@@ -5,17 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>About Us | Mindo Bird Watching</title>
 
-  <!-- STAGING: keep until launch -->
   <meta name="robots" content="noindex, nofollow" />
 
-  <!-- hreflang -->
   <link rel="alternate" hreflang="en" href="/about-us/" />
   <link rel="alternate" hreflang="es" href="/es/sobre-nosotros/" />
   <link rel="alternate" hreflang="x-default" href="/about-us/" />
 
   <link rel="stylesheet" href="/assets/css/site.css">
-
-  <!-- Universal head (favicons + OG + theme-color) -->
   <script src="/assets/js/head.js" defer></script>
 
   <style>
@@ -88,7 +84,6 @@
       color:var(--ink);
     }
 
-    /* Hamburger (mobile) */
     .menuBtn{
       display:none;
       align-items:center;
@@ -179,10 +174,8 @@
 
     @media (max-width:900px){
       .grid{ grid-template-columns:1fr; }
-
       .right .lang,
       .right .nav{ display:none; }
-
       .menuBtn{ display:inline-flex; }
     }
   </style>
@@ -199,13 +192,11 @@
       </a>
 
       <div class="right">
-        <!-- Desktop language switch -->
         <div class="lang" aria-label="Language switch">
           <a class="active" href="/about-us/" aria-current="page">EN</a>
           <a href="/es/sobre-nosotros/">ES</a>
         </div>
 
-        <!-- Desktop nav -->
         <nav class="nav" aria-label="Primary">
           <a class="pill" href="/home/">Home</a>
           <a class="pill active" href="/about-us/">About Us</a>
@@ -216,7 +207,6 @@
           <a class="pill" href="/contact/">Contact</a>
         </nav>
 
-        <!-- Mobile hamburger -->
         <button class="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -224,7 +214,6 @@
         </button>
       </div>
 
-      <!-- Mobile menu panel -->
       <div class="menuPanel" id="menuPanel" aria-label="Mobile menu">
         <div class="lang" aria-label="Language switch (mobile)">
           <a class="active" href="/about-us/" aria-current="page">EN</a>
@@ -287,37 +276,40 @@
       </div>
     </main>
 
-    <footer class="footer" aria-label="Footer">
-      <small>Mindo Bird Watching 2025 ©</small>
-    </footer>
+    <!-- Shared footer mount -->
+    <div id="siteFooter"></div>
   </div>
 
   <script>
     (function(){
       const btn = document.querySelector('.menuBtn');
       const panel = document.getElementById('menuPanel');
-      if(!btn || !panel) return;
-
-      function closeMenu(){
-        panel.classList.remove('is-open');
-        btn.setAttribute('aria-expanded', 'false');
+      if(btn && panel){
+        function closeMenu(){
+          panel.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+        btn.addEventListener('click', function(){
+          const open = panel.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function(e){
+          if(panel.classList.contains('is-open')){
+            const inside = panel.contains(e.target) || btn.contains(e.target);
+            if(!inside) closeMenu();
+          }
+        });
+        document.addEventListener('keydown', function(e){
+          if(e.key === 'Escape') closeMenu();
+        });
       }
 
-      btn.addEventListener('click', function(){
-        const open = panel.classList.toggle('is-open');
-        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      });
-
-      document.addEventListener('click', function(e){
-        if(panel.classList.contains('is-open')){
-          const isInside = panel.contains(e.target) || btn.contains(e.target);
-          if(!isInside) closeMenu();
-        }
-      });
-
-      document.addEventListener('keydown', function(e){
-        if(e.key === 'Escape') closeMenu();
-      });
+      (async function(){
+        const mount = document.getElementById('siteFooter');
+        if(!mount) return;
+        const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
+        mount.innerHTML = await res.text();
+      })();
     })();
   </script>
 </body>
