@@ -10,7 +10,7 @@
 
   <style>
     :root{
-      --page-bg:#C6DBAD; /* TEST BACKGROUND */
+      --page-bg:#C6DBAD;
       --text:#071923;
       --muted:rgba(7,25,35,.75);
       --line:rgba(7,25,35,.14);
@@ -27,7 +27,6 @@
 
     .container{max-width:1100px;margin:0 auto;padding:24px}
 
-    /* Keep your existing header look (but on light bg) */
     .topbar{
       display:flex;
       align-items:center;
@@ -40,9 +39,9 @@
       backdrop-filter: blur(10px);
     }
 
-    .brand{display:flex;align-items:center;gap:12px;font-weight:900}
+    .brand{font-weight:900}
 
-    .nav{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .nav{display:flex;flex-wrap:wrap;gap:12px}
     .pill{
       padding:10px 12px;
       border-radius:999px;
@@ -65,18 +64,17 @@
       border-radius:var(--r);
       background:rgba(255,255,255,.55);
     }
-    h1{margin:0 0 10px;font-size:36px;letter-spacing:-.5px}
+
+    h1{margin:0 0 10px;font-size:36px}
     p{margin:0;color:var(--muted);line-height:1.6}
 
     .ctaRow{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
     .btn{
-      display:inline-block;
       padding:12px 14px;
       border-radius:14px;
       border:1px solid var(--line);
       font-weight:900;
       background:rgba(255,255,255,.65);
-      color:#071923;
     }
 
     .grid{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -86,30 +84,36 @@
       border-radius:var(--r);
       background:rgba(255,255,255,.55);
     }
-    .card h2{margin:0 0 6px;font-size:16px}
-    .card p{margin:0}
 
     /* ===== FOOTER TEST ===== */
     .footer{
-      margin-top:22px;
-      padding:22px 0 10px;
+      margin-top:28px;
+      padding:24px 0 10px;
       text-align:center;
     }
 
-    .footer a{
-      display:inline-flex;
-      align-items:center;
+    .footer-icons{
+      display:flex;
       justify-content:center;
+      gap:18px;
+      margin-bottom:10px;
+    }
+
+    .footer a{
       width:72px;
       height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       border-radius:999px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.60);
       transition:transform 140ms ease, background 140ms ease;
     }
+
     .footer a:hover{
-      transform:translateY(-1px);
-      background:rgba(255,255,255,.75);
+      transform:translateY(-2px);
+      background:rgba(255,255,255,.8);
     }
 
     .footer img{
@@ -120,8 +124,6 @@
     }
 
     .footer small{
-      display:block;
-      margin-top:10px;
       font-weight:900;
       color:rgba(7,25,35,.78);
     }
@@ -135,10 +137,9 @@
 <body>
   <div class="container">
 
-    <!-- HEADER -->
     <header class="topbar">
-      <div class="brand"><span>Mindo Bird Watching</span></div>
-      <nav class="nav" aria-label="Primary">
+      <div class="brand">Mindo Bird Watching</div>
+      <nav class="nav">
         <a class="pill active" href="/home">Home</a>
         <a class="pill" href="/about-us">About Us</a>
         <a class="pill" href="/our-guide">Our Guide</a>
@@ -149,12 +150,9 @@
       </nav>
     </header>
 
-    <!-- CONTENT -->
     <section class="hero">
       <h1>Private birding in Mindo, Ecuador</h1>
-      <p>
-        Testing page background + footer layout on Cloudflare Pages staging.
-      </p>
+      <p>Testing background color and footer social layout.</p>
       <div class="ctaRow">
         <a class="btn" href="/book-tour">Book a tour</a>
         <a class="btn" href="/tours">Explore tours</a>
@@ -162,16 +160,21 @@
     </section>
 
     <section class="grid">
-      <div class="card"><h2>Full-day tours</h2><p>Build the exact page at <strong>/tours-full-day</strong>.</p></div>
-      <div class="card"><h2>Half-day tours</h2><p>Build the exact page at <strong>/tours-half-day</strong>.</p></div>
-      <div class="card"><h2>Bird of the week</h2><p>Keep your URL at <strong>/bird-of-the-week</strong>.</p></div>
+      <div class="card"><h2>Full-day tours</h2><p>/tours-full-day</p></div>
+      <div class="card"><h2>Half-day tours</h2><p>/tours-half-day</p></div>
+      <div class="card"><h2>Bird of the week</h2><p>/bird-of-the-week</p></div>
     </section>
 
-    <!-- FOOTER TEST -->
-    <footer class="footer" aria-label="Footer">
-      <a href="https://instagram.com/mindobirdwatching.com" target="_blank" rel="noopener" aria-label="Instagram">
-        <img src="/assets/images/MBW-Icon-Instagram.jpg" alt="Instagram icon">
-      </a>
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-icons">
+        <a href="https://instagram.com/mindobirdwatching.com" target="_blank" rel="noopener">
+          <img src="/assets/images/MBW-Icon-Instagram.jpg" alt="Instagram">
+        </a>
+        <a href="https://tiktok.com/mindobirdwatching" target="_blank" rel="noopener">
+          <img src="/assets/images/MBW-Ico-Linktreeta.jpg" alt="TikTok">
+        </a>
+      </div>
       <small>Mindo Bird Watching 2025 ©</small>
     </footer>
 
