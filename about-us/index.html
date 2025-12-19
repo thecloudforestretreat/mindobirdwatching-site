@@ -15,7 +15,9 @@
   <script src="/assets/js/head.js" defer></script>
 
   <style>
-    /* ===== Approved global header (same as /home/) ===== */
+    /* ===== Header styles (must exist somewhere for header.html to render correctly)
+       If these already live in /assets/css/site.css, you can remove this block later.
+       For now we keep it so header.html always looks/behaves like /home/. ===== */
     .topbar{
       display:flex;
       align-items:center;
@@ -128,6 +130,14 @@
       width:100%;
     }
 
+    @media (max-width:900px){
+      .right .lang,
+      .right .nav{ display:none; }
+      .menuBtn{ display:inline-flex; }
+      .menuPanel{ display:none; }
+      .menuPanel.is-open{ display:block; }
+    }
+
     /* ===== Page styles ===== */
     .page{ margin-top:18px; padding:26px; }
     .page.card{
@@ -176,11 +186,6 @@
 
     @media (max-width:900px){
       .grid{ grid-template-columns:1fr; }
-      .right .lang,
-      .right .nav{ display:none; }
-      .menuBtn{ display:inline-flex; }
-      .menuPanel{ display:none; }
-      .menuPanel.is-open{ display:block; }
     }
   </style>
 
@@ -190,53 +195,8 @@
 <body>
   <div class="container">
 
-    <!-- Approved global header (same as /home/) -->
-    <header class="topbar">
-      <a class="brand" href="/home/" aria-label="Mindo Bird Watching home">
-        <img src="/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo mark">
-        <span>Mindo Bird Watching</span>
-      </a>
-
-      <div class="right">
-        <div class="lang" aria-label="Language switch">
-          <a class="active" href="/about-us/" aria-current="page">EN</a>
-          <a href="/es/sobre-nosotros/">ES</a>
-        </div>
-
-        <nav class="nav" aria-label="Primary">
-          <a class="pill" href="/home/">Home</a>
-          <a class="pill active" href="/about-us/">About Us</a>
-          <a class="pill" href="/our-guide/">Our Guide</a>
-          <a class="pill" href="/tours/">Tours</a>
-          <a class="pill" href="/bird-gallery/">Bird Gallery</a>
-          <a class="pill" href="/book-tour/">Book Tour</a>
-          <a class="pill" href="/contact/">Contact</a>
-        </nav>
-
-        <button class="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="menuPanel" id="menuPanel" aria-label="Mobile menu">
-        <div class="lang" aria-label="Language switch (mobile)">
-          <a class="active" href="/about-us/" aria-current="page">EN</a>
-          <a href="/es/sobre-nosotros/">ES</a>
-        </div>
-
-        <nav class="menuList" aria-label="Primary (mobile)">
-          <a class="pill" href="/home/">Home</a>
-          <a class="pill active" href="/about-us/">About Us</a>
-          <a class="pill" href="/our-guide/">Our Guide</a>
-          <a class="pill" href="/tours/">Tours</a>
-          <a class="pill" href="/bird-gallery/">Bird Gallery</a>
-          <a class="pill" href="/book-tour/">Book Tour</a>
-          <a class="pill" href="/contact/">Contact</a>
-        </nav>
-      </div>
-    </header>
+    <!-- Global header mount -->
+    <div id="siteHeader"></div>
 
     <main class="page card">
       <h1>About Us</h1>
@@ -277,16 +237,47 @@
       </div>
     </main>
 
-    <!-- Shared footer mount -->
+    <!-- Global footer mount -->
     <div id="siteFooter"></div>
   </div>
 
   <script>
     (function(){
-      const btn = document.querySelector('.menuBtn');
-      const panel = document.getElementById('menuPanel');
 
-      if(btn && panel){
+      function normalizePath(p){
+        if(!p) return '/';
+        // keep trailing slash for consistency
+        return p.endsWith('/') ? p : (p + '/');
+      }
+
+      function setActiveHeaderState(){
+        const path = normalizePath(window.location.pathname);
+
+        // Active nav pill (desktop + mobile)
+        document.querySelectorAll('.nav a.pill, .menuList a.pill').forEach(a => {
+          const href = normalizePath(a.getAttribute('href') || '');
+          const isActive = href === path;
+          a.classList.toggle('active', isActive);
+          if(isActive) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
+
+        // Active language (desktop + mobile) based on <html lang="">
+        const pageLang = (document.documentElement.lang || 'en').toLowerCase();
+        document.querySelectorAll('.lang a[data-lang]').forEach(a => {
+          const isActive = (a.getAttribute('data-lang') || '').toLowerCase() === pageLang;
+          a.classList.toggle('active', isActive);
+          if(isActive) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
+      }
+
+      function initHamburger(){
+        const btn = document.querySelector('.menuBtn');
+        const panel = document.getElementById('menuPanel');
+
+        if(!btn || !panel) return;
+
         function closeMenu(){
           panel.classList.remove('is-open');
           btn.setAttribute('aria-expanded', 'false');
@@ -309,12 +300,25 @@
         });
       }
 
-      (async function(){
-        const mount = document.getElementById('siteFooter');
-        if(!mount) return;
-        const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
-        mount.innerHTML = await res.text();
-      })();
+      async function mountIncludes(){
+        const headerMount = document.getElementById('siteHeader');
+        if(headerMount){
+          const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
+          headerMount.innerHTML = await res.text();
+        }
+
+        const footerMount = document.getElementById('siteFooter');
+        if(footerMount){
+          const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
+          footerMount.innerHTML = await res.text();
+        }
+
+        // After header is injected:
+        setActiveHeaderState();
+        initHamburger();
+      }
+
+      mountIncludes();
     })();
   </script>
 </body>
