@@ -178,6 +178,7 @@
       align-items:center;
     }
 
+    /* Carousel (page-only) */
     .carouselWrap{
       margin-top: 22px;
       padding-top: 14px;
@@ -205,39 +206,98 @@
       font-size: 13px;
     }
 
-    .carousel{
-      display:flex;
-      gap: 12px;
-      overflow-x:auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 6px;
-    }
-    .slide{
-      flex: 0 0 min(520px, 88%);
-      scroll-snap-align: start;
+    .mbwCarousel{
+      position: relative;
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
-      overflow:hidden;
+      overflow: hidden;
     }
-    .slide img{
-      width:100%;
-      height: 320px;
+
+    .mbwCarouselViewport{
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .mbwCarouselTrack{
+      display: flex;
+      width: 100%;
+      transform: translateX(0);
+      transition: transform 420ms ease;
+      will-change: transform;
+    }
+
+    .mbwSlide{
+      flex: 0 0 100%;
+      width: 100%;
+    }
+
+    .mbwSlide img{
+      width: 100%;
+      height: 420px;
+      display: block;
       object-fit: cover;
-      display:block;
     }
-    .slide .label{
+
+    .mbwSlide .label{
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       color: var(--muted);
       font-size: 13px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .mbwNavBtn{
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .mbwNavBtn svg{ width: 20px; height: 20px; }
+    .mbwNavPrev{ left: 10px; }
+    .mbwNavNext{ right: 10px; }
+
+    .mbwDots{
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%);
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+    }
+    .mbwDot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(13,89,37,.22);
+    }
+    .mbwDot.is-active{
+      background: rgba(13,89,37,.65);
     }
 
     @media (max-width: 900px){
       .guideCard{ grid-template-columns: 1fr; }
-      .slide img{ height: 240px; }
+      .mbwSlide img{ height: 280px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .mbwCarouselTrack{ transition: none; }
     }
   </style>
 </head>
@@ -306,23 +366,17 @@
         <div class="qaList">
           <details class="qaItem">
             <summary>What inspired you to become a birdwatching guide?</summary>
-            <div class="answer">
-              I’m deeply inspired by the opportunity to observe so many wonders and colors in Mindo every day.
-            </div>
+            <div class="answer">I’m deeply inspired by the opportunity to observe so many wonders and colors in Mindo every day.</div>
           </details>
 
           <details class="qaItem">
             <summary>How long have you been guiding birdwatching tours in Mindo?</summary>
-            <div class="answer">
-              I’ve been guiding for about six years, but I keep discovering new things that motivate me to continue learning.
-            </div>
+            <div class="answer">I’ve been guiding for about six years, but I keep discovering new things that motivate me to continue learning.</div>
           </details>
 
           <details class="qaItem">
             <summary>What do you enjoy most about birdwatching in the cloud forest?</summary>
-            <div class="answer">
-              What I enjoy most is starting each morning with the diversity of bird songs and colors, which bring a sense of peace within nature.
-            </div>
+            <div class="answer">What I enjoy most is starting each morning with the diversity of bird songs and colors, which bring a sense of peace within nature.</div>
           </details>
 
           <details class="qaItem">
@@ -343,9 +397,7 @@
 
           <details class="qaItem">
             <summary>How many bird species have you identified in the area?</summary>
-            <div class="answer">
-              In my experience as a guide, I’ve been fortunate to find around 400 species, including birds and hummingbirds.
-            </div>
+            <div class="answer">In my experience as a guide, I’ve been fortunate to find around 400 species, including birds and hummingbirds.</div>
           </details>
 
           <details class="qaItem">
@@ -358,9 +410,7 @@
 
           <details class="qaItem">
             <summary>Can you share a memorable experience with a group of birdwatchers?</summary>
-            <div class="answer">
-              The experience with the American couple was very special. Their best memory and experience was visiting Mindo and meeting me as their guide.
-            </div>
+            <div class="answer">The experience with the American couple was very special. Their best memory and experience was visiting Mindo and meeting me as their guide.</div>
           </details>
 
           <details class="qaItem">
@@ -405,9 +455,7 @@
 
           <details class="qaItem">
             <summary>What’s a fun fact about birds that surprises most people?</summary>
-            <div class="answer">
-              A fun fact that always surprises tourists is that in Mindo, we can always find wonders. There’s no tourist who doesn’t discover something interesting.
-            </div>
+            <div class="answer">A fun fact that always surprises tourists is that in Mindo, we can always find wonders. There’s no tourist who doesn’t discover something interesting.</div>
           </details>
 
           <details class="qaItem">
@@ -420,16 +468,12 @@
 
           <details class="qaItem">
             <summary>Why is bird conservation important to you?</summary>
-            <div class="answer">
-              It’s important because birds are part of the natural wealth we have. Going out to observe them is like finding the green gold of nature.
-            </div>
+            <div class="answer">It’s important because birds are part of the natural wealth we have. Going out to observe them is like finding the green gold of nature.</div>
           </details>
 
           <details class="qaItem">
             <summary>How do your tours help protect Mindo’s biodiversity?</summary>
-            <div class="answer">
-              My tours help convey respect for nature and showcase the beauty that surrounds us. This motivates people to value and protect biodiversity.
-            </div>
+            <div class="answer">My tours help convey respect for nature and showcase the beauty that surrounds us. This motivates people to value and protect biodiversity.</div>
           </details>
 
           <details class="qaItem">
@@ -445,34 +489,49 @@
       <section class="carouselWrap" aria-label="Photo carousel">
         <div class="carouselHead">
           <h2>Moments from Mindo</h2>
-          <p class="carouselHint">Replace the five image links below when you are ready.</p>
+          <p class="carouselHint">Autoplays every 3 seconds. You can also use the arrows.</p>
         </div>
 
-        <div class="carousel" role="region" aria-label="Scrollable image carousel">
-          <div class="slide">
-            <img src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 1 (replace)">
-            <div class="label">Image 1</div>
+        <div class="mbwCarousel" data-autoplay="true" data-interval="3000" aria-label="Image carousel">
+          <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous image">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="mbwCarouselViewport" role="region" aria-label="Carousel viewport">
+            <div class="mbwCarouselTrack">
+              <!-- Replace image links only -->
+              <div class="mbwSlide">
+                <img src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 1 (replace)">
+                <div class="label">Image 1</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 2 (replace)">
+                <div class="label">Image 2</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 3 (replace)">
+                <div class="label">Image 3</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 4 (replace)">
+                <div class="label">Image 4</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 5 (replace)">
+                <div class="label">Image 5</div>
+              </div>
+            </div>
           </div>
 
-          <div class="slide">
-            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 2 (replace)">
-            <div class="label">Image 2</div>
-          </div>
+          <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Next image">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
 
-          <div class="slide">
-            <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 3 (replace)">
-            <div class="label">Image 3</div>
-          </div>
-
-          <div class="slide">
-            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 4 (replace)">
-            <div class="label">Image 4</div>
-          </div>
-
-          <div class="slide">
-            <img src="https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 5 (replace)">
-            <div class="label">Image 5</div>
-          </div>
+          <div class="mbwDots" aria-label="Carousel position indicators"></div>
         </div>
       </section>
     </main>
@@ -482,7 +541,7 @@
 
   </div>
 
-  <!-- Required loader script (single source of truth for this page) -->
+  <!-- Required loader script (single source of truth) + page-only carousel behavior -->
   <script>
     (async function(){
       const headerMount = document.getElementById('siteHeader');
@@ -496,6 +555,105 @@
         const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
         footerMount.innerHTML = await res.text();
       }
+
+      // Page-only: carousel logic (does not touch header/footer/menu behavior)
+      const root = document.querySelector('.mbwCarousel');
+      if(!root) return;
+
+      const track = root.querySelector('.mbwCarouselTrack');
+      const slides = Array.from(root.querySelectorAll('.mbwSlide'));
+      const prevBtn = root.querySelector('.mbwNavPrev');
+      const nextBtn = root.querySelector('.mbwNavNext');
+      const dotsWrap = root.querySelector('.mbwDots');
+
+      if(!track || slides.length === 0) return;
+
+      let index = 0;
+      const intervalMs = Number(root.getAttribute('data-interval') || '3000');
+      const autoplay = (root.getAttribute('data-autoplay') || 'true') === 'true';
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function clamp(i){
+        const n = slides.length;
+        return (i % n + n) % n;
+      }
+
+      function renderDots(){
+        if(!dotsWrap) return;
+        dotsWrap.innerHTML = '';
+        slides.forEach((_, i) => {
+          const d = document.createElement('span');
+          d.className = 'mbwDot' + (i === index ? ' is-active' : '');
+          d.setAttribute('aria-hidden', 'true');
+          dotsWrap.appendChild(d);
+        });
+      }
+
+      function goTo(i){
+        index = clamp(i);
+        track.style.transform = 'translateX(' + (-index * 100) + '%)';
+        renderDots();
+      }
+
+      function next(){ goTo(index + 1); }
+      function prev(){ goTo(index - 1); }
+
+      if(prevBtn) prevBtn.addEventListener('click', () => { stop(); prev(); start(); });
+      if(nextBtn) nextBtn.addEventListener('click', () => { stop(); next(); start(); });
+
+      // Basic swipe support
+      let startX = null;
+      let dragging = false;
+
+      function onPointerDown(e){
+        if(e.pointerType === 'mouse') return;
+        dragging = true;
+        startX = e.clientX;
+        stop();
+      }
+
+      function onPointerUp(e){
+        if(!dragging) return;
+        dragging = false;
+        const dx = e.clientX - startX;
+        startX = null;
+
+        const threshold = 35;
+        if(dx > threshold) prev();
+        else if(dx < -threshold) next();
+
+        start();
+      }
+
+      root.addEventListener('pointerdown', onPointerDown, { passive: true });
+      root.addEventListener('pointerup', onPointerUp, { passive: true });
+      root.addEventListener('pointercancel', () => { dragging = false; startX = null; start(); }, { passive: true });
+
+      // Autoplay with pause on hover/focus
+      let timer = null;
+
+      function start(){
+        if(!autoplay || reduceMotion) return;
+        if(timer) return;
+        timer = window.setInterval(next, Math.max(2000, intervalMs));
+      }
+
+      function stop(){
+        if(timer){
+          window.clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', start);
+      root.addEventListener('focusin', stop);
+      root.addEventListener('focusout', start);
+
+      window.addEventListener('resize', () => { goTo(index); }, { passive: true });
+
+      goTo(0);
+      start();
     })();
   </script>
 </body>
