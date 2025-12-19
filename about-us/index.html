@@ -3,26 +3,143 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Our Guide | Mindo Bird Watching</title>
+  <title>About Us | Mindo Bird Watching</title>
 
-  <!-- Keep for staging while testing -->
   <meta name="robots" content="noindex, nofollow" />
 
-  <!-- Hreflang -->
-  <link rel="alternate" hreflang="en" href="/our-guide/" />
-  <link rel="alternate" hreflang="es" href="/es/nuestro-guia/" />
-  <link rel="alternate" hreflang="x-default" href="/our-guide/" />
+  <link rel="alternate" hreflang="en" href="/about-us/" />
+  <link rel="alternate" hreflang="es" href="/es/sobre-nosotros/" />
+  <link rel="alternate" hreflang="x-default" href="/about-us/" />
 
   <link rel="stylesheet" href="/assets/css/site.css">
   <script src="/assets/js/head.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
 
   <style>
-    /* Page-only styles (no header/footer/menu styles) */
-    .page{
-      margin-top:18px;
-      padding:26px;
+    /* ===== Header styles (must exist somewhere for header.html to render correctly)
+       If these already live in /assets/css/site.css, you can remove this block later.
+       For now we keep it so header.html always looks/behaves like /home/. ===== */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.65);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      position: relative;
     }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:900;
+      color: var(--ink);
+      white-space:nowrap;
+      min-width: 0;
+    }
+
+    .brand img{
+      height:26px;
+      width:auto;
+      display:block;
+      flex:0 0 auto;
+      border-radius: 8px;
+    }
+
+    .right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .lang{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.5);
+    }
+    .lang a{
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:12.5px;
+      color:var(--muted);
+    }
+    .lang a.active{
+      background:rgba(13,89,37,.14);
+      border:1px solid rgba(13,89,37,.35);
+      color:var(--ink);
+    }
+
+    .menuBtn{
+      display:none;
+      align-items:center;
+      justify-content:center;
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.65);
+      cursor:pointer;
+    }
+    .menuBtn svg{ width:22px; height:22px; }
+
+    .menuPanel{
+      display:none;
+      position:absolute;
+      right:12px;
+      top: calc(100% + 10px);
+      width: min(320px, calc(100vw - 24px));
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      z-index: 50;
+    }
+    .menuPanel .lang{
+      width:100%;
+      justify-content:center;
+      margin-bottom: 10px;
+      background: rgba(255,255,255,.75);
+    }
+    .menuList{
+      display:grid;
+      gap:10px;
+    }
+    .menuList a.pill{
+      display:flex;
+      justify-content:center;
+      width:100%;
+    }
+
+    @media (max-width:900px){
+      .right .lang,
+      .right .nav{ display:none; }
+      .menuBtn{ display:inline-flex; }
+      .menuPanel{ display:none; }
+      .menuPanel.is-open{ display:block; }
+    }
+
+    /* ===== Page styles ===== */
+    .page{ margin-top:18px; padding:26px; }
     .page.card{
       background: var(--card);
       border: 1px solid var(--line);
@@ -30,630 +147,178 @@
       box-shadow: var(--shadow);
     }
 
-    .lede{
-      max-width: 90ch;
-      margin-top: 8px;
-      line-height: 1.6;
-    }
-    .lede p{ margin: 0 0 12px; }
-
-    .actions{
-      margin-top: 14px;
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .waBtn{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      font-weight: 800;
-      color: var(--ink);
-      text-decoration: none;
-    }
-    .waBtn img{
-      width: 22px;
-      height: 22px;
-      border-radius: 7px;
-      display:block;
-    }
-
-    .guideCard{
-      margin-top: 18px;
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 16px;
-      align-items:start;
-    }
-
-    .photo.card{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .photo .frame{
-      aspect-ratio: 4 / 3;
-      background: rgba(255,255,255,.55);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position: relative;
-    }
-
-    .photo .frame img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .photo .cap{
-      padding: 12px 14px;
-      border-top: 1px solid var(--line);
-      font-size: 13.5px;
-      color: var(--muted);
-    }
-
-    .facts.card{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 16px;
-    }
-
-    .facts h2{
-      margin: 0 0 8px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
-
-    .facts ul{
-      margin: 0;
-      padding-left: 18px;
-      color: var(--ink);
-      line-height: 1.55;
-    }
-    .facts li{ margin: 6px 0; }
-
-    .qa{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
-
-    .qa h2{
-      margin: 0 0 10px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 20px;
-    }
-
-    .qaList{
-      display:grid;
-      gap: 12px;
-      margin-top: 8px;
-    }
-
-    details.qaItem{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 12px 14px;
-    }
-
-    details.qaItem summary{
-      cursor: pointer;
-      font-weight: 900;
-      color: var(--ink);
-      list-style: none;
-    }
-    details.qaItem summary::-webkit-details-marker{ display:none; }
-
-    .answer{
+    .copy{
+      max-width: 82ch;
       margin-top: 10px;
-      color: var(--ink);
-      line-height: 1.6;
+    }
+    .copy p{ margin:0 0 12px; }
+
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
     }
 
-    .bottomCtas{
-      margin-top: 18px;
+    .mini{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.65);
+    }
+
+    .mini h2{
+      margin:0 0 6px;
+      font-size:16px;
+      font-family:var(--font-head);
+      color:var(--forest);
+      letter-spacing:-0.02em;
+    }
+
+    .mini p{ margin:0; }
+
+    .ctaRow{
+      margin-top:16px;
       display:flex;
       gap:12px;
       flex-wrap:wrap;
-      align-items:center;
     }
 
-    /* Carousel (page-only) */
-    .carouselWrap{
-      margin-top: 22px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
-
-    .carouselHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap:wrap;
-      margin-bottom: 10px;
-    }
-    .carouselHead h2{
-      margin: 0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 20px;
-    }
-    .carouselHint{
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .mbwCarousel{
-      position: relative;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .mbwCarouselViewport{
-      width: 100%;
-      overflow: hidden;
-    }
-
-    .mbwCarouselTrack{
-      display: flex;
-      width: 100%;
-      transform: translateX(0);
-      transition: transform 420ms ease;
-      will-change: transform;
-    }
-
-    .mbwSlide{
-      flex: 0 0 100%;
-      width: 100%;
-    }
-
-    .mbwSlide img{
-      width: 100%;
-      height: 420px;
-      display: block;
-      object-fit: cover;
-    }
-
-    .mbwSlide .label{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      background: rgba(255,255,255,.55);
-    }
-
-    .mbwNavBtn{
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.85);
-      box-shadow: var(--shadow);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-    }
-    .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
-    .mbwNavBtn svg{ width: 20px; height: 20px; }
-    .mbwNavPrev{ left: 10px; }
-    .mbwNavNext{ right: 10px; }
-
-    .mbwDots{
-      position: absolute;
-      left: 50%;
-      bottom: 10px;
-      transform: translateX(-50%);
-      display: inline-flex;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.78);
-    }
-    .mbwDot{
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(13,89,37,.22);
-    }
-    .mbwDot.is-active{
-      background: rgba(13,89,37,.65);
-    }
-
-    @media (max-width: 900px){
-      .guideCard{ grid-template-columns: 1fr; }
-      .mbwSlide img{ height: 280px; }
-    }
-
-    @media (prefers-reduced-motion: reduce){
-      .mbwCarouselTrack{ transition: none; }
+    @media (max-width:900px){
+      .grid{ grid-template-columns:1fr; }
     }
   </style>
+
+  <script src="/assets/js/site.js" defer></script>
 </head>
 
 <body>
   <div class="container">
 
-    <!-- Shared header mount -->
+    <!-- Global header mount -->
     <div id="siteHeader"></div>
 
     <main class="page card">
-      <h1 style="margin:0 0 6px;">Our Guide</h1>
+      <h1>About Us</h1>
 
-      <div class="lede" aria-label="Our guide intro">
+      <div class="copy" aria-label="About us copy">
         <p>
-          Meet our expert bird guide at Mindo Bird Watching. With years of experience in Ecuador’s cloud forest, our guide helps you spot toucans,
-          hummingbirds, and rare Andean species with passion and precision.
+          At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
+          With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
+          tanagers, and countless other species that call Mindo home.
         </p>
-
         <p>
-          Meet Chicho, our passionate birdwatching guide in Mindo. With over six years of experience and a love for the cloud forest, Chicho has identified
-          over 400 bird species, including the stunning Cock-of-the-Rock and Highland Toucan. Join Chicho for an unforgettable journey into the heart of nature.
+          Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
+          With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
         </p>
+        <p>
+          Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
+        </p>
+      </div>
 
-        <div class="actions" aria-label="Primary actions">
-          <a class="btn primary" href="/book-tour/">Book tour</a>
-
-          <a class="waBtn" href="https://wa.me/13054585402" target="_blank" rel="noopener" aria-label="Reserve your tour instantly on WhatsApp">
-            <img src="/assets/images/icons/mbw-ig-test-10.png" alt="WhatsApp icon">
-            <span>Reserve instantly on WhatsApp</span>
-          </a>
+      <div class="grid" aria-label="Key points">
+        <div class="mini">
+          <h2>Local guide</h2>
+          <p>Years of experience guiding birders through Mindo’s cloud forest.</p>
+        </div>
+        <div class="mini">
+          <h2>Personalized tours</h2>
+          <p>Great for both experienced birders and first-time nature lovers.</p>
+        </div>
+        <div class="mini">
+          <h2>Best birding spots</h2>
+          <p>Access to some of the strongest routes and habitats in the region.</p>
         </div>
       </div>
 
-      <section class="guideCard" aria-label="Guide overview">
-        <div class="photo card" aria-label="Chicho photo">
-          <div class="frame">
-            <!-- Replace this src with Chicho’s real photo -->
-            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Chicho, birdwatching guide in Mindo (replace this image)">
-          </div>
-          <div class="cap">
-            Replace the image above with Chicho’s photo when ready.
-          </div>
-        </div>
-
-        <aside class="facts card" aria-label="Quick facts about Chicho">
-          <h2>Get to know Chicho</h2>
-          <ul>
-            <li>Guiding in Mindo for 6+ years</li>
-            <li>Identified around 400 species</li>
-            <li>Favorites: Cock-of-the-Rock and Highland Toucan</li>
-            <li>Memorable tour: 284 species in 2.5 days with an American couple</li>
-            <li>Style: friendly, calm, and focused on helping you see more</li>
-          </ul>
-
-          <div class="bottomCtas" aria-label="Secondary actions">
-            <a class="btn secondary" href="/tours/">Explore tours</a>
-            <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Message on WhatsApp</a>
-          </div>
-        </aside>
-      </section>
-
-      <section class="qa" aria-label="Guide interview">
-        <h2>Interview</h2>
-
-        <div class="qaList">
-          <details class="qaItem">
-            <summary>What inspired you to become a birdwatching guide?</summary>
-            <div class="answer">I’m deeply inspired by the opportunity to observe so many wonders and colors in Mindo every day.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>How long have you been guiding birdwatching tours in Mindo?</summary>
-            <div class="answer">I’ve been guiding for about six years, but I keep discovering new things that motivate me to continue learning.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What do you enjoy most about birdwatching in the cloud forest?</summary>
-            <div class="answer">What I enjoy most is starting each morning with the diversity of bird songs and colors, which bring a sense of peace within nature.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>Do you have any childhood memories related to nature or birds that left a mark on you?</summary>
-            <div class="answer">
-              As a child, my first experience was observing a Cock-of-the-Rock, an emblematic bird with very striking colors.
-              I remember seeing it through binoculars, which allowed me to appreciate it even more closely. Its songs, size, and colors left a lasting impression on me.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What is your favorite bird species to observe in Mindo, and why?</summary>
-            <div class="answer">
-              I have two favorites: the Cock-of-the-Rock and the Highland Toucan. Their songs and colors stand out in the forest,
-              and having the privilege of finding them in Mindo is a blessing.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>How many bird species have you identified in the area?</summary>
-            <div class="answer">In my experience as a guide, I’ve been fortunate to find around 400 species, including birds and hummingbirds.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What is the most exciting or rare bird you’ve seen on a tour?</summary>
-            <div class="answer">
-              My best experience was guiding an American couple who were bird enthusiasts. In just two and a half days, we saw 284 species.
-              They were so excited that they called me every night from Ecuador to say they couldn’t believe they had seen so much variety.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>Can you share a memorable experience with a group of birdwatchers?</summary>
-            <div class="answer">The experience with the American couple was very special. Their best memory and experience was visiting Mindo and meeting me as their guide.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What can visitors expect on a birdwatching tour with you?</summary>
-            <div class="answer">
-              People who join me will always find someone friendly, who makes them feel confident about spotting colorful bird varieties.
-              In Mindo, we’re privileged to have so many species, and visitors always leave with beautiful memories.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What makes Mindo such a special place for birdwatching?</summary>
-            <div class="answer">
-              Mindo is special because, in a small area, we can observe a great variety of flora and fauna.
-              In just one square meter, you can see up to six different bird species. That’s why Mindo is called the Bird Capital.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>How do you help beginners or first-time birdwatchers enjoy the experience?</summary>
-            <div class="answer">
-              It’s always good to help and motivate people who are just starting out. Sharing respect for nature is the best thing one can do,
-              as it offers us so much beauty.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What is the best time of year to visit Mindo for birdwatching?</summary>
-            <div class="answer">
-              The best times are from late January, when more birds gather. It’s the season when they come out with their chicks,
-              and you can find them in greater numbers. It’s also easier to see them flying everywhere.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>Do you have a favorite bird call or sound that you like to imitate?</summary>
-            <div class="answer">
-              My favorite call is that of the Highland Toucan. It’s a loud call that, when you hear it, seems to say, Watch out, I’m here.
-              It has a lot of personality, and hearing it always makes me happy because it’s not very common.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What’s a fun fact about birds that surprises most people?</summary>
-            <div class="answer">A fun fact that always surprises tourists is that in Mindo, we can always find wonders. There’s no tourist who doesn’t discover something interesting.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>If you could be a bird, which one would you choose and why?</summary>
-            <div class="answer">
-              If I were a bird, I’d be a Highland Toucan. Its call and colors are special. It’s a calm toucan, but when it sings, it commands a lot of personality.
-              I’ve been lucky enough to see up to 17 Highland Toucans in a single tree.
-            </div>
-          </details>
-
-          <details class="qaItem">
-            <summary>Why is bird conservation important to you?</summary>
-            <div class="answer">It’s important because birds are part of the natural wealth we have. Going out to observe them is like finding the green gold of nature.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>How do your tours help protect Mindo’s biodiversity?</summary>
-            <div class="answer">My tours help convey respect for nature and showcase the beauty that surrounds us. This motivates people to value and protect biodiversity.</div>
-          </details>
-
-          <details class="qaItem">
-            <summary>What advice would you give to someone who wants to start birdwatching?</summary>
-            <div class="answer">
-              My advice is to do it with passion. There’s nothing better than going out to discover so much beauty in nature.
-              Be prepared to see how special birds, mountains, and rivers are.
-            </div>
-          </details>
-        </div>
-      </section>
-
-      <section class="carouselWrap" aria-label="Photo carousel">
-        <div class="carouselHead">
-          <h2>Moments from Mindo</h2>
-          <p class="carouselHint">Autoplays every 3 seconds. You can also use the arrows.</p>
-        </div>
-
-        <div class="mbwCarousel" data-autoplay="true" data-interval="3000" aria-label="Image carousel">
-          <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous image">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <div class="mbwCarouselViewport" role="region" aria-label="Carousel viewport">
-            <div class="mbwCarouselTrack">
-              <!-- Replace image links only -->
-              <div class="mbwSlide">
-                <img src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 1 (replace)">
-                <div class="label">Image 1</div>
-              </div>
-              <div class="mbwSlide">
-                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 2 (replace)">
-                <div class="label">Image 2</div>
-              </div>
-              <div class="mbwSlide">
-                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 3 (replace)">
-                <div class="label">Image 3</div>
-              </div>
-              <div class="mbwSlide">
-                <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 4 (replace)">
-                <div class="label">Image 4</div>
-              </div>
-              <div class="mbwSlide">
-                <img src="https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 5 (replace)">
-                <div class="label">Image 5</div>
-              </div>
-            </div>
-          </div>
-
-          <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Next image">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <div class="mbwDots" aria-label="Carousel position indicators"></div>
-        </div>
-      </section>
+      <div class="ctaRow">
+        <a class="btn primary" href="/book-tour/">Book a tour</a>
+        <a class="btn secondary" href="/tours/">Explore tours</a>
+      </div>
     </main>
 
-    <!-- Shared footer mount -->
+    <!-- Global footer mount -->
     <div id="siteFooter"></div>
-
   </div>
 
-  <!-- Required loader script (single source of truth) + page-only carousel behavior -->
   <script>
-    (async function(){
-      const headerMount = document.getElementById('siteHeader');
-      if(headerMount){
-        const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
-        headerMount.innerHTML = await res.text();
+    (function(){
+
+      function normalizePath(p){
+        if(!p) return '/';
+        // keep trailing slash for consistency
+        return p.endsWith('/') ? p : (p + '/');
       }
 
-      const footerMount = document.getElementById('siteFooter');
-      if(footerMount){
-        const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
-        footerMount.innerHTML = await res.text();
-      }
+      function setActiveHeaderState(){
+        const path = normalizePath(window.location.pathname);
 
-      // Page-only: carousel logic (does not touch header/footer/menu behavior)
-      const root = document.querySelector('.mbwCarousel');
-      if(!root) return;
+        // Active nav pill (desktop + mobile)
+        document.querySelectorAll('.nav a.pill, .menuList a.pill').forEach(a => {
+          const href = normalizePath(a.getAttribute('href') || '');
+          const isActive = href === path;
+          a.classList.toggle('active', isActive);
+          if(isActive) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
 
-      const track = root.querySelector('.mbwCarouselTrack');
-      const slides = Array.from(root.querySelectorAll('.mbwSlide'));
-      const prevBtn = root.querySelector('.mbwNavPrev');
-      const nextBtn = root.querySelector('.mbwNavNext');
-      const dotsWrap = root.querySelector('.mbwDots');
-
-      if(!track || slides.length === 0) return;
-
-      let index = 0;
-      const intervalMs = Number(root.getAttribute('data-interval') || '3000');
-      const autoplay = (root.getAttribute('data-autoplay') || 'true') === 'true';
-      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      function clamp(i){
-        const n = slides.length;
-        return (i % n + n) % n;
-      }
-
-      function renderDots(){
-        if(!dotsWrap) return;
-        dotsWrap.innerHTML = '';
-        slides.forEach((_, i) => {
-          const d = document.createElement('span');
-          d.className = 'mbwDot' + (i === index ? ' is-active' : '');
-          d.setAttribute('aria-hidden', 'true');
-          dotsWrap.appendChild(d);
+        // Active language (desktop + mobile) based on <html lang="">
+        const pageLang = (document.documentElement.lang || 'en').toLowerCase();
+        document.querySelectorAll('.lang a[data-lang]').forEach(a => {
+          const isActive = (a.getAttribute('data-lang') || '').toLowerCase() === pageLang;
+          a.classList.toggle('active', isActive);
+          if(isActive) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
         });
       }
 
-      function goTo(i){
-        index = clamp(i);
-        track.style.transform = 'translateX(' + (-index * 100) + '%)';
-        renderDots();
-      }
+      function initHamburger(){
+        const btn = document.querySelector('.menuBtn');
+        const panel = document.getElementById('menuPanel');
 
-      function next(){ goTo(index + 1); }
-      function prev(){ goTo(index - 1); }
+        if(!btn || !panel) return;
 
-      if(prevBtn) prevBtn.addEventListener('click', () => { stop(); prev(); start(); });
-      if(nextBtn) nextBtn.addEventListener('click', () => { stop(); next(); start(); });
-
-      // Basic swipe support
-      let startX = null;
-      let dragging = false;
-
-      function onPointerDown(e){
-        if(e.pointerType === 'mouse') return;
-        dragging = true;
-        startX = e.clientX;
-        stop();
-      }
-
-      function onPointerUp(e){
-        if(!dragging) return;
-        dragging = false;
-        const dx = e.clientX - startX;
-        startX = null;
-
-        const threshold = 35;
-        if(dx > threshold) prev();
-        else if(dx < -threshold) next();
-
-        start();
-      }
-
-      root.addEventListener('pointerdown', onPointerDown, { passive: true });
-      root.addEventListener('pointerup', onPointerUp, { passive: true });
-      root.addEventListener('pointercancel', () => { dragging = false; startX = null; start(); }, { passive: true });
-
-      // Autoplay with pause on hover/focus
-      let timer = null;
-
-      function start(){
-        if(!autoplay || reduceMotion) return;
-        if(timer) return;
-        timer = window.setInterval(next, Math.max(2000, intervalMs));
-      }
-
-      function stop(){
-        if(timer){
-          window.clearInterval(timer);
-          timer = null;
+        function closeMenu(){
+          panel.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', 'false');
         }
+
+        btn.addEventListener('click', function(){
+          const open = panel.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function(e){
+          if(panel.classList.contains('is-open')){
+            const inside = panel.contains(e.target) || btn.contains(e.target);
+            if(!inside) closeMenu();
+          }
+        });
+
+        document.addEventListener('keydown', function(e){
+          if(e.key === 'Escape') closeMenu();
+        });
       }
 
-      root.addEventListener('mouseenter', stop);
-      root.addEventListener('mouseleave', start);
-      root.addEventListener('focusin', stop);
-      root.addEventListener('focusout', start);
+      async function mountIncludes(){
+        const headerMount = document.getElementById('siteHeader');
+        if(headerMount){
+          const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
+          headerMount.innerHTML = await res.text();
+        }
 
-      window.addEventListener('resize', () => { goTo(index); }, { passive: true });
+        const footerMount = document.getElementById('siteFooter');
+        if(footerMount){
+          const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
+          footerMount.innerHTML = await res.text();
+        }
 
-      goTo(0);
-      start();
+        // After header is injected:
+        setActiveHeaderState();
+        initHamburger();
+      }
+
+      mountIncludes();
     })();
   </script>
 </body>
