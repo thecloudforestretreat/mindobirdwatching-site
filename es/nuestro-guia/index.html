@@ -1,54 +1,504 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PAGE_TITLE | Mindo Bird Watching</title>
+  <title>Nuestro guía | Mindo Bird Watching</title>
+
+  <!-- Keep for staging while testing -->
   <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Hreflang -->
+  <link rel="alternate" hreflang="en" href="/our-guide/" />
+  <link rel="alternate" hreflang="es" href="/es/nuestro-guia/" />
+  <link rel="alternate" hreflang="x-default" href="/our-guide/" />
+
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+
   <style>
-    :root{
-      --bg:#071923; --card:#0b2431; --text:#fff; --muted:rgba(255,255,255,.78);
-      --line:rgba(255,255,255,.12); --accent:#034EA2; --accent2:#FFDD00; --r:18px;
+    /* Page-only styles (no header/footer/menu styles) */
+    .page{
+      margin-top:18px;
+      padding:26px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,var(--bg),#041018);color:var(--text)}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:rgba(11,36,49,.55);backdrop-filter: blur(10px)}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:800}
-    .dot{width:10px;height:10px;border-radius:99px;background:var(--accent2);box-shadow:0 0 0 3px rgba(255,221,0,.2)}
-    .nav{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-    .pill{padding:10px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:13px}
-    .hero{margin-top:18px;padding:26px;border:1px solid var(--line);border-radius:var(--r);background:rgba(11,36,49,.55)}
-    h1{margin:0 0 10px;font-size:34px;letter-spacing:-.4px}
-    p{margin:0;color:var(--muted);line-height:1.6}
-    .note{margin-top:12px;padding:14px;border:1px dashed rgba(255,255,255,.2);border-radius:14px;color:rgba(255,255,255,.72)}
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .lede{
+      max-width: 92ch;
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+    .lede p{ margin: 0 0 12px; }
+
+    .actions{
+      margin-top: 14px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .waBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      font-weight: 800;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .waBtn img{
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      display:block;
+    }
+
+    .guideCard{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .photo.card{
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .photo .frame{
+      aspect-ratio: 4 / 3;
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position: relative;
+    }
+
+    .photo .frame img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .photo .cap{
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    .facts.card{
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .facts h2{
+      margin: 0 0 8px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+    }
+
+    .facts ul{
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .facts li{ margin: 6px 0; }
+
+    .qa{
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .qa h2{
+      margin: 0 0 10px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
+
+    .qaList{
+      display:grid;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    details.qaItem{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+    }
+
+    details.qaItem summary{
+      cursor: pointer;
+      font-weight: 900;
+      color: var(--ink);
+      list-style: none;
+    }
+    details.qaItem summary::-webkit-details-marker{ display:none; }
+
+    .answer{
+      margin-top: 10px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .bottomCtas{
+      margin-top: 18px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .carouselWrap{
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .carouselHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .carouselHead h2{
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
+    .carouselHint{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .carousel{
+      display:flex;
+      gap: 12px;
+      overflow-x:auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px;
+    }
+    .slide{
+      flex: 0 0 min(520px, 88%);
+      scroll-snap-align: start;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .slide img{
+      width:100%;
+      height: 320px;
+      object-fit: cover;
+      display:block;
+    }
+    .slide .label{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px){
+      .guideCard{ grid-template-columns: 1fr; }
+      .slide img{ height: 240px; }
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
 
-    <header class="topbar">
-      <div class="brand"><span class="dot"></span><span>Mindo Bird Watching</span></div>
-      <nav class="nav" aria-label="Primary">
-        <a class="pill" href="/home">Home</a>
-        <a class="pill" href="/about-us">About Us</a>
-        <a class="pill" href="/our-guide">Our Guide</a>
-        <a class="pill" href="/tours">Tours</a>
-        <a class="pill" href="/bird-gallery">Bird Gallery</a>
-        <a class="pill" href="/bird-of-the-week">Bird of the Week</a>
-        <a class="pill" href="/book-tour">Book Tour</a>
-        <a class="pill" href="/contact">Contact</a>
-      </nav>
-    </header>
+    <!-- Shared header mount -->
+    <div id="siteHeader"></div>
 
-    <section class="hero">
-      <h1>PAGE_H1</h1>
-      <p>This page is ready for your real content and layout. We are keeping the URL exactly the same for launch.</p>
-      <div class="note">Next: replace this placeholder with your Adobe content + your new design.</div>
-    </section>
+    <main class="page card">
+      <h1 style="margin:0 0 6px;">Nuestro guía</h1>
+
+      <div class="lede" aria-label="Introducción del guía">
+        <p>
+          Conoce a Chicho, nuestro apasionado guía de avistamiento de aves en Mindo.
+        </p>
+
+        <p>
+          Con más de seis años de experiencia y un profundo amor por el bosque nublado, Chicho ha identificado más de 400 especies de aves,
+          incluyendo el impresionante Gallito de la Roca y el Tucán Andino. ¡Únete a Chicho para un viaje inolvidable al corazón de la naturaleza!
+        </p>
+
+        <div class="actions" aria-label="Acciones principales">
+          <a class="btn primary" href="/book-tour/">Reservar tour</a>
+
+          <a class="waBtn" href="https://wa.me/13054585402" target="_blank" rel="noopener" aria-label="Reserva tu aventura al instante en WhatsApp">
+            <img src="/assets/images/icons/mbw-ig-test-10.png" alt="Icono de WhatsApp">
+            <span>Reserva tu aventura al instante en WhatsApp</span>
+          </a>
+        </div>
+      </div>
+
+      <section class="guideCard" aria-label="Perfil del guía">
+        <div class="photo card" aria-label="Foto de Chicho">
+          <div class="frame">
+            <!-- Reemplaza este src por la foto real de Chicho -->
+            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Chicho, guía de avistamiento en Mindo (reemplazar esta imagen)">
+          </div>
+          <div class="cap">
+            Reemplaza la imagen de arriba por la foto de Chicho cuando esté lista.
+          </div>
+        </div>
+
+        <aside class="facts card" aria-label="Datos rápidos de Chicho">
+          <h2>Lo esencial</h2>
+          <ul>
+            <li>Guía en Mindo desde hace 6+ años</li>
+            <li>Ha identificado alrededor de 400 especies</li>
+            <li>Favoritas: Gallito de la Roca y Tucán de altura</li>
+            <li>Tour memorable: 284 especies en 2 días y medio</li>
+            <li>Estilo: amable, tranquilo y enfocado en que veas más</li>
+          </ul>
+
+          <div class="bottomCtas" aria-label="Acciones secundarias">
+            <a class="btn secondary" href="/tours/">Ver tours</a>
+            <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+          </div>
+        </aside>
+      </section>
+
+      <section class="qa" aria-label="Entrevista">
+        <h2>Conoce más de Chicho</h2>
+
+        <div class="qaList">
+          <details class="qaItem">
+            <summary>¿Qué te inspiró a convertirte en guía de avistamiento de aves?</summary>
+            <div class="answer">
+              Me inspira tanto poder observar cada día tantas maravillas y colores dentro de Mindo.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cuánto tiempo llevas guiando tours de avistamiento de aves en Mindo?</summary>
+            <div class="answer">
+              Llevo unos seis años guiando, pero cada vez encuentro cosas diferentes que me motivan a seguir aprendiendo.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Qué es lo que más te gusta del avistamiento de aves en el bosque nublado?</summary>
+            <div class="answer">
+              Lo que más me gusta es encontrarme cada mañana con la diversidad de cantos y colores de las aves,
+              que te hacen sentir una paz dentro de la naturaleza.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Tienes algún recuerdo de infancia relacionado con la naturaleza o las aves que te haya marcado?</summary>
+            <div class="answer">
+              Cuando fui niño, mi primera experiencia fue observar un Gallo de Peña, un ave emblemática con colores muy llamativos.
+              Recuerdo verlo con binoculares, lo que me permitió apreciarlo aún más de cerca. Sus cantos, tamaño y colores marcaron mis recuerdos.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cuál es tu especie de ave favorita para observar en Mindo y por qué?</summary>
+            <div class="answer">
+              Tengo dos especies favoritas: el Gallo de Peña y el Tucán de altura. Sus cantos y colores marcan mucha diferencia en el bosque,
+              y tener el privilegio de encontrarlos en Mindo es una bendición.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cuántas especies de aves has identificado en la zona?</summary>
+            <div class="answer">
+              En mi experiencia como guía, he tenido la suerte de encontrar alrededor de 400 especies, entre aves y colibríes.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cuál es el ave más emocionante o rara que has visto en un tour?</summary>
+            <div class="answer">
+              Mi mejor experiencia fue guiar a una pareja americana amante de las aves. En dos días y medio, vimos 284 especies.
+              Ellos estaban tan emocionados que me llamaban todas las noches desde Ecuador para decirme que no podían creer haber visto tanta variedad.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Puedes compartir una experiencia memorable con un grupo de observadores de aves?</summary>
+            <div class="answer">
+              La experiencia con la pareja americana fue muy especial. Su mejor recuerdo y experiencia fue haber visitado Mindo y haberme conocido como guía.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Qué pueden esperar los visitantes en un tour de avistamiento de aves contigo?</summary>
+            <div class="answer">
+              Las personas que salen conmigo siempre encontrarán a alguien amable, que les da seguridad para encontrar variedades coloridas de aves.
+              En Mindo, tenemos el privilegio de tener muchas especies, y los visitantes siempre se llevan bonitos recuerdos.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Qué hace que Mindo sea un lugar tan especial para el avistamiento de aves?</summary>
+            <div class="answer">
+              Mindo es especial porque, en poco territorio, podemos observar una gran cantidad de flora y fauna.
+              En un metro cuadrado, se pueden ver hasta seis variedades de aves. Por eso, Mindo es llamada la “Capital de las Aves.”
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cómo ayudas a los principiantes o a quienes observan aves por primera vez a disfrutar de la experiencia?</summary>
+            <div class="answer">
+              Siempre es bueno ayudar y motivar a las personas que están iniciando. Transmitir respeto por la naturaleza es lo mejor que uno puede hacer,
+              ya que ella nos presta tanta belleza.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cuál es la mejor época del año para visitar Mindo y observar aves?</summary>
+            <div class="answer">
+              Las mejores épocas son desde finales de enero, cuando se concentran más individuos. Es la temporada en la que salen con sus bebés,
+              y se pueden encontrar en mayores cantidades. También es más fácil verlos volar por todos lados.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Tienes un canto o sonido de ave favorito que te guste imitar?</summary>
+            <div class="answer">
+              Mi canto favorito es el del Tucán de altura. Es un canto sonoro que, cuando lo escuchas, parece decir “cuidado que llegué.”
+              Tiene mucha personalidad, y escucharlo siempre me alegra porque no es muy común.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cuál es un dato curioso sobre las aves que sorprende a la mayoría de las personas?</summary>
+            <div class="answer">
+              Un dato curioso que siempre sorprende a los turistas es que en Mindo siempre podemos encontrar maravillas.
+              No hay turista que no encuentre algo interesante.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Si pudieras ser un ave, ¿cuál elegirías y por qué?</summary>
+            <div class="answer">
+              Si yo fuera un ave, sería un Tucán de altura. Su canto y colores son especiales. Es un tucán tranquilo, pero cuando canta, impone mucha personalidad.
+              He tenido la suerte de ver hasta 17 tucanes de altura en un solo árbol.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Por qué es importante para ti la conservación de las aves?</summary>
+            <div class="answer">
+              Es importante porque las aves son parte de la riqueza natural que tenemos. Salir a observarlas es como encontrar el “oro verde” de la naturaleza.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Cómo contribuyen tus tours a proteger la biodiversidad de Mindo?</summary>
+            <div class="answer">
+              Mis tours ayudan a transmitir respeto por la naturaleza y a mostrar la belleza que nos rodea.
+              Esto motiva a las personas a valorar y proteger la biodiversidad.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>¿Qué consejo le darías a alguien que quiere empezar a observar aves?</summary>
+            <div class="answer">
+              Mi consejo es que lo hagan con pasión. No hay mejor cosa que salir a encontrar tanta belleza en la naturaleza.
+              Prepárense para ver lo especial que son las aves, las montañas y los ríos.
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="carouselWrap" aria-label="Carrusel de fotos">
+        <div class="carouselHead">
+          <h2>Momentos en Mindo</h2>
+          <p class="carouselHint">Reemplaza los cinco enlaces de imagen cuando estés listo.</p>
+        </div>
+
+        <div class="carousel" role="region" aria-label="Carrusel desplazable de imágenes">
+          <div class="slide">
+            <img src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70" alt="Imagen 1 del carrusel (reemplazar)">
+            <div class="label">Imagen 1</div>
+          </div>
+
+          <div class="slide">
+            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70" alt="Imagen 2 del carrusel (reemplazar)">
+            <div class="label">Imagen 2</div>
+          </div>
+
+          <div class="slide">
+            <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=70" alt="Imagen 3 del carrusel (reemplazar)">
+            <div class="label">Imagen 3</div>
+          </div>
+
+          <div class="slide">
+            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Imagen 4 del carrusel (reemplazar)">
+            <div class="label">Imagen 4</div>
+          </div>
+
+          <div class="slide">
+            <img src="https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=1600&q=70" alt="Imagen 5 del carrusel (reemplazar)">
+            <div class="label">Imagen 5</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Shared footer mount -->
+    <div id="siteFooter"></div>
 
   </div>
+
+  <!-- Required loader script (single source of truth for this page) -->
+  <script>
+    (async function(){
+      const headerMount = document.getElementById('siteHeader');
+      if(headerMount){
+        const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
+        headerMount.innerHTML = await res.text();
+      }
+
+      const footerMount = document.getElementById('siteFooter');
+      if(footerMount){
+        const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
+        footerMount.innerHTML = await res.text();
+      }
+    })();
+  </script>
 </body>
 </html>
