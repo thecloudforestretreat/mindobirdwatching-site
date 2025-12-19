@@ -4,7 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>About Us | Mindo Bird Watching</title>
+
+  <!-- STAGING: keep until launch -->
   <meta name="robots" content="noindex, nofollow" />
+
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="en" href="/about-us/" />
+  <link rel="alternate" hreflang="es" href="/es/sobre-nosotros/" />
+  <link rel="alternate" hreflang="x-default" href="/about-us/" />
 
   <link rel="stylesheet" href="/assets/css/site.css">
   <script src="/assets/js/site.js" defer></script>
@@ -29,6 +36,7 @@
       gap:12px;
       font-weight:900;
       color: var(--ink);
+      white-space:nowrap;
     }
 
     .brand-dot{
@@ -39,11 +47,44 @@
       box-shadow:0 0 0 3px rgba(255,215,0,.25);
     }
 
+    .right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
     .nav{
       display:flex;
       flex-wrap:wrap;
       gap:12px;
       align-items:center;
+    }
+
+    /* Language switch */
+    .lang{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.5);
+    }
+
+    .lang a{
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:12.5px;
+      color:var(--muted);
+    }
+
+    .lang a.active{
+      background:rgba(13,89,37,.14);
+      border:1px solid rgba(13,89,37,.35);
+      color:var(--ink);
     }
 
     .page{
@@ -59,53 +100,51 @@
     }
 
     .lede{
-      max-width: 78ch;
-      font-size: 16px;
+      max-width:78ch;
+      font-size:16px;
     }
 
     .copy{
-      max-width: 82ch;
-      margin-top: 14px;
+      max-width:82ch;
+      margin-top:14px;
     }
 
-    .copy p{
-      margin: 0 0 12px;
-    }
+    .copy p{ margin:0 0 12px; }
 
     .grid{
-      margin-top: 16px;
+      margin-top:16px;
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
     }
 
     .mini{
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.65);
     }
 
     .mini h2{
       margin:0 0 6px;
-      font-size: 16px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
+      font-size:16px;
+      font-family:var(--font-head);
+      color:var(--forest);
+      letter-spacing:-0.02em;
     }
 
     .mini p{ margin:0; }
 
     .ctaRow{
-      margin-top: 16px;
+      margin-top:16px;
       display:flex;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap:12px;
+      flex-wrap:wrap;
     }
 
-    @media (max-width: 900px){
-      .grid{ grid-template-columns: 1fr; }
-      .nav{ justify-content:flex-start; }
+    @media (max-width:900px){
+      .grid{ grid-template-columns:1fr; }
+      .right{ justify-content:flex-start; }
     }
   </style>
 </head>
@@ -120,28 +159,39 @@
         <span>Mindo Bird Watching</span>
       </a>
 
-      <nav class="nav" aria-label="Primary">
-        <a class="pill" href="/home">Home</a>
-        <a class="pill active" href="/about-us">About Us</a>
-        <a class="pill" href="/our-guide">Our Guide</a>
-        <a class="pill" href="/tours">Tours</a>
-        <a class="pill" href="/bird-gallery">Bird Gallery</a>
-        <a class="pill" href="/book-tour">Book Tour</a>
-        <a class="pill" href="/contact">Contact</a>
-      </nav>
+      <div class="right">
+        <!-- Language switch -->
+        <div class="lang" aria-label="Language switch">
+          <a class="active" href="/about-us/" aria-current="page">EN</a>
+          <a href="/es/sobre-nosotros/">ES</a>
+        </div>
+
+        <nav class="nav" aria-label="Primary">
+          <a class="pill" href="/home">Home</a>
+          <a class="pill active" href="/about-us">About Us</a>
+          <a class="pill" href="/our-guide">Our Guide</a>
+          <a class="pill" href="/tours">Tours</a>
+          <a class="pill" href="/bird-gallery">Bird Gallery</a>
+          <a class="pill" href="/book-tour">Book Tour</a>
+          <a class="pill" href="/contact">Contact</a>
+        </nav>
+      </div>
     </header>
 
     <!-- PAGE -->
     <main class="page card">
       <h1>About Us</h1>
+
       <p class="lede">
-        Learn about Mindo Bird Watching and our passion for Ecuador’s incredible birdlife. Discover our local guide, eco-friendly values, and love for sharing Mindo’s cloud forest with bird lovers worldwide.
+        Learn about Mindo Bird Watching and our passion for Ecuador’s incredible birdlife.
+        Discover our local guide, eco-friendly values, and love for sharing Mindo’s cloud forest with bird lovers worldwide.
       </p>
 
-      <div class="copy" aria-label="About us copy">
+      <div class="copy">
         <p>
           At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
-          With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds, tanagers, and countless other species that call Mindo home.
+          With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
+          tanagers, and countless other species that call Mindo home.
         </p>
         <p>
           Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
@@ -152,17 +202,15 @@
         </p>
       </div>
 
-      <div class="grid" aria-label="About highlights">
+      <div class="grid">
         <div class="mini">
           <h2>Local guide</h2>
           <p>Years of experience guiding birders through Mindo’s cloud forest.</p>
         </div>
-
         <div class="mini">
           <h2>Personalized tours</h2>
           <p>Great for both experienced birders and first-time nature lovers.</p>
         </div>
-
         <div class="mini">
           <h2>Best birding spots</h2>
           <p>Access to some of the strongest routes and habitats in the region.</p>
