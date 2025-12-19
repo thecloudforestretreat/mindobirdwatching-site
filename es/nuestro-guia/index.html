@@ -603,6 +603,22 @@
       function next(){ goTo(index + 1); }
       function prev(){ goTo(index - 1); }
 
+      // Autoplay timer
+      let timer = null;
+
+      function start(){
+        if(!autoplay || reduceMotion) return;
+        if(timer) return;
+        timer = window.setInterval(next, Math.max(2000, intervalMs));
+      }
+
+      function stop(){
+        if(timer){
+          window.clearInterval(timer);
+          timer = null;
+        }
+      }
+
       if(prevBtn) prevBtn.addEventListener('click', () => { stop(); prev(); start(); });
       if(nextBtn) nextBtn.addEventListener('click', () => { stop(); next(); start(); });
 
@@ -634,22 +650,7 @@
       root.addEventListener('pointerup', onPointerUp, { passive: true });
       root.addEventListener('pointercancel', () => { dragging = false; startX = null; start(); }, { passive: true });
 
-      // Autoplay with pause on hover/focus
-      let timer = null;
-
-      function start(){
-        if(!autoplay || reduceMotion) return;
-        if(timer) return;
-        timer = window.setInterval(next, Math.max(2000, intervalMs));
-      }
-
-      function stop(){
-        if(timer){
-          window.clearInterval(timer);
-          timer = null;
-        }
-      }
-
+      // Pause on hover/focus
       root.addEventListener('mouseenter', stop);
       root.addEventListener('mouseleave', start);
       root.addEventListener('focusin', stop);
