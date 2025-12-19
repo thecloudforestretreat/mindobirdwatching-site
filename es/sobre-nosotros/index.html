@@ -79,21 +79,22 @@
 <body>
   <div class="container">
 
-    <!-- Global header mount (loaded by /assets/js/site.js) -->
+    <!-- Global header mount -->
     <div id="siteHeader"></div>
 
-    <!-- PAGE -->
     <main class="page card">
       <h1>Sobre nosotros</h1>
 
       <div class="copy" aria-label="Sobre nosotros texto">
         <p>
           En Mindo Bird Watching, nos apasiona compartir la impresionante belleza del bosque nublado de Ecuador y su increíble avifauna.
-          Con años de experiencia como guía de avistamiento de aves, me especializo en ayudar a los visitantes a descubrir el vibrante mundo de tucanes, colibríes, tangaras y muchas otras especies que habitan en Mindo.
+          Con años de experiencia como guía de avistamiento de aves, me especializo en ayudar a los visitantes a descubrir el vibrante mundo de tucanes,
+          colibríes, tangaras y muchas otras especies que habitan en Mindo.
         </p>
         <p>
-          Nuestros tours están diseñados para ofrecer una experiencia única e inmersiva, ya sea que seas un observador de aves experimentado o un entusiasta de la naturaleza que visita por primera vez.
-          Con una guía experta, atención personalizada y acceso a algunos de los mejores lugares para avistar aves en la región, garantizamos que cada momento sea inolvidable.
+          Nuestros tours están diseñados para ofrecer una experiencia única e inmersiva, ya sea que seas un observador de aves experimentado o un entusiasta
+          de la naturaleza que visita por primera vez. Con una guía experta, atención personalizada y acceso a algunos de los mejores lugares para avistar aves
+          en la región, garantizamos que cada momento sea inolvidable.
         </p>
         <p>
           Únete a nosotros para explorar las maravillas de Mindo y crear recuerdos rodeados por los cantos y colores de la naturaleza.
@@ -123,9 +124,125 @@
       </div>
     </main>
 
-    <!-- Global footer mount (loaded by /assets/js/site.js) -->
+    <!-- Global footer mount -->
     <div id="siteFooter"></div>
-
   </div>
+
+  <script>
+    (function(){
+
+      async function mountIncludesOnce() {
+        const headerMount = document.getElementById('siteHeader');
+        const footerMount = document.getElementById('siteFooter');
+
+        // Prevent double-injection if something else already mounted it
+        if (headerMount && !headerMount.querySelector('header.topbar')) {
+          const hRes = await fetch('/assets/includes/header.html', { cache: 'no-store' });
+          headerMount.innerHTML = await hRes.text();
+        }
+
+        if (footerMount && !footerMount.querySelector('footer.footer')) {
+          const fRes = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
+          footerMount.innerHTML = await fRes.text();
+        }
+      }
+
+      function applySpanishHeaderUI() {
+        // Option A: keep ONE global header include, localize it per page
+        const header = document.querySelector('header.topbar');
+        if (!header) return;
+
+        // Update language switch links + active state
+        const langLinks = header.querySelectorAll('.lang a[data-lang]');
+        langLinks.forEach(a => a.classList.remove('active'));
+
+        const enLink = header.querySelector('.lang a[data-lang="en"]');
+        const esLink = header.querySelector('.lang a[data-lang="es"]');
+        if (enLink) enLink.setAttribute('href', '/about-us/');
+        if (esLink) {
+          esLink.setAttribute('href', '/es/sobre-nosotros/');
+          esLink.classList.add('active');
+          esLink.setAttribute('aria-current', 'page');
+        }
+        if (enLink) {
+          enLink.removeAttribute('aria-current');
+        }
+
+        // Map EN -> ES labels + ES routes
+        const map = [
+          { en: 'Home',        es: 'Inicio',         href: '/es/' },
+          { en: 'About Us',    es: 'Sobre nosotros', href: '/es/sobre-nosotros/' },
+          { en: 'Our Guide',   es: 'Nuestro guía',   href: '/es/nuestro-guia/' },
+          { en: 'Tours',       es: 'Tours',          href: '/es/tours/' },
+          { en: 'Bird Gallery',es: 'Galería',        href: '/es/galeria/' },
+          { en: 'Book Tour',   es: 'Reservar',       href: '/es/reservar/' },
+          { en: 'Contact',     es: 'Contacto',       href: '/es/contacto/' }
+        ];
+
+        // Update both desktop + mobile menus
+        const allNavLinks = header.querySelectorAll('.nav a.pill, .menuList a.pill');
+
+        allNavLinks.forEach(a => {
+          const txt = (a.textContent || '').trim();
+
+          const hit = map.find(x => x.en === txt);
+          if (hit) {
+            a.textContent = hit.es;
+            a.setAttribute('href', hit.href);
+          }
+
+          // clear active state first
+          a.classList.remove('active');
+          a.removeAttribute('aria-current');
+        });
+
+        // Mark current page as active (Sobre nosotros)
+        const currentHref = '/es/sobre-nosotros/';
+        header.querySelectorAll(`.nav a.pill[href="${currentHref}"], .menuList a.pill[href="${currentHref}"]`)
+          .forEach(a => {
+            a.classList.add('active');
+            a.setAttribute('aria-current', 'page');
+          });
+      }
+
+      function bindHamburger() {
+        const btn = document.querySelector('.menuBtn');
+        const panel = document.getElementById('menuPanel');
+        if (!btn || !panel) return;
+
+        // Ensure closed on load
+        panel.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+
+        function closeMenu(){
+          panel.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+
+        btn.addEventListener('click', function(){
+          const open = panel.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function(e){
+          if(panel.classList.contains('is-open')){
+            const inside = panel.contains(e.target) || btn.contains(e.target);
+            if(!inside) closeMenu();
+          }
+        });
+
+        document.addEventListener('keydown', function(e){
+          if(e.key === 'Escape') closeMenu();
+        });
+      }
+
+      (async function init(){
+        await mountIncludesOnce();
+        applySpanishHeaderUI();
+        bindHamburger();
+      })();
+
+    })();
+  </script>
 </body>
 </html>
