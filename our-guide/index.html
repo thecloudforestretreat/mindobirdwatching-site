@@ -15,7 +15,6 @@
 
   <link rel="stylesheet" href="/assets/css/site.css">
   <script src="/assets/js/head.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
 
   <style>
     /* Page-only styles (no header/footer/menu styles) */
@@ -414,7 +413,7 @@
           </details>
 
           <details class="qaItem">
-            <summary>What can visitors expect on a birdwatching tour with you?</summary>
+            <summary>What can visitors expect on a tour with you?</summary>
             <div class="answer">
               People who join me will always find someone friendly, who makes them feel confident about spotting colorful bird varieties.
               In Mindo, we’re privileged to have so many species, and visitors always leave with beautiful memories.
@@ -430,7 +429,7 @@
           </details>
 
           <details class="qaItem">
-            <summary>How do you help beginners or first-time birdwatchers enjoy the experience?</summary>
+            <summary>How do you help beginners enjoy the experience?</summary>
             <div class="answer">
               It’s always good to help and motivate people who are just starting out. Sharing respect for nature is the best thing one can do,
               as it offers us so much beauty.
@@ -446,7 +445,7 @@
           </details>
 
           <details class="qaItem">
-            <summary>Do you have a favorite bird call or sound that you like to imitate?</summary>
+            <summary>Do you have a favorite bird call?</summary>
             <div class="answer">
               My favorite call is that of the Highland Toucan. It’s a loud call that, when you hear it, seems to say, Watch out, I’m here.
               It has a lot of personality, and hearing it always makes me happy because it’s not very common.
@@ -454,12 +453,12 @@
           </details>
 
           <details class="qaItem">
-            <summary>What’s a fun fact about birds that surprises most people?</summary>
+            <summary>What’s a fun fact that surprises most people?</summary>
             <div class="answer">A fun fact that always surprises tourists is that in Mindo, we can always find wonders. There’s no tourist who doesn’t discover something interesting.</div>
           </details>
 
           <details class="qaItem">
-            <summary>If you could be a bird, which one would you choose and why?</summary>
+            <summary>If you could be a bird, which one would you choose?</summary>
             <div class="answer">
               If I were a bird, I’d be a Highland Toucan. Its call and colors are special. It’s a calm toucan, but when it sings, it commands a lot of personality.
               I’ve been lucky enough to see up to 17 Highland Toucans in a single tree.
@@ -467,17 +466,17 @@
           </details>
 
           <details class="qaItem">
-            <summary>Why is bird conservation important to you?</summary>
+            <summary>Why is conservation important?</summary>
             <div class="answer">It’s important because birds are part of the natural wealth we have. Going out to observe them is like finding the green gold of nature.</div>
           </details>
 
           <details class="qaItem">
-            <summary>How do your tours help protect Mindo’s biodiversity?</summary>
+            <summary>How do your tours help protect biodiversity?</summary>
             <div class="answer">My tours help convey respect for nature and showcase the beauty that surrounds us. This motivates people to value and protect biodiversity.</div>
           </details>
 
           <details class="qaItem">
-            <summary>What advice would you give to someone who wants to start birdwatching?</summary>
+            <summary>What advice would you give to someone starting birdwatching?</summary>
             <div class="answer">
               My advice is to do it with passion. There’s nothing better than going out to discover so much beauty in nature.
               Be prepared to see how special birds, mountains, and rivers are.
@@ -501,7 +500,6 @@
 
           <div class="mbwCarouselViewport" role="region" aria-label="Carousel viewport">
             <div class="mbwCarouselTrack">
-              <!-- Replace image links only -->
               <div class="mbwSlide">
                 <img src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70" alt="Carousel image 1 (replace)">
                 <div class="label">Image 1</div>
@@ -541,9 +539,9 @@
 
   </div>
 
-  <!-- Required loader script (single source of truth) + page-only carousel behavior -->
   <script>
     (async function(){
+      // 1) Inject includes first
       const headerMount = document.getElementById('siteHeader');
       if(headerMount){
         const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
@@ -556,7 +554,21 @@
         footerMount.innerHTML = await res.text();
       }
 
-      // Page-only: carousel logic (does not touch header/footer/menu behavior)
+      // 2) Load global site.js AFTER header exists (so hamburger binds correctly)
+      await new Promise((resolve) => {
+        const existing = document.querySelector('script[data-global-sitejs="true"]');
+        if(existing) return resolve();
+
+        const s = document.createElement('script');
+        s.src = '/assets/js/site.js';
+        s.defer = true;
+        s.setAttribute('data-global-sitejs', 'true');
+        s.onload = () => resolve();
+        s.onerror = () => resolve();
+        document.head.appendChild(s);
+      });
+
+      // 3) Page-only: carousel logic (does not touch header/footer/menu behavior)
       const root = document.querySelector('.mbwCarousel');
       if(!root) return;
 
@@ -598,6 +610,8 @@
       function next(){ goTo(index + 1); }
       function prev(){ goTo(index - 1); }
 
+      let timer = null;
+
       function stop(){
         if(timer){
           window.clearInterval(timer);
@@ -614,7 +628,6 @@
       if(prevBtn) prevBtn.addEventListener('click', () => { stop(); prev(); start(); });
       if(nextBtn) nextBtn.addEventListener('click', () => { stop(); next(); start(); });
 
-      // Basic swipe support (touch/pointer)
       let startX = null;
       let dragging = false;
 
@@ -642,8 +655,6 @@
       root.addEventListener('pointerup', onPointerUp, { passive: true });
       root.addEventListener('pointercancel', () => { dragging = false; startX = null; start(); }, { passive: true });
 
-      // Autoplay pause on hover/focus
-      let timer = null;
       root.addEventListener('mouseenter', stop);
       root.addEventListener('mouseleave', start);
       root.addEventListener('focusin', stop);
