@@ -79,7 +79,7 @@
 <body>
   <div class="container">
 
-    <!-- Shared header mount -->
+    <!-- Global header mount (loaded by /assets/js/site.js) -->
     <div id="siteHeader"></div>
 
     <!-- PAGE -->
@@ -123,25 +123,9 @@
       </div>
     </main>
 
-    <!-- Shared footer mount -->
+    <!-- Global footer mount (loaded by /assets/js/site.js) -->
     <div id="siteFooter"></div>
 
   </div>
-
-  <script>
-    (async function(){
-      const headerMount = document.getElementById('siteHeader');
-      if(headerMount){
-        const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
-        headerMount.innerHTML = await res.text();
-      }
-
-      const footerMount = document.getElementById('siteFooter');
-      if(footerMount){
-        const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
-        footerMount.innerHTML = await res.text();
-      }
-    })();
-  </script>
 </body>
 </html>
