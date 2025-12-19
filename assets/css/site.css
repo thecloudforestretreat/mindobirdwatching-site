@@ -1,6 +1,6 @@
 /* ============================
    Mindo Bird Watching
-   Global Brand Styles (v1.2)
+   Global Brand Styles (v1.3)
    Fonts: Playfair Display (headings) + Open Sans (body/UI)
    Background: #C7DAAC site-wide
    ============================ */
@@ -34,6 +34,9 @@
   /* Footer social icon sizing (NO bubbles) */
   --social-icon-size: 36px; /* icon size */
   --social-gap: 14px;       /* gap between icons */
+
+  /* Sticky header spacing */
+  --sticky-top: 16px;
 }
 
 /* Base reset */
@@ -143,11 +146,26 @@ p{
 }
 
 /* ============================
-   Global Header styles
-   Matches /assets/includes/header.html
-   (Hamburger only on mobile)
+   Global Header (APPROVED include)
+   Uses header.html classes:
+   .topbar .brand .right .lang .nav
+   .menuBtn #menuPanel .menuList
+   Plus sticky behavior (inside container)
    ============================ */
 
+/* Sticky mount (keeps header sticky while scrolling) */
+#siteHeader{
+  position: sticky;
+  top: var(--sticky-top);
+  z-index: 2000;
+}
+
+/* If any ancestor sets overflow hidden, sticky can break.
+   We explicitly allow visible overflow on common wrappers. */
+html, body{ overflow-x: visible; }
+.container{ overflow: visible; }
+
+/* Header shell */
 .topbar{
   display:flex;
   align-items:center;
@@ -159,21 +177,10 @@ p{
   background:rgba(255,255,255,.65);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow);
-  position: relative;
-
-  /* Sticky header */
-  position: sticky;
-  top: 12px;
-  z-index: 1000;
+  position: relative; /* anchors menuPanel */
 }
 
-/* iOS safe-area support */
-@supports (top: env(safe-area-inset-top)){
-  .topbar{
-    top: calc(env(safe-area-inset-top) + 12px);
-  }
-}
-
+/* Brand */
 .brand{
   display:flex;
   align-items:center;
@@ -183,7 +190,6 @@ p{
   white-space:nowrap;
   min-width: 0;
 }
-
 .brand img{
   height:26px;
   width:auto;
@@ -192,6 +198,7 @@ p{
   border-radius: 8px;
 }
 
+/* Right side (desktop) */
 .right{
   display:flex;
   align-items:center;
@@ -200,7 +207,6 @@ p{
   justify-content:flex-end;
 }
 
-/* Desktop nav area */
 .nav{
   display:flex;
   flex-wrap:wrap;
@@ -209,7 +215,7 @@ p{
   justify-content:flex-end;
 }
 
-/* Language switch (desktop + mobile use same class) */
+/* Language switch */
 .lang{
   display:inline-flex;
   align-items:center;
@@ -219,7 +225,6 @@ p{
   border-radius:999px;
   background:rgba(255,255,255,.5);
 }
-
 .lang a{
   padding:8px 10px;
   border-radius:999px;
@@ -227,14 +232,13 @@ p{
   font-size:12.5px;
   color:var(--muted);
 }
-
 .lang a.active{
   background:rgba(13,89,37,.14);
   border:1px solid rgba(13,89,37,.35);
   color:var(--ink);
 }
 
-/* Hamburger button */
+/* Hamburger (mobile) */
 .menuBtn{
   display:none;
   align-items:center;
@@ -246,10 +250,9 @@ p{
   background:rgba(255,255,255,.65);
   cursor:pointer;
 }
-
 .menuBtn svg{ width:22px; height:22px; }
 
-/* Mobile menu panel (absolute under header) */
+/* Mobile panel */
 .menuPanel{
   display:none;
   position:absolute;
@@ -261,34 +264,37 @@ p{
   border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 12px;
-  z-index: 1100; /* above content + sticky header */
+  z-index: 2100;
 }
-
 .menuPanel .lang{
   width:100%;
   justify-content:center;
   margin-bottom: 10px;
   background: rgba(255,255,255,.75);
 }
-
 .menuList{
   display:grid;
   gap:10px;
 }
-
 .menuList a.pill{
   display:flex;
   justify-content:center;
   width:100%;
 }
 
+/* Mobile behavior: hide desktop nav and show hamburger */
 @media (max-width:900px){
   .right .lang,
   .right .nav{ display:none; }
   .menuBtn{ display:inline-flex; }
-
   .menuPanel{ display:none; }
   .menuPanel.is-open{ display:block; }
+}
+
+/* Optional: tighten sticky spacing on small screens */
+@media (max-width:520px){
+  :root{ --sticky-top: 12px; }
+  .container{ padding: 18px; }
 }
 
 /* ============================
@@ -348,13 +354,4 @@ p{
   display:block;
   font-weight: 900;
   color: rgba(7,25,35,.78);
-}
-
-/* Mobile: shrink icons automatically if many links */
-@media (max-width: 520px){
-  :root{
-    --social-icon-size: 30px;
-    --social-gap: 10px;
-  }
-  .container{ padding: 18px; }
 }
