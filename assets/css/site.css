@@ -143,13 +143,12 @@ p{
 }
 
 /* ============================
-   Universal Header styles
-   Works with your include + JS
+   Global Header styles
+   Matches /assets/includes/header.html
    (Hamburger only on mobile)
    ============================ */
 
-/* If your header include uses these hooks */
-.site-topbar{
+.topbar{
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -160,24 +159,40 @@ p{
   background:rgba(255,255,255,.65);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow);
+  position: relative;
+
+  /* Sticky header */
+  position: sticky;
+  top: 12px;
+  z-index: 1000;
 }
 
-.site-brand{
+/* iOS safe-area support */
+@supports (top: env(safe-area-inset-top)){
+  .topbar{
+    top: calc(env(safe-area-inset-top) + 12px);
+  }
+}
+
+.brand{
   display:flex;
   align-items:center;
   gap:12px;
   font-weight:900;
   color: var(--ink);
-  white-space: nowrap;
+  white-space:nowrap;
+  min-width: 0;
 }
 
-.site-brand img{
+.brand img{
   height:26px;
   width:auto;
+  display:block;
+  flex:0 0 auto;
+  border-radius: 8px;
 }
 
-/* Desktop nav area */
-.site-right{
+.right{
   display:flex;
   align-items:center;
   gap:12px;
@@ -185,14 +200,16 @@ p{
   justify-content:flex-end;
 }
 
-.site-nav{
+/* Desktop nav area */
+.nav{
   display:flex;
   flex-wrap:wrap;
   gap:12px;
   align-items:center;
+  justify-content:flex-end;
 }
 
-/* Language switch (desktop) */
+/* Language switch (desktop + mobile use same class) */
 .lang{
   display:inline-flex;
   align-items:center;
@@ -217,71 +234,61 @@ p{
   color:var(--ink);
 }
 
-/* Hamburger button (shown on mobile) */
-.hamburger{
+/* Hamburger button */
+.menuBtn{
   display:none;
+  align-items:center;
+  justify-content:center;
   width:44px;
   height:44px;
   border-radius:14px;
-  border:1px solid rgba(255,165,0,.65);
-  background: rgba(255,255,255,.72);
-  align-items:center;
-  justify-content:center;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.65);
   cursor:pointer;
 }
 
-.hamburger svg{
-  width:22px;
-  height:22px;
-}
+.menuBtn svg{ width:22px; height:22px; }
 
-/* Mobile menu panel */
-.mobile-panel{
+/* Mobile menu panel (absolute under header) */
+.menuPanel{
   display:none;
-  margin-top:12px;
-  padding:16px;
-  border:1px solid var(--line);
-  border-radius: var(--r);
-  background: rgba(255,255,255,.65);
+  position:absolute;
+  right:12px;
+  top: calc(100% + 10px);
+  width: min(320px, calc(100vw - 24px));
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--line);
+  border-radius: 18px;
   box-shadow: var(--shadow);
+  padding: 12px;
+  z-index: 1100; /* above content + sticky header */
 }
 
-.mobile-panel .mobile-lang{
+.menuPanel .lang{
+  width:100%;
+  justify-content:center;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,.75);
+}
+
+.menuList{
+  display:grid;
+  gap:10px;
+}
+
+.menuList a.pill{
   display:flex;
   justify-content:center;
-  margin-bottom:12px;
+  width:100%;
 }
 
-.mobile-panel .mobile-links{
-  display:grid;
-  gap:12px;
-  justify-items:center;
-}
+@media (max-width:900px){
+  .right .lang,
+  .right .nav{ display:none; }
+  .menuBtn{ display:inline-flex; }
 
-.mobile-panel .mobile-links a{
-  width:min(340px, 100%);
-  text-align:center;
-  padding:12px 14px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background: rgba(255,255,255,.70);
-  font-weight:900;
-  color: var(--ink);
-}
-
-.mobile-panel .mobile-links a.active{
-  background: rgba(13,89,37,.14);
-  border-color: rgba(13,89,37,.35);
-}
-
-@media (max-width: 900px){
-  /* hide desktop nav + show hamburger */
-  .site-nav{ display:none; }
-  .site-right{ justify-content:flex-end; width:auto; }
-  .hamburger{ display:inline-flex; }
-
-  /* when JS adds .nav-open on body or header container, show panel */
-  .nav-open .mobile-panel{ display:block; }
+  .menuPanel{ display:none; }
+  .menuPanel.is-open{ display:block; }
 }
 
 /* ============================
@@ -327,12 +334,12 @@ p{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px; /* reduced padding around logo/text */
+  gap:6px;
   margin-top: 2px;
 }
 
 .footer-bottom img{
-  height: 45px; /* ~1.5x bigger than 30px */
+  height: 45px;
   width:auto;
   display:block;
 }
