@@ -262,23 +262,24 @@
         const header = document.querySelector('header.topbar');
         if (!header) return;
 
-        // Language switch: ES active on this page
-        const allLang = header.querySelectorAll('.lang a[data-lang]');
-        allLang.forEach(a => {
+        /* ===== FIX: apply active state to BOTH desktop + mobile language switchers ===== */
+        const allLangLinks = header.querySelectorAll('.lang a[data-lang]');
+        allLangLinks.forEach(a => {
           a.classList.remove('active');
           a.removeAttribute('aria-current');
         });
 
-        const en = header.querySelector('.lang a[data-lang="en"]');
-        const es = header.querySelector('.lang a[data-lang="es"]');
-        if (en) en.setAttribute('href', '/about-us/');
-        if (es) {
-          es.setAttribute('href', '/es/sobre-nosotros/');
-          es.classList.add('active');
-          es.setAttribute('aria-current', 'page');
-        }
+        const enLinks = header.querySelectorAll('.lang a[data-lang="en"]');
+        const esLinks = header.querySelectorAll('.lang a[data-lang="es"]');
 
-        // Translate + route both desktop + mobile nav
+        enLinks.forEach(a => a.setAttribute('href', '/about-us/'));
+        esLinks.forEach(a => {
+          a.setAttribute('href', '/es/sobre-nosotros/');
+          a.classList.add('active');
+          a.setAttribute('aria-current', 'page');
+        });
+
+        /* ===== Translate + route both desktop + mobile nav ===== */
         const map = [
           { en: 'Home',         es: 'Inicio',         href: '/es/' },
           { en: 'About Us',     es: 'Sobre nosotros', href: '/es/sobre-nosotros/' },
@@ -301,7 +302,6 @@
           a.removeAttribute('aria-current');
         });
 
-        // Active state
         const current = '/es/sobre-nosotros/';
         header.querySelectorAll(`.nav a.pill[href="${current}"], .menuList a.pill[href="${current}"]`)
           .forEach(a => {
@@ -315,7 +315,6 @@
         const panel = document.getElementById('menuPanel');
         if (!btn || !panel) return;
 
-        // Reset (prevents weird state if re-mounted)
         panel.classList.remove('is-open');
         btn.setAttribute('aria-expanded', 'false');
 
