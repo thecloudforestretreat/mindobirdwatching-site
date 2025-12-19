@@ -598,10 +598,23 @@
       function next(){ goTo(index + 1); }
       function prev(){ goTo(index - 1); }
 
+      function stop(){
+        if(timer){
+          window.clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      function start(){
+        if(!autoplay || reduceMotion) return;
+        if(timer) return;
+        timer = window.setInterval(next, Math.max(2000, intervalMs));
+      }
+
       if(prevBtn) prevBtn.addEventListener('click', () => { stop(); prev(); start(); });
       if(nextBtn) nextBtn.addEventListener('click', () => { stop(); next(); start(); });
 
-      // Basic swipe support
+      // Basic swipe support (touch/pointer)
       let startX = null;
       let dragging = false;
 
@@ -629,22 +642,8 @@
       root.addEventListener('pointerup', onPointerUp, { passive: true });
       root.addEventListener('pointercancel', () => { dragging = false; startX = null; start(); }, { passive: true });
 
-      // Autoplay with pause on hover/focus
+      // Autoplay pause on hover/focus
       let timer = null;
-
-      function start(){
-        if(!autoplay || reduceMotion) return;
-        if(timer) return;
-        timer = window.setInterval(next, Math.max(2000, intervalMs));
-      }
-
-      function stop(){
-        if(timer){
-          window.clearInterval(timer);
-          timer = null;
-        }
-      }
-
       root.addEventListener('mouseenter', stop);
       root.addEventListener('mouseleave', start);
       root.addEventListener('focusin', stop);
