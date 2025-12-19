@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Our Guide | Mindo Bird Watching</title>
 
-  <!-- Keep for staging while testing -->
   <meta name="robots" content="noindex, nofollow" />
 
-  <!-- Hreflang -->
   <link rel="alternate" hreflang="en" href="/our-guide/" />
   <link rel="alternate" hreflang="es" href="/es/nuestro-guia/" />
   <link rel="alternate" hreflang="x-default" href="/our-guide/" />
@@ -334,12 +332,9 @@
       <section class="guideCard" aria-label="Guide overview">
         <div class="photo card" aria-label="Chicho photo">
           <div class="frame">
-            <!-- Replace this src with Chicho’s real photo -->
             <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Chicho, birdwatching guide in Mindo (replace this image)">
           </div>
-          <div class="cap">
-            Replace the image above with Chicho’s photo when ready.
-          </div>
+          <div class="cap">Replace the image above with Chicho’s photo when ready.</div>
         </div>
 
         <aside class="facts card" aria-label="Quick facts about Chicho">
@@ -541,7 +536,7 @@
 
   <script>
     (async function(){
-      // 1) Inject includes first
+      // Inject includes
       const headerMount = document.getElementById('siteHeader');
       if(headerMount){
         const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
@@ -554,7 +549,7 @@
         footerMount.innerHTML = await res.text();
       }
 
-      // 2) Load global site.js AFTER header exists (so hamburger binds correctly)
+      // Load global site.js AFTER header exists (hamburger binds correctly)
       await new Promise((resolve) => {
         const existing = document.querySelector('script[data-global-sitejs="true"]');
         if(existing) return resolve();
@@ -568,7 +563,7 @@
         document.head.appendChild(s);
       });
 
-      // 3) Page-only: carousel logic (does not touch header/footer/menu behavior)
+      // Page-only carousel logic
       const root = document.querySelector('.mbwCarousel');
       if(!root) return;
 
