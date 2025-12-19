@@ -4,72 +4,112 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>About Us | Mindo Bird Watching</title>
-
-  <!-- Keep staging unindexed -->
   <meta name="robots" content="noindex, nofollow" />
 
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script src="/assets/js/site.js" defer></script>
+
   <style>
-    :root{
-      --bg:#071923;
-      --card:#0b2431;
-      --text:#ffffff;
-      --muted:rgba(255,255,255,.78);
-      --line:rgba(255,255,255,.12);
-      --accent:#034EA2;
-      --accent2:#FFDD00;
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:linear-gradient(180deg,var(--bg),#041018);
-      color:var(--text);
-    }
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
     .topbar{
-      display:flex;align-items:center;justify-content:space-between;
-      gap:16px;padding:14px 16px;border:1px solid var(--line);
-      border-radius:var(--radius);background:rgba(11,36,49,.55);backdrop-filter: blur(10px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.65);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
-    .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px}
-    .dot{width:10px;height:10px;border-radius:99px;background:var(--accent2);box-shadow:0 0 0 3px rgba(255,221,0,.2)}
-    .nav{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-    .pill{
-      padding:10px 12px;border-radius:999px;border:1px solid var(--line);
-      color:var(--muted);font-weight:700;font-size:13px;
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:900;
+      color: var(--ink);
     }
-    .pill.active{background:rgba(3,78,162,.18);border-color:rgba(3,78,162,.55);color:#fff}
-    .lang{display:flex;gap:8px;align-items:center}
-    .lang a{font-weight:900;font-size:13px;padding:10px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
-    .lang a.active{background:rgba(255,221,0,.14);border-color:rgba(255,221,0,.5);color:#fff}
-    .hero{
-      margin-top:18px;padding:26px;border:1px solid var(--line);
-      border-radius:var(--radius);background:rgba(11,36,49,.55);
+
+    .brand-dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background: var(--gold);
+      box-shadow:0 0 0 3px rgba(255,215,0,.25);
     }
-    h1{margin:0 0 10px;font-size:34px;letter-spacing:-.4px}
-    p{margin:0;color:var(--muted);line-height:1.6}
-    .grid{margin-top:18px;display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-    .card{
-      padding:18px;border:1px solid var(--line);border-radius:var(--radius);
-      background:rgba(11,36,49,.45);
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
     }
-    h2{margin:0 0 10px;font-size:18px}
-    ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.8}
-    .footer{margin:22px 0 8px;color:rgba(255,255,255,.6);font-size:12px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+    .page{
+      margin-top:18px;
+      padding:26px;
+    }
+
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .lede{
+      max-width: 78ch;
+      font-size: 16px;
+    }
+
+    .grid{
+      margin-top: 16px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .mini{
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+    }
+
+    .mini h2{
+      margin:0 0 6px;
+      font-size: 16px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+    }
+
+    .mini p{ margin:0; }
+
+    .ctaRow{
+      margin-top: 16px;
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+      .nav{ justify-content:flex-start; }
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
 
+    <!-- HEADER -->
     <header class="topbar">
-      <div class="brand">
-        <span class="dot"></span>
+      <a class="brand" href="/home">
+        <span class="brand-dot"></span>
         <span>Mindo Bird Watching</span>
-      </div>
+      </a>
 
       <nav class="nav" aria-label="Primary">
         <a class="pill" href="/home">Home</a>
@@ -80,45 +120,43 @@
         <a class="pill" href="/book-tour">Book Tour</a>
         <a class="pill" href="/contact">Contact</a>
       </nav>
-
-      <div class="lang" aria-label="Language">
-        <a class="active" href="/about-us">EN</a>
-        <!-- If you decide to create a Spanish About page later, link it here -->
-        <a href="/about-us">ES</a>
-      </div>
     </header>
 
-    <section class="hero">
-      <h1>About Us</h1>
-      <p>
-        This page is being rebuilt on Cloudflare Pages (staging). Content will be migrated from Adobe Portfolio,
-        keeping the same URL structure for a clean launch.
+    <!-- PAGE -->
+    <main class="page card">
+      <h1>About Mindo Bird Watching</h1>
+      <p class="lede">
+        We offer private birding experiences in and around Mindo, Ecuador. Our focus is simple:
+        maximize sightings, keep logistics easy, and give you a calm, professional experience in the cloud forest.
       </p>
-    </section>
 
-    <section class="grid">
-      <div class="card">
-        <h2>What we do</h2>
-        <ul>
-          <li>Private birding tours in and around Mindo</li>
-          <li>Local guiding, logistics, and custom itineraries</li>
-          <li>Beginner-friendly and expert-friendly experiences</li>
-        </ul>
+      <div class="grid" aria-label="About highlights">
+        <div class="mini">
+          <h2>Private tours</h2>
+          <p>Flexible pacing, your target species, and a plan built around your goals.</p>
+        </div>
+
+        <div class="mini">
+          <h2>Local expertise</h2>
+          <p>Guiding based on real routes, real conditions, and years of field experience in Mindo.</p>
+        </div>
+
+        <div class="mini">
+          <h2>Simple planning</h2>
+          <p>Clear pickup details, timing, and what to bring so your day runs smoothly.</p>
+        </div>
       </div>
 
-      <div class="card">
-        <h2>Next migration steps</h2>
-        <ul>
-          <li>Replace this placeholder copy with your existing About content</li>
-          <li>Add real images and a consistent layout system</li>
-          <li>Build Spanish equivalents where needed and connect via EN | ES links</li>
-        </ul>
+      <div class="ctaRow">
+        <a class="btn primary" href="/book-tour">Book a tour</a>
+        <a class="btn secondary" href="/tours">Explore tours</a>
       </div>
-    </section>
+    </main>
 
-    <div class="footer">
-      Staging build. Live site remains on Adobe Portfolio at www.mindobirdwatching.com.
-    </div>
+    <!-- FOOTER -->
+    <footer class="footer" aria-label="Footer">
+      <small>Mindo Bird Watching 2025 ©</small>
+    </footer>
 
   </div>
 </body>
