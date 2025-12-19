@@ -31,11 +31,9 @@
   --font-body: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
 
-  /* Footer icon sizing */
-  --social-size: 62px;      /* bubble diameter (desktop) */
-  --social-icon: 34px;      /* icon size inside bubble (desktop) */
-  --social-gap: 12px;       /* gap between bubbles */
-  --social-pad: 10px;       /* VISUAL padding around the icon = (bubble - icon)/2 */
+  /* Footer social icon sizing (NO bubbles) */
+  --social-icon-size: 36px; /* icon size */
+  --social-gap: 14px;       /* gap between icons */
 }
 
 /* Base reset */
@@ -282,12 +280,12 @@ p{
   .site-right{ justify-content:flex-end; width:auto; }
   .hamburger{ display:inline-flex; }
 
-  /* when JS adds .open on body or header container, show panel */
+  /* when JS adds .nav-open on body or header container, show panel */
   .nav-open .mobile-panel{ display:block; }
 }
 
 /* ============================
-   Footer
+   Footer (NO bubbles, locked sizing)
    ============================ */
 
 .footer{
@@ -304,27 +302,24 @@ p{
   margin-bottom: 14px;
 }
 
+/* IMPORTANT: remove container sizing/padding so Safari can’t blow it up */
 .footer-social a{
-  width: var(--social-size);
-  height: var(--social-size);
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.65);
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  transition: transform 140ms ease, background 140ms ease;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  border: 0;
+  background: transparent;
 }
 
-.footer-social a:hover{
-  transform: translateY(-1px);
-  background: rgba(255,255,255,.80);
-}
-
+/* IMPORTANT: lock size at IMG level */
 .footer-social img{
-  width: var(--social-icon);
-  height: var(--social-icon);
+  width: var(--social-icon-size);
+  height: var(--social-icon-size);
   object-fit: contain;
+  display:block;
 }
 
 /* Bottom line: small logo + text centered */
@@ -332,15 +327,14 @@ p{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:10px;
+  gap:6px; /* reduced padding around logo/text */
   margin-top: 2px;
 }
 
 .footer-bottom img{
-  height: 30px; /* ~1.5x typical 20px */
+  height: 45px; /* ~1.5x bigger than 30px */
   width:auto;
   display:block;
-  /* remove “padding” by not wrapping in padded container */
 }
 
 .footer small{
@@ -349,13 +343,11 @@ p{
   color: rgba(7,25,35,.78);
 }
 
-/* Mobile: shrink bubbles if many links */
+/* Mobile: shrink icons automatically if many links */
 @media (max-width: 520px){
   :root{
-    --social-size: 54px;
-    --social-icon: 30px;
+    --social-icon-size: 30px;
     --social-gap: 10px;
-    --social-pad: 12px;
   }
   .container{ padding: 18px; }
 }
