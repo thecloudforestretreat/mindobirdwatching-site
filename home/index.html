@@ -5,28 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mindo Bird Watching</title>
   <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Global brand CSS (your code goes in /assets/css/site.css) -->
   <link rel="stylesheet" href="/assets/css/site.css">
-  <script src="/assets/js/site.js" defer></script>
 
+  <!-- Optional page-specific layout only (NO background in here) -->
   <style>
-    :root{
-      --page-bg:#C6DBAD;
-      --text:#071923;
-      --muted:rgba(7,25,35,.75);
-      --line:rgba(7,25,35,.14);
-      --r:18px;
-    }
-
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:var(--page-bg);
-      color:var(--text);
-    }
-
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-
     .topbar{
       display:flex;
       align-items:center;
@@ -35,111 +19,137 @@
       padding:14px 16px;
       border:1px solid var(--line);
       border-radius:var(--r);
-      background:rgba(255,255,255,.55);
+      background:rgba(255,255,255,.65);
       backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
-    .brand{font-weight:900}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:900;
+      color: var(--ink);
+    }
 
-    .nav{display:flex;flex-wrap:wrap;gap:12px}
-    .pill{
-      padding:10px 12px;
+    .brand-dot{
+      width:10px;
+      height:10px;
       border-radius:999px;
-      border:1px solid var(--line);
-      color:var(--muted);
-      font-weight:800;
-      font-size:13px;
-      background:rgba(255,255,255,.5);
+      background: var(--gold);
+      box-shadow:0 0 0 3px rgba(255,215,0,.25);
+      flex:0 0 auto;
     }
-    .pill.active{
-      background:rgba(3,78,162,.14);
-      border-color:rgba(3,78,162,.35);
-      color:#071923;
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-end;
     }
 
     .hero{
       margin-top:18px;
       padding:26px;
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.55);
     }
 
-    h1{margin:0 0 10px;font-size:36px}
-    p{margin:0;color:var(--muted);line-height:1.6}
-
-    .ctaRow{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
-    .btn{
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      font-weight:900;
-      background:rgba(255,255,255,.65);
+    .hero.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
     }
 
-    .grid{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .card{
+    .ctaRow{
+      margin-top:16px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .grid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+    }
+
+    .tile{
       padding:16px;
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.55);
     }
 
-    /* ===== FOOTER TEST ===== */
-    .footer{
-      margin-top:28px;
-      padding:24px 0 10px;
-      text-align:center;
+    .tile.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
     }
 
+    .tile h2{
+      margin:0 0 6px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .tile p{
+      margin:0;
+    }
+
+    /* Footer icon test */
     .footer-icons{
+      margin-top: 10px;
       display:flex;
       justify-content:center;
-      gap:18px;
-      margin-bottom:10px;
+      gap:12px;
+      flex-wrap:wrap;
     }
 
-    .footer a{
-      width:72px;
-      height:72px;
-      display:flex;
+    .icon-link{
+      display:inline-flex;
       align-items:center;
       justify-content:center;
+      width:72px;
+      height:72px;
       border-radius:999px;
       border:1px solid var(--line);
-      background:rgba(255,255,255,.60);
+      background: rgba(255,255,255,.65);
       transition:transform 140ms ease, background 140ms ease;
     }
 
-    .footer a:hover{
-      transform:translateY(-2px);
-      background:rgba(255,255,255,.8);
+    .icon-link:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.80);
     }
 
-    .footer img{
+    .icon-link img{
       width:38px;
       height:38px;
       object-fit:cover;
       border-radius:10px;
     }
 
-    .footer small{
-      font-weight:900;
-      color:rgba(7,25,35,.78);
-    }
-
     @media (max-width:900px){
-      .grid{grid-template-columns:1fr}
+      .grid{ grid-template-columns:1fr; }
     }
   </style>
+
+  <script src="/assets/js/site.js" defer></script>
 </head>
 
 <body>
   <div class="container">
 
+    <!-- HEADER -->
     <header class="topbar">
-      <div class="brand">Mindo Bird Watching</div>
-      <nav class="nav">
+      <a class="brand" href="/home" aria-label="Mindo Bird Watching home">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Mindo Bird Watching</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
         <a class="pill active" href="/home">Home</a>
         <a class="pill" href="/about-us">About Us</a>
         <a class="pill" href="/our-guide">Our Guide</a>
@@ -150,31 +160,49 @@
       </nav>
     </header>
 
-    <section class="hero">
-      <h1>Private birding in Mindo, Ecuador</h1>
-      <p>Testing background color and footer social layout.</p>
+    <!-- CONTENT -->
+    <section class="hero card">
+      <h1 style="margin:0 0 10px;">Private birding in Mindo, Ecuador</h1>
+      <p>
+        This is the rebuilt site on Cloudflare Pages (staging). This page is now a clean test for:
+        global background, global fonts, and shared UI components coming from <strong>/assets/css/site.css</strong>.
+      </p>
+
       <div class="ctaRow">
-        <a class="btn" href="/book-tour">Book a tour</a>
-        <a class="btn" href="/tours">Explore tours</a>
+        <a class="btn primary" href="/book-tour">Book a tour</a>
+        <a class="btn secondary" href="/tours">Explore tours</a>
       </div>
     </section>
 
-    <section class="grid">
-      <div class="card"><h2>Full-day tours</h2><p>/tours-full-day</p></div>
-      <div class="card"><h2>Half-day tours</h2><p>/tours-half-day</p></div>
-      <div class="card"><h2>Bird of the week</h2><p>/bird-of-the-week</p></div>
+    <section class="grid" aria-label="Quick links">
+      <div class="tile card">
+        <h2>Full-day tours</h2>
+        <p>Build the exact page at <strong>/tours-full-day</strong>.</p>
+      </div>
+
+      <div class="tile card">
+        <h2>Half-day tours</h2>
+        <p>Build the exact page at <strong>/tours-half-day</strong>.</p>
+      </div>
+
+      <div class="tile card">
+        <h2>Bird of the week</h2>
+        <p>Keep your URL at <strong>/bird-of-the-week</strong>.</p>
+      </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-      <div class="footer-icons">
-        <a href="https://instagram.com/mindobirdwatching.com" target="_blank" rel="noopener">
-          <img src="/assets/images/MBW-Icon-Instagram.jpg" alt="Instagram">
+    <!-- FOOTER TEST -->
+    <footer class="footer" aria-label="Footer">
+      <div class="footer-icons" aria-label="Social links">
+        <a class="icon-link" href="https://instagram.com/mindobirdwatching.com" target="_blank" rel="noopener" aria-label="Instagram">
+          <img src="/assets/images/MBW-Icon-Instagram.jpg" alt="Instagram icon">
         </a>
-        <a href="https://tiktok.com/mindobirdwatching" target="_blank" rel="noopener">
-          <img src="/assets/images/MBW-Ico-Linktreeta.jpg" alt="TikTok">
+
+        <a class="icon-link" href="https://tiktok.com/mindobirdwatching" target="_blank" rel="noopener" aria-label="TikTok">
+          <img src="/assets/images/MBW-Ico-Linktreeta.jpg" alt="TikTok icon">
         </a>
       </div>
+
       <small>Mindo Bird Watching 2025 ©</small>
     </footer>
 
