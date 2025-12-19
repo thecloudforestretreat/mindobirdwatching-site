@@ -16,121 +16,11 @@
   <script src="/assets/js/site.js" defer></script>
 
   <style>
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      padding:14px 16px;
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      position: relative;
+    .page{
+      margin-top:18px;
+      padding:26px;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      font-weight:900;
-      color: var(--ink);
-      white-space:nowrap;
-      min-width: 0;
-    }
-
-    .brand img{
-      height:26px;
-      width:auto;
-      display:block;
-      flex:0 0 auto;
-      border-radius: 8px;
-    }
-
-    .right{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    .nav{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      align-items:center;
-    }
-
-    .lang{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background:rgba(255,255,255,.5);
-    }
-    .lang a{
-      padding:8px 10px;
-      border-radius:999px;
-      font-weight:800;
-      font-size:12.5px;
-      color:var(--muted);
-    }
-    .lang a.active{
-      background:rgba(13,89,37,.14);
-      border:1px solid rgba(13,89,37,.35);
-      color:var(--ink);
-    }
-
-    .menuBtn{
-      display:none;
-      align-items:center;
-      justify-content:center;
-      width:44px;
-      height:44px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.65);
-      cursor:pointer;
-    }
-    .menuBtn svg{ width:22px; height:22px; }
-
-    .menuPanel{
-      display:none;
-      position:absolute;
-      right:12px;
-      top: calc(100% + 10px);
-      width: min(320px, calc(100vw - 24px));
-      background: rgba(255,255,255,.92);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 12px;
-      z-index: 50;
-    }
-    .menuPanel.is-open{ display:block; }
-
-    .menuPanel .lang{
-      width:100%;
-      justify-content:center;
-      margin-bottom: 10px;
-      background: rgba(255,255,255,.75);
-    }
-
-    .menuList{
-      display:grid;
-      gap:10px;
-    }
-    .menuList a.pill{
-      display:flex;
-      justify-content:center;
-      width:100%;
-    }
-
-    .page{ margin-top:18px; padding:26px; }
     .page.card{
       background: var(--card);
       border: 1px solid var(--line);
@@ -177,61 +67,15 @@
 
     @media (max-width:900px){
       .grid{ grid-template-columns:1fr; }
-      .right .lang,
-      .right .nav{ display:none; }
-      .menuBtn{ display:inline-flex; }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <header class="topbar">
-      <a class="brand" href="/home/" aria-label="Mindo Bird Watching home">
-        <img src="/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo mark">
-        <span>Mindo Bird Watching</span>
-      </a>
 
-      <div class="right">
-        <div class="lang" aria-label="Language switch">
-          <a class="active" href="/about-us/" aria-current="page">EN</a>
-          <a href="/es/sobre-nosotros/">ES</a>
-        </div>
-
-        <nav class="nav" aria-label="Primary">
-          <a class="pill" href="/home/">Home</a>
-          <a class="pill active" href="/about-us/">About Us</a>
-          <a class="pill" href="/our-guide/">Our Guide</a>
-          <a class="pill" href="/tours/">Tours</a>
-          <a class="pill" href="/bird-gallery/">Bird Gallery</a>
-          <a class="pill" href="/book-tour/">Book Tour</a>
-          <a class="pill" href="/contact/">Contact</a>
-        </nav>
-
-        <button class="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="menuPanel" id="menuPanel" aria-label="Mobile menu">
-        <div class="lang" aria-label="Language switch (mobile)">
-          <a class="active" href="/about-us/" aria-current="page">EN</a>
-          <a href="/es/sobre-nosotros/">ES</a>
-        </div>
-
-        <nav class="menuList" aria-label="Primary (mobile)">
-          <a class="pill" href="/home/">Home</a>
-          <a class="pill active" href="/about-us/">About Us</a>
-          <a class="pill" href="/our-guide/">Our Guide</a>
-          <a class="pill" href="/tours/">Tours</a>
-          <a class="pill" href="/bird-gallery/">Bird Gallery</a>
-          <a class="pill" href="/book-tour/">Book Tour</a>
-          <a class="pill" href="/contact/">Contact</a>
-        </nav>
-      </div>
-    </header>
+    <!-- Shared header mount -->
+    <div id="siteHeader"></div>
 
     <main class="page card">
       <h1>About Us</h1>
@@ -274,38 +118,22 @@
 
     <!-- Shared footer mount -->
     <div id="siteFooter"></div>
+
   </div>
 
   <script>
-    (function(){
-      const btn = document.querySelector('.menuBtn');
-      const panel = document.getElementById('menuPanel');
-      if(btn && panel){
-        function closeMenu(){
-          panel.classList.remove('is-open');
-          btn.setAttribute('aria-expanded', 'false');
-        }
-        btn.addEventListener('click', function(){
-          const open = panel.classList.toggle('is-open');
-          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        });
-        document.addEventListener('click', function(e){
-          if(panel.classList.contains('is-open')){
-            const inside = panel.contains(e.target) || btn.contains(e.target);
-            if(!inside) closeMenu();
-          }
-        });
-        document.addEventListener('keydown', function(e){
-          if(e.key === 'Escape') closeMenu();
-        });
+    (async function(){
+      const headerMount = document.getElementById('siteHeader');
+      if(headerMount){
+        const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
+        headerMount.innerHTML = await res.text();
       }
 
-      (async function(){
-        const mount = document.getElementById('siteFooter');
-        if(!mount) return;
+      const footerMount = document.getElementById('siteFooter');
+      if(footerMount){
         const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
-        mount.innerHTML = await res.text();
-      })();
+        footerMount.innerHTML = await res.text();
+      }
     })();
   </script>
 </body>
