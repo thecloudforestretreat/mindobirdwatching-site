@@ -1,94 +1,361 @@
-/* ===== Shared Footer (Centered) ===== */
-.footer{
-  margin-top: 22px;
-  padding: 18px 0 26px;
+/* ============================
+   Mindo Bird Watching
+   Global Brand Styles (v1.2)
+   Fonts: Playfair Display (headings) + Open Sans (body/UI)
+   Background: #C7DAAC site-wide
+   ============================ */
+
+/* Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap");
+
+:root{
+  /* Brand palette */
+  --bg: #C7DAAC;          /* site background (global) */
+  --forest: #0D5925;      /* primary */
+  --brown: #8B4513;       /* secondary */
+  --sky: #87CEEB;         /* optional accent */
+  --gold: #FFD700;        /* CTA accent */
+
+  /* Neutrals */
+  --ink: #071923;         /* primary text */
+  --muted: rgba(7,25,35,.72);
+  --card: rgba(255,255,255,.72);
+  --card-strong: rgba(255,255,255,.88);
+  --line: rgba(7,25,35,.14);
+
+  /* Radius + shadow */
+  --r: 18px;
+  --shadow: 0 18px 55px rgba(7,25,35,.10);
+
+  /* Typography */
+  --font-body: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
+
+  /* Footer icon sizing */
+  --social-size: 62px;      /* bubble diameter (desktop) */
+  --social-icon: 34px;      /* icon size inside bubble (desktop) */
+  --social-gap: 12px;       /* gap between bubbles */
+  --social-pad: 10px;       /* VISUAL padding around the icon = (bubble - icon)/2 */
 }
 
-.footer-inner{
-  background: rgba(255,255,255,.65);
+/* Base reset */
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
+
+body{
+  margin:0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links: remove default underline/blue */
+a{
+  color: inherit;
+  text-decoration: none;
+}
+a:visited{ color: inherit; }
+a:hover{ text-decoration: none; }
+a:focus-visible{
+  outline: 3px solid rgba(255,215,0,.35);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+img{
+  max-width: 100%;
+  display: block;
+}
+
+/* Layout helper */
+.container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Text defaults */
+h1,h2,h3,h4,h5,h6{
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+p{
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+/* Cards */
+.card{
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
   box-shadow: var(--shadow);
-  padding: 16px;
 }
 
-.footer-center{
-  display:flex;
-  flex-direction:column;
+/* Buttons */
+.btn{
+  display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:14px;
+  gap:10px;
+  padding:12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  font-weight: 800;
+  background: var(--card-strong);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.btn.primary{
+  background: rgba(255,215,0,.22);
+  border-color: rgba(255,215,0,.55);
+}
+
+.btn.secondary{
+  background: rgba(13,89,37,.14);
+  border-color: rgba(13,89,37,.35);
+}
+
+/* Pills */
+.pill{
+  padding:10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 13px;
+  background: rgba(255,255,255,.55);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  white-space: nowrap;
+}
+
+.pill.active{
+  background: rgba(13,89,37,.14);
+  border-color: rgba(13,89,37,.35);
+  color: var(--ink);
+}
+
+/* ============================
+   Universal Header styles
+   Works with your include + JS
+   (Hamburger only on mobile)
+   ============================ */
+
+/* If your header include uses these hooks */
+.site-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.65);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+}
+
+.site-brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:900;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.site-brand img{
+  height:26px;
+  width:auto;
+}
+
+/* Desktop nav area */
+.site-right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.site-nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  align-items:center;
+}
+
+/* Language switch (desktop) */
+.lang{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:rgba(255,255,255,.5);
+}
+
+.lang a{
+  padding:8px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12.5px;
+  color:var(--muted);
+}
+
+.lang a.active{
+  background:rgba(13,89,37,.14);
+  border:1px solid rgba(13,89,37,.35);
+  color:var(--ink);
+}
+
+/* Hamburger button (shown on mobile) */
+.hamburger{
+  display:none;
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  border:1px solid rgba(255,165,0,.65);
+  background: rgba(255,255,255,.72);
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.hamburger svg{
+  width:22px;
+  height:22px;
+}
+
+/* Mobile menu panel */
+.mobile-panel{
+  display:none;
+  margin-top:12px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+}
+
+.mobile-panel .mobile-lang{
+  display:flex;
+  justify-content:center;
+  margin-bottom:12px;
+}
+
+.mobile-panel .mobile-links{
+  display:grid;
+  gap:12px;
+  justify-items:center;
+}
+
+.mobile-panel .mobile-links a{
+  width:min(340px, 100%);
+  text-align:center;
+  padding:12px 14px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background: rgba(255,255,255,.70);
+  font-weight:900;
+  color: var(--ink);
+}
+
+.mobile-panel .mobile-links a.active{
+  background: rgba(13,89,37,.14);
+  border-color: rgba(13,89,37,.35);
+}
+
+@media (max-width: 900px){
+  /* hide desktop nav + show hamburger */
+  .site-nav{ display:none; }
+  .site-right{ justify-content:flex-end; width:auto; }
+  .hamburger{ display:inline-flex; }
+
+  /* when JS adds .open on body or header container, show panel */
+  .nav-open .mobile-panel{ display:block; }
+}
+
+/* ============================
+   Footer
+   ============================ */
+
+.footer{
+  text-align:center;
+  padding: 28px 0 10px;
 }
 
 .footer-social{
   display:flex;
-  align-items:center;
   justify-content:center;
-  gap:12px;
+  align-items:center;
+  gap: var(--social-gap);
   flex-wrap:wrap;
-  width:100%;
+  margin-bottom: 14px;
 }
 
-/* Auto-scale bubbles if you add many links */
-.footer-social-btn{
-  --bubble: 64px;
-  width: var(--bubble);
-  height: var(--bubble);
+.footer-social a{
+  width: var(--social-size);
+  height: var(--social-size);
   border-radius: 999px;
   border: 1px solid var(--line);
   background: rgba(255,255,255,.65);
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  text-decoration:none;
   transition: transform 140ms ease, background 140ms ease;
 }
 
-.footer-social-btn:hover{
+.footer-social a:hover{
   transform: translateY(-1px);
   background: rgba(255,255,255,.80);
 }
 
-/* Icon sizing inside bubble */
-.footer-social-btn img{
-  width: calc(var(--bubble) * 0.55);
-  height: calc(var(--bubble) * 0.55);
-  border-radius: 10px;
+.footer-social img{
+  width: var(--social-icon);
+  height: var(--social-icon);
   object-fit: contain;
 }
 
-/* Row with mark + copyright centered */
-.footer-copy-row{
+/* Bottom line: small logo + text centered */
+.footer-bottom{
   display:flex;
   align-items:center;
   justify-content:center;
   gap:10px;
+  margin-top: 2px;
 }
 
-/* 1.5x bigger than before (was 24px) and no extra padding/badge styling */
-.footer-mark{
-  width: 36px;
-  height: 36px;
-  border-radius: 0;
-  border: 0;
-  background: transparent;
-  padding: 0;
+.footer-bottom img{
+  height: 30px; /* ~1.5x typical 20px */
+  width:auto;
   display:block;
-  object-fit: contain;
+  /* remove “padding” by not wrapping in padded container */
 }
 
-.footer-copy{
-  font-weight: 800;
-  color: var(--muted);
-  text-align:center;
+.footer small{
+  display:block;
+  font-weight: 900;
+  color: rgba(7,25,35,.78);
 }
 
-/* Mobile: slightly smaller bubbles */
-@media (max-width: 900px){
-  .footer-social-btn{ --bubble: 56px; }
-}
-
-/* If you add lots of links, bubbles shrink automatically */
+/* Mobile: shrink bubbles if many links */
 @media (max-width: 520px){
-  .footer-social-btn{ --bubble: 50px; }
+  :root{
+    --social-size: 54px;
+    --social-icon: 30px;
+    --social-gap: 10px;
+    --social-pad: 12px;
+  }
+  .container{ padding: 18px; }
 }
