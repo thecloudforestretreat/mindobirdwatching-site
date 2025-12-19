@@ -3,51 +3,205 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mindo Bird Watching</title>
+  <title>Home | Mindo Bird Watching</title>
 
   <!-- STAGING: keep until launch -->
   <meta name="robots" content="noindex, nofollow" />
 
+  <!-- Global brand CSS -->
   <link rel="stylesheet" href="/assets/css/site.css">
-  <script src="/assets/js/site.js" defer></script>
 
-  <!-- Universal head (favicons + OG + theme-color) -->
+  <!-- Universal head (favicons + manifest + OG + fonts) -->
   <script src="/assets/js/head.js" defer></script>
 
+  <!-- Your global JS (if needed) -->
+  <script src="/assets/js/site.js" defer></script>
+
   <style>
-    /* Minimal landing styles (uses your site-wide background via site.css vars) */
-    body{
-      margin:0;
-      min-height:100vh;
+    .topbar{
       display:flex;
       align-items:center;
-      justify-content:center;
-      padding:24px;
-      text-align:center;
-    }
-    .gate{
-      max-width: 520px;
-      padding: 26px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: var(--card);
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.65);
+      backdrop-filter: blur(10px);
       box-shadow: var(--shadow);
     }
-    .logo{
-      width:min(360px, 92%);
-      margin: 0 auto 14px;
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:900;
+      color: var(--ink);
+      white-space:nowrap;
     }
-    h1{ margin:0 0 10px; }
-    p{ margin:0 0 16px; }
+
+    .brand img{
+      height:26px;
+      width:auto;
+      display:block;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .hero{
+      margin-top:18px;
+      padding:26px;
+    }
+
+    .hero.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .ctaRow{
+      margin-top:16px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .grid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+    }
+
+    .tile{
+      padding:16px;
+    }
+
+    .tile.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .tile h2{
+      margin:0 0 6px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .tile p{ margin:0; }
+
+    .footer-icons{
+      margin-top: 10px;
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .icon-link{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:72px;
+      height:72px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      transition:transform 140ms ease, background 140ms ease;
+    }
+
+    .icon-link:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.80);
+    }
+
+    .icon-link img{
+      width:38px;
+      height:38px;
+      object-fit:cover;
+      border-radius:10px;
+    }
+
+    @media (max-width:900px){
+      .grid{ grid-template-columns:1fr; }
+    }
   </style>
 </head>
 
 <body>
-  <div class="gate">
-    <img class="logo" src="/assets/images/logo/mbw-logo-full-2000x600.png" alt="Mindo Bird Watching logo">
-    <h1>Mindo Bird Watching</h1>
-    <p>Staging site build. Start here:</p>
-    <a class="btn primary" href="/home">Go to Home</a>
+  <div class="container">
+
+    <header class="topbar">
+      <a class="brand" href="/home" aria-label="Mindo Bird Watching home">
+        <img src="/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo mark">
+        <span>Mindo Bird Watching</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a class="pill active" href="/home">Home</a>
+        <a class="pill" href="/about-us">About Us</a>
+        <a class="pill" href="/our-guide">Our Guide</a>
+        <a class="pill" href="/tours">Tours</a>
+        <a class="pill" href="/bird-gallery">Bird Gallery</a>
+        <a class="pill" href="/book-tour">Book Tour</a>
+        <a class="pill" href="/contact">Contact</a>
+      </nav>
+    </header>
+
+    <section class="hero card">
+      <h1 style="margin:0 0 10px;">Private birding in Mindo, Ecuador</h1>
+      <p>
+        This is the rebuilt site on Cloudflare Pages (staging). This page is now a clean test for:
+        global background, global fonts, and shared UI components coming from <strong>/assets/css/site.css</strong>.
+      </p>
+
+      <div class="ctaRow">
+        <a class="btn primary" href="/book-tour">Book a tour</a>
+        <a class="btn secondary" href="/tours">Explore tours</a>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Quick links">
+      <div class="tile card">
+        <h2>Full-day tours</h2>
+        <p>Build the exact page at <strong>/tours-full-day</strong>.</p>
+      </div>
+
+      <div class="tile card">
+        <h2>Half-day tours</h2>
+        <p>Build the exact page at <strong>/tours-half-day</strong>.</p>
+      </div>
+
+      <div class="tile card">
+        <h2>Bird of the week</h2>
+        <p>Keep your URL at <strong>/bird-of-the-week</strong>.</p>
+      </div>
+    </section>
+
+    <footer class="footer" aria-label="Footer">
+      <div class="footer-icons" aria-label="Social links">
+        <a class="icon-link" href="https://instagram.com/mindobirdwatching.com" target="_blank" rel="noopener" aria-label="Instagram">
+          <img src="/assets/images/MBW-Icon-Instagram.jpg" alt="Instagram icon">
+        </a>
+
+        <a class="icon-link" href="https://tiktok.com/mindobirdwatching" target="_blank" rel="noopener" aria-label="TikTok">
+          <img src="/assets/images/MBW-Ico-Linktreeta.jpg" alt="TikTok icon">
+        </a>
+      </div>
+      <small>Mindo Bird Watching 2025 ©</small>
+    </footer>
+
   </div>
 </body>
 </html>
