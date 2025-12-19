@@ -1,80 +1,76 @@
-/* =========================================================
-   MBW Universal Head Tags Injector
-   - Adds favicon links, manifest, theme-color, and OG defaults
-   - Only adds tags if they are missing (safe on any page)
-   ========================================================= */
-
+/* /assets/js/head.js
+   Injects: favicon + manifest + theme color + OG defaults
+   Works on any page that includes this script with `defer`.
+*/
 (function () {
-  function ensureMeta(attrName, attrValue, content) {
-    const selector = `meta[${attrName}="${attrValue}"]`;
-    let el = document.head.querySelector(selector);
+  const head = document.head;
+  if (!head) return;
+
+  const PAGE_BG = "#C7DAAC";
+  const THEME = "#0d5925";
+
+  const OG_DEFAULT = "/assets/images/og/og-default-1200x630.jpg";
+  const SITE_NAME = "Mindo Bird Watching";
+
+  // Helper: upsert <meta> and <link>
+  function upsertMeta(attrName, attrValue, content) {
+    let el = head.querySelector(`meta[${attrName}="${attrValue}"]`);
     if (!el) {
       el = document.createElement("meta");
       el.setAttribute(attrName, attrValue);
-      el.setAttribute("content", content);
-      document.head.appendChild(el);
+      head.appendChild(el);
     }
+    el.setAttribute("content", content);
   }
 
-  function ensureLink(rel, href, extra) {
-    const selector = `link[rel="${rel}"][href="${href}"]`;
-    let el = document.head.querySelector(selector);
+  function upsertLink(rel, href, extra = {}) {
+    let selector = `link[rel="${rel}"]`;
+    if (extra.sizes) selector += `[sizes="${extra.sizes}"]`;
+    if (extra.type) selector += `[type="${extra.type}"]`;
+
+    let el = head.querySelector(selector);
     if (!el) {
       el = document.createElement("link");
       el.setAttribute("rel", rel);
-      el.setAttribute("href", href);
-      if (extra) {
-        for (const [k, v] of Object.entries(extra)) el.setAttribute(k, v);
-      }
-      document.head.appendChild(el);
+      if (extra.sizes) el.setAttribute("sizes", extra.sizes);
+      if (extra.type) el.setAttribute("type", extra.type);
+      head.appendChild(el);
     }
+    el.setAttribute("href", href);
   }
 
-  function ensureIcon(rel, href, type, sizes) {
-    const selector = `link[rel="${rel}"][href="${href}"]`;
-    let el = document.head.querySelector(selector);
-    if (!el) {
-      el = document.createElement("link");
-      el.setAttribute("rel", rel);
-      el.setAttribute("href", href);
-      if (type) el.setAttribute("type", type);
-      if (sizes) el.setAttribute("sizes", sizes);
-      document.head.appendChild(el);
-    }
+  // Favicons + manifest (ROOT paths)
+  upsertLink("icon", "/favicon.ico", { sizes: "any" });
+  upsertLink("icon", "/favicon.svg", { type: "image/svg+xml" });
+  upsertLink("apple-touch-icon", "/apple-touch-icon.png");
+  upsertLink("manifest", "/site.webmanifest");
+
+  // Theme / PWA colors
+  upsertMeta("name", "theme-color", THEME);
+  upsertMeta("name", "msapplication-TileColor", THEME);
+
+  // OG defaults (page-specific pages can override by adding their own OG tags in HTML)
+  const canonical = document.querySelector('link[rel="canonical"]')?.href || window.location.href;
+
+  upsertMeta("property", "og:site_name", SITE_NAME);
+  upsertMeta("property", "og:type", "website");
+  upsertMeta("property", "og:url", canonical);
+
+  // If page already has og:title/og:description, keep them. Otherwise set safe defaults.
+  if (!head.querySelector('meta[property="og:title"]')) {
+    upsertMeta("property", "og:title", document.title || SITE_NAME);
+  }
+  if (!head.querySelector('meta[property="og:description"]')) {
+    upsertMeta("property", "og:description", "Private birding tours in Mindo, Ecuador.");
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    /* Favicons and manifest (your root files) */
-    ensureIcon("icon", "/favicon.ico", null, "any");
-    ensureIcon("icon", "/favicon.svg", "image/svg+xml", null);
-    ensureLink("apple-touch-icon", "/apple-touch-icon.png");
-    ensureLink("manifest", "/site.webmanifest");
+  // Image
+  if (!head.querySelector('meta[property="og:image"]')) {
+    upsertMeta("property", "og:image", OG_DEFAULT);
+  }
+  upsertMeta("property", "og:image:width", "1200");
+  upsertMeta("property", "og:image:height", "630");
 
-    /* Theme colors */
-    ensureMeta("name", "theme-color", "#0d5925");
-
-    /* OG defaults (pages can override by defining their own tags in HTML) */
-    ensureMeta("property", "og:site_name", "Mindo Bird Watching");
-    ensureMeta("property", "og:type", "website");
-    ensureMeta("property", "og:title", document.title || "Mindo Bird Watching");
-    ensureMeta(
-      "property",
-      "og:description",
-      "Private birding in Mindo, Ecuador. Local guide, personalized tours, and the best cloud forest routes."
-    );
-    ensureMeta("property", "og:image", "/assets/images/og/og-default-1200x630.jpg");
-    ensureMeta("property", "og:image:width", "1200");
-    ensureMeta("property", "og:image:height", "630");
-    ensureMeta("property", "og:image:alt", "Mindo Bird Watching");
-
-    /* Twitter defaults */
-    ensureMeta("name", "twitter:card", "summary_large_image");
-    ensureMeta("name", "twitter:title", document.title || "Mindo Bird Watching");
-    ensureMeta(
-      "name",
-      "twitter:description",
-      "Private birding in Mindo, Ecuador. Local guide, personalized tours, and the best cloud forest routes."
-    );
-    ensureMeta("name", "twitter:image", "/assets/images/og/og-default-1200x630.jpg");
-  });
+  // Optional: background color guard (in case any page has old inline bg)
+  document.documentElement.style.backgroundColor = PAGE_BG;
 })();
