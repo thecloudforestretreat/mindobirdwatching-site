@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sobre nosotros | Mindo Bird Watching</title>
 
-  <!-- Keep for staging while testing -->
   <meta name="robots" content="noindex, nofollow" />
 
-  <!-- Hreflang (About Us EN <-> Sobre Nosotros ES) -->
   <link rel="alternate" hreflang="en" href="/about-us/" />
   <link rel="alternate" hreflang="es" href="/es/sobre-nosotros/" />
   <link rel="alternate" hreflang="x-default" href="/about-us/" />
@@ -18,11 +16,132 @@
   <script src="/assets/js/site.js" defer></script>
 
   <style>
-    .page{
-      margin-top:18px;
-      padding:26px;
+    /* ===== Header component styles (required for global header include to behave like /home/) ===== */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.65);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      position: relative;
     }
 
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:900;
+      color: var(--ink);
+      white-space:nowrap;
+      min-width: 0;
+    }
+
+    .brand img{
+      height:26px;
+      width:auto;
+      display:block;
+      flex:0 0 auto;
+      border-radius: 8px;
+    }
+
+    .right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .lang{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.5);
+    }
+    .lang a{
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:12.5px;
+      color:var(--muted);
+    }
+    .lang a.active{
+      background:rgba(13,89,37,.14);
+      border:1px solid rgba(13,89,37,.35);
+      color:var(--ink);
+    }
+
+    .menuBtn{
+      display:none;
+      align-items:center;
+      justify-content:center;
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.65);
+      cursor:pointer;
+    }
+    .menuBtn svg{ width:22px; height:22px; }
+
+    .menuPanel{
+      display:none;
+      position:absolute;
+      right:12px;
+      top: calc(100% + 10px);
+      width: min(320px, calc(100vw - 24px));
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      z-index: 50;
+    }
+    .menuPanel.is-open{ display:block; }
+
+    .menuPanel .lang{
+      width:100%;
+      justify-content:center;
+      margin-bottom: 10px;
+      background: rgba(255,255,255,.75);
+    }
+
+    .menuList{
+      display:grid;
+      gap:10px;
+    }
+    .menuList a.pill{
+      display:flex;
+      justify-content:center;
+      width:100%;
+    }
+
+    @media (max-width: 900px){
+      .right .lang,
+      .right .nav{ display:none; }
+      .menuBtn{ display:inline-flex; }
+      .menuPanel{ display:none; }
+      .menuPanel.is-open{ display:block; }
+    }
+
+    /* ===== Page styles ===== */
+    .page{ margin-top:18px; padding:26px; }
     .page.card{
       background: var(--card);
       border: 1px solid var(--line);
@@ -30,14 +149,8 @@
       box-shadow: var(--shadow);
     }
 
-    .copy{
-      max-width: 82ch;
-      margin-top: 8px;
-    }
-
-    .copy p{
-      margin: 0 0 12px;
-    }
+    .copy{ max-width: 82ch; margin-top: 8px; }
+    .copy p{ margin: 0 0 12px; }
 
     .grid{
       margin-top: 16px;
@@ -130,12 +243,10 @@
 
   <script>
     (function(){
-
-      async function mountIncludesOnce() {
+      async function mountIncludes() {
         const headerMount = document.getElementById('siteHeader');
         const footerMount = document.getElementById('siteFooter');
 
-        // Prevent double-injection if something else already mounted it
         if (headerMount && !headerMount.querySelector('header.topbar')) {
           const hRes = await fetch('/assets/includes/header.html', { cache: 'no-store' });
           headerMount.innerHTML = await hRes.text();
@@ -147,58 +258,52 @@
         }
       }
 
-      function applySpanishHeaderUI() {
-        // Option A: keep ONE global header include, localize it per page
+      function localizeHeaderToSpanish() {
         const header = document.querySelector('header.topbar');
         if (!header) return;
 
-        // Update language switch links + active state
-        const langLinks = header.querySelectorAll('.lang a[data-lang]');
-        langLinks.forEach(a => a.classList.remove('active'));
+        // Language switch: ES active on this page
+        const allLang = header.querySelectorAll('.lang a[data-lang]');
+        allLang.forEach(a => {
+          a.classList.remove('active');
+          a.removeAttribute('aria-current');
+        });
 
-        const enLink = header.querySelector('.lang a[data-lang="en"]');
-        const esLink = header.querySelector('.lang a[data-lang="es"]');
-        if (enLink) enLink.setAttribute('href', '/about-us/');
-        if (esLink) {
-          esLink.setAttribute('href', '/es/sobre-nosotros/');
-          esLink.classList.add('active');
-          esLink.setAttribute('aria-current', 'page');
-        }
-        if (enLink) {
-          enLink.removeAttribute('aria-current');
+        const en = header.querySelector('.lang a[data-lang="en"]');
+        const es = header.querySelector('.lang a[data-lang="es"]');
+        if (en) en.setAttribute('href', '/about-us/');
+        if (es) {
+          es.setAttribute('href', '/es/sobre-nosotros/');
+          es.classList.add('active');
+          es.setAttribute('aria-current', 'page');
         }
 
-        // Map EN -> ES labels + ES routes
+        // Translate + route both desktop + mobile nav
         const map = [
-          { en: 'Home',        es: 'Inicio',         href: '/es/' },
-          { en: 'About Us',    es: 'Sobre nosotros', href: '/es/sobre-nosotros/' },
-          { en: 'Our Guide',   es: 'Nuestro guía',   href: '/es/nuestro-guia/' },
-          { en: 'Tours',       es: 'Tours',          href: '/es/tours/' },
-          { en: 'Bird Gallery',es: 'Galería',        href: '/es/galeria/' },
-          { en: 'Book Tour',   es: 'Reservar',       href: '/es/reservar/' },
-          { en: 'Contact',     es: 'Contacto',       href: '/es/contacto/' }
+          { en: 'Home',         es: 'Inicio',         href: '/es/' },
+          { en: 'About Us',     es: 'Sobre nosotros', href: '/es/sobre-nosotros/' },
+          { en: 'Our Guide',    es: 'Nuestro guía',   href: '/es/nuestro-guia/' },
+          { en: 'Tours',        es: 'Tours',          href: '/es/tours/' },
+          { en: 'Bird Gallery', es: 'Galería',        href: '/es/galeria/' },
+          { en: 'Book Tour',    es: 'Reservar',       href: '/es/reservar/' },
+          { en: 'Contact',      es: 'Contacto',       href: '/es/contacto/' }
         ];
 
-        // Update both desktop + mobile menus
-        const allNavLinks = header.querySelectorAll('.nav a.pill, .menuList a.pill');
-
-        allNavLinks.forEach(a => {
+        const links = header.querySelectorAll('.nav a.pill, .menuList a.pill');
+        links.forEach(a => {
           const txt = (a.textContent || '').trim();
-
           const hit = map.find(x => x.en === txt);
           if (hit) {
             a.textContent = hit.es;
             a.setAttribute('href', hit.href);
           }
-
-          // clear active state first
           a.classList.remove('active');
           a.removeAttribute('aria-current');
         });
 
-        // Mark current page as active (Sobre nosotros)
-        const currentHref = '/es/sobre-nosotros/';
-        header.querySelectorAll(`.nav a.pill[href="${currentHref}"], .menuList a.pill[href="${currentHref}"]`)
+        // Active state
+        const current = '/es/sobre-nosotros/';
+        header.querySelectorAll(`.nav a.pill[href="${current}"], .menuList a.pill[href="${current}"]`)
           .forEach(a => {
             a.classList.add('active');
             a.setAttribute('aria-current', 'page');
@@ -210,7 +315,7 @@
         const panel = document.getElementById('menuPanel');
         if (!btn || !panel) return;
 
-        // Ensure closed on load
+        // Reset (prevents weird state if re-mounted)
         panel.classList.remove('is-open');
         btn.setAttribute('aria-expanded', 'false');
 
@@ -237,11 +342,10 @@
       }
 
       (async function init(){
-        await mountIncludesOnce();
-        applySpanishHeaderUI();
+        await mountIncludes();
+        localizeHeaderToSpanish();
         bindHamburger();
       })();
-
     })();
   </script>
 </body>
