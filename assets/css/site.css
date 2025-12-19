@@ -1,1 +1,90 @@
+:root{
+  --bg:#071923;
+  --card:#0b2431;
+  --text:#ffffff;
+  --muted:rgba(255,255,255,.78);
+  --line:rgba(255,255,255,.12);
+  --accent:#034EA2;
+  --accent2:#FFDD00;
+  --r:18px;
+}
 
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,var(--bg),#041018);color:var(--text)}
+a{color:inherit;text-decoration:none}
+
+.container{max-width:1100px;margin:0 auto;padding:24px}
+
+/* Header */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:rgba(7,25,35,.72);
+  backdrop-filter: blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1100px;
+  margin:0 auto;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:900;
+  letter-spacing:-.02em;
+  white-space:nowrap;
+}
+.brand-dot{
+  width:10px;height:10px;border-radius:999px;
+  background:var(--accent2);
+  box-shadow:0 0 0 3px rgba(255,221,0,.18);
+}
+
+/* Desktop nav */
+.nav{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+}
+.pill{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-weight:800;
+  font-size:13px;
+}
+.pill:hover{background:rgba(255,255,255,.06)}
+.pill.active{
+  background:rgba(3,78,162,.22);
+  border-color:rgba(3,78,162,.45);
+  color:#fff;
+}
+
+/* Mobile nav: 2 rows */
+.nav-mobile{display:none; flex-direction:column; gap:10px; width:100%}
+.nav-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+
+/* Page hero placeholder */
+.hero{
+  max-width:1100px;
+  margin:0 auto;
+  padding:26px 18px 18px;
+}
+.hero h1{margin:0 0 10px; font-size:34px; letter-spacing:-.4px}
+.hero p{margin:0; color:var(--muted); line-height:1.6}
+
+@media (max-width:720px){
+  .topbar-inner{flex-direction:column; align-items:center}
+  .nav{display:none}
+  .nav-mobile{display:flex}
+}
