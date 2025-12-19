@@ -1,114 +1,171 @@
+/* =========================================================
+   MBW Global Site JS
+   - Loads global header + footer includes (if mounts exist)
+   - Chooses header-en vs header-es based on URL (/es/...)
+   - Sets active state for:
+     - EN/ES language switch (desktop + mobile)
+     - Nav pills (desktop + mobile)
+   - Initializes hamburger menu AFTER header is injected
+   ========================================================= */
+
 (function () {
+  "use strict";
+
+  // ---------- helpers ----------
   function normalizePath(p) {
-    if (!p) return "/";
-    if (p.length > 1 && p.endsWith("/")) return p.slice(0, -1);
-    return p;
-  }
-
-  function setActiveNav() {
-    const path = normalizePath(window.location.pathname);
-    const slug = path.startsWith("/es/") ? path.replace("/es/", "/") : path;
-
-    const keyMap = {
-      "/home": "home",
-      "/about-us": "about-us",
-      "/our-guide": "our-guide",
-      "/tours": "tours",
-      "/bird-gallery": "bird-gallery",
-      "/bird-of-the-week": "bird-of-the-week",
-      "/reviews": "reviews",
-      "/blog": "blog",
-      "/contact": "contact"
-    };
-
-    const key = keyMap[slug] || "";
-
-    document.querySelectorAll('[data-mbw-header] .pill').forEach(a => {
-      a.classList.remove("active");
-      const k = a.getAttribute("data-nav");
-      if (k && k === key) a.classList.add("active");
-    });
-  }
-
-  function setLangSwitch() {
-    const path = normalizePath(window.location.pathname);
-
-    const enToEs = {
-      "/about-us": "/es/sobre-nosotros",
-      "/home": "/es/inicio",
-      "/our-guide": "/es/nuestro-guia",
-      "/tours": "/es/tours",
-      "/bird-gallery": "/es/galeria",
-      "/bird-of-the-week": "/es/ave-de-la-semana",
-      "/reviews": "/es/resenas",
-      "/blog": "/es/blog",
-      "/contact": "/es/contacto",
-      "/book-tour": "/es/reservar"
-    };
-
-    const esToEn = {};
-    Object.keys(enToEs).forEach(en => { esToEn[enToEs[en]] = en; });
-
-    const isEs = path.startsWith("/es/");
-    const base = normalizePath(isEs ? path.replace(/^\/es/, "") : path);
-
-    const enPath = isEs ? (esToEn[normalizePath(path)] || base) : base;
-    const esPath = isEs ? normalizePath(path) : (enToEs[base] || ("/es" + base));
-
-    document.querySelectorAll('[data-mbw-header] [data-lang="en"]').forEach(a => {
-      a.href = enPath + "/";
-      a.classList.toggle("active", !isEs);
-      if (!isEs) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
-    });
-
-    document.querySelectorAll('[data-mbw-header] [data-lang="es"]').forEach(a => {
-      a.href = esPath + "/";
-      a.classList.toggle("active", isEs);
-      if (isEs) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
-    });
-  }
-
-  function initMobileMenu() {
-    const root = document.querySelector("[data-mbw-header]");
-    if (!root) return;
-
-    const btn = root.querySelector("[data-menu-btn]");
-    const closeBtn = root.querySelector("[data-menu-close]");
-    const mobile = root.querySelector("[data-mobile]");
-    if (!btn || !mobile) return;
-
-    function open() {
-      mobile.hidden = false;
-      btn.setAttribute("aria-expanded", "true");
+    try {
+      if (!p) return "/";
+      // ensure leading slash, remove query/hash, force trailing slash (except root)
+      let path = p.split("?")[0].split("#")[0];
+      if (!path.startsWith("/")) path = "/" + path;
+      if (path !== "/" && !path.endsWith("/")) path += "/";
+      return path;
+    } catch {
+      return "/";
     }
+  }
 
-    function close() {
-      mobile.hidden = true;
+  function getLocaleFromPathname() {
+    const p = normalizePath(window.location.pathname);
+    return p.startsWith("/es/") ? "es" : "en";
+  }
+
+  function getAlternateHref(lang) {
+    // Pull from <link rel="alternate" hreflang="xx" href="...">
+    const el = document.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
+    if (!el) return null;
+    const href = el.getAttribute("href");
+    if (!href) return null;
+    return href;
+  }
+
+  async function fetchInclude(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed to load ${url} (${res.status})`);
+    return await res.text();
+  }
+
+  // ---------- active state ----------
+  function setActiveLangLinks(scope) {
+    const locale = getLocaleFromPathname();
+    const enHref = getAlternateHref("en") || "/home/";
+    const esHref = getAlternateHref("es") || "/es/";
+
+    const langLinks = scope.querySelectorAll('.lang a[data-lang]');
+    langLinks.forEach((a) => {
+      const lang = a.getAttribute("data-lang");
+      // set correct destination using hreflang alternates
+      if (lang === "en") a.setAttribute("href", enHref);
+      if (lang === "es") a.setAttribute("href", esHref);
+
+      // active state
+      const isActive = lang === locale;
+      a.classList.toggle("active", isActive);
+      if (isActive) {
+        a.setAttribute("aria-current", "page");
+      } else {
+        a.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  function setActiveNavPills(scope) {
+    const current = normalizePath(window.location.pathname);
+
+    // Mark active for nav pills in both desktop + mobile
+    const pillLinks = scope.querySelectorAll('nav a.pill');
+
+    pillLinks.forEach((a) => {
+      let href = a.getAttribute("href") || "";
+      // support absolute or relative
+      let linkPath = "/";
+      try {
+        linkPath = normalizePath(new URL(href, window.location.origin).pathname);
+      } catch {
+        linkPath = normalizePath(href);
+      }
+
+      // exact match is best; fallback: current starts with linkPath (for section roots)
+      const exact = current === linkPath;
+      const section =
+        linkPath !== "/" &&
+        current.startsWith(linkPath);
+
+      const active = exact || section;
+      a.classList.toggle("active", active);
+      if (active) {
+        a.setAttribute("aria-current", "page");
+      } else {
+        a.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  // ---------- hamburger ----------
+  function initHamburger(scope) {
+    const btn = scope.querySelector(".menuBtn");
+    const panel = scope.querySelector("#menuPanel");
+
+    if (!btn || !panel) return;
+
+    // prevent duplicate listeners if init runs again
+    if (btn.dataset.hamburgerInit === "1") return;
+    btn.dataset.hamburgerInit = "1";
+
+    function closeMenu() {
+      panel.classList.remove("is-open");
       btn.setAttribute("aria-expanded", "false");
     }
 
-    btn.addEventListener("click", () => {
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      expanded ? close() : open();
+    btn.addEventListener("click", function () {
+      const open = panel.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
     });
 
-    if (closeBtn) closeBtn.addEventListener("click", close);
-
-    // Close when a mobile link is clicked
-    mobile.addEventListener("click", (e) => {
-      const t = e.target;
-      if (t && t.matches && (t.matches("a") || t.closest("a"))) close();
+    document.addEventListener("click", function (e) {
+      if (!panel.classList.contains("is-open")) return;
+      const inside = panel.contains(e.target) || btn.contains(e.target);
+      if (!inside) closeMenu();
     });
 
-    // Close on escape
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") close();
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeMenu();
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    setActiveNav();
-    setLangSwitch();
-    initMobileMenu();
+  // ---------- mounts loader ----------
+  async function loadGlobalHeaderFooter() {
+    const headerMount = document.getElementById("siteHeader");
+    const footerMount = document.getElementById("siteFooter");
+
+    // HEADER
+    if (headerMount) {
+      const locale = getLocaleFromPathname();
+      const headerUrl =
+        locale === "es"
+          ? "/assets/includes/header-es.html"
+          : "/assets/includes/header-en.html";
+
+      const html = await fetchInclude(headerUrl);
+      headerMount.innerHTML = html;
+
+      // After injection, initialize behavior + states
+      setActiveLangLinks(headerMount);
+      setActiveNavPills(headerMount);
+      initHamburger(headerMount);
+    }
+
+    // FOOTER
+    if (footerMount) {
+      const html = await fetchInclude("/assets/includes/footer.html");
+      footerMount.innerHTML = html;
+    }
+  }
+
+  // ---------- boot ----------
+  document.addEventListener("DOMContentLoaded", function () {
+    loadGlobalHeaderFooter().catch((err) => {
+      console.error("[MBW] Include load error:", err);
+    });
   });
 })();
