@@ -5,104 +5,175 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mindo Bird Watching</title>
   <meta name="robots" content="noindex, nofollow" />
-
-  <!-- Shared site styles -->
   <link rel="stylesheet" href="/assets/css/site.css">
+  <script src="/assets/js/site.js" defer></script>
 
-  <!-- Page-only styles -->
   <style>
+    :root{
+      --page-bg:#C6DBAD; /* TEST BACKGROUND */
+      --text:#071923;
+      --muted:rgba(7,25,35,.75);
+      --line:rgba(7,25,35,.14);
+      --r:18px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--page-bg);
+      color:var(--text);
+    }
+
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+
+    /* Keep your existing header look (but on light bg) */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.55);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{display:flex;align-items:center;gap:12px;font-weight:900}
+
+    .nav{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .pill{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      background:rgba(255,255,255,.5);
+    }
+    .pill.active{
+      background:rgba(3,78,162,.14);
+      border-color:rgba(3,78,162,.35);
+      color:#071923;
+    }
+
     .hero{
       margin-top:18px;
       padding:26px;
       border:1px solid var(--line);
       border-radius:var(--r);
-      background:rgba(11,36,49,.55);
+      background:rgba(255,255,255,.55);
     }
     h1{margin:0 0 10px;font-size:36px;letter-spacing:-.5px}
     p{margin:0;color:var(--muted);line-height:1.6}
+
     .ctaRow{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
-    .btn{display:inline-block;padding:12px 14px;border-radius:14px;border:1px solid var(--line);font-weight:900}
-    .btn.primary{background:rgba(255,221,0,.14);border-color:rgba(255,221,0,.55)}
-    .btn.secondary{background:rgba(3,78,162,.18);border-color:rgba(3,78,162,.55)}
+    .btn{
+      display:inline-block;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      font-weight:900;
+      background:rgba(255,255,255,.65);
+      color:#071923;
+    }
+
     .grid{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .card{padding:16px;border:1px solid var(--line);border-radius:var(--r);background:rgba(11,36,49,.45)}
+    .card{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.55);
+    }
     .card h2{margin:0 0 6px;font-size:16px}
     .card p{margin:0}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  </style>
 
-  <!-- Shared JS -->
-  <script src="/assets/js/site.js" defer></script>
+    /* ===== FOOTER TEST ===== */
+    .footer{
+      margin-top:22px;
+      padding:22px 0 10px;
+      text-align:center;
+    }
+
+    .footer a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:72px;
+      height:72px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.60);
+      transition:transform 140ms ease, background 140ms ease;
+    }
+    .footer a:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.75);
+    }
+
+    .footer img{
+      width:38px;
+      height:38px;
+      object-fit:cover;
+      border-radius:10px;
+    }
+
+    .footer small{
+      display:block;
+      margin-top:10px;
+      font-weight:900;
+      color:rgba(7,25,35,.78);
+    }
+
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
 
-    <!-- Shared header -->
+    <!-- HEADER -->
     <header class="topbar">
-      <div class="topbar-inner">
-        <a class="brand" href="/home">
-          <span class="brand-dot"></span>
-          <span>Mindo Bird Watching</span>
-        </a>
-
-        <!-- Desktop -->
-        <nav class="nav" aria-label="Primary" data-nav>
-          <a class="pill" href="/home">Home</a>
-          <a class="pill" href="/about-us">About</a>
-          <a class="pill" href="/our-guide">Our Guide</a>
-          <a class="pill" href="/tours">Tours</a>
-          <a class="pill" href="/bird-gallery">Bird Gallery</a>
-          <a class="pill" href="/bird-of-the-week">Bird of the Week</a>
-          <a class="pill" href="/book-tour">Book Tour</a>
-          <a class="pill" href="/contact">Contact</a>
-        </nav>
-
-        <!-- Mobile -->
-        <nav class="nav-mobile" aria-label="Primary mobile" data-nav>
-          <div class="nav-row">
-            <a class="pill" href="/home">Home</a>
-            <a class="pill" href="/about-us">About</a>
-            <a class="pill" href="/our-guide">Our Guide</a>
-            <a class="pill" href="/contact">Contact</a>
-          </div>
-          <div class="nav-row">
-            <a class="pill" href="/tours">Tours</a>
-            <a class="pill" href="/bird-gallery">Bird Gallery</a>
-            <a class="pill" href="/book-tour">Book Tour</a>
-            <a class="pill" href="/bird-of-the-week">Bird of the Week</a>
-          </div>
-        </nav>
-      </div>
+      <div class="brand"><span>Mindo Bird Watching</span></div>
+      <nav class="nav" aria-label="Primary">
+        <a class="pill active" href="/home">Home</a>
+        <a class="pill" href="/about-us">About Us</a>
+        <a class="pill" href="/our-guide">Our Guide</a>
+        <a class="pill" href="/tours">Tours</a>
+        <a class="pill" href="/bird-gallery">Bird Gallery</a>
+        <a class="pill" href="/book-tour">Book Tour</a>
+        <a class="pill" href="/contact">Contact</a>
+      </nav>
     </header>
 
+    <!-- CONTENT -->
     <section class="hero">
       <h1>Private birding in Mindo, Ecuador</h1>
       <p>
-        This is the rebuilt site on Cloudflare Pages (staging). Next we’ll replace this placeholder
-        with your real home layout, hero visuals, and tour pathways.
+        Testing page background + footer layout on Cloudflare Pages staging.
       </p>
-
       <div class="ctaRow">
-        <a class="btn primary" href="/book-tour">Book a tour</a>
-        <a class="btn secondary" href="/tours">Explore tours</a>
+        <a class="btn" href="/book-tour">Book a tour</a>
+        <a class="btn" href="/tours">Explore tours</a>
       </div>
     </section>
 
     <section class="grid">
-      <div class="card">
-        <h2>Full-day tours</h2>
-        <p>Build the exact page at <strong>/tours-full-day</strong>.</p>
-      </div>
-      <div class="card">
-        <h2>Half-day tours</h2>
-        <p>Build the exact page at <strong>/tours-half-day</strong>.</p>
-      </div>
-      <div class="card">
-        <h2>Bird of the week</h2>
-        <p>Keep your URL at <strong>/bird-of-the-week</strong>.</p>
-      </div>
+      <div class="card"><h2>Full-day tours</h2><p>Build the exact page at <strong>/tours-full-day</strong>.</p></div>
+      <div class="card"><h2>Half-day tours</h2><p>Build the exact page at <strong>/tours-half-day</strong>.</p></div>
+      <div class="card"><h2>Bird of the week</h2><p>Keep your URL at <strong>/bird-of-the-week</strong>.</p></div>
     </section>
+
+    <!-- FOOTER TEST -->
+    <footer class="footer" aria-label="Footer">
+      <a href="https://instagram.com/mindobirdwatching.com" target="_blank" rel="noopener" aria-label="Instagram">
+        <img src="/assets/images/MBW-Icon-Instagram.jpg" alt="Instagram icon">
+      </a>
+      <small>Mindo Bird Watching 2025 ©</small>
+    </footer>
 
   </div>
 </body>
