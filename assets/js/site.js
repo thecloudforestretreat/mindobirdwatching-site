@@ -1,3 +1,15 @@
+/* =========================================================
+   MBW Global Site JS (single include system)
+   - Loads /assets/includes/header.html into #siteHeader
+   - Loads /assets/includes/footer.html into #siteFooter
+   - Locale from URL: /es/... => "es", else "en"
+   - Updates nav labels + hrefs from data attributes in header.html
+   - Sets EN/ES switch hrefs from <link rel="alternate" hreflang="en|es">
+   - Sets active nav pill based on window.location.pathname (HOME exact-match only)
+   - Initializes hamburger after header is injected
+   - Re-hydrates only if the header node itself gets replaced (no subtree loops)
+   ========================================================= */
+
 (function () {
   "use strict";
 
@@ -35,7 +47,7 @@
       const res = await fetch(url, { cache: "no-store", signal: controller.signal });
       if (!res.ok) return null;
       return await res.text();
-    } catch (e) {
+    } catch {
       return null;
     } finally {
       window.clearTimeout(t);
@@ -65,7 +77,10 @@
     const brand = scope.querySelector(".brand");
     if (brand) {
       brand.setAttribute("href", locale === "es" ? "/es/" : "/home/");
-      brand.setAttribute("aria-label", locale === "es" ? "Mindo Bird Watching inicio" : "Mindo Bird Watching home");
+      brand.setAttribute(
+        "aria-label",
+        locale === "es" ? "Mindo Bird Watching inicio" : "Mindo Bird Watching home"
+      );
     }
 
     const ariaMap = {
@@ -116,6 +131,8 @@
       }
 
       const exact = current === linkPath;
+
+      // IMPORTANT: home should NOT be a section match
       const section =
         !HOME_PATHS.has(linkPath) &&
         linkPath !== "/" &&
@@ -131,7 +148,9 @@
 
   function closeAllMenus() {
     document.querySelectorAll(".menuPanel.is-open").forEach((panel) => panel.classList.remove("is-open"));
-    document.querySelectorAll(".menuBtn[aria-expanded='true']").forEach((btn) => btn.setAttribute("aria-expanded", "false"));
+    document.querySelectorAll(".menuBtn[aria-expanded='true']").forEach((btn) =>
+      btn.setAttribute("aria-expanded", "false")
+    );
   }
 
   function initHamburger(scope) {
@@ -173,10 +192,16 @@
   }
 
   function hydrateHeader(scope) {
-    applyNavLocale(scope);
-    setLangSwitchLinks(scope);
-    setActiveNavPills(scope);
-    initHamburger(scope);
+    if (!scope || scope.dataset.mbwHydrating === "1") return;
+    scope.dataset.mbwHydrating = "1";
+    try {
+      applyNavLocale(scope);
+      setLangSwitchLinks(scope);
+      setActiveNavPills(scope);
+      initHamburger(scope);
+    } finally {
+      scope.dataset.mbwHydrating = "0";
+    }
   }
 
   async function mountIncludes() {
@@ -191,13 +216,14 @@
       }
       hydrateHeader(headerMount);
 
+      // IMPORTANT: Observe only direct children replacement (no subtree loop)
       if (headerMount.dataset.observeHeader !== "1") {
         headerMount.dataset.observeHeader = "1";
         const mo = new MutationObserver(() => {
           const hdr = headerMount.querySelector("header.topbar");
           if (hdr) hydrateHeader(headerMount);
         });
-        mo.observe(headerMount, { childList: true, subtree: true });
+        mo.observe(headerMount, { childList: true }); // <-- FIX
       }
     }
 
