@@ -1,15 +1,3 @@
-/* =========================================================
-   MBW Global Site JS (single include system)
-   - Loads /assets/includes/header.html into #siteHeader
-   - Loads /assets/includes/footer.html into #siteFooter
-   - Locale from URL: /es/... => "es", else "en"
-   - Updates nav labels + hrefs from data attributes in header.html
-   - Sets EN/ES switch hrefs from <link rel="alternate" hreflang="en|es">
-   - Sets active nav pill based on window.location.pathname (HOME exact-match only)
-   - Initializes hamburger after header is injected
-   - Re-binds on header DOM replacement (protects against page scripts overwriting header)
-   ========================================================= */
-
 (function () {
   "use strict";
 
@@ -39,15 +27,23 @@
     return href ? href : null;
   }
 
-  async function fetchInclude(url) {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Failed to load ${url} (${res.status})`);
-    return await res.text();
+  async function fetchInclude(url, timeoutMs = 6000) {
+    const controller = new AbortController();
+    const t = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+      if (!res.ok) return null;
+      return await res.text();
+    } catch (e) {
+      return null;
+    } finally {
+      window.clearTimeout(t);
+    }
   }
 
   function setLangSwitchLinks(scope) {
     const locale = getLocaleFromPathname();
-
     const enHref = getAlternateHref("en") || "/home/";
     const esHref = getAlternateHref("es") || "/es/";
 
@@ -66,7 +62,6 @@
   function applyNavLocale(scope) {
     const locale = getLocaleFromPathname();
 
-    // Brand link
     const brand = scope.querySelector(".brand");
     if (brand) {
       brand.setAttribute("href", locale === "es" ? "/es/" : "/home/");
@@ -96,11 +91,10 @@
 
     scope.querySelectorAll("[data-i18n-aria]").forEach((el) => {
       const key = el.getAttribute("data-i18n-aria");
-      const val = (ariaMap[locale] && ariaMap[locale][key]) ? ariaMap[locale][key] : null;
+      const val = ariaMap[locale]?.[key];
       if (val) el.setAttribute("aria-label", val);
     });
 
-    // Nav links (desktop + mobile)
     scope.querySelectorAll('a.pill[data-href-en][data-href-es]').forEach((a) => {
       const href = locale === "es" ? a.getAttribute("data-href-es") : a.getAttribute("data-href-en");
       if (href) a.setAttribute("href", href);
@@ -122,8 +116,6 @@
       }
 
       const exact = current === linkPath;
-
-      // IMPORTANT: home should NOT be a section match
       const section =
         !HOME_PATHS.has(linkPath) &&
         linkPath !== "/" &&
@@ -147,7 +139,6 @@
     const panel = scope.querySelector("#menuPanel");
     if (!btn || !panel) return;
 
-    // Re-bind protection per button instance
     if (btn.dataset.hamburgerInit === "1") return;
     btn.dataset.hamburgerInit = "1";
 
@@ -164,7 +155,6 @@
       }
     });
 
-    // Add global handlers once
     if (document.documentElement.dataset.mbwHamburgerDoc === "1") return;
     document.documentElement.dataset.mbwHamburgerDoc = "1";
 
@@ -196,12 +186,11 @@
     if (headerMount) {
       const hasHeader = !!headerMount.querySelector("header.topbar");
       if (!hasHeader) {
-        const html = await fetchInclude("/assets/includes/header.html");
-        headerMount.innerHTML = html;
+        const html = await fetchInclude("/assets/includes/header.html", 6000);
+        if (html) headerMount.innerHTML = html;
       }
       hydrateHeader(headerMount);
 
-      // If any page script overwrites the header later, re-hydrate automatically
       if (headerMount.dataset.observeHeader !== "1") {
         headerMount.dataset.observeHeader = "1";
         const mo = new MutationObserver(() => {
@@ -215,13 +204,13 @@
     if (footerMount) {
       const hasFooter = !!footerMount.querySelector("footer.footer");
       if (!hasFooter) {
-        const html = await fetchInclude("/assets/includes/footer.html");
-        footerMount.innerHTML = html;
+        const html = await fetchInclude("/assets/includes/footer.html", 6000);
+        if (html) footerMount.innerHTML = html;
       }
     }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    mountIncludes().catch((err) => console.error("[MBW] include load error:", err));
+    mountIncludes().catch(() => {});
   });
 })();
