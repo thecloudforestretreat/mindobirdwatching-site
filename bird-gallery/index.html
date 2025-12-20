@@ -1,1 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bird Gallery | Mindo Bird Watching</title>
+  <meta name="description" content="Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds, toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest." />
 
+  <!-- Language alternates (used by /assets/js/site.js for EN/ES switch) -->
+  <link rel="alternate" hreflang="en" href="/bird-gallery/" />
+  <link rel="alternate" hreflang="es" href="/es/galeria/" />
+  <link rel="alternate" hreflang="x-default" href="/bird-gallery/" />
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+
+  <style>
+    /* =========================
+       Page-only styles (main content only)
+       ========================= */
+    .page {
+      margin-top: 18px;
+      padding: 26px;
+    }
+    .page.card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .hero h1 {
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.6;
+      max-width: 82ch;
+    }
+
+    .heroCard {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .heroCard h2 {
+      margin: 0 0 8px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+    }
+
+    .heroCard ul {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .heroCtas {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .section {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sectionHead {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .sectionHead h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 10px 0 14px;
+    }
+
+    .chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .chip[aria-pressed="true"] {
+      background: rgba(13,89,37,.14);
+      border-color: rgba(13,89,37,.35);
+    }
+
+    /* Gallery grid */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      overflow: hidden;
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      position: relative;
+      min-height: 160px;
+    }
+
+    .thumb {
+      width: 100%;
+      height: 220px;
+      display: block;
+      object-fit: cover;
+      background: rgba(255,255,255,.55);
+    }
+
+    .meta {
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      background: rgba(255,255,255,.55);
+    }
+
+    .name {
+      margin: 0;
+      font-weight: 900;
+      font-size: 13.5px;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tag {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .emptyState {
+      display: none;
+      margin-top: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+    }
+    .emptyState.is-visible { display: block; }
+
+    /* Videos */
+    .videoGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .videoCard {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .videoFrame {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      border: 0;
+      display: block;
+      background: rgba(255,255,255,.55);
+    }
+
+    .videoCap {
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,.55);
+    }
+
+    /* Lightbox */
+    .lb {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 18px;
+    }
+    .lb.is-open { display: flex; }
+
+    .lbDialog {
+      width: min(980px, 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 30px 80px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+
+    .lbMedia {
+      position: relative;
+      background: rgba(255,255,255,.55);
+    }
+
+    .lbImg {
+      width: 100%;
+      height: min(70vh, 640px);
+      object-fit: contain;
+      display: block;
+      background: rgba(255,255,255,.55);
+    }
+
+    .lbBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+    }
+
+    .lbTitle {
+      margin: 0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lbSub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      white-space: nowrap;
+    }
+
+    .lbBtns {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+
+    .iconBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .iconBtn:focus { outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .iconBtn svg { width: 20px; height: 20px; }
+
+    .closeBtn {
+      width: auto;
+      padding: 0 12px;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .gallery { grid-template-columns: repeat(3, 1fr); }
+      .thumb { height: 200px; }
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+      .thumb { height: 190px; }
+      .videoGrid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .gallery { grid-template-columns: 1fr; }
+      .thumb { height: 220px; }
+      .lbImg { height: min(65vh, 560px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lb { transition: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Shared header mount -->
+    <div id="siteHeader"></div>
+
+    <main class="page card">
+      <!-- HERO -->
+      <section class="hero" aria-label="Bird gallery introduction">
+        <div>
+          <h1>Bird Gallery</h1>
+          <p>
+            Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
+            toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
+          </p>
+
+          <div class="heroCtas" aria-label="Primary actions">
+            <a class="btn primary" href="/book-tour/">Book a tour</a>
+            <a class="btn secondary" href="/tours/">View tours</a>
+          </div>
+        </div>
+
+        <aside class="heroCard" aria-label="How to use this gallery">
+          <h2>Meet the Birds</h2>
+          <ul>
+            <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
+            <li>Click any photo to open the full-screen viewer</li>
+            <li>Use ← / → keys (or swipe) to browse</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- GALLERY -->
+      <section class="section" aria-label="Gallery section">
+        <div class="sectionHead">
+          <h2>Gallery</h2>
+          <p class="hint">Placeholders are ready — you’ll only replace image URLs, titles, and categories.</p>
+        </div>
+
+        <div class="filters" role="toolbar" aria-label="Gallery filters">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-filter="hummingbirds" aria-pressed="false">Hummingbirds</button>
+          <button class="chip" type="button" data-filter="toucans" aria-pressed="false">Toucans</button>
+          <button class="chip" type="button" data-filter="tanagers" aria-pressed="false">Tanagers</button>
+          <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Cock-of-the-Rock</button>
+          <button class="chip" type="button" data-filter="other" aria-pressed="false">Other</button>
+          <button class="chip" type="button" data-filter="videos" aria-pressed="false">Videos</button>
+        </div>
+
+        <div id="galleryGrid" class="gallery" aria-label="Bird photo grid"></div>
+        <div id="emptyState" class="emptyState" role="status" aria-live="polite">
+          No items found for this filter yet.
+        </div>
+      </section>
+
+      <!-- VIDEOS -->
+      <section class="section" aria-label="Videos section">
+        <div class="sectionHead">
+          <h2>Videos</h2>
+          <p class="hint">Replace the YouTube IDs when ready.</p>
+        </div>
+
+        <div class="videoGrid">
+          <div class="videoCard" aria-label="Video 1">
+            <iframe
+              class="videoFrame"
+              src="https://www.youtube-nocookie.com/embed/VIDEO_ID_1"
+              title="Mindo Bird Watching video 1"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+            <div class="videoCap">Placeholder video 1 — replace <strong>VIDEO_ID_1</strong>.</div>
+          </div>
+
+          <div class="videoCard" aria-label="Video 2">
+            <iframe
+              class="videoFrame"
+              src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
+              title="Mindo Bird Watching video 2"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+            <div class="videoCap">Placeholder video 2 — replace <strong>VIDEO_ID_2</strong>.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Shared footer mount -->
+    <div id="siteFooter"></div>
+  </div>
+
+  <!-- Page-only gallery + lightbox (NO header/menu logic) -->
+  <script>
+    (function () {
+      "use strict";
+
+      // Prevent duplicate init if a page is hot-reloaded / scripts re-run
+      if (document.documentElement.dataset.mbwGalleryInit === "1") return;
+      document.documentElement.dataset.mbwGalleryInit = "1";
+
+      const grid = document.getElementById("galleryGrid");
+      const emptyState = document.getElementById("emptyState");
+      const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
+
+      if (!grid) return;
+
+      // ---------- Placeholder generator ----------
+      function svgPlaceholder(label) {
+        const bg = "F3F7F1";
+        const stroke = "D6E5C6";
+        const text = "0D5925";
+        const safe = String(label || "Placeholder").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const svg =
+          `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">` +
+            `<rect width="1200" height="1600" fill="#${bg}"/>` +
+            `<rect x="60" y="60" width="1080" height="1480" rx="44" fill="none" stroke="#${stroke}" stroke-width="10"/>` +
+            `<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">` +
+              `<text x="600" y="760" font-size="54" font-weight="700" fill="#${text}">${safe}</text>` +
+              `<text x="600" y="840" font-size="28" font-weight="600" fill="#6B7C6C">Replace src + title + category</text>` +
+            `</g>` +
+          `</svg>`;
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+      }
+
+      // ---------- YOUR ONLY EDIT POINTS ----------
+      // Replace: title, category, src, alt
+      // Category must be one of:
+      // "hummingbirds" | "toucans" | "tanagers" | "cock-of-the-rock" | "other"
+      const ITEMS = [
+        // Hummingbirds (placeholders)
+        { id: "img-01", type: "image", category: "hummingbirds", title: "Hummingbird 01", src: svgPlaceholder("Hummingbird 01"), alt: "Placeholder hummingbird photo 01" },
+        { id: "img-02", type: "image", category: "hummingbirds", title: "Hummingbird 02", src: svgPlaceholder("Hummingbird 02"), alt: "Placeholder hummingbird photo 02" },
+        { id: "img-03", type: "image", category: "hummingbirds", title: "Hummingbird 03", src: svgPlaceholder("Hummingbird 03"), alt: "Placeholder hummingbird photo 03" },
+        { id: "img-04", type: "image", category: "hummingbirds", title: "Hummingbird 04", src: svgPlaceholder("Hummingbird 04"), alt: "Placeholder hummingbird photo 04" },
+        { id: "img-05", type: "image", category: "hummingbirds", title: "Hummingbird 05", src: svgPlaceholder("Hummingbird 05"), alt: "Placeholder hummingbird photo 05" },
+
+        // Toucans
+        { id: "img-06", type: "image", category: "toucans", title: "Toucan 01", src: svgPlaceholder("Toucan 01"), alt: "Placeholder toucan photo 01" },
+        { id: "img-07", type: "image", category: "toucans", title: "Toucan 02", src: svgPlaceholder("Toucan 02"), alt: "Placeholder toucan photo 02" },
+        { id: "img-08", type: "image", category: "toucans", title: "Toucan 03", src: svgPlaceholder("Toucan 03"), alt: "Placeholder toucan photo 03" },
+        { id: "img-09", type: "image", category: "toucans", title: "Toucan 04", src: svgPlaceholder("Toucan 04"), alt: "Placeholder toucan photo 04" },
+        { id: "img-10", type: "image", category: "toucans", title: "Toucan 05", src: svgPlaceholder("Toucan 05"), alt: "Placeholder toucan photo 05" },
+
+        // Tanagers
+        { id: "img-11", type: "image", category: "tanagers", title: "Tanager 01", src: svgPlaceholder("Tanager 01"), alt: "Placeholder tanager photo 01" },
+        { id: "img-12", type: "image", category: "tanagers", title: "Tanager 02", src: svgPlaceholder("Tanager 02"), alt: "Placeholder tanager photo 02" },
+        { id: "img-13", type: "image", category: "tanagers", title: "Tanager 03", src: svgPlaceholder("Tanager 03"), alt: "Placeholder tanager photo 03" },
+        { id: "img-14", type: "image", category: "tanagers", title: "Tanager 04", src: svgPlaceholder("Tanager 04"), alt: "Placeholder tanager photo 04" },
+        { id: "img-15", type: "image", category: "tanagers", title: "Tanager 05", src: svgPlaceholder("Tanager 05"), alt: "Placeholder tanager photo 05" },
+
+        // Cock-of-the-Rock
+        { id: "img-16", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 01", src: svgPlaceholder("Cock-of-the-Rock 01"), alt: "Placeholder cock-of-the-rock photo 01" },
+        { id: "img-17", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 02", src: svgPlaceholder("Cock-of-the-Rock 02"), alt: "Placeholder cock-of-the-rock photo 02" },
+        { id: "img-18", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 03", src: svgPlaceholder("Cock-of-the-Rock 03"), alt: "Placeholder cock-of-the-rock photo 03" },
+        { id: "img-19", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 04", src: svgPlaceholder("Cock-of-the-Rock 04"), alt: "Placeholder cock-of-the-rock photo 04" },
+        { id: "img-20", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 05", src: svgPlaceholder("Cock-of-the-Rock 05"), alt: "Placeholder cock-of-the-rock photo 05" },
+
+        // Other (10 more to reach 30)
+        { id: "img-21", type: "image", category: "other", title: "Bird 21", src: svgPlaceholder("Bird 21"), alt: "Placeholder bird photo 21" },
+        { id: "img-22", type: "image", category: "other", title: "Bird 22", src: svgPlaceholder("Bird 22"), alt: "Placeholder bird photo 22" },
+        { id: "img-23", type: "image", category: "other", title: "Bird 23", src: svgPlaceholder("Bird 23"), alt: "Placeholder bird photo 23" },
+        { id: "img-24", type: "image", category: "other", title: "Bird 24", src: svgPlaceholder("Bird 24"), alt: "Placeholder bird photo 24" },
+        { id: "img-25", type: "image", category: "other", title: "Bird 25", src: svgPlaceholder("Bird 25"), alt: "Placeholder bird photo 25" },
+        { id: "img-26", type: "image", category: "other", title: "Bird 26", src: svgPlaceholder("Bird 26"), alt: "Placeholder bird photo 26" },
+        { id: "img-27", type: "image", category: "other", title: "Bird 27", src: svgPlaceholder("Bird 27"), alt: "Placeholder bird photo 27" },
+        { id: "img-28", type: "image", category: "other", title: "Bird 28", src: svgPlaceholder("Bird 28"), alt: "Placeholder bird photo 28" },
+        { id: "img-29", type: "image", category: "other", title: "Bird 29", src: svgPlaceholder("Bird 29"), alt: "Placeholder bird photo 29" },
+        { id: "img-30", type: "image", category: "other", title: "Bird 30", src: svgPlaceholder("Bird 30"), alt: "Placeholder bird photo 30" }
+      ];
+      // ---------- END EDIT POINTS ----------
+
+      // Lightbox DOM
+      const lb = document.createElement("div");
+      lb.className = "lb";
+      lb.setAttribute("role", "dialog");
+      lb.setAttribute("aria-modal", "true");
+      lb.setAttribute("aria-label", "Image viewer");
+      lb.innerHTML = `
+        <div class="lbDialog" role="document">
+          <div class="lbMedia">
+            <img class="lbImg" alt="" />
+          </div>
+          <div class="lbBar">
+            <div style="min-width:0;">
+              <p class="lbTitle" style="min-width:0;"></p>
+              <p class="lbSub"></p>
+            </div>
+            <div class="lbBtns">
+              <button class="iconBtn" type="button" data-lb="prev" aria-label="Previous (left arrow)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn" type="button" data-lb="next" aria-label="Next (right arrow)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn closeBtn" type="button" data-lb="close" aria-label="Close (escape)">
+                <span>Close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(lb);
+
+      const lbImg = lb.querySelector(".lbImg");
+      const lbTitle = lb.querySelector(".lbTitle");
+      const lbSub = lb.querySelector(".lbSub");
+      const btnPrev = lb.querySelector('[data-lb="prev"]');
+      const btnNext = lb.querySelector('[data-lb="next"]');
+      const btnClose = lb.querySelector('[data-lb="close"]');
+
+      let activeFilter = "all";
+      let visible = ITEMS.slice();
+      let lbIndex = 0;
+      let lastFocused = null;
+
+      function prettyCategory(c) {
+        const map = {
+          "hummingbirds": "Hummingbirds",
+          "toucans": "Toucans",
+          "tanagers": "Tanagers",
+          "cock-of-the-rock": "Cock-of-the-Rock",
+          "other": "Other"
+        };
+        return map[c] || "Birds";
+      }
+
+      function setEmptyState() {
+        if (!emptyState) return;
+        emptyState.classList.toggle("is-visible", visible.length === 0);
+      }
+
+      function render() {
+        // Filter logic: photos only here; videos are embedded below
+        const filtered =
+          activeFilter === "all" ? ITEMS :
+          activeFilter === "videos" ? [] :
+          ITEMS.filter(x => x.category === activeFilter);
+
+        visible = filtered;
+        grid.innerHTML = "";
+
+        visible.forEach((item, i) => {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "tile";
+          tile.setAttribute("aria-label", `Open ${item.title}`);
+          tile.dataset.index = String(i);
+
+          const img = document.createElement("img");
+          img.className = "thumb";
+          img.src = item.src;
+          img.alt = item.alt || item.title;
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          const name = document.createElement("p");
+          name.className = "name";
+          name.textContent = item.title;
+
+          const tag = document.createElement("p");
+          tag.className = "tag";
+          tag.textContent = prettyCategory(item.category);
+
+          meta.appendChild(name);
+          meta.appendChild(tag);
+
+          tile.appendChild(img);
+          tile.appendChild(meta);
+
+          tile.addEventListener("click", () => openLightbox(i));
+
+          grid.appendChild(tile);
+        });
+
+        setEmptyState();
+      }
+
+      function clamp(i) {
+        const n = visible.length || 1;
+        return (i % n + n) % n;
+      }
+
+      function openLightbox(i) {
+        if (!visible.length) return;
+        lastFocused = document.activeElement;
+
+        lbIndex = clamp(i);
+        const item = visible[lbIndex];
+
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Photo";
+        lbSub.textContent = prettyCategory(item.category);
+
+        lb.classList.add("is-open");
+
+        // Focus close button for accessibility
+        window.setTimeout(() => {
+          btnClose && btnClose.focus();
+        }, 0);
+      }
+
+      function closeLightbox() {
+        lb.classList.remove("is-open");
+        // return focus
+        if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+      }
+
+      function showNext(dir) {
+        if (!visible.length) return;
+        lbIndex = clamp(lbIndex + dir);
+        const item = visible[lbIndex];
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Photo";
+        lbSub.textContent = prettyCategory(item.category);
+      }
+
+      // Lightbox controls (bind once)
+      if (!lb.dataset.bound) {
+        lb.dataset.bound = "1";
+
+        btnPrev && btnPrev.addEventListener("click", () => showNext(-1));
+        btnNext && btnNext.addEventListener("click", () => showNext(1));
+        btnClose && btnClose.addEventListener("click", closeLightbox);
+
+        lb.addEventListener("click", (e) => {
+          // click outside dialog closes
+          if (e.target === lb) closeLightbox();
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (!lb.classList.contains("is-open")) return;
+          if (e.key === "Escape") closeLightbox();
+          if (e.key === "ArrowLeft") showNext(-1);
+          if (e.key === "ArrowRight") showNext(1);
+        });
+      }
+
+      // Filters (bind once)
+      if (!document.documentElement.dataset.mbwGalleryFiltersBound) {
+        document.documentElement.dataset.mbwGalleryFiltersBound = "1";
+
+        chips.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            chips.forEach(b => b.setAttribute("aria-pressed", "false"));
+            btn.setAttribute("aria-pressed", "true");
+
+            activeFilter = btn.dataset.filter || "all";
+
+            // If user clicks Videos, scroll to videos section instead of empty grid
+            if (activeFilter === "videos") {
+              render(); // sets empty state
+              const videosSection = document.querySelector('section[aria-label="Videos section"]');
+              if (videosSection) videosSection.scrollIntoView({ behavior: "smooth", block: "start" });
+              return;
+            }
+
+            render();
+          });
+        });
+      }
+
+      // Initial render
+      render();
+    })();
+  </script>
+</body>
+</html>
