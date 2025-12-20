@@ -1,1 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reviews | Mindo Bird Watching</title>
+  <meta name="description" content="Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours, expert birding guides, and unforgettable wildlife experiences." />
 
+  <link rel="alternate" hreflang="en" href="/reviews/" />
+  <link rel="alternate" hreflang="x-default" href="/reviews/" />
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+
+  <style>
+    /* =========================
+       Page-only styles (main content only)
+       ========================= */
+
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .hero h1{
+      margin:0 0 8px;
+      letter-spacing:-0.02em;
+    }
+
+    .hero p{
+      margin:0;
+      max-width: 85ch;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    .heroCtas{
+      margin-top: 14px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .summaryCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      overflow:hidden;
+      position: relative;
+    }
+
+    .summaryTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .score{
+      display:flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .scoreNum{
+      font-weight: 1000;
+      letter-spacing: -0.03em;
+      font-size: 44px;
+      line-height: 1;
+      color: var(--ink);
+    }
+
+    .scoreMeta{
+      display:grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .stars{
+      display:flex;
+      align-items:center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .starRow{
+      display:flex;
+      gap: 4px;
+      align-items:center;
+    }
+
+    .star{
+      width: 16px;
+      height: 16px;
+      display:inline-block;
+      border-radius: 4px;
+      background: rgba(13,89,37,.10);
+      border: 1px solid rgba(13,89,37,.18);
+      position: relative;
+    }
+
+    .star::before{
+      content: "★";
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(13,89,37,.95);
+      line-height: 1;
+    }
+
+    .scoreLine{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.7);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .proof{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .proofItem{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      padding: 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .proofItem b{
+      display:block;
+      font-weight: 950;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .proofItem span{
+      display:block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 2px;
+    }
+
+    .ghostArt{
+      position:absolute;
+      right: -26px;
+      top: -26px;
+      width: 160px;
+      height: 160px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(13,89,37,.18), rgba(13,89,37,0));
+      filter: blur(0px);
+      pointer-events:none;
+      opacity: .9;
+    }
+
+    .section{
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sectionHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .sectionHead h2{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing:-0.02em;
+      font-size: 20px;
+    }
+
+    .hint{ margin:0; color: var(--muted); font-size: 13px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .reviewCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      position: relative;
+      overflow:hidden;
+    }
+
+    .reviewTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .who{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .avatar{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid rgba(13,89,37,.18);
+      background: rgba(13,89,37,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 950;
+      color: rgba(13,89,37,.95);
+      flex: 0 0 auto;
+    }
+
+    .whoMeta{
+      display:grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .name{
+      margin:0;
+      font-weight: 950;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 28ch;
+    }
+
+    .sub{
+      margin:0;
+      color: var(--muted);
+      font-size: 12.5px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 38ch;
+    }
+
+    .reviewStars{
+      display:flex;
+      align-items:center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+
+    .reviewStars .badge{ padding: 7px 9px; }
+
+    .quote{
+      margin: 12px 0 0;
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    .quote p{ margin:0 0 10px; }
+    .quote p:last-child{ margin-bottom:0; }
+
+    .tagRow{
+      margin-top: 12px;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items:center;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 12.5px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .pull{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 12px;
+      align-items: start;
+      margin-top: 12px;
+    }
+
+    .pullCard{
+      border: 1px dashed rgba(13,89,37,.35);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.55);
+      padding: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .ctaCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .ctaCard h3{
+      margin: 0 0 8px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+    }
+
+    .ctaCard p{
+      margin:0;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .ctaRow{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .linkLine{
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    .linkLine a{
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    @media (max-width: 980px){
+      .hero{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .pull{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Shared header mount -->
+    <div id="siteHeader"></div>
+
+    <main class="page card">
+      <section class="hero" aria-label="Reviews introduction">
+        <div>
+          <h1>Reviews</h1>
+          <p>
+            Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours,
+            expert birding guides, and unforgettable wildlife experiences.
+          </p>
+
+          <div class="heroCtas" aria-label="Primary actions">
+            <a class="btn primary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">
+              Leave a review on Google
+            </a>
+            <a class="btn secondary" href="/book-tour/">Book a tour</a>
+            <a class="btn secondary" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER?text=Hi%20Mindo%20Bird%20Watching%21%20I%27d%20like%20to%20reserve%20a%20tour." target="_blank" rel="noopener noreferrer">
+              Reserve instantly on WhatsApp
+            </a>
+          </div>
+        </div>
+
+        <aside class="summaryCard" aria-label="Google rating summary">
+          <div class="ghostArt" aria-hidden="true"></div>
+
+          <div class="summaryTop">
+            <div class="score" aria-label="Overall rating">
+              <div class="scoreNum" id="ratingValue">4.9</div>
+              <div class="scoreMeta">
+                <div class="stars" aria-label="Star rating">
+                  <div class="starRow" aria-hidden="true">
+                    <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
+                  </div>
+                  <span class="badge" id="ratingMeta">Google Reviews</span>
+                </div>
+                <p class="scoreLine">
+                  <span id="reviewCount">120</span> reviews (placeholder). Replace these values later from your API or a JSON file.
+                </p>
+              </div>
+            </div>
+
+            <span class="badge" aria-label="Location badge">📍 Mindo, Ecuador</span>
+          </div>
+
+          <div class="proof" aria-label="What guests highlight">
+            <div class="proofItem">
+              <div>
+                <b>Expert local guides</b>
+                <span>Guests mention spotting help, bird calls, and finding hidden species.</span>
+              </div>
+              <span class="badge">Most mentioned</span>
+            </div>
+
+            <div class="proofItem">
+              <div>
+                <b>Unforgettable sightings</b>
+                <span>From hummingbirds to Cock-of-the-Rock, the cloud forest delivers.</span>
+              </div>
+              <span class="badge">Top theme</span>
+            </div>
+
+            <div class="proofItem">
+              <div>
+                <b>Smooth experience</b>
+                <span>Clear communication, comfortable transport, and a relaxed pace.</span>
+              </div>
+              <span class="badge">Highly rated</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" aria-label="Featured reviews">
+        <div class="sectionHead">
+          <h2>Featured reviews</h2>
+          <p class="hint">Phase 1: curated highlights. Phase 2: replace with live Google feed.</p>
+        </div>
+
+        <div class="grid" aria-label="Reviews grid">
+          <!-- Review 1 -->
+          <article class="reviewCard" aria-label="Review card 1">
+            <div class="reviewTop">
+              <div class="who">
+                <div class="avatar" aria-hidden="true">A</div>
+                <div class="whoMeta">
+                  <p class="name">Reviewer Name 1</p>
+                  <p class="sub">Half-day tour • Month YYYY (placeholder)</p>
+                </div>
+              </div>
+              <div class="reviewStars" aria-label="Rating and source">
+                <span class="badge">★★★★★</span>
+                <span class="badge">Google</span>
+              </div>
+            </div>
+
+            <div class="quote">
+              <p>
+                “Paste a real review snippet here. Keep it short and specific, focusing on what made the experience feel special.”
+              </p>
+            </div>
+
+            <div class="tagRow" aria-label="Tags">
+              <span class="tag">Great guide</span>
+              <span class="tag">Lots of birds</span>
+              <span class="tag">Easy booking</span>
+            </div>
+          </article>
+
+          <!-- Review 2 -->
+          <article class="reviewCard" aria-label="Review card 2">
+            <div class="reviewTop">
+              <div class="who">
+                <div class="avatar" aria-hidden="true">J</div>
+                <div class="whoMeta">
+                  <p class="name">Reviewer Name 2</p>
+                  <p class="sub">Full-day tour • Month YYYY (placeholder)</p>
+                </div>
+              </div>
+              <div class="reviewStars" aria-label="Rating and source">
+                <span class="badge">★★★★★</span>
+                <span class="badge">Google</span>
+              </div>
+            </div>
+
+            <div class="quote">
+              <p>
+                “Paste a second review here. Mention a bird highlight, the pace, and how the guide helped with spotting.”
+              </p>
+            </div>
+
+            <div class="tagRow" aria-label="Tags">
+              <span class="tag">Cock-of-the-Rock</span>
+              <span class="tag">Photography</span>
+              <span class="tag">Comfortable</span>
+            </div>
+          </article>
+
+          <!-- Review 3 -->
+          <article class="reviewCard" aria-label="Review card 3">
+            <div class="reviewTop">
+              <div class="who">
+                <div class="avatar" aria-hidden="true">S</div>
+                <div class="whoMeta">
+                  <p class="name">Reviewer Name 3</p>
+                  <p class="sub">Private guide • Month YYYY (placeholder)</p>
+                </div>
+              </div>
+              <div class="reviewStars" aria-label="Rating and source">
+                <span class="badge">★★★★★</span>
+                <span class="badge">Google</span>
+              </div>
+            </div>
+
+            <div class="quote">
+              <p>
+                “Paste a third review here. Highlight knowledge, patience, and how the guide tailored the route to your goals.”
+              </p>
+            </div>
+
+            <div class="tagRow" aria-label="Tags">
+              <span class="tag">Patient</span>
+              <span class="tag">Knowledgeable</span>
+              <span class="tag">Custom tour</span>
+            </div>
+          </article>
+
+          <!-- Review 4 -->
+          <article class="reviewCard" aria-label="Review card 4">
+            <div class="reviewTop">
+              <div class="who">
+                <div class="avatar" aria-hidden="true">M</div>
+                <div class="whoMeta">
+                  <p class="name">Reviewer Name 4</p>
+                  <p class="sub">Bird gallery visit • Month YYYY (placeholder)</p>
+                </div>
+              </div>
+              <div class="reviewStars" aria-label="Rating and source">
+                <span class="badge">★★★★★</span>
+                <span class="badge">Google</span>
+              </div>
+            </div>
+
+            <div class="quote">
+              <p>
+                “Paste a fourth review here. Mention friendliness, communication, and how easy it felt to plan the day.”
+              </p>
+            </div>
+
+            <div class="tagRow" aria-label="Tags">
+              <span class="tag">Friendly</span>
+              <span class="tag">Clear communication</span>
+              <span class="tag">Great value</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="pull" aria-label="Next steps and CTA">
+          <div class="pullCard">
+            <strong>Phase 2 (later):</strong> we’ll swap these curated cards for a live feed from your server endpoint
+            (example: <code>/api/reviews</code>) that pulls Google reviews, caches them, and returns safe JSON to render here.
+            No API keys in the browser.
+          </div>
+
+          <aside class="ctaCard" aria-label="Call to action">
+            <h3>Ready to go birding?</h3>
+            <p>
+              Tell us your dates and experience level. We’ll recommend the best tour and timing for sightings in the cloud forest.
+            </p>
+            <div class="ctaRow">
+              <a class="btn primary" href="/book-tour/">Book a tour</a>
+              <a class="btn secondary" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER?text=Hi%20Mindo%20Bird%20Watching%21%20I%27d%20like%20to%20reserve%20a%20tour." target="_blank" rel="noopener noreferrer">
+                WhatsApp us
+              </a>
+            </div>
+
+            <div class="linkLine">
+              ✈️ Planning your Ecuador trip? <a href="/trip-planning/">Let us help you plan it</a>
+              <span style="display:block; margin-top:4px;">(Trip planning page placeholder, we’ll build this later.)</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <!-- Shared footer mount -->
+    <div id="siteFooter"></div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      if (document.documentElement.dataset.mbwReviewsInit === "1") return;
+      document.documentElement.dataset.mbwReviewsInit = "1";
+
+      // Phase 1: simple placeholders you can edit anytime.
+      // Later, replace this object with data from your server endpoint (Phase 2).
+      const REVIEW_SUMMARY = {
+        ratingValue: "4.9",     // string ok
+        reviewCount: "120",     // string ok
+        sourceLabel: "Google Reviews"
+      };
+
+      function setText(id, val) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = String(val || "");
+      }
+
+      setText("ratingValue", REVIEW_SUMMARY.ratingValue);
+      setText("reviewCount", REVIEW_SUMMARY.reviewCount);
+      setText("ratingMeta", REVIEW_SUMMARY.sourceLabel);
+    })();
+  </script>
+</body>
+</html>
