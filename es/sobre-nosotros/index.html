@@ -16,132 +16,8 @@
   <script src="/assets/js/site.js" defer></script>
 
   <style>
-    /* ===== Header component styles (required for global header include to behave like /home/) ===== */
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      padding:14px 16px;
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      position: relative;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      font-weight:900;
-      color: var(--ink);
-      white-space:nowrap;
-      min-width: 0;
-    }
-
-    .brand img{
-      height:26px;
-      width:auto;
-      display:block;
-      flex:0 0 auto;
-      border-radius: 8px;
-    }
-
-    .right{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    .nav{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      align-items:center;
-      justify-content:flex-end;
-    }
-
-    .lang{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background:rgba(255,255,255,.5);
-    }
-    .lang a{
-      padding:8px 10px;
-      border-radius:999px;
-      font-weight:800;
-      font-size:12.5px;
-      color:var(--muted);
-    }
-    .lang a.active{
-      background:rgba(13,89,37,.14);
-      border:1px solid rgba(13,89,37,.35);
-      color:var(--ink);
-    }
-
-    .menuBtn{
-      display:none;
-      align-items:center;
-      justify-content:center;
-      width:44px;
-      height:44px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.65);
-      cursor:pointer;
-    }
-    .menuBtn svg{ width:22px; height:22px; }
-
-    .menuPanel{
-      display:none;
-      position:absolute;
-      right:12px;
-      top: calc(100% + 10px);
-      width: min(320px, calc(100vw - 24px));
-      background: rgba(255,255,255,.92);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 12px;
-      z-index: 50;
-    }
-    .menuPanel.is-open{ display:block; }
-
-    .menuPanel .lang{
-      width:100%;
-      justify-content:center;
-      margin-bottom: 10px;
-      background: rgba(255,255,255,.75);
-    }
-
-    .menuList{
-      display:grid;
-      gap:10px;
-    }
-    .menuList a.pill{
-      display:flex;
-      justify-content:center;
-      width:100%;
-    }
-
-    @media (max-width: 900px){
-      .right .lang,
-      .right .nav{ display:none; }
-      .menuBtn{ display:inline-flex; }
-      .menuPanel{ display:none; }
-      .menuPanel.is-open{ display:block; }
-    }
-
-    /* ===== Page styles ===== */
-    .page{ margin-top:18px; padding:26px; }
+    /* ===== Page styles only (do not restyle header/footer here) ===== */
+    .page { margin-top: 18px; padding: 26px; }
     .page.card{
       background: var(--card);
       border: 1px solid var(--line);
@@ -192,7 +68,7 @@
 <body>
   <div class="container">
 
-    <!-- Global header mount -->
+    <!-- Global header mount (do not hardcode header here) -->
     <div id="siteHeader"></div>
 
     <main class="page card">
@@ -232,120 +108,13 @@
       </div>
 
       <div class="ctaRow">
-        <a class="btn primary" href="/book-tour/">Reservar un tour</a>
-        <a class="btn secondary" href="/tours/">Ver tours</a>
+        <a class="btn primary" href="/es/reservar/">Reservar un tour</a>
+        <a class="btn secondary" href="/es/tours/">Ver tours</a>
       </div>
     </main>
 
-    <!-- Global footer mount -->
+    <!-- Global footer mount (do not hardcode footer here) -->
     <div id="siteFooter"></div>
   </div>
-
-  <script>
-    (function(){
-      async function mountIncludes() {
-        const headerMount = document.getElementById('siteHeader');
-        const footerMount = document.getElementById('siteFooter');
-
-        if (headerMount && !headerMount.querySelector('header.topbar')) {
-          const hRes = await fetch('/assets/includes/header.html', { cache: 'no-store' });
-          headerMount.innerHTML = await hRes.text();
-        }
-
-        if (footerMount && !footerMount.querySelector('footer.footer')) {
-          const fRes = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
-          footerMount.innerHTML = await fRes.text();
-        }
-      }
-
-      function localizeHeaderToSpanish() {
-        const header = document.querySelector('header.topbar');
-        if (!header) return;
-
-        /* ===== FIX: apply active state to BOTH desktop + mobile language switchers ===== */
-        const allLangLinks = header.querySelectorAll('.lang a[data-lang]');
-        allLangLinks.forEach(a => {
-          a.classList.remove('active');
-          a.removeAttribute('aria-current');
-        });
-
-        const enLinks = header.querySelectorAll('.lang a[data-lang="en"]');
-        const esLinks = header.querySelectorAll('.lang a[data-lang="es"]');
-
-        enLinks.forEach(a => a.setAttribute('href', '/about-us/'));
-        esLinks.forEach(a => {
-          a.setAttribute('href', '/es/sobre-nosotros/');
-          a.classList.add('active');
-          a.setAttribute('aria-current', 'page');
-        });
-
-        /* ===== Translate + route both desktop + mobile nav ===== */
-        const map = [
-          { en: 'Home',         es: 'Inicio',         href: '/es/' },
-          { en: 'About Us',     es: 'Sobre nosotros', href: '/es/sobre-nosotros/' },
-          { en: 'Our Guide',    es: 'Nuestro guía',   href: '/es/nuestro-guia/' },
-          { en: 'Tours',        es: 'Tours',          href: '/es/tours/' },
-          { en: 'Bird Gallery', es: 'Galería',        href: '/es/galeria/' },
-          { en: 'Book Tour',    es: 'Reservar',       href: '/es/reservar/' },
-          { en: 'Contact',      es: 'Contacto',       href: '/es/contacto/' }
-        ];
-
-        const links = header.querySelectorAll('.nav a.pill, .menuList a.pill');
-        links.forEach(a => {
-          const txt = (a.textContent || '').trim();
-          const hit = map.find(x => x.en === txt);
-          if (hit) {
-            a.textContent = hit.es;
-            a.setAttribute('href', hit.href);
-          }
-          a.classList.remove('active');
-          a.removeAttribute('aria-current');
-        });
-
-        const current = '/es/sobre-nosotros/';
-        header.querySelectorAll(`.nav a.pill[href="${current}"], .menuList a.pill[href="${current}"]`)
-          .forEach(a => {
-            a.classList.add('active');
-            a.setAttribute('aria-current', 'page');
-          });
-      }
-
-      function bindHamburger() {
-        const btn = document.querySelector('.menuBtn');
-        const panel = document.getElementById('menuPanel');
-        if (!btn || !panel) return;
-
-        panel.classList.remove('is-open');
-        btn.setAttribute('aria-expanded', 'false');
-
-        function closeMenu(){
-          panel.classList.remove('is-open');
-          btn.setAttribute('aria-expanded', 'false');
-        }
-
-        btn.addEventListener('click', function(){
-          const open = panel.classList.toggle('is-open');
-          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        });
-
-        document.addEventListener('click', function(e){
-          if(panel.classList.contains('is-open')){
-            const inside = panel.contains(e.target) || btn.contains(e.target);
-            if(!inside) closeMenu();
-          }
-        });
-
-        document.addEventListener('keydown', function(e){
-          if(e.key === 'Escape') closeMenu();
-        });
-      }
-
-      (async function init(){
-        await mountIncludes();
-        localizeHeaderToSpanish();
-        bindHamburger();
-      })();
-    })();
-  </script>
 </body>
 </html>
