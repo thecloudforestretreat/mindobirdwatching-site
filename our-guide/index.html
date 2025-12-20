@@ -13,6 +13,7 @@
 
   <link rel="stylesheet" href="/assets/css/site.css">
   <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
 
   <style>
     /* Page-only styles (no header/footer/menu styles) */
@@ -277,6 +278,7 @@
       border-radius: 999px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.78);
+      pointer-events: none; /* dots should never block taps */
     }
     .mbwDot{
       width: 8px;
@@ -535,35 +537,8 @@
   </div>
 
   <script>
-    (async function(){
-      // Inject includes
-      const headerMount = document.getElementById('siteHeader');
-      if(headerMount){
-        const res = await fetch('/assets/includes/header.html', { cache: 'no-store' });
-        headerMount.innerHTML = await res.text();
-      }
-
-      const footerMount = document.getElementById('siteFooter');
-      if(footerMount){
-        const res = await fetch('/assets/includes/footer.html', { cache: 'no-store' });
-        footerMount.innerHTML = await res.text();
-      }
-
-      // Load global site.js AFTER header exists (hamburger binds correctly)
-      await new Promise((resolve) => {
-        const existing = document.querySelector('script[data-global-sitejs="true"]');
-        if(existing) return resolve();
-
-        const s = document.createElement('script');
-        s.src = '/assets/js/site.js';
-        s.defer = true;
-        s.setAttribute('data-global-sitejs', 'true');
-        s.onload = () => resolve();
-        s.onerror = () => resolve();
-        document.head.appendChild(s);
-      });
-
-      // Page-only carousel logic
+    (function(){
+      // Page-only carousel logic (does not touch header/footer)
       const root = document.querySelector('.mbwCarousel');
       if(!root) return;
 
