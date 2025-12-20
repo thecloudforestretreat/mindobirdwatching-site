@@ -5,13 +5,15 @@
    - Locale from URL: /es/... => "es", else "en"
    - Updates nav labels + hrefs from data attributes in header.html
    - Sets EN/ES switch hrefs from <link rel="alternate" hreflang="en|es">
-   - Sets active nav pill based on window.location.pathname
+   - Sets active nav pill based on window.location.pathname (HOME exact-match only)
    - Initializes hamburger after header is injected
-   - Avoids duplicate listeners if run more than once
+   - Re-binds on header DOM replacement (protects against page scripts overwriting header)
    ========================================================= */
 
 (function () {
   "use strict";
+
+  const HOME_PATHS = new Set(["/", "/home/", "/es/"]);
 
   function normalizePath(p) {
     try {
@@ -27,7 +29,7 @@
 
   function getLocaleFromPathname() {
     const p = normalizePath(window.location.pathname);
-    return p.startsWith("/es/") ? "es" : "en";
+    return p.startsWith("/es/") || p === "/es/" ? "es" : "en";
   }
 
   function getAlternateHref(lang) {
@@ -71,7 +73,6 @@
       brand.setAttribute("aria-label", locale === "es" ? "Mindo Bird Watching inicio" : "Mindo Bird Watching home");
     }
 
-    // Header aria labels
     const ariaMap = {
       en: {
         brandHome: "Mindo Bird Watching home",
@@ -121,7 +122,13 @@
       }
 
       const exact = current === linkPath;
-      const section = linkPath !== "/" && current.startsWith(linkPath);
+
+      // IMPORTANT: home should NOT be a section match
+      const section =
+        !HOME_PATHS.has(linkPath) &&
+        linkPath !== "/" &&
+        current.startsWith(linkPath);
+
       const active = exact || section;
 
       a.classList.toggle("active", active);
@@ -130,34 +137,56 @@
     });
   }
 
+  function closeAllMenus() {
+    document.querySelectorAll(".menuPanel.is-open").forEach((panel) => panel.classList.remove("is-open"));
+    document.querySelectorAll(".menuBtn[aria-expanded='true']").forEach((btn) => btn.setAttribute("aria-expanded", "false"));
+  }
+
   function initHamburger(scope) {
     const btn = scope.querySelector(".menuBtn");
     const panel = scope.querySelector("#menuPanel");
     if (!btn || !panel) return;
 
-    // Prevent duplicate listeners if site.js is executed again
+    // Re-bind protection per button instance
     if (btn.dataset.hamburgerInit === "1") return;
     btn.dataset.hamburgerInit = "1";
 
-    function closeMenu() {
-      panel.classList.remove("is-open");
-      btn.setAttribute("aria-expanded", "false");
-    }
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
 
-    btn.addEventListener("click", function () {
-      const open = panel.classList.toggle("is-open");
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      const willOpen = !panel.classList.contains("is-open");
+      closeAllMenus();
+
+      if (willOpen) {
+        panel.classList.add("is-open");
+        btn.setAttribute("aria-expanded", "true");
+      }
     });
 
+    // Add global handlers once
+    if (document.documentElement.dataset.mbwHamburgerDoc === "1") return;
+    document.documentElement.dataset.mbwHamburgerDoc = "1";
+
     document.addEventListener("click", function (e) {
-      if (!panel.classList.contains("is-open")) return;
-      const inside = panel.contains(e.target) || btn.contains(e.target);
-      if (!inside) closeMenu();
+      const openPanel = document.querySelector(".menuPanel.is-open");
+      if (!openPanel) return;
+
+      const openBtn = document.querySelector(".menuBtn[aria-expanded='true']");
+      const inside = openPanel.contains(e.target) || (openBtn && openBtn.contains(e.target));
+      if (!inside) closeAllMenus();
     });
 
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closeMenu();
+      if (e.key === "Escape") closeAllMenus();
     });
+  }
+
+  function hydrateHeader(scope) {
+    applyNavLocale(scope);
+    setLangSwitchLinks(scope);
+    setActiveNavPills(scope);
+    initHamburger(scope);
   }
 
   async function mountIncludes() {
@@ -165,19 +194,30 @@
     const footerMount = document.getElementById("siteFooter");
 
     if (headerMount) {
-      const html = await fetchInclude("/assets/includes/header.html");
-      headerMount.innerHTML = html;
+      const hasHeader = !!headerMount.querySelector("header.topbar");
+      if (!hasHeader) {
+        const html = await fetchInclude("/assets/includes/header.html");
+        headerMount.innerHTML = html;
+      }
+      hydrateHeader(headerMount);
 
-      // Ensure header is localized and interactive
-      applyNavLocale(headerMount);
-      setLangSwitchLinks(headerMount);
-      setActiveNavPills(headerMount);
-      initHamburger(headerMount);
+      // If any page script overwrites the header later, re-hydrate automatically
+      if (headerMount.dataset.observeHeader !== "1") {
+        headerMount.dataset.observeHeader = "1";
+        const mo = new MutationObserver(() => {
+          const hdr = headerMount.querySelector("header.topbar");
+          if (hdr) hydrateHeader(headerMount);
+        });
+        mo.observe(headerMount, { childList: true, subtree: true });
+      }
     }
 
     if (footerMount) {
-      const html = await fetchInclude("/assets/includes/footer.html");
-      footerMount.innerHTML = html;
+      const hasFooter = !!footerMount.querySelector("footer.footer");
+      if (!hasFooter) {
+        const html = await fetchInclude("/assets/includes/footer.html");
+        footerMount.innerHTML = html;
+      }
     }
   }
 
