@@ -3,51 +3,479 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PAGE_TITLE | Mindo Bird Watching</title>
+  <title>Tours: Full Day | Mindo Bird Watching</title>
+
   <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="alternate" hreflang="en" href="/tours/full-day/" />
+  <link rel="alternate" hreflang="es" href="/es/tours/dia-completo/" />
+  <link rel="alternate" hreflang="x-default" href="/tours/full-day/" />
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+
   <style>
-    :root{
-      --bg:#071923; --card:#0b2431; --text:#fff; --muted:rgba(255,255,255,.78);
-      --line:rgba(255,255,255,.12); --accent:#034EA2; --accent2:#FFDD00; --r:18px;
+    /* Page-only styles (no header/footer/menu styles) */
+    .page{ margin-top: 18px; padding: 26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,var(--bg),#041018);color:var(--text)}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:rgba(11,36,49,.55);backdrop-filter: blur(10px)}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:800}
-    .dot{width:10px;height:10px;border-radius:99px;background:var(--accent2);box-shadow:0 0 0 3px rgba(255,221,0,.2)}
-    .nav{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-    .pill{padding:10px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:13px}
-    .hero{margin-top:18px;padding:26px;border:1px solid var(--line);border-radius:var(--r);background:rgba(11,36,49,.55)}
-    h1{margin:0 0 10px;font-size:34px;letter-spacing:-.4px}
-    p{margin:0;color:var(--muted);line-height:1.6}
-    .note{margin-top:12px;padding:14px;border:1px dashed rgba(255,255,255,.2);border-radius:14px;color:rgba(255,255,255,.72)}
+
+    .hero{
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .copy{ max-width: 92ch; }
+    .copy p{ margin: 0 0 12px; line-height: 1.6; }
+
+    .checks{
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+    .checks li{
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--ink);
+    }
+    .checks .tick{
+      width: 22px;
+      height: 22px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      font-weight: 900;
+      color: var(--forest);
+      line-height: 1;
+    }
+
+    .slot.card{
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .slotFrame{
+      aspect-ratio: 9 / 16;
+      background: rgba(255,255,255,.55);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slotFrame img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .slotCap{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+      background: rgba(255,255,255,.55);
+    }
+
+    .btnRow{
+      margin-top: 14px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .section{
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .section h2{
+      margin: 0 0 10px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
+    .hint{ margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+
+    /* Standard MBW carousel (same pattern as your other pages) */
+    .mbwCarousel{
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .mbwCarouselViewport{ width: 100%; overflow: hidden; }
+    .mbwCarouselTrack{
+      display: flex;
+      width: 100%;
+      transform: translateX(0);
+      transition: transform 420ms ease;
+      will-change: transform;
+    }
+    .mbwSlide{ flex: 0 0 100%; width: 100%; }
+    .mbwSlide img{
+      width: 100%;
+      height: 420px;
+      display: block;
+      object-fit: cover;
+    }
+    .mbwSlide .label{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .mbwNavBtn{
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      z-index: 2;
+    }
+    .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .mbwNavBtn svg{ width: 20px; height: 20px; }
+    .mbwNavPrev{ left: 10px; }
+    .mbwNavNext{ right: 10px; }
+
+    .mbwDots{
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%);
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      z-index: 2;
+    }
+    .mbwDot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(13,89,37,.22);
+    }
+    .mbwDot.is-active{ background: rgba(13,89,37,.65); }
+
+    /* YouTube embeds */
+    .videoGrid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .video.card{
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .video .frame{
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      background: rgba(255,255,255,.55);
+    }
+    .video iframe{
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    .video .cap{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+      background: rgba(255,255,255,.55);
+    }
+
+    @media (max-width: 900px){
+      .hero{ grid-template-columns: 1fr; }
+      .mbwSlide img{ height: 280px; }
+      .videoGrid{ grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .mbwCarouselTrack{ transition: none; }
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
 
-    <header class="topbar">
-      <div class="brand"><span class="dot"></span><span>Mindo Bird Watching</span></div>
-      <nav class="nav" aria-label="Primary">
-        <a class="pill" href="/home">Home</a>
-        <a class="pill" href="/about-us">About Us</a>
-        <a class="pill" href="/our-guide">Our Guide</a>
-        <a class="pill" href="/tours">Tours</a>
-        <a class="pill" href="/bird-gallery">Bird Gallery</a>
-        <a class="pill" href="/bird-of-the-week">Bird of the Week</a>
-        <a class="pill" href="/book-tour">Book Tour</a>
-        <a class="pill" href="/contact">Contact</a>
-      </nav>
-    </header>
+    <!-- Global header mount -->
+    <div id="siteHeader"></div>
 
-    <section class="hero">
-      <h1>PAGE_H1</h1>
-      <p>This page is ready for your real content and layout. We are keeping the URL exactly the same for launch.</p>
-      <div class="note">Next: replace this placeholder with your Adobe content + your new design.</div>
-    </section>
+    <main class="page card">
+      <section class="hero" aria-label="Tours full day hero">
+        <div class="copy">
+          <h1 style="margin:0 0 6px;">Tours: Full Day</h1>
+
+          <p>
+            Discover the magic of Ecuador’s cloud forests with Mindo Bird Watching. Our expert local guides will take you on unforgettable journeys
+            to spot some of the most iconic species on the planet, from the vibrant Andean Cock-of-the-rock to toucans, tanagers, hummingbirds,
+            and even the rare Long-wattled Umbrella-bird.
+          </p>
+
+          <p>
+            Whether you’re looking for a half-day exploration or a full-day immersive adventure, we have a tour designed for every level of birder and nature lover.
+          </p>
+
+          <ul class="checks" aria-label="Full day tour highlights">
+            <li><span class="tick" aria-hidden="true">✓</span> Guided by experienced local experts</li>
+            <li><span class="tick" aria-hidden="true">✓</span> High-quality equipment provided</li>
+            <li><span class="tick" aria-hidden="true">✓</span> Comfortable transportation included</li>
+          </ul>
+
+          <p style="margin-top:12px;">
+            These are just some of the tours we offer. Book today and let us create your perfect birdwatching experience in 📍Mindo, Ecuador.
+          </p>
+
+          <p style="margin-top:12px; font-weight:800;">
+            Reserve your tour now and start your adventure.
+          </p>
+
+          <div class="btnRow" aria-label="Tour actions">
+            <a class="btn primary" href="/book-tour/">Reserve now</a>
+            <a class="btn secondary" href="/terms/">Terms &amp; condition</a>
+            <a class="btn secondary" href="/tours/">Back</a>
+          </div>
+        </div>
+
+        <aside class="slot card" aria-label="Tour package image slot">
+          <div class="slotFrame">
+            <!-- Replace this image later -->
+            <img
+              src="/assets/images/placeholders/tour-full-day-9x16.jpg"
+              alt="Full day tour package placeholder (replace this image)"
+            />
+          </div>
+          <div class="slotCap">
+            Placeholder 9:16 tour package image. Swap this file when ready.
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" aria-label="Photo carousel section">
+        <h2>Full Day Tour Gallery</h2>
+        <p class="hint">Autoplays every 2.5 seconds. You can also use the arrows.</p>
+
+        <div class="mbwCarousel" data-autoplay="true" data-interval="2500" aria-label="Image carousel">
+          <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous image">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="mbwCarouselViewport" role="region" aria-label="Carousel viewport">
+            <div class="mbwCarouselTrack">
+              <div class="mbwSlide">
+                <img src="/assets/images/placeholders/tour-full-day-01.jpg" alt="Full day tour photo 1 placeholder" />
+                <div class="label">Replace image 1</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="/assets/images/placeholders/tour-full-day-02.jpg" alt="Full day tour photo 2 placeholder" />
+                <div class="label">Replace image 2</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="/assets/images/placeholders/tour-full-day-03.jpg" alt="Full day tour photo 3 placeholder" />
+                <div class="label">Replace image 3</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="/assets/images/placeholders/tour-full-day-04.jpg" alt="Full day tour photo 4 placeholder" />
+                <div class="label">Replace image 4</div>
+              </div>
+              <div class="mbwSlide">
+                <img src="/assets/images/placeholders/tour-full-day-05.jpg" alt="Full day tour photo 5 placeholder" />
+                <div class="label">Replace image 5</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Next image">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="mbwDots" aria-label="Carousel position indicators"></div>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Videos section">
+        <h2>Videos</h2>
+        <p class="hint">Embedded YouTube videos. Replace the video IDs with your own.</p>
+
+        <div class="videoGrid" aria-label="Video grid">
+          <div class="video card" aria-label="Video 1">
+            <div class="frame">
+              <iframe
+                src="https://www.youtube.com/embed/VIDEO_ID_1"
+                title="Mindo Bird Watching video 1"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="cap">Replace VIDEO_ID_1 with your YouTube video ID.</div>
+          </div>
+
+          <div class="video card" aria-label="Video 2">
+            <div class="frame">
+              <iframe
+                src="https://www.youtube.com/embed/VIDEO_ID_2"
+                title="Mindo Bird Watching video 2"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="cap">Replace VIDEO_ID_2 with your YouTube video ID.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Global footer mount -->
+    <div id="siteFooter"></div>
 
   </div>
+
+  <script>
+    (function(){
+      // Standard carousel logic (page-only)
+      const root = document.querySelector(".mbwCarousel");
+      if (!root) return;
+
+      const track = root.querySelector(".mbwCarouselTrack");
+      const slides = Array.from(root.querySelectorAll(".mbwSlide"));
+      const prevBtn = root.querySelector(".mbwNavPrev");
+      const nextBtn = root.querySelector(".mbwNavNext");
+      const dotsWrap = root.querySelector(".mbwDots");
+
+      if (!track || slides.length === 0) return;
+
+      let index = 0;
+      const intervalMs = Number(root.getAttribute("data-interval") || "2500");
+      const autoplay = (root.getAttribute("data-autoplay") || "true") === "true";
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function clamp(i){
+        const n = slides.length;
+        return (i % n + n) % n;
+      }
+
+      function renderDots(){
+        if (!dotsWrap) return;
+        dotsWrap.innerHTML = "";
+        slides.forEach((_, i) => {
+          const d = document.createElement("span");
+          d.className = "mbwDot" + (i === index ? " is-active" : "");
+          d.setAttribute("aria-hidden", "true");
+          dotsWrap.appendChild(d);
+        });
+      }
+
+      function goTo(i){
+        index = clamp(i);
+        track.style.transform = "translateX(" + (-index * 100) + "%)";
+        renderDots();
+      }
+
+      function next(){ goTo(index + 1); }
+      function prev(){ goTo(index - 1); }
+
+      let timer = null;
+
+      function stop(){
+        if (timer){
+          window.clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      function start(){
+        if (!autoplay || reduceMotion) return;
+        if (timer) return;
+        timer = window.setInterval(next, Math.max(2000, intervalMs));
+      }
+
+      if (prevBtn) prevBtn.addEventListener("click", () => { stop(); prev(); start(); });
+      if (nextBtn) nextBtn.addEventListener("click", () => { stop(); next(); start(); });
+
+      let startX = null;
+      let dragging = false;
+
+      function onPointerDown(e){
+        if (e.pointerType === "mouse") return;
+        dragging = true;
+        startX = e.clientX;
+        stop();
+      }
+
+      function onPointerUp(e){
+        if (!dragging) return;
+        dragging = false;
+        const dx = e.clientX - startX;
+        startX = null;
+
+        const threshold = 35;
+        if (dx > threshold) prev();
+        else if (dx < -threshold) next();
+
+        start();
+      }
+
+      root.addEventListener("pointerdown", onPointerDown, { passive: true });
+      root.addEventListener("pointerup", onPointerUp, { passive: true });
+      root.addEventListener("pointercancel", () => { dragging = false; startX = null; start(); }, { passive: true });
+
+      root.addEventListener("mouseenter", stop);
+      root.addEventListener("mouseleave", start);
+      root.addEventListener("focusin", stop);
+      root.addEventListener("focusout", start);
+
+      window.addEventListener("resize", () => { goTo(index); }, { passive: true });
+
+      goTo(0);
+      start();
+    })();
+  </script>
 </body>
 </html>
