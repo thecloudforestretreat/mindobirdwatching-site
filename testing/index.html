@@ -122,10 +122,9 @@
       border-radius: 22px;
       background: rgba(255,255,255,.70);
       box-shadow: var(--shadow);
-      overflow:hidden;
+      overflow:hidden; /* keep rounded corners */
     }
 
-    /* Header row with bigger image frame */
     .cardTop{
       display:grid;
       grid-template-columns: 180px 1fr auto;
@@ -136,7 +135,7 @@
       border-bottom: 1px solid var(--line);
     }
 
-    /* Bigger thumb with padding OUTSIDE the image */
+    /* Bigger thumb with padding around the image */
     .thumb{
       width: 160px;
       height: 160px;
@@ -226,25 +225,27 @@
     .monthsWrap{
       padding: 14px;
       background: rgba(255,255,255,.55);
+      overflow: visible; /* important so nothing looks clipped */
     }
 
-    /* DESKTOP: show all 12 without scroll */
+    /* DESKTOP: show all months, no scroll */
     .months{
       display:grid;
-      grid-template-columns: repeat(12, minmax(84px, 1fr));
-      gap: 10px;
-      overflow-x: visible;         /* key: no scroll on desktop */
-      padding: 2px 0 0;
+      grid-template-columns: repeat(12, minmax(0, 1fr)); /* key: never overflow */
+      gap: 8px;
+      overflow: visible; /* no scroll on desktop */
+      padding: 0;
+      margin: 0;
     }
 
     .month{
       border: 1px solid var(--line);
       border-radius: 18px;
       background: rgba(255,255,255,.65);
-      padding: 10px;
+      padding: 10px 8px;
       text-align:center;
       box-sizing: border-box;
-      min-width: 0;                /* allow grid to shrink nicely */
+      min-width: 0;
     }
 
     .mLabel{
@@ -253,6 +254,7 @@
       margin-bottom: 8px;
       font-weight: 900;
       letter-spacing: -0.01em;
+      white-space: nowrap;
     }
 
     .mVal{
@@ -260,9 +262,9 @@
       align-items:center;
       justify-content:center;
       width: 100%;
-      padding: 8px 10px;
+      padding: 8px 8px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 950;
       border: 1px solid transparent;
       white-space: nowrap;
@@ -282,10 +284,11 @@
       line-height: 1.6;
     }
 
-    @media (max-width: 980px){
-      /* tighten a little earlier if needed */
-      .months{ grid-template-columns: repeat(12, minmax(78px, 1fr)); gap: 8px; }
-      .month{ padding: 9px; }
+    /* If the container is tight, wrap months into 2 rows (still NO scroll on desktop) */
+    @media (max-width: 1280px){
+      .months{
+        grid-template-columns: repeat(6, minmax(0, 1fr)); /* shows Jan–Dec across 2 rows */
+      }
     }
 
     @media (max-width: 900px){
@@ -313,11 +316,12 @@
         justify-content:flex-start;
       }
 
-      /* MOBILE/TABLET: allow horizontal scroll */
+      /* MOBILE/TABLET: scroll allowed */
       .months{
         grid-template-columns: repeat(12, minmax(120px, 1fr));
         gap: 12px;
-        overflow-x: auto;                 /* key: scroll only here */
+        overflow-x: auto;
+        overflow-y: hidden;
         padding: 2px 10px 8px 2px;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
@@ -431,6 +435,7 @@
 
         cardsEl.innerHTML = rows.map(r => {
           const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
+
           const thumbHtml = imgUrl
             ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open image source">
                  <img src="${esc(imgUrl)}" alt="${esc(r.en)} photo" loading="lazy" />
@@ -474,7 +479,9 @@
 
       function fillCategories(rows){
         const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
-        catSel.innerHTML = `<option value="all">All categories</option>` + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+        catSel.innerHTML =
+          `<option value="all">All categories</option>` +
+          cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
       }
 
       async function load(){
