@@ -1,1 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Birding Calendar | Mindo Bird Watching</title>
 
+  <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with quick categories and photo links." />
+
+  <link rel="alternate" hreflang="en" href="/birding-calendar/" />
+  <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
+  <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
+
+  <!-- Favicons (approved root paths) -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#034EA2">
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+
+  <style>
+    /* Page-only styles (main content only) */
+    .page{ margin-top:18px; padding:26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .hero{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .hero h1{
+      margin:0;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .hero p{
+      margin: 8px 0 0;
+      color: var(--ink);
+      line-height: 1.7;
+      max-width: 88ch;
+    }
+
+    .statusRow{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: space-between;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .filters{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .filters label{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .filters select,
+    .filters input{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.65);
+      color: var(--ink);
+      font-weight: 800;
+      min-width: 220px;
+    }
+
+    .section{
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .cardItem{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .cardTop{
+      padding: 14px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: rgba(255,255,255,.55);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .names{
+      display:flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .nameEn{
+      font-weight: 950;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .nameEs{
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .cat{
+      font-size: 12.5px;
+      font-weight: 900;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .cam{
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      line-height: 1;
+    }
+
+    .months{
+      padding: 12px 14px 14px;
+      display:grid;
+      grid-template-columns: repeat(12, minmax(72px, 1fr));
+      gap: 8px;
+      overflow:auto;
+    }
+
+    .month{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      padding: 10px;
+      text-align:center;
+      min-width: 72px;
+    }
+
+    .mLabel{
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 900;
+    }
+
+    .mVal{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 950;
+      border: 1px solid transparent;
+      min-width: 70px;
+    }
+
+    .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
+    .st-good{ background:#fef9c3; color:#92400e; border-color: rgba(146,64,14,.25); }
+    .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
+    .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
+    .st-off{ background:#e2e8f0; color:#64748b; border-color: rgba(100,116,139,.2); }
+
+    .footnote{
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px){
+      .filters select,
+      .filters input{ min-width: 0; width: 100%; }
+      .filters{ width: 100%; }
+      .statusRow{ flex-direction: column; align-items: stretch; }
+      .months{ grid-template-columns: repeat(6, minmax(72px, 1fr)); }
+    }
+
+    @media (max-width: 520px){
+      .months{ grid-template-columns: repeat(3, minmax(72px, 1fr)); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="siteHeader"></div>
+
+    <main class="page card" aria-label="Birding calendar">
+      <div class="hero">
+        <div>
+          <h1>Birding Calendar</h1>
+          <p>
+            A quick month-by-month view of common target species around 📍Mindo, Ecuador.
+            Tap the camera icon to open a photo source.
+          </p>
+        </div>
+
+        <div class="statusRow" aria-label="Calendar controls">
+          <span class="pill" id="bcStatus">Loading calendar…</span>
+
+          <div class="filters" aria-label="Filters">
+            <div>
+              <label for="bcCategory">Category</label><br>
+              <select id="bcCategory">
+                <option value="all">All categories</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="bcSearch">Search</label><br>
+              <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="cards" id="bcCards" aria-label="Species cards"></div>
+
+        <p class="footnote">
+          Data source: your Google Sheet via Apps Script JSON endpoint.
+          This page renders natively so it matches the new site styling and header/footer system.
+        </p>
+      </section>
+    </main>
+
+    <div id="siteFooter"></div>
+  </div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      // prevent duplicates if this page script is evaluated more than once
+      if (document.documentElement.dataset.mbwBirdingCalendarInit === "1") return;
+      document.documentElement.dataset.mbwBirdingCalendarInit = "1";
+
+      const API = "https://script.google.com/macros/s/AKfycbyBB61IXST79pAfF6weE_PdXymBVdHknPYa4XnWNkOOkfnYL26hC58YIOeg10SL_xIL/exec?format=json";
+
+      const statusEl = document.getElementById("bcStatus");
+      const cardsEl = document.getElementById("bcCards");
+      const catSel = document.getElementById("bcCategory");
+      const searchEl = document.getElementById("bcSearch");
+
+      if(!statusEl || !cardsEl || !catSel || !searchEl) return;
+
+      function esc(s){
+        return String(s || "")
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+
+      function statusClass(v){
+        const s = String(v || "").trim().toLowerCase();
+        if (s === "great") return "st-great";
+        if (s === "good") return "st-good";
+        if (s === "fair") return "st-fair";
+        if (s === "rare") return "st-rare";
+        return "st-off";
+      }
+
+      let payload = null;
+
+      function render(){
+        if(!payload) return;
+
+        const q = searchEl.value.trim().toLowerCase();
+        const cat = catSel.value;
+
+        const rows = (payload.rows || []).filter(r => {
+          const inCat = (cat === "all") ? true : (String(r.category || "") === cat);
+          const inSearch = !q ? true : (
+            String(r.en || "").toLowerCase().includes(q) ||
+            String(r.es || "").toLowerCase().includes(q)
+          );
+          return inCat && inSearch;
+        });
+
+        statusEl.textContent = rows.length
+          ? ("Showing " + rows.length + " species")
+          : "No matches. Try a different search.";
+
+        cardsEl.innerHTML = rows.map(r => {
+          const cam = r.imageUrl
+            ? `<a class="cam" href="${esc(r.imageUrl)}" target="_blank" rel="noopener" aria-label="Open photo source">📸</a>`
+            : "";
+
+          const months = (payload.monthNames || []).map((m, i) => {
+            const val = (r.months && r.months[i]) ? r.months[i] : "";
+            return `
+              <div class="month" aria-label="${esc(m)}">
+                <div class="mLabel">${esc(m)}</div>
+                <div class="mVal ${statusClass(val)}">${esc(val || "Off")}</div>
+              </div>
+            `;
+          }).join("");
+
+          return `
+            <article class="cardItem" aria-label="${esc(r.en)}">
+              <div class="cardTop">
+                <div class="names">
+                  <div class="nameEn">${esc(r.en)} ${cam}</div>
+                  <div class="nameEs">${esc(r.es)}</div>
+                </div>
+                <div class="cat">${esc(r.category)}</div>
+              </div>
+              <div class="months" aria-label="Months">${months}</div>
+            </article>
+          `;
+        }).join("");
+      }
+
+      function fillCategories(rows){
+        const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
+        catSel.innerHTML = `<option value="all">All categories</option>` + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+      }
+
+      async function load(){
+        try{
+          statusEl.textContent = "Loading calendar…";
+          const res = await fetch(API, { headers: { "accept": "application/json" } });
+          const json = await res.json();
+
+          if(!json || json.ok !== true){
+            statusEl.textContent = "Calendar unavailable right now.";
+            return;
+          }
+
+          payload = json;
+          fillCategories(payload.rows || []);
+          render();
+
+        }catch(_){
+          statusEl.textContent = "Calendar unavailable right now.";
+        }
+      }
+
+      // avoid duplicate listeners
+      if (catSel.dataset.bound !== "1"){
+        catSel.dataset.bound = "1";
+        catSel.addEventListener("change", render);
+      }
+      if (searchEl.dataset.bound !== "1"){
+        searchEl.dataset.bound = "1";
+        searchEl.addEventListener("input", render);
+      }
+
+      load();
+    })();
+  </script>
+</body>
+</html>
