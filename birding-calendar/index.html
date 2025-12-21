@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Birding Calendar | Mindo Bird Watching</title>
 
-  <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with quick categories and photo links." />
+  <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with categories and photo thumbnails." />
 
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
@@ -51,7 +51,7 @@
       margin: 8px 0 0;
       color: var(--ink);
       line-height: 1.7;
-      max-width: 88ch;
+      max-width: 90ch;
     }
 
     .statusRow{
@@ -101,7 +101,7 @@
       background: rgba(255,255,255,.65);
       color: var(--ink);
       font-weight: 800;
-      min-width: 220px;
+      min-width: 240px;
     }
 
     .section{
@@ -116,29 +116,54 @@
       gap: 12px;
     }
 
+    /* Card */
     .cardItem{
       border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
+      border-radius: 22px;
+      background: rgba(255,255,255,.70);
       box-shadow: var(--shadow);
-      overflow:hidden;
+      overflow:hidden; /* keep rounded corners */
     }
 
     .cardTop{
+      display:grid;
+      grid-template-columns: 180px 1fr auto;
+      gap: 16px;
+      align-items:center;
       padding: 14px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
       background: rgba(255,255,255,.55);
       border-bottom: 1px solid var(--line);
+    }
+
+    /* Bigger thumb with padding around the image */
+    .thumb{
+      width: 160px;
+      height: 160px;
+      padding: 10px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing: border-box;
+      text-decoration: none;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 14px;
+      display:block;
+      background: transparent;
     }
 
     .names{
       display:flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
       min-width: 0;
     }
 
@@ -146,22 +171,39 @@
       font-weight: 950;
       color: var(--ink);
       letter-spacing: -0.01em;
+      line-height: 1.2;
       display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
       align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .nameEs{
       color: var(--muted);
       font-size: 12.5px;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
-    .cat{
-      font-size: 12.5px;
+    .metaRight{
+      display:flex;
+      flex-direction: column;
+      align-items:flex-end;
+      gap: 10px;
+    }
+
+    .catPill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
       font-weight: 900;
+      font-size: 12.5px;
       color: var(--ink);
+      line-height: 1;
       white-space: nowrap;
     }
 
@@ -170,49 +212,63 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
       line-height: 1;
     }
 
+    /* Months wrapper */
+    .monthsWrap{
+      padding: 14px;
+      background: rgba(255,255,255,.55);
+      overflow: visible; /* important so nothing looks clipped */
+    }
+
+    /* DESKTOP: show all months, no scroll */
     .months{
-      padding: 12px 14px 14px;
       display:grid;
-      grid-template-columns: repeat(12, minmax(72px, 1fr));
+      grid-template-columns: repeat(12, minmax(0, 1fr)); /* key: never overflow */
       gap: 8px;
-      overflow:auto;
+      overflow: visible; /* no scroll on desktop */
+      padding: 0;
+      margin: 0;
     }
 
     .month{
       border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 10px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.65);
+      padding: 10px 8px;
       text-align:center;
-      min-width: 72px;
+      box-sizing: border-box;
+      min-width: 0;
     }
 
     .mLabel{
       font-size: 11px;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-weight: 900;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
     }
 
     .mVal{
-      display:inline-flex;
+      display:flex;
       align-items:center;
       justify-content:center;
-      padding: 6px 10px;
+      width: 100%;
+      padding: 8px 8px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 950;
       border: 1px solid transparent;
-      min-width: 70px;
+      white-space: nowrap;
+      box-sizing: border-box;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -228,16 +284,53 @@
       line-height: 1.6;
     }
 
+    /* If the container is tight, wrap months into 2 rows (still NO scroll on desktop) */
+    @media (max-width: 1280px){
+      .months{
+        grid-template-columns: repeat(6, minmax(0, 1fr)); /* shows Jan–Dec across 2 rows */
+      }
+    }
+
     @media (max-width: 900px){
       .filters select,
       .filters input{ min-width: 0; width: 100%; }
       .filters{ width: 100%; }
       .statusRow{ flex-direction: column; align-items: stretch; }
-      .months{ grid-template-columns: repeat(6, minmax(72px, 1fr)); }
-    }
 
-    @media (max-width: 520px){
-      .months{ grid-template-columns: repeat(3, minmax(72px, 1fr)); }
+      .cardTop{
+        grid-template-columns: 160px 1fr;
+        grid-template-rows: auto auto;
+        align-items:start;
+      }
+
+      .thumb{
+        width: 140px;
+        height: 140px;
+        border-radius: 22px;
+      }
+
+      .metaRight{
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items:center;
+        justify-content:flex-start;
+      }
+
+      /* MOBILE/TABLET: scroll allowed */
+      .months{
+        grid-template-columns: repeat(12, minmax(120px, 1fr));
+        gap: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 2px 10px 8px 2px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+      }
+      .month{
+        min-width: 120px;
+        scroll-snap-align: start;
+      }
     }
   </style>
 </head>
@@ -252,7 +345,7 @@
           <h1>Birding Calendar</h1>
           <p>
             A quick month-by-month view of common target species around 📍Mindo, Ecuador.
-            Tap the camera icon to open a photo source.
+            Images are pulled from the sheet’s <strong>imageUrl</strong>.
           </p>
         </div>
 
@@ -279,8 +372,7 @@
         <div class="cards" id="bcCards" aria-label="Species cards"></div>
 
         <p class="footnote">
-          Data source: your Google Sheet via Apps Script JSON endpoint.
-          This page renders natively so it matches the new site styling and header/footer system.
+          Tip: photos come from third-party sources. Thumbnails use “contain” mode so the full bird stays visible.
         </p>
       </section>
     </main>
@@ -292,7 +384,6 @@
     (function(){
       "use strict";
 
-      // prevent duplicates if this page script is evaluated more than once
       if (document.documentElement.dataset.mbwBirdingCalendarInit === "1") return;
       document.documentElement.dataset.mbwBirdingCalendarInit = "1";
 
@@ -302,7 +393,6 @@
       const cardsEl = document.getElementById("bcCards");
       const catSel = document.getElementById("bcCategory");
       const searchEl = document.getElementById("bcSearch");
-
       if(!statusEl || !cardsEl || !catSel || !searchEl) return;
 
       function esc(s){
@@ -341,17 +431,28 @@
           ? ("Showing " + rows.length + " species")
           : "No matches. Try a different search.";
 
+        const monthNames = payload.monthNames || [];
+
         cardsEl.innerHTML = rows.map(r => {
-          const cam = r.imageUrl
-            ? `<a class="cam" href="${esc(r.imageUrl)}" target="_blank" rel="noopener" aria-label="Open photo source">📸</a>`
+          const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
+
+          const thumbHtml = imgUrl
+            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open image source">
+                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} photo" loading="lazy" />
+               </a>`
+            : `<span class="thumb" aria-label="No image available"></span>`;
+
+          const cam = imgUrl
+            ? `<a class="cam" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open photo source">📸</a>`
             : "";
 
-          const months = (payload.monthNames || []).map((m, i) => {
+          const months = monthNames.map((m, i) => {
             const val = (r.months && r.months[i]) ? r.months[i] : "";
+            const label = (val && String(val).trim()) ? String(val).trim() : "Off";
             return `
               <div class="month" aria-label="${esc(m)}">
                 <div class="mLabel">${esc(m)}</div>
-                <div class="mVal ${statusClass(val)}">${esc(val || "Off")}</div>
+                <div class="mVal ${statusClass(label)}">${esc(label)}</div>
               </div>
             `;
           }).join("");
@@ -359,13 +460,18 @@
           return `
             <article class="cardItem" aria-label="${esc(r.en)}">
               <div class="cardTop">
+                ${thumbHtml}
                 <div class="names">
                   <div class="nameEn">${esc(r.en)} ${cam}</div>
                   <div class="nameEs">${esc(r.es)}</div>
                 </div>
-                <div class="cat">${esc(r.category)}</div>
+                <div class="metaRight">
+                  <span class="catPill">${esc(r.category)}</span>
+                </div>
               </div>
-              <div class="months" aria-label="Months">${months}</div>
+              <div class="monthsWrap">
+                <div class="months" aria-label="Months">${months}</div>
+              </div>
             </article>
           `;
         }).join("");
@@ -373,7 +479,9 @@
 
       function fillCategories(rows){
         const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
-        catSel.innerHTML = `<option value="all">All categories</option>` + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+        catSel.innerHTML =
+          `<option value="all">All categories</option>` +
+          cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
       }
 
       async function load(){
@@ -396,7 +504,6 @@
         }
       }
 
-      // avoid duplicate listeners
       if (catSel.dataset.bound !== "1"){
         catSel.dataset.bound = "1";
         catSel.addEventListener("change", render);
