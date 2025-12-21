@@ -51,7 +51,7 @@
       margin: 8px 0 0;
       color: var(--ink);
       line-height: 1.7;
-      max-width: 88ch;
+      max-width: 90ch;
     }
 
     .statusRow{
@@ -101,7 +101,7 @@
       background: rgba(255,255,255,.65);
       color: var(--ink);
       font-weight: 800;
-      min-width: 220px;
+      min-width: 240px;
     }
 
     .section{
@@ -127,29 +127,34 @@
 
     .cardTop{
       display:grid;
-      grid-template-columns: 92px 1fr auto;
-      gap: 12px;
+      grid-template-columns: 128px 1fr auto;
+      gap: 14px;
       align-items:center;
       padding: 14px;
       background: rgba(255,255,255,.55);
       border-bottom: 1px solid var(--line);
     }
 
+    /* Bigger thumb + contain so birds don't get chopped */
     .thumb{
-      width: 92px;
-      height: 92px;
-      border-radius: 18px;
+      width: 128px;
+      height: 128px;
+      border-radius: 20px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
+      background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.55));
       overflow:hidden;
       box-shadow: var(--shadow);
       display:block;
+      position: relative;
     }
     .thumb img{
       width:100%;
       height:100%;
-      object-fit: cover;
+      object-fit: contain;         /* KEY: show whole bird */
+      object-position: center;
       display:block;
+      padding: 8px;                /* adds breathing room around odd crops */
+      background: transparent;
     }
 
     .names{
@@ -213,19 +218,20 @@
       line-height: 1;
     }
 
-    /* Months: cleaner + responsive */
+    /* Months: wider cells + pill stretches to full width */
     .monthsWrap{
-      padding: 12px 14px 14px;
+      padding: 14px;
       background: rgba(255,255,255,.55);
     }
 
     .months{
       display:grid;
-      grid-template-columns: repeat(12, minmax(76px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(12, minmax(108px, 1fr)); /* wider so "Dec" never feels cut */
+      gap: 10px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      padding: 2px 8px 6px 2px; /* right padding prevents last item looking clipped */
       scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
     }
 
     .month{
@@ -234,29 +240,31 @@
       background: rgba(255,255,255,.65);
       padding: 10px;
       text-align:center;
-      min-width: 76px;
+      min-width: 108px;
       scroll-snap-align: start;
+      box-sizing: border-box;
     }
 
     .mLabel{
       font-size: 11px;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-weight: 900;
       letter-spacing: -0.01em;
     }
 
     .mVal{
-      display:inline-flex;
+      display:flex;
       align-items:center;
       justify-content:center;
-      padding: 6px 10px;
+      width: 100%;                  /* KEY: pill never wider than its month box */
+      padding: 7px 10px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 950;
       border: 1px solid transparent;
-      min-width: 70px;
       white-space: nowrap;
+      box-sizing: border-box;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -279,25 +287,26 @@
       .statusRow{ flex-direction: column; align-items: stretch; }
 
       .cardTop{
-        grid-template-columns: 78px 1fr;
+        grid-template-columns: 104px 1fr;
         grid-template-rows: auto auto;
         align-items:start;
       }
-      .thumb{ width: 78px; height: 78px; border-radius: 16px; }
+      .thumb{ width: 104px; height: 104px; border-radius: 18px; }
       .metaRight{
         grid-column: 1 / -1;
         flex-direction: row;
         align-items:center;
         justify-content:flex-start;
       }
+
       .months{
-        grid-template-columns: repeat(6, minmax(76px, 1fr));
+        grid-template-columns: repeat(6, minmax(110px, 1fr));
       }
     }
 
     @media (max-width: 520px){
       .months{
-        grid-template-columns: repeat(3, minmax(76px, 1fr));
+        grid-template-columns: repeat(3, minmax(112px, 1fr));
       }
     }
   </style>
@@ -340,7 +349,7 @@
         <div class="cards" id="bcCards" aria-label="Species cards"></div>
 
         <p class="footnote">
-          Tip: if an image URL is missing, the card will still render cleanly.
+          Tip: photos come from third-party sources. We keep thumbnails in “contain” mode so the full bird stays visible.
         </p>
       </section>
     </main>
@@ -415,10 +424,11 @@
 
           const months = monthNames.map((m, i) => {
             const val = (r.months && r.months[i]) ? r.months[i] : "";
+            const label = (val && String(val).trim()) ? String(val).trim() : "Off";
             return `
               <div class="month" aria-label="${esc(m)}">
                 <div class="mLabel">${esc(m)}</div>
-                <div class="mVal ${statusClass(val)}">${esc(val || "Off")}</div>
+                <div class="mVal ${statusClass(label)}">${esc(label)}</div>
               </div>
             `;
           }).join("");
