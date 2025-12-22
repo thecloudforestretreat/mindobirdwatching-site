@@ -139,6 +139,13 @@
 
     .bodAudio audio { width: 100%; display: block; }
 
+    .bodAudioStatus {
+      margin-top: 8px;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
     .bodLinks {
       margin-top: 8px;
       display: flex;
@@ -444,7 +451,8 @@
               </div>
 
               <div class="bodAudio" id="bodAudioWrap" hidden>
-                <audio id="bodAudio" controls preload="metadata"></audio>
+                <audio id="bodAudio" controls preload="metadata" crossorigin="anonymous"></audio>
+                <div class="bodAudioStatus" id="bodAudioStatus" aria-live="polite"></div>
 
                 <div class="bodLinks">
                   <div>
@@ -532,7 +540,7 @@
 
       /* =========================
          Ave del día (fetch + fallback JSONP)
-         Fix audio: normaliza Xeno-canto /download a MP3 stream
+         Audio fix: Xeno-canto fallbacks + debug listeners + status line
          ========================= */
       if (document.documentElement.dataset.mbwBodInit !== "1") {
         document.documentElement.dataset.mbwBodInit = "1";
@@ -548,6 +556,7 @@
 
         const bodAudioWrap = document.getElementById("bodAudioWrap");
         const bodAudio = document.getElementById("bodAudio");
+        const bodAudioStatus = document.getElementById("bodAudioStatus");
 
         const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
         const bodImageCredit = document.getElementById("bodImageCredit");
@@ -560,11 +569,17 @@
 
         function safeText(s) { return String(s || "").trim(); }
 
+        function setAudioStatus(msg) {
+          if (!bodAudioStatus) return;
+          bodAudioStatus.textContent = msg || "";
+        }
+
         function setLoading() {
           if (bodSub) bodSub.textContent = "Cargando el ave de hoy...";
           if (bodPill) bodPill.textContent = "Cargando";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
+          setAudioStatus("");
         }
 
         function setError() {
@@ -572,14 +587,66 @@
           if (bodPill) bodPill.textContent = "Sin conexión";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
+          setAudioStatus("");
         }
 
-        function normalizeAudioUrl(url) {
+        function getXenoId(url) {
           const u = safeText(url);
-          if (!u) return "";
-          const m = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\/download\/?$/i);
-          if (m && m[1]) return "https://xeno-canto.org/" + m[1] + "/download?type=mp3";
-          return u;
+          const m1 = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\/download\/?$/i);
+          if (m1 && m1[1]) return m1[1];
+          const m2 = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\b/i);
+          if (m2 && m2[1]) return m2[1];
+          return "";
+        }
+
+        function buildAudioSources(audioUrl) {
+          const raw = safeText(audioUrl);
+          if (!raw) return [];
+
+          const id = getXenoId(raw);
+          if (id) {
+            return [
+              { src: "https://xeno-canto.org/" + id + "/download?type=mp3", type: "audio/mpeg" },
+              { src: "https://xeno-canto.org/" + id + "/download", type: "" },
+              { src: raw, type: "" }
+            ];
+          }
+
+          return [{ src: raw, type: "" }];
+        }
+
+        function bindAudioDebugOnce() {
+          if (!bodAudio || bodAudio.dataset.debugBound === "1") return;
+          bodAudio.dataset.debugBound = "1";
+
+          const logPrefix = "[Audio Ave del día]";
+
+          bodAudio.addEventListener("loadstart", () => console.log(logPrefix, "loadstart"));
+          bodAudio.addEventListener("loadedmetadata", () => {
+            console.log(logPrefix, "loadedmetadata duration:", bodAudio.duration);
+            setAudioStatus(Number.isFinite(bodAudio.duration) && bodAudio.duration > 0 ? "" : "Cargando metadatos de audio...");
+          });
+          bodAudio.addEventListener("canplay", () => {
+            console.log(logPrefix, "canplay");
+            setAudioStatus("");
+          });
+          bodAudio.addEventListener("playing", () => {
+            console.log(logPrefix, "playing");
+            setAudioStatus("");
+          });
+          bodAudio.addEventListener("stalled", () => {
+            console.warn(logPrefix, "stalled");
+            setAudioStatus("El audio se detuvo. Revisa la pestaña Network para la solicitud de audio.");
+          });
+          bodAudio.addEventListener("waiting", () => {
+            console.warn(logPrefix, "waiting");
+            setAudioStatus("Cargando buffer...");
+          });
+          bodAudio.addEventListener("error", () => {
+            const err = bodAudio.error;
+            console.warn(logPrefix, "error:", err);
+            setAudioStatus("El audio no cargó. Abre la fuente de audio o revisa Network.");
+          });
         }
 
         function renderBod(data) {
@@ -587,10 +654,10 @@
           const spanishName = safeText(data.spanishName);
 
           const imageUrl = safeText(data.imageUrl);
-          const audioUrl = normalizeAudioUrl(data.audioUrl);
+          const audioUrlRaw = safeText(data.audioUrl);
 
           const imageLink = safeText(data.imageLink) || imageUrl;
-          const audioLink = safeText(data.audioLink) || audioUrl;
+          const audioLink = safeText(data.audioLink) || audioUrlRaw;
 
           const imageCredit = safeText(data.imageCredit);
           const audioCredit = safeText(data.audioCredit);
@@ -607,20 +674,28 @@
             if (bodMedia) bodMedia.hidden = true;
           }
 
-          if (bodAudio && audioUrl) {
+          if (bodAudio && audioUrlRaw) {
+            bindAudioDebugOnce();
+
             bodAudio.pause();
             bodAudio.removeAttribute("src");
             bodAudio.innerHTML = "";
 
-            const src = document.createElement("source");
-            src.src = audioUrl;
-            src.type = "audio/mpeg";
-            bodAudio.appendChild(src);
+            const sources = buildAudioSources(audioUrlRaw);
+            sources.forEach((s) => {
+              const el = document.createElement("source");
+              el.src = s.src;
+              if (s.type) el.type = s.type;
+              bodAudio.appendChild(el);
+            });
 
             bodAudio.load();
             if (bodAudioWrap) bodAudioWrap.hidden = false;
+
+            setAudioStatus("Toca play. Si se queda en 0:00, revisa Network para la solicitud de audio.");
           } else {
             if (bodAudioWrap) bodAudioWrap.hidden = true;
+            setAudioStatus("");
           }
 
           if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
@@ -694,11 +769,8 @@
         { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet en Mindo, Ecuador" },
         { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet en Mindo, Ecuador" },
         { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan en Mindo, Ecuador" },
-
         { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock en Mindo, Ecuador" },
-
         { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph (colibrí) en Mindo, Ecuador" },
-
         { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager en Mindo, Ecuador" },
         { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager en Mindo, Ecuador" },
         { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager en Mindo, Ecuador" },
@@ -707,7 +779,6 @@
         { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager en Mindo, Ecuador" },
         { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager en Mindo, Ecuador" },
         { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager en Mindo, Ecuador" },
-
         { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher en Mindo, Ecuador" },
         { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher en Mindo, Ecuador" },
         { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot en Mindo, Ecuador" },
@@ -715,13 +786,11 @@
         { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker en Mindo, Ecuador" },
         { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon en Mindo, Ecuador" },
         { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot en Mindo, Ecuador" },
-
         { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird en Mindo, Ecuador" },
         { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra en Mindo, Ecuador" },
         { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta en Mindo, Ecuador" },
         { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal en Mindo, Ecuador" },
         { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon en Mindo, Ecuador" },
-
         { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan en Mindo, Ecuador" }
       ];
 
