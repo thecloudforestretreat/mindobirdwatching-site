@@ -6,7 +6,6 @@
   <title>Bird Gallery | Mindo Bird Watching</title>
   <meta name="description" content="Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds, toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest." />
 
-  <!-- Language alternates (used by /assets/js/site.js for EN/ES switch) -->
   <link rel="alternate" hreflang="en" href="/bird-gallery/" />
   <link rel="alternate" hreflang="es" href="/es/galeria/" />
   <link rel="alternate" hreflang="x-default" href="/bird-gallery/" />
@@ -16,9 +15,6 @@
   <script src="/assets/js/site.js" defer></script>
 
   <style>
-    /* =========================
-       Page-only styles (main content only)
-       ========================= */
     .page { margin-top: 18px; padding: 26px; }
     .page.card {
       background: var(--card);
@@ -27,9 +23,10 @@
       box-shadow: var(--shadow);
     }
 
+    /* Hero layout update: balanced 50/50 and BOD is bigger */
     .hero {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
       align-items: start;
     }
@@ -37,6 +34,7 @@
     .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
     .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
 
+    .heroLeft { display: grid; gap: 12px; align-content: start; }
     .heroRight { display: grid; gap: 12px; align-content: start; }
 
     .heroCard {
@@ -64,9 +62,7 @@
       flex-wrap: wrap;
     }
 
-    /* =========================
-       Bird of the Day card
-       ========================= */
+    /* Bird of the Day card (bigger) */
     .bodHead {
       display: flex;
       align-items: center;
@@ -81,7 +77,7 @@
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1.2;
     }
 
@@ -126,9 +122,10 @@
       padding: 12px;
     }
 
+    /* Bigger image area */
     .bodImg {
       width: 100%;
-      height: 260px;
+      height: 360px;
       display: block;
       object-fit: contain;
       object-position: center;
@@ -166,16 +163,6 @@
 
     .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
 
-    .bodNote {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-    }
-
-    /* =========================
-       Sections
-       ========================= */
     .section {
       margin-top: 18px;
       padding-top: 14px;
@@ -201,7 +188,6 @@
 
     .hint { margin: 0; color: var(--muted); font-size: 13px; }
 
-    /* Filters */
     .filters {
       display: flex;
       gap: 10px;
@@ -228,7 +214,6 @@
       border-color: rgba(13,89,37,.35);
     }
 
-    /* Gallery grid */
     .gallery {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -247,7 +232,7 @@
       padding: 0;
     }
 
-    /* FIX: prevent cropping by switching to contain + adding padding */
+    /* contain = no cropping */
     .thumb {
       width: 100%;
       height: 220px;
@@ -298,7 +283,6 @@
     }
     .emptyState.is-visible { display: block; }
 
-    /* Videos */
     .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .videoCard {
@@ -396,7 +380,7 @@
     @media (max-width: 980px) {
       .gallery { grid-template-columns: repeat(3, 1fr); }
       .thumb { height: 200px; }
-      .bodImg { height: 240px; }
+      .bodImg { height: 320px; }
     }
 
     @media (max-width: 900px) {
@@ -404,41 +388,54 @@
       .gallery { grid-template-columns: repeat(2, 1fr); }
       .thumb { height: 190px; }
       .videoGrid { grid-template-columns: 1fr; }
-      .bodImg { height: 260px; }
+      .bodImg { height: 320px; }
     }
 
     @media (max-width: 520px) {
       .gallery { grid-template-columns: 1fr; }
       .thumb { height: 220px; }
       .lbImg { height: min(65vh, 560px); }
-      .bodImg { height: 240px; }
+      .bodImg { height: 280px; }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <!-- Shared header mount -->
     <div id="siteHeader"></div>
 
     <main class="page card">
+
       <!-- HERO -->
       <section class="hero" aria-label="Bird gallery introduction">
-        <div>
-          <h1>Bird Gallery</h1>
-          <p>
-            Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
-            toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
-          </p>
 
-          <div class="heroCtas" aria-label="Primary actions">
-            <a class="btn primary" href="/book-tour/">Book a tour</a>
-            <a class="btn secondary" href="/tours/">View tours</a>
+        <!-- LEFT -->
+        <div class="heroLeft" aria-label="Hero left column">
+          <div class="heroCard" aria-label="Bird gallery intro">
+            <h1 style="margin:0 0 6px;">Bird Gallery</h1>
+            <p>
+              Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
+              toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
+            </p>
+
+            <div class="heroCtas" aria-label="Primary actions">
+              <a class="btn primary" href="/book-tour/">Book a tour</a>
+              <a class="btn secondary" href="/tours/">View tours</a>
+            </div>
           </div>
+
+          <aside class="heroCard" aria-label="Meet the Birds">
+            <h2>Meet the Birds</h2>
+            <ul>
+              <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
+              <li>Click any photo to open the full-screen viewer</li>
+              <li>Use ← / → keys to browse</li>
+            </ul>
+          </aside>
         </div>
 
+        <!-- RIGHT -->
         <div class="heroRight" aria-label="Hero right column">
-          <!-- Bird of the Day -->
           <aside class="heroCard" aria-label="Bird of the Day">
             <div class="bodHead">
               <div class="bodTitle" style="min-width:0;">
@@ -456,7 +453,7 @@
               </div>
 
               <div class="bodAudio" id="bodAudioWrap" hidden>
-                <audio id="bodAudio" controls preload="none"></audio>
+                <audio id="bodAudio" controls preload="metadata"></audio>
 
                 <div class="bodLinks">
                   <div>
@@ -472,21 +469,9 @@
 
             <div class="bodCtas">
               <a class="btn secondary" href="/book-tour/">Bird with a guide</a>
-              <a class="btn secondary" href="/birding-calendar/">Best months to see birds</a>
+              <a class="btn secondary" href="/birding-calendar/">Birding Calendar</a>
+              <a class="btn secondary" href="/bird-of-the-week/">Bird of the Week</a>
             </div>
-
-            <p class="bodNote">
-              Tip: Gallery thumbnails are now fit-to-frame (contain) so nothing is cropped.
-            </p>
-          </aside>
-
-          <aside class="heroCard" aria-label="How to use this gallery">
-            <h2>Meet the Birds</h2>
-            <ul>
-              <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
-              <li>Click any photo to open the full-screen viewer</li>
-              <li>Use ← / → keys to browse</li>
-            </ul>
           </aside>
         </div>
       </section>
@@ -558,6 +543,7 @@
 
       /* =========================
          Bird of the Day (fetch + JSONP fallback)
+         Audio fix: normalize Xeno-canto /download to streamable MP3
          ========================= */
       if (document.documentElement.dataset.mbwBodInit !== "1") {
         document.documentElement.dataset.mbwBodInit = "1";
@@ -599,12 +585,25 @@
           if (bodAudioWrap) bodAudioWrap.hidden = true;
         }
 
+        // ✅ Xeno-canto streaming helper
+        // Converts: https://xeno-canto.org/618378/download
+        // Into:     https://xeno-canto.org/618378/download?type=mp3
+        function normalizeAudioUrl(url) {
+          const u = safeText(url);
+          if (!u) return "";
+
+          const m = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\/download\/?$/i);
+          if (m && m[1]) return "https://xeno-canto.org/" + m[1] + "/download?type=mp3";
+
+          return u;
+        }
+
         function renderBod(data) {
           const birdName = safeText(data.birdName) || "Bird of the Day";
           const spanishName = safeText(data.spanishName);
 
           const imageUrl = safeText(data.imageUrl);
-          const audioUrl = safeText(data.audioUrl);
+          const audioUrl = normalizeAudioUrl(data.audioUrl);
 
           const imageLink = safeText(data.imageLink) || imageUrl;
           const audioLink = safeText(data.audioLink) || audioUrl;
@@ -624,11 +623,18 @@
             if (bodMedia) bodMedia.hidden = true;
           }
 
+          // ✅ Force the audio element to reload cleanly
           if (bodAudio && audioUrl) {
+            bodAudio.pause();
+            bodAudio.removeAttribute("src");
             bodAudio.innerHTML = "";
+
             const src = document.createElement("source");
             src.src = audioUrl;
+            src.type = "audio/mpeg";
             bodAudio.appendChild(src);
+
+            bodAudio.load();
             if (bodAudioWrap) bodAudioWrap.hidden = false;
           } else {
             if (bodAudioWrap) bodAudioWrap.hidden = true;
@@ -650,12 +656,8 @@
             const script = document.createElement("script");
 
             window[cb] = function (payload) {
-              try {
-                resolve(payload);
-              } finally {
-                delete window[cb];
-                script.remove();
-              }
+              try { resolve(payload); }
+              finally { delete window[cb]; script.remove(); }
             };
 
             script.onerror = function () {
@@ -672,16 +674,13 @@
         async function loadBod() {
           setLoading();
 
-          // Try fetch first (fast when CORS allows), then fallback to JSONP (works even when CORS blocks).
           try {
             const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
             const json = await res.json();
             if (!json || json.ok !== true) throw new Error("Not ok");
             renderBod(json);
             return;
-          } catch (_) {
-            // Fallback JSONP
-          }
+          } catch (_) {}
 
           try {
             const jsonp = await loadViaJsonp();
@@ -707,44 +706,40 @@
       if (!grid) return;
 
       const ITEMS = [
-        // Toucans / Toucan-like
-        { id: "img-01", type: "image", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari in Mindo, Ecuador" },
-        { id: "img-02", type: "image", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan in Mindo, Ecuador" },
-        { id: "img-03", type: "image", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet in Mindo, Ecuador" },
-        { id: "img-04", type: "image", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet in Mindo, Ecuador" },
-        { id: "img-05", type: "image", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan in Mindo, Ecuador" },
+        { id: "img-01", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari in Mindo, Ecuador" },
+        { id: "img-02", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan in Mindo, Ecuador" },
+        { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet in Mindo, Ecuador" },
+        { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet in Mindo, Ecuador" },
+        { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan in Mindo, Ecuador" },
 
-        // Cock-of-the-rock
-        { id: "img-06", type: "image", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock in Mindo, Ecuador" },
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock in Mindo, Ecuador" },
 
-        // Hummingbirds
-        { id: "img-07", type: "image", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph hummingbird in Mindo, Ecuador" },
+        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph hummingbird in Mindo, Ecuador" },
 
-        // Tanagers
-        { id: "img-08", type: "image", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager in Mindo, Ecuador" },
-        { id: "img-09", type: "image", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager in Mindo, Ecuador" },
-        { id: "img-10", type: "image", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager in Mindo, Ecuador" },
-        { id: "img-11", type: "image", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager in Mindo, Ecuador" },
-        { id: "img-12", type: "image", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager in Mindo, Ecuador" },
-        { id: "img-13", type: "image", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager in Mindo, Ecuador" },
-        { id: "img-14", type: "image", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager in Mindo, Ecuador" },
-        { id: "img-15", type: "image", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager in Mindo, Ecuador" },
+        { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager in Mindo, Ecuador" },
+        { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager in Mindo, Ecuador" },
+        { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager in Mindo, Ecuador" },
+        { id: "img-11", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager in Mindo, Ecuador" },
+        { id: "img-12", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager in Mindo, Ecuador" },
+        { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager in Mindo, Ecuador" },
+        { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager in Mindo, Ecuador" },
+        { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager in Mindo, Ecuador" },
 
-        // Other birds
-        { id: "img-16", type: "image", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher in Mindo, Ecuador" },
-        { id: "img-17", type: "image", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher in Mindo, Ecuador" },
-        { id: "img-18", type: "image", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot in Mindo, Ecuador" },
-        { id: "img-19", type: "image", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo in Mindo, Ecuador" },
-        { id: "img-20", type: "image", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker in Mindo, Ecuador" },
-        { id: "img-21", type: "image", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon in Mindo, Ecuador" },
-        { id: "img-22", type: "image", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot in Mindo, Ecuador" },
+        { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher in Mindo, Ecuador" },
+        { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher in Mindo, Ecuador" },
+        { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot in Mindo, Ecuador" },
+        { id: "img-19", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo in Mindo, Ecuador" },
+        { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker in Mindo, Ecuador" },
+        { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon in Mindo, Ecuador" },
+        { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot in Mindo, Ecuador" },
 
-        // New adds
-        { id: "img-23", type: "image", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird in Mindo, Ecuador" },
-        { id: "img-24", type: "image", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra in Mindo, Ecuador" },
-        { id: "img-25", type: "image", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta in Mindo, Ecuador" },
-        { id: "img-26", type: "image", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal in Mindo, Ecuador" },
-        { id: "img-27", type: "image", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon in Mindo, Ecuador" }
+        { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird in Mindo, Ecuador" },
+        { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra in Mindo, Ecuador" },
+        { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta in Mindo, Ecuador" },
+        { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal in Mindo, Ecuador" },
+        { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon in Mindo, Ecuador" },
+
+        { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan in Mindo, Ecuador" }
       ];
 
       function prettyCategory(c) {
@@ -758,12 +753,11 @@
         return map[c] || "Birds";
       }
 
-      function setEmptyState(visible) {
+      function setEmptyState(list) {
         if (!emptyState) return;
-        emptyState.classList.toggle("is-visible", visible.length === 0);
+        emptyState.classList.toggle("is-visible", list.length === 0);
       }
 
-      // Lightbox DOM
       const lb = document.createElement("div");
       lb.className = "lb";
       lb.setAttribute("role", "dialog");
@@ -824,7 +818,6 @@
           tile.type = "button";
           tile.className = "tile";
           tile.setAttribute("aria-label", "Open " + item.title);
-          tile.dataset.index = String(i);
 
           const img = document.createElement("img");
           img.className = "thumb";
