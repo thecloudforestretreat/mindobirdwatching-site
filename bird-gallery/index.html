@@ -6,7 +6,6 @@
   <title>Bird Gallery | Mindo Bird Watching</title>
   <meta name="description" content="Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds, toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest." />
 
-  <!-- Language alternates (used by /assets/js/site.js for EN/ES switch) -->
   <link rel="alternate" hreflang="en" href="/bird-gallery/" />
   <link rel="alternate" hreflang="es" href="/es/galeria/" />
   <link rel="alternate" hreflang="x-default" href="/bird-gallery/" />
@@ -16,13 +15,7 @@
   <script src="/assets/js/site.js" defer></script>
 
   <style>
-    /* =========================
-       Page-only styles (main content only)
-       ========================= */
-    .page {
-      margin-top: 18px;
-      padding: 26px;
-    }
+    .page { margin-top: 18px; padding: 26px; }
     .page.card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -37,17 +30,10 @@
       align-items: start;
     }
 
-    .hero h1 {
-      margin: 0 0 6px;
-      letter-spacing: -0.02em;
-    }
+    .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
 
-    .hero p {
-      margin: 0;
-      color: var(--ink);
-      line-height: 1.6;
-      max-width: 82ch;
-    }
+    .heroRight { display: grid; gap: 12px; align-content: start; }
 
     .heroCard {
       border: 1px solid var(--line);
@@ -65,18 +51,119 @@
       font-size: 18px;
     }
 
-    .heroCard ul {
-      margin: 0;
-      padding-left: 18px;
-      line-height: 1.55;
-      color: var(--ink);
-    }
+    .heroCard ul { margin: 0; padding-left: 18px; line-height: 1.55; color: var(--ink); }
 
     .heroCtas {
       margin-top: 12px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .bodHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bodTitle { display: grid; gap: 2px; min-width: 0; }
+    .bodTitle h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .bodSub {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bodPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .bodMedia {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .bodImgWrap {
+      background: rgba(255,255,255,.65);
+      display: grid;
+      place-items: center;
+      padding: 12px;
+    }
+
+    .bodImg {
+      width: 100%;
+      height: 260px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.06);
+    }
+
+    .bodAudio {
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+    }
+
+    .bodAudio audio { width: 100%; display: block; }
+
+    .bodLinks {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .bodLinks a {
+      color: inherit;
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .bodNote {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
     }
 
     .section {
@@ -102,13 +189,8 @@
       font-size: 20px;
     }
 
-    .hint {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
+    .hint { margin: 0; color: var(--muted); font-size: 13px; }
 
-    /* Filters */
     .filters {
       display: flex;
       gap: 10px;
@@ -135,7 +217,6 @@
       border-color: rgba(13,89,37,.35);
     }
 
-    /* Gallery grid */
     .gallery {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -151,14 +232,19 @@
       cursor: pointer;
       position: relative;
       min-height: 160px;
+      padding: 0;
     }
 
+    /* Key fix: no cropping */
     .thumb {
       width: 100%;
       height: 220px;
       display: block;
-      object-fit: cover;
-      background: rgba(255,255,255,.55);
+      object-fit: contain;
+      object-position: center;
+      background: rgba(255,255,255,.72);
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     .meta {
@@ -200,12 +286,7 @@
     }
     .emptyState.is-visible { display: block; }
 
-    /* Videos */
-    .videoGrid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .videoCard {
       border: 1px solid var(--line);
@@ -215,13 +296,7 @@
       overflow: hidden;
     }
 
-    .videoFrame {
-      aspect-ratio: 16 / 9;
-      width: 100%;
-      border: 0;
-      display: block;
-      background: rgba(255,255,255,.55);
-    }
+    .videoFrame { aspect-ratio: 16 / 9; width: 100%; border: 0; display: block; background: rgba(255,255,255,.55); }
 
     .videoCap {
       padding: 10px 12px;
@@ -231,7 +306,6 @@
       background: rgba(255,255,255,.55);
     }
 
-    /* Lightbox */
     .lb {
       position: fixed;
       inset: 0;
@@ -253,10 +327,7 @@
       overflow: hidden;
     }
 
-    .lbMedia {
-      position: relative;
-      background: rgba(255,255,255,.55);
-    }
+    .lbMedia { position: relative; background: rgba(255,255,255,.55); }
 
     .lbImg {
       width: 100%;
@@ -286,19 +357,9 @@
       white-space: nowrap;
     }
 
-    .lbSub {
-      margin: 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      white-space: nowrap;
-    }
+    .lbSub { margin: 0; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
 
-    .lbBtns {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      flex: 0 0 auto;
-    }
+    .lbBtns { display: inline-flex; gap: 8px; align-items: center; flex: 0 0 auto; }
 
     .iconBtn {
       width: 44px;
@@ -316,17 +377,12 @@
     .iconBtn:focus { outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
     .iconBtn svg { width: 20px; height: 20px; }
 
-    .closeBtn {
-      width: auto;
-      padding: 0 12px;
-      gap: 10px;
-      font-weight: 900;
-      font-size: 13px;
-    }
+    .closeBtn { width: auto; padding: 0 12px; gap: 10px; font-weight: 900; font-size: 13px; }
 
     @media (max-width: 980px) {
       .gallery { grid-template-columns: repeat(3, 1fr); }
       .thumb { height: 200px; }
+      .bodImg { height: 240px; }
     }
 
     @media (max-width: 900px) {
@@ -334,27 +390,23 @@
       .gallery { grid-template-columns: repeat(2, 1fr); }
       .thumb { height: 190px; }
       .videoGrid { grid-template-columns: 1fr; }
+      .bodImg { height: 260px; }
     }
 
     @media (max-width: 520px) {
       .gallery { grid-template-columns: 1fr; }
       .thumb { height: 220px; }
       .lbImg { height: min(65vh, 560px); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .lb { transition: none; }
+      .bodImg { height: 240px; }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <!-- Shared header mount -->
     <div id="siteHeader"></div>
 
     <main class="page card">
-      <!-- HERO -->
       <section class="hero" aria-label="Bird gallery introduction">
         <div>
           <h1>Bird Gallery</h1>
@@ -369,21 +421,63 @@
           </div>
         </div>
 
-        <aside class="heroCard" aria-label="How to use this gallery">
-          <h2>Meet the Birds</h2>
-          <ul>
-            <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
-            <li>Click any photo to open the full-screen viewer</li>
-            <li>Use ← / → keys (or swipe) to browse</li>
-          </ul>
-        </aside>
+        <div class="heroRight" aria-label="Hero right column">
+          <aside class="heroCard" aria-label="Bird of the Day">
+            <div class="bodHead">
+              <div class="bodTitle" style="min-width:0;">
+                <h2>Bird of the Day</h2>
+                <div class="bodSub" id="bodSub">Loading today’s bird...</div>
+              </div>
+              <span class="bodPill" id="bodPill">Loading</span>
+            </div>
+
+            <div class="bodMedia" id="bodMedia" hidden>
+              <div class="bodImgWrap">
+                <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Open image source" style="display:block; width:100%;">
+                  <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
+                </a>
+              </div>
+
+              <div class="bodAudio" id="bodAudioWrap" hidden>
+                <audio id="bodAudio" controls preload="none"></audio>
+
+                <div class="bodLinks">
+                  <div>
+                    <span id="bodImageCreditWrap" hidden>Image credit: <a id="bodImageCredit" href="#" target="_blank" rel="noopener">Source</a></span>
+                    <span id="bodAudioCreditWrap" hidden style="margin-left:10px;">Audio credit: <a id="bodAudioCredit" href="#" target="_blank" rel="noopener">Source</a></span>
+                  </div>
+                  <div>
+                    <span id="bodAudioSrcWrap" hidden>Audio source: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Open</a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bodCtas">
+              <a class="btn secondary" href="/book-tour/">Bird with a guide</a>
+              <a class="btn secondary" href="/birding-calendar/">Best months to see birds</a>
+            </div>
+
+            <p class="bodNote">
+              Tip: Gallery thumbnails are shown in contain mode so nothing is cropped.
+            </p>
+          </aside>
+
+          <aside class="heroCard" aria-label="How to use this gallery">
+            <h2>Meet the Birds</h2>
+            <ul>
+              <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
+              <li>Click any photo to open the full-screen viewer</li>
+              <li>Use ← / → keys to browse</li>
+            </ul>
+          </aside>
+        </div>
       </section>
 
-      <!-- GALLERY -->
       <section class="section" aria-label="Gallery section">
         <div class="sectionHead">
           <h2>Gallery</h2>
-          <p class="hint">Placeholders are ready — you’ll only replace image URLs, titles, and categories.</p>
+          <p class="hint">Now using your real images from <strong>/assets/images/bird-gallery</strong>.</p>
         </div>
 
         <div class="filters" role="toolbar" aria-label="Gallery filters">
@@ -402,7 +496,6 @@
         </div>
       </section>
 
-      <!-- VIDEOS -->
       <section class="section" aria-label="Videos section">
         <div class="sectionHead">
           <h2>Videos</h2>
@@ -419,7 +512,7 @@
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
-            <div class="videoCap">Placeholder video 1 — replace <strong>VIDEO_ID_1</strong>.</div>
+            <div class="videoCap">Placeholder video 1. Replace <strong>VIDEO_ID_1</strong>.</div>
           </div>
 
           <div class="videoCard" aria-label="Video 2">
@@ -431,97 +524,216 @@
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
-            <div class="videoCap">Placeholder video 2 — replace <strong>VIDEO_ID_2</strong>.</div>
+            <div class="videoCap">Placeholder video 2. Replace <strong>VIDEO_ID_2</strong>.</div>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- Shared footer mount -->
     <div id="siteFooter"></div>
   </div>
 
-  <!-- Page-only gallery + lightbox (NO header/menu logic) -->
   <script>
     (function () {
       "use strict";
 
-      // Prevent duplicate init if a page is hot-reloaded / scripts re-run
+      /* =========================
+         Bird of the Day (fetch + JSONP fallback)
+         ========================= */
+      if (document.documentElement.dataset.mbwBodInit !== "1") {
+        document.documentElement.dataset.mbwBodInit = "1";
+
+        // IMPORTANT: Replace with your *public* Web App URL (NO /u/1/)
+        const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
+
+        const bodSub = document.getElementById("bodSub");
+        const bodPill = document.getElementById("bodPill");
+        const bodMedia = document.getElementById("bodMedia");
+
+        const bodImg = document.getElementById("bodImg");
+        const bodImgLink = document.getElementById("bodImgLink");
+
+        const bodAudioWrap = document.getElementById("bodAudioWrap");
+        const bodAudio = document.getElementById("bodAudio");
+
+        const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
+        const bodImageCredit = document.getElementById("bodImageCredit");
+
+        const bodAudioCreditWrap = document.getElementById("bodAudioCreditWrap");
+        const bodAudioCredit = document.getElementById("bodAudioCredit");
+
+        const bodAudioSrcWrap = document.getElementById("bodAudioSrcWrap");
+        const bodAudioSrc = document.getElementById("bodAudioSrc");
+
+        function safeText(s) { return String(s || "").trim(); }
+
+        function setLoading() {
+          if (bodSub) bodSub.textContent = "Loading today’s bird...";
+          if (bodPill) bodPill.textContent = "Loading";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function setError() {
+          if (bodSub) bodSub.textContent = "Bird of the Day is unavailable right now.";
+          if (bodPill) bodPill.textContent = "Offline";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function renderBod(data) {
+          const birdName = safeText(data.birdName) || "Bird of the Day";
+          const spanishName = safeText(data.spanishName);
+
+          const imageUrl = safeText(data.imageUrl);
+          const audioUrl = safeText(data.audioUrl);
+
+          const imageLink = safeText(data.imageLink) || imageUrl;
+          const audioLink = safeText(data.audioLink) || audioUrl;
+
+          const imageCredit = safeText(data.imageCredit);
+          const audioCredit = safeText(data.audioCredit);
+
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Today’s pick from Mindo";
+          if (bodPill) bodPill.textContent = "Today";
+
+          if (bodImg && imageUrl) {
+            bodImg.src = imageUrl;
+            bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
+            if (bodImgLink) bodImgLink.href = imageLink || imageUrl;
+            if (bodMedia) bodMedia.hidden = false;
+          } else {
+            if (bodMedia) bodMedia.hidden = true;
+          }
+
+          if (bodAudio && audioUrl) {
+            bodAudio.innerHTML = "";
+            const src = document.createElement("source");
+            src.src = audioUrl;
+            bodAudio.appendChild(src);
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+          } else {
+            if (bodAudioWrap) bodAudioWrap.hidden = true;
+          }
+
+          if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
+          if (bodImageCredit && imageCredit) bodImageCredit.href = imageCredit;
+
+          if (bodAudioCreditWrap) bodAudioCreditWrap.hidden = !audioCredit;
+          if (bodAudioCredit && audioCredit) bodAudioCredit.href = audioCredit;
+
+          if (bodAudioSrcWrap) bodAudioSrcWrap.hidden = !audioLink;
+          if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
+        }
+
+        function loadViaJsonp() {
+          return new Promise((resolve, reject) => {
+            const cb = "mbwBodCb_" + Math.random().toString(36).slice(2);
+            const script = document.createElement("script");
+
+            window[cb] = function (payload) {
+              try { resolve(payload); }
+              finally { delete window[cb]; script.remove(); }
+            };
+
+            script.onerror = function () {
+              delete window[cb];
+              script.remove();
+              reject(new Error("JSONP load failed"));
+            };
+
+            script.src = BASE + "?format=json&callback=" + encodeURIComponent(cb);
+            document.head.appendChild(script);
+          });
+        }
+
+        async function loadBod() {
+          setLoading();
+
+          try {
+            const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
+            const json = await res.json();
+            if (!json || json.ok !== true) throw new Error("Not ok");
+            renderBod(json);
+            return;
+          } catch (_) {}
+
+          try {
+            const jsonp = await loadViaJsonp();
+            if (!jsonp || jsonp.ok !== true) { setError(); return; }
+            renderBod(jsonp);
+          } catch (_) {
+            setError();
+          }
+        }
+
+        loadBod();
+      }
+
+      /* =========================
+         Gallery + lightbox
+         ========================= */
       if (document.documentElement.dataset.mbwGalleryInit === "1") return;
       document.documentElement.dataset.mbwGalleryInit = "1";
 
       const grid = document.getElementById("galleryGrid");
       const emptyState = document.getElementById("emptyState");
       const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
-
       if (!grid) return;
 
-      // ---------- Placeholder generator ----------
-      function svgPlaceholder(label) {
-        const bg = "F3F7F1";
-        const stroke = "D6E5C6";
-        const text = "0D5925";
-        const safe = String(label || "Placeholder").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const svg =
-          `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">` +
-            `<rect width="1200" height="1600" fill="#${bg}"/>` +
-            `<rect x="60" y="60" width="1080" height="1480" rx="44" fill="none" stroke="#${stroke}" stroke-width="10"/>` +
-            `<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">` +
-              `<text x="600" y="760" font-size="54" font-weight="700" fill="#${text}">${safe}</text>` +
-              `<text x="600" y="840" font-size="28" font-weight="600" fill="#6B7C6C">Replace src + title + category</text>` +
-            `</g>` +
-          `</svg>`;
-        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+      const ITEMS = [
+        { id: "img-01", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari in Mindo, Ecuador" },
+        { id: "img-02", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan in Mindo, Ecuador" },
+        { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet in Mindo, Ecuador" },
+        { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet in Mindo, Ecuador" },
+        { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan in Mindo, Ecuador" },
+
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock in Mindo, Ecuador" },
+
+        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph hummingbird in Mindo, Ecuador" },
+
+        { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager in Mindo, Ecuador" },
+        { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager in Mindo, Ecuador" },
+        { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager in Mindo, Ecuador" },
+        { id: "img-11", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager in Mindo, Ecuador" },
+        { id: "img-12", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager in Mindo, Ecuador" },
+        { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager in Mindo, Ecuador" },
+        { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager in Mindo, Ecuador" },
+        { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager in Mindo, Ecuador" },
+
+        { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher in Mindo, Ecuador" },
+        { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher in Mindo, Ecuador" },
+        { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot in Mindo, Ecuador" },
+        { id: "img-19", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo in Mindo, Ecuador" },
+        { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker in Mindo, Ecuador" },
+        { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon in Mindo, Ecuador" },
+        { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot in Mindo, Ecuador" },
+
+        { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird in Mindo, Ecuador" },
+        { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra in Mindo, Ecuador" },
+        { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta in Mindo, Ecuador" },
+        { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal in Mindo, Ecuador" },
+        { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon in Mindo, Ecuador" },
+
+        { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan in Mindo, Ecuador" }
+      ];
+
+      function prettyCategory(c) {
+        const map = {
+          "hummingbirds": "Hummingbirds",
+          "toucans": "Toucans",
+          "tanagers": "Tanagers",
+          "cock-of-the-rock": "Cock-of-the-Rock",
+          "other": "Other"
+        };
+        return map[c] || "Birds";
       }
 
-      // ---------- YOUR ONLY EDIT POINTS ----------
-      // Replace: title, category, src, alt
-      // Category must be one of:
-      // "hummingbirds" | "toucans" | "tanagers" | "cock-of-the-rock" | "other"
-      const ITEMS = [
-        // Hummingbirds (placeholders)
-        { id: "img-01", type: "image", category: "hummingbirds", title: "Hummingbird 01", src: svgPlaceholder("Hummingbird 01"), alt: "Placeholder hummingbird photo 01" },
-        { id: "img-02", type: "image", category: "hummingbirds", title: "Hummingbird 02", src: svgPlaceholder("Hummingbird 02"), alt: "Placeholder hummingbird photo 02" },
-        { id: "img-03", type: "image", category: "hummingbirds", title: "Hummingbird 03", src: svgPlaceholder("Hummingbird 03"), alt: "Placeholder hummingbird photo 03" },
-        { id: "img-04", type: "image", category: "hummingbirds", title: "Hummingbird 04", src: svgPlaceholder("Hummingbird 04"), alt: "Placeholder hummingbird photo 04" },
-        { id: "img-05", type: "image", category: "hummingbirds", title: "Hummingbird 05", src: svgPlaceholder("Hummingbird 05"), alt: "Placeholder hummingbird photo 05" },
+      function setEmptyState(list) {
+        if (!emptyState) return;
+        emptyState.classList.toggle("is-visible", list.length === 0);
+      }
 
-        // Toucans
-        { id: "img-06", type: "image", category: "toucans", title: "Toucan 01", src: svgPlaceholder("Toucan 01"), alt: "Placeholder toucan photo 01" },
-        { id: "img-07", type: "image", category: "toucans", title: "Toucan 02", src: svgPlaceholder("Toucan 02"), alt: "Placeholder toucan photo 02" },
-        { id: "img-08", type: "image", category: "toucans", title: "Toucan 03", src: svgPlaceholder("Toucan 03"), alt: "Placeholder toucan photo 03" },
-        { id: "img-09", type: "image", category: "toucans", title: "Toucan 04", src: svgPlaceholder("Toucan 04"), alt: "Placeholder toucan photo 04" },
-        { id: "img-10", type: "image", category: "toucans", title: "Toucan 05", src: svgPlaceholder("Toucan 05"), alt: "Placeholder toucan photo 05" },
-
-        // Tanagers
-        { id: "img-11", type: "image", category: "tanagers", title: "Tanager 01", src: svgPlaceholder("Tanager 01"), alt: "Placeholder tanager photo 01" },
-        { id: "img-12", type: "image", category: "tanagers", title: "Tanager 02", src: svgPlaceholder("Tanager 02"), alt: "Placeholder tanager photo 02" },
-        { id: "img-13", type: "image", category: "tanagers", title: "Tanager 03", src: svgPlaceholder("Tanager 03"), alt: "Placeholder tanager photo 03" },
-        { id: "img-14", type: "image", category: "tanagers", title: "Tanager 04", src: svgPlaceholder("Tanager 04"), alt: "Placeholder tanager photo 04" },
-        { id: "img-15", type: "image", category: "tanagers", title: "Tanager 05", src: svgPlaceholder("Tanager 05"), alt: "Placeholder tanager photo 05" },
-
-        // Cock-of-the-Rock
-        { id: "img-16", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 01", src: svgPlaceholder("Cock-of-the-Rock 01"), alt: "Placeholder cock-of-the-rock photo 01" },
-        { id: "img-17", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 02", src: svgPlaceholder("Cock-of-the-Rock 02"), alt: "Placeholder cock-of-the-rock photo 02" },
-        { id: "img-18", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 03", src: svgPlaceholder("Cock-of-the-Rock 03"), alt: "Placeholder cock-of-the-rock photo 03" },
-        { id: "img-19", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 04", src: svgPlaceholder("Cock-of-the-Rock 04"), alt: "Placeholder cock-of-the-rock photo 04" },
-        { id: "img-20", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 05", src: svgPlaceholder("Cock-of-the-Rock 05"), alt: "Placeholder cock-of-the-rock photo 05" },
-
-        // Other (10 more to reach 30)
-        { id: "img-21", type: "image", category: "other", title: "Bird 21", src: svgPlaceholder("Bird 21"), alt: "Placeholder bird photo 21" },
-        { id: "img-22", type: "image", category: "other", title: "Bird 22", src: svgPlaceholder("Bird 22"), alt: "Placeholder bird photo 22" },
-        { id: "img-23", type: "image", category: "other", title: "Bird 23", src: svgPlaceholder("Bird 23"), alt: "Placeholder bird photo 23" },
-        { id: "img-24", type: "image", category: "other", title: "Bird 24", src: svgPlaceholder("Bird 24"), alt: "Placeholder bird photo 24" },
-        { id: "img-25", type: "image", category: "other", title: "Bird 25", src: svgPlaceholder("Bird 25"), alt: "Placeholder bird photo 25" },
-        { id: "img-26", type: "image", category: "other", title: "Bird 26", src: svgPlaceholder("Bird 26"), alt: "Placeholder bird photo 26" },
-        { id: "img-27", type: "image", category: "other", title: "Bird 27", src: svgPlaceholder("Bird 27"), alt: "Placeholder bird photo 27" },
-        { id: "img-28", type: "image", category: "other", title: "Bird 28", src: svgPlaceholder("Bird 28"), alt: "Placeholder bird photo 28" },
-        { id: "img-29", type: "image", category: "other", title: "Bird 29", src: svgPlaceholder("Bird 29"), alt: "Placeholder bird photo 29" },
-        { id: "img-30", type: "image", category: "other", title: "Bird 30", src: svgPlaceholder("Bird 30"), alt: "Placeholder bird photo 30" }
-      ];
-      // ---------- END EDIT POINTS ----------
-
-      // Lightbox DOM
       const lb = document.createElement("div");
       lb.className = "lb";
       lb.setAttribute("role", "dialog");
@@ -569,43 +781,25 @@
       let lbIndex = 0;
       let lastFocused = null;
 
-      function prettyCategory(c) {
-        const map = {
-          "hummingbirds": "Hummingbirds",
-          "toucans": "Toucans",
-          "tanagers": "Tanagers",
-          "cock-of-the-rock": "Cock-of-the-Rock",
-          "other": "Other"
-        };
-        return map[c] || "Birds";
-      }
-
-      function setEmptyState() {
-        if (!emptyState) return;
-        emptyState.classList.toggle("is-visible", visible.length === 0);
-      }
-
       function render() {
-        // Filter logic: photos only here; videos are embedded below
-        const filtered =
+        visible =
           activeFilter === "all" ? ITEMS :
           activeFilter === "videos" ? [] :
           ITEMS.filter(x => x.category === activeFilter);
 
-        visible = filtered;
         grid.innerHTML = "";
 
         visible.forEach((item, i) => {
           const tile = document.createElement("button");
           tile.type = "button";
           tile.className = "tile";
-          tile.setAttribute("aria-label", `Open ${item.title}`);
-          tile.dataset.index = String(i);
+          tile.setAttribute("aria-label", "Open " + item.title);
 
           const img = document.createElement("img");
           img.className = "thumb";
           img.src = item.src;
           img.alt = item.alt || item.title;
+          img.loading = "lazy";
 
           const meta = document.createElement("div");
           meta.className = "meta";
@@ -625,11 +819,10 @@
           tile.appendChild(meta);
 
           tile.addEventListener("click", () => openLightbox(i));
-
           grid.appendChild(tile);
         });
 
-        setEmptyState();
+        setEmptyState(visible);
       }
 
       function clamp(i) {
@@ -650,16 +843,11 @@
         lbSub.textContent = prettyCategory(item.category);
 
         lb.classList.add("is-open");
-
-        // Focus close button for accessibility
-        window.setTimeout(() => {
-          btnClose && btnClose.focus();
-        }, 0);
+        window.setTimeout(() => { btnClose && btnClose.focus(); }, 0);
       }
 
       function closeLightbox() {
         lb.classList.remove("is-open");
-        // return focus
         if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
       }
 
@@ -673,18 +861,13 @@
         lbSub.textContent = prettyCategory(item.category);
       }
 
-      // Lightbox controls (bind once)
       if (!lb.dataset.bound) {
         lb.dataset.bound = "1";
-
         btnPrev && btnPrev.addEventListener("click", () => showNext(-1));
         btnNext && btnNext.addEventListener("click", () => showNext(1));
         btnClose && btnClose.addEventListener("click", closeLightbox);
 
-        lb.addEventListener("click", (e) => {
-          // click outside dialog closes
-          if (e.target === lb) closeLightbox();
-        });
+        lb.addEventListener("click", (e) => { if (e.target === lb) closeLightbox(); });
 
         document.addEventListener("keydown", (e) => {
           if (!lb.classList.contains("is-open")) return;
@@ -694,7 +877,6 @@
         });
       }
 
-      // Filters (bind once)
       if (!document.documentElement.dataset.mbwGalleryFiltersBound) {
         document.documentElement.dataset.mbwGalleryFiltersBound = "1";
 
@@ -705,9 +887,8 @@
 
             activeFilter = btn.dataset.filter || "all";
 
-            // If user clicks Videos, scroll to videos section instead of empty grid
             if (activeFilter === "videos") {
-              render(); // sets empty state
+              render();
               const videosSection = document.querySelector('section[aria-label="Videos section"]');
               if (videosSection) videosSection.scrollIntoView({ behavior: "smooth", block: "start" });
               return;
@@ -718,7 +899,6 @@
         });
       }
 
-      // Initial render
       render();
     })();
   </script>
