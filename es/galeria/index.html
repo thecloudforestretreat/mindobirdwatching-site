@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Galería | Mindo Bird Watching</title>
-  <meta name="description" content="Explora la galería de Mindo Bird Watching con aves coloridas de Ecuador. Fotos de colibríes, tucanes, tángaras y el Gallo de la Peña del bosque nublado de Mindo." />
+  <title>Galería de Aves | Mindo Bird Watching</title>
+  <meta name="description" content="Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Mira fotos increíbles de colibríes, tucanes, tangaras y el Gallito de la Peña en el bosque nublado de Mindo." />
 
   <link rel="alternate" hreflang="en" href="/bird-gallery/" />
   <link rel="alternate" hreflang="es" href="/es/galeria/" />
@@ -15,34 +15,28 @@
   <script src="/assets/js/site.js" defer></script>
 
   <style>
-    /* =========================
-       Estilos solo de esta página (contenido principal)
-       ========================= */
     .page { margin-top: 18px; padding: 26px; }
-    .page.card{
+    .page.card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
 
-    .hero{
+    .hero {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
       align-items: start;
     }
 
-    .hero h1{ margin: 0 0 6px; letter-spacing: -0.02em; }
+    .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
 
-    .hero p{
-      margin: 0;
-      color: var(--ink);
-      line-height: 1.6;
-      max-width: 82ch;
-    }
+    .heroLeft { display: grid; gap: 12px; align-content: start; }
+    .heroRight { display: grid; gap: 12px; align-content: start; }
 
-    .heroCard{
+    .heroCard {
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -50,7 +44,7 @@
       padding: 14px;
     }
 
-    .heroCard h2{
+    .heroCard h2 {
       margin: 0 0 8px;
       font-family: var(--font-head);
       color: var(--forest);
@@ -58,27 +52,121 @@
       font-size: 18px;
     }
 
-    .heroCard ul{
-      margin: 0;
-      padding-left: 18px;
-      line-height: 1.55;
-      color: var(--ink);
-    }
+    .heroCard ul { margin: 0; padding-left: 18px; line-height: 1.55; color: var(--ink); }
 
-    .heroCtas{
+    .heroCtas {
       margin-top: 12px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .section{
+    .bodHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bodTitle { display: grid; gap: 2px; min-width: 0; }
+    .bodTitle h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .bodSub {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bodPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .bodMedia {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .bodImgWrap {
+      background: rgba(255,255,255,.65);
+      display: grid;
+      place-items: center;
+      padding: 12px;
+    }
+
+    .bodImg {
+      width: 100%;
+      height: 360px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.06);
+    }
+
+    .bodAudio {
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+    }
+
+    .bodAudio audio { width: 100%; display: block; }
+
+    .bodLinks {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .bodLinks a {
+      color: inherit;
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .section {
       margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
 
-    .sectionHead{
+    .sectionHead {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -87,7 +175,7 @@
       margin-bottom: 10px;
     }
 
-    .sectionHead h2{
+    .sectionHead h2 {
       margin: 0;
       font-family: var(--font-head);
       color: var(--forest);
@@ -95,9 +183,9 @@
       font-size: 20px;
     }
 
-    .hint{ margin: 0; color: var(--muted); font-size: 13px; }
+    .hint { margin: 0; color: var(--muted); font-size: 13px; }
 
-    .filters{
+    .filters {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -105,7 +193,7 @@
       margin: 10px 0 14px;
     }
 
-    .chip{
+    .chip {
       appearance: none;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.65);
@@ -118,18 +206,18 @@
       cursor: pointer;
       box-shadow: var(--shadow);
     }
-    .chip[aria-pressed="true"]{
+    .chip[aria-pressed="true"] {
       background: rgba(13,89,37,.14);
       border-color: rgba(13,89,37,.35);
     }
 
-    .gallery{
+    .gallery {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
     }
 
-    .tile{
+    .tile {
       border: 1px solid var(--line);
       border-radius: var(--r);
       overflow: hidden;
@@ -138,17 +226,21 @@
       cursor: pointer;
       position: relative;
       min-height: 160px;
+      padding: 0;
     }
 
-    .thumb{
+    .thumb {
       width: 100%;
       height: 220px;
       display: block;
-      object-fit: cover;
-      background: rgba(255,255,255,.55);
+      object-fit: contain;
+      object-position: center;
+      background: rgba(255,255,255,.72);
+      padding: 10px;
+      box-sizing: border-box;
     }
 
-    .meta{
+    .meta {
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       display: flex;
@@ -158,7 +250,7 @@
       background: rgba(255,255,255,.55);
     }
 
-    .name{
+    .name {
       margin: 0;
       font-weight: 900;
       font-size: 13.5px;
@@ -168,14 +260,14 @@
       white-space: nowrap;
     }
 
-    .tag{
+    .tag {
       margin: 0;
       font-size: 12.5px;
       color: var(--muted);
       white-space: nowrap;
     }
 
-    .emptyState{
+    .emptyState {
       display: none;
       margin-top: 10px;
       padding: 14px;
@@ -185,15 +277,11 @@
       box-shadow: var(--shadow);
       color: var(--muted);
     }
-    .emptyState.is-visible{ display: block; }
+    .emptyState.is-visible { display: block; }
 
-    .videoGrid{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-    .videoCard{
+    .videoCard {
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -201,15 +289,9 @@
       overflow: hidden;
     }
 
-    .videoFrame{
-      aspect-ratio: 16 / 9;
-      width: 100%;
-      border: 0;
-      display: block;
-      background: rgba(255,255,255,.55);
-    }
+    .videoFrame { aspect-ratio: 16 / 9; width: 100%; border: 0; display: block; background: rgba(255,255,255,.55); }
 
-    .videoCap{
+    .videoCap {
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       color: var(--muted);
@@ -217,7 +299,7 @@
       background: rgba(255,255,255,.55);
     }
 
-    .lb{
+    .lb {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,.62);
@@ -227,9 +309,9 @@
       z-index: 9999;
       padding: 18px;
     }
-    .lb.is-open{ display: flex; }
+    .lb.is-open { display: flex; }
 
-    .lbDialog{
+    .lbDialog {
       width: min(980px, 100%);
       border-radius: 20px;
       border: 1px solid rgba(255,255,255,.22);
@@ -238,9 +320,9 @@
       overflow: hidden;
     }
 
-    .lbMedia{ position: relative; background: rgba(255,255,255,.55); }
+    .lbMedia { position: relative; background: rgba(255,255,255,.55); }
 
-    .lbImg{
+    .lbImg {
       width: 100%;
       height: min(70vh, 640px);
       object-fit: contain;
@@ -248,7 +330,7 @@
       background: rgba(255,255,255,.55);
     }
 
-    .lbBar{
+    .lbBar {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -258,7 +340,7 @@
       background: rgba(255,255,255,.82);
     }
 
-    .lbTitle{
+    .lbTitle {
       margin: 0;
       font-weight: 900;
       color: var(--ink);
@@ -268,21 +350,11 @@
       white-space: nowrap;
     }
 
-    .lbSub{
-      margin: 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      white-space: nowrap;
-    }
+    .lbSub { margin: 0; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
 
-    .lbBtns{
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      flex: 0 0 auto;
-    }
+    .lbBtns { display: inline-flex; gap: 8px; align-items: center; flex: 0 0 auto; }
 
-    .iconBtn{
+    .iconBtn {
       width: 44px;
       height: 44px;
       border-radius: 14px;
@@ -295,86 +367,125 @@
       cursor: pointer;
       user-select: none;
     }
-    .iconBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
-    .iconBtn svg{ width: 20px; height: 20px; }
+    .iconBtn:focus { outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .iconBtn svg { width: 20px; height: 20px; }
 
-    .closeBtn{
-      width: auto;
-      padding: 0 12px;
-      gap: 10px;
-      font-weight: 900;
-      font-size: 13px;
+    .closeBtn { width: auto; padding: 0 12px; gap: 10px; font-weight: 900; font-size: 13px; }
+
+    @media (max-width: 980px) {
+      .gallery { grid-template-columns: repeat(3, 1fr); }
+      .thumb { height: 200px; }
+      .bodImg { height: 320px; }
     }
 
-    @media (max-width: 980px){
-      .gallery{ grid-template-columns: repeat(3, 1fr); }
-      .thumb{ height: 200px; }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+      .thumb { height: 190px; }
+      .videoGrid { grid-template-columns: 1fr; }
+      .bodImg { height: 320px; }
     }
 
-    @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .gallery{ grid-template-columns: repeat(2, 1fr); }
-      .thumb{ height: 190px; }
-      .videoGrid{ grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 520px){
-      .gallery{ grid-template-columns: 1fr; }
-      .thumb{ height: 220px; }
-      .lbImg{ height: min(65vh, 560px); }
+    @media (max-width: 520px) {
+      .gallery { grid-template-columns: 1fr; }
+      .thumb { height: 220px; }
+      .lbImg { height: min(65vh, 560px); }
+      .bodImg { height: 280px; }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <!-- Shared header mount -->
     <div id="siteHeader"></div>
 
     <main class="page card">
-      <section class="hero" aria-label="Introducción a la galería">
-        <div>
-          <h1>Galería</h1>
-          <p>
-            Explora la galería de Mindo Bird Watching con aves coloridas de Ecuador. Mira fotos de colibríes,
-            tucanes, tángaras y el Gallo de la Peña del bosque nublado de Mindo.
-          </p>
 
-          <div class="heroCtas" aria-label="Acciones principales">
-            <a class="btn primary" href="/es/reservar/">Reservar un tour</a>
-            <a class="btn secondary" href="/es/tours/">Ver tours</a>
+      <section class="hero" aria-label="Introducción a la galería">
+        <div class="heroLeft" aria-label="Columna izquierda">
+          <div class="heroCard" aria-label="Intro">
+            <h1 style="margin:0 0 6px;">Galería de Aves</h1>
+            <p>
+              Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Mira fotos increíbles de colibríes,
+              tucanes, tangaras y el Gallito de la Peña en el bosque nublado de Mindo.
+            </p>
+
+            <div class="heroCtas" aria-label="Acciones principales">
+              <a class="btn primary" href="/es/reservar-tour/">Reserva un tour</a>
+              <a class="btn secondary" href="/es/tours/">Ver tours</a>
+            </div>
           </div>
+
+          <aside class="heroCard" aria-label="Conoce las aves">
+            <h2>Conoce las aves</h2>
+            <ul>
+              <li>Usa los filtros para ir directo a un grupo (Colibríes, Tucanes, etc.)</li>
+              <li>Haz clic en cualquier foto para abrir el visor a pantalla completa</li>
+              <li>Usa las teclas ← / → para navegar</li>
+            </ul>
+          </aside>
         </div>
 
-        <aside class="heroCard" aria-label="Cómo usar esta galería">
-          <h2>Conoce las aves</h2>
-          <ul>
-            <li>Usa los filtros para ver grupos (colibríes, tucanes, etc.)</li>
-            <li>Haz clic en una foto para abrir el visor</li>
-            <li>Usa las teclas izquierda y derecha para navegar</li>
-          </ul>
-        </aside>
+        <div class="heroRight" aria-label="Columna derecha">
+          <aside class="heroCard" aria-label="Ave del día">
+            <div class="bodHead">
+              <div class="bodTitle" style="min-width:0;">
+                <h2>Ave del día</h2>
+                <div class="bodSub" id="bodSub">Cargando el ave de hoy...</div>
+              </div>
+              <span class="bodPill" id="bodPill">Cargando</span>
+            </div>
+
+            <div class="bodMedia" id="bodMedia" hidden>
+              <div class="bodImgWrap">
+                <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de imagen" style="display:block; width:100%;">
+                  <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
+                </a>
+              </div>
+
+              <div class="bodAudio" id="bodAudioWrap" hidden>
+                <audio id="bodAudio" controls preload="metadata"></audio>
+
+                <div class="bodLinks">
+                  <div>
+                    <span id="bodImageCreditWrap" hidden>Crédito de imagen: <a id="bodImageCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
+                    <span id="bodAudioCreditWrap" hidden style="margin-left:10px;">Crédito de audio: <a id="bodAudioCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
+                  </div>
+                  <div>
+                    <span id="bodAudioSrcWrap" hidden>Fuente de audio: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Abrir</a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bodCtas">
+              <a class="btn secondary" href="/es/reservar-tour/">Ave con guía</a>
+              <a class="btn secondary" href="/es/calendario-de-avistamiento/">Calendario de avistamiento</a>
+              <a class="btn secondary" href="/es/ave-de-la-semana/">Ave de la semana</a>
+            </div>
+          </aside>
+        </div>
       </section>
 
-      <section class="section" aria-label="Sección de galería">
+      <section class="section" aria-label="Sección galería">
         <div class="sectionHead">
-          <h2>Fotos</h2>
-          <p class="hint">Listo con placeholders. Solo cambia URLs, títulos y categorías.</p>
+          <h2>Galería</h2>
+          <p class="hint">Usando imágenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
         </div>
 
-        <div class="filters" role="toolbar" aria-label="Filtros de galería">
-          <button class="chip" type="button" data-filter="all" aria-pressed="true">Todo</button>
+        <div class="filters" role="toolbar" aria-label="Filtros de la galería">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">Todas</button>
           <button class="chip" type="button" data-filter="hummingbirds" aria-pressed="false">Colibríes</button>
           <button class="chip" type="button" data-filter="toucans" aria-pressed="false">Tucanes</button>
-          <button class="chip" type="button" data-filter="tanagers" aria-pressed="false">Tángaras</button>
-          <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Gallo de la Peña</button>
+          <button class="chip" type="button" data-filter="tanagers" aria-pressed="false">Tangaras</button>
+          <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Gallito de la Peña</button>
           <button class="chip" type="button" data-filter="other" aria-pressed="false">Otras</button>
           <button class="chip" type="button" data-filter="videos" aria-pressed="false">Videos</button>
         </div>
 
         <div id="galleryGrid" class="gallery" aria-label="Cuadrícula de fotos"></div>
         <div id="emptyState" class="emptyState" role="status" aria-live="polite">
-          Aún no hay elementos para este filtro.
+          No hay elementos para este filtro todavía.
         </div>
       </section>
 
@@ -389,100 +500,246 @@
             <iframe
               class="videoFrame"
               src="https://www.youtube-nocookie.com/embed/VIDEO_ID_1"
-              title="Video 1 de Mindo Bird Watching"
+              title="Mindo Bird Watching video 1"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen></iframe>
-            <div class="videoCap">Video placeholder 1. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
+              allowfullscreen>
+            </iframe>
+            <div class="videoCap">Video de ejemplo 1. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
           </div>
 
           <div class="videoCard" aria-label="Video 2">
             <iframe
               class="videoFrame"
               src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
-              title="Video 2 de Mindo Bird Watching"
+              title="Mindo Bird Watching video 2"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen></iframe>
-            <div class="videoCap">Video placeholder 2. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
+              allowfullscreen>
+            </iframe>
+            <div class="videoCap">Video de ejemplo 2. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- Shared footer mount -->
     <div id="siteFooter"></div>
   </div>
 
-  <!-- Lógica solo de la galería (sin lógica de menú) -->
   <script>
     (function () {
       "use strict";
 
-      if (document.documentElement.dataset.mbwGaleriaInit === "1") return;
-      document.documentElement.dataset.mbwGaleriaInit = "1";
+      /* =========================
+         Ave del día (fetch + fallback JSONP)
+         Fix audio: normaliza Xeno-canto /download a MP3 stream
+         ========================= */
+      if (document.documentElement.dataset.mbwBodInit !== "1") {
+        document.documentElement.dataset.mbwBodInit = "1";
+
+        const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
+
+        const bodSub = document.getElementById("bodSub");
+        const bodPill = document.getElementById("bodPill");
+        const bodMedia = document.getElementById("bodMedia");
+
+        const bodImg = document.getElementById("bodImg");
+        const bodImgLink = document.getElementById("bodImgLink");
+
+        const bodAudioWrap = document.getElementById("bodAudioWrap");
+        const bodAudio = document.getElementById("bodAudio");
+
+        const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
+        const bodImageCredit = document.getElementById("bodImageCredit");
+
+        const bodAudioCreditWrap = document.getElementById("bodAudioCreditWrap");
+        const bodAudioCredit = document.getElementById("bodAudioCredit");
+
+        const bodAudioSrcWrap = document.getElementById("bodAudioSrcWrap");
+        const bodAudioSrc = document.getElementById("bodAudioSrc");
+
+        function safeText(s) { return String(s || "").trim(); }
+
+        function setLoading() {
+          if (bodSub) bodSub.textContent = "Cargando el ave de hoy...";
+          if (bodPill) bodPill.textContent = "Cargando";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function setError() {
+          if (bodSub) bodSub.textContent = "El Ave del día no está disponible en este momento.";
+          if (bodPill) bodPill.textContent = "Sin conexión";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function normalizeAudioUrl(url) {
+          const u = safeText(url);
+          if (!u) return "";
+          const m = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\/download\/?$/i);
+          if (m && m[1]) return "https://xeno-canto.org/" + m[1] + "/download?type=mp3";
+          return u;
+        }
+
+        function renderBod(data) {
+          const birdName = safeText(data.birdName) || "Ave del día";
+          const spanishName = safeText(data.spanishName);
+
+          const imageUrl = safeText(data.imageUrl);
+          const audioUrl = normalizeAudioUrl(data.audioUrl);
+
+          const imageLink = safeText(data.imageLink) || imageUrl;
+          const audioLink = safeText(data.audioLink) || audioUrl;
+
+          const imageCredit = safeText(data.imageCredit);
+          const audioCredit = safeText(data.audioCredit);
+
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Selección de hoy en Mindo";
+          if (bodPill) bodPill.textContent = "Hoy";
+
+          if (bodImg && imageUrl) {
+            bodImg.src = imageUrl;
+            bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
+            if (bodImgLink) bodImgLink.href = imageLink || imageUrl;
+            if (bodMedia) bodMedia.hidden = false;
+          } else {
+            if (bodMedia) bodMedia.hidden = true;
+          }
+
+          if (bodAudio && audioUrl) {
+            bodAudio.pause();
+            bodAudio.removeAttribute("src");
+            bodAudio.innerHTML = "";
+
+            const src = document.createElement("source");
+            src.src = audioUrl;
+            src.type = "audio/mpeg";
+            bodAudio.appendChild(src);
+
+            bodAudio.load();
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+          } else {
+            if (bodAudioWrap) bodAudioWrap.hidden = true;
+          }
+
+          if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
+          if (bodImageCredit && imageCredit) bodImageCredit.href = imageCredit;
+
+          if (bodAudioCreditWrap) bodAudioCreditWrap.hidden = !audioCredit;
+          if (bodAudioCredit && audioCredit) bodAudioCredit.href = audioCredit;
+
+          if (bodAudioSrcWrap) bodAudioSrcWrap.hidden = !audioLink;
+          if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
+        }
+
+        function loadViaJsonp() {
+          return new Promise((resolve, reject) => {
+            const cb = "mbwBodCb_" + Math.random().toString(36).slice(2);
+            const script = document.createElement("script");
+
+            window[cb] = function (payload) {
+              try { resolve(payload); }
+              finally { delete window[cb]; script.remove(); }
+            };
+
+            script.onerror = function () {
+              delete window[cb];
+              script.remove();
+              reject(new Error("JSONP falló"));
+            };
+
+            script.src = BASE + "?format=json&callback=" + encodeURIComponent(cb);
+            document.head.appendChild(script);
+          });
+        }
+
+        async function loadBod() {
+          setLoading();
+
+          try {
+            const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
+            const json = await res.json();
+            if (!json || json.ok !== true) throw new Error("Not ok");
+            renderBod(json);
+            return;
+          } catch (_) {}
+
+          try {
+            const jsonp = await loadViaJsonp();
+            if (!jsonp || jsonp.ok !== true) { setError(); return; }
+            renderBod(jsonp);
+          } catch (_) {
+            setError();
+          }
+        }
+
+        loadBod();
+      }
+
+      /* =========================
+         Galería + lightbox
+         ========================= */
+      if (document.documentElement.dataset.mbwGalleryInit === "1") return;
+      document.documentElement.dataset.mbwGalleryInit = "1";
 
       const grid = document.getElementById("galleryGrid");
       const emptyState = document.getElementById("emptyState");
       const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
       if (!grid) return;
 
-      function svgPlaceholder(label) {
-        const bg = "F3F7F1";
-        const stroke = "D6E5C6";
-        const text = "0D5925";
-        const safe = String(label || "Placeholder").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const svg =
-          `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">` +
-            `<rect width="1200" height="1600" fill="#${bg}"/>` +
-            `<rect x="60" y="60" width="1080" height="1480" rx="44" fill="none" stroke="#${stroke}" stroke-width="10"/>` +
-            `<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">` +
-              `<text x="600" y="760" font-size="54" font-weight="700" fill="#${text}">${safe}</text>` +
-              `<text x="600" y="840" font-size="28" font-weight="600" fill="#6B7C6C">Reemplaza src, título y categoría</text>` +
-            `</g>` +
-          `</svg>`;
-        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+      const ITEMS = [
+        { id: "img-01", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari en Mindo, Ecuador" },
+        { id: "img-02", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan en Mindo, Ecuador" },
+        { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet en Mindo, Ecuador" },
+        { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet en Mindo, Ecuador" },
+        { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan en Mindo, Ecuador" },
+
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock en Mindo, Ecuador" },
+
+        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph (colibrí) en Mindo, Ecuador" },
+
+        { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager en Mindo, Ecuador" },
+        { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager en Mindo, Ecuador" },
+        { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager en Mindo, Ecuador" },
+        { id: "img-11", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager en Mindo, Ecuador" },
+        { id: "img-12", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager en Mindo, Ecuador" },
+        { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager en Mindo, Ecuador" },
+        { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager en Mindo, Ecuador" },
+        { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager en Mindo, Ecuador" },
+
+        { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher en Mindo, Ecuador" },
+        { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher en Mindo, Ecuador" },
+        { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot en Mindo, Ecuador" },
+        { id: "img-19", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo en Mindo, Ecuador" },
+        { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker en Mindo, Ecuador" },
+        { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon en Mindo, Ecuador" },
+        { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot en Mindo, Ecuador" },
+
+        { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird en Mindo, Ecuador" },
+        { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra en Mindo, Ecuador" },
+        { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta en Mindo, Ecuador" },
+        { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal en Mindo, Ecuador" },
+        { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon en Mindo, Ecuador" },
+
+        { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan en Mindo, Ecuador" }
+      ];
+
+      function prettyCategory(c) {
+        const map = {
+          "hummingbirds": "Colibríes",
+          "toucans": "Tucanes",
+          "tanagers": "Tangaras",
+          "cock-of-the-rock": "Gallito de la Peña",
+          "other": "Otras"
+        };
+        return map[c] || "Aves";
       }
 
-      // Edita solo estos campos: title, category, src, alt
-      // category:
-      // "hummingbirds" | "toucans" | "tanagers" | "cock-of-the-rock" | "other"
-      const ITEMS = [
-        { id: "img-01", type: "image", category: "hummingbirds", title: "Colibrí 01", src: svgPlaceholder("Colibrí 01"), alt: "Foto placeholder colibrí 01" },
-        { id: "img-02", type: "image", category: "hummingbirds", title: "Colibrí 02", src: svgPlaceholder("Colibrí 02"), alt: "Foto placeholder colibrí 02" },
-        { id: "img-03", type: "image", category: "hummingbirds", title: "Colibrí 03", src: svgPlaceholder("Colibrí 03"), alt: "Foto placeholder colibrí 03" },
-        { id: "img-04", type: "image", category: "hummingbirds", title: "Colibrí 04", src: svgPlaceholder("Colibrí 04"), alt: "Foto placeholder colibrí 04" },
-        { id: "img-05", type: "image", category: "hummingbirds", title: "Colibrí 05", src: svgPlaceholder("Colibrí 05"), alt: "Foto placeholder colibrí 05" },
-
-        { id: "img-06", type: "image", category: "toucans", title: "Tucán 01", src: svgPlaceholder("Tucán 01"), alt: "Foto placeholder tucán 01" },
-        { id: "img-07", type: "image", category: "toucans", title: "Tucán 02", src: svgPlaceholder("Tucán 02"), alt: "Foto placeholder tucán 02" },
-        { id: "img-08", type: "image", category: "toucans", title: "Tucán 03", src: svgPlaceholder("Tucán 03"), alt: "Foto placeholder tucán 03" },
-        { id: "img-09", type: "image", category: "toucans", title: "Tucán 04", src: svgPlaceholder("Tucán 04"), alt: "Foto placeholder tucán 04" },
-        { id: "img-10", type: "image", category: "toucans", title: "Tucán 05", src: svgPlaceholder("Tucán 05"), alt: "Foto placeholder tucán 05" },
-
-        { id: "img-11", type: "image", category: "tanagers", title: "Tángara 01", src: svgPlaceholder("Tángara 01"), alt: "Foto placeholder tángara 01" },
-        { id: "img-12", type: "image", category: "tanagers", title: "Tángara 02", src: svgPlaceholder("Tángara 02"), alt: "Foto placeholder tángara 02" },
-        { id: "img-13", type: "image", category: "tanagers", title: "Tángara 03", src: svgPlaceholder("Tángara 03"), alt: "Foto placeholder tángara 03" },
-        { id: "img-14", type: "image", category: "tanagers", title: "Tángara 04", src: svgPlaceholder("Tángara 04"), alt: "Foto placeholder tángara 04" },
-        { id: "img-15", type: "image", category: "tanagers", title: "Tángara 05", src: svgPlaceholder("Tángara 05"), alt: "Foto placeholder tángara 05" },
-
-        { id: "img-16", type: "image", category: "cock-of-the-rock", title: "Gallo de la Peña 01", src: svgPlaceholder("Gallo de la Peña 01"), alt: "Foto placeholder gallo de la peña 01" },
-        { id: "img-17", type: "image", category: "cock-of-the-rock", title: "Gallo de la Peña 02", src: svgPlaceholder("Gallo de la Peña 02"), alt: "Foto placeholder gallo de la peña 02" },
-        { id: "img-18", type: "image", category: "cock-of-the-rock", title: "Gallo de la Peña 03", src: svgPlaceholder("Gallo de la Peña 03"), alt: "Foto placeholder gallo de la peña 03" },
-        { id: "img-19", type: "image", category: "cock-of-the-rock", title: "Gallo de la Peña 04", src: svgPlaceholder("Gallo de la Peña 04"), alt: "Foto placeholder gallo de la peña 04" },
-        { id: "img-20", type: "image", category: "cock-of-the-rock", title: "Gallo de la Peña 05", src: svgPlaceholder("Gallo de la Peña 05"), alt: "Foto placeholder gallo de la peña 05" },
-
-        { id: "img-21", type: "image", category: "other", title: "Ave 21", src: svgPlaceholder("Ave 21"), alt: "Foto placeholder ave 21" },
-        { id: "img-22", type: "image", category: "other", title: "Ave 22", src: svgPlaceholder("Ave 22"), alt: "Foto placeholder ave 22" },
-        { id: "img-23", type: "image", category: "other", title: "Ave 23", src: svgPlaceholder("Ave 23"), alt: "Foto placeholder ave 23" },
-        { id: "img-24", type: "image", category: "other", title: "Ave 24", src: svgPlaceholder("Ave 24"), alt: "Foto placeholder ave 24" },
-        { id: "img-25", type: "image", category: "other", title: "Ave 25", src: svgPlaceholder("Ave 25"), alt: "Foto placeholder ave 25" },
-        { id: "img-26", type: "image", category: "other", title: "Ave 26", src: svgPlaceholder("Ave 26"), alt: "Foto placeholder ave 26" },
-        { id: "img-27", type: "image", category: "other", title: "Ave 27", src: svgPlaceholder("Ave 27"), alt: "Foto placeholder ave 27" },
-        { id: "img-28", type: "image", category: "other", title: "Ave 28", src: svgPlaceholder("Ave 28"), alt: "Foto placeholder ave 28" },
-        { id: "img-29", type: "image", category: "other", title: "Ave 29", src: svgPlaceholder("Ave 29"), alt: "Foto placeholder ave 29" },
-        { id: "img-30", type: "image", category: "other", title: "Ave 30", src: svgPlaceholder("Ave 30"), alt: "Foto placeholder ave 30" }
-      ];
+      function setEmptyState(list) {
+        if (!emptyState) return;
+        emptyState.classList.toggle("is-visible", list.length === 0);
+      }
 
       const lb = document.createElement("div");
       lb.className = "lb";
@@ -531,42 +788,25 @@
       let lbIndex = 0;
       let lastFocused = null;
 
-      function prettyCategory(c) {
-        const map = {
-          "hummingbirds": "Colibríes",
-          "toucans": "Tucanes",
-          "tanagers": "Tángaras",
-          "cock-of-the-rock": "Gallo de la Peña",
-          "other": "Otras"
-        };
-        return map[c] || "Aves";
-      }
-
-      function setEmptyState() {
-        if (!emptyState) return;
-        emptyState.classList.toggle("is-visible", visible.length === 0);
-      }
-
       function render() {
-        const filtered =
+        visible =
           activeFilter === "all" ? ITEMS :
           activeFilter === "videos" ? [] :
           ITEMS.filter(x => x.category === activeFilter);
 
-        visible = filtered;
         grid.innerHTML = "";
 
         visible.forEach((item, i) => {
           const tile = document.createElement("button");
           tile.type = "button";
           tile.className = "tile";
-          tile.setAttribute("aria-label", `Abrir ${item.title}`);
-          tile.dataset.index = String(i);
+          tile.setAttribute("aria-label", "Abrir " + item.title);
 
           const img = document.createElement("img");
           img.className = "thumb";
           img.src = item.src;
           img.alt = item.alt || item.title;
+          img.loading = "lazy";
 
           const meta = document.createElement("div");
           meta.className = "meta";
@@ -589,7 +829,7 @@
           grid.appendChild(tile);
         });
 
-        setEmptyState();
+        setEmptyState(visible);
       }
 
       function clamp(i) {
@@ -610,7 +850,7 @@
         lbSub.textContent = prettyCategory(item.category);
 
         lb.classList.add("is-open");
-        window.setTimeout(() => { if (btnClose) btnClose.focus(); }, 0);
+        window.setTimeout(() => { btnClose && btnClose.focus(); }, 0);
       }
 
       function closeLightbox() {
@@ -630,9 +870,9 @@
 
       if (!lb.dataset.bound) {
         lb.dataset.bound = "1";
-        if (btnPrev) btnPrev.addEventListener("click", () => showNext(-1));
-        if (btnNext) btnNext.addEventListener("click", () => showNext(1));
-        if (btnClose) btnClose.addEventListener("click", closeLightbox);
+        btnPrev && btnPrev.addEventListener("click", () => showNext(-1));
+        btnNext && btnNext.addEventListener("click", () => showNext(1));
+        btnClose && btnClose.addEventListener("click", closeLightbox);
 
         lb.addEventListener("click", (e) => { if (e.target === lb) closeLightbox(); });
 
@@ -644,12 +884,14 @@
         });
       }
 
-      if (!document.documentElement.dataset.mbwGaleriaFiltersBound) {
-        document.documentElement.dataset.mbwGaleriaFiltersBound = "1";
+      if (!document.documentElement.dataset.mbwGalleryFiltersBound) {
+        document.documentElement.dataset.mbwGalleryFiltersBound = "1";
+
         chips.forEach((btn) => {
           btn.addEventListener("click", () => {
             chips.forEach(b => b.setAttribute("aria-pressed", "false"));
             btn.setAttribute("aria-pressed", "true");
+
             activeFilter = btn.dataset.filter || "all";
 
             if (activeFilter === "videos") {
