@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Galería de Aves | Mindo Bird Watching</title>
-  <meta name="description" content="Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Mira fotos increíbles de colibríes, tucanes, tangaras y el Gallito de la Peña en el bosque nublado de Mindo." />
+  <meta name="description" content="Explora la galería de Mindo Bird Watching con fotos increíbles de aves de Ecuador. Colibríes, tucanes, tangaras y el Gallito de la Peña en el bosque nublado de Mindo." />
 
   <link rel="alternate" hreflang="en" href="/bird-gallery/" />
   <link rel="alternate" hreflang="es" href="/es/galeria/" />
@@ -61,6 +61,7 @@
       flex-wrap: wrap;
     }
 
+    .bodCard { padding: 16px; }
     .bodHead {
       display: flex;
       align-items: center;
@@ -122,7 +123,7 @@
 
     .bodImg {
       width: 100%;
-      height: 360px;
+      height: 340px;
       display: block;
       object-fit: contain;
       object-position: center;
@@ -138,13 +139,6 @@
     }
 
     .bodAudio audio { width: 100%; display: block; }
-
-    .bodAudioStatus {
-      margin-top: 8px;
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
 
     .bodLinks {
       margin-top: 8px;
@@ -165,7 +159,14 @@
       text-underline-offset: 2px;
     }
 
-    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .bodCtas { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .bodHelp {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
 
     .section {
       margin-top: 18px;
@@ -382,7 +383,7 @@
     @media (max-width: 980px) {
       .gallery { grid-template-columns: repeat(3, 1fr); }
       .thumb { height: 200px; }
-      .bodImg { height: 320px; }
+      .bodImg { height: 300px; }
     }
 
     @media (max-width: 900px) {
@@ -407,34 +408,33 @@
     <div id="siteHeader"></div>
 
     <main class="page card">
-
-      <section class="hero" aria-label="Introducción a la galería">
-        <div class="heroLeft" aria-label="Columna izquierda">
-          <div class="heroCard" aria-label="Intro">
-            <h1 style="margin:0 0 6px;">Galería de Aves</h1>
+      <section class="hero" aria-label="Introducción de la galería">
+        <div class="heroLeft">
+          <div>
+            <h1>Galería de Aves</h1>
             <p>
-              Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Mira fotos increíbles de colibríes,
-              tucanes, tangaras y el Gallito de la Peña en el bosque nublado de Mindo.
+              Explora la galería de Mindo Bird Watching con fotos increíbles de aves de Ecuador. Colibríes, tucanes, tangaras y el
+              Gallito de la Peña en el bosque nublado de Mindo.
             </p>
 
             <div class="heroCtas" aria-label="Acciones principales">
-              <a class="btn primary" href="/es/reservar-tour/">Reserva un tour</a>
+              <a class="btn primary" href="/es/reservar-tour/">Reservar tour</a>
               <a class="btn secondary" href="/es/tours/">Ver tours</a>
             </div>
           </div>
 
-          <aside class="heroCard" aria-label="Conoce las aves">
-            <h2>Conoce las aves</h2>
+          <aside class="heroCard" aria-label="Cómo usar esta galería">
+            <h2>Conoce las Aves</h2>
             <ul>
-              <li>Usa los filtros para ir directo a un grupo (Colibríes, Tucanes, etc.)</li>
-              <li>Haz clic en cualquier foto para abrir el visor a pantalla completa</li>
-              <li>Usa las teclas ← / → para navegar</li>
+              <li>Usa los filtros para ver un grupo (Colibríes, Tucanes, etc.)</li>
+              <li>Haz clic en cualquier foto para abrir el visor</li>
+              <li>Usa ← / → para navegar</li>
             </ul>
           </aside>
         </div>
 
         <div class="heroRight" aria-label="Columna derecha">
-          <aside class="heroCard" aria-label="Ave del día">
+          <aside class="heroCard bodCard" aria-label="Ave del día">
             <div class="bodHead">
               <div class="bodTitle" style="min-width:0;">
                 <h2>Ave del día</h2>
@@ -445,14 +445,17 @@
 
             <div class="bodMedia" id="bodMedia" hidden>
               <div class="bodImgWrap">
-                <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de imagen" style="display:block; width:100%;">
+                <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen" style="display:block; width:100%;">
                   <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
                 </a>
               </div>
 
               <div class="bodAudio" id="bodAudioWrap" hidden>
-                <audio id="bodAudio" controls preload="metadata" crossorigin="anonymous"></audio>
-                <div class="bodAudioStatus" id="bodAudioStatus" aria-live="polite"></div>
+                <audio id="bodAudio" controls preload="none"></audio>
+
+                <div class="bodHelp" id="bodHelp" hidden>
+                  Si el audio no inicia, abre el enlace de Fuente de audio.
+                </div>
 
                 <div class="bodLinks">
                   <div>
@@ -468,20 +471,20 @@
 
             <div class="bodCtas">
               <a class="btn secondary" href="/es/reservar-tour/">Ave con guía</a>
-              <a class="btn secondary" href="/es/calendario-de-avistamiento/">Calendario de avistamiento</a>
+              <a class="btn secondary" href="/es/calendario/">Calendario</a>
               <a class="btn secondary" href="/es/ave-de-la-semana/">Ave de la semana</a>
             </div>
           </aside>
         </div>
       </section>
 
-      <section class="section" aria-label="Sección galería">
+      <section class="section" aria-label="Sección de galería">
         <div class="sectionHead">
           <h2>Galería</h2>
-          <p class="hint">Usando imágenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
+          <p class="hint">Usando tus imágenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
         </div>
 
-        <div class="filters" role="toolbar" aria-label="Filtros de la galería">
+        <div class="filters" role="toolbar" aria-label="Filtros de galería">
           <button class="chip" type="button" data-filter="all" aria-pressed="true">Todas</button>
           <button class="chip" type="button" data-filter="hummingbirds" aria-pressed="false">Colibríes</button>
           <button class="chip" type="button" data-filter="toucans" aria-pressed="false">Tucanes</button>
@@ -493,14 +496,14 @@
 
         <div id="galleryGrid" class="gallery" aria-label="Cuadrícula de fotos"></div>
         <div id="emptyState" class="emptyState" role="status" aria-live="polite">
-          No hay elementos para este filtro todavía.
+          No hay elementos para este filtro.
         </div>
       </section>
 
       <section class="section" aria-label="Sección de videos">
         <div class="sectionHead">
           <h2>Videos</h2>
-          <p class="hint">Reemplaza los IDs de YouTube cuando estén listos.</p>
+          <p class="hint">Reemplaza los IDs de YouTube cuando estés listo.</p>
         </div>
 
         <div class="videoGrid">
@@ -508,24 +511,24 @@
             <iframe
               class="videoFrame"
               src="https://www.youtube-nocookie.com/embed/VIDEO_ID_1"
-              title="Mindo Bird Watching video 1"
+              title="Video 1 de Mindo Bird Watching"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
-            <div class="videoCap">Video de ejemplo 1. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
+            <div class="videoCap">Video 1 de ejemplo. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
           </div>
 
           <div class="videoCard" aria-label="Video 2">
             <iframe
               class="videoFrame"
               src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
-              title="Mindo Bird Watching video 2"
+              title="Video 2 de Mindo Bird Watching"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
-            <div class="videoCap">Video de ejemplo 2. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
+            <div class="videoCap">Video 2 de ejemplo. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
           </div>
         </div>
       </section>
@@ -538,14 +541,11 @@
     (function () {
       "use strict";
 
-      /* =========================
-         Ave del día (fetch + fallback JSONP)
-         Audio fix: Xeno-canto fallbacks + debug listeners + status line
-         ========================= */
       if (document.documentElement.dataset.mbwBodInit !== "1") {
         document.documentElement.dataset.mbwBodInit = "1";
 
         const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
+        const AUDIO_PROXY = "https://mbw-audio-proxy.mindobirdwatching.workers.dev/?url=";
 
         const bodSub = document.getElementById("bodSub");
         const bodPill = document.getElementById("bodPill");
@@ -556,7 +556,7 @@
 
         const bodAudioWrap = document.getElementById("bodAudioWrap");
         const bodAudio = document.getElementById("bodAudio");
-        const bodAudioStatus = document.getElementById("bodAudioStatus");
+        const bodHelp = document.getElementById("bodHelp");
 
         const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
         const bodImageCredit = document.getElementById("bodImageCredit");
@@ -569,84 +569,26 @@
 
         function safeText(s) { return String(s || "").trim(); }
 
-        function setAudioStatus(msg) {
-          if (!bodAudioStatus) return;
-          bodAudioStatus.textContent = msg || "";
-        }
-
         function setLoading() {
           if (bodSub) bodSub.textContent = "Cargando el ave de hoy...";
           if (bodPill) bodPill.textContent = "Cargando";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
-          setAudioStatus("");
+          if (bodHelp) bodHelp.hidden = true;
         }
 
         function setError() {
-          if (bodSub) bodSub.textContent = "El Ave del día no está disponible en este momento.";
-          if (bodPill) bodPill.textContent = "Sin conexión";
+          if (bodSub) bodSub.textContent = "El ave del día no está disponible ahora.";
+          if (bodPill) bodPill.textContent = "Offline";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
-          setAudioStatus("");
+          if (bodHelp) bodHelp.hidden = true;
         }
 
-        function getXenoId(url) {
+        function proxifyAudio(url) {
           const u = safeText(url);
-          const m1 = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\/download\/?$/i);
-          if (m1 && m1[1]) return m1[1];
-          const m2 = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\b/i);
-          if (m2 && m2[1]) return m2[1];
-          return "";
-        }
-
-        function buildAudioSources(audioUrl) {
-          const raw = safeText(audioUrl);
-          if (!raw) return [];
-
-          const id = getXenoId(raw);
-          if (id) {
-            return [
-              { src: "https://xeno-canto.org/" + id + "/download?type=mp3", type: "audio/mpeg" },
-              { src: "https://xeno-canto.org/" + id + "/download", type: "" },
-              { src: raw, type: "" }
-            ];
-          }
-
-          return [{ src: raw, type: "" }];
-        }
-
-        function bindAudioDebugOnce() {
-          if (!bodAudio || bodAudio.dataset.debugBound === "1") return;
-          bodAudio.dataset.debugBound = "1";
-
-          const logPrefix = "[Audio Ave del día]";
-
-          bodAudio.addEventListener("loadstart", () => console.log(logPrefix, "loadstart"));
-          bodAudio.addEventListener("loadedmetadata", () => {
-            console.log(logPrefix, "loadedmetadata duration:", bodAudio.duration);
-            setAudioStatus(Number.isFinite(bodAudio.duration) && bodAudio.duration > 0 ? "" : "Cargando metadatos de audio...");
-          });
-          bodAudio.addEventListener("canplay", () => {
-            console.log(logPrefix, "canplay");
-            setAudioStatus("");
-          });
-          bodAudio.addEventListener("playing", () => {
-            console.log(logPrefix, "playing");
-            setAudioStatus("");
-          });
-          bodAudio.addEventListener("stalled", () => {
-            console.warn(logPrefix, "stalled");
-            setAudioStatus("El audio se detuvo. Revisa la pestaña Network para la solicitud de audio.");
-          });
-          bodAudio.addEventListener("waiting", () => {
-            console.warn(logPrefix, "waiting");
-            setAudioStatus("Cargando buffer...");
-          });
-          bodAudio.addEventListener("error", () => {
-            const err = bodAudio.error;
-            console.warn(logPrefix, "error:", err);
-            setAudioStatus("El audio no cargó. Abre la fuente de audio o revisa Network.");
-          });
+          if (!u) return "";
+          return AUDIO_PROXY + encodeURIComponent(u);
         }
 
         function renderBod(data) {
@@ -654,15 +596,15 @@
           const spanishName = safeText(data.spanishName);
 
           const imageUrl = safeText(data.imageUrl);
-          const audioUrlRaw = safeText(data.audioUrl);
+          const audioUrl = safeText(data.audioUrl);
 
           const imageLink = safeText(data.imageLink) || imageUrl;
-          const audioLink = safeText(data.audioLink) || audioUrlRaw;
+          const audioLink = safeText(data.audioLink) || audioUrl;
 
           const imageCredit = safeText(data.imageCredit);
           const audioCredit = safeText(data.audioCredit);
 
-          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Selección de hoy en Mindo";
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Selección de hoy";
           if (bodPill) bodPill.textContent = "Hoy";
 
           if (bodImg && imageUrl) {
@@ -674,28 +616,25 @@
             if (bodMedia) bodMedia.hidden = true;
           }
 
-          if (bodAudio && audioUrlRaw) {
-            bindAudioDebugOnce();
+          if (bodAudio && audioUrl) {
+            const proxied = proxifyAudio(audioUrl);
 
             bodAudio.pause();
             bodAudio.removeAttribute("src");
             bodAudio.innerHTML = "";
 
-            const sources = buildAudioSources(audioUrlRaw);
-            sources.forEach((s) => {
-              const el = document.createElement("source");
-              el.src = s.src;
-              if (s.type) el.type = s.type;
-              bodAudio.appendChild(el);
-            });
+            const src = document.createElement("source");
+            src.src = proxied;
+            src.type = "audio/mpeg";
+            bodAudio.appendChild(src);
 
             bodAudio.load();
-            if (bodAudioWrap) bodAudioWrap.hidden = false;
 
-            setAudioStatus("Toca play. Si se queda en 0:00, revisa Network para la solicitud de audio.");
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+            if (bodHelp) bodHelp.hidden = false;
           } else {
             if (bodAudioWrap) bodAudioWrap.hidden = true;
-            setAudioStatus("");
+            if (bodHelp) bodHelp.hidden = true;
           }
 
           if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
@@ -708,42 +647,13 @@
           if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
         }
 
-        function loadViaJsonp() {
-          return new Promise((resolve, reject) => {
-            const cb = "mbwBodCb_" + Math.random().toString(36).slice(2);
-            const script = document.createElement("script");
-
-            window[cb] = function (payload) {
-              try { resolve(payload); }
-              finally { delete window[cb]; script.remove(); }
-            };
-
-            script.onerror = function () {
-              delete window[cb];
-              script.remove();
-              reject(new Error("JSONP falló"));
-            };
-
-            script.src = BASE + "?format=json&callback=" + encodeURIComponent(cb);
-            document.head.appendChild(script);
-          });
-        }
-
         async function loadBod() {
           setLoading();
-
           try {
             const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
             const json = await res.json();
-            if (!json || json.ok !== true) throw new Error("Not ok");
+            if (!json || json.ok !== true) { setError(); return; }
             renderBod(json);
-            return;
-          } catch (_) {}
-
-          try {
-            const jsonp = await loadViaJsonp();
-            if (!jsonp || jsonp.ok !== true) { setError(); return; }
-            renderBod(jsonp);
           } catch (_) {
             setError();
           }
@@ -752,9 +662,6 @@
         loadBod();
       }
 
-      /* =========================
-         Galería + lightbox
-         ========================= */
       if (document.documentElement.dataset.mbwGalleryInit === "1") return;
       document.documentElement.dataset.mbwGalleryInit = "1";
 
@@ -769,8 +676,11 @@
         { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet en Mindo, Ecuador" },
         { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet en Mindo, Ecuador" },
         { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan en Mindo, Ecuador" },
-        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock en Mindo, Ecuador" },
-        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph (colibrí) en Mindo, Ecuador" },
+
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Gallito de la Peña en Mindo, Ecuador" },
+
+        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph en Mindo, Ecuador" },
+
         { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager en Mindo, Ecuador" },
         { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager en Mindo, Ecuador" },
         { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager en Mindo, Ecuador" },
@@ -779,6 +689,7 @@
         { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager en Mindo, Ecuador" },
         { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager en Mindo, Ecuador" },
         { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager en Mindo, Ecuador" },
+
         { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher en Mindo, Ecuador" },
         { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher en Mindo, Ecuador" },
         { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot en Mindo, Ecuador" },
@@ -786,11 +697,13 @@
         { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker en Mindo, Ecuador" },
         { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon en Mindo, Ecuador" },
         { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot en Mindo, Ecuador" },
+
         { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird en Mindo, Ecuador" },
         { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra en Mindo, Ecuador" },
         { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta en Mindo, Ecuador" },
         { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal en Mindo, Ecuador" },
         { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon en Mindo, Ecuador" },
+
         { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan en Mindo, Ecuador" }
       ];
 
@@ -814,7 +727,7 @@
       lb.className = "lb";
       lb.setAttribute("role", "dialog");
       lb.setAttribute("aria-modal", "true");
-      lb.setAttribute("aria-label", "Visor de imágenes");
+      lb.setAttribute("aria-label", "Visor de imagen");
       lb.innerHTML = `
         <div class="lbDialog" role="document">
           <div class="lbMedia">
