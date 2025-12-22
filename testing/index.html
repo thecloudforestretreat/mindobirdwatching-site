@@ -23,9 +23,10 @@
       box-shadow: var(--shadow);
     }
 
+    /* HERO LAYOUT: left info + right big BOD */
     .hero {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
       align-items: start;
     }
@@ -33,6 +34,7 @@
     .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
     .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
 
+    .heroLeft { display: grid; gap: 12px; align-content: start; }
     .heroRight { display: grid; gap: 12px; align-content: start; }
 
     .heroCard {
@@ -60,6 +62,8 @@
       flex-wrap: wrap;
     }
 
+    /* BOD card bigger */
+    .bodCard { padding: 16px; }
     .bodHead {
       display: flex;
       align-items: center;
@@ -74,7 +78,7 @@
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1.2;
     }
 
@@ -121,7 +125,7 @@
 
     .bodImg {
       width: 100%;
-      height: 360px;
+      height: 340px;
       display: block;
       object-fit: contain;
       object-position: center;
@@ -137,13 +141,6 @@
     }
 
     .bodAudio audio { width: 100%; display: block; }
-
-    .bodAudioStatus {
-      margin-top: 8px;
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
 
     .bodLinks {
       margin-top: 8px;
@@ -164,8 +161,16 @@
       text-underline-offset: 2px;
     }
 
-    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+    .bodCtas { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
 
+    .bodHelp {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    /* SECTIONS */
     .section {
       margin-top: 18px;
       padding-top: 14px;
@@ -191,6 +196,7 @@
 
     .hint { margin: 0; color: var(--muted); font-size: 13px; }
 
+    /* Filters */
     .filters {
       display: flex;
       gap: 10px;
@@ -217,6 +223,7 @@
       border-color: rgba(13,89,37,.35);
     }
 
+    /* Gallery grid */
     .gallery {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -235,6 +242,7 @@
       padding: 0;
     }
 
+    /* No cropping: contain + padding */
     .thumb {
       width: 100%;
       height: 220px;
@@ -285,6 +293,7 @@
     }
     .emptyState.is-visible { display: block; }
 
+    /* Videos */
     .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .videoCard {
@@ -305,6 +314,7 @@
       background: rgba(255,255,255,.55);
     }
 
+    /* Lightbox */
     .lb {
       position: fixed;
       inset: 0;
@@ -381,7 +391,7 @@
     @media (max-width: 980px) {
       .gallery { grid-template-columns: repeat(3, 1fr); }
       .thumb { height: 200px; }
-      .bodImg { height: 320px; }
+      .bodImg { height: 300px; }
     }
 
     @media (max-width: 900px) {
@@ -407,19 +417,21 @@
 
     <main class="page card">
       <section class="hero" aria-label="Bird gallery introduction">
-        <div>
-          <h1>Bird Gallery</h1>
-          <p>
-            Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
-            toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
-          </p>
+        <div class="heroLeft">
+          <div>
+            <h1>Bird Gallery</h1>
+            <p>
+              Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
+              toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
+            </p>
 
-          <div class="heroCtas" aria-label="Primary actions">
-            <a class="btn primary" href="/book-tour/">Book a tour</a>
-            <a class="btn secondary" href="/tours/">View tours</a>
+            <div class="heroCtas" aria-label="Primary actions">
+              <a class="btn primary" href="/book-tour/">Book a tour</a>
+              <a class="btn secondary" href="/tours/">View tours</a>
+            </div>
           </div>
 
-          <aside class="heroCard" aria-label="Meet the birds" style="margin-top:12px;">
+          <aside class="heroCard" aria-label="How to use this gallery">
             <h2>Meet the Birds</h2>
             <ul>
               <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
@@ -430,7 +442,7 @@
         </div>
 
         <div class="heroRight" aria-label="Hero right column">
-          <aside class="heroCard" aria-label="Bird of the Day">
+          <aside class="heroCard bodCard" aria-label="Bird of the Day">
             <div class="bodHead">
               <div class="bodTitle" style="min-width:0;">
                 <h2>Bird of the Day</h2>
@@ -447,8 +459,11 @@
               </div>
 
               <div class="bodAudio" id="bodAudioWrap" hidden>
-                <audio id="bodAudio" controls preload="metadata" crossorigin="anonymous"></audio>
-                <div class="bodAudioStatus" id="bodAudioStatus" aria-live="polite"></div>
+                <audio id="bodAudio" controls preload="none"></audio>
+
+                <div class="bodHelp" id="bodHelp" hidden>
+                  If audio does not start, open the Audio source link below.
+                </div>
 
                 <div class="bodLinks">
                   <div>
@@ -535,13 +550,13 @@
       "use strict";
 
       /* =========================
-         Bird of the Day (fetch + JSONP fallback)
-         Audio fix: Xeno-canto fallbacks + debug listeners + status line
+         Bird of the Day (fetch + audio proxy)
          ========================= */
       if (document.documentElement.dataset.mbwBodInit !== "1") {
         document.documentElement.dataset.mbwBodInit = "1";
 
         const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
+        const AUDIO_PROXY = "https://mbw-audio-proxy.mindobirdwatching.workers.dev/?url=";
 
         const bodSub = document.getElementById("bodSub");
         const bodPill = document.getElementById("bodPill");
@@ -552,7 +567,7 @@
 
         const bodAudioWrap = document.getElementById("bodAudioWrap");
         const bodAudio = document.getElementById("bodAudio");
-        const bodAudioStatus = document.getElementById("bodAudioStatus");
+        const bodHelp = document.getElementById("bodHelp");
 
         const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
         const bodImageCredit = document.getElementById("bodImageCredit");
@@ -565,17 +580,12 @@
 
         function safeText(s) { return String(s || "").trim(); }
 
-        function setAudioStatus(msg) {
-          if (!bodAudioStatus) return;
-          bodAudioStatus.textContent = msg || "";
-        }
-
         function setLoading() {
           if (bodSub) bodSub.textContent = "Loading today’s bird...";
           if (bodPill) bodPill.textContent = "Loading";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
-          setAudioStatus("");
+          if (bodHelp) bodHelp.hidden = true;
         }
 
         function setError() {
@@ -583,67 +593,13 @@
           if (bodPill) bodPill.textContent = "Offline";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
-          setAudioStatus("");
+          if (bodHelp) bodHelp.hidden = true;
         }
 
-        function getXenoId(url) {
+        function proxifyAudio(url) {
           const u = safeText(url);
-          const m1 = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\/download\/?$/i);
-          if (m1 && m1[1]) return m1[1];
-          const m2 = u.match(/^https?:\/\/xeno-canto\.org\/(\d+)\b/i);
-          if (m2 && m2[1]) return m2[1];
-          return "";
-        }
-
-        function buildAudioSources(audioUrl) {
-          const raw = safeText(audioUrl);
-          if (!raw) return [];
-
-          // If it’s Xeno-canto, try multiple known variants.
-          const id = getXenoId(raw);
-          if (id) {
-            return [
-              { src: "https://xeno-canto.org/" + id + "/download?type=mp3", type: "audio/mpeg" },
-              { src: "https://xeno-canto.org/" + id + "/download", type: "" },
-              { src: raw, type: "" }
-            ];
-          }
-
-          return [{ src: raw, type: "" }];
-        }
-
-        function bindAudioDebugOnce() {
-          if (!bodAudio || bodAudio.dataset.debugBound === "1") return;
-          bodAudio.dataset.debugBound = "1";
-
-          const logPrefix = "[BOD audio]";
-
-          bodAudio.addEventListener("loadstart", () => console.log(logPrefix, "loadstart"));
-          bodAudio.addEventListener("loadedmetadata", () => {
-            console.log(logPrefix, "loadedmetadata duration:", bodAudio.duration);
-            setAudioStatus(Number.isFinite(bodAudio.duration) && bodAudio.duration > 0 ? "" : "Loading audio metadata...");
-          });
-          bodAudio.addEventListener("canplay", () => {
-            console.log(logPrefix, "canplay");
-            setAudioStatus("");
-          });
-          bodAudio.addEventListener("playing", () => {
-            console.log(logPrefix, "playing");
-            setAudioStatus("");
-          });
-          bodAudio.addEventListener("stalled", () => {
-            console.warn(logPrefix, "stalled");
-            setAudioStatus("Audio stalled. Check the Network tab for the audio request.");
-          });
-          bodAudio.addEventListener("waiting", () => {
-            console.warn(logPrefix, "waiting");
-            setAudioStatus("Buffering audio...");
-          });
-          bodAudio.addEventListener("error", () => {
-            const err = bodAudio.error;
-            console.warn(logPrefix, "error:", err);
-            setAudioStatus("Audio failed to load. Open Audio source to verify the file, or check Network tab.");
-          });
+          if (!u) return "";
+          return AUDIO_PROXY + encodeURIComponent(u);
         }
 
         function renderBod(data) {
@@ -651,10 +607,10 @@
           const spanishName = safeText(data.spanishName);
 
           const imageUrl = safeText(data.imageUrl);
-          const audioUrlRaw = safeText(data.audioUrl);
+          const audioUrl = safeText(data.audioUrl);
 
           const imageLink = safeText(data.imageLink) || imageUrl;
-          const audioLink = safeText(data.audioLink) || audioUrlRaw;
+          const audioLink = safeText(data.audioLink) || audioUrl;
 
           const imageCredit = safeText(data.imageCredit);
           const audioCredit = safeText(data.audioCredit);
@@ -671,29 +627,25 @@
             if (bodMedia) bodMedia.hidden = true;
           }
 
-          // Audio
-          if (bodAudio && audioUrlRaw) {
-            bindAudioDebugOnce();
+          if (bodAudio && audioUrl) {
+            const proxied = proxifyAudio(audioUrl);
 
             bodAudio.pause();
             bodAudio.removeAttribute("src");
             bodAudio.innerHTML = "";
 
-            const sources = buildAudioSources(audioUrlRaw);
-            sources.forEach((s) => {
-              const el = document.createElement("source");
-              el.src = s.src;
-              if (s.type) el.type = s.type;
-              bodAudio.appendChild(el);
-            });
+            const src = document.createElement("source");
+            src.src = proxied;
+            src.type = "audio/mpeg";
+            bodAudio.appendChild(src);
 
             bodAudio.load();
-            if (bodAudioWrap) bodAudioWrap.hidden = false;
 
-            setAudioStatus("Tap play. If it stays at 0:00, check Network tab for the audio request.");
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+            if (bodHelp) bodHelp.hidden = false;
           } else {
             if (bodAudioWrap) bodAudioWrap.hidden = true;
-            setAudioStatus("");
+            if (bodHelp) bodHelp.hidden = true;
           }
 
           if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
@@ -706,42 +658,13 @@
           if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
         }
 
-        function loadViaJsonp() {
-          return new Promise((resolve, reject) => {
-            const cb = "mbwBodCb_" + Math.random().toString(36).slice(2);
-            const script = document.createElement("script");
-
-            window[cb] = function (payload) {
-              try { resolve(payload); }
-              finally { delete window[cb]; script.remove(); }
-            };
-
-            script.onerror = function () {
-              delete window[cb];
-              script.remove();
-              reject(new Error("JSONP load failed"));
-            };
-
-            script.src = BASE + "?format=json&callback=" + encodeURIComponent(cb);
-            document.head.appendChild(script);
-          });
-        }
-
         async function loadBod() {
           setLoading();
-
           try {
             const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
             const json = await res.json();
-            if (!json || json.ok !== true) throw new Error("Not ok");
+            if (!json || json.ok !== true) { setError(); return; }
             renderBod(json);
-            return;
-          } catch (_) {}
-
-          try {
-            const jsonp = await loadViaJsonp();
-            if (!jsonp || jsonp.ok !== true) { setError(); return; }
-            renderBod(jsonp);
           } catch (_) {
             setError();
           }
