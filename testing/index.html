@@ -244,14 +244,19 @@
       cursor: pointer;
       position: relative;
       min-height: 160px;
+      padding: 0;
     }
 
+    /* FIX: prevent cropping by switching to contain + adding padding */
     .thumb {
       width: 100%;
       height: 220px;
       display: block;
-      object-fit: cover;
-      background: rgba(255,255,255,.55);
+      object-fit: contain;
+      object-position: center;
+      background: rgba(255,255,255,.72);
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     .meta {
@@ -471,11 +476,10 @@
             </div>
 
             <p class="bodNote">
-              Tip: Photos and audio come from third-party sources. Images are shown in contain mode with padding to avoid awkward crops.
+              Tip: Gallery thumbnails are now fit-to-frame (contain) so nothing is cropped.
             </p>
           </aside>
 
-          <!-- Existing "Meet the Birds" card -->
           <aside class="heroCard" aria-label="How to use this gallery">
             <h2>Meet the Birds</h2>
             <ul>
@@ -545,7 +549,6 @@
       </section>
     </main>
 
-    <!-- Shared footer mount -->
     <div id="siteFooter"></div>
   </div>
 
@@ -554,12 +557,12 @@
       "use strict";
 
       /* =========================
-         Bird of the Day (fetch + render)
+         Bird of the Day (fetch + JSONP fallback)
          ========================= */
       if (document.documentElement.dataset.mbwBodInit !== "1") {
         document.documentElement.dataset.mbwBodInit = "1";
 
-        const BOD_API = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec?format=json";
+        const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
 
         const bodSub = document.getElementById("bodSub");
         const bodPill = document.getElementById("bodPill");
@@ -599,6 +602,7 @@
         function renderBod(data) {
           const birdName = safeText(data.birdName) || "Bird of the Day";
           const spanishName = safeText(data.spanishName);
+
           const imageUrl = safeText(data.imageUrl);
           const audioUrl = safeText(data.audioUrl);
 
@@ -616,6 +620,8 @@
             bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
             if (bodImgLink) bodImgLink.href = imageLink || imageUrl;
             if (bodMedia) bodMedia.hidden = false;
+          } else {
+            if (bodMedia) bodMedia.hidden = true;
           }
 
           if (bodAudio && audioUrl) {
@@ -638,13 +644,49 @@
           if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
         }
 
+        function loadViaJsonp() {
+          return new Promise((resolve, reject) => {
+            const cb = "mbwBodCb_" + Math.random().toString(36).slice(2);
+            const script = document.createElement("script");
+
+            window[cb] = function (payload) {
+              try {
+                resolve(payload);
+              } finally {
+                delete window[cb];
+                script.remove();
+              }
+            };
+
+            script.onerror = function () {
+              delete window[cb];
+              script.remove();
+              reject(new Error("JSONP load failed"));
+            };
+
+            script.src = BASE + "?format=json&callback=" + encodeURIComponent(cb);
+            document.head.appendChild(script);
+          });
+        }
+
         async function loadBod() {
           setLoading();
+
+          // Try fetch first (fast when CORS allows), then fallback to JSONP (works even when CORS blocks).
           try {
-            const res = await fetch(BOD_API, { headers: { "accept": "application/json" } });
+            const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
             const json = await res.json();
-            if (!json || json.ok !== true) { setError(); return; }
+            if (!json || json.ok !== true) throw new Error("Not ok");
             renderBod(json);
+            return;
+          } catch (_) {
+            // Fallback JSONP
+          }
+
+          try {
+            const jsonp = await loadViaJsonp();
+            if (!jsonp || jsonp.ok !== true) { setError(); return; }
+            renderBod(jsonp);
           } catch (_) {
             setError();
           }
@@ -664,40 +706,45 @@
       const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
       if (!grid) return;
 
-      // Real images from /assets/images/bird-gallery
-      // Category must be one of:
-      // "hummingbirds" | "toucans" | "tanagers" | "cock-of-the-rock" | "other"
       const ITEMS = [
         // Toucans / Toucan-like
         { id: "img-01", type: "image", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari in Mindo, Ecuador" },
         { id: "img-02", type: "image", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan in Mindo, Ecuador" },
         { id: "img-03", type: "image", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet in Mindo, Ecuador" },
         { id: "img-04", type: "image", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet in Mindo, Ecuador" },
+        { id: "img-05", type: "image", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan in Mindo, Ecuador" },
 
         // Cock-of-the-rock
-        { id: "img-05", type: "image", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock in Mindo, Ecuador" },
+        { id: "img-06", type: "image", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock in Mindo, Ecuador" },
 
         // Hummingbirds
-        { id: "img-06", type: "image", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph hummingbird in Mindo, Ecuador" },
+        { id: "img-07", type: "image", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph hummingbird in Mindo, Ecuador" },
 
         // Tanagers
-        { id: "img-07", type: "image", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager in Mindo, Ecuador" },
-        { id: "img-08", type: "image", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager in Mindo, Ecuador" },
-        { id: "img-09", type: "image", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager in Mindo, Ecuador" },
-        { id: "img-10", type: "image", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager in Mindo, Ecuador" },
-        { id: "img-11", type: "image", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager in Mindo, Ecuador" },
-        { id: "img-12", type: "image", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager in Mindo, Ecuador" },
-        { id: "img-13", type: "image", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager in Mindo, Ecuador" },
-        { id: "img-14", type: "image", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager in Mindo, Ecuador" },
+        { id: "img-08", type: "image", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager in Mindo, Ecuador" },
+        { id: "img-09", type: "image", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager in Mindo, Ecuador" },
+        { id: "img-10", type: "image", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager in Mindo, Ecuador" },
+        { id: "img-11", type: "image", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager in Mindo, Ecuador" },
+        { id: "img-12", type: "image", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager in Mindo, Ecuador" },
+        { id: "img-13", type: "image", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager in Mindo, Ecuador" },
+        { id: "img-14", type: "image", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager in Mindo, Ecuador" },
+        { id: "img-15", type: "image", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager in Mindo, Ecuador" },
 
         // Other birds
-        { id: "img-15", type: "image", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher in Mindo, Ecuador" },
-        { id: "img-16", type: "image", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher in Mindo, Ecuador" },
-        { id: "img-17", type: "image", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmo.jpg", alt: "Broad-billed Motmot in Mindo, Ecuador" },
-        { id: "img-18", type: "image", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo in Mindo, Ecuador" },
-        { id: "img-19", type: "image", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker in Mindo, Ecuador" },
-        { id: "img-20", type: "image", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon in Mindo, Ecuador" },
-        { id: "img-21", type: "image", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot in Mindo, Ecuador" }
+        { id: "img-16", type: "image", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher in Mindo, Ecuador" },
+        { id: "img-17", type: "image", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher in Mindo, Ecuador" },
+        { id: "img-18", type: "image", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot in Mindo, Ecuador" },
+        { id: "img-19", type: "image", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo in Mindo, Ecuador" },
+        { id: "img-20", type: "image", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker in Mindo, Ecuador" },
+        { id: "img-21", type: "image", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon in Mindo, Ecuador" },
+        { id: "img-22", type: "image", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot in Mindo, Ecuador" },
+
+        // New adds
+        { id: "img-23", type: "image", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird in Mindo, Ecuador" },
+        { id: "img-24", type: "image", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra in Mindo, Ecuador" },
+        { id: "img-25", type: "image", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta in Mindo, Ecuador" },
+        { id: "img-26", type: "image", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal in Mindo, Ecuador" },
+        { id: "img-27", type: "image", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon in Mindo, Ecuador" }
       ];
 
       function prettyCategory(c) {
