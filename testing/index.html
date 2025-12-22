@@ -49,6 +49,12 @@
       max-width: 82ch;
     }
 
+    .heroRight {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
     .heroCard {
       border: 1px solid var(--line);
       border-radius: var(--r);
@@ -79,26 +85,42 @@
       flex-wrap: wrap;
     }
 
-    /* Bird of the Day (featured card) */
-    .botdCard {
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .botdTop {
-      padding: 14px;
-      background: rgba(255,255,255,.60);
-      border-bottom: 1px solid var(--line);
+    /* =========================
+       Bird of the Day card
+       ========================= */
+    .bodHead {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      margin-bottom: 10px;
     }
 
-    .botdBadge {
+    .bodTitle {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .bodTitle h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .bodSub {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bodPill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -107,107 +129,88 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,.75);
       box-shadow: var(--shadow);
-      font-weight: 950;
+      font-weight: 900;
       font-size: 12.5px;
       color: var(--ink);
       line-height: 1;
       white-space: nowrap;
+      flex: 0 0 auto;
     }
 
-    .botdBody {
-      padding: 14px;
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .botdThumb {
-      width: 120px;
-      height: 120px;
-      border-radius: 18px;
+    .bodMedia {
       border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.6));
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
       box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
     }
 
-    .botdThumb svg {
-      width: 58px;
-      height: 58px;
-      opacity: .85;
+    /* Big image with padding and contain, so scraped crops don't look bad */
+    .bodImgWrap {
+      background: rgba(255,255,255,.65);
+      display: grid;
+      place-items: center;
+      padding: 12px;
     }
 
-    .botdTitle {
-      margin: 0;
-      font-weight: 950;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      line-height: 1.2;
-      font-size: 16px;
+    .bodImg {
+      width: 100%;
+      height: 260px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.06);
     }
 
-    .botdSub {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
+    .bodAudio {
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
     }
 
-    .botdActions {
-      margin-top: 10px;
+    .bodAudio audio {
+      width: 100%;
+      display: block;
+    }
+
+    .bodLinks {
+      margin-top: 8px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
-    }
-
-    .botdBtn {
-      appearance: none;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow);
-      font-weight: 950;
-      font-size: 13px;
-      color: var(--ink);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      line-height: 1;
-      white-space: nowrap;
-    }
-
-    .botdBtn.primary {
-      background: rgba(13,89,37,.14);
-      border-color: rgba(13,89,37,.35);
-    }
-
-    .botdFoot {
-      padding: 12px 14px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.60);
+      justify-content: space-between;
       color: var(--muted);
       font-size: 12.5px;
-      line-height: 1.45;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: space-between;
+      line-height: 1.4;
     }
 
-    .botdFoot a {
+    .bodLinks a {
       color: inherit;
+      font-weight: 900;
       text-decoration: underline;
       text-underline-offset: 2px;
     }
 
+    .bodCtas {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .bodNote {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    /* =========================
+       Sections
+       ========================= */
     .section {
       margin-top: 18px;
       padding-top: 14px;
@@ -456,6 +459,7 @@
     @media (max-width: 980px) {
       .gallery { grid-template-columns: repeat(3, 1fr); }
       .thumb { height: 200px; }
+      .bodImg { height: 240px; }
     }
 
     @media (max-width: 900px) {
@@ -463,15 +467,14 @@
       .gallery { grid-template-columns: repeat(2, 1fr); }
       .thumb { height: 190px; }
       .videoGrid { grid-template-columns: 1fr; }
-
-      .botdBody { grid-template-columns: 100px 1fr; }
-      .botdThumb { width: 100px; height: 100px; border-radius: 16px; }
+      .bodImg { height: 260px; }
     }
 
     @media (max-width: 520px) {
       .gallery { grid-template-columns: 1fr; }
       .thumb { height: 220px; }
       .lbImg { height: min(65vh, 560px); }
+      .bodImg { height: 240px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -501,38 +504,50 @@
           </div>
         </div>
 
-        <div style="display:grid; gap:12px;">
+        <div class="heroRight" aria-label="Hero right column">
           <!-- Bird of the Day -->
-          <aside class="botdCard" aria-label="Bird of the Day">
-            <div class="botdTop">
-              <span class="botdBadge">Bird of the Day</span>
-              <span class="botdBadge" id="botdStatus">Loading…</span>
+          <aside class="heroCard" aria-label="Bird of the Day">
+            <div class="bodHead">
+              <div class="bodTitle" style="min-width:0;">
+                <h2>Bird of the Day</h2>
+                <div class="bodSub" id="bodSub">Loading today’s bird...</div>
+              </div>
+              <span class="bodPill" id="bodPill">Loading</span>
             </div>
 
-            <div class="botdBody">
-              <div class="botdThumb" aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 3c3 0 5 2 5 5 0 2-1 3-2 4 2 1 3 3 3 5 0 3-2 5-6 5s-6-2-6-5c0-2 1-4 3-5-1-1-2-2-2-4 0-3 2-5 5-5zm0 2c-2 0-3 1-3 3 0 2 1 3 3 3s3-1 3-3c0-2-1-3-3-3zm0 8c-3 0-4 2-4 4 0 2 1 3 4 3s4-1 4-3c0-2-1-4-4-4z" fill="currentColor"/>
-                </svg>
+            <div class="bodMedia" id="bodMedia" hidden>
+              <div class="bodImgWrap">
+                <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Open image source" style="display:block; width:100%;">
+                  <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
+                </a>
               </div>
 
-              <div>
-                <p class="botdTitle" id="botdName">—</p>
-                <p class="botdSub" id="botdEs">—</p>
+              <div class="bodAudio" id="bodAudioWrap" hidden>
+                <audio id="bodAudio" controls preload="none"></audio>
 
-                <div class="botdActions" id="botdActions">
-                  <!-- JS injects Hear button + links -->
+                <div class="bodLinks">
+                  <div>
+                    <span id="bodImageCreditWrap" hidden>Image credit: <a id="bodImageCredit" href="#" target="_blank" rel="noopener">Source</a></span>
+                    <span id="bodAudioCreditWrap" hidden style="margin-left:10px;">Audio credit: <a id="bodAudioCredit" href="#" target="_blank" rel="noopener">Source</a></span>
+                  </div>
+                  <div>
+                    <span id="bodAudioSrcWrap" hidden>Audio source: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Open</a></span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="botdFoot" id="botdCredits">
-              <span>Credits load here</span>
-              <span></span>
+            <div class="bodCtas">
+              <a class="btn secondary" href="/book-tour/">Bird with a guide</a>
+              <a class="btn secondary" href="/birding-calendar/">Best months to see birds</a>
             </div>
+
+            <p class="bodNote">
+              Tip: Photos and audio come from third-party sources. We display images in “contain” mode with padding to avoid awkward crops.
+            </p>
           </aside>
 
-          <!-- Existing help card -->
+          <!-- Existing "Meet the Birds" card -->
           <aside class="heroCard" aria-label="How to use this gallery">
             <h2>Meet the Birds</h2>
             <ul>
@@ -548,7 +563,7 @@
       <section class="section" aria-label="Gallery section">
         <div class="sectionHead">
           <h2>Gallery</h2>
-          <p class="hint">Placeholders are ready — you’ll only replace image URLs, titles, and categories.</p>
+          <p class="hint">Placeholders are ready. You’ll only replace image URLs, titles, and categories.</p>
         </div>
 
         <div class="filters" role="toolbar" aria-label="Gallery filters">
@@ -584,7 +599,7 @@
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
-            <div class="videoCap">Placeholder video 1 — replace <strong>VIDEO_ID_1</strong>.</div>
+            <div class="videoCap">Placeholder video 1. Replace <strong>VIDEO_ID_1</strong>.</div>
           </div>
 
           <div class="videoCard" aria-label="Video 2">
@@ -596,7 +611,7 @@
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
-            <div class="videoCap">Placeholder video 2 — replace <strong>VIDEO_ID_2</strong>.</div>
+            <div class="videoCap">Placeholder video 2. Replace <strong>VIDEO_ID_2</strong>.</div>
           </div>
         </div>
       </section>
@@ -606,86 +621,130 @@
     <div id="siteFooter"></div>
   </div>
 
-  <!-- Page-only scripts -->
+  <!-- Page-only scripts (NO header/menu logic) -->
   <script>
     (function () {
       "use strict";
 
+      /* =========================
+         Bird of the Day (fetch + render)
+         ========================= */
+      if (document.documentElement.dataset.mbwBodInit !== "1") {
+        document.documentElement.dataset.mbwBodInit = "1";
+
+        const BOD_API = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec?format=json";
+
+        const bodSub = document.getElementById("bodSub");
+        const bodPill = document.getElementById("bodPill");
+        const bodMedia = document.getElementById("bodMedia");
+
+        const bodImg = document.getElementById("bodImg");
+        const bodImgLink = document.getElementById("bodImgLink");
+
+        const bodAudioWrap = document.getElementById("bodAudioWrap");
+        const bodAudio = document.getElementById("bodAudio");
+
+        const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
+        const bodImageCredit = document.getElementById("bodImageCredit");
+
+        const bodAudioCreditWrap = document.getElementById("bodAudioCreditWrap");
+        const bodAudioCredit = document.getElementById("bodAudioCredit");
+
+        const bodAudioSrcWrap = document.getElementById("bodAudioSrcWrap");
+        const bodAudioSrc = document.getElementById("bodAudioSrc");
+
+        function safeText(s) {
+          return String(s || "").trim();
+        }
+
+        function setLoading() {
+          if (bodSub) bodSub.textContent = "Loading today’s bird...";
+          if (bodPill) bodPill.textContent = "Loading";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function setError() {
+          if (bodSub) bodSub.textContent = "Bird of the Day is unavailable right now.";
+          if (bodPill) bodPill.textContent = "Offline";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function renderBod(data) {
+          const birdName = safeText(data.birdName) || "Bird of the Day";
+          const spanishName = safeText(data.spanishName);
+          const imageUrl = safeText(data.imageUrl);
+          const audioUrl = safeText(data.audioUrl);
+
+          const imageLink = safeText(data.imageLink) || imageUrl;
+          const audioLink = safeText(data.audioLink) || audioUrl;
+
+          const imageCredit = safeText(data.imageCredit);
+          const audioCredit = safeText(data.audioCredit);
+
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Today’s pick from Mindo";
+          if (bodPill) bodPill.textContent = "Today";
+
+          // Image
+          if (bodImg && imageUrl) {
+            bodImg.src = imageUrl;
+            bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
+            if (bodImgLink) {
+              bodImgLink.href = imageLink || imageUrl;
+              bodImgLink.style.pointerEvents = (imageLink || imageUrl) ? "auto" : "none";
+            }
+            if (bodMedia) bodMedia.hidden = false;
+          }
+
+          // Audio
+          if (bodAudio && audioUrl) {
+            bodAudio.innerHTML = "";
+            const src = document.createElement("source");
+            src.src = audioUrl;
+            bodAudio.appendChild(src);
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+          } else {
+            if (bodAudioWrap) bodAudioWrap.hidden = true;
+          }
+
+          // Credits
+          if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
+          if (bodImageCredit && imageCredit) bodImageCredit.href = imageCredit;
+
+          if (bodAudioCreditWrap) bodAudioCreditWrap.hidden = !audioCredit;
+          if (bodAudioCredit && audioCredit) bodAudioCredit.href = audioCredit;
+
+          if (bodAudioSrcWrap) bodAudioSrcWrap.hidden = !audioLink;
+          if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
+        }
+
+        async function loadBod() {
+          setLoading();
+          try {
+            const res = await fetch(BOD_API, { headers: { "accept": "application/json" } });
+            const json = await res.json();
+
+            if (!json || json.ok !== true) {
+              setError();
+              return;
+            }
+
+            renderBod(json);
+          } catch (_) {
+            setError();
+          }
+        }
+
+        loadBod();
+      }
+
+      /* =========================
+         Gallery + lightbox (your original logic)
+         ========================= */
+      // Prevent duplicate init if a page is hot-reloaded / scripts re-run
       if (document.documentElement.dataset.mbwGalleryInit === "1") return;
       document.documentElement.dataset.mbwGalleryInit = "1";
-
-      // ✅ Set this to your Bird of the Day Apps Script URL
-      // Example: https://script.google.com/macros/s/XXXX/exec?format=json
-      const BOTD_API = "PASTE_BIRD_OF_THE_DAY_JSON_URL_HERE";
-
-      const botdStatus = document.getElementById("botdStatus");
-      const botdName = document.getElementById("botdName");
-      const botdEs = document.getElementById("botdEs");
-      const botdActions = document.getElementById("botdActions");
-      const botdCredits = document.getElementById("botdCredits");
-
-      function esc(s){
-        return String(s || "")
-          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-      }
-
-      async function loadBirdOfTheDay(){
-        if(!BOTD_API || BOTD_API.indexOf("PASTE_") === 0){
-          if (botdStatus) botdStatus.textContent = "Missing API URL";
-          return;
-        }
-        try{
-          if (botdStatus) botdStatus.textContent = "Loading…";
-          const res = await fetch(BOTD_API, { headers: { "accept": "application/json" }});
-          const json = await res.json();
-          if(!json || json.ok !== true){
-            if (botdStatus) botdStatus.textContent = "Unavailable";
-            return;
-          }
-
-          const name = json.birdName || "Bird of the Day";
-          const es = json.spanishName || "";
-          const audioUrl = json.audioUrl || "";
-          const imageCredit = json.imageCredit || "";
-          const audioCredit = json.audioCredit || "";
-
-          if (botdName) botdName.textContent = name;
-          if (botdEs) botdEs.textContent = es ? es : " ";
-
-          if (botdActions){
-            const hearBtn = audioUrl
-              ? `<a class="botdBtn primary" href="${esc(audioUrl)}" target="_blank" rel="noopener">🔊 Hear this bird</a>`
-              : `<span class="botdBtn" aria-disabled="true">🔇 No audio today</span>`;
-
-            const cta = `<a class="botdBtn" href="/book-tour/">Book a tour</a>`;
-            botdActions.innerHTML = hearBtn + cta;
-          }
-
-          if (botdCredits){
-            const left = imageCredit ? `📸 <a href="${esc(imageCredit)}" target="_blank" rel="noopener">Image credit</a>` : `📸 Image credit: —`;
-            const right = audioCredit ? `🎧 <a href="${esc(audioCredit)}" target="_blank" rel="noopener">Audio credit</a>` : `🎧 Audio credit: —`;
-            botdCredits.innerHTML = `<span>${left}</span><span>${right}</span>`;
-          }
-
-          if (botdStatus) botdStatus.textContent = "Today";
-
-        }catch(_){
-          if (botdStatus) botdStatus.textContent = "Unavailable";
-        }
-      }
-
-      loadBirdOfTheDay();
-    })();
-  </script>
-
-  <!-- Your existing gallery + lightbox script stays the same (kept intact below) -->
-  <script>
-    (function () {
-      "use strict";
-
-      if (document.documentElement.dataset.mbwGalleryGridInit === "1") return;
-      document.documentElement.dataset.mbwGalleryGridInit = "1";
 
       const grid = document.getElementById("galleryGrid");
       const emptyState = document.getElementById("emptyState");
@@ -693,6 +752,7 @@
 
       if (!grid) return;
 
+      // ---------- Placeholder generator ----------
       function svgPlaceholder(label) {
         const bg = "F3F7F1";
         const stroke = "D6E5C6";
@@ -710,31 +770,40 @@
         return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
       }
 
+      // ---------- YOUR ONLY EDIT POINTS ----------
+      // Replace: title, category, src, alt
+      // Category must be one of:
+      // "hummingbirds" | "toucans" | "tanagers" | "cock-of-the-rock" | "other"
       const ITEMS = [
+        // Hummingbirds (placeholders)
         { id: "img-01", type: "image", category: "hummingbirds", title: "Hummingbird 01", src: svgPlaceholder("Hummingbird 01"), alt: "Placeholder hummingbird photo 01" },
         { id: "img-02", type: "image", category: "hummingbirds", title: "Hummingbird 02", src: svgPlaceholder("Hummingbird 02"), alt: "Placeholder hummingbird photo 02" },
         { id: "img-03", type: "image", category: "hummingbirds", title: "Hummingbird 03", src: svgPlaceholder("Hummingbird 03"), alt: "Placeholder hummingbird photo 03" },
         { id: "img-04", type: "image", category: "hummingbirds", title: "Hummingbird 04", src: svgPlaceholder("Hummingbird 04"), alt: "Placeholder hummingbird photo 04" },
         { id: "img-05", type: "image", category: "hummingbirds", title: "Hummingbird 05", src: svgPlaceholder("Hummingbird 05"), alt: "Placeholder hummingbird photo 05" },
 
+        // Toucans
         { id: "img-06", type: "image", category: "toucans", title: "Toucan 01", src: svgPlaceholder("Toucan 01"), alt: "Placeholder toucan photo 01" },
         { id: "img-07", type: "image", category: "toucans", title: "Toucan 02", src: svgPlaceholder("Toucan 02"), alt: "Placeholder toucan photo 02" },
         { id: "img-08", type: "image", category: "toucans", title: "Toucan 03", src: svgPlaceholder("Toucan 03"), alt: "Placeholder toucan photo 03" },
         { id: "img-09", type: "image", category: "toucans", title: "Toucan 04", src: svgPlaceholder("Toucan 04"), alt: "Placeholder toucan photo 04" },
         { id: "img-10", type: "image", category: "toucans", title: "Toucan 05", src: svgPlaceholder("Toucan 05"), alt: "Placeholder toucan photo 05" },
 
+        // Tanagers
         { id: "img-11", type: "image", category: "tanagers", title: "Tanager 01", src: svgPlaceholder("Tanager 01"), alt: "Placeholder tanager photo 01" },
         { id: "img-12", type: "image", category: "tanagers", title: "Tanager 02", src: svgPlaceholder("Tanager 02"), alt: "Placeholder tanager photo 02" },
         { id: "img-13", type: "image", category: "tanagers", title: "Tanager 03", src: svgPlaceholder("Tanager 03"), alt: "Placeholder tanager photo 03" },
         { id: "img-14", type: "image", category: "tanagers", title: "Tanager 04", src: svgPlaceholder("Tanager 04"), alt: "Placeholder tanager photo 04" },
         { id: "img-15", type: "image", category: "tanagers", title: "Tanager 05", src: svgPlaceholder("Tanager 05"), alt: "Placeholder tanager photo 05" },
 
+        // Cock-of-the-Rock
         { id: "img-16", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 01", src: svgPlaceholder("Cock-of-the-Rock 01"), alt: "Placeholder cock-of-the-rock photo 01" },
-        { id: "img-17", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-rock 02", src: svgPlaceholder("Cock-of-the-Rock 02"), alt: "Placeholder cock-of-the-rock photo 02" },
+        { id: "img-17", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 02", src: svgPlaceholder("Cock-of-the-Rock 02"), alt: "Placeholder cock-of-the-rock photo 02" },
         { id: "img-18", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 03", src: svgPlaceholder("Cock-of-the-Rock 03"), alt: "Placeholder cock-of-the-rock photo 03" },
         { id: "img-19", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 04", src: svgPlaceholder("Cock-of-the-Rock 04"), alt: "Placeholder cock-of-the-rock photo 04" },
         { id: "img-20", type: "image", category: "cock-of-the-rock", title: "Cock-of-the-Rock 05", src: svgPlaceholder("Cock-of-the-Rock 05"), alt: "Placeholder cock-of-the-rock photo 05" },
 
+        // Other (10 more to reach 30)
         { id: "img-21", type: "image", category: "other", title: "Bird 21", src: svgPlaceholder("Bird 21"), alt: "Placeholder bird photo 21" },
         { id: "img-22", type: "image", category: "other", title: "Bird 22", src: svgPlaceholder("Bird 22"), alt: "Placeholder bird photo 22" },
         { id: "img-23", type: "image", category: "other", title: "Bird 23", src: svgPlaceholder("Bird 23"), alt: "Placeholder bird photo 23" },
@@ -746,7 +815,9 @@
         { id: "img-29", type: "image", category: "other", title: "Bird 29", src: svgPlaceholder("Bird 29"), alt: "Placeholder bird photo 29" },
         { id: "img-30", type: "image", category: "other", title: "Bird 30", src: svgPlaceholder("Bird 30"), alt: "Placeholder bird photo 30" }
       ];
+      // ---------- END EDIT POINTS ----------
 
+      // Lightbox DOM
       const lb = document.createElement("div");
       lb.className = "lb";
       lb.setAttribute("role", "dialog");
@@ -823,7 +894,7 @@
           const tile = document.createElement("button");
           tile.type = "button";
           tile.className = "tile";
-          tile.setAttribute("aria-label", `Open ${item.title}`);
+          tile.setAttribute("aria-label", "Open " + item.title);
           tile.dataset.index = String(i);
 
           const img = document.createElement("img");
