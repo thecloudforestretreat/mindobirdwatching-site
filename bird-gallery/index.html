@@ -23,17 +23,19 @@
       box-shadow: var(--shadow);
     }
 
+    /* HERO: make it a true 50/50 split */
     .hero {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
       align-items: start;
     }
 
+    .heroLeft { display: grid; gap: 12px; align-content: start; }
+    .heroRight { display: grid; gap: 12px; align-content: start; }
+
     .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
     .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
-
-    .heroRight { display: grid; gap: 12px; align-content: start; }
 
     .heroCard {
       border: 1px solid var(--line);
@@ -60,12 +62,14 @@
       flex-wrap: wrap;
     }
 
+    /* Bird of the Day: bigger card, bigger media */
+    .bodCard { padding: 16px; }
     .bodHead {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .bodTitle { display: grid; gap: 2px; min-width: 0; }
@@ -74,7 +78,7 @@
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1.2;
     }
 
@@ -121,7 +125,7 @@
 
     .bodImg {
       width: 100%;
-      height: 260px;
+      height: 360px; /* increased */
       display: block;
       object-fit: contain;
       object-position: center;
@@ -137,6 +141,13 @@
     }
 
     .bodAudio audio { width: 100%; display: block; }
+
+    .bodAudioStatus {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
 
     .bodLinks {
       margin-top: 8px;
@@ -157,14 +168,7 @@
       text-underline-offset: 2px;
     }
 
-    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
-
-    .bodNote {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-    }
+    .bodCtas { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
 
     .section {
       margin-top: 18px;
@@ -235,7 +239,7 @@
       padding: 0;
     }
 
-    /* Key fix: no cropping */
+    /* no cropping */
     .thumb {
       width: 100%;
       height: 220px;
@@ -382,7 +386,7 @@
     @media (max-width: 980px) {
       .gallery { grid-template-columns: repeat(3, 1fr); }
       .thumb { height: 200px; }
-      .bodImg { height: 240px; }
+      .bodImg { height: 320px; }
     }
 
     @media (max-width: 900px) {
@@ -390,14 +394,14 @@
       .gallery { grid-template-columns: repeat(2, 1fr); }
       .thumb { height: 190px; }
       .videoGrid { grid-template-columns: 1fr; }
-      .bodImg { height: 260px; }
+      .bodImg { height: 320px; }
     }
 
     @media (max-width: 520px) {
       .gallery { grid-template-columns: 1fr; }
       .thumb { height: 220px; }
       .lbImg { height: min(65vh, 560px); }
-      .bodImg { height: 240px; }
+      .bodImg { height: 280px; }
     }
   </style>
 </head>
@@ -408,21 +412,34 @@
 
     <main class="page card">
       <section class="hero" aria-label="Bird gallery introduction">
-        <div>
-          <h1>Bird Gallery</h1>
-          <p>
-            Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
-            toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
-          </p>
+        <!-- LEFT: intro + Meet the Birds (moved here to balance layout) -->
+        <div class="heroLeft">
+          <div class="heroCard" aria-label="Bird gallery intro">
+            <h1>Bird Gallery</h1>
+            <p>
+              Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
+              toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
+            </p>
 
-          <div class="heroCtas" aria-label="Primary actions">
-            <a class="btn primary" href="/book-tour/">Book a tour</a>
-            <a class="btn secondary" href="/tours/">View tours</a>
+            <div class="heroCtas" aria-label="Primary actions">
+              <a class="btn primary" href="/book-tour/">Book a tour</a>
+              <a class="btn secondary" href="/tours/">View tours</a>
+            </div>
           </div>
+
+          <aside class="heroCard" aria-label="Meet the birds">
+            <h2>Meet the Birds</h2>
+            <ul>
+              <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
+              <li>Click any photo to open the full-screen viewer</li>
+              <li>Use ← / → keys to browse</li>
+            </ul>
+          </aside>
         </div>
 
+        <!-- RIGHT: bigger Bird of the Day (about half the hero area) -->
         <div class="heroRight" aria-label="Hero right column">
-          <aside class="heroCard" aria-label="Bird of the Day">
+          <aside class="heroCard bodCard" aria-label="Bird of the Day">
             <div class="bodHead">
               <div class="bodTitle" style="min-width:0;">
                 <h2>Bird of the Day</h2>
@@ -439,7 +456,8 @@
               </div>
 
               <div class="bodAudio" id="bodAudioWrap" hidden>
-                <audio id="bodAudio" controls preload="none"></audio>
+                <audio id="bodAudio" controls preload="metadata" playsinline></audio>
+                <div class="bodAudioStatus" id="bodAudioStatus" hidden></div>
 
                 <div class="bodLinks">
                   <div>
@@ -455,21 +473,9 @@
 
             <div class="bodCtas">
               <a class="btn secondary" href="/book-tour/">Bird with a guide</a>
-              <a class="btn secondary" href="/birding-calendar/">Best months to see birds</a>
+              <a class="btn secondary" href="/birding-calendar/">Birding calendar</a>
+              <a class="btn secondary" href="/bird-of-the-week/">Bird of the Week</a>
             </div>
-
-            <p class="bodNote">
-              Tip: Gallery thumbnails are shown in contain mode so nothing is cropped.
-            </p>
-          </aside>
-
-          <aside class="heroCard" aria-label="How to use this gallery">
-            <h2>Meet the Birds</h2>
-            <ul>
-              <li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
-              <li>Click any photo to open the full-screen viewer</li>
-              <li>Use ← / → keys to browse</li>
-            </ul>
           </aside>
         </div>
       </section>
@@ -543,7 +549,6 @@
       if (document.documentElement.dataset.mbwBodInit !== "1") {
         document.documentElement.dataset.mbwBodInit = "1";
 
-        // IMPORTANT: Replace with your *public* Web App URL (NO /u/1/)
         const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
 
         const bodSub = document.getElementById("bodSub");
@@ -555,6 +560,7 @@
 
         const bodAudioWrap = document.getElementById("bodAudioWrap");
         const bodAudio = document.getElementById("bodAudio");
+        const bodAudioStatus = document.getElementById("bodAudioStatus");
 
         const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
         const bodImageCredit = document.getElementById("bodImageCredit");
@@ -567,11 +573,19 @@
 
         function safeText(s) { return String(s || "").trim(); }
 
+        function setAudioStatus(msg) {
+          if (!bodAudioStatus) return;
+          if (!msg) { bodAudioStatus.hidden = true; bodAudioStatus.textContent = ""; return; }
+          bodAudioStatus.hidden = false;
+          bodAudioStatus.textContent = msg;
+        }
+
         function setLoading() {
           if (bodSub) bodSub.textContent = "Loading today’s bird...";
           if (bodPill) bodPill.textContent = "Loading";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
+          setAudioStatus("");
         }
 
         function setError() {
@@ -579,6 +593,27 @@
           if (bodPill) bodPill.textContent = "Offline";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
+          setAudioStatus("");
+        }
+
+        function wireAudioDebug(audioLink) {
+          if (!bodAudio) return;
+
+          bodAudio.addEventListener("error", function () {
+            setAudioStatus("Audio could not be played. Try the Audio source link. If it opens a preview page, the file is not a direct public audio URL.");
+          }, { once: true });
+
+          bodAudio.addEventListener("loadedmetadata", function () {
+            setAudioStatus("");
+          }, { once: true });
+
+          bodAudio.addEventListener("canplay", function () {
+            setAudioStatus("");
+          }, { once: true });
+
+          if (audioLink) {
+            setAudioStatus("If audio does not start, open Audio source and ensure the file is publicly accessible and a direct .mp3/.wav URL.");
+          }
         }
 
         function renderBod(data) {
@@ -607,13 +642,31 @@
           }
 
           if (bodAudio && audioUrl) {
+            try {
+              bodAudio.pause();
+            } catch (_) {}
+
+            bodAudio.removeAttribute("src");
             bodAudio.innerHTML = "";
+
+            bodAudio.crossOrigin = "anonymous";
+            bodAudio.setAttribute("playsinline", "");
+
             const src = document.createElement("source");
             src.src = audioUrl;
+
             bodAudio.appendChild(src);
+
+            try {
+              bodAudio.load();
+            } catch (_) {}
+
             if (bodAudioWrap) bodAudioWrap.hidden = false;
+
+            wireAudioDebug(audioLink);
           } else {
             if (bodAudioWrap) bodAudioWrap.hidden = true;
+            setAudioStatus("");
           }
 
           if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
