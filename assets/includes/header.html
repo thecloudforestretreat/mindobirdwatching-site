@@ -1,110 +1,132 @@
-<header class="topbar">
-  <!-- Checkbox must be a DIRECT child of .topbar -->
-  <input class="nav-toggle" type="checkbox" id="eeNavToggle" aria-label="Open menu">
+<header class="topbar" data-mbw-header>
+  <a class="brand" href="/home/" aria-label="Mindo Bird Watching home" data-i18n-aria="brandHome">
+    <img src="/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo mark">
+    <span data-i18n="brandName">Mindo Bird Watching</span>
+  </a>
 
-  <div class="topbar-inner">
-    <a class="brand" href="/">
-      <img src="/assets/icons/EE-Logo-Assets-Pin-3.png" alt="Experience Ecuador pin">
-      <span>Experience Ecuador</span>
-    </a>
+  <div class="right">
+    <div class="lang" aria-label="Language switch" data-i18n-aria="langSwitch">
+      <a href="/home/" data-lang="en">EN</a>
+      <a href="/es/" data-lang="es">ES</a>
+    </div>
 
-    <!-- Hamburger button (label toggles checkbox) -->
-    <label class="nav-toggle-btn" for="eeNavToggle" aria-label="Menu">
-      <span class="nav-toggle-icon" aria-hidden="true"></span>
-      <span class="sr-only">Menu</span>
-    </label>
+    <nav class="nav" aria-label="Primary" data-i18n-aria="primaryNav">
+      <a class="pill"
+         href="/home/"
+         data-href-en="/home/"
+         data-href-es="/es/"
+         data-label-en="Home"
+         data-label-es="Inicio">Home</a>
 
-    <!-- DESKTOP NAV -->
-    <nav class="nav nav-desktop" aria-label="Primary navigation">
-      <a class="nav-link" href="/">Home</a>
-      <a class="nav-link" href="/about/">About</a>
-      <a class="nav-link" href="/mission/">Mission</a>
+      <a class="pill"
+         href="/about-us/"
+         data-href-en="/about-us/"
+         data-href-es="/es/sobre-nosotros/"
+         data-label-en="About Us"
+         data-label-es="Sobre nosotros">About Us</a>
 
-      <details class="nav-dd">
-        <summary class="nav-link nav-dd-btn">Regions <span class="caret" aria-hidden="true"></span></summary>
-        <div class="nav-dd-menu" role="menu" aria-label="Regions submenu">
-          <a href="/regions/" role="menuitem">All Regions</a>
-          <a href="/regions/galapagos/" role="menuitem">Galapagos</a>
-          <a href="/regions/coast/" role="menuitem">Coast</a>
-          <a href="/regions/andes/" role="menuitem">Andes</a>
-          <a href="/regions/amazon/" role="menuitem">Amazon</a>
-        </div>
-      </details>
+      <a class="pill"
+         href="/our-guide/"
+         data-href-en="/our-guide/"
+         data-href-es="/es/nuestro-guia/"
+         data-label-en="Our Guide"
+         data-label-es="Nuestro guía">Our Guide</a>
 
-      <details class="nav-dd">
-        <summary class="nav-link nav-dd-btn">Experiences <span class="caret" aria-hidden="true"></span></summary>
-        <div class="nav-dd-menu" role="menu" aria-label="Experiences submenu">
-          <a href="/experiences/" role="menuitem">All Experiences</a>
-          <a href="/experiences/adventure/" role="menuitem">Adventure</a>
-          <a href="/experiences/nature/" role="menuitem">Nature</a>
-          <a href="/experiences/wildlife-birding/" role="menuitem">Wildlife &amp; Birding</a>
-          <a href="/experiences/relaxation/" role="menuitem">Relaxation</a>
-          <a href="/experiences/culinary/" role="menuitem">Culinary</a>
-          <a href="/experiences/culture/" role="menuitem">Culture</a>
-        </div>
-      </details>
+      <a class="pill"
+         href="/tours/"
+         data-href-en="/tours/"
+         data-href-es="/es/tours/"
+         data-label-en="Tours"
+         data-label-es="Tours">Tours</a>
 
-      <a class="nav-link" href="/trip-builder/">Trip Builder</a>
-      <a class="nav-link" href="/contact/">Contact</a>
+      <a class="pill"
+         href="/bird-gallery/"
+         data-href-en="/bird-gallery/"
+         data-href-es="/es/galeria/"
+         data-label-en="Bird Gallery"
+         data-label-es="Galería">Bird Gallery</a>
 
-      <!-- Language switch (JS sets href + label) -->
-      <a class="nav-link" href="#" data-lang-switch aria-label="Switch language">ES</a>
+      <a class="pill"
+         href="/book-tour/"
+         data-href-en="/book-tour/"
+         data-href-es="/es/reservar-tour/"
+         data-label-en="Book Tour"
+         data-label-es="Reservar">Book Tour</a>
+
+      <a class="pill"
+         href="/contact/"
+         data-href-en="/contact/"
+         data-href-es="/es/contacto/"
+         data-label-en="Contact"
+         data-label-es="Contacto">Contact</a>
     </nav>
+
+    <button class="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" data-i18n-aria="openMenu">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"/>
+      </svg>
+    </button>
   </div>
 
-  <!-- MOBILE PANEL (hamburger-only, JS-driven, NO hash navigation) -->
-  <nav class="nav nav-mobile" aria-label="Mobile navigation">
-    <div class="m-panel">
-
-      <!-- MAIN MENU -->
-      <div class="m-view m-main">
-        <a class="m-item" href="/">Home</a>
-        <a class="m-item" href="/about/">About</a>
-        <a class="m-item" href="/mission/">Mission</a>
-
-        <button class="m-item m-next" type="button" data-target="#m-regions">
-          Regions <span class="m-arrow" aria-hidden="true"></span>
-        </button>
-
-        <button class="m-item m-next" type="button" data-target="#m-experiences">
-          Experiences <span class="m-arrow" aria-hidden="true"></span>
-        </button>
-
-        <a class="m-item" href="/trip-builder/">Trip Builder</a>
-        <a class="m-item" href="/contact/">Contact</a>
-
-        <!-- Language switch (JS sets href + label) -->
-        <a class="m-item" href="#" data-lang-switch aria-label="Switch language">Español</a>
-      </div>
-
-      <!-- REGIONS SUBMENU -->
-      <div class="m-view m-submenu" id="m-regions" hidden>
-        <button class="m-back" type="button" data-back>
-          Back
-        </button>
-
-        <a class="m-item" href="/regions/">All Regions</a>
-        <a class="m-item" href="/regions/galapagos/">Galapagos</a>
-        <a class="m-item" href="/regions/coast/">Coast</a>
-        <a class="m-item" href="/regions/andes/">Andes</a>
-        <a class="m-item" href="/regions/amazon/">Amazon</a>
-      </div>
-
-      <!-- EXPERIENCES SUBMENU -->
-      <div class="m-view m-submenu" id="m-experiences" hidden>
-        <button class="m-back" type="button" data-back>
-          Back
-        </button>
-
-        <a class="m-item" href="/experiences/">All Experiences</a>
-        <a class="m-item" href="/experiences/adventure/">Adventure</a>
-        <a class="m-item" href="/experiences/nature/">Nature</a>
-        <a class="m-item" href="/experiences/wildlife-birding/">Wildlife &amp; Birding</a>
-        <a class="m-item" href="/experiences/relaxation/">Relaxation</a>
-        <a class="m-item" href="/experiences/culinary/">Culinary</a>
-        <a class="m-item" href="/experiences/culture/">Culture</a>
-      </div>
-
+  <div class="menuPanel" id="menuPanel" aria-label="Mobile menu" data-i18n-aria="mobileMenu">
+    <div class="lang" aria-label="Language switch (mobile)" data-i18n-aria="langSwitchMobile">
+      <a href="/home/" data-lang="en">EN</a>
+      <a href="/es/" data-lang="es">ES</a>
     </div>
-  </nav>
+
+    <nav class="menuList" aria-label="Primary (mobile)" data-i18n-aria="primaryNavMobile">
+      <a class="pill"
+         href="/home/"
+         data-href-en="/home/"
+         data-href-es="/es/"
+         data-label-en="Home"
+         data-label-es="Inicio">Home</a>
+
+      <a class="pill"
+         href="/about-us/"
+         data-href-en="/about-us/"
+         data-href-es="/es/sobre-nosotros/"
+         data-label-en="About Us"
+         data-label-es="Sobre nosotros">About Us</a>
+
+      <a class="pill"
+         href="/our-guide/"
+         data-href-en="/our-guide/"
+         data-href-es="/es/nuestro-guia/"
+         data-label-en="Our Guide"
+         data-label-es="Nuestro guía">Our Guide</a>
+
+      <a class="pill"
+         href="/tours/"
+         data-href-en="/tours/"
+         data-href-es="/es/tours/"
+         data-label-en="Tours"
+         data-label-es="Tours">Tours</a>
+
+      <a class="pill"
+         href="/bird-gallery/"
+         data-href-en="/bird-gallery/"
+         data-href-es="/es/galeria-de-aves/"
+         data-label-en="Bird Gallery"
+         data-label-es="Galería">Bird Gallery</a>
+
+      <a class="pill"
+         href="/book-tour/"
+         data-href-en="/book-tour/"
+         data-href-es="/es/reservar-tour/"
+         data-label-en="Book Tour"
+         data-label-es="Reservar">Book Tour</a>
+
+      <a class="pill"
+         href="/contact/"
+         data-href-en="/contact/"
+         data-href-es="/es/contacto/"
+         data-label-en="Contact"
+         data-label-es="Contacto">Contact</a>
+    </nav>
+  </div>
 </header>
