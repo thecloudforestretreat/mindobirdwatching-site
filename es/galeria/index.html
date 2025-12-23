@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Galería de Aves | Mindo Bird Watching</title>
-  <meta name="description" content="Explora la galería de Mindo Bird Watching con fotos increíbles de aves de Ecuador. Colibríes, tucanes, tangaras y el Gallito de la Peña en el bosque nublado de Mindo." />
+  <meta name="description" content="Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Fotos de colibríes, tucanes, tangaras y el Gallito de las Rocas en el bosque nublado de Mindo." />
 
   <link rel="alternate" hreflang="en" href="/bird-gallery/" />
   <link rel="alternate" hreflang="es" href="/es/galeria/" />
@@ -33,8 +33,7 @@
     .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
     .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
 
-    .heroLeft { display: grid; gap: 12px; align-content: start; }
-    .heroRight { display: grid; gap: 12px; align-content: start; }
+    .heroLeft, .heroRight { display: grid; gap: 12px; align-content: start; }
 
     .heroCard {
       border: 1px solid var(--line);
@@ -61,7 +60,6 @@
       flex-wrap: wrap;
     }
 
-    .bodCard { padding: 16px; }
     .bodHead {
       display: flex;
       align-items: center;
@@ -76,7 +74,7 @@
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1.2;
     }
 
@@ -123,7 +121,7 @@
 
     .bodImg {
       width: 100%;
-      height: 340px;
+      height: 320px;
       display: block;
       object-fit: contain;
       object-position: center;
@@ -137,7 +135,6 @@
       border-top: 1px solid var(--line);
       background: rgba(255,255,255,.65);
     }
-
     .bodAudio audio { width: 100%; display: block; }
 
     .bodLinks {
@@ -159,14 +156,7 @@
       text-underline-offset: 2px;
     }
 
-    .bodCtas { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
-
-    .bodHelp {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-    }
+    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
 
     .section {
       margin-top: 18px;
@@ -383,7 +373,7 @@
     @media (max-width: 980px) {
       .gallery { grid-template-columns: repeat(3, 1fr); }
       .thumb { height: 200px; }
-      .bodImg { height: 300px; }
+      .bodImg { height: 280px; }
     }
 
     @media (max-width: 900px) {
@@ -398,7 +388,7 @@
       .gallery { grid-template-columns: 1fr; }
       .thumb { height: 220px; }
       .lbImg { height: min(65vh, 560px); }
-      .bodImg { height: 280px; }
+      .bodImg { height: 260px; }
     }
   </style>
 </head>
@@ -409,35 +399,36 @@
 
     <main class="page card">
       <section class="hero" aria-label="Introducción de la galería">
+
         <div class="heroLeft">
           <div>
             <h1>Galería de Aves</h1>
             <p>
-              Explora la galería de Mindo Bird Watching con fotos increíbles de aves de Ecuador. Colibríes, tucanes, tangaras y el
-              Gallito de la Peña en el bosque nublado de Mindo.
+              Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Fotos de colibríes, tucanes,
+              tangaras y el Gallito de las Rocas en el bosque nublado de Mindo.
             </p>
 
             <div class="heroCtas" aria-label="Acciones principales">
-              <a class="btn primary" href="/es/reservar-tour/">Reservar tour</a>
-              <a class="btn secondary" href="/es/tours/">Ver tours</a>
+              <a class="btn primary" href="/book-tour/">Reservar un tour</a>
+              <a class="btn secondary" href="/tours/">Ver tours</a>
             </div>
           </div>
 
           <aside class="heroCard" aria-label="Cómo usar esta galería">
             <h2>Conoce las Aves</h2>
             <ul>
-              <li>Usa los filtros para ver un grupo (Colibríes, Tucanes, etc.)</li>
-              <li>Haz clic en cualquier foto para abrir el visor</li>
+              <li>Usa filtros para ir a un grupo (Colibríes, Tucanes, etc.)</li>
+              <li>Haz clic en una foto para ver en pantalla completa</li>
               <li>Usa ← / → para navegar</li>
             </ul>
           </aside>
         </div>
 
         <div class="heroRight" aria-label="Columna derecha">
-          <aside class="heroCard bodCard" aria-label="Ave del día">
+          <aside class="heroCard" aria-label="Ave del día">
             <div class="bodHead">
               <div class="bodTitle" style="min-width:0;">
-                <h2>Ave del día</h2>
+                <h2>Ave del Día</h2>
                 <div class="bodSub" id="bodSub">Cargando el ave de hoy...</div>
               </div>
               <span class="bodPill" id="bodPill">Cargando</span>
@@ -445,7 +436,7 @@
 
             <div class="bodMedia" id="bodMedia" hidden>
               <div class="bodImgWrap">
-                <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen" style="display:block; width:100%;">
+                <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de imagen" style="display:block; width:100%;">
                   <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
                 </a>
               </div>
@@ -453,26 +444,22 @@
               <div class="bodAudio" id="bodAudioWrap" hidden>
                 <audio id="bodAudio" controls preload="none"></audio>
 
-                <div class="bodHelp" id="bodHelp" hidden>
-                  Si el audio no inicia, abre el enlace de Fuente de audio.
-                </div>
-
                 <div class="bodLinks">
                   <div>
                     <span id="bodImageCreditWrap" hidden>Crédito de imagen: <a id="bodImageCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
                     <span id="bodAudioCreditWrap" hidden style="margin-left:10px;">Crédito de audio: <a id="bodAudioCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
                   </div>
                   <div>
-                    <span id="bodAudioSrcWrap" hidden>Fuente de audio: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Abrir</a></span>
+                    <span id="bodAudioSrcWrap" hidden>Fuente del audio: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Abrir</a></span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div class="bodCtas">
-              <a class="btn secondary" href="/es/reservar-tour/">Ave con guía</a>
-              <a class="btn secondary" href="/es/calendario/">Calendario</a>
-              <a class="btn secondary" href="/es/ave-de-la-semana/">Ave de la semana</a>
+              <a class="btn secondary" href="/book-tour/">Aves con guía</a>
+              <a class="btn secondary" href="/birding-calendar/">Calendario de avistamiento</a>
+              <a class="btn secondary" href="/bird-of-the-week/">Ave de la Semana</a>
             </div>
           </aside>
         </div>
@@ -481,7 +468,7 @@
       <section class="section" aria-label="Sección de galería">
         <div class="sectionHead">
           <h2>Galería</h2>
-          <p class="hint">Usando tus imágenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
+          <p class="hint">Usando imágenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
         </div>
 
         <div class="filters" role="toolbar" aria-label="Filtros de galería">
@@ -489,14 +476,14 @@
           <button class="chip" type="button" data-filter="hummingbirds" aria-pressed="false">Colibríes</button>
           <button class="chip" type="button" data-filter="toucans" aria-pressed="false">Tucanes</button>
           <button class="chip" type="button" data-filter="tanagers" aria-pressed="false">Tangaras</button>
-          <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Gallito de la Peña</button>
+          <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Gallito de las Rocas</button>
           <button class="chip" type="button" data-filter="other" aria-pressed="false">Otras</button>
           <button class="chip" type="button" data-filter="videos" aria-pressed="false">Videos</button>
         </div>
 
         <div id="galleryGrid" class="gallery" aria-label="Cuadrícula de fotos"></div>
         <div id="emptyState" class="emptyState" role="status" aria-live="polite">
-          No hay elementos para este filtro.
+          No hay elementos para este filtro todavía.
         </div>
       </section>
 
@@ -556,7 +543,6 @@
 
         const bodAudioWrap = document.getElementById("bodAudioWrap");
         const bodAudio = document.getElementById("bodAudio");
-        const bodHelp = document.getElementById("bodHelp");
 
         const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
         const bodImageCredit = document.getElementById("bodImageCredit");
@@ -568,43 +554,39 @@
         const bodAudioSrc = document.getElementById("bodAudioSrc");
 
         function safeText(s) { return String(s || "").trim(); }
+        function isHttpUrl(v) { return /^https?:\/\/\S+/i.test(String(v || "").trim()); }
 
         function setLoading() {
           if (bodSub) bodSub.textContent = "Cargando el ave de hoy...";
           if (bodPill) bodPill.textContent = "Cargando";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
-          if (bodHelp) bodHelp.hidden = true;
         }
 
         function setError() {
-          if (bodSub) bodSub.textContent = "El ave del día no está disponible ahora.";
+          if (bodSub) bodSub.textContent = "Ave del Día no está disponible en este momento.";
           if (bodPill) bodPill.textContent = "Offline";
           if (bodMedia) bodMedia.hidden = true;
           if (bodAudioWrap) bodAudioWrap.hidden = true;
-          if (bodHelp) bodHelp.hidden = true;
-        }
-
-        function proxifyAudio(url) {
-          const u = safeText(url);
-          if (!u) return "";
-          return AUDIO_PROXY + encodeURIComponent(u);
         }
 
         function renderBod(data) {
-          const birdName = safeText(data.birdName) || "Ave del día";
+          const birdName = safeText(data.birdName) || "Ave del Día";
           const spanishName = safeText(data.spanishName);
 
           const imageUrl = safeText(data.imageUrl);
-          const audioUrl = safeText(data.audioUrl);
-
           const imageLink = safeText(data.imageLink) || imageUrl;
-          const audioLink = safeText(data.audioLink) || audioUrl;
+
+          const rawAudioUrl = isHttpUrl(data.audioUrl) ? safeText(data.audioUrl)
+                            : isHttpUrl(data.audioLink) ? safeText(data.audioLink)
+                            : "";
+
+          const audioLink = safeText(data.audioLink) || rawAudioUrl;
 
           const imageCredit = safeText(data.imageCredit);
           const audioCredit = safeText(data.audioCredit);
 
-          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Selección de hoy";
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Selección de hoy en Mindo";
           if (bodPill) bodPill.textContent = "Hoy";
 
           if (bodImg && imageUrl) {
@@ -616,25 +598,21 @@
             if (bodMedia) bodMedia.hidden = true;
           }
 
-          if (bodAudio && audioUrl) {
-            const proxied = proxifyAudio(audioUrl);
+          if (bodAudio && rawAudioUrl) {
+            const proxied = AUDIO_PROXY + encodeURIComponent(rawAudioUrl);
 
-            bodAudio.pause();
-            bodAudio.removeAttribute("src");
             bodAudio.innerHTML = "";
-
             const src = document.createElement("source");
             src.src = proxied;
             src.type = "audio/mpeg";
             bodAudio.appendChild(src);
 
-            bodAudio.load();
-
             if (bodAudioWrap) bodAudioWrap.hidden = false;
-            if (bodHelp) bodHelp.hidden = false;
+
+            bodAudio.addEventListener("loadstart", () => console.log("[Audio Ave del día] loadstart", proxied), { once: true });
+            bodAudio.addEventListener("error", () => console.log("[Audio Ave del día] error", bodAudio.error), { once: true });
           } else {
             if (bodAudioWrap) bodAudioWrap.hidden = true;
-            if (bodHelp) bodHelp.hidden = true;
           }
 
           if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
@@ -652,7 +630,7 @@
           try {
             const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
             const json = await res.json();
-            if (!json || json.ok !== true) { setError(); return; }
+            if (!json || json.ok !== true) throw new Error("Not ok");
             renderBod(json);
           } catch (_) {
             setError();
@@ -662,6 +640,7 @@
         loadBod();
       }
 
+      /* Gallery JS */
       if (document.documentElement.dataset.mbwGalleryInit === "1") return;
       document.documentElement.dataset.mbwGalleryInit = "1";
 
@@ -677,7 +656,7 @@
         { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet en Mindo, Ecuador" },
         { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan en Mindo, Ecuador" },
 
-        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Gallito de la Peña en Mindo, Ecuador" },
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Gallito de las Rocas en Mindo, Ecuador" },
 
         { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph en Mindo, Ecuador" },
 
@@ -703,7 +682,6 @@
         { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta en Mindo, Ecuador" },
         { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal en Mindo, Ecuador" },
         { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon en Mindo, Ecuador" },
-
         { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan en Mindo, Ecuador" }
       ];
 
@@ -712,7 +690,7 @@
           "hummingbirds": "Colibríes",
           "toucans": "Tucanes",
           "tanagers": "Tangaras",
-          "cock-of-the-rock": "Gallito de la Peña",
+          "cock-of-the-rock": "Gallito de las Rocas",
           "other": "Otras"
         };
         return map[c] || "Aves";
@@ -727,7 +705,7 @@
       lb.className = "lb";
       lb.setAttribute("role", "dialog");
       lb.setAttribute("aria-modal", "true");
-      lb.setAttribute("aria-label", "Visor de imagen");
+      lb.setAttribute("aria-label", "Visor de imágenes");
       lb.innerHTML = `
         <div class="lbDialog" role="document">
           <div class="lbMedia">
