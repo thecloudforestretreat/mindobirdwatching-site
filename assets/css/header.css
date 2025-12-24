@@ -1,87 +1,236 @@
-/* ======================================================
-   MBW Header – Desktop Dropdowns
-   ====================================================== */
+/* =========================
+   MBW Header + Dropdowns
+   Requires: header.html markup with .dd, .ddBtn, .dropdownMenu
+   ========================= */
 
-/* Desktop only */
-@media (min-width: 901px) {
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 6000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(243, 247, 234, 0.92);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  backdrop-filter: blur(10px);
+}
+
+.topbar .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+}
+
+.topbar .brand img {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: block;
+}
+
+.topbar .right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar .lang {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.7);
+}
+
+.topbar .lang a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 34px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.topbar .nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  transform: translateY(-1px);
+}
+
+/* =========================
+   Desktop dropdown behavior
+   ========================= */
+
+.dd {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ddBtn {
+  cursor: default;
+}
+
+.ddBtn::after {
+  content: "▾";
+  margin-left: 8px;
+  font-size: 12px;
+  opacity: .75;
+}
+
+/* default hidden */
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 220px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 22px 60px rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
+}
+
+.dropdownMenu a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dropdownMenu a:hover {
+  background: rgba(13, 89, 37, 0.10);
+}
+
+/* show on hover/focus */
+.dd:hover .dropdownMenu,
+.dd:focus-within .dropdownMenu {
+  display: block;
+}
+
+/* =========================
+   Mobile menu button/panel
+   (relies on your existing site.js menu logic)
+   ========================= */
+
+.menuBtn {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.80);
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+  cursor: pointer;
+}
+
+.menuPanel {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 18px 60px rgba(0,0,0,.12);
+}
+
+/* Mobile */
+@media (max-width: 900px) {
   .topbar {
-    position: relative;
-    z-index: 5000;
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
   .topbar .nav {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: nowrap;
+    display: none;
   }
 
-  .topbar .dropdown {
-    position: relative;
+  .menuBtn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
   }
 
-  /* Hidden by default */
-  .topbar .dropdownMenu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 10px);
-    left: 0;
-    z-index: 9999;
-
-    min-width: 220px;
-    padding: 10px;
-    border-radius: 16px;
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(8px);
+  /* When your JS opens it, it typically toggles [data-open] or aria-expanded.
+     We won't assume your exact attribute — your existing site.js should handle showing it.
+     If you already toggle a class like .is-open, keep it in site.js. */
+  .menuPanel {
+    display: block;
+    width: 100%;
   }
 
-  /* Show on hover + keyboard */
-  .topbar .dropdown:hover .dropdownMenu,
-  .topbar .dropdown:focus-within .dropdownMenu {
+  .menuPanel .menuList {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  /* Mobile: dropdowns should NOT float — just stack */
+  .menuPanel .dd {
+    position: static;
     display: grid;
     gap: 8px;
   }
 
-  .topbar .dropdownMenu a {
-    display: block;
-    padding: 10px 12px;
-    border-radius: 14px;
-    font-weight: 900;
-    text-decoration: none;
-    color: var(--ink);
-    background: rgba(255,255,255,.7);
-    border: 1px solid rgba(0,0,0,.06);
-    white-space: nowrap;
+  .menuPanel .dropdownMenu {
+    display: grid;
+    position: static;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
   }
 
-  .topbar .dropdownMenu a:hover,
-  .topbar .dropdownMenu a:focus {
-    background: rgba(13,89,37,.12);
-    border-color: rgba(13,89,37,.25);
-    outline: none;
-  }
-}
-
-/* Mobile: flat menu (no hover dropdowns) */
-@media (max-width: 900px) {
-  .topbar .dropdownMenu {
-    display: none !important;
+  .menuPanel .dropdownMenu a {
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(0,0,0,.10);
+    box-shadow: 0 8px 18px rgba(0,0,0,.06);
   }
 
-  .menuGroup {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--line);
-  }
-
-  .menuGroupTitle {
-    font-size: 12.5px;
-    font-weight: 900;
-    color: var(--muted);
-    margin-bottom: 8px;
+  .ddBtn::after {
+    content: "";
   }
 }
