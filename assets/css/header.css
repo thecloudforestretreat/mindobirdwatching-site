@@ -232,10 +232,31 @@ header.topbar[data-mbw-header] .menuPanel.is-open{
   display: block;
 }
 
+/* ✅ CRITICAL: Force HTML [hidden] to win (prevents main + submenu showing together) */
+header.topbar[data-mbw-header] .menuPanel [hidden]{
+  display: none !important;
+}
+
 header.topbar[data-mbw-header] .menuList{
   display: grid;
   gap: 10px;
   margin-top: 10px;
+}
+
+/* ✅ Mobile drill-down button layout */
+header.topbar[data-mbw-header] .m-next{
+  justify-content: space-between;
+}
+
+header.topbar[data-mbw-header] .m-arrow{
+  font-size: 18px;
+  opacity: .65;
+}
+
+/* ✅ Back button should look like a normal row, left aligned */
+header.topbar[data-mbw-header] .m-back{
+  justify-content: flex-start;
+  gap: 10px;
 }
 
 @media (max-width: 900px){
