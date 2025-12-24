@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mindo Bird Watching | Private Birding Tours in Mindo, Ecuador</title>
+  <title>Activities | Mindo Bird Watching</title>
+  <meta name="description" content="Discover Mindo’s best adventures with Mindo Bird Watching. Explore birding, ziplining, rafting, canyoning, butterflies, orchids, and coffee & chocolate tastings in 📍Mindo, Ecuador." />
 
-  <meta name="description" content="Private and small-group birdwatching in 📍Mindo, Ecuador. Expert bilingual guides, flexible tours, and unforgettable cloud forest wildlife. Explore tours, watch the video, and plan your trip." />
-
-  <link rel="alternate" hreflang="en" href="/home/" />
-  <link rel="alternate" hreflang="es" href="/es/" />
-  <link rel="alternate" hreflang="x-default" href="/home/" />
+  <link rel="alternate" hreflang="en" href="/activities/" />
+  <link rel="alternate" hreflang="es" href="/es/actividades/" />
+  <link rel="alternate" hreflang="x-default" href="/activities/" />
 
   <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -18,13 +17,9 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
 
-  <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <!-- Header dropdown styling -->
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-
-  <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
 
   <style>
     /* =========================
@@ -41,22 +36,22 @@
 
     .hero{
       display:grid;
-      grid-template-columns: 1.1fr .9fr;
+      grid-template-columns: 1.08fr .92fr;
       gap: 16px;
       align-items: start;
     }
 
     .hero h1{
-      margin: 0 0 10px;
+      margin: 0 0 8px;
       letter-spacing: -0.02em;
-      line-height: 1.05;
+      line-height: 1.1;
     }
 
     .hero p{
       margin: 0;
+      max-width: 92ch;
       color: var(--ink);
-      line-height: 1.75;
-      max-width: 85ch;
+      line-height: 1.7;
     }
 
     .heroCtas{
@@ -67,7 +62,7 @@
       align-items:center;
     }
 
-    .heroAside{
+    .heroCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -75,8 +70,8 @@
       padding: 14px;
     }
 
-    .heroAside h2{
-      margin:0 0 10px;
+    .heroCard h2{
+      margin: 0 0 10px;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
@@ -87,7 +82,7 @@
       margin: 0;
       padding-left: 18px;
       color: var(--ink);
-      line-height: 1.7;
+      line-height: 1.6;
     }
 
     .section{
@@ -99,14 +94,14 @@
     .sectionHead{
       display:flex;
       align-items:flex-end;
-      justify-content:space-between;
+      justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
       margin-bottom: 10px;
     }
 
     .sectionHead h2{
-      margin:0;
+      margin: 0;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
@@ -114,190 +109,153 @@
     }
 
     .hint{
-      margin:0;
+      margin: 0;
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.5;
+      line-height: 1.4;
+      max-width: 70ch;
     }
 
-    /* Image + video blocks */
-    .mediaGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .mediaCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .mediaFrame{
-      width:100%;
-      aspect-ratio: 16 / 10;
-      background: rgba(255,255,255,.55);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-    }
-
-    .mediaFrame img{
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      display:block;
-    }
-
-    .videoFrame{
-      width:100%;
-      aspect-ratio: 16 / 9;
-      border:0;
-      display:block;
-      background: rgba(255,255,255,.55);
-    }
-
-    .mediaBar{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      display:flex;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-
-    .mediaTitle{
-      margin:0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 13.5px;
-      letter-spacing: -0.01em;
-    }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-    }
-
-    /* Quick links */
-    .tiles{
+    /* Activity cards */
+    .grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
     }
 
-    .tile{
+    .act{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
-      padding: 14px;
-      text-decoration:none;
-      color: inherit;
-      display:block;
-      min-height: 120px;
+      overflow: hidden;
+      display:flex;
+      flex-direction: column;
+      min-height: 220px;
     }
 
-    .tile h3{
-      margin:0 0 6px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.01em;
-      font-size: 16.5px;
-    }
-
-    .tile p{
-      margin:0;
-      color: var(--ink);
-      line-height: 1.65;
-    }
-
-    .tile .sub{
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12.5px;
-    }
-
-    /* Small photo rail */
-    .photoRail{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
+    .actTop{
+      display:flex;
       gap: 12px;
+      padding: 14px;
+      align-items: flex-start;
     }
 
-    .photo{
+    .avatar{
+      width: 62px;
+      height: 62px;
+      border-radius: 999px;
       border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
+      background: rgba(255,255,255,.75);
       box-shadow: var(--shadow);
-      overflow:hidden;
+      overflow: hidden;
+      flex: 0 0 auto;
     }
 
-    .photo img{
-      width:100%;
-      height: 170px;
+    .avatar img{
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       display:block;
-      background: rgba(255,255,255,.55);
     }
 
-    .photoCap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
+    .actMeta{
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .actTitle{
+      margin: 0;
+      font-weight: 950;
+      color: var(--ink);
+      font-size: 15px;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+    }
+
+    .actSub{
+      margin: 6px 0 0;
       color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.45;
+      font-size: 13px;
+      line-height: 1.55;
     }
 
-    /* CTA band */
-    .ctaBand{
-      margin-top: 14px;
+    .actBody{
+      padding: 0 14px 14px;
+      display:grid;
+      gap: 10px;
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 8px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .miniNote{
       border: 1px dashed rgba(13,89,37,.35);
       border-radius: 16px;
       background: rgba(255,255,255,.55);
-      padding: 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      padding: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
     }
 
-    .ctaBand p{
-      margin:0;
+    .ctaStrip{
+      margin-top: 14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      align-items:center;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .ctaStrip p{
+      margin: 0;
       color: var(--ink);
       line-height: 1.6;
+      max-width: 75ch;
+    }
+
+    .ctaStrip .actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
     }
 
     @media (max-width: 980px){
-      .photoRail{ grid-template-columns: repeat(2, 1fr); }
-      .photo img{ height: 180px; }
+      .grid{ grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 900px){
       .hero{ grid-template-columns: 1fr; }
-      .mediaGrid{ grid-template-columns: 1fr; }
-      .tiles{ grid-template-columns: 1fr; }
-      .photoRail{ grid-template-columns: 1fr; }
-      .photo img{ height: 220px; }
+      .grid{ grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px){
+      .grid{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -307,133 +265,106 @@
     <!-- Shared header mount -->
     <div id="siteHeader"></div>
 
-    <main class="page card" aria-label="Mindo Bird Watching home">
-      <!-- HERO -->
-      <section class="hero" aria-label="Intro">
+    <main class="page card" aria-label="Activities">
+      <section class="hero" aria-label="Activities intro">
         <div>
-          <h1>Private birdwatching in 📍Mindo, Ecuador</h1>
+          <h1>Discover Mindo’s Best Adventures 🌿✨</h1>
           <p>
-            Explore the cloud forest with expert bilingual guides. Simple planning, flexible pacing, and the best chances to
-            see toucans, hummingbirds, tanagers, and the iconic Andean Cock-of-the-Rock.
+            At Mindo Bird Watching, our passion starts with the incredible birdlife of the cloud forest,
+            home to colorful toucans, countless hummingbirds, and the iconic Andean Cock-of-the-Rock.
+          </p>
+          <p style="margin-top:10px;">
+            But there’s so much more to experience here. From adrenaline-filled adventures like ziplining, rafting, and canyoning
+            to relaxing nature tours like butterflies, orchids, and coffee and chocolate tastings, Mindo offers something unforgettable
+            for every kind of traveler.
+          </p>
+          <p style="margin-top:10px;">
+            Explore all our activities below and plan your perfect mix of birdwatching, adventure, and discovery in 📍Mindo, Ecuador.
           </p>
 
           <div class="heroCtas" aria-label="Primary actions">
-            <a class="btn primary" href="/book-tour/">Book a tour</a>
-            <a class="btn secondary" href="/tours/">View tours</a>
-            <a class="btn secondary" href="/bird-gallery/">Bird Gallery</a>
-          </div>
-
-          <div class="ctaBand" aria-label="Quick reassurance">
-            <p><strong>New to birding?</strong> No problem. We guide beginners and serious birders, and we keep the experience calm and organized.</p>
-            <a class="btn secondary" href="/faqs/">Read FAQs</a>
+            <a class="btn primary" href="/reserve-tour/">Reserve now</a>
+            <a class="btn secondary" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER" target="_blank" rel="noopener">Reserve instantly on WhatsApp</a>
+            <a class="btn secondary" href="/tours/">View birding tours</a>
           </div>
         </div>
 
-        <aside class="heroAside" aria-label="Highlights">
-          <h2>Why guests love Mindo</h2>
+        <aside class="heroCard" aria-label="How to use this page">
+          <h2>How this page works</h2>
           <ul class="heroList">
-            <li>Early starts that maximize sightings</li>
-            <li>Local spots chosen by season and weather</li>
-            <li>Binoculars and scope support when needed</li>
-            <li>Great for families, photographers, and groups</li>
+            <li>Each activity card has a circular image slot. Drop in your images later.</li>
+            <li>Titles and descriptions are placeholders. Replace them as you finalize the offerings.</li>
+            <li>You can add or remove cards anytime without breaking layout.</li>
           </ul>
         </aside>
       </section>
 
-      <!-- FEATURE MEDIA: IMAGE + VIDEO -->
-      <section class="section" aria-label="Featured media">
+      <section class="section" aria-label="Activities grid">
         <div class="sectionHead">
-          <h2>See what the experience feels like</h2>
-          <p class="hint">Replace the placeholders with your own images and YouTube video ID.</p>
+          <h2>All activities</h2>
+          <p class="hint">Replace the image <strong>src</strong> and the placeholder text inside each card. No other changes needed.</p>
         </div>
 
-        <div class="mediaGrid">
-          <!-- Big image slot -->
-          <article class="mediaCard" aria-label="Featured image">
-            <div class="mediaFrame">
-              <img
-                src="/assets/images/pages/MBW-Hero-Homepage-01.png"
-                alt="Homepage featured image placeholder"
-              />
+        <div class="miniNote" aria-label="Image note">
+          <strong>Image tip:</strong> use square images (1:1) for the best result inside the circular slot.
+          Recommended size: 800x800 or higher.
+        </div>
+
+        <div class="grid" style="margin-top:12px;" aria-label="Activities list">
+          <!-- KEEP YOUR 20 ACTIVITY CARDS EXACTLY AS YOU ALREADY HAVE THEM -->
+          <!-- (No changes needed inside the cards for this update.) -->
+
+          <!-- 01 -->
+          <article class="act" aria-label="Activity 1">
+            <div class="actTop">
+              <div class="avatar">
+                <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23F3F7F1%22/%3E%3Ctext%20x%3D%22100%22%20y%3D%22110%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EIMG%2001%3C/text%3E%3C/svg%3E" alt="Activity image placeholder 1">
+              </div>
+              <div class="actMeta">
+                <p class="actTitle">Activity Title 01 (placeholder)</p>
+                <p class="actSub">Short description line for this activity. Replace later. (placeholder)</p>
+              </div>
             </div>
-            <div class="mediaBar">
-              <p class="mediaTitle">Plate-billed Mountain-Toucan</p>
-              <span class="badge">Cloud Forest • Mindo</span>
+            <div class="actBody">
+              <div class="chips" aria-label="Activity 1 tags">
+                <span class="chip">Adventure</span>
+                <span class="chip">Family friendly</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 02 -->
+          <article class="act" aria-label="Activity 2">
+            <div class="actTop">
+              <div class="avatar">
+                <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23F3F7F1%22/%3E%3Ctext%20x%3D%22100%22%20y%3D%22110%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EIMG%2002%3C/text%3E%3C/svg%3E" alt="Activity image placeholder 2">
+              </div>
+              <div class="actMeta">
+                <p class="actTitle">Activity Title 02 (placeholder)</p>
+                <p class="actSub">Short description line for this activity. Replace later. (placeholder)</p>
+              </div>
+            </div>
+            <div class="actBody">
+              <div class="chips" aria-label="Activity 2 tags">
+                <span class="chip">Nature</span>
+                <span class="chip">Relaxed</span>
+              </div>
             </div>
           </article>
 
-          <!-- Video slot -->
-          <article class="mediaCard" aria-label="Featured video">
-            <iframe
-              class="videoFrame"
-              src="https://youtube.com/shorts/bfVgotdkJPE?si=pAuz5dYpQVcQ4Mt-"
-              title="Mindo Bird Watching video"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen></iframe>
-            <div class="mediaBar">
-              <p class="mediaTitle">The Magic of Mindo</p>
-              <span class="badge">2025</span>
-            </div>
-          </article>
-        </div>
-      </section>
+          <!-- ... KEEP THE REST OF YOUR CARDS 03–20 EXACTLY AS-IS ... -->
 
-      <!-- QUICK LINKS -->
-      <section class="section" aria-label="Explore sections">
-        <div class="sectionHead">
-          <h2>Explore the site</h2>
-          <p class="hint">Fast paths for new visitors.</p>
         </div>
 
-        <div class="tiles" aria-label="Quick links grid">
-          <a class="tile" href="/tours/" aria-label="Explore tours">
-            <h3>Tours</h3>
-            <p>Half-day, full-day, and custom private tours.</p>
-            <p class="sub">See options and what’s included</p>
-          </a>
-
-          <a class="tile" href="/bird-of-the-week/" aria-label="Bird of the week">
-            <h3>Bird of the Week</h3>
-            <p>Featured species, quick facts, and calls to learn.</p>
-            <p class="sub">Perfect for trip prep</p>
-          </a>
-
-          <a class="tile" href="/bird-gallery/" aria-label="Bird gallery">
-            <h3>Bird Gallery</h3>
-            <p>Browse local species you may spot in Mindo.</p>
-            <p class="sub">Great for beginners</p>
-          </a>
-        </div>
-      </section>
-
-      <!-- PHOTO RAIL -->
-      <section class="section" aria-label="Highlights">
-        <div class="sectionHead">
-          <h2>Highlights</h2>
-          <p class="hint">Swap these four images anytime.</p>
-        </div>
-
-        <div class="photoRail" aria-label="Photo highlights grid">
-          <figure class="photo" aria-label="Highlight 1">
-            <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EPhoto%201%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Highlight photo 1 placeholder" />
-            <figcaption class="photoCap">Birding moments (placeholder)</figcaption>
-          </figure>
-
-          <figure class="photo" aria-label="Highlight 2">
-            <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EPhoto%202%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Highlight photo 2 placeholder" />
-            <figcaption class="photoCap">Cloud forest trails (placeholder)</figcaption>
-          </figure>
-
-          <figure class="photo" aria-label="Highlight 3">
-            <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EPhoto%203%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Highlight photo 3 placeholder" />
-            <figcaption class="photoCap">Hummingbirds and feeders (placeholder)</figcaption>
-          </figure>
-
-          <figure class="photo" aria-label="Highlight 4">
-            <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EPhoto%204%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Highlight photo 4 placeholder" />
-            <figcaption class="photoCap">Waterfalls and nature (placeholder)</figcaption>
-          </figure>
+        <div class="ctaStrip" aria-label="Reserve call to action">
+          <p>
+            Want us to help you pick the best mix of birdwatching and adventure for your dates?
+            Reserve your tour and we will confirm the best plan for your group.
+          </p>
+          <div class="actions" aria-label="Reserve buttons">
+            <a class="btn primary" href="/reserve-tour/">Reserve now</a>
+            <a class="btn secondary" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER" target="_blank" rel="noopener">Reserve instantly on WhatsApp</a>
+          </div>
         </div>
       </section>
     </main>
@@ -441,9 +372,5 @@
     <!-- Shared footer mount -->
     <div id="siteFooter"></div>
   </div>
-
-  <!-- ✅ Include injector + header behavior at bottom -->
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
 </body>
-</html>
+</html>V
