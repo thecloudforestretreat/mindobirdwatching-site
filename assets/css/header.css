@@ -1,1 +1,87 @@
+/* ======================================================
+   MBW Header – Desktop Dropdowns
+   ====================================================== */
 
+/* Desktop only */
+@media (min-width: 901px) {
+  .topbar {
+    position: relative;
+    z-index: 5000;
+  }
+
+  .topbar .nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+
+  .topbar .dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Hidden by default */
+  .topbar .dropdownMenu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    z-index: 9999;
+
+    min-width: 220px;
+    padding: 10px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Show on hover + keyboard */
+  .topbar .dropdown:hover .dropdownMenu,
+  .topbar .dropdown:focus-within .dropdownMenu {
+    display: grid;
+    gap: 8px;
+  }
+
+  .topbar .dropdownMenu a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-weight: 900;
+    text-decoration: none;
+    color: var(--ink);
+    background: rgba(255,255,255,.7);
+    border: 1px solid rgba(0,0,0,.06);
+    white-space: nowrap;
+  }
+
+  .topbar .dropdownMenu a:hover,
+  .topbar .dropdownMenu a:focus {
+    background: rgba(13,89,37,.12);
+    border-color: rgba(13,89,37,.25);
+    outline: none;
+  }
+}
+
+/* Mobile: flat menu (no hover dropdowns) */
+@media (max-width: 900px) {
+  .topbar .dropdownMenu {
+    display: none !important;
+  }
+
+  .menuGroup {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .menuGroupTitle {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+}
