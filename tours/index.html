@@ -11,9 +11,20 @@
   <link rel="alternate" hreflang="es" href="/es/tours/" />
   <link rel="alternate" hreflang="x-default" href="/tours/" />
 
+  <!-- Favicons (approved root paths) -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#034EA2">
+
+  <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css">
+  <!-- Header dropdown styling -->
+  <link rel="stylesheet" href="/assets/css/header.css?v=1">
+
+  <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
 
   <style>
     /* Page-only styles only */
@@ -310,6 +321,7 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,.80);
       z-index: 2;
+      pointer-events: none; /* ✅ never block taps */
     }
     .mbwDot{
       width: 8px;
@@ -549,7 +561,6 @@
         <div class="videoGrid" aria-label="YouTube embeds">
           <div class="videoCard">
             <div class="videoFrame">
-              <!-- Replace VIDEO_ID -->
               <iframe
                 src="https://www.youtube.com/embed/VIDEO_ID"
                 title="Mindo Bird Watching video 1"
@@ -561,7 +572,6 @@
 
           <div class="videoCard">
             <div class="videoFrame">
-              <!-- Replace VIDEO_ID -->
               <iframe
                 src="https://www.youtube.com/embed/VIDEO_ID"
                 title="Mindo Bird Watching video 2"
@@ -577,6 +587,10 @@
 
     <div id="siteFooter"></div>
   </div>
+
+  <!-- ✅ Shared includes + header behavior (must be on every page that uses #siteHeader/#siteFooter) -->
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
 
   <script>
     (function(){
