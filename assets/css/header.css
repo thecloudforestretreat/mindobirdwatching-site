@@ -1,236 +1,231 @@
-/* =========================
-   MBW Header + Dropdowns
-   Requires: header.html markup with .dd, .ddBtn, .dropdownMenu
-   ========================= */
+/* MBW Header (Dropdown v2) */
 
-.topbar {
+:root{
+  --mbw-header-bg: rgba(243, 247, 241, 0.85);
+  --mbw-pill-bg: rgba(255,255,255,0.65);
+  --mbw-pill-bg-hover: rgba(13,89,37,0.14);
+  --mbw-line: rgba(0,0,0,0.10);
+  --mbw-shadow: 0 14px 40px rgba(0,0,0,.10);
+  --mbw-r: 18px;
+}
+
+header.topbar[data-mbw-header]{
   position: sticky;
   top: 0;
-  z-index: 6000;
+  z-index: 5000;
+
+  margin-top: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--mbw-line);
+  background: var(--mbw-header-bg);
+  box-shadow: var(--mbw-shadow);
+
+  padding: 14px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(243, 247, 234, 0.92);
-  border: 1px solid rgba(0,0,0,.08);
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+
   backdrop-filter: blur(10px);
 }
 
-.topbar .brand {
+header.topbar[data-mbw-header] .brand{
   display: inline-flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
   color: inherit;
+  min-width: 220px;
+}
+
+header.topbar[data-mbw-header] .brand img{
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+header.topbar[data-mbw-header] .brand span{
   font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
-.topbar .brand img {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: block;
-}
-
-.topbar .right {
-  display: flex;
+header.topbar[data-mbw-header] .right{
+  display: inline-flex;
   align-items: center;
   gap: 12px;
 }
 
-.topbar .lang {
+header.topbar[data-mbw-header] .lang{
   display: inline-flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   padding: 6px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.08);
-  background: rgba(255,255,255,.7);
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.70);
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
 }
 
-.topbar .lang a {
+header.topbar[data-mbw-header] .lang a{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
+  min-width: 34px;
   height: 34px;
+  padding: 0 10px;
   border-radius: 999px;
   text-decoration: none;
   color: inherit;
   font-weight: 900;
   font-size: 13px;
+  border: 1px solid transparent;
 }
 
-.topbar .nav {
-  display: flex;
+header.topbar[data-mbw-header] .lang a.is-active,
+header.topbar[data-mbw-header] .lang a[aria-current="page"]{
+  border-color: rgba(13,89,37,.25);
+  background: rgba(13,89,37,.12);
+}
+
+/* Desktop nav */
+header.topbar[data-mbw-header] nav.nav{
+  display: inline-flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: nowrap;         /* IMPORTANT: no wrapping */
+  white-space: nowrap;       /* IMPORTANT: no wrapping */
 }
 
-/* pills */
-.pill {
+header.topbar[data-mbw-header] .pill{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 38px;
+  height: 40px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.72);
-  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+  border: 1px solid var(--mbw-line);
+  background: var(--mbw-pill-bg);
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
   text-decoration: none;
   color: inherit;
   font-weight: 900;
   font-size: 13.5px;
-  white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
-.pill:hover {
-  transform: translateY(-1px);
+header.topbar[data-mbw-header] .pill:hover{
+  background: var(--mbw-pill-bg-hover);
+  border-color: rgba(13,89,37,.28);
 }
 
-/* =========================
-   Desktop dropdown behavior
-   ========================= */
-
-.dd {
-  position: relative;
+/* Dropdown */
+header.topbar[data-mbw-header] .dropdown{
+  position: relative; /* REQUIRED for absolute menu */
   display: inline-flex;
   align-items: center;
 }
 
-.ddBtn {
-  cursor: default;
+header.topbar[data-mbw-header] .dropdown > .pill{
+  gap: 8px;
 }
 
-.ddBtn::after {
-  content: "▾";
-  margin-left: 8px;
-  font-size: 12px;
-  opacity: .75;
-}
-
-/* default hidden */
-.dropdownMenu {
-  display: none;
-  position: absolute;
+header.topbar[data-mbw-header] .dropdownMenu{
+  position: absolute;         /* IMPORTANT: was static before */
   top: calc(100% + 10px);
   left: 0;
-  min-width: 220px;
+  min-width: 240px;
+
+  display: none;              /* IMPORTANT: hidden by default */
+  flex-direction: column;
+  gap: 6px;
+
   padding: 10px;
   border-radius: 16px;
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(0,0,0,.10);
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.94);
   box-shadow: 0 22px 60px rgba(0,0,0,.18);
   backdrop-filter: blur(10px);
 }
 
-.dropdownMenu a {
+header.topbar[data-mbw-header] .dropdownMenu a{
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  height: 38px;
+  height: 40px;
   padding: 0 12px;
   border-radius: 12px;
   text-decoration: none;
   color: inherit;
   font-weight: 900;
-  font-size: 13px;
-  white-space: nowrap;
+  font-size: 13.5px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.70);
 }
 
-.dropdownMenu a:hover {
-  background: rgba(13, 89, 37, 0.10);
+header.topbar[data-mbw-header] .dropdownMenu a:hover{
+  background: rgba(13,89,37,0.12);
+  border-color: rgba(13,89,37,.22);
 }
 
-/* show on hover/focus */
-.dd:hover .dropdownMenu,
-.dd:focus-within .dropdownMenu {
-  display: block;
-}
+/* Open dropdown on hover + keyboard focus */
+@media (min-width: 901px){
+  header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
+  header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
+    display: flex;
+  }
 
-/* =========================
-   Mobile menu button/panel
-   (relies on your existing site.js menu logic)
-   ========================= */
-
-.menuBtn {
-  display: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.80);
-  box-shadow: 0 8px 18px rgba(0,0,0,.06);
-  cursor: pointer;
-}
-
-.menuPanel {
-  display: none;
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(0,0,0,.08);
-  background: rgba(255,255,255,.88);
-  box-shadow: 0 18px 60px rgba(0,0,0,.12);
+  /* Hide mobile button/panel on desktop */
+  header.topbar[data-mbw-header] .menuBtn,
+  header.topbar[data-mbw-header] .menuPanel{
+    display: none !important;
+  }
 }
 
 /* Mobile */
-@media (max-width: 900px) {
-  .topbar {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
+header.topbar[data-mbw-header] .menuBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
-  .topbar .nav {
+header.topbar[data-mbw-header] .menuBtn svg{
+  width: 22px;
+  height: 22px;
+}
+
+header.topbar[data-mbw-header] .menuPanel{
+  display: none;
+  position: absolute;
+  right: 14px;
+  top: calc(100% + 10px);
+  width: min(360px, calc(100vw - 28px));
+
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 24px 70px rgba(0,0,0,.22);
+}
+
+header.topbar[data-mbw-header] .menuPanel.is-open{
+  display: block;
+}
+
+header.topbar[data-mbw-header] .menuList{
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px){
+  header.topbar[data-mbw-header] nav.nav{
     display: none;
-  }
-
-  .menuBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* When your JS opens it, it typically toggles [data-open] or aria-expanded.
-     We won't assume your exact attribute — your existing site.js should handle showing it.
-     If you already toggle a class like .is-open, keep it in site.js. */
-  .menuPanel {
-    display: block;
-    width: 100%;
-  }
-
-  .menuPanel .menuList {
-    display: grid;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  /* Mobile: dropdowns should NOT float — just stack */
-  .menuPanel .dd {
-    position: static;
-    display: grid;
-    gap: 8px;
-  }
-
-  .menuPanel .dropdownMenu {
-    display: grid;
-    position: static;
-    padding: 0;
-    border: 0;
-    box-shadow: none;
-    background: transparent;
-  }
-
-  .menuPanel .dropdownMenu a {
-    background: rgba(255,255,255,.72);
-    border: 1px solid rgba(0,0,0,.10);
-    box-shadow: 0 8px 18px rgba(0,0,0,.06);
-  }
-
-  .ddBtn::after {
-    content: "";
   }
 }
