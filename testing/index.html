@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Galería de Aves | Mindo Bird Watching</title>
-  <meta name="description" content="Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Fotos de colibríes, tucanes, tangaras y el Gallito de las Rocas en el bosque nublado de Mindo." />
-  <link rel="alternate" hreflang="en" href="/bird-gallery/" />
-  <link rel="alternate" hreflang="es" href="/es/galeria/" />
-  <link rel="alternate" hreflang="x-default" href="/bird-gallery/" />
+  <title>Ave de la Semana | Mindo Bird Watching</title>
+  <meta name="description" content="Descubre nuestra Ave de la Semana desde los bosques nublados de 📍Mindo, Ecuador. Conoce datos fascinantes, mira fotos, escucha cantos y prepárate para tu próxima salida de observación de aves." />
+  <link rel="alternate" hreflang="en" href="/bird-of-the-week/" />
+  <link rel="alternate" hreflang="es" href="/es/ave-de-la-semana/" />
+  <link rel="alternate" hreflang="x-default" href="/bird-of-the-week/" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -15,29 +15,49 @@
   <meta name="theme-color" content="#034EA2">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <link rel="stylesheet" href="/assets/css/footer.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
   <style>
+    /* =========================
+       Page-only styles (main content only)
+       ========================= */
+
     .page { margin-top: 18px; padding: 26px; }
-    .page.card {
+    .page.card{
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
 
-    .hero {
+    .hero{
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.1fr .9fr;
       gap: 16px;
       align-items: start;
     }
 
-    .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
-    .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
+    .hero h1{
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
 
-    .heroLeft, .heroRight { display: grid; gap: 12px; align-content: start; }
+    .hero p{
+      margin: 0;
+      max-width: 85ch;
+      color: var(--ink);
+      line-height: 1.65;
+    }
 
-    .heroCard {
+    .heroCtas{
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .heroCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -45,128 +65,28 @@
       padding: 14px;
     }
 
-    .heroCard h2 {
-      margin: 0 0 8px;
+    .heroCard h2{
+      margin: 0 0 10px;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
       font-size: 18px;
     }
 
-    .heroCard ul { margin: 0; padding-left: 18px; line-height: 1.55; color: var(--ink); }
-
-    .heroCtas {
-      margin-top: 12px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .bodHead {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .bodTitle { display: grid; gap: 2px; min-width: 0; }
-    .bodTitle h2 {
+    .heroList{
       margin: 0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-      line-height: 1.2;
-    }
-
-    .bodSub {
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.3;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .bodPill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
+      padding-left: 18px;
       color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-      flex: 0 0 auto;
+      line-height: 1.55;
     }
 
-    .bodMedia {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .bodImgWrap {
-      background: rgba(255,255,255,.65);
-      display: grid;
-      place-items: center;
-      padding: 12px;
-    }
-
-    .bodImg {
-      width: 100%;
-      height: 320px;
-      display: block;
-      object-fit: contain;
-      object-position: center;
-      background: transparent;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.06);
-    }
-
-    .bodAudio {
-      padding: 10px 12px 12px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-    }
-    .bodAudio audio { width: 100%; display: block; }
-
-    .bodLinks {
-      margin-top: 8px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.4;
-    }
-
-    .bodLinks a {
-      color: inherit;
-      font-weight: 900;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
-
-    .section {
+    .section{
       margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
 
-    .sectionHead {
+    .sectionHead{
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -175,7 +95,7 @@
       margin-bottom: 10px;
     }
 
-    .sectionHead h2 {
+    .sectionHead h2{
       margin: 0;
       font-family: var(--font-head);
       color: var(--forest);
@@ -183,214 +103,270 @@
       font-size: 20px;
     }
 
-    .hint { margin: 0; color: var(--muted); font-size: 13px; }
+    .hint{ margin: 0; color: var(--muted); font-size: 13px; }
 
-    .filters {
+    .feature{
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .mediaCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .mediaFrame{
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: rgba(255,255,255,.55);
       display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .mediaFrame img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .mediaBar{
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      display: flex;
+      justify-content: space-between;
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
-      margin: 10px 0 14px;
     }
 
-    .chip {
-      appearance: none;
+    .mediaTitle{
+      margin: 0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .badge{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.65);
-      color: var(--ink);
-      border-radius: 999px;
-      padding: 10px 12px;
-      font-weight: 900;
-      font-size: 13px;
-      line-height: 1;
-      cursor: pointer;
       box-shadow: var(--shadow);
-    }
-    .chip[aria-pressed="true"] {
-      background: rgba(13,89,37,.14);
-      border-color: rgba(13,89,37,.35);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
     }
 
-    .gallery {
+    .infoCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .infoTop{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .latin{
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .facts{
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .fact{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      padding: 12px;
+    }
+
+    .fact dt{
+      margin: 0 0 6px;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .fact dd{
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    .audioCard{
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .audioRow{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .audioLabel{
+      margin: 0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    audio{
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .story{
+      margin-top: 12px;
+      line-height: 1.7;
+      color: var(--ink);
+    }
+
+    .story p{ margin: 0 0 12px; }
+
+    .videoGrid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .videoCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .videoFrame{
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      border: 0;
+      display: block;
+      background: rgba(255,255,255,.55);
+    }
+
+    .videoCap{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .rail{
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
     }
 
-    .tile {
+    .tile{
       border: 1px solid var(--line);
       border-radius: var(--r);
-      overflow: hidden;
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
-      cursor: pointer;
-      position: relative;
-      min-height: 160px;
-      padding: 0;
-    }
-
-    .thumb {
-      width: 100%;
-      height: 220px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
       display: block;
-      object-fit: contain;
-      object-position: center;
-      background: rgba(255,255,255,.72);
-      padding: 10px;
-      box-sizing: border-box;
     }
 
-    .meta {
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: baseline;
+    .tile img{
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
       background: rgba(255,255,255,.55);
     }
 
-    .name {
+    .tileMeta{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+    }
+
+    .tileMeta .t{
       margin: 0;
       font-weight: 900;
+      color: var(--ink);
       font-size: 13.5px;
-      color: var(--ink);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .tag {
-      margin: 0;
+    .tileMeta .s{
+      margin: 4px 0 0;
+      color: var(--muted);
       font-size: 12.5px;
-      color: var(--muted);
       white-space: nowrap;
     }
 
-    .emptyState {
-      display: none;
+    .note{
       margin-top: 10px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
+      padding: 12px;
+      border: 1px dashed rgba(13,89,37,.35);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
       color: var(--muted);
-    }
-    .emptyState.is-visible { display: block; }
-
-    .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .videoCard {
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .videoFrame { aspect-ratio: 16 / 9; width: 100%; border: 0; display: block; background: rgba(255,255,255,.55); }
-
-    .videoCap {
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
+      line-height: 1.55;
       font-size: 13px;
-      background: rgba(255,255,255,.55);
     }
 
-    .lb {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.62);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 18px;
-    }
-    .lb.is-open { display: flex; }
-
-    .lbDialog {
-      width: min(980px, 100%);
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(255,255,255,.92);
-      box-shadow: 0 30px 80px rgba(0,0,0,.35);
-      overflow: hidden;
+    @media (max-width: 980px){
+      .rail{ grid-template-columns: repeat(3, 1fr); }
+      .tile img{ height: 170px; }
     }
 
-    .lbMedia { position: relative; background: rgba(255,255,255,.55); }
-
-    .lbImg {
-      width: 100%;
-      height: min(70vh, 640px);
-      object-fit: contain;
-      display: block;
-      background: rgba(255,255,255,.55);
+    @media (max-width: 900px){
+      .hero{ grid-template-columns: 1fr; }
+      .feature{ grid-template-columns: 1fr; }
+      .facts{ grid-template-columns: 1fr; }
+      .videoGrid{ grid-template-columns: 1fr; }
+      .rail{ grid-template-columns: repeat(2, 1fr); }
+      .tile img{ height: 160px; }
     }
 
-    .lbBar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.82);
-    }
-
-    .lbTitle {
-      margin: 0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 14px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .lbSub { margin: 0; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
-
-    .lbBtns { display: inline-flex; gap: 8px; align-items: center; flex: 0 0 auto; }
-
-    .iconBtn {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.85);
-      box-shadow: var(--shadow);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-    }
-    .iconBtn:focus { outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
-    .iconBtn svg { width: 20px; height: 20px; }
-
-    .closeBtn { width: auto; padding: 0 12px; gap: 10px; font-weight: 900; font-size: 13px; }
-
-    @media (max-width: 980px) {
-      .gallery { grid-template-columns: repeat(3, 1fr); }
-      .thumb { height: 200px; }
-      .bodImg { height: 280px; }
-    }
-
-    @media (max-width: 900px) {
-      .hero { grid-template-columns: 1fr; }
-      .gallery { grid-template-columns: repeat(2, 1fr); }
-      .thumb { height: 190px; }
-      .videoGrid { grid-template-columns: 1fr; }
-      .bodImg { height: 320px; }
-    }
-
-    @media (max-width: 520px) {
-      .gallery { grid-template-columns: 1fr; }
-      .thumb { height: 220px; }
-      .lbImg { height: min(65vh, 560px); }
-      .bodImg { height: 260px; }
+    @media (max-width: 520px){
+      .rail{ grid-template-columns: 1fr; }
+      .tile img{ height: 220px; }
     }
   </style>
 </head>
@@ -398,96 +374,107 @@
   <div class="container">
     <div id="siteHeader"></div>
 <main class="page card">
-  <section class="hero" aria-label="Introducción de la galería">
+  <section class="hero" aria-label="Introducción de Ave de la Semana">
+    <div>
+      <h1>Ave de la Semana</h1>
+      <p>
+        Descubre nuestra Ave de la Semana desde los bosques nublados de 📍Mindo, Ecuador. Conoce datos fascinantes, mira fotos hermosas
+        y prepárate para identificar estas especies increíbles en tu próxima salida de observación de aves.
+      </p>
 
-    <div class="heroLeft">
-      <div>
-        <h1>Galería de Aves</h1>
-        <p>
-          Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Fotos de colibríes, tucanes,
-          tangaras y el Gallito de las Rocas en el bosque nublado de Mindo.
-        </p>
-
-        <div class="heroCtas" aria-label="Acciones principales">
-          <a class="btn primary" href="/es/reservar/">Reservar un Tour</a>
-          <a class="btn secondary" href="/es/tours/">Ver Tours</a>
-        </div>
+      <div class="heroCtas" aria-label="Acciones principales">
+        <a class="btn primary" href="/es/reservar-tour/">Reservar un tour</a>
+        <a class="btn secondary" href="/es/tours/">Ver tours</a>
+        <a class="btn secondary" href="/es/galeria-de-aves/">Galería de Aves</a>
       </div>
-
-      <aside class="heroCard" aria-label="Cómo usar esta galería">
-        <h2>Conoce las Aves</h2>
-        <ul>
-          <li>Usa filtros para ir a un grupo (Colibríes, Tucanes, etc.)</li>
-          <li>Haz clic en una foto para ver en pantalla completa</li>
-          <li>Usa ← / → para navegar</li>
-        </ul>
-      </aside>
     </div>
 
-    <div class="heroRight" aria-label="Columna derecha">
-      <aside class="heroCard" aria-label="Ave del Día">
-        <div class="bodHead">
-          <div class="bodTitle" style="min-width:0;">
-            <h2>Ave del Día</h2>
-            <div class="bodSub" id="bodSub">Cargando el ave de hoy...</div>
-          </div>
-          <span class="bodPill" id="bodPill">Cargando</span>
-        </div>
-
-        <div class="bodMedia" id="bodMedia" hidden>
-          <div class="bodImgWrap">
-            <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de imagen" style="display:block; width:100%;">
-              <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
-            </a>
-          </div>
-
-          <div class="bodAudio" id="bodAudioWrap" hidden>
-            <audio id="bodAudio" controls preload="none"></audio>
-
-            <div class="bodLinks">
-              <div>
-                <span id="bodImageCreditWrap" hidden>Crédito de imagen: <a id="bodImageCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
-                <span id="bodAudioCreditWrap" hidden style="margin-left:10px;">Crédito de audio: <a id="bodAudioCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
-              </div>
-              <div>
-                <span id="bodAudioSrcWrap" hidden>Fuente del audio: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Abrir</a></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bodCtas">
-          <a class="btn secondary" href="/es/reservar/">Aves con Guía</a>
-          <a class="btn secondary" href="/es/calendario/">Calendario de Avistamiento</a>
-          <a class="btn secondary" href="/es/ave-de-la-semana/">Ave de la Semana</a>
-        </div>
-      </aside>
-    </div>
+    <aside class="heroCard" aria-label="Qué encontrarás aquí">
+      <h2>Qué Incluye</h2>
+      <ul class="heroList">
+        <li>Especie destacada cada semana con fotos y datos rápidos</li>
+        <li>Audios de cantos para escuchar antes del viaje</li>
+        <li>Videos integrados de avistamientos y comportamiento</li>
+      </ul>
+    </aside>
   </section>
 
-  <section class="section" aria-label="Sección de galería">
+  <section class="section" aria-label="Ave destacada">
     <div class="sectionHead">
-      <h2>Galería</h2>
-      <p class="hint">Usando imágenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
+      <h2>El ave destacada de esta semana</h2>
+      <p class="hint">Los placeholders están listos. Luego podrás reemplazar los datos desde tu Google Sheet.</p>
     </div>
 
-    <div class="filters" role="toolbar" aria-label="Filtros de galería">
-      <button class="chip" type="button" data-filter="all" aria-pressed="true">Todas</button>
-      <button class="chip" type="button" data-filter="hummingbirds" aria-pressed="false">Colibríes</button>
-      <button class="chip" type="button" data-filter="toucans" aria-pressed="false">Tucanes</button>
-      <button class="chip" type="button" data-filter="tanagers" aria-pressed="false">Tangaras</button>
-      <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Gallito de las Rocas</button>
-      <button class="chip" type="button" data-filter="other" aria-pressed="false">Otras</button>
-      <button class="chip" type="button" data-filter="videos" aria-pressed="false">Videos</button>
+    <div class="feature">
+      <article class="mediaCard" aria-label="Foto del ave destacada">
+        <div class="mediaFrame">
+          <img id="birdHeroImg" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22900%22%20viewBox%3D%220%200%201200%20900%22%3E%3Crect%20width%3D%221200%22%20height%3D%22900%22%20fill%3D%22%23F3F7F1%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2260%22%20width%3D%221080%22%20height%3D%22780%22%20rx%3D%2244%22%20fill%3D%22none%22%20stroke%3D%22%23D6E5C6%22%20stroke-width%3D%2210%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22460%22%20font-size%3D%2248%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EFoto%20del%20Ave%20Destacada%3C/text%3E%3Ctext%20x%3D%22600%22%20y%3D%22520%22%20font-size%3D%2226%22%20font-weight%3D%22600%22%20fill%3D%22%236B7C6C%22%3EReemplaza%20esta%20URL%20desde%20tu%20Sheet%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de foto del ave destacada" />
+        </div>
+
+        <div class="mediaBar">
+          <p id="birdHeroTitle" class="mediaTitle">Gallito de las Rocas Andino (placeholder)</p>
+          <span id="birdHeroBadge" class="badge">Bosque Nublado • 📍Mindo, Ecuador</span>
+        </div>
+      </article>
+
+      <aside class="infoCard" aria-label="Datos del ave destacada">
+        <div class="infoTop">
+          <div style="min-width:0;">
+            <h2 id="birdName" style="margin:0; letter-spacing:-0.02em;">Gallito de las Rocas Andino</h2>
+            <p id="birdLatin" class="latin">Rupicola peruvianus</p>
+          </div>
+          <span id="birdWeekTag" class="badge">Ave de la Semana</span>
+        </div>
+
+        <dl class="facts" aria-label="Datos rápidos">
+          <div class="fact">
+            <dt>Mejor hora</dt>
+            <dd id="factBestTime">Temprano en la mañana (placeholder)</dd>
+          </div>
+          <div class="fact">
+            <dt>Dónde ver</dt>
+            <dd id="factWhere">Bordes del bosque y leks (placeholder)</dd>
+          </div>
+          <div class="fact">
+            <dt>Dieta</dt>
+            <dd id="factDiet">Mayormente fruta (placeholder)</dd>
+          </div>
+          <div class="fact">
+            <dt>Dato curioso</dt>
+            <dd id="factFun">Los machos se reúnen para exhibirse en leks (placeholder)</dd>
+          </div>
+        </dl>
+
+        <div class="audioCard" aria-label="Audio del ave">
+          <div class="audioRow">
+            <p class="audioLabel">Escucha el canto</p>
+            <span id="audioNote" class="badge">Placeholder de audio</span>
+          </div>
+          <audio id="birdAudio" controls preload="none">
+            <source src="AUDIO_FILE_URL_PLACEHOLDER.mp3" type="audio/mpeg" />
+            Tu navegador no soporta el elemento de audio.
+          </audio>
+        </div>
+
+        <div class="note" aria-label="Cómo actualizar esta página luego">
+          <strong>Luego (Sheets):</strong> reemplaza los valores placeholder en el objeto <code>BIRD_DATA</code> del script al final
+          con datos provenientes de tu export o endpoint de Google Sheet.
+        </div>
+      </aside>
     </div>
 
-    <div id="galleryGrid" class="gallery" aria-label="Cuadrícula de fotos"></div>
-    <div id="emptyState" class="emptyState" role="status" aria-live="polite">
-      No hay elementos para este filtro todavía.
+    <div class="story" aria-label="Descripción del ave">
+      <p id="birdStory1">
+        Aquí agregarás una historia corta y atractiva sobre el ave destacada. Mantén el tono amistoso y práctico, como lo que le dirías a un huésped
+        justo antes de la primera parada del tour. (placeholder)
+      </p>
+      <p id="birdStory2">
+        Agrega un segundo párrafo con qué observar: comportamiento, patrón de vuelo, perchas favoritas y la mejor pista para que un principiante la detecte. (placeholder)
+      </p>
     </div>
   </section>
 
-  <section class="section" aria-label="Sección de videos">
+  <section class="section" aria-label="Videos">
     <div class="sectionHead">
       <h2>Videos</h2>
       <p class="hint">Reemplaza los IDs de YouTube cuando estés listo.</p>
@@ -498,375 +485,129 @@
         <iframe
           class="videoFrame"
           src="https://www.youtube-nocookie.com/embed/VIDEO_ID_1"
-          title="Video 1 de Mindo Bird Watching"
+          title="Video 1 de Ave de la Semana"
           loading="lazy"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen>
-        </iframe>
-        <div class="videoCap">Video 1 de ejemplo. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
+          allowfullscreen></iframe>
+        <div class="videoCap">Video placeholder 1. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
       </div>
 
       <div class="videoCard" aria-label="Video 2">
         <iframe
           class="videoFrame"
           src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
-          title="Video 2 de Mindo Bird Watching"
+          title="Video 2 de Ave de la Semana"
           loading="lazy"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen>
-        </iframe>
-        <div class="videoCap">Video 2 de ejemplo. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
+          allowfullscreen></iframe>
+        <div class="videoCap">Video placeholder 2. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
       </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Aves recientes">
+    <div class="sectionHead">
+      <h2>Aves Recientes</h2>
+      <p class="hint">Opcional: enlaza estas tarjetas a semanas anteriores o páginas dedicadas.</p>
+    </div>
+
+    <div class="rail" aria-label="Grid de aves recientes">
+      <a class="tile" href="#" aria-label="Ave reciente 1 (enlace placeholder)">
+        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%201%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 1" />
+        <div class="tileMeta">
+          <p class="t">Ave Reciente 1</p>
+          <p class="s">Haz clic para ver (placeholder)</p>
+        </div>
+      </a>
+
+      <a class="tile" href="#" aria-label="Ave reciente 2 (enlace placeholder)">
+        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%202%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 2" />
+        <div class="tileMeta">
+          <p class="t">Ave Reciente 2</p>
+          <p class="s">Haz clic para ver (placeholder)</p>
+        </div>
+      </a>
+
+      <a class="tile" href="#" aria-label="Ave reciente 3 (enlace placeholder)">
+        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%203%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 3" />
+        <div class="tileMeta">
+          <p class="t">Ave Reciente 3</p>
+          <p class="s">Haz clic para ver (placeholder)</p>
+        </div>
+      </a>
+
+      <a class="tile" href="#" aria-label="Ave reciente 4 (enlace placeholder)">
+        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%204%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 4" />
+        <div class="tileMeta">
+          <p class="t">Ave Reciente 4</p>
+          <p class="s">Haz clic para ver (placeholder)</p>
+        </div>
+      </a>
     </div>
   </section>
 </main>
 
 <div id="siteFooter"></div>
   </div>
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
+  <script src="/assets/js/includes.js?v=1"></script>
+  <script src="/assets/js/site.js?v=1"></script>
   <script>
     (function () {
       "use strict";
 
-      if (document.documentElement.dataset.mbwBodInit !== "1") {
-        document.documentElement.dataset.mbwBodInit = "1";
+      if (document.documentElement.dataset.mbwBotwInit === "1") return;
+      document.documentElement.dataset.mbwBotwInit = "1";
 
-        const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
-        const AUDIO_PROXY = "https://mbw-audio-proxy.mindobirdwatching.workers.dev/?url=";
+      const BIRD_DATA = {
+        heroImageUrl: null,
+        commonName: "Gallito de las Rocas Andino",
+        latinName: "Rupicola peruvianus",
+        badgeText: "Bosque Nublado • 📍Mindo, Ecuador",
+        bestTime: "Temprano en la mañana",
+        where: "Bordes del bosque y leks",
+        diet: "Mayormente fruta",
+        funFact: "Los machos se reúnen para exhibirse en leks",
+        audioUrl: "AUDIO_FILE_URL_PLACEHOLDER.mp3",
+        story1: "Aquí agregarás una historia corta y atractiva sobre el ave destacada. (placeholder)",
+        story2: "Agrega un segundo párrafo con comportamiento, patrón de vuelo y tips para detectarla. (placeholder)"
+      };
 
-        const bodSub = document.getElementById("bodSub");
-        const bodPill = document.getElementById("bodPill");
-        const bodMedia = document.getElementById("bodMedia");
-
-        const bodImg = document.getElementById("bodImg");
-        const bodImgLink = document.getElementById("bodImgLink");
-
-        const bodAudioWrap = document.getElementById("bodAudioWrap");
-        const bodAudio = document.getElementById("bodAudio");
-
-        const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
-        const bodImageCredit = document.getElementById("bodImageCredit");
-
-        const bodAudioCreditWrap = document.getElementById("bodAudioCreditWrap");
-        const bodAudioCredit = document.getElementById("bodAudioCredit");
-
-        const bodAudioSrcWrap = document.getElementById("bodAudioSrcWrap");
-        const bodAudioSrc = document.getElementById("bodAudioSrc");
-
-        function safeText(s) { return String(s || "").trim(); }
-        function isHttpUrl(v) { return /^https?:\/\/\S+/i.test(String(v || "").trim()); }
-
-        function setLoading() {
-          if (bodSub) bodSub.textContent = "Cargando el ave de hoy...";
-          if (bodPill) bodPill.textContent = "Cargando";
-          if (bodMedia) bodMedia.hidden = true;
-          if (bodAudioWrap) bodAudioWrap.hidden = true;
-        }
-
-        function setError() {
-          if (bodSub) bodSub.textContent = "Ave del Día no está disponible en este momento.";
-          if (bodPill) bodPill.textContent = "Offline";
-          if (bodMedia) bodMedia.hidden = true;
-          if (bodAudioWrap) bodAudioWrap.hidden = true;
-        }
-
-        function renderBod(data) {
-          const birdName = safeText(data.birdName) || "Ave del Día";
-          const spanishName = safeText(data.spanishName);
-
-          const imageUrl = safeText(data.imageUrl);
-          const imageLink = safeText(data.imageLink) || imageUrl;
-
-          const rawAudioUrl = isHttpUrl(data.audioUrl) ? safeText(data.audioUrl)
-                            : isHttpUrl(data.audioLink) ? safeText(data.audioLink)
-                            : "";
-
-          const audioLink = safeText(data.audioLink) || rawAudioUrl;
-
-          const imageCredit = safeText(data.imageCredit);
-          const audioCredit = safeText(data.audioCredit);
-
-          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Selección de hoy en Mindo";
-          if (bodPill) bodPill.textContent = "Hoy";
-
-          if (bodImg && imageUrl) {
-            bodImg.src = imageUrl;
-            bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
-            if (bodImgLink) bodImgLink.href = imageLink || imageUrl;
-            if (bodMedia) bodMedia.hidden = false;
-          } else {
-            if (bodMedia) bodMedia.hidden = true;
-          }
-
-          if (bodAudio && rawAudioUrl) {
-            const proxied = AUDIO_PROXY + encodeURIComponent(rawAudioUrl);
-
-            bodAudio.innerHTML = "";
-            const src = document.createElement("source");
-            src.src = proxied;
-            src.type = "audio/mpeg";
-            bodAudio.appendChild(src);
-
-            if (bodAudioWrap) bodAudioWrap.hidden = false;
-
-            bodAudio.addEventListener("loadstart", () => console.log("[Audio Ave del día] loadstart", proxied), { once: true });
-            bodAudio.addEventListener("error", () => console.log("[Audio Ave del día] error", bodAudio.error), { once: true });
-          } else {
-            if (bodAudioWrap) bodAudioWrap.hidden = true;
-          }
-
-          if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
-          if (bodImageCredit && imageCredit) bodImageCredit.href = imageCredit;
-
-          if (bodAudioCreditWrap) bodAudioCreditWrap.hidden = !audioCredit;
-          if (bodAudioCredit && audioCredit) bodAudioCredit.href = audioCredit;
-
-          if (bodAudioSrcWrap) bodAudioSrcWrap.hidden = !audioLink;
-          if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
-        }
-
-        async function loadBod() {
-          setLoading();
-          try {
-            const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
-            const json = await res.json();
-            if (!json || json.ok !== true) throw new Error("Not ok");
-            renderBod(json);
-          } catch (_) {
-            setError();
-          }
-        }
-
-        loadBod();
+      function setText(id, val) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = String(val || "");
       }
 
-      if (document.documentElement.dataset.mbwGalleryInit === "1") return;
-      document.documentElement.dataset.mbwGalleryInit = "1";
-
-      const grid = document.getElementById("galleryGrid");
-      const emptyState = document.getElementById("emptyState");
-      const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
-      if (!grid) return;
-
-      const ITEMS = [
-        { id: "img-01", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari en Mindo, Ecuador" },
-        { id: "img-02", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan en Mindo, Ecuador" },
-        { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet en Mindo, Ecuador" },
-        { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet en Mindo, Ecuador" },
-        { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan en Mindo, Ecuador" },
-
-        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Gallito de las Rocas en Mindo, Ecuador" },
-
-        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph en Mindo, Ecuador" },
-
-        { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager en Mindo, Ecuador" },
-        { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager en Mindo, Ecuador" },
-        { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager en Mindo, Ecuador" },
-        { id: "img-11", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager en Mindo, Ecuador" },
-        { id: "img-12", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager en Mindo, Ecuador" },
-        { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager en Mindo, Ecuador" },
-        { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager en Mindo, Ecuador" },
-        { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager en Mindo, Ecuador" },
-
-        { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher en Mindo, Ecuador" },
-        { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher en Mindo, Ecuador" },
-        { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot en Mindo, Ecuador" },
-        { id: "img-19", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo en Mindo, Ecuador" },
-        { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker en Mindo, Ecuador" },
-        { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon en Mindo, Ecuador" },
-        { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot en Mindo, Ecuador" },
-
-        { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird en Mindo, Ecuador" },
-        { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra en Mindo, Ecuador" },
-        { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta en Mindo, Ecuador" },
-        { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal en Mindo, Ecuador" },
-        { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon en Mindo, Ecuador" },
-        { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan en Mindo, Ecuador" }
-      ];
-
-      function prettyCategory(c) {
-        const map = {
-          "hummingbirds": "Colibríes",
-          "toucans": "Tucanes",
-          "tanagers": "Tangaras",
-          "cock-of-the-rock": "Gallito de las Rocas",
-          "other": "Otras"
-        };
-        return map[c] || "Aves";
+      function setImage(id, url, alt) {
+        const el = document.getElementById(id);
+        if (!el || !url) return;
+        el.src = url;
+        if (alt) el.alt = alt;
       }
 
-      function setEmptyState(list) {
-        if (!emptyState) return;
-        emptyState.classList.toggle("is-visible", list.length === 0);
+      function setAudio(id, url) {
+        const audio = document.getElementById(id);
+        if (!audio || !url) return;
+        const src = audio.querySelector("source");
+        if (src) src.src = url;
+        audio.load();
       }
 
-      const lb = document.createElement("div");
-      lb.className = "lb";
-      lb.setAttribute("role", "dialog");
-      lb.setAttribute("aria-modal", "true");
-      lb.setAttribute("aria-label", "Visor de imágenes");
-      lb.innerHTML = `
-        <div class="lbDialog" role="document">
-          <div class="lbMedia">
-            <img class="lbImg" alt="" />
-          </div>
-          <div class="lbBar">
-            <div style="min-width:0;">
-              <p class="lbTitle" style="min-width:0;"></p>
-              <p class="lbSub"></p>
-            </div>
-            <div class="lbBtns">
-              <button class="iconBtn" type="button" data-lb="prev" aria-label="Anterior (flecha izquierda)">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <button class="iconBtn" type="button" data-lb="next" aria-label="Siguiente (flecha derecha)">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <button class="iconBtn closeBtn" type="button" data-lb="close" aria-label="Cerrar (escape)">
-                <span>Cerrar</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(lb);
+      setText("birdHeroTitle", BIRD_DATA.commonName + " (placeholder)");
+      setText("birdName", BIRD_DATA.commonName);
+      setText("birdLatin", BIRD_DATA.latinName);
+      setText("birdHeroBadge", BIRD_DATA.badgeText);
+      setText("factBestTime", BIRD_DATA.bestTime);
+      setText("factWhere", BIRD_DATA.where);
+      setText("factDiet", BIRD_DATA.diet);
+      setText("factFun", BIRD_DATA.funFact);
+      setText("birdStory1", BIRD_DATA.story1);
+      setText("birdStory2", BIRD_DATA.story2);
+      setAudio("birdAudio", BIRD_DATA.audioUrl);
 
-      const lbImg = lb.querySelector(".lbImg");
-      const lbTitle = lb.querySelector(".lbTitle");
-      const lbSub = lb.querySelector(".lbSub");
-      const btnPrev = lb.querySelector('[data-lb="prev"]');
-      const btnNext = lb.querySelector('[data-lb="next"]');
-      const btnClose = lb.querySelector('[data-lb="close"]');
-
-      let activeFilter = "all";
-      let visible = ITEMS.slice();
-      let lbIndex = 0;
-      let lastFocused = null;
-
-      function render() {
-        visible =
-          activeFilter === "all" ? ITEMS :
-          activeFilter === "videos" ? [] :
-          ITEMS.filter(x => x.category === activeFilter);
-
-        grid.innerHTML = "";
-
-        visible.forEach((item, i) => {
-          const tile = document.createElement("button");
-          tile.type = "button";
-          tile.className = "tile";
-          tile.setAttribute("aria-label", "Abrir " + item.title);
-
-          const img = document.createElement("img");
-          img.className = "thumb";
-          img.src = item.src;
-          img.alt = item.alt || item.title;
-          img.loading = "lazy";
-
-          const meta = document.createElement("div");
-          meta.className = "meta";
-
-          const name = document.createElement("p");
-          name.className = "name";
-          name.textContent = item.title;
-
-          const tag = document.createElement("p");
-          tag.className = "tag";
-          tag.textContent = prettyCategory(item.category);
-
-          meta.appendChild(name);
-          meta.appendChild(tag);
-
-          tile.appendChild(img);
-          tile.appendChild(meta);
-
-          tile.addEventListener("click", () => openLightbox(i));
-          grid.appendChild(tile);
-        });
-
-        setEmptyState(visible);
+      if (BIRD_DATA.heroImageUrl) {
+        setImage("birdHeroImg", BIRD_DATA.heroImageUrl, BIRD_DATA.commonName + " foto");
       }
-
-      function clamp(i) {
-        const n = visible.length || 1;
-        return (i % n + n) % n;
-      }
-
-      function openLightbox(i) {
-        if (!visible.length) return;
-        lastFocused = document.activeElement;
-
-        lbIndex = clamp(i);
-        const item = visible[lbIndex];
-
-        lbImg.src = item.src;
-        lbImg.alt = item.alt || item.title;
-        lbTitle.textContent = item.title || "Foto";
-        lbSub.textContent = prettyCategory(item.category);
-
-        lb.classList.add("is-open");
-        window.setTimeout(() => { btnClose && btnClose.focus(); }, 0);
-      }
-
-      function closeLightbox() {
-        lb.classList.remove("is-open");
-        if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
-      }
-
-      function showNext(dir) {
-        if (!visible.length) return;
-        lbIndex = clamp(lbIndex + dir);
-        const item = visible[lbIndex];
-        lbImg.src = item.src;
-        lbImg.alt = item.alt || item.title;
-        lbTitle.textContent = item.title || "Foto";
-        lbSub.textContent = prettyCategory(item.category);
-      }
-
-      if (!lb.dataset.bound) {
-        lb.dataset.bound = "1";
-        btnPrev && btnPrev.addEventListener("click", () => showNext(-1));
-        btnNext && btnNext.addEventListener("click", () => showNext(1));
-        btnClose && btnClose.addEventListener("click", closeLightbox);
-
-        lb.addEventListener("click", (e) => { if (e.target === lb) closeLightbox(); });
-
-        document.addEventListener("keydown", (e) => {
-          if (!lb.classList.contains("is-open")) return;
-          if (e.key === "Escape") closeLightbox();
-          if (e.key === "ArrowLeft") showNext(-1);
-          if (e.key === "ArrowRight") showNext(1);
-        });
-      }
-
-      if (!document.documentElement.dataset.mbwGalleryFiltersBound) {
-        document.documentElement.dataset.mbwGalleryFiltersBound = "1";
-
-        chips.forEach((btn) => {
-          btn.addEventListener("click", () => {
-            chips.forEach(b => b.setAttribute("aria-pressed", "false"));
-            btn.setAttribute("aria-pressed", "true");
-
-            activeFilter = btn.dataset.filter || "all";
-
-            if (activeFilter === "videos") {
-              render();
-              const videosSection = document.querySelector('section[aria-label="Sección de videos"]');
-              if (videosSection) videosSection.scrollIntoView({ behavior: "smooth", block: "start" });
-              return;
-            }
-
-            render();
-          });
-        });
-      }
-
-      render();
     })();
   </script>
 </body>
