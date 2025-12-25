@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tours: Medio Día | Mindo Bird Watching</title>
-  <meta name="robots" content="noindex, nofollow" />
-  <link rel="alternate" hreflang="en" href="/tours/half-day/" />
-  <link rel="alternate" hreflang="es" href="/es/tours/medio-dia/" />
-  <link rel="alternate" hreflang="x-default" href="/tours/half-day/" />
+  <title>Galería de Aves | Mindo Bird Watching</title>
+  <meta name="description" content="Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Fotos de colibríes, tucanes, tangaras y el Gallito de las Rocas en el bosque nublado de Mindo." />
+  <link rel="alternate" hreflang="en" href="/bird-gallery/" />
+  <link rel="alternate" hreflang="es" href="/es/galeria/" />
+  <link rel="alternate" hreflang="x-default" href="/bird-gallery/" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -17,142 +17,344 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
   <style>
-    .page{ margin-top: 18px; padding: 26px; }
-    .page.card{
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
 
-    .hero{
+    .hero {
       display: grid;
-      grid-template-columns: 1.15fr .85fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
       align-items: start;
     }
 
-    .copy{ max-width: 92ch; }
-    .copy p{ margin: 0 0 12px; line-height: 1.6; }
+    .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
 
-    .checks{
-      margin: 12px 0 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 8px;
-    }
-    .checks li{
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      color: var(--ink);
-    }
-    .checks .tick{
-      width: 22px;
-      height: 22px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      font-weight: 900;
-      color: var(--forest);
-      line-height: 1;
-    }
+    .heroLeft, .heroRight { display: grid; gap: 12px; align-content: start; }
 
-    .btnRow{
-      margin-top: 14px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .slots{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .slot.card{
-      background: rgba(255,255,255,.65);
+    .heroCard {
       border: 1px solid var(--line);
       border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .heroCard h2 {
+      margin: 0 0 8px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+    }
+
+    .heroCard ul { margin: 0; padding-left: 18px; line-height: 1.55; color: var(--ink); }
+
+    .heroCtas {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .bodHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bodTitle { display: grid; gap: 2px; min-width: 0; }
+    .bodTitle h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .bodSub {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bodPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .bodMedia {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-    .slotFrame{
-      aspect-ratio: 9 / 16;
-      background: rgba(255,255,255,.55);
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .slotFrame img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .slotCap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      font-size: 13px;
-      color: var(--muted);
-      background: rgba(255,255,255,.55);
+
+    .bodImgWrap {
+      background: rgba(255,255,255,.65);
+      display: grid;
+      place-items: center;
+      padding: 12px;
     }
 
-    .section{
+    .bodImg {
+      width: 100%;
+      height: 320px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.06);
+    }
+
+    .bodAudio {
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+    }
+    .bodAudio audio { width: 100%; display: block; }
+
+    .bodLinks {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .bodLinks a {
+      color: inherit;
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .section {
       margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
-    .section h2{
-      margin: 0 0 10px;
+
+    .sectionHead {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .sectionHead h2 {
+      margin: 0;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
       font-size: 20px;
     }
-    .hint{ margin: 0 0 12px; color: var(--muted); font-size: 13px; }
 
-    .mbwCarousel{
+    .hint { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 10px 0 14px;
+    }
+
+    .chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .chip[aria-pressed="true"] {
+      background: rgba(13,89,37,.14);
+      border-color: rgba(13,89,37,.35);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      overflow: hidden;
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      cursor: pointer;
       position: relative;
+      min-height: 160px;
+      padding: 0;
+    }
+
+    .thumb {
+      width: 100%;
+      height: 220px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: rgba(255,255,255,.72);
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .meta {
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      background: rgba(255,255,255,.55);
+    }
+
+    .name {
+      margin: 0;
+      font-weight: 900;
+      font-size: 13.5px;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tag {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .emptyState {
+      display: none;
+      margin-top: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+    }
+    .emptyState.is-visible { display: block; }
+
+    .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .videoCard {
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-    .mbwCarouselViewport{ width: 100%; overflow: hidden; }
-    .mbwCarouselTrack{
-      display: flex;
-      width: 100%;
-      transform: translateX(0);
-      transition: transform 420ms ease;
-      will-change: transform;
-    }
-    .mbwSlide{ flex: 0 0 100%; width: 100%; }
-    .mbwSlide img{
-      width: 100%;
-      height: 420px;
-      display: block;
-      object-fit: cover;
-    }
-    .mbwSlide .label{
+
+    .videoFrame { aspect-ratio: 16 / 9; width: 100%; border: 0; display: block; background: rgba(255,255,255,.55); }
+
+    .videoCap {
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       color: var(--muted);
       font-size: 13px;
       background: rgba(255,255,255,.55);
     }
-    .mbwNavBtn{
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
+
+    .lb {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 18px;
+    }
+    .lb.is-open { display: flex; }
+
+    .lbDialog {
+      width: min(980px, 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 30px 80px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+
+    .lbMedia { position: relative; background: rgba(255,255,255,.55); }
+
+    .lbImg {
+      width: 100%;
+      height: min(70vh, 640px);
+      object-fit: contain;
+      display: block;
+      background: rgba(255,255,255,.55);
+    }
+
+    .lbBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+    }
+
+    .lbTitle {
+      margin: 0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lbSub { margin: 0; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+
+    .lbBtns { display: inline-flex; gap: 8px; align-items: center; flex: 0 0 auto; }
+
+    .iconBtn {
       width: 44px;
       height: 44px;
       border-radius: 14px;
@@ -164,73 +366,31 @@
       justify-content: center;
       cursor: pointer;
       user-select: none;
-      z-index: 2;
     }
-    .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
-    .mbwNavBtn svg{ width: 20px; height: 20px; }
-    .mbwNavPrev{ left: 10px; }
-    .mbwNavNext{ right: 10px; }
-    .mbwDots{
-      position: absolute;
-      left: 50%;
-      bottom: 10px;
-      transform: translateX(-50%);
-      display: inline-flex;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.78);
-      z-index: 2;
-    }
-    .mbwDot{
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(13,89,37,.22);
-    }
-    .mbwDot.is-active{ background: rgba(13,89,37,.65); }
+    .iconBtn:focus { outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .iconBtn svg { width: 20px; height: 20px; }
 
-    .videoGrid{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .video.card{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .video .frame{
-      aspect-ratio: 16 / 9;
-      width: 100%;
-      background: rgba(255,255,255,.55);
-    }
-    .video iframe{
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
-    }
-    .video .cap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      font-size: 13px;
-      color: var(--muted);
-      background: rgba(255,255,255,.55);
+    .closeBtn { width: auto; padding: 0 12px; gap: 10px; font-weight: 900; font-size: 13px; }
+
+    @media (max-width: 980px) {
+      .gallery { grid-template-columns: repeat(3, 1fr); }
+      .thumb { height: 200px; }
+      .bodImg { height: 280px; }
     }
 
-    @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .slots{ grid-template-columns: 1fr; }
-      .mbwSlide img{ height: 280px; }
-      .videoGrid{ grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+      .thumb { height: 190px; }
+      .videoGrid { grid-template-columns: 1fr; }
+      .bodImg { height: 320px; }
     }
 
-    @media (prefers-reduced-motion: reduce){
-      .mbwCarouselTrack{ transition: none; }
+    @media (max-width: 520px) {
+      .gallery { grid-template-columns: 1fr; }
+      .thumb { height: 220px; }
+      .lbImg { height: min(65vh, 560px); }
+      .bodImg { height: 260px; }
     }
   </style>
 </head>
@@ -238,141 +398,124 @@
   <div class="container">
     <div id="siteHeader"></div>
 <main class="page card">
-  <section class="hero" aria-label="Encabezado de tours de medio día">
-    <div class="copy">
-      <h1 style="margin:0 0 6px;">Tours: Medio Día</h1>
+  <section class="hero" aria-label="Introducción de la galería">
 
-      <p style="font-weight:900; margin:0 0 10px;">
-        Reserva Tu Aventura de Avistamiento de Aves en Mindo
-      </p>
+    <div class="heroLeft">
+      <div>
+        <h1>Galería de Aves</h1>
+        <p>
+          Explora la galería de Mindo Bird Watching con las aves más coloridas de Ecuador. Fotos de colibríes, tucanes,
+          tangaras y el Gallito de las Rocas en el bosque nublado de Mindo.
+        </p>
 
-      <p>
-        Descubre la magia de los bosques nublados de Ecuador con Mindo Bird Watching. Nuestros guías locales expertos te llevarán a vivir experiencias inolvidables para observar algunas de las especies más icónicas del planeta, desde el vibrante Gallo de la Peña hasta tucanes, tángaras, colibríes e incluso el raro Pájaro Paraguas.
-      </p>
-
-      <p>
-        Ya sea que busques una exploración de medio día o una aventura completa de todo el día, tenemos un tour diseñado para cada nivel de observador y amante de la naturaleza.
-      </p>
-
-      <ul class="checks" aria-label="Beneficios del tour de medio día">
-        <li><span class="tick" aria-hidden="true">✓</span> Guiado por expertos locales</li>
-        <li><span class="tick" aria-hidden="true">✓</span> Equipo de alta calidad incluido</li>
-        <li><span class="tick" aria-hidden="true">✓</span> Transporte cómodo garantizado</li>
-      </ul>
-
-      <p style="margin-top:12px;">
-        Estos son solo algunos de los tours que ofrecemos. Reserva hoy y deja que creemos tu experiencia perfecta de avistamiento de aves en 📍Mindo, Ecuador.
-      </p>
-
-      <p style="margin-top:12px; font-weight:900;">
-        ¡Reserva tu tour ahora y comienza tu aventura!
-      </p>
-
-      <div class="btnRow" aria-label="Acciones de tours de medio día">
-        <a class="btn primary" href="/es/reservar/">Reservar ahora</a>
-        <a class="btn secondary" href="/es/terminos/">Términos y condiciones</a>
-        <a class="btn secondary" href="/es/tours/">Volver</a>
+        <div class="heroCtas" aria-label="Acciones principales">
+          <a class="btn primary" href="/es/reservar/">Reservar un tour</a>
+          <a class="btn secondary" href="/es/tours/">Ver tours</a>
+        </div>
       </div>
+
+      <aside class="heroCard" aria-label="Cómo usar esta galería">
+        <h2>Conoce las Aves</h2>
+        <ul>
+          <li>Usa filtros para ir a un grupo (Colibríes, Tucanes, etc.)</li>
+          <li>Haz clic en una foto para ver en pantalla completa</li>
+          <li>Usa ← / → para navegar</li>
+        </ul>
+      </aside>
     </div>
 
-    <aside class="slots" aria-label="Dos opciones (imágenes 9:16)">
-      <div class="slot card" aria-label="Opción 1 (medio día) imagen">
-        <div class="slotFrame">
-          <img
-            src="/assets/images/tour-promos/MBW-Assets-HDT-1-ES.jpg"
-            alt="Imagen placeholder de la opción 1 (medio día) (reemplazar)"
-          />
+    <div class="heroRight" aria-label="Columna derecha">
+      <aside class="heroCard" aria-label="Ave del Día">
+        <div class="bodHead">
+          <div class="bodTitle" style="min-width:0;">
+            <h2>Ave del Día</h2>
+            <div class="bodSub" id="bodSub">Cargando el ave de hoy...</div>
+          </div>
+          <span class="bodPill" id="bodPill">Cargando</span>
         </div>
-      </div>
 
-      <div class="slot card" aria-label="Opción 2 (medio día) imagen">
-        <div class="slotFrame">
-          <img
-            src="/assets/images/tour-promos/MBW-Assets-HDT-2-ES.jpg"
-            alt="Imagen placeholder de la opción 2 (medio día) (reemplazar)"
-          />
+        <div class="bodMedia" id="bodMedia" hidden>
+          <div class="bodImgWrap">
+            <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de imagen" style="display:block; width:100%;">
+              <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
+            </a>
+          </div>
+
+          <div class="bodAudio" id="bodAudioWrap" hidden>
+            <audio id="bodAudio" controls preload="none"></audio>
+
+            <div class="bodLinks">
+              <div>
+                <span id="bodImageCreditWrap" hidden>Crédito de imagen: <a id="bodImageCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
+                <span id="bodAudioCreditWrap" hidden style="margin-left:10px;">Crédito de audio: <a id="bodAudioCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
+              </div>
+              <div>
+                <span id="bodAudioSrcWrap" hidden>Fuente del audio: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Abrir</a></span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </aside>
+
+        <div class="bodCtas">
+          <a class="btn secondary" href="/es/reservar/">Aves con guía</a>
+          <a class="btn secondary" href="/es/calendario/">Calendario de avistamiento</a>
+          <a class="btn secondary" href="/es/ave-de-la-semana/">Ave de la Semana</a>
+        </div>
+      </aside>
+    </div>
   </section>
 
-  <section class="section" aria-label="Sección de carrusel">
-    <h2>Galería del Tour</h2>
-    <p class="hint">Reproduce automáticamente cada 2.5 segundos. También puedes usar las flechas.</p>
+  <section class="section" aria-label="Sección de galería">
+    <div class="sectionHead">
+      <h2>Galería</h2>
+      <p class="hint">Usando imágenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
+    </div>
 
-    <div class="mbwCarousel" data-autoplay="true" data-interval="2500" aria-label="Carrusel de imágenes">
-      <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Imagen anterior">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+    <div class="filters" role="toolbar" aria-label="Filtros de galería">
+      <button class="chip" type="button" data-filter="all" aria-pressed="true">Todas</button>
+      <button class="chip" type="button" data-filter="hummingbirds" aria-pressed="false">Colibríes</button>
+      <button class="chip" type="button" data-filter="toucans" aria-pressed="false">Tucanes</button>
+      <button class="chip" type="button" data-filter="tanagers" aria-pressed="false">Tangaras</button>
+      <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Gallito de las Rocas</button>
+      <button class="chip" type="button" data-filter="other" aria-pressed="false">Otras</button>
+      <button class="chip" type="button" data-filter="videos" aria-pressed="false">Videos</button>
+    </div>
 
-      <div class="mbwCarouselViewport" role="region" aria-label="Vista del carrusel">
-        <div class="mbwCarouselTrack">
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-medio-dia-01.jpg" alt="Imagen 1 del tour (placeholder)" />
-            <div class="label">Reemplazar imagen 1</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-medio-dia-02.jpg" alt="Imagen 2 del tour (placeholder)" />
-            <div class="label">Reemplazar imagen 2</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-medio-dia-03.jpg" alt="Imagen 3 del tour (placeholder)" />
-            <div class="label">Reemplazar imagen 3</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-medio-dia-04.jpg" alt="Imagen 4 del tour (placeholder)" />
-            <div class="label">Reemplazar imagen 4</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-medio-dia-05.jpg" alt="Imagen 5 del tour (placeholder)" />
-            <div class="label">Reemplazar imagen 5</div>
-          </div>
-        </div>
-      </div>
-
-      <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente imagen">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-
-      <div class="mbwDots" aria-label="Indicadores de posición"></div>
+    <div id="galleryGrid" class="gallery" aria-label="Cuadrícula de fotos"></div>
+    <div id="emptyState" class="emptyState" role="status" aria-live="polite">
+      No hay elementos para este filtro todavía.
     </div>
   </section>
 
   <section class="section" aria-label="Sección de videos">
-    <h2>Videos</h2>
-    <p class="hint">Videos de YouTube incrustados. Reemplaza los IDs por los tuyos.</p>
+    <div class="sectionHead">
+      <h2>Videos</h2>
+      <p class="hint">Reemplaza los IDs de YouTube cuando estés listo.</p>
+    </div>
 
-    <div class="videoGrid" aria-label="Grid de videos">
-      <div class="video card" aria-label="Video 1">
-        <div class="frame">
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID_1"
-            title="Video 1 de Mindo Bird Watching"
-            loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <div class="cap">Reemplaza VIDEO_ID_1 con tu ID de YouTube.</div>
+    <div class="videoGrid">
+      <div class="videoCard" aria-label="Video 1">
+        <iframe
+          class="videoFrame"
+          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_1"
+          title="Video 1 de Mindo Bird Watching"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+        <div class="videoCap">Video 1 de ejemplo. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
       </div>
 
-      <div class="video card" aria-label="Video 2">
-        <div class="frame">
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID_2"
-            title="Video 2 de Mindo Bird Watching"
-            loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <div class="cap">Reemplaza VIDEO_ID_2 con tu ID de YouTube.</div>
+      <div class="videoCard" aria-label="Video 2">
+        <iframe
+          class="videoFrame"
+          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
+          title="Video 2 de Mindo Bird Watching"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+        <div class="videoCap">Video 2 de ejemplo. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
       </div>
     </div>
   </section>
@@ -383,102 +526,347 @@
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
   <script>
-    (function(){
-      const root = document.querySelector(".mbwCarousel");
-      if (!root) return;
+    (function () {
+      "use strict";
 
-      const track = root.querySelector(".mbwCarouselTrack");
-      const slides = Array.from(root.querySelectorAll(".mbwSlide"));
-      const prevBtn = root.querySelector(".mbwNavPrev");
-      const nextBtn = root.querySelector(".mbwNavNext");
-      const dotsWrap = root.querySelector(".mbwDots");
+      if (document.documentElement.dataset.mbwBodInit !== "1") {
+        document.documentElement.dataset.mbwBodInit = "1";
 
-      if (!track || slides.length === 0) return;
+        const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
+        const AUDIO_PROXY = "https://mbw-audio-proxy.mindobirdwatching.workers.dev/?url=";
 
-      let index = 0;
-      const intervalMs = Number(root.getAttribute("data-interval") || "2500");
-      const autoplay = (root.getAttribute("data-autoplay") || "true") === "true";
-      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const bodSub = document.getElementById("bodSub");
+        const bodPill = document.getElementById("bodPill");
+        const bodMedia = document.getElementById("bodMedia");
 
-      function clamp(i){
-        const n = slides.length;
+        const bodImg = document.getElementById("bodImg");
+        const bodImgLink = document.getElementById("bodImgLink");
+
+        const bodAudioWrap = document.getElementById("bodAudioWrap");
+        const bodAudio = document.getElementById("bodAudio");
+
+        const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
+        const bodImageCredit = document.getElementById("bodImageCredit");
+
+        const bodAudioCreditWrap = document.getElementById("bodAudioCreditWrap");
+        const bodAudioCredit = document.getElementById("bodAudioCredit");
+
+        const bodAudioSrcWrap = document.getElementById("bodAudioSrcWrap");
+        const bodAudioSrc = document.getElementById("bodAudioSrc");
+
+        function safeText(s) { return String(s || "").trim(); }
+        function isHttpUrl(v) { return /^https?:\/\/\S+/i.test(String(v || "").trim()); }
+
+        function setLoading() {
+          if (bodSub) bodSub.textContent = "Cargando el ave de hoy...";
+          if (bodPill) bodPill.textContent = "Cargando";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function setError() {
+          if (bodSub) bodSub.textContent = "Ave del Día no está disponible en este momento.";
+          if (bodPill) bodPill.textContent = "Offline";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function renderBod(data) {
+          const birdName = safeText(data.birdName) || "Ave del Día";
+          const spanishName = safeText(data.spanishName);
+
+          const imageUrl = safeText(data.imageUrl);
+          const imageLink = safeText(data.imageLink) || imageUrl;
+
+          const rawAudioUrl = isHttpUrl(data.audioUrl) ? safeText(data.audioUrl)
+                            : isHttpUrl(data.audioLink) ? safeText(data.audioLink)
+                            : "";
+
+          const audioLink = safeText(data.audioLink) || rawAudioUrl;
+
+          const imageCredit = safeText(data.imageCredit);
+          const audioCredit = safeText(data.audioCredit);
+
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Selección de hoy en Mindo";
+          if (bodPill) bodPill.textContent = "Hoy";
+
+          if (bodImg && imageUrl) {
+            bodImg.src = imageUrl;
+            bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
+            if (bodImgLink) bodImgLink.href = imageLink || imageUrl;
+            if (bodMedia) bodMedia.hidden = false;
+          } else {
+            if (bodMedia) bodMedia.hidden = true;
+          }
+
+          if (bodAudio && rawAudioUrl) {
+            const proxied = AUDIO_PROXY + encodeURIComponent(rawAudioUrl);
+
+            bodAudio.innerHTML = "";
+            const src = document.createElement("source");
+            src.src = proxied;
+            src.type = "audio/mpeg";
+            bodAudio.appendChild(src);
+
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+
+            bodAudio.addEventListener("loadstart", () => console.log("[Audio Ave del día] loadstart", proxied), { once: true });
+            bodAudio.addEventListener("error", () => console.log("[Audio Ave del día] error", bodAudio.error), { once: true });
+          } else {
+            if (bodAudioWrap) bodAudioWrap.hidden = true;
+          }
+
+          if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
+          if (bodImageCredit && imageCredit) bodImageCredit.href = imageCredit;
+
+          if (bodAudioCreditWrap) bodAudioCreditWrap.hidden = !audioCredit;
+          if (bodAudioCredit && audioCredit) bodAudioCredit.href = audioCredit;
+
+          if (bodAudioSrcWrap) bodAudioSrcWrap.hidden = !audioLink;
+          if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
+        }
+
+        async function loadBod() {
+          setLoading();
+          try {
+            const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
+            const json = await res.json();
+            if (!json || json.ok !== true) throw new Error("Not ok");
+            renderBod(json);
+          } catch (_) {
+            setError();
+          }
+        }
+
+        loadBod();
+      }
+
+      if (document.documentElement.dataset.mbwGalleryInit === "1") return;
+      document.documentElement.dataset.mbwGalleryInit = "1";
+
+      const grid = document.getElementById("galleryGrid");
+      const emptyState = document.getElementById("emptyState");
+      const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
+      if (!grid) return;
+
+      const ITEMS = [
+        { id: "img-01", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari en Mindo, Ecuador" },
+        { id: "img-02", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan en Mindo, Ecuador" },
+        { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet en Mindo, Ecuador" },
+        { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet en Mindo, Ecuador" },
+        { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan en Mindo, Ecuador" },
+
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Gallito de las Rocas en Mindo, Ecuador" },
+
+        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph en Mindo, Ecuador" },
+
+        { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager en Mindo, Ecuador" },
+        { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager en Mindo, Ecuador" },
+        { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager en Mindo, Ecuador" },
+        { id: "img-11", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager en Mindo, Ecuador" },
+        { id: "img-12", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager en Mindo, Ecuador" },
+        { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager en Mindo, Ecuador" },
+        { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager en Mindo, Ecuador" },
+        { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager en Mindo, Ecuador" },
+
+        { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher en Mindo, Ecuador" },
+        { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher en Mindo, Ecuador" },
+        { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot en Mindo, Ecuador" },
+        { id: "img-19", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo en Mindo, Ecuador" },
+        { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker en Mindo, Ecuador" },
+        { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon en Mindo, Ecuador" },
+        { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot en Mindo, Ecuador" },
+
+        { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird en Mindo, Ecuador" },
+        { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra en Mindo, Ecuador" },
+        { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta en Mindo, Ecuador" },
+        { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal en Mindo, Ecuador" },
+        { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon en Mindo, Ecuador" },
+        { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan en Mindo, Ecuador" }
+      ];
+
+      function prettyCategory(c) {
+        const map = {
+          "hummingbirds": "Colibríes",
+          "toucans": "Tucanes",
+          "tanagers": "Tangaras",
+          "cock-of-the-rock": "Gallito de las Rocas",
+          "other": "Otras"
+        };
+        return map[c] || "Aves";
+      }
+
+      function setEmptyState(list) {
+        if (!emptyState) return;
+        emptyState.classList.toggle("is-visible", list.length === 0);
+      }
+
+      const lb = document.createElement("div");
+      lb.className = "lb";
+      lb.setAttribute("role", "dialog");
+      lb.setAttribute("aria-modal", "true");
+      lb.setAttribute("aria-label", "Visor de imágenes");
+      lb.innerHTML = `
+        <div class="lbDialog" role="document">
+          <div class="lbMedia">
+            <img class="lbImg" alt="" />
+          </div>
+          <div class="lbBar">
+            <div style="min-width:0;">
+              <p class="lbTitle" style="min-width:0;"></p>
+              <p class="lbSub"></p>
+            </div>
+            <div class="lbBtns">
+              <button class="iconBtn" type="button" data-lb="prev" aria-label="Anterior (flecha izquierda)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn" type="button" data-lb="next" aria-label="Siguiente (flecha derecha)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn closeBtn" type="button" data-lb="close" aria-label="Cerrar (escape)">
+                <span>Cerrar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(lb);
+
+      const lbImg = lb.querySelector(".lbImg");
+      const lbTitle = lb.querySelector(".lbTitle");
+      const lbSub = lb.querySelector(".lbSub");
+      const btnPrev = lb.querySelector('[data-lb="prev"]');
+      const btnNext = lb.querySelector('[data-lb="next"]');
+      const btnClose = lb.querySelector('[data-lb="close"]');
+
+      let activeFilter = "all";
+      let visible = ITEMS.slice();
+      let lbIndex = 0;
+      let lastFocused = null;
+
+      function render() {
+        visible =
+          activeFilter === "all" ? ITEMS :
+          activeFilter === "videos" ? [] :
+          ITEMS.filter(x => x.category === activeFilter);
+
+        grid.innerHTML = "";
+
+        visible.forEach((item, i) => {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "tile";
+          tile.setAttribute("aria-label", "Abrir " + item.title);
+
+          const img = document.createElement("img");
+          img.className = "thumb";
+          img.src = item.src;
+          img.alt = item.alt || item.title;
+          img.loading = "lazy";
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          const name = document.createElement("p");
+          name.className = "name";
+          name.textContent = item.title;
+
+          const tag = document.createElement("p");
+          tag.className = "tag";
+          tag.textContent = prettyCategory(item.category);
+
+          meta.appendChild(name);
+          meta.appendChild(tag);
+
+          tile.appendChild(img);
+          tile.appendChild(meta);
+
+          tile.addEventListener("click", () => openLightbox(i));
+          grid.appendChild(tile);
+        });
+
+        setEmptyState(visible);
+      }
+
+      function clamp(i) {
+        const n = visible.length || 1;
         return (i % n + n) % n;
       }
 
-      function renderDots(){
-        if (!dotsWrap) return;
-        dotsWrap.innerHTML = "";
-        slides.forEach((_, i) => {
-          const d = document.createElement("span");
-          d.className = "mbwDot" + (i === index ? " is-active" : "");
-          d.setAttribute("aria-hidden", "true");
-          dotsWrap.appendChild(d);
+      function openLightbox(i) {
+        if (!visible.length) return;
+        lastFocused = document.activeElement;
+
+        lbIndex = clamp(i);
+        const item = visible[lbIndex];
+
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Foto";
+        lbSub.textContent = prettyCategory(item.category);
+
+        lb.classList.add("is-open");
+        window.setTimeout(() => { btnClose && btnClose.focus(); }, 0);
+      }
+
+      function closeLightbox() {
+        lb.classList.remove("is-open");
+        if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+      }
+
+      function showNext(dir) {
+        if (!visible.length) return;
+        lbIndex = clamp(lbIndex + dir);
+        const item = visible[lbIndex];
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Foto";
+        lbSub.textContent = prettyCategory(item.category);
+      }
+
+      if (!lb.dataset.bound) {
+        lb.dataset.bound = "1";
+        btnPrev && btnPrev.addEventListener("click", () => showNext(-1));
+        btnNext && btnNext.addEventListener("click", () => showNext(1));
+        btnClose && btnClose.addEventListener("click", closeLightbox);
+
+        lb.addEventListener("click", (e) => { if (e.target === lb) closeLightbox(); });
+
+        document.addEventListener("keydown", (e) => {
+          if (!lb.classList.contains("is-open")) return;
+          if (e.key === "Escape") closeLightbox();
+          if (e.key === "ArrowLeft") showNext(-1);
+          if (e.key === "ArrowRight") showNext(1);
         });
       }
 
-      function goTo(i){
-        index = clamp(i);
-        track.style.transform = "translateX(" + (-index * 100) + "%)";
-        renderDots();
+      if (!document.documentElement.dataset.mbwGalleryFiltersBound) {
+        document.documentElement.dataset.mbwGalleryFiltersBound = "1";
+
+        chips.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            chips.forEach(b => b.setAttribute("aria-pressed", "false"));
+            btn.setAttribute("aria-pressed", "true");
+
+            activeFilter = btn.dataset.filter || "all";
+
+            if (activeFilter === "videos") {
+              render();
+              const videosSection = document.querySelector('section[aria-label="Sección de videos"]');
+              if (videosSection) videosSection.scrollIntoView({ behavior: "smooth", block: "start" });
+              return;
+            }
+
+            render();
+          });
+        });
       }
 
-      function next(){ goTo(index + 1); }
-      function prev(){ goTo(index - 1); }
-
-      let timer = null;
-
-      function stop(){
-        if (timer){
-          window.clearInterval(timer);
-          timer = null;
-        }
-      }
-
-      function start(){
-        if (!autoplay || reduceMotion) return;
-        if (timer) return;
-        timer = window.setInterval(next, Math.max(2000, intervalMs));
-      }
-
-      if (prevBtn) prevBtn.addEventListener("click", () => { stop(); prev(); start(); });
-      if (nextBtn) nextBtn.addEventListener("click", () => { stop(); next(); start(); });
-
-      let startX = null;
-      let dragging = false;
-
-      function onPointerDown(e){
-        if (e.pointerType === "mouse") return;
-        dragging = true;
-        startX = e.clientX;
-        stop();
-      }
-
-      function onPointerUp(e){
-        if (!dragging) return;
-        dragging = false;
-        const dx = e.clientX - startX;
-        startX = null;
-
-        const threshold = 35;
-        if (dx > threshold) prev();
-        else if (dx < -threshold) next();
-
-        start();
-      }
-
-      root.addEventListener("pointerdown", onPointerDown, { passive: true });
-      root.addEventListener("pointerup", onPointerUp, { passive: true });
-      root.addEventListener("pointercancel", () => { dragging = false; startX = null; start(); }, { passive: true });
-
-      root.addEventListener("mouseenter", stop);
-      root.addEventListener("mouseleave", start);
-      root.addEventListener("focusin", stop);
-      root.addEventListener("focusout", start);
-
-      window.addEventListener("resize", () => { goTo(index); }, { passive: true });
-
-      goTo(0);
-      start();
+      render();
     })();
   </script>
 </body>
