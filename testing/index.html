@@ -220,6 +220,7 @@
       overflow: visible;
     }
 
+    /* DESKTOP: always show Jan–Dec (no scroll) */
     .months{
       display:grid;
       grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -248,24 +249,34 @@
       white-space: nowrap;
     }
 
-    /* FIX: bubbles even + allow “Fuera de temporada” / “Off-season” to fit */
+    /* FIX: uniform bubbles, single-line for all except "Fuera de temporada" */
     .mVal{
       display:flex;
       align-items:center;
       justify-content:center;
       width: 100%;
-      padding: 7px 6px;
+      padding: 7px 8px;
       border-radius: 999px;
       font-size: 11.5px;
       font-weight: 950;
       border: 1px solid transparent;
       box-sizing: border-box;
 
-      white-space: normal;
+      white-space: nowrap;
       line-height: 1.1;
       min-height: 34px;
       text-align: center;
-      overflow-wrap: anywhere;
+      overflow: hidden;
+    }
+
+    .mVal.twoLine{
+      white-space: normal;
+      min-height: 38px;
+    }
+    .mVal.twoLine span{
+      display:block;
+      text-align:center;
+      line-height: 1.1;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -281,10 +292,9 @@
       line-height: 1.6;
     }
 
+    /* Keep Jan–Dec visible by wrapping to 2 rows on tight screens */
     @media (max-width: 1280px){
-      .months{
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-      }
+      .months{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
     }
 
     @media (max-width: 900px){
@@ -312,19 +322,12 @@
         justify-content:flex-start;
       }
 
+      /* MOBILE/TABLET: still keep all months visible (2 rows), no horizontal scroll */
       .months{
-        grid-template-columns: repeat(12, minmax(120px, 1fr));
-        gap: 12px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 2px 10px 8px 2px;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-      }
-      .month{
-        min-width: 120px;
-        scroll-snap-align: start;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 10px;
+        overflow: visible;
+        padding: 0;
       }
     }
   </style>
@@ -402,12 +405,19 @@
         return "st-off";
       }
 
-      function catLabel(c){
-        const s = String(c || "").trim();
-        return s;
-      }
-
       let payload = null;
+
+      function labelHtmlFor(raw){
+        const s = String(raw || "").trim().toLowerCase();
+        if (s === "off" || s === "off-season" || s === "offseason"){
+          return { html: '<span>Fuera de</span><span>temporada</span>', twoLine: true, rawForClass: "off" };
+        }
+        if (s === "rare") return { html: "Raro", twoLine: false, rawForClass: "rare" };
+        if (s === "fair") return { html: "Regular", twoLine: false, rawForClass: "fair" };
+        if (s === "good") return { html: "Bueno", twoLine: false, rawForClass: "good" };
+        if (s === "great") return { html: "Excelente", twoLine: false, rawForClass: "great" };
+        return { html: '<span>Fuera de</span><span>temporada</span>', twoLine: true, rawForClass: "off" };
+      }
 
       function render(){
         if(!payload) return;
@@ -434,60 +444,51 @@
           const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
 
           const thumbHtml = imgUrl
-            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">
-                 <img src="${esc(imgUrl)}" alt="${esc(r.es || r.en)} foto" loading="lazy" />
-               </a>`
-            : `<span class="thumb" aria-label="No hay imagen disponible"></span>`;
+            ? '<a class="thumb" href="' + esc(imgUrl) + '" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">' +
+                 '<img src="' + esc(imgUrl) + '" alt="' + esc(r.es || r.en) + ' foto" loading="lazy" />' +
+               '</a>'
+            : '<span class="thumb" aria-label="No hay imagen disponible"></span>';
 
           const cam = imgUrl
-            ? `<a class="cam" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>`
+            ? '<a class="cam" href="' + esc(imgUrl) + '" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>'
             : "";
 
           const months = monthNames.map((m, i) => {
             const val = (r.months && r.months[i]) ? r.months[i] : "";
             const raw = (val && String(val).trim()) ? String(val).trim() : "Off";
+            const L = labelHtmlFor(raw);
 
-            const s = raw.toLowerCase();
-            let label = raw;
-            if (s === "off" || s === "off-season" || s === "offseason") label = "Fuera de temporada";
-            else if (s === "rare") label = "Raro";
-            else if (s === "fair") label = "Regular";
-            else if (s === "good") label = "Bueno";
-            else if (s === "great") label = "Excelente";
-
-            return `
-              <div class="month" aria-label="${esc(m)}">
-                <div class="mLabel">${esc(m)}</div>
-                <div class="mVal ${statusClass(raw)}">${esc(label)}</div>
-              </div>
-            `;
+            return '' +
+              '<div class="month" aria-label="' + esc(m) + '">' +
+                '<div class="mLabel">' + esc(m) + '</div>' +
+                '<div class="mVal ' + (L.twoLine ? 'twoLine ' : '') + statusClass(L.rawForClass) + '">' + L.html + '</div>' +
+              '</div>';
           }).join("");
 
-          return `
-            <article class="cardItem" aria-label="${esc(r.es || r.en)}">
-              <div class="cardTop">
-                ${thumbHtml}
-                <div class="names">
-                  <div class="nameEn">${esc(r.es || r.en)} ${cam}</div>
-                  <div class="nameEs">${esc(r.en ? ("EN: " + r.en) : "")}</div>
-                </div>
-                <div class="metaRight">
-                  <span class="catPill">${esc(catLabel(r.category))}</span>
-                </div>
-              </div>
-              <div class="monthsWrap">
-                <div class="months" aria-label="Meses">${months}</div>
-              </div>
-            </article>
-          `;
+          return '' +
+            '<article class="cardItem" aria-label="' + esc(r.es || r.en) + '">' +
+              '<div class="cardTop">' +
+                thumbHtml +
+                '<div class="names">' +
+                  '<div class="nameEn">' + esc(r.es || r.en) + ' ' + cam + '</div>' +
+                  '<div class="nameEs">' + esc(r.en ? ('EN: ' + r.en) : '') + '</div>' +
+                '</div>' +
+                '<div class="metaRight">' +
+                  '<span class="catPill">' + esc(r.category) + '</span>' +
+                '</div>' +
+              '</div>' +
+              '<div class="monthsWrap">' +
+                '<div class="months" aria-label="Meses">' + months + '</div>' +
+              '</div>' +
+            '</article>';
         }).join("");
       }
 
       function fillCategories(rows){
         const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
         catSel.innerHTML =
-          `<option value="all">Todas las categorías</option>` +
-          cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+          '<option value="all">Todas las categorías</option>' +
+          cats.map(c => '<option value="' + esc(c) + '">' + esc(c) + '</option>').join("");
       }
 
       async function load(){
