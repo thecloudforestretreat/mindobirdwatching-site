@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Birding Calendar | Mindo Bird Watching</title>
-  <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with categories and photo thumbnails." />
+  <title>Calendario de Avistamiento | Mindo Bird Watching</title>
+  <meta name="description" content="Calendario de avistamiento para 📍Mindo, Ecuador. Visibilidad mensual por especie, con categorías y miniaturas de fotos." />
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
@@ -248,7 +248,7 @@
       white-space: nowrap;
     }
 
-    /* FIX: make probability bubbles even + allow Off-season to fit */
+    /* FIX: bubbles even + allow “Fuera de temporada” / “Off-season” to fit */
     .mVal{
       display:flex;
       align-items:center;
@@ -261,11 +261,11 @@
       border: 1px solid transparent;
       box-sizing: border-box;
 
-      white-space: normal;       /* allow wrapping */
-      line-height: 1.1;          /* tighter so 2 lines fit nicely */
-      min-height: 34px;          /* consistent bubble height across all months */
+      white-space: normal;
+      line-height: 1.1;
+      min-height: 34px;
       text-align: center;
-      overflow-wrap: anywhere;   /* ensures long tokens still wrap */
+      overflow-wrap: anywhere;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -332,40 +332,40 @@
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-<main class="page card" aria-label="Birding calendar">
+<main class="page card" aria-label="Calendario de avistamiento">
   <div class="hero">
     <div>
-      <h1>Birding Calendar</h1>
+      <h1>Calendario de Avistamiento</h1>
       <p>
-        A quick month-by-month view of common target species around 📍Mindo, Ecuador.
-        Images are pulled from the sheet’s <strong>imageUrl</strong>.
+        Una vista rápida mes a mes de especies objetivo comunes en 📍Mindo, Ecuador.
+        Las imágenes se cargan desde el campo <strong>imageUrl</strong> de la hoja.
       </p>
     </div>
 
-    <div class="statusRow" aria-label="Calendar controls">
-      <span class="pill" id="bcStatus">Loading calendar…</span>
+    <div class="statusRow" aria-label="Controles del calendario">
+      <span class="pill" id="bcStatus">Cargando calendario…</span>
 
-      <div class="filters" aria-label="Filters">
+      <div class="filters" aria-label="Filtros">
         <div>
-          <label for="bcCategory">Category</label><br>
+          <label for="bcCategory">Categoría</label><br>
           <select id="bcCategory">
-            <option value="all">All categories</option>
+            <option value="all">Todas las categorías</option>
           </select>
         </div>
 
         <div>
-          <label for="bcSearch">Search</label><br>
-          <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
+          <label for="bcSearch">Buscar</label><br>
+          <input id="bcSearch" type="search" placeholder="Buscar especie…" autocomplete="off" />
         </div>
       </div>
     </div>
   </div>
 
   <section class="section">
-    <div class="cards" id="bcCards" aria-label="Species cards"></div>
+    <div class="cards" id="bcCards" aria-label="Tarjetas de especies"></div>
 
     <p class="footnote">
-      Tip: photos come from third-party sources. Thumbnails use “contain” mode so the full bird stays visible.
+      Tip: las fotos provienen de fuentes de terceros. Las miniaturas usan modo “contain” para que el ave se vea completa.
     </p>
   </section>
 </main>
@@ -402,6 +402,11 @@
         return "st-off";
       }
 
+      function catLabel(c){
+        const s = String(c || "").trim();
+        return s;
+      }
+
       let payload = null;
 
       function render(){
@@ -420,8 +425,8 @@
         });
 
         statusEl.textContent = rows.length
-          ? ("Showing " + rows.length + " species")
-          : "No matches. Try a different search.";
+          ? ("Mostrando " + rows.length + " especies")
+          : "Sin resultados. Prueba otra búsqueda.";
 
         const monthNames = payload.monthNames || [];
 
@@ -429,40 +434,49 @@
           const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
 
           const thumbHtml = imgUrl
-            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open image source">
-                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} photo" loading="lazy" />
+            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">
+                 <img src="${esc(imgUrl)}" alt="${esc(r.es || r.en)} foto" loading="lazy" />
                </a>`
-            : `<span class="thumb" aria-label="No image available"></span>`;
+            : `<span class="thumb" aria-label="No hay imagen disponible"></span>`;
 
           const cam = imgUrl
-            ? `<a class="cam" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open photo source">📸</a>`
+            ? `<a class="cam" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>`
             : "";
 
           const months = monthNames.map((m, i) => {
             const val = (r.months && r.months[i]) ? r.months[i] : "";
-            const label = (val && String(val).trim()) ? String(val).trim() : "Off";
+            const raw = (val && String(val).trim()) ? String(val).trim() : "Off";
+
+            const s = raw.toLowerCase();
+            let label = raw;
+            if (s === "off" || s === "off-season" || s === "offseason") label = "Fuera de temporada";
+            else if (s === "rare") label = "Raro";
+            else if (s === "fair") label = "Regular";
+            else if (s === "good") label = "Bueno";
+            else if (s === "great") label = "Excelente";
+
             return `
               <div class="month" aria-label="${esc(m)}">
                 <div class="mLabel">${esc(m)}</div>
-                <div class="mVal ${statusClass(label)}">${esc(label)}</div>
+                <div class="mVal ${statusClass(raw)}">${esc(label)}</div>
               </div>
             `;
           }).join("");
 
           return `
-            <article class="cardItem" aria-label="${esc(r.en)}">
+            <article class="cardItem" aria-label="${esc(r.es || r.en)}">
               <div class="cardTop">
                 ${thumbHtml}
                 <div class="names">
-                  <div class="nameEn">${esc(r.en)} ${cam}</div>
-                  <div class="nameEs">${esc(r.es)}</div>
+                  <div class="nameEn">${esc(r.es || r.en)} ${cam}</div>
+                  <div class="nameEs">${esc(r.en ? ("EN: " + r.en) : "")}</div>
                 </div>
                 <div class="metaRight">
-                  <span class="catPill">${esc(r.category)}</span>
+                  <span class="catPill">${esc(catLabel(r.category))}</span>
                 </div>
               </div>
               <div class="monthsWrap">
-                <div class="months" aria-label="Months">${months}</div>
+                <div class="months" aria-label="Meses">${months}</div>
               </div>
             </article>
           `;
@@ -472,18 +486,18 @@
       function fillCategories(rows){
         const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
         catSel.innerHTML =
-          `<option value="all">All categories</option>` +
+          `<option value="all">Todas las categorías</option>` +
           cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
       }
 
       async function load(){
         try{
-          statusEl.textContent = "Loading calendar…";
+          statusEl.textContent = "Cargando calendario…";
           const res = await fetch(API, { headers: { "accept": "application/json" } });
           const json = await res.json();
 
           if(!json || json.ok !== true){
-            statusEl.textContent = "Calendar unavailable right now.";
+            statusEl.textContent = "El calendario no está disponible en este momento.";
             return;
           }
 
@@ -492,7 +506,7 @@
           render();
 
         }catch(_){
-          statusEl.textContent = "Calendar unavailable right now.";
+          statusEl.textContent = "El calendario no está disponible en este momento.";
         }
       }
 
