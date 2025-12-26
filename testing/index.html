@@ -221,13 +221,13 @@
       overflow: visible;
     }
 
-    /* KEY CHANGE:
-       - auto-fit + min width gives each month more room
-       - wraps into multiple rows so Jan–Dec are always visible (no horizontal clipping)
+    /* PROFESSIONAL LAYOUT:
+       Always 6 months on top row + 6 months on bottom row (desktop/tablet),
+       no scroll, consistent sizing.
     */
     .months{
       display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 10px;
       overflow: visible;
       padding: 0;
@@ -253,24 +253,21 @@
       white-space: nowrap;
     }
 
-    /* KEY CHANGE:
-       - more internal space for "Excelente"
-       - fixed minimum height for consistent pills
-    */
+    /* More space for "Excelente" and "Fuera de temporada" */
     .mVal{
       display:flex;
       align-items:center;
       justify-content:center;
       width: 100%;
-      padding: 9px 12px;
+      padding: 10px 14px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 950;
       border: 1px solid transparent;
-      white-space: nowrap; /* keep single line for Bueno/Regular/Raro/Excelente */
       box-sizing: border-box;
-      min-height: 38px; /* consistent + room for two-line off-season */
+      min-height: 40px;
       line-height: 1.05;
+      white-space: nowrap;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -278,9 +275,7 @@
     .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
     .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
 
-    /* KEY CHANGE:
-       - allow ONLY off-season to wrap into 2 lines centered: "Fuera de temporada"
-    */
+    /* Only this one can be 2 lines, centered */
     .st-off{
       background:#e2e8f0;
       color:#64748b;
@@ -321,10 +316,34 @@
         justify-content:flex-start;
       }
 
-      /* Still wraps (no horizontal scroll) */
+      /* Keep 6 + 6; reduce gap slightly for smaller screens */
       .months{
-        grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .month{
+        padding: 11px 9px;
+      }
+
+      .mVal{
+        padding: 10px 12px;
+        font-size: 11.75px;
+        min-height: 40px;
+      }
+    }
+
+    @media (max-width: 560px){
+      /* On very small screens, keep all months visible without sideways scroll:
+         4 columns => 3 rows (still professional, readable).
+      */
+      .months{
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .mVal{
+        padding: 10px 10px;
+        font-size: 11.5px;
       }
     }
   </style>
@@ -399,7 +418,7 @@
         if (s === "good" || s === "bueno") return "good";
         if (s === "fair" || s === "regular") return "fair";
         if (s === "rare" || s === "raro") return "rare";
-        if (s === "off" || s === "off-season" || s === "fuera de temporada") return "off";
+        if (s === "off" || s === "off-season" || s === "offseason" || s === "fuera de temporada") return "off";
         return "off";
       }
 
@@ -417,6 +436,16 @@
         if (key === "fair") return "Regular";
         if (key === "rare") return "Raro";
         return "Fuera de temporada";
+      }
+
+      const MONTH_ABBR_ES = {
+        "Jan":"Ene","Feb":"Feb","Mar":"Mar","Apr":"Abr","May":"May","Jun":"Jun",
+        "Jul":"Jul","Aug":"Ago","Sep":"Sep","Oct":"Oct","Nov":"Nov","Dec":"Dic"
+      };
+
+      function monthLabelEs(m){
+        const k = String(m || "").trim();
+        return MONTH_ABBR_ES[k] || k;
       }
 
       let payload = null;
@@ -459,10 +488,11 @@
             const raw = (r.months && r.months[i]) ? r.months[i] : "";
             const key = normStatus(raw);
             const labelEs = statusLabelEs(key);
+            const mEs = monthLabelEs(m);
 
             return `
-              <div class="month" aria-label="${esc(m)}">
-                <div class="mLabel">${esc(m)}</div>
+              <div class="month" aria-label="${esc(mEs)}">
+                <div class="mLabel">${esc(mEs)}</div>
                 <div class="mVal ${statusClass(key)}">${esc(labelEs)}</div>
               </div>
             `;
