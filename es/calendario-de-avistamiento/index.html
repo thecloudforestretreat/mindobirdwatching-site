@@ -1,1 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calendario de Avistamiento | Mindo Bird Watching</title>
+  <meta name="description" content="Calendario de avistamiento para 📍Mindo, Ecuador. Visibilidad mensual por especie con categorías y miniaturas." />
+  <link rel="alternate" hreflang="en" href="/birding-calendar/" />
+  <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
+  <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
+  <!-- Favicons (approved root paths) -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#034EA2">
+  <!-- Global header/footer CSS (required) -->
+  <link rel="stylesheet" href="/assets/css/header.css">
+  <link rel="stylesheet" href="/assets/css/footer.css">
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/head.js" defer></script>
+  <style>
+    /* Page-only styles (main content only) */
+    .page{ margin-top:18px; padding:26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
 
+    .hero{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .hero h1{
+      margin:0;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .hero p{
+      margin: 8px 0 0;
+      color: var(--ink);
+      line-height: 1.7;
+      max-width: 90ch;
+    }
+
+    .statusRow{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: space-between;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .filters{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .filters label{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .filters select,
+    .filters input{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.65);
+      color: var(--ink);
+      font-weight: 800;
+      min-width: 240px;
+    }
+
+    .section{
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    /* Card */
+    .cardItem{
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.70);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .cardTop{
+      display:grid;
+      grid-template-columns: 180px 1fr auto;
+      gap: 16px;
+      align-items:center;
+      padding: 14px;
+      background: rgba(255,255,255,.55);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .thumb{
+      width: 160px;
+      height: 160px;
+      padding: 10px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing: border-box;
+      text-decoration: none;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 14px;
+      display:block;
+      background: transparent;
+    }
+
+    .names{
+      display:flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .nameEn{
+      font-weight: 950;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nameEs{
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    .metaRight{
+      display:flex;
+      flex-direction: column;
+      align-items:flex-end;
+      gap: 10px;
+    }
+
+    .catPill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .cam{
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      line-height: 1;
+    }
+
+    /* Months wrapper */
+    .monthsWrap{
+      padding: 14px;
+      background: rgba(255,255,255,.55);
+      overflow: visible;
+    }
+
+    /* PROFESSIONAL LAYOUT:
+       6 months top row + 6 months bottom row (desktop/tablet), no scroll
+    */
+    .months{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      overflow: visible;
+      padding: 0;
+      margin: 0;
+    }
+
+    .month{
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.65);
+      padding: 12px 10px;
+      text-align:center;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    .mLabel{
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    /* More space for "Excelente" and "Fuera de temporada" */
+    .mVal{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 950;
+      border: 1px solid transparent;
+      box-sizing: border-box;
+      min-height: 40px;
+      line-height: 1.05;
+      white-space: nowrap;
+    }
+
+    .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
+    .st-good{ background:#fef9c3; color:#92400e; border-color: rgba(146,64,14,.25); }
+    .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
+    .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
+
+    /* Only this one can be 2 lines, centered */
+    .st-off{
+      background:#e2e8f0;
+      color:#64748b;
+      border-color: rgba(100,116,139,.2);
+      white-space: normal;
+      text-align: center;
+    }
+
+    .footnote{
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px){
+      .filters select,
+      .filters input{ min-width: 0; width: 100%; }
+      .filters{ width: 100%; }
+      .statusRow{ flex-direction: column; align-items: stretch; }
+
+      .cardTop{
+        grid-template-columns: 160px 1fr;
+        grid-template-rows: auto auto;
+        align-items:start;
+      }
+
+      .thumb{
+        width: 140px;
+        height: 140px;
+        border-radius: 22px;
+      }
+
+      .metaRight{
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items:center;
+        justify-content:flex-start;
+      }
+
+      .months{
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .month{
+        padding: 11px 9px;
+      }
+
+      .mVal{
+        padding: 10px 12px;
+        font-size: 11.75px;
+        min-height: 40px;
+      }
+    }
+
+    @media (max-width: 560px){
+      .months{
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .mVal{
+        padding: 10px 10px;
+        font-size: 11.5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="siteHeader"></div>
+<main class="page card" aria-label="Calendario de avistamiento">
+  <div class="hero">
+    <div>
+      <h1>Calendario de Avistamiento</h1>
+      <p>
+        Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
+        Las imágenes se cargan desde el campo <strong>imageUrl</strong> de la hoja.
+      </p>
+    </div>
+
+    <div class="statusRow" aria-label="Controles del calendario">
+      <span class="pill" id="bcStatus">Cargando calendario…</span>
+
+      <div class="filters" aria-label="Filtros">
+        <div>
+          <label for="bcCategory">Categoría</label><br>
+          <select id="bcCategory">
+            <option value="all">Todas las categorías</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="bcSearch">Buscar</label><br>
+          <input id="bcSearch" type="search" placeholder="Buscar especie…" autocomplete="off" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="cards" id="bcCards" aria-label="Tarjetas de especies"></div>
+
+    <p class="footnote">
+      Tip: las fotos provienen de fuentes de terceros. Las miniaturas usan “contain” para que el ave se vea completa.
+    </p>
+  </section>
+</main>
+
+<div id="siteFooter"></div>
+  </div>
+  <script>
+    (function(){
+      "use strict";
+
+      async function inject(id, url){
+        const el = document.getElementById(id);
+        if(!el) return;
+        const res = await fetch(url, { cache: "no-store" });
+        el.innerHTML = await res.text();
+      }
+
+      function loadScript(src){
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.defer = true;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+
+      (async function(){
+        await inject("siteHeader", "/assets/includes/header-es.html");
+        await inject("siteFooter", "/assets/includes/footer.html");
+        await loadScript("/assets/js/site.js");
+      })();
+
+      if (document.documentElement.dataset.mbwBirdingCalendarInit === "1") return;
+      document.documentElement.dataset.mbwBirdingCalendarInit = "1";
+
+      const API = "https://script.google.com/macros/s/AKfycbyBB61IXST79pAfF6weE_PdXymBVdHknPYa4XnWNkOOkfnYL26hC58YIOeg10SL_xIL/exec?format=json";
+
+      const statusEl = document.getElementById("bcStatus");
+      const cardsEl = document.getElementById("bcCards");
+      const catSel = document.getElementById("bcCategory");
+      const searchEl = document.getElementById("bcSearch");
+      if(!statusEl || !cardsEl || !catSel || !searchEl) return;
+
+      function esc(s){
+        return String(s || "")
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+
+      function normStatus(v){
+        const s = String(v || "").trim().toLowerCase();
+        if (s === "great" || s === "excelente") return "great";
+        if (s === "good" || s === "bueno") return "good";
+        if (s === "fair" || s === "regular") return "fair";
+        if (s === "rare" || s === "raro") return "rare";
+        if (s === "off" || s === "off-season" || s === "offseason" || s === "fuera de temporada") return "off";
+        return "off";
+      }
+
+      function statusClass(key){
+        if (key === "great") return "st-great";
+        if (key === "good") return "st-good";
+        if (key === "fair") return "st-fair";
+        if (key === "rare") return "st-rare";
+        return "st-off";
+      }
+
+      function statusLabelEs(key){
+        if (key === "great") return "Excelente";
+        if (key === "good") return "Bueno";
+        if (key === "fair") return "Regular";
+        if (key === "rare") return "Raro";
+        return "Fuera de temporada";
+      }
+
+      const MONTH_ABBR_ES = {
+        "Jan":"Ene","Feb":"Feb","Mar":"Mar","Apr":"Abr","May":"May","Jun":"Jun",
+        "Jul":"Jul","Aug":"Ago","Sep":"Sep","Oct":"Oct","Nov":"Nov","Dec":"Dic"
+      };
+
+      function monthLabelEs(m){
+        const k = String(m || "").trim();
+        return MONTH_ABBR_ES[k] || k;
+      }
+
+      let payload = null;
+
+      function render(){
+        if(!payload) return;
+
+        const q = searchEl.value.trim().toLowerCase();
+        const cat = catSel.value;
+
+        const rows = (payload.rows || []).filter(r => {
+          const inCat = (cat === "all") ? true : (String(r.category || "") === cat);
+          const inSearch = !q ? true : (
+            String(r.en || "").toLowerCase().includes(q) ||
+            String(r.es || "").toLowerCase().includes(q)
+          );
+          return inCat && inSearch;
+        });
+
+        statusEl.textContent = rows.length
+          ? ("Mostrando " + rows.length + " especies")
+          : "Sin resultados. Prueba con otra búsqueda.";
+
+        const monthNames = payload.monthNames || [];
+
+        cardsEl.innerHTML = rows.map(r => {
+          const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
+
+          const thumbHtml = imgUrl
+            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">
+                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} foto" loading="lazy" />
+               </a>`
+            : `<span class="thumb" aria-label="No hay imagen disponible"></span>`;
+
+          const cam = imgUrl
+            ? `<a class="cam" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>`
+            : "";
+
+          const months = monthNames.map((m, i) => {
+            const raw = (r.months && r.months[i]) ? r.months[i] : "";
+            const key = normStatus(raw);
+            const labelEs = statusLabelEs(key);
+            const mEs = monthLabelEs(m);
+
+            return `
+              <div class="month" aria-label="${esc(mEs)}">
+                <div class="mLabel">${esc(mEs)}</div>
+                <div class="mVal ${statusClass(key)}">${esc(labelEs)}</div>
+              </div>
+            `;
+          }).join("");
+
+          return `
+            <article class="cardItem" aria-label="${esc(r.en)}">
+              <div class="cardTop">
+                ${thumbHtml}
+                <div class="names">
+                  <div class="nameEn">${esc(r.en)} ${cam}</div>
+                  <div class="nameEs">${esc(r.es)}</div>
+                </div>
+                <div class="metaRight">
+                  <span class="catPill">${esc(r.category)}</span>
+                </div>
+              </div>
+              <div class="monthsWrap">
+                <div class="months" aria-label="Meses">${months}</div>
+              </div>
+            </article>
+          `;
+        }).join("");
+      }
+
+      function fillCategories(rows){
+        const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
+        catSel.innerHTML =
+          `<option value="all">Todas las categorías</option>` +
+          cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+      }
+
+      async function load(){
+        try{
+          statusEl.textContent = "Cargando calendario…";
+          const res = await fetch(API, { headers: { "accept": "application/json" } });
+          const json = await res.json();
+
+          if(!json || json.ok !== true){
+            statusEl.textContent = "Calendario no disponible en este momento.";
+            return;
+          }
+
+          payload = json;
+          fillCategories(payload.rows || []);
+          render();
+
+        }catch(_){
+          statusEl.textContent = "Calendario no disponible en este momento.";
+        }
+      }
+
+      if (catSel.dataset.bound !== "1"){
+        catSel.dataset.bound = "1";
+        catSel.addEventListener("change", render);
+      }
+      if (searchEl.dataset.bound !== "1"){
+        searchEl.dataset.bound = "1";
+        searchEl.addEventListener("input", render);
+      }
+
+      load();
+    })();
+  </script>
+</body>
+</html>
