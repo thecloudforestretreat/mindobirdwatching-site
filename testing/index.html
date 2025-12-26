@@ -3,26 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ave de la Semana | Mindo Bird Watching</title>
-  <meta name="description" content="Descubre nuestra Ave de la Semana desde los bosques nublados de 📍Mindo, Ecuador. Conoce datos fascinantes, mira fotos, escucha cantos y prepárate para tu próxima salida de observación de aves." />
-  <link rel="alternate" hreflang="en" href="/bird-of-the-week/" />
-  <link rel="alternate" hreflang="es" href="/es/ave-de-la-semana/" />
-  <link rel="alternate" hreflang="x-default" href="/bird-of-the-week/" />
+  <title>Nuestro Guía | Mindo Bird Watching</title>
+  <!-- Keep for staging while testing -->
+  <meta name="robots" content="noindex, nofollow" />
+  <!-- Hreflang -->
+  <link rel="alternate" hreflang="en" href="/our-guide/" />
+  <link rel="alternate" hreflang="es" href="/es/nuestro-guia/" />
+  <link rel="alternate" hreflang="x-default" href="/our-guide/" />
+  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
-  <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/footer.css?v=1" />
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/header.css?v=1">
+  <link rel="stylesheet" href="/assets/css/footer.css?v=1">
+  <!-- Head helpers -->
   <script src="/assets/js/head.js" defer></script>
   <style>
-    /* =========================
-       Page-only styles (main content only)
-       ========================= */
-
-    .page { margin-top: 18px; padding: 26px; }
+    /* Page-only styles (no header/footer/menu styles) */
+    .page{
+      margin-top:18px;
+      padding:26px;
+    }
     .page.card{
       background: var(--card);
       border: 1px solid var(--line);
@@ -30,89 +35,184 @@
       box-shadow: var(--shadow);
     }
 
-    .hero{
-      display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
-      align-items: start;
+    .lede{
+      max-width: 92ch;
+      margin-top: 8px;
+      line-height: 1.6;
     }
+    .lede p{ margin: 0 0 12px; }
 
-    .hero h1{
-      margin: 0 0 8px;
-      letter-spacing: -0.02em;
-    }
-
-    .hero p{
-      margin: 0;
-      max-width: 85ch;
-      color: var(--ink);
-      line-height: 1.65;
-    }
-
-    .heroCtas{
+    .actions{
       margin-top: 14px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
     }
 
-    .heroCard{
+    .waBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 12px 14px;
+      border-radius: 14px;
       border: 1px solid var(--line);
-      border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
-      padding: 14px;
+      font-weight: 800;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .waBtn img{
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      display:block;
     }
 
-    .heroCard h2{
-      margin: 0 0 10px;
+    .guideCard{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .photo.card{
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .photo .frame{
+      aspect-ratio: 4 / 3;
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position: relative;
+    }
+
+    .photo .frame img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .photo .cap{
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    .facts.card{
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .facts h2{
+      margin: 0 0 8px;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
       font-size: 18px;
     }
 
-    .heroList{
+    .facts ul{
       margin: 0;
       padding-left: 18px;
       color: var(--ink);
       line-height: 1.55;
     }
+    .facts li{ margin: 6px 0; }
 
-    .section{
+    .qa{
       margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
 
-    .sectionHead{
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .sectionHead h2{
-      margin: 0;
+    .qa h2{
+      margin: 0 0 10px;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
       font-size: 20px;
     }
 
-    .hint{ margin: 0; color: var(--muted); font-size: 13px; }
-
-    .feature{
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 16px;
-      align-items: start;
+    .qaList{
+      display:grid;
+      gap: 12px;
+      margin-top: 8px;
     }
 
-    .mediaCard{
+    details.qaItem{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+    }
+
+    details.qaItem summary{
+      cursor: pointer;
+      font-weight: 900;
+      color: var(--ink);
+      list-style: none;
+    }
+    details.qaItem summary::-webkit-details-marker{ display:none; }
+
+    .answer{
+      margin-top: 10px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .bottomCtas{
+      margin-top: 18px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    /* Carousel (page-only) */
+    .carouselWrap{
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .carouselHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .carouselHead h2{
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
+    .carouselHint{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mbwCarousel{
+      position: relative;
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -120,494 +220,436 @@
       overflow: hidden;
     }
 
-    .mediaFrame{
+    .mbwCarouselViewport{
       width: 100%;
-      aspect-ratio: 4 / 3;
-      background: rgba(255,255,255,.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+      overflow: hidden;
     }
 
-    .mediaFrame img{
+    .mbwCarouselTrack{
+      display: flex;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      transform: translateX(0);
+      transition: transform 420ms ease;
+      will-change: transform;
+    }
+
+    .mbwSlide{
+      flex: 0 0 100%;
+      width: 100%;
+    }
+
+    .mbwSlide img{
+      width: 100%;
+      height: 420px;
       display: block;
+      object-fit: cover;
     }
 
-    .mediaBar{
-      padding: 12px 14px;
+    .mbwSlide .label{
+      padding: 10px 12px;
       border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
       background: rgba(255,255,255,.55);
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
     }
 
-    .mediaTitle{
-      margin: 0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 14px;
-      letter-spacing: -0.01em;
-    }
-
-    .badge{
+    .mbwNavBtn{
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .mbwNavBtn svg{ width: 20px; height: 20px; }
+    .mbwNavPrev{ left: 10px; }
+    .mbwNavNext{ right: 10px; }
+
+    .mbwDots{
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%);
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
+      background: rgba(255,255,255,.78);
     }
-
-    .infoCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 16px;
+    .mbwDot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(13,89,37,.22);
     }
-
-    .infoTop{
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .latin{
-      margin: 0;
-      font-size: 13px;
-      color: var(--muted);
-      font-style: italic;
-    }
-
-    .facts{
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .fact{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-    }
-
-    .fact dt{
-      margin: 0 0 6px;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 12.5px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .fact dd{
-      margin: 0;
-      color: var(--ink);
-      line-height: 1.55;
-    }
-
-    .audioCard{
-      margin-top: 12px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .audioRow{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .audioLabel{
-      margin: 0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 13px;
-    }
-
-    audio{
-      width: 100%;
-      max-width: 100%;
-    }
-
-    .story{
-      margin-top: 12px;
-      line-height: 1.7;
-      color: var(--ink);
-    }
-
-    .story p{ margin: 0 0 12px; }
-
-    .videoGrid{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .videoCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .videoFrame{
-      aspect-ratio: 16 / 9;
-      width: 100%;
-      border: 0;
-      display: block;
-      background: rgba(255,255,255,.55);
-    }
-
-    .videoCap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      background: rgba(255,255,255,.55);
-    }
-
-    .rail{
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .tile{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-
-    .tile img{
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      display: block;
-      background: rgba(255,255,255,.55);
-    }
-
-    .tileMeta{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-    }
-
-    .tileMeta .t{
-      margin: 0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 13.5px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .tileMeta .s{
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      white-space: nowrap;
-    }
-
-    .note{
-      margin-top: 10px;
-      padding: 12px;
-      border: 1px dashed rgba(13,89,37,.35);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 13px;
-    }
-
-    @media (max-width: 980px){
-      .rail{ grid-template-columns: repeat(3, 1fr); }
-      .tile img{ height: 170px; }
+    .mbwDot.is-active{
+      background: rgba(13,89,37,.65);
     }
 
     @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .feature{ grid-template-columns: 1fr; }
-      .facts{ grid-template-columns: 1fr; }
-      .videoGrid{ grid-template-columns: 1fr; }
-      .rail{ grid-template-columns: repeat(2, 1fr); }
-      .tile img{ height: 160px; }
+      .guideCard{ grid-template-columns: 1fr; }
+      .mbwSlide img{ height: 280px; }
     }
 
-    @media (max-width: 520px){
-      .rail{ grid-template-columns: 1fr; }
-      .tile img{ height: 220px; }
+    @media (prefers-reduced-motion: reduce){
+      .mbwCarouselTrack{ transition: none; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="siteHeader"></div>
-<main class="page card">
-  <section class="hero" aria-label="Introducción de Ave de la Semana">
-    <div>
-      <h1>Ave de la Semana</h1>
-      <p>
-        Descubre nuestra Ave de la Semana desde los bosques nublados de 📍Mindo, Ecuador. Conoce datos fascinantes, mira fotos hermosas
-        y prepárate para identificar estas especies increíbles en tu próxima salida de observación de aves.
-      </p>
+<!-- Shared header mount -->
+<div id="siteHeader"></div>
 
-      <div class="heroCtas" aria-label="Acciones principales">
-        <a class="btn primary" href="/es/reservar-tour/">Reservar un tour</a>
-        <a class="btn secondary" href="/es/tours/">Ver tours</a>
-        <a class="btn secondary" href="/es/galeria-de-aves/">Galería de Aves</a>
+<main class="page card">
+  <h1 style="margin:0 0 6px;">Nuestro guía</h1>
+
+  <div class="lede" aria-label="Introducción del guía">
+    <p>Conoce a Chicho, nuestro apasionado guía de avistamiento de aves en Mindo.</p>
+
+    <p>
+      Con más de seis años de experiencia y un profundo amor por el bosque nublado, Chicho ha identificado más de 400 especies de aves,
+      incluyendo el impresionante Gallito de la Roca y el Tucán Andino. ¡Únete a Chicho para un viaje inolvidable al corazón de la naturaleza!
+    </p>
+
+    <div class="actions" aria-label="Acciones principales">
+      <a class="btn primary" href="/book-tour/">Reservar tour</a>
+
+      <a class="waBtn" href="https://wa.me/13054585402" target="_blank" rel="noopener" aria-label="Reserva tu aventura al instante en WhatsApp">
+        <img src="/assets/images/icons/mbw-ig-test-10.png" alt="Icono de WhatsApp">
+        <span>Reserva tu aventura al instante en WhatsApp</span>
+      </a>
+    </div>
+  </div>
+
+  <section class="guideCard" aria-label="Perfil del guía">
+    <div class="photo card" aria-label="Foto de Chicho">
+      <div class="frame">
+        <!-- Reemplaza este src por la foto real de Chicho -->
+        <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Chicho, guía de avistamiento en Mindo (reemplazar esta imagen)">
       </div>
+      <div class="cap">Reemplaza la imagen de arriba por la foto de Chicho cuando esté lista.</div>
     </div>
 
-    <aside class="heroCard" aria-label="Qué encontrarás aquí">
-      <h2>Qué Incluye</h2>
-      <ul class="heroList">
-        <li>Especie destacada cada semana con fotos y datos rápidos</li>
-        <li>Audios de cantos para escuchar antes del viaje</li>
-        <li>Videos integrados de avistamientos y comportamiento</li>
+    <aside class="facts card" aria-label="Datos rápidos de Chicho">
+      <h2>Lo esencial</h2>
+      <ul>
+        <li>Guía en Mindo desde hace 6+ años</li>
+        <li>Ha identificado alrededor de 400 especies</li>
+        <li>Favoritas: Gallito de la Roca y Tucán de altura</li>
+        <li>Tour memorable: 284 especies en 2 días y medio</li>
+        <li>Estilo: amable, tranquilo y enfocado en que veas más</li>
       </ul>
+
+      <div class="bottomCtas" aria-label="Acciones secundarias">
+        <a class="btn secondary" href="/tours/">Ver tours</a>
+        <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+      </div>
     </aside>
   </section>
 
-  <section class="section" aria-label="Ave destacada">
-    <div class="sectionHead">
-      <h2>El ave destacada de esta semana</h2>
-      <p class="hint">Los placeholders están listos. Luego podrás reemplazar los datos desde tu Google Sheet.</p>
-    </div>
+  <section class="qa" aria-label="Entrevista">
+    <h2>Conoce más de Chicho</h2>
 
-    <div class="feature">
-      <article class="mediaCard" aria-label="Foto del ave destacada">
-        <div class="mediaFrame">
-          <img id="birdHeroImg" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22900%22%20viewBox%3D%220%200%201200%20900%22%3E%3Crect%20width%3D%221200%22%20height%3D%22900%22%20fill%3D%22%23F3F7F1%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2260%22%20width%3D%221080%22%20height%3D%22780%22%20rx%3D%2244%22%20fill%3D%22none%22%20stroke%3D%22%23D6E5C6%22%20stroke-width%3D%2210%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22460%22%20font-size%3D%2248%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EFoto%20del%20Ave%20Destacada%3C/text%3E%3Ctext%20x%3D%22600%22%20y%3D%22520%22%20font-size%3D%2226%22%20font-weight%3D%22600%22%20fill%3D%22%236B7C6C%22%3EReemplaza%20esta%20URL%20desde%20tu%20Sheet%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de foto del ave destacada" />
+    <div class="qaList">
+      <details class="qaItem">
+        <summary>¿Qué te inspiró a convertirte en guía de avistamiento de aves?</summary>
+        <div class="answer">Me inspira tanto poder observar cada día tantas maravillas y colores dentro de Mindo.</div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Cuánto tiempo llevas guiando tours de avistamiento de aves en Mindo?</summary>
+        <div class="answer">Llevo unos seis años guiando, pero cada vez encuentro cosas diferentes que me motivan a seguir aprendiendo.</div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Qué es lo que más te gusta del avistamiento de aves en el bosque nublado?</summary>
+        <div class="answer">
+          Lo que más me gusta es encontrarme cada mañana con la diversidad de cantos y colores de las aves, que te hacen sentir una paz dentro de la naturaleza.
         </div>
+      </details>
 
-        <div class="mediaBar">
-          <p id="birdHeroTitle" class="mediaTitle">Gallito de las Rocas Andino (placeholder)</p>
-          <span id="birdHeroBadge" class="badge">Bosque Nublado • 📍Mindo, Ecuador</span>
+      <details class="qaItem">
+        <summary>¿Tienes algún recuerdo de infancia relacionado con la naturaleza o las aves que te haya marcado?</summary>
+        <div class="answer">
+          Cuando fui niño, mi primera experiencia fue observar un Gallo de Peña, un ave emblemática con colores muy llamativos.
+          Recuerdo verlo con binoculares, lo que me permitió apreciarlo aún más de cerca. Sus cantos, tamaño y colores marcaron mis recuerdos.
         </div>
-      </article>
+      </details>
 
-      <aside class="infoCard" aria-label="Datos del ave destacada">
-        <div class="infoTop">
-          <div style="min-width:0;">
-            <h2 id="birdName" style="margin:0; letter-spacing:-0.02em;">Gallito de las Rocas Andino</h2>
-            <p id="birdLatin" class="latin">Rupicola peruvianus</p>
-          </div>
-          <span id="birdWeekTag" class="badge">Ave de la Semana</span>
+      <details class="qaItem">
+        <summary>¿Cuál es tu especie de ave favorita para observar en Mindo y por qué?</summary>
+        <div class="answer">
+          Tengo dos especies favoritas: el Gallo de Peña y el Tucán de altura. Sus cantos y colores marcan mucha diferencia en el bosque,
+          y tener el privilegio de encontrarlos en Mindo es una bendición.
         </div>
+      </details>
 
-        <dl class="facts" aria-label="Datos rápidos">
-          <div class="fact">
-            <dt>Mejor hora</dt>
-            <dd id="factBestTime">Temprano en la mañana (placeholder)</dd>
-          </div>
-          <div class="fact">
-            <dt>Dónde ver</dt>
-            <dd id="factWhere">Bordes del bosque y leks (placeholder)</dd>
-          </div>
-          <div class="fact">
-            <dt>Dieta</dt>
-            <dd id="factDiet">Mayormente fruta (placeholder)</dd>
-          </div>
-          <div class="fact">
-            <dt>Dato curioso</dt>
-            <dd id="factFun">Los machos se reúnen para exhibirse en leks (placeholder)</dd>
-          </div>
-        </dl>
+      <details class="qaItem">
+        <summary>¿Cuántas especies de aves has identificado en la zona?</summary>
+        <div class="answer">En mi experiencia como guía, he tenido la suerte de encontrar alrededor de 400 especies, entre aves y colibríes.</div>
+      </details>
 
-        <div class="audioCard" aria-label="Audio del ave">
-          <div class="audioRow">
-            <p class="audioLabel">Escucha el canto</p>
-            <span id="audioNote" class="badge">Placeholder de audio</span>
-          </div>
-          <audio id="birdAudio" controls preload="none">
-            <source src="AUDIO_FILE_URL_PLACEHOLDER.mp3" type="audio/mpeg" />
-            Tu navegador no soporta el elemento de audio.
-          </audio>
+      <details class="qaItem">
+        <summary>¿Cuál es el ave más emocionante o rara que has visto en un tour?</summary>
+        <div class="answer">
+          Mi mejor experiencia fue guiar a una pareja americana amante de las aves. En dos días y medio, vimos 284 especies.
+          Ellos estaban tan emocionados que me llamaban todas las noches desde Ecuador para decirme que no podían creer haber visto tanta variedad.
         </div>
+      </details>
 
-        <div class="note" aria-label="Cómo actualizar esta página luego">
-          <strong>Luego (Sheets):</strong> reemplaza los valores placeholder en el objeto <code>BIRD_DATA</code> del script al final
-          con datos provenientes de tu export o endpoint de Google Sheet.
+      <details class="qaItem">
+        <summary>¿Puedes compartir una experiencia memorable con un grupo de observadores de aves?</summary>
+        <div class="answer">
+          La experiencia con la pareja americana fue muy especial. Su mejor recuerdo y experiencia fue haber visitado Mindo y haberme conocido como guía.
         </div>
-      </aside>
-    </div>
+      </details>
 
-    <div class="story" aria-label="Descripción del ave">
-      <p id="birdStory1">
-        Aquí agregarás una historia corta y atractiva sobre el ave destacada. Mantén el tono amistoso y práctico, como lo que le dirías a un huésped
-        justo antes de la primera parada del tour. (placeholder)
-      </p>
-      <p id="birdStory2">
-        Agrega un segundo párrafo con qué observar: comportamiento, patrón de vuelo, perchas favoritas y la mejor pista para que un principiante la detecte. (placeholder)
-      </p>
+      <details class="qaItem">
+        <summary>¿Qué pueden esperar los visitantes en un tour de avistamiento de aves contigo?</summary>
+        <div class="answer">
+          Las personas que salen conmigo siempre encontrarán a alguien amable, que les da seguridad para encontrar variedades coloridas de aves.
+          En Mindo, tenemos el privilegio de tener muchas especies, y los visitantes siempre se llevan bonitos recuerdos.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Qué hace que Mindo sea un lugar tan especial para el avistamiento de aves?</summary>
+        <div class="answer">
+          Mindo es especial porque, en poco territorio, podemos observar una gran cantidad de flora y fauna.
+          En un metro cuadrado, se pueden ver hasta seis variedades de aves. Por eso, Mindo es llamada la “Capital de las Aves.”
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Cómo ayudas a los principiantes o a quienes observan aves por primera vez a disfrutar de la experiencia?</summary>
+        <div class="answer">
+          Siempre es bueno ayudar y motivar a las personas que están iniciando. Transmitir respeto por la naturaleza es lo mejor que uno puede hacer,
+          ya que ella nos presta tanta belleza.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Cuál es la mejor época del año para visitar Mindo y observar aves?</summary>
+        <div class="answer">
+          Las mejores épocas son desde finales de enero, cuando se concentran más individuos. Es la temporada en la que salen con sus bebés,
+          y se pueden encontrar en mayores cantidades. También es más fácil verlos volar por todos lados.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Tienes un canto o sonido de ave favorito que te guste imitar?</summary>
+        <div class="answer">
+          Mi canto favorito es el del Tucán de altura. Es un canto sonoro que, cuando lo escuchas, parece decir “cuidado que llegué.”
+          Tiene mucha personalidad, y escucharlo siempre me alegra porque no es muy común.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Cuál es un dato curioso sobre las aves que sorprende a la mayoría de las personas?</summary>
+        <div class="answer">
+          Un dato curioso que siempre sorprende a los turistas es que en Mindo siempre podemos encontrar maravillas. No hay turista que no encuentre algo interesante.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>Si pudieras ser un ave, ¿cuál elegirías y por qué?</summary>
+        <div class="answer">
+          Si yo fuera un ave, sería un Tucán de altura. Su canto y colores son especiales. Es un tucán tranquilo, pero cuando canta, impone mucha personalidad.
+          He tenido la suerte de ver hasta 17 tucanes de altura en un solo árbol.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Por qué es importante para ti la conservación de las aves?</summary>
+        <div class="answer">
+          Es importante porque las aves son parte de la riqueza natural que tenemos. Salir a observarlas es como encontrar el “oro verde” de la naturaleza.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Cómo contribuyen tus tours a proteger la biodiversidad de Mindo?</summary>
+        <div class="answer">
+          Mis tours ayudan a transmitir respeto por la naturaleza y a mostrar la belleza que nos rodea. Esto motiva a las personas a valorar y proteger la biodiversidad.
+        </div>
+      </details>
+
+      <details class="qaItem">
+        <summary>¿Qué consejo le darías a alguien que quiere empezar a observar aves?</summary>
+        <div class="answer">
+          Mi consejo es que lo hagan con pasión. No hay mejor cosa que salir a encontrar tanta belleza en la naturaleza.
+          Prepárense para ver lo especial que son las aves, las montañas y los ríos.
+        </div>
+      </details>
     </div>
   </section>
 
-  <section class="section" aria-label="Videos">
-    <div class="sectionHead">
-      <h2>Videos</h2>
-      <p class="hint">Reemplaza los IDs de YouTube cuando estés listo.</p>
+  <section class="carouselWrap" aria-label="Carrusel de fotos">
+    <div class="carouselHead">
+      <h2>Momentos en Mindo</h2>
+      <p class="carouselHint">Autoplay cada 3 segundos. También puedes usar las flechas.</p>
     </div>
 
-    <div class="videoGrid">
-      <div class="videoCard" aria-label="Video 1">
-        <iframe
-          class="videoFrame"
-          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_1"
-          title="Video 1 de Ave de la Semana"
-          loading="lazy"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen></iframe>
-        <div class="videoCap">Video placeholder 1. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
+    <div class="mbwCarousel" data-autoplay="true" data-interval="3000" aria-label="Carrusel de imágenes">
+      <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Imagen anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="mbwCarouselViewport" role="region" aria-label="Vista del carrusel">
+        <div class="mbwCarouselTrack">
+          <!-- Reemplaza SOLO los links de imagen -->
+          <div class="mbwSlide">
+            <img src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70" alt="Imagen 1 del carrusel (reemplazar)">
+            <div class="label">Imagen 1</div>
+          </div>
+          <div class="mbwSlide">
+            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70" alt="Imagen 2 del carrusel (reemplazar)">
+            <div class="label">Imagen 2</div>
+          </div>
+          <div class="mbwSlide">
+            <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=70" alt="Imagen 3 del carrusel (reemplazar)">
+            <div class="label">Imagen 3</div>
+          </div>
+          <div class="mbwSlide">
+            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Imagen 4 del carrusel (reemplazar)">
+            <div class="label">Imagen 4</div>
+          </div>
+          <div class="mbwSlide">
+            <img src="https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=1600&q=70" alt="Imagen 5 del carrusel (reemplazar)">
+            <div class="label">Imagen 5</div>
+          </div>
+        </div>
       </div>
 
-      <div class="videoCard" aria-label="Video 2">
-        <iframe
-          class="videoFrame"
-          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
-          title="Video 2 de Ave de la Semana"
-          loading="lazy"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen></iframe>
-        <div class="videoCap">Video placeholder 2. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
-      </div>
-    </div>
-  </section>
+      <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente imagen">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
 
-  <section class="section" aria-label="Aves recientes">
-    <div class="sectionHead">
-      <h2>Aves Recientes</h2>
-      <p class="hint">Opcional: enlaza estas tarjetas a semanas anteriores o páginas dedicadas.</p>
-    </div>
-
-    <div class="rail" aria-label="Grid de aves recientes">
-      <a class="tile" href="#" aria-label="Ave reciente 1 (enlace placeholder)">
-        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%201%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 1" />
-        <div class="tileMeta">
-          <p class="t">Ave Reciente 1</p>
-          <p class="s">Haz clic para ver (placeholder)</p>
-        </div>
-      </a>
-
-      <a class="tile" href="#" aria-label="Ave reciente 2 (enlace placeholder)">
-        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%202%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 2" />
-        <div class="tileMeta">
-          <p class="t">Ave Reciente 2</p>
-          <p class="s">Haz clic para ver (placeholder)</p>
-        </div>
-      </a>
-
-      <a class="tile" href="#" aria-label="Ave reciente 3 (enlace placeholder)">
-        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%203%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 3" />
-        <div class="tileMeta">
-          <p class="t">Ave Reciente 3</p>
-          <p class="s">Haz clic para ver (placeholder)</p>
-        </div>
-      </a>
-
-      <a class="tile" href="#" aria-label="Ave reciente 4 (enlace placeholder)">
-        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EAve%20Reciente%204%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Placeholder de ave reciente 4" />
-        <div class="tileMeta">
-          <p class="t">Ave Reciente 4</p>
-          <p class="s">Haz clic para ver (placeholder)</p>
-        </div>
-      </a>
+      <div class="mbwDots" aria-label="Indicadores de posición"></div>
     </div>
   </section>
 </main>
 
+<!-- Shared footer mount -->
 <div id="siteFooter"></div>
   </div>
+  <!-- Required loader + global menu behavior -->
   <script src="/assets/js/includes.js?v=1"></script>
   <script src="/assets/js/site.js?v=1"></script>
+  <!-- Page-only: carousel behavior (does not touch header/footer/menu behavior) -->
   <script>
-    (function () {
+    (function(){
       "use strict";
 
-      if (document.documentElement.dataset.mbwBotwInit === "1") return;
-      document.documentElement.dataset.mbwBotwInit = "1";
+      const root = document.querySelector('.mbwCarousel');
+      if(!root) return;
 
-      const BIRD_DATA = {
-        heroImageUrl: null,
-        commonName: "Gallito de las Rocas Andino",
-        latinName: "Rupicola peruvianus",
-        badgeText: "Bosque Nublado • 📍Mindo, Ecuador",
-        bestTime: "Temprano en la mañana",
-        where: "Bordes del bosque y leks",
-        diet: "Mayormente fruta",
-        funFact: "Los machos se reúnen para exhibirse en leks",
-        audioUrl: "AUDIO_FILE_URL_PLACEHOLDER.mp3",
-        story1: "Aquí agregarás una historia corta y atractiva sobre el ave destacada. (placeholder)",
-        story2: "Agrega un segundo párrafo con comportamiento, patrón de vuelo y tips para detectarla. (placeholder)"
-      };
+      const track = root.querySelector('.mbwCarouselTrack');
+      const slides = Array.from(root.querySelectorAll('.mbwSlide'));
+      const prevBtn = root.querySelector('.mbwNavPrev');
+      const nextBtn = root.querySelector('.mbwNavNext');
+      const dotsWrap = root.querySelector('.mbwDots');
 
-      function setText(id, val) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.textContent = String(val || "");
+      if(!track || slides.length === 0) return;
+
+      let index = 0;
+      const intervalMs = Number(root.getAttribute('data-interval') || '3000');
+      const autoplay = (root.getAttribute('data-autoplay') || 'true') === 'true';
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function clamp(i){
+        const n = slides.length;
+        return (i % n + n) % n;
       }
 
-      function setImage(id, url, alt) {
-        const el = document.getElementById(id);
-        if (!el || !url) return;
-        el.src = url;
-        if (alt) el.alt = alt;
+      function renderDots(){
+        if(!dotsWrap) return;
+        dotsWrap.innerHTML = '';
+        slides.forEach((_, i) => {
+          const d = document.createElement('span');
+          d.className = 'mbwDot' + (i === index ? ' is-active' : '');
+          d.setAttribute('aria-hidden', 'true');
+          dotsWrap.appendChild(d);
+        });
       }
 
-      function setAudio(id, url) {
-        const audio = document.getElementById(id);
-        if (!audio || !url) return;
-        const src = audio.querySelector("source");
-        if (src) src.src = url;
-        audio.load();
+      function goTo(i){
+        index = clamp(i);
+        track.style.transform = 'translateX(' + (-index * 100) + '%)';
+        renderDots();
       }
 
-      setText("birdHeroTitle", BIRD_DATA.commonName + " (placeholder)");
-      setText("birdName", BIRD_DATA.commonName);
-      setText("birdLatin", BIRD_DATA.latinName);
-      setText("birdHeroBadge", BIRD_DATA.badgeText);
-      setText("factBestTime", BIRD_DATA.bestTime);
-      setText("factWhere", BIRD_DATA.where);
-      setText("factDiet", BIRD_DATA.diet);
-      setText("factFun", BIRD_DATA.funFact);
-      setText("birdStory1", BIRD_DATA.story1);
-      setText("birdStory2", BIRD_DATA.story2);
-      setAudio("birdAudio", BIRD_DATA.audioUrl);
+      function next(){ goTo(index + 1); }
+      function prev(){ goTo(index - 1); }
 
-      if (BIRD_DATA.heroImageUrl) {
-        setImage("birdHeroImg", BIRD_DATA.heroImageUrl, BIRD_DATA.commonName + " foto");
+      let timer = null;
+
+      function start(){
+        if(!autoplay || reduceMotion) return;
+        if(timer) return;
+        timer = window.setInterval(next, Math.max(2000, intervalMs));
       }
+
+      function stop(){
+        if(timer){
+          window.clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      if(prevBtn) prevBtn.addEventListener('click', () => { stop(); prev(); start(); });
+      if(nextBtn) nextBtn.addEventListener('click', () => { stop(); next(); start(); });
+
+      let startX = null;
+      let dragging = false;
+
+      function onPointerDown(e){
+        if(e.pointerType === 'mouse') return;
+        dragging = true;
+        startX = e.clientX;
+        stop();
+      }
+
+      function onPointerUp(e){
+        if(!dragging) return;
+        dragging = false;
+        const dx = e.clientX - startX;
+        startX = null;
+
+        const threshold = 35;
+        if(dx > threshold) prev();
+        else if(dx < -threshold) next();
+
+        start();
+      }
+
+      root.addEventListener('pointerdown', onPointerDown, { passive: true });
+      root.addEventListener('pointerup', onPointerUp, { passive: true });
+      root.addEventListener('pointercancel', () => { dragging = false; startX = null; start(); }, { passive: true });
+
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', start);
+      root.addEventListener('focusin', stop);
+      root.addEventListener('focusout', start);
+
+      window.addEventListener('resize', () => { goTo(index); }, { passive: true });
+
+      goTo(0);
+      start();
     })();
   </script>
 </body>
