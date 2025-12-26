@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Calendario de Avistamiento | Mindo Bird Watching</title>
-  <meta name="description" content="Calendario de avistamiento para 📍Mindo, Ecuador. Visibilidad mensual por especie, con categorías y miniaturas de fotos." />
+  <meta name="description" content="Calendario de avistamiento para 📍Mindo, Ecuador. Visibilidad mensual por especie con categorías y miniaturas." />
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
@@ -214,17 +214,21 @@
       line-height: 1;
     }
 
+    /* Months wrapper */
     .monthsWrap{
       padding: 14px;
       background: rgba(255,255,255,.55);
       overflow: visible;
     }
 
-    /* DESKTOP: always show Jan–Dec (no scroll) */
+    /* KEY CHANGE:
+       - auto-fit + min width gives each month more room
+       - wraps into multiple rows so Jan–Dec are always visible (no horizontal clipping)
+    */
     .months{
       display:grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+      gap: 10px;
       overflow: visible;
       padding: 0;
       margin: 0;
@@ -234,7 +238,7 @@
       border: 1px solid var(--line);
       border-radius: 18px;
       background: rgba(255,255,255,.65);
-      padding: 9px 6px;
+      padding: 12px 10px;
       text-align:center;
       box-sizing: border-box;
       min-width: 0;
@@ -243,58 +247,53 @@
     .mLabel{
       font-size: 11px;
       color: var(--muted);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-weight: 900;
       letter-spacing: -0.01em;
       white-space: nowrap;
     }
 
-    /* FIX: uniform bubbles, single-line for all except "Fuera de temporada" */
+    /* KEY CHANGE:
+       - more internal space for "Excelente"
+       - fixed minimum height for consistent pills
+    */
     .mVal{
       display:flex;
       align-items:center;
       justify-content:center;
       width: 100%;
-      padding: 7px 8px;
+      padding: 9px 12px;
       border-radius: 999px;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 950;
       border: 1px solid transparent;
+      white-space: nowrap; /* keep single line for Bueno/Regular/Raro/Excelente */
       box-sizing: border-box;
-
-      white-space: nowrap;
-      line-height: 1.1;
-      min-height: 34px;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .mVal.twoLine{
-      white-space: normal;
-      min-height: 38px;
-    }
-    .mVal.twoLine span{
-      display:block;
-      text-align:center;
-      line-height: 1.1;
+      min-height: 38px; /* consistent + room for two-line off-season */
+      line-height: 1.05;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
     .st-good{ background:#fef9c3; color:#92400e; border-color: rgba(146,64,14,.25); }
     .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
     .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
-    .st-off{ background:#e2e8f0; color:#64748b; border-color: rgba(100,116,139,.2); }
+
+    /* KEY CHANGE:
+       - allow ONLY off-season to wrap into 2 lines centered: "Fuera de temporada"
+    */
+    .st-off{
+      background:#e2e8f0;
+      color:#64748b;
+      border-color: rgba(100,116,139,.2);
+      white-space: normal;
+      text-align: center;
+    }
 
     .footnote{
       margin-top: 12px;
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.6;
-    }
-
-    /* Keep Jan–Dec visible by wrapping to 2 rows on tight screens */
-    @media (max-width: 1280px){
-      .months{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
     }
 
     @media (max-width: 900px){
@@ -322,12 +321,10 @@
         justify-content:flex-start;
       }
 
-      /* MOBILE/TABLET: still keep all months visible (2 rows), no horizontal scroll */
+      /* Still wraps (no horizontal scroll) */
       .months{
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
         gap: 10px;
-        overflow: visible;
-        padding: 0;
       }
     }
   </style>
@@ -340,7 +337,7 @@
     <div>
       <h1>Calendario de Avistamiento</h1>
       <p>
-        Una vista rápida mes a mes de especies objetivo comunes en 📍Mindo, Ecuador.
+        Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
         Las imágenes se cargan desde el campo <strong>imageUrl</strong> de la hoja.
       </p>
     </div>
@@ -368,7 +365,7 @@
     <div class="cards" id="bcCards" aria-label="Tarjetas de especies"></div>
 
     <p class="footnote">
-      Tip: las fotos provienen de fuentes de terceros. Las miniaturas usan modo “contain” para que el ave se vea completa.
+      Tip: las fotos provienen de fuentes de terceros. Las miniaturas usan “contain” para que el ave se vea completa.
     </p>
   </section>
 </main>
@@ -396,28 +393,33 @@
           .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
       }
 
-      function statusClass(v){
+      function normStatus(v){
         const s = String(v || "").trim().toLowerCase();
-        if (s === "great") return "st-great";
-        if (s === "good") return "st-good";
-        if (s === "fair") return "st-fair";
-        if (s === "rare") return "st-rare";
+        if (s === "great" || s === "excelente") return "great";
+        if (s === "good" || s === "bueno") return "good";
+        if (s === "fair" || s === "regular") return "fair";
+        if (s === "rare" || s === "raro") return "rare";
+        if (s === "off" || s === "off-season" || s === "fuera de temporada") return "off";
+        return "off";
+      }
+
+      function statusClass(key){
+        if (key === "great") return "st-great";
+        if (key === "good") return "st-good";
+        if (key === "fair") return "st-fair";
+        if (key === "rare") return "st-rare";
         return "st-off";
       }
 
-      let payload = null;
-
-      function labelHtmlFor(raw){
-        const s = String(raw || "").trim().toLowerCase();
-        if (s === "off" || s === "off-season" || s === "offseason"){
-          return { html: '<span>Fuera de</span><span>temporada</span>', twoLine: true, rawForClass: "off" };
-        }
-        if (s === "rare") return { html: "Raro", twoLine: false, rawForClass: "rare" };
-        if (s === "fair") return { html: "Regular", twoLine: false, rawForClass: "fair" };
-        if (s === "good") return { html: "Bueno", twoLine: false, rawForClass: "good" };
-        if (s === "great") return { html: "Excelente", twoLine: false, rawForClass: "great" };
-        return { html: '<span>Fuera de</span><span>temporada</span>', twoLine: true, rawForClass: "off" };
+      function statusLabelEs(key){
+        if (key === "great") return "Excelente";
+        if (key === "good") return "Bueno";
+        if (key === "fair") return "Regular";
+        if (key === "rare") return "Raro";
+        return "Fuera de temporada";
       }
+
+      let payload = null;
 
       function render(){
         if(!payload) return;
@@ -436,7 +438,7 @@
 
         statusEl.textContent = rows.length
           ? ("Mostrando " + rows.length + " especies")
-          : "Sin resultados. Prueba otra búsqueda.";
+          : "Sin resultados. Prueba con otra búsqueda.";
 
         const monthNames = payload.monthNames || [];
 
@@ -444,51 +446,53 @@
           const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
 
           const thumbHtml = imgUrl
-            ? '<a class="thumb" href="' + esc(imgUrl) + '" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">' +
-                 '<img src="' + esc(imgUrl) + '" alt="' + esc(r.es || r.en) + ' foto" loading="lazy" />' +
-               '</a>'
-            : '<span class="thumb" aria-label="No hay imagen disponible"></span>';
+            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">
+                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} foto" loading="lazy" />
+               </a>`
+            : `<span class="thumb" aria-label="No hay imagen disponible"></span>`;
 
           const cam = imgUrl
-            ? '<a class="cam" href="' + esc(imgUrl) + '" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>'
+            ? `<a class="cam" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>`
             : "";
 
           const months = monthNames.map((m, i) => {
-            const val = (r.months && r.months[i]) ? r.months[i] : "";
-            const raw = (val && String(val).trim()) ? String(val).trim() : "Off";
-            const L = labelHtmlFor(raw);
+            const raw = (r.months && r.months[i]) ? r.months[i] : "";
+            const key = normStatus(raw);
+            const labelEs = statusLabelEs(key);
 
-            return '' +
-              '<div class="month" aria-label="' + esc(m) + '">' +
-                '<div class="mLabel">' + esc(m) + '</div>' +
-                '<div class="mVal ' + (L.twoLine ? 'twoLine ' : '') + statusClass(L.rawForClass) + '">' + L.html + '</div>' +
-              '</div>';
+            return `
+              <div class="month" aria-label="${esc(m)}">
+                <div class="mLabel">${esc(m)}</div>
+                <div class="mVal ${statusClass(key)}">${esc(labelEs)}</div>
+              </div>
+            `;
           }).join("");
 
-          return '' +
-            '<article class="cardItem" aria-label="' + esc(r.es || r.en) + '">' +
-              '<div class="cardTop">' +
-                thumbHtml +
-                '<div class="names">' +
-                  '<div class="nameEn">' + esc(r.es || r.en) + ' ' + cam + '</div>' +
-                  '<div class="nameEs">' + esc(r.en ? ('EN: ' + r.en) : '') + '</div>' +
-                '</div>' +
-                '<div class="metaRight">' +
-                  '<span class="catPill">' + esc(r.category) + '</span>' +
-                '</div>' +
-              '</div>' +
-              '<div class="monthsWrap">' +
-                '<div class="months" aria-label="Meses">' + months + '</div>' +
-              '</div>' +
-            '</article>';
+          return `
+            <article class="cardItem" aria-label="${esc(r.en)}">
+              <div class="cardTop">
+                ${thumbHtml}
+                <div class="names">
+                  <div class="nameEn">${esc(r.en)} ${cam}</div>
+                  <div class="nameEs">${esc(r.es)}</div>
+                </div>
+                <div class="metaRight">
+                  <span class="catPill">${esc(r.category)}</span>
+                </div>
+              </div>
+              <div class="monthsWrap">
+                <div class="months" aria-label="Meses">${months}</div>
+              </div>
+            </article>
+          `;
         }).join("");
       }
 
       function fillCategories(rows){
         const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
         catSel.innerHTML =
-          '<option value="all">Todas las categorías</option>' +
-          cats.map(c => '<option value="' + esc(c) + '">' + esc(c) + '</option>').join("");
+          `<option value="all">Todas las categorías</option>` +
+          cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
       }
 
       async function load(){
@@ -498,7 +502,7 @@
           const json = await res.json();
 
           if(!json || json.ok !== true){
-            statusEl.textContent = "El calendario no está disponible en este momento.";
+            statusEl.textContent = "Calendario no disponible en este momento.";
             return;
           }
 
@@ -507,7 +511,7 @@
           render();
 
         }catch(_){
-          statusEl.textContent = "El calendario no está disponible en este momento.";
+          statusEl.textContent = "Calendario no disponible en este momento.";
         }
       }
 
