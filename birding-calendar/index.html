@@ -4,24 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Birding Calendar | Mindo Bird Watching</title>
-
   <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with categories and photo thumbnails." />
-
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
-
-  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
-
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
-
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -122,7 +116,7 @@
       border-radius: 22px;
       background: rgba(255,255,255,.70);
       box-shadow: var(--shadow);
-      overflow:hidden; /* keep rounded corners */
+      overflow:hidden;
     }
 
     .cardTop{
@@ -135,7 +129,6 @@
       border-bottom: 1px solid var(--line);
     }
 
-    /* Bigger thumb with padding around the image */
     .thumb{
       width: 160px;
       height: 160px;
@@ -221,19 +214,17 @@
       line-height: 1;
     }
 
-    /* Months wrapper */
     .monthsWrap{
       padding: 14px;
       background: rgba(255,255,255,.55);
-      overflow: visible; /* important so nothing looks clipped */
+      overflow: visible;
     }
 
-    /* DESKTOP: show all months, no scroll */
     .months{
       display:grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr)); /* key: never overflow */
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       gap: 8px;
-      overflow: visible; /* no scroll on desktop */
+      overflow: visible;
       padding: 0;
       margin: 0;
     }
@@ -242,7 +233,7 @@
       border: 1px solid var(--line);
       border-radius: 18px;
       background: rgba(255,255,255,.65);
-      padding: 10px 8px;
+      padding: 9px 6px;
       text-align:center;
       box-sizing: border-box;
       min-width: 0;
@@ -257,18 +248,24 @@
       white-space: nowrap;
     }
 
+    /* FIX: make probability bubbles even + allow Off-season to fit */
     .mVal{
       display:flex;
       align-items:center;
       justify-content:center;
       width: 100%;
-      padding: 8px 8px;
+      padding: 7px 6px;
       border-radius: 999px;
       font-size: 11.5px;
       font-weight: 950;
       border: 1px solid transparent;
-      white-space: nowrap;
       box-sizing: border-box;
+
+      white-space: normal;       /* allow wrapping */
+      line-height: 1.1;          /* tighter so 2 lines fit nicely */
+      min-height: 34px;          /* consistent bubble height across all months */
+      text-align: center;
+      overflow-wrap: anywhere;   /* ensures long tokens still wrap */
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -284,10 +281,9 @@
       line-height: 1.6;
     }
 
-    /* If the container is tight, wrap months into 2 rows (still NO scroll on desktop) */
     @media (max-width: 1280px){
       .months{
-        grid-template-columns: repeat(6, minmax(0, 1fr)); /* shows Jan–Dec across 2 rows */
+        grid-template-columns: repeat(6, minmax(0, 1fr));
       }
     }
 
@@ -316,7 +312,6 @@
         justify-content:flex-start;
       }
 
-      /* MOBILE/TABLET: scroll allowed */
       .months{
         grid-template-columns: repeat(12, minmax(120px, 1fr));
         gap: 12px;
@@ -334,52 +329,49 @@
     }
   </style>
 </head>
-
 <body>
   <div class="container">
     <div id="siteHeader"></div>
+<main class="page card" aria-label="Birding calendar">
+  <div class="hero">
+    <div>
+      <h1>Birding Calendar</h1>
+      <p>
+        A quick month-by-month view of common target species around 📍Mindo, Ecuador.
+        Images are pulled from the sheet’s <strong>imageUrl</strong>.
+      </p>
+    </div>
 
-    <main class="page card" aria-label="Birding calendar">
-      <div class="hero">
+    <div class="statusRow" aria-label="Calendar controls">
+      <span class="pill" id="bcStatus">Loading calendar…</span>
+
+      <div class="filters" aria-label="Filters">
         <div>
-          <h1>Birding Calendar</h1>
-          <p>
-            A quick month-by-month view of common target species around 📍Mindo, Ecuador.
-            Images are pulled from the sheet’s <strong>imageUrl</strong>.
-          </p>
+          <label for="bcCategory">Category</label><br>
+          <select id="bcCategory">
+            <option value="all">All categories</option>
+          </select>
         </div>
 
-        <div class="statusRow" aria-label="Calendar controls">
-          <span class="pill" id="bcStatus">Loading calendar…</span>
-
-          <div class="filters" aria-label="Filters">
-            <div>
-              <label for="bcCategory">Category</label><br>
-              <select id="bcCategory">
-                <option value="all">All categories</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="bcSearch">Search</label><br>
-              <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
-            </div>
-          </div>
+        <div>
+          <label for="bcSearch">Search</label><br>
+          <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
         </div>
       </div>
-
-      <section class="section">
-        <div class="cards" id="bcCards" aria-label="Species cards"></div>
-
-        <p class="footnote">
-          Tip: photos come from third-party sources. Thumbnails use “contain” mode so the full bird stays visible.
-        </p>
-      </section>
-    </main>
-
-    <div id="siteFooter"></div>
+    </div>
   </div>
 
+  <section class="section">
+    <div class="cards" id="bcCards" aria-label="Species cards"></div>
+
+    <p class="footnote">
+      Tip: photos come from third-party sources. Thumbnails use “contain” mode so the full bird stays visible.
+    </p>
+  </section>
+</main>
+
+<div id="siteFooter"></div>
+  </div>
   <script>
     (function(){
       "use strict";
