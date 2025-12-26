@@ -8,14 +8,17 @@
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
+  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+  <!-- Global header/footer CSS (required) -->
+  <link rel="stylesheet" href="/assets/css/header.css">
+  <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -222,8 +225,7 @@
     }
 
     /* PROFESSIONAL LAYOUT:
-       Always 6 months on top row + 6 months on bottom row (desktop/tablet),
-       no scroll, consistent sizing.
+       6 months top row + 6 months bottom row (desktop/tablet), no scroll
     */
     .months{
       display:grid;
@@ -316,7 +318,6 @@
         justify-content:flex-start;
       }
 
-      /* Keep 6 + 6; reduce gap slightly for smaller screens */
       .months{
         grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 8px;
@@ -334,9 +335,6 @@
     }
 
     @media (max-width: 560px){
-      /* On very small screens, keep all months visible without sideways scroll:
-         4 columns => 3 rows (still professional, readable).
-      */
       .months{
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
@@ -394,6 +392,30 @@
   <script>
     (function(){
       "use strict";
+
+      async function inject(id, url){
+        const el = document.getElementById(id);
+        if(!el) return;
+        const res = await fetch(url, { cache: "no-store" });
+        el.innerHTML = await res.text();
+      }
+
+      function loadScript(src){
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.defer = true;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+
+      (async function(){
+        await inject("siteHeader", "/assets/includes/header-es.html");
+        await inject("siteFooter", "/assets/includes/footer.html");
+        await loadScript("/assets/js/site.js");
+      })();
 
       if (document.documentElement.dataset.mbwBirdingCalendarInit === "1") return;
       document.documentElement.dataset.mbwBirdingCalendarInit = "1";
