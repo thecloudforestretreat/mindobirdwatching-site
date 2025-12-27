@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -124,9 +125,7 @@
       box-sizing: border-box;
     }
 
-    .filterPill select{
-      appearance: auto;
-    }
+    .filterPill select{ appearance: auto; }
 
     .section{
       margin-top: 16px;
@@ -195,10 +194,6 @@
       color: var(--ink);
       letter-spacing: -0.01em;
       line-height: 1.2;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
     }
 
     .nameEs{
@@ -289,7 +284,7 @@
       white-space: nowrap;
     }
 
-    /* Base: same bubble size for all statuses */
+    /* Base: keep status words on ONE line (no breaking) */
     .mVal{
       display:flex;
       align-items:center;
@@ -303,8 +298,12 @@
       box-sizing: border-box;
       min-height: 40px;
       line-height: 1.05;
-      white-space: nowrap;
       text-align:center;
+
+      white-space: nowrap !important;
+      overflow-wrap: normal !important;
+      word-break: normal !important;
+      hyphens: none !important;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -312,18 +311,22 @@
     .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
     .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
 
-    /* Off-season (ES): allow 2 lines and force "Fuera de" / "temporada" */
+    /* Off-season (ES): allow 2 lines exactly */
     .st-off{
       background:#e2e8f0;
       color:#64748b;
       border-color: rgba(100,116,139,.2);
-      white-space: normal;
+      white-space: normal !important;
+      overflow-wrap: normal !important;
+      word-break: normal !important;
+      hyphens: none !important;
       line-height: 1.05;
     }
     .st-off .os2{
       display:block;
       text-align:center;
       font-weight: 950;
+      white-space: normal !important;
     }
 
     .footnote{
@@ -390,34 +393,29 @@
 
       /* Mobile: months no horizontal scroll */
       .months{
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
       }
 
       .month{ padding: 11px 9px; }
 
+      /* Slightly smaller so “Excelente/Regular/Bueno” still stay 1 line */
       .mVal{
-        padding: 10px 14px;
-        font-size: 11.75px;
+        padding: 10px 12px;
+        font-size: 11.25px;
         min-height: 40px;
       }
     }
 
     @media (max-width: 560px){
-      .filters{
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
-      /* 4 columns => 3 rows for months, still no scroll */
+      /* KEY FIX: use 3 columns so “Excelente” NEVER breaks (still no scroll) */
       .months{
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
       }
-
       .mVal{
         padding: 10px 12px;
-        font-size: 11.5px;
+        font-size: 11.25px;
       }
     }
   </style>
@@ -429,9 +427,7 @@
   <div class="hero">
     <div>
       <h1>Calendario de Avistamiento</h1>
-      <p>
-        Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
-      </p>
+      <p>Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.</p>
     </div>
 
     <div class="statusRow" aria-label="Controles del calendario">
@@ -457,7 +453,7 @@
     <div class="cards" id="bcCards" aria-label="Tarjetas de especies"></div>
 
     <p class="footnote">
-      Tip: las fotos provienen de fuentes de terceros. Las miniaturas usan “contain” para que el ave se vea completa.
+      Tip: las fotos provienen de fuentes de terceros.
     </p>
   </section>
 </main>
@@ -475,22 +471,9 @@
         el.innerHTML = await res.text();
       }
 
-      function loadScript(src){
-        return new Promise((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = src;
-          s.defer = true;
-          s.onload = resolve;
-          s.onerror = reject;
-          document.body.appendChild(s);
-        });
-      }
-
-      (async function(){
-        await inject("siteHeader", "/assets/includes/header-es.html");
-        await inject("siteFooter", "/assets/includes/footer.html");
-        await loadScript("/assets/js/site.js");
-      })();
+      // Global header/footer (Spanish header)
+      inject("siteHeader", "/assets/includes/header-es.html");
+      inject("siteFooter", "/assets/includes/footer.html");
 
       if (document.documentElement.dataset.mbwBirdingCalendarInit === "1") return;
       document.documentElement.dataset.mbwBirdingCalendarInit = "1";
@@ -525,10 +508,6 @@
         if (key === "fair") return "st-fair";
         if (key === "rare") return "st-rare";
         return "st-off";
-      }
-
-      function isOffSeasonEs(key){
-        return key === "off";
       }
 
       function statusLabelEs(key){
@@ -588,12 +567,11 @@
           const months = monthNames.map((m, i) => {
             const raw = (r.months && r.months[i]) ? r.months[i] : "";
             const key = normStatus(raw);
-            const labelEs = statusLabelEs(key);
             const mEs = monthLabelEs(m);
 
-            const valHtml = isOffSeasonEs(key)
+            const valHtml = (key === "off")
               ? `<span class="os2">Fuera de<br>temporada</span>`
-              : esc(labelEs);
+              : esc(statusLabelEs(key));
 
             return `
               <div class="month" aria-label="${esc(mEs)}">
@@ -645,7 +623,6 @@
           payload = json;
           fillCategories(payload.rows || []);
           render();
-
         }catch(_){
           statusEl.textContent = "Calendario no disponible en este momento.";
         }
