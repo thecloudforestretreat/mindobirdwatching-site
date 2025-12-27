@@ -231,28 +231,44 @@ header.topbar[data-mbw-header] .menuList{
   margin-top: 10px;
 }
 
-/* ✅ Mobile menu rows: force consistent LEFT alignment */
-header.topbar[data-mbw-header] .menuPanel .menuList .pill{
-  width: 100%;
-  justify-content: flex-start;
-  text-align: left;
-}
+/* ✅ FORCE LEFT ALIGNMENT FOR ALL MOBILE MENU ROWS (anchors, buttons, language) */
+@media (max-width: 900px){
+  /* Any .pill inside the mobile panel */
+  header.topbar[data-mbw-header] .menuPanel .pill{
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
 
-/* ✅ Drill-down buttons: label left, arrow pinned right */
-header.topbar[data-mbw-header] .menuPanel .m-next{
-  justify-content: space-between;
-  padding-right: 14px;
+  /* If any link/button inside the panel is centered by other CSS, override it */
+  header.topbar[data-mbw-header] .menuPanel a.pill,
+  header.topbar[data-mbw-header] .menuPanel button.pill{
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  /* Make sure the language footer rows are also left aligned */
+  header.topbar[data-mbw-header] .menuPanel .menuLangSwitch{
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  /* Drill-down rows: label left, arrow pinned right */
+  header.topbar[data-mbw-header] .menuPanel .m-next{
+    justify-content: space-between !important;
+    padding-right: 14px;
+  }
+
+  /* Back row stays left */
+  header.topbar[data-mbw-header] .menuPanel .m-back{
+    justify-content: flex-start !important;
+  }
 }
 
 header.topbar[data-mbw-header] .m-arrow{
   font-size: 18px;
   opacity: .65;
-}
-
-/* Back button */
-header.topbar[data-mbw-header] .m-back{
-  justify-content: flex-start;
-  gap: 10px;
 }
 
 header.topbar[data-mbw-header] .menuLangFooter{
@@ -268,13 +284,6 @@ header.topbar[data-mbw-header] .menuLangCurrent{
   font-weight: 900;
   font-size: 12px;
   letter-spacing: -0.01em;
-}
-
-/* ✅ Keep the language switch row consistent with menu rows */
-header.topbar[data-mbw-header] .menuLangSwitch{
-  width: 100%;
-  justify-content: flex-start;
-  text-align: left;
 }
 
 @media (max-width: 900px){
