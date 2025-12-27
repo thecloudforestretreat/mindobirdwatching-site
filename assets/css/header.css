@@ -13,19 +13,16 @@ header.topbar[data-mbw-header]{
   position: sticky;
   top: 0;
   z-index: 5000;
-
   margin-top: 18px;
   border-radius: 22px;
   border: 1px solid var(--mbw-line);
   background: var(--mbw-header-bg);
   box-shadow: var(--mbw-shadow);
-
   padding: 14px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-
   backdrop-filter: blur(10px);
 }
 
@@ -130,28 +127,23 @@ header.topbar[data-mbw-header] .dropdown > .pill{
   gap: 8px;
 }
 
-/* IMPORTANT: keep menu click-safe */
 header.topbar[data-mbw-header] .dropdownMenu{
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
   min-width: 240px;
-
   display: none;
   flex-direction: column;
   gap: 6px;
-
   padding: 10px;
   border-radius: 16px;
   border: 1px solid var(--mbw-line);
   background: rgba(255,255,255,0.94);
   box-shadow: 0 22px 60px rgba(0,0,0,.18);
   backdrop-filter: blur(10px);
-
   z-index: 6000;
 }
 
-/* ✅ HOVER BRIDGE: fills the 10px gap so hover doesn't drop */
 header.topbar[data-mbw-header] .dropdownMenu::before{
   content: "";
   position: absolute;
@@ -162,7 +154,6 @@ header.topbar[data-mbw-header] .dropdownMenu::before{
   background: transparent;
 }
 
-/* Keep items clickable */
 header.topbar[data-mbw-header] .dropdownMenu a{
   display: flex;
   align-items: center;
@@ -182,7 +173,6 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
   border-color: rgba(13,89,37,.22);
 }
 
-/* Open dropdown on hover + keyboard focus */
 @media (min-width: 901px){
   header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
   header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
@@ -220,7 +210,6 @@ header.topbar[data-mbw-header] .menuPanel{
   right: 14px;
   top: calc(100% + 10px);
   width: min(360px, calc(100vw - 28px));
-
   padding: 12px;
   border-radius: 18px;
   border: 1px solid var(--mbw-line);
@@ -232,7 +221,6 @@ header.topbar[data-mbw-header] .menuPanel.is-open{
   display: block;
 }
 
-/* ✅ CRITICAL: Force HTML [hidden] to win (prevents main + submenu showing together) */
 header.topbar[data-mbw-header] .menuPanel [hidden]{
   display: none !important;
 }
@@ -243,7 +231,6 @@ header.topbar[data-mbw-header] .menuList{
   margin-top: 10px;
 }
 
-/* ✅ Mobile drill-down button layout */
 header.topbar[data-mbw-header] .m-next{
   justify-content: space-between;
 }
@@ -253,14 +240,37 @@ header.topbar[data-mbw-header] .m-arrow{
   opacity: .65;
 }
 
-/* ✅ Back button should look like a normal row, left aligned */
 header.topbar[data-mbw-header] .m-back{
   justify-content: flex-start;
   gap: 10px;
 }
 
+header.topbar[data-mbw-header] .menuLangFooter{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: grid;
+  gap: 10px;
+}
+
+header.topbar[data-mbw-header] .menuLangCurrent{
+  color: rgba(0,0,0,0.55);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+
+header.topbar[data-mbw-header] .menuLangSwitch{
+  width: 100%;
+  justify-content: center;
+}
+
 @media (max-width: 900px){
   header.topbar[data-mbw-header] nav.nav{
+    display: none;
+  }
+
+  header.topbar[data-mbw-header] .langDesktop{
     display: none;
   }
 }
