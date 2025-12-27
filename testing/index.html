@@ -77,6 +77,7 @@
       color: var(--ink);
       line-height: 1;
       white-space: nowrap;
+      box-sizing: border-box;
     }
 
     .filters{
@@ -120,6 +121,7 @@
       padding: 0;
       height: 28px;
       line-height: 28px;
+      box-sizing: border-box;
     }
 
     .filterPill select{
@@ -287,7 +289,7 @@
       white-space: nowrap;
     }
 
-    /* Same bubble size for all statuses (sized to fit "Off-season" with breathing room) */
+    /* Base: same bubble size for all statuses */
     .mVal{
       display:flex;
       align-items:center;
@@ -305,11 +307,24 @@
       text-align:center;
     }
 
+    /* Off-season: allow 2 lines and force a clean split "Off" / "season" */
+    .st-off{
+      background:#e2e8f0;
+      color:#64748b;
+      border-color: rgba(100,116,139,.2);
+      white-space: normal;
+      line-height: 1.05;
+    }
+    .st-off .os2{
+      display:block;
+      text-align:center;
+      font-weight: 950;
+    }
+
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
     .st-good{ background:#fef9c3; color:#92400e; border-color: rgba(146,64,14,.25); }
     .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
     .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
-    .st-off{ background:#e2e8f0; color:#64748b; border-color: rgba(100,116,139,.2); }
 
     .footnote{
       margin-top: 12px;
@@ -369,7 +384,7 @@
         justify-content:flex-start;
       }
 
-      /* Ensure mobile name order: EN, ES, camera */
+      /* Mobile: EN, ES, then camera */
       .names{ gap: 6px; }
       .camBtn{ width: 42px; height: 42px; border-radius: 14px; }
 
@@ -389,7 +404,6 @@
     }
 
     @media (max-width: 560px){
-      /* Very small screens: keep controls readable and aligned */
       .filters{
         grid-template-columns: 1fr 1fr;
         gap: 10px;
@@ -417,6 +431,7 @@
       <h1>Birding Calendar</h1>
       <p>
         A quick month-by-month view of common target species around 📍Mindo, Ecuador.
+        Images are pulled from the sheet’s <strong>imageUrl</strong>.
       </p>
     </div>
 
@@ -504,6 +519,11 @@
         return "st-off";
       }
 
+      function isOffSeason(v){
+        const s = String(v || "").trim().toLowerCase();
+        return (s === "off" || s === "off-season" || s === "offseason" || s === "off season" || s === "");
+      }
+
       let payload = null;
 
       function render(){
@@ -541,12 +561,18 @@
             : "";
 
           const months = monthNames.map((m, i) => {
-            const val = (r.months && r.months[i]) ? r.months[i] : "";
-            const label = (val && String(val).trim()) ? String(val).trim() : "Off-season";
+            const raw = (r.months && r.months[i]) ? r.months[i] : "";
+            const label = (raw && String(raw).trim()) ? String(raw).trim() : "Off-season";
+            const cls = statusClass(label);
+
+            const valHtml = isOffSeason(label)
+              ? `<span class="os2">Off<br>season</span>`
+              : esc(label);
+
             return `
               <div class="month" aria-label="${esc(m)}">
                 <div class="mLabel">${esc(m)}</div>
-                <div class="mVal ${statusClass(label)}">${esc(label)}</div>
+                <div class="mVal ${cls}">${valHtml}</div>
               </div>
             `;
           }).join("");
