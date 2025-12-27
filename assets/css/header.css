@@ -13,16 +13,19 @@ header.topbar[data-mbw-header]{
   position: sticky;
   top: 0;
   z-index: 5000;
+
   margin-top: 18px;
   border-radius: 22px;
   border: 1px solid var(--mbw-line);
   background: var(--mbw-header-bg);
   box-shadow: var(--mbw-shadow);
+
   padding: 14px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+
   backdrop-filter: blur(10px);
 }
 
@@ -127,23 +130,28 @@ header.topbar[data-mbw-header] .dropdown > .pill{
   gap: 8px;
 }
 
+/* IMPORTANT: keep menu click-safe */
 header.topbar[data-mbw-header] .dropdownMenu{
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
   min-width: 240px;
+
   display: none;
   flex-direction: column;
   gap: 6px;
+
   padding: 10px;
   border-radius: 16px;
   border: 1px solid var(--mbw-line);
   background: rgba(255,255,255,0.94);
   box-shadow: 0 22px 60px rgba(0,0,0,.18);
   backdrop-filter: blur(10px);
+
   z-index: 6000;
 }
 
+/* Hover bridge to prevent hover drop */
 header.topbar[data-mbw-header] .dropdownMenu::before{
   content: "";
   position: absolute;
@@ -154,6 +162,7 @@ header.topbar[data-mbw-header] .dropdownMenu::before{
   background: transparent;
 }
 
+/* Dropdown items */
 header.topbar[data-mbw-header] .dropdownMenu a{
   display: flex;
   align-items: center;
@@ -173,6 +182,7 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
   border-color: rgba(13,89,37,.22);
 }
 
+/* Open dropdown on hover + keyboard focus */
 @media (min-width: 901px){
   header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
   header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
@@ -210,6 +220,7 @@ header.topbar[data-mbw-header] .menuPanel{
   right: 14px;
   top: calc(100% + 10px);
   width: min(360px, calc(100vw - 28px));
+
   padding: 12px;
   border-radius: 18px;
   border: 1px solid var(--mbw-line);
@@ -221,6 +232,7 @@ header.topbar[data-mbw-header] .menuPanel.is-open{
   display: block;
 }
 
+/* Force HTML [hidden] to win */
 header.topbar[data-mbw-header] .menuPanel [hidden]{
   display: none !important;
 }
@@ -231,20 +243,37 @@ header.topbar[data-mbw-header] .menuList{
   margin-top: 10px;
 }
 
-header.topbar[data-mbw-header] .m-next{
-  justify-content: space-between;
+/* Center ALL mobile menu rows (anchors + buttons) */
+header.topbar[data-mbw-header] .menuPanel .menuList .pill{
+  width: 100%;
+  justify-content: center;
+  text-align: center;
 }
 
-header.topbar[data-mbw-header] .m-arrow{
+/* Drill-down rows: keep arrow at far right, but center the label */
+header.topbar[data-mbw-header] .menuPanel .m-next{
+  position: relative;
+  justify-content: center;
+  padding-right: 44px; /* space so centered label doesn't collide with arrow */
+}
+
+header.topbar[data-mbw-header] .menuPanel .m-arrow{
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 18px;
   opacity: .65;
 }
 
-header.topbar[data-mbw-header] .m-back{
+/* Back button stays left aligned for UX */
+header.topbar[data-mbw-header] .menuPanel .m-back{
   justify-content: flex-start;
   gap: 10px;
+  text-align: left;
 }
 
+/* Mobile language footer */
 header.topbar[data-mbw-header] .menuLangFooter{
   margin-top: 12px;
   padding-top: 12px;
@@ -270,6 +299,7 @@ header.topbar[data-mbw-header] .menuLangSwitch{
     display: none;
   }
 
+  /* Hide language pills in the header bar on mobile (language lives at bottom of hamburger) */
   header.topbar[data-mbw-header] .langDesktop{
     display: none;
   }
