@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/head.js" defer></script>
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -224,9 +226,7 @@
       overflow: visible;
     }
 
-    /* PROFESSIONAL LAYOUT:
-       6 months top row + 6 months bottom row (desktop/tablet), no scroll
-    */
+    /* PRO layout: always 6 months per row (2 rows) on desktop/tablet */
     .months{
       display:grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -267,8 +267,10 @@
       font-weight: 950;
       border: 1px solid transparent;
       box-sizing: border-box;
+
       min-height: 40px;
       line-height: 1.05;
+      text-align: center;
       white-space: nowrap;
     }
 
@@ -283,7 +285,6 @@
       color:#64748b;
       border-color: rgba(100,116,139,.2);
       white-space: normal;
-      text-align: center;
     }
 
     .footnote{
@@ -318,12 +319,17 @@
         justify-content:flex-start;
       }
 
+      /* MOBILE: keep 6 + 6 layout (NO horizontal scroll) */
       .months{
         grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 8px;
+        overflow: visible;
+        padding: 0;
+        scroll-snap-type: none;
       }
 
       .month{
+        min-width: 0;
         padding: 11px 9px;
       }
 
@@ -335,6 +341,7 @@
     }
 
     @media (max-width: 560px){
+      /* Very small phones: 4 columns => 3 rows (still no scroll) */
       .months{
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
@@ -348,6 +355,7 @@
 </head>
 <body>
   <div class="container">
+    <!-- Shared header mount -->
     <div id="siteHeader"></div>
 <main class="page card" aria-label="Calendario de avistamiento">
   <div class="hero">
@@ -355,7 +363,6 @@
       <h1>Calendario de Avistamiento</h1>
       <p>
         Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
-        Las imágenes se cargan desde el campo <strong>imageUrl</strong> de la hoja.
       </p>
     </div>
 
@@ -387,6 +394,7 @@
   </section>
 </main>
 
+<!-- Shared footer mount -->
 <div id="siteFooter"></div>
   </div>
   <script>
