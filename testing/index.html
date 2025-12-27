@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calendario de Avistamiento | Mindo Bird Watching</title>
-  <meta name="description" content="Calendario de avistamiento para 📍Mindo, Ecuador. Visibilidad mensual por especie con categorías y miniaturas." />
+  <title>Birding Calendar | Mindo Bird Watching</title>
+  <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with categories and photo thumbnails." />
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
@@ -61,11 +61,13 @@
       width: 100%;
     }
 
+    /* Desktop: make status pill same height as filter pills */
     .pill{
       display:inline-flex;
       align-items:center;
       gap: 8px;
-      padding: 8px 10px;
+      padding: 0 14px;
+      height: 44px;
       border-radius: 999px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.65);
@@ -85,23 +87,43 @@
       justify-content:flex-end;
     }
 
-    .filters label{
+    /* Filter pills (separate pills for Category and Search) */
+    .filterPill{
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 8px 12px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      height: 44px;
+      box-sizing: border-box;
+    }
+
+    .filterPill label{
       font-weight: 900;
       font-size: 12.5px;
       color: var(--muted);
-      display:inline-block;
-      margin-bottom: 6px;
+      white-space: nowrap;
     }
 
-    .filters select,
-    .filters input{
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,.65);
+    .filterPill select,
+    .filterPill input{
+      border: 0;
+      outline: 0;
+      background: transparent;
       color: var(--ink);
       font-weight: 800;
-      min-width: 240px;
+      min-width: 180px;
+      width: 100%;
+      padding: 0;
+      height: 28px;
+      line-height: 28px;
+    }
+
+    .filterPill select{
+      appearance: auto;
     }
 
     .section{
@@ -162,7 +184,7 @@
     .names{
       display:flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
       min-width: 0;
     }
 
@@ -181,6 +203,29 @@
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.35;
+    }
+
+    /* Camera link: no pill outline */
+    .camBtn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      text-decoration: none;
+      font-size: 22px;
+      line-height: 1;
+      padding: 0;
+      cursor: pointer;
+    }
+    .camBtn:focus-visible{
+      outline: 2px solid rgba(3,78,162,.35);
+      outline-offset: 2px;
+      border-radius: 14px;
     }
 
     .metaRight{
@@ -206,20 +251,6 @@
       white-space: nowrap;
     }
 
-    .cam{
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      line-height: 1;
-    }
-
     /* Months wrapper */
     .monthsWrap{
       padding: 14px;
@@ -227,7 +258,7 @@
       overflow: visible;
     }
 
-    /* PROFESSIONAL LAYOUT: 6 + 6, no scroll */
+    /* 6 + 6 on desktop/tablet */
     .months{
       display:grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -256,6 +287,7 @@
       white-space: nowrap;
     }
 
+    /* Same bubble size for all statuses (sized to fit "Off-season" with breathing room) */
     .mVal{
       display:flex;
       align-items:center;
@@ -270,21 +302,14 @@
       min-height: 40px;
       line-height: 1.05;
       white-space: nowrap;
+      text-align:center;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
     .st-good{ background:#fef9c3; color:#92400e; border-color: rgba(146,64,14,.25); }
     .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
     .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
-
-    /* Only this one can be 2 lines, centered */
-    .st-off{
-      background:#e2e8f0;
-      color:#64748b;
-      border-color: rgba(100,116,139,.2);
-      white-space: normal;
-      text-align: center;
-    }
+    .st-off{ background:#e2e8f0; color:#64748b; border-color: rgba(100,116,139,.2); }
 
     .footnote{
       margin-top: 12px;
@@ -293,26 +318,37 @@
       line-height: 1.6;
     }
 
-    /* MOBILE: align Category + Search side-by-side like the EN page */
     @media (max-width: 900px){
+      /* Mobile: status pill full width (same as card width) */
+      .pill{
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* Mobile: two separate pills (Category + Search) on the same line */
       .filters{
         width: 100%;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
         justify-content: stretch;
-        align-items: end;
+        align-items: stretch;
       }
 
-      .filters > div{ min-width: 0; }
-
-      .filters select,
-      .filters input{
-        min-width: 0;
+      .filterPill{
         width: 100%;
+        justify-content: flex-start;
       }
 
-      .statusRow{ flex-direction: column; align-items: stretch; }
+      .filterPill select,
+      .filterPill input{
+        min-width: 0;
+      }
+
+      .statusRow{
+        flex-direction: column;
+        align-items: stretch;
+      }
 
       .cardTop{
         grid-template-columns: 160px 1fr;
@@ -333,7 +369,11 @@
         justify-content:flex-start;
       }
 
-      /* Keep months visible without horizontal scroll */
+      /* Ensure mobile name order: EN, ES, camera */
+      .names{ gap: 6px; }
+      .camBtn{ width: 42px; height: 42px; border-radius: 14px; }
+
+      /* Mobile: still no horizontal scroll for months */
       .months{
         grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 8px;
@@ -342,25 +382,27 @@
       .month{ padding: 11px 9px; }
 
       .mVal{
-        padding: 10px 12px;
+        padding: 10px 14px;
         font-size: 11.75px;
         min-height: 40px;
       }
     }
 
     @media (max-width: 560px){
-      /* Very small screens: 4 columns => 3 rows, still no scroll */
+      /* Very small screens: keep controls readable and aligned */
       .filters{
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
       }
 
+      /* 4 columns => 3 rows for months, still no scroll */
       .months{
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
       }
 
       .mVal{
-        padding: 10px 10px;
+        padding: 10px 12px;
         font-size: 11.5px;
       }
     }
@@ -369,40 +411,40 @@
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-<main class="page card" aria-label="Calendario de avistamiento">
+<main class="page card" aria-label="Birding calendar">
   <div class="hero">
     <div>
-      <h1>Calendario de Avistamiento</h1>
+      <h1>Birding Calendar</h1>
       <p>
-        Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
-        Las imágenes se cargan desde el campo <strong>imageUrl</strong> de la hoja.
+        A quick month-by-month view of common target species around 📍Mindo, Ecuador.
+        Images are pulled from the sheet’s <strong>imageUrl</strong>.
       </p>
     </div>
 
-    <div class="statusRow" aria-label="Controles del calendario">
-      <span class="pill" id="bcStatus">Cargando calendario…</span>
+    <div class="statusRow" aria-label="Calendar controls">
+      <span class="pill" id="bcStatus">Loading calendar…</span>
 
-      <div class="filters" aria-label="Filtros">
-        <div>
-          <label for="bcCategory">Categoría</label>
+      <div class="filters" aria-label="Filters">
+        <div class="filterPill" aria-label="Category filter">
+          <label for="bcCategory">Category</label>
           <select id="bcCategory">
-            <option value="all">Todas las categorías</option>
+            <option value="all">All categories</option>
           </select>
         </div>
 
-        <div>
-          <label for="bcSearch">Buscar</label>
-          <input id="bcSearch" type="search" placeholder="Buscar especie…" autocomplete="off" />
+        <div class="filterPill" aria-label="Search filter">
+          <label for="bcSearch">Search</label>
+          <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
         </div>
       </div>
     </div>
   </div>
 
   <section class="section">
-    <div class="cards" id="bcCards" aria-label="Tarjetas de especies"></div>
+    <div class="cards" id="bcCards" aria-label="Species cards"></div>
 
     <p class="footnote">
-      Tip: las fotos provienen de fuentes de terceros. Las miniaturas usan “contain” para que el ave se vea completa.
+      Tip: photos come from third-party sources. Thumbnails use “contain” mode so the full bird stays visible.
     </p>
   </section>
 </main>
@@ -432,7 +474,7 @@
       }
 
       (async function(){
-        await inject("siteHeader", "/assets/includes/header-es.html");
+        await inject("siteHeader", "/assets/includes/header.html");
         await inject("siteFooter", "/assets/includes/footer.html");
         await loadScript("/assets/js/site.js");
       })();
@@ -454,40 +496,13 @@
           .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
       }
 
-      function normStatus(v){
+      function statusClass(v){
         const s = String(v || "").trim().toLowerCase();
-        if (s === "great" || s === "excelente") return "great";
-        if (s === "good" || s === "bueno") return "good";
-        if (s === "fair" || s === "regular") return "fair";
-        if (s === "rare" || s === "raro") return "rare";
-        if (s === "off" || s === "off-season" || s === "offseason" || s === "fuera de temporada") return "off";
-        return "off";
-      }
-
-      function statusClass(key){
-        if (key === "great") return "st-great";
-        if (key === "good") return "st-good";
-        if (key === "fair") return "st-fair";
-        if (key === "rare") return "st-rare";
+        if (s === "great") return "st-great";
+        if (s === "good") return "st-good";
+        if (s === "fair") return "st-fair";
+        if (s === "rare") return "st-rare";
         return "st-off";
-      }
-
-      function statusLabelEs(key){
-        if (key === "great") return "Excelente";
-        if (key === "good") return "Bueno";
-        if (key === "fair") return "Regular";
-        if (key === "rare") return "Raro";
-        return "Fuera de temporada";
-      }
-
-      const MONTH_ABBR_ES = {
-        "Jan":"Ene","Feb":"Feb","Mar":"Mar","Apr":"Abr","May":"May","Jun":"Jun",
-        "Jul":"Jul","Aug":"Ago","Sep":"Sep","Oct":"Oct","Nov":"Nov","Dec":"Dic"
-      };
-
-      function monthLabelEs(m){
-        const k = String(m || "").trim();
-        return MONTH_ABBR_ES[k] || k;
       }
 
       let payload = null;
@@ -508,8 +523,8 @@
         });
 
         statusEl.textContent = rows.length
-          ? ("Mostrando " + rows.length + " especies")
-          : "Sin resultados. Prueba con otra búsqueda.";
+          ? ("Showing " + rows.length + " species")
+          : "No matches. Try a different search.";
 
         const monthNames = payload.monthNames || [];
 
@@ -517,25 +532,22 @@
           const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
 
           const thumbHtml = imgUrl
-            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">
-                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} foto" loading="lazy" />
+            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open image source">
+                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} photo" loading="lazy" />
                </a>`
-            : `<span class="thumb" aria-label="No hay imagen disponible"></span>`;
+            : `<span class="thumb" aria-label="No image available"></span>`;
 
           const cam = imgUrl
-            ? `<a class="cam" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>`
+            ? `<a class="camBtn" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open photo source">📸</a>`
             : "";
 
           const months = monthNames.map((m, i) => {
-            const raw = (r.months && r.months[i]) ? r.months[i] : "";
-            const key = normStatus(raw);
-            const labelEs = statusLabelEs(key);
-            const mEs = monthLabelEs(m);
-
+            const val = (r.months && r.months[i]) ? r.months[i] : "";
+            const label = (val && String(val).trim()) ? String(val).trim() : "Off-season";
             return `
-              <div class="month" aria-label="${esc(mEs)}">
-                <div class="mLabel">${esc(mEs)}</div>
-                <div class="mVal ${statusClass(key)}">${esc(labelEs)}</div>
+              <div class="month" aria-label="${esc(m)}">
+                <div class="mLabel">${esc(m)}</div>
+                <div class="mVal ${statusClass(label)}">${esc(label)}</div>
               </div>
             `;
           }).join("");
@@ -545,15 +557,16 @@
               <div class="cardTop">
                 ${thumbHtml}
                 <div class="names">
-                  <div class="nameEn">${esc(r.en)} ${cam}</div>
+                  <div class="nameEn">${esc(r.en)}</div>
                   <div class="nameEs">${esc(r.es)}</div>
+                  ${cam}
                 </div>
                 <div class="metaRight">
                   <span class="catPill">${esc(r.category)}</span>
                 </div>
               </div>
               <div class="monthsWrap">
-                <div class="months" aria-label="Meses">${months}</div>
+                <div class="months" aria-label="Months">${months}</div>
               </div>
             </article>
           `;
@@ -563,18 +576,18 @@
       function fillCategories(rows){
         const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
         catSel.innerHTML =
-          `<option value="all">Todas las categorías</option>` +
+          `<option value="all">All categories</option>` +
           cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
       }
 
       async function load(){
         try{
-          statusEl.textContent = "Cargando calendario…";
+          statusEl.textContent = "Loading calendar…";
           const res = await fetch(API, { headers: { "accept": "application/json" } });
           const json = await res.json();
 
           if(!json || json.ok !== true){
-            statusEl.textContent = "Calendario no disponible en este momento.";
+            statusEl.textContent = "Calendar unavailable right now.";
             return;
           }
 
@@ -583,7 +596,7 @@
           render();
 
         }catch(_){
-          statusEl.textContent = "Calendario no disponible en este momento.";
+          statusEl.textContent = "Calendar unavailable right now.";
         }
       }
 
