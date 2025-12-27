@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Birding Calendar | Mindo Bird Watching</title>
-  <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with categories and photo thumbnails." />
+  <title>Calendario de Avistamiento | Mindo Bird Watching</title>
+  <meta name="description" content="Calendario de avistamiento para 📍Mindo, Ecuador. Visibilidad mensual por especie con categorías y miniaturas." />
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
@@ -61,7 +61,7 @@
       width: 100%;
     }
 
-    /* Desktop: make status pill same height as filter pills */
+    /* Desktop: status pill same height as filter pills */
     .pill{
       display:inline-flex;
       align-items:center;
@@ -307,7 +307,12 @@
       text-align:center;
     }
 
-    /* Off-season: allow 2 lines and force a clean split "Off" / "season" */
+    .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
+    .st-good{ background:#fef9c3; color:#92400e; border-color: rgba(146,64,14,.25); }
+    .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
+    .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
+
+    /* Off-season (ES): allow 2 lines and force "Fuera de" / "temporada" */
     .st-off{
       background:#e2e8f0;
       color:#64748b;
@@ -320,11 +325,6 @@
       text-align:center;
       font-weight: 950;
     }
-
-    .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
-    .st-good{ background:#fef9c3; color:#92400e; border-color: rgba(146,64,14,.25); }
-    .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
-    .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
 
     .footnote{
       margin-top: 12px;
@@ -384,11 +384,11 @@
         justify-content:flex-start;
       }
 
-      /* Mobile: EN, ES, then camera */
+      /* Mobile: text order EN, ES, then camera */
       .names{ gap: 6px; }
       .camBtn{ width: 42px; height: 42px; border-radius: 14px; }
 
-      /* Mobile: still no horizontal scroll for months */
+      /* Mobile: months no horizontal scroll */
       .months{
         grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 8px;
@@ -425,39 +425,39 @@
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-<main class="page card" aria-label="Birding calendar">
+<main class="page card" aria-label="Calendario de avistamiento">
   <div class="hero">
     <div>
-      <h1>Birding Calendar</h1>
+      <h1>Calendario de Avistamiento</h1>
       <p>
-        A quick month-by-month view of common target species around 📍Mindo, Ecuador.
+        Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
       </p>
     </div>
 
-    <div class="statusRow" aria-label="Calendar controls">
-      <span class="pill" id="bcStatus">Loading calendar…</span>
+    <div class="statusRow" aria-label="Controles del calendario">
+      <span class="pill" id="bcStatus">Cargando calendario…</span>
 
-      <div class="filters" aria-label="Filters">
-        <div class="filterPill" aria-label="Category filter">
-          <label for="bcCategory">Category</label>
+      <div class="filters" aria-label="Filtros">
+        <div class="filterPill" aria-label="Filtro por categoría">
+          <label for="bcCategory">Categoría</label>
           <select id="bcCategory">
-            <option value="all">All categories</option>
+            <option value="all">Todas las categorías</option>
           </select>
         </div>
 
-        <div class="filterPill" aria-label="Search filter">
-          <label for="bcSearch">Search</label>
-          <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
+        <div class="filterPill" aria-label="Filtro de búsqueda">
+          <label for="bcSearch">Buscar</label>
+          <input id="bcSearch" type="search" placeholder="Buscar especie…" autocomplete="off" />
         </div>
       </div>
     </div>
   </div>
 
   <section class="section">
-    <div class="cards" id="bcCards" aria-label="Species cards"></div>
+    <div class="cards" id="bcCards" aria-label="Tarjetas de especies"></div>
 
     <p class="footnote">
-      Tip: photos come from third-party sources. Thumbnails use “contain” mode so the full bird stays visible.
+      Tip: las fotos provienen de fuentes de terceros. Las miniaturas usan “contain” para que el ave se vea completa.
     </p>
   </section>
 </main>
@@ -487,7 +487,7 @@
       }
 
       (async function(){
-        await inject("siteHeader", "/assets/includes/header.html");
+        await inject("siteHeader", "/assets/includes/header-es.html");
         await inject("siteFooter", "/assets/includes/footer.html");
         await loadScript("/assets/js/site.js");
       })();
@@ -509,18 +509,44 @@
           .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
       }
 
-      function statusClass(v){
+      function normStatus(v){
         const s = String(v || "").trim().toLowerCase();
-        if (s === "great") return "st-great";
-        if (s === "good") return "st-good";
-        if (s === "fair") return "st-fair";
-        if (s === "rare") return "st-rare";
+        if (s === "great" || s === "excelente") return "great";
+        if (s === "good" || s === "bueno") return "good";
+        if (s === "fair" || s === "regular") return "fair";
+        if (s === "rare" || s === "raro") return "rare";
+        if (s === "off" || s === "off-season" || s === "offseason" || s === "fuera de temporada") return "off";
+        return "off";
+      }
+
+      function statusClass(key){
+        if (key === "great") return "st-great";
+        if (key === "good") return "st-good";
+        if (key === "fair") return "st-fair";
+        if (key === "rare") return "st-rare";
         return "st-off";
       }
 
-      function isOffSeason(v){
-        const s = String(v || "").trim().toLowerCase();
-        return (s === "off" || s === "off-season" || s === "offseason" || s === "off season" || s === "");
+      function isOffSeasonEs(key){
+        return key === "off";
+      }
+
+      function statusLabelEs(key){
+        if (key === "great") return "Excelente";
+        if (key === "good") return "Bueno";
+        if (key === "fair") return "Regular";
+        if (key === "rare") return "Raro";
+        return "Fuera de temporada";
+      }
+
+      const MONTH_ABBR_ES = {
+        "Jan":"Ene","Feb":"Feb","Mar":"Mar","Apr":"Abr","May":"May","Jun":"Jun",
+        "Jul":"Jul","Aug":"Ago","Sep":"Sep","Oct":"Oct","Nov":"Nov","Dec":"Dic"
+      };
+
+      function monthLabelEs(m){
+        const k = String(m || "").trim();
+        return MONTH_ABBR_ES[k] || k;
       }
 
       let payload = null;
@@ -541,8 +567,8 @@
         });
 
         statusEl.textContent = rows.length
-          ? ("Showing " + rows.length + " species")
-          : "No matches. Try a different search.";
+          ? ("Mostrando " + rows.length + " especies")
+          : "Sin resultados. Prueba con otra búsqueda.";
 
         const monthNames = payload.monthNames || [];
 
@@ -550,28 +576,29 @@
           const imgUrl = r.imageUrl ? String(r.imageUrl) : "";
 
           const thumbHtml = imgUrl
-            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open image source">
-                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} photo" loading="lazy" />
+            ? `<a class="thumb" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la imagen">
+                 <img src="${esc(imgUrl)}" alt="${esc(r.en)} foto" loading="lazy" />
                </a>`
-            : `<span class="thumb" aria-label="No image available"></span>`;
+            : `<span class="thumb" aria-label="No hay imagen disponible"></span>`;
 
           const cam = imgUrl
-            ? `<a class="camBtn" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Open photo source">📸</a>`
+            ? `<a class="camBtn" href="${esc(imgUrl)}" target="_blank" rel="noopener" aria-label="Abrir fuente de la foto">📸</a>`
             : "";
 
           const months = monthNames.map((m, i) => {
             const raw = (r.months && r.months[i]) ? r.months[i] : "";
-            const label = (raw && String(raw).trim()) ? String(raw).trim() : "Off-season";
-            const cls = statusClass(label);
+            const key = normStatus(raw);
+            const labelEs = statusLabelEs(key);
+            const mEs = monthLabelEs(m);
 
-            const valHtml = isOffSeason(label)
-              ? `<span class="os2">Off<br>season</span>`
-              : esc(label);
+            const valHtml = isOffSeasonEs(key)
+              ? `<span class="os2">Fuera de<br>temporada</span>`
+              : esc(labelEs);
 
             return `
-              <div class="month" aria-label="${esc(m)}">
-                <div class="mLabel">${esc(m)}</div>
-                <div class="mVal ${cls}">${valHtml}</div>
+              <div class="month" aria-label="${esc(mEs)}">
+                <div class="mLabel">${esc(mEs)}</div>
+                <div class="mVal ${statusClass(key)}">${valHtml}</div>
               </div>
             `;
           }).join("");
@@ -590,7 +617,7 @@
                 </div>
               </div>
               <div class="monthsWrap">
-                <div class="months" aria-label="Months">${months}</div>
+                <div class="months" aria-label="Meses">${months}</div>
               </div>
             </article>
           `;
@@ -600,18 +627,18 @@
       function fillCategories(rows){
         const cats = Array.from(new Set(rows.map(r => String(r.category || "").trim()).filter(Boolean))).sort();
         catSel.innerHTML =
-          `<option value="all">All categories</option>` +
+          `<option value="all">Todas las categorías</option>` +
           cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
       }
 
       async function load(){
         try{
-          statusEl.textContent = "Loading calendar…";
+          statusEl.textContent = "Cargando calendario…";
           const res = await fetch(API, { headers: { "accept": "application/json" } });
           const json = await res.json();
 
           if(!json || json.ok !== true){
-            statusEl.textContent = "Calendar unavailable right now.";
+            statusEl.textContent = "Calendario no disponible en este momento.";
             return;
           }
 
@@ -620,7 +647,7 @@
           render();
 
         }catch(_){
-          statusEl.textContent = "Calendar unavailable right now.";
+          statusEl.textContent = "Calendario no disponible en este momento.";
         }
       }
 
