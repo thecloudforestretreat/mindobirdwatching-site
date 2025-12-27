@@ -8,13 +8,11 @@
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
-  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
-  <!-- Global header/footer CSS (required) -->
   <link rel="stylesheet" href="/assets/css/header.css">
   <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
@@ -124,9 +122,7 @@
       box-sizing: border-box;
     }
 
-    .filterPill select{
-      appearance: auto;
-    }
+    .filterPill select{ appearance: auto; }
 
     .section{
       margin-top: 16px;
@@ -260,7 +256,7 @@
       overflow: visible;
     }
 
-    /* 6 + 6 on desktop/tablet */
+    /* 6 + 6 layout */
     .months{
       display:grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -289,7 +285,7 @@
       white-space: nowrap;
     }
 
-    /* Base: same bubble size for all statuses */
+    /* Base: same bubble size for all statuses (DESKTOP) */
     .mVal{
       display:flex;
       align-items:center;
@@ -305,6 +301,7 @@
       line-height: 1.05;
       white-space: nowrap;
       text-align:center;
+      overflow: hidden;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -312,7 +309,7 @@
     .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
     .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
 
-    /* Off-season (ES): allow 2 lines and force "Fuera de" / "temporada" */
+    /* Off-season: force 2 lines */
     .st-off{
       background:#e2e8f0;
       color:#64748b;
@@ -340,7 +337,7 @@
         justify-content: center;
       }
 
-      /* Mobile: two separate pills (Category + Search) on the same line */
+      /* Mobile: Category + Search on same row, separate pills */
       .filters{
         width: 100%;
         display: grid;
@@ -350,15 +347,8 @@
         align-items: stretch;
       }
 
-      .filterPill{
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .filterPill select,
-      .filterPill input{
-        min-width: 0;
-      }
+      .filterPill{ width: 100%; justify-content: flex-start; }
+      .filterPill select, .filterPill input{ min-width: 0; }
 
       .statusRow{
         flex-direction: column;
@@ -384,10 +374,6 @@
         justify-content:flex-start;
       }
 
-      /* Mobile: text order EN, ES, then camera */
-      .names{ gap: 6px; }
-      .camBtn{ width: 42px; height: 42px; border-radius: 14px; }
-
       /* Mobile: months no horizontal scroll */
       .months{
         grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -396,11 +382,26 @@
 
       .month{ padding: 11px 9px; }
 
+      /* Mobile bubble: allow wrapping + smaller typography so "Excelente" never spills */
       .mVal{
-        padding: 10px 14px;
-        font-size: 11.75px;
-        min-height: 40px;
+        padding: 8px 8px;
+        font-size: 11px;
+        min-height: 44px;
+        white-space: normal;
+        line-height: 1.05;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        word-break: normal;
       }
+
+      /* Off-season (ES): ensure comfortable two-line fit */
+      .st-off .os2{
+        font-size: 10.75px;
+        line-height: 1.05;
+      }
+
+      /* Mobile: text order EN, ES, then camera (already in markup) */
+      .camBtn{ width: 42px; height: 42px; }
     }
 
     @media (max-width: 560px){
@@ -416,8 +417,13 @@
       }
 
       .mVal{
-        padding: 10px 12px;
-        font-size: 11.5px;
+        font-size: 10.5px;
+        min-height: 46px;
+        padding: 8px 7px;
+      }
+
+      .st-off .os2{
+        font-size: 10.25px;
       }
     }
   </style>
@@ -429,9 +435,7 @@
   <div class="hero">
     <div>
       <h1>Calendario de Avistamiento</h1>
-      <p>
-        Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
-      </p>
+      <p>Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.</p>
     </div>
 
     <div class="statusRow" aria-label="Controles del calendario">
