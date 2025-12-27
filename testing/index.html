@@ -19,8 +19,6 @@
   <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
-  <link rel="stylesheet" href="/assets/css/site.css" />
-  <script src="/assets/js/head.js" defer></script>
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -60,6 +58,7 @@
       flex-wrap: wrap;
       align-items:center;
       justify-content: space-between;
+      width: 100%;
     }
 
     .pill{
@@ -90,6 +89,8 @@
       font-weight: 900;
       font-size: 12.5px;
       color: var(--muted);
+      display:inline-block;
+      margin-bottom: 6px;
     }
 
     .filters select,
@@ -226,7 +227,7 @@
       overflow: visible;
     }
 
-    /* PRO layout: always 6 months per row (2 rows) on desktop/tablet */
+    /* PROFESSIONAL LAYOUT: 6 + 6, no scroll */
     .months{
       display:grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -255,7 +256,6 @@
       white-space: nowrap;
     }
 
-    /* More space for "Excelente" and "Fuera de temporada" */
     .mVal{
       display:flex;
       align-items:center;
@@ -267,10 +267,8 @@
       font-weight: 950;
       border: 1px solid transparent;
       box-sizing: border-box;
-
       min-height: 40px;
       line-height: 1.05;
-      text-align: center;
       white-space: nowrap;
     }
 
@@ -285,6 +283,7 @@
       color:#64748b;
       border-color: rgba(100,116,139,.2);
       white-space: normal;
+      text-align: center;
     }
 
     .footnote{
@@ -294,10 +293,25 @@
       line-height: 1.6;
     }
 
+    /* MOBILE: align Category + Search side-by-side like the EN page */
     @media (max-width: 900px){
+      .filters{
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        justify-content: stretch;
+        align-items: end;
+      }
+
+      .filters > div{ min-width: 0; }
+
       .filters select,
-      .filters input{ min-width: 0; width: 100%; }
-      .filters{ width: 100%; }
+      .filters input{
+        min-width: 0;
+        width: 100%;
+      }
+
       .statusRow{ flex-direction: column; align-items: stretch; }
 
       .cardTop{
@@ -319,19 +333,13 @@
         justify-content:flex-start;
       }
 
-      /* MOBILE: keep 6 + 6 layout (NO horizontal scroll) */
+      /* Keep months visible without horizontal scroll */
       .months{
         grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 8px;
-        overflow: visible;
-        padding: 0;
-        scroll-snap-type: none;
       }
 
-      .month{
-        min-width: 0;
-        padding: 11px 9px;
-      }
+      .month{ padding: 11px 9px; }
 
       .mVal{
         padding: 10px 12px;
@@ -341,11 +349,16 @@
     }
 
     @media (max-width: 560px){
-      /* Very small phones: 4 columns => 3 rows (still no scroll) */
+      /* Very small screens: 4 columns => 3 rows, still no scroll */
+      .filters{
+        grid-template-columns: 1fr;
+      }
+
       .months{
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
       }
+
       .mVal{
         padding: 10px 10px;
         font-size: 11.5px;
@@ -355,7 +368,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- Shared header mount -->
     <div id="siteHeader"></div>
 <main class="page card" aria-label="Calendario de avistamiento">
   <div class="hero">
@@ -363,6 +375,7 @@
       <h1>Calendario de Avistamiento</h1>
       <p>
         Una vista rápida mes a mes de especies objetivo comunes alrededor de 📍Mindo, Ecuador.
+        Las imágenes se cargan desde el campo <strong>imageUrl</strong> de la hoja.
       </p>
     </div>
 
@@ -371,14 +384,14 @@
 
       <div class="filters" aria-label="Filtros">
         <div>
-          <label for="bcCategory">Categoría</label><br>
+          <label for="bcCategory">Categoría</label>
           <select id="bcCategory">
             <option value="all">Todas las categorías</option>
           </select>
         </div>
 
         <div>
-          <label for="bcSearch">Buscar</label><br>
+          <label for="bcSearch">Buscar</label>
           <input id="bcSearch" type="search" placeholder="Buscar especie…" autocomplete="off" />
         </div>
       </div>
@@ -394,7 +407,6 @@
   </section>
 </main>
 
-<!-- Shared footer mount -->
 <div id="siteFooter"></div>
   </div>
   <script>
