@@ -8,14 +8,17 @@
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
+  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+  <!-- Global header/footer CSS (required) -->
+  <link rel="stylesheet" href="/assets/css/header.css">
+  <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -116,7 +119,7 @@
       border-radius: 22px;
       background: rgba(255,255,255,.70);
       box-shadow: var(--shadow);
-      overflow:hidden;
+      overflow:hidden; /* keep rounded corners */
     }
 
     .cardTop{
@@ -214,16 +217,18 @@
       line-height: 1;
     }
 
+    /* Months wrapper */
     .monthsWrap{
       padding: 14px;
       background: rgba(255,255,255,.55);
       overflow: visible;
     }
 
+    /* PRO layout: always 6 months per row (2 rows) on desktop/tablet */
     .months{
       display:grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
       overflow: visible;
       padding: 0;
       margin: 0;
@@ -233,7 +238,7 @@
       border: 1px solid var(--line);
       border-radius: 18px;
       background: rgba(255,255,255,.65);
-      padding: 9px 6px;
+      padding: 12px 10px;
       text-align:center;
       box-sizing: border-box;
       min-width: 0;
@@ -242,30 +247,34 @@
     .mLabel{
       font-size: 11px;
       color: var(--muted);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-weight: 900;
       letter-spacing: -0.01em;
       white-space: nowrap;
     }
 
-    /* FIX: make probability bubbles even + allow Off-season to fit */
+    /* Consistent bubble sizing, allow Off-season to wrap if needed */
     .mVal{
       display:flex;
       align-items:center;
       justify-content:center;
       width: 100%;
-      padding: 7px 6px;
+      padding: 10px 14px;
       border-radius: 999px;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 950;
       border: 1px solid transparent;
       box-sizing: border-box;
 
-      white-space: normal;       /* allow wrapping */
-      line-height: 1.1;          /* tighter so 2 lines fit nicely */
-      min-height: 34px;          /* consistent bubble height across all months */
+      min-height: 40px;
+      line-height: 1.05;
       text-align: center;
-      overflow-wrap: anywhere;   /* ensures long tokens still wrap */
+      white-space: nowrap;
+    }
+
+    /* Only Off-season can go to 2 lines */
+    .st-off{
+      white-space: normal;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -279,12 +288,6 @@
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.6;
-    }
-
-    @media (max-width: 1280px){
-      .months{
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-      }
     }
 
     @media (max-width: 900px){
@@ -312,25 +315,43 @@
         justify-content:flex-start;
       }
 
+      /* MOBILE: keep the same 6 + 6 layout (NO horizontal scroll) */
       .months{
-        grid-template-columns: repeat(12, minmax(120px, 1fr));
-        gap: 12px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 2px 10px 8px 2px;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px;
+        overflow: visible;
+        padding: 0;
+        scroll-snap-type: none;
       }
+
       .month{
-        min-width: 120px;
-        scroll-snap-align: start;
+        min-width: 0;
+        padding: 11px 9px;
+      }
+
+      .mVal{
+        padding: 10px 12px;
+        font-size: 11.75px;
+        min-height: 40px;
+      }
+    }
+
+    @media (max-width: 560px){
+      /* Very small phones: 4 columns => 3 rows (still no scroll) */
+      .months{
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .mVal{
+        padding: 10px 10px;
+        font-size: 11.5px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Shared header mount -->
     <div id="siteHeader"></div>
 <main class="page card" aria-label="Birding calendar">
   <div class="hero">
@@ -370,11 +391,36 @@
   </section>
 </main>
 
+<!-- Shared footer mount -->
 <div id="siteFooter"></div>
   </div>
   <script>
     (function(){
       "use strict";
+
+      async function inject(id, url){
+        const el = document.getElementById(id);
+        if(!el) return;
+        const res = await fetch(url, { cache: "no-store" });
+        el.innerHTML = await res.text();
+      }
+
+      function loadScript(src){
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.defer = true;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+
+      (async function(){
+        await inject("siteHeader", "/assets/includes/header.html");
+        await inject("siteFooter", "/assets/includes/footer.html");
+        await loadScript("/assets/js/site.js");
+      })();
 
       if (document.documentElement.dataset.mbwBirdingCalendarInit === "1") return;
       document.documentElement.dataset.mbwBirdingCalendarInit = "1";
@@ -440,7 +486,7 @@
 
           const months = monthNames.map((m, i) => {
             const val = (r.months && r.months[i]) ? r.months[i] : "";
-            const label = (val && String(val).trim()) ? String(val).trim() : "Off";
+            const label = (val && String(val).trim()) ? String(val).trim() : "Off-season";
             return `
               <div class="month" aria-label="${esc(m)}">
                 <div class="mLabel">${esc(m)}</div>
