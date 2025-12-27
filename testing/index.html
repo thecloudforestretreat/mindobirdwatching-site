@@ -8,15 +8,18 @@
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
+  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+  <!-- Global header/footer CSS (required) -->
   <link rel="stylesheet" href="/assets/css/header.css">
   <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -191,10 +194,6 @@
       color: var(--ink);
       letter-spacing: -0.01em;
       line-height: 1.2;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
     }
 
     .nameEs{
@@ -256,7 +255,7 @@
       overflow: visible;
     }
 
-    /* 6 + 6 layout */
+    /* 6 + 6 on desktop/tablet */
     .months{
       display:grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -285,7 +284,7 @@
       white-space: nowrap;
     }
 
-    /* Base: same bubble size for all statuses (DESKTOP) */
+    /* Base: keep status words on ONE line (no breaking) */
     .mVal{
       display:flex;
       align-items:center;
@@ -299,9 +298,12 @@
       box-sizing: border-box;
       min-height: 40px;
       line-height: 1.05;
-      white-space: nowrap;
       text-align:center;
-      overflow: hidden;
+
+      white-space: nowrap !important;
+      overflow-wrap: normal !important;
+      word-break: normal !important;
+      hyphens: none !important;
     }
 
     .st-great{ background:#dcfce7; color:#15803d; border-color: rgba(21,128,61,.25); }
@@ -309,18 +311,22 @@
     .st-fair{ background:#ffedd5; color:#c2410c; border-color: rgba(194,65,12,.25); }
     .st-rare{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.25); }
 
-    /* Off-season: force 2 lines */
+    /* Off-season (ES): allow 2 lines exactly */
     .st-off{
       background:#e2e8f0;
       color:#64748b;
       border-color: rgba(100,116,139,.2);
-      white-space: normal;
+      white-space: normal !important;
+      overflow-wrap: normal !important;
+      word-break: normal !important;
+      hyphens: none !important;
       line-height: 1.05;
     }
     .st-off .os2{
       display:block;
       text-align:center;
       font-weight: 950;
+      white-space: normal !important;
     }
 
     .footnote{
@@ -337,7 +343,7 @@
         justify-content: center;
       }
 
-      /* Mobile: Category + Search on same row, separate pills */
+      /* Mobile: two separate pills (Category + Search) on the same line */
       .filters{
         width: 100%;
         display: grid;
@@ -347,8 +353,15 @@
         align-items: stretch;
       }
 
-      .filterPill{ width: 100%; justify-content: flex-start; }
-      .filterPill select, .filterPill input{ min-width: 0; }
+      .filterPill{
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .filterPill select,
+      .filterPill input{
+        min-width: 0;
+      }
 
       .statusRow{
         flex-direction: column;
@@ -374,56 +387,35 @@
         justify-content:flex-start;
       }
 
+      /* Mobile: text order EN, ES, then camera */
+      .names{ gap: 6px; }
+      .camBtn{ width: 42px; height: 42px; border-radius: 14px; }
+
       /* Mobile: months no horizontal scroll */
-      .months{
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 8px;
-      }
-
-      .month{ padding: 11px 9px; }
-
-      /* Mobile bubble: allow wrapping + smaller typography so "Excelente" never spills */
-      .mVal{
-        padding: 8px 8px;
-        font-size: 11px;
-        min-height: 44px;
-        white-space: normal;
-        line-height: 1.05;
-        overflow: hidden;
-        overflow-wrap: anywhere;
-        word-break: normal;
-      }
-
-      /* Off-season (ES): ensure comfortable two-line fit */
-      .st-off .os2{
-        font-size: 10.75px;
-        line-height: 1.05;
-      }
-
-      /* Mobile: text order EN, ES, then camera (already in markup) */
-      .camBtn{ width: 42px; height: 42px; }
-    }
-
-    @media (max-width: 560px){
-      .filters{
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
-      /* 4 columns => 3 rows for months, still no scroll */
       .months{
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
       }
 
-      .mVal{
-        font-size: 10.5px;
-        min-height: 46px;
-        padding: 8px 7px;
-      }
+      .month{ padding: 11px 9px; }
 
-      .st-off .os2{
-        font-size: 10.25px;
+      /* Slightly smaller so “Excelente/Regular/Bueno” still stay 1 line */
+      .mVal{
+        padding: 10px 12px;
+        font-size: 11.25px;
+        min-height: 40px;
+      }
+    }
+
+    @media (max-width: 560px){
+      /* KEY FIX: use 3 columns so “Excelente” NEVER breaks (still no scroll) */
+      .months{
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .mVal{
+        padding: 10px 12px;
+        font-size: 11.25px;
       }
     }
   </style>
@@ -479,22 +471,9 @@
         el.innerHTML = await res.text();
       }
 
-      function loadScript(src){
-        return new Promise((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = src;
-          s.defer = true;
-          s.onload = resolve;
-          s.onerror = reject;
-          document.body.appendChild(s);
-        });
-      }
-
-      (async function(){
-        await inject("siteHeader", "/assets/includes/header-es.html");
-        await inject("siteFooter", "/assets/includes/footer.html");
-        await loadScript("/assets/js/site.js");
-      })();
+      // Global header/footer (Spanish header)
+      inject("siteHeader", "/assets/includes/header-es.html");
+      inject("siteFooter", "/assets/includes/footer.html");
 
       if (document.documentElement.dataset.mbwBirdingCalendarInit === "1") return;
       document.documentElement.dataset.mbwBirdingCalendarInit = "1";
@@ -529,10 +508,6 @@
         if (key === "fair") return "st-fair";
         if (key === "rare") return "st-rare";
         return "st-off";
-      }
-
-      function isOffSeasonEs(key){
-        return key === "off";
       }
 
       function statusLabelEs(key){
@@ -592,12 +567,11 @@
           const months = monthNames.map((m, i) => {
             const raw = (r.months && r.months[i]) ? r.months[i] : "";
             const key = normStatus(raw);
-            const labelEs = statusLabelEs(key);
             const mEs = monthLabelEs(m);
 
-            const valHtml = isOffSeasonEs(key)
+            const valHtml = (key === "off")
               ? `<span class="os2">Fuera de<br>temporada</span>`
-              : esc(labelEs);
+              : esc(statusLabelEs(key));
 
             return `
               <div class="month" aria-label="${esc(mEs)}">
@@ -649,7 +623,6 @@
           payload = json;
           fillCategories(payload.rows || []);
           render();
-
         }catch(_){
           statusEl.textContent = "Calendario no disponible en este momento.";
         }
