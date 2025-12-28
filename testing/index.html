@@ -206,6 +206,20 @@ textarea{
   background: rgba(13,89,37,.10);
   color: var(--ink);
   font-weight: 900;
+  margin-top: 10px;
+}
+
+.errorMsg{
+  display:none;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(160,0,0,.22);
+  background: rgba(160,0,0,.08);
+  color: var(--ink);
+  font-weight: 900;
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.35;
 }
 
 .quickRow{
@@ -273,6 +287,7 @@ textarea{
   min-width: 0;
   max-width: 100%;
 }
+.dateRange, .dateRange *{ max-width: 100%; }
 
 .dateRange > input{
   width: 100%;
@@ -315,33 +330,24 @@ input[type="date"]{
   align-items: stretch;
 }
 
-/* ✅ Make both buttons same font size + both bold */
+/* ✅ Make BOTH CTAs same size + bold */
 .ctaActions .btn,
 .ctaActions button.btn{
   width: 100%;
   justify-content: center;
   font-size: 14px;
+  font-weight: 900;
   line-height: 1;
   padding-top: 14px;
   padding-bottom: 14px;
   min-height: 46px;
-  font-weight: 900;
 }
 
-/* ✅ Inline success message under the form (not the hero) */
-.formSuccess{
-  margin-top: 10px;
-}
-
-/* ✅ Hidden iframe so form submission never navigates away */
-.hiddenFrame{
-  position:absolute;
-  left:-9999px;
-  top:-9999px;
-  width:1px;
-  height:1px;
-  opacity:0;
-  pointer-events:none;
+/* Optional: disabled state for the submit button */
+.btn[disabled]{
+  opacity: .65;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 @media (max-width: 980px){
@@ -384,8 +390,6 @@ input[type="date"]{
         </div>
         <p class="note">Fields marked with <span class="req">*</span> are required.</p>
       </div>
-
-      <div class="success" id="successMsg">✅ Request received — check your email for confirmation.</div>
     </div>
 
     <aside class="metaCard" aria-label="Quick contact">
@@ -413,11 +417,12 @@ input[type="date"]{
 
     <div class="grid2">
       <div class="cardBox">
-        <iframe class="hiddenFrame" id="formFrame" name="formFrame" title="Hidden form frame"></iframe>
+        <!-- Hidden iframe prevents navigation away from this page -->
+        <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
 
         <form class="form" id="bookTourForm"
           method="post"
-          target="formFrame"
+          target="mbwHiddenFrame"
           action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
 
           <div class="row2">
@@ -533,9 +538,9 @@ input[type="date"]{
             <a class="btn secondary" href="/tours/">View Tours</a>
           </div>
 
-          <div class="success formSuccess" id="formSuccessMsg">
-            ✅ Your request has been sent — we’ll email you a confirmation shortly.
-          </div>
+          <!-- ✅ Success message UNDER the form (no redirect, never leaves page) -->
+          <div class="success" id="formSuccessMsg">✅ Your message has been sent — we’ll email you a confirmation shortly.</div>
+          <div class="errorMsg" id="formErrorMsg">⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.</div>
         </form>
       </div>
 
@@ -617,50 +622,59 @@ input[type="date"]{
         });
       }
 
+      // ✅ On-page success (no redirects): listen for Apps Script postMessage
       var form = document.getElementById("bookTourForm");
-      var frame = document.getElementById("formFrame");
-      var formSuccess = document.getElementById("formSuccessMsg");
-      var heroSuccess = document.getElementById("successMsg");
+      var successEl = document.getElementById("formSuccessMsg");
+      var errorEl = document.getElementById("formErrorMsg");
       var submitBtn = document.getElementById("submitBtn");
-      var submitted = false;
 
-      function setSending(isSending){
-        if(!submitBtn) return;
-        if(isSending){
-          submitBtn.disabled = true;
-          submitBtn.dataset.__label = submitBtn.textContent;
-          submitBtn.textContent = "Sending…";
-        }else{
-          submitBtn.disabled = false;
-          if(submitBtn.dataset.__label) submitBtn.textContent = submitBtn.dataset.__label;
-        }
+      function hideMsgs(){
+        if(successEl) successEl.style.display = "none";
+        if(errorEl) errorEl.style.display = "none";
+      }
+      hideMsgs();
+
+      if(form){
+        form.addEventListener("submit", function(){
+          hideMsgs();
+          if(submitBtn){
+            submitBtn.setAttribute("disabled", "disabled");
+            submitBtn.textContent = "Sending...";
+          }
+        });
       }
 
-      if(form && frame){
-        form.addEventListener("submit", function(){
-          submitted = true;
-          if(formSuccess) formSuccess.style.display = "none";
-          if(heroSuccess) heroSuccess.style.display = "none";
-          setSending(true);
-        });
+      window.addEventListener("message", function(ev){
+        // Accept message from the Apps Script confirmation page inside the iframe
+        var data = ev && ev.data ? ev.data : null;
+        if(!data || data.type !== "mbw-booktour") return;
 
-        frame.addEventListener("load", function(){
-          if(!submitted) return;
-          submitted = false;
-          setSending(false);
+        if(submitBtn){
+          submitBtn.removeAttribute("disabled");
+          submitBtn.textContent = "Send Request";
+        }
 
-          if(formSuccess) formSuccess.style.display = "block";
+        if(data.status === "ok"){
+          if(successEl) successEl.style.display = "block";
+          if(errorEl) errorEl.style.display = "none";
 
+          // Optional: reset the form after success
           try{
             form.reset();
+            if(ds) ds.value = "";
+            if(de) de.value = "";
             combineDates();
           }catch(e){}
-          try{
-            var y = form.getBoundingClientRect().top + window.pageYOffset + form.offsetHeight - 20;
-            window.scrollTo({ top: y, behavior: "smooth" });
-          }catch(e){}
-        });
-      }
+          return;
+        }
+
+        // error path
+        if(errorEl){
+          errorEl.textContent = data.message ? ("⚠️ " + data.message) : "⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.";
+          errorEl.style.display = "block";
+        }
+        if(successEl) successEl.style.display = "none";
+      });
 
       async function inject(id, url){
         const el = document.getElementById(id);
