@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reservar Un Tour | Mindo Bird Watching</title>
-  <meta name="description" content="Reserva un tour de avistamiento de aves en 📍Mindo, Ecuador. Comparte tus fechas, tamaño de grupo y objetivos — confirmaremos los detalles y te responderemos rápidamente." />
+  <title>Book A Tour | Mindo Bird Watching</title>
+  <meta name="description" content="Book a birdwatching tour in 📍Mindo, Ecuador. Send your dates, group size, and goals — we’ll confirm details and follow up quickly." />
   <link rel="alternate" hreflang="en" href="/book-tour/" />
   <link rel="alternate" hreflang="es" href="/es/reservar-tour/" />
   <link rel="alternate" hreflang="x-default" href="/book-tour/" />
@@ -29,23 +29,10 @@
   display:grid;
   grid-template-columns: 1.05fr .95fr;
   gap: 16px;
-  align-items: stretch; /* ✅ make both columns equal height so bottoms can align */
+  align-items:start;
 }
 
-/* ✅ Left hero column becomes a flex column so the metaCard can sit on the bottom */
-.heroLeft{
-  display:flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-.heroBottom{
-  margin-top: auto; /* ✅ pushes the chips/meta block to the bottom to match EN */
-}
-
-h1{
-  margin:0 0 10px;
-  letter-spacing:-0.02em;
-}
+h1{ margin:0 0 10px; letter-spacing:-0.02em; }
 
 .lede{
   margin:0;
@@ -189,7 +176,6 @@ input, select, textarea{
   display: block;
 }
 
-/* Keep ALL “bubbles” the same height */
 input, select{
   height: 46px;
   line-height: 46px;
@@ -257,7 +243,6 @@ textarea{
   line-height: 1.35;
 }
 
-/* ✅ Desktop: same fix as EN page (Dates get a touch more space; Guests a touch less) */
 .rowDatesGuests{
   grid-template-columns: minmax(0, 1fr) 132px;
   align-items:start;
@@ -289,8 +274,6 @@ textarea{
   max-width: 100%;
 }
 
-.dateRange, .dateRange *{ max-width: 100%; }
-
 .dateRange > input{
   width: 100%;
   min-width: 176px;
@@ -300,7 +283,7 @@ textarea{
 input[type="date"]{
   width: 100%;
   max-width: 100%;
-  min-width: 0;
+  min-inline-size: 0;
   display: block;
   box-sizing: border-box;
   -webkit-appearance: none;
@@ -310,12 +293,8 @@ input[type="date"]{
 }
 
 @media (max-width: 1180px) and (min-width: 981px){
-  .rowDatesGuests{
-    grid-template-columns: minmax(0, 1fr) 132px;
-  }
-  .dateRange > input{
-    min-width: 156px;
-  }
+  .rowDatesGuests{ grid-template-columns: minmax(0, 1fr) 132px; }
+  .dateRange > input{ min-width: 156px; }
 }
 
 .dateHint{
@@ -325,7 +304,6 @@ input[type="date"]{
   line-height: 1.5;
 }
 
-/* keep “Número de personas” aligned with Fechas (top aligned) */
 .row2 > label{ align-content:start; }
 .row2 > label select{ margin-top: 0; }
 
@@ -337,6 +315,7 @@ input[type="date"]{
   align-items: stretch;
 }
 
+/* ✅ Make both buttons same font size + both bold */
 .ctaActions .btn,
 .ctaActions button.btn{
   width: 100%;
@@ -346,13 +325,27 @@ input[type="date"]{
   padding-top: 14px;
   padding-bottom: 14px;
   min-height: 46px;
+  font-weight: 900;
+}
+
+/* ✅ Inline success message under the form (not the hero) */
+.formSuccess{
+  margin-top: 10px;
+}
+
+/* ✅ Hidden iframe so form submission never navigates away */
+.hiddenFrame{
+  position:absolute;
+  left:-9999px;
+  top:-9999px;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
 }
 
 @media (max-width: 980px){
-  .hero{ grid-template-columns: 1fr; align-items:start; }
-  .heroLeft{ min-height: 0; }
-  .heroBottom{ margin-top: 12px; }
-
+  .hero{ grid-template-columns: 1fr; }
   .grid2{ grid-template-columns: 1fr; }
   .row2{ grid-template-columns: 1fr; }
   .rowDatesGuests{ grid-template-columns: 1fr; }
@@ -376,83 +369,84 @@ input[type="date"]{
   <div class="container">
     <div id="siteHeader"></div>
 <main class="page card">
-  <section class="hero" aria-label="Reservar un tour hero">
-    <div class="heroLeft">
-      <h1>Reservar Un Tour</h1>
+  <section class="hero" aria-label="Book a tour hero">
+    <div>
+      <h1>Book A Tour</h1>
       <p class="lede">
-        Comparte tus fechas, tamaño de grupo y objetivos — confirmaremos los detalles y te responderemos rápidamente.
+        Share your dates, group size, and goals — we’ll confirm details and follow up quickly.
       </p>
 
-      <div class="heroBottom">
-        <div class="metaCard" style="margin-top:12px;">
-          <div class="chips">
-            <span class="chip">📍Mindo, Ecuador</span>
-            <span class="chip">Respuesta rápida por email</span>
-            <span class="chip">Opciones privadas y personalizadas</span>
-          </div>
-          <p class="note">Los campos marcados con <span class="req">*</span> son obligatorios.</p>
+      <div class="metaCard" style="margin-top:12px;">
+        <div class="chips">
+          <span class="chip">📍Mindo, Ecuador</span>
+          <span class="chip">Fast reply by email</span>
+          <span class="chip">Private &amp; custom options</span>
         </div>
-
-        <div class="success" id="successMsg">✅ Solicitud recibida — revisa tu email para la confirmación.</div>
+        <p class="note">Fields marked with <span class="req">*</span> are required.</p>
       </div>
+
+      <div class="success" id="successMsg">✅ Request received — check your email for confirmation.</div>
     </div>
 
-    <aside class="metaCard" aria-label="Contacto rápido">
+    <aside class="metaCard" aria-label="Quick contact">
       <p class="note" style="margin:0;"><strong>Email</strong></p>
       <div class="quickRow">
-        <a class="btn secondary" id="emailBtn" style="min-height:46px; display:inline-flex; align-items:center;" href="mailto:mindobirdwatching@gmail.com?subject=Solicitud%20de%20Tour%20%E2%80%94%20Mindo%20Bird%20Watching">Escríbenos</a>
-        <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copiar email">
+        <a class="btn secondary" id="emailBtn" style="min-height:46px; display:inline-flex; align-items:center;" href="mailto:mindobirdwatching@gmail.com?subject=Book%20a%20Tour%20Request%20%E2%80%94%20Mindo%20Bird%20Watching">Email Us</a>
+        <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copy email address">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
           </svg>
         </button>
       </div>
-      <div class="toast" id="copyToast">✅ Copiado: mindobirdwatching@gmail.com</div>
+      <div class="toast" id="copyToast">✅ Copied: mindobirdwatching@gmail.com</div>
 
       <p class="note" style="margin-top:10px;"><strong>WhatsApp</strong></p>
-      <a class="btn secondary" style="min-height:46px; display:inline-flex; align-items:center; justify-content:center;" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Enviar mensaje por WhatsApp</a>
+      <a class="btn secondary" style="min-height:46px; display:inline-flex; align-items:center; justify-content:center;" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Message on WhatsApp</a>
     </aside>
   </section>
 
-  <section class="section" aria-label="Formulario de reserva">
+  <section class="section" aria-label="Book tour form">
     <div class="sectionHead">
-      <h2>Solicita tu Tour</h2>
-      <p class="note">Nos vemos pronto.</p>
+      <h2>Request Your Tour</h2>
+      <p class="note">See you soon!</p>
     </div>
 
     <div class="grid2">
       <div class="cardBox">
-        <form class="form"
+        <iframe class="hiddenFrame" id="formFrame" name="formFrame" title="Hidden form frame"></iframe>
+
+        <form class="form" id="bookTourForm"
           method="post"
+          target="formFrame"
           action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
 
           <div class="row2">
             <label>
-              <span class="labelText">Nombre<span class="req">*</span></span>
-              <input type="text" name="first_name" autocomplete="given-name" placeholder="Nombre" required />
+              <span class="labelText">First Name<span class="req">*</span></span>
+              <input type="text" name="first_name" autocomplete="given-name" placeholder="First name" required />
             </label>
 
             <label>
-              <span class="labelText">Apellido<span class="req">*</span></span>
-              <input type="text" name="last_name" autocomplete="family-name" placeholder="Apellido" required />
+              <span class="labelText">Last Name<span class="req">*</span></span>
+              <input type="text" name="last_name" autocomplete="family-name" placeholder="Last name" required />
             </label>
           </div>
 
           <div class="row2">
             <label>
               <span class="labelText">Email<span class="req">*</span></span>
-              <input type="email" name="email" autocomplete="email" placeholder="tu@email.com" required />
+              <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required />
             </label>
 
             <label>
-              <span class="labelText">¿Cómo te enteraste de nosotros?</span>
-              <input type="text" name="how_hear" placeholder="Google, Instagram, recomendado, hotel, etc." />
+              <span class="labelText">How Did You Hear About Us?</span>
+              <input type="text" name="how_hear" placeholder="Google, Instagram, friend, hotel, etc." />
             </label>
           </div>
 
           <div class="rowPhone">
             <label>
-              <span class="labelText">Código de país<span class="req">*</span></span>
+              <span class="labelText">Country Code<span class="req">*</span></span>
               <input
                 type="text"
                 name="country_code"
@@ -465,7 +459,7 @@ input[type="date"]{
             </label>
 
             <label>
-              <span class="labelText">Teléfono / WhatsApp<span class="req">*</span></span>
+              <span class="labelText">Phone / WhatsApp Number<span class="req">*</span></span>
               <input
                 type="tel"
                 name="phone_number"
@@ -478,80 +472,84 @@ input[type="date"]{
           </div>
 
           <label>
-            <span class="labelText">Mensaje / Preguntas<span class="req">*</span></span>
-            <textarea name="message" placeholder="Cuéntanos tus objetivos: aves objetivo, fotografía, ritmo, guía privado, etc." required></textarea>
+            <span class="labelText">Message / Questions<span class="req">*</span></span>
+            <textarea name="message" placeholder="Tell us your goals: target birds, photography, pace, private guide, etc." required></textarea>
           </label>
 
           <div class="row2 rowDatesGuests">
             <label>
-              <span class="labelText">Fechas de visita</span>
+              <span class="labelText">Dates of Visit</span>
               <div class="dateRange">
                 <input type="date" id="dateStart" autocomplete="off" />
                 <input type="date" id="dateEnd" autocomplete="off" />
               </div>
-              <p class="dateHint">Selecciona una fecha de inicio y (opcional) una fecha de fin.</p>
+              <p class="dateHint">Select a start date and (optional) end date.</p>
               <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
             </label>
 
             <label class="guestsLabel">
-              <span class="labelText">Número de personas</span>
+              <span class="labelText">Number of Guests</span>
               <select name="number_of_guests">
-                <option value="">Seleccionar</option>
+                <option value="">Select</option>
                 <option>1</option>
                 <option>2</option>
-                <option>3 a 4</option>
-                <option>5 a 8</option>
+                <option>3 to 4</option>
+                <option>5 to 8</option>
                 <option>9+</option>
               </select>
             </label>
           </div>
 
           <label>
-            <span class="labelText">Tipo de tour preferido</span>
+            <span class="labelText">Preferred Tour Type</span>
             <select name="preferred_tour_type">
-              <option value="">Seleccionar</option>
-              <option>Tour de medio día</option>
-              <option>Tour de día completo</option>
-              <option>Tour personalizado / privado</option>
-              <option>Aún no estoy seguro</option>
+              <option value="">Select</option>
+              <option>Half-Day Tour</option>
+              <option>Full-Day Tour</option>
+              <option>Custom / Private Tour</option>
+              <option>Not Sure Yet</option>
             </select>
           </label>
 
           <label>
-            <span class="labelText">Necesidades de alojamiento</span>
-            <input type="text" name="accommodation_needs" placeholder="Opcional (hotel, notas de pickup, etc.)" />
+            <span class="labelText">Accommodation Needs</span>
+            <input type="text" name="accommodation_needs" placeholder="Optional (hotel name, pickup notes, etc.)" />
           </label>
 
           <label>
-            <span class="labelText">Intereses especiales</span>
-            <input type="text" name="special_interests" placeholder="Fotografía, colibríes, tangaras, caminata nocturna, etc." />
+            <span class="labelText">Special Interests</span>
+            <input type="text" name="special_interests" placeholder="Photography, hummingbirds, tanagers, night walk, etc." />
           </label>
 
-          <input type="hidden" name="source_page" value="https://www.mindobirdwatching.com/es/reservar-tour/" />
+          <input type="hidden" name="source_page" value="https://www.mindobirdwatching.com/book-tour/" />
           <input type="hidden" name="user_agent" id="uaField" value="" />
 
           <p class="help">
-            Después de enviar, recibirás un email de confirmación. Si no lo ves, revisa Spam/Promociones.
+            After you submit, you’ll receive an email confirmation. If you don’t see it, check Spam/Promotions.
           </p>
 
           <div class="ctaActions">
-            <button class="btn primary" type="submit">Enviar Solicitud</button>
-            <a class="btn secondary" href="/es/tours/">Ver Tours</a>
+            <button class="btn primary" id="submitBtn" type="submit">Send Request</button>
+            <a class="btn secondary" href="/tours/">View Tours</a>
+          </div>
+
+          <div class="success formSuccess" id="formSuccessMsg">
+            ✅ Your request has been sent — we’ll email you a confirmation shortly.
           </div>
         </form>
       </div>
 
-      <div class="cardBox" aria-label="Qué nos ayuda a responder">
-        <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Lo que nos ayuda a responder más rápido</h3>
+      <div class="cardBox" aria-label="What we need">
+        <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">What helps us reply faster</h3>
         <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
-          <li>Especies objetivo (si tienes alguna)</li>
-          <li>Prioridad: fotografía vs. lista de aves</li>
-          <li>Ritmo preferido (relajado vs. intensivo)</li>
-          <li>Solicitud de guía privado (sí/no)</li>
-          <li>Restricciones de movilidad u horarios</li>
+          <li>Target species (if any)</li>
+          <li>Photography priority vs. bird list priority</li>
+          <li>Preferred pace (relaxed vs. intensive)</li>
+          <li>Private guide request (yes/no)</li>
+          <li>Any mobility or timing constraints</li>
         </ul>
         <p class="note" style="margin-top:10px;">
-          Puedes mantenerlo simple ahora y afinarlo después.
+          You can keep this simple now and refine later.
         </p>
       </div>
     </div>
@@ -562,14 +560,6 @@ input[type="date"]{
   </div>
   <script>
     (function(){
-      try{
-        var params = new URLSearchParams(window.location.search);
-        if(params.get("sent") === "1"){
-          var el = document.getElementById("successMsg");
-          if(el) el.style.display = "block";
-        }
-      }catch(e){}
-
       var ua = document.getElementById("uaField");
       if(ua) ua.value = navigator.userAgent || "";
 
@@ -623,6 +613,51 @@ input[type="date"]{
             document.execCommand("copy");
             document.body.removeChild(ta);
             showToast();
+          }catch(e){}
+        });
+      }
+
+      var form = document.getElementById("bookTourForm");
+      var frame = document.getElementById("formFrame");
+      var formSuccess = document.getElementById("formSuccessMsg");
+      var heroSuccess = document.getElementById("successMsg");
+      var submitBtn = document.getElementById("submitBtn");
+      var submitted = false;
+
+      function setSending(isSending){
+        if(!submitBtn) return;
+        if(isSending){
+          submitBtn.disabled = true;
+          submitBtn.dataset.__label = submitBtn.textContent;
+          submitBtn.textContent = "Sending…";
+        }else{
+          submitBtn.disabled = false;
+          if(submitBtn.dataset.__label) submitBtn.textContent = submitBtn.dataset.__label;
+        }
+      }
+
+      if(form && frame){
+        form.addEventListener("submit", function(){
+          submitted = true;
+          if(formSuccess) formSuccess.style.display = "none";
+          if(heroSuccess) heroSuccess.style.display = "none";
+          setSending(true);
+        });
+
+        frame.addEventListener("load", function(){
+          if(!submitted) return;
+          submitted = false;
+          setSending(false);
+
+          if(formSuccess) formSuccess.style.display = "block";
+
+          try{
+            form.reset();
+            combineDates();
+          }catch(e){}
+          try{
+            var y = form.getBoundingClientRect().top + window.pageYOffset + form.offsetHeight - 20;
+            window.scrollTo({ top: y, behavior: "smooth" });
           }catch(e){}
         });
       }
