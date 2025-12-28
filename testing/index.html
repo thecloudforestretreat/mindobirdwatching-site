@@ -146,7 +146,8 @@ label{
   font-weight: 900;
   font-size: 13px;
   color: var(--ink);
-  min-width: 0; /* prevent grid overflow on mobile */
+  min-width: 0;
+  width: 100%;
 }
 
 .labelText{
@@ -164,6 +165,7 @@ label{
 
 input, select, textarea{
   width: 100%;
+  max-width: 100%;
   border-radius: 14px;
   border: 1px solid var(--line);
   background: rgba(255,255,255,.70);
@@ -173,7 +175,8 @@ input, select, textarea{
   color: var(--ink);
   outline: none;
   box-sizing: border-box;
-  min-width: 0; /* key for date inputs on mobile */
+  min-width: 0;
+  display: block;
 }
 
 /* Keep ALL “bubbles” the same height */
@@ -252,7 +255,19 @@ textarea{
   width: 100%;
   min-width: 0;
 }
-.dateRange > input{ min-width: 0; } /* ensures perfect alignment with other bubbles */
+
+/* FIX (mobile overflow): force date inputs to never exceed the form width (iOS Safari) */
+.dateRange, .dateRange *{ max-width: 100%; }
+input[type="date"]{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  background-clip: padding-box;
+}
 
 .dateHint{
   margin: 0;
