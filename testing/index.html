@@ -247,17 +247,16 @@
       line-height: 1.35;
     }
 
-    /* ✅ Desktop: Guests bubble should be only as wide as needed, so both date placeholders show fully */
+    /* ✅ Desktop: give Dates the space; keep Guests bubble compact (only needs "Select") */
     .rowDatesGuests{
-      grid-template-columns: minmax(0, 1fr) max-content;
+      grid-template-columns: minmax(0, 1fr) clamp(112px, 12vw, 144px);
       align-items:start;
       column-gap: 12px;
     }
     .rowDatesGuests > label{ min-width: 0; }
 
-    /* Make Guests label/field shrink to content (override global label/input width:100%) */
     .rowDatesGuests .guestsLabel{
-      width: auto;
+      width: 100%;
       min-width: 0;
       justify-self: end;
       align-content: start;
@@ -266,16 +265,16 @@
       white-space: nowrap;
     }
     .rowDatesGuests .guestsLabel select{
-      width: auto;
-      min-width: 120px;   /* fits “Select” comfortably */
-      max-width: 160px;   /* prevents an oversized bubble */
-      padding-right: 42px; /* room for dropdown caret */
-      justify-self: end;
+      width: 100%;
+      min-width: 0;
+      padding-left: 12px;
+      padding-right: 36px; /* caret room, but not huge */
     }
 
+    /* Dates: enforce enough min width so mm/dd/yyyy stays visible on desktop */
     .dateRange{
       display:grid;
-      grid-template-columns: minmax(170px, 1fr) minmax(170px, 1fr);
+      grid-template-columns: repeat(2, minmax(210px, 1fr));
       gap: 12px;
       align-items:start;
       width: 100%;
@@ -298,7 +297,17 @@
       -webkit-appearance: none;
       appearance: none;
       background-clip: padding-box;
-      padding-right: 42px; /* room for calendar icon */
+      padding-right: 42px; /* calendar icon room */
+    }
+
+    /* Mid-width desktops/laptops: slightly smaller min widths but still keep placeholders visible */
+    @media (max-width: 1180px) and (min-width: 981px){
+      .rowDatesGuests{
+        grid-template-columns: minmax(0, 1fr) 128px;
+      }
+      .dateRange{
+        grid-template-columns: repeat(2, minmax(190px, 1fr));
+      }
     }
 
     .dateHint{
@@ -346,7 +355,6 @@
       .rowDatesGuests .guestsLabel select{
         width: 100%;
         min-width: 0;
-        max-width: 100%;
       }
       .rowDatesGuests .guestsLabel .labelText{ white-space: normal; }
     }
@@ -540,7 +548,6 @@
   </div>
   <script>
     (function(){
-      // show success message if redirected back with ?sent=1
       try{
         var params = new URLSearchParams(window.location.search);
         if(params.get("sent") === "1"){
@@ -549,11 +556,9 @@
         }
       }catch(e){}
 
-      // capture user agent
       var ua = document.getElementById("uaField");
       if(ua) ua.value = navigator.userAgent || "";
 
-      // Date range -> combine into a single field the Apps Script already expects
       function combineDates(){
         var s = document.getElementById("dateStart");
         var e = document.getElementById("dateEnd");
@@ -573,7 +578,6 @@
       if(de) de.addEventListener("change", combineDates);
       combineDates();
 
-      // Copy email
       var copyBtn = document.getElementById("copyEmailBtn");
       var toast = document.getElementById("copyToast");
       var email = "mindobirdwatching@gmail.com";
