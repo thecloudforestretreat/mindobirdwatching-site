@@ -248,10 +248,16 @@
       line-height: 1.35;
     }
 
-    /* Dates + Guests row: make dates wider, guests narrower (desktop) */
+    /* Dates + Guests row:
+       - dates get remaining space
+       - guests gets a fixed, small column so it stays aligned
+       - guests label forced to single line (no wrap) */
     .rowDatesGuests{
-      grid-template-columns: 1.6fr .4fr;
+      grid-template-columns: 1fr 170px;
       align-items:start;
+    }
+    .rowDatesGuests .guestsLabel .labelText{
+      white-space: nowrap;
     }
 
     .dateRange{
@@ -317,6 +323,7 @@
       .rowPhone{ grid-template-columns: 120px 1fr; }
       .ctaActions{ grid-template-columns: 1fr; }
       .dateRange{ grid-template-columns: 1fr; } /* one per line on mobile */
+      .rowDatesGuests .guestsLabel .labelText{ white-space: normal; } /* allow wrap on very small screens */
     }
   </style>
 </head>
@@ -441,7 +448,7 @@
                   <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
                 </label>
 
-                <label>
+                <label class="guestsLabel">
                   <span class="labelText">Number of Guests</span>
                   <select name="number_of_guests">
                     <option value="">Select</option>
