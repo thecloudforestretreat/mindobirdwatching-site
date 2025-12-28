@@ -248,22 +248,23 @@
       line-height: 1.35;
     }
 
-    /* Dates + Guests row:
-       - dates get remaining space
-       - guests gets a fixed, small column so it stays aligned
-       - guests label forced to single line (no wrap) */
+    /* ✅ Desktop fix: prevent overlap + prevent date placeholder cut-off
+       Key ideas:
+       - allow the left grid column to actually shrink (minmax(0,1fr))
+       - let each date input shrink (min-width:0 / min-inline-size:0)
+       - give Guests a stable column wide enough for the select, and keep its label single-line */
     .rowDatesGuests{
-      grid-template-columns: 1fr 170px;
+      grid-template-columns: minmax(0, 1fr) 210px;
       align-items:start;
+      column-gap: 14px;
     }
-    .rowDatesGuests .guestsLabel .labelText{
-      white-space: nowrap;
-    }
+    .rowDatesGuests > label{ min-width: 0; } /* critical for grid shrink */
+    .rowDatesGuests .guestsLabel .labelText{ white-space: nowrap; }
 
     .dateRange{
       display:grid;
-      grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr);
-      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
       align-items:start;
       width: 100%;
       min-width: 0;
@@ -271,18 +272,21 @@
     }
     .dateRange > input{
       min-width: 0;
-      max-width: 100%;
+      min-inline-size: 0; /* Safari/Chromium shrink */
       width: 100%;
     }
+
     input[type="date"]{
       width: 100%;
       max-width: 100%;
       min-width: 0;
+      min-inline-size: 0;
       display: block;
       box-sizing: border-box;
       -webkit-appearance: none;
       appearance: none;
       background-clip: padding-box;
+      padding-right: 42px; /* room for calendar icon so placeholder doesn't feel clipped */
     }
 
     .dateHint{
@@ -323,7 +327,7 @@
       .rowPhone{ grid-template-columns: 120px 1fr; }
       .ctaActions{ grid-template-columns: 1fr; }
       .dateRange{ grid-template-columns: 1fr; } /* one per line on mobile */
-      .rowDatesGuests .guestsLabel .labelText{ white-space: normal; } /* allow wrap on very small screens */
+      .rowDatesGuests .guestsLabel .labelText{ white-space: normal; }
     }
   </style>
 </head>
