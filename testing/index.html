@@ -330,7 +330,6 @@ input[type="date"]{
   align-items: stretch;
 }
 
-/* ✅ Make BOTH CTAs same size + bold */
 .ctaActions .btn,
 .ctaActions button.btn{
   width: 100%;
@@ -343,7 +342,6 @@ input[type="date"]{
   min-height: 46px;
 }
 
-/* Optional: disabled state for the submit button */
 .btn[disabled]{
   opacity: .65;
   cursor: not-allowed;
@@ -417,7 +415,6 @@ input[type="date"]{
 
     <div class="grid2">
       <div class="cardBox">
-        <!-- Hidden iframe prevents navigation away from this page -->
         <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
 
         <form class="form" id="bookTourForm"
@@ -428,12 +425,32 @@ input[type="date"]{
           <div class="row2">
             <label>
               <span class="labelText">First Name<span class="req">*</span></span>
-              <input type="text" name="first_name" autocomplete="given-name" placeholder="First name" required />
+              <input
+                type="text"
+                name="first_name"
+                id="firstName"
+                autocomplete="given-name"
+                autocapitalize="words"
+                autocorrect="off"
+                spellcheck="false"
+                placeholder="First name"
+                required
+              />
             </label>
 
             <label>
               <span class="labelText">Last Name<span class="req">*</span></span>
-              <input type="text" name="last_name" autocomplete="family-name" placeholder="Last name" required />
+              <input
+                type="text"
+                name="last_name"
+                id="lastName"
+                autocomplete="family-name"
+                autocapitalize="words"
+                autocorrect="off"
+                spellcheck="false"
+                placeholder="Last name"
+                required
+              />
             </label>
           </div>
 
@@ -538,7 +555,6 @@ input[type="date"]{
             <a class="btn secondary" href="/tours/">View Tours</a>
           </div>
 
-          <!-- ✅ Success message UNDER the form (no redirect, never leaves page) -->
           <div class="success" id="formSuccessMsg">✅ Your message has been sent — we’ll email you a confirmation shortly.</div>
           <div class="errorMsg" id="formErrorMsg">⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.</div>
         </form>
@@ -562,11 +578,34 @@ input[type="date"]{
 </main>
 
 <div id="siteFooter"></div>
-  </div>
+      </div>
   <script>
     (function(){
       var ua = document.getElementById("uaField");
       if(ua) ua.value = navigator.userAgent || "";
+
+      function titleCaseWords(str){
+        return String(str || "")
+          .trim()
+          .replace(/\s+/g, " ")
+          .split(" ")
+          .map(function(w){
+            if(!w) return "";
+            var lower = w.toLowerCase();
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+          })
+          .join(" ");
+      }
+
+      function attachNameAutoCap(id){
+        var el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener("blur", function(){
+          el.value = titleCaseWords(el.value);
+        });
+      }
+      attachNameAutoCap("firstName");
+      attachNameAutoCap("lastName");
 
       function combineDates(){
         var s = document.getElementById("dateStart");
@@ -622,58 +661,100 @@ input[type="date"]{
         });
       }
 
-      // ✅ On-page success (no redirects): listen for Apps Script postMessage
       var form = document.getElementById("bookTourForm");
       var successEl = document.getElementById("formSuccessMsg");
       var errorEl = document.getElementById("formErrorMsg");
       var submitBtn = document.getElementById("submitBtn");
+      var iframe = document.getElementById("mbwHiddenFrame");
+
+      var pending = false;
+      var done = false;
+      var fallbackTimer = null;
 
       function hideMsgs(){
         if(successEl) successEl.style.display = "none";
         if(errorEl) errorEl.style.display = "none";
       }
+
+      function setBtnSending(isSending){
+        if(!submitBtn) return;
+        if(isSending){
+          submitBtn.set_translation_disabled = true;
+          submitBtn.setAttribute("disabled", "disabled");
+          submitBtn.textContent = "Sending...";
+        }else{
+          submitBtn.removeAttribute("disabled");
+          submitBtn.textContent = "Send Request";
+        }
+      }
+
+      function completeOk(){
+        if(done) return;
+        done = true;
+        pending = false;
+        if(fallbackTimer) clearTimeout(fallbackTimer);
+        setBtnSending(false);
+        if(successEl) successEl.style.display = "block";
+        if(errorEl) errorEl.style.display = "none";
+        try{
+          form.reset();
+          if(ds) ds.value = "";
+          if(de) de.value = "";
+          combineDates();
+        }catch(e){}
+      }
+
+      function completeError(msg){
+        if(done) return;
+        done = true;
+        pending = false;
+        if(fallbackTimer) clearTimeout(fallbackTimer);
+        setBtnSending(false);
+        if(errorEl){
+          errorEl.textContent = msg || "⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.";
+          errorEl.style.display = "block";
+        }
+        if(successEl) successEl.style.display = "none";
+      }
+
       hideMsgs();
 
       if(form){
         form.addEventListener("submit", function(){
           hideMsgs();
-          if(submitBtn){
-            submitBtn.setAttribute("disabled", "disabled");
-            submitBtn.textContent = "Sending...";
+          done = false;
+          pending = true;
+          setBtnSending(true);
+
+          if(fallbackTimer) clearTimeout(fallbackTimer);
+          fallbackTimer = setTimeout(function(){
+            if(!done){
+              completeError("⚠️ Still waiting… please try again, or email us directly at mindobirdwatching@gmail.com.");
+            }
+          }, 12000);
+        });
+      }
+
+      // ✅ Fallback that fixes “stuck on sending” even if Apps Script postMessage never arrives:
+      // When the hidden iframe finishes loading the response, we mark the submission as complete.
+      if(iframe){
+        iframe.addEventListener("load", function(){
+          if(pending && !done){
+            completeOk();
           }
         });
       }
 
+      // If your Apps Script *does* send postMessage, we still support it (more accurate).
       window.addEventListener("message", function(ev){
-        // Accept message from the Apps Script confirmation page inside the iframe
         var data = ev && ev.data ? ev.data : null;
         if(!data || data.type !== "mbw-booktour") return;
 
-        if(submitBtn){
-          submitBtn.removeAttribute("disabled");
-          submitBtn.textContent = "Send Request";
-        }
-
         if(data.status === "ok"){
-          if(successEl) successEl.style.display = "block";
-          if(errorEl) errorEl.style.display = "none";
-
-          // Optional: reset the form after success
-          try{
-            form.reset();
-            if(ds) ds.value = "";
-            if(de) de.value = "";
-            combineDates();
-          }catch(e){}
+          completeOk();
           return;
         }
-
-        // error path
-        if(errorEl){
-          errorEl.textContent = data.message ? ("⚠️ " + data.message) : "⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.";
-          errorEl.style.display = "block";
-        }
-        if(successEl) successEl.style.display = "none";
+        completeError(data.message ? ("⚠️ " + data.message) : null);
       });
 
       async function inject(id, url){
@@ -694,3 +775,5 @@ input[type="date"]{
   <script src="/assets/js/site.js"></script>
 </body>
 </html>
+
+    
