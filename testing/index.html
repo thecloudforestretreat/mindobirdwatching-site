@@ -246,15 +246,15 @@ textarea{
   line-height: 1.35;
 }
 
-/* ✅ Desktop: Guests stays compact; ALL remaining space goes to the two date bubbles */
+/* ✅ Desktop: shave Guests by ~1 "pt" (a few px) and give Dates a touch more */
 .rowDatesGuests{
-  grid-template-columns: minmax(0, 1fr) 140px; /* Guests column fixed (as you like); Dates gets the rest */
+  grid-template-columns: minmax(0, 1fr) 132px; /* was 140px */
   align-items:start;
-  column-gap: 12px;
+  column-gap: 10px; /* was 12px */
 }
 .rowDatesGuests > label{ min-width: 0; }
 
-/* Guests bubble (keep as-is / perfect) */
+/* Guests bubble (slightly tighter) */
 .rowDatesGuests .guestsLabel{
   width: 100%;
   min-width: 0;
@@ -266,13 +266,13 @@ textarea{
   width: 100%;
   min-width: 0;
   padding-left: 12px;
-  padding-right: 36px;
+  padding-right: 34px;
 }
 
 /* Dates: split the available Dates space evenly between the two inputs */
 .dateRange{
   display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* THIS is the “divide the space” line */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   align-items:start;
   width: 100%;
@@ -280,10 +280,10 @@ textarea{
   max-width: 100%;
 }
 
-/* Force the date inputs to be wide enough for mm/dd/yyyy on desktop */
+/* Give each date bubble just a bit more minimum room so yyyy fits */
 .dateRange > input{
   width: 100%;
-  min-width: 168px;        /* <-- if you still see clipping, bump to 176/184 */
+  min-width: 176px; /* was 168px */
   min-inline-size: 0;
 }
 
@@ -296,16 +296,15 @@ input[type="date"]{
   -webkit-appearance: none;
   appearance: none;
   background-clip: padding-box;
-  padding-right: 34px;     /* slightly smaller than 42 so the text has more room */
+  padding-right: 32px; /* was 34px: tiny gain for text */
 }
 
-/* If someone is on a narrower desktop/laptop, keep 3 bubbles on one line by allowing dates to compress a bit */
 @media (max-width: 1180px) and (min-width: 981px){
   .rowDatesGuests{
-    grid-template-columns: minmax(0, 1fr) 140px;
+    grid-template-columns: minmax(0, 1fr) 132px;
   }
   .dateRange > input{
-    min-width: 150px;      /* <-- adjust if needed for that breakpoint */
+    min-width: 156px; /* was 150px */
   }
 }
 
