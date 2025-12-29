@@ -16,518 +16,518 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
   <script src="/assets/js/head.js" defer></script>
   <style>
-    .page { margin-top: 18px; padding: 26px; }
-    .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-    }
-
-    .hero{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
-      align-items:start;
-    }
-
-    .hero h1{
-      margin:0 0 8px;
-      letter-spacing:-0.02em;
-    }
-
-    .hero p{
-      margin:0;
-      max-width: 85ch;
-      color: var(--ink);
-      line-height: 1.65;
-    }
-
-    .heroCtas{
-      margin-top: 14px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-
-    .summaryCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      overflow:hidden;
-      position: relative;
-    }
-
-    .ghostArt{
-      position:absolute;
-      right: -26px;
-      top: -26px;
-      width: 160px;
-      height: 160px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(13,89,37,.18), rgba(13,89,37,0));
-      pointer-events:none;
-      opacity: .9;
-    }
-
-    .summaryTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .score{
-      display:flex;
-      align-items: baseline;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .scoreNum{
-      font-weight: 1000;
-      letter-spacing: -0.03em;
-      font-size: 44px;
-      line-height: 1;
-      color: var(--ink);
-    }
-
-    .scoreMeta{
-      display:grid;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .stars{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    /* Accurate Google star color */
     :root{
-      --google-star: #fbbc04;
+      --google-star: #FBBC04;
     }
+.page { margin-top: 18px; padding: 26px; }
+.page.card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
 
-    /* Large, borderless stars (2x) */
-    .starRow{
-      display:flex;
-      gap: 6px;
-      align-items:center;
-      line-height: 1;
-    }
-    .star{
-      width: 0;
-      height: 0;
-      border: 0;
-      background: transparent;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .star::before{
-      content:"★";
-      font-size: 24px;          /* 2x size */
-      font-weight: 900;
-      color: var(--google-star);
-      line-height: 1;
-    }
+.hero{
+  display:grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 16px;
+  align-items:start;
+}
 
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.7);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-    }
+.hero h1{
+  margin:0 0 8px;
+  letter-spacing:-0.02em;
+}
 
-    /* Align Google Reviews + location badge nicely */
-    .badgeRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 2px;
-    }
-    .badgeRow .badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
+.hero p{
+  margin:0;
+  max-width: 85ch;
+  color: var(--ink);
+  line-height: 1.65;
+}
 
-    .scoreLine{
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
+.heroCtas{
+  margin-top: 14px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+}
 
-    .poweredBy{
-      margin-top: 10px;
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.35;
-      flex-wrap: wrap;
-    }
-    .poweredBy img{
-      width: 16px;
-      height: 16px;
-      display:block;
-    }
-    .poweredBy a{
-      color: var(--ink);
-      font-weight: 900;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
+.summaryCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  overflow:hidden;
+  position: relative;
+}
 
-    .proof{
-      margin-top: 12px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+.ghostArt{
+  position:absolute;
+  right: -26px;
+  top: -26px;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, rgba(13,89,37,.18), rgba(13,89,37,0));
+  pointer-events:none;
+  opacity: .9;
+}
 
-    .proofItem{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+.summaryTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-    .proofItem b{
-      display:block;
-      font-weight: 950;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-    }
+.score{
+  display:flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
 
-    .proofItem span{
-      display:block;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      margin-top: 2px;
-    }
+.scoreNum{
+  font-weight: 1000;
+  letter-spacing: -0.03em;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--ink);
+}
 
-    .section{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
+.scoreMeta{
+  display:grid;
+  gap: 8px;
+  min-width: 0;
+}
 
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
+.stars{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-    .sectionHead h2{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing:-0.02em;
-      font-size: 20px;
-    }
+/* Clean, big, non-merged stars */
+.starRow{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  line-height: 1;
+  flex-wrap: nowrap;
+}
+.gStar{
+  width: 28px;
+  height: 28px;
+  display:block;
+  flex: 0 0 auto;
+}
+.gStar path{ fill: var(--google-star); }
 
-    .hint{ margin:0; color: var(--muted); font-size: 13px; }
+.badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.7);
+  box-shadow: var(--shadow);
+  font-weight: 900;
+  font-size: 12.5px;
+  color: var(--ink);
+  line-height: 1;
+  white-space: nowrap;
+}
 
-    /* NEW: Top featured/latest review spotlight */
-    .spotlight{
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 12px;
-      align-items: start;
-      margin-top: 12px;
-    }
-    .spotlightCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.72);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      position: relative;
-      overflow:hidden;
-    }
-    .spotlightCard::after{
-      content:"";
-      position:absolute;
-      inset:-40px -60px auto auto;
-      width: 220px;
-      height: 220px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(251,188,4,.24), rgba(251,188,4,0));
-      pointer-events:none;
-      opacity: .9;
-    }
-    .spotTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 1;
-    }
-    .spotWho{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 0;
-    }
-    .avatar{
-      width: 42px;
-      height: 42px;
-      border-radius: 16px;
-      border: 1px solid rgba(251,188,4,.35);
-      background: rgba(251,188,4,.14);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight: 950;
-      color: #8a6a00;
-      flex: 0 0 auto;
-    }
-    .whoMeta{
-      display:grid;
-      gap: 2px;
-      min-width: 0;
-    }
-    .name{
-      margin:0;
-      font-weight: 950;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      font-size: 14px;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      max-width: 38ch;
-    }
-    .sub{
-      margin:0;
-      color: var(--muted);
-      font-size: 12.5px;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      max-width: 48ch;
-    }
-    .spotBadges{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-      position: relative;
-      z-index: 1;
-    }
-    .starsText{
-      display:inline-flex;
-      align-items:center;
-      gap: 6px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 0;
-      background: rgba(251,188,4,.16);
-      box-shadow: var(--shadow);
-      font-weight: 1000;
-      font-size: 13px;
-      color: #8a6a00;
-      line-height: 1;
-      white-space: nowrap;
-    }
-    .gBadge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-    }
-    .gBadge img{ width: 14px; height: 14px; display:block; }
-    .spotQuote{
-      margin-top: 12px;
-      color: var(--ink);
-      line-height: 1.75;
-      white-space: pre-wrap;
-      position: relative;
-      z-index: 1;
-      font-size: 14px;
-    }
-    .spotActions{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-      position: relative;
-      z-index: 1;
-    }
+/* Align Google Reviews + Mindo, Ecuador */
+.badgeRow{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
 
-    /* Reviews list */
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-    }
+.scoreLine{
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
 
-    .reviewCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      position: relative;
-      overflow:hidden;
-    }
+.poweredBy{
+  margin-top: 6px;
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+  flex-wrap: wrap;
+}
+.poweredBy img{
+  width: 16px;
+  height: 16px;
+  display:block;
+}
+.poweredBy a{
+  color: var(--ink);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
-    .reviewTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+.proof{
+  margin-top: 12px;
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
 
-    .who{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 0;
-    }
+.proofItem{
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.55);
+  padding: 12px;
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    .reviewStars{
-      display:flex;
-      align-items:center;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-    }
+.proofItem b{
+  display:block;
+  font-weight: 950;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
 
-    .quote{
-      margin: 12px 0 0;
-      color: var(--ink);
-      line-height: 1.7;
-      white-space: pre-wrap;
-    }
+.proofItem span{
+  display:block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  margin-top: 2px;
+}
 
-    .pull{
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 12px;
-      align-items: start;
-      margin-top: 12px;
-    }
+.section{
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
 
-    .pullCard{
-      border: 1px dashed rgba(13,89,37,.35);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.55);
-      padding: 14px;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 13px;
-    }
+.sectionHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
 
-    .ctaCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-    }
+.sectionHead h2{
+  margin:0;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing:-0.02em;
+  font-size: 20px;
+}
 
-    .ctaCard h3{
-      margin: 0 0 8px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
+.hint{ margin:0; color: var(--muted); font-size: 13px; }
 
-    .ctaCard p{
-      margin:0;
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.6;
-    }
+/* Spotlight latest review */
+.spotlight{
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 12px;
+  align-items: start;
+  margin-top: 12px;
+}
+.spotlightCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.72);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  position: relative;
+  overflow:hidden;
+}
+.spotlightCard::after{
+  content:"";
+  position:absolute;
+  inset:-40px -60px auto auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, rgba(251,188,4,.24), rgba(251,188,4,0));
+  pointer-events:none;
+  opacity: .9;
+}
+.spotTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+.spotWho{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+.avatar{
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  border: 1px solid rgba(251,188,4,.35);
+  background: rgba(251,188,4,.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 950;
+  color: #8a6a00;
+  flex: 0 0 auto;
+}
+.whoMeta{
+  display:grid;
+  gap: 2px;
+  min-width: 0;
+}
+.name{
+  margin:0;
+  font-weight: 950;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 38ch;
+}
+.sub{
+  margin:0;
+  color: var(--muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 48ch;
+}
+.spotBadges{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+  position: relative;
+  z-index: 1;
+}
 
-    .ctaRow{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
+/* Star pill but clean, with proper spacing and Google yellow */
+.starsText{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(251,188,4,.16);
+  box-shadow: var(--shadow);
+  font-weight: 1000;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--google-star);
+  letter-spacing: 2px;
+}
+.starsText span{
+  letter-spacing: 2px;
+}
 
-    .linkLine{
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.55;
-    }
+/* Google badge: logo only, not smushed, no border */
+.gBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(255,255,255,.75);
+  box-shadow: var(--shadow);
+  line-height: 1;
+  white-space: nowrap;
+}
+.gBadge img{
+  width: 18px;
+  height: 18px;
+  display:block;
+  object-fit: contain;
+}
 
-    .linkLine a{
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-weight: 900;
-      color: var(--ink);
-    }
+.spotQuote{
+  margin-top: 12px;
+  color: var(--ink);
+  line-height: 1.75;
+  white-space: pre-wrap;
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+}
+.spotActions{
+  margin-top: 12px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+  position: relative;
+  z-index: 1;
+}
 
-    .emptyState{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.60);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.6;
-    }
+/* Reviews list */
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
 
-    @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; }
-      .grid{ grid-template-columns: 1fr; }
-      .pull{ grid-template-columns: 1fr; }
-      .spotlight{ grid-template-columns: 1fr; }
-    }
-  </style>
+.reviewCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  position: relative;
+  overflow:hidden;
+}
+
+.reviewTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.who{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.reviewStars{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
+
+.quote{
+  margin: 12px 0 0;
+  color: var(--ink);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.pull{
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 12px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.pullCard{
+  border: 1px dashed rgba(13,89,37,.35);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.55);
+  padding: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.ctaCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.ctaCard h3{
+  margin: 0 0 8px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 18px;
+}
+
+.ctaCard p{
+  margin:0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.ctaRow{
+  margin-top: 12px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+
+.linkLine{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.linkLine a{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.emptyState{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.60);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+@media (max-width: 980px){
+  .hero{ grid-template-columns: 1fr; }
+  .grid{ grid-template-columns: 1fr; }
+  .pull{ grid-template-columns: 1fr; }
+  .spotlight{ grid-template-columns: 1fr; }
+  .scoreNum{ font-size: 42px; }
+  .gStar{ width: 26px; height: 26px; }
+}
+      </style>
 </head>
 <body>
   <div class="container">
@@ -558,10 +558,15 @@
       <div class="summaryTop">
         <div class="score" aria-label="Overall rating">
           <div class="scoreNum" id="ratingValue">-</div>
+
           <div class="scoreMeta">
             <div class="stars" aria-label="Star rating">
               <div class="starRow" aria-hidden="true">
-                <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
+                <svg class="gStar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg class="gStar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg class="gStar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg class="gStar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg class="gStar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               </div>
 
               <div class="badgeRow" aria-label="Badges row">
@@ -618,7 +623,6 @@
       <p class="hint" id="reviewsHint">Loading…</p>
     </div>
 
-    <!-- Spotlight latest review -->
     <div class="spotlight" aria-label="Latest review spotlight">
       <article class="spotlightCard" id="spotlightCard" style="display:none;">
         <div class="spotTop">
@@ -631,8 +635,10 @@
           </div>
 
           <div class="spotBadges" aria-label="Spotlight badges">
-            <span class="starsText" id="spotStars">★★★★★</span>
-            <span class="gBadge"><img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews icon">Google</span>
+            <span class="starsText" id="spotStars"><span>★★★★★</span></span>
+            <span class="gBadge" aria-label="Google Reviews">
+              <img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews">
+            </span>
           </div>
         </div>
 
@@ -653,8 +659,8 @@
       </div>
     </div>
 
-    <!-- Grid list -->
     <div class="grid" id="reviewsGrid" aria-label="Reviews grid"></div>
+
     <div class="emptyState" id="reviewsEmpty" style="display:none;">
       Reviews are not available right now. Please try again soon.
     </div>
@@ -688,22 +694,16 @@
 <div id="siteFooter"></div>
   </div>
   <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
+    <script src="/assets/js/site.js?v=1" defer></script>
   <script>
     (function () {
       "use strict";
 
       function byId(id){ return document.getElementById(id); }
       function setText(id, val){
-        const el = byId(id);
+        var el = byId(id);
         if(!el) return;
         el.textContent = String(val == null ? "" : val);
-      }
-
-      function starsText(rating){
-        const r = Number(rating || 0);
-        const full = Math.max(0, Math.min(5, Math.round(r)));
-        return "★".repeat(full) + "☆".repeat(5 - full);
       }
 
       function esc(s){
@@ -716,58 +716,80 @@
       }
 
       function makeAvatarLetters(name){
-        const n = String(name || "").trim();
+        var n = String(name || "").trim();
         if(!n) return "G";
-        const parts = n.split(/\s+/).filter(Boolean);
-        const a = (parts[0] || "G")[0] || "G";
-        const b = (parts[1] || "")[0] || "";
+        var parts = n.split(/\s+/).filter(Boolean);
+        var a = (parts[0] || "G")[0] || "G";
+        var b = (parts[1] || "")[0] || "";
         return (a + b).toUpperCase();
       }
 
+      function starsText(rating){
+        var r = Number(rating || 0);
+        var full = Math.max(0, Math.min(5, Math.round(r)));
+        return "★".repeat(full) + "☆".repeat(5 - full);
+      }
+
+      function parseTime(r){
+        if(!r) return 0;
+        if(r.publish_time){
+          var t = Date.parse(r.publish_time);
+          if(!Number.isNaN(t)) return t;
+        }
+        return 0;
+      }
+
       async function load(){
-        const hint = byId("reviewsHint");
-        const grid = byId("reviewsGrid");
-        const empty = byId("reviewsEmpty");
+        var hint = byId("reviewsHint");
+        var grid = byId("reviewsGrid");
+        var empty = byId("reviewsEmpty");
 
         try{
-          const res = await fetch("/api/reviews", { cache: "no-store" });
+          var res = await fetch("/api/reviews", { cache: "no-store" });
           if(!res.ok) throw new Error("HTTP " + res.status);
-          const data = await res.json();
+          var data = await res.json();
 
           if(!data || !data.ok){
             throw new Error((data && data.error) ? data.error : "Bad response");
           }
 
-          const rating = data.summary && data.summary.rating != null ? data.summary.rating : "-";
-          const count = data.summary && data.summary.review_count != null ? data.summary.review_count : "-";
+          var rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
+          var count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
           setText("ratingValue", rating);
           setText("reviewCount", count);
 
           if(data.place && data.place.maps_url){
-            const wrap = byId("mapsLinkWrap");
-            const link = byId("mapsLink");
+            var wrap = byId("mapsLinkWrap");
+            var link = byId("mapsLink");
             if(wrap && link){
               link.href = data.place.maps_url;
               wrap.style.display = "inline";
             }
           }
 
-          const reviews = Array.isArray(data.reviews) ? data.reviews : [];
-          if(hint) hint.textContent = reviews.length ? "Live from Google" : "No reviews returned from the API right now.";
+          var reviews = Array.isArray(data.reviews) ? data.reviews.slice() : [];
 
           if(!reviews.length){
+            if(hint) hint.textContent = "No reviews returned from the API right now.";
             if(empty) empty.style.display = "block";
             return;
           }
 
-          // Spotlight = latest review (first returned)
-          const latest = reviews[0];
-          const spot = byId("spotlightCard");
+          /* FIX: sort by publish_time descending so the true latest appears first */
+          reviews.sort(function(a,b){
+            return parseTime(b) - parseTime(a);
+          });
+
+          if(hint) hint.textContent = "Live from Google";
+
+          /* Spotlight: newest review after sorting */
+          var latest = reviews[0];
+          var spot = byId("spotlightCard");
           if(spot){
-            const nm = latest.author || "Google user";
-            const sub = latest.relative_time || "";
-            const text = latest.text || "";
-            const ratingNum = latest.rating != null ? latest.rating : 5;
+            var nm = latest.author || "Google user";
+            var sub = latest.relative_time || "";
+            var text = latest.text || "";
+            var ratingNum = (latest.rating != null) ? latest.rating : 5;
 
             setText("spotAvatar", makeAvatarLetters(nm));
             setText("spotName", nm);
@@ -775,7 +797,7 @@
             setText("spotStars", starsText(ratingNum));
             setText("spotText", "“" + text + "”");
 
-            const authorLink = byId("spotAuthorLink");
+            var authorLink = byId("spotAuthorLink");
             if(authorLink && latest.author_url){
               authorLink.href = latest.author_url;
               authorLink.style.display = "inline-flex";
@@ -783,7 +805,7 @@
               authorLink.style.display = "none";
             }
 
-            const mapsLink = byId("spotMapsLink");
+            var mapsLink = byId("spotMapsLink");
             if(mapsLink && data.place && data.place.maps_url){
               mapsLink.href = data.place.maps_url;
               mapsLink.style.display = "inline-flex";
@@ -794,15 +816,16 @@
             spot.style.display = "block";
           }
 
-          // Render remaining reviews (skip latest)
-          const rest = reviews.slice(1);
-          const html = rest.map((r) => {
-            const name = r.author || "Google user";
-            const sub = r.relative_time || "";
-            const text = r.text || "";
-            const ratingNum = r.rating != null ? r.rating : "";
-            const authorUrl = r.author_url || "";
-            const nameHtml = authorUrl
+          /* Render the rest */
+          var rest = reviews.slice(1);
+          var html = rest.map(function(r){
+            var name = r.author || "Google user";
+            var sub = r.relative_time || "";
+            var text = r.text || "";
+            var ratingNum = (r.rating != null) ? r.rating : "";
+            var authorUrl = r.author_url || "";
+
+            var nameHtml = authorUrl
               ? '<a href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:3px;">' + esc(name) + '</a>'
               : esc(name);
 
@@ -817,8 +840,8 @@
                     '</div>' +
                   '</div>' +
                   '<div class="reviewStars" aria-label="Rating and source">' +
-                    '<span class="starsText" aria-label="Stars">' + esc(starsText(ratingNum)) + '</span>' +
-                    '<span class="gBadge"><img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews icon">Google</span>' +
+                    '<span class="starsText" aria-label="Stars"><span>' + esc(starsText(ratingNum)) + '</span></span>' +
+                    '<span class="gBadge" aria-label="Google Reviews"><img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews"></span>' +
                   '</div>' +
                 '</div>' +
                 '<div class="quote">“' + esc(text) + '”</div>' +
@@ -839,3 +862,4 @@
   </script>
 </body>
 </html>
+
