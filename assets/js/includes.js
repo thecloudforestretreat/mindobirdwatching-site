@@ -48,7 +48,9 @@
     if (p === "/book-tour/" || p.startsWith("/book-tour/")) return "book-tour";
     if (p === "/contact/" || p.startsWith("/contact/")) return "contact";
 
-    if (p === "/es/reservar-tour/" || p.startsWith("/es/reservar-tour/")) return "reservar-tour";
+    // ES routes (UPDATED)
+    if (p === "/es/reservar/" || p.startsWith("/es/reservar/")) return "reservar";
+    if (p === "/es/reservar-tour/" || p.startsWith("/es/reservar-tour/")) return "reservar";
     if (p === "/es/contacto/" || p.startsWith("/es/contacto/")) return "contacto";
 
     // Generic fallback: last non-empty segment
@@ -101,14 +103,20 @@
     if (document.querySelector("[data-mbw-header]")) return;
 
     const lang = getCurrentLang();
+
     const headerUrl =
       lang === "es"
         ? "/assets/includes/header-es.html"
         : "/assets/includes/header.html";
 
+    const footerUrl =
+      lang === "es"
+        ? "/assets/includes/footer-es.html"
+        : "/assets/includes/footer.html";
+
     const tasks = [];
     if (headerHost) tasks.push(inject("siteHeader", headerUrl));
-    if (footerHost) tasks.push(inject("siteFooter", "/assets/includes/footer.html"));
+    if (footerHost) tasks.push(inject("siteFooter", footerUrl));
 
     await Promise.all(tasks);
 
