@@ -37,6 +37,60 @@
   }
 
   /* -----------------------------
+     Form source helper (NEW)
+     Adds hidden input: form_source
+     Also sets source_page if present
+  ----------------------------- */
+  function getFormSourceFromPath() {
+    const p = (window.location.pathname || "/").toLowerCase();
+
+    // Common direct mappings
+    if (p === "/book-tour/" || p.startsWith("/book-tour/")) return "book-tour";
+    if (p === "/contact/" || p.startsWith("/contact/")) return "contact";
+
+    if (p === "/es/reservar-tour/" || p.startsWith("/es/reservar-tour/")) return "reservar-tour";
+    if (p === "/es/contacto/" || p.startsWith("/es/contacto/")) return "contacto";
+
+    // Generic fallback: last non-empty segment
+    const segs = p.split("/").filter(Boolean);
+    if (!segs.length) return "home";
+    return segs[segs.length - 1];
+  }
+
+  function ensureHiddenInput(form, name, value) {
+    if (!form) return;
+    let el = form.querySelector('input[name="' + name + '"]');
+    if (!el) {
+      el = document.createElement("input");
+      el.type = "hidden";
+      el.name = name;
+      form.appendChild(el);
+    }
+    if (typeof value !== "undefined") el.value = value;
+  }
+
+  function applyFormSource() {
+    const forms = Array.from(document.querySelectorAll("form"));
+    if (!forms.length) return;
+
+    const source = getFormSourceFromPath();
+    const href = window.location.href;
+
+    forms.forEach((form) => {
+      // Only touch forms that post to your Apps Script endpoint
+      const action = (form.getAttribute("action") || "").toLowerCase();
+      if (!action || action.indexOf("script.google.com/macros") === -1) return;
+
+      // Add / set form_source
+      ensureHiddenInput(form, "form_source", source);
+
+      // If the page already uses source_page, set it correctly
+      const sp = form.querySelector('input[name="source_page"]');
+      if (sp) sp.value = href;
+    });
+  }
+
+  /* -----------------------------
      Inject header + footer
   ----------------------------- */
   async function injectChrome() {
@@ -203,8 +257,12 @@
 
   ready(() => {
     injectChrome().then(initHeader);
+    applyFormSource();
   });
 
-  window.addEventListener("mbw:includes:ready", initHeader);
+  window.addEventListener("mbw:includes:ready", () => {
+    initHeader();
+    applyFormSource();
+  });
 
 })();
