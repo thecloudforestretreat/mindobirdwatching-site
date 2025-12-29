@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reviews | Mindo Bird Watching</title>
   <meta name="description" content="Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours, expert birding guides, and unforgettable wildlife experiences." />
+  <link rel="canonical" href="https://mindobirdwatching.com/reviews/" />
   <link rel="alternate" hreflang="en" href="/reviews/" />
   <link rel="alternate" hreflang="x-default" href="/reviews/" />
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -98,6 +99,13 @@
       background: rgba(3,78,162,.06);
       flex: 0 0 auto;
       font-size: 18px;
+      overflow:hidden;
+    }
+    .pillIcon img{
+      width: 18px;
+      height: 18px;
+      display:block;
+      object-fit: contain;
     }
     .pillText{
       display:grid;
@@ -138,7 +146,7 @@
       border-color: rgba(251,188,4,.35);
     }
     .pillPrimary .pillIcon{
-      background: rgba(251,188,4,.22);
+      background: rgba(251,188,4,.18);
       border-color: rgba(251,188,4,.40);
     }
 
@@ -274,18 +282,6 @@
       position: relative;
     }
 
-    .ghostArt{
-      position:absolute;
-      right: -26px;
-      top: -26px;
-      width: 160px;
-      height: 160px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(13,89,37,.18), rgba(13,89,37,0));
-      pointer-events:none;
-      opacity: .9;
-    }
-
     .summaryTop{
       display:flex;
       align-items:flex-start;
@@ -296,7 +292,7 @@
 
     .score{
       display:flex;
-      align-items: baseline;
+      align-items:flex-start;
       gap: 12px;
       min-width: 0;
     }
@@ -307,6 +303,7 @@
       font-size: 44px;
       line-height: 1;
       color: var(--ink);
+      flex: 0 0 auto;
     }
 
     .scoreMeta{
@@ -317,12 +314,12 @@
 
     .stars{
       display:flex;
-      align-items:center;
-      gap: 12px;
+      align-items:flex-start;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
-    /* Large, borderless stars (fixed for mobile spacing) */
+    /* Stars row (fixed spacing, no squish) */
     .starRow{
       display:flex;
       gap: 8px;
@@ -351,12 +348,18 @@
       display:block;
     }
 
+    .scoreLine{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
     .badgeRow{
       display:flex;
       align-items:center;
       gap: 10px;
       flex-wrap: wrap;
-      margin-top: 2px;
     }
 
     .badge{
@@ -375,18 +378,12 @@
       white-space: nowrap;
     }
 
-    .scoreLine{
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
-
     .poweredBy{
       margin-top: 6px;
       display:flex;
       align-items:center;
-      gap: 8px;
+      justify-content:flex-start;
+      gap: 10px;
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.35;
@@ -402,6 +399,12 @@
       font-weight: 900;
       text-decoration: underline;
       text-underline-offset: 3px;
+    }
+    .mapsInline{
+      display:none;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: nowrap;
     }
 
     .proof{
@@ -477,18 +480,18 @@
       align-content:start;
     }
 
-    /* Spotlight = first (newest) review, large */
-    .spotlightCard{
+    /* Review cards */
+    .reviewCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
-      background: rgba(255,255,255,.76);
+      background: rgba(255,255,255,.70);
       box-shadow: var(--shadow);
-      padding: 16px;
+      padding: 14px;
       position: relative;
       overflow:hidden;
     }
 
-    .spotTop{
+    .reviewTop{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
@@ -545,7 +548,7 @@
       max-width: 52ch;
     }
 
-    .spotBadges{
+    .reviewBadges{
       display:flex;
       align-items:center;
       gap: 10px;
@@ -569,6 +572,16 @@
       white-space: nowrap;
     }
 
+    .starsTextInline{
+      font-size: 14px;
+      letter-spacing: .06em;
+      color: var(--google-star);
+      font-weight: 1000;
+      line-height: 1;
+      display:inline-flex;
+      gap: 2px;
+    }
+
     .gMark{
       display:inline-flex;
       align-items:center;
@@ -581,53 +594,10 @@
     }
 
     .gMark img{
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       display:block;
       object-fit: contain;
-    }
-
-    .spotQuote{
-      margin-top: 12px;
-      color: var(--ink);
-      line-height: 1.8;
-      white-space: pre-wrap;
-      font-size: 14.5px;
-    }
-
-    .spotActions{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-
-    /* Regular review cards */
-    .reviewCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.68);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      position: relative;
-      overflow:hidden;
-    }
-
-    .reviewTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .reviewBadges{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
     }
 
     .quote{
@@ -636,24 +606,6 @@
       line-height: 1.7;
       white-space: pre-wrap;
       font-size: 14px;
-    }
-
-    .starsTextInline{
-      font-size: 14px;
-      letter-spacing: .06em;
-      color: var(--google-star);
-      font-weight: 1000;
-      line-height: 1;
-      display:inline-flex;
-      gap: 2px;
-    }
-
-    .btnRow{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-      margin-top: 12px;
     }
 
     /* CTA card */
@@ -717,11 +669,48 @@
       margin-top: 12px;
     }
 
-    /* Breakpoint tweak so desktop keeps two columns */
     @media (max-width: 860px){
       .hero{ grid-template-columns: 1fr; }
       .reviewsSplit{ grid-template-columns: 1fr; }
       .ctaPills, .miniCarousel{ max-width: 100%; }
+
+      /* Save space on mobile (your screenshot 2) */
+      .page{ padding: 18px; }
+      .score{ gap: 10px; }
+      .scoreNum{ font-size: 42px; }
+      .star::before{ font-size: 24px; }
+      .stars{ gap: 8px; }
+      .scoreMeta{ gap: 6px; }
+
+      /* Put Google Reviews + Location on one line */
+      .badgeRow{
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+      .badge{
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+
+      /* Open on Maps to the left of Powered by Google on one line */
+      .poweredBy{
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .mapsInline{
+        display:flex;
+      }
+      .poweredGroup{
+        display:flex;
+        align-items:center;
+        gap: 8px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+      }
+
+      /* CTA pill titles fit better */
+      .pillTitle{ font-size: 15px; }
     }
 
     @media (prefers-reduced-motion: reduce){
@@ -747,7 +736,9 @@
         <div class="ctaPills" aria-label="Primary actions">
           <a class="pillBtn pillPrimary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">
             <div class="pillLeft">
-              <div class="pillIcon" aria-hidden="true">★</div>
+              <div class="pillIcon" aria-hidden="true">
+                <img src="/assets/images/icons/Google-Review-Symbol.png" alt="">
+              </div>
               <div class="pillText">
                 <p class="pillTitle">Leave A Review On Google</p>
                 <p class="pillSub">It helps us a lot</p>
@@ -771,7 +762,7 @@
             <div class="pillLeft">
               <div class="pillIcon" aria-hidden="true">💬</div>
               <div class="pillText">
-                <p class="pillTitle">Reserve Instantly Via WhatsApp</p>
+                <p class="pillTitle">Reserve Via WhatsApp</p>
                 <p class="pillSub">Fast confirmation</p>
               </div>
             </div>
@@ -809,16 +800,17 @@
     </div>
 
     <aside class="summaryCard" aria-label="Google rating summary">
-      <div class="ghostArt" aria-hidden="true"></div>
-
       <div class="summaryTop">
         <div class="score" aria-label="Overall rating">
           <div class="scoreNum" id="ratingValue">-</div>
+
           <div class="scoreMeta">
             <div class="stars" aria-label="Star rating">
               <div class="starRow" aria-hidden="true">
                 <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
               </div>
+
+              <p class="scoreLine"><span id="reviewCount">-</span> reviews</p>
 
               <div class="badgeRow" aria-label="Badges row">
                 <span class="badge" id="ratingMeta">Google Reviews</span>
@@ -826,11 +818,16 @@
               </div>
             </div>
 
-            <p class="scoreLine"><span id="reviewCount">-</span> reviews</p>
-
             <div class="poweredBy">
-              <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
-              <span>Powered by Google</span>
+              <span class="mapsInline" id="mapsInlineWrap" style="display:none;">
+                <a id="mapsInline" href="#" target="_blank" rel="noopener noreferrer">Open on Maps</a>
+              </span>
+
+              <span class="poweredGroup">
+                <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
+                <span>Powered by Google</span>
+              </span>
+
               <span id="mapsLinkWrap" style="display:none;">
                 <span>•</span>
                 <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer">Open on Maps</a>
@@ -948,48 +945,7 @@
         return "★".repeat(full) + "☆".repeat(5 - full);
       }
 
-      function buildSpotlightCard(r, mapsUrl){
-        const name = r.author || "Google user";
-        const sub = r.relative_time || "";
-        const text = r.text || "";
-        const ratingNum = r.rating != null ? r.rating : 5;
-        const authorUrl = r.author_url || "";
-
-        const viewReviewer = authorUrl
-          ? '<a class="btn secondary" href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer">View reviewer</a>'
-          : "";
-
-        const openMaps = mapsUrl
-          ? '<a class="btn secondary" href="' + esc(mapsUrl) + '" target="_blank" rel="noopener noreferrer">Open on Maps</a>'
-          : "";
-
-        return (
-          '<article class="spotlightCard" aria-label="Latest review">' +
-            '<div class="spotTop">' +
-              '<div class="who">' +
-                '<div class="avatar" aria-hidden="true">' + esc(makeAvatarLetters(name)) + '</div>' +
-                '<div class="whoMeta">' +
-                  '<p class="name">' + esc(name) + '</p>' +
-                  '<p class="sub">' + esc(sub) + '</p>' +
-                '</div>' +
-              '</div>' +
-              '<div class="spotBadges" aria-label="Rating and source">' +
-                '<span class="starsPill"><span class="starsTextInline" aria-label="Stars">' + esc(starsInline(ratingNum)) + '</span></span>' +
-                '<span class="gMark" aria-label="Google Reviews">' +
-                  '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews">' +
-                '</span>' +
-              '</div>' +
-            '</div>' +
-            '<div class="spotQuote">“' + esc(text) + '”</div>' +
-            '<div class="spotActions" aria-label="Actions">' +
-              viewReviewer +
-              openMaps +
-            '</div>' +
-          '</article>'
-        );
-      }
-
-      function buildReviewCard(r){
+      function buildReviewCard(r, mapsUrl){
         const name = r.author || "Google user";
         const sub = r.relative_time || "";
         const text = r.text || "";
@@ -1034,8 +990,8 @@
           const data = await res.json();
           if(!data || !data.ok) throw new Error("Bad response");
 
-          const rating = data.summary && data.summary.rating != null ? data.summary.rating : "-";
-          const count = data.summary && data.summary.review_count != null ? data.summary.review_count : "-";
+          const rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
+          const count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
           setText("ratingValue", rating);
           setText("reviewCount", count);
 
@@ -1043,9 +999,16 @@
           if(mapsUrl){
             const wrap = byId("mapsLinkWrap");
             const link = byId("mapsLink");
+            const inlineWrap = byId("mapsInlineWrap");
+            const inlineLink = byId("mapsInline");
+
             if(wrap && link){
               link.href = mapsUrl;
               wrap.style.display = "inline";
+            }
+            if(inlineWrap && inlineLink){
+              inlineLink.href = mapsUrl;
+              inlineWrap.style.display = "flex";
             }
           }
 
@@ -1063,18 +1026,13 @@
 
           const top10 = reviews.slice(0, 10);
 
-          const first = top10[0];
           const leftItems = [];
           const rightItems = [];
 
-          leftItems.push(buildSpotlightCard(first, mapsUrl));
-
-          const rest = top10.slice(1);
-          const leftRest = rest.slice(0, 4);
-          const rightRest = rest.slice(4, 9);
-
-          leftRest.forEach(r => leftItems.push(buildReviewCard(r)));
-          rightRest.forEach(r => rightItems.push(buildReviewCard(r)));
+          top10.forEach((r, i) => {
+            if(i % 2 === 0) leftItems.push(buildReviewCard(r, mapsUrl));
+            else rightItems.push(buildReviewCard(r, mapsUrl));
+          });
 
           if(colLeft) colLeft.innerHTML = leftItems.join("");
           if(colRight) colRight.innerHTML = rightItems.join("");
