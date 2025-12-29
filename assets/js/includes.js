@@ -1,6 +1,6 @@
 /* =========================================================
    MBW Site JS (Header + Mobile Menu + Language Switch)
-   Version: v2.3 — Stable & Unified
+   Version: v2.4 — Stable (Single Footer)
 ========================================================= */
 
 (function () {
@@ -37,31 +37,23 @@
   }
 
   /* -----------------------------
-     Form source helper (NEW)
-     Adds hidden input: form_source
-     Also sets source_page if present
+     Form source helper
   ----------------------------- */
   function getFormSourceFromPath() {
     const p = (window.location.pathname || "/").toLowerCase();
 
-    // Common direct mappings
     if (p === "/book-tour/" || p.startsWith("/book-tour/")) return "book-tour";
     if (p === "/contact/" || p.startsWith("/contact/")) return "contact";
-
-    // ES routes (UPDATED)
-    if (p === "/es/reservar/" || p.startsWith("/es/reservar/")) return "reservar";
-    if (p === "/es/reservar-tour/" || p.startsWith("/es/reservar-tour/")) return "reservar";
+    if (p === "/es/reservar-tour/" || p.startsWith("/es/reservar-tour/")) return "reservar-tour";
     if (p === "/es/contacto/" || p.startsWith("/es/contacto/")) return "contacto";
 
-    // Generic fallback: last non-empty segment
     const segs = p.split("/").filter(Boolean);
-    if (!segs.length) return "home";
-    return segs[segs.length - 1];
+    return segs.length ? segs[segs.length - 1] : "home";
   }
 
   function ensureHiddenInput(form, name, value) {
     if (!form) return;
-    let el = form.querySelector('input[name="' + name + '"]');
+    let el = form.querySelector(`input[name="${name}"]`);
     if (!el) {
       el = document.createElement("input");
       el.type = "hidden";
@@ -79,14 +71,11 @@
     const href = window.location.href;
 
     forms.forEach((form) => {
-      // Only touch forms that post to your Apps Script endpoint
       const action = (form.getAttribute("action") || "").toLowerCase();
-      if (!action || action.indexOf("script.google.com/macros") === -1) return;
+      if (!action.includes("script.google.com/macros")) return;
 
-      // Add / set form_source
       ensureHiddenInput(form, "form_source", source);
 
-      // If the page already uses source_page, set it correctly
       const sp = form.querySelector('input[name="source_page"]');
       if (sp) sp.value = href;
     });
@@ -109,10 +98,8 @@
         ? "/assets/includes/header-es.html"
         : "/assets/includes/header.html";
 
-    const footerUrl =
-      lang === "es"
-        ? "/assets/includes/footer-es.html"
-        : "/assets/includes/footer.html";
+    // ✅ SINGLE FOOTER FOR ALL LANGUAGES
+    const footerUrl = "/assets/includes/footer.html";
 
     const tasks = [];
     if (headerHost) tasks.push(inject("siteHeader", headerUrl));
@@ -196,7 +183,7 @@
   }
 
   /* -----------------------------
-     Mobile drill-down menus
+     Mobile drill-down
   ----------------------------- */
   function initMobileDrilldown(header) {
     const panel = header.querySelector("#menuPanel");
