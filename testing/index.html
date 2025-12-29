@@ -322,21 +322,25 @@
       flex-wrap: wrap;
     }
 
-    /* Large, borderless stars */
+    /* Large, borderless stars (fixed for mobile spacing) */
     .starRow{
       display:flex;
-      gap: 7px;
+      gap: 8px;
       align-items:center;
       line-height: 1;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      letter-spacing: 0;
     }
     .star{
-      width: 0;
-      height: 0;
       border: 0;
       background: transparent;
       display:inline-flex;
       align-items:center;
       justify-content:center;
+      width: auto;
+      height: auto;
+      flex: 0 0 auto;
     }
     .star::before{
       content:"★";
@@ -344,6 +348,7 @@
       font-weight: 900;
       color: var(--google-star);
       line-height: 1;
+      display:block;
     }
 
     .badgeRow{
@@ -458,7 +463,7 @@
 
     .hint{ margin:0; color: var(--muted); font-size: 13px; }
 
-    /* Reviews split layout */
+    /* Reviews split layout (two columns on desktop) */
     .reviewsSplit{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -575,7 +580,6 @@
       line-height: 1;
     }
 
-    /* Make Google Reviews logo 2x bigger and crisp */
     .gMark img{
       width: 32px;
       height: 32px;
@@ -634,7 +638,6 @@
       font-size: 14px;
     }
 
-    /* Keep stars nice in pills */
     .starsTextInline{
       font-size: 14px;
       letter-spacing: .06em;
@@ -714,7 +717,8 @@
       margin-top: 12px;
     }
 
-    @media (max-width: 980px){
+    /* Breakpoint tweak so desktop keeps two columns */
+    @media (max-width: 860px){
       .hero{ grid-template-columns: 1fr; }
       .reviewsSplit{ grid-template-columns: 1fr; }
       .ctaPills, .miniCarousel{ max-width: 100%; }
@@ -1076,10 +1080,10 @@
           if(colRight) colRight.innerHTML = rightItems.join("");
 
         }catch(e){
-          const hint = byId("reviewsHint");
-          const empty = byId("reviewsEmpty");
-          if(hint) hint.textContent = "Could not load live reviews.";
-          if(empty) empty.style.display = "block";
+          const hint2 = byId("reviewsHint");
+          const empty2 = byId("reviewsEmpty");
+          if(hint2) hint2.textContent = "Could not load live reviews.";
+          if(empty2) empty2.style.display = "block";
         }
       }
 
