@@ -1,6 +1,6 @@
 /* =========================================================
    MBW Site JS (Header + Mobile Menu + Language Switch)
-   Version: v2.4 — Unified + Active Nav Fix
+   Version: v2.5 — Unified + Active Nav Fix (ignore lang pills)
 ========================================================= */
 
 (function () {
@@ -24,18 +24,13 @@
   function normalizePath(p) {
     if (!p) return "/";
     try {
-      // If it's a full URL, grab pathname
       if (p.indexOf("http://") === 0 || p.indexOf("https://") === 0) {
         p = new URL(p).pathname || "/";
       }
     } catch (e) {}
 
-    // Ensure it starts with /
     if (p.charAt(0) !== "/") p = "/" + p;
-
-    // Remove trailing slash except root
     if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
-
     return p;
   }
 
@@ -60,8 +55,6 @@
 
   /* -----------------------------
      Form source helper
-     Adds hidden input: form_source
-     Also sets source_page if present
   ----------------------------- */
   function getFormSourceFromPath() {
     const p = (window.location.pathname || "/").toLowerCase();
@@ -174,35 +167,45 @@
   }
 
   /* -----------------------------
-     ACTIVE NAV (FIX)
-     Highlights the correct pill based on current URL
+     ACTIVE NAV (PERMANENT FIX)
+     - Ignore language pills (EN/ES)
+     - Only consider real nav links (desktop + mobile menu)
   ----------------------------- */
   function setActiveNav(header) {
     const current = getPathname();
 
-    // Clear any previous active state
-    header.querySelectorAll('[aria-current="page"]').forEach((el) => {
+    // Clear ONLY nav-related state (do not wipe language active)
+    header.querySelectorAll(".nav a[aria-current='page'], #menuPanel a[aria-current='page']").forEach((el) => {
       el.removeAttribute("aria-current");
     });
-    header.querySelectorAll(".pill.is-active").forEach((el) => {
+    header.querySelectorAll(".nav a.is-active, #menuPanel a.is-active").forEach((el) => {
       el.classList.remove("is-active");
     });
 
-    // Collect candidate links (desktop + mobile + dropdown items)
-    const links = Array.from(header.querySelectorAll('a[href]'))
+    // Collect candidates: links in nav + menu panel, excluding language UI
+    const candidates = Array.from(header.querySelectorAll(".nav a[href], #menuPanel a[href]"))
       .filter((a) => {
+        if (!a) return false;
         const href = a.getAttribute("href") || "";
         if (!href) return false;
         if (href.startsWith("#")) return false;
         if (href.startsWith("mailto:") || href.startsWith("tel:")) return false;
+
+        // Exclude language links and lang switch pill
+        if (a.hasAttribute("data-lang")) return false;
+        if (a.hasAttribute("data-lang-switch")) return false;
+        if (a.closest(".lang")) return false;
+        if (a.closest(".menuLangFooter")) return false;
+
         return true;
       });
 
-    // Find best match (exact first, else longest prefix)
+    if (!candidates.length) return;
+
     let best = null;
     let bestLen = -1;
 
-    links.forEach((a) => {
+    candidates.forEach((a) => {
       const href = a.getAttribute("href") || "";
       let path = "/";
       try {
@@ -211,19 +214,19 @@
         path = normalizePath(href);
       }
 
-      if (path === "/") {
-        // Root should only match exact root
-        if (current === "/") {
-          if (1 > bestLen) {
+      // Treat "/" and "/es" as home and only match EXACT
+      if (path === "/" || path === "/es") {
+        if (current === path) {
+          if (path.length > bestLen) {
             best = a;
-            bestLen = 1;
+            bestLen = path.length;
           }
         }
         return;
       }
 
+      // Exact match wins
       if (current === path) {
-        // Exact match wins immediately
         if (path.length > bestLen) {
           best = a;
           bestLen = path.length;
@@ -231,8 +234,8 @@
         return;
       }
 
-      // Prefix match (e.g., /es/tours/medio-dia matches /es/tours)
-      if (current.startsWith(path + "/") || current === path) {
+      // Prefix match for deeper pages
+      if (current.startsWith(path + "/")) {
         if (path.length > bestLen) {
           best = a;
           bestLen = path.length;
@@ -245,15 +248,13 @@
     best.classList.add("is-active");
     best.setAttribute("aria-current", "page");
 
-    // If it's a dropdown menu item, also highlight the parent pill
+    // If it's a dropdown menu item, highlight the parent pill too
     const dropdown = best.closest(".dropdownMenu");
     if (dropdown) {
       const parent = dropdown.closest(".dropdown");
       if (parent) {
         const parentPill = parent.querySelector(':scope > a.pill');
-        if (parentPill) {
-          parentPill.classList.add("is-active");
-        }
+        if (parentPill) parentPill.classList.add("is-active");
       }
     }
   }
@@ -355,7 +356,7 @@
     initMenuToggle(header);
     initMobileDrilldown(header);
 
-    // FIX: set active nav based on current URL
+    // Active nav (fixed)
     setActiveNav(header);
   }
 
