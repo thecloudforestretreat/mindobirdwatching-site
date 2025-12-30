@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reviews | Mindo Bird Watching</title>
   <meta name="description" content="Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours, expert birding guides, and unforgettable wildlife experiences." />
+  <link rel="canonical" href="https://mindobirdwatching.com/reviews/" />
   <link rel="alternate" hreflang="en" href="/reviews/" />
   <link rel="alternate" hreflang="x-default" href="/reviews/" />
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -16,485 +17,865 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
   <script src="/assets/js/head.js" defer></script>
   <style>
-    .page { margin-top: 18px; padding: 26px; }
-    .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
+    :root{
+      --google-star: #fbbc04;
+      --glass: rgba(255,255,255,.70);
+      --glass2: rgba(255,255,255,.62);
+      --soft: rgba(255,255,255,.55);
     }
+.page { margin-top: 18px; padding: 26px; }
+.page.card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
 
-    .hero{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
-      align-items:start;
-    }
+.hero{
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 16px;
+  align-items:start;
+}
 
-    .hero h1{
-      margin:0 0 8px;
-      letter-spacing:-0.02em;
-    }
+.hero h1{
+  margin:0 0 8px;
+  letter-spacing:-0.02em;
+}
 
-    .hero p{
-      margin:0;
-      max-width: 85ch;
-      color: var(--ink);
-      line-height: 1.65;
-    }
+.hero p{
+  margin:0;
+  max-width: 85ch;
+  color: var(--ink);
+  line-height: 1.65;
+}
 
-    .heroCtas{
-      margin-top: 14px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
+/* CTA pills + carousel area */
+.leftStack{
+  display:grid;
+  gap: 14px;
+}
 
-    .summaryCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      overflow:hidden;
-      position: relative;
-    }
+.ctaPills{
+  margin-top: 14px;
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items:stretch;
+  max-width: 560px;
+}
 
-    .summaryTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+.pillBtn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  text-decoration:none;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  background: var(--glass);
+  min-height: 58px;
+}
+.pillBtn .pillLeft{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 0;
+}
+.pillIcon{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid rgba(3,78,162,.18);
+  background: rgba(3,78,162,.06);
+  flex: 0 0 auto;
+  font-size: 18px;
+  overflow:hidden;
+}
+.pillIcon img{
+  width: 34px;
+  height: 34px;
+  display:block;
+  object-fit: contain;
+}
 
-    .score{
-      display:flex;
-      align-items: baseline;
-      gap: 10px;
-    }
+.pillText{
+  display:grid;
+  gap: 2px;
+  min-width: 0;
+}
+.pillTitle{
+  margin:0;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+.pillSub{
+  margin:0;
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+.pillChevron{
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.7);
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+}
 
-    .scoreNum{
-      font-weight: 1000;
-      letter-spacing: -0.03em;
-      font-size: 44px;
-      line-height: 1;
-      color: var(--ink);
-    }
+.pillPrimary{
+  background: rgba(251,188,4,.22);
+  border-color: rgba(251,188,4,.35);
+}
+.pillPrimary .pillIcon{
+  background: rgba(251,188,4,.18);
+  border-color: rgba(251,188,4,.40);
+}
 
-    .scoreMeta{
-      display:grid;
-      gap: 4px;
-      min-width: 0;
-    }
+.pillSecondary{
+  background: rgba(13,89,37,.08);
+  border-color: rgba(13,89,37,.18);
+}
+.pillSecondary .pillIcon{
+  background: rgba(13,89,37,.10);
+  border-color: rgba(13,89,37,.20);
+}
 
-    .stars{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+.pillWhatsapp{
+  background: rgba(37,211,102,.10);
+  border-color: rgba(37,211,102,.20);
+}
+.pillWhatsapp .pillIcon{
+  background: rgba(37,211,102,.12);
+  border-color: rgba(37,211,102,.22);
+}
 
-    .starRow{
-      display:flex;
-      gap: 4px;
-      align-items:center;
-    }
+.pillBtn:hover{ transform: translateY(-1px); }
+.pillBtn:active{ transform: translateY(0px); }
 
-    .star{
-      width: 16px;
-      height: 16px;
-      display:inline-block;
-      border-radius: 4px;
-      background: rgba(251,188,4,.16);
-      border: 1px solid rgba(251,188,4,.40);
-      position: relative;
-    }
+/* Mini carousel */
+.miniCarousel{
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--glass2);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  position: relative;
+  max-width: 560px;
+}
+.miniCarouselHeader{
+  padding: 12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.miniCarouselHeader b{
+  font-weight: 1000;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.miniCarouselHeader span{
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+.miniStage{
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: rgba(0,0,0,.03);
+}
+.miniStage img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity .45s ease, transform .65s ease;
+  pointer-events:none;
+}
+.miniStage img.active{
+  opacity: 1;
+  transform: scale(1.00);
+  pointer-events:auto;
+}
+.miniNav{
+  position:absolute;
+  inset: 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 10px;
+  pointer-events:none;
+}
+.miniBtn{
+  pointer-events:auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.76);
+  box-shadow: var(--shadow);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--ink);
+  cursor:pointer;
+  user-select:none;
+}
+.miniBtn:active{ transform: scale(.98); }
+.miniDots{
+  display:flex;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  justify-content:center;
+  align-items:center;
+  background: rgba(255,255,255,.35);
+  border-top: 1px solid rgba(0,0,0,.04);
+}
+.dot{
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.35);
+  cursor:pointer;
+}
+.dot.active{
+  width: 18px;
+  background: rgba(3,78,162,.38);
+  border-color: rgba(3,78,162,.22);
+}
 
-    .star::before{
-      content: "★";
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 12px;
-      font-weight: 900;
-      color: #fbbc04;
-      line-height: 1;
-    }
+/* Summary card */
+.summaryCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--glass2);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  overflow:hidden;
+  position: relative;
+}
 
-    .scoreLine{
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
+.summaryTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.7);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-    }
+.score{
+  display:flex;
+  align-items:flex-start;
+  gap: 12px;
+  min-width: 0;
+}
 
-    .proof{
-      margin-top: 12px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+.scoreNum{
+  font-weight: 1000;
+  letter-spacing: -0.03em;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--ink);
+  flex: 0 0 auto;
+}
 
-    .proofItem{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+.scoreMeta{
+  display:grid;
+  gap: 8px;
+  min-width: 0;
+}
 
-    .proofItem b{
-      display:block;
-      font-weight: 950;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-    }
+.stars{
+  display:flex;
+  align-items:flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    .proofItem span{
-      display:block;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      margin-top: 2px;
-    }
+.starRow{
+  display:flex;
+  gap: 8px;
+  align-items:center;
+  line-height: 1;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+.star{
+  border: 0;
+  background: transparent;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width: auto;
+  height: auto;
+  flex: 0 0 auto;
+}
+.star::before{
+  content:"★";
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--google-star);
+  line-height: 1;
+  display:block;
+}
 
-    .ghostArt{
-      position:absolute;
-      right: -26px;
-      top: -26px;
-      width: 160px;
-      height: 160px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(13,89,37,.18), rgba(13,89,37,0));
-      pointer-events:none;
-      opacity: .9;
-    }
+.scoreLine{
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
 
-    .poweredBy{
-      margin-top: 10px;
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.35;
-    }
-    .poweredBy img{
-      width: 16px;
-      height: 16px;
-      display:block;
-    }
-    .poweredBy a{
-      color: var(--ink);
-      font-weight: 900;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
+.badgeRow{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    .section{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.72);
+  box-shadow: var(--shadow);
+  font-weight: 950;
+  font-size: 12.5px;
+  color: var(--ink);
+  line-height: 1;
+  white-space: nowrap;
+}
 
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
+.poweredBy{
+  margin-top: 6px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+  flex-wrap: wrap;
+}
+.poweredGroup{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.poweredBy img{
+  width: 16px;
+  height: 16px;
+  display:block;
+}
+.poweredBy a{
+  color: var(--ink);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
 
-    .sectionHead h2{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing:-0.02em;
-      font-size: 20px;
-    }
+.proof{
+  margin-top: 12px;
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
 
-    .hint{ margin:0; color: var(--muted); font-size: 13px; }
+.proofItem{
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--soft);
+  padding: 12px;
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+.proofItem b{
+  display:block;
+  font-weight: 950;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
 
-    .reviewCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      position: relative;
-      overflow:hidden;
-    }
+.proofItem span{
+  display:block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  margin-top: 2px;
+}
 
-    .reviewTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+.section{
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
 
-    .who{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 0;
-    }
+.sectionHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
 
-    .avatar{
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      border: 1px solid rgba(251,188,4,.45);
-      background: rgba(251,188,4,.14);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight: 950;
-      color: #8a6a00;
-      flex: 0 0 auto;
-    }
+.sectionHead h2{
+  margin:0;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing:-0.02em;
+  font-size: 20px;
+}
 
-    .whoMeta{
-      display:grid;
-      gap: 2px;
-      min-width: 0;
-    }
+.hint{ margin:0; color: var(--muted); font-size: 13px; }
 
-    .name{
-      margin:0;
-      font-weight: 950;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      font-size: 14px;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      max-width: 28ch;
-    }
+.reviewsSplit{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items:start;
+  margin-top: 12px;
+}
+.col{
+  display:grid;
+  gap: 12px;
+  align-content:start;
+}
 
-    .sub{
-      margin:0;
-      color: var(--muted);
-      font-size: 12.5px;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      max-width: 38ch;
-    }
+.reviewCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.70);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  position: relative;
+  overflow:hidden;
+}
 
-    .reviewStars{
-      display:flex;
-      align-items:center;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-    }
+.reviewTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    .starsText{
-      display:inline-flex;
-      align-items:center;
-      gap: 6px;
-      padding: 7px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(251,188,4,.35);
-      background: rgba(251,188,4,.14);
-      box-shadow: var(--shadow);
-      font-weight: 1000;
-      font-size: 12.5px;
-      color: #8a6a00;
-      line-height: 1;
-      white-space: nowrap;
-    }
+.who{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
 
-    .gBadge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 7px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.70);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-    }
-    .gBadge img{ width: 14px; height: 14px; display:block; }
+.avatar{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  border: 1px solid rgba(251,188,4,.35);
+  background: rgba(251,188,4,.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 950;
+  color: #8a6a00;
+  flex: 0 0 auto;
+}
 
-    .quote{
-      margin: 12px 0 0;
-      color: var(--ink);
-      line-height: 1.7;
-      white-space: pre-wrap;
-    }
+.whoMeta{
+  display:grid;
+  gap: 2px;
+  min-width: 0;
+}
 
-    .pull{
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 12px;
-      align-items: start;
-      margin-top: 12px;
-    }
+.name{
+  margin:0;
+  font-weight: 950;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 42ch;
+}
 
-    .pullCard{
-      border: 1px dashed rgba(13,89,37,.35);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.55);
-      padding: 14px;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 13px;
-    }
+.sub{
+  margin:0;
+  color: var(--muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 52ch;
+}
 
-    .ctaCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-    }
+.reviewBadges{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
 
-    .ctaCard h3{
-      margin: 0 0 8px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
+.starsPill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(251,188,4,.16);
+  box-shadow: var(--shadow);
+  font-weight: 1000;
+  font-size: 13px;
+  color: #8a6a00;
+  line-height: 1;
+  white-space: nowrap;
+}
 
-    .ctaCard p{
-      margin:0;
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.6;
-    }
+.starsTextInline{
+  font-size: 14px;
+  letter-spacing: .06em;
+  color: var(--google-star);
+  font-weight: 1000;
+  line-height: 1;
+  display:inline-flex;
+  gap: 2px;
+}
 
-    .ctaRow{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
+.gMark{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  line-height: 1;
+}
 
-    .linkLine{
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.55;
-    }
+.gMark img{
+  width: 28px;
+  height: 28px;
+  display:block;
+  object-fit: contain;
+}
 
-    .linkLine a{
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-weight: 900;
-      color: var(--ink);
-    }
+.quote{
+  margin: 12px 0 0;
+  color: var(--ink);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  font-size: 14px;
+}
 
-    .emptyState{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.60);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.6;
-    }
+.reviewCtaCard{
+  border: 1px dashed rgba(3,78,162,.25);
+  background: rgba(3,78,162,.06);
+}
+.reviewCtaInner{
+  display:flex;
+  gap: 12px;
+  align-items:flex-start;
+}
+.reviewCtaIcon{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  border: 1px solid rgba(251,188,4,.35);
+  background: rgba(251,188,4,.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex: 0 0 auto;
+  overflow:hidden;
+}
+.reviewCtaIcon img{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display:block;
+}
+.reviewCtaCopy{
+  display:grid;
+  gap: 4px;
+  min-width: 0;
+}
+.reviewCtaCopy b{
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.reviewCtaCopy span{
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.reviewCtaActions{
+  margin-top: 10px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+.reviewCtaActions a{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.72);
+  box-shadow: var(--shadow);
+  font-weight: 950;
+  font-size: 12.5px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
 
-    @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; }
-      .grid{ grid-template-columns: 1fr; }
-      .pull{ grid-template-columns: 1fr; }
-    }
-  </style>
+.ctaCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.ctaCard h3{
+  margin: 0 0 8px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 18px;
+}
+
+.ctaCard p{
+  margin:0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.ctaRow{
+  margin-top: 12px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+
+.linkLine{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.linkLine a{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.emptyState{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.60);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin-top: 12px;
+}
+
+@media (max-width: 860px){
+  .hero{ grid-template-columns: 1fr; }
+  .reviewsSplit{ grid-template-columns: 1fr; }
+  .ctaPills, .miniCarousel{ max-width: 100%; }
+
+  .page{ padding: 18px; }
+  .score{ gap: 10px; }
+  .scoreNum{ font-size: 42px; }
+  .star::before{ font-size: 24px; }
+  .stars{ gap: 8px; }
+  .scoreMeta{ gap: 6px; }
+
+  .badgeRow{
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .badge{
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .poweredBy{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .pillTitle{ font-size: 15px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .miniStage img{ transition: none; }
+  .pillBtn:hover{ transform:none; }
+  .miniBtn:active{ transform:none; }
+}
+      </style>
 </head>
 <body>
   <div class="container">
     <div id="siteHeader"></div>
 <main class="page card">
   <section class="hero" aria-label="Reviews introduction">
-    <div>
-      <h1>Reviews</h1>
-      <p>
-        Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours,
-        expert birding guides, and unforgettable wildlife experiences.
-      </p>
+    <div class="leftStack">
+      <div>
+        <h1>Reviews</h1>
+        <p>
+          Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours,
+          expert birding guides, and unforgettable wildlife experiences.
+        </p>
 
-      <div class="heroCtas" aria-label="Primary actions">
-        <a class="btn primary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">
-          Leave A Review On Google
-        </a>
-        <a class="btn secondary" href="/book-tour/">Book A Tour</a>
-        <a class="btn secondary" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER?text=Hi%20Mindo%20Bird%20Watching%21%20I%27d%20like%20to%20reserve%20a%20tour." target="_blank" rel="noopener noreferrer">
-          Reserve Instantly Via WhatsApp
-        </a>
+        <div class="ctaPills" aria-label="Primary actions">
+          <a class="pillBtn pillPrimary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">
+            <div class="pillLeft">
+              <div class="pillIcon" aria-hidden="true">
+                <img src="/assets/images/icons/Google-Review-Symbol.png" alt="">
+              </div>
+              <div class="pillText">
+                <p class="pillTitle">Leave A Review On Google</p>
+                <p class="pillSub">It helps us a lot</p>
+              </div>
+            </div>
+            <div class="pillChevron" aria-hidden="true">›</div>
+          </a>
+
+          <a class="pillBtn pillSecondary" href="/book-tour/">
+            <div class="pillLeft">
+              <div class="pillIcon" aria-hidden="true">🦜</div>
+              <div class="pillText">
+                <p class="pillTitle">Book A Tour</p>
+                <p class="pillSub">Choose dates and style</p>
+              </div>
+            </div>
+            <div class="pillChevron" aria-hidden="true">›</div>
+          </a>
+
+          <a class="pillBtn pillWhatsapp" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER?text=Hi%20Mindo%20Bird%20Watching%21%20I%27d%20like%20to%20reserve%20a%20tour." target="_blank" rel="noopener noreferrer">
+            <div class="pillLeft">
+              <div class="pillIcon" aria-hidden="true">💬</div>
+              <div class="pillText">
+                <p class="pillTitle">Reserve Via WhatsApp</p>
+                <p class="pillSub">Fast confirmation</p>
+              </div>
+            </div>
+            <div class="pillChevron" aria-hidden="true">›</div>
+          </a>
+        </div>
       </div>
+
+      <section class="miniCarousel" aria-label="Tour moments carousel">
+        <div class="miniCarouselHeader">
+          <b>Tour moments</b>
+          <span>Auto-rotates</span>
+        </div>
+
+        <div class="miniStage" id="miniStage">
+          <img class="active" alt="Mindo Bird Watching moment 1" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 2" src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 3" src="https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 4" src="https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 5" src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 6" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 7" src="https://images.unsplash.com/photo-1497752531616-c3afd9760a11?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 8" src="https://images.unsplash.com/photo-1456926631375-92c8ce872def?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 9" src="https://images.unsplash.com/photo-1501706362039-c6e13d1c9c36?auto=format&fit=crop&w=1600&q=70">
+          <img alt="Mindo Bird Watching moment 10" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=70">
+
+          <div class="miniNav" aria-label="Carousel navigation">
+            <button class="miniBtn" type="button" id="miniPrev" aria-label="Previous image">‹</button>
+            <button class="miniBtn" type="button" id="miniNext" aria-label="Next image">›</button>
+          </div>
+        </div>
+
+        <div class="miniDots" id="miniDots" aria-label="Carousel dots"></div>
+      </section>
     </div>
 
     <aside class="summaryCard" aria-label="Google rating summary">
-      <div class="ghostArt" aria-hidden="true"></div>
-
       <div class="summaryTop">
         <div class="score" aria-label="Overall rating">
           <div class="scoreNum" id="ratingValue">-</div>
+
           <div class="scoreMeta">
             <div class="stars" aria-label="Star rating">
               <div class="starRow" aria-hidden="true">
                 <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
               </div>
-              <span class="badge" id="ratingMeta">Google Reviews</span>
+
+              <p class="scoreLine"><span id="reviewCount">-</span> reviews</p>
+
+              <div class="badgeRow" aria-label="Badges row">
+                <span class="badge" id="ratingMeta">Google Reviews</span>
+                <span class="badge" aria-label="Location badge">📍 Mindo, Ecuador</span>
+              </div>
             </div>
-            <p class="scoreLine">
-              <span id="reviewCount">-</span> reviews
-            </p>
+
             <div class="poweredBy">
-              <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
-              <span>Powered by Google</span>
-              <span id="mapsLinkWrap" style="display:none;">
-                <span>•</span>
-                <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer">Open on Maps</a>
+              <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">Open on Maps</a>
+              <span class="poweredGroup">
+                <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
+                <span>Powered by Google</span>
               </span>
             </div>
           </div>
         </div>
-
-        <span class="badge" aria-label="Location badge">📍 Mindo, Ecuador</span>
       </div>
 
       <div class="proof" aria-label="What guests highlight">
@@ -531,35 +912,32 @@
       <p class="hint" id="reviewsHint">Loading…</p>
     </div>
 
-    <div class="grid" id="reviewsGrid" aria-label="Reviews grid"></div>
+    <div class="reviewsSplit" aria-label="Reviews split columns">
+      <div class="col" id="colLeft" aria-label="Left column"></div>
+      <div class="col" id="colRight" aria-label="Right column"></div>
+    </div>
+
     <div class="emptyState" id="reviewsEmpty" style="display:none;">
       Reviews are not available right now. Please try again soon.
     </div>
 
-    <div class="pull" aria-label="Next steps and CTA">
-      <div class="pullCard">
-        Tip: this page pulls reviews from a server endpoint (/api/reviews) so your API key stays private.
-        If you ever hit quota, increase the cache TTL in the Cloudflare function.
+    <aside class="ctaCard" aria-label="Call to action">
+      <h3>Ready To Go Birding?</h3>
+      <p>
+        Tell us your dates and experience level. We’ll recommend the best tour and timing for sightings in the cloud forest.
+      </p>
+      <div class="ctaRow">
+        <a class="btn primary" href="/book-tour/">Book A Tour</a>
+        <a class="btn secondary" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER?text=Hi%20Mindo%20Bird%20Watching%21%20I%27d%20like%20to%20reserve%20a%20tour." target="_blank" rel="noopener noreferrer">
+          WhatsApp Us
+        </a>
       </div>
 
-      <aside class="ctaCard" aria-label="Call to action">
-        <h3>Ready To Go Birding?</h3>
-        <p>
-          Tell us your dates and experience level. We’ll recommend the best tour and timing for sightings in the cloud forest.
-        </p>
-        <div class="ctaRow">
-          <a class="btn primary" href="/book-tour/">Book A Tour</a>
-          <a class="btn secondary" href="https://wa.me/WHATSAPP_NUMBER_PLACEHOLDER?text=Hi%20Mindo%20Bird%20Watching%21%20I%27d%20like%20to%20reserve%20a%20tour." target="_blank" rel="noopener noreferrer">
-            WhatsApp Us
-          </a>
-        </div>
-
-        <div class="linkLine">
-          ✈️ Planning your Ecuador trip? <a href="/trip-planning/">Let us help you plan it</a>
-          <span style="display:block; margin-top:4px;">(Trip planning page placeholder, we’ll build this later.)</span>
-        </div>
-      </aside>
-    </div>
+      <div class="linkLine">
+        ✈️ Planning your Ecuador trip? <a href="/trip-planning/">Let us help you plan it</a>
+        <span style="display:block; margin-top:4px;">(Trip planning page placeholder, we’ll build this later.)</span>
+      </div>
+    </aside>
   </section>
 </main>
 
@@ -578,12 +956,6 @@
         el.textContent = String(val == null ? "" : val);
       }
 
-      function starsText(rating){
-        const r = Number(rating || 0);
-        const full = Math.max(0, Math.min(5, Math.round(r)));
-        return "★".repeat(full) + "☆".repeat(5 - full);
-      }
-
       function esc(s){
         return String(s || "")
           .replaceAll("&","&amp;")
@@ -593,85 +965,207 @@
           .replaceAll("'","&#039;");
       }
 
-      function makeAvatarLetter(name){
-        const n = (name || "").trim();
+      function makeAvatarLetters(name){
+        const n = String(name || "").trim();
         if(!n) return "G";
-        return n[0].toUpperCase();
+        const parts = n.split(/\s+/).filter(Boolean);
+        const a = (parts[0] || "G")[0] || "G";
+        const b = (parts[1] || "")[0] || "";
+        return (a + b).toUpperCase();
       }
 
-      async function load(){
+      function parseTime(s){
+        if(!s) return 0;
+        const t = Date.parse(s);
+        return Number.isFinite(t) ? t : 0;
+      }
+
+      function starsInline(rating){
+        const r = Number(rating || 0);
+        const full = Math.max(0, Math.min(5, Math.round(r)));
+        return "★".repeat(full) + "☆".repeat(5 - full);
+      }
+
+      function buildReviewCard(r){
+        const name = r.author || "Google user";
+        const sub = r.relative_time || "";
+        const text = r.text || "";
+        const ratingNum = r.rating != null ? r.rating : 5;
+        const authorUrl = r.author_url || "";
+
+        const nameHtml = authorUrl
+          ? '<a href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:3px;">' + esc(name) + '</a>'
+          : esc(name);
+
+        return (
+          '<article class="reviewCard" aria-label="Review">' +
+            '<div class="reviewTop">' +
+              '<div class="who">' +
+                '<div class="avatar" aria-hidden="true">' + esc(makeAvatarLetters(name)) + '</div>' +
+                '<div class="whoMeta">' +
+                  '<p class="name">' + nameHtml + '</p>' +
+                  '<p class="sub">' + esc(sub) + '</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="reviewBadges" aria-label="Rating and source">' +
+                '<span class="starsPill"><span class="starsTextInline" aria-label="Stars">' + esc(starsInline(ratingNum)) + '</span></span>' +
+                '<span class="gMark" aria-label="Google Reviews">' +
+                  '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews">' +
+                '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="quote">“' + esc(text) + '”</div>' +
+          '</article>'
+        );
+      }
+
+      function buildReadMoreCard(mapsUrl){
+        const safeUrl = mapsUrl || "https://www.google.com/maps";
+        return (
+          '<article class="reviewCard reviewCtaCard" aria-label="More reviews">' +
+            '<div class="reviewCtaInner">' +
+              '<div class="reviewCtaIcon" aria-hidden="true">' +
+                '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="">' +
+              '</div>' +
+              '<div class="reviewCtaCopy">' +
+                '<b>Want more reviews?</b>' +
+                '<span>Google limits the API to 5 reviews per request. Open Maps to see all the latest reviews.</span>' +
+                '<div class="reviewCtaActions">' +
+                  '<a href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">Open on Maps</a>' +
+                  '<a href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">Leave a Review</a>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</article>'
+        );
+      }
+
+      async function loadReviews(){
         const hint = byId("reviewsHint");
-        const grid = byId("reviewsGrid");
         const empty = byId("reviewsEmpty");
+        const colLeft = byId("colLeft");
+        const colRight = byId("colRight");
 
         try{
           const res = await fetch("/api/reviews", { cache: "no-store" });
           if(!res.ok) throw new Error("HTTP " + res.status);
           const data = await res.json();
+          if(!data || !data.ok) throw new Error("Bad response");
 
-          if(!data || !data.ok){
-            throw new Error((data && data.error) ? data.error : "Bad response");
-          }
-
-          const rating = data.summary && data.summary.rating != null ? data.summary.rating : "-";
-          const count = data.summary && data.summary.review_count != null ? data.summary.review_count : "-";
+          const rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
+          const count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
           setText("ratingValue", rating);
           setText("reviewCount", count);
 
-          if(data.place && data.place.maps_url){
-            const wrap = byId("mapsLinkWrap");
-            const link = byId("mapsLink");
-            if(wrap && link){
-              link.href = data.place.maps_url;
-              wrap.style.display = "inline";
-            }
+          const mapsUrl = (data.place && data.place.maps_url) ? data.place.maps_url : "";
+          const mapsLink = byId("mapsLink");
+          if(mapsUrl && mapsLink){
+            mapsLink.href = mapsUrl;
+            mapsLink.style.display = "inline";
           }
 
-          const reviews = Array.isArray(data.reviews) ? data.reviews : [];
-          if(hint) hint.textContent = reviews.length ? "Live from Google" : "No reviews returned from the API right now.";
+          let reviews = Array.isArray(data.reviews) ? data.reviews.slice() : [];
+          reviews = reviews
+            .filter(r => r && (r.text || r.author))
+            .sort((a,b) => parseTime(b.publish_time) - parseTime(a.publish_time));
+
+          if(hint){
+            hint.textContent = reviews.length ? "Live from Google" : "No reviews returned from the API right now.";
+          }
 
           if(!reviews.length){
             if(empty) empty.style.display = "block";
             return;
           }
 
-          const html = reviews.map((r) => {
-            const name = r.author || "Google user";
-            const sub = r.relative_time || "";
-            const text = r.text || "";
-            const ratingNum = r.rating != null ? r.rating : "";
-            const authorUrl = r.author_url || "";
-            const nameHtml = authorUrl ? '<a href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:3px;">' + esc(name) + '</a>' : esc(name);
+          const maxFromGoogle = Math.min(5, reviews.length);
+          const top = reviews.slice(0, maxFromGoogle);
 
-            return (
-              '<article class="reviewCard" aria-label="Review">' +
-                '<div class="reviewTop">' +
-                  '<div class="who">' +
-                    '<div class="avatar" aria-hidden="true">' + esc(makeAvatarLetter(name)) + '</div>' +
-                    '<div class="whoMeta">' +
-                      '<p class="name">' + nameHtml + '</p>' +
-                      '<p class="sub">' + esc(sub) + '</p>' +
-                    '</div>' +
-                  '</div>' +
-                  '<div class="reviewStars" aria-label="Rating and source">' +
-                    '<span class="starsText" aria-label="Stars">' + esc(starsText(ratingNum)) + '</span>' +
-                    '<span class="gBadge"><img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews icon">Google</span>' +
-                  '</div>' +
-                '</div>' +
-                '<div class="quote">' + esc(text) + '</div>' +
-              '</article>'
-            );
-          }).join("");
+          const leftItems = [];
+          const rightItems = [];
 
-          if(grid) grid.innerHTML = html;
+          top.forEach((r, i) => {
+            if(i % 2 === 0) leftItems.push(buildReviewCard(r));
+            else rightItems.push(buildReviewCard(r));
+          });
+
+          const totalCardsTarget = 6;
+          const currentTotal = leftItems.length + rightItems.length;
+          if(currentTotal < totalCardsTarget){
+            if(leftItems.length <= rightItems.length) leftItems.push(buildReadMoreCard(mapsUrl));
+            else rightItems.push(buildReadMoreCard(mapsUrl));
+          }
+
+          if(colLeft) colLeft.innerHTML = leftItems.join("");
+          if(colRight) colRight.innerHTML = rightItems.join("");
 
         }catch(e){
-          if(hint) hint.textContent = "Could not load live reviews.";
-          if(empty) empty.style.display = "block";
+          const hint2 = byId("reviewsHint");
+          const empty2 = byId("reviewsEmpty");
+          if(hint2) hint2.textContent = "Could not load live reviews.";
+          if(empty2) empty2.style.display = "block";
         }
       }
 
-      load();
+      function initCarousel(){
+        const stage = byId("miniStage");
+        const dotsWrap = byId("miniDots");
+        const prev = byId("miniPrev");
+        const next = byId("miniNext");
+        if(!stage || !dotsWrap || !prev || !next) return;
+
+        const imgs = Array.from(stage.querySelectorAll("img"));
+        if(!imgs.length) return;
+
+        let idx = 0;
+        let timer = null;
+
+        function renderDots(){
+          dotsWrap.innerHTML = imgs.map((_, i) => (
+            '<button class="dot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Go to image ' + (i+1) + '" data-i="' + i + '"></button>'
+          )).join("");
+        }
+
+        function show(i){
+          idx = (i + imgs.length) % imgs.length;
+          imgs.forEach((im, k) => im.classList.toggle("active", k === idx));
+          renderDots();
+        }
+
+        function start(){
+          const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if(reduce) return;
+          stop();
+          timer = setInterval(() => show(idx + 1), 2600);
+        }
+
+        function stop(){
+          if(timer){ clearInterval(timer); timer = null; }
+        }
+
+        prev.addEventListener("click", function(){ show(idx - 1); start(); });
+        next.addEventListener("click", function(){ show(idx + 1); start(); });
+
+        dotsWrap.addEventListener("click", function(e){
+          const t = e.target;
+          if(!t || !t.getAttribute) return;
+          const di = t.getAttribute("data-i");
+          if(di == null) return;
+          show(parseInt(di, 10));
+          start();
+        });
+
+        stage.addEventListener("mouseenter", stop);
+        stage.addEventListener("mouseleave", start);
+        stage.addEventListener("touchstart", stop, { passive: true });
+        stage.addEventListener("touchend", start, { passive: true });
+
+        show(0);
+        start();
+      }
+
+      loadReviews();
+      initCarousel();
     })();
   </script>
 </body>
