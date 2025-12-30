@@ -10,20 +10,14 @@
     <span>Mindo Bird Watching</span>
   </a>
   <div class="right">
-    <!-- DESKTOP language switch (match English structure/position) -->
-    <div class="lang langDesktop" aria-label="Selector de idioma">
-      <a href="/home/" data-lang="en" aria-label="Cambiar a Inglés">EN</a>
-      <a href="/es/" data-lang="es" aria-label="Cambiar a Español" aria-current="page">ES</a>
-    </div>
-<!-- DESKTOP -->
-<nav class="nav" aria-label="Principal">
-  <a class="pill"
-     href="/es/"
-     data-href-en="/home/"
-     data-href-es="/es/"
-     data-label-en="Home"
-     data-label-es="Inicio">Inicio</a>
-
+    <!-- DESKTOP -->
+    <nav class="nav" aria-label="Principal">
+      <a class="pill"
+         href="/es/"
+         data-href-en="/home/"
+         data-href-es="/es/"
+         data-label-en="Home"
+         data-label-es="Inicio">Inicio</a>
   <div class="dropdown" data-dd="tours">
     <a class="pill"
        href="/es/tours/"
@@ -107,6 +101,12 @@
      data-label-es="Reservar">Reservar</a>
 </nav>
 
+<!-- DESKTOP language switch (MOVED AFTER NAV so it can never sit “above” the menu) -->
+<div class="lang langDesktop" aria-label="Selector de idioma">
+  <a href="/home/" data-lang="en" aria-label="Cambiar a Inglés">EN</a>
+  <a href="/es/" data-lang="es" aria-label="Cambiar a Español" aria-current="page">ES</a>
+</div>
+
 <!-- MOBILE BUTTON -->
 <button class="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false">
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -119,6 +119,60 @@
 </button>
   </div>
   <!-- MOBILE PANEL (DRILL-DOWN) -->
+  <div class="menuPanel" id="menuPanel" aria-label="Menú móvil">
+    <!-- MAIN LIST -->
+    <nav class="menuList m-main" aria-label="Principal (móvil)">
+      <a class="pill" href="/es/" data-href-en="/home/" data-href-es="/es/" data-label-en="Home" data-label-es="Inicio">Inicio</a>
+  <button class="pill m-next" type="button" data-target="#m-tours">
+    Tours <span class="m-arrow" aria-hidden="true">›</span>
+  </button>
+
+  <button class="pill m-next" type="button" data-target="#m-plan">
+    Planifica tu viaje <span class="m-arrow" aria-hidden="true">›</span>
+  </button>
+
+  <button class="pill m-next" type="button" data-target="#m-birds">
+    Aves <span class="m-arrow" aria-hidden="true">›</span>
+  </button>
+
+  <button class="pill m-next" type="button" data-target="#m-about">
+    Acerca de <span class="m-arrow" aria-hidden="true">›</span>
+  </button>
+
+  <a class="pill" href="/es/contacto/" data-href-en="/contact/" data-href-es="/es/contacto/" data-label-en="Contact" data-label-es="Contacto">Contacto</a>
+  <a class="pill" href="/es/reservar-tour/" data-href-en="/book-tour/" data-href-es="/es/reservar-tour/" data-label-en="Book A Tour" data-label-es="Reservar">Reservar</a>
+</nav>
+
+<!-- SUBMENUS (HIDDEN BY DEFAULT) -->
+<nav class="menuList m-submenu" id="m-tours" hidden aria-label="Tours (móvil)">
+  <button class="pill m-back" type="button" data-back>← Volver</button>
+  <a class="pill" href="/es/tours/">Resumen de Tours</a>
+  <a class="pill" href="/es/tours/medio-dia/">Tours de Medio Día</a>
+  <a class="pill" href="/es/tours/dia-entero/">Tours de Día Entero</a>
+  <a class="pill" href="/es/tour-personalizado-privado/">Tour Personalizado / Privado</a>
+</nav>
+
+<nav class="menuList m-submenu" id="m-plan" hidden aria-label="Planifica tu viaje (móvil)">
+  <button class="pill m-back" type="button" data-back>← Volver</button>
+  <a class="pill" href="/es/planifica-tu-viaje/">Planifica Tu Viaje</a>
+  <a class="pill" href="/es/preguntas-frecuentes-faq/">Preguntas Frecuentes</a>
+</nav>
+
+<nav class="menuList m-submenu" id="m-birds" hidden aria-label="Aves (móvil)">
+  <button class="pill m-back" type="button" data-back>← Volver</button>
+  <a class="pill" href="/es/galeria/">Galería de Aves</a>
+  <a class="pill" href="/es/ave-de-la-semana/">Ave de la Semana</a>
+  <a class="pill" href="/es/calendario-de-avistamiento/">Calendario de Avistamiento</a>
+</nav>
+
+<nav class="menuList m-submenu" id="m-about" hidden aria-label="Acerca de (móvil)">
+  <button class="pill m-back" type="button" data-back>← Volver</button>
+  <a class="pill" href="/es/sobre-nosotros/">Sobre Nosotros</a>
+  <a class="pill" href="/es/nuestro-guia/">Nuestro Guía</a>
+  <a class="pill" href="/es/resenas/">Reseñas</a>
+</nav>
+
+<!-- MOBILE LANGUAGE (BOTTOM) -->
   <div class="menuPanel" id="menuPanel" aria-label="Menú móvil">
     <!-- MAIN LIST -->
     <nav class="menuList m-main" aria-label="Principal (móvil)">
