@@ -12,37 +12,27 @@ export async function onRequestGet(context) {
     );
   }
 
-  // Simple edge cache (Cloudflare Cache API)
-  const cacheKey = new Request(new URL("/api/reviews", request.url).toString(), request);
+  // Cache key includes full URL (keeps it stable and safe)
+  const cacheKey = new Request(request.url, request);
   const cache = caches.default;
 
-  // 12 hours
-  const TTL_SECONDS = 60 * 60 * 12;
+  // 30 minutes (so new reviews appear quickly)
+  const TTL_SECONDS = 60 * 30;
 
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
 
-  // Places API (New) Place Details endpoint
-  // FieldMask is REQUIRED (or Google returns an error).  [oai_citation:1‡Google for Developers](https://developers.google.com/maps/documentation/places/web-service/place-details)
-  const fieldMask = [
-    "displayName",
-    "googleMapsUri",
-    "rating",
-    "userRatingCount",
-    "reviews" // includes review text/rating/author attribution fields where available
-  ].join(",");
+  // Places API (Legacy) Place Details endpoint
+  // Reviews are capped to "up to five" by Google; we request newest ordering.
+  const fields = ["name", "url", "rating", "user_ratings_total", "reviews"].join(",");
+  const url =
+    `https://maps.googleapis.com/maps/api/place/details/json` +
+    `?place_id=${encodeURIComponent(PLACE_ID)}` +
+    `&fields=${encodeURIComponent(fields)}` +
+    `&reviews_sort=newest` +
+    `&key=${encodeURIComponent(API_KEY)}`;
 
-  const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(PLACE_ID)}?fields=${encodeURIComponent(fieldMask)}&key=${encodeURIComponent(API_KEY)}`;
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      // Using URL fields= already supplies the mask, but keeping the header is fine and explicit.
-      "X-Goog-Api-Key": API_KEY,
-      "X-Goog-FieldMask": fieldMask
-    }
-  });
+  const res = await fetch(url, { method: "GET" });
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -52,29 +42,36 @@ export async function onRequestGet(context) {
     );
   }
 
-  const data = await res.json();
+  const raw = await res.json();
+  const result = raw && raw.result ? raw.result : null;
+
+  if (!result) {
+    return json(
+      { ok: false, error: "Google Places returned no result", detail: raw },
+      502
+    );
+  }
 
   const normalized = {
     ok: true,
-    source: "google_places_new",
+    source: "google_places_legacy",
     place: {
-      name: data?.displayName?.text || "",
-      maps_url: data?.googleMapsUri || ""
+      name: result?.name || "",
+      maps_url: result?.url || ""
     },
     summary: {
-      rating: typeof data?.rating === "number" ? data.rating : null,
-      review_count: typeof data?.userRatingCount === "number" ? data.userRatingCount : null
+      rating: typeof result?.rating === "number" ? result.rating : null,
+      review_count: typeof result?.user_ratings_total === "number" ? result.user_ratings_total : null
     },
-    // Google may return a limited subset of reviews depending on availability/policy.
-    reviews: Array.isArray(data?.reviews)
-      ? data.reviews.map((r) => ({
-          author: r?.authorAttribution?.displayName || "Google user",
-          author_url: r?.authorAttribution?.uri || "",
+    reviews: Array.isArray(result?.reviews)
+      ? result.reviews.map((r) => ({
+          author: r?.author_name || "Google user",
+          author_url: r?.author_url || "",
           rating: typeof r?.rating === "number" ? r.rating : null,
-          // In Places API (New), text is often nested as text.text
-          text: r?.text?.text || "",
-          relative_time: r?.relativePublishTimeDescription || "",
-          publish_time: r?.publishTime || ""
+          text: r?.text || "",
+          relative_time: r?.relative_time_description || "",
+          // Legacy returns "time" (unix seconds). Convert to ISO.
+          publish_time: typeof r?.time === "number" ? new Date(r.time * 1000).toISOString() : ""
         }))
       : []
   };
@@ -83,9 +80,7 @@ export async function onRequestGet(context) {
     "Cache-Control": `public, max-age=0, s-maxage=${TTL_SECONDS}`
   });
 
-  // Store in edge cache
   await cache.put(cacheKey, response.clone());
-
   return response;
 }
 
