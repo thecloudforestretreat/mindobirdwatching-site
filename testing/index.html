@@ -89,8 +89,8 @@
       min-width: 0;
     }
     .pillIcon{
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 14px;
       display:flex;
       align-items:center;
@@ -101,12 +101,14 @@
       font-size: 18px;
       overflow:hidden;
     }
+    /* Bigger Google Reviews icon (your fix #1) */
     .pillIcon img{
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       display:block;
       object-fit: contain;
     }
+
     .pillText{
       display:grid;
       gap: 2px;
@@ -319,7 +321,6 @@
       flex-wrap: wrap;
     }
 
-    /* Stars row (fixed spacing, no squish) */
     .starRow{
       display:flex;
       gap: 8px;
@@ -378,16 +379,23 @@
       white-space: nowrap;
     }
 
+    /* Open on Maps ONLY ONCE (your fix #2 + #3) */
     .poweredBy{
       margin-top: 6px;
       display:flex;
       align-items:center;
       justify-content:flex-start;
-      gap: 10px;
+      gap: 12px;
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.35;
       flex-wrap: wrap;
+    }
+    .poweredGroup{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      white-space: nowrap;
     }
     .poweredBy img{
       width: 16px;
@@ -399,12 +407,7 @@
       font-weight: 900;
       text-decoration: underline;
       text-underline-offset: 3px;
-    }
-    .mapsInline{
-      display:none;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: nowrap;
+      white-space: nowrap;
     }
 
     .proof{
@@ -466,7 +469,7 @@
 
     .hint{ margin:0; color: var(--muted); font-size: 13px; }
 
-    /* Reviews split layout (two columns on desktop) */
+    /* Reviews split layout */
     .reviewsSplit{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -674,7 +677,6 @@
       .reviewsSplit{ grid-template-columns: 1fr; }
       .ctaPills, .miniCarousel{ max-width: 100%; }
 
-      /* Save space on mobile (your screenshot 2) */
       .page{ padding: 18px; }
       .score{ gap: 10px; }
       .scoreNum{ font-size: 42px; }
@@ -682,7 +684,6 @@
       .stars{ gap: 8px; }
       .scoreMeta{ gap: 6px; }
 
-      /* Put Google Reviews + Location on one line */
       .badgeRow{
         flex-wrap: nowrap;
         gap: 8px;
@@ -692,24 +693,13 @@
         font-size: 12px;
       }
 
-      /* Open on Maps to the left of Powered by Google on one line */
+      /* If not on one line, Open on Maps goes on top of Powered by Google */
       .poweredBy{
-        flex-wrap: nowrap;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .mapsInline{
-        display:flex;
-      }
-      .poweredGroup{
-        display:flex;
-        align-items:center;
-        gap: 8px;
-        white-space: nowrap;
-        flex: 0 0 auto;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
       }
 
-      /* CTA pill titles fit better */
       .pillTitle{ font-size: 15px; }
     }
 
@@ -819,18 +809,10 @@
             </div>
 
             <div class="poweredBy">
-              <span class="mapsInline" id="mapsInlineWrap" style="display:none;">
-                <a id="mapsInline" href="#" target="_blank" rel="noopener noreferrer">Open on Maps</a>
-              </span>
-
+              <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">Open on Maps</a>
               <span class="poweredGroup">
                 <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
                 <span>Powered by Google</span>
-              </span>
-
-              <span id="mapsLinkWrap" style="display:none;">
-                <span>•</span>
-                <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer">Open on Maps</a>
               </span>
             </div>
           </div>
@@ -945,7 +927,7 @@
         return "★".repeat(full) + "☆".repeat(5 - full);
       }
 
-      function buildReviewCard(r, mapsUrl){
+      function buildReviewCard(r){
         const name = r.author || "Google user";
         const sub = r.relative_time || "";
         const text = r.text || "";
@@ -997,18 +979,10 @@
 
           const mapsUrl = (data.place && data.place.maps_url) ? data.place.maps_url : "";
           if(mapsUrl){
-            const wrap = byId("mapsLinkWrap");
-            const link = byId("mapsLink");
-            const inlineWrap = byId("mapsInlineWrap");
-            const inlineLink = byId("mapsInline");
-
-            if(wrap && link){
-              link.href = mapsUrl;
-              wrap.style.display = "inline";
-            }
-            if(inlineWrap && inlineLink){
-              inlineLink.href = mapsUrl;
-              inlineWrap.style.display = "flex";
+            const mapsLink = byId("mapsLink");
+            if(mapsLink){
+              mapsLink.href = mapsUrl;
+              mapsLink.style.display = "inline";
             }
           }
 
@@ -1024,14 +998,16 @@
             return;
           }
 
-          const top10 = reviews.slice(0, 10);
+          /* Recommendation: show 6 so desktop stays balanced (3 + 3) */
+          const showCount = 6;
+          const top = reviews.slice(0, showCount);
 
           const leftItems = [];
           const rightItems = [];
 
-          top10.forEach((r, i) => {
-            if(i % 2 === 0) leftItems.push(buildReviewCard(r, mapsUrl));
-            else rightItems.push(buildReviewCard(r, mapsUrl));
+          top.forEach((r, i) => {
+            if(i % 2 === 0) leftItems.push(buildReviewCard(r));
+            else rightItems.push(buildReviewCard(r));
           });
 
           if(colLeft) colLeft.innerHTML = leftItems.join("");
