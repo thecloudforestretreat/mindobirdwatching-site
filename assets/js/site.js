@@ -1,5 +1,8 @@
 /* /assets/js/site.js
-   MBW mobile menu controller (drill-down)
+   MBW mobile menu controller (drill-down) - DROP-IN FILE (ASCII ONLY)
+
+   Fixes:
+   - Works with injected headers (includes.js) by re-initializing when headers appear
    - Hamburger opens main menu only (submenus hidden)
    - .m-next opens submenu via data-target (e.g. '#m-tours')
    - .m-back returns via data-back
@@ -10,7 +13,8 @@
   function qsa(root, sel) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function initHeader(header) {
-    if (!header) return;
+    if (!header || header.__mbwInited) return;
+    header.__mbwInited = true;
 
     var btn = qs(header, ".menuBtn");
     var panel = qs(header, ".menuPanel");
@@ -92,13 +96,25 @@
       }
     });
 
-    // Initial state
+    // Initial state (important if HTML is injected with submenus visible)
     closeAllSubmenus();
     btn.setAttribute("aria-expanded", "false");
   }
 
-  function boot() {
+  function initAll() {
     qsa(document, "header.topbar[data-mbw-header]").forEach(initHeader);
+  }
+
+  function observeForInjectedHeaders() {
+    var mo = new MutationObserver(function () {
+      initAll();
+    });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  function boot() {
+    initAll();
+    observeForInjectedHeaders();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
