@@ -355,17 +355,25 @@ html, body{ overflow-x: visible; }
   font-weight: 900;
   color: rgba(7,25,35,.78);
 }
+
 /* =========================================================
-   MBW Header Fix – Desktop ES matches EN:
+   MBW Header Fix – Desktop ES matches EN (WITHOUT killing dropdowns)
    1) Keep one-row layout (no EN/ES dropping)
    2) Move EN/ES to the LEFT of nav (Spanish only)
    3) Prevent first pill ("Inicio") from clipping
+   4) KEEP dropdown menus visible on desktop
    ========================================================= */
 
 @media (min-width: 901px){
-  /* Keep everything on one row (only MBW header include) */
+  /* Keep everything on one row */
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  /* Ensure nav can shrink without pushing items to a new line */
+  header.topbar[data-mbw-header] nav.nav{
+    flex: 1 1 auto;
     min-width: 0;
   }
 
@@ -378,12 +386,13 @@ html, body{ overflow-x: visible; }
     order: 1;
   }
 
-  /* Prevent wrapping AND prevent left edge clipping of first pill */
+  /* KEY FIX:
+     - overflow MUST be visible so dropdownMenu can render outside nav
+     - padding-left prevents "Inicio" pill clipping */
   header.topbar[data-mbw-header] nav.nav{
     flex-wrap: nowrap;
-    min-width: 0;
-    overflow: hidden;   /* IMPORTANT: keep hidden */
-    padding-left: 8px;  /* buffer so "Inicio" isn't clipped */
+    overflow: visible;    /* ✅ allow dropdowns to show */
+    padding-left: 8px;    /* ✅ prevent "Inicio" from clipping */
   }
 
   /* Keep language switch stable */
