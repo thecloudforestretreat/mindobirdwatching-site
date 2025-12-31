@@ -47,10 +47,12 @@ header.topbar[data-mbw-header] .brand span{
   letter-spacing: -0.01em;
 }
 
+/* Right cluster */
 header.topbar[data-mbw-header] .right{
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  min-width: 0;
 }
 
 /* Language switch */
@@ -63,6 +65,8 @@ header.topbar[data-mbw-header] .lang{
   border: 1px solid var(--mbw-line);
   background: rgba(255,255,255,0.70);
   box-shadow: 0 10px 25px rgba(0,0,0,.07);
+  flex: 0 0 auto;
+  flex-shrink: 0;
 }
 
 header.topbar[data-mbw-header] .lang a{
@@ -93,8 +97,10 @@ header.topbar[data-mbw-header] nav.nav{
   gap: 10px;
   flex-wrap: nowrap;
   white-space: nowrap;
+  min-width: 0;
 }
 
+/* Pills */
 header.topbar[data-mbw-header] .pill{
   display: inline-flex;
   align-items: center;
@@ -174,6 +180,7 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
   border-color: rgba(13,89,37,.22);
 }
 
+/* Desktop rules */
 @media (min-width: 901px){
   header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
   header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
@@ -185,34 +192,26 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
     display: none !important;
   }
 
-  /* Desktop stability */
+  /* Force one-line cluster and prevent overlap */
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
     min-width: 0;
-    gap: 12px;
+    gap: 14px;
   }
 
-  header.topbar[data-mbw-header] .lang{
-    flex: 0 0 auto;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 3;
-  }
-
+  /* Let nav take remaining space, but never collide with lang */
   header.topbar[data-mbw-header] nav.nav{
     flex: 1 1 auto;
     min-width: 0;
-    overflow: visible; /* dropdowns need this */
+    overflow: visible;
     position: relative;
     z-index: 2;
+    padding-left: 8px;
   }
 
-  /* ✅ ES FIX: guaranteed spacing between language pills and first nav pill */
-  header.topbar[data-mbw-header][data-current-lang="es"] .lang{
-    margin-right: 14px !important;
-  }
-  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav > a.pill:first-child{
-    margin-left: 10px !important;
+  header.topbar[data-mbw-header] .lang{
+    position: relative;
+    z-index: 3;
   }
 }
 
@@ -262,7 +261,7 @@ header.topbar[data-mbw-header] .menuList{
   margin-top: 10px;
 }
 
-/* ✅ FORCE LEFT ALIGNMENT FOR ALL MOBILE MENU ROWS */
+/* Force left alignment for all mobile rows */
 @media (max-width: 900px){
   header.topbar[data-mbw-header] nav.nav{
     display: none;
