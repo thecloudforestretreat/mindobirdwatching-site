@@ -356,26 +356,37 @@ html, body{ overflow-x: visible; }
   color: rgba(7,25,35,.78);
 }
 /* =========================================================
-   MBW Header Fix – Desktop EN/ES Alignment + no "Inicio" clip
-   (Append at END of assets/css/site.css)
+   MBW Header Fix – Desktop ES matches EN:
+   1) Keep one-row layout (no EN/ES dropping)
+   2) Move EN/ES to the LEFT of nav (Spanish only)
+   3) Prevent first pill ("Inicio") from clipping
    ========================================================= */
 
 @media (min-width: 901px){
-  /* Keep everything on one row */
+  /* Keep everything on one row (only MBW header include) */
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
     min-width: 0;
   }
 
-  /* Prevent wrapping AND prevent left edge clipping */
+  /* Spanish only: place language switch to the LEFT of nav */
+  header.topbar[data-mbw-header][data-current-lang="es"] .rightActions{
+    order: 0;
+    flex: 0 0 auto;
+  }
+  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav{
+    order: 1;
+  }
+
+  /* Prevent wrapping AND prevent left edge clipping of first pill */
   header.topbar[data-mbw-header] nav.nav{
     flex-wrap: nowrap;
     min-width: 0;
-    overflow: hidden;      /* IMPORTANT: do NOT set to visible */
-    padding-left: 8px;     /* buffer so "Inicio" pill isn't clipped */
+    overflow: hidden;   /* IMPORTANT: keep hidden */
+    padding-left: 8px;  /* buffer so "Inicio" isn't clipped */
   }
 
-  /* Keep language switch pinned right */
+  /* Keep language switch stable */
   header.topbar[data-mbw-header] .lang{
     flex: 0 0 auto;
   }
