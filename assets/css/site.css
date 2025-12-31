@@ -356,23 +356,14 @@ html, body{ overflow-x: visible; }
   color: rgba(7,25,35,.78);
 }
 /* =========================================================
-   MBW Header Fix – Desktop EN/ES Alignment
-   (Safe append – does not override existing layout)
+   MBW Header Fix – Prevent left edge clipping of first pill
+   (Desktop only)
    ========================================================= */
 
 @media (min-width: 901px){
-  header.topbar[data-mbw-header] .right{
-    flex-wrap: nowrap;
-    min-width: 0;
-  }
-
+  /* Let pills render fully (no clipping of rounded edge / shadow) */
   header.topbar[data-mbw-header] nav.nav{
-    flex-wrap: nowrap;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  header.topbar[data-mbw-header] .lang{
-    flex: 0 0 auto;
+    overflow: visible;         /* overrides previous overflow:hidden */
+    padding-left: 6px;         /* tiny buffer so the first pill never gets cut */
   }
 }
