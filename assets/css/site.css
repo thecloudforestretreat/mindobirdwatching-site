@@ -359,30 +359,36 @@ html, body{ overflow-x: visible; }
 }
 
 /* =========================================================
-   MBW Header Fix – Desktop stability (EN + ES)
-   - Prevent overlap between language pills and first nav pill
-   - Keep dropdowns working (dropdownMenu can render outside nav)
+   MBW Header Fix – Desktop ES overlap fix (EN/ES vs Inicio)
+   - Force real spacing so first nav pill cannot sit under lang
+   - Keep dropdowns working
    ========================================================= */
 
 @media (min-width: 901px){
-  /* Keep header right cluster on one line */
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
     min-width: 0;
+    gap: 14px; /* stronger separation than header.css */
   }
 
-  /* Language switch should never shrink/overlap */
   header.topbar[data-mbw-header] .lang{
     flex: 0 0 auto;
     flex-shrink: 0;
+    position: relative;
+    z-index: 3; /* keep lang above if anything collides */
   }
 
-  /* Nav should take remaining space and be allowed to shrink */
   header.topbar[data-mbw-header] nav.nav{
     flex: 1 1 auto;
     min-width: 0;
     flex-wrap: nowrap;
-    overflow: visible;   /* ✅ allow dropdownMenu to show outside nav */
-    padding-left: 8px;   /* ✅ prevents first pill clipping */
+    overflow: visible; /* dropdowns must render outside nav */
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ✅ THE ACTUAL FIX: push Inicio away from EN/ES on ES desktop */
+  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav > a.pill:first-child{
+    margin-left: 12px; /* hard gap so it cannot overlap the lang pills */
   }
 }
