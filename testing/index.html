@@ -146,6 +146,14 @@
       align-items: start;
     }
 
+    .mediaCol{
+      display:flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: stretch;
+      min-width: 0;
+    }
+
     .mediaCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
@@ -212,6 +220,54 @@
       color: var(--ink);
       line-height: 1;
       white-space: nowrap;
+    }
+
+    /* Secure badge card */
+    .secureWrap{
+      padding: 14px;
+      display:flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .secureImg{
+      width: 96px;
+      height: 96px;
+      flex: 0 0 auto;
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border: 1px solid var(--line);
+    }
+
+    .secureImg img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display:block;
+    }
+
+    .secureCopy{
+      min-width: 0;
+    }
+
+    .secureKicker{
+      margin: 0 0 4px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      font-size: 13.5px;
+      line-height: 1.2;
+    }
+
+    .secureText{
+      margin: 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.55;
     }
 
     /* Quick links */
@@ -316,6 +372,14 @@
       .tiles{ grid-template-columns: 1fr; }
       .photoRail{ grid-template-columns: 1fr; }
       .photo img{ height: 220px; }
+
+      .secureWrap{
+        align-items: flex-start;
+      }
+      .secureImg{
+        width: 84px;
+        height: 84px;
+      }
     }
   </style>
 </head>
@@ -358,42 +422,73 @@
         </aside>
       </section>
 
-      <!-- FEATURE MEDIA: IMAGE + VIDEO -->
+      <!-- FEATURE MEDIA: IMAGES + SECURE BADGE + VIDEO -->
       <section class="section" aria-label="Featured media">
         <div class="sectionHead">
           <h2>See What The Experience Feels Like</h2>
-          <p class="hint">Featured image and a YouTube Short.</p>
+          <p class="hint">Two featured photos, a safe travel badge, and a YouTube Short.</p>
         </div>
 
         <div class="mediaGrid">
-          <!-- Big image slot -->
-          <article class="mediaCard" aria-label="Featured image">
-            <div class="mediaFrame">
-              <img
-                src="/assets/images/pages/home/MBW-Assets-homepage-top.jpg"
-                alt="Birdwatching in the Mindo cloud forest"
-              />
-            </div>
-            <div class="mediaBar">
-              <p class="mediaTitle">Cloud Forest Birding</p>
-              <span class="badge">Mindo</span>
-            </div>
-          </article>
+          <!-- Left column: stacked images (fills space next to vertical video) -->
+          <div class="mediaCol" aria-label="Featured images">
+            <article class="mediaCard" aria-label="Featured image 1">
+              <div class="mediaFrame">
+                <img
+                  src="/assets/images/pages/home/MBW-Assets-homepage-top.jpg"
+                  alt="Birdwatching in the Mindo cloud forest"
+                />
+              </div>
+              <div class="mediaBar">
+                <p class="mediaTitle">Cloud Forest Birding</p>
+                <span class="badge">Mindo</span>
+              </div>
+            </article>
 
-          <!-- Video slot -->
-          <article class="mediaCard" aria-label="Featured video">
-            <iframe
-              class="videoFrame"
-              src="https://www.youtube.com/embed/bfVgotdkJPE"
-              title="Spotting the Elusive Umbrellabird in Mindo, Ecuador!"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen></iframe>
-            <div class="mediaBar">
-              <p class="mediaTitle">Spotting the Umbrellabird</p>
-              <span class="badge">YouTube Short</span>
-            </div>
-          </article>
+            <article class="mediaCard" aria-label="Featured image 2">
+              <div class="mediaFrame">
+                <img
+                  src="/assets/images/pages/home/MBW-Assets-homepage-top-2.jpg"
+                  alt="Birding trail and scenic cloud forest views in Mindo"
+                />
+              </div>
+              <div class="mediaBar">
+                <p class="mediaTitle">Local Trails and Views</p>
+                <span class="badge">Guided</span>
+              </div>
+            </article>
+          </div>
+
+          <!-- Right column: secure badge then video -->
+          <div class="mediaCol" aria-label="Safe travel and video">
+            <article class="mediaCard" aria-label="Safe and secure travel badge">
+              <div class="secureWrap">
+                <div class="secureImg" aria-hidden="true">
+                  <img src="/assets/images/MBW-Assets-4-SecureBadge.png" alt="Safe and secure travel badge" />
+                </div>
+                <div class="secureCopy">
+                  <p class="secureKicker">Safe and secure travel</p>
+                  <p class="secureText">
+                    We keep tours calm, organized, and well planned with trusted local logistics, clear meeting points, and guidance every step of the way.
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <article class="mediaCard" aria-label="Featured video">
+              <iframe
+                class="videoFrame"
+                src="https://www.youtube.com/embed/bfVgotdkJPE"
+                title="Spotting the Elusive Umbrellabird in Mindo, Ecuador!"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen></iframe>
+              <div class="mediaBar">
+                <p class="mediaTitle">Spotting the Umbrellabird</p>
+                <span class="badge">YouTube Short</span>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
 
