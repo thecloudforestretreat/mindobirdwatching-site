@@ -1,9 +1,12 @@
 /* MBW Header (Dropdown v2)
-   FIXED:
-   1. ES desktop overlap (EN/ES vs Inicio)
-   2. Hamburger hidden on desktop
-   3. Language switch only inside hamburger on mobile
-   4. Mobile submenus closed by default
+   Fixes:
+   1) ES language pills never overlap first nav pill (desktop)
+   2) Hamburger never appears on desktop
+   3) Mobile language switch is not shown in the header row (only in menu footer)
+   4) Mobile menu opens in a clean state (main menu only); submenus hidden via [hidden]
+   Notes:
+   - Targets ES by html[lang="es"] (do not rely on header data attributes)
+   - ASCII only
 */
 
 :root{
@@ -15,12 +18,10 @@
   --mbw-r: 18px;
 }
 
-/* Safety: hide anything marked hidden */
-header.topbar[data-mbw-header] [hidden] {
+/* Hard guarantee: any [hidden] inside header is hidden (prevents "all submenus open") */
+header.topbar[data-mbw-header] [hidden]{
   display: none !important;
 }
-
-/* ================= HEADER ================= */
 
 header.topbar[data-mbw-header]{
   position: sticky;
@@ -31,7 +32,7 @@ header.topbar[data-mbw-header]{
   border: 1px solid var(--mbw-line);
   background: var(--mbw-header-bg);
   box-shadow: var(--mbw-shadow);
-  padding: 14px;
+  padding: 14px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,34 +45,34 @@ header.topbar[data-mbw-header] .brand{
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
-  flex: 0 1 auto;
   text-decoration: none;
   color: inherit;
+  min-width: 220px;
 }
 
 header.topbar[data-mbw-header] .brand img{
   width: 28px;
   height: 28px;
   border-radius: 999px;
+  object-fit: cover;
 }
 
 header.topbar[data-mbw-header] .brand span{
   font-weight: 900;
-  white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
-/* Right group */
+/* Right cluster */
 header.topbar[data-mbw-header] .right{
   display: flex;
   align-items: center;
   gap: 14px;
-  flex: 1 1 auto;
-  justify-content: flex-end;
+  min-width: 0;
 }
 
-/* Language switch */
-header.topbar[data-mbw-header] .lang{
+/* Language switch (desktop) */
+header.topbar[data-mbw-header] .lang,
+header.topbar[data-mbw-header] .langDesktop{
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -81,26 +82,33 @@ header.topbar[data-mbw-header] .lang{
   background: rgba(255,255,255,0.70);
   box-shadow: 0 10px 25px rgba(0,0,0,.07);
   flex: 0 0 auto;
+  flex-shrink: 0;
+  position: relative;
   z-index: 3;
 }
 
-header.topbar[data-mbw-header] .lang a{
-  min-width: 34px;
-  height: 34px;
+header.topbar[data-mbw-header] .lang a,
+header.topbar[data-mbw-header] .langDesktop a{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 13px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
   border-radius: 999px;
   text-decoration: none;
   color: inherit;
+  font-weight: 900;
+  font-size: 13px;
+  border: 1px solid transparent;
 }
 
 header.topbar[data-mbw-header] .lang a.is-active,
-header.topbar[data-mbw-header] .lang a[aria-current="page"]{
+header.topbar[data-mbw-header] .lang a[aria-current="page"],
+header.topbar[data-mbw-header] .langDesktop a.is-active,
+header.topbar[data-mbw-header] .langDesktop a[aria-current="page"]{
+  border-color: rgba(13,89,37,.25);
   background: rgba(13,89,37,.12);
-  border: 1px solid rgba(13,89,37,.25);
 }
 
 /* Desktop nav */
@@ -108,34 +116,45 @@ header.topbar[data-mbw-header] nav.nav{
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: nowrap;
   white-space: nowrap;
-  flex: 1 1 auto;
-  margin-left: 12px;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 /* Pills */
 header.topbar[data-mbw-header] .pill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 40px;
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid var(--mbw-line);
   background: var(--mbw-pill-bg);
-  font-weight: 900;
-  font-size: 13.5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
   text-decoration: none;
   color: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
 }
 
 header.topbar[data-mbw-header] .pill:hover{
   background: var(--mbw-pill-bg-hover);
+  border-color: rgba(13,89,37,.28);
 }
 
 /* Dropdown */
 header.topbar[data-mbw-header] .dropdown{
   position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+header.topbar[data-mbw-header] .dropdown > .pill{
+  gap: 8px;
 }
 
 header.topbar[data-mbw-header] .dropdownMenu{
@@ -148,41 +167,99 @@ header.topbar[data-mbw-header] .dropdownMenu{
   gap: 6px;
   padding: 10px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.94);
   border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.94);
   box-shadow: 0 22px 60px rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
+  z-index: 6000;
 }
 
-header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu{
+header.topbar[data-mbw-header] .dropdownMenu::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  height: 12px;
+  background: transparent;
+}
+
+header.topbar[data-mbw-header] .dropdownMenu a{
   display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.70);
 }
 
-/* ================= DESKTOP ONLY ================= */
-@media (min-width: 901px){
+header.topbar[data-mbw-header] .dropdownMenu a:hover{
+  background: rgba(13,89,37,0.12);
+  border-color: rgba(13,89,37,.22);
+}
 
-  /* Hide hamburger on desktop */
+/* Desktop rules */
+@media (min-width: 901px){
+  header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
+  header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
+    display: flex;
+  }
+
+  /* Never show hamburger/panel on desktop */
   header.topbar[data-mbw-header] .menuBtn,
   header.topbar[data-mbw-header] .menuPanel{
     display: none !important;
   }
 
-  /* Extra spacing for ES so it never collides */
+  header.topbar[data-mbw-header] .right{
+    flex-wrap: nowrap;
+    min-width: 0;
+    gap: 14px;
+  }
+
+  header.topbar[data-mbw-header] nav.nav{
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: visible;
+    padding-left: 18px;
+  }
+
+  /* ES desktop: extra gap so EN/ES never touches Inicio */
+  html[lang="es"] header.topbar[data-mbw-header] .lang,
+  html[lang="es"] header.topbar[data-mbw-header] .langDesktop{
+    margin-right: 18px !important;
+  }
   html[lang="es"] header.topbar[data-mbw-header] nav.nav{
-    margin-left: 18px !important;
+    padding-left: 24px !important;
+  }
+  html[lang="es"] header.topbar[data-mbw-header] nav.nav > a.pill:first-child{
+    margin-left: 8px !important;
   }
 }
 
-/* ================= MOBILE ================= */
-
+/* Mobile hamburger UI */
 header.topbar[data-mbw-header] .menuBtn{
   width: 44px;
   height: 44px;
   border-radius: 14px;
   border: 1px solid var(--mbw-line);
   background: rgba(255,255,255,0.75);
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+}
+
+header.topbar[data-mbw-header] .menuBtn svg{
+  width: 22px;
+  height: 22px;
 }
 
 header.topbar[data-mbw-header] .menuPanel{
@@ -193,6 +270,7 @@ header.topbar[data-mbw-header] .menuPanel{
   width: min(360px, calc(100vw - 28px));
   padding: 12px;
   border-radius: 18px;
+  border: 1px solid var(--mbw-line);
   background: rgba(255,255,255,0.94);
   box-shadow: 0 24px 70px rgba(0,0,0,.22);
 }
@@ -201,27 +279,71 @@ header.topbar[data-mbw-header] .menuPanel.is-open{
   display: block;
 }
 
+header.topbar[data-mbw-header] .menuList{
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Mobile behavior */
 @media (max-width: 900px){
-
-  /* Hide desktop nav + language switch */
-  header.topbar[data-mbw-header] nav.nav,
-  header.topbar[data-mbw-header] .lang{
+  header.topbar[data-mbw-header] nav.nav{
     display: none !important;
   }
 
-  /* Submenus hidden by default */
-  header.topbar[data-mbw-header] .menuPanel .m-submenu{
+  /* Hide any header-row language switch on mobile; language lives in menu footer */
+  header.topbar[data-mbw-header] .lang,
+  header.topbar[data-mbw-header] .langDesktop,
+  header.topbar[data-mbw-header] .langDesktopWrap,
+  header.topbar[data-mbw-header] .langDesktopOnly{
     display: none !important;
   }
 
-  /* Only open when JS toggles */
-  header.topbar[data-mbw-header] .menuPanel .m-submenu.is-open,
-  header.topbar[data-mbw-header] .menuPanel .m-submenu.is-active{
-    display: block !important;
-  }
-
+  /* Left-align rows */
   header.topbar[data-mbw-header] .menuPanel .pill{
     width: 100%;
-    justify-content: flex-start;
+    justify-content: flex-start !important;
+    text-align: left !important;
   }
+
+  header.topbar[data-mbw-header] .menuPanel a.pill,
+  header.topbar[data-mbw-header] .menuPanel button.pill{
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  header.topbar[data-mbw-header] .menuPanel .menuLangSwitch{
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  header.topbar[data-mbw-header] .menuPanel .m-next{
+    justify-content: space-between !important;
+    padding-right: 14px;
+  }
+
+  header.topbar[data-mbw-header] .menuPanel .m-back{
+    justify-content: flex-start !important;
+  }
+}
+
+header.topbar[data-mbw-header] .m-arrow{
+  font-size: 18px;
+  opacity: .65;
+}
+
+header.topbar[data-mbw-header] .menuLangFooter{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: grid;
+  gap: 10px;
+}
+
+header.topbar[data-mbw-header] .menuLangCurrent{
+  color: rgba(0,0,0,0.55);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: -0.01em;
 }
