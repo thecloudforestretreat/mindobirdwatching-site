@@ -186,13 +186,35 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
   }
 
   /* =========================================================
-     ✅ DESKTOP ES OVERLAP FIX (EN/ES vs Inicio)
-     - Add guaranteed spacing after the language switch
-     - Works even if site.css is overridden
-     - Does NOT break dropdowns
+     DESKTOP STABILITY (prevents any overlap)
+     - Keep dropdowns working
+     - Ensure lang never shrinks
+     - Ensure nav never bleeds underneath lang
      ========================================================= */
-  header.topbar[data-mbw-header][data-current-lang="es"] .lang{
-    margin-right: 12px !important;
+
+  header.topbar[data-mbw-header] .right{
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  header.topbar[data-mbw-header] .lang{
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 3;
+  }
+
+  header.topbar[data-mbw-header] nav.nav{
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: visible; /* dropdowns need this */
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ✅ ACTUAL ES FIX: create real space between ES pill group and "Inicio" */
+  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav{
+    margin-left: 12px !important;
   }
 }
 
@@ -242,36 +264,31 @@ header.topbar[data-mbw-header] .menuList{
   margin-top: 10px;
 }
 
-/* ✅ FORCE LEFT ALIGNMENT FOR ALL MOBILE MENU ROWS (anchors, buttons, language) */
+/* FORCE LEFT ALIGNMENT FOR ALL MOBILE MENU ROWS */
 @media (max-width: 900px){
-  /* Any .pill inside the mobile panel */
   header.topbar[data-mbw-header] .menuPanel .pill{
     width: 100%;
     justify-content: flex-start !important;
     text-align: left !important;
   }
 
-  /* If any link/button inside the panel is centered by other CSS, override it */
   header.topbar[data-mbw-header] .menuPanel a.pill,
   header.topbar[data-mbw-header] .menuPanel button.pill{
     justify-content: flex-start !important;
     text-align: left !important;
   }
 
-  /* Make sure the language footer rows are also left aligned */
   header.topbar[data-mbw-header] .menuPanel .menuLangSwitch{
     width: 100%;
     justify-content: flex-start !important;
     text-align: left !important;
   }
 
-  /* Drill-down rows: label left, arrow pinned right */
   header.topbar[data-mbw-header] .menuPanel .m-next{
     justify-content: space-between !important;
     padding-right: 14px;
   }
 
-  /* Back row stays left */
   header.topbar[data-mbw-header] .menuPanel .m-back{
     justify-content: flex-start !important;
   }
