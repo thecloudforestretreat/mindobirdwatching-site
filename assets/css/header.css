@@ -1,13 +1,16 @@
 /* /assets/css/header.css
-   MBW Header (Dropdown v2) - FINAL STABILIZATION
+   MBW Header (Dropdown v2) - STABLE (works even if markup is div.topbar and/or missing data-mbw-header)
+
    Fixes:
-   1) ES desktop: EN/ES never overlaps Inicio (hard spacing using html[lang="es"])
-   2) Desktop: hamburger and mobile panel never appear
-   3) Mobile: header-row language pills are hidden (language switch stays inside menu footer only)
-   4) Mobile menu: submenus are hidden by default via [hidden] and JS toggles (Safari-safe)
+   1) ES desktop: EN/ES never overlaps first nav pill (hard spacing)
+   2) Desktop: hamburger + mobile panel never appear
+   3) Mobile: header-row language pills are hidden (language switch lives inside menu panel footer only)
+   4) Mobile: submenus are hidden by default via [hidden] + JS; Safari-safe
    5) Dropdown font matches pill font (Open Sans)
-   Notes:
-   - Uses html[lang="es"] to target Spanish reliably (no header data attributes)
+
+   IMPORTANT:
+   - Scoped to #siteHeader so it does not affect other .topbar elements
+   - Does NOT require <header> tag or data-mbw-header attribute
    - ASCII only
 */
 
@@ -21,12 +24,18 @@
   --mbw-font: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+/* Scope */
+#siteHeader .topbar{
+  font-family: var(--mbw-font);
+}
+
 /* Hard guarantee: any [hidden] inside header is hidden */
-header.topbar[data-mbw-header] [hidden]{
+#siteHeader .topbar [hidden]{
   display: none !important;
 }
 
-header.topbar[data-mbw-header]{
+/* Header shell */
+#siteHeader .topbar{
   position: sticky;
   top: 0;
   z-index: 5000;
@@ -41,11 +50,10 @@ header.topbar[data-mbw-header]{
   justify-content: space-between;
   gap: 14px;
   backdrop-filter: blur(10px);
-  font-family: var(--mbw-font);
 }
 
 /* Brand */
-header.topbar[data-mbw-header] .brand{
+#siteHeader .topbar .brand{
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -53,29 +61,27 @@ header.topbar[data-mbw-header] .brand{
   color: inherit;
   min-width: 220px;
 }
-
-header.topbar[data-mbw-header] .brand img{
+#siteHeader .topbar .brand img{
   width: 28px;
   height: 28px;
   border-radius: 999px;
   object-fit: cover;
 }
-
-header.topbar[data-mbw-header] .brand span{
+#siteHeader .topbar .brand span{
   font-weight: 900;
   letter-spacing: -0.01em;
 }
 
 /* Right cluster */
-header.topbar[data-mbw-header] .right{
+#siteHeader .topbar .right{
   display: flex;
   align-items: center;
   gap: 16px;
   min-width: 0;
 }
 
-/* Language switch (desktop) */
-header.topbar[data-mbw-header] .lang{
+/* Language switch (header-row, desktop) */
+#siteHeader .topbar .lang{
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -89,8 +95,7 @@ header.topbar[data-mbw-header] .lang{
   position: relative;
   z-index: 3;
 }
-
-header.topbar[data-mbw-header] .lang a{
+#siteHeader .topbar .lang a{
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -105,15 +110,16 @@ header.topbar[data-mbw-header] .lang a{
   border: 1px solid transparent;
   font-family: var(--mbw-font);
 }
-
-header.topbar[data-mbw-header] .lang a.is-active,
-header.topbar[data-mbw-header] .lang a[aria-current="page"]{
+#siteHeader .topbar .lang a.is-active,
+#siteHeader .topbar .lang a[aria-current="page"],
+#siteHeader .topbar .lang a.active{
   border-color: rgba(13,89,37,.25);
   background: rgba(13,89,37,.12);
 }
 
 /* Desktop nav */
-header.topbar[data-mbw-header] nav.nav{
+#siteHeader .topbar nav.nav,
+#siteHeader .topbar .nav{
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -126,7 +132,7 @@ header.topbar[data-mbw-header] nav.nav{
 }
 
 /* Pills */
-header.topbar[data-mbw-header] .pill{
+#siteHeader .topbar .pill{
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -143,24 +149,21 @@ header.topbar[data-mbw-header] .pill{
   letter-spacing: -0.01em;
   font-family: var(--mbw-font);
 }
-
-header.topbar[data-mbw-header] .pill:hover{
+#siteHeader .topbar .pill:hover{
   background: var(--mbw-pill-bg-hover);
   border-color: rgba(13,89,37,.28);
 }
 
 /* Dropdown */
-header.topbar[data-mbw-header] .dropdown{
+#siteHeader .topbar .dropdown{
   position: relative;
   display: inline-flex;
   align-items: center;
 }
-
-header.topbar[data-mbw-header] .dropdown > .pill{
+#siteHeader .topbar .dropdown > .pill{
   gap: 8px;
 }
-
-header.topbar[data-mbw-header] .dropdownMenu{
+#siteHeader .topbar .dropdownMenu{
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
@@ -177,8 +180,7 @@ header.topbar[data-mbw-header] .dropdownMenu{
   z-index: 6000;
   font-family: var(--mbw-font);
 }
-
-header.topbar[data-mbw-header] .dropdownMenu::before{
+#siteHeader .topbar .dropdownMenu::before{
   content: "";
   position: absolute;
   left: 0;
@@ -187,8 +189,7 @@ header.topbar[data-mbw-header] .dropdownMenu::before{
   height: 12px;
   background: transparent;
 }
-
-header.topbar[data-mbw-header] .dropdownMenu a{
+#siteHeader .topbar .dropdownMenu a{
   display: flex;
   align-items: center;
   height: 40px;
@@ -203,32 +204,34 @@ header.topbar[data-mbw-header] .dropdownMenu a{
   background: rgba(255,255,255,0.70);
   font-family: var(--mbw-font);
 }
-
-header.topbar[data-mbw-header] .dropdownMenu a:hover{
+#siteHeader .topbar .dropdownMenu a:hover{
   background: rgba(13,89,37,0.12);
   border-color: rgba(13,89,37,.22);
 }
 
 /* Desktop rules */
 @media (min-width: 901px){
-  header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
-  header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
+  #siteHeader .topbar .dropdown:hover .dropdownMenu,
+  #siteHeader .topbar .dropdown:focus-within .dropdownMenu{
     display: flex;
   }
 
   /* Never show hamburger/panel on desktop */
-  header.topbar[data-mbw-header] .menuBtn,
-  header.topbar[data-mbw-header] .menuPanel{
+  #siteHeader .topbar .menuBtn,
+  #siteHeader .topbar .menuPanel,
+  #siteHeader .topbar #menuBtn,
+  #siteHeader .topbar #menuPanel{
     display: none !important;
   }
 
-  header.topbar[data-mbw-header] .right{
+  #siteHeader .topbar .right{
     flex-wrap: nowrap;
     min-width: 0;
     gap: 16px;
   }
 
-  header.topbar[data-mbw-header] nav.nav{
+  #siteHeader .topbar nav.nav,
+  #siteHeader .topbar .nav{
     flex: 1 1 auto;
     min-width: 0;
     overflow: visible;
@@ -236,22 +239,25 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
   }
 
   /* ES desktop: hard extra gap so EN/ES never touches Inicio */
-  html[lang="es"] header.topbar[data-mbw-header] .right{
+  html[lang="es"] #siteHeader .topbar .right{
     gap: 18px;
   }
-  html[lang="es"] header.topbar[data-mbw-header] .lang{
-    margin-right: 22px !important;
+  html[lang="es"] #siteHeader .topbar .lang{
+    margin-right: 26px !important;
   }
-  html[lang="es"] header.topbar[data-mbw-header] nav.nav{
-    padding-left: 30px !important;
+  html[lang="es"] #siteHeader .topbar nav.nav,
+  html[lang="es"] #siteHeader .topbar .nav{
+    padding-left: 34px !important;
   }
-  html[lang="es"] header.topbar[data-mbw-header] nav.nav > a.pill:first-child{
-    margin-left: 12px !important;
+  html[lang="es"] #siteHeader .topbar nav.nav > a.pill:first-child,
+  html[lang="es"] #siteHeader .topbar .nav > a.pill:first-child{
+    margin-left: 14px !important;
   }
 }
 
 /* Mobile hamburger UI (base) */
-header.topbar[data-mbw-header] .menuBtn{
+#siteHeader .topbar .menuBtn,
+#siteHeader .topbar #menuBtn{
   width: 44px;
   height: 44px;
   border-radius: 14px;
@@ -263,13 +269,14 @@ header.topbar[data-mbw-header] .menuBtn{
   justify-content: center;
   cursor: pointer;
 }
-
-header.topbar[data-mbw-header] .menuBtn svg{
+#siteHeader .topbar .menuBtn svg,
+#siteHeader .topbar #menuBtn svg{
   width: 22px;
   height: 22px;
 }
 
-header.topbar[data-mbw-header] .menuPanel{
+#siteHeader .topbar .menuPanel,
+#siteHeader .topbar #menuPanel{
   display: none;
   position: absolute;
   right: 14px;
@@ -282,11 +289,12 @@ header.topbar[data-mbw-header] .menuPanel{
   box-shadow: 0 24px 70px rgba(0,0,0,.22);
 }
 
-header.topbar[data-mbw-header] .menuPanel.is-open{
+#siteHeader .topbar .menuPanel.is-open,
+#siteHeader .topbar #menuPanel.is-open{
   display: block;
 }
 
-header.topbar[data-mbw-header] .menuList{
+#siteHeader .topbar .menuList{
   display: grid;
   gap: 10px;
   margin-top: 10px;
@@ -295,53 +303,48 @@ header.topbar[data-mbw-header] .menuList{
 /* Mobile behavior */
 @media (max-width: 900px){
   /* Hide desktop nav */
-  header.topbar[data-mbw-header] nav.nav{
+  #siteHeader .topbar nav.nav,
+  #siteHeader .topbar .nav{
     display: none !important;
   }
 
-  /* Hide header-row language switch on mobile */
-  header.topbar[data-mbw-header] .lang,
-  header.topbar[data-mbw-header] .langDesktop,
-  header.topbar[data-mbw-header] .right .lang,
-  header.topbar[data-mbw-header] .right .langDesktop{
+  /* Hide header-row language switch on mobile (but KEEP menu footer language switch visible) */
+  #siteHeader .topbar .lang{
     display: none !important;
+  }
+  #siteHeader .topbar .menuPanel .lang{
+    display: inline-flex !important;
   }
 
   /* Left-align rows */
-  header.topbar[data-mbw-header] .menuPanel .pill{
+  #siteHeader .topbar .menuPanel .pill{
     width: 100%;
     justify-content: flex-start !important;
     text-align: left !important;
   }
 
-  header.topbar[data-mbw-header] .menuPanel a.pill,
-  header.topbar[data-mbw-header] .menuPanel button.pill{
+  #siteHeader .topbar .menuPanel a.pill,
+  #siteHeader .topbar .menuPanel button.pill{
     justify-content: flex-start !important;
     text-align: left !important;
   }
 
-  header.topbar[data-mbw-header] .menuPanel .menuLangSwitch{
-    width: 100%;
-    justify-content: flex-start !important;
-    text-align: left !important;
-  }
-
-  header.topbar[data-mbw-header] .menuPanel .m-next{
+  #siteHeader .topbar .menuPanel .m-next{
     justify-content: space-between !important;
     padding-right: 14px;
   }
 
-  header.topbar[data-mbw-header] .menuPanel .m-back{
+  #siteHeader .topbar .menuPanel .m-back{
     justify-content: flex-start !important;
   }
 }
 
-header.topbar[data-mbw-header] .m-arrow{
+#siteHeader .topbar .m-arrow{
   font-size: 18px;
   opacity: .65;
 }
 
-header.topbar[data-mbw-header] .menuLangFooter{
+#siteHeader .topbar .menuLangFooter{
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid rgba(0,0,0,0.08);
@@ -349,7 +352,7 @@ header.topbar[data-mbw-header] .menuLangFooter{
   gap: 10px;
 }
 
-header.topbar[data-mbw-header] .menuLangCurrent{
+#siteHeader .topbar .menuLangCurrent{
   color: rgba(0,0,0,0.55);
   font-weight: 900;
   font-size: 12px;
