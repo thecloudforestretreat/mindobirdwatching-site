@@ -1,11 +1,14 @@
 /* /assets/css/header.css
-   MBW Header (Dropdown v2) - DROP-IN FILE (ASCII ONLY)
-
-   Goals fixed here:
-   1) ES desktop: EN/ES pill never overlaps the first nav pill (Inicio) - even by 1px
-   2) Desktop: hamburger/menu panel never shows
-   3) Mobile: language switch is NOT in the header row; it lives inside the hamburger menu footer
-   4) Mobile: submenus are hidden by default; hamburger opens main menu only; drill-down + Back works (JS handles state)
+   MBW Header (Dropdown v2) - FINAL STABILIZATION
+   Fixes:
+   1) ES desktop: EN/ES never overlaps Inicio (hard spacing using html[lang="es"])
+   2) Desktop: hamburger and mobile panel never appear
+   3) Mobile: header-row language pills are hidden (language switch stays inside menu footer only)
+   4) Mobile menu: submenus are hidden by default via [hidden] and JS toggles (Safari-safe)
+   5) Dropdown font matches pill font (Open Sans)
+   Notes:
+   - Uses html[lang="es"] to target Spanish reliably (no header data attributes)
+   - ASCII only
 */
 
 :root{
@@ -15,9 +18,10 @@
   --mbw-line: rgba(0,0,0,0.10);
   --mbw-shadow: 0 14px 40px rgba(0,0,0,.10);
   --mbw-r: 18px;
+  --mbw-font: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* Hard guarantee: any [hidden] inside header is hidden (prevents "all submenus open") */
+/* Hard guarantee: any [hidden] inside header is hidden */
 header.topbar[data-mbw-header] [hidden]{
   display: none !important;
 }
@@ -37,6 +41,7 @@ header.topbar[data-mbw-header]{
   justify-content: space-between;
   gap: 14px;
   backdrop-filter: blur(10px);
+  font-family: var(--mbw-font);
 }
 
 /* Brand */
@@ -65,13 +70,12 @@ header.topbar[data-mbw-header] .brand span{
 header.topbar[data-mbw-header] .right{
   display: flex;
   align-items: center;
-  gap: 18px; /* slightly larger baseline spacing to prevent collisions */
+  gap: 16px;
   min-width: 0;
 }
 
-/* Language switch (desktop row) */
-header.topbar[data-mbw-header] .lang,
-header.topbar[data-mbw-header] .langDesktop{
+/* Language switch (desktop) */
+header.topbar[data-mbw-header] .lang{
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -86,8 +90,7 @@ header.topbar[data-mbw-header] .langDesktop{
   z-index: 3;
 }
 
-header.topbar[data-mbw-header] .lang a,
-header.topbar[data-mbw-header] .langDesktop a{
+header.topbar[data-mbw-header] .lang a{
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -100,13 +103,11 @@ header.topbar[data-mbw-header] .langDesktop a{
   font-weight: 900;
   font-size: 13px;
   border: 1px solid transparent;
-  font-family: inherit;
+  font-family: var(--mbw-font);
 }
 
 header.topbar[data-mbw-header] .lang a.is-active,
-header.topbar[data-mbw-header] .lang a[aria-current="page"],
-header.topbar[data-mbw-header] .langDesktop a.is-active,
-header.topbar[data-mbw-header] .langDesktop a[aria-current="page"]{
+header.topbar[data-mbw-header] .lang a[aria-current="page"]{
   border-color: rgba(13,89,37,.25);
   background: rgba(13,89,37,.12);
 }
@@ -121,6 +122,7 @@ header.topbar[data-mbw-header] nav.nav{
   min-width: 0;
   position: relative;
   z-index: 2;
+  font-family: var(--mbw-font);
 }
 
 /* Pills */
@@ -139,7 +141,7 @@ header.topbar[data-mbw-header] .pill{
   font-weight: 900;
   font-size: 13.5px;
   letter-spacing: -0.01em;
-  font-family: inherit;
+  font-family: var(--mbw-font);
 }
 
 header.topbar[data-mbw-header] .pill:hover{
@@ -173,6 +175,7 @@ header.topbar[data-mbw-header] .dropdownMenu{
   box-shadow: 0 22px 60px rgba(0,0,0,.18);
   backdrop-filter: blur(10px);
   z-index: 6000;
+  font-family: var(--mbw-font);
 }
 
 header.topbar[data-mbw-header] .dropdownMenu::before{
@@ -196,9 +199,9 @@ header.topbar[data-mbw-header] .dropdownMenu a{
   font-weight: 900;
   font-size: 13.5px;
   letter-spacing: -0.01em;
-  font-family: inherit;
   border: 1px solid rgba(0,0,0,0.06);
   background: rgba(255,255,255,0.70);
+  font-family: var(--mbw-font);
 }
 
 header.topbar[data-mbw-header] .dropdownMenu a:hover{
@@ -213,7 +216,7 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
     display: flex;
   }
 
-  /* Never show hamburger/panel on desktop (strong) */
+  /* Never show hamburger/panel on desktop */
   header.topbar[data-mbw-header] .menuBtn,
   header.topbar[data-mbw-header] .menuPanel{
     display: none !important;
@@ -222,28 +225,32 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
     min-width: 0;
+    gap: 16px;
   }
 
   header.topbar[data-mbw-header] nav.nav{
     flex: 1 1 auto;
     min-width: 0;
     overflow: visible;
-    margin-left: 10px; /* baseline separation from language switch */
+    padding-left: 22px;
   }
 
-  /* ES desktop: guaranteed extra separation so EN/ES never overlaps Inicio */
+  /* ES desktop: hard extra gap so EN/ES never touches Inicio */
   html[lang="es"] header.topbar[data-mbw-header] .right{
-    gap: 22px !important;
+    gap: 18px;
+  }
+  html[lang="es"] header.topbar[data-mbw-header] .lang{
+    margin-right: 22px !important;
   }
   html[lang="es"] header.topbar[data-mbw-header] nav.nav{
-    margin-left: 18px !important;
+    padding-left: 30px !important;
   }
   html[lang="es"] header.topbar[data-mbw-header] nav.nav > a.pill:first-child{
     margin-left: 12px !important;
   }
 }
 
-/* Mobile hamburger UI */
+/* Mobile hamburger UI (base) */
 header.topbar[data-mbw-header] .menuBtn{
   width: 44px;
   height: 44px;
@@ -287,16 +294,16 @@ header.topbar[data-mbw-header] .menuList{
 
 /* Mobile behavior */
 @media (max-width: 900px){
+  /* Hide desktop nav */
   header.topbar[data-mbw-header] nav.nav{
     display: none !important;
   }
 
-  /* Hide any header-row language switch on mobile (strong selectors + !important) */
+  /* Hide header-row language switch on mobile */
   header.topbar[data-mbw-header] .lang,
   header.topbar[data-mbw-header] .langDesktop,
-  header.topbar[data-mbw-header] .langDesktopWrap,
-  header.topbar[data-mbw-header] .langDesktopOnly,
-  header.topbar[data-mbw-header] .right > .lang{
+  header.topbar[data-mbw-header] .right .lang,
+  header.topbar[data-mbw-header] .right .langDesktop{
     display: none !important;
   }
 
@@ -347,5 +354,4 @@ header.topbar[data-mbw-header] .menuLangCurrent{
   font-weight: 900;
   font-size: 12px;
   letter-spacing: -0.01em;
-  font-family: inherit;
 }
