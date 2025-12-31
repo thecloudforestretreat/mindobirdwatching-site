@@ -1,4 +1,9 @@
 /* MBW Header (Dropdown v2) */
+/* Fixes:
+   1) ES language pills overlapping first nav pill (desktop)
+   2) Hamburger showing on desktop (should be mobile only)
+   3) Language switch outside hamburger on mobile (hide it; keep inside menu)
+   4) Ensure hidden submenus actually hide (Safari/WebKit) */
 
 :root{
   --mbw-header-bg: rgba(243, 247, 241, 0.85);
@@ -7,6 +12,11 @@
   --mbw-line: rgba(0,0,0,0.10);
   --mbw-shadow: 0 14px 40px rgba(0,0,0,.10);
   --mbw-r: 18px;
+}
+
+/* Hard guarantee: any [hidden] inside header is hidden (prevents "all submenus open") */
+header.topbar[data-mbw-header] [hidden]{
+  display: none !important;
 }
 
 header.topbar[data-mbw-header]{
@@ -26,6 +36,7 @@ header.topbar[data-mbw-header]{
   backdrop-filter: blur(10px);
 }
 
+/* Brand */
 header.topbar[data-mbw-header] .brand{
   display: inline-flex;
   align-items: center;
@@ -55,7 +66,7 @@ header.topbar[data-mbw-header] .right{
   min-width: 0;
 }
 
-/* Language switch */
+/* Language switch (desktop only; mobile hides it below) */
 header.topbar[data-mbw-header] .lang{
   display: inline-flex;
   align-items: center;
@@ -66,6 +77,9 @@ header.topbar[data-mbw-header] .lang{
   background: rgba(255,255,255,0.70);
   box-shadow: 0 10px 25px rgba(0,0,0,.07);
   flex: 0 0 auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
 }
 
 header.topbar[data-mbw-header] .lang a{
@@ -97,6 +111,8 @@ header.topbar[data-mbw-header] nav.nav{
   flex-wrap: nowrap;
   white-space: nowrap;
   min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 /* Pills */
@@ -129,6 +145,10 @@ header.topbar[data-mbw-header] .dropdown{
   align-items: center;
 }
 
+header.topbar[data-mbw-header] .dropdown > .pill{
+  gap: 8px;
+}
+
 header.topbar[data-mbw-header] .dropdownMenu{
   position: absolute;
   top: calc(100% + 10px);
@@ -146,36 +166,68 @@ header.topbar[data-mbw-header] .dropdownMenu{
   z-index: 6000;
 }
 
-header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
-header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
-  display: flex;
+header.topbar[data-mbw-header] .dropdownMenu::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  height: 12px;
+  background: transparent;
 }
 
-/* DESKTOP FIX — THIS SOLVES THE ES OVERLAP */
+header.topbar[data-mbw-header] .dropdownMenu a{
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.70);
+}
+
+header.topbar[data-mbw-header] .dropdownMenu a:hover{
+  background: rgba(13,89,37,0.12);
+  border-color: rgba(13,89,37,.22);
+}
+
+/* Desktop rules */
 @media (min-width: 901px){
+  header.topbar[data-mbw-header] .dropdown:hover .dropdownMenu,
+  header.topbar[data-mbw-header] .dropdown:focus-within .dropdownMenu{
+    display: flex;
+  }
+
+  /* Always hide hamburger + panel on desktop (strong) */
+  header.topbar[data-mbw-header] .menuBtn,
+  header.topbar[data-mbw-header] .menuPanel{
+    display: none !important;
+  }
+
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
     min-width: 0;
+    gap: 14px;
   }
 
-  header.topbar[data-mbw-header] .lang{
-    position: relative;
-    z-index: 3;
-    margin-right: 14px;
-  }
-
+  /* Let nav take remaining space */
   header.topbar[data-mbw-header] nav.nav{
     flex: 1 1 auto;
     min-width: 0;
     overflow: visible;
-    position: relative;
-    z-index: 2;
-    padding-left: 12px;
+    padding-left: 12px; /* baseline spacing so first pill never collides */
   }
 
-  /* Spanish only — prevents overlap */
-  html[lang="es"] header.topbar[data-mbw-header] nav.nav > a.pill:first-child{
-    margin-left: 6px;
+  /* ES FIX: apply via document language (do not rely on header data attributes) */
+  html[lang="es"] header.topbar[data-mbw-header] .lang{
+    margin-right: 12px !important;
+  }
+  html[lang="es"] header.topbar[data-mbw-header] nav.nav{
+    padding-left: 16px !important;
   }
 }
 
@@ -191,6 +243,11 @@ header.topbar[data-mbw-header] .menuBtn{
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+header.topbar[data-mbw-header] .menuBtn svg{
+  width: 22px;
+  height: 22px;
 }
 
 header.topbar[data-mbw-header] .menuPanel{
@@ -210,14 +267,74 @@ header.topbar[data-mbw-header] .menuPanel.is-open{
   display: block;
 }
 
+header.topbar[data-mbw-header] .menuList{
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Mobile behavior */
 @media (max-width: 900px){
+  /* Hide desktop nav */
   header.topbar[data-mbw-header] nav.nav{
-    display: none;
+    display: none !important;
   }
+
+  /* Hide desktop language pills; language switch should live inside hamburger menu */
+  header.topbar[data-mbw-header] .lang{
+    display: none !important;
+  }
+
+  /* If you use a separate desktop-only lang cluster */
+  header.topbar[data-mbw-header] .langDesktop{
+    display: none !important;
+  }
+
+  /* Make menu rows left-aligned */
+  header.topbar[data-mbw-header] .menuPanel .pill{
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  header.topbar[data-mbw-header] .menuPanel a.pill,
+  header.topbar[data-mbw-header] .menuPanel button.pill{
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  header.topbar[data-mbw-header] .menuPanel .menuLangSwitch{
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  header.topbar[data-mbw-header] .menuPanel .m-next{
+    justify-content: space-between !important;
+    padding-right: 14px;
+  }
+
+  header.topbar[data-mbw-header] .menuPanel .m-back{
+    justify-content: flex-start !important;
+  }
+}
+
+header.topbar[data-mbw-header] .m-arrow{
+  font-size: 18px;
+  opacity: .65;
 }
 
 header.topbar[data-mbw-header] .menuLangFooter{
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid rgba(0,0,0,0.08);
+  display: grid;
+  gap: 10px;
+}
+
+header.topbar[data-mbw-header] .menuLangCurrent{
+  color: rgba(0,0,0,0.55);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: -0.01em;
 }
