@@ -1,12 +1,11 @@
-/* MBW Header (Dropdown v2)
-   Fixes:
-   1) ES language pills never overlap first nav pill (desktop)
-   2) Hamburger never appears on desktop
-   3) Mobile language switch is not shown in the header row (only in menu footer)
-   4) Mobile menu opens in a clean state (main menu only); submenus hidden via [hidden]
-   Notes:
-   - Targets ES by html[lang="es"] (do not rely on header data attributes)
-   - ASCII only
+/* /assets/css/header.css
+   MBW Header (Dropdown v2) - DROP-IN FILE (ASCII ONLY)
+
+   Goals fixed here:
+   1) ES desktop: EN/ES pill never overlaps the first nav pill (Inicio) - even by 1px
+   2) Desktop: hamburger/menu panel never shows
+   3) Mobile: language switch is NOT in the header row; it lives inside the hamburger menu footer
+   4) Mobile: submenus are hidden by default; hamburger opens main menu only; drill-down + Back works (JS handles state)
 */
 
 :root{
@@ -66,11 +65,11 @@ header.topbar[data-mbw-header] .brand span{
 header.topbar[data-mbw-header] .right{
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px; /* slightly larger baseline spacing to prevent collisions */
   min-width: 0;
 }
 
-/* Language switch (desktop) */
+/* Language switch (desktop row) */
 header.topbar[data-mbw-header] .lang,
 header.topbar[data-mbw-header] .langDesktop{
   display: inline-flex;
@@ -101,6 +100,7 @@ header.topbar[data-mbw-header] .langDesktop a{
   font-weight: 900;
   font-size: 13px;
   border: 1px solid transparent;
+  font-family: inherit;
 }
 
 header.topbar[data-mbw-header] .lang a.is-active,
@@ -139,6 +139,7 @@ header.topbar[data-mbw-header] .pill{
   font-weight: 900;
   font-size: 13.5px;
   letter-spacing: -0.01em;
+  font-family: inherit;
 }
 
 header.topbar[data-mbw-header] .pill:hover{
@@ -195,6 +196,7 @@ header.topbar[data-mbw-header] .dropdownMenu a{
   font-weight: 900;
   font-size: 13.5px;
   letter-spacing: -0.01em;
+  font-family: inherit;
   border: 1px solid rgba(0,0,0,0.06);
   background: rgba(255,255,255,0.70);
 }
@@ -211,7 +213,7 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
     display: flex;
   }
 
-  /* Never show hamburger/panel on desktop */
+  /* Never show hamburger/panel on desktop (strong) */
   header.topbar[data-mbw-header] .menuBtn,
   header.topbar[data-mbw-header] .menuPanel{
     display: none !important;
@@ -220,26 +222,24 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
     min-width: 0;
-    gap: 14px;
   }
 
   header.topbar[data-mbw-header] nav.nav{
     flex: 1 1 auto;
     min-width: 0;
     overflow: visible;
-    padding-left: 18px;
+    margin-left: 10px; /* baseline separation from language switch */
   }
 
-  /* ES desktop: extra gap so EN/ES never touches Inicio */
-  html[lang="es"] header.topbar[data-mbw-header] .lang,
-  html[lang="es"] header.topbar[data-mbw-header] .langDesktop{
-    margin-right: 18px !important;
+  /* ES desktop: guaranteed extra separation so EN/ES never overlaps Inicio */
+  html[lang="es"] header.topbar[data-mbw-header] .right{
+    gap: 22px !important;
   }
   html[lang="es"] header.topbar[data-mbw-header] nav.nav{
-    padding-left: 24px !important;
+    margin-left: 18px !important;
   }
   html[lang="es"] header.topbar[data-mbw-header] nav.nav > a.pill:first-child{
-    margin-left: 8px !important;
+    margin-left: 12px !important;
   }
 }
 
@@ -291,11 +291,12 @@ header.topbar[data-mbw-header] .menuList{
     display: none !important;
   }
 
-  /* Hide any header-row language switch on mobile; language lives in menu footer */
+  /* Hide any header-row language switch on mobile (strong selectors + !important) */
   header.topbar[data-mbw-header] .lang,
   header.topbar[data-mbw-header] .langDesktop,
   header.topbar[data-mbw-header] .langDesktopWrap,
-  header.topbar[data-mbw-header] .langDesktopOnly{
+  header.topbar[data-mbw-header] .langDesktopOnly,
+  header.topbar[data-mbw-header] .right > .lang{
     display: none !important;
   }
 
@@ -346,4 +347,5 @@ header.topbar[data-mbw-header] .menuLangCurrent{
   font-weight: 900;
   font-size: 12px;
   letter-spacing: -0.01em;
+  font-family: inherit;
 }
