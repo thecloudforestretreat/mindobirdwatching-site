@@ -207,6 +207,8 @@ html, body{ overflow-x: visible; }
   justify-content:flex-end;
 }
 
+/* NOTE: header.css is the primary source of truth for header layout.
+   These base styles remain, desktop overrides are added at the bottom. */
 .nav{
   display:flex;
   flex-wrap:wrap;
@@ -357,46 +359,30 @@ html, body{ overflow-x: visible; }
 }
 
 /* =========================================================
-   MBW Header Fix – Desktop ES matches EN (WITHOUT killing dropdowns)
-   1) Keep one-row layout (no EN/ES dropping)
-   2) Move EN/ES to the LEFT of nav (Spanish only)
-   3) Prevent first pill ("Inicio") from clipping
-   4) KEEP dropdown menus visible on desktop
+   MBW Header Fix – Desktop stability (EN + ES)
+   - Prevent overlap between language pills and first nav pill
+   - Keep dropdowns working (dropdownMenu can render outside nav)
    ========================================================= */
 
 @media (min-width: 901px){
-  /* Keep everything on one row */
+  /* Keep header right cluster on one line */
   header.topbar[data-mbw-header] .right{
     flex-wrap: nowrap;
     min-width: 0;
   }
 
-  /* Ensure nav can shrink without pushing items to a new line */
+  /* Language switch should never shrink/overlap */
+  header.topbar[data-mbw-header] .lang{
+    flex: 0 0 auto;
+    flex-shrink: 0;
+  }
+
+  /* Nav should take remaining space and be allowed to shrink */
   header.topbar[data-mbw-header] nav.nav{
     flex: 1 1 auto;
     min-width: 0;
-  }
-
-  /* Spanish only: place language switch to the LEFT of nav */
-  header.topbar[data-mbw-header][data-current-lang="es"] .rightActions{
-    order: 0;
-    flex: 0 0 auto;
-  }
-  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav{
-    order: 1;
-  }
-
-  /* KEY FIX:
-     - overflow MUST be visible so dropdownMenu can render outside nav
-     - padding-left prevents "Inicio" pill clipping */
-  header.topbar[data-mbw-header] nav.nav{
     flex-wrap: nowrap;
-    overflow: visible;    /* ✅ allow dropdowns to show */
-    padding-left: 8px;    /* ✅ prevent "Inicio" from clipping */
-  }
-
-  /* Keep language switch stable */
-  header.topbar[data-mbw-header] .lang{
-    flex: 0 0 auto;
+    overflow: visible;   /* ✅ allow dropdownMenu to show outside nav */
+    padding-left: 8px;   /* ✅ prevents first pill clipping */
   }
 }
