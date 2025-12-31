@@ -207,9 +207,12 @@ header.topbar[data-mbw-header] .dropdownMenu a:hover{
     z-index: 2;
   }
 
-  /* ✅ FINAL, SINGLE ES FIX: guaranteed spacing between language pills and first nav pill */
-  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav{
-    margin-left: 14px !important;
+  /* ✅ ES FIX: guaranteed spacing between language pills and first nav pill */
+  header.topbar[data-mbw-header][data-current-lang="es"] .lang{
+    margin-right: 14px !important;
+  }
+  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav > a.pill:first-child{
+    margin-left: 10px !important;
   }
 }
 
@@ -259,8 +262,16 @@ header.topbar[data-mbw-header] .menuList{
   margin-top: 10px;
 }
 
-/* ✅ FORCE LEFT ALIGNMENT FOR ALL MOBILE MENU ROWS (anchors, buttons, language) */
+/* ✅ FORCE LEFT ALIGNMENT FOR ALL MOBILE MENU ROWS */
 @media (max-width: 900px){
+  header.topbar[data-mbw-header] nav.nav{
+    display: none;
+  }
+
+  header.topbar[data-mbw-header] .langDesktop{
+    display: none;
+  }
+
   header.topbar[data-mbw-header] .menuPanel .pill{
     width: 100%;
     justify-content: flex-start !important;
@@ -307,14 +318,4 @@ header.topbar[data-mbw-header] .menuLangCurrent{
   font-weight: 900;
   font-size: 12px;
   letter-spacing: -0.01em;
-}
-
-@media (max-width: 900px){
-  header.topbar[data-mbw-header] nav.nav{
-    display: none;
-  }
-
-  header.topbar[data-mbw-header] .langDesktop{
-    display: none;
-  }
 }
