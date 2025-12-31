@@ -1,11 +1,12 @@
 /* /assets/js/site.js
-   MBW mobile menu controller (drill-down) - DROP-IN FILE (ASCII ONLY)
-
+   MBW mobile menu controller (drill-down) - STABLE
    Fixes:
-   - Works with injected headers (includes.js) by re-initializing when headers appear
+   - Works even when header is injected asynchronously (includes.js)
    - Hamburger opens main menu only (submenus hidden)
    - .m-next opens submenu via data-target (e.g. '#m-tours')
    - .m-back returns via data-back
+   - Does NOT add extra classes to .lang (so site.css can hide it on mobile)
+   ASCII only
 */
 
 (function () {
@@ -13,23 +14,32 @@
   function qsa(root, sel) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function initHeader(header) {
-    if (!header || header.__mbwInited) return;
-    header.__mbwInited = true;
+    if (!header || header.__mbwMenuInit) return;
+    header.__mbwMenuInit = true;
 
     var btn = qs(header, ".menuBtn");
     var panel = qs(header, ".menuPanel");
     if (!btn || !panel) return;
 
-    // Mark header-row language cluster as desktop-only so CSS can hide it on mobile
-    var lang = qs(header, ".lang");
-    if (lang) lang.classList.add("langDesktop");
-
     var mainView = qs(panel, ".m-main") || panel;
     var subViews = qsa(panel, ".m-submenu");
 
+    // Fallback: if markup does not use .m-submenu, treat any element with id starting "m-" as a submenu view
+    if (!subViews.length) {
+      subViews = qsa(panel, "[id^='m-']").filter(function (el) {
+        return el !== panel && el !== mainView;
+      });
+    }
+
+    function setHidden(el, on) {
+      if (!el) return;
+      if (on) el.setAttribute("hidden", "");
+      else el.removeAttribute("hidden");
+    }
+
     function closeAllSubmenus() {
-      subViews.forEach(function (sv) { sv.setAttribute("hidden", ""); });
-      if (mainView) mainView.removeAttribute("hidden");
+      subViews.forEach(function (sv) { setHidden(sv, true); });
+      setHidden(mainView, false);
     }
 
     function openPanel() {
@@ -59,7 +69,7 @@
     panel.addEventListener("click", function (e) {
       var el = e.target;
 
-      // .m-next (open submenu)
+      // .m-next opens submenu
       while (el && el !== panel && !(el.classList && el.classList.contains("m-next"))) {
         el = el.parentNode;
       }
@@ -69,25 +79,27 @@
         var targetMenu = qs(panel, targetSel);
         if (!targetMenu) return;
 
-        if (mainView) mainView.setAttribute("hidden", "");
-        subViews.forEach(function (sv) { sv.setAttribute("hidden", ""); });
-        targetMenu.removeAttribute("hidden");
+        setHidden(mainView, true);
+        subViews.forEach(function (sv) { setHidden(sv, true); });
+        setHidden(targetMenu, false);
         e.preventDefault();
         return;
       }
 
-      // .m-back (go back)
+      // .m-back goes back
       el = e.target;
       while (el && el !== panel && !(el.classList && el.classList.contains("m-back"))) {
         el = el.parentNode;
       }
       if (el && el.classList && el.classList.contains("m-back")) {
         var backSel = el.getAttribute("data-back");
-        subViews.forEach(function (sv) { sv.setAttribute("hidden", ""); });
+
+        subViews.forEach(function (sv) { setHidden(sv, true); });
+
         if (backSel) {
           var backMenu = qs(panel, backSel);
-          if (backMenu) backMenu.removeAttribute("hidden");
-          else if (mainView) mainView.removeAttribute("hidden");
+          if (backMenu) setHidden(backMenu, false);
+          else setHidden(mainView, false);
         } else {
           closeAllSubmenus();
         }
@@ -96,27 +108,32 @@
       }
     });
 
-    // Initial state (important if HTML is injected with submenus visible)
+    // Initial state
     closeAllSubmenus();
     btn.setAttribute("aria-expanded", "false");
   }
 
-  function initAll() {
+  function bootOnce() {
     qsa(document, "header.topbar[data-mbw-header]").forEach(initHeader);
   }
 
-  function observeForInjectedHeaders() {
-    var mo = new MutationObserver(function () {
-      initAll();
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true });
+  // Retry because header is injected async by includes.js
+  function bootWithRetry() {
+    var tries = 0;
+    var maxTries = 40; // ~4s
+    var timer = setInterval(function () {
+      tries += 1;
+      bootOnce();
+      if (qsa(document, "header.topbar[data-mbw-header]").length && tries >= 3) {
+        clearInterval(timer);
+      }
+      if (tries >= maxTries) clearInterval(timer);
+    }, 100);
   }
 
-  function boot() {
-    initAll();
-    observeForInjectedHeaders();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootWithRetry);
+  } else {
+    bootWithRetry();
   }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
 })();
