@@ -356,14 +356,27 @@ html, body{ overflow-x: visible; }
   color: rgba(7,25,35,.78);
 }
 /* =========================================================
-   MBW Header Fix – Prevent left edge clipping of first pill
-   (Desktop only)
+   MBW Header Fix – Desktop EN/ES Alignment + no "Inicio" clip
+   (Append at END of assets/css/site.css)
    ========================================================= */
 
 @media (min-width: 901px){
-  /* Let pills render fully (no clipping of rounded edge / shadow) */
+  /* Keep everything on one row */
+  header.topbar[data-mbw-header] .right{
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  /* Prevent wrapping AND prevent left edge clipping */
   header.topbar[data-mbw-header] nav.nav{
-    overflow: visible;         /* overrides previous overflow:hidden */
-    padding-left: 6px;         /* tiny buffer so the first pill never gets cut */
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow: hidden;      /* IMPORTANT: do NOT set to visible */
+    padding-left: 8px;     /* buffer so "Inicio" pill isn't clipped */
+  }
+
+  /* Keep language switch pinned right */
+  header.topbar[data-mbw-header] .lang{
+    flex: 0 0 auto;
   }
 }
