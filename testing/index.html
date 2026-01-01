@@ -6,7 +6,6 @@
   <title>Plan Your Trip to Mindo | Mindo Bird Watching</title>
   <meta name="description" content="Plan your trip to Mindo with a simple, step-by-step flow. Choose trip length, decide what to book first, and get a birding-first set of suggestions you can copy or email." />
   <link rel="canonical" href="https://mindobirdwatching.com/plan-your-trip/mindo/" />
-  <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
   <meta property="og:title" content="Plan Your Trip to Mindo | Mindo Bird Watching" />
@@ -17,7 +16,6 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Plan your trip to Mindo with a simple, step-by-step guide" />
-  <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Plan Your Trip to Mindo | Mindo Bird Watching" />
   <meta name="twitter:description" content="Plan your trip to Mindo with a simple, step-by-step flow. Choose trip length, decide what to book first, and get a birding-first set of suggestions you can copy or email." />
@@ -25,19 +23,16 @@
   <link rel="alternate" hreflang="en" href="/plan-your-trip/mindo/" />
   <link rel="alternate" hreflang="es" href="/es/plan-your-trip/mindo/" />
   <link rel="alternate" hreflang="x-default" href="/plan-your-trip/mindo/" />
-  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
-  <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
-  <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
   <style>
-    /* Page-only styles only (ASCII only) */
+    /* Page-only styles (ASCII only) */
     .page{
       margin-top:18px;
       padding:26px;
@@ -48,476 +43,625 @@
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
+.crumbs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.crumbs a{
+  color: var(--ink);
+  font-weight: 900;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0,0,0,0.14);
+}
+.crumbs a:hover{ border-bottom-color: rgba(0,0,0,0.30); }
 
-    .crumbs{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      align-items:center;
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-    .crumbs a{
-      color: var(--ink);
-      font-weight: 900;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(0,0,0,0.14);
-    }
-    .crumbs a:hover{ border-bottom-color: rgba(0,0,0,0.30); }
+.hero{
+  display:grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+  align-items:stretch;
+  margin-top: 10px;
+}
+@media (max-width: 900px){
+  .hero{ grid-template-columns: 1fr; }
+}
 
-    .hero{
-      display:grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 16px;
-      align-items:stretch;
-      margin-top: 10px;
-    }
-    @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-    }
+.heroMain{
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  min-width:0;
+}
 
-    .heroMain{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 18px;
-      min-width:0;
-    }
+.heroTitle{
+  margin: 0 0 8px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 28px;
+  line-height: 1.15;
+}
 
-    .heroTitle{
-      margin: 0 0 8px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 28px;
-      line-height: 1.15;
-    }
+.heroLede{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 85ch;
+}
 
-    .heroLede{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-      max-width: 85ch;
-    }
+.quickFacts{
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
 
-    .quickFacts{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-    }
+.factsTitle{
+  margin: 0 0 6px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 18px;
+}
 
-    .factsTitle{
-      margin: 0 0 6px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
+.factGrid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
 
-    .factGrid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+.fact{
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.72);
+  border-radius: 14px;
+  padding: 12px;
+}
+.fact strong{
+  display:block;
+  color: var(--ink);
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.fact span{
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 13.5px;
+  display:block;
+}
 
-    .fact{
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
-      border-radius: 14px;
-      padding: 12px;
-    }
-    .fact strong{
-      display:block;
-      color: var(--ink);
-      font-weight: 900;
-      margin-bottom: 4px;
-    }
-    .fact span{
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 13.5px;
-      display:block;
-    }
+.ctaRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  margin-top: 14px;
+  align-items:center;
+}
 
-    .ctaRow{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 10px;
-      margin-top: 14px;
-      align-items:center;
-    }
+.btnTertiary{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  font-weight: 900;
+  color: var(--ink);
+  text-decoration:none;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+}
+.btnTertiary:hover{
+  background: rgba(255,255,255,.82);
+}
 
-    .btnTertiary{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      font-weight: 900;
-      color: var(--ink);
-      text-decoration:none;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-    }
-    .btnTertiary:hover{
-      background: rgba(255,255,255,.82);
-    }
+.section{
+  margin-top: 18px;
+}
 
-    .section{
-      margin-top: 18px;
-    }
+.sectionTitle{
+  margin: 0 0 10px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 20px;
+}
 
-    .sectionTitle{
-      margin: 0 0 10px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 20px;
-    }
+.stepGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items:stretch;
+}
+@media (max-width: 900px){
+  .stepGrid{ grid-template-columns: 1fr; }
+}
 
-    .stepGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items:stretch;
-    }
-    @media (max-width: 900px){
-      .stepGrid{ grid-template-columns: 1fr; }
-    }
+.stepCard{
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  min-width:0;
+}
 
-    .stepCard{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-      min-width:0;
-    }
+.stepTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap: 10px;
+  flex-wrap:wrap;
+}
 
-    .stepTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap: 10px;
-      flex-wrap:wrap;
-    }
+.stepTitle{
+  margin:0;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 18px;
+  line-height: 1.2;
+}
 
-    .stepTitle{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-      line-height: 1.2;
-    }
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.75);
+  font-weight: 900;
+  font-size: 12px;
+  color: var(--ink);
+  white-space:nowrap;
+}
 
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap: 6px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.75);
-      font-weight: 900;
-      font-size: 12px;
-      color: var(--ink);
-      white-space:nowrap;
-    }
+.stepDesc{
+  margin:0;
+  color: var(--muted);
+  line-height: 1.6;
+}
 
-    .stepDesc{
-      margin:0;
-      color: var(--muted);
-      line-height: 1.6;
-    }
+.miniList{
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.miniList li{ margin: 4px 0; }
 
-    .miniList{
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-    .miniList li{ margin: 4px 0; }
+.stepActions{
+  margin-top:auto;
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  align-items:center;
+}
 
-    .stepActions{
-      margin-top:auto;
-      display:flex;
-      flex-wrap:wrap;
-      gap: 10px;
-      align-items:center;
-    }
+.divider{
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
 
-    .divider{
-      margin-top: 18px;
-      border-top: 1px solid var(--line);
-      padding-top: 18px;
-    }
+.twoCol{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items:stretch;
+}
+@media (max-width: 900px){
+  .twoCol{ grid-template-columns: 1fr; }
+}
 
-    .twoCol{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items:stretch;
-    }
-    @media (max-width: 900px){
-      .twoCol{ grid-template-columns: 1fr; }
-    }
+.callout{
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  min-width:0;
+}
 
-    .callout{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      min-width:0;
-    }
+.callout h3{
+  margin:0 0 8px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 18px;
+}
+.callout p{
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.6;
+}
 
-    .callout h3{
-      margin:0 0 8px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
-    .callout p{
-      margin: 0 0 10px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
+.softCard{
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.72);
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 10px;
+}
 
-    .softCard{
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
-      border-radius: 14px;
-      padding: 12px;
-      margin-top: 10px;
-    }
+.softCard strong{
+  display:block;
+  color: var(--ink);
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.softCard span{
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 13.5px;
+  display:block;
+}
 
-    .softCard strong{
-      display:block;
-      color: var(--ink);
-      font-weight: 900;
-      margin-bottom: 4px;
-    }
-    .softCard span{
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 13.5px;
-      display:block;
-    }
+.noteLine{
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.noteLine a{
+  color: var(--ink);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
-    .noteLine{
-      margin-top: 10px;
-      padding-top: 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .noteLine a{
-      color: var(--ink);
-      font-weight: 900;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
+/* Trip builder */
+.builder{
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  min-width:0;
+}
+.builderTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap: 12px;
+  flex-wrap:wrap;
+  margin-bottom: 10px;
+}
+.builderTitle{
+  margin:0;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 20px;
+}
+.builderLede{
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 90ch;
+}
+.builderGrid{
+  display:grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 14px;
+  align-items:start;
+  margin-top: 12px;
+}
+@media (max-width: 900px){
+  .builderGrid{ grid-template-columns: 1fr; }
+}
 
-    /* Trip builder (page-only) */
-    .builder{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      min-width:0;
-    }
-    .builderTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap: 12px;
-      flex-wrap:wrap;
-      margin-bottom: 10px;
-    }
-    .builderTitle{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 20px;
-    }
-    .builderLede{
-      margin: 6px 0 0;
-      color: var(--muted);
-      line-height: 1.6;
-      max-width: 90ch;
-    }
-    .builderGrid{
-      display:grid;
-      grid-template-columns: 0.85fr 1.15fr;
-      gap: 14px;
-      align-items:start;
-      margin-top: 12px;
-    }
-    @media (max-width: 900px){
-      .builderGrid{ grid-template-columns: 1fr; }
-    }
+.field{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.field label{
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.field select,
+.field input{
+  font: inherit;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.78);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  outline: none;
+}
 
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    .field label{
-      font-size: 13px;
-      font-weight: 900;
-      color: var(--ink);
-    }
-    .field select,
-    .field input,
-    .field textarea{
-      font: inherit;
-      padding: 11px 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.78);
-      box-shadow: var(--shadow);
-      color: var(--ink);
-      outline: none;
-    }
+.field.inlineSelect{
+  align-items:flex-start;
+}
+.field.inlineSelect select{
+  width: 220px;
+  max-width: 100%;
+}
 
-    /* Make Trip length dropdown not full width */
-    .field.inlineSelect{
-      align-items:flex-start;
-    }
-    .field.inlineSelect select{
-      width: 220px;
-      max-width: 100%;
-    }
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.75);
+  box-shadow: var(--shadow);
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color: transparent;
+}
+.chip input{
+  width: 16px;
+  height: 16px;
+  accent-color: #0d5925;
+}
+.chip span{
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+}
+@media (max-width: 520px){
+  .chips{ gap: 10px; }
+  .chip{ padding: 10px 12px; }
+}
 
-    /* Output: taller and read-only */
-    .field textarea{
-      min-height: 460px;
-      resize: vertical;
-      line-height: 1.55;
-    }
-    @media (max-width: 900px){
-      .field textarea{ min-height: 320px; }
-    }
-    textarea[readonly]{
-      background: rgba(255,255,255,.72);
-      cursor: default;
-    }
+.builderActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  align-items:center;
+  margin-top: 10px;
+}
 
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 8px;
-      margin-top: 6px;
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 9px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow);
-      cursor:pointer;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .chip input{
-      width: 16px;
-      height: 16px;
-      accent-color: #0d5925;
-    }
-    .chip span{
-      font-size: 13px;
-      font-weight: 900;
-      color: var(--ink);
-      line-height: 1;
-    }
-    @media (max-width: 520px){
-      .chips{ gap: 10px; }
-      .chip{ padding: 10px 12px; }
-    }
+.mutedSmall{
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
 
-    .builderActions{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 10px;
-      align-items:center;
-      margin-top: 10px;
-    }
+.builderStatus{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.72);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
 
-    .mutedSmall{
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
+details.emailDetails{
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+details.emailDetails > summary{
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  font-weight: 900;
+  color: var(--ink);
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.75);
+  box-shadow: var(--shadow);
+  width: fit-content;
+  max-width: 100%;
+}
+details.emailDetails > summary::-webkit-details-marker{ display:none; }
+details.emailDetails[open] > summary{
+  background: rgba(255,255,255,.82);
+}
 
-    .builderStatus{
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
+.inviteGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+@media (max-width: 900px){
+  .inviteGrid{ grid-template-columns: 1fr; }
+}
 
-    details.emailDetails{
-      margin-top: 12px;
-      border-top: 1px solid var(--line);
-      padding-top: 12px;
-    }
-    details.emailDetails > summary{
-      list-style: none;
-      cursor: pointer;
-      user-select: none;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      font-weight: 900;
-      color: var(--ink);
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow);
-      width: fit-content;
-      max-width: 100%;
-    }
-    details.emailDetails > summary::-webkit-details-marker{ display:none; }
-    details.emailDetails[open] > summary{
-      background: rgba(255,255,255,.82);
-    }
+/* Itinerary display (matches your screenshot style) */
+.itWrap{
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.itHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap:wrap;
+  margin-bottom: 10px;
+}
+.itTitle{
+  margin: 0;
+  font-family: var(--font-head);
+  color: #233a8a;
+  letter-spacing: -0.02em;
+  font-size: 28px;
+  line-height: 1.15;
+}
+.itNote{
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 95ch;
+  font-size: 14px;
+}
 
-    .inviteGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    @media (max-width: 900px){
-      .inviteGrid{ grid-template-columns: 1fr; }
-    }
-  </style>
+.daysStack{
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.dayCard{
+  background: rgba(255,255,255,.72);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.dayTop{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items:center;
+  margin-bottom: 10px;
+}
+@media (max-width: 560px){
+  .dayTop{ grid-template-columns: 1fr; }
+}
+
+.dayTitle{
+  margin: 0;
+  font-family: var(--font-head);
+  color: #1f2d63;
+  letter-spacing: -0.02em;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.pillBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(3,78,162,0.25);
+  background: rgba(3,78,162,0.08);
+  color: #1f2d63;
+  font-weight: 900;
+  text-decoration:none;
+  white-space:nowrap;
+}
+
+.planCard{
+  background: rgba(245,248,255,0.70);
+  border: 1px solid rgba(31,45,99,0.16);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.planLabel{
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #1f2d63;
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+.planTitle{
+  margin: 0 0 8px;
+  font-family: var(--font-head);
+  color: #1f2d63;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.planDesc{
+  margin: 0 0 10px;
+  color: #2b355c;
+  line-height: 1.65;
+}
+
+.planMeta{
+  margin: 0 0 10px;
+  color: #2b355c;
+  opacity: 0.85;
+  font-weight: 800;
+}
+
+.planList{
+  margin: 0;
+  padding-left: 18px;
+  color: #2b355c;
+  line-height: 1.6;
+}
+.planList li{ margin: 5px 0; }
+
+.planNotes{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(31,45,99,0.14);
+  color: #2b355c;
+  line-height: 1.6;
+}
+.planNotes p{
+  margin: 6px 0 0;
+}
+.planNotes strong{
+  color: #1f2d63;
+  font-weight: 900;
+}
+
+.itFooterHelp{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.itFooterHelp a{
+  color: var(--ink);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Hidden plain text output (for copy/email only) */
+.srText{
+  position:absolute;
+  left:-9999px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
+      </style>
 </head>
 <body>
   <div class="container">
@@ -575,7 +719,7 @@
         <div>
           <h2 class="builderTitle">Build a Simple Itinerary</h2>
           <p class="builderLede">
-            Pick your trip length and interests. We will generate a birding-first set of suggestions you can copy or email to your travel group.
+            Pick your trip length and interests. We will generate a birding-first skeleton with optional suggestions based on your picks.
           </p>
         </div>
         <span class="badge" aria-label="Builder status badge">Fast Draft</span>
@@ -610,14 +754,14 @@
               <label class="chip"><input type="checkbox" value="night"><span>Night walk</span></label>
             </div>
             <div class="mutedSmall" style="margin-top:8px;">
-              Birding tip: Early mornings are best. Many visitors come mainly for birdwatching.
+              Birding tip: Early mornings are best. Mindo is famous for hummingbirds, toucans, and tanagers, plus many cloud forest specialties.
             </div>
           </div>
 
           <div class="builderActions" aria-label="Builder actions">
             <button class="btn primary" id="btnGenerate" type="button">Generate suggestions</button>
             <button class="btn secondary" id="btnCopy" type="button">Copy</button>
-            <a class="btn tertiary" href="/tours/" id="btnViewTours">View tours</a>
+            <a class="btn tertiary" href="/tours/" id="btnBookTour">Book a tour</a>
           </div>
 
           <details class="emailDetails" id="emailDetails">
@@ -659,12 +803,24 @@
         </div>
 
         <div aria-label="Itinerary output">
-          <div class="field">
-            <label for="itineraryOutput">Your draft suggestions</label>
-            <textarea id="itineraryOutput" readonly aria-readonly="true" placeholder="Click Generate suggestions to build a birding-first outline with optional ideas."></textarea>
-          </div>
-          <div class="mutedSmall">
-            This is generated for easy sharing. Use Copy or Email.
+          <div class="itWrap" aria-label="Suggested itinerary">
+            <div class="itHeader">
+              <div>
+                <h3 class="itTitle">Your Suggested Itinerary</h3>
+                <p class="itNote" id="itNote">
+                  Note: This is a suggested itinerary generated from your selections. Times and logistics can vary by season, traffic, and exact pickup locations.
+                </p>
+              </div>
+            </div>
+
+            <div class="daysStack" id="itineraryCards" aria-live="polite"></div>
+
+            <div class="itFooterHelp" id="itHelpLine">
+              Want help matching this to your hotel and arrival time?
+              <a href="https://wa.me/13054585402" target="_blank" rel="noopener">Message us on WhatsApp</a>
+            </div>
+
+            <textarea id="itineraryPlainText" class="srText" readonly aria-hidden="true"></textarea>
           </div>
         </div>
       </div>
@@ -823,15 +979,14 @@
 
 <div id="siteFooter"></div>
   </div>
-  <!-- Trip builder logic (page-only) -->
   <script>
     (function(){
       const DATA_URL = "/assets/data/itinerary_blocks.json";
+
       const root = document.getElementById("tripBuilder");
       const statusEl = document.getElementById("builderStatus");
       const daysEl = document.getElementById("tripDays");
       const chipsEl = document.getElementById("interestChips");
-      const outEl = document.getElementById("itineraryOutput");
 
       const btnGenerate = document.getElementById("btnGenerate");
       const btnCopy = document.getElementById("btnCopy");
@@ -842,6 +997,9 @@
       const t1EmailEl = document.getElementById("t1Email");
       const t2EmailEl = document.getElementById("t2Email");
       const t3EmailEl = document.getElementById("t3Email");
+
+      const cardsEl = document.getElementById("itineraryCards");
+      const plainEl = document.getElementById("itineraryPlainText");
 
       let blocks = [];
 
@@ -858,13 +1016,13 @@
         return interests.indexOf(key) >= 0;
       }
 
-      function filterByTime(list, time){
-        return list.filter(b => String(b.time_of_day || "") === time);
-      }
-
       function filterByCategory(list, cat){
         const c = String(cat).toLowerCase();
         return list.filter(b => String(b.category || "").toLowerCase() === c);
+      }
+
+      function filterByTime(list, time){
+        return list.filter(b => String(b.time_of_day || "") === time);
       }
 
       function hasTag(block, tag){
@@ -884,10 +1042,98 @@
         return list[0] || null;
       }
 
-      function getOptional(list, used, labelPrefix){
-        const b = pick(list, used);
-        if (!b) return null;
-        return (labelPrefix ? (labelPrefix + b.title) : b.title);
+      function safeText(s){
+        return String(s || "").replace(/\s+/g, " ").trim();
+      }
+
+      function clearCards(){
+        while(cardsEl.firstChild) cardsEl.removeChild(cardsEl.firstChild);
+      }
+
+      function renderDayCard(dayIndex, regionLabel, planTitle, planDesc, metaText, bullets, notes){
+        const dayCard = document.createElement("div");
+        dayCard.className = "dayCard";
+
+        const dayTop = document.createElement("div");
+        dayTop.className = "dayTop";
+
+        const h = document.createElement("h4");
+        h.className = "dayTitle";
+        h.textContent = "Day " + dayIndex + ": " + regionLabel;
+
+        const pill = document.createElement("span");
+        pill.className = "pillBtn";
+        pill.textContent = "Suggested day plan";
+
+        dayTop.appendChild(h);
+        dayTop.appendChild(pill);
+
+        const planCard = document.createElement("div");
+        planCard.className = "planCard";
+
+        const label = document.createElement("div");
+        label.className = "planLabel";
+        label.textContent = "FLEXIBLE";
+
+        const title = document.createElement("h5");
+        title.className = "planTitle";
+        title.textContent = planTitle;
+
+        const desc = document.createElement("p");
+        desc.className = "planDesc";
+        desc.textContent = planDesc;
+
+        const meta = document.createElement("p");
+        meta.className = "planMeta";
+        meta.textContent = metaText;
+
+        const ul = document.createElement("ul");
+        ul.className = "planList";
+        (bullets || []).forEach(function(b){
+          const li = document.createElement("li");
+          li.textContent = b;
+          ul.appendChild(li);
+        });
+
+        const notesWrap = document.createElement("div");
+        notesWrap.className = "planNotes";
+
+        (notes || []).forEach(function(n){
+          const p = document.createElement("p");
+          p.innerHTML = "<strong>Note:</strong> " + safeText(n);
+          notesWrap.appendChild(p);
+        });
+
+        planCard.appendChild(label);
+        planCard.appendChild(title);
+        planCard.appendChild(desc);
+        planCard.appendChild(meta);
+        planCard.appendChild(ul);
+        planCard.appendChild(notesWrap);
+
+        dayCard.appendChild(dayTop);
+        dayCard.appendChild(planCard);
+
+        cardsEl.appendChild(dayCard);
+      }
+
+      function buildPlainTextHeader(days, interests){
+        const parts = [];
+
+        parts.push("Mindo trip suggestions (birding first)");
+        parts.push("");
+        parts.push("Birding note: Mindo is famous for hummingbirds, toucans, and tanagers. Early mornings are best for activity and light. Many visitors plan around 1 to 2 strong mornings.");
+        parts.push("");
+
+        if (days === 1){
+          parts.push("1-day plan: Keep it focused. Aim for an early start, one main birding block, and one optional add-on.");
+          parts.push("");
+        }
+
+        parts.push("Selected interests: " + (interests.length ? interests.join(", ") : "none"));
+        parts.push("");
+
+        return parts;
       }
 
       function buildItinerary(){
@@ -915,136 +1161,159 @@
         const chocolateBlocks = blocks.filter(b => hasTag(b, "chocolate"));
         const coffeeBlocks = blocks.filter(b => hasTag(b, "coffee"));
         const adventureBlocks = blocks.filter(b => hasTag(b, "adventure"));
-        const nightBlocks = blocks.filter(b => hasTag(b, "night") || String(b.category || "").toLowerCase() === "night" || String(b.time_of_day || "") === "evening");
+        const nightBlocks = blocks.filter(b => hasTag(b, "night") || String(b.category || "").toLowerCase() === "night");
 
-        const lines = [];
-        lines.push("Mindo trip suggestions (birding first)");
-        lines.push("");
-        lines.push("Birding note: Mindo is famous for hummingbirds, toucans, and tanagers. Early mornings are best for activity and light. Many visitors plan around 1 to 2 strong mornings.");
-        if (hummingbirdsWanted){
-          lines.push("Hummingbirds note: Feeders and gardens are perfect for close views and photos. Mornings and late afternoons are usually best.");
-        }
-        if (photoWanted){
-          lines.push("Photography note: Cloud forest light is soft and changes fast. Bring a rain cover and plan for quick lens swaps.");
-        }
-        lines.push("");
+        clearCards();
 
-        if (days === 1){
-          lines.push("1-day plan: Keep it focused. Aim for an early start, one main birding block, and one optional add-on.");
-          lines.push("");
-        }
+        const plain = buildPlainTextHeader(days, interests);
 
         for (let d = 1; d <= days; d++){
-          lines.push("Day " + d);
-          lines.push("");
-
-          // Morning: birding-first skeleton (guided if available and birding selected)
-          let morningLine = "Morning: Birdwatching (best time of day).";
+          // Morning: birding-first always
+          let morningTitle = "Birdwatching morning with target species (birding first)";
           if (birdingWanted && birdingBlocks.length){
             const guided = pick(birdingBlocks, used);
-            if (guided && guided.title){
-              morningLine = "Morning: " + guided.title + " (birding first).";
-            }
+            if (guided && guided.title) morningTitle = guided.title + " (birding first)";
           } else if (morningAny.length){
             const m = pick(morningAny, used);
-            if (m && m.title){
-              morningLine = "Morning: " + m.title + ".";
-            }
+            if (m && m.title) morningTitle = m.title;
           }
-          lines.push(morningLine);
-          lines.push("  - What you might see: hummingbirds, toucans, tanagers, plus many cloud forest specialties.");
 
-          // Midday: always keep it light (rest/town/lunch) with optional chocolate/coffee if selected
-          lines.push("");
-          let middayLine = "Midday: Slow down, lunch, and rest (cloud forest mornings start early).";
+          // Midday: always light
+          let middayTitle = "Slow down, lunch, and rest (cloud forest mornings start early)";
           if ((chocolateWanted || coffeeWanted) && middayAny.length){
-            const midOpts = [];
-            if (chocolateWanted && chocolateBlocks.length) midOpts.push(getOptional(chocolateBlocks, used, ""));
-            if (coffeeWanted && coffeeBlocks.length) midOpts.push(getOptional(coffeeBlocks, used, ""));
-            if (midOpts.filter(Boolean).length){
-              middayLine = "Midday: Lunch + optional " + midOpts.filter(Boolean).join(" or ") + ".";
+            const mids = [];
+            if (chocolateWanted && chocolateBlocks.length){
+              const c = pick(chocolateBlocks, used);
+              if (c && c.title) mids.push(c.title);
+              else mids.push("chocolate tour");
             }
+            if (coffeeWanted && coffeeBlocks.length){
+              const cf = pick(coffeeBlocks, used);
+              if (cf && cf.title) mids.push(cf.title);
+              else mids.push("coffee tour");
+            }
+            if (mids.length) middayTitle = "Lunch + optional " + mids.slice(0,2).join(" or ");
           }
-          lines.push(middayLine);
 
-          // Afternoon: optional suggestions based on selected interests (do not over-design)
-          lines.push("");
-          const afternoonOpts = [];
+          // Afternoon: only suggest activities if selected
+          // - Waterfalls only if selected
+          // - Adventure only if selected
+          // - Otherwise keep generic and light (no full itinerary design)
+          let afternoonTitle = "One light activity based on energy (optional)";
+          const afternoonParts = [];
 
           if (waterfallsWanted){
             if (waterfallBlocks.length){
-              const w = getOptional(waterfallBlocks, used, "");
-              if (w) afternoonOpts.push(w);
+              const w = pick(waterfallBlocks, used);
+              afternoonParts.push((w && w.title) ? w.title : "Waterfall visit");
             } else {
-              afternoonOpts.push("Waterfall visit (optional)");
+              afternoonParts.push("Waterfall visit");
             }
           }
 
           if (adventureWanted){
             if (adventureBlocks.length){
-              const a = getOptional(adventureBlocks, used, "");
-              if (a) afternoonOpts.push(a);
+              const a = pick(adventureBlocks, used);
+              afternoonParts.push((a && a.title) ? a.title : "River tubing");
             } else {
-              afternoonOpts.push("Adventure activity (zipline or similar) (optional)");
+              afternoonParts.push("River tubing");
             }
           }
 
-          if (photoWanted && !waterfallsWanted && !adventureWanted){
-            afternoonOpts.push("Photography time (gardens, feeders, forest edges) (optional)");
-          }
-
-          if (!afternoonOpts.length){
-            if (relaxedWanted){
-              afternoonOpts.push("Easy nature walk or lodge downtime (optional)");
-            } else {
-              afternoonOpts.push("One light activity based on energy (optional)");
+          if (!afternoonParts.length){
+            if (photoWanted){
+              afternoonTitle = "Photography time (gardens, feeders, forest edges) (optional)";
+            } else if (relaxedWanted){
+              afternoonTitle = "Easy nature walk or lodge downtime (optional)";
             }
+          } else {
+            afternoonTitle = afternoonParts.slice(0,2).join(" | ") + " (optional)";
           }
 
-          lines.push("Afternoon: " + afternoonOpts.slice(0, 2).join(" | "));
-
-          // Evening: suggest night walk OR chocolate/coffee OR town cafes/restaurants
-          lines.push("");
-          let eveningLine = "Evening: Explore town (cafes and restaurants) or an early night for tomorrow.";
+          // Evening: optional suggestions (night walk / chocolate / coffee / town)
+          let eveningTitle = "Explore town (cafes and restaurants) or an early night for tomorrow";
           if (nightWanted){
             if (nightBlocks.length){
-              const n = getOptional(nightBlocks, used, "");
-              if (n) eveningLine = "Evening: " + n + " (optional).";
-              else eveningLine = "Evening: Night walk (optional).";
+              const n = pick(nightBlocks, used);
+              eveningTitle = (n && n.title) ? (n.title + " (optional)") : "Night walk (optional)";
             } else {
-              eveningLine = "Evening: Night walk (optional).";
+              eveningTitle = "Night walk (optional)";
             }
           } else if (chocolateWanted || coffeeWanted){
-            if (chocolateWanted && chocolateBlocks.length){
-              const c = getOptional(chocolateBlocks, used, "");
-              if (c) eveningLine = "Evening: " + c + " (optional) or town dinner.";
-              else eveningLine = "Evening: Chocolate or cacao experience (optional) or town dinner.";
-            } else if (coffeeWanted && coffeeBlocks.length){
-              const cf = getOptional(coffeeBlocks, used, "");
-              if (cf) eveningLine = "Evening: " + cf + " (optional) or town dinner.";
-              else eveningLine = "Evening: Coffee experience (optional) or town dinner.";
-            } else {
-              eveningLine = "Evening: Chocolate or coffee (optional) or town dinner.";
+            if (chocolateWanted){
+              eveningTitle = "Chocolate tour (optional) or town dinner";
+            } else if (coffeeWanted){
+              eveningTitle = "Coffee tour (optional) or town dinner";
             }
           }
-          lines.push(eveningLine);
 
-          lines.push("");
+          // Card title/description/meta
+          const cardTitleParts = [];
+          if (birdingWanted) cardTitleParts.push("Birding");
+          if (adventureWanted) cardTitleParts.push("Adventure");
+          if (!cardTitleParts.length) cardTitleParts.push("Birding-first");
+
+          const cardTitle = "Mindo " + cardTitleParts.join(" + ") + " day plan";
+          let cardDesc = "Birding mornings first, then keep the rest flexible based on your interests and energy.";
+          if (days === 1){
+            cardDesc = "Keep it focused: one strong birding block, one optional add-on, then an easy evening.";
+          }
+
+          const metaBits = [];
+          if (birdingWanted) metaBits.push("Birding");
+          if (adventureWanted) metaBits.push("Adventure");
+          if (waterfallsWanted) metaBits.push("Waterfalls");
+          if (chocolateWanted) metaBits.push("Chocolate");
+          if (coffeeWanted) metaBits.push("Coffee");
+          if (photoWanted) metaBits.push("Photography");
+          if (relaxedWanted) metaBits.push("Relaxed");
+          if (nightWanted) metaBits.push("Night");
+
+          const metaText = (metaBits.length ? (metaBits.join("  \u2022  ") + "  \u2022  ") : "") + "Flexible timing";
+
+          const bullets = [
+            "Morning: " + morningTitle,
+            "Midday: " + middayTitle,
+            "Afternoon: " + afternoonTitle,
+            "Evening: " + eveningTitle
+          ];
+
+          const notes = [];
+          notes.push("What you might see: hummingbirds, toucans, tanagers, plus many cloud forest specialties.");
+          notes.push("Early mornings are best for bird activity and softer light. Plan on 1 to 2 strong mornings if birding is your main goal.");
+          if (hummingbirdsWanted){
+            notes.push("Hummingbirds: feeders and gardens are ideal for close views and photos. Mornings and late afternoons are often best.");
+          }
+          if (photoWanted){
+            notes.push("Photography: cloud forest weather changes fast. A rain cover helps, and quick lens swaps matter.");
+          }
+          if (adventureWanted){
+            notes.push("Adventure is suggested only because you selected it. If you want a lighter day, swap the afternoon for an easy walk or town time.");
+          }
+
+          renderDayCard(d, "Mindo", cardTitle, cardDesc, metaText, bullets, notes);
+
+          // Plain text for copy/email
+          plain.push("Day " + d);
+          plain.push("Morning: " + morningTitle);
+          plain.push("  - What you might see: hummingbirds, toucans, tanagers, plus many cloud forest specialties.");
+          plain.push("Midday: " + middayTitle);
+          plain.push("Afternoon: " + afternoonTitle);
+          plain.push("Evening: " + eveningTitle);
+          plain.push("");
         }
 
-        lines.push("Want help matching this to your hotel and arrival time? Message us on WhatsApp: https://wa.me/13054585402");
-        outEl.value = lines.join("\n");
+        plainEl.value = plain.join("\n");
         setStatus("Suggestions generated. Use Copy or Email.");
       }
 
       function copyItinerary(){
-        const txt = outEl.value || "";
-        if (!txt.trim()){
+        const txt = (plainEl.value || "").trim();
+        if (!txt){
           setStatus("Nothing to copy yet. Click Generate suggestions first.");
           return;
         }
 
-        // Prefer modern clipboard API when available
         if (navigator.clipboard && window.isSecureContext){
           navigator.clipboard.writeText(txt).then(function(){
             setStatus("Copied to clipboard.");
@@ -1056,15 +1325,15 @@
         fallbackCopy();
 
         function fallbackCopy(){
-          outEl.focus();
-          outEl.select();
+          plainEl.focus();
+          plainEl.select();
           try{
             const ok = document.execCommand("copy");
             setStatus(ok ? "Copied to clipboard." : "Copy failed. Select and copy manually.");
           }catch(err){
             setStatus("Copy failed. Select and copy manually.");
           }
-          outEl.setSelectionRange(0, 0);
+          plainEl.setSelectionRange(0, 0);
         }
       }
 
@@ -1079,8 +1348,8 @@
           return;
         }
 
-        const itineraryText = outEl.value || "";
-        if (!itineraryText.trim()){
+        const itineraryText = (plainEl.value || "").trim();
+        if (!itineraryText){
           setStatus("Nothing to email yet. Click Generate suggestions first.");
           return;
         }
@@ -1118,7 +1387,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
           });
+
           const data = await res.json().catch(() => ({}));
+
           if (res.ok && data && data.ok){
             setStatus("Sent. Check your inbox (and spam) in a minute.");
             if (emailDetails && emailDetails.open) emailDetails.open = false;
@@ -1136,13 +1407,10 @@
           const data = await res.json();
           const arr = data && data.blocks ? data.blocks : [];
           blocks = Array.isArray(arr) ? arr : [];
-          if (!blocks.length){
-            setStatus("No blocks found. Check " + DATA_URL);
-            return;
-          }
-          setStatus("Ready. Pick days, choose interests, then generate.");
+          setStatus(blocks.length ? "Ready. Pick days, choose interests, then generate." : "Ready. Pick days, choose interests, then generate.");
         }catch(err){
-          setStatus("Could not load blocks. Check " + DATA_URL);
+          blocks = [];
+          setStatus("Ready. Pick days, choose interests, then generate.");
         }
       }
 
@@ -1153,7 +1421,6 @@
       loadBlocks();
     })();
   </script>
-  <!-- Shared includes + header behavior -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
 </body>
