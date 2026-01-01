@@ -9,7 +9,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
   <meta property="og:title" content="Plan Your Trip to Mindo | Mindo Bird Watching" />
-  <meta property="og:description" content="Plan your trip to Mindo with a simple, step-by-step flow. Choose trip length, decide what to book first, and get a birding-first set of suggestions you can copy or email." />
+  <meta property="og:description" content="Plan your trip to Mindo with a simple, step-by-step flow. Choose trip length, decide what to book first, and get a birding-first outline you can copy or email." />
   <meta property="og:url" content="https://mindobirdwatching.com/plan-your-trip/mindo/" />
   <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
@@ -18,7 +18,7 @@
   <meta property="og:image:alt" content="Plan your trip to Mindo with a simple, step-by-step guide" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Plan Your Trip to Mindo | Mindo Bird Watching" />
-  <meta name="twitter:description" content="Plan your trip to Mindo with a simple, step-by-step flow. Choose trip length, decide what to book first, and get a birding-first set of suggestions you can copy or email." />
+  <meta name="twitter:description" content="Plan your trip to Mindo with a simple, step-by-step flow. Choose trip length, decide what to book first, and get a birding-first outline you can copy or email." />
   <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <link rel="alternate" hreflang="en" href="/plan-your-trip/mindo/" />
   <link rel="alternate" hreflang="es" href="/es/plan-your-trip/mindo/" />
@@ -395,7 +395,7 @@
   align-items:flex-start;
 }
 .field.inlineSelect select{
-  width: 220px;
+  width: 120px;
   max-width: 100%;
 }
 
@@ -496,7 +496,7 @@ details.emailDetails[open] > summary{
   .inviteGrid{ grid-template-columns: 1fr; }
 }
 
-/* Itinerary display (matches your screenshot style) */
+/* Itinerary display */
 .itWrap{
   background: rgba(255,255,255,.65);
   border: 1px solid var(--line);
@@ -622,19 +622,25 @@ details.emailDetails[open] > summary{
 }
 .planList li{ margin: 5px 0; }
 
-.planNotes{
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(31,45,99,0.14);
-  color: #2b355c;
+.itGlobalNotes{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
   line-height: 1.6;
+  font-size: 14px;
 }
-.planNotes p{
-  margin: 6px 0 0;
-}
-.planNotes strong{
-  color: #1f2d63;
+.itGlobalNotes .gnTitle{
   font-weight: 900;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.itGlobalNotes ul{
+  margin: 0;
+  padding-left: 18px;
+}
+.itGlobalNotes li{
+  margin: 6px 0;
 }
 
 .itFooterHelp{
@@ -814,6 +820,11 @@ details.emailDetails[open] > summary{
             </div>
 
             <div class="daysStack" id="itineraryCards" aria-live="polite"></div>
+
+            <div class="itGlobalNotes" id="itGlobalNotes" hidden>
+              <div class="gnTitle">Note:</div>
+              <ul id="itGlobalNotesList"></ul>
+            </div>
 
             <div class="itFooterHelp" id="itHelpLine">
               Want help matching this to your hotel and arrival time?
@@ -1001,6 +1012,9 @@ details.emailDetails[open] > summary{
       const cardsEl = document.getElementById("itineraryCards");
       const plainEl = document.getElementById("itineraryPlainText");
 
+      const globalNotesWrap = document.getElementById("itGlobalNotes");
+      const globalNotesListEl = document.getElementById("itGlobalNotesList");
+
       let blocks = [];
 
       function setStatus(msg){
@@ -1050,7 +1064,27 @@ details.emailDetails[open] > summary{
         while(cardsEl.firstChild) cardsEl.removeChild(cardsEl.firstChild);
       }
 
-      function renderDayCard(dayIndex, regionLabel, planTitle, planDesc, metaText, bullets, notes){
+      function clearGlobalNotes(){
+        while(globalNotesListEl.firstChild) globalNotesListEl.removeChild(globalNotesListEl.firstChild);
+        globalNotesWrap.hidden = true;
+      }
+
+      function renderGlobalNotes(notes){
+        clearGlobalNotes();
+        const clean = (notes || []).map(safeText).filter(Boolean);
+
+        if (!clean.length) return;
+
+        clean.forEach(function(n){
+          const li = document.createElement("li");
+          li.textContent = n;
+          globalNotesListEl.appendChild(li);
+        });
+
+        globalNotesWrap.hidden = false;
+      }
+
+      function renderDayCard(dayIndex, regionLabel, planTitle, planDesc, metaText, bullets){
         const dayCard = document.createElement("div");
         dayCard.className = "dayCard";
 
@@ -1095,21 +1129,11 @@ details.emailDetails[open] > summary{
           ul.appendChild(li);
         });
 
-        const notesWrap = document.createElement("div");
-        notesWrap.className = "planNotes";
-
-        (notes || []).forEach(function(n){
-          const p = document.createElement("p");
-          p.innerHTML = "<strong>Note:</strong> " + safeText(n);
-          notesWrap.appendChild(p);
-        });
-
         planCard.appendChild(label);
         planCard.appendChild(title);
         planCard.appendChild(desc);
         planCard.appendChild(meta);
         planCard.appendChild(ul);
-        planCard.appendChild(notesWrap);
 
         dayCard.appendChild(dayTop);
         dayCard.appendChild(planCard);
@@ -1121,8 +1145,6 @@ details.emailDetails[open] > summary{
         const parts = [];
 
         parts.push("Mindo trip suggestions (birding first)");
-        parts.push("");
-        parts.push("Birding note: Mindo is famous for hummingbirds, toucans, and tanagers. Early mornings are best for activity and light. Many visitors plan around 1 to 2 strong mornings.");
         parts.push("");
 
         if (days === 1){
@@ -1154,8 +1176,6 @@ details.emailDetails[open] > summary{
         const birdingBlocks = filterByCategory(blocks, "birding");
         const morningAny = filterByTime(blocks, "early_morning").concat(filterByTime(blocks, "morning"));
         const middayAny = filterByTime(blocks, "midday");
-        const afternoonAny = filterByTime(blocks, "afternoon");
-        const eveningAny = filterByTime(blocks, "evening");
 
         const waterfallBlocks = blocks.filter(b => hasTag(b, "waterfalls"));
         const chocolateBlocks = blocks.filter(b => hasTag(b, "chocolate"));
@@ -1164,11 +1184,11 @@ details.emailDetails[open] > summary{
         const nightBlocks = blocks.filter(b => hasTag(b, "night") || String(b.category || "").toLowerCase() === "night");
 
         clearCards();
+        clearGlobalNotes();
 
         const plain = buildPlainTextHeader(days, interests);
 
         for (let d = 1; d <= days; d++){
-          // Morning: birding-first always
           let morningTitle = "Birdwatching morning with target species (birding first)";
           if (birdingWanted && birdingBlocks.length){
             const guided = pick(birdingBlocks, used);
@@ -1178,7 +1198,6 @@ details.emailDetails[open] > summary{
             if (m && m.title) morningTitle = m.title;
           }
 
-          // Midday: always light
           let middayTitle = "Slow down, lunch, and rest (cloud forest mornings start early)";
           if ((chocolateWanted || coffeeWanted) && middayAny.length){
             const mids = [];
@@ -1195,10 +1214,6 @@ details.emailDetails[open] > summary{
             if (mids.length) middayTitle = "Lunch + optional " + mids.slice(0,2).join(" or ");
           }
 
-          // Afternoon: only suggest activities if selected
-          // - Waterfalls only if selected
-          // - Adventure only if selected
-          // - Otherwise keep generic and light (no full itinerary design)
           let afternoonTitle = "One light activity based on energy (optional)";
           const afternoonParts = [];
 
@@ -1230,7 +1245,6 @@ details.emailDetails[open] > summary{
             afternoonTitle = afternoonParts.slice(0,2).join(" | ") + " (optional)";
           }
 
-          // Evening: optional suggestions (night walk / chocolate / coffee / town)
           let eveningTitle = "Explore town (cafes and restaurants) or an early night for tomorrow";
           if (nightWanted){
             if (nightBlocks.length){
@@ -1247,7 +1261,6 @@ details.emailDetails[open] > summary{
             }
           }
 
-          // Card title/description/meta
           const cardTitleParts = [];
           if (birdingWanted) cardTitleParts.push("Birding");
           if (adventureWanted) cardTitleParts.push("Adventure");
@@ -1269,7 +1282,7 @@ details.emailDetails[open] > summary{
           if (relaxedWanted) metaBits.push("Relaxed");
           if (nightWanted) metaBits.push("Night");
 
-          const metaText = (metaBits.length ? (metaBits.join("  \u2022  ") + "  \u2022  ") : "") + "Flexible timing";
+          const metaText = (metaBits.length ? (metaBits.join("  •  ") + "  •  ") : "") + "Flexible timing";
 
           const bullets = [
             "Morning: " + morningTitle,
@@ -1278,30 +1291,35 @@ details.emailDetails[open] > summary{
             "Evening: " + eveningTitle
           ];
 
-          const notes = [];
-          notes.push("What you might see: hummingbirds, toucans, tanagers, plus many cloud forest specialties.");
-          notes.push("Early mornings are best for bird activity and softer light. Plan on 1 to 2 strong mornings if birding is your main goal.");
-          if (hummingbirdsWanted){
-            notes.push("Hummingbirds: feeders and gardens are ideal for close views and photos. Mornings and late afternoons are often best.");
-          }
-          if (photoWanted){
-            notes.push("Photography: cloud forest weather changes fast. A rain cover helps, and quick lens swaps matter.");
-          }
-          if (adventureWanted){
-            notes.push("Adventure is suggested only because you selected it. If you want a lighter day, swap the afternoon for an easy walk or town time.");
-          }
+          renderDayCard(d, "Mindo", cardTitle, cardDesc, metaText, bullets);
 
-          renderDayCard(d, "Mindo", cardTitle, cardDesc, metaText, bullets, notes);
-
-          // Plain text for copy/email
           plain.push("Day " + d);
           plain.push("Morning: " + morningTitle);
-          plain.push("  - What you might see: hummingbirds, toucans, tanagers, plus many cloud forest specialties.");
           plain.push("Midday: " + middayTitle);
           plain.push("Afternoon: " + afternoonTitle);
           plain.push("Evening: " + eveningTitle);
           plain.push("");
         }
+
+        const globalNotes = [];
+        globalNotes.push("What you might see: hummingbirds, toucans, tanagers, plus many cloud forest specialties.");
+        globalNotes.push("Early mornings are best for bird activity and softer light. Plan on 1 to 2 strong mornings if birding is your main goal.");
+        if (hummingbirdsWanted){
+          globalNotes.push("Hummingbirds: feeders and gardens are ideal for close views and photos. Mornings and late afternoons are often best.");
+        }
+        if (photoWanted){
+          globalNotes.push("Photography: cloud forest weather changes fast. A rain cover helps, and quick lens swaps matter.");
+        }
+        if (adventureWanted){
+          globalNotes.push("Adventure is suggested only because you selected it. If you want a lighter day, swap the afternoon for an easy walk or town time.");
+        }
+
+        renderGlobalNotes(globalNotes);
+
+        plain.push("Note:");
+        globalNotes.forEach(function(n){
+          plain.push("- " + safeText(n));
+        });
 
         plainEl.value = plain.join("\n");
         setStatus("Suggestions generated. Use Copy or Email.");
@@ -1407,7 +1425,7 @@ details.emailDetails[open] > summary{
           const data = await res.json();
           const arr = data && data.blocks ? data.blocks : [];
           blocks = Array.isArray(arr) ? arr : [];
-          setStatus(blocks.length ? "Ready. Pick days, choose interests, then generate." : "Ready. Pick days, choose interests, then generate.");
+          setStatus("Ready. Pick days, choose interests, then generate.");
         }catch(err){
           blocks = [];
           setStatus("Ready. Pick days, choose interests, then generate.");
