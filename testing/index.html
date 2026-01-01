@@ -38,17 +38,16 @@
   <script src="/assets/js/head.js" defer></script>
   <style>
     /* Page-only styles only (ASCII only) */
-.page{
-  margin-top:18px;
-  padding:26px;
-}
-.page.card{
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
-
+    .page{
+      margin-top:18px;
+      padding:26px;
+    }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
 .crumbs{
   display:flex;
   flex-wrap:wrap;
@@ -365,7 +364,7 @@
 }
 .builderGrid{
   display:grid;
-  grid-template-columns: 0.9fr 1.1fr;
+  grid-template-columns: 0.85fr 1.15fr;
   gap: 14px;
   align-items:start;
   margin-top: 12px;
@@ -397,10 +396,24 @@
   color: var(--ink);
   outline: none;
 }
+
+/* Make Trip length dropdown not full width */
+.field.inlineSelect{
+  align-items:flex-start;
+}
+.field.inlineSelect select{
+  width: 220px;
+  max-width: 100%;
+}
+
+/* Make itinerary output taller on desktop */
 .field textarea{
-  min-height: 220px;
+  min-height: 420px;
   resize: vertical;
   line-height: 1.55;
+}
+@media (max-width: 900px){
+  .field textarea{ min-height: 300px; }
 }
 
 .chips{
@@ -413,13 +426,14 @@
   display:inline-flex;
   align-items:center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 9px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: rgba(255,255,255,.75);
   box-shadow: var(--shadow);
   cursor:pointer;
   user-select:none;
+  -webkit-tap-highlight-color: transparent;
 }
 .chip input{
   width: 16px;
@@ -431,6 +445,14 @@
   font-weight: 900;
   color: var(--ink);
   line-height: 1;
+}
+
+/* Mobile chip UX: full-width-ish rows */
+@media (max-width: 520px){
+  .chips{ gap: 10px; }
+  .chip{
+    padding: 10px 12px;
+  }
 }
 
 .builderActions{
@@ -458,16 +480,39 @@
   line-height: 1.5;
 }
 
-.inviteBox{
+/* Collapsible email section (hidden by default, cleaner than a big hidden form) */
+details.emailDetails{
   margin-top: 12px;
-  padding-top: 12px;
   border-top: 1px solid var(--line);
-  display:none;
+  padding-top: 12px;
 }
+details.emailDetails > summary{
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  font-weight: 900;
+  color: var(--ink);
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.75);
+  box-shadow: var(--shadow);
+  width: fit-content;
+  max-width: 100%;
+}
+details.emailDetails > summary::-webkit-details-marker{ display:none; }
+details.emailDetails[open] > summary{
+  background: rgba(255,255,255,.82);
+}
+
 .inviteGrid{
   display:grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
+  margin-top: 10px;
 }
 @media (max-width: 900px){
   .inviteGrid{ grid-template-columns: 1fr; }
@@ -485,44 +530,47 @@
     <span aria-hidden="true">/</span>
     <span>Plan Your Trip to Mindo</span>
   </nav>
+
   <section class="hero" aria-label="Plan your trip to Mindo hero">
     <div class="heroMain">
       <h1 class="heroTitle">Plan Your Trip to Mindo</h1>
       <p class="heroLede">
         Use this simple flow to decide trip length, what to book first, and how to build a day-by-day outline that fits your pace. If you want, we can also help you match arrival times to early birding mornings.
       </p>
-  <div class="ctaRow" aria-label="Primary actions">
-    <a class="btn primary" href="/tours/">Browse Tours</a>
-    <a class="btn secondary" href="/transportation/">Transportation</a>
-    <a class="btnTertiary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask on WhatsApp</a>
-  </div>
 
-  <div class="noteLine">
-    Short on time? Tell us your dates and goals and we will recommend a simple plan.
-    <a href="https://wa.me/13054585402" target="_blank" rel="noopener">Message us</a>
-  </div>
-</div>
+      <div class="ctaRow" aria-label="Primary actions">
+        <a class="btn primary" href="/tours/">Browse Tours</a>
+        <a class="btn secondary" href="/transportation/">Transportation</a>
+        <a class="btnTertiary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask on WhatsApp</a>
+      </div>
 
-<aside class="quickFacts" aria-label="Quick facts">
-  <h2 class="factsTitle">Quick Facts</h2>
-  <div class="factGrid">
-    <div class="fact">
-      <strong>Best For</strong>
-      <span>Birding, cloud forest, waterfalls, chocolate, and easy nature days from Quito.</span>
+      <div class="noteLine">
+        Short on time? Tell us your dates and goals and we will recommend a simple plan.
+        <a href="https://wa.me/13054585402" target="_blank" rel="noopener">Message us</a>
+      </div>
     </div>
-    <div class="fact">
-      <strong>Getting Here</strong>
-      <span>Most travelers land in Quito (UIO) and transfer by private driver or shared van.</span>
-    </div>
-    <div class="fact">
-      <strong>Trip Length</strong>
-      <span>2 to 4 nights is a great starting point. Longer stays work well for photography pacing.</span>
-    </div>
-  </div>
-</aside>
+
+    <aside class="quickFacts" aria-label="Quick facts">
+      <h2 class="factsTitle">Quick Facts</h2>
+      <div class="factGrid">
+        <div class="fact">
+          <strong>Best For</strong>
+          <span>Birding, cloud forest, waterfalls, chocolate, and easy nature days from Quito.</span>
+        </div>
+        <div class="fact">
+          <strong>Getting Here</strong>
+          <span>Most travelers land in Quito (UIO) and transfer by private driver or shared van.</span>
+        </div>
+        <div class="fact">
+          <strong>Trip Length</strong>
+          <span>2 to 4 nights is a great starting point. Longer stays work well for photography pacing.</span>
+        </div>
+      </div>
+    </aside>
   </section>
+
   <section class="section" aria-label="Trip builder">
-    <div class="builder" id="tripBuilder" data-endpoint="">
+    <div class="builder" id="tripBuilder" data-endpoint="https://script.google.com/macros/s/AKfycbx_GZytHTBZpX4GBYYxUQY2nX2TvjuOgIdIRDM2TxVLPAZl1Oa8aV4T0kuPhKbf4oHfTw/exec">
       <div class="builderTop">
         <div>
           <h2 class="builderTitle">Build a Simple Itinerary</h2>
@@ -532,512 +580,514 @@
         </div>
         <span class="badge" aria-label="Builder status badge">Fast Draft</span>
       </div>
-  <div class="builderGrid" aria-label="Trip builder form and output">
-    <div aria-label="Builder controls">
-      <div class="field">
-        <label for="tripDays">Trip length (days)</label>
-        <select id="tripDays">
-          <option value="2">2 days</option>
-          <option value="3" selected>3 days</option>
-          <option value="4">4 days</option>
-          <option value="5">5 days</option>
-          <option value="6">6 days</option>
-          <option value="7">7 days</option>
-        </select>
-      </div>
 
-      <div class="field" aria-label="Interests">
-        <label>What are you most excited about?</label>
-        <div class="chips" id="interestChips">
-          <label class="chip"><input type="checkbox" value="birding" checked><span>Birding</span></label>
-          <label class="chip"><input type="checkbox" value="waterfalls"><span>Waterfalls</span></label>
-          <label class="chip"><input type="checkbox" value="chocolate"><span>Chocolate</span></label>
-          <label class="chip"><input type="checkbox" value="hummingbirds"><span>Hummingbirds</span></label>
-          <label class="chip"><input type="checkbox" value="photography"><span>Photography</span></label>
-          <label class="chip"><input type="checkbox" value="adventure"><span>Adventure</span></label>
-          <label class="chip"><input type="checkbox" value="relaxed"><span>Relaxed pace</span></label>
-          <label class="chip"><input type="checkbox" value="night"><span>Night walk</span></label>
-        </div>
-        <div class="mutedSmall" style="margin-top:8px;">
-          Tip: If you choose Birding, we will anchor mornings with guided birding blocks.
-        </div>
-      </div>
-
-      <div class="builderActions" aria-label="Builder actions">
-        <button class="btn primary" id="btnGenerate" type="button">Generate itinerary</button>
-        <button class="btn secondary" id="btnCopy" type="button">Copy</button>
-        <button class="btn tertiary" id="btnEmailToggle" type="button">Email this</button>
-      </div>
-
-      <div class="inviteBox" id="inviteBox" aria-label="Email itinerary form">
-        <div class="field">
-          <label for="primaryEmail">Your email</label>
-          <input id="primaryEmail" type="email" placeholder="you@email.com" autocomplete="email">
-        </div>
-
-        <div class="inviteGrid" aria-label="Invite up to 3 travelers">
-          <div class="field">
-            <label for="t1Email">Traveler 1 email</label>
-            <input id="t1Email" type="email" placeholder="traveler1@email.com">
+      <div class="builderGrid" aria-label="Trip builder form and output">
+        <div aria-label="Builder controls">
+          <div class="field inlineSelect">
+            <label for="tripDays">Trip length (days)</label>
+            <select id="tripDays">
+              <option value="2">2 days</option>
+              <option value="3" selected>3 days</option>
+              <option value="4">4 days</option>
+              <option value="5">5 days</option>
+              <option value="6">6 days</option>
+              <option value="7">7 days</option>
+            </select>
           </div>
-          <div class="field">
-            <label for="t2Email">Traveler 2 email</label>
-            <input id="t2Email" type="email" placeholder="traveler2@email.com">
+
+          <div class="field" aria-label="Interests">
+            <label>What are you most excited about?</label>
+            <div class="chips" id="interestChips">
+              <label class="chip"><input type="checkbox" value="birding" checked><span>Birding</span></label>
+              <label class="chip"><input type="checkbox" value="waterfalls"><span>Waterfalls</span></label>
+              <label class="chip"><input type="checkbox" value="chocolate"><span>Chocolate</span></label>
+              <label class="chip"><input type="checkbox" value="hummingbirds"><span>Hummingbirds</span></label>
+              <label class="chip"><input type="checkbox" value="photography"><span>Photography</span></label>
+              <label class="chip"><input type="checkbox" value="adventure"><span>Adventure</span></label>
+              <label class="chip"><input type="checkbox" value="relaxed"><span>Relaxed pace</span></label>
+              <label class="chip"><input type="checkbox" value="night"><span>Night walk</span></label>
+            </div>
+            <div class="mutedSmall" style="margin-top:8px;">
+              Tip: If you choose Birding, we will anchor mornings with guided birding blocks.
+            </div>
           </div>
-          <div class="field">
-            <label for="t3Email">Traveler 3 email</label>
-            <input id="t3Email" type="email" placeholder="traveler3@email.com">
+
+          <div class="builderActions" aria-label="Builder actions">
+            <button class="btn primary" id="btnGenerate" type="button">Generate itinerary</button>
+            <button class="btn secondary" id="btnCopy" type="button">Copy</button>
+            <a class="btn tertiary" href="/tours/" id="btnViewTours">View tours</a>
+          </div>
+
+          <details class="emailDetails" id="emailDetails">
+            <summary>Email itinerary</summary>
+
+            <div class="field" style="margin-top:10px;">
+              <label for="primaryEmail">Your email</label>
+              <input id="primaryEmail" type="email" placeholder="you@email.com" autocomplete="email">
+            </div>
+
+            <div class="inviteGrid" aria-label="Invite up to 3 travelers">
+              <div class="field">
+                <label for="t1Email">Traveler 1 email</label>
+                <input id="t1Email" type="email" placeholder="traveler1@email.com">
+              </div>
+              <div class="field">
+                <label for="t2Email">Traveler 2 email</label>
+                <input id="t2Email" type="email" placeholder="traveler2@email.com">
+              </div>
+              <div class="field">
+                <label for="t3Email">Traveler 3 email</label>
+                <input id="t3Email" type="email" placeholder="traveler3@email.com">
+              </div>
+            </div>
+
+            <div class="builderActions" style="margin-top:12px;">
+              <button class="btn primary" id="btnSendEmail" type="button">Send email</button>
+              <a class="btn secondary" href="/tours/">Browse tours</a>
+            </div>
+
+            <div class="mutedSmall" style="margin-top:10px;">
+              We will email your draft and include up to 3 additional travelers.
+            </div>
+          </details>
+
+          <div class="builderStatus" id="builderStatus" role="status" aria-live="polite">
+            Loading itinerary blocks...
           </div>
         </div>
 
-        <div class="builderActions" style="margin-top:12px;">
-          <button class="btn primary" id="btnSendEmail" type="button">Send email</button>
-          <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask us to refine it</a>
+        <div aria-label="Itinerary output">
+          <div class="field">
+            <label for="itineraryOutput">Your draft itinerary</label>
+            <textarea id="itineraryOutput" placeholder="Click Generate itinerary to build a day-by-day outline."></textarea>
+          </div>
+          <div class="mutedSmall">
+            You can edit this text before you copy or email it.
+          </div>
         </div>
-
-        <div class="mutedSmall" style="margin-top:10px;">
-          Note: To enable email sending, set the web app endpoint in the builder's data-endpoint attribute.
-        </div>
-      </div>
-
-      <div class="builderStatus" id="builderStatus" role="status" aria-live="polite">
-        Loading itinerary blocks...
       </div>
     </div>
-
-    <div aria-label="Itinerary output">
-      <div class="field">
-        <label for="itineraryOutput">Your draft itinerary</label>
-        <textarea id="itineraryOutput" placeholder="Click Generate itinerary to build a day-by-day outline."></textarea>
-      </div>
-      <div class="mutedSmall">
-        You can edit this text before you copy or email it.
-      </div>
-    </div>
-  </div>
-</div>
   </section>
+
   <section class="section" aria-label="Step by step planning">
     <h2 class="sectionTitle">Step-by-Step Planning</h2>
-<div class="stepGrid" aria-label="Planning steps">
-  <article class="stepCard" aria-label="Step 1 trip length">
-    <div class="stepTop">
-      <h3 class="stepTitle">1) Choose your trip length</h3>
-      <span class="badge">Start Here</span>
-    </div>
-    <p class="stepDesc">
-      Pick a trip length based on your energy level and how many early mornings you want.
-    </p>
-    <ul class="miniList" aria-label="Trip length options">
-      <li><strong>2 Nights:</strong> highlights and one strong birding morning</li>
-      <li><strong>3 Nights:</strong> best balance for birding plus relaxed afternoons</li>
-      <li><strong>4+ Nights:</strong> slow pacing for photography and target species</li>
-    </ul>
-    <div class="stepActions">
-      <a class="btn primary" href="/tours/">Pick A Tour</a>
-      <a class="btn secondary" href="/activities/">Add Activities</a>
-    </div>
-  </article>
 
-  <article class="stepCard" aria-label="Step 2 what to book first">
-    <div class="stepTop">
-      <h3 class="stepTitle">2) Book the right things first</h3>
-      <span class="badge">Quick Wins</span>
-    </div>
-    <p class="stepDesc">
-      Lock the items that affect your mornings. Everything else can stay flexible.
-    </p>
-    <ul class="miniList" aria-label="Booking priority">
-      <li>Guided birding mornings (best guides book first)</li>
-      <li>Lodging close to your start point</li>
-      <li>Transportation that matches your arrival time</li>
-    </ul>
-    <div class="stepActions">
-      <a class="btn primary" href="/tours/">See Tour Options</a>
-      <a class="btn secondary" href="/transportation/">Plan Transfers</a>
-    </div>
-  </article>
+    <div class="stepGrid" aria-label="Planning steps">
+      <article class="stepCard" aria-label="Step 1 trip length">
+        <div class="stepTop">
+          <h3 class="stepTitle">1) Choose your trip length</h3>
+          <span class="badge">Start Here</span>
+        </div>
+        <p class="stepDesc">
+          Pick a trip length based on your energy level and how many early mornings you want.
+        </p>
+        <ul class="miniList" aria-label="Trip length options">
+          <li><strong>2 Nights:</strong> highlights and one strong birding morning</li>
+          <li><strong>3 Nights:</strong> best balance for birding plus relaxed afternoons</li>
+          <li><strong>4+ Nights:</strong> slow pacing for photography and target species</li>
+        </ul>
+        <div class="stepActions">
+          <a class="btn primary" href="/tours/">Pick A Tour</a>
+          <a class="btn secondary" href="/activities/">Add Activities</a>
+        </div>
+      </article>
 
-  <article class="stepCard" aria-label="Step 3 day by day outline">
-    <div class="stepTop">
-      <h3 class="stepTitle">3) Draft a simple day-by-day outline</h3>
-      <span class="badge">Easy pacing</span>
-    </div>
-    <p class="stepDesc">
-      Mindo works best with early birding, relaxed midday, and a second light activity later.
-    </p>
-    <ul class="miniList" aria-label="Outline idea">
-      <li>Morning: birding or photo session</li>
-      <li>Midday: rest, lunch, chocolate, or a short nature walk</li>
-      <li>Afternoon: waterfall or garden visit</li>
-    </ul>
-    <div class="stepActions">
-      <a class="btn primary" href="/activities/">Build Your Days</a>
-      <a class="btn secondary" href="/tours/">Add A Guided Morning</a>
-    </div>
-  </article>
+      <article class="stepCard" aria-label="Step 2 what to book first">
+        <div class="stepTop">
+          <h3 class="stepTitle">2) Book the right things first</h3>
+          <span class="badge">Quick Wins</span>
+        </div>
+        <p class="stepDesc">
+          Lock the items that affect your mornings. Everything else can stay flexible.
+        </p>
+        <ul class="miniList" aria-label="Booking priority">
+          <li>Guided birding mornings (best guides book first)</li>
+          <li>Lodging close to your start point</li>
+          <li>Transportation that matches your arrival time</li>
+        </ul>
+        <div class="stepActions">
+          <a class="btn primary" href="/tours/">See Tour Options</a>
+          <a class="btn secondary" href="/transportation/">Plan Transfers</a>
+        </div>
+      </article>
 
-  <article class="stepCard" aria-label="Step 4 arrivals and transportation">
-    <div class="stepTop">
-      <h3 class="stepTitle">4) Match arrival to your first morning</h3>
-      <span class="badge">No Stress</span>
+      <article class="stepCard" aria-label="Step 3 day by day outline">
+        <div class="stepTop">
+          <h3 class="stepTitle">3) Draft a simple day-by-day outline</h3>
+          <span class="badge">Easy pacing</span>
+        </div>
+        <p class="stepDesc">
+          Mindo works best with early birding, relaxed midday, and a second light activity later.
+        </p>
+        <ul class="miniList" aria-label="Outline idea">
+          <li>Morning: birding or photo session</li>
+          <li>Midday: rest, lunch, chocolate, or a short nature walk</li>
+          <li>Afternoon: waterfall or garden visit</li>
+        </ul>
+        <div class="stepActions">
+          <a class="btn primary" href="/activities/">Build Your Days</a>
+          <a class="btn secondary" href="/tours/">Add A Guided Morning</a>
+        </div>
+      </article>
+
+      <article class="stepCard" aria-label="Step 4 arrivals and transportation">
+        <div class="stepTop">
+          <h3 class="stepTitle">4) Match arrival to your first morning</h3>
+          <span class="badge">No Stress</span>
+        </div>
+        <p class="stepDesc">
+          If you want a strong first morning, aim to arrive with time to transfer in daylight.
+        </p>
+        <ul class="miniList" aria-label="Arrival tips">
+          <li>Prefer Quito (UIO) for fastest access</li>
+          <li>Plan your transfer so you can settle in before dark</li>
+          <li>Tell us your flight time and we will recommend pickup timing</li>
+        </ul>
+        <div class="stepActions">
+          <a class="btn primary" href="/transportation/">Transportation Options</a>
+          <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Send Flight Details</a>
+        </div>
+      </article>
     </div>
-    <p class="stepDesc">
-      If you want a strong first morning, aim to arrive with time to transfer in daylight.
-    </p>
-    <ul class="miniList" aria-label="Arrival tips">
-      <li>Prefer Quito (UIO) for fastest access</li>
-      <li>Plan your transfer so you can settle in before dark</li>
-      <li>Tell us your flight time and we will recommend pickup timing</li>
-    </ul>
-    <div class="stepActions">
-      <a class="btn primary" href="/transportation/">Transportation Options</a>
-      <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Send Flight Details</a>
-    </div>
-  </article>
-</div>
   </section>
+
   <section class="section divider" aria-label="Recommended plans">
     <h2 class="sectionTitle">Recommended Sample Plans</h2>
-<div class="twoCol" aria-label="Sample plans">
-  <div class="callout" aria-label="2 night plan">
-    <h3>2 Nights (highlights)</h3>
-    <p>
-      Great if you want one strong birding morning plus a relaxed nature afternoon.
-    </p>
-    <div class="softCard">
-      <strong>Example Outline</strong>
-      <span>Day 1: arrive + easy sunset activity. Day 2: guided birding morning + waterfalls. Day 3: breakfast + transfer.</span>
-    </div>
-    <div class="ctaRow">
-      <a class="btn primary" href="/tours/">Choose A Tour</a>
-      <a class="btn secondary" href="/transportation/">Book Pickup</a>
-    </div>
-  </div>
 
-  <div class="callout" aria-label="3 to 4 night plan">
-    <h3>3 to 4 Nights (best balance)</h3>
-    <p>
-      Ideal for birders who want more than one early morning and time for photography pacing.
-    </p>
-    <div class="softCard">
-      <strong>Example Outline</strong>
-      <span>Two birding mornings, one flexible activity day, plus a relaxed final morning before departure.</span>
-    </div>
-    <div class="ctaRow">
-      <a class="btn primary" href="/tours/">See Birding Tours</a>
-      <a class="btn secondary" href="/activities/">Add Activities</a>
-    </div>
-  </div>
-</div>
+    <div class="twoCol" aria-label="Sample plans">
+      <div class="callout" aria-label="2 night plan">
+        <h3>2 Nights (highlights)</h3>
+        <p>
+          Great if you want one strong birding morning plus a relaxed nature afternoon.
+        </p>
+        <div class="softCard">
+          <strong>Example Outline</strong>
+          <span>Day 1: arrive + easy sunset activity. Day 2: guided birding morning + waterfalls. Day 3: breakfast + transfer.</span>
+        </div>
+        <div class="ctaRow">
+          <a class="btn primary" href="/tours/">Choose A Tour</a>
+          <a class="btn secondary" href="/transportation/">Book Pickup</a>
+        </div>
+      </div>
 
-<div class="noteLine">
-  Want a custom plan? Message us your dates, hotel (if known), and goals.
-  <a href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask on WhatsApp</a>
-</div>
+      <div class="callout" aria-label="3 to 4 night plan">
+        <h3>3 to 4 Nights (best balance)</h3>
+        <p>
+          Ideal for birders who want more than one early morning and time for photography pacing.
+        </p>
+        <div class="softCard">
+          <strong>Example Outline</strong>
+          <span>Two birding mornings, one flexible activity day, plus a relaxed final morning before departure.</span>
+        </div>
+        <div class="ctaRow">
+          <a class="btn primary" href="/tours/">See Birding Tours</a>
+          <a class="btn secondary" href="/activities/">Add Activities</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="noteLine">
+      Want a custom plan? Message us your dates, hotel (if known), and goals.
+      <a href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask on WhatsApp</a>
+    </div>
   </section>
+
   <section class="section divider" aria-label="More planning links">
     <h2 class="sectionTitle">More Planning Help</h2>
-<div class="twoCol" aria-label="More links">
-  <div class="callout">
-    <h3>Flights and arrivals</h3>
-    <p>Use the main Plan Your Trip page to quickly check flights and then coordinate your transfer.</p>
-    <div class="ctaRow">
-      <a class="btn primary" href="/plan-your-trip/">Open Flight Tool</a>
-      <a class="btn secondary" href="/transportation/">Transportation</a>
-    </div>
-  </div>
 
-  <div class="callout">
-    <h3>Birding-first planning</h3>
-    <p>If you want a birding-only flow, use the birding days page and we will help you sequence mornings.</p>
-    <div class="ctaRow">
-      <a class="btn primary" href="/plan-your-trip/mindo-birding/">Plan Birding Days</a>
-      <a class="btn secondary" href="/tours/">Browse Tours</a>
+    <div class="twoCol" aria-label="More links">
+      <div class="callout">
+        <h3>Flights and arrivals</h3>
+        <p>Use the main Plan Your Trip page to quickly check flights and then coordinate your transfer.</p>
+        <div class="ctaRow">
+          <a class="btn primary" href="/plan-your-trip/">Open Flight Tool</a>
+          <a class="btn secondary" href="/transportation/">Transportation</a>
+        </div>
+      </div>
+
+      <div class="callout">
+        <h3>Birding-first planning</h3>
+        <p>If you want a birding-only flow, use the birding days page and we will help you sequence mornings.</p>
+        <div class="ctaRow">
+          <a class="btn primary" href="/plan-your-trip/mindo-birding/">Plan Birding Days</a>
+          <a class="btn secondary" href="/tours/">Browse Tours</a>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
   </section>
 </main>
+
 <div id="siteFooter"></div>
   </div>
   <!-- Trip builder logic (page-only) -->
   <script>
-  (function(){
-    const DATA_URL = "/assets/data/itinerary_blocks.json";
-    const root = document.getElementById("tripBuilder");
-    const statusEl = document.getElementById("builderStatus");
-    const daysEl = document.getElementById("tripDays");
-    const chipsEl = document.getElementById("interestChips");
-    const outEl = document.getElementById("itineraryOutput");
+    (function(){
+      const DATA_URL = "/assets/data/itinerary_blocks.json";
+      const root = document.getElementById("tripBuilder");
+      const statusEl = document.getElementById("builderStatus");
+      const daysEl = document.getElementById("tripDays");
+      const chipsEl = document.getElementById("interestChips");
+      const outEl = document.getElementById("itineraryOutput");
 
-    const btnGenerate = document.getElementById("btnGenerate");
-    const btnCopy = document.getElementById("btnCopy");
-    const btnEmailToggle = document.getElementById("btnEmailToggle");
-    const inviteBox = document.getElementById("inviteBox");
-    const btnSendEmail = document.getElementById("btnSendEmail");
+      const btnGenerate = document.getElementById("btnGenerate");
+      const btnCopy = document.getElementById("btnCopy");
+      const btnSendEmail = document.getElementById("btnSendEmail");
 
-    const primaryEmailEl = document.getElementById("primaryEmail");
-    const t1EmailEl = document.getElementById("t1Email");
-    const t2EmailEl = document.getElementById("t2Email");
-    const t3EmailEl = document.getElementById("t3Email");
+      const emailDetails = document.getElementById("emailDetails");
+      const primaryEmailEl = document.getElementById("primaryEmail");
+      const t1EmailEl = document.getElementById("t1Email");
+      const t2EmailEl = document.getElementById("t2Email");
+      const t3EmailEl = document.getElementById("t3Email");
 
-    let blocks = [];
+      let blocks = [];
 
-    function setStatus(msg){
-      statusEl.textContent = msg;
-    }
-
-    function getSelectedInterests(){
-      const checked = Array.from(chipsEl.querySelectorAll("input[type='checkbox']:checked"));
-      return checked.map(x => x.value);
-    }
-
-    function pick(list, usedIds){
-      for (let i = 0; i < list.length; i++){
-        const b = list[i];
-        if (!usedIds.has(b.id)){
-          usedIds.add(b.id);
-          return b;
-        }
+      function setStatus(msg){
+        statusEl.textContent = msg;
       }
-      return list[0] || null;
-    }
 
-    function matchesInterest(block, interests){
-      const tagSet = new Set((block.tags || []).map(t => String(t).toLowerCase()));
-      const cat = String(block.category || "").toLowerCase();
-      for (let i = 0; i < interests.length; i++){
-        const it = String(interests[i]).toLowerCase();
-        if (tagSet.has(it)) return true;
-        if (cat === it) return true;
+      function getSelectedInterests(){
+        const checked = Array.from(chipsEl.querySelectorAll("input[type='checkbox']:checked"));
+        return checked.map(x => x.value);
       }
-      return false;
-    }
 
-    function filterByTime(list, time){
-      return list.filter(b => String(b.time_of_day || "") === time);
-    }
-
-    function filterByCategory(list, cat){
-      const c = String(cat).toLowerCase();
-      return list.filter(b => String(b.category || "").toLowerCase() === c);
-    }
-
-    function buildItinerary(){
-      const days = parseInt(daysEl.value || "3", 10);
-      const interests = getSelectedInterests();
-      const used = new Set();
-
-      const byInterest = blocks.filter(b => matchesInterest(b, interests));
-      const any = blocks.slice();
-
-      const birdingWanted = interests.indexOf("birding") >= 0;
-      const waterfallsWanted = interests.indexOf("waterfalls") >= 0;
-      const chocolateWanted = interests.indexOf("chocolate") >= 0;
-      const nightWanted = interests.indexOf("night") >= 0;
-      const adventureWanted = interests.indexOf("adventure") >= 0;
-      const relaxedWanted = interests.indexOf("relaxed") >= 0;
-      const photoWanted = interests.indexOf("photography") >= 0;
-
-      const birdingBlocks = filterByCategory(blocks, "birding");
-      const waterfallBlocks = blocks.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("waterfalls") >= 0);
-      const chocolateBlocks = blocks.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("chocolate") >= 0);
-      const nightBlocks = blocks.filter(b => String(b.time_of_day || "") === "evening");
-      const adventureBlocks = blocks.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("adventure") >= 0);
-
-      const morningList = filterByTime(byInterest.length ? byInterest : any, "early_morning")
-        .concat(filterByTime(byInterest.length ? byInterest : any, "morning"));
-
-      const middayList = filterByTime(any, "midday");
-      const afternoonList = filterByTime(byInterest.length ? byInterest : any, "afternoon");
-      const eveningList = filterByTime(any, "evening");
-
-      const lines = [];
-      lines.push("Mindo itinerary draft");
-      lines.push("");
-      lines.push("Tip: Edit this to match your flight times and hotel.");
-      lines.push("");
-
-      for (let d = 1; d <= days; d++){
-        lines.push("Day " + d);
-        lines.push("");
-
-        let morning = null;
-
-        if (birdingWanted && birdingBlocks.length){
-          const tourHalf = birdingBlocks.filter(b => b.id === "birding-tour-half-day");
-          const tourFull = birdingBlocks.filter(b => b.id === "birding-tour-full-day");
-
-          if (photoWanted && tourFull.length) morning = pick(tourFull, used);
-          if (!morning && (d >= 2) && tourFull.length && days >= 4) morning = pick(tourFull, used);
-          if (!morning && tourHalf.length) morning = pick(tourHalf, used);
-
-          if (!morning){
-            const bm = birdingBlocks.filter(b => String(b.time_of_day || "") === "early_morning" || String(b.time_of_day || "") === "morning");
-            morning = pick(bm, used);
+      function pick(list, usedIds){
+        for (let i = 0; i < list.length; i++){
+          const b = list[i];
+          if (!usedIds.has(b.id)){
+            usedIds.add(b.id);
+            return b;
           }
         }
+        return list[0] || null;
+      }
 
-        if (!morning){
-          morning = pick(morningList, used);
+      function matchesInterest(block, interests){
+        const tagSet = new Set((block.tags || []).map(t => String(t).toLowerCase()));
+        const cat = String(block.category || "").toLowerCase();
+        for (let i = 0; i < interests.length; i++){
+          const it = String(interests[i]).toLowerCase();
+          if (tagSet.has(it)) return true;
+          if (cat === it) return true;
         }
+        return false;
+      }
 
-        if (morning) lines.push("Morning: " + morning.title);
+      function filterByTime(list, time){
+        return list.filter(b => String(b.time_of_day || "") === time);
+      }
 
-        let midday = null;
-        if (relaxedWanted){
-          const relax = middayList.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("relax") >= 0);
-          if (relax.length) midday = pick(relax, used);
-        }
-        if (!midday && chocolateWanted && chocolateBlocks.length){
-          midday = pick(chocolateBlocks, used);
-        }
-        if (!midday){
-          midday = pick(middayList, used);
-        }
-        if (midday) lines.push("Midday: " + midday.title);
+      function filterByCategory(list, cat){
+        const c = String(cat).toLowerCase();
+        return list.filter(b => String(b.category || "").toLowerCase() === c);
+      }
 
-        let afternoon = null;
-        if (waterfallsWanted && waterfallBlocks.length){
-          afternoon = pick(waterfallBlocks, used);
-        }
-        if (!afternoon && adventureWanted && adventureBlocks.length){
-          afternoon = pick(adventureBlocks, used);
-        }
-        if (!afternoon){
-          afternoon = pick(afternoonList, used);
-        }
-        if (afternoon) lines.push("Afternoon: " + afternoon.title);
+      function buildItinerary(){
+        const days = parseInt(daysEl.value || "3", 10);
+        const interests = getSelectedInterests();
+        const used = new Set();
 
-        let evening = null;
-        if (nightWanted && d >= 2 && nightBlocks.length){
-          evening = pick(nightBlocks, used);
-        }
-        if (!evening && eveningList.length && !relaxedWanted && d === 2){
-          evening = pick(eveningList, used);
-        }
-        if (evening) lines.push("Evening: " + evening.title);
+        const byInterest = blocks.filter(b => matchesInterest(b, interests));
+        const any = blocks.slice();
 
+        const birdingWanted = interests.indexOf("birding") >= 0;
+        const waterfallsWanted = interests.indexOf("waterfalls") >= 0;
+        const chocolateWanted = interests.indexOf("chocolate") >= 0;
+        const nightWanted = interests.indexOf("night") >= 0;
+        const adventureWanted = interests.indexOf("adventure") >= 0;
+        const relaxedWanted = interests.indexOf("relaxed") >= 0;
+        const photoWanted = interests.indexOf("photography") >= 0;
+
+        const birdingBlocks = filterByCategory(blocks, "birding");
+        const waterfallBlocks = blocks.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("waterfalls") >= 0);
+        const chocolateBlocks = blocks.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("chocolate") >= 0);
+        const nightBlocks = blocks.filter(b => String(b.time_of_day || "") === "evening");
+        const adventureBlocks = blocks.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("adventure") >= 0);
+
+        const morningList = filterByTime(byInterest.length ? byInterest : any, "early_morning")
+          .concat(filterByTime(byInterest.length ? byInterest : any, "morning"));
+
+        const middayList = filterByTime(any, "midday");
+        const afternoonList = filterByTime(byInterest.length ? byInterest : any, "afternoon");
+        const eveningList = filterByTime(any, "evening");
+
+        const lines = [];
+        lines.push("Mindo itinerary draft");
         lines.push("");
-      }
+        lines.push("Tip: Edit this to match your flight times and hotel.");
+        lines.push("");
 
-      lines.push("Want us to customize this? Message us on WhatsApp: https://wa.me/13054585402");
-      outEl.value = lines.join("\n");
-      setStatus("Itinerary generated. You can edit it before copying or emailing.");
-    }
+        for (let d = 1; d <= days; d++){
+          lines.push("Day " + d);
+          lines.push("");
 
-    function copyItinerary(){
-      const txt = outEl.value || "";
-      if (!txt.trim()){
-        setStatus("Nothing to copy yet. Click Generate itinerary first.");
-        return;
-      }
-      outEl.focus();
-      outEl.select();
-      try{
-        const ok = document.execCommand("copy");
-        setStatus(ok ? "Copied to clipboard." : "Copy failed. Select and copy manually.");
-      }catch(err){
-        setStatus("Copy failed. Select and copy manually.");
-      }
-      outEl.setSelectionRange(0, 0);
-    }
+          let morning = null;
 
-    function toggleEmail(){
-      const show = inviteBox.style.display !== "block";
-      inviteBox.style.display = show ? "block" : "none";
-      if (show) setStatus("Add your email and up to 3 travelers, then click Send email.");
-      else setStatus("Email form hidden.");
-    }
+          if (birdingWanted && birdingBlocks.length){
+            const tourHalf = birdingBlocks.filter(b => b.id === "birding-tour-half-day");
+            const tourFull = birdingBlocks.filter(b => b.id === "birding-tour-full-day");
 
-    function isValidEmail(s){
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
-    }
+            if (photoWanted && tourFull.length) morning = pick(tourFull, used);
+            if (!morning && (d >= 2) && tourFull.length && days >= 4) morning = pick(tourFull, used);
+            if (!morning && tourHalf.length) morning = pick(tourHalf, used);
 
-    async function sendEmail(){
-      const endpoint = (root.getAttribute("data-endpoint") || "").trim();
-      if (!endpoint){
-        setStatus("Email sending is not enabled yet. Set a web app endpoint in data-endpoint.");
-        return;
-      }
+            if (!morning){
+              const bm = birdingBlocks.filter(b => String(b.time_of_day || "") === "early_morning" || String(b.time_of_day || "") === "morning");
+              morning = pick(bm, used);
+            }
+          }
 
-      const itineraryText = outEl.value || "";
-      if (!itineraryText.trim()){
-        setStatus("Nothing to email yet. Click Generate itinerary first.");
-        return;
-      }
+          if (!morning){
+            morning = pick(morningList, used);
+          }
 
-      const primaryEmail = (primaryEmailEl.value || "").trim();
-      if (!isValidEmail(primaryEmail)){
-        setStatus("Please enter a valid email.");
-        return;
-      }
+          if (morning) lines.push("Morning: " + morning.title);
 
-      const invitees = [t1EmailEl.value, t2EmailEl.value, t3EmailEl.value]
-        .map(x => String(x || "").trim())
-        .filter(x => x && isValidEmail(x))
-        .map(x => ({ first_name:"", last_name:"", email:x }));
+          let midday = null;
+          if (relaxedWanted){
+            const relax = middayList.filter(b => (b.tags || []).map(String).map(s => s.toLowerCase()).indexOf("relax") >= 0);
+            if (relax.length) midday = pick(relax, used);
+          }
+          if (!midday && chocolateWanted && chocolateBlocks.length){
+            midday = pick(chocolateBlocks, used);
+          }
+          if (!midday){
+            midday = pick(middayList, used);
+          }
+          if (midday) lines.push("Midday: " + midday.title);
 
-      const interests = getSelectedInterests();
-      const payload = {
-        first_name: "Traveler",
-        last_name: "MBW",
-        email: primaryEmail,
-        trip_days: parseInt(daysEl.value || "3", 10),
-        regions: "Mindo",
-        experiences: interests.join(", "),
-        page_url: location.href,
-        user_agent: navigator.userAgent,
-        itinerary_text: itineraryText,
-        invitees_json: JSON.stringify(invitees)
-      };
+          let afternoon = null;
+          if (waterfallsWanted && waterfallBlocks.length){
+            afternoon = pick(waterfallBlocks, used);
+          }
+          if (!afternoon && adventureWanted && adventureBlocks.length){
+            afternoon = pick(adventureBlocks, used);
+          }
+          if (!afternoon){
+            afternoon = pick(afternoonList, used);
+          }
+          if (afternoon) lines.push("Afternoon: " + afternoon.title);
 
-      setStatus("Sending email...");
+          let evening = null;
+          if (nightWanted && d >= 2 && nightBlocks.length){
+            evening = pick(nightBlocks, used);
+          }
+          if (!evening && eveningList.length && !relaxedWanted && d === 2){
+            evening = pick(eveningList, used);
+          }
+          if (evening) lines.push("Evening: " + evening.title);
 
-      try{
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data && data.ok){
-          setStatus("Sent. Check your inbox (and spam) in a minute.");
-        } else {
-          setStatus("Send failed. " + (data && (data.error || data.detail) ? (data.error || data.detail) : "Unknown error"));
+          lines.push("");
         }
-      }catch(err){
-        setStatus("Send failed. Network or endpoint error.");
-      }
-    }
 
-    async function loadBlocks(){
-      try{
-        const res = await fetch(DATA_URL, { cache: "no-store" });
-        const data = await res.json();
-        const arr = data && data.blocks ? data.blocks : [];
-        blocks = Array.isArray(arr) ? arr : [];
-        if (!blocks.length){
-          setStatus("No blocks found. Check " + DATA_URL);
+        lines.push("Want us to customize this? Message us on WhatsApp: https://wa.me/13054585402");
+        outEl.value = lines.join("\n");
+        setStatus("Itinerary generated. You can edit it before copying or emailing.");
+      }
+
+      function copyItinerary(){
+        const txt = outEl.value || "";
+        if (!txt.trim()){
+          setStatus("Nothing to copy yet. Click Generate itinerary first.");
           return;
         }
-        setStatus("Ready. Choose your trip length, select interests, then generate.");
-      }catch(err){
-        setStatus("Could not load blocks. Check " + DATA_URL);
+        outEl.focus();
+        outEl.select();
+        try{
+          const ok = document.execCommand("copy");
+          setStatus(ok ? "Copied to clipboard." : "Copy failed. Select and copy manually.");
+        }catch(err){
+          setStatus("Copy failed. Select and copy manually.");
+        }
+        outEl.setSelectionRange(0, 0);
       }
-    }
 
-    btnGenerate.addEventListener("click", buildItinerary);
-    btnCopy.addEventListener("click", copyItinerary);
-    btnEmailToggle.addEventListener("click", toggleEmail);
-    btnSendEmail.addEventListener("click", sendEmail);
+      function isValidEmail(s){
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
+      }
 
-    loadBlocks();
-  })();
+      async function sendEmail(){
+        const endpoint = (root.getAttribute("data-endpoint") || "").trim();
+        if (!endpoint){
+          setStatus("Email is not enabled. Missing web app endpoint.");
+          return;
+        }
+
+        const itineraryText = outEl.value || "";
+        if (!itineraryText.trim()){
+          setStatus("Nothing to email yet. Click Generate itinerary first.");
+          return;
+        }
+
+        const primaryEmail = (primaryEmailEl.value || "").trim();
+        if (!isValidEmail(primaryEmail)){
+          setStatus("Please enter a valid email.");
+          return;
+        }
+
+        const invitees = [t1EmailEl.value, t2EmailEl.value, t3EmailEl.value]
+          .map(x => String(x || "").trim())
+          .filter(x => x && isValidEmail(x))
+          .map(x => ({ first_name:"", last_name:"", email:x }));
+
+        const interests = getSelectedInterests();
+        const payload = {
+          first_name: "MBW",
+          last_name: "Traveler",
+          email: primaryEmail,
+          trip_days: parseInt(daysEl.value || "3", 10),
+          regions: "Mindo",
+          experiences: interests.join(", "),
+          page_url: location.href,
+          user_agent: navigator.userAgent,
+          itinerary_text: itineraryText,
+          invitees_json: JSON.stringify(invitees)
+        };
+
+        setStatus("Sending email...");
+
+        try{
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data && data.ok){
+            setStatus("Sent. Check your inbox (and spam) in a minute.");
+            if (emailDetails && emailDetails.open) emailDetails.open = false;
+          } else {
+            setStatus("Send failed. " + (data && (data.error || data.detail) ? (data.error || data.detail) : "Unknown error"));
+          }
+        }catch(err){
+          setStatus("Send failed. Network or endpoint error.");
+        }
+      }
+
+      async function loadBlocks(){
+        try{
+          const res = await fetch(DATA_URL, { cache: "no-store" });
+          const data = await res.json();
+          const arr = data && data.blocks ? data.blocks : [];
+          blocks = Array.isArray(arr) ? arr : [];
+          if (!blocks.length){
+            setStatus("No blocks found. Check " + DATA_URL);
+            return;
+          }
+          setStatus("Ready. Choose your trip length, select interests, then generate.");
+        }catch(err){
+          setStatus("Could not load blocks. Check " + DATA_URL);
+        }
+      }
+
+      btnGenerate.addEventListener("click", buildItinerary);
+      btnCopy.addEventListener("click", copyItinerary);
+      btnSendEmail.addEventListener("click", sendEmail);
+
+      loadBlocks();
+    })();
   </script>
   <!-- Shared includes + header behavior -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
 </body>
-</html> |oai:code-citation|
+</html>
