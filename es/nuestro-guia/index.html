@@ -3,25 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nuestro Guía | Mindo Bird Watching</title>
-  <!-- Keep for staging while testing -->
-  <meta name="robots" content="noindex, nofollow" />
-  <!-- Hreflang -->
+
+  <title>Nuestro Guia | Mindo Bird Watching</title>
+  <meta name="description" content="Conoce a Chicho, nuestro guia experto en avistamiento de aves en Mindo. Descubre su estilo, que esperar en los tours y momentos del bosque nublado." />
+  <link rel="canonical" href="https://mindobirdwatching.com/es/nuestro-guia/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Nuestro Guia | Mindo Bird Watching" />
+  <meta property="og:description" content="Conoce a Chicho, nuestro guia experto en avistamiento de aves en Mindo. Descubre su estilo, que esperar en los tours y momentos del bosque nublado." />
+  <meta property="og:url" content="https://mindobirdwatching.com/es/nuestro-guia/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - tours de avistamiento de aves en el bosque nublado de Mindo, Ecuador" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nuestro Guia | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Conoce a Chicho, nuestro guia experto en avistamiento de aves en Mindo. Descubre su estilo, que esperar en los tours y momentos del bosque nublado." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+
   <link rel="alternate" hreflang="en" href="/our-guide/" />
   <link rel="alternate" hreflang="es" href="/es/nuestro-guia/" />
   <link rel="alternate" hreflang="x-default" href="/our-guide/" />
+
   <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
-  <!-- Global CSS -->
+
+  <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css">
+  <!-- Header dropdown styling -->
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
-  <link rel="stylesheet" href="/assets/css/footer.css?v=1">
-  <!-- Head helpers -->
+
+  <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
+
   <style>
     /* Page-only styles (no header/footer/menu styles) */
     .page{
@@ -36,7 +59,7 @@
     }
 
     .lede{
-      max-width: 92ch;
+      max-width: 90ch;
       margin-top: 8px;
       line-height: 1.6;
     }
@@ -183,14 +206,16 @@
       align-items:center;
     }
 
-    /* Carousel (page-only) */
-    .carouselWrap{
+    /* ---------------------------------------------
+       BOTTOM SPLIT: 9:16 Carousel (left) + YouTube (right)
+       --------------------------------------------- */
+    .bottomSplit{
       margin-top: 22px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
 
-    .carouselHead{
+    .bottomSplitHead{
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
@@ -198,59 +223,73 @@
       flex-wrap:wrap;
       margin-bottom: 10px;
     }
-    .carouselHead h2{
+    .bottomSplitHead h2{
       margin: 0;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
       font-size: 20px;
     }
-    .carouselHint{
+    .bottomSplitHint{
       margin: 0;
       color: var(--muted);
       font-size: 13px;
     }
 
-    .mbwCarousel{
-      position: relative;
+    .mediaGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    .mediaCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .mediaFrame{
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      background: rgba(255,255,255,.55);
+      overflow:hidden;
+    }
+
+    /* ---------- Vertical Carousel ---------- */
+    .mbwVCarousel{
+      position: relative;
+    }
+
+    .mbwVViewport{
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
 
-    .mbwCarouselViewport{
+    .mbwVTrack{
+      display:flex;
       width: 100%;
-      overflow: hidden;
-    }
-
-    .mbwCarouselTrack{
-      display: flex;
-      width: 100%;
+      height: 100%;
       transform: translateX(0);
       transition: transform 420ms ease;
       will-change: transform;
     }
 
-    .mbwSlide{
+    .mbwVSlide{
       flex: 0 0 100%;
       width: 100%;
+      height: 100%;
     }
 
-    .mbwSlide img{
+    .mbwVSlide img{
       width: 100%;
-      height: 420px;
-      display: block;
+      height: 100%;
+      display:block;
       object-fit: cover;
-    }
-
-    .mbwSlide .label{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      background: rgba(255,255,255,.55);
     }
 
     .mbwNavBtn{
@@ -261,13 +300,14 @@
       height: 44px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.88);
       box-shadow: var(--shadow);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       user-select: none;
+      z-index: 3;
     }
     .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
     .mbwNavBtn svg{ width: 20px; height: 20px; }
@@ -285,6 +325,8 @@
       border-radius: 999px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.78);
+      pointer-events: none;
+      z-index: 3;
     }
     .mbwDot{
       width: 8px;
@@ -292,274 +334,294 @@
       border-radius: 999px;
       background: rgba(13,89,37,.22);
     }
-    .mbwDot.is-active{
-      background: rgba(13,89,37,.65);
+    .mbwDot.is-active{ background: rgba(13,89,37,.65); }
+
+    .mediaCap{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,.55);
+    }
+
+    /* ---------- YouTube (vertical) ---------- */
+    .ytFrame iframe{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      border:0;
+      display:block;
     }
 
     @media (max-width: 900px){
       .guideCard{ grid-template-columns: 1fr; }
-      .mbwSlide img{ height: 280px; }
+      .mediaGrid{ grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce){
-      .mbwCarouselTrack{ transition: none; }
+      .mbwVTrack{ transition: none; }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-<!-- Shared header mount -->
-<div id="siteHeader"></div>
 
-<main class="page card">
-  <h1 style="margin:0 0 6px;">Nuestro Guía</h1>
+    <!-- Shared header mount -->
+    <div id="siteHeader"></div>
 
-  <div class="lede" aria-label="Introducción del guía">
-    <p>Conoce a Chicho, nuestro apasionado guía de avistamiento de aves en Mindo.</p>
+    <main class="page card">
+      <h1 style="margin:0 0 6px;">Nuestro Guia</h1>
 
-    <p>
-      Con más de seis años de experiencia y un profundo amor por el bosque nublado, Chicho ha identificado más de 400 especies de aves,
-      incluyendo el impresionante Gallito de la Roca y el Tucán Andino. ¡Únete a Chicho para un viaje inolvidable al corazón de la naturaleza!
-    </p>
+      <div class="lede" aria-label="Introduccion del guia">
+        <p>
+          Conoce a nuestro guia experto en aves en Mindo Bird Watching. Con anos de experiencia en el bosque nublado del Ecuador, nuestro guia te ayuda a ver tucanes,
+          colibries y especies andinas poco comunes con pasion y precision.
+        </p>
 
-    <div class="actions" aria-label="Acciones principales">
-      <a class="btn primary" href="/book-tour/">Reservar Tour</a>
+        <p>
+          Conoce a Chicho, nuestro apasionado guia de avistamiento de aves en Mindo. Con mas de seis anos de experiencia y amor por el bosque nublado, Chicho ha identificado
+          mas de 400 especies de aves, incluyendo el impresionante Gallito de la Roca y el Tucan Andino de Altura. Unete a Chicho para un viaje inolvidable al corazon de la naturaleza.
+        </p>
 
-      <a class="waBtn" href="https://wa.me/13054585402" target="_blank" rel="noopener" aria-label="Reserva tu aventura al instante en WhatsApp">
-        <img src="/assets/images/icons/mbw-ig-test-10.png" alt="Icono de WhatsApp">
-        <span>Reserva tu aventura al instante en WhatsApp</span>
-      </a>
-    </div>
+        <div class="actions" aria-label="Acciones principales">
+          <a class="btn primary" href="/es/reservar-tour/">Reservar un tour</a>
+
+          <a class="waBtn" href="https://wa.me/13054585402" target="_blank" rel="noopener" aria-label="Reserva tu tour al instante por WhatsApp">
+            <img src="/assets/images/icons/mbw-ig-test-10.png" alt="Icono de WhatsApp">
+            <span>Reserva al instante por WhatsApp</span>
+          </a>
+        </div>
+      </div>
+
+      <section class="guideCard" aria-label="Resumen del guia">
+        <div class="photo card" aria-label="Foto de Chicho">
+          <div class="frame">
+            <img src="/assets/images/pages/our-guide/MBW-Assets-39-OurGuide.jpg" alt="Chicho, guia de avistamiento de aves en Mindo">
+          </div>
+          <div class="cap">El susurrador de aves de Mindo</div>
+        </div>
+
+        <aside class="facts card" aria-label="Datos rapidos sobre Chicho">
+          <h2>Conoce a Chicho</h2>
+          <ul>
+            <li>Guiando en Mindo por mas de 6 anos</li>
+            <li>Ha identificado alrededor de 400 especies</li>
+            <li>Favoritas: Gallito de la Roca y Tucan Andino de Altura</li>
+            <li>Tour memorable: 284 especies en 2 dias y medio con una pareja estadounidense</li>
+            <li>Estilo: amable, tranquilo y enfocado en ayudarte a ver mas</li>
+          </ul>
+
+          <div class="bottomCtas" aria-label="Acciones secundarias">
+            <a class="btn primary" href="/es/reservar-tour/">Reservar tour</a>
+            <a class="btn secondary" href="/es/tours/" target="_blank" rel="noopener">Explorar tours</a>
+          </div>
+        </aside>
+      </section>
+
+      <section class="qa" aria-label="Entrevista al guia">
+        <h2>Entrevista</h2>
+
+        <div class="qaList">
+          <details class="qaItem">
+            <summary>Que te inspiro a convertirte en guia de avistamiento de aves?</summary>
+            <div class="answer">Me inspira profundamente la oportunidad de observar tantas maravillas y colores en Mindo cada dia.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Cuanto tiempo llevas guiando tours de avistamiento de aves en Mindo?</summary>
+            <div class="answer">He estado guiando por alrededor de seis anos, pero sigo descubriendo cosas nuevas que me motivan a seguir aprendiendo.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Que es lo que mas disfrutas del avistamiento de aves en el bosque nublado?</summary>
+            <div class="answer">Lo que mas disfruto es comenzar cada manana con la diversidad de cantos y colores de las aves, que traen una sensacion de paz dentro de la naturaleza.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Tienes recuerdos de infancia relacionados con la naturaleza o las aves que te hayan marcado?</summary>
+            <div class="answer">
+              De nino, mi primera experiencia fue observar un Gallito de la Roca, un ave emblematica con colores muy llamativos.
+              Recuerdo verlo con binoculares, lo que me permitio apreciarlo aun mas de cerca. Sus cantos, tamano y colores dejaron una impresion duradera en mi.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Cual es tu especie de ave favorita para observar en Mindo y por que?</summary>
+            <div class="answer">
+              Tengo dos favoritas: el Gallito de la Roca y el Tucan Andino de Altura. Sus cantos y colores destacan en el bosque,
+              y tener el privilegio de encontrarlos en Mindo es una bendicion.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Cuantas especies de aves has identificado en el area?</summary>
+            <div class="answer">En mi experiencia como guia, he tenido la suerte de encontrar alrededor de 400 especies, incluyendo aves y colibries.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Cual es el ave mas emocionante o rara que has visto en un tour?</summary>
+            <div class="answer">
+              Mi mejor experiencia fue guiar a una pareja estadounidense que eran entusiastas de las aves. En solo dos dias y medio, vimos 284 especies.
+              Estaban tan emocionados que me llamaban todas las noches desde Ecuador para decir que no podian creer que habian visto tanta variedad.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Puedes compartir una experiencia memorable con un grupo de observadores de aves?</summary>
+            <div class="answer">La experiencia con la pareja estadounidense fue muy especial. Su mejor recuerdo y experiencia fue visitar Mindo y conocerme como su guia.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Que pueden esperar los visitantes en un tour contigo?</summary>
+            <div class="answer">
+              Quienes salen conmigo siempre encontraran a alguien amable, que les hace sentir confianza para ver variedades coloridas de aves.
+              En Mindo, tenemos el privilegio de tantas especies, y los visitantes siempre se van con hermosos recuerdos.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Que hace a Mindo un lugar tan especial para el avistamiento de aves?</summary>
+            <div class="answer">
+              Mindo es especial porque, en un area pequena, podemos observar una gran variedad de flora y fauna.
+              En solo un metro cuadrado, puedes ver hasta seis especies diferentes de aves. Por eso Mindo es llamada la Capital de las Aves.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Como ayudas a los principiantes a disfrutar la experiencia?</summary>
+            <div class="answer">
+              Siempre es bueno ayudar y motivar a las personas que estan empezando. Compartir respeto por la naturaleza es lo mejor que uno puede hacer,
+              porque nos ofrece tanta belleza.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Cual es la mejor epoca del ano para visitar Mindo y observar aves?</summary>
+            <div class="answer">
+              Las mejores epocas son desde finales de enero, cuando se concentran mas aves. Es la temporada cuando salen con sus crias,
+              y se las puede encontrar en mayor numero. Tambien es mas facil verlas volar por todas partes.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Tienes un canto de ave favorito?</summary>
+            <div class="answer">
+              Mi canto favorito es el del Tucan Andino de Altura. Es un canto fuerte que, cuando lo escuchas, parece decir, Cuidado, aqui estoy.
+              Tiene mucha personalidad, y escucharlo siempre me alegra porque no es muy comun.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Cual es un dato curioso que sorprende a la mayoria de las personas?</summary>
+            <div class="answer">Un dato curioso que siempre sorprende a los turistas es que en Mindo siempre podemos encontrar maravillas. No hay turista que no descubra algo interesante.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Si pudieras ser un ave, cual elegirias?</summary>
+            <div class="answer">
+              Si yo fuera un ave, seria un Tucan Andino de Altura. Su canto y colores son especiales. Es un tucan tranquilo, pero cuando canta, impone mucha personalidad.
+              He tenido la suerte de ver hasta 17 tucanes andinos de altura en un solo arbol.
+            </div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Por que es importante la conservacion?</summary>
+            <div class="answer">Es importante porque las aves son parte de la riqueza natural que tenemos. Salir a observarlas es como encontrar el oro verde de la naturaleza.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Como ayudan tus tours a proteger la biodiversidad?</summary>
+            <div class="answer">Mis tours ayudan a transmitir respeto por la naturaleza y a mostrar la belleza que nos rodea. Esto motiva a las personas a valorar y proteger la biodiversidad.</div>
+          </details>
+
+          <details class="qaItem">
+            <summary>Que consejo le darias a alguien que empieza a observar aves?</summary>
+            <div class="answer">
+              Mi consejo es hacerlo con pasion. No hay nada mejor que salir a descubrir tanta belleza en la naturaleza.
+              Preparense para ver lo especiales que son las aves, las montanas y los rios.
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="bottomSplit" aria-label="Medios del guia">
+        <div class="bottomSplitHead">
+          <h2>Mira + Ve Mindo</h2>
+          <p class="bottomSplitHint">Reproduce automaticamente cada 3 segundos. Usa las flechas para navegar.</p>
+        </div>
+
+        <div class="mediaGrid" aria-label="Cuadricula de medios">
+          <div class="mediaCard" aria-label="Carrusel vertical de fotos">
+            <div class="mediaFrame mbwVCarousel" data-autoplay="true" data-interval="3000" aria-label="Carrusel de imagenes">
+              <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Imagen anterior">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+
+              <div class="mbwVViewport" role="region" aria-label="Vista del carrusel">
+                <div class="mbwVTrack">
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-47-OurGuide-Carousel.jpg" alt="Momento de guia en Mindo 47">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-48-OurGuide-Carousel.jpg" alt="Momento de guia en Mindo 48">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-49-OurGuide-Carousel.jpg" alt="Momento de guia en Mindo 49">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-50-OurGuide-Carousel.jpg" alt="Momento de guia en Mindo 50">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-51-OurGuide-Carousel.jpg" alt="Momento de guia en Mindo 51">
+                  </div>
+                </div>
+              </div>
+
+              <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente imagen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+
+              <div class="mbwDots" aria-label="Indicadores de posicion del carrusel"></div>
+            </div>
+            <div class="mediaCap">Chicho en accion.</div>
+          </div>
+
+          <div class="mediaCard" aria-label="Video vertical">
+            <div class="mediaFrame ytFrame" aria-label="Video de YouTube">
+              <iframe
+                src="https://www.youtube.com/embed/bbT79GShncU"
+                title="Mindo, Ecuador: Aves del bosque nublado al amanecer"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="mediaCap">Chicho detras del lente.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="siteFooter"></div>
+
   </div>
 
-  <section class="guideCard" aria-label="Perfil del guía">
-    <div class="photo card" aria-label="Foto de Chicho">
-      <div class="frame">
-        <!-- Reemplaza este src por la foto real de Chicho -->
-        <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Chicho, guía de avistamiento en Mindo (reemplazar esta imagen)">
-      </div>
-      <div class="cap">Reemplaza la imagen de arriba por la foto de Chicho cuando esté lista.</div>
-    </div>
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
 
-    <aside class="facts card" aria-label="Datos rápidos de Chicho">
-      <h2>Lo Esencial</h2>
-      <ul>
-        <li>Guía en Mindo desde hace 6+ años</li>
-        <li>Ha identificado alrededor de 400 especies</li>
-        <li>Favoritas: Gallito de la Roca y Tucán de altura</li>
-        <li>Tour memorable: 284 especies en 2 días y medio</li>
-        <li>Estilo: amable, tranquilo y enfocado en que veas más</li>
-      </ul>
-
-      <div class="bottomCtas" aria-label="Acciones secundarias">
-        <a class="btn secondary" href="/tours/">Ver Tours</a>
-        <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Escribir por WhatsApp</a>
-      </div>
-    </aside>
-  </section>
-
-  <section class="qa" aria-label="Entrevista">
-    <h2>Conoce más de Chicho</h2>
-
-    <div class="qaList">
-      <details class="qaItem">
-        <summary>¿Qué te inspiró a convertirte en guía de avistamiento de aves?</summary>
-        <div class="answer">Me inspira tanto poder observar cada día tantas maravillas y colores dentro de Mindo.</div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cuánto tiempo llevas guiando tours de avistamiento de aves en Mindo?</summary>
-        <div class="answer">Llevo unos seis años guiando, pero cada vez encuentro cosas diferentes que me motivan a seguir aprendiendo.</div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Qué es lo que más te gusta del avistamiento de aves en el bosque nublado?</summary>
-        <div class="answer">
-          Lo que más me gusta es encontrarme cada mañana con la diversidad de cantos y colores de las aves, que te hacen sentir una paz dentro de la naturaleza.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Tienes algún recuerdo de infancia relacionado con la naturaleza o las aves que te haya marcado?</summary>
-        <div class="answer">
-          Cuando fui niño, mi primera experiencia fue observar un Gallo de Peña, un ave emblemática con colores muy llamativos.
-          Recuerdo verlo con binoculares, lo que me permitió apreciarlo aún más de cerca. Sus cantos, tamaño y colores marcaron mis recuerdos.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cuál es tu especie de ave favorita para observar en Mindo y por qué?</summary>
-        <div class="answer">
-          Tengo dos especies favoritas: el Gallo de Peña y el Tucán de altura. Sus cantos y colores marcan mucha diferencia en el bosque,
-          y tener el privilegio de encontrarlos en Mindo es una bendición.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cuántas especies de aves has identificado en la zona?</summary>
-        <div class="answer">En mi experiencia como guía, he tenido la suerte de encontrar alrededor de 400 especies, entre aves y colibríes.</div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cuál es el ave más emocionante o rara que has visto en un tour?</summary>
-        <div class="answer">
-          Mi mejor experiencia fue guiar a una pareja americana amante de las aves. En dos días y medio, vimos 284 especies.
-          Ellos estaban tan emocionados que me llamaban todas las noches desde Ecuador para decirme que no podían creer haber visto tanta variedad.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Puedes compartir una experiencia memorable con un grupo de observadores de aves?</summary>
-        <div class="answer">
-          La experiencia con la pareja americana fue muy especial. Su mejor recuerdo y experiencia fue haber visitado Mindo y haberme conocido como guía.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Qué pueden esperar los visitantes en un tour de avistamiento de aves contigo?</summary>
-        <div class="answer">
-          Las personas que salen conmigo siempre encontrarán a alguien amable, que les da seguridad para encontrar variedades coloridas de aves.
-          En Mindo, tenemos el privilegio de tener muchas especies, y los visitantes siempre se llevan bonitos recuerdos.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Qué hace que Mindo sea un lugar tan especial para el avistamiento de aves?</summary>
-        <div class="answer">
-          Mindo es especial porque, en poco territorio, podemos observar una gran cantidad de flora y fauna.
-          En un metro cuadrado, se pueden ver hasta seis variedades de aves. Por eso, Mindo es llamada la “Capital de las Aves.”
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cómo ayudas a los principiantes o a quienes observan aves por primera vez a disfrutar de la experiencia?</summary>
-        <div class="answer">
-          Siempre es bueno ayudar y motivar a las personas que están iniciando. Transmitir respeto por la naturaleza es lo mejor que uno puede hacer,
-          ya que ella nos presta tanta belleza.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cuál es la mejor época del año para visitar Mindo y observar aves?</summary>
-        <div class="answer">
-          Las mejores épocas son desde finales de enero, cuando se concentran más individuos. Es la temporada en la que salen con sus bebés,
-          y se pueden encontrar en mayores cantidades. También es más fácil verlos volar por todos lados.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Tienes un canto o sonido de ave favorito que te guste imitar?</summary>
-        <div class="answer">
-          Mi canto favorito es el del Tucán de altura. Es un canto sonoro que, cuando lo escuchas, parece decir “cuidado que llegué.”
-          Tiene mucha personalidad, y escucharlo siempre me alegra porque no es muy común.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cuál es un dato curioso sobre las aves que sorprende a la mayoría de las personas?</summary>
-        <div class="answer">
-          Un dato curioso que siempre sorprende a los turistas es que en Mindo siempre podemos encontrar maravillas. No hay turista que no encuentre algo interesante.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>Si pudieras ser un ave, ¿cuál elegirías y por qué?</summary>
-        <div class="answer">
-          Si yo fuera un ave, sería un Tucán de altura. Su canto y colores son especiales. Es un tucán tranquilo, pero cuando canta, impone mucha personalidad.
-          He tenido la suerte de ver hasta 17 tucanes de altura en un solo árbol.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Por qué es importante para ti la conservación de las aves?</summary>
-        <div class="answer">
-          Es importante porque las aves son parte de la riqueza natural que tenemos. Salir a observarlas es como encontrar el “oro verde” de la naturaleza.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Cómo contribuyen tus tours a proteger la biodiversidad de Mindo?</summary>
-        <div class="answer">
-          Mis tours ayudan a transmitir respeto por la naturaleza y a mostrar la belleza que nos rodea. Esto motiva a las personas a valorar y proteger la biodiversidad.
-        </div>
-      </details>
-
-      <details class="qaItem">
-        <summary>¿Qué consejo le darías a alguien que quiere empezar a observar aves?</summary>
-        <div class="answer">
-          Mi consejo es que lo hagan con pasión. No hay mejor cosa que salir a encontrar tanta belleza en la naturaleza.
-          Prepárense para ver lo especial que son las aves, las montañas y los ríos.
-        </div>
-      </details>
-    </div>
-  </section>
-
-  <section class="carouselWrap" aria-label="Carrusel de fotos">
-    <div class="carouselHead">
-      <h2>Momentos en Mindo</h2>
-      <p class="carouselHint">Autoplay cada 3 segundos. También puedes usar las flechas.</p>
-    </div>
-
-    <div class="mbwCarousel" data-autoplay="true" data-interval="3000" aria-label="Carrusel de imágenes">
-      <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Imagen anterior">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-
-      <div class="mbwCarouselViewport" role="region" aria-label="Vista del carrusel">
-        <div class="mbwCarouselTrack">
-          <!-- Reemplaza SOLO los links de imagen -->
-          <div class="mbwSlide">
-            <img src="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?auto=format&fit=crop&w=1600&q=70" alt="Imagen 1 del carrusel (reemplazar)">
-            <div class="label">Imagen 1</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70" alt="Imagen 2 del carrusel (reemplazar)">
-            <div class="label">Imagen 2</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=70" alt="Imagen 3 del carrusel (reemplazar)">
-            <div class="label">Imagen 3</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=70" alt="Imagen 4 del carrusel (reemplazar)">
-            <div class="label">Imagen 4</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=1600&q=70" alt="Imagen 5 del carrusel (reemplazar)">
-            <div class="label">Imagen 5</div>
-          </div>
-        </div>
-      </div>
-
-      <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente imagen">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-
-      <div class="mbwDots" aria-label="Indicadores de posición"></div>
-    </div>
-  </section>
-</main>
-
-<!-- Shared footer mount -->
-<div id="siteFooter"></div>
-  </div>
-  <!-- Required loader + global menu behavior -->
-  <script src="/assets/js/includes.js?v=1"></script>
-  <script src="/assets/js/site.js?v=1"></script>
-  <!-- Page-only: carousel behavior (does not touch header/footer/menu behavior) -->
   <script>
     (function(){
-      "use strict";
-
-      const root = document.querySelector('.mbwCarousel');
+      const root = document.querySelector('.mbwVCarousel');
       if(!root) return;
 
-      const track = root.querySelector('.mbwCarouselTrack');
-      const slides = Array.from(root.querySelectorAll('.mbwSlide'));
+      const track = root.querySelector('.mbwVTrack');
+      const slides = Array.from(root.querySelectorAll('.mbwVSlide'));
       const prevBtn = root.querySelector('.mbwNavPrev');
       const nextBtn = root.querySelector('.mbwNavNext');
       const dotsWrap = root.querySelector('.mbwDots');
@@ -598,17 +660,17 @@
 
       let timer = null;
 
-      function start(){
-        if(!autoplay || reduceMotion) return;
-        if(timer) return;
-        timer = window.setInterval(next, Math.max(2000, intervalMs));
-      }
-
       function stop(){
         if(timer){
           window.clearInterval(timer);
           timer = null;
         }
+      }
+
+      function start(){
+        if(!autoplay || reduceMotion) return;
+        if(timer) return;
+        timer = window.setInterval(next, Math.max(2000, intervalMs));
       }
 
       if(prevBtn) prevBtn.addEventListener('click', () => { stop(); prev(); start(); });
