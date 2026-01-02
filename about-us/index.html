@@ -118,6 +118,167 @@
       max-width: 48ch;
     }
 
+    /* Left-column fill cards */
+    .leftFill{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      max-width: 82ch;
+    }
+
+    .fillCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding: 14px;
+    }
+
+    .fillTitle{
+      margin: 0 0 10px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    /* Traveler Highlight: NOT bold */
+    .quote{
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    .quoteMeta{
+      margin-top: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .stars{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 900;
+    }
+    .stars .starRow{ letter-spacing: 1px; }
+    .stars .who{ font-weight: 800; color: var(--ink); }
+
+    .reviewLink{
+      color: var(--ink);
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      white-space:nowrap;
+    }
+
+    /* -----------------------------
+       SOCIAL CARD (FIXED DESKTOP)
+       - No split columns (prevents cropping)
+       - Buttons are normal "site pills"
+       - Icons are 1.5x
+       ----------------------------- */
+
+    .socialTop{ display:block; }
+
+    .socialKicker{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--ink);
+      white-space:nowrap;
+    }
+
+    .socialCopy{
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 68ch;
+    }
+
+    /* ICON PATHS (swap here later) */
+    :root{
+      --mbw-icon-ig: url("/assets/images/icons/MBW-IG.png");
+      --mbw-icon-fb: url("/assets/images/icons/MBW-FB.png");
+      --mbw-icon-tt: url("/assets/images/icons/MBW-TikTok3.png");
+      --mbw-icon-yt: url("/assets/images/icons/MBW-YouTube.png");
+    }
+
+    .socialGrid{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      align-items:start;
+    }
+
+    /*
+      Keep site consistency:
+      anchors already have "btn secondary"
+      We ONLY align icon + label and prevent overflow.
+    */
+    .socialBtn{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+      text-decoration:none;
+      justify-content:flex-start;
+    }
+
+    .socialBtn .ico{
+      width: 27px;  /* 1.5x */
+      height: 27px; /* 1.5x */
+      display:inline-block;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.10));
+      flex: 0 0 auto;
+    }
+
+    .socialBtn .label{
+      min-width: 0;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display:block;
+      line-height: 1.1;
+    }
+
+    .ico.ig{ background-image: var(--mbw-icon-ig); }
+    .ico.fb{ background-image: var(--mbw-icon-fb); }
+    .ico.tt{ background-image: var(--mbw-icon-tt); }
+    .ico.yt{ background-image: var(--mbw-icon-yt); }
+
+    /* If the left column gets tight, switch to 2 columns automatically */
+    @media (max-width: 1200px){
+      .socialGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    /* Mobile: full-width stacked (your screenshot 2 is good) */
+    @media (max-width: 900px){
+      .socialGrid{ grid-template-columns: 1fr; }
+      .socialGrid a{ width: 100%; justify-content:center; }
+    }
+
     .grid{
       margin-top:16px;
       display:grid;
@@ -150,15 +311,10 @@
     }
 
     @media (max-width: 900px){
-      .aboutLayout{
-        grid-template-columns: 1fr;
-      }
-      .sideImage{
-        min-height: 260px;
-      }
-      .grid{
-        grid-template-columns:1fr;
-      }
+      .aboutLayout{ grid-template-columns: 1fr; }
+      .sideImage{ min-height: 260px; }
+      .grid{ grid-template-columns:1fr; }
+      .leftFill{ max-width: none; }
     }
   </style>
 </head>
@@ -171,23 +327,90 @@
       <h1>About Us</h1>
 
       <div class="aboutLayout" aria-label="About us layout">
-        <div class="copy" aria-label="About us copy">
-          <p>
-            At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
-            With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
-            tanagers, and countless other species that call Mindo home.
-          </p>
-          <p>
-            Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
-            With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
-          </p>
-          <p>
-            Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
-          </p>
+        <div>
+          <div class="copy" aria-label="About us copy">
+            <p>
+              At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador's cloud forest and its incredible birdlife.
+              With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
+              tanagers, and countless other species that call Mindo home.
+            </p>
+            <p>
+              Our tours are designed to provide a unique and immersive experience, whether you're a seasoned birder or a first-time nature enthusiast.
+              With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
+            </p>
+            <p>
+              Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
+            </p>
+          </div>
+
+          <div class="leftFill" aria-label="Trust and social section">
+            <section class="fillCard" aria-label="Testimonial">
+              <h2 class="fillTitle">Traveler Highlight</h2>
+
+              <p class="quote">
+                "Incredible experience! I didn't realize how much I would enjoy this. Looking back on my trip to Ecuador this was definitely one of my highlights. Unforgettable experience and the tour guide is so friendly and knowledgeable."
+              </p>
+
+              <div class="quoteMeta" aria-label="Review metadata">
+                <div class="stars" aria-label="5 star rating">
+                  <span class="starRow" aria-hidden="true">★★★★★</span>
+                  <span class="who">Abigail, USA</span>
+                </div>
+                <a class="reviewLink" href="https://maps.app.goo.gl/eBu55MP1F5mZJWtt9" target="_blank" rel="noopener">Read on Google</a>
+              </div>
+            </section>
+
+            <section class="fillCard" aria-label="Our guide snippet and social follow">
+              <!-- ICONS LIVE HERE (easy swap later):
+                   IG: /assets/images/icons/MBW-IG.png
+                   FB: /assets/images/icons/MBW-FB.png
+                   TikTok: /assets/images/icons/MBW-TikTok3.png
+                   YouTube: /assets/images/icons/MBW-YouTube.png
+                   Or replace CSS vars above: --mbw-icon-ig / fb / tt / yt
+              -->
+              <div class="socialTop">
+                <div class="socialKicker">Meet the guide + follow along</div>
+                <p class="socialCopy">
+                  Want the full story, guiding style, and what to expect on a birding morning? Start here, then follow our latest sightings and reels.
+                </p>
+              </div>
+
+              <div class="socialGrid" aria-label="Social links">
+                <a class="btn secondary socialBtn" href="/our-guide/" aria-label="Read Our Guide">
+                  <span class="label">Our Guide</span>
+                </a>
+
+                <a class="btn secondary socialBtn" href="https://instagram.com/mindobirdwatching/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
+                  <span class="ico ig" aria-hidden="true"></span>
+                  <span class="label">Instagram</span>
+                </a>
+
+                <a class="btn secondary socialBtn" href="https://facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener" aria-label="Follow on Facebook">
+                  <span class="ico fb" aria-hidden="true"></span>
+                  <span class="label">Facebook</span>
+                </a>
+
+                <a class="btn secondary socialBtn" href="https://tiktok.com/@mindobirdwatching" target="_blank" rel="noopener" aria-label="Follow on TikTok">
+                  <span class="ico tt" aria-hidden="true"></span>
+                  <span class="label">TikTok</span>
+                </a>
+                
+                <a class="btn secondary socialBtn" href="https://youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
+                  <span class="ico yt" aria-hidden="true"></span>
+                  <span class="label">YouTube</span>
+                </a>
+
+                <a class="btn secondary socialBtn" href="https://youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
+                  <span class="ico yt" aria-hidden="true"></span>
+                  <span class="label">YouTube</span>
+                </a>
+              </div>
+            </section>
+          </div>
         </div>
 
         <aside class="sideImage" aria-label="Cloud forest image">
-          <img src="/assets/images/pages/MBW-Assets-73-AboutUs.jpg" alt="Mindo cloud forest scenery in Ecuador" />
+          <img src="/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Mindo cloud forest scenery in Ecuador" />
           <div class="sideImageCaption">
             Cloud forest, close-up.
             <span>Quiet trails, hummingbirds, and the best birding routes in Mindo.</span>
@@ -198,7 +421,7 @@
       <div class="grid" aria-label="Key points">
         <div class="mini">
           <h2>Local Guide</h2>
-          <p>Years of experience guiding birders through Mindo’s cloud forest.</p>
+          <p>Years of experience guiding birders through Mindo's cloud forest.</p>
         </div>
         <div class="mini">
           <h2>Personalized Tours</h2>
