@@ -37,8 +37,6 @@
     :root{
       --mbw-green: #0D5925;
       --mbw-ink: #111111;
-      --mbw-yellow-bg: rgba(255,221,0,0.55);
-      --mbw-yellow-border: rgba(255,221,0,0.95);
       --mbw-green-bg: rgba(13,89,37,0.14);
       --mbw-green-border: rgba(13,89,37,0.32);
     }
@@ -54,35 +52,33 @@
       box-shadow: var(--shadow);
     }
 
-    /* Force only two pill styles on this page: green (secondary) and yellow (primary) */
-    .page .btn{
-      border-radius: 14px;
-      font-weight: 900;
-    }
-    .page .btn.primary{
-      background: var(--mbw-yellow-bg);
-      border: 1px solid var(--mbw-yellow-border);
-      color: var(--mbw-ink);
-    }
-    .page .btn.primary:hover{
-      background: rgba(255,221,0,0.68);
-    }
-    .page .btn.secondary{
-      background: var(--mbw-green-bg);
-      border: 1px solid var(--mbw-green-border);
-      color: var(--mbw-ink);
-    }
-    .page .btn.secondary:hover{
-      background: rgba(13,89,37,0.18);
-    }
-    .page .btn.tertiary{
-      background: var(--mbw-yellow-bg);
-      border: 1px solid var(--mbw-yellow-border);
-      color: var(--mbw-ink);
-    }
-    .page .btn.tertiary:hover{
-      background: rgba(255,221,0,0.68);
-    }
+    /* Button styling: match Tours page secondary shade for the "yellow" buttons */
+.page .btn{
+  border-radius: 14px;
+  font-weight: 900;
+}
+
+/* Keep green secondary as you wanted */
+.page .btn.secondary{
+  background: var(--mbw-green-bg);
+  border: 1px solid var(--mbw-green-border);
+  color: var(--mbw-ink);
+}
+.page .btn.secondary:hover{
+  background: rgba(13,89,37,0.18);
+}
+
+/* Make primary + tertiary use the exact same shade as global .btn.secondary (Tours page) */
+.page .btn.primary,
+.page .btn.tertiary{
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-text);
+}
+.page .btn.primary:hover,
+.page .btn.tertiary:hover{
+  background: var(--btn-secondary-bg-hover);
+}
 
     .crumbs{
       display:flex;
