@@ -172,13 +172,8 @@
       color: var(--ink);
       font-weight: 900;
     }
-    .stars .starRow{
-      letter-spacing: 1px;
-    }
-    .stars .who{
-      font-weight: 800;
-      color: var(--ink);
-    }
+    .stars .starRow{ letter-spacing: 1px; }
+    .stars .who{ font-weight: 800; color: var(--ink); }
 
     .reviewLink{
       color: var(--ink);
@@ -196,11 +191,7 @@
     }
 
     .socialTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap:wrap;
+      display:block;
     }
 
     .socialKicker{
@@ -224,7 +215,7 @@
       max-width: 68ch;
     }
 
-    /* Easy-to-find icon sources (replace later here) */
+    /* ICON PATHS (swap here later) */
     :root{
       --mbw-icon-ig: url("/assets/images/icons/MBW-IG.png");
       --mbw-icon-fb: url("/assets/images/icons/MBW-FB.png");
@@ -236,28 +227,35 @@
       display:grid;
       grid-template-columns: 1fr;
       gap: 10px;
-      margin-top: 6px;
+      margin-top: 10px;
+      align-content:start;
     }
 
     /*
-      Keep consistency with site pills:
-      - Do NOT override padding, radius, background, border, etc.
-      - Only add icon layout + sizing
-      These anchors already have: class="btn secondary"
+      IMPORTANT: Keep your site pill styles.
+      We do NOT touch padding/radius/background/border from .btn.secondary.
+      We only control layout so it doesn't break on desktop.
     */
     .socialBtn{
       display:inline-flex;
       align-items:center;
-      justify-content:center;
       gap: 10px;
       text-decoration:none;
-      white-space:nowrap;
       min-width: 0;
+      line-height: 1.1;
+    }
+
+    .socialBtn .label{
+      display:block;
+      min-width: 0;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .socialBtn .ico{
-      width: 27px;   /* 18 -> 27 (1.5x) */
-      height: 27px;  /* 18 -> 27 (1.5x) */
+      width: 27px;   /* 1.5x */
+      height: 27px;  /* 1.5x */
       display:inline-block;
       background-size: contain;
       background-repeat: no-repeat;
@@ -271,39 +269,29 @@
     .ico.tt{ background-image: var(--mbw-icon-tt); }
     .ico.yt{ background-image: var(--mbw-icon-yt); }
 
-    /* Desktop: tighter, consistent pills in a 3-column grid (no oversized "Our Guide") */
+    /* Desktop: make a dedicated right column for buttons so they never collide */
     @media (min-width: 901px){
       .socialShell{
-        grid-template-columns: 1.05fr 0.95fr;
+        grid-template-columns: 1fr 420px; /* stable space for pills */
+        gap: 16px;
         align-items:start;
-        gap: 14px;
-      }
-      .socialTop{
-        display:block;
-      }
-      .socialCopy{
-        max-width: 58ch;
       }
 
       .socialGrid{
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        align-content:start;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
+        margin-top: 0;
       }
 
-      /* Make buttons align like normal site pills (not full-width bars) */
+      /* "Our Guide" spans full row, same pill height as others */
+      .socialGrid .guide{
+        grid-column: 1 / -1;
+      }
+
+      /* Make pills fill their grid cell (prevents weird wrapping/overlap) */
       .socialGrid a{
-        width: auto;
-      }
-
-      .socialBtn{
+        width: 100%;
         justify-content:flex-start;
-      }
-
-      /* Slightly reduce icon size on desktop so pills match site rhythm */
-      .socialBtn .ico{
-        width: 24px;
-        height: 24px;
       }
     }
 
@@ -343,7 +331,8 @@
       .sideImage{ min-height: 260px; }
       .grid{ grid-template-columns:1fr; }
       .leftFill{ max-width: none; }
-      .socialBtn{ justify-content:center; }
+      .socialGrid{ grid-template-columns: 1fr; }
+      .socialGrid a{ width: 100%; justify-content:center; }
     }
   </style>
 </head>
@@ -395,7 +384,7 @@
                    FB: /assets/images/icons/MBW-FB.png
                    TikTok: /assets/images/icons/MBW-TikTok3.png
                    YouTube: /assets/images/icons/MBW-YouTube.png
-                   Or replace the CSS vars: --mbw-icon-ig / fb / tt / yt
+                   Or replace CSS vars above: --mbw-icon-ig / fb / tt / yt
               -->
               <div class="socialShell">
                 <div class="socialTop">
@@ -406,26 +395,28 @@
                 </div>
 
                 <div class="socialGrid" aria-label="Social links">
-                  <a class="btn secondary socialBtn" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
+                  <a class="btn secondary socialBtn guide" href="/our-guide/" aria-label="Read Our Guide">
+                    <span class="label">Our Guide</span>
+                  </a>
 
                   <a class="btn secondary socialBtn" href="https://instagram.com/mindobirdwatching/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
                     <span class="ico ig" aria-hidden="true"></span>
-                    Instagram
+                    <span class="label">Instagram</span>
                   </a>
 
                   <a class="btn secondary socialBtn" href="https://facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener" aria-label="Follow on Facebook">
                     <span class="ico fb" aria-hidden="true"></span>
-                    Facebook
+                    <span class="label">Facebook</span>
                   </a>
 
                   <a class="btn secondary socialBtn" href="https://tiktok.com/@mindobirdwatching" target="_blank" rel="noopener" aria-label="Follow on TikTok">
                     <span class="ico tt" aria-hidden="true"></span>
-                    TikTok
+                    <span class="label">TikTok</span>
                   </a>
 
                   <a class="btn secondary socialBtn" href="https://youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
                     <span class="ico yt" aria-hidden="true"></span>
-                    YouTube
+                    <span class="label">YouTube</span>
                   </a>
                 </div>
               </div>
