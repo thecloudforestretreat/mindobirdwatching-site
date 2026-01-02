@@ -3,9 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Our Guide | Mindo Bird Watching</title>
 
-  <meta name="robots" content="noindex, nofollow" />
+  <title>Our Guide | Mindo Bird Watching</title>
+  <meta name="description" content="Meet Chicho, our expert birdwatching guide in Mindo. Learn his guiding style, what to expect on tours, and see Mindo cloud forest moments." />
+  <link rel="canonical" href="https://mindobirdwatching.com/our-guide/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Our Guide | Mindo Bird Watching" />
+  <meta property="og:description" content="Meet Chicho, our expert birdwatching guide in Mindo. Learn his guiding style, what to expect on tours, and see Mindo cloud forest moments." />
+  <meta property="og:url" content="https://mindobirdwatching.com/our-guide/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - cloud forest birding tours in Mindo, Ecuador" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Our Guide | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Meet Chicho, our expert birdwatching guide in Mindo. Learn his guiding style, what to expect on tours, and see Mindo cloud forest moments." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
 
   <link rel="alternate" hreflang="en" href="/our-guide/" />
   <link rel="alternate" hreflang="es" href="/es/nuestro-guia/" />
@@ -187,14 +206,16 @@
       align-items:center;
     }
 
-    /* Carousel (page-only) */
-    .carouselWrap{
+    /* ---------------------------------------------
+       BOTTOM SPLIT: 9:16 Carousel (left) + YouTube (right)
+       --------------------------------------------- */
+    .bottomSplit{
       margin-top: 22px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
 
-    .carouselHead{
+    .bottomSplitHead{
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
@@ -202,59 +223,73 @@
       flex-wrap:wrap;
       margin-bottom: 10px;
     }
-    .carouselHead h2{
+    .bottomSplitHead h2{
       margin: 0;
       font-family: var(--font-head);
       color: var(--forest);
       letter-spacing: -0.02em;
       font-size: 20px;
     }
-    .carouselHint{
+    .bottomSplitHint{
       margin: 0;
       color: var(--muted);
       font-size: 13px;
     }
 
-    .mbwCarousel{
-      position: relative;
+    .mediaGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    .mediaCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .mediaFrame{
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      background: rgba(255,255,255,.55);
+      overflow:hidden;
+    }
+
+    /* ---------- Vertical Carousel ---------- */
+    .mbwVCarousel{
+      position: relative;
+    }
+
+    .mbwVViewport{
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
 
-    .mbwCarouselViewport{
+    .mbwVTrack{
+      display:flex;
       width: 100%;
-      overflow: hidden;
-    }
-
-    .mbwCarouselTrack{
-      display: flex;
-      width: 100%;
+      height: 100%;
       transform: translateX(0);
       transition: transform 420ms ease;
       will-change: transform;
     }
 
-    .mbwSlide{
+    .mbwVSlide{
       flex: 0 0 100%;
       width: 100%;
+      height: 100%;
     }
 
-    .mbwSlide img{
+    .mbwVSlide img{
       width: 100%;
-      height: 420px;
-      display: block;
+      height: 100%;
+      display:block;
       object-fit: cover;
-    }
-
-    .mbwSlide .label{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      background: rgba(255,255,255,.55);
     }
 
     .mbwNavBtn{
@@ -265,13 +300,14 @@
       height: 44px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.88);
       box-shadow: var(--shadow);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       user-select: none;
+      z-index: 3;
     }
     .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
     .mbwNavBtn svg{ width: 20px; height: 20px; }
@@ -289,7 +325,8 @@
       border-radius: 999px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.78);
-      pointer-events: none; /* dots should never block taps */
+      pointer-events: none;
+      z-index: 3;
     }
     .mbwDot{
       width: 8px;
@@ -297,17 +334,33 @@
       border-radius: 999px;
       background: rgba(13,89,37,.22);
     }
-    .mbwDot.is-active{
-      background: rgba(13,89,37,.65);
+    .mbwDot.is-active{ background: rgba(13,89,37,.65); }
+
+    .mediaCap{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,.55);
+    }
+
+    /* ---------- YouTube (vertical) ---------- */
+    .ytFrame iframe{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      border:0;
+      display:block;
     }
 
     @media (max-width: 900px){
       .guideCard{ grid-template-columns: 1fr; }
-      .mbwSlide img{ height: 280px; }
+      .mediaGrid{ grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce){
-      .mbwCarouselTrack{ transition: none; }
+      .mbwVTrack{ transition: none; }
     }
   </style>
 </head>
@@ -345,7 +398,7 @@
       <section class="guideCard" aria-label="Guide overview">
         <div class="photo card" aria-label="Chicho photo">
           <div class="frame">
-            <img src="/assets/images/pages/our-guide/MBW-Assets-39-OurGuide.jpg">
+            <img src="/assets/images/pages/our-guide/MBW-Assets-39-OurGuide.jpg" alt="Chicho, birdwatching guide in Mindo">
           </div>
           <div class="cap">Mindo's bird whisperer</div>
         </div>
@@ -361,8 +414,8 @@
           </ul>
 
           <div class="bottomCtas" aria-label="Secondary actions">
-            <a class="btn secondary" href="/tours/">Explore Tours</a>
-            <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Message on WhatsApp</a>
+            <a class="btn primary" href="/book-tour/">Book Tour</a>
+            <a class="btn secondary" href="/tours/" target="_blank" rel="noopener">Explore Tours</a>
           </div>
         </aside>
       </section>
@@ -493,72 +546,82 @@
         </div>
       </section>
 
-      <section class="carouselWrap" aria-label="Photo carousel">
-        <div class="carouselHead">
-          <h2>Moments From Mindo</h2>
-          <p class="carouselHint">Autoplays every 3 seconds. You can also use the arrows.</p>
+      <section class="bottomSplit" aria-label="Guide media">
+        <div class="bottomSplitHead">
+          <h2>Watch + See Mindo</h2>
+          <p class="bottomSplitHint">Autoplays every 3 seconds. Use arrows to navigate.</p>
         </div>
 
-        <div class="mbwCarousel" data-autoplay="true" data-interval="3000" aria-label="Image carousel">
-          <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous image">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+        <div class="mediaGrid" aria-label="Media grid">
+          <div class="mediaCard" aria-label="Vertical photo carousel">
+            <div class="mediaFrame mbwVCarousel" data-autoplay="true" data-interval="3000" aria-label="Image carousel">
+              <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
 
-          <div class="mbwCarouselViewport" role="region" aria-label="Carousel viewport">
-            <div class="mbwCarouselTrack">
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/our-guide/MBW-Assets-40-OurGuide-Carousel.jpg" alt="Carousel image 1 (replace)">
-                <div class="label"></div>
+              <div class="mbwVViewport" role="region" aria-label="Carousel viewport">
+                <div class="mbwVTrack">
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-47-OurGuide-Carousel.jpg" alt="Mindo guide moment 47">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-48-OurGuide-Carousel.jpg" alt="Mindo guide moment 48">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-49-OurGuide-Carousel.jpg" alt="Mindo guide moment 49">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-50-OurGuide-Carousel.jpg" alt="Mindo guide moment 50">
+                  </div>
+                  <div class="mbwVSlide">
+                    <img src="/assets/images/pages/our-guide/MBW-Assets-51-OurGuide-Carousel.jpg" alt="Mindo guide moment 51">
+                  </div>
+                </div>
               </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/our-guide/MBW-Assets-41-OurGuide-Carousel.jpg" alt="Carousel image 2 (replace)">
-                <div class="label"></div>
-              </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/our-guide/MBW-Assets-42-OurGuide-Carousel.jpg" alt="Carousel image 3 (replace)">
-                <div class="label"></div>
-              </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/our-guide/MBW-Assets-43-OurGuide-Carousel.jpg" alt="Carousel image 4 (replace)">
-                <div class="label"></div>
-              </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/our-guide/MBW-Assets-44-OurGuide-Carousel.jpg" alt="Carousel image 5 (replace)">
-                <div class="label"></div>
-              </div>
+
+              <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Next image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+
+              <div class="mbwDots" aria-label="Carousel position indicators"></div>
             </div>
+            <div class="mediaCap">Chicho in action.</div>
           </div>
 
-          <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Next image">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <div class="mbwDots" aria-label="Carousel position indicators"></div>
+          <div class="mediaCard" aria-label="Vertical video">
+            <div class="mediaFrame ytFrame" aria-label="YouTube video">
+              <iframe
+                src="https://www.youtube.com/embed/bbT79GShncU"
+                title="Mindo, Ecuador: Witnessing Cloud Forest Birds at Dawn"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="mediaCap">Chicho behind the lens.</div>
+          </div>
         </div>
       </section>
     </main>
 
-    <!-- Shared footer mount -->
     <div id="siteFooter"></div>
 
   </div>
 
-  <!-- ✅ Shared includes + header behavior -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
 
   <script>
     (function(){
-      // Page-only carousel logic (does not touch header/footer)
-      const root = document.querySelector('.mbwCarousel');
+      const root = document.querySelector('.mbwVCarousel');
       if(!root) return;
 
-      const track = root.querySelector('.mbwCarouselTrack');
-      const slides = Array.from(root.querySelectorAll('.mbwSlide'));
+      const track = root.querySelector('.mbwVTrack');
+      const slides = Array.from(root.querySelectorAll('.mbwVSlide'));
       const prevBtn = root.querySelector('.mbwNavPrev');
       const nextBtn = root.querySelector('.mbwNavNext');
       const dotsWrap = root.querySelector('.mbwDots');
