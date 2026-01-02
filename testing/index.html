@@ -118,6 +118,153 @@
       max-width: 48ch;
     }
 
+    /* Left-column fill cards to remove empty space */
+    .leftFill{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      max-width: 82ch;
+    }
+
+    .fillCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding: 14px;
+    }
+
+    .fillTitle{
+      margin: 0 0 10px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .quote{
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .quoteMeta{
+      margin-top: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .stars{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    .stars .starRow{
+      letter-spacing: 1px;
+    }
+
+    .reviewLink{
+      color: var(--ink);
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      white-space:nowrap;
+    }
+
+    /* Social follow row */
+    .socialRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+    }
+
+    .socialLeft{
+      min-width: 220px;
+    }
+
+    .socialKicker{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--ink);
+      white-space:nowrap;
+      margin-bottom: 8px;
+    }
+
+    .socialCopy{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 60ch;
+    }
+
+    .socialIcons{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+      margin-left:auto;
+    }
+
+    .socialBtn{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(3,78,162,0.92);
+      box-shadow: var(--shadow);
+      text-decoration:none;
+      color:#fff;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      transition: transform .12s ease, background .12s ease;
+      white-space:nowrap;
+    }
+
+    .socialBtn:hover{
+      transform: translateY(-1px);
+      background: rgba(3,78,162,1);
+    }
+
+    .socialBtn img{
+      width: 18px;
+      height: 18px;
+      display:block;
+      object-fit:contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.18));
+    }
+
+    .ghostBtn{
+      background: rgba(255,255,255,.65);
+      color: var(--ink);
+    }
+    .ghostBtn:hover{
+      background: rgba(255,255,255,.82);
+    }
+
     .grid{
       margin-top:16px;
       display:grid;
@@ -150,15 +297,11 @@
     }
 
     @media (max-width: 900px){
-      .aboutLayout{
-        grid-template-columns: 1fr;
-      }
-      .sideImage{
-        min-height: 260px;
-      }
-      .grid{
-        grid-template-columns:1fr;
-      }
+      .aboutLayout{ grid-template-columns: 1fr; }
+      .sideImage{ min-height: 260px; }
+      .grid{ grid-template-columns:1fr; }
+      .socialIcons{ justify-content:flex-start; margin-left:0; }
+      .leftFill{ max-width: none; }
     }
   </style>
 </head>
@@ -171,19 +314,72 @@
       <h1>About Us</h1>
 
       <div class="aboutLayout" aria-label="About us layout">
-        <div class="copy" aria-label="About us copy">
-          <p>
-            At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
-            With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
-            tanagers, and countless other species that call Mindo home.
-          </p>
-          <p>
-            Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
-            With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
-          </p>
-          <p>
-            Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
-          </p>
+        <div>
+          <div class="copy" aria-label="About us copy">
+            <p>
+              At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
+              With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
+              tanagers, and countless other species that call Mindo home.
+            </p>
+            <p>
+              Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
+              With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
+            </p>
+            <p>
+              Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
+            </p>
+          </div>
+
+          <!-- Fill the empty desktop space with trust + social -->
+          <div class="leftFill" aria-label="Trust and social section">
+            <section class="fillCard" aria-label="Testimonial">
+              <h2 class="fillTitle">Traveler Highlight</h2>
+
+              <p class="quote">
+                "Incredible experience! I didn’t realize how much I would enjoy this. Looking back on my trip to Ecuador this was definitely one of my highlights. Unforgettable experience and the tour guide is so friendly and knowledgeable."
+              </p>
+
+              <div class="quoteMeta" aria-label="Review metadata">
+                <div class="stars" aria-label="5 star rating">
+                  <span class="starRow" aria-hidden="true">★★★★★</span>
+                  <span>Abigail, USA</span>
+                </div>
+                <a class="reviewLink" href="https://maps.app.goo.gl/eBu55MP1F5mZJWtt9" target="_blank" rel="noopener">Read on Google</a>
+              </div>
+            </section>
+
+            <section class="fillCard" aria-label="Our guide snippet and social follow">
+              <div class="socialRow">
+                <div class="socialLeft">
+                  <div class="socialKicker">Meet the guide + follow along</div>
+                  <p class="socialCopy">
+                    Want the full story, guiding style, and what to expect on a birding morning? Start here, then follow our latest sightings and reels.
+                  </p>
+                </div>
+
+                <div class="socialIcons" aria-label="Social links">
+                  <!-- Replace these hrefs with your real social URLs -->
+                  <a class="socialBtn ghostBtn" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
+                  <a class="socialBtn" href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
+                    <img src="/assets/images/icons/MBW-IG.png" alt="Instagram icon" />
+                    Instagram
+                  </a>
+                  <a class="socialBtn" href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Follow on Facebook">
+                    <img src="/assets/images/icons/MBW-FB.png" alt="Facebook icon" />
+                    Facebook
+                  </a>
+                  <a class="socialBtn" href="https://tiktok.com/" target="_blank" rel="noopener" aria-label="Follow on TikTok">
+                    <img src="/assets/images/icons/MBW-TikTok3.png" alt="TikTok icon" />
+                    TikTok
+                  </a>
+                  <a class="socialBtn" href="https://youtube.com/" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
+                    <img src="/assets/images/icons/MBW-YouTube.png" alt="YouTube icon" />
+                    YouTube
+                  </a>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
 
         <aside class="sideImage" aria-label="Cloud forest image">
