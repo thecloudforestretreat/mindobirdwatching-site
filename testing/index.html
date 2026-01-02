@@ -136,6 +136,7 @@
       padding: 14px;
     }
 
+    /* Traveler highlight */
     .fillTitle{
       margin: 0 0 10px;
       font-family: var(--font-head);
@@ -149,7 +150,7 @@
       margin: 0;
       color: var(--ink);
       line-height: 1.6;
-      font-weight: 700;
+      font-weight: 500; /* not bold */
     }
 
     .quoteMeta{
@@ -167,10 +168,11 @@
     .stars{
       display:inline-flex;
       align-items:center;
-      gap: 6px;
-      font-weight: 900;
+      gap: 8px;
+      font-weight: 800;
       color: var(--ink);
     }
+
     .stars .starRow{
       letter-spacing: 1px;
     }
@@ -183,17 +185,16 @@
       white-space:nowrap;
     }
 
-    /* Social follow row */
+    /* Social + Our Guide block (aligned grid, green buttons) */
     .socialRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns: 1fr auto;
       gap: 12px;
-      flex-wrap:wrap;
+      align-items:center;
     }
 
     .socialLeft{
-      min-width: 220px;
+      min-width: 0;
     }
 
     .socialKicker{
@@ -215,54 +216,58 @@
       margin: 0;
       color: var(--muted);
       line-height: 1.55;
-      max-width: 60ch;
+      max-width: 62ch;
     }
 
     .socialIcons{
-      display:flex;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
       gap: 10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-      margin-left:auto;
+      justify-items:stretch;
+      align-items:stretch;
+      min-width: 320px;
     }
 
-    .socialBtn{
+    .pillBtn{
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap: 10px;
-      padding: 10px 12px;
+      padding: 11px 14px;
       border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(3,78,162,0.92);
+      border: 1px solid rgba(13,89,37,0.30);
+      background: rgba(13,89,37,0.18); /* match Explore Tours green vibe */
       box-shadow: var(--shadow);
       text-decoration:none;
-      color:#fff;
+      color: var(--ink);
       font-weight: 900;
       letter-spacing: -0.01em;
-      transition: transform .12s ease, background .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
       white-space:nowrap;
+      min-height: 44px;
     }
 
-    .socialBtn:hover{
+    .pillBtn:hover{
       transform: translateY(-1px);
-      background: rgba(3,78,162,1);
+      background: rgba(13,89,37,0.24);
+      border-color: rgba(13,89,37,0.40);
     }
 
-    .socialBtn img{
+    .pillBtn img{
       width: 18px;
       height: 18px;
       display:block;
       object-fit:contain;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.18));
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.12));
     }
 
-    .ghostBtn{
-      background: rgba(255,255,255,.65);
-      color: var(--ink);
+    .pillBtn.primary{
+      background: rgba(13,89,37,0.22);
+      border-color: rgba(13,89,37,0.42);
     }
-    .ghostBtn:hover{
-      background: rgba(255,255,255,.82);
+
+    .pillBtn.primary:hover{
+      background: rgba(13,89,37,0.28);
     }
 
     .grid{
@@ -300,8 +305,13 @@
       .aboutLayout{ grid-template-columns: 1fr; }
       .sideImage{ min-height: 260px; }
       .grid{ grid-template-columns:1fr; }
-      .socialIcons{ justify-content:flex-start; margin-left:0; }
       .leftFill{ max-width: none; }
+      .socialRow{ grid-template-columns: 1fr; }
+      .socialIcons{ min-width: 0; grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 520px){
+      .socialIcons{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -330,7 +340,6 @@
             </p>
           </div>
 
-          <!-- Fill the empty desktop space with trust + social -->
           <div class="leftFill" aria-label="Trust and social section">
             <section class="fillCard" aria-label="Testimonial">
               <h2 class="fillTitle">Traveler Highlight</h2>
@@ -359,20 +368,24 @@
 
                 <div class="socialIcons" aria-label="Social links">
                   <!-- Replace these hrefs with your real social URLs -->
-                  <a class="socialBtn ghostBtn" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
-                  <a class="socialBtn" href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
+                  <a class="pillBtn primary" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
+
+                  <a class="pillBtn" href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
                     <img src="/assets/images/icons/MBW-IG.png" alt="Instagram icon" />
                     Instagram
                   </a>
-                  <a class="socialBtn" href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Follow on Facebook">
+
+                  <a class="pillBtn" href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Follow on Facebook">
                     <img src="/assets/images/icons/MBW-FB.png" alt="Facebook icon" />
                     Facebook
                   </a>
-                  <a class="socialBtn" href="https://tiktok.com/" target="_blank" rel="noopener" aria-label="Follow on TikTok">
+
+                  <a class="pillBtn" href="https://tiktok.com/" target="_blank" rel="noopener" aria-label="Follow on TikTok">
                     <img src="/assets/images/icons/MBW-TikTok3.png" alt="TikTok icon" />
                     TikTok
                   </a>
-                  <a class="socialBtn" href="https://youtube.com/" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
+
+                  <a class="pillBtn" href="https://youtube.com/" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
                     <img src="/assets/images/icons/MBW-YouTube.png" alt="YouTube icon" />
                     YouTube
                   </a>
