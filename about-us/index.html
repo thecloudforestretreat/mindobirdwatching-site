@@ -3,9 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>About Us | Mindo Bird Watching</title>
 
-  <meta name="robots" content="noindex, nofollow" />
+  <title>About Us | Mindo Bird Watching</title>
+  <meta name="description" content="Meet Mindo Bird Watching. Expert local guiding, personalized tours, and the best cloud forest birding routes in Mindo, Ecuador for all experience levels." />
+  <link rel="canonical" href="https://mindobirdwatching.com/about-us/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="About Us | Mindo Bird Watching" />
+  <meta property="og:description" content="Meet Mindo Bird Watching. Expert local guiding, personalized tours, and the best cloud forest birding routes in Mindo, Ecuador for all experience levels." />
+  <meta property="og:url" content="https://mindobirdwatching.com/about-us/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - cloud forest birding tours in Mindo, Ecuador" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="About Us | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Meet Mindo Bird Watching. Expert local guiding, personalized tours, and the best cloud forest birding routes in Mindo, Ecuador for all experience levels." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
 
   <link rel="alternate" hreflang="en" href="/about-us/" />
   <link rel="alternate" hreflang="es" href="/es/sobre-nosotros/" />
@@ -20,7 +39,6 @@
 
   <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css">
-  <!-- Header dropdown styling -->
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
 
   <!-- Head-only JS -->
@@ -36,11 +54,69 @@
       box-shadow: var(--shadow);
     }
 
+    /* Two-column layout: content left, vertical image right */
+    .aboutLayout{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items:start;
+    }
+
     .copy{
       max-width: 82ch;
-      margin-top: 10px;
+      margin: 0;
     }
     .copy p{ margin:0 0 12px; }
+
+    .sideImage{
+      position: relative;
+      border-radius: var(--r);
+      overflow:hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      min-height: 520px;
+    }
+
+    .sideImage img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+      transform: scale(1.01);
+    }
+
+    .sideImage::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05), rgba(0,0,0,0.22));
+      pointer-events:none;
+    }
+
+    .sideImageCaption{
+      position:absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 12px;
+      color: #fff;
+      z-index: 1;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      line-height: 1.2;
+    }
+    .sideImageCaption span{
+      display:block;
+      margin-top: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      opacity: 0.92;
+      letter-spacing: 0;
+      line-height: 1.35;
+      max-width: 48ch;
+    }
 
     .grid{
       margin-top:16px;
@@ -73,8 +149,16 @@
       flex-wrap:wrap;
     }
 
-    @media (max-width:900px){
-      .grid{ grid-template-columns:1fr; }
+    @media (max-width: 900px){
+      .aboutLayout{
+        grid-template-columns: 1fr;
+      }
+      .sideImage{
+        min-height: 260px;
+      }
+      .grid{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
@@ -86,19 +170,29 @@
     <main class="page card">
       <h1>About Us</h1>
 
-      <div class="copy" aria-label="About us copy">
-        <p>
-          At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
-          With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
-          tanagers, and countless other species that call Mindo home.
-        </p>
-        <p>
-          Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
-          With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
-        </p>
-        <p>
-          Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
-        </p>
+      <div class="aboutLayout" aria-label="About us layout">
+        <div class="copy" aria-label="About us copy">
+          <p>
+            At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
+            With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
+            tanagers, and countless other species that call Mindo home.
+          </p>
+          <p>
+            Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
+            With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
+          </p>
+          <p>
+            Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
+          </p>
+        </div>
+
+        <aside class="sideImage" aria-label="Cloud forest image">
+          <img src="/assets/images/pages/MBW-Assets-73-AboutUs.jpg" alt="Mindo cloud forest scenery in Ecuador" />
+          <div class="sideImageCaption">
+            Cloud forest, close-up.
+            <span>Quiet trails, hummingbirds, and the best birding routes in Mindo.</span>
+          </div>
+        </aside>
       </div>
 
       <div class="grid" aria-label="Key points">
@@ -125,7 +219,7 @@
     <div id="siteFooter"></div>
   </div>
 
-  <!-- ✅ Include injector + header behavior -->
+  <!-- Include injector + header behavior -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
 </body>
