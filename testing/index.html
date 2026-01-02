@@ -118,7 +118,7 @@
       max-width: 48ch;
     }
 
-    /* Left-column fill cards to remove empty space */
+    /* Left-column fill cards */
     .leftFill{
       margin-top: 14px;
       display:grid;
@@ -136,7 +136,6 @@
       padding: 14px;
     }
 
-    /* Traveler highlight */
     .fillTitle{
       margin: 0 0 10px;
       font-family: var(--font-head);
@@ -146,11 +145,12 @@
       line-height: 1.2;
     }
 
+    /* Traveler Highlight: NOT bold */
     .quote{
       margin: 0;
       color: var(--ink);
-      line-height: 1.6;
-      font-weight: 500; /* not bold */
+      line-height: 1.65;
+      font-weight: 500;
     }
 
     .quoteMeta{
@@ -168,13 +168,16 @@
     .stars{
       display:inline-flex;
       align-items:center;
-      gap: 8px;
-      font-weight: 800;
+      gap: 10px;
       color: var(--ink);
+      font-weight: 900;
     }
-
     .stars .starRow{
       letter-spacing: 1px;
+    }
+    .stars .who{
+      font-weight: 800;
+      color: var(--ink);
     }
 
     .reviewLink{
@@ -185,16 +188,19 @@
       white-space:nowrap;
     }
 
-    /* Social + Our Guide block (aligned grid, green buttons) */
-    .socialRow{
+    /* Social follow card layout */
+    .socialShell{
       display:grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr;
       gap: 12px;
-      align-items:center;
     }
 
-    .socialLeft{
-      min-width: 0;
+    .socialTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
     }
 
     .socialKicker{
@@ -209,65 +215,85 @@
       font-size: 12px;
       color: var(--ink);
       white-space:nowrap;
-      margin-bottom: 8px;
     }
 
     .socialCopy{
-      margin: 0;
+      margin: 8px 0 0;
       color: var(--muted);
       line-height: 1.55;
-      max-width: 62ch;
+      max-width: 68ch;
     }
 
-    .socialIcons{
+    /* Easy-to-find icon sources (replace later here) */
+    :root{
+      --mbw-icon-ig: url("/assets/images/icons/MBW-IG.png");
+      --mbw-icon-fb: url("/assets/images/icons/MBW-FB.png");
+      --mbw-icon-tt: url("/assets/images/icons/MBW-TikTok3.png");
+      --mbw-icon-yt: url("/assets/images/icons/MBW-YouTube.png");
+    }
+
+    .socialGrid{
       display:grid;
-      grid-template-columns: repeat(2, minmax(150px, 1fr));
+      grid-template-columns: 1fr;
       gap: 10px;
-      justify-items:stretch;
-      align-items:stretch;
-      min-width: 320px;
+      margin-top: 4px;
     }
 
-    .pillBtn{
+    /* We reuse your site button palette: "btn secondary" (same as Explore Tours) */
+    .socialBtn{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap: 10px;
-      padding: 11px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(13,89,37,0.30);
-      background: rgba(13,89,37,0.18); /* match Explore Tours green vibe */
-      box-shadow: var(--shadow);
+      gap: 12px;
       text-decoration:none;
-      color: var(--ink);
-      font-weight: 900;
-      letter-spacing: -0.01em;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      width: 100%;
+      border-radius: 18px;
+      padding: 14px 14px;
       white-space:nowrap;
-      min-height: 44px;
     }
 
-    .pillBtn:hover{
-      transform: translateY(-1px);
-      background: rgba(13,89,37,0.24);
-      border-color: rgba(13,89,37,0.40);
+    .socialBtn .ico{
+      width: 27px;   /* 18 -> 27 (1.5x) */
+      height: 27px;  /* 18 -> 27 (1.5x) */
+      display:inline-block;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.12));
+      flex: 0 0 auto;
     }
 
-    .pillBtn img{
-      width: 18px;
-      height: 18px;
-      display:block;
-      object-fit:contain;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.12));
-    }
+    /* Map each icon to a CSS var so you can replace in one place */
+    .ico.ig{ background-image: var(--mbw-icon-ig); }
+    .ico.fb{ background-image: var(--mbw-icon-fb); }
+    .ico.tt{ background-image: var(--mbw-icon-tt); }
+    .ico.yt{ background-image: var(--mbw-icon-yt); }
 
-    .pillBtn.primary{
-      background: rgba(13,89,37,0.22);
-      border-color: rgba(13,89,37,0.42);
-    }
-
-    .pillBtn.primary:hover{
-      background: rgba(13,89,37,0.28);
+    /* Desktop: make it look intentional (copy left, buttons right) */
+    @media (min-width: 901px){
+      .socialShell{
+        grid-template-columns: 1.05fr 0.95fr;
+        align-items:stretch;
+        gap: 14px;
+      }
+      .socialTop{
+        display:block;
+      }
+      .socialCopy{
+        max-width: 58ch;
+      }
+      .socialGrid{
+        grid-template-columns: 1fr 1fr;
+        align-content:start;
+      }
+      /* Make "Our Guide" a full-width anchor on top */
+      .socialGrid .guide{
+        grid-column: 1 / -1;
+      }
+      .socialBtn{
+        padding: 13px 14px;
+        justify-content:flex-start;
+      }
     }
 
     .grid{
@@ -306,12 +332,7 @@
       .sideImage{ min-height: 260px; }
       .grid{ grid-template-columns:1fr; }
       .leftFill{ max-width: none; }
-      .socialRow{ grid-template-columns: 1fr; }
-      .socialIcons{ min-width: 0; grid-template-columns: 1fr 1fr; }
-    }
-
-    @media (max-width: 520px){
-      .socialIcons{ grid-template-columns: 1fr; }
+      .socialBtn{ justify-content:center; padding: 16px 14px; }
     }
   </style>
 </head>
@@ -327,12 +348,12 @@
         <div>
           <div class="copy" aria-label="About us copy">
             <p>
-              At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador’s cloud forest and its incredible birdlife.
+              At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador's cloud forest and its incredible birdlife.
               With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
               tanagers, and countless other species that call Mindo home.
             </p>
             <p>
-              Our tours are designed to provide a unique and immersive experience, whether you’re a seasoned birder or a first-time nature enthusiast.
+              Our tours are designed to provide a unique and immersive experience, whether you're a seasoned birder or a first-time nature enthusiast.
               With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
             </p>
             <p>
@@ -345,48 +366,55 @@
               <h2 class="fillTitle">Traveler Highlight</h2>
 
               <p class="quote">
-                "Incredible experience! I didn’t realize how much I would enjoy this. Looking back on my trip to Ecuador this was definitely one of my highlights. Unforgettable experience and the tour guide is so friendly and knowledgeable."
+                "Incredible experience! I didn't realize how much I would enjoy this. Looking back on my trip to Ecuador this was definitely one of my highlights. Unforgettable experience and the tour guide is so friendly and knowledgeable."
               </p>
 
               <div class="quoteMeta" aria-label="Review metadata">
                 <div class="stars" aria-label="5 star rating">
                   <span class="starRow" aria-hidden="true">★★★★★</span>
-                  <span>Abigail, USA</span>
+                  <span class="who">Abigail, USA</span>
                 </div>
                 <a class="reviewLink" href="https://maps.app.goo.gl/eBu55MP1F5mZJWtt9" target="_blank" rel="noopener">Read on Google</a>
               </div>
             </section>
 
             <section class="fillCard" aria-label="Our guide snippet and social follow">
-              <div class="socialRow">
-                <div class="socialLeft">
+              <!-- ICONS LIVE HERE (easy swap later):
+                   IG: /assets/images/icons/MBW-IG.png
+                   FB: /assets/images/icons/MBW-FB.png
+                   TikTok: /assets/images/icons/MBW-TikTok3.png
+                   YouTube: /assets/images/icons/MBW-YouTube.png
+                   Or replace the CSS vars: --mbw-icon-ig / fb / tt / yt
+              -->
+              <div class="socialShell">
+                <div class="socialTop">
                   <div class="socialKicker">Meet the guide + follow along</div>
                   <p class="socialCopy">
                     Want the full story, guiding style, and what to expect on a birding morning? Start here, then follow our latest sightings and reels.
                   </p>
                 </div>
 
-                <div class="socialIcons" aria-label="Social links">
+                <div class="socialGrid" aria-label="Social links">
                   <!-- Replace these hrefs with your real social URLs -->
-                  <a class="pillBtn primary" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
+                  <a class="btn secondary socialBtn guide" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
 
-                  <a class="pillBtn" href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
-                    <img src="/assets/images/icons/MBW-IG.png" alt="Instagram icon" />
+                  <a class="btn secondary socialBtn" href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
+                    <span class="ico ig" aria-hidden="true"></span>
                     Instagram
                   </a>
 
-                  <a class="pillBtn" href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Follow on Facebook">
-                    <img src="/assets/images/icons/MBW-FB.png" alt="Facebook icon" />
+                  <a class="btn secondary socialBtn" href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Follow on Facebook">
+                    <span class="ico fb" aria-hidden="true"></span>
                     Facebook
                   </a>
 
-                  <a class="pillBtn" href="https://tiktok.com/" target="_blank" rel="noopener" aria-label="Follow on TikTok">
-                    <img src="/assets/images/icons/MBW-TikTok3.png" alt="TikTok icon" />
+                  <a class="btn secondary socialBtn" href="https://tiktok.com/" target="_blank" rel="noopener" aria-label="Follow on TikTok">
+                    <span class="ico tt" aria-hidden="true"></span>
                     TikTok
                   </a>
 
-                  <a class="pillBtn" href="https://youtube.com/" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
-                    <img src="/assets/images/icons/MBW-YouTube.png" alt="YouTube icon" />
+                  <a class="btn secondary socialBtn" href="https://youtube.com/" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
+                    <span class="ico yt" aria-hidden="true"></span>
                     YouTube
                   </a>
                 </div>
@@ -407,7 +435,7 @@
       <div class="grid" aria-label="Key points">
         <div class="mini">
           <h2>Local Guide</h2>
-          <p>Years of experience guiding birders through Mindo’s cloud forest.</p>
+          <p>Years of experience guiding birders through Mindo's cloud forest.</p>
         </div>
         <div class="mini">
           <h2>Personalized Tours</h2>
