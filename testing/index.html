@@ -183,18 +183,14 @@
       white-space:nowrap;
     }
 
-    /* Social follow card layout */
-    .socialShell{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      align-items:start;
-    }
+    /* -----------------------------
+       SOCIAL CARD (FIXED DESKTOP)
+       - No split columns (prevents cropping)
+       - Buttons are normal "site pills"
+       - Icons are 1.5x
+       ----------------------------- */
 
-    .socialTop{
-      display:block;
-      min-width: 0;
-    }
+    .socialTop{ display:block; }
 
     .socialKicker{
       display:inline-flex;
@@ -208,7 +204,6 @@
       font-size: 12px;
       color: var(--ink);
       white-space:nowrap;
-      max-width: 100%;
     }
 
     .socialCopy{
@@ -227,39 +222,30 @@
     }
 
     .socialGrid{
+      margin-top: 12px;
       display:grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 10px;
-      align-content:start;
-      min-width: 0;
+      align-items:start;
     }
 
     /*
-      Keep your site pill styles (.btn.secondary).
-      We do NOT touch padding/radius/background/border here.
-      We only fix layout so desktop never clips/overlaps.
+      Keep site consistency:
+      anchors already have "btn secondary"
+      We ONLY align icon + label and prevent overflow.
     */
     .socialBtn{
       display:inline-flex;
       align-items:center;
       gap: 10px;
+      min-width: 0;
       text-decoration:none;
-      min-width: 0;
-      line-height: 1.1;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    .socialBtn .label{
-      display:block;
-      min-width: 0;
-      white-space: nowrap;
+      justify-content:flex-start;
     }
 
     .socialBtn .ico{
-      width: 27px;   /* 1.5x */
-      height: 27px;  /* 1.5x */
+      width: 27px;  /* 1.5x */
+      height: 27px; /* 1.5x */
       display:inline-block;
       background-size: contain;
       background-repeat: no-repeat;
@@ -268,60 +254,29 @@
       flex: 0 0 auto;
     }
 
+    .socialBtn .label{
+      min-width: 0;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display:block;
+      line-height: 1.1;
+    }
+
     .ico.ig{ background-image: var(--mbw-icon-ig); }
     .ico.fb{ background-image: var(--mbw-icon-fb); }
     .ico.tt{ background-image: var(--mbw-icon-tt); }
     .ico.yt{ background-image: var(--mbw-icon-yt); }
 
-    /*
-      DESKTOP FIX (the root cause from your screenshots):
-      The right column was too wide (420-520px), leaving the left column tiny,
-      so the paragraph became a vertical "word stack" and the kicker overflowed.
-      We make BOTH columns fluid with safe minimums.
-    */
-    @media (min-width: 901px){
-      .socialShell{
-        grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
-        gap: 16px;
-        align-items:start;
-      }
+    /* If the left column gets tight, switch to 2 columns automatically */
+    @media (max-width: 1200px){
+      .socialGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
 
-      /* Let the pill tag wrap if needed instead of spilling into the buttons */
-      .socialKicker{
-        white-space: normal;
-        line-height: 1.2;
-      }
-
-      .socialCopy{
-        max-width: none;
-      }
-
-      .socialGrid{
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 0;
-      }
-
-      .socialGrid .guide{
-        grid-column: 1 / -1;
-      }
-
-      .socialGrid a{
-        width: 100%;
-        justify-content:flex-start;
-      }
-
-      /* Make pills feel like your normal site pills (not fat) */
-      .socialGrid .btn.secondary{
-        font-size: 14px;
-        line-height: 1.1;
-      }
-
-      /* Slightly smaller icons on desktop to reduce "fatness" */
-      .socialBtn .ico{
-        width: 24px;
-        height: 24px;
-      }
+    /* Mobile: full-width stacked (your screenshot 2 is good) */
+    @media (max-width: 900px){
+      .socialGrid{ grid-template-columns: 1fr; }
+      .socialGrid a{ width: 100%; justify-content:center; }
     }
 
     .grid{
@@ -360,9 +315,6 @@
       .sideImage{ min-height: 260px; }
       .grid{ grid-template-columns:1fr; }
       .leftFill{ max-width: none; }
-      .socialGrid{ grid-template-columns: 1fr; }
-      .socialGrid a{ width: 100%; justify-content:center; }
-      .socialKicker{ white-space: nowrap; }
     }
   </style>
 </head>
@@ -416,39 +368,37 @@
                    YouTube: /assets/images/icons/MBW-YouTube.png
                    Or replace CSS vars above: --mbw-icon-ig / fb / tt / yt
               -->
-              <div class="socialShell">
-                <div class="socialTop">
-                  <div class="socialKicker">Meet the guide + follow along</div>
-                  <p class="socialCopy">
-                    Want the full story, guiding style, and what to expect on a birding morning? Start here, then follow our latest sightings and reels.
-                  </p>
-                </div>
+              <div class="socialTop">
+                <div class="socialKicker">Meet the guide + follow along</div>
+                <p class="socialCopy">
+                  Want the full story, guiding style, and what to expect on a birding morning? Start here, then follow our latest sightings and reels.
+                </p>
+              </div>
 
-                <div class="socialGrid" aria-label="Social links">
-                  <a class="btn secondary socialBtn guide" href="/our-guide/" aria-label="Read Our Guide">
-                    <span class="label">Our Guide</span>
-                  </a>
+              <div class="socialGrid" aria-label="Social links">
+                <a class="btn secondary socialBtn" href="/our-guide/" aria-label="Read Our Guide">
+                  <span class="label">Our Guide</span>
+                </a>
 
-                  <a class="btn secondary socialBtn" href="https://instagram.com/mindobirdwatching/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
-                    <span class="ico ig" aria-hidden="true"></span>
-                    <span class="label">Instagram</span>
-                  </a>
+                <a class="btn secondary socialBtn" href="https://instagram.com/mindobirdwatching/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
+                  <span class="ico ig" aria-hidden="true"></span>
+                  <span class="label">Instagram</span>
+                </a>
 
-                  <a class="btn secondary socialBtn" href="https://facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener" aria-label="Follow on Facebook">
-                    <span class="ico fb" aria-hidden="true"></span>
-                    <span class="label">Facebook</span>
-                  </a>
+                <a class="btn secondary socialBtn" href="https://facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener" aria-label="Follow on Facebook">
+                  <span class="ico fb" aria-hidden="true"></span>
+                  <span class="label">Facebook</span>
+                </a>
 
-                  <a class="btn secondary socialBtn" href="https://tiktok.com/@mindobirdwatching" target="_blank" rel="noopener" aria-label="Follow on TikTok">
-                    <span class="ico tt" aria-hidden="true"></span>
-                    <span class="label">TikTok</span>
-                  </a>
+                <a class="btn secondary socialBtn" href="https://tiktok.com/@mindobirdwatching" target="_blank" rel="noopener" aria-label="Follow on TikTok">
+                  <span class="ico tt" aria-hidden="true"></span>
+                  <span class="label">TikTok</span>
+                </a>
 
-                  <a class="btn secondary socialBtn" href="https://youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
-                    <span class="ico yt" aria-hidden="true"></span>
-                    <span class="label">YouTube</span>
-                  </a>
-                </div>
+                <a class="btn secondary socialBtn" href="https://youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="Subscribe on YouTube">
+                  <span class="ico yt" aria-hidden="true"></span>
+                  <span class="label">YouTube</span>
+                </a>
               </div>
             </section>
           </div>
