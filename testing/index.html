@@ -3,204 +3,549 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>Planifica tu viaje | Mindo Bird Watching</title>
-  <meta name="description" content="Planifica tu viaje a Mindo en minutos. Elige tu ruta, revisa vuelos y organiza el transporte para comenzar tu experiencia sin complicaciones." />
-
+  <meta name="description" content="Planifica tu viaje en minutos. Elige una ruta de planificacion, revisa vuelos y asegura un transporte sencillo para que tus dias en Mindo empiecen sin problemas y sigan siendo flexibles." />
   <link rel="canonical" href="https://mindobirdwatching.com/es/planifica-tu-viaje/" />
-
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
   <meta property="og:title" content="Planifica tu viaje | Mindo Bird Watching" />
-  <meta property="og:description" content="Planifica tu viaje a Mindo en minutos. Elige tu ruta, revisa vuelos y organiza el transporte fácilmente." />
+  <meta property="og:description" content="Planifica tu viaje en minutos. Elige una ruta de planificacion, revisa vuelos y asegura un transporte sencillo para que tus dias en Mindo empiecen sin problemas y sigan siendo flexibles." />
   <meta property="og:url" content="https://mindobirdwatching.com/es/planifica-tu-viaje/" />
   <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Planifica tu viaje a Mindo, Ecuador" />
-
-  <!-- Twitter -->
+  <meta property="og:image:alt" content="Planifica tu viaje a Mindo, Ecuador con apoyo de vuelos y transporte" />
+  <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Planifica tu viaje | Mindo Bird Watching" />
-  <meta name="twitter:description" content="Organiza tu viaje a Mindo de forma simple y flexible." />
+  <meta name="twitter:description" content="Planifica tu viaje en minutos. Elige una ruta de planificacion, revisa vuelos y asegura un transporte sencillo para que tus dias en Mindo empiecen sin problemas y sigan siendo flexibles." />
   <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
-
   <link rel="alternate" hreflang="en" href="/plan-your-trip/" />
   <link rel="alternate" hreflang="es" href="/es/planifica-tu-viaje/" />
   <link rel="alternate" hreflang="x-default" href="/plan-your-trip/" />
-
+  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
-
+  <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
-
+  <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
+  <style>
+    /* Page-only styles only */
+.page{
+  margin-top:18px;
+  padding:26px;
+}
+.page.card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+
+.lede{
+  max-width: 95ch;
+  margin-top: 10px;
+}
+.lede p{ margin: 0 0 12px; }
+
+.grid2{
+  margin-top: 18px;
+  display:grid;
+  grid-template-columns: 1.25fr .75fr;
+  gap: 16px;
+  align-items:stretch;
+}
+@media (max-width: 900px){
+  .grid2{ grid-template-columns: 1fr; }
+}
+
+.sectionTitle{
+  margin: 0 0 10px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 20px;
+}
+
+/* ===== Plan cards ===== */
+.planCards{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items:stretch;
+}
+@media (max-width: 900px){
+  .planCards{ grid-template-columns: 1fr; }
+}
+
+.planCard{
+  position:relative;
+  overflow:hidden;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  min-height: 240px;
+  display:flex;
+  flex-direction:column;
+}
+
+.planMedia{
+  position:relative;
+  height: 150px;
+  background: rgba(255,255,255,.55);
+  border-bottom: 1px solid var(--line);
+  overflow:hidden;
+}
+.planMedia::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.05));
+  pointer-events:none;
+}
+.planMedia img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transform: scale(1.02);
+}
+
+.planBody{
+  padding: 14px 16px 16px;
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  flex:1;
+}
+
+.planTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+  flex-wrap:wrap;
+}
+
+.planTitle{
+  margin:0;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.75);
+  font-weight: 900;
+  font-size: 12px;
+  color: var(--ink);
+  white-space:nowrap;
+}
+
+.planDesc{
+  margin:0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.microList{
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.microList li{ margin: 4px 0; }
+
+.planActions{
+  margin-top:auto;
+  display:flex;
+  gap: 10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.ghostLink{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  font-weight: 900;
+  color: var(--ink);
+  text-decoration:none;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+}
+.ghostLink:hover{
+  background: rgba(255,255,255,.82);
+}
+
+.arrow{
+  width: 18px;
+  height: 18px;
+  display:inline-block;
+}
+
+/* ===== Flights + Transport layout ===== */
+:root{
+  --mini-label-col: 78px;
+}
+
+.sideStack{
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+  height:100%;
+  min-width:0;
+}
+
+/* Make Flights + Transportation together match the left column height */
+.sideStack .miniCard{
+  flex: 1 1 0;
+  display:flex;
+  flex-direction:column;
+  min-height: 0;
+}
+
+.miniCard{
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  min-width:0;
+}
+
+.miniTitle{
+  margin:0 0 10px;
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  font-size: 18px;
+}
+
+.miniGrid{
+  display:grid;
+  grid-template-columns: var(--mini-label-col) 1fr;
+  gap:10px 10px;
+  align-items:center;
+  width:100%;
+  max-width:100%;
+}
+.miniGrid > *{ min-width:0; }
+
+.miniGrid label{
+  font-weight:800;
+  color: var(--ink);
+  font-size:13px;
+  letter-spacing:0.02em;
+  white-space:nowrap;
+  text-align:left;
+}
+
+.miniGrid input,
+.miniGrid select{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-weight:700;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  outline:none;
+  height:44px;
+  line-height:22px;
+  box-shadow: var(--shadow);
+}
+
+.miniGrid input[type="date"]{
+  -webkit-appearance:none;
+  appearance:none;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  height:44px;
+}
+
+.miniGrid input:focus,
+.miniGrid select:focus{
+  box-shadow: 0 0 0 4px rgba(3,78,162,0.14);
+  border-color: rgba(3,78,162,0.35);
+}
+
+.miniActions{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns: var(--mini-label-col) 1fr;
+  gap:10px 10px;
+  align-items:center;
+  width:100%;
+}
+.miniActions .btn{ width:100%; justify-self:stretch; }
+.miniActions .spacer{ display:block; width:100%; height:1px; }
+
+.miniHint{
+  margin-top:10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.miniLink{
+  color: var(--ink);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.transportRow{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  flex:1;
+  min-height:0;
+}
+
+.transportOption{
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.72);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.transportOptionTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+  flex-wrap:wrap;
+  margin-bottom: 6px;
+}
+
+.transportOption strong{
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.transportMeta{
+  margin:0;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 13.5px;
+}
+
+.transportActions{
+  display:flex;
+  gap: 10px;
+  flex-wrap:wrap;
+  margin-top: 10px;
+}
+
+/* Keep button row from squishing too much */
+.transportActions .btn{
+  white-space:nowrap;
+}
+
+/* Mobile: do not force equal heights */
+@media(max-width:900px){
+  .sideStack .miniCard{ flex: initial; }
+  .miniGrid{ grid-template-columns: 1fr; }
+  .miniActions{ grid-template-columns: 1fr; }
+  .miniActions .spacer{ display:none; }
+  .grid2{ align-items:start; }
+}
+
+/* Small helpers */
+.noteLine{
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+      </style>
 </head>
-
 <body>
-<div class="container">
+  <div class="container">
+<div id="siteHeader"></div>
+<main class="page card">
+  <h1 style="margin:0 0 6px;">Planifica tu viaje</h1>
+  <div class="lede" aria-label="Introduccion para planificar tu viaje">
+    <p>
+      Planifica tu viaje a Mindo sin el ida y vuelta. Elige una ruta de planificacion abajo, luego revisa vuelos y organiza el transporte para llegar sin problemas y empezar temprano cuando quieras.
+    </p>
+    <p>
+      Solo decisiones rapidas: elige una ruta, confirma tu llegada y simplifica como moverte.
+    </p>
+  </div>
+  <div class="grid2" aria-label="Tarjetas de planificacion y herramientas de viaje">
+    <section aria-label="Rutas de planificacion">
+      <h2 class="sectionTitle">Elige una ruta de planificacion</h2>
+  <div class="planCards" aria-label="Opciones de planificacion">
+    <article class="planCard" aria-label="Planifica tu viaje a Mindo">
+      <div class="planMedia" role="img" aria-label="Imagen de tarjeta de planificacion de Mindo">
+        <img src="/assets/images/pages/plan-your-trip/MBW-Assets-25-Plan-Your-Mindo.jpg" alt="Vista del bosque nublado cerca de Mindo, Ecuador (reemplaza la imagen si es necesario)">
+      </div>
 
-  <div id="siteHeader"></div>
-
-  <main class="page card">
-    <h1 style="margin:0 0 6px;">Planifica tu viaje</h1>
-
-    <div class="lede">
-      <p>
-        Planifica tu viaje a Mindo sin complicaciones. Elige un camino claro, revisa vuelos
-        y organiza el transporte para empezar tu experiencia con tranquilidad.
-      </p>
-      <p>
-        Decisiones simples: elige tu ruta, confirma tu llegada y disfruta cada momento.
-      </p>
-    </div>
-
-    <div class="grid2">
-      <section>
-        <h2 class="sectionTitle">Elige cómo planificar tu viaje</h2>
-
-        <div class="planCards">
-          <article class="planCard">
-            <div class="planMedia">
-              <img src="/assets/images/pages/plan-your-trip/MBW-Assets-25-Plan-Your-Mindo.jpg" alt="Planifica tu viaje a Mindo">
-            </div>
-
-            <div class="planBody">
-              <div class="planTop">
-                <h3 class="planTitle">Planifica tu viaje a Mindo</h3>
-                <span class="badge">Rápido y fácil</span>
-              </div>
-
-              <p class="planDesc">
-                Un flujo simple para definir la duración ideal, qué reservar primero y cómo organizar tus días.
-              </p>
-
-              <ul class="microList">
-                <li>Duración ideal del viaje</li>
-                <li>Qué reservar primero</li>
-                <li>Guía rápida para principiantes</li>
-              </ul>
-
-              <div class="planActions">
-                <a class="btn primary" href="/es/planifica-tu-viaje/mindo/">Abrir guía</a>
-                <a class="btn secondary" href="/tours/">Ver tours</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="planCard">
-            <div class="planMedia">
-              <img src="/assets/images/pages/plan-your-trip/MBW-Assets-26-Plan-Your-Ecuador.jpg" alt="Planifica tu viaje a Ecuador">
-            </div>
-
-            <div class="planBody">
-              <div class="planTop">
-                <h3 class="planTitle">Planifica tu viaje a Ecuador</h3>
-                <span class="badge">Ruta completa</span>
-              </div>
-
-              <p class="planDesc">
-                Diseña tu recorrido por Ecuador y encaja Mindo en el mejor momento del viaje.
-              </p>
-
-              <ul class="microList">
-                <li>Cómo organizar tu ruta</li>
-                <li>Cuándo visitar Mindo</li>
-                <li>Consejos para moverte sin estrés</li>
-              </ul>
-
-              <div class="planActions">
-                <a class="btn primary" href="/plan-your-trip/ecuador/">Abrir guía</a>
-                <a class="btn secondary" href="https://www.experienceecuador.com/">Explorar Ecuador</a>
-              </div>
-            </div>
-          </article>
+      <div class="planBody">
+        <div class="planTop">
+          <h3 class="planTitle">Planifica tu viaje a Mindo</h3>
+          <span class="badge">Inicio rapido</span>
         </div>
 
-        <div class="noteLine">
-          ¿Quieres una recomendación personalizada? Escríbenos y te ayudamos a organizar tu viaje.
-          <a class="miniLink" href="https://wa.me/13054585402" target="_blank" rel="noopener">Hablar por WhatsApp</a>
+        <p class="planDesc">
+          Un flujo simple paso a paso para elegir la duracion ideal del tour, el mejor ritmo y que reservar primero.
+        </p>
+
+        <ul class="microList" aria-label="Incluye">
+          <li>Duracion ideal y ritmo</li>
+          <li>Que reservar primero (tours, alojamiento, traslados)</li>
+          <li>Lista rapida para quienes vienen por primera vez</li>
+        </ul>
+
+        <div class="planActions">
+          <a class="btn primary" href="/es/planifica-tu-viaje/mindo/">Abrir guia</a>
+          <a class="btn secondary" href="/tours/">
+            Ver tours
+            <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 12h10M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </a>
         </div>
-      </section>
+      </div>
+    </article>
 
-      <aside class="sideStack">
-        <section class="miniCard">
-          <h2 class="miniTitle">Vuelos</h2>
+    <article class="planCard" aria-label="Planifica tu viaje a Ecuador">
+      <div class="planMedia" role="img" aria-label="Imagen de tarjeta de planificacion de Ecuador">
+        <img src="/assets/images/pages/plan-your-trip/MBW-Assets-26-Plan-Your-Ecuador.jpg" alt="Vista de planificacion de viaje para Ecuador (reemplaza la imagen si es necesario)">
+      </div>
 
-          <div class="miniGrid">
-            <label for="flightFrom">Desde</label>
-            <input id="flightFrom" type="text" placeholder="Ej: JFK">
+      <div class="planBody">
+        <div class="planTop">
+          <h3 class="planTitle">Planifica tu viaje a Ecuador</h3>
+          <span class="badge">Experience Ecuador</span>
+        </div>
 
-            <label for="flightTo">Hacia</label>
-            <select id="flightTo">
-              <option value="UIO">Quito (UIO)</option>
-              <option value="GYE">Guayaquil (GYE)</option>
-            </select>
+        <p class="planDesc">
+          Crea un plan centrado en Ecuador y luego integra Mindo en el punto perfecto para vida silvestre, bosque nublado y un respiro facil.
+        </p>
 
-            <label for="flightDepart">Salida</label>
-            <input id="flightDepart" type="date">
+        <ul class="microList" aria-label="Incluye">
+          <li>Como recorrer Ecuador con minimo retroceso</li>
+          <li>Donde encaja mejor Mindo (antes o despues de Quito)</li>
+          <li>Consejos simples para el ritmo de dias de viaje</li>
+        </ul>
 
-            <label for="flightReturn">Regreso</label>
-            <input id="flightReturn" type="date">
-          </div>
+        <div class="planActions">
+          <a class="btn primary" href="/plan-your-trip/ecuador/">Abrir guia</a>
+          <a class="btn secondary" href="https://www.experienceecuador.com/">
+            Explorar Ecuador
+            <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 12h10M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </article>
+  </div>
 
-          <div class="miniActions">
-            <span class="spacer"></span>
-            <button class="btn primary" id="flightSearchBtn">Buscar vuelos</button>
-          </div>
+  <div class="noteLine">
+    Quieres una recomendacion simple segun tus fechas? Escribenos y te sugerimos un plan facil.
+    <a class="miniLink" href="https://wa.me/13054585402" target="_blank" rel="noopener">Preguntar por WhatsApp</a>
+  </div>
+</section>
 
-          <p class="miniHint">
-            Consejo: la mayoría llega por Quito. Si aterrizas tarde, planifica el traslado para el día siguiente.
-          </p>
-        </section>
+<aside class="sideStack" aria-label="Vuelos y transporte">
+  <section class="miniCard" id="flightsBox" aria-label="Vuelos">
+    <h2 class="miniTitle">Vuelos</h2>
 
-        <section class="miniCard">
-          <h2 class="miniTitle">Transporte</h2>
+    <div class="miniGrid" aria-label="Entradas de vuelos">
+      <label for="flightFrom">Desde</label>
+      <input id="flightFrom" type="text" inputmode="latin" autocomplete="off" placeholder="ej: JFK" maxlength="6">
 
-          <div class="transportOption">
-            <div class="transportOptionTop">
-              <strong>Conductor privado</strong>
-              <span class="badge">Más cómodo</span>
-            </div>
+      <label for="flightTo">Hacia</label>
+      <select id="flightTo" aria-label="Aeropuerto de destino">
+        <option value="UIO">Quito (UIO)</option>
+        <option value="GYE">Guayaquil (GYE)</option>
+      </select>
 
-            <p class="transportMeta">
-              Recogida directa desde Quito, flexible y perfecta para comenzar temprano.
-            </p>
+      <label for="flightDepart">Salida</label>
+      <input id="flightDepart" type="date">
 
-            <div class="transportActions">
-              <a class="btn primary" href="/transportation/">Ver opciones</a>
-              <a class="btn secondary" href="https://wa.me/13054585402" target="_blank">Pedir cotización</a>
-            </div>
-          </div>
-
-          <p class="miniHint">
-            ¿Necesitas ayuda con horarios o aeropuerto? Escríbenos y te orientamos.
-          </p>
-        </section>
-      </aside>
+      <label for="flightReturn">Regreso</label>
+      <input id="flightReturn" type="date">
     </div>
-  </main>
 
-  <div id="siteFooter"></div>
-</div>
+    <div class="miniActions" aria-label="Accion de vuelos">
+      <span class="spacer" aria-hidden="true"></span>
+      <button class="btn primary" id="flightSearchBtn" type="button">Buscar vuelos</button>
+    </div>
 
-<script src="/assets/js/includes.js?v=1" defer></script>
-<script src="/assets/js/site.js?v=1" defer></script>
+    <p class="miniHint">
+      Consejo: la mayoria vuela a Quito (UIO) y va por carretera a Mindo. Si aterrizas tarde, planifica tu traslado para el dia.
+    </p>
+  </section>
 
-<script>
-(function(){
-  function normalizeAirportCode(v){
-    const s = String(v || "").trim().toUpperCase();
-    const m = s.match(/[A-Z]{3}/);
-    return m ? m[0] : "";
-  }
+  <section class="miniCard" aria-label="Transporte">
+    <h2 class="miniTitle">Transporte</h2>
 
+    <div class="transportRow" aria-label="Opciones de transporte">
+      <div class="transportOption" aria-label="Conductor privado">
+        <div class="transportOptionTop">
+          <strong>Conductor privado</strong>
+          <span class="badge">Mas facil</span>
+        </div>
+        <p class="transportMeta">
+          Recogida puerta a puerta desde Quito (UIO), paradas flexibles y la opcion mas suave para empezar temprano.
+        </p>
+        <div class="transportActions">
+          <a class="btn primary" href="/transportation/">Ver opciones</a>
+          <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Pedir cotizacion</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="miniHint">
+      Necesitas ayuda para ajustar tu llegada del vuelo con la hora de recogida? Envia tus fechas y aeropuerto por WhatsApp y te recomendamos el traslado mas simple.
+    </p>
+  </section>
+</aside>
+  </div>
+</main>
+<div id="siteFooter"></div>
+  </div>
+  <!-- Shared includes + header behavior -->
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
+  <script>
+    (function(){
+      function normalizeAirportCode(v){
+        const s = String(v || "").trim().toUpperCase();
+        const m = s.match(/[A-Z]{3}/);
+        return m ? m[0] : "";
+      }
   function buildGoogleFlightsUrl(opts){
     const from = opts.from || "";
     const to = opts.to || "";
@@ -215,17 +560,22 @@
     return "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
   }
 
-  document.getElementById("flightSearchBtn").addEventListener("click", function(){
+  function openFlights(){
     const from = normalizeAirportCode(document.getElementById("flightFrom").value);
-    const to = document.getElementById("flightTo").value;
-    const depart = document.getElementById("flightDepart").value;
-    const ret = document.getElementById("flightReturn").value;
+    const to = String(document.getElementById("flightTo").value || "").trim().toUpperCase();
+    const depart = String(document.getElementById("flightDepart").value || "").trim();
+    const ret = String(document.getElementById("flightReturn").value || "").trim();
+    if (!to) return;
 
-    const url = buildGoogleFlightsUrl({ from, to, depart, ret });
+    const url = buildGoogleFlightsUrl({ from: from, to: to, depart: depart, ret: ret });
     window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const btn = document.getElementById("flightSearchBtn");
+    if (btn) btn.addEventListener("click", openFlights);
   });
 })();
-</script>
-
+      </script>
 </body>
 </html>
