@@ -208,6 +208,7 @@
       font-size: 12px;
       color: var(--ink);
       white-space:nowrap;
+      max-width: 100%;
     }
 
     .socialCopy{
@@ -235,9 +236,9 @@
     }
 
     /*
-      IMPORTANT: Keep your site pill styles.
-      We do NOT touch padding/radius/background/border from .btn.secondary.
-      We only control layout so it doesn't break on desktop.
+      Keep your site pill styles (.btn.secondary).
+      We do NOT touch padding/radius/background/border here.
+      We only fix layout so desktop never clips/overlaps.
     */
     .socialBtn{
       display:inline-flex;
@@ -250,7 +251,6 @@
       box-sizing: border-box;
     }
 
-    /* FIX: do NOT ellipsis on desktop (it was causing "Face..." etc) */
     .socialBtn .label{
       display:block;
       min-width: 0;
@@ -273,16 +273,27 @@
     .ico.tt{ background-image: var(--mbw-icon-tt); }
     .ico.yt{ background-image: var(--mbw-icon-yt); }
 
-    /* Desktop: use a fluid right column so pills never collide or clip */
+    /*
+      DESKTOP FIX (the root cause from your screenshots):
+      The right column was too wide (420-520px), leaving the left column tiny,
+      so the paragraph became a vertical "word stack" and the kicker overflowed.
+      We make BOTH columns fluid with safe minimums.
+    */
     @media (min-width: 901px){
       .socialShell{
-        grid-template-columns: 1fr minmax(360px, 520px);
+        grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
         gap: 16px;
         align-items:start;
       }
 
+      /* Let the pill tag wrap if needed instead of spilling into the buttons */
+      .socialKicker{
+        white-space: normal;
+        line-height: 1.2;
+      }
+
       .socialCopy{
-        max-width: 54ch;
+        max-width: none;
       }
 
       .socialGrid{
@@ -291,24 +302,22 @@
         margin-top: 0;
       }
 
-      /* "Our Guide" spans full row, same pill height as others */
       .socialGrid .guide{
         grid-column: 1 / -1;
       }
 
-      /* Keep consistent pill sizing with the rest of the site */
       .socialGrid a{
         width: 100%;
         justify-content:flex-start;
       }
 
-      /* FIX: allow label to show fully (no clipping) */
-      .socialBtn .label{
-        overflow: visible;
-        text-overflow: clip;
+      /* Make pills feel like your normal site pills (not fat) */
+      .socialGrid .btn.secondary{
+        font-size: 14px;
+        line-height: 1.1;
       }
 
-      /* Slightly smaller icons on desktop so pills don't feel "fat" */
+      /* Slightly smaller icons on desktop to reduce "fatness" */
       .socialBtn .ico{
         width: 24px;
         height: 24px;
@@ -353,10 +362,7 @@
       .leftFill{ max-width: none; }
       .socialGrid{ grid-template-columns: 1fr; }
       .socialGrid a{ width: 100%; justify-content:center; }
-      .socialBtn .label{
-        overflow: visible;
-        text-overflow: clip;
-      }
+      .socialKicker{ white-space: nowrap; }
     }
   </style>
 </head>
