@@ -236,20 +236,23 @@
       display:grid;
       grid-template-columns: 1fr;
       gap: 10px;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
-    /* We reuse your site button palette: "btn secondary" (same as Explore Tours) */
+    /*
+      Keep consistency with site pills:
+      - Do NOT override padding, radius, background, border, etc.
+      - Only add icon layout + sizing
+      These anchors already have: class="btn secondary"
+    */
     .socialBtn{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap: 12px;
+      gap: 10px;
       text-decoration:none;
-      width: 100%;
-      border-radius: 18px;
-      padding: 14px 14px;
       white-space:nowrap;
+      min-width: 0;
     }
 
     .socialBtn .ico{
@@ -259,21 +262,20 @@
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.12));
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.10));
       flex: 0 0 auto;
     }
 
-    /* Map each icon to a CSS var so you can replace in one place */
     .ico.ig{ background-image: var(--mbw-icon-ig); }
     .ico.fb{ background-image: var(--mbw-icon-fb); }
     .ico.tt{ background-image: var(--mbw-icon-tt); }
     .ico.yt{ background-image: var(--mbw-icon-yt); }
 
-    /* Desktop: make it look intentional (copy left, buttons right) */
+    /* Desktop: tighter, consistent pills in a 3-column grid (no oversized "Our Guide") */
     @media (min-width: 901px){
       .socialShell{
         grid-template-columns: 1.05fr 0.95fr;
-        align-items:stretch;
+        align-items:start;
         gap: 14px;
       }
       .socialTop{
@@ -282,17 +284,26 @@
       .socialCopy{
         max-width: 58ch;
       }
+
       .socialGrid{
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         align-content:start;
+        gap: 10px;
       }
-      /* Make "Our Guide" a full-width anchor on top */
-      .socialGrid .guide{
-        grid-column: 1 / -1;
+
+      /* Make buttons align like normal site pills (not full-width bars) */
+      .socialGrid a{
+        width: auto;
       }
+
       .socialBtn{
-        padding: 13px 14px;
         justify-content:flex-start;
+      }
+
+      /* Slightly reduce icon size on desktop so pills match site rhythm */
+      .socialBtn .ico{
+        width: 24px;
+        height: 24px;
       }
     }
 
@@ -332,7 +343,7 @@
       .sideImage{ min-height: 260px; }
       .grid{ grid-template-columns:1fr; }
       .leftFill{ max-width: none; }
-      .socialBtn{ justify-content:center; padding: 16px 14px; }
+      .socialBtn{ justify-content:center; }
     }
   </style>
 </head>
@@ -395,8 +406,7 @@
                 </div>
 
                 <div class="socialGrid" aria-label="Social links">
-                  <!-- Replace these hrefs with your real social URLs -->
-                  <a class="btn secondary socialBtn guide" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
+                  <a class="btn secondary socialBtn" href="/our-guide/" aria-label="Read Our Guide">Our Guide</a>
 
                   <a class="btn secondary socialBtn" href="https://instagram.com/mindobirdwatching/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
                     <span class="ico ig" aria-hidden="true"></span>
