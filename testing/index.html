@@ -36,542 +36,589 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
   <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
+
   <style>
     /* Page-only styles only */
-.page{
-  margin-top:18px;
-  padding:26px;
-}
-.page.card{
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
+    .page{
+      margin-top:18px;
+      padding:26px;
+    }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
 
-.lede{
-  max-width: 95ch;
-  margin-top: 10px;
-}
-.lede p{ margin: 0 0 12px; }
+    .lede{
+      max-width: 95ch;
+      margin-top: 10px;
+    }
+    .lede p{ margin: 0 0 12px; }
 
-.grid2{
-  margin-top: 18px;
-  display:grid;
-  grid-template-columns: 1.25fr .75fr;
-  gap: 16px;
-  align-items:stretch;
-}
-@media (max-width: 900px){
-  .grid2{ grid-template-columns: 1fr; }
-}
+    .grid2{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 16px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
 
-.sectionTitle{
-  margin: 0 0 10px;
-  font-family: var(--font-head);
-  color: var(--forest);
-  letter-spacing: -0.02em;
-  font-size: 20px;
-}
+    .sectionTitle{
+      margin: 0 0 10px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
 
-/* ===== Plan cards ===== */
-.planCards{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  align-items:stretch;
-}
-@media (max-width: 900px){
-  .planCards{ grid-template-columns: 1fr; }
-}
+    /* ===== Plan cards ===== */
+    .planCards{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .planCards{ grid-template-columns: 1fr; }
+    }
 
-.planCard{
-  position:relative;
-  overflow:hidden;
-  border-radius: var(--r);
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.65);
-  box-shadow: var(--shadow);
-  min-height: 240px;
-  display:flex;
-  flex-direction:column;
-}
+    .planCard{
+      position:relative;
+      overflow:hidden;
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      min-height: 240px;
+      display:flex;
+      flex-direction:column;
+    }
 
-.planMedia{
-  position:relative;
-  height: 160px;
-  background: rgba(255,255,255,.55);
-  border-bottom: 1px solid var(--line);
-  overflow:hidden;
-}
-.planMedia::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.30), rgba(0,0,0,0.06));
-  pointer-events:none;
-}
-.planMedia img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  transform: scale(1.02);
-}
+    .planMedia{
+      position:relative;
+      height: 160px;
+      background: rgba(255,255,255,.55);
+      border-bottom: 1px solid var(--line);
+      overflow:hidden;
+    }
+    .planMedia::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.30), rgba(0,0,0,0.06));
+      pointer-events:none;
+    }
+    .planMedia img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      transform: scale(1.02);
+    }
 
-.planBody{
-  padding: 14px 16px 16px;
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-  flex:1;
-}
+    .planBody{
+      padding: 14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      flex:1;
+    }
 
-.planTop{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 10px;
-  flex-wrap:wrap;
-}
+    .planTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
 
-.planTitle{
-  margin:0;
-  font-family: var(--font-head);
-  color: var(--forest);
-  letter-spacing: -0.02em;
-  font-size: 18px;
-  line-height: 1.2;
-}
+    .planTitle{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
+    }
 
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap: 6px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.75);
-  font-weight: 900;
-  font-size: 12px;
-  color: var(--ink);
-  white-space:nowrap;
-}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--ink);
+      white-space:nowrap;
+    }
 
-.planDesc{
-  margin:0;
-  color: var(--muted);
-  line-height: 1.6;
-}
+    .planDesc{
+      margin:0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
 
-.microList{
-  margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  line-height: 1.55;
-}
-.microList li{ margin: 4px 0; }
+    .microList{
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .microList li{ margin: 4px 0; }
 
-.planActions{
-  margin-top:auto;
-  display:flex;
-  gap: 10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
+    .planActions{
+      margin-top:auto;
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
 
-.arrow{
-  width: 18px;
-  height: 18px;
-  display:inline-block;
-}
+    .arrow{
+      width: 18px;
+      height: 18px;
+      display:inline-block;
+    }
 
-/* ===== Preferred Partner Highlight ===== */
-.partnerHero{
-  margin-top: 14px;
-  border-radius: var(--r);
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.65);
-  box-shadow: var(--shadow);
-  overflow:hidden;
-}
+    /* ===== Preferred Partner Highlight (Full width on desktop) ===== */
+    .partnerHero{
+      margin-top: 18px;
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
 
-.partnerTop{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 12px;
-  padding: 14px 16px 12px;
-  flex-wrap:wrap;
-}
+    .partnerTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 16px 18px 14px;
+      flex-wrap:wrap;
+    }
 
-.partnerKicker{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  flex-wrap:wrap;
-}
+    .partnerKicker{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
 
-.partnerKicker .pill{
-  display:inline-flex;
-  align-items:center;
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.78);
-  font-weight: 900;
-  font-size: 12px;
-  color: var(--ink);
-  white-space:nowrap;
-}
+    .partnerKicker .pill{
+      display:inline-flex;
+      align-items:center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--ink);
+      white-space:nowrap;
+    }
 
-.partnerTitle{
-  margin: 6px 0 0;
-  font-family: var(--font-head);
-  color: var(--forest);
-  letter-spacing: -0.02em;
-  font-size: 20px;
-}
+    .partnerTitle{
+      margin: 6px 0 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 22px;
+    }
 
-.partnerCopy{
-  margin: 8px 0 0;
-  color: var(--muted);
-  line-height: 1.6;
-  max-width: 85ch;
-}
+    .partnerCopy{
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 95ch;
+    }
 
-.partnerActions{
-  display:flex;
-  gap: 10px;
-  flex-wrap:wrap;
-  align-items:center;
-  margin-left:auto;
-}
+    .partnerActions{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-left:auto;
+    }
+    .partnerActions .btn{ white-space:nowrap; }
 
-.partnerActions .btn{ white-space:nowrap; }
+    .partnerCarousel{
+      position:relative;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.50);
+    }
 
-.partnerCarousel{
-  position:relative;
-  border-top: 1px solid var(--line);
-  background: rgba(255,255,255,.50);
-}
+    .carouselViewport{
+      position:relative;
+      height: 360px;
+      overflow:hidden;
+    }
 
-.carouselViewport{
-  position:relative;
-  height: 220px;
-  overflow:hidden;
-}
+    .carouselSlide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transition: opacity .35s ease;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+    }
+    .carouselSlide.isActive{ opacity:1; }
 
-.carouselSlide{
-  position:absolute;
-  inset:0;
-  opacity:0;
-  transition: opacity .35s ease;
-  display:flex;
-  align-items:flex-end;
-  justify-content:flex-start;
-}
+    .carouselSlide img{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
 
-.carouselSlide.isActive{ opacity:1; }
+    .carouselOverlay{
+      position:relative;
+      width:100%;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.00), rgba(0,0,0,0.62));
+      color:#fff;
+      z-index:1;
+    }
 
-.carouselSlide img{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
+    .carouselOverlay strong{
+      display:block;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
 
-.carouselOverlay{
-  position:relative;
-  width:100%;
-  padding: 14px 16px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.00), rgba(0,0,0,0.60));
-  color:#fff;
-  z-index:1;
-}
+    .carouselOverlay span{
+      display:block;
+      margin-top: 4px;
+      font-size: 14px;
+      opacity:.92;
+      line-height: 1.45;
+      max-width: 105ch;
+    }
 
-.carouselOverlay strong{
-  display:block;
-  font-size: 16px;
-  letter-spacing: -0.01em;
-}
+    .carouselControls{
+      position:absolute;
+      inset: 14px 14px auto 14px;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      pointer-events:none;
+      z-index:2;
+    }
 
-.carouselOverlay span{
-  display:block;
-  margin-top: 4px;
-  font-size: 13px;
-  opacity:.92;
-  line-height: 1.45;
-  max-width: 90ch;
-}
+    .carouselBtn{
+      pointer-events:auto;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(0,0,0,0.35);
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+      cursor:pointer;
+    }
 
-.carouselControls{
-  position:absolute;
-  inset: 12px 12px auto 12px;
-  display:flex;
-  justify-content:space-between;
-  gap: 10px;
-  pointer-events:none;
-  z-index:2;
-}
+    .carouselDots{
+      display:flex;
+      gap: 8px;
+      padding: 12px 18px 16px;
+      align-items:center;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+    }
 
-.carouselBtn{
-  pointer-events:auto;
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.35);
-  background: rgba(0,0,0,0.35);
-  color:#fff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.12);
-  cursor:pointer;
-}
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      cursor:pointer;
+    }
+    .dot.isActive{
+      background: rgba(3,78,162,0.35);
+      border-color: rgba(3,78,162,0.35);
+    }
 
-.carouselDots{
-  display:flex;
-  gap: 8px;
-  padding: 12px 16px 14px;
-  align-items:center;
-  justify-content:flex-start;
-  flex-wrap:wrap;
-}
+    /* ===== Flights + Sidebar ===== */
+    :root{ --mini-label-col: 78px; }
 
-.dot{
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.65);
-  cursor:pointer;
-}
-.dot.isActive{
-  background: rgba(3,78,162,0.35);
-  border-color: rgba(3,78,162,0.35);
-}
+    .sideStack{
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+      min-width:0;
+    }
 
-/* ===== Flights + Sidebar ===== */
-:root{ --mini-label-col: 78px; }
+    .miniCard{
+      background: rgba(255,255,255,.65);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-width:0;
+    }
 
-.sideStack{
-  display:flex;
-  flex-direction:column;
-  gap: 14px;
-  height:100%;
-  min-width:0;
-}
+    .miniTitle{
+      margin:0 0 10px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+    }
 
-.sideStack .miniCard{
-  flex: 1 1 0;
-  display:flex;
-  flex-direction:column;
-  min-height: 0;
-}
+    .miniGrid{
+      display:grid;
+      grid-template-columns: var(--mini-label-col) 1fr;
+      gap:10px 10px;
+      align-items:center;
+      width:100%;
+      max-width:100%;
+    }
+    .miniGrid > *{ min-width:0; }
 
-.miniCard{
-  background: rgba(255,255,255,.65);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-  padding: 14px;
-  min-width:0;
-}
+    .miniGrid label{
+      font-weight:800;
+      color: var(--ink);
+      font-size:13px;
+      letter-spacing:0.02em;
+      white-space:nowrap;
+      text-align:left;
+    }
 
-.miniTitle{
-  margin:0 0 10px;
-  font-family: var(--font-head);
-  color: var(--forest);
-  letter-spacing: -0.02em;
-  font-size: 18px;
-}
+    .miniGrid input,
+    .miniGrid select{
+      display:block;
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-weight:700;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      outline:none;
+      height:44px;
+      line-height:22px;
+      box-shadow: var(--shadow);
+    }
 
-.miniGrid{
-  display:grid;
-  grid-template-columns: var(--mini-label-col) 1fr;
-  gap:10px 10px;
-  align-items:center;
-  width:100%;
-  max-width:100%;
-}
-.miniGrid > *{ min-width:0; }
+    .miniGrid input[type="date"]{
+      -webkit-appearance:none;
+      appearance:none;
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      height:44px;
+    }
 
-.miniGrid label{
-  font-weight:800;
-  color: var(--ink);
-  font-size:13px;
-  letter-spacing:0.02em;
-  white-space:nowrap;
-  text-align:left;
-}
+    .miniGrid input:focus,
+    .miniGrid select:focus{
+      box-shadow: 0 0 0 4px rgba(3,78,162,0.14);
+      border-color: rgba(3,78,162,0.35);
+    }
 
-.miniGrid input,
-.miniGrid select{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--ink);
-  font-weight:700;
-  padding: 10px 12px;
-  border-radius: 14px;
-  font-size: 14px;
-  outline:none;
-  height:44px;
-  line-height:22px;
-  box-shadow: var(--shadow);
-}
+    .miniActions{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: var(--mini-label-col) 1fr;
+      gap:10px 10px;
+      align-items:center;
+      width:100%;
+    }
+    .miniActions .btn{ width:100%; justify-self:stretch; }
+    .miniActions .spacer{ display:block; width:100%; height:1px; }
 
-.miniGrid input[type="date"]{
-  -webkit-appearance:none;
-  appearance:none;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  height:44px;
-}
+    .miniHint{
+      margin-top:10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
 
-.miniGrid input:focus,
-.miniGrid select:focus{
-  box-shadow: 0 0 0 4px rgba(3,78,162,0.14);
-  border-color: rgba(3,78,162,0.35);
-}
+    .miniLink{
+      color: var(--ink);
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
 
-.miniActions{
-  margin-top:12px;
-  display:grid;
-  grid-template-columns: var(--mini-label-col) 1fr;
-  gap:10px 10px;
-  align-items:center;
-  width:100%;
-}
-.miniActions .btn{ width:100%; justify-self:stretch; }
-.miniActions .spacer{ display:block; width:100%; height:1px; }
+    .miniList{
+      margin: 6px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13.5px;
+    }
+    .miniList li{ margin: 4px 0; }
 
-.miniHint{
-  margin-top:10px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
-}
+    /* Desktop: keep the sidebar feeling balanced */
+    @media (min-width: 901px){
+      .sideStack{ height:100%; }
+      #quickStepsBox{ flex: 1 1 auto; }
+    }
 
-.miniLink{
-  color: var(--ink);
-  font-weight: 900;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.miniList{
-  margin: 6px 0 0;
-  padding-left: 18px;
-  color: var(--muted);
-  line-height: 1.55;
-  font-size: 13.5px;
-}
-.miniList li{ margin: 4px 0; }
-
-/* Mobile: do not force equal heights */
-@media(max-width:900px){
-  .sideStack .miniCard{ flex: initial; }
-  .miniGrid{ grid-template-columns: 1fr; }
-  .miniActions{ grid-template-columns: 1fr; }
-  .miniActions .spacer{ display:none; }
-  .grid2{ align-items:start; }
-  .carouselViewport{ height: 200px; }
-}
+    /* Mobile */
+    @media(max-width:900px){
+      .miniGrid{ grid-template-columns: 1fr; }
+      .miniActions{ grid-template-columns: 1fr; }
+      .miniActions .spacer{ display:none; }
+      .grid2{ align-items:start; }
+      .carouselViewport{ height: 220px; }
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-<main class="page card">
-  <h1 style="margin:0 0 6px;">Plan Your Trip to Ecuador</h1>
 
-  <div class="lede" aria-label="Plan your Ecuador trip intro">
-    <p>
-      Want more than Mindo? Build an Ecuador-wide itinerary in minutes, then plug in Mindo for the cloud forest and world-class birding at exactly the right point in your route.
-    </p>
-    <p>
-      Start with flights, then use our preferred partner Experience Ecuador to map a smooth, low-stress trip across the country.
-    </p>
-  </div>
+    <main class="page card">
+      <h1 style="margin:0 0 6px;">Plan Your Trip to Ecuador</h1>
 
-  <div class="grid2" aria-label="Ecuador planning and travel tools">
-    <section aria-label="Ecuador planning content">
-      <h2 class="sectionTitle">Your Ecuador Game Plan</h2>
+      <div class="lede" aria-label="Plan your Ecuador trip intro">
+        <p>
+          Want more than Mindo? Build an Ecuador-wide itinerary in minutes, then plug in Mindo for the cloud forest and world-class birding at exactly the right point in your route.
+        </p>
+        <p>
+          Start with flights, then use our preferred partner Experience Ecuador to map a smooth, low-stress trip across the country.
+        </p>
+      </div>
 
-      <div class="planCards" aria-label="Ecuador plan cards">
-        <article class="planCard" aria-label="Start with the Ecuador Trip Builder">
-          <div class="planMedia" role="img" aria-label="Ecuador Trip Builder image">
-            <img src="/assets/images/pages/plan-your-trip/MBW-Assets-26-Plan-Your-Ecuador.jpg" alt="Ecuador trip planning view (replace image if needed)">
+      <div class="grid2" aria-label="Ecuador planning and travel tools">
+        <section aria-label="Ecuador planning content">
+          <h2 class="sectionTitle">Your Ecuador Game Plan</h2>
+
+          <div class="planCards" aria-label="Ecuador plan cards">
+            <article class="planCard" aria-label="Start with the Ecuador Trip Builder">
+              <div class="planMedia" role="img" aria-label="Ecuador Trip Builder image">
+                <img src="/assets/images/pages/plan-your-trip/MBW-Assets-26-Plan-Your-Ecuador.jpg" alt="Ecuador trip planning view (replace image if needed)">
+              </div>
+
+              <div class="planBody">
+                <div class="planTop">
+                  <h3 class="planTitle">Build Your Itinerary</h3>
+                  <span class="badge">Best First Step</span>
+                </div>
+
+                <p class="planDesc">
+                  Use the Experience Ecuador Trip Builder to create a complete route, then we will help you layer in Mindo at the perfect time.
+                </p>
+
+                <ul class="microList" aria-label="Includes">
+                  <li>Pick regions without backtracking</li>
+                  <li>Balance travel days with experiences</li>
+                  <li>Get a clear day-by-day starting point</li>
+                </ul>
+
+                <div class="planActions">
+                  <a class="btn primary" href="https://experienceecuador.com/trip-builder/" target="_blank" rel="noopener">Open Trip Builder</a>
+                  <a class="btn secondary" href="https://experienceecuador.com/" target="_blank" rel="noopener">
+                    Visit Experience Ecuador
+                    <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M7 12h10M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <article class="planCard" aria-label="Add Mindo to your Ecuador route">
+              <div class="planMedia" role="img" aria-label="Mindo highlight image">
+                <img src="/assets/images/pages/plan-your-trip/MBW-Assets-25-Plan-Your-Mindo.jpg" alt="Cloud forest view near Mindo, Ecuador (replace image if needed)">
+              </div>
+
+              <div class="planBody">
+                <div class="planTop">
+                  <h3 class="planTitle">Add Mindo the Easy Way</h3>
+                  <span class="badge">Wildlife Reset</span>
+                </div>
+
+                <p class="planDesc">
+                  Mindo is the perfect cloud forest break near Quito. Great for birding, waterfalls, and a calm change of pace.
+                </p>
+
+                <ul class="microList" aria-label="Mindo highlights">
+                  <li>Easy from Quito by road</li>
+                  <li>World-class birding and hummingbirds</li>
+                  <li>Waterfalls, chocolate, and forest trails</li>
+                </ul>
+
+                <div class="planActions">
+                  <a class="btn primary" href="/tours/">Browse Mindo Tours</a>
+                  <a class="btn secondary" href="/transportation/">
+                    Transportation
+                    <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M7 12h10M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
           </div>
+        </section>
 
-          <div class="planBody">
-            <div class="planTop">
-              <h3 class="planTitle">Build Your Itinerary</h3>
-              <span class="badge">Best First Step</span>
+        <aside class="sideStack" aria-label="Flights and quick actions">
+          <section class="miniCard" id="flightsBox" aria-label="Flights">
+            <h2 class="miniTitle">Flights</h2>
+
+            <div class="miniGrid" aria-label="Flights inputs">
+              <label for="flightFrom">From</label>
+              <input id="flightFrom" type="text" inputmode="latin" autocomplete="off" placeholder="e.g., JFK" maxlength="6">
+
+              <label for="flightTo">To</label>
+              <select id="flightTo" aria-label="Destination airport">
+                <option value="UIO">Quito (UIO)</option>
+                <option value="GYE">Guayaquil (GYE)</option>
+              </select>
+
+              <label for="flightDepart">Depart</label>
+              <input id="flightDepart" type="date">
+
+              <label for="flightReturn">Return</label>
+              <input id="flightReturn" type="date">
             </div>
 
-            <p class="planDesc">
-              Use the Experience Ecuador Trip Builder to create a complete route, then we will help you layer in Mindo at the perfect time.
-            </p>
+            <div class="miniActions" aria-label="Flights action">
+              <span class="spacer" aria-hidden="true"></span>
+              <button class="btn primary" id="flightSearchBtn" type="button">Search Flights</button>
+            </div>
 
-            <ul class="microList" aria-label="Includes">
-              <li>Pick regions without backtracking</li>
-              <li>Balance travel days with experiences</li>
-              <li>Get a clear day-by-day starting point</li>
+            <p class="miniHint">
+              Tip: Most travelers start in Quito (UIO). If you land late, plan long drives for daylight.
+            </p>
+          </section>
+
+          <section class="miniCard" id="quickStepsBox" aria-label="Quick next steps">
+            <h2 class="miniTitle">Quick Next Steps</h2>
+
+            <ul class="miniList" aria-label="Next steps list">
+              <li>Build your Ecuador itinerary with Experience Ecuador.</li>
+              <li>Pick your Mindo dates and tours.</li>
+              <li>Confirm transportation between Quito and Mindo.</li>
             </ul>
 
-            <div class="planActions">
-              <a class="btn primary" href="https://experienceecuador.com/trip-builder/" target="_blank" rel="noopener">Open Trip Builder</a>
-              <a class="btn secondary" href="https://experienceecuador.com/" target="_blank" rel="noopener">
-                Visit Experience Ecuador
-                <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M7 12h10M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </article>
-
-        <article class="planCard" aria-label="Add Mindo to your Ecuador route">
-          <div class="planMedia" role="img" aria-label="Mindo highlight image">
-            <img src="/assets/images/pages/plan-your-trip/MBW-Assets-25-Plan-Your-Mindo.jpg" alt="Cloud forest view near Mindo, Ecuador (replace image if needed)">
-          </div>
-
-          <div class="planBody">
-            <div class="planTop">
-              <h3 class="planTitle">Add Mindo the Easy Way</h3>
-              <span class="badge">Wildlife Reset</span>
-            </div>
-
-            <p class="planDesc">
-              Mindo is the perfect cloud forest break near Quito. Great for birding, waterfalls, and a calm change of pace.
+            <p class="miniHint">
+              Want us to sanity-check your route and suggest where Mindo fits best? Send your dates and ideas.
+              <a class="miniLink" href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask on WhatsApp</a>
             </p>
-
-            <ul class="microList" aria-label="Mindo highlights">
-              <li>Easy from Quito by road</li>
-              <li>World-class birding and hummingbirds</li>
-              <li>Waterfalls, chocolate, and forest trails</li>
-            </ul>
-
-            <div class="planActions">
-              <a class="btn primary" href="/tours/">Browse Mindo Tours</a>
-              <a class="btn secondary" href="/transportation/">
-                Transportation
-                <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M7 12h10M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </article>
+          </section>
+        </aside>
       </div>
 
       <div class="partnerHero" aria-label="Preferred partner highlight: Experience Ecuador">
@@ -640,62 +687,15 @@
           </div>
         </div>
       </div>
-    </section>
+    </main>
 
-    <aside class="sideStack" aria-label="Flights and quick actions">
-      <section class="miniCard" id="flightsBox" aria-label="Flights">
-        <h2 class="miniTitle">Flights</h2>
-
-        <div class="miniGrid" aria-label="Flights inputs">
-          <label for="flightFrom">From</label>
-          <input id="flightFrom" type="text" inputmode="latin" autocomplete="off" placeholder="e.g., JFK" maxlength="6">
-
-          <label for="flightTo">To</label>
-          <select id="flightTo" aria-label="Destination airport">
-            <option value="UIO">Quito (UIO)</option>
-            <option value="GYE">Guayaquil (GYE)</option>
-          </select>
-
-          <label for="flightDepart">Depart</label>
-          <input id="flightDepart" type="date">
-
-          <label for="flightReturn">Return</label>
-          <input id="flightReturn" type="date">
-        </div>
-
-        <div class="miniActions" aria-label="Flights action">
-          <span class="spacer" aria-hidden="true"></span>
-          <button class="btn primary" id="flightSearchBtn" type="button">Search Flights</button>
-        </div>
-
-        <p class="miniHint">
-          Tip: Most travelers start in Quito (UIO). If you land late, plan long drives for daylight.
-        </p>
-      </section>
-
-      <section class="miniCard" aria-label="Quick next steps">
-        <h2 class="miniTitle">Quick Next Steps</h2>
-
-        <ul class="miniList" aria-label="Next steps list">
-          <li>Build your Ecuador itinerary with Experience Ecuador.</li>
-          <li>Pick your Mindo dates and tours.</li>
-          <li>Confirm transportation between Quito and Mindo.</li>
-        </ul>
-
-        <p class="miniHint">
-          Want us to sanity-check your route and suggest where Mindo fits best? Send your dates and ideas.
-          <a class="miniLink" href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask on WhatsApp</a>
-        </p>
-      </section>
-    </aside>
+    <div id="siteFooter"></div>
   </div>
-</main>
 
-<div id="siteFooter"></div>
-  </div>
   <!-- Shared includes + header behavior -->
   <script src="/assets/js/includes.js?v=1" defer></script>
-    <script src="/assets/js/site.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
+
   <script>
     (function(){
       function normalizeAirportCode(v){
@@ -798,5 +798,4 @@
     })();
   </script>
 </body>
-</html> |oai:code-citation|
-
+</html>
