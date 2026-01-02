@@ -188,10 +188,12 @@
       display:grid;
       grid-template-columns: 1fr;
       gap: 12px;
+      align-items:start;
     }
 
     .socialTop{
       display:block;
+      min-width: 0;
     }
 
     .socialKicker{
@@ -229,6 +231,7 @@
       gap: 10px;
       margin-top: 10px;
       align-content:start;
+      min-width: 0;
     }
 
     /*
@@ -243,13 +246,14 @@
       text-decoration:none;
       min-width: 0;
       line-height: 1.1;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
+    /* FIX: do NOT ellipsis on desktop (it was causing "Face..." etc) */
     .socialBtn .label{
       display:block;
       min-width: 0;
-      overflow:hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
@@ -269,12 +273,16 @@
     .ico.tt{ background-image: var(--mbw-icon-tt); }
     .ico.yt{ background-image: var(--mbw-icon-yt); }
 
-    /* Desktop: make a dedicated right column for buttons so they never collide */
+    /* Desktop: use a fluid right column so pills never collide or clip */
     @media (min-width: 901px){
       .socialShell{
-        grid-template-columns: 1fr 420px; /* stable space for pills */
+        grid-template-columns: 1fr minmax(360px, 520px);
         gap: 16px;
         align-items:start;
+      }
+
+      .socialCopy{
+        max-width: 54ch;
       }
 
       .socialGrid{
@@ -288,10 +296,22 @@
         grid-column: 1 / -1;
       }
 
-      /* Make pills fill their grid cell (prevents weird wrapping/overlap) */
+      /* Keep consistent pill sizing with the rest of the site */
       .socialGrid a{
         width: 100%;
         justify-content:flex-start;
+      }
+
+      /* FIX: allow label to show fully (no clipping) */
+      .socialBtn .label{
+        overflow: visible;
+        text-overflow: clip;
+      }
+
+      /* Slightly smaller icons on desktop so pills don't feel "fat" */
+      .socialBtn .ico{
+        width: 24px;
+        height: 24px;
       }
     }
 
@@ -333,6 +353,10 @@
       .leftFill{ max-width: none; }
       .socialGrid{ grid-template-columns: 1fr; }
       .socialGrid a{ width: 100%; justify-content:center; }
+      .socialBtn .label{
+        overflow: visible;
+        text-overflow: clip;
+      }
     }
   </style>
 </head>
