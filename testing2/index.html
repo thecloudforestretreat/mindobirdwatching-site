@@ -102,7 +102,7 @@
 
     .wxMetric{
       display:inline-flex;
-      align-items:baseline;
+      align-items:center;
       gap: 8px;
       padding: 8px 10px;
       border-radius: 14px;
@@ -143,7 +143,7 @@
       padding: 10px;
       display:flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       min-width: 0;
     }
 
@@ -151,7 +151,7 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 8px;
+      gap: 10px;
     }
 
     .wxDow{
@@ -161,12 +161,20 @@
       letter-spacing: -0.01em;
     }
 
-    .wxIcon{
-      font-size: 16px;
-      line-height: 1;
+    /* Temps block with icon on the right, same visual height */
+    .wxTempsRow{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
     }
 
-    .wxTemps{
+    .wxTempsLines{
+      min-width: 0;
+    }
+
+    .wxLine{
       font-weight: 900;
       font-size: 12.5px;
       color: var(--ink);
@@ -174,6 +182,16 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    .wxIcon{
+      font-size: 18px;
+      line-height: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 22px;
     }
 
     .wxRain{
@@ -317,7 +335,7 @@
       line-height: 1.6;
     }
 
-    /* Secure badge card (right column under "Why Guests Love Mindo") */
+    /* Secure badge card */
     .secureCard{
       margin-top: 14px;
       border: 1px solid var(--line);
@@ -563,8 +581,9 @@
         <span class="wxPin" aria-label="Location">📍 Mindo</span>
       </div>
   <div class="wxToday" aria-label="Today summary">
-    <span class="wxMetric" id="wxTodayTemps"><span class="emoji">🌡️</span> --C/--F --C/--F</span>
-    <span class="wxMetric" id="wxTodayRain"><span class="emoji">💧</span> --</span>
+    <span class="wxMetric" id="wxTodayHi"><span class="emoji">🌡️</span> -- C / -- F</span>
+    <span class="wxMetric" id="wxTodayLo"><span class="emoji">🌡️</span> -- C / -- F</span>
+    <span class="wxMetric" id="wxTodayRain"><span class="emoji">💧</span> -- mm</span>
     <span class="wxMetric" id="wxTodayIcon" aria-hidden="true"><span class="emoji">🌥️</span></span>
   </div>
 </div>
@@ -573,39 +592,15 @@
 
 <div class="wxGrid" id="wxGrid" aria-label="7-day forecast">
   <div class="wxDay">
-    <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon">🌥️</span></div>
-    <div class="wxTemps">--C/--F --C/--F</div>
-    <div class="wxRain">💧 --</div>
-  </div>
-  <div class="wxDay">
-    <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon">🌥️</span></div>
-    <div class="wxTemps">--C/--F --C/--F</div>
-    <div class="wxRain">💧 --</div>
-  </div>
-  <div class="wxDay">
-    <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon">🌥️</span></div>
-    <div class="wxTemps">--C/--F --C/--F</div>
-    <div class="wxRain">💧 --</div>
-  </div>
-  <div class="wxDay">
-    <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon">🌥️</span></div>
-    <div class="wxTemps">--C/--F --C/--F</div>
-    <div class="wxRain">💧 --</div>
-  </div>
-  <div class="wxDay">
-    <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon">🌥️</span></div>
-    <div class="wxTemps">--C/--F --C/--F</div>
-    <div class="wxRain">💧 --</div>
-  </div>
-  <div class="wxDay">
-    <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon">🌥️</span></div>
-    <div class="wxTemps">--C/--F --C/--F</div>
-    <div class="wxRain">💧 --</div>
-  </div>
-  <div class="wxDay">
-    <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon">🌥️</span></div>
-    <div class="wxTemps">--C/--F --C/--F</div>
-    <div class="wxRain">💧 --</div>
+    <div class="wxDayTop"><span class="wxDow">Sat</span></div>
+    <div class="wxTempsRow">
+      <div class="wxTempsLines">
+        <div class="wxLine">-- C / -- F</div>
+        <div class="wxLine">-- C / -- F</div>
+      </div>
+      <span class="wxIcon" aria-hidden="true">🌥️</span>
+    </div>
+    <div class="wxRain">💧 -- mm</div>
   </div>
 </div>
 
@@ -625,7 +620,6 @@
     <a class="btn secondary" href="/bird-gallery/">Bird Gallery</a>
   </div>
 
-  <!-- Left column only: New-to-birding band -->
   <div class="ctaBand" aria-label="Quick reassurance">
     <p><strong>New to birding?</strong> No problem. We guide beginners and serious birders, and we keep the experience calm and organized.</p>
     <a class="btn secondary" href="/faqs/">Read FAQs</a>
@@ -641,7 +635,6 @@
     <li>Great for families, photographers, and groups</li>
   </ul>
 
-  <!-- Right column: Safe and secure travel card under the list -->
   <div class="secureCard" aria-label="Safe and secure travel">
     <div class="secureImg" aria-hidden="true">
       <img src="/assets/images/MBW-Assets-4-SecureBadge.png" alt="Safe and secure travel badge" />
@@ -662,7 +655,6 @@
       <p class="hint"></p>
     </div>
 <div class="mediaGrid">
-  <!-- Left column: stacked images -->
   <div class="mediaCol" aria-label="Featured images">
     <article class="mediaCard" aria-label="Featured image 1">
       <div class="mediaFrame">
@@ -691,7 +683,6 @@
     </article>
   </div>
 
-  <!-- Right column: video -->
   <div class="mediaCol" aria-label="Video">
     <article class="mediaCard" aria-label="Featured video">
       <iframe
@@ -781,7 +772,8 @@
       var CACHE_KEY = "mbw_wx_mindo_v1";
       var CACHE_TTL_MS = 60 * 60 * 1000;
 
-      var elTodayTemps = document.getElementById("wxTodayTemps");
+      var elTodayHi = document.getElementById("wxTodayHi");
+      var elTodayLo = document.getElementById("wxTodayLo");
       var elTodayRain = document.getElementById("wxTodayRain");
       var elTodayIcon = document.getElementById("wxTodayIcon");
       var elGrid = document.getElementById("wxGrid");
@@ -799,11 +791,11 @@
         return (typeof n === "number" && isFinite(n)) ? n : null;
       }
 
-      function fmtTempPair(c){
+      function fmtTempLine(c){
         var cc = safeNum(c);
-        if (cc === null) return "--C/--F";
+        if (cc === null) return "-- C / -- F";
         var ff = cToF(cc);
-        return round(cc) + "C/" + round(ff) + "F";
+        return round(cc) + " C / " + round(ff) + " F";
       }
 
       function fmtMm(mm){
@@ -814,10 +806,10 @@
         return round(v).toString();
       }
 
-      function dowShort(iso){
+      function dowFull(iso){
         var d = new Date(iso + "T00:00:00");
         if (isNaN(d.getTime())) return "--";
-        return d.toLocaleDateString(undefined, { weekday: "short" }).slice(0, 2);
+        return d.toLocaleDateString("en-US", { weekday: "short" });
       }
 
       function iconFromCode(code, mm){
@@ -894,11 +886,14 @@
 
           var icon = iconFromCode(todayCode, todayRain);
 
-          if (elTodayTemps){
-            elTodayTemps.innerHTML = '<span class="emoji">🌡️</span> ' + fmtTempPair(todayMax) + " " + fmtTempPair(todayMin);
+          if (elTodayHi){
+            elTodayHi.innerHTML = '<span class="emoji">🌡️</span> ' + fmtTempLine(todayMax);
+          }
+          if (elTodayLo){
+            elTodayLo.innerHTML = '<span class="emoji">🌡️</span> ' + fmtTempLine(todayMin);
           }
           if (elTodayRain){
-            elTodayRain.innerHTML = '<span class="emoji">💧</span> ' + fmtMm(todayRain) + "mm";
+            elTodayRain.innerHTML = '<span class="emoji">💧</span> ' + fmtMm(todayRain) + " mm";
           }
           if (elTodayIcon){
             elTodayIcon.innerHTML = '<span class="emoji">' + icon + "</span>";
@@ -916,12 +911,15 @@
 
             html += ''
               + '<div class="wxDay">'
-              +   '<div class="wxDayTop">'
-              +     '<span class="wxDow">' + dowShort(d) + '</span>'
+              +   '<div class="wxDayTop"><span class="wxDow">' + dowFull(d) + '</span></div>'
+              +   '<div class="wxTempsRow">'
+              +     '<div class="wxTempsLines">'
+              +       '<div class="wxLine">' + fmtTempLine(maxC) + '</div>'
+              +       '<div class="wxLine">' + fmtTempLine(minC) + '</div>'
+              +     '</div>'
               +     '<span class="wxIcon" aria-hidden="true">' + dayIcon + '</span>'
               +   '</div>'
-              +   '<div class="wxTemps">' + fmtTempPair(maxC) + ' ' + fmtTempPair(minC) + '</div>'
-              +   '<div class="wxRain">💧 ' + fmtMm(mm) + 'mm</div>'
+              +   '<div class="wxRain">💧 ' + fmtMm(mm) + ' mm</div>'
               + '</div>';
           }
           if (elGrid) elGrid.innerHTML = html;
