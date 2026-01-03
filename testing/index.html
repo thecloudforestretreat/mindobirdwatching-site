@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>Activities | Mindo Bird Watching</title>
-  <meta name="description" content="Explore unforgettable activities in Mindo, Ecuador—from birdwatching and waterfalls to ziplining, rafting, wildlife, and family-friendly nature experiences." />
+  <meta name="description" content="Explore unforgettable activities in Mindo, Ecuador-from birdwatching and waterfalls to ziplining, rafting, wildlife, and family-friendly nature experiences." />
 
   <!-- Canonical -->
   <link rel="canonical" href="https://mindobirdwatching.com/activities/" />
@@ -41,6 +41,9 @@
 
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
+
+  <!-- Global header/footer injector -->
+  <script src="/assets/js/includes.js" defer></script>
 
   <style>
     /* =========================
@@ -253,7 +256,6 @@
       align-items: flex-start;
     }
 
-    /* Desktop image size increased (mobile stays fine via media query) */
     .avatar{
       width: 140px;
       height: 140px;
@@ -367,9 +369,10 @@
 </head>
 
 <body>
-  <div class="container">
-    <div id="siteHeader"></div>
+  <!-- Shared header mount (global) -->
+  <div id="siteHeader"></div>
 
+  <div class="container">
     <main class="page card" aria-label="Activities">
       <section class="hero" aria-label="Activities intro">
         <div>
@@ -396,7 +399,6 @@
         </div>
 
         <div class="heroRight" aria-label="Hero right column">
-          <!-- Carousel (right of intro, above All Activities) -->
           <div class="carousel" aria-label="Activities highlights carousel">
             <div class="carouselViewport">
               <img id="carImg" class="carouselImg" src="/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" alt="Birdwatching in Mindo, Ecuador" loading="lazy" />
@@ -856,51 +858,24 @@
         </div>
       </section>
     </main>
-
-    <div id="siteFooter"></div>
   </div>
 
-  <!-- Keep your global site behavior -->
+  <!-- Shared footer mount (global) -->
+  <div id="siteFooter"></div>
+
+  <!-- Global site behavior -->
   <script src="/assets/js/site.js"></script>
 
   <script>
     (function () {
       "use strict";
 
-      /* =========================
-         Auto-rotating carousel (5 images, 2.5s) + Prev/Next
-         ========================= */
       const slides = [
-        {
-          src: "/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg",
-          alt: "Birdwatching in Mindo, Ecuador",
-          title: "Birdwatching",
-          sub: "Guided cloud forest moments"
-        },
-        {
-          src: "/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg",
-          alt: "Waterfall tour in Mindo, Ecuador",
-          title: "Waterfalls",
-          sub: "Cable car + lush trails"
-        },
-        {
-          src: "/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg",
-          alt: "Ziplining in Mindo, Ecuador",
-          title: "Ziplining",
-          sub: "Treetop views + adrenaline"
-        },
-        {
-          src: "/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg",
-          alt: "Chocolate tour in Mindo, Ecuador",
-          title: "Chocolate Tour",
-          sub: "Cacao to tasting"
-        },
-        {
-          src: "/assets/images/pages/activities/MBW-Activities-16-Canyoning.jpg",
-          alt: "Canyoning in Mindo, Ecuador",
-          title: "Canyoning",
-          sub: "Waterfalls + rappels"
-        }
+        { src: "/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg", alt: "Birdwatching in Mindo, Ecuador", title: "Birdwatching", sub: "Guided cloud forest moments" },
+        { src: "/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg", alt: "Waterfall tour in Mindo, Ecuador", title: "Waterfalls", sub: "Cable car + lush trails" },
+        { src: "/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg", alt: "Ziplining in Mindo, Ecuador", title: "Ziplining", sub: "Treetop views + adrenaline" },
+        { src: "/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg", alt: "Chocolate tour in Mindo, Ecuador", title: "Chocolate Tour", sub: "Cacao to tasting" },
+        { src: "/assets/images/pages/activities/MBW-Activities-16-Canyoning.jpg", alt: "Canyoning in Mindo, Ecuador", title: "Canyoning", sub: "Waterfalls + rappels" }
       ];
 
       const img = document.getElementById("carImg");
@@ -947,7 +922,6 @@
       prev.addEventListener("click", () => { setSlide(i - 1); start(); });
       next.addEventListener("click", () => { setSlide(i + 1); start(); });
 
-      // Optional: pause on hover (desktop) / touch focus
       const carousel = img.closest(".carousel");
       if (carousel) {
         carousel.addEventListener("mouseenter", stop);
