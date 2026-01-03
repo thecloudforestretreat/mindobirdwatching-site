@@ -3,14 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>Activities | Mindo Bird Watching</title>
-  <meta name="description" content="Discover Mindo’s best adventures with Mindo Bird Watching. Explore birding, ziplining, rafting, canyoning, butterflies, orchids, and coffee & chocolate tastings in 📍Mindo, Ecuador." />
+  <meta name="description" content="Explore unforgettable activities in Mindo, Ecuador-from birdwatching and waterfalls to ziplining, rafting, wildlife, and family-friendly nature experiences." />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://mindobirdwatching.com/activities/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Activities | Mindo Bird Watching" />
+  <meta property="og:description" content="From birdwatching and waterfalls to ziplining and rafting, discover activities for all ages in the cloud forest of Mindo, Ecuador." />
+  <meta property="og:url" content="https://mindobirdwatching.com/activities/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching activities in the Ecuadorian cloud forest" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Activities | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Discover adventure, wildlife, and family-friendly activities in Mindo's cloud forest." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
 
   <link rel="alternate" hreflang="en" href="/activities/" />
   <link rel="alternate" hreflang="es" href="/es/actividades/" />
   <link rel="alternate" hreflang="x-default" href="/activities/" />
 
-  <!-- Favicons (approved root paths) -->
+  <!-- Favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -19,6 +41,9 @@
 
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
+
+  <!-- Global header/footer injector -->
+  <script src="/assets/js/includes.js" defer></script>
 
   <style>
     /* =========================
@@ -61,6 +86,12 @@
       align-items:center;
     }
 
+    .heroRight{
+      display:grid;
+      gap: 12px;
+      align-content: start;
+    }
+
     .heroCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
@@ -83,6 +114,99 @@
       color: var(--ink);
       line-height: 1.6;
     }
+
+    /* Carousel */
+    .carousel{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carouselViewport{
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .carouselImg{
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .carouselBtns{
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+      padding: 10px;
+    }
+
+    .cBtn{
+      pointer-events: auto;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .cBtn svg{ width: 20px; height: 20px; }
+
+    .carouselDots{
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 10px;
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      opacity: .75;
+    }
+    .dot.is-active{
+      opacity: 1;
+      background: rgba(13,89,37,.18);
+      border-color: rgba(13,89,37,.35);
+    }
+
+    .carouselCap{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .carouselCap strong{ color: var(--ink); }
 
     .section{
       margin-top: 18px;
@@ -107,15 +231,12 @@
       font-size: 20px;
     }
 
-    .hint{
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.4;
-      max-width: 70ch;
-    }
-
-    /* Activity cards */
+    /* Activity cards (UI/UX alignment fixes)
+       Goals:
+       - Remove excess dead space (esp. under image / between text and tags)
+       - Center tags cleanly inside the card on desktop + mobile
+       - Keep spacing consistent without forcing tall empty cards
+    */
     .grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -130,20 +251,20 @@
       overflow: hidden;
       display:flex;
       flex-direction: column;
-      min-height: 220px;
+      min-height: 0; /* was forcing extra blank space */
     }
 
     .actTop{
       display:flex;
-      gap: 12px;
-      padding: 14px;
+      gap: 14px;
+      padding: 14px 14px 10px; /* slightly tighter bottom spacing */
       align-items: flex-start;
     }
 
     .avatar{
-      width: 62px;
-      height: 62px;
-      border-radius: 999px;
+      width: 140px;
+      height: 140px;
+      border-radius: 18px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.75);
       box-shadow: var(--shadow);
@@ -167,28 +288,32 @@
       margin: 0;
       font-weight: 950;
       color: var(--ink);
-      font-size: 15px;
+      font-size: 16px;
       letter-spacing: -0.01em;
       line-height: 1.15;
     }
 
     .actSub{
-      margin: 6px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 13.5px;
       line-height: 1.55;
     }
 
+    /* No more "push tags to the very bottom" behavior */
     .actBody{
       padding: 0 14px 14px;
-      display:grid;
-      gap: 10px;
+      display:flex;
+      justify-content: center; /* centers tags inside card */
     }
 
     .chips{
       display:flex;
       flex-wrap:wrap;
       gap: 8px;
+      justify-content:center;  /* keeps wrapped rows centered */
+      width: 100%;
+      max-width: 520px;        /* prevents odd wide stretching on large cards */
     }
 
     .chip{
@@ -204,16 +329,6 @@
       color: var(--ink);
       line-height: 1;
       white-space: nowrap;
-    }
-
-    .miniNote{
-      border: 1px dashed rgba(13,89,37,.35);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 13px;
     }
 
     .ctaStrip{
@@ -251,29 +366,44 @@
     @media (max-width: 900px){
       .hero{ grid-template-columns: 1fr; }
       .grid{ grid-template-columns: repeat(2, 1fr); }
+
+      /* Mobile/tablet card tightening */
+      .actTop{ padding: 12px 12px 8px; gap: 12px; }
+      .actSub{ margin-top: 6px; }
+      .actBody{ padding: 0 12px 12px; }
+      .chips{ max-width: 100%; }
+
+      .avatar{ width: 80px; height: 80px; border-radius: 999px; }
+      .carouselViewport{ height: 220px; }
     }
 
     @media (max-width: 560px){
       .grid{ grid-template-columns: 1fr; }
+
+      /* Extra-tight on small phones to remove the big blank zone you highlighted */
+      .actTop{ padding: 12px 12px 6px; }
+      .actBody{ padding: 0 12px 12px; }
+      .chip{ padding: 7px 10px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <!-- Shared header mount -->
-    <div id="siteHeader"></div>
+  <!-- Shared header mount (global) -->
+  <div id="siteHeader"></div>
 
+  <div class="container">
     <main class="page card" aria-label="Activities">
       <section class="hero" aria-label="Activities intro">
         <div>
-          <h1>Discover Mindo’s Best Adventures 🌿✨</h1>
+          <h1>Discover Mindo's Best Adventures 🌿✨</h1>
+
           <p>
-            At Mindo Bird Watching, our passion starts with the incredible birdlife of the cloud forest,
-            home to colorful toucans, countless hummingbirds, and the iconic Andean Cock-of-the-Rock.
+            At Mindo Bird Watching, our passion starts with the incredible birdlife of the cloud forest, home to colorful toucans,
+            countless hummingbirds, and the iconic Andean Cock-of-the-Rock.
           </p>
           <p style="margin-top:10px;">
-            But there’s so much more to experience here. From adrenaline-filled adventures like ziplining, rafting, and canyoning
+            But there's so much more to experience here. From adrenaline-filled adventures like ziplining, rafting, and canyoning
             to relaxing nature tours like butterflies, orchids, and coffee and chocolate tastings, Mindo offers something unforgettable
             for every kind of traveler.
           </p>
@@ -288,418 +418,449 @@
           </div>
         </div>
 
-        <aside class="heroCard" aria-label="How to use this page">
-          <h2>How This Page Works</h2>
-          <ul class="heroList">
-            <li>Each activity card has a circular image slot. Drop in your images later.</li>
-            <li>Titles and descriptions are placeholders. Replace them as you finalize the offerings.</li>
-            <li>You can add or remove cards anytime without breaking layout.</li>
-          </ul>
-        </aside>
+        <div class="heroRight" aria-label="Hero right column">
+          <div class="carousel" aria-label="Activities highlights carousel">
+            <div class="carouselViewport">
+              <img id="carImg" class="carouselImg" src="/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" alt="Birdwatching in Mindo, Ecuador" loading="lazy" />
+              <div class="carouselBtns" aria-hidden="false">
+                <button class="cBtn" type="button" id="carPrev" aria-label="Previous image">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="cBtn" type="button" id="carNext" aria-label="Next image">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="carouselDots" aria-hidden="true">
+                <span class="dot is-active" data-dot="0"></span>
+                <span class="dot" data-dot="1"></span>
+                <span class="dot" data-dot="2"></span>
+                <span class="dot" data-dot="3"></span>
+                <span class="dot" data-dot="4"></span>
+              </div>
+            </div>
+            <div class="carouselCap">
+              <span><strong id="carTitle">Birdwatching</strong> <span id="carSub">Guided cloud forest moments</span></span>
+              <span id="carCount" style="white-space:nowrap;">1 / 5</span>
+            </div>
+          </div>
+
+          <aside class="heroCard">
+            <h2>How This Page Works</h2>
+            <ul class="heroList">
+              <li>Choose from calm nature walks, hands-on tours, and high-energy adventures.</li>
+              <li>Most activities are family-friendly, with options for kids, teens, and adults.</li>
+              <li>Want the perfect mix? Tell us your group and dates, and we will help you plan.</li>
+            </ul>
+          </aside>
+        </div>
       </section>
 
       <section class="section" aria-label="Activities grid">
         <div class="sectionHead">
           <h2>All Activities</h2>
-          <p class="hint"></p>
-        </div>
-
-        <div class="miniNote" aria-label="Image note">
-          <strong>Fun for all ages.</strong> Mindo is an adventure hotspot.
         </div>
 
         <div class="grid" style="margin-top:12px;" aria-label="Activities list">
           <!-- 01 -->
-          <article class="act" aria-label="Activity 1">
+          <article class="act" aria-label="Bird Watching">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" alt="Activity image placeholder 1">
+                <img src="/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" alt="Bird watching in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Bird Watching</p>
-                <p class="actSub">Discover why Mindo is a birdwatcher’s paradise! Spot colorful toucans, countless hummingbirds, and the iconic Andean Cock-of-the-Rock — with expert local bilingual guides leading the way.
-Over 550 bird species await in Ecuador’s magical cloud forest.</p>
+                <p class="actSub">Explore the cloud forest with expert local guides and spot toucans, hummingbirds, and rare specialties. A must-do for nature lovers of every level.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 1 tags">
-                <span class="chip">Adventure</span>
-                <span class="chip">Family friendly</span>
+              <div class="chips" aria-label="Bird Watching tags">
+                <span class="chip">Wildlife</span>
+                <span class="chip">Guided</span>
+                <span class="chip">All Ages</span>
               </div>
             </div>
           </article>
 
           <!-- 02 -->
-          <article class="act" aria-label="Activity 2">
+          <article class="act" aria-label="Waterfall Tour">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg">
+                <img src="/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg" alt="Waterfall tour in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Waterfall Tour</p>
-                <p class="actSub">Discover the magic of the Chocó Andino Reserve — a lush cloud forest with hidden waterfalls and the famous Nambillo fall.
-Glide across the canopy on a hummingbird-shaped cable car and feel the thrill of adventure in the heart of nature!</p>
+                <p class="actSub">Ride the iconic cable car and walk through lush trails to beautiful hidden falls. Easy, scenic, and perfect for photos and fresh air.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 2 tags">
+              <div class="chips" aria-label="Waterfall Tour tags">
                 <span class="chip">Nature</span>
-                <span class="chip">Relaxed</span>
+                <span class="chip">Scenic</span>
+                <span class="chip">Family</span>
               </div>
             </div>
           </article>
 
           <!-- 03 -->
-          <article class="act" aria-label="Activity 3">
+          <article class="act" aria-label="Nambillo Waterfall">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg">
+                <img src="/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg" alt="Nambillo Waterfall in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Nambillo Waterfall</p>
-                <p class="actSub">Dive into the crystal-clear Nambillo River! Swim, ride a natural 15-meter slide, or take the leap from thrilling 4- and 12-meter jumps. A refreshing cloud forest adventure just minutes from Mindo!
-Approximate Duration: 3 to 4 hours</p>
+                <p class="actSub">Cool off in crystal-clear water with swimming, a natural rock slide, and optional jumps. A refreshing half-day adventure close to town.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 3 tags">
-                <span class="chip">Birding</span>
-                <span class="chip">Scenic</span>
+              <div class="chips" aria-label="Nambillo Waterfall tags">
+                <span class="chip">Water</span>
+                <span class="chip">Adventure</span>
+                <span class="chip">Active</span>
               </div>
             </div>
           </article>
 
           <!-- 04 -->
-          <article class="act" aria-label="Activity 4">
+          <article class="act" aria-label="Quad Tour">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-8-QuadTour.jpg" alt="Activity image placeholder 4">
+                <img src="/assets/images/pages/activities/MBW-Activities-8-QuadTour.jpg" alt="Quad tour in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Quad Tour</p>
-                <p class="actSub">Rev up your adrenaline on our Quad Tour! Ride through jungle trails, cross suspension bridges, and splash by the river — all safely guided and fully equipped.
-An adventure-packed hour in the heart of Mindo!</p>
+                <p class="actSub">Ride through forest trails, cross bridges, and splash by the river with a guide and full safety gear. Big fun in a short time.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 4 tags">
-                <span class="chip">Adventure</span>
-                <span class="chip">Water</span>
+              <div class="chips" aria-label="Quad Tour tags">
+                <span class="chip">Adrenaline</span>
+                <span class="chip">Guided</span>
+                <span class="chip">Outdoor</span>
               </div>
             </div>
           </article>
 
           <!-- 05 -->
-          <article class="act" aria-label="Activity 5">
+          <article class="act" aria-label="Ziplining">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg" alt="Activity image placeholder 5">
+                <img src="/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg" alt="Ziplining in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Ziplining</p>
-                <p class="actSub">Fly above the Mindo cloud forest on 10 thrilling zip lines spanning 3,500 meters!
-Safe, certified, and led by expert guides — this is the ultimate adventure in the treetops</p>
+                <p class="actSub">Fly above the treetops on multiple lines with certified guides and safety equipment. The classic Mindo thrill with epic views.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 5 tags">
-                <span class="chip">Culture</span>
-                <span class="chip">Tasting</span>
+              <div class="chips" aria-label="Ziplining tags">
+                <span class="chip">Adrenaline</span>
+                <span class="chip">Canopy</span>
+                <span class="chip">Must-Do</span>
               </div>
             </div>
           </article>
 
           <!-- 06 -->
-          <article class="act" aria-label="Activity 6">
+          <article class="act" aria-label="Chocolate Tour">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg" alt="Activity image placeholder 6">
+                <img src="/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg" alt="Chocolate tour in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Chocolate Tour</p>
-                <p class="actSub">Discover the sweet side of Mindo on a one-hour Chocolate Tour! From cacao fruit to delicious treats, learn the artisanal process of making fine chocolate.
-End with a brownie tasting—or even a chocolate face mask!</p>
+                <p class="actSub">See cacao transform into real chocolate, then enjoy tastings at the end. A fun, delicious experience that kids and adults love.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 6 tags">
-                <span class="chip">Wildlife</span>
-                <span class="chip">Easy</span>
+              <div class="chips" aria-label="Chocolate Tour tags">
+                <span class="chip">Culture</span>
+                <span class="chip">Tasting</span>
+                <span class="chip">Family</span>
               </div>
             </div>
           </article>
 
           <!-- 07 -->
-          <article class="act" aria-label="Activity 7">
+          <article class="act" aria-label="Coffee Tour">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-14-CoffeTour.jpg" alt="Activity image placeholder 7">
+                <img src="/assets/images/pages/activities/MBW-Activities-14-CoffeTour.jpg" alt="Coffee tour in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Coffee Tour</p>
-                <p class="actSub">Awaken your senses on a Coffee Tour in Mindo! From bean to brew, explore the full journey—growth, artisanal roasting, and expert tasting.
-End by savoring a gourmet cup born in the cloud forest.</p>
+                <p class="actSub">Follow the journey from bean to cup with roasting and guided tasting. A relaxing, flavorful tour in the heart of the cloud forest.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 7 tags">
-                <span class="chip">Hiking</span>
-                <span class="chip">Scenic</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- 08 -->
-          <article class="act" aria-label="Activity 8">
-            <div class="actTop">
-              <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-5-ButterflyTour.jpg" alt="Activity image placeholder 8">
-              </div>
-              <div class="actMeta">
-                <p class="actTitle">Butterfly Tour</p>
-                <p class="actSub">Step into a magical butterfly garden in Mindo! Witness over 1,000 butterflies in every stage of life, feed them by hand, and enjoy hummingbirds, orchids, and more.
-A perfect family experience!</p>
-              </div>
-            </div>
-            <div class="actBody">
-              <div class="chips" aria-label="Activity 8 tags">
-                <span class="chip">Zipline</span>
-                <span class="chip">Adrenaline</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- 09 -->
-          <article class="act" aria-label="Activity 9">
-            <div class="actTop">
-              <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-7-OrchidGardenTour.jpg" alt="Activity image placeholder 9">
-              </div>
-              <div class="actMeta">
-                <p class="actTitle">Orchid Garden Tour</p>
-                <p class="actSub">Step into a living rainbow at Mindo’s Orchid Garden! Discover over 250 native species — from the famous monkey-face orchid to dazzling hummingbird orchids — all in a sanctuary of conservation and beauty.</p>
-              </div>
-            </div>
-            <div class="actBody">
-              <div class="chips" aria-label="Activity 9 tags">
-                <span class="chip">Rafting</span>
-                <span class="chip">Water</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- 10 -->
-          <article class="act" aria-label="Activity 10">
-            <div class="actTop">
-              <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-4-FrogConcert.jpg" alt="Activity image placeholder 10">
-              </div>
-              <div class="actMeta">
-                <p class="actTitle">Frog Concert</p>
-                <p class="actSub">Experience the “frog concert” in Mindo’s cloud forest at night!
-This 2-hour guided tour reveals frogs, insects, and maybe even sleeping birds — all accompanied by the magical symphony of the forest.</p>
-              </div>
-            </div>
-            <div class="actBody">
-              <div class="chips" aria-label="Activity 10 tags">
-                <span class="chip">Canyoning</span>
-                <span class="chip">Adventure</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- 11 -->
-          <article class="act" aria-label="Activity 11">
-            <div class="actTop">
-              <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-19-Tubing.jpg" alt="Activity image placeholder 11">
-              </div>
-              <div class="actMeta">
-                <p class="actTitle">Tubing</p>
-                <p class="actSub">Ride the rivers of Mindo on tubing and rafting adventures! From gentle floats (Level I) to thrilling descents (Level II & III), expert guides lead you through adrenaline, laughter, and the magic of the cloud forest.</p>
-              </div>
-            </div>
-            <div class="actBody">
-              <div class="chips" aria-label="Activity 11 tags">
-                <span class="chip">Butterflies</span>
-                <span class="chip">Nature</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- 12 -->
-          <article class="act" aria-label="Activity 12">
-            <div class="actTop">
-              <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-15-Rafting.jpg" alt="Activity image placeholder 12">
-              </div>
-              <div class="actMeta">
-                <p class="actTitle">Rafting</p>
-                <p class="actSub">Feel the rush of whitewater rafting in Mindo’s wild rivers!
-Paddle through exciting rapids surrounded by the beauty of the cloud forest.
-An adventure full of adrenaline and nature in perfect harmony.</p>
-              </div>
-            </div>
-            <div class="actBody">
-              <div class="chips" aria-label="Activity 12 tags">
-                <span class="chip">Orchids</span>
+              <div class="chips" aria-label="Coffee Tour tags">
+                <span class="chip">Culture</span>
+                <span class="chip">Tasting</span>
                 <span class="chip">Relaxed</span>
               </div>
             </div>
           </article>
 
-          <!-- 13 -->
-          <article class="act" aria-label="Activity 13">
+          <!-- 08 -->
+          <article class="act" aria-label="Butterfly Tour">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-16-Canyoning.jpg" alt="Activity image placeholder 13">
+                <img src="/assets/images/pages/activities/MBW-Activities-5-ButterflyTour.jpg" alt="Butterfly tour in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
-                <p class="actTitle">Canyoning</p>
-                <p class="actSub">Dive into adventure with canyoning in Mindo’s rivers — waterfalls, natural pools, and vertical descents await!
-Equipped with helmet, harness, and expert guides, this is pure adrenaline in the cloud forest.</p>
+                <p class="actTitle">Butterfly Tour</p>
+                <p class="actSub">Walk through a vibrant butterfly garden and see every stage of life up close. Gentle, colorful, and perfect for families.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 13 tags">
-                <span class="chip">Coffee</span>
-                <span class="chip">Tasting</span>
+              <div class="chips" aria-label="Butterfly Tour tags">
+                <span class="chip">Wildlife</span>
+                <span class="chip">Easy</span>
+                <span class="chip">Kids</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 09 -->
+          <article class="act" aria-label="Orchid Garden Tour">
+            <div class="actTop">
+              <div class="avatar">
+                <img src="/assets/images/pages/activities/MBW-Activities-7-OrchidGardenTour.jpg" alt="Orchid garden tour in Mindo, Ecuador" loading="lazy">
+              </div>
+              <div class="actMeta">
+                <p class="actTitle">Orchid Garden Tour</p>
+                <p class="actSub">Discover stunning native orchids and learn the stories behind rare blooms. A calm, beautiful visit for nature and photography lovers.</p>
+              </div>
+            </div>
+            <div class="actBody">
+              <div class="chips" aria-label="Orchid Garden Tour tags">
+                <span class="chip">Nature</span>
+                <span class="chip">Relaxed</span>
+                <span class="chip">Photography</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 10 -->
+          <article class="act" aria-label="Frog Concert">
+            <div class="actTop">
+              <div class="avatar">
+                <img src="/assets/images/pages/activities/MBW-Activities-4-FrogConcert.jpg" alt="Frog concert night tour in Mindo, Ecuador" loading="lazy">
+              </div>
+              <div class="actMeta">
+                <p class="actTitle">Frog Concert</p>
+                <p class="actSub">Explore the cloud forest at night and listen to the rainforest come alive. Spot frogs, insects, and other nocturnal surprises with a guide.</p>
+              </div>
+            </div>
+            <div class="actBody">
+              <div class="chips" aria-label="Frog Concert tags">
+                <span class="chip">Night</span>
+                <span class="chip">Wildlife</span>
+                <span class="chip">Guided</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 11 -->
+          <article class="act" aria-label="Tubing">
+            <div class="actTop">
+              <div class="avatar">
+                <img src="/assets/images/pages/activities/MBW-Activities-19-Tubing.jpg" alt="Tubing in Mindo, Ecuador" loading="lazy">
+              </div>
+              <div class="actMeta">
+                <p class="actTitle">Tubing</p>
+                <p class="actSub">Float down the river on an easygoing ride with optional faster sections. A fun water activity that keeps the whole group smiling.</p>
+              </div>
+            </div>
+            <div class="actBody">
+              <div class="chips" aria-label="Tubing tags">
+                <span class="chip">Water</span>
+                <span class="chip">Fun</span>
+                <span class="chip">Group</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 12 -->
+          <article class="act" aria-label="Rafting">
+            <div class="actTop">
+              <div class="avatar">
+                <img src="/assets/images/pages/activities/MBW-Activities-15-Rafting.jpg" alt="Rafting in Mindo, Ecuador" loading="lazy">
+              </div>
+              <div class="actMeta">
+                <p class="actTitle">Rafting</p>
+                <p class="actSub">Paddle exciting rapids surrounded by lush green canyon walls. Guided and safety-focused, with options for different thrill levels.</p>
+              </div>
+            </div>
+            <div class="actBody">
+              <div class="chips" aria-label="Rafting tags">
+                <span class="chip">Adrenaline</span>
+                <span class="chip">Water</span>
+                <span class="chip">Guided</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 13 -->
+          <article class="act" aria-label="Canyoning">
+            <div class="actTop">
+              <div class="avatar">
+                <img src="/assets/images/pages/activities/MBW-Activities-16-Canyoning.jpg" alt="Canyoning in Mindo, Ecuador" loading="lazy">
+              </div>
+              <div class="actMeta">
+                <p class="actTitle">Canyoning</p>
+                <p class="actSub">Rappel down waterfalls and splash into natural pools in a full-body adventure. Best for thrill-seekers who want the real rush.</p>
+              </div>
+            </div>
+            <div class="actBody">
+              <div class="chips" aria-label="Canyoning tags">
+                <span class="chip">Extreme</span>
+                <span class="chip">Waterfalls</span>
+                <span class="chip">Adrenaline</span>
               </div>
             </div>
           </article>
 
           <!-- 14 -->
-          <article class="act" aria-label="Activity 14">
+          <article class="act" aria-label="Night Walk">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg" alt="Activity image placeholder 14">
+                <img src="/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg" alt="Night walk in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Night Walk</p>
-                <p class="actSub">Step into the magic of the cloud forest at night!
-Discover frogs, snakes, insects, and even glowing wood on this 1-hour guided night walk.</p>
+                <p class="actSub">A guided evening walk to spot frogs, insects, and other nocturnal life. Short, fascinating, and great for curious travelers.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 14 tags">
-                <span class="chip">Chocolate</span>
-                <span class="chip">Culture</span>
+              <div class="chips" aria-label="Night Walk tags">
+                <span class="chip">Night</span>
+                <span class="chip">Nature</span>
+                <span class="chip">Easy</span>
               </div>
             </div>
           </article>
 
           <!-- 15 -->
-          <article class="act" aria-label="Activity 15">
+          <article class="act" aria-label="Paintball">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-10-PaintBall.jpg" alt="Activity image placeholder 15">
+                <img src="/assets/images/pages/activities/MBW-Activities-10-PaintBall.jpg" alt="Paintball in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Paintball</p>
-                <p class="actSub">Gear up for an adrenaline rush in the Mindo forest! With paintball guns, helmets, and 100 rounds included, challenge your friends or family on a battlefield full of obstacles. Fun, teamwork, and action await!</p>
+                <p class="actSub">Team up and battle it out in a forest arena with obstacles and strategy. A high-energy option for friends and groups.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 15 tags">
-                <span class="chip">Tubing</span>
-                <span class="chip">Water</span>
+              <div class="chips" aria-label="Paintball tags">
+                <span class="chip">Team</span>
+                <span class="chip">Adrenaline</span>
+                <span class="chip">Groups</span>
               </div>
             </div>
           </article>
 
           <!-- 16 -->
-          <article class="act" aria-label="Activity 16">
+          <article class="act" aria-label="Horseback Riding">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-11-HorsebackRiding.jpg" alt="Activity image placeholder 16">
+                <img src="/assets/images/pages/activities/MBW-Activities-11-HorsebackRiding.jpg" alt="Horseback riding in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Horseback Riding</p>
-                <p class="actSub">Explore Mindo’s cloud forest the classic way—on horseback! Ride along ecological trails, rivers, and waterfalls, with tours lasting from one hour to a full day. A perfect mix of nature, adventure, and relaxation.</p>
+                <p class="actSub">Ride along rivers, trails, and viewpoints at a calm pace. A peaceful way to experience the landscape with flexible durations.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 16 tags">
-                <span class="chip">Waterfalls</span>
+              <div class="chips" aria-label="Horseback Riding tags">
+                <span class="chip">Relaxed</span>
                 <span class="chip">Scenic</span>
+                <span class="chip">Nature</span>
               </div>
             </div>
           </article>
 
           <!-- 17 -->
-          <article class="act" aria-label="Activity 17">
+          <article class="act" aria-label="Mountain Biking">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-20-MountainBiking.jpg" alt="Activity image placeholder 17">
+                <img src="/assets/images/pages/activities/MBW-Activities-20-MountainBiking.jpg" alt="Mountain biking in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Mountain Biking</p>
-                <p class="actSub">Pedal through cloud forest trails, rivers, and breathtaking Andean landscapes on our mountain biking tours.
-From short rides to epic circuits, every route is guided, adventurous, and unforgettable.</p>
+                <p class="actSub">Pedal through forest trails and rolling hills with a guide and route options. Great for active travelers who want to explore more.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 17 tags">
-                <span class="chip">Night walk</span>
-                <span class="chip">Wildlife</span>
+              <div class="chips" aria-label="Mountain Biking tags">
+                <span class="chip">Active</span>
+                <span class="chip">Outdoor</span>
+                <span class="chip">Scenic</span>
               </div>
             </div>
           </article>
 
           <!-- 18 -->
-          <article class="act" aria-label="Activity 18">
+          <article class="act" aria-label="Double Extreme Swing">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-2-Double-Extreme-Swing.jpg" alt="Activity image placeholder 18">
+                <img src="/assets/images/pages/activities/MBW-Activities-2-Double-Extreme-Swing.jpg" alt="Double extreme swing in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Double Extreme Swing</p>
-                <p class="actSub">Take the leap on Mindo’s Double Extreme Swing! Soar up to 45 meters into the cloud forest, with helmets, harnesses, and guides ensuring a safe adrenaline rush.</p>
+                <p class="actSub">Soar high over the forest on a thrilling swing with full safety gear and guides. A quick, unforgettable adrenaline hit.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 18 tags">
-                <span class="chip">Photography</span>
-                <span class="chip">Private</span>
+              <div class="chips" aria-label="Double Extreme Swing tags">
+                <span class="chip">Adrenaline</span>
+                <span class="chip">Views</span>
+                <span class="chip">Must-Do</span>
               </div>
             </div>
           </article>
 
           <!-- 19 -->
-          <article class="act" aria-label="Activity 19">
+          <article class="act" aria-label="Sky Bike">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-17-ExtremeBike.jpg" alt="Activity image placeholder 19">
+                <img src="/assets/images/pages/activities/MBW-Activities-17-ExtremeBike.jpg" alt="Sky bike in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Sky Bike</p>
-                <p class="actSub">Soar above the forest on Mindo’s Sky Ride! Pedal a suspended bicycle along a 400-meter cable for the ultimate mix of adventure and stunning nature views.</p>
+                <p class="actSub">Pedal a suspended bike along a cable for an exciting view of the canopy. A fun mix of adventure and photos.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 19 tags">
-                <span class="chip">Custom</span>
-                <span class="chip">Flexible</span>
+              <div class="chips" aria-label="Sky Bike tags">
+                <span class="chip">Adventure</span>
+                <span class="chip">Views</span>
+                <span class="chip">Unique</span>
               </div>
             </div>
           </article>
 
           <!-- 20 -->
-          <article class="act" aria-label="Activity 20">
+          <article class="act" aria-label="Sky Ride">
             <div class="actTop">
               <div class="avatar">
-                <img src="/assets/images/pages/activities/MBW-Activities-6-SkyRide.jpg" alt="Activity image placeholder 20">
+                <img src="/assets/images/pages/activities/MBW-Activities-6-SkyRide.jpg" alt="Sky ride in Mindo, Ecuador" loading="lazy">
               </div>
               <div class="actMeta">
                 <p class="actTitle">Sky Ride</p>
-                <p class="actSub">Ride high above the cloud forest on Mindo’s thrilling double sky bike! Pedal 400 meters round-trip with a friend and take in breathtaking views from the treetops.
-Adventure and scenery all in one!</p>
+                <p class="actSub">Ride above the forest and enjoy panoramic treetop views with a partner. A safe, scenic highlight that is great for couples and friends.</p>
               </div>
             </div>
             <div class="actBody">
-              <div class="chips" aria-label="Activity 20 tags">
+              <div class="chips" aria-label="Sky Ride tags">
+                <span class="chip">Scenic</span>
+                <span class="chip">Pairs</span>
                 <span class="chip">Easy</span>
-                <span class="chip">Nature</span>
               </div>
             </div>
           </article>
@@ -717,11 +878,81 @@ Adventure and scenery all in one!</p>
         </div>
       </section>
     </main>
-
-    <!-- Shared footer mount -->
-    <div id="siteFooter"></div>
   </div>
 
+  <!-- Shared footer mount (global) -->
+  <div id="siteFooter"></div>
+
+  <!-- Global site behavior -->
   <script src="/assets/js/site.js"></script>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const slides = [
+        { src: "/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg", alt: "Birdwatching in Mindo, Ecuador", title: "Birdwatching", sub: "Guided cloud forest moments" },
+        { src: "/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg", alt: "Waterfall tour in Mindo, Ecuador", title: "Waterfalls", sub: "Cable car + lush trails" },
+        { src: "/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg", alt: "Ziplining in Mindo, Ecuador", title: "Ziplining", sub: "Treetop views + adrenaline" },
+        { src: "/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg", alt: "Chocolate tour in Mindo, Ecuador", title: "Chocolate Tour", sub: "Cacao to tasting" },
+        { src: "/assets/images/pages/activities/MBW-Activities-16-Canyoning.jpg", alt: "Canyoning in Mindo, Ecuador", title: "Canyoning", sub: "Waterfalls + rappels" }
+      ];
+
+      const img = document.getElementById("carImg");
+      const title = document.getElementById("carTitle");
+      const sub = document.getElementById("carSub");
+      const count = document.getElementById("carCount");
+      const prev = document.getElementById("carPrev");
+      const next = document.getElementById("carNext");
+      const dots = Array.from(document.querySelectorAll(".dot"));
+
+      if (!img || !title || !sub || !count || !prev || !next) return;
+
+      let i = 0;
+      let timer = null;
+      const intervalMs = 2500;
+
+      function setSlide(idx) {
+        i = (idx % slides.length + slides.length) % slides.length;
+        const s = slides[i];
+
+        img.src = s.src;
+        img.alt = s.alt;
+        title.textContent = s.title;
+        sub.textContent = " " + s.sub;
+        count.textContent = (i + 1) + " / " + slides.length;
+
+        dots.forEach((d) => d.classList.remove("is-active"));
+        const activeDot = dots.find(d => String(d.getAttribute("data-dot")) === String(i));
+        if (activeDot) activeDot.classList.add("is-active");
+      }
+
+      function start() {
+        stop();
+        timer = window.setInterval(() => setSlide(i + 1), intervalMs);
+      }
+
+      function stop() {
+        if (timer) {
+          window.clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      prev.addEventListener("click", () => { setSlide(i - 1); start(); });
+      next.addEventListener("click", () => { setSlide(i + 1); start(); });
+
+      const carousel = img.closest(".carousel");
+      if (carousel) {
+        carousel.addEventListener("mouseenter", stop);
+        carousel.addEventListener("mouseleave", start);
+        carousel.addEventListener("focusin", stop);
+        carousel.addEventListener("focusout", start);
+      }
+
+      setSlide(0);
+      start();
+    })();
+  </script>
 </body>
 </html>
