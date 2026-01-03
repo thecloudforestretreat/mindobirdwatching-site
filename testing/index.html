@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Activities | Mindo Bird Watching</title>
   <meta name="description" content="Explore unforgettable activities in Mindo, Ecuador-from birdwatching and waterfalls to ziplining, rafting, wildlife, and family-friendly nature experiences." />
-  <!-- Canonical -->
   <link rel="canonical" href="https://mindobirdwatching.com/activities/" />
-  <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
   <meta property="og:title" content="Activities | Mindo Bird Watching" />
@@ -18,7 +16,6 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Mindo Bird Watching activities in the Ecuadorian cloud forest" />
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Activities | Mindo Bird Watching" />
   <meta name="twitter:description" content="Discover adventure, wildlife, and family-friendly activities in Mindo's cloud forest." />
@@ -26,7 +23,6 @@
   <link rel="alternate" hreflang="en" href="/activities/" />
   <link rel="alternate" hreflang="es" href="/es/actividades/" />
   <link rel="alternate" hreflang="x-default" href="/activities/" />
-  <!-- Favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -34,42 +30,38 @@
   <meta name="theme-color" content="#034EA2">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
-  <!-- Global header/footer injector -->
   <script src="/assets/js/includes.js" defer></script>
   <style>
-    /* =========================
-       Page-only styles (main content only)
-       ========================= */
-
-    .page { margin-top: 18px; padding: 26px; }
-    .page.card{
+    /* Page-only styles scoped to this page so the global header/footer never change */
+    body.activities-page .page { margin-top: 18px; padding: 26px; }
+    body.activities-page .page.card{
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
 
-    .hero{
+    body.activities-page .hero{
       display:grid;
       grid-template-columns: 1.08fr .92fr;
       gap: 16px;
       align-items: start;
     }
 
-    .hero h1{
+    body.activities-page .hero h1{
       margin: 0 0 8px;
       letter-spacing: -0.02em;
       line-height: 1.1;
     }
 
-    .hero p{
+    body.activities-page .hero p{
       margin: 0;
       max-width: 92ch;
       color: var(--ink);
       line-height: 1.7;
     }
 
-    .heroCtas{
+    body.activities-page .heroCtas{
       margin-top: 14px;
       display:flex;
       gap: 10px;
@@ -77,13 +69,13 @@
       align-items:center;
     }
 
-    .heroRight{
+    body.activities-page .heroRight{
       display:grid;
       gap: 12px;
       align-content: start;
     }
 
-    .heroCard{
+    body.activities-page .heroCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -91,7 +83,7 @@
       padding: 14px;
     }
 
-    .heroCard h2{
+    body.activities-page .heroCard h2{
       margin: 0 0 10px;
       font-family: var(--font-head);
       color: var(--forest);
@@ -99,15 +91,15 @@
       font-size: 18px;
     }
 
-    .heroList{
+    body.activities-page .heroList{
       margin: 0;
       padding-left: 18px;
       color: var(--ink);
       line-height: 1.6;
     }
 
-    /* Carousel */
-    .carousel{
+    /* Carousel (scoped) */
+    body.activities-page .carousel{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -116,21 +108,21 @@
       position: relative;
     }
 
-    .carouselViewport{
+    body.activities-page .carouselViewport{
       position: relative;
       width: 100%;
       height: 240px;
       background: rgba(255,255,255,.55);
     }
 
-    .carouselImg{
+    body.activities-page .carouselImg{
       width: 100%;
       height: 100%;
       display: block;
       object-fit: cover;
     }
 
-    .carouselBtns{
+    body.activities-page .carouselBtns{
       position: absolute;
       inset: 0;
       display: flex;
@@ -140,7 +132,7 @@
       padding: 10px;
     }
 
-    .cBtn{
+    body.activities-page .cBtn{
       pointer-events: auto;
       width: 44px;
       height: 44px;
@@ -154,10 +146,10 @@
       cursor: pointer;
       user-select: none;
     }
-    .cBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
-    .cBtn svg{ width: 20px; height: 20px; }
+    body.activities-page .cBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    body.activities-page .cBtn svg{ width: 20px; height: 20px; }
 
-    .carouselDots{
+    body.activities-page .carouselDots{
       position: absolute;
       left: 0;
       right: 0;
@@ -168,7 +160,7 @@
       pointer-events: none;
     }
 
-    .dot{
+    body.activities-page .dot{
       width: 8px;
       height: 8px;
       border-radius: 999px;
@@ -177,13 +169,13 @@
       box-shadow: var(--shadow);
       opacity: .75;
     }
-    .dot.is-active{
+    body.activities-page .dot.is-active{
       opacity: 1;
       background: rgba(13,89,37,.18);
       border-color: rgba(13,89,37,.35);
     }
 
-    .carouselCap{
+    body.activities-page .carouselCap{
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       color: var(--muted);
@@ -197,15 +189,15 @@
       flex-wrap: wrap;
     }
 
-    .carouselCap strong{ color: var(--ink); }
+    body.activities-page .carouselCap strong{ color: var(--ink); }
 
-    .section{
+    body.activities-page .section{
       margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
 
-    .sectionHead{
+    body.activities-page .sectionHead{
       display:flex;
       align-items:flex-end;
       justify-content: space-between;
@@ -214,7 +206,7 @@
       margin-bottom: 10px;
     }
 
-    .sectionHead h2{
+    body.activities-page .sectionHead h2{
       margin: 0;
       font-family: var(--font-head);
       color: var(--forest);
@@ -222,20 +214,14 @@
       font-size: 20px;
     }
 
-    /* Activity cards
-       Goal: visual consistency.
-       Strategy:
-       - Keep titles and descriptions at consistent visual height using line clamp + min-height
-       - Push chips to the bottom so rows align even if copy differs slightly
-       - Remove the image outer line by removing avatar border/shadow
-    */
-    .grid{
+    /* Activity cards (scoped) */
+    body.activities-page .grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
     }
 
-    .act{
+    body.activities-page .act{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -246,15 +232,14 @@
       min-height: 0;
     }
 
-    .actTop{
+    body.activities-page .actTop{
       display:flex;
       gap: 14px;
       padding: 14px 14px 10px;
       align-items: flex-start;
     }
 
-    /* Remove the outer line around activity images (desktop-only issue) */
-    .avatar{
+    body.activities-page .avatar{
       width: 140px;
       height: 140px;
       border-radius: 18px;
@@ -265,21 +250,21 @@
       flex: 0 0 auto;
     }
 
-    .avatar img{
+    body.activities-page .avatar img{
       width: 100%;
       height: 100%;
       object-fit: cover;
       display:block;
     }
 
-    .actMeta{
+    body.activities-page .actMeta{
       min-width: 0;
       flex: 1 1 auto;
       display:flex;
       flex-direction: column;
     }
 
-    .actTitle{
+    body.activities-page .actTitle{
       margin: 0;
       font-weight: 950;
       color: var(--ink);
@@ -294,7 +279,7 @@
       min-height: calc(1.15em * 2);
     }
 
-    .actSub{
+    body.activities-page .actSub{
       margin: 8px 0 0;
       color: var(--muted);
       font-size: 13.5px;
@@ -307,14 +292,14 @@
       min-height: calc(1.55em * 5);
     }
 
-    .actBody{
+    body.activities-page .actBody{
       margin-top: auto;
       padding: 0 14px 14px;
       display:flex;
       justify-content: center;
     }
 
-    .chips{
+    body.activities-page .chips{
       display:flex;
       flex-wrap:wrap;
       gap: 8px;
@@ -323,7 +308,7 @@
       max-width: 520px;
     }
 
-    .chip{
+    body.activities-page .chip{
       display:inline-flex;
       align-items:center;
       padding: 7px 10px;
@@ -338,7 +323,7 @@
       white-space: nowrap;
     }
 
-    .ctaStrip{
+    body.activities-page .ctaStrip{
       margin-top: 14px;
       display:flex;
       flex-wrap:wrap;
@@ -352,14 +337,14 @@
       padding: 14px;
     }
 
-    .ctaStrip p{
+    body.activities-page .ctaStrip p{
       margin: 0;
       color: var(--ink);
       line-height: 1.6;
       max-width: 75ch;
     }
 
-    .ctaStrip .actions{
+    body.activities-page .ctaStrip .actions{
       display:flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -367,40 +352,39 @@
     }
 
     @media (max-width: 980px){
-      .grid{ grid-template-columns: repeat(2, 1fr); }
+      body.activities-page .grid{ grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .grid{ grid-template-columns: repeat(2, 1fr); }
+      body.activities-page .hero{ grid-template-columns: 1fr; }
+      body.activities-page .grid{ grid-template-columns: repeat(2, 1fr); }
 
-      .actTop{ padding: 12px 12px 8px; gap: 12px; }
-      .actSub{ margin-top: 6px; -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
-      .actBody{ padding: 0 12px 12px; }
-      .chips{ max-width: 100%; }
+      body.activities-page .actTop{ padding: 12px 12px 8px; gap: 12px; }
+      body.activities-page .actSub{ margin-top: 6px; -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
+      body.activities-page .actBody{ padding: 0 12px 12px; }
+      body.activities-page .chips{ max-width: 100%; }
 
-      .avatar{ width: 80px; height: 80px; border-radius: 999px; }
-      .carouselViewport{ height: 220px; }
+      body.activities-page .avatar{ width: 80px; height: 80px; border-radius: 999px; }
+      body.activities-page .carouselViewport{ height: 220px; }
     }
 
     @media (max-width: 560px){
-      .grid{ grid-template-columns: 1fr; }
+      body.activities-page .grid{ grid-template-columns: 1fr; }
 
-      .actTop{ padding: 12px 12px 6px; }
-      .actSub{ -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
-      .actBody{ padding: 0 12px 12px; }
-      .chip{ padding: 7px 10px; }
+      body.activities-page .actTop{ padding: 12px 12px 6px; }
+      body.activities-page .actSub{ -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
+      body.activities-page .actBody{ padding: 0 12px 12px; }
+      body.activities-page .chip{ padding: 7px 10px; }
     }
   </style>
 </head>
-<body>
-  <!-- Shared header mount (global) -->
+<body class="activities-page">
   <div id="siteHeader"></div>
   <div class="container">
     <main class="page card" aria-label="Activities">
       <section class="hero" aria-label="Activities intro">
         <div>
-          <h1>Discover Mindo's Best Adventures 🌿✨</h1>
+          <h1>Discover Mindo's Best Adventures</h1>
       <p>
         At Mindo Bird Watching, our passion starts with the incredible birdlife of the cloud forest, home to colorful toucans,
         countless hummingbirds, and the iconic Andean Cock-of-the-Rock.
@@ -411,7 +395,7 @@
         for every kind of traveler.
       </p>
       <p style="margin-top:10px;">
-        Explore all our activities below and plan your perfect mix of birdwatching, adventure, and discovery in 📍Mindo, Ecuador.
+        Explore all our activities below and plan your perfect mix of birdwatching, adventure, and discovery in Mindo, Ecuador.
       </p>
 
       <div class="heroCtas" aria-label="Primary actions">
@@ -468,7 +452,6 @@
     </div>
 
     <div class="grid" style="margin-top:12px;" aria-label="Activities list">
-      <!-- 01 -->
       <article class="act" aria-label="Bird Watching">
         <div class="actTop">
           <div class="avatar">
@@ -488,7 +471,6 @@
         </div>
       </article>
 
-      <!-- 02 -->
       <article class="act" aria-label="Waterfall Tour">
         <div class="actTop">
           <div class="avatar">
@@ -508,7 +490,6 @@
         </div>
       </article>
 
-      <!-- 03 -->
       <article class="act" aria-label="Nambillo Waterfall">
         <div class="actTop">
           <div class="avatar">
@@ -528,7 +509,6 @@
         </div>
       </article>
 
-      <!-- 04 -->
       <article class="act" aria-label="Quad Tour">
         <div class="actTop">
           <div class="avatar">
@@ -548,7 +528,6 @@
         </div>
       </article>
 
-      <!-- 05 -->
       <article class="act" aria-label="Ziplining">
         <div class="actTop">
           <div class="avatar">
@@ -568,7 +547,6 @@
         </div>
       </article>
 
-      <!-- 06 -->
       <article class="act" aria-label="Chocolate Tour">
         <div class="actTop">
           <div class="avatar">
@@ -588,7 +566,6 @@
         </div>
       </article>
 
-      <!-- 07 -->
       <article class="act" aria-label="Coffee Tour">
         <div class="actTop">
           <div class="avatar">
@@ -608,7 +585,6 @@
         </div>
       </article>
 
-      <!-- 08 -->
       <article class="act" aria-label="Butterfly Tour">
         <div class="actTop">
           <div class="avatar">
@@ -628,7 +604,6 @@
         </div>
       </article>
 
-      <!-- 09 -->
       <article class="act" aria-label="Orchid Garden Tour">
         <div class="actTop">
           <div class="avatar">
@@ -648,7 +623,6 @@
         </div>
       </article>
 
-      <!-- 10 -->
       <article class="act" aria-label="Frog Concert">
         <div class="actTop">
           <div class="avatar">
@@ -668,7 +642,6 @@
         </div>
       </article>
 
-      <!-- 11 -->
       <article class="act" aria-label="Tubing">
         <div class="actTop">
           <div class="avatar">
@@ -688,7 +661,6 @@
         </div>
       </article>
 
-      <!-- 12 -->
       <article class="act" aria-label="Rafting">
         <div class="actTop">
           <div class="avatar">
@@ -708,7 +680,6 @@
         </div>
       </article>
 
-      <!-- 13 -->
       <article class="act" aria-label="Canyoning">
         <div class="actTop">
           <div class="avatar">
@@ -728,7 +699,6 @@
         </div>
       </article>
 
-      <!-- 14 -->
       <article class="act" aria-label="Night Walk">
         <div class="actTop">
           <div class="avatar">
@@ -748,7 +718,6 @@
         </div>
       </article>
 
-      <!-- 15 -->
       <article class="act" aria-label="Paintball">
         <div class="actTop">
           <div class="avatar">
@@ -768,7 +737,6 @@
         </div>
       </article>
 
-      <!-- 16 -->
       <article class="act" aria-label="Horseback Riding">
         <div class="actTop">
           <div class="avatar">
@@ -788,7 +756,6 @@
         </div>
       </article>
 
-      <!-- 17 -->
       <article class="act" aria-label="Mountain Biking">
         <div class="actTop">
           <div class="avatar">
@@ -808,7 +775,6 @@
         </div>
       </article>
 
-      <!-- 18 -->
       <article class="act" aria-label="Double Extreme Swing">
         <div class="actTop">
           <div class="avatar">
@@ -828,7 +794,6 @@
         </div>
       </article>
 
-      <!-- 19 -->
       <article class="act" aria-label="Sky Bike">
         <div class="actTop">
           <div class="avatar">
@@ -848,7 +813,6 @@
         </div>
       </article>
 
-      <!-- 20 -->
       <article class="act" aria-label="Sky Ride">
         <div class="actTop">
           <div class="avatar">
@@ -882,9 +846,7 @@
   </section>
 </main>
   </div>
-  <!-- Shared footer mount (global) -->
   <div id="siteFooter"></div>
-  <!-- Global site behavior -->
   <script src="/assets/js/site.js"></script>
   <script>
     (function () {
@@ -904,7 +866,7 @@
       const count = document.getElementById("carCount");
       const prev = document.getElementById("carPrev");
       const next = document.getElementById("carNext");
-      const dots = Array.from(document.querySelectorAll(".dot"));
+      const dots = Array.from(document.querySelectorAll("body.activities-page .dot"));
 
       if (!img || !title || !sub || !count || !prev || !next) return;
 
