@@ -95,13 +95,6 @@
       object-fit: cover;
       display: block;
     }
-    .slotCap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      font-size: 13px;
-      color: var(--muted);
-      background: rgba(255,255,255,.55);
-    }
 
     .btnRow{
       margin-top: 14px;
@@ -144,9 +137,9 @@
       will-change: transform;
     }
     .mbwSlide{ flex: 0 0 100%; width: 100%; }
+
     .mbwSlide img{
       width: 100%;
-      height: 420px;
       display: block;
       object-fit: cover;
     }
@@ -192,7 +185,7 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,.78);
       z-index: 2;
-      pointer-events: none; /* never block taps */
+      pointer-events: none;
     }
     .mbwDot{
       width: 8px;
@@ -202,7 +195,18 @@
     }
     .mbwDot.is-active{ background: rgba(13,89,37,.65); }
 
-    /* Tall (9:16) carousel variant */
+    /* 9:16 strict height (keeps carousel + video same height) */
+    .frame916{
+      aspect-ratio: 9 / 16;
+      width: 100%;
+      background: rgba(255,255,255,.55);
+    }
+    .frame916 iframe{
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
     .mbwCarousel.isTall .mbwCarouselViewport{
       aspect-ratio: 9 / 16;
       background: rgba(255,255,255,.55);
@@ -211,32 +215,34 @@
       height: 100%;
     }
 
-    /* Videos section grid (left carousel + right video) */
+    /* Media grid (left gallery + right video) */
     .videoGrid{
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
       align-items: start;
     }
-    .video.card{
+
+    .mediaCard{
       background: rgba(255,255,255,.65);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-    .video .frame{
-      aspect-ratio: 9 / 16;
-      width: 100%;
+    .mediaCard .head{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
       background: rgba(255,255,255,.55);
     }
-    .video iframe{
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
+    .mediaCard .head h3{
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
     }
-    .video .cap{
+    .mediaCard .cap{
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       font-size: 13px;
@@ -246,7 +252,6 @@
 
     @media (max-width: 900px){
       .hero{ grid-template-columns: 1fr; }
-      .mbwSlide img{ height: 280px; }
       .videoGrid{ grid-template-columns: 1fr; }
     }
 
@@ -308,60 +313,19 @@
         </aside>
       </section>
 
-      <section class="section" aria-label="Photo carousel section">
-        <h2>Full-Day Tour Gallery</h2>
-        <p class="hint">Autoplays every 2.5 seconds. You can also use the arrows.</p>
+      <!-- Removed: Horizontal "Full-Day Tour Gallery" carousel section -->
 
-        <div class="mbwCarousel" data-autoplay="true" data-interval="2500" aria-label="Image carousel">
-          <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous image">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <div class="mbwCarouselViewport" role="region" aria-label="Carousel viewport">
-            <div class="mbwCarouselTrack">
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/tours/MBW-Assets-27-Tours-Full-Day.jpg" alt="Full day tour photo 1 placeholder" />
-                <div class="label"></div>
-              </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/tours/MBW-Assets-28-Tours-Full-Day.jpg" alt="Full day tour photo 2 placeholder" />
-                <div class="label"></div>
-              </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/tours/MBW-Assets-29-Tours-Full-Day.jpg" alt="Full day tour photo 3 placeholder" />
-                <div class="label"></div>
-              </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/tours/MBW-Assets-30-Tours-Full-Day.jpg" alt="Full day tour photo 4 placeholder" />
-                <div class="label"></div>
-              </div>
-              <div class="mbwSlide">
-                <img src="/assets/images/pages/tours/MBW-Assets-31-Tours-Full-Day.jpg" alt="Full day tour photo 5 placeholder" />
-                <div class="label"></div>
-              </div>
-            </div>
-          </div>
-
-          <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Next image">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <div class="mbwDots" aria-label="Carousel position indicators"></div>
-        </div>
-      </section>
-
-      <section class="section" aria-label="Videos section">
-        <h2>Videos</h2>
-        <p class="hint">Scroll the carousel on the left and watch the short on the right.</p>
+      <section class="section" aria-label="Gallery and video section">
+        <p class="hint">Swipe the gallery on the left and watch the short on the right.</p>
 
         <div class="videoGrid" aria-label="Media grid">
-          <!-- Left: 9:16 image carousel (replaces previous Video 1 box) -->
-          <div class="video card" aria-label="Full day vertical carousel">
-            <div class="frame">
+          <!-- Left: 9:16 image carousel WITH heading -->
+          <article class="mediaCard" aria-label="Full-Day Tour Gallery">
+            <div class="head">
+              <h3>Full-Day Tour Gallery</h3>
+            </div>
+
+            <div class="frame916">
               <div class="mbwCarousel isTall" data-autoplay="true" data-interval="2400" aria-label="Full day vertical carousel">
                 <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous image">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -423,12 +387,17 @@
                 <div class="mbwDots" aria-label="Carousel position indicators"></div>
               </div>
             </div>
-            <div class="cap">Full-day tour moments (vertical gallery)</div>
-          </div>
 
-          <!-- Right: YouTube short (9:16) -->
-          <div class="video card" aria-label="YouTube short">
-            <div class="frame">
+            <div class="cap">Full-day tour moments (vertical gallery)</div>
+          </article>
+
+          <!-- Right: YouTube short WITH heading -->
+          <article class="mediaCard" aria-label="Videos">
+            <div class="head">
+              <h3>Videos</h3>
+            </div>
+
+            <div class="frame916">
               <iframe width="487" height="866"
                 src="https://www.youtube.com/embed/53B0Thmq9AQ"
                 title="Toucans in the Wild! Birding at a Secret Spot in Mindo, Ecuador"
@@ -437,8 +406,9 @@
                 referrerpolicy="strict-origin-when-cross-origin"
                 allowfullscreen></iframe>
             </div>
+
             <div class="cap">Toucans in the Wild! Birding at a Secret Spot in Mindo, Ecuador</div>
-          </div>
+          </article>
         </div>
       </section>
     </main>
