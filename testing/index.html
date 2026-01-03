@@ -222,11 +222,12 @@
       font-size: 20px;
     }
 
-    /* Activity cards (UI/UX alignment fixes)
-       Goals:
-       - Remove excess dead space (esp. under image / between text and tags)
-       - Center tags cleanly inside the card on desktop + mobile
-       - Keep spacing consistent without forcing tall empty cards
+    /* Activity cards
+       Goal: visual consistency.
+       Strategy:
+       - Keep titles and descriptions at consistent visual height using line clamp + min-height
+       - Push chips to the bottom so rows align even if copy differs slightly
+       - Remove the image outer line by removing avatar border/shadow
     */
     .grid{
       display:grid;
@@ -252,9 +253,7 @@
       align-items: flex-start;
     }
 
-    /* Remove the outer line around activity images (desktop-only issue)
-       This was caused by the avatar border/shadow. Keep clean edge with overflow hidden.
-    */
+    /* Remove the outer line around activity images (desktop-only issue) */
     .avatar{
       width: 140px;
       height: 140px;
@@ -276,6 +275,8 @@
     .actMeta{
       min-width: 0;
       flex: 1 1 auto;
+      display:flex;
+      flex-direction: column;
     }
 
     .actTitle{
@@ -285,6 +286,12 @@
       font-size: 16px;
       letter-spacing: -0.01em;
       line-height: 1.15;
+
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      min-height: calc(1.15em * 2);
     }
 
     .actSub{
@@ -292,9 +299,16 @@
       color: var(--muted);
       font-size: 13.5px;
       line-height: 1.55;
+
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 5;
+      overflow: hidden;
+      min-height: calc(1.55em * 5);
     }
 
     .actBody{
+      margin-top: auto;
       padding: 0 14px 14px;
       display:flex;
       justify-content: center;
@@ -361,7 +375,7 @@
       .grid{ grid-template-columns: repeat(2, 1fr); }
 
       .actTop{ padding: 12px 12px 8px; gap: 12px; }
-      .actSub{ margin-top: 6px; }
+      .actSub{ margin-top: 6px; -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
       .actBody{ padding: 0 12px 12px; }
       .chips{ max-width: 100%; }
 
@@ -373,6 +387,7 @@
       .grid{ grid-template-columns: 1fr; }
 
       .actTop{ padding: 12px 12px 6px; }
+      .actSub{ -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
       .actBody{ padding: 0 12px 12px; }
       .chip{ padding: 7px 10px; }
     }
@@ -461,7 +476,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Bird Watching</p>
-            <p class="actSub">Explore the cloud forest with expert local guides and spot toucans, hummingbirds, and rare specialties. A must-do for nature lovers of every level.</p>
+            <p class="actSub">Join a local guide on forest trails to spot toucans, hummingbirds, and rare endemics, with tips for photos and bird IDs along the way.</p>
           </div>
         </div>
         <div class="actBody">
@@ -481,7 +496,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Waterfall Tour</p>
-            <p class="actSub">Ride the iconic cable car and walk through lush trails to beautiful hidden falls. Easy, scenic, and perfect for photos and fresh air.</p>
+            <p class="actSub">Take the cable car then walk easy green trails to several waterfalls, with time for photos, river views, and a relaxed pace for families.</p>
           </div>
         </div>
         <div class="actBody">
@@ -501,7 +516,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Nambillo Waterfall</p>
-            <p class="actSub">Cool off in crystal-clear water with swimming, a natural rock slide, and optional jumps. A refreshing half-day adventure close to town.</p>
+            <p class="actSub">Swim in clear pools at Nambillo, try the natural rock slide, and enjoy optional jumps, a refreshing half day escape close to town.</p>
           </div>
         </div>
         <div class="actBody">
@@ -521,7 +536,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Quad Tour</p>
-            <p class="actSub">Ride through forest trails, cross bridges, and splash by the river with a guide and full safety gear. Big fun in a short time.</p>
+            <p class="actSub">Ride an ATV through muddy forest tracks and river crossings with a guide and safety gear, fast fun with scenic stops and plenty of laughs.</p>
           </div>
         </div>
         <div class="actBody">
@@ -541,7 +556,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Ziplining</p>
-            <p class="actSub">Fly above the treetops on multiple lines with certified guides and safety equipment. The classic Mindo thrill with epic views.</p>
+            <p class="actSub">Glide on multiple canopy lines above the treetops with certified guides, a classic Mindo thrill with big views and smooth landings.</p>
           </div>
         </div>
         <div class="actBody">
@@ -561,7 +576,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Chocolate Tour</p>
-            <p class="actSub">See cacao transform into real chocolate, then enjoy tastings at the end. A fun, delicious experience that kids and adults love.</p>
+            <p class="actSub">Learn how cacao becomes chocolate, watch the process step by step, then finish with tastings that make this tour sweet for all ages.</p>
           </div>
         </div>
         <div class="actBody">
@@ -581,7 +596,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Coffee Tour</p>
-            <p class="actSub">Follow the journey from bean to cup with roasting and guided tasting. A relaxing, flavorful tour in the heart of the cloud forest.</p>
+            <p class="actSub">See beans roasted and brewed fresh, learn local growing basics, and enjoy a guided tasting that is calm, cozy, and full of aroma.</p>
           </div>
         </div>
         <div class="actBody">
@@ -601,7 +616,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Butterfly Tour</p>
-            <p class="actSub">Walk through a vibrant butterfly garden and see every stage of life up close. Gentle, colorful, and perfect for families.</p>
+            <p class="actSub">Walk through a colorful butterfly garden, see cocoons and newly emerged wings, and learn fun facts in an easy visit for families.</p>
           </div>
         </div>
         <div class="actBody">
@@ -621,7 +636,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Orchid Garden Tour</p>
-            <p class="actSub">Discover stunning native orchids and learn the stories behind rare blooms. A calm, beautiful visit for nature and photography lovers.</p>
+            <p class="actSub">Explore a quiet orchid garden with native blooms, learn what makes them unique, and enjoy a photo friendly stop in the cloud forest.</p>
           </div>
         </div>
         <div class="actBody">
@@ -641,7 +656,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Frog Concert</p>
-            <p class="actSub">Explore the cloud forest at night and listen to the rainforest come alive. Spot frogs, insects, and other nocturnal surprises with a guide.</p>
+            <p class="actSub">Join a night tour to hear the forest chorus and spot frogs and insects with a guide, a magical after dark experience in Mindo.</p>
           </div>
         </div>
         <div class="actBody">
@@ -661,7 +676,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Tubing</p>
-            <p class="actSub">Float down the river on an easygoing ride with optional faster sections. A fun water activity that keeps the whole group smiling.</p>
+            <p class="actSub">Float the river on an inner tube with gentle stretches and a few fun bumps, a chilled water ride that keeps groups smiling.</p>
           </div>
         </div>
         <div class="actBody">
@@ -681,7 +696,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Rafting</p>
-            <p class="actSub">Paddle exciting rapids surrounded by lush green canyon walls. Guided and safety-focused, with options for different thrill levels.</p>
+            <p class="actSub">Paddle lively rapids in a green canyon with trained guides and safety gear, choose your level and enjoy a true Mindo adventure.</p>
           </div>
         </div>
         <div class="actBody">
@@ -701,7 +716,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Canyoning</p>
-            <p class="actSub">Rappel down waterfalls and splash into natural pools in a full-body adventure. Best for thrill-seekers who want the real rush.</p>
+            <p class="actSub">Rappel down waterfalls into natural pools on a guided route, a high energy challenge for thrill seekers who want the full rush.</p>
           </div>
         </div>
         <div class="actBody">
@@ -721,7 +736,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Night Walk</p>
-            <p class="actSub">A guided evening walk to spot frogs, insects, and other nocturnal life. Short, fascinating, and great for curious travelers.</p>
+            <p class="actSub">Take a short evening walk to look for frogs, spiders, and glowing insects, an easy guided intro to Mindo after dark wildlife.</p>
           </div>
         </div>
         <div class="actBody">
@@ -741,7 +756,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Paintball</p>
-            <p class="actSub">Team up and battle it out in a forest arena with obstacles and strategy. A high-energy option for friends and groups.</p>
+            <p class="actSub">Play fast team matches in a forest field with obstacles and strategy, a great option for friends, parties, and competitive groups.</p>
           </div>
         </div>
         <div class="actBody">
@@ -761,7 +776,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Horseback Riding</p>
-            <p class="actSub">Ride along rivers, trails, and viewpoints at a calm pace. A peaceful way to experience the landscape with flexible durations.</p>
+            <p class="actSub">Ride gentle horses along rivers and countryside trails at your pace, a scenic and relaxing way to see more of the landscape.</p>
           </div>
         </div>
         <div class="actBody">
@@ -781,7 +796,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Mountain Biking</p>
-            <p class="actSub">Pedal through forest trails and rolling hills with a guide and route options. Great for active travelers who want to explore more.</p>
+            <p class="actSub">Bike dirt roads and forest paths with route options and a guide, ideal for active travelers who want fresh air and viewpoints.</p>
           </div>
         </div>
         <div class="actBody">
@@ -801,7 +816,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Double Extreme Swing</p>
-            <p class="actSub">Soar high over the forest on a thrilling swing with full safety gear and guides. A quick, unforgettable adrenaline hit.</p>
+            <p class="actSub">Swing out over the valley with epic forest views and full safety gear, a quick adrenaline hit that makes for amazing photos.</p>
           </div>
         </div>
         <div class="actBody">
@@ -821,7 +836,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Sky Bike</p>
-            <p class="actSub">Pedal a suspended bike along a cable for an exciting view of the canopy. A fun mix of adventure and photos.</p>
+            <p class="actSub">Pedal a suspended bike across a cable line for canopy views, a unique mix of fun and nerves with plenty of time for pictures.</p>
           </div>
         </div>
         <div class="actBody">
@@ -841,7 +856,7 @@
           </div>
           <div class="actMeta">
             <p class="actTitle">Sky Ride</p>
-            <p class="actSub">Ride above the forest and enjoy panoramic treetop views with a partner. A safe, scenic highlight that is great for couples and friends.</p>
+            <p class="actSub">Ride a seated zip style line with panoramic treetop views, a smooth and scenic highlight that works well for couples and friends.</p>
           </div>
         </div>
         <div class="actBody">
