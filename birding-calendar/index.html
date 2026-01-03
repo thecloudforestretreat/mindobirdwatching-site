@@ -3,22 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>Birding Calendar | Mindo Bird Watching</title>
-  <meta name="description" content="Birding calendar for 📍Mindo, Ecuador. Monthly visibility by species with categories and photo thumbnails." />
+  <meta name="description" content="Birding calendar for Mindo, Ecuador with monthly visibility by species, categories, and photo thumbnails to plan the best birdwatching targets." />
+
+  <link rel="canonical" href="https://mindobirdwatching.com/birding-calendar/" />
+
   <link rel="alternate" hreflang="en" href="/birding-calendar/" />
   <link rel="alternate" hreflang="es" href="/es/calendario-de-avistamiento/" />
   <link rel="alternate" hreflang="x-default" href="/birding-calendar/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Birding Calendar | Mindo Bird Watching" />
+  <meta property="og:description" content="Birding calendar for Mindo, Ecuador with monthly visibility by species, categories, and photo thumbnails to plan the best birdwatching targets." />
+  <meta property="og:url" content="https://mindobirdwatching.com/birding-calendar/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching birding calendar for Mindo, Ecuador" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Birding Calendar | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Birding calendar for Mindo, Ecuador with monthly visibility by species, categories, and photo thumbnails to plan the best birdwatching targets." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+
   <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+
   <!-- Global header/footer CSS (required) -->
   <link rel="stylesheet" href="/assets/css/header.css">
   <link rel="stylesheet" href="/assets/css/footer.css">
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/head.js" defer></script>
+
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -425,45 +450,47 @@
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-<main class="page card" aria-label="Birding calendar">
-  <div class="hero">
-    <div>
-      <h1>Birding Calendar</h1>
-      <p>
-        A quick month-by-month view of common target species around 📍Mindo, Ecuador.
-      </p>
-    </div>
 
-    <div class="statusRow" aria-label="Calendar controls">
-      <span class="pill" id="bcStatus">Loading calendar…</span>
-
-      <div class="filters" aria-label="Filters">
-        <div class="filterPill" aria-label="Category filter">
-          <label for="bcCategory">Category</label>
-          <select id="bcCategory">
-            <option value="all">All categories</option>
-          </select>
+    <main class="page card" aria-label="Birding calendar">
+      <div class="hero">
+        <div>
+          <h1>Birding Calendar</h1>
+          <p>
+            A quick month-by-month view of common target species around 📍Mindo, Ecuador.
+          </p>
         </div>
 
-        <div class="filterPill" aria-label="Search filter">
-          <label for="bcSearch">Search</label>
-          <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
+        <div class="statusRow" aria-label="Calendar controls">
+          <span class="pill" id="bcStatus">Loading calendar…</span>
+
+          <div class="filters" aria-label="Filters">
+            <div class="filterPill" aria-label="Category filter">
+              <label for="bcCategory">Category</label>
+              <select id="bcCategory">
+                <option value="all">All categories</option>
+              </select>
+            </div>
+
+            <div class="filterPill" aria-label="Search filter">
+              <label for="bcSearch">Search</label>
+              <input id="bcSearch" type="search" placeholder="Search species…" autocomplete="off" />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      <section class="section">
+        <div class="cards" id="bcCards" aria-label="Species cards"></div>
+
+        <p class="footnote">
+          Tip: photos come from third-party sources.
+        </p>
+      </section>
+    </main>
+
+    <div id="siteFooter"></div>
   </div>
 
-  <section class="section">
-    <div class="cards" id="bcCards" aria-label="Species cards"></div>
-
-    <p class="footnote">
-      Tip: photos come from third-party sources.
-    </p>
-  </section>
-</main>
-
-<div id="siteFooter"></div>
-  </div>
   <script>
     (function(){
       "use strict";
