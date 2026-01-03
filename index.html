@@ -51,6 +51,170 @@
       box-shadow: var(--shadow);
     }
 
+    /* Above-the-fold ordering: Desktop shows weather first, Mobile shows intro first */
+    .aboveFold{
+      display:flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .aboveFold .wx{ order: 1; }
+    .aboveFold .hero{ order: 2; }
+    @media (max-width: 900px){
+      .aboveFold .hero{ order: 1; }
+      .aboveFold .wx{ order: 2; }
+    }
+
+    /* Weather card (8 cards total: 1 current + 7 days) */
+    .wx{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin: 0;
+    }
+
+    .wxGrid{
+      display:grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .wxDay{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .wxDayTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .wxDow{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Current card header: pin + Mindo */
+    .wxPlace{
+      display:inline-flex;
+      align-items:center;
+      gap: 2px;
+      min-width: 0;
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Desktop-only: remove spacing between pin and "Mindo" */
+    @media (min-width: 901px){
+      .wxPlace{ gap: 0; }
+    }
+
+    .wxPinDot{
+      font-size: 14px;
+      line-height: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      transform: translateY(-0.5px);
+    }
+
+    /* Temps block (no second icon on the right) */
+    .wxTempsRow{
+      display:block;
+      min-width: 0;
+    }
+
+    .wxTempsLines{
+      min-width: 0;
+    }
+
+    .wxLine{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    .wxIcon{
+      font-size: 18px;
+      line-height: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 22px;
+      flex: 0 0 auto;
+    }
+
+    /* Center the rain line (droplet + text) */
+    .wxRain{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
+      text-align:center;
+    }
+
+    .wxNote{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .wxNote[hidden]{ display:none; }
+
+    .wxSkeleton .wxDay{
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wxSkeleton .wxDay:before{
+      content:"";
+      position:absolute;
+      inset:-40% -60%;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0));
+      transform: translateX(-40%);
+      animation: wxShimmer 1.35s linear infinite;
+      pointer-events:none;
+    }
+
+    @keyframes wxShimmer{
+      0%{ transform: translateX(-40%); }
+      100%{ transform: translateX(40%); }
+    }
+
     .hero{
       display:grid;
       grid-template-columns: 1.1fr .9fr;
@@ -152,7 +316,7 @@
       line-height: 1.6;
     }
 
-    /* Secure badge card (right column under "Why Guests Love Mindo") */
+    /* Secure badge card */
     .secureCard{
       margin-top: 14px;
       border: 1px solid var(--line);
@@ -361,6 +525,11 @@
       line-height: 1.45;
     }
 
+    /* Breakpoints */
+    @media (max-width: 1180px){
+      .wxGrid{ grid-template-columns: repeat(4, 1fr); }
+    }
+
     @media (max-width: 980px){
       .photoRail{ grid-template-columns: repeat(2, 1fr); }
       .photo img{ height: 180px; }
@@ -380,6 +549,9 @@
         width: 152px;
         height: 152px;
       }
+
+      /* Mobile: 8 cards total -> 2 columns -> 4 rows */
+      .wxGrid{ grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -388,51 +560,80 @@
     <!-- Shared header mount -->
     <div id="siteHeader"></div>
 <main class="page card" aria-label="Mindo Bird Watching home">
-  <!-- HERO -->
-  <section class="hero" aria-label="Intro">
-    <div>
-      <h1>Private birdwatching in Mindo, Ecuador</h1>
-      <p>
-        Explore the cloud forest with expert bilingual guides. Simple planning, flexible pacing, and the best chances to
-        see toucans, hummingbirds, tanagers, and the iconic Andean Cock-of-the-Rock.
-      </p>
+  <div class="aboveFold">
+    <!-- HERO -->
+    <section class="hero" aria-label="Intro">
+      <div>
+        <h1>Private birdwatching in Mindo, Ecuador</h1>
+        <p>
+          Explore the cloud forest with expert bilingual guides. Simple planning, flexible pacing, and the best chances to
+          see toucans, hummingbirds, tanagers, and the iconic Andean Cock-of-the-Rock.
+        </p>
 
-      <div class="heroCtas" aria-label="Primary actions">
-        <a class="btn secondary" href="/tours/">View Tours</a>
-        <a class="btn primary" href="/book-tour/">Book A Tour</a>
-        <a class="btn secondary" href="/bird-gallery/">Bird Gallery</a>
-      </div>
-
-      <!-- Left column only: New-to-birding band -->
-      <div class="ctaBand" aria-label="Quick reassurance">
-        <p><strong>New to birding?</strong> No problem. We guide beginners and serious birders, and we keep the experience calm and organized.</p>
-        <a class="btn secondary" href="/faqs/">Read FAQs</a>
-      </div>
-    </div>
-
-    <aside class="heroAside" aria-label="Highlights">
-      <h2>Why Guests Love Mindo</h2>
-      <ul class="heroList">
-        <li>Early starts that maximize sightings</li>
-        <li>Local spots chosen by season and weather</li>
-        <li>Binoculars and scope support when needed</li>
-        <li>Great for families, photographers, and groups</li>
-      </ul>
-
-      <!-- Right column: Safe and secure travel card under the list -->
-      <div class="secureCard" aria-label="Safe and secure travel">
-        <div class="secureImg" aria-hidden="true">
-          <img src="/assets/images/MBW-Assets-4-SecureBadge.png" alt="Safe and secure travel badge" />
+        <div class="heroCtas" aria-label="Primary actions">
+          <a class="btn secondary" href="/tours/">View Tours</a>
+          <a class="btn primary" href="/book-tour/">Book A Tour</a>
+          <a class="btn secondary" href="/bird-gallery/">Bird Gallery</a>
         </div>
-        <div class="secureCopy">
-          <p class="secureKicker">Safe and secure travel</p>
-          <p class="secureText">
-            Tours are well planned, calm, and organized with clear meeting points, trusted local logistics, and guidance every step of the way.
-          </p>
+
+        <div class="ctaBand" aria-label="Quick reassurance">
+          <p><strong>New to birding?</strong> No problem. We guide beginners and serious birders, and we keep the experience calm and organized.</p>
+          <a class="btn secondary" href="/faqs/">Read FAQs</a>
         </div>
       </div>
-    </aside>
-  </section>
+
+      <aside class="heroAside" aria-label="Highlights">
+        <h2>Why Guests Love Mindo</h2>
+        <ul class="heroList">
+          <li>Early starts that maximize sightings</li>
+          <li>Local spots chosen by season and weather</li>
+          <li>Binoculars and scope support when needed</li>
+          <li>Great for families, photographers, and groups</li>
+        </ul>
+
+        <div class="secureCard" aria-label="Safe and secure travel">
+          <div class="secureImg" aria-hidden="true">
+            <img src="/assets/images/MBW-Assets-4-SecureBadge.png" alt="Safe and secure travel badge" />
+          </div>
+          <div class="secureCopy">
+            <p class="secureKicker">Safe and secure travel</p>
+            <p class="secureText">
+              Tours are well planned, calm, and organized with clear meeting points, trusted local logistics, and guidance every step of the way.
+            </p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- WEATHER (8 cards: current + 7-day) -->
+    <section class="wx wxSkeleton" aria-label="Weather">
+      <div class="wxGrid" id="wxGrid" aria-label="Current + 7-day forecast">
+        <!-- Skeleton placeholders (8) -->
+        <div class="wxDay">
+          <div class="wxDayTop">
+            <span class="wxDow">--</span>
+            <span class="wxIcon" aria-hidden="true">🌥️</span>
+          </div>
+          <div class="wxTempsRow">
+            <div class="wxTempsLines">
+              <div class="wxLine">-- C / -- F</div>
+              <div class="wxLine">-- C / -- F</div>
+            </div>
+          </div>
+          <div class="wxRain"><span aria-hidden="true">💧</span><span>-- mm</span></div>
+        </div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+      </div>
+
+      <p class="wxNote" id="wxNote" hidden> </p>
+    </section>
+  </div>
 
   <!-- FEATURE MEDIA: IMAGES + VIDEO -->
   <section class="section" aria-label="Featured media">
@@ -442,14 +643,10 @@
     </div>
 
     <div class="mediaGrid">
-      <!-- Left column: stacked images -->
       <div class="mediaCol" aria-label="Featured images">
         <article class="mediaCard" aria-label="Featured image 1">
           <div class="mediaFrame">
-            <img
-              src="/assets/images/pages/home/MBW-Assets-homepage-top.jpg"
-              alt="Birdwatching in the Mindo cloud forest"
-            />
+            <img src="/assets/images/pages/home/MBW-Assets-homepage-top.jpg" alt="Birdwatching in the Mindo cloud forest" />
           </div>
           <div class="mediaBar">
             <p class="mediaTitle">Cloud Forest Birding</p>
@@ -459,10 +656,7 @@
 
         <article class="mediaCard" aria-label="Featured image 2">
           <div class="mediaFrame">
-            <img
-              src="/assets/images/pages/home/MBW-Assets-homepage-top-2.jpg"
-              alt="Birding trail and scenic cloud forest views in Mindo"
-            />
+            <img src="/assets/images/pages/home/MBW-Assets-homepage-top-2.jpg" alt="Birding trail and scenic cloud forest views in Mindo" />
           </div>
           <div class="mediaBar">
             <p class="mediaTitle">Local Trails and Views</p>
@@ -471,7 +665,6 @@
         </article>
       </div>
 
-      <!-- Right column: video -->
       <div class="mediaCol" aria-label="Video">
         <article class="mediaCard" aria-label="Featured video">
           <iframe
@@ -528,22 +721,22 @@
 
     <div class="photoRail" aria-label="Photo highlights grid">
       <figure class="photo" aria-label="Highlight 1">
-        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-1.jpg" alt="Birding highlights in Mindo" />
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-1.jpg" alt="Birding highlights in Mindo" loading="lazy" />
         <figcaption class="photoCap">Birding moments</figcaption>
       </figure>
 
       <figure class="photo" aria-label="Highlight 2">
-        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-2.jpg" alt="Cloud forest trails in Mindo" />
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-2.jpg" alt="Cloud forest trails in Mindo" loading="lazy" />
         <figcaption class="photoCap">Cloud forest trails</figcaption>
       </figure>
 
       <figure class="photo" aria-label="Highlight 3">
-        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-3.jpg" alt="Hummingbirds in Mindo" />
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-3.jpg" alt="Hummingbirds in Mindo" loading="lazy" />
         <figcaption class="photoCap">Hummingbirds and feeders</figcaption>
       </figure>
 
       <figure class="photo" aria-label="Highlight 4">
-        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-4.jpg" alt="Waterfalls and nature near Mindo" />
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-4.jpg" alt="Waterfalls and nature near Mindo" loading="lazy" />
         <figcaption class="photoCap">Waterfalls and nature</figcaption>
       </figure>
     </div>
@@ -556,5 +749,234 @@
   <!-- Include injector + site behavior at bottom -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
+  <script>
+    (function(){
+      "use strict";
+
+      var LAT = -0.0516;
+      var LON = -78.7764;
+
+      var CACHE_KEY = "mbw_wx_mindo_v2";
+      var CACHE_TTL_MS = 60 * 60 * 1000;
+
+      var elGrid = document.getElementById("wxGrid");
+      var elNote = document.getElementById("wxNote");
+
+      function cToF(c){
+        return (c * 9 / 5) + 32;
+      }
+
+      function round(n){
+        return Math.round(n);
+      }
+
+      function safeNum(n){
+        return (typeof n === "number" && isFinite(n)) ? n : null;
+      }
+
+      function fmtTempLine(c){
+        var cc = safeNum(c);
+        if (cc === null) return "-- C / -- F";
+        var ff = cToF(cc);
+        return round(cc) + " C / " + round(ff) + " F";
+      }
+
+      function fmtMm(mm){
+        var v = safeNum(mm);
+        if (v === null) return "--";
+        if (v === 0) return "0";
+        if (v < 1) return v.toFixed(1);
+        return round(v).toString();
+      }
+
+      function dowShort(iso){
+        var d = new Date(iso + "T00:00:00");
+        if (isNaN(d.getTime())) return "--";
+        return d.toLocaleDateString("en-US", { weekday: "short" });
+      }
+
+      function iconFromCode(code, mm){
+        var c = safeNum(code);
+        var r = safeNum(mm);
+
+        if (r !== null && r >= 15) return "⛈️";
+        if (r !== null && r >= 6) return "🌧️";
+        if (r !== null && r > 0) return "🌦️";
+
+        if (c === null) return "🌥️";
+
+        if (c === 0) return "☀️";
+        if (c === 1 || c === 2) return "🌤️";
+        if (c === 3) return "☁️";
+
+        if (c === 45 || c === 48) return "🌫️";
+
+        if (c === 51 || c === 53 || c === 55) return "🌦️";
+        if (c === 56 || c === 57) return "🌧️";
+
+        if (c === 61 || c === 63 || c === 65) return "🌧️";
+        if (c === 66 || c === 67) return "🌧️";
+
+        if (c === 71 || c === 73 || c === 75) return "❄️";
+        if (c === 77) return "❄️";
+
+        if (c === 80 || c === 81 || c === 82) return "🌧️";
+
+        if (c === 85 || c === 86) return "❄️";
+
+        if (c === 95 || c === 96 || c === 99) return "⛈️";
+
+        return "🌥️";
+      }
+
+      function setSkeleton(isOn){
+        var wx = document.querySelector(".wx");
+        if (!wx) return;
+        if (isOn) wx.classList.add("wxSkeleton");
+        else wx.classList.remove("wxSkeleton");
+      }
+
+      function setNote(msg){
+        if (!elNote) return;
+        if (!msg){
+          elNote.hidden = true;
+          elNote.textContent = "";
+          return;
+        }
+        elNote.hidden = false;
+        elNote.textContent = msg;
+      }
+
+      function renderDaily(data){
+        try{
+          var daily = data && data.daily ? data.daily : null;
+          if (!daily) throw new Error("No daily data");
+
+          var tmax = daily.temperature_2m_max || [];
+          var tmin = daily.temperature_2m_min || [];
+          var psum = daily.precipitation_sum || [];
+          var time = daily.time || [];
+          var wcode = daily.weathercode || daily.weather_code || [];
+
+          if (!time.length || tmax.length < 7 || tmin.length < 7 || psum.length < 7){
+            throw new Error("Insufficient daily arrays");
+          }
+
+          var todayMax = tmax[0];
+          var todayMin = tmin[0];
+          var todayRain = psum[0];
+          var todayCode = (wcode && wcode.length) ? wcode[0] : null;
+          var todayIcon = iconFromCode(todayCode, todayRain);
+
+          var html = "";
+
+          /* Card 1: Current (pin + Mindo, hi/lo, rain, single icon) */
+          html += ''
+            + '<div class="wxDay wxNow" aria-label="Current weather">'
+            +   '<div class="wxDayTop">'
+            +     '<span class="wxPlace"><span class="wxPinDot" aria-hidden="true">📍</span>Mindo</span>'
+            +     '<span class="wxIcon" aria-hidden="true">' + todayIcon + '</span>'
+            +   '</div>'
+            +   '<div class="wxTempsRow">'
+            +     '<div class="wxTempsLines">'
+            +       '<div class="wxLine">' + fmtTempLine(todayMax) + '</div>'
+            +       '<div class="wxLine">' + fmtTempLine(todayMin) + '</div>'
+            +     '</div>'
+            +   '</div>'
+            +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(todayRain) + ' mm</span></div>'
+            + '</div>';
+
+          /* Cards 2-8: 7-day (single icon at top only, centered rain line) */
+          for (var i = 0; i < 7; i++){
+            var d = time[i];
+            var maxC = tmax[i];
+            var minC = tmin[i];
+            var mm = psum[i];
+            var code = (wcode && wcode.length) ? wcode[i] : null;
+            var dayIcon = iconFromCode(code, mm);
+
+            html += ''
+              + '<div class="wxDay" aria-label="Forecast day">'
+              +   '<div class="wxDayTop">'
+              +     '<span class="wxDow">' + dowShort(d) + '</span>'
+              +     '<span class="wxIcon" aria-hidden="true">' + dayIcon + '</span>'
+              +   '</div>'
+              +   '<div class="wxTempsRow">'
+              +     '<div class="wxTempsLines">'
+              +       '<div class="wxLine">' + fmtTempLine(maxC) + '</div>'
+              +       '<div class="wxLine">' + fmtTempLine(minC) + '</div>'
+              +     '</div>'
+              +   '</div>'
+              +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(mm) + ' mm</span></div>'
+              + '</div>';
+          }
+
+          if (elGrid) elGrid.innerHTML = html;
+
+          setSkeleton(false);
+          setNote("");
+        }catch(e){
+          setSkeleton(false);
+          setNote("");
+        }
+      }
+
+      function readCache(){
+        try{
+          var raw = localStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          var obj = JSON.parse(raw);
+          if (!obj || !obj.ts || !obj.data) return null;
+          if ((Date.now() - obj.ts) > CACHE_TTL_MS) return null;
+          return obj.data;
+        }catch(e){
+          return null;
+        }
+      }
+
+      function writeCache(data){
+        try{
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+        }catch(e){
+          return;
+        }
+      }
+
+      function fetchWx(){
+        var url =
+          "https://api.open-meteo.com/v1/forecast"
+          + "?latitude=" + encodeURIComponent(LAT)
+          + "&longitude=" + encodeURIComponent(LON)
+          + "&timezone=auto"
+          + "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode";
+
+        return fetch(url, { cache: "no-store" }).then(function(r){
+          if (!r.ok) throw new Error("Bad response");
+          return r.json();
+        });
+      }
+
+      setSkeleton(true);
+
+      var cached = readCache();
+      if (cached){
+        renderDaily(cached);
+        fetchWx().then(function(data){
+          writeCache(data);
+          renderDaily(data);
+        }).catch(function(){
+          return;
+        });
+      }else{
+        fetchWx().then(function(data){
+          writeCache(data);
+          renderDaily(data);
+        }).catch(function(){
+          setSkeleton(false);
+          setNote("");
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
