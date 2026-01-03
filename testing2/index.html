@@ -51,6 +51,19 @@
       box-shadow: var(--shadow);
     }
 
+    /* Above-the-fold ordering: Desktop shows weather first, Mobile shows intro first */
+    .aboveFold{
+      display:flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .aboveFold .wx{ order: 1; }
+    .aboveFold .hero{ order: 2; }
+    @media (max-width: 900px){
+      .aboveFold .hero{ order: 1; }
+      .aboveFold .wx{ order: 2; }
+    }
+
     /* Weather card (8 cards total: 1 current + 7 days) */
     .wx{
       border: 1px solid var(--line);
@@ -58,7 +71,7 @@
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
       padding: 14px;
-      margin-bottom: 16px;
+      margin: 0;
     }
 
     .wxGrid{
@@ -98,11 +111,11 @@
       text-overflow: ellipsis;
     }
 
-    /* Current card header: pin + Mindo */
+    /* Current card header: pin + Mindo (tight spacing so Mindo stays fully visible) */
     .wxPlace{
       display:inline-flex;
       align-items:center;
-      gap: 8px;
+      gap: 3px;
       min-width: 0;
       font-weight: 900;
       font-size: 12.5px;
@@ -119,6 +132,7 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
+      transform: translateY(-0.5px);
     }
 
     /* Temps block with icon on the right, same visual height */
@@ -537,76 +551,78 @@
     <!-- Shared header mount -->
     <div id="siteHeader"></div>
 <main class="page card" aria-label="Mindo Bird Watching home">
-  <!-- WEATHER (8 cards: current + 7-day) -->
-  <section class="wx wxSkeleton" aria-label="Weather">
-    <div class="wxGrid" id="wxGrid" aria-label="Current + 7-day forecast">
-      <!-- Skeleton placeholders (8) -->
-      <div class="wxDay">
-        <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon" aria-hidden="true">🌥️</span></div>
-        <div class="wxTempsRow">
-          <div class="wxTempsLines">
-            <div class="wxLine">-- C / -- F</div>
-            <div class="wxLine">-- C / -- F</div>
+  <div class="aboveFold">
+    <!-- HERO -->
+    <section class="hero" aria-label="Intro">
+      <div>
+        <h1>Private birdwatching in Mindo, Ecuador</h1>
+        <p>
+          Explore the cloud forest with expert bilingual guides. Simple planning, flexible pacing, and the best chances to
+          see toucans, hummingbirds, tanagers, and the iconic Andean Cock-of-the-Rock.
+        </p>
+
+        <div class="heroCtas" aria-label="Primary actions">
+          <a class="btn secondary" href="/tours/">View Tours</a>
+          <a class="btn primary" href="/book-tour/">Book A Tour</a>
+          <a class="btn secondary" href="/bird-gallery/">Bird Gallery</a>
+        </div>
+
+        <div class="ctaBand" aria-label="Quick reassurance">
+          <p><strong>New to birding?</strong> No problem. We guide beginners and serious birders, and we keep the experience calm and organized.</p>
+          <a class="btn secondary" href="/faqs/">Read FAQs</a>
+        </div>
+      </div>
+
+      <aside class="heroAside" aria-label="Highlights">
+        <h2>Why Guests Love Mindo</h2>
+        <ul class="heroList">
+          <li>Early starts that maximize sightings</li>
+          <li>Local spots chosen by season and weather</li>
+          <li>Binoculars and scope support when needed</li>
+          <li>Great for families, photographers, and groups</li>
+        </ul>
+
+        <div class="secureCard" aria-label="Safe and secure travel">
+          <div class="secureImg" aria-hidden="true">
+            <img src="/assets/images/MBW-Assets-4-SecureBadge.png" alt="Safe and secure travel badge" />
           </div>
-          <span class="wxIcon" aria-hidden="true">🌥️</span>
+          <div class="secureCopy">
+            <p class="secureKicker">Safe and secure travel</p>
+            <p class="secureText">
+              Tours are well planned, calm, and organized with clear meeting points, trusted local logistics, and guidance every step of the way.
+            </p>
+          </div>
         </div>
-        <div class="wxRain">💧 -- mm</div>
-      </div>
-      <div class="wxDay"></div>
-      <div class="wxDay"></div>
-      <div class="wxDay"></div>
-      <div class="wxDay"></div>
-      <div class="wxDay"></div>
-      <div class="wxDay"></div>
-      <div class="wxDay"></div>
-    </div>
+      </aside>
+    </section>
 
-    <p class="wxNote" id="wxNote" hidden> </p>
-  </section>
-
-  <!-- HERO -->
-  <section class="hero" aria-label="Intro">
-    <div>
-      <h1>Private birdwatching in Mindo, Ecuador</h1>
-      <p>
-        Explore the cloud forest with expert bilingual guides. Simple planning, flexible pacing, and the best chances to
-        see toucans, hummingbirds, tanagers, and the iconic Andean Cock-of-the-Rock.
-      </p>
-
-      <div class="heroCtas" aria-label="Primary actions">
-        <a class="btn secondary" href="/tours/">View Tours</a>
-        <a class="btn primary" href="/book-tour/">Book A Tour</a>
-        <a class="btn secondary" href="/bird-gallery/">Bird Gallery</a>
-      </div>
-
-      <div class="ctaBand" aria-label="Quick reassurance">
-        <p><strong>New to birding?</strong> No problem. We guide beginners and serious birders, and we keep the experience calm and organized.</p>
-        <a class="btn secondary" href="/faqs/">Read FAQs</a>
-      </div>
-    </div>
-
-    <aside class="heroAside" aria-label="Highlights">
-      <h2>Why Guests Love Mindo</h2>
-      <ul class="heroList">
-        <li>Early starts that maximize sightings</li>
-        <li>Local spots chosen by season and weather</li>
-        <li>Binoculars and scope support when needed</li>
-        <li>Great for families, photographers, and groups</li>
-      </ul>
-
-      <div class="secureCard" aria-label="Safe and secure travel">
-        <div class="secureImg" aria-hidden="true">
-          <img src="/assets/images/MBW-Assets-4-SecureBadge.png" alt="Safe and secure travel badge" />
+    <!-- WEATHER (8 cards: current + 7-day) -->
+    <section class="wx wxSkeleton" aria-label="Weather">
+      <div class="wxGrid" id="wxGrid" aria-label="Current + 7-day forecast">
+        <!-- Skeleton placeholders (8) -->
+        <div class="wxDay">
+          <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon" aria-hidden="true">🌥️</span></div>
+          <div class="wxTempsRow">
+            <div class="wxTempsLines">
+              <div class="wxLine">-- C / -- F</div>
+              <div class="wxLine">-- C / -- F</div>
+            </div>
+            <span class="wxIcon" aria-hidden="true">🌥️</span>
+          </div>
+          <div class="wxRain">💧 -- mm</div>
         </div>
-        <div class="secureCopy">
-          <p class="secureKicker">Safe and secure travel</p>
-          <p class="secureText">
-            Tours are well planned, calm, and organized with clear meeting points, trusted local logistics, and guidance every step of the way.
-          </p>
-        </div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
       </div>
-    </aside>
-  </section>
+
+      <p class="wxNote" id="wxNote" hidden> </p>
+    </section>
+  </div>
 
   <!-- FEATURE MEDIA: IMAGES + VIDEO -->
   <section class="section" aria-label="Featured media">
@@ -853,7 +869,7 @@
           html += ''
             + '<div class="wxDay wxNow" aria-label="Current weather">'
             +   '<div class="wxDayTop">'
-            +     '<span class="wxPlace"><span class="wxPinDot" aria-hidden="true">📍</span> Mindo</span>'
+            +     '<span class="wxPlace"><span class="wxPinDot" aria-hidden="true">📍</span>Mindo</span>'
             +     '<span class="wxIcon" aria-hidden="true">' + todayIcon + '</span>'
             +   '</div>'
             +   '<div class="wxTempsRow">'
