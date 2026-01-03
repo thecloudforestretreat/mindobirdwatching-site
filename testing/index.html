@@ -207,12 +207,28 @@
       border: 0;
       display: block;
     }
+
+    /* Tall carousel - force FULL height and remove the empty label strip */
+    .mbwCarousel.isTall{
+      height: 100%;
+    }
     .mbwCarousel.isTall .mbwCarouselViewport{
       aspect-ratio: 9 / 16;
+      height: 100%;
       background: rgba(255,255,255,.55);
     }
-    .mbwCarousel.isTall .mbwSlide img{
+    .mbwCarousel.isTall .mbwCarouselTrack,
+    .mbwCarousel.isTall .mbwSlide{
       height: 100%;
+    }
+    .mbwCarousel.isTall .mbwSlide img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .mbwCarousel.isTall .mbwSlide .label{
+      display: none; /* key fix: removes the blank space */
     }
 
     /* Media grid (left gallery + right video) */
