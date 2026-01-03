@@ -97,7 +97,7 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
     }
 
@@ -111,11 +111,11 @@
       text-overflow: ellipsis;
     }
 
-    /* Current card header: pin + Mindo (tight spacing so Mindo stays fully visible) */
+    /* Current card header: pin + Mindo */
     .wxPlace{
       display:inline-flex;
       align-items:center;
-      gap: 3px;
+      gap: 2px;
       min-width: 0;
       font-weight: 900;
       font-size: 12.5px;
@@ -124,6 +124,11 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    /* Desktop-only: remove spacing between pin and "Mindo" */
+    @media (min-width: 901px){
+      .wxPlace{ gap: 0; }
     }
 
     .wxPinDot{
@@ -135,12 +140,9 @@
       transform: translateY(-0.5px);
     }
 
-    /* Temps block with icon on the right, same visual height */
+    /* Temps block (no second icon on the right) */
     .wxTempsRow{
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items:center;
+      display:block;
       min-width: 0;
     }
 
@@ -166,8 +168,10 @@
       align-items:center;
       justify-content:center;
       min-width: 22px;
+      flex: 0 0 auto;
     }
 
+    /* Center the rain line (droplet + text) */
     .wxRain{
       font-weight: 900;
       font-size: 12.5px;
@@ -175,6 +179,11 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
+      text-align:center;
     }
 
     .wxNote{
@@ -601,15 +610,17 @@
       <div class="wxGrid" id="wxGrid" aria-label="Current + 7-day forecast">
         <!-- Skeleton placeholders (8) -->
         <div class="wxDay">
-          <div class="wxDayTop"><span class="wxDow">--</span><span class="wxIcon" aria-hidden="true">🌥️</span></div>
+          <div class="wxDayTop">
+            <span class="wxDow">--</span>
+            <span class="wxIcon" aria-hidden="true">🌥️</span>
+          </div>
           <div class="wxTempsRow">
             <div class="wxTempsLines">
               <div class="wxLine">-- C / -- F</div>
               <div class="wxLine">-- C / -- F</div>
             </div>
-            <span class="wxIcon" aria-hidden="true">🌥️</span>
           </div>
-          <div class="wxRain">💧 -- mm</div>
+          <div class="wxRain"><span aria-hidden="true">💧</span><span>-- mm</span></div>
         </div>
         <div class="wxDay"></div>
         <div class="wxDay"></div>
@@ -635,10 +646,7 @@
       <div class="mediaCol" aria-label="Featured images">
         <article class="mediaCard" aria-label="Featured image 1">
           <div class="mediaFrame">
-            <img
-              src="/assets/images/pages/home/MBW-Assets-homepage-top.jpg"
-              alt="Birdwatching in the Mindo cloud forest"
-            />
+            <img src="/assets/images/pages/home/MBW-Assets-homepage-top.jpg" alt="Birdwatching in the Mindo cloud forest" />
           </div>
           <div class="mediaBar">
             <p class="mediaTitle">Cloud Forest Birding</p>
@@ -648,10 +656,7 @@
 
         <article class="mediaCard" aria-label="Featured image 2">
           <div class="mediaFrame">
-            <img
-              src="/assets/images/pages/home/MBW-Assets-homepage-top-2.jpg"
-              alt="Birding trail and scenic cloud forest views in Mindo"
-            />
+            <img src="/assets/images/pages/home/MBW-Assets-homepage-top-2.jpg" alt="Birding trail and scenic cloud forest views in Mindo" />
           </div>
           <div class="mediaBar">
             <p class="mediaTitle">Local Trails and Views</p>
@@ -865,7 +870,7 @@
 
           var html = "";
 
-          /* Card 1: Current (pin + Mindo, hi/lo, rain, emoji) */
+          /* Card 1: Current (pin + Mindo, hi/lo, rain, single icon) */
           html += ''
             + '<div class="wxDay wxNow" aria-label="Current weather">'
             +   '<div class="wxDayTop">'
@@ -877,12 +882,11 @@
             +       '<div class="wxLine">' + fmtTempLine(todayMax) + '</div>'
             +       '<div class="wxLine">' + fmtTempLine(todayMin) + '</div>'
             +     '</div>'
-            +     '<span class="wxIcon" aria-hidden="true">' + todayIcon + '</span>'
             +   '</div>'
-            +   '<div class="wxRain">💧 ' + fmtMm(todayRain) + ' mm</div>'
+            +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(todayRain) + ' mm</span></div>'
             + '</div>';
 
-          /* Cards 2-8: 7-day (Sat..Fri etc) */
+          /* Cards 2-8: 7-day (single icon at top only, centered rain line) */
           for (var i = 0; i < 7; i++){
             var d = time[i];
             var maxC = tmax[i];
@@ -902,9 +906,8 @@
               +       '<div class="wxLine">' + fmtTempLine(maxC) + '</div>'
               +       '<div class="wxLine">' + fmtTempLine(minC) + '</div>'
               +     '</div>'
-              +     '<span class="wxIcon" aria-hidden="true">' + dayIcon + '</span>'
               +   '</div>'
-              +   '<div class="wxRain">💧 ' + fmtMm(mm) + ' mm</div>'
+              +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(mm) + ' mm</span></div>'
               + '</div>';
           }
 
