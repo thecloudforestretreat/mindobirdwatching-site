@@ -25,7 +25,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Activities | Mindo Bird Watching" />
-  <meta name="twitter:description" content="Discover adventure, wildlife, and family-friendly activities in Mindo’s cloud forest." />
+  <meta name="twitter:description" content="Discover adventure, wildlife, and family-friendly activities in Mindo's cloud forest." />
   <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
 
   <link rel="alternate" hreflang="en" href="/activities/" />
@@ -231,7 +231,12 @@
       font-size: 20px;
     }
 
-    /* Activity cards */
+    /* Activity cards (UI/UX alignment fixes)
+       Goals:
+       - Remove excess dead space (esp. under image / between text and tags)
+       - Center tags cleanly inside the card on desktop + mobile
+       - Keep spacing consistent without forcing tall empty cards
+    */
     .grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -246,13 +251,13 @@
       overflow: hidden;
       display:flex;
       flex-direction: column;
-      min-height: 260px;
+      min-height: 0; /* was forcing extra blank space */
     }
 
     .actTop{
       display:flex;
       gap: 14px;
-      padding: 14px;
+      padding: 14px 14px 10px; /* slightly tighter bottom spacing */
       align-items: flex-start;
     }
 
@@ -295,17 +300,20 @@
       line-height: 1.55;
     }
 
+    /* No more "push tags to the very bottom" behavior */
     .actBody{
-      margin-top: auto;
       padding: 0 14px 14px;
-      display:grid;
-      gap: 10px;
+      display:flex;
+      justify-content: center; /* centers tags inside card */
     }
 
     .chips{
       display:flex;
       flex-wrap:wrap;
       gap: 8px;
+      justify-content:center;  /* keeps wrapped rows centered */
+      width: 100%;
+      max-width: 520px;        /* prevents odd wide stretching on large cards */
     }
 
     .chip{
@@ -358,12 +366,24 @@
     @media (max-width: 900px){
       .hero{ grid-template-columns: 1fr; }
       .grid{ grid-template-columns: repeat(2, 1fr); }
+
+      /* Mobile/tablet card tightening */
+      .actTop{ padding: 12px 12px 8px; gap: 12px; }
+      .actSub{ margin-top: 6px; }
+      .actBody{ padding: 0 12px 12px; }
+      .chips{ max-width: 100%; }
+
       .avatar{ width: 80px; height: 80px; border-radius: 999px; }
       .carouselViewport{ height: 220px; }
     }
 
     @media (max-width: 560px){
       .grid{ grid-template-columns: 1fr; }
+
+      /* Extra-tight on small phones to remove the big blank zone you highlighted */
+      .actTop{ padding: 12px 12px 6px; }
+      .actBody{ padding: 0 12px 12px; }
+      .chip{ padding: 7px 10px; }
     }
   </style>
 </head>
@@ -376,14 +396,14 @@
     <main class="page card" aria-label="Activities">
       <section class="hero" aria-label="Activities intro">
         <div>
-          <h1>Discover Mindo’s Best Adventures 🌿✨</h1>
+          <h1>Discover Mindo's Best Adventures 🌿✨</h1>
 
           <p>
             At Mindo Bird Watching, our passion starts with the incredible birdlife of the cloud forest, home to colorful toucans,
             countless hummingbirds, and the iconic Andean Cock-of-the-Rock.
           </p>
           <p style="margin-top:10px;">
-            But there’s so much more to experience here. From adrenaline-filled adventures like ziplining, rafting, and canyoning
+            But there's so much more to experience here. From adrenaline-filled adventures like ziplining, rafting, and canyoning
             to relaxing nature tours like butterflies, orchids, and coffee and chocolate tastings, Mindo offers something unforgettable
             for every kind of traveler.
           </p>
