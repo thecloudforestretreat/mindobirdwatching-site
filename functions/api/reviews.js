@@ -1,81 +1,102 @@
-export async function onRequestGet({ env }) {
+// functions/api/reviews.js
+export async function onRequestGet(context) {
+  const { env, request } = context;
+
   const PLACE_ID = env.MBW_PLACE_ID;
   const API_KEY = env.GOOGLE_PLACES_API_KEY;
 
-  const fields = ["name", "url", "rating", "user_ratings_total", "reviews"].join(",");
-  const url =
-    `https://maps.googleapis.com/maps/api/place/details/json` +
-    `?place_id=${encodeURIComponent(PLACE_ID)}` +
-    `&fields=${encodeURIComponent(fields)}` +
-    `&reviews_sort=newest` +
-    `&key=${encodeURIComponent(API_KEY)}`;
-
-  let res;
-  try {
-    res = await fetch(url, { method: "GET" });
-  } catch (e) {
+  if (!PLACE_ID || !API_KEY) {
     return json(
-      { ok: false, stage: "fetch_throw", message: String(e?.message || e) },
-      502
+      { ok: false, error: "Missing MBW_PLACE_ID or GOOGLE_PLACES_API_KEY env vars." },
+      500
     );
   }
+
+  // Cache
+  const cacheKey = new Request(request.url, request);
+  const cache = caches.default;
+  const TTL_SECONDS = 60 * 30;
+
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  // Places API (New) - Place Details
+  // NOTE: FieldMask is REQUIRED for Places API (New)
+  const endpoint = `https://places.googleapis.com/v1/places/${encodeURIComponent(PLACE_ID)}`;
+
+  // We only request what we need
+  const fieldMask = [
+    "displayName",
+    "googleMapsUri",
+    "rating",
+    "userRatingCount",
+    "reviews"
+  ].join(",");
+
+  const res = await fetch(endpoint, {
+    method: "GET",
+    headers: {
+      "X-Goog-Api-Key": API_KEY,
+      "X-Goog-FieldMask": fieldMask
+    }
+  });
 
   const text = await res.text().catch(() => "");
 
-  // If Google returns an error, we want to see it.
   if (!res.ok) {
-    return json(
-      {
-        ok: false,
-        stage: "google_http_error",
-        status: res.status,
-        statusText: res.statusText,
-        body_preview: text.slice(0, 2000)
-      },
-      502
-    );
-  }
-
-  // Parse JSON
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    return json(
-      {
-        ok: false,
-        stage: "json_parse_error",
-        body_preview: text.slice(0, 2000)
-      },
-      502
-    );
-  }
-
-  // Google-level errors are often inside JSON even with 200 OK
-  if (data?.status && data.status !== "OK") {
+    // Try to parse JSON error if possible
+    let body = null;
+    try { body = text ? JSON.parse(text) : null; } catch {}
     return json(
       {
         ok: false,
         stage: "google_api_error",
-        google_status: data.status,
-        google_error_message: data.error_message || "",
-        body: data
+        http_status: res.status,
+        body: body || text.slice(0, 2000)
       },
       502
     );
   }
 
-  return json(
-    {
-      ok: true,
-      stage: "google_ok",
-      place_name: data?.result?.name || "",
-      rating: data?.result?.rating ?? null,
-      user_ratings_total: data?.result?.user_ratings_total ?? null,
-      reviews_count: Array.isArray(data?.result?.reviews) ? data.result.reviews.length : 0
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch {}
+
+  if (!data) {
+    return json(
+      { ok: false, stage: "parse_error", detail: text.slice(0, 2000) },
+      502
+    );
+  }
+
+  const normalized = {
+    ok: true,
+    source: "places_api_new",
+    place: {
+      name: data?.displayName?.text || "",
+      maps_url: data?.googleMapsUri || ""
     },
-    200
-  );
+    summary: {
+      rating: typeof data?.rating === "number" ? data.rating : null,
+      review_count: typeof data?.userRatingCount === "number" ? data.userRatingCount : null
+    },
+    reviews: Array.isArray(data?.reviews)
+      ? data.reviews.map((r) => ({
+          author: r?.authorAttribution?.displayName || "Google user",
+          author_url: r?.authorAttribution?.uri || "",
+          rating: typeof r?.rating === "number" ? r.rating : null,
+          text: r?.text?.text || "",
+          relative_time: r?.relativePublishTimeDescription || "",
+          publish_time: r?.publishTime || ""
+        }))
+      : []
+  };
+
+  const response = json(normalized, 200, {
+    "Cache-Control": `public, max-age=0, s-maxage=${TTL_SECONDS}`
+  });
+
+  await cache.put(cacheKey, response.clone());
+  return response;
 }
 
 function json(body, status = 200, headers = {}) {
