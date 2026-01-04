@@ -23,14 +23,13 @@
       --glass2: rgba(255,255,255,.62);
       --soft: rgba(255,255,255,.55);
     }
-.page { margin-top: 18px; padding: 26px; }
-.page.card{
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
-
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
 .hero{
   display:grid;
   grid-template-columns: 1.05fr .95fr;
@@ -171,7 +170,6 @@
 .pillBtn:hover{ transform: translateY(-1px); }
 .pillBtn:active{ transform: translateY(0px); }
 
-/* Summary card (moved into left column) */
 .summaryCard{
   border: 1px solid var(--line);
   border-radius: var(--r);
@@ -342,7 +340,6 @@
   margin-top: 2px;
 }
 
-/* NEW: 9:16 carousel (right column) */
 .rightStack{
   display:grid;
   gap: 12px;
@@ -843,7 +840,6 @@
         </div>
       </div>
 
-      <!-- MOVED HERE: rating summary (replaces old carousel spot) -->
       <aside class="summaryCard" aria-label="Google rating summary">
         <div class="summaryTop">
           <div class="score" aria-label="Overall rating">
@@ -902,7 +898,6 @@
       </aside>
     </div>
 
-    <!-- RIGHT COLUMN: new 9:16 carousel -->
     <div class="rightStack" aria-label="Reviews carousel column">
       <section class="vCarousel" aria-label="Reviews highlights carousel">
         <div class="vCarouselHeader">
@@ -951,9 +946,7 @@
       </p>
       <div class="ctaRow">
         <a class="btn primary" href="/book-tour/">Book A Tour</a>
-        <a class="btn secondary" href="/contact" target="_blank" rel="noopener noreferrer">
-          Questions?
-        </a>
+        <a class="btn secondary" href="/contact" target="_blank" rel="noopener noreferrer">Questions?</a>
       </div>
 
       <div class="linkLine">
@@ -963,10 +956,8 @@
     </aside>
   </section>
 </main>
-
-<div id="siteFooter"></div>
   </div>
-    <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
   <script>
     (function () {
@@ -999,24 +990,24 @@
 
       function parseTime(s){
         if(!s) return 0;
-        const t = Date.parse(s);
+        var t = Date.parse(s);
         return Number.isFinite(t) ? t : 0;
       }
 
       function starsInline(rating){
-        const r = Number(rating || 0);
-        const full = Math.max(0, Math.min(5, Math.round(r)));
+        var r = Number(rating || 0);
+        var full = Math.max(0, Math.min(5, Math.round(r)));
         return "★".repeat(full) + "☆".repeat(5 - full);
       }
 
       function buildReviewCard(r){
-        const name = r.author || "Google user";
-        const sub = r.relative_time || "";
-        const text = r.text || "";
-        const ratingNum = r.rating != null ? r.rating : 5;
-        const authorUrl = r.author_url || "";
+        var name = r.author || "Google user";
+        var sub = r.relative_time || "";
+        var text = r.text || "";
+        var ratingNum = (r.rating != null) ? r.rating : 5;
+        var authorUrl = r.author_url || "";
 
-        const nameHtml = authorUrl
+        var nameHtml = authorUrl
           ? '<a href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:3px;">' + esc(name) + '</a>'
           : esc(name);
 
@@ -1043,7 +1034,7 @@
       }
 
       function buildReadMoreCard(mapsUrl){
-        const safeUrl = mapsUrl || "https://www.google.com/maps";
+        var safeUrl = mapsUrl || "https://www.google.com/maps";
         return (
           '<article class="reviewCard reviewCtaCard" aria-label="More reviews">' +
             '<div class="reviewCtaInner">' +
@@ -1052,7 +1043,7 @@
               '</div>' +
               '<div class="reviewCtaCopy">' +
                 '<b>Want more reviews?</b>' +
-                '<span>Google may limit the number of reviews returned per request. Open Maps to see all the latest reviews.</span>' +
+                '<span>If the API returns only a few reviews, open Maps to see everything.</span>' +
                 '<div class="reviewCtaActions">' +
                   '<a href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">Open on Maps</a>' +
                   '<a href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">Leave a Review</a>' +
@@ -1063,127 +1054,188 @@
         );
       }
 
-      async function fetchJsonWithFallback(urls){
-        let lastErr = null;
-        for(const url of urls){
-          try{
-            const res = await fetch(url, { cache: "no-store" });
-            if(!res.ok) throw new Error("HTTP " + res.status + " @ " + url);
-            const data = await res.json();
-            return { data: data, usedUrl: url };
-          }catch(e){
-            lastErr = e;
-          }
-        }
-        throw lastErr || new Error("All endpoints failed");
+      function readTextSafe(res){
+        return res.text().then(function(t){ return t || ""; });
       }
 
-      async function loadReviews(){
-        const hint = byId("reviewsHint");
-        const empty = byId("reviewsEmpty");
-        const colLeft = byId("colLeft");
-        const colRight = byId("colRight");
+      function fetchJson(url, timeoutMs){
+        var controller = new AbortController();
+        var timer = setTimeout(function(){ controller.abort(); }, timeoutMs || 8000);
 
-        try{
-          if(hint) hint.textContent = "Loading…";
+        return fetch(url, { cache: "no-store", signal: controller.signal })
+          .then(function(res){
+            clearTimeout(timer);
 
-          const endpoints = [
-            "https://mindobirdwatching.com/api/reviews",
-            "/api/reviews",
-            "/assets/data/reviews.json"
-          ];
+            if(!res.ok){
+              return readTextSafe(res).then(function(body){
+                var snippet = body.replace(/\s+/g, " ").slice(0, 140);
+                throw new Error("HTTP " + res.status + " @ " + url + (snippet ? (" | " + snippet) : ""));
+              });
+            }
 
-          const result = await fetchJsonWithFallback(endpoints);
-          const data = result.data;
+            var ct = (res.headers.get("content-type") || "").toLowerCase();
+            if(ct.indexOf("application/json") === -1 && ct.indexOf("json") === -1){
+              return readTextSafe(res).then(function(body){
+                var snippet2 = body.replace(/\s+/g, " ").slice(0, 160);
+                throw new Error("Non-JSON response @ " + url + (snippet2 ? (" | " + snippet2) : ""));
+              });
+            }
 
-          if(!data || !data.ok) throw new Error("Bad response shape from " + result.usedUrl);
-
-          const rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
-          const count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
-          setText("ratingValue", rating);
-          setText("reviewCount", count);
-
-          const mapsUrl = (data.place && data.place.maps_url) ? data.place.maps_url : "";
-          const mapsLink = byId("mapsLink");
-          if(mapsUrl && mapsLink){
-            mapsLink.href = mapsUrl;
-            mapsLink.style.display = "inline";
-          }
-
-          let reviews = Array.isArray(data.reviews) ? data.reviews.slice() : [];
-          reviews = reviews
-            .filter(r => r && (r.text || r.author))
-            .sort((a,b) => parseTime(b.publish_time) - parseTime(a.publish_time));
-
-          if(hint){
-            hint.textContent = reviews.length ? ("Live reviews loaded (" + result.usedUrl + ")") : ("No reviews returned (" + result.usedUrl + ")");
-          }
-
-          if(!reviews.length){
-            if(empty) empty.style.display = "block";
-            return;
-          }
-
-          const maxFromGoogle = Math.min(5, reviews.length);
-          const top = reviews.slice(0, maxFromGoogle);
-
-          const leftItems = [];
-          const rightItems = [];
-
-          top.forEach((r, i) => {
-            if(i % 2 === 0) leftItems.push(buildReviewCard(r));
-            else rightItems.push(buildReviewCard(r));
+            return res.json().then(function(data){
+              return { data: data, usedUrl: url };
+            });
+          })
+          .catch(function(err){
+            clearTimeout(timer);
+            throw err;
           });
+      }
 
-          const totalCardsTarget = 6;
-          const currentTotal = leftItems.length + rightItems.length;
-          if(currentTotal < totalCardsTarget){
-            if(leftItems.length <= rightItems.length) leftItems.push(buildReadMoreCard(mapsUrl));
-            else rightItems.push(buildReadMoreCard(mapsUrl));
+      function fetchJsonWithFallback(urls){
+        var i = 0;
+        var lastErr = null;
+
+        function next(){
+          if(i >= urls.length){
+            throw lastErr || new Error("All endpoints failed");
           }
-
-          if(colLeft) colLeft.innerHTML = leftItems.join("");
-          if(colRight) colRight.innerHTML = rightItems.join("");
-
-        }catch(e){
-          console.error("[Reviews] Failed to load reviews:", e);
-          const hint2 = byId("reviewsHint");
-          const empty2 = byId("reviewsEmpty");
-          if(hint2) hint2.textContent = "Could not load live reviews (check console + /api/reviews availability).";
-          if(empty2) empty2.style.display = "block";
+          var url = urls[i++];
+          return fetchJson(url, 9000).catch(function(e){
+            lastErr = e;
+            return next();
+          });
         }
+
+        return Promise.resolve().then(next);
+      }
+
+      function normalizeReviewsShape(data){
+        if(!data) return null;
+
+        if(data.ok && (data.summary || data.reviews)) return data;
+
+        if(data.summary || data.reviews){
+          data.ok = true;
+          return data;
+        }
+
+        if(Array.isArray(data.reviews)){
+          return { ok: true, summary: data.summary || {}, place: data.place || {}, reviews: data.reviews };
+        }
+
+        return data;
+      }
+
+      function loadReviews(){
+        var hint = byId("reviewsHint");
+        var empty = byId("reviewsEmpty");
+        var colLeft = byId("colLeft");
+        var colRight = byId("colRight");
+
+        if(hint) hint.textContent = "Loading…";
+
+        var endpoints = [
+          "/api/reviews",
+          "/api/reviews/",
+          "/api/reviews.json",
+          "/assets/data/reviews.json"
+        ];
+
+        return fetchJsonWithFallback(endpoints)
+          .then(function(result){
+            var data = normalizeReviewsShape(result.data);
+            if(!data || !data.ok){
+              throw new Error("Bad response shape @ " + result.usedUrl);
+            }
+
+            var rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
+            var count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
+            setText("ratingValue", rating);
+            setText("reviewCount", count);
+
+            var mapsUrl = (data.place && data.place.maps_url) ? data.place.maps_url : "";
+            var mapsLink = byId("mapsLink");
+            if(mapsUrl && mapsLink){
+              mapsLink.href = mapsUrl;
+              mapsLink.style.display = "inline";
+            }
+
+            var reviews = Array.isArray(data.reviews) ? data.reviews.slice() : [];
+            reviews = reviews
+              .filter(function(r){ return r && (r.text || r.author); })
+              .sort(function(a,b){ return parseTime(b.publish_time) - parseTime(a.publish_time); });
+
+            if(hint){
+              hint.textContent = reviews.length
+                ? ("Loaded " + reviews.length + " review(s) from " + result.usedUrl)
+                : ("No reviews returned from " + result.usedUrl);
+            }
+
+            if(!reviews.length){
+              if(empty) empty.style.display = "block";
+              return;
+            }
+
+            var maxFromGoogle = Math.min(5, reviews.length);
+            var top = reviews.slice(0, maxFromGoogle);
+
+            var leftItems = [];
+            var rightItems = [];
+
+            top.forEach(function(r, idx){
+              if(idx % 2 === 0) leftItems.push(buildReviewCard(r));
+              else rightItems.push(buildReviewCard(r));
+            });
+
+            var currentTotal = leftItems.length + rightItems.length;
+            if(currentTotal < 6){
+              if(leftItems.length <= rightItems.length) leftItems.push(buildReadMoreCard(mapsUrl));
+              else rightItems.push(buildReadMoreCard(mapsUrl));
+            }
+
+            if(colLeft) colLeft.innerHTML = leftItems.join("");
+            if(colRight) colRight.innerHTML = rightItems.join("");
+
+            if(empty) empty.style.display = "none";
+          })
+          .catch(function(e){
+            if(hint) hint.textContent = "Reviews failed to load: " + String(e && e.message ? e.message : e);
+            if(empty) empty.style.display = "block";
+          });
       }
 
       function initVerticalCarousel(){
-        const stage = byId("vStage");
-        const dotsWrap = byId("vDots");
-        const prev = byId("vPrev");
-        const next = byId("vNext");
+        var stage = byId("vStage");
+        var dotsWrap = byId("vDots");
+        var prev = byId("vPrev");
+        var next = byId("vNext");
         if(!stage || !dotsWrap || !prev || !next) return;
 
-        const imgs = Array.from(stage.querySelectorAll("img"));
+        var imgs = Array.prototype.slice.call(stage.querySelectorAll("img"));
         if(!imgs.length) return;
 
-        let idx = 0;
-        let timer = null;
+        var idx = 0;
+        var timer = null;
 
         function renderDots(){
-          dotsWrap.innerHTML = imgs.map((_, i) => (
-            '<button class="vDot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Go to image ' + (i+1) + '" data-i="' + i + '"></button>'
-          )).join("");
+          dotsWrap.innerHTML = imgs.map(function(_, i){
+            return '<button class="vDot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Go to image ' + (i+1) + '" data-i="' + i + '"></button>';
+          }).join("");
         }
 
         function show(i){
           idx = (i + imgs.length) % imgs.length;
-          imgs.forEach((im, k) => im.classList.toggle("active", k === idx));
+          imgs.forEach(function(im, k){
+            im.classList.toggle("active", k === idx);
+          });
           renderDots();
         }
 
         function start(){
-          const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
           if(reduce) return;
           stop();
-          timer = setInterval(() => show(idx + 1), 2600);
+          timer = setInterval(function(){ show(idx + 1); }, 2600);
         }
 
         function stop(){
@@ -1194,9 +1246,9 @@
         next.addEventListener("click", function(){ show(idx + 1); start(); });
 
         dotsWrap.addEventListener("click", function(e){
-          const t = e.target;
+          var t = e.target;
           if(!t || !t.getAttribute) return;
-          const di = t.getAttribute("data-i");
+          var di = t.getAttribute("data-i");
           if(di == null) return;
           show(parseInt(di, 10));
           start();
@@ -1220,3 +1272,4 @@
 </body>
 </html>
 
+<div id="siteFooter"></div>
