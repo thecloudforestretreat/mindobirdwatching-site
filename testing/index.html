@@ -998,11 +998,17 @@
         if(hint) hint.textContent = "Loading…";
 
         try{
-          if(window.MBW_REVIEWS_DATA && window.MBW_REVIEWS_DATA.ok){
-            applyData(window.MBW_REVIEWS_DATA, "reviews-data.js");
-            return;
-          }
-        }catch(e){}
+  if(window.MBW_REVIEWS_DATA && window.MBW_REVIEWS_DATA.ok){
+    var hasReviews = Array.isArray(window.MBW_REVIEWS_DATA.reviews) && window.MBW_REVIEWS_DATA.reviews.length > 0;
+    var hasCount = window.MBW_REVIEWS_DATA.summary && Number(window.MBW_REVIEWS_DATA.summary.review_count || 0) > 0;
+
+    if(hasReviews || hasCount){
+      applyData(window.MBW_REVIEWS_DATA, "reviews-data.js");
+      return;
+    }
+    // If empty, fall through and try endpoints
+  }
+}catch(e){}
 
         var endpoints = [
           "/api/reviews",
