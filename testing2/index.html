@@ -16,6 +16,9 @@
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
   <script src="/assets/js/head.js" defer></script>
+  <!-- Workaround A: load a JS data file that defines window.MBW_REVIEWS_DATA
+       IMPORTANT: do NOT use defer here, so data is available to the inline script below. -->
+  <script src="/assets/data/reviews-data.js"></script>
   <style>
     :root{
       --google-star: #fbbc04;
@@ -658,8 +661,6 @@
       .vBtn:active{ transform:none; }
     }
   </style>
-  <!-- Workaround A: load a JS data file that defines window.MBW_REVIEWS_DATA -->
-  <script src="/assets/data/reviews-data.js" defer></script>
 </head>
 <body>
   <div class="container">
@@ -673,145 +674,140 @@
           Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours,
           expert birding guides, and unforgettable wildlife experiences.
         </p>
+    <div class="ctaPills" aria-label="Primary actions">
+      <a class="pillBtn pillPrimary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">
+        <div class="pillLeft">
+          <div class="pillIcon" aria-hidden="true">
+            <img src="/assets/images/icons/Google-Review-Symbol.png" alt="">
+          </div>
+          <div class="pillText">
+            <p class="pillTitle">Leave A Review On Google</p>
+            <p class="pillSub">It helps us a lot</p>
+          </div>
+        </div>
+        <div class="pillChevron" aria-hidden="true">›</div>
+      </a>
 
-        <div class="ctaPills" aria-label="Primary actions">
-          <a class="pillBtn pillPrimary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">
-            <div class="pillLeft">
-              <div class="pillIcon" aria-hidden="true">
-                <img src="/assets/images/icons/Google-Review-Symbol.png" alt="">
-              </div>
-              <div class="pillText">
-                <p class="pillTitle">Leave A Review On Google</p>
-                <p class="pillSub">It helps us a lot</p>
-              </div>
-            </div>
-            <div class="pillChevron" aria-hidden="true">›</div>
-          </a>
+      <a class="pillBtn pillSecondary" href="/book-tour/">
+        <div class="pillLeft">
+          <div class="pillIcon" aria-hidden="true">🦜</div>
+          <div class="pillText">
+            <p class="pillTitle">Book A Tour</p>
+            <p class="pillSub">Choose dates and style</p>
+          </div>
+        </div>
+        <div class="pillChevron" aria-hidden="true">›</div>
+      </a>
 
-          <a class="pillBtn pillSecondary" href="/book-tour/">
-            <div class="pillLeft">
-              <div class="pillIcon" aria-hidden="true">🦜</div>
-              <div class="pillText">
-                <p class="pillTitle">Book A Tour</p>
-                <p class="pillSub">Choose dates and style</p>
-              </div>
-            </div>
-            <div class="pillChevron" aria-hidden="true">›</div>
-          </a>
+      <a class="pillBtn pillWhatsapp" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">
+        <div class="pillLeft">
+          <div class="pillIcon" aria-hidden="true">💬</div>
+          <div class="pillText">
+            <p class="pillTitle">Reserve Via WhatsApp</p>
+            <p class="pillSub">Fast confirmation</p>
+          </div>
+        </div>
+        <div class="pillChevron" aria-hidden="true">›</div>
+      </a>
+    </div>
+  </div>
 
-          <a class="pillBtn pillWhatsapp" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">
-            <div class="pillLeft">
-              <div class="pillIcon" aria-hidden="true">💬</div>
-              <div class="pillText">
-                <p class="pillTitle">Reserve Via WhatsApp</p>
-                <p class="pillSub">Fast confirmation</p>
-              </div>
+  <aside class="summaryCard" aria-label="Google rating summary">
+    <div class="summaryTop">
+      <div class="score" aria-label="Overall rating">
+        <div class="scoreNum" id="ratingValue">-</div>
+
+        <div class="scoreMeta">
+          <div class="stars" aria-label="Star rating">
+            <div class="starRow" aria-hidden="true">
+              <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
             </div>
-            <div class="pillChevron" aria-hidden="true">›</div>
-          </a>
+
+            <p class="scoreLine"><span id="reviewCount">-</span> reviews</p>
+
+            <div class="badgeRow" aria-label="Badges row">
+              <span class="badge" id="ratingMeta">Google Reviews</span>
+              <span class="badge" aria-label="Location badge">📍 Mindo, Ecuador</span>
+            </div>
+          </div>
+
+          <div class="poweredBy">
+            <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">Open on Maps</a>
+            <span class="poweredGroup">
+              <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
+              <span>Powered by Google</span>
+            </span>
+          </div>
         </div>
       </div>
-
-      <aside class="summaryCard" aria-label="Google rating summary">
-        <div class="summaryTop">
-          <div class="score" aria-label="Overall rating">
-            <div class="scoreNum" id="ratingValue">-</div>
-
-            <div class="scoreMeta">
-              <div class="stars" aria-label="Star rating">
-                <div class="starRow" aria-hidden="true">
-                  <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
-                </div>
-
-                <p class="scoreLine"><span id="reviewCount">-</span> reviews</p>
-
-                <div class="badgeRow" aria-label="Badges row">
-                  <span class="badge" id="ratingMeta">Google Reviews</span>
-                  <span class="badge" aria-label="Location badge">📍 Mindo, Ecuador</span>
-                </div>
-              </div>
-
-              <div class="poweredBy">
-                <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">Open on Maps</a>
-                <span class="poweredGroup">
-                  <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
-                  <span>Powered by Google</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="proof" aria-label="What guests highlight">
-          <div class="proofItem">
-            <div>
-              <b>Expert Local Guides</b>
-              <span>Guests mention spotting help, bird calls, and finding hidden species.</span>
-            </div>
-            <span class="badge">Most Mentioned</span>
-          </div>
-
-          <div class="proofItem">
-            <div>
-              <b>Unforgettable Sightings</b>
-              <span>From hummingbirds to Cock-of-the-Rock, the cloud forest delivers.</span>
-            </div>
-            <span class="badge">Top Theme</span>
-          </div>
-
-          <div class="proofItem">
-            <div>
-              <b>Smooth Experience</b>
-              <span>Clear communication and a relaxed pace.</span>
-            </div>
-            <span class="badge">Highly Rated</span>
-          </div>
-        </div>
-      </aside>
     </div>
 
-    <div class="rightStack" aria-label="Reviews carousel column">
-      <section class="vCarousel" aria-label="Reviews highlights carousel">
-        <div class="vCarouselHeader">
-          <b>Tour Highlights</b>
-          <span></span>
+    <div class="proof" aria-label="What guests highlight">
+      <div class="proofItem">
+        <div>
+          <b>Expert Local Guides</b>
+          <span>Guests mention spotting help, bird calls, and finding hidden species.</span>
         </div>
+        <span class="badge">Most Mentioned</span>
+      </div>
 
-        <div class="vStage" id="vStage">
-          <img class="active" alt="Mindo Bird Watching review highlight 1" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-01.jpg">
-          <img alt="Mindo Bird Watching review highlight 2" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-02.jpg">
-          <img alt="Mindo Bird Watching review highlight 3" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-03.jpg">
-          <img alt="Mindo Bird Watching review highlight 4" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-04.jpg">
-          <img alt="Mindo Bird Watching review highlight 5" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-05.jpg">
-
-          <div class="vNav" aria-label="Carousel navigation">
-            <button class="vBtn" type="button" id="vPrev" aria-label="Previous image">‹</button>
-            <button class="vBtn" type="button" id="vNext" aria-label="Next image">›</button>
-          </div>
+      <div class="proofItem">
+        <div>
+          <b>Unforgettable Sightings</b>
+          <span>From hummingbirds to Cock-of-the-Rock, the cloud forest delivers.</span>
         </div>
+        <span class="badge">Top Theme</span>
+      </div>
 
-        <div class="vDots" id="vDots" aria-label="Carousel dots"></div>
-      </section>
+      <div class="proofItem">
+        <div>
+          <b>Smooth Experience</b>
+          <span>Clear communication and a relaxed pace.</span>
+        </div>
+        <span class="badge">Highly Rated</span>
+      </div>
     </div>
+  </aside>
+</div>
+
+<div class="rightStack" aria-label="Reviews carousel column">
+  <section class="vCarousel" aria-label="Reviews highlights carousel">
+    <div class="vCarouselHeader">
+      <b>Tour Highlights</b>
+      <span></span>
+    </div>
+
+    <div class="vStage" id="vStage">
+      <img class="active" alt="Mindo Bird Watching review highlight 1" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-01.jpg">
+      <img alt="Mindo Bird Watching review highlight 2" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-02.jpg">
+      <img alt="Mindo Bird Watching review highlight 3" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-03.jpg">
+      <img alt="Mindo Bird Watching review highlight 4" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-04.jpg">
+      <img alt="Mindo Bird Watching review highlight 5" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-05.jpg">
+
+      <div class="vNav" aria-label="Carousel navigation">
+        <button class="vBtn" type="button" id="vPrev" aria-label="Previous image">‹</button>
+        <button class="vBtn" type="button" id="vNext" aria-label="Next image">›</button>
+      </div>
+    </div>
+
+    <div class="vDots" id="vDots" aria-label="Carousel dots"></div>
   </section>
-
-  <section class="section" aria-label="Live reviews">
+</div>  
+  </section>  <section class="section" aria-label="Live reviews">
     <div class="sectionHead">
       <h2>Latest Google Reviews</h2>
       <p class="hint" id="reviewsHint">Loading…</p>
     </div>
+<div class="reviewsSplit" aria-label="Reviews split columns">
+  <div class="col" id="colLeft" aria-label="Left column"></div>
+  <div class="col" id="colRight" aria-label="Right column"></div>
+</div>
 
-    <div class="reviewsSplit" aria-label="Reviews split columns">
-      <div class="col" id="colLeft" aria-label="Left column"></div>
-      <div class="col" id="colRight" aria-label="Right column"></div>
-    </div>
-
-    <div class="emptyState" id="reviewsEmpty" style="display:none;">
-      Reviews are not available right now. Please try again soon.
-    </div>
-  </section>
+<div class="emptyState" id="reviewsEmpty" style="display:none;">
+  Reviews are not available right now. Please try again soon.
+</div>
+      </section>
 </main>
-
 <div id="siteFooter"></div>
   </div>
   <script src="/assets/js/includes.js?v=1" defer></script>
@@ -819,259 +815,265 @@
   <script>
     (function () {
       "use strict";
+  function byId(id){ return document.getElementById(id); }
+  function setText(id, val){
+    var el = byId(id);
+    if(!el) return;
+    el.textContent = String(val == null ? "" : val);
+  }
 
-      function byId(id){ return document.getElementById(id); }
-      function setText(id, val){
-        var el = byId(id);
-        if(!el) return;
-        el.textContent = String(val == null ? "" : val);
-      }
+  function esc(s){
+    return String(s || "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
 
-      function esc(s){
-        return String(s || "")
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#039;");
-      }
+  function makeAvatarLetters(name){
+    var n = String(name || "").trim();
+    if(!n) return "G";
+    var parts = n.split(/\s+/).filter(Boolean);
+    var a = (parts[0] || "G")[0] || "G";
+    var b = (parts[1] || "")[0] || "";
+    return (a + b).toUpperCase();
+  }
 
-      function makeAvatarLetters(name){
-        var n = String(name || "").trim();
-        if(!n) return "G";
-        var parts = n.split(/\s+/).filter(Boolean);
-        var a = (parts[0] || "G")[0] || "G";
-        var b = (parts[1] || "")[0] || "";
-        return (a + b).toUpperCase();
-      }
+  function parseTime(s){
+    if(!s) return 0;
+    var t = Date.parse(s);
+    return Number.isFinite(t) ? t : 0;
+  }
 
-      function parseTime(s){
-        if(!s) return 0;
-        var t = Date.parse(s);
-        return Number.isFinite(t) ? t : 0;
-      }
+  function starsInline(rating){
+    var r = Number(rating || 0);
+    var full = Math.max(0, Math.min(5, Math.round(r)));
+    return "★".repeat(full) + "☆".repeat(5 - full);
+  }
 
-      function starsInline(rating){
-        var r = Number(rating || 0);
-        var full = Math.max(0, Math.min(5, Math.round(r)));
-        return "★".repeat(full) + "☆".repeat(5 - full);
-      }
+  function buildReviewCard(r){
+    var name = r.author || "Google user";
+    var sub = r.relative_time || "";
+    var text = r.text || "";
+    var ratingNum = (r.rating != null) ? r.rating : 5;
+    var authorUrl = r.author_url || "";
 
-      function buildReviewCard(r){
-        var name = r.author || "Google user";
-        var sub = r.relative_time || "";
-        var text = r.text || "";
-        var ratingNum = (r.rating != null) ? r.rating : 5;
-        var authorUrl = r.author_url || "";
+    var nameHtml = authorUrl
+      ? '<a href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:3px;">' + esc(name) + '</a>'
+      : esc(name);
 
-        var nameHtml = authorUrl
-          ? '<a href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:3px;">' + esc(name) + '</a>'
-          : esc(name);
-
-        return (
-          '<article class="reviewCard" aria-label="Review">' +
-            '<div class="reviewTop">' +
-              '<div class="who">' +
-                '<div class="avatar" aria-hidden="true">' + esc(makeAvatarLetters(name)) + '</div>' +
-                '<div class="whoMeta">' +
-                  '<p class="name">' + nameHtml + '</p>' +
-                  '<p class="sub">' + esc(sub) + '</p>' +
-                '</div>' +
-              '</div>' +
-              '<div class="reviewBadges" aria-label="Rating and source">' +
-                '<span class="starsPill"><span class="starsTextInline" aria-label="Stars">' + esc(starsInline(ratingNum)) + '</span></span>' +
-                '<span class="gMark" aria-label="Google Reviews">' +
-                  '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews">' +
-                '</span>' +
-              '</div>' +
+    return (
+      '<article class="reviewCard" aria-label="Review">' +
+        '<div class="reviewTop">' +
+          '<div class="who">' +
+            '<div class="avatar" aria-hidden="true">' + esc(makeAvatarLetters(name)) + '</div>' +
+            '<div class="whoMeta">' +
+              '<p class="name">' + nameHtml + '</p>' +
+              '<p class="sub">' + esc(sub) + '</p>' +
             '</div>' +
-            '<div class="quote">“' + esc(text) + '”</div>' +
-          '</article>'
-        );
-      }
+          '</div>' +
+          '<div class="reviewBadges" aria-label="Rating and source">' +
+            '<span class="starsPill"><span class="starsTextInline" aria-label="Stars">' + esc(starsInline(ratingNum)) + '</span></span>' +
+            '<span class="gMark" aria-label="Google Reviews">' +
+              '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews">' +
+            '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="quote">“' + esc(text) + '”</div>' +
+      '</article>'
+    );
+  }
 
-      function buildReadMoreCard(mapsUrl){
-        var safeUrl = mapsUrl || "https://www.google.com/maps";
-        return (
-          '<article class="reviewCard" aria-label="More reviews">' +
-            '<div style="display:flex; gap:12px; align-items:flex-start;">' +
-              '<div class="avatar" aria-hidden="true" style="border-color: rgba(3,78,162,.20); background: rgba(3,78,162,.10); color: rgba(3,78,162,.95);">G</div>' +
-              '<div style="min-width:0;">' +
-                '<p class="name" style="margin:0 0 4px;">Want more reviews?</p>' +
-                '<p class="sub" style="margin:0; white-space:normal; line-height:1.55;">Open Google Maps to see every review (Google may limit what sites can display).</p>' +
-                '<div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">' +
-                  '<a class="btn secondary" href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">Open on Maps</a>' +
-                  '<a class="btn primary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">Leave a Review</a>' +
-                '</div>' +
-              '</div>' +
+  function buildReadMoreCard(mapsUrl){
+    var safeUrl = mapsUrl || "https://www.google.com/maps";
+    return (
+      '<article class="reviewCard" aria-label="More reviews">' +
+        '<div style="display:flex; gap:12px; align-items:flex-start;">' +
+          '<div class="avatar" aria-hidden="true" style="border-color: rgba(3,78,162,.20); background: rgba(3,78,162,.10); color: rgba(3,78,162,.95);">G</div>' +
+          '<div style="min-width:0;">' +
+            '<p class="name" style="margin:0 0 4px;">Want more reviews?</p>' +
+            '<p class="sub" style="margin:0; white-space:normal; line-height:1.55;">Open Google Maps to see every review (Google may limit what sites can display).</p>' +
+            '<div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">' +
+              '<a class="btn secondary" href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">Open on Maps</a>' +
+              '<a class="btn primary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">Leave a Review</a>' +
             '</div>' +
-          '</article>'
-        );
-      }
+          '</div>' +
+        '</div>' +
+      '</article>'
+    );
+  }
 
-      function applyData(data, sourceLabel){
-        if(!data || !data.ok) throw new Error("Bad response shape");
-        var rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
-        var count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
-        setText("ratingValue", rating);
-        setText("reviewCount", count);
+  function applyData(data, sourceLabel){
+    if(!data || !data.ok) throw new Error("Bad response shape");
+    var rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
+    var count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
+    setText("ratingValue", rating);
+    setText("reviewCount", count);
 
-        var mapsUrl = (data.place && data.place.maps_url) ? data.place.maps_url : "";
-        var mapsLink = byId("mapsLink");
-        if(mapsUrl && mapsLink){
-          mapsLink.href = mapsUrl;
-          mapsLink.style.display = "inline";
-        }
+    var mapsUrl = (data.place && data.place.maps_url) ? data.place.maps_url : "";
+    var mapsLink = byId("mapsLink");
+    if(mapsUrl && mapsLink){
+      mapsLink.href = mapsUrl;
+      mapsLink.style.display = "inline";
+    }
 
-        var hint = byId("reviewsHint");
-        var empty = byId("reviewsEmpty");
-        var colLeft = byId("colLeft");
-        var colRight = byId("colRight");
+    var hint = byId("reviewsHint");
+    var empty = byId("reviewsEmpty");
+    var colLeft = byId("colLeft");
+    var colRight = byId("colRight");
 
-        var reviews = Array.isArray(data.reviews) ? data.reviews.slice() : [];
-        reviews = reviews
-          .filter(function(r){ return r && (r.text || r.author); })
-          .sort(function(a,b){ return parseTime(b.publish_time) - parseTime(a.publish_time); });
+    var reviews = Array.isArray(data.reviews) ? data.reviews.slice() : [];
+    reviews = reviews
+      .filter(function(r){ return r && (r.text || r.author); })
+      .sort(function(a,b){ return parseTime(b.publish_time) - parseTime(a.publish_time); });
 
-        if(hint){
-          hint.textContent = reviews.length
-            ? ("Loaded " + reviews.length + " review(s) (" + sourceLabel + ")")
-            : ("No reviews returned (" + sourceLabel + ")");
-        }
+    if(hint){
+      hint.textContent = reviews.length
+        ? ("Loaded " + reviews.length + " review(s) (" + sourceLabel + ")")
+        : ("No reviews returned (" + sourceLabel + ")");
+    }
 
-        if(!reviews.length){
-          if(empty) empty.style.display = "block";
-          return;
-        }
+    if(!reviews.length){
+      if(empty) empty.style.display = "block";
+      if(colLeft) colLeft.innerHTML = "";
+      if(colRight) colRight.innerHTML = "";
+      return;
+    }
 
-        var top = reviews.slice(0, Math.min(5, reviews.length));
-        var leftItems = [];
-        var rightItems = [];
+    var top = reviews.slice(0, Math.min(5, reviews.length));
+    var leftItems = [];
+    var rightItems = [];
 
-        top.forEach(function(r, i){
-          if(i % 2 === 0) leftItems.push(buildReviewCard(r));
-          else rightItems.push(buildReviewCard(r));
-        });
+    top.forEach(function(r, i){
+      if(i % 2 === 0) leftItems.push(buildReviewCard(r));
+      else rightItems.push(buildReviewCard(r));
+    });
 
-        if(leftItems.length + rightItems.length < 6){
-          if(leftItems.length <= rightItems.length) leftItems.push(buildReadMoreCard(mapsUrl));
-          else rightItems.push(buildReadMoreCard(mapsUrl));
-        }
+    if(leftItems.length + rightItems.length < 6){
+      if(leftItems.length <= rightItems.length) leftItems.push(buildReadMoreCard(mapsUrl));
+      else rightItems.push(buildReadMoreCard(mapsUrl));
+    }
 
-        if(colLeft) colLeft.innerHTML = leftItems.join("");
-        if(colRight) colRight.innerHTML = rightItems.join("");
+    if(colLeft) colLeft.innerHTML = leftItems.join("");
+    if(colRight) colRight.innerHTML = rightItems.join("");
 
-        if(empty) empty.style.display = "none";
-      }
+    if(empty) empty.style.display = "none";
+  }
 
-      function fetchJson(url){
-        return fetch(url, { cache: "no-store" }).then(function(res){
-          if(!res.ok) throw new Error("HTTP " + res.status + " @ " + url);
-          var ct = (res.headers.get("content-type") || "").toLowerCase();
-          if(ct.indexOf("json") === -1) throw new Error("Non-JSON @ " + url);
-          return res.json();
-        });
-      }
-
-      function loadReviews(){
-        var hint = byId("reviewsHint");
-        var empty = byId("reviewsEmpty");
-        if(hint) hint.textContent = "Loading…";
-
+  function fetchJson(url){
+    return fetch(url, { cache: "no-store" }).then(function(res){
+      if(!res.ok) throw new Error("HTTP " + res.status + " @ " + url);
+      // Some hosts mislabel content-type; we still try JSON, but if it's HTML it will throw below.
+      return res.text().then(function(txt){
         try{
-          if(window.MBW_REVIEWS_DATA && window.MBW_REVIEWS_DATA.ok){
-            applyData(window.MBW_REVIEWS_DATA, "reviews-data.js");
-            return;
-          }
-        }catch(e){}
-
-        var endpoints = [
-          "/api/reviews",
-          "/api/reviews/",
-          "/api/reviews.json",
-          "/assets/data/reviews.json"
-        ];
-
-        var i = 0;
-        function next(){
-          if(i >= endpoints.length) throw new Error("All endpoints failed");
-          var url = endpoints[i++];
-          return fetchJson(url).then(function(data){
-            applyData(data, url);
-          }).catch(function(){
-            return next();
-          });
+          return JSON.parse(txt);
+        }catch(e){
+          throw new Error("Non-JSON response @ " + url + " | " + String(txt).slice(0, 140));
         }
+      });
+    });
+  }
 
-        next().catch(function(e){
-          if(hint) hint.textContent = "Reviews failed to load: " + String(e && e.message ? e.message : e);
-          if(empty) empty.style.display = "block";
-        });
+  function loadReviews(){
+    var hint = byId("reviewsHint");
+    var empty = byId("reviewsEmpty");
+    if(hint) hint.textContent = "Loading…";
+
+    try{
+      if(window.MBW_REVIEWS_DATA && window.MBW_REVIEWS_DATA.ok){
+        applyData(window.MBW_REVIEWS_DATA, "reviews-data.js");
+        return;
       }
+    }catch(e){}
 
-      function initVerticalCarousel(){
-        var stage = byId("vStage");
-        var dotsWrap = byId("vDots");
-        var prev = byId("vPrev");
-        var next = byId("vNext");
-        if(!stage || !dotsWrap || !prev || !next) return;
+    var endpoints = [
+      "/api/reviews",
+      "/api/reviews/",
+      "/api/reviews.json",
+      "/assets/data/reviews.json"
+    ];
 
-        var imgs = Array.prototype.slice.call(stage.querySelectorAll("img"));
-        if(!imgs.length) return;
+    var i = 0;
+    function next(){
+      if(i >= endpoints.length) throw new Error("All endpoints failed");
+      var url = endpoints[i++];
+      return fetchJson(url).then(function(data){
+        applyData(data, url);
+      }).catch(function(){
+        return next();
+      });
+    }
 
-        var idx = 0;
-        var timer = null;
+    next().catch(function(e){
+      if(hint) hint.textContent = "Reviews failed to load: " + String(e && e.message ? e.message : e);
+      if(empty) empty.style.display = "block";
+    });
+  }
 
-        function renderDots(){
-          dotsWrap.innerHTML = imgs.map(function(_, i){
-            return '<button class="vDot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Go to image ' + (i+1) + '" data-i="' + i + '"></button>';
-          }).join("");
-        }
+  function initVerticalCarousel(){
+    var stage = byId("vStage");
+    var dotsWrap = byId("vDots");
+    var prev = byId("vPrev");
+    var next = byId("vNext");
+    if(!stage || !dotsWrap || !prev || !next) return;
 
-        function show(i){
-          idx = (i + imgs.length) % imgs.length;
-          imgs.forEach(function(im, k){ im.classList.toggle("active", k === idx); });
-          renderDots();
-        }
+    var imgs = Array.prototype.slice.call(stage.querySelectorAll("img"));
+    if(!imgs.length) return;
 
-        function start(){
-          var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-          if(reduce) return;
-          stop();
-          timer = setInterval(function(){ show(idx + 1); }, 2600);
-        }
+    var idx = 0;
+    var timer = null;
 
-        function stop(){
-          if(timer){ clearInterval(timer); timer = null; }
-        }
+    function renderDots(){
+      dotsWrap.innerHTML = imgs.map(function(_, i){
+        return '<button class="vDot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Go to image ' + (i+1) + '" data-i="' + i + '"></button>';
+      }).join("");
+    }
 
-        prev.addEventListener("click", function(){ show(idx - 1); start(); });
-        next.addEventListener("click", function(){ show(idx + 1); start(); });
+    function show(i){
+      idx = (i + imgs.length) % imgs.length;
+      imgs.forEach(function(im, k){ im.classList.toggle("active", k === idx); });
+      renderDots();
+    }
 
-        dotsWrap.addEventListener("click", function(e){
-          var t = e.target;
-          if(!t || !t.getAttribute) return;
-          var di = t.getAttribute("data-i");
-          if(di == null) return;
-          show(parseInt(di, 10));
-          start();
-        });
+    function start(){
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if(reduce) return;
+      stop();
+      timer = setInterval(function(){ show(idx + 1); }, 2600);
+    }
 
-        stage.addEventListener("mouseenter", stop);
-        stage.addEventListener("mouseleave", start);
-        stage.addEventListener("touchstart", stop, { passive: true });
-        stage.addEventListener("touchend", start, { passive: true });
-        stage.addEventListener("focusin", stop);
-        stage.addEventListener("focusout", start);
+    function stop(){
+      if(timer){ clearInterval(timer); timer = null; }
+    }
 
-        show(0);
-        start();
-      }
+    prev.addEventListener("click", function(){ show(idx - 1); start(); });
+    next.addEventListener("click", function(){ show(idx + 1); start(); });
 
-      loadReviews();
-      initVerticalCarousel();
-    })();
-  </script>
+    dotsWrap.addEventListener("click", function(e){
+      var t = e.target;
+      if(!t || !t.getAttribute) return;
+      var di = t.getAttribute("data-i");
+      if(di == null) return;
+      show(parseInt(di, 10));
+      start();
+    });
+
+    stage.addEventListener("mouseenter", stop);
+    stage.addEventListener("mouseleave", start);
+    stage.addEventListener("touchstart", stop, { passive: true });
+    stage.addEventListener("touchend", start, { passive: true });
+    stage.addEventListener("focusin", stop);
+    stage.addEventListener("focusout", start);
+
+    show(0);
+    start();
+  }
+
+  loadReviews();
+  initVerticalCarousel();
+})();
+      </script>
 </body>
 </html>
 
