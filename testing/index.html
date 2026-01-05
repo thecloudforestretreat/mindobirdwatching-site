@@ -3,25 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reservar un tour | Mindo Bird Watching</title>
-  <meta name="description" content="Solicita un tour de observacion de aves en Mindo, Ecuador. Comparte fechas, tamano de grupo y objetivos, y te confirmaremos detalles y responderemos rapido por email o WhatsApp." />
+  <title>Reservar un Tour | Mindo Bird Watching</title>
+  <meta name="description" content="Reserva un tour de avistamiento de aves en Mindo, Ecuador. Comparte fechas, tamano del grupo y objetivos, y confirmaremos detalles y te responderemos rapido por email o WhatsApp." />
   <link rel="canonical" href="https://mindobirdwatching.com/es/reservar-tour/" />
   <link rel="alternate" hreflang="en" href="/book-tour/" />
   <link rel="alternate" hreflang="es" href="/es/reservar-tour/" />
   <link rel="alternate" hreflang="x-default" href="/book-tour/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
-  <meta property="og:title" content="Reservar un tour | Mindo Bird Watching" />
-  <meta property="og:description" content="Solicita un tour de observacion de aves en Mindo, Ecuador. Comparte fechas, tamano de grupo y objetivos, y te confirmaremos detalles y responderemos rapido por email o WhatsApp." />
+  <meta property="og:title" content="Reservar un Tour | Mindo Bird Watching" />
+  <meta property="og:description" content="Reserva un tour de avistamiento de aves en Mindo, Ecuador. Comparte fechas, tamano del grupo y objetivos, y confirmaremos detalles y te responderemos rapido por email o WhatsApp." />
   <meta property="og:url" content="https://mindobirdwatching.com/es/reservar-tour/" />
   <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Mindo Bird Watching - Tours de aves en bosque nublado en Ecuador" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - Cloud forest birding tours in Ecuador" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Reservar un tour | Mindo Bird Watching" />
-  <meta name="twitter:description" content="Solicita un tour de observacion de aves en Mindo, Ecuador. Comparte fechas, tamano de grupo y objetivos, y te confirmaremos detalles y responderemos rapido por email o WhatsApp." />
+  <meta name="twitter:title" content="Reservar un Tour | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Reserva un tour de avistamiento de aves en Mindo, Ecuador. Comparte fechas, tamano del grupo y objetivos, y confirmaremos detalles y te responderemos rapido por email o WhatsApp." />
   <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="/assets/css/header.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <script src="/assets/js/head.js" defer></script>
+
   <style>
     /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
@@ -42,16 +43,37 @@
       box-shadow: var(--shadow);
     }
 
-    /* ===== HERO GRID ===== */
-    .hero{
+    /*
+      FIX FOR THE EMPTY GAP
+      We convert the top area into a 2-column "layout" where:
+      - Left column flows naturally: heroLeft then the form section
+      - Right column is its own stack: heroRight then the tips card
+      This removes the large blank space that happens when the hero row height is defined by the taller right column.
+    */
+    .layout{
       display:grid;
       grid-template-columns: 1.05fr .95fr;
       gap: 16px;
       align-items:start;
     }
 
-    /* Fix: eliminate unexpected vertical "stretch + space-between" gaps on the left.
-       (Some global CSS may style .heroLeft; we hard override here.) */
+    /* Left stack: title/meta/glance then form */
+    .leftStack{
+      display:grid;
+      gap: 18px;
+      align-content:start;
+      min-width:0;
+    }
+
+    /* Right stack: image/actions then tips */
+    .rightStack{
+      display:grid;
+      gap: 12px;
+      align-content:start;
+      min-width:0;
+    }
+
+    /* ===== HERO LEFT ===== */
     .heroLeft{
       display:grid;
       gap: 12px;
@@ -60,8 +82,6 @@
       min-width: 0;
     }
     .heroLeft > *{ min-width: 0; }
-    .heroLeft .metaCard{ margin-top: 0 !important; }
-    .heroLeft .lede{ margin-bottom: 0; }
 
     h1{ margin:0 0 10px; letter-spacing:-0.02em; }
 
@@ -272,7 +292,6 @@
 
     /* ===== SECTION ===== */
     .section{
-      margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
@@ -292,13 +311,6 @@
       color: var(--forest);
       letter-spacing:-0.02em;
       font-size: 20px;
-    }
-
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      align-items:start;
     }
 
     .cardBox{
@@ -499,8 +511,7 @@
 
     /* ===== MOBILE POLISH ===== */
     @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; }
-      .grid2{ grid-template-columns: 1fr; }
+      .layout{ grid-template-columns: 1fr; }
       .row2{ grid-template-columns: 1fr; }
       .rowDatesGuests{ grid-template-columns: 1fr; }
       .rowPhone{ grid-template-columns: 120px 1fr; }
@@ -510,23 +521,17 @@
       .rowDatesGuests .guestsLabel{ width: 100%; justify-self: stretch; }
       .rowDatesGuests .guestsLabel select{ width: 100%; min-width: 0; }
       .rowDatesGuests .guestsLabel .labelText{ white-space: normal; }
-      .heroLeft{ gap: 12px; }
+      .glanceGrid{ grid-template-columns: 1fr; }
     }
 
     @media (max-width: 640px){
       .page{ margin-top:14px; padding:16px; }
-      .hero{ gap: 12px; }
-
-      .heroRight{ gap: 10px; }
-      .glanceGrid{ grid-template-columns: 1fr; }
-
+      .metaCard, .glance, .heroActions{ padding: 12px; }
+      .heroImageBar{ padding: 10px 12px; }
       .heroActions .btn{ width:100%; }
       .heroActions .quickRow{ gap: 10px; }
       .heroActions .quickRow .btn{ flex: 1 1 auto; }
       .iconBtn{ width:46px; height:46px; }
-
-      .metaCard, .glance, .heroActions{ padding: 12px; }
-      .heroImageBar{ padding: 10px 12px; }
     }
 
     @media (max-width: 420px){
@@ -539,254 +544,258 @@
     <div id="siteHeader"></div>
 
     <main class="page card">
-      <section class="hero" aria-label="Reservar un tour - hero grid">
-        <div class="heroLeft">
-          <h1>Reservar un tour</h1>
-          <p class="lede">
-            Comparte tus fechas, tamano de grupo y objetivos. Confirmaremos detalles y responderemos rapido.
-          </p>
+      <div class="layout" aria-label="Layout para reservar un tour">
+        <!-- LEFT COLUMN -->
+        <div class="leftStack" aria-label="Columna izquierda">
+          <section class="heroLeft" aria-label="Introduccion para reservar un tour">
+            <h1>Reservar un Tour</h1>
+            <p class="lede">
+              Comparte tus fechas, tamano del grupo y objetivos. Confirmaremos los detalles y te responderemos rapido.
+            </p>
 
-          <div class="metaCard" aria-label="Metadatos de reserva">
-            <div class="chips">
-              <span class="chip">Mindo, Ecuador</span>
-              <span class="chip">Respuesta por email o WhatsApp</span>
-              <span class="chip">Opciones privadas y personalizadas</span>
-            </div>
-            <p class="note">Los campos marcados con <span class="req">*</span> son obligatorios.</p>
-          </div>
-
-          <div class="glance" aria-label="Resumen rapido">
-            <div class="chips" aria-label="Chips de resumen">
-              <span class="chip">Resumen</span>
-              <span class="chip">2 a 3 minutos</span>
-              <span class="chip">Sin pago</span>
+            <div class="metaCard" aria-label="Metadatos de reserva">
+              <div class="chips">
+                <span class="chip">Mindo, Ecuador</span>
+                <span class="chip">Respuesta por email o WhatsApp</span>
+                <span class="chip">Opciones privadas y personalizadas</span>
+              </div>
+              <p class="note">Los campos marcados con <span class="req">*</span> son obligatorios.</p>
             </div>
 
-            <div class="glanceGrid" aria-label="Grid de resumen">
-              <div class="glanceItem">
-                <div class="glanceK">Mejor incluir</div>
-                <div class="glanceV">Aves objetivo, ritmo y prioridad de fotos.</div>
+            <div class="glance" aria-label="De un vistazo">
+              <div class="chips" aria-label="Chips de resumen">
+                <span class="chip">De un vistazo</span>
+                <span class="chip">2 a 3 minutos</span>
+                <span class="chip">No se requiere pago</span>
               </div>
-              <div class="glanceItem">
-                <div class="glanceK">Fechas</div>
-                <div class="glanceV">La fecha de inicio es suficiente, fin opcional.</div>
-              </div>
-              <div class="glanceItem">
-                <div class="glanceK">Tamano de grupo</div>
-                <div class="glanceV">Nos ayuda con guia, tiempos y logistica.</div>
-              </div>
-              <div class="glanceItem">
-                <div class="glanceK">Seguimiento</div>
-                <div class="glanceV">Confirmamos disponibilidad y el mejor plan para tus objetivos.</div>
+
+              <div class="glanceGrid" aria-label="Grid de resumen">
+                <div class="glanceItem">
+                  <div class="glanceK">Mejor incluir</div>
+                  <div class="glanceV">Especies objetivo, ritmo y prioridad de fotografia.</div>
+                </div>
+                <div class="glanceItem">
+                  <div class="glanceK">Fechas</div>
+                  <div class="glanceV">La fecha de inicio es suficiente; la fecha de fin es opcional.</div>
+                </div>
+                <div class="glanceItem">
+                  <div class="glanceK">Tamano del grupo</div>
+                  <div class="glanceV">Ayuda a ajustar guia y logistica.</div>
+                </div>
+                <div class="glanceItem">
+                  <div class="glanceK">Seguimiento</div>
+                  <div class="glanceV">Confirmamos disponibilidad y el mejor plan segun tus objetivos.</div>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
+
+          <section class="section" aria-label="Formulario para reservar tour" id="request-form">
+            <div class="sectionHead">
+              <h2>Solicita tu Tour</h2>
+              <p class="note">Responderemos con disponibilidad, horarios y siguientes pasos.</p>
+            </div>
+
+            <div class="cardBox">
+              <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
+
+              <form class="form" id="bookTourForm"
+                method="post"
+                target="mbwHiddenFrame"
+                action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
+
+                <div class="row2">
+                  <label>
+                    <span class="labelText">Nombre<span class="req">*</span></span>
+                    <input
+                      type="text"
+                      name="first_name"
+                      id="firstName"
+                      autocomplete="given-name"
+                      autocapitalize="words"
+                      autocorrect="off"
+                      spellcheck="false"
+                      placeholder="Nombre"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span class="labelText">Apellido<span class="req">*</span></span>
+                    <input
+                      type="text"
+                      name="last_name"
+                      id="lastName"
+                      autocomplete="family-name"
+                      autocapitalize="words"
+                      autocorrect="off"
+                      spellcheck="false"
+                      placeholder="Apellido"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div class="row2">
+                  <label>
+                    <span class="labelText">Email<span class="req">*</span></span>
+                    <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required />
+                  </label>
+
+                  <label>
+                    <span class="labelText">Como te enteraste de nosotros?</span>
+                    <input type="text" name="how_hear" placeholder="Google, Instagram, amigo, hotel, etc." />
+                  </label>
+                </div>
+
+                <div class="rowPhone">
+                  <label>
+                    <span class="labelText">Codigo de pais<span class="req">*</span></span>
+                    <input
+                      type="text"
+                      name="country_code"
+                      inputmode="numeric"
+                      pattern="[0-9]{1,4}"
+                      placeholder="1"
+                      value="1"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span class="labelText">Telefono / WhatsApp<span class="req">*</span></span>
+                    <input
+                      type="tel"
+                      name="phone_number"
+                      autocomplete="tel"
+                      inputmode="tel"
+                      placeholder="123 456 7890"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <label>
+                  <span class="labelText">Mensaje / Preguntas<span class="req">*</span></span>
+                  <textarea name="message" placeholder="Comparte tus objetivos: especies, fotografia, ritmo, guia privado y cualquier nota de horario." required></textarea>
+                </label>
+
+                <div class="row2 rowDatesGuests">
+                  <label>
+                    <span class="labelText">Fechas de visita</span>
+                    <div class="dateRange">
+                      <input type="date" id="dateStart" autocomplete="off" />
+                      <input type="date" id="dateEnd" autocomplete="off" />
+                    </div>
+                    <p class="dateHint">Selecciona una fecha de inicio y una fecha de fin opcional.</p>
+                    <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
+                  </label>
+
+                  <label class="guestsLabel">
+                    <span class="labelText">Numero de personas</span>
+                    <select name="number_of_guests">
+                      <option value="">Seleccionar</option>
+                      <option>1</option>
+                      <option>2</option>
+                      <option>3 to 4</option>
+                      <option>5 to 8</option>
+                      <option>9+</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label>
+                  <span class="labelText">Tipo de tour preferido</span>
+                  <select name="preferred_tour_type">
+                    <option value="">Seleccionar</option>
+                    <option>Tour de medio dia</option>
+                    <option>Tour de dia completo</option>
+                    <option>Tour privado / personalizado</option>
+                    <option>Aun no estoy seguro</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span class="labelText">Necesidades de alojamiento</span>
+                  <input type="text" name="accommodation_needs" placeholder="Opcional (hotel, notas de recogida, etc.)" />
+                </label>
+
+                <label>
+                  <span class="labelText">Intereses especiales</span>
+                  <input type="text" name="special_interests" placeholder="Fotografia, colibries, tangaras, caminata nocturna, etc." />
+                </label>
+
+                <input type="hidden" name="source_page" value="https://mindobirdwatching.com/es/reservar-tour/" />
+                <input type="hidden" name="user_agent" id="uaField" value="" />
+
+                <p class="help">
+                  Despues de enviar, recibiras una confirmacion por email. Si no la ves, revisa Spam o Promociones.
+                </p>
+
+                <div class="ctaActions">
+                  <button class="btn primary" id="submitBtn" type="submit">Enviar solicitud</button>
+                  <a class="btn secondary" href="/tours/">Ver tours</a>
+                </div>
+
+                <div class="success" id="formSuccessMsg">Tu solicitud fue enviada. Te enviaremos una confirmacion por email en breve.</div>
+                <div class="errorMsg" id="formErrorMsg">Algo salio mal. Intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.</div>
+              </form>
+            </div>
+          </section>
         </div>
 
-        <aside class="heroRight" aria-label="Imagen y acciones">
-          <div class="heroImageCard" aria-label="Imagen de reserva">
-            <div class="heroImageFrame">
-              <img src="/assets/images/pages/tours/MBW-Tours-Custom-Tour.jpg" alt="Observacion de aves en el bosque nublado de Mindo con guia" loading="lazy" decoding="async" />
+        <!-- RIGHT COLUMN -->
+        <aside class="rightStack" aria-label="Columna derecha">
+          <div class="heroRight" aria-label="Imagen y acciones">
+            <div class="heroImageCard" aria-label="Imagen de reserva">
+              <div class="heroImageFrame">
+                <img src="/assets/images/pages/tours/MBW-Tours-Custom-Tour.jpg" alt="Avistamiento de aves en el bosque nuboso de Mindo con un guia" loading="lazy" decoding="async" />
+              </div>
+              <div class="heroImageBar">
+                <p class="heroImageTitle">Reservar un Tour</p>
+                <span class="heroImageTag">Foto 4:3</span>
+              </div>
             </div>
-            <div class="heroImageBar">
-              <p class="heroImageTitle">Reservar un tour</p>
-              <span class="heroImageTag">Foto 4:3</span>
+
+            <div class="heroActions" aria-label="Acciones rapidas">
+              <div class="quickRow" aria-label="Acciones principales">
+                <a class="btn primary" href="#request-form">Enviar solicitud</a>
+                <a class="btn secondary" href="/tours/">Ver tours</a>
+              </div>
+
+              <div class="sectionHead" style="margin:4px 0 0; padding:0; border:0;">
+                <p class="note" style="margin:0;">Prefieres contacto directo? Usa email o WhatsApp.</p>
+              </div>
+
+              <div class="quickRow" aria-label="Acciones de email">
+                <a class="btn secondary" id="emailBtn" href="mailto:mindobirdwatching@gmail.com?subject=Solicitud%20de%20Tour%20-%20Mindo%20Bird%20Watching">Email</a>
+                <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copiar email">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="toast" id="copyToast">Copiado: mindobirdwatching@gmail.com</div>
+
+              <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Mensaje por WhatsApp</a>
             </div>
           </div>
 
-          <div class="heroActions" aria-label="Acciones rapidas">
-            <div class="quickRow" aria-label="Acciones principales">
-              <a class="btn primary" href="#request-form">Enviar solicitud</a>
-              <a class="btn secondary" href="/es/tours/">Ver tours</a>
-            </div>
-
-            <div class="sectionHead" style="margin:4px 0 0; padding:0; border:0;">
-              <p class="note" style="margin:0;">Prefieres contacto directo? Usa email o WhatsApp.</p>
-            </div>
-
-            <div class="quickRow" aria-label="Acciones de email">
-              <a class="btn secondary" id="emailBtn" href="mailto:mindobirdwatching@gmail.com?subject=Solicitud%20de%20tour%20-%20Mindo%20Bird%20Watching">Escribenos</a>
-              <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copiar direccion de email">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
-                </svg>
-              </button>
-            </div>
-            <div class="toast" id="copyToast">Copiado: mindobirdwatching@gmail.com</div>
-
-            <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Mensaje por WhatsApp</a>
-          </div>
-
-          <div class="cardBox" aria-label="Que ayuda a responder mas rapido">
+          <div class="cardBox" aria-label="Que nos ayuda a responder mas rapido">
             <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Que nos ayuda a responder mas rapido</h3>
             <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
               <li>Especies objetivo (si aplica)</li>
-              <li>Prioridad fotos vs. lista de aves</li>
+              <li>Prioridad de fotografia vs. lista de aves</li>
               <li>Ritmo preferido (relajado vs. intensivo)</li>
               <li>Guia privado (si o no)</li>
-              <li>Limitaciones de movilidad o tiempo</li>
+              <li>Cualquier limitacion de movilidad u horario</li>
             </ul>
             <p class="note" style="margin-top:10px;">
-              Comparte lo que sabes ahora. Ajustamos detalles despues de confirmar disponibilidad.
+              Comparte lo que sepas ahora. Podemos ajustar detalles despues de confirmar disponibilidad.
             </p>
           </div>
         </aside>
-      </section>
-
-      <section class="section" aria-label="Formulario de reserva" id="request-form">
-        <div class="sectionHead">
-          <h2>Solicita tu tour</h2>
-          <p class="note">Responderemos con disponibilidad, horarios y siguientes pasos.</p>
-        </div>
-
-        <div class="grid2">
-          <div class="cardBox">
-            <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
-
-            <form class="form" id="bookTourForm"
-              method="post"
-              target="mbwHiddenFrame"
-              action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
-
-              <div class="row2">
-                <label>
-                  <span class="labelText">Nombre<span class="req">*</span></span>
-                  <input
-                    type="text"
-                    name="first_name"
-                    id="firstName"
-                    autocomplete="given-name"
-                    autocapitalize="words"
-                    autocorrect="off"
-                    spellcheck="false"
-                    placeholder="Nombre"
-                    required
-                  />
-                </label>
-
-                <label>
-                  <span class="labelText">Apellido<span class="req">*</span></span>
-                  <input
-                    type="text"
-                    name="last_name"
-                    id="lastName"
-                    autocomplete="family-name"
-                    autocapitalize="words"
-                    autocorrect="off"
-                    spellcheck="false"
-                    placeholder="Apellido"
-                    required
-                  />
-                </label>
-              </div>
-
-              <div class="row2">
-                <label>
-                  <span class="labelText">Email<span class="req">*</span></span>
-                  <input type="email" name="email" autocomplete="email" placeholder="tu@email.com" required />
-                </label>
-
-                <label>
-                  <span class="labelText">Como nos encontraste?</span>
-                  <input type="text" name="how_hear" placeholder="Google, Instagram, amigo, hotel, etc." />
-                </label>
-              </div>
-
-              <div class="rowPhone">
-                <label>
-                  <span class="labelText">Codigo de pais<span class="req">*</span></span>
-                  <input
-                    type="text"
-                    name="country_code"
-                    inputmode="numeric"
-                    pattern="[0-9]{1,4}"
-                    placeholder="1"
-                    value="1"
-                    required
-                  />
-                </label>
-
-                <label>
-                  <span class="labelText">Telefono / WhatsApp<span class="req">*</span></span>
-                  <input
-                    type="tel"
-                    name="phone_number"
-                    autocomplete="tel"
-                    inputmode="tel"
-                    placeholder="123 456 7890"
-                    required
-                  />
-                </label>
-              </div>
-
-              <label>
-                <span class="labelText">Mensaje / preguntas<span class="req">*</span></span>
-                <textarea name="message" placeholder="Comparte tus objetivos: aves objetivo, fotografia, ritmo, guia privado y notas de horario." required></textarea>
-              </label>
-
-              <div class="row2 rowDatesGuests">
-                <label>
-                  <span class="labelText">Fechas de visita</span>
-                  <div class="dateRange">
-                    <input type="date" id="dateStart" autocomplete="off" />
-                    <input type="date" id="dateEnd" autocomplete="off" />
-                  </div>
-                  <p class="dateHint">Elige una fecha de inicio y una fecha de fin opcional.</p>
-                  <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
-                </label>
-
-                <label class="guestsLabel">
-                  <span class="labelText">Numero de personas</span>
-                  <select name="number_of_guests">
-                    <option value="">Selecciona</option>
-                    <option>1</option>
-                    <option>2</option>
-                    <option>3 a 4</option>
-                    <option>5 a 8</option>
-                    <option>9+</option>
-                  </select>
-                </label>
-              </div>
-
-              <label>
-                <span class="labelText">Tipo de tour preferido</span>
-                <select name="preferred_tour_type">
-                  <option value="">Selecciona</option>
-                  <option>Tour de medio dia</option>
-                  <option>Tour de dia completo</option>
-                  <option>Tour privado / personalizado</option>
-                  <option>Todavia no se</option>
-                </select>
-              </label>
-
-              <label>
-                <span class="labelText">Necesidades de alojamiento</span>
-                <input type="text" name="accommodation_needs" placeholder="Opcional (hotel, notas de recogida, etc.)" />
-              </label>
-
-              <label>
-                <span class="labelText">Intereses especiales</span>
-                <input type="text" name="special_interests" placeholder="Fotografia, colibries, tangaras, caminata nocturna, etc." />
-              </label>
-
-              <input type="hidden" name="source_page" value="https://mindobirdwatching.com/es/reservar-tour/" />
-              <input type="hidden" name="user_agent" id="uaField" value="" />
-
-              <p class="help">
-                Despues de enviar, recibiras un email de confirmacion. Si no lo ves, revisa Spam o Promociones.
-              </p>
-
-              <div class="ctaActions">
-                <button class="btn primary" id="submitBtn" type="submit">Enviar solicitud</button>
-                <a class="btn secondary" href="/es/tours/">Ver tours</a>
-              </div>
-
-              <div class="success" id="formSuccessMsg">Tu solicitud fue enviada. Te enviaremos una confirmacion por email pronto.</div>
-              <div class="errorMsg" id="formErrorMsg">Algo salio mal. Intenta de nuevo o escribenos a mindobirdwatching@gmail.com.</div>
-            </form>
-          </div>
-        </div>
-      </section>
+      </div>
     </main>
 
     <div id="siteFooter"></div>
@@ -923,7 +932,7 @@
         if(fallbackTimer) clearTimeout(fallbackTimer);
         setBtnSending(false);
         if(errorEl){
-          errorEl.textContent = msg || "Algo salio mal. Intenta de nuevo o escribenos a mindobirdwatching@gmail.com.";
+          errorEl.textContent = msg || "Algo salio mal. Intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.";
           errorEl.style.display = "block";
         }
         if(successEl) successEl.style.display = "none";
@@ -941,7 +950,7 @@
           if(fallbackTimer) clearTimeout(fallbackTimer);
           fallbackTimer = setTimeout(function(){
             if(!done){
-              completeError("Seguimos esperando. Intenta de nuevo o escribenos a mindobirdwatching@gmail.com.");
+              completeError("Aun estamos esperando. Intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.");
             }
           }, 12000);
         });
