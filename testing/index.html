@@ -25,6 +25,7 @@
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
+/* HERO */
 .hero{
   display:grid;
   grid-template-columns: 1.05fr .95fr;
@@ -81,6 +82,7 @@ h1{ margin:0 0 10px; letter-spacing:-0.02em; }
   font-size: 20px;
 }
 
+/* MAIN TWO COLUMN */
 .grid2{
   display:grid;
   grid-template-columns: 1fr 1fr;
@@ -328,7 +330,7 @@ input[type="date"]{
 }
 .linkList a{ font-weight: 900; }
 
-/* Hero: left actions box (Email/Copy/WhatsApp + Tip) */
+/* HERO: left actions box (Email/Copy/WhatsApp + Tip) */
 .actionsTitle{
   margin: 0;
   font-family: var(--font-head);
@@ -413,6 +415,20 @@ input[type="date"]{
   color: var(--ink);
 }
 
+/* RIGHT COLUMN STACK (align Help Center with image) */
+.rightCol{
+  display:grid;
+  gap: 12px;
+  align-items:start;
+  align-content:start;
+}
+
+/* Reduce vertical separation between hero and section to remove empty left gap */
+.section.sectionTight{
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
 @media (max-width: 980px){
   .hero{ grid-template-columns: 1fr; }
   .grid2{ grid-template-columns: 1fr; }
@@ -432,6 +448,10 @@ input[type="date"]{
   }
   .rowDatesGuests .guestsLabel .labelText{ white-space: normal; }
   .actionsRow{ flex-wrap: wrap; }
+  .section.sectionTight{
+    margin-top: 14px;
+    padding-top: 14px;
+  }
 }
   </style>
 </head>
@@ -480,7 +500,7 @@ input[type="date"]{
     </aside>
   </section>
 
-  <section class="section" aria-label="Contact form and help center">
+  <section class="section sectionTight" aria-label="Contact form and help center">
     <div class="sectionHead">
       <h2>Send a Message</h2>
       <p class="note">We usually reply within 24 hours.</p>
@@ -633,29 +653,32 @@ input[type="date"]{
         </form>
       </div>
 
-      <div class="cardBox" aria-label="Help center">
-        <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Help Center</h3>
-        <p class="note" style="margin-top:0;">Common questions and policies live here.</p>
+      <div class="rightCol" aria-label="Right column: help center aligned under image">
+        <div class="cardBox" aria-label="Help center">
+          <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Help Center</h3>
+          <p class="note" style="margin-top:0;">Common questions and policies live here.</p>
 
-        <ul class="linkList" aria-label="Help center links">
-          <li><a href="/faqs">FAQs</a></li>
-          <li><a href="/terms-of-service">Terms of Service</a></li>
-          <li><a href="/terms-conditions">Terms and Conditions</a></li>
-          <li><a href="/privacy-policy">Privacy Policy</a></li>
-        </ul>
-
-        <div class="section" style="margin-top:14px; padding-top:14px;">
-          <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">What helps us reply faster</h3>
-          <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
-            <li>Your dates (if known)</li>
-            <li>Group size and pace</li>
-            <li>Target species or photography goals</li>
-            <li>Hotel name or pickup area</li>
-            <li>Any mobility or timing constraints</li>
+          <ul class="linkList" aria-label="Help center links">
+            <li><a href="/faqs/">FAQs</a></li>
+            <li><a href="/terms-of-service/">Terms of Service</a></li>
+            <li><a href="/terms-conditions/">Terms and Conditions</a></li>
+            <li><a href="/privacy-policy/">Privacy Policy</a></li>
           </ul>
-          <p class="note" style="margin-top:10px;">You can keep it simple now and refine later.</p>
+
+          <div class="section" style="margin-top:14px; padding-top:14px;">
+            <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">What helps us reply faster</h3>
+            <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
+              <li>Your dates (if known)</li>
+              <li>Group size and pace</li>
+              <li>Target species or photography goals</li>
+              <li>Hotel name or pickup area</li>
+              <li>Any mobility or timing constraints</li>
+            </ul>
+            <p class="note" style="margin-top:10px;">You can keep it simple now and refine later.</p>
+          </div>
         </div>
       </div>
+
     </div>
   </section>
 </main>
