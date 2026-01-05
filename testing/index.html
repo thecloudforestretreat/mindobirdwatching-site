@@ -88,141 +88,159 @@
       font-size: 20px;
     }
     .hint{ margin: 0; color: var(--muted); font-size: 13px; }
-    .feature{
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 16px;
-      align-items: start;
-    }
-    .mediaCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .mediaFrame{
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      background: rgba(255,255,255,.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .mediaFrame img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      display: block;
-      background: rgba(255,255,255,.55);
-    }
-    .mediaBar{
-      padding: 12px 14px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .mediaTitle{
-      margin: 0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 14px;
-      letter-spacing: -0.01em;
-    }
-    .badge{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-    }
-    .infoCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 16px;
-    }
-    .infoTop{
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: start;
-    }
-    .latin{
-      margin: 0;
-      font-size: 13px;
-      color: var(--muted);
-      font-style: italic;
-    }
-    .facts{
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .fact{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-    }
-    .fact dt{
-      margin: 0 0 6px;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 12.5px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-    .fact dd{
-      margin: 0;
-      color: var(--ink);
-      line-height: 1.55;
-    }
-    .audioCard{
-      margin-top: 12px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-      display: grid;
-      gap: 10px;
-    }
-    .audioRow{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .audioLabel{
-      margin: 0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 13px;
-    }
-    audio{ width: 100%; max-width: 100%; }
-    .story{
-      margin-top: 12px;
-      line-height: 1.7;
-      color: var(--ink);
-    }
-    .story p{ margin: 0 0 12px; }
+.feature{
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 16px;
+  align-items: start;
+}
+.mediaCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* Featured image frame */
+.mediaFrame{
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: rgba(255,255,255,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.mediaFrame img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  background: rgba(255,255,255,.55);
+}
+
+/* If the featured image is portrait: make frame taller + fit full image */
+.mediaFrame.is-portrait{
+  aspect-ratio: 3 / 4;
+  background: rgba(255,255,255,.55);
+}
+.mediaFrame.is-portrait img{
+  object-fit: contain;
+  object-position: center;
+  background: rgba(243,247,241,.95);
+}
+
+.mediaBar{
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  background: rgba(255,255,255,.55);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.mediaTitle{
+  margin: 0;
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+.badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  font-weight: 900;
+  font-size: 12.5px;
+  color: var(--ink);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.infoCard{
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.infoTop{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
+}
+.latin{
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+.facts{
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.fact{
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.55);
+  padding: 12px;
+}
+.fact dt{
+  margin: 0 0 6px;
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.fact dd{
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.audioCard{
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.55);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+.audioRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.audioLabel{
+  margin: 0;
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 13px;
+}
+audio{ width: 100%; max-width: 100%; }
+
+.story{
+  margin-top: 12px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.story p{ margin: 0 0 12px; }
+
 .rail{
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -240,12 +258,20 @@
 }
 .tile img{
   width: 100%;
-  height: 180px;
+  height: 200px;
   object-fit: cover;
   object-position: center;
   display: block;
   background: rgba(255,255,255,.55);
 }
+
+/* If a recent tile image is portrait: fit full image + standard background */
+.tile.is-portrait img{
+  object-fit: contain;
+  object-position: center;
+  background: rgba(243,247,241,.95);
+}
+
 .tileMeta{
   padding: 10px 12px;
   border-top: 1px solid var(--line);
@@ -308,7 +334,7 @@
 
 @media (max-width: 980px){
   .rail{ grid-template-columns: repeat(3, 1fr); }
-  .tile img{ height: 170px; }
+  .tile img{ height: 210px; }
 }
 @media (max-width: 900px){
   .hero{ grid-template-columns: 1fr; }
@@ -316,11 +342,15 @@
   .facts{ grid-template-columns: 1fr; }
   .videoGrid{ grid-template-columns: 1fr; }
   .rail{ grid-template-columns: repeat(2, 1fr); }
-  .tile img{ height: 160px; }
+  .tile img{ height: 240px; }
+  .mediaFrame{ aspect-ratio: 16 / 11; }
+  .mediaFrame.is-portrait{ aspect-ratio: 3 / 4; }
 }
 @media (max-width: 520px){
   .rail{ grid-template-columns: 1fr; }
-  .tile img{ height: 220px; }
+  .tile img{ height: 320px; } /* Taller on mobile so portrait birds do not feel chopped */
+  .mediaFrame{ aspect-ratio: 16 / 12; }
+  .mediaFrame.is-portrait{ aspect-ratio: 3 / 4; }
 }
   </style>
 </head>
@@ -357,7 +387,7 @@
     </div>
 <div class="feature">
   <article class="mediaCard" aria-label="Featured bird photo">
-    <div class="mediaFrame">
+    <div class="mediaFrame" id="birdHeroFrame">
       <img id="birdHeroImg" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22900%22%20viewBox%3D%220%200%201200%20900%22%3E%3Crect%20width%3D%221200%22%20height%3D%22900%22%20fill%3D%22%23F3F7F1%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2260%22%20width%3D%221080%22%20height%3D%22780%22%20rx%3D%2244%22%20fill%3D%22none%22%20stroke%3D%22%23D6E5C6%22%20stroke-width%3D%2210%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22460%22%20font-size%3D%2248%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3EFeatured%20Bird%20Photo%3C/text%3E%3Ctext%20x%3D%22600%22%20y%3D%22520%22%20font-size%3D%2226%22%20font-weight%3D%22600%22%20fill%3D%22%236B7C6C%22%3EReplace%20this%20image%20URL%20from%20your%20Sheet%3C/text%3E%3C/g%3E%3C/svg%3E" alt="Featured bird placeholder" />
     </div>
     <div class="mediaBar">
@@ -365,7 +395,6 @@
       <span id="birdHeroBadge" class="badge">Cloud Forest • Mindo</span>
     </div>
   </article>
-
   <aside class="infoCard" aria-label="Featured bird facts">
     <div class="infoTop">
       <div style="min-width:0;">
@@ -374,43 +403,41 @@
       </div>
       <span id="birdWeekTag" class="badge">Bird of the Week</span>
     </div>
+<dl class="facts" aria-label="Quick facts">
+  <div class="fact">
+    <dt>Best time</dt>
+    <dd id="factBestTime">Loading...</dd>
+  </div>
+  <div class="fact">
+    <dt>Where to spot</dt>
+    <dd id="factWhere">Loading...</dd>
+  </div>
+  <div class="fact">
+    <dt>Diet</dt>
+    <dd id="factDiet">Loading...</dd>
+  </div>
+  <div class="fact">
+    <dt>Fun fact</dt>
+    <dd id="factFun">Loading...</dd>
+  </div>
+</dl>
 
-    <dl class="facts" aria-label="Quick facts">
-      <div class="fact">
-        <dt>Best time</dt>
-        <dd id="factBestTime">Loading...</dd>
-      </div>
-      <div class="fact">
-        <dt>Where to spot</dt>
-        <dd id="factWhere">Loading...</dd>
-      </div>
-      <div class="fact">
-        <dt>Diet</dt>
-        <dd id="factDiet">Loading...</dd>
-      </div>
-      <div class="fact">
-        <dt>Fun fact</dt>
-        <dd id="factFun">Loading...</dd>
-      </div>
-    </dl>
-
-    <div class="audioCard" aria-label="Bird audio">
-      <div class="audioRow">
-        <p class="audioLabel">Listen to the call</p>
-        <span id="audioNote" class="badge">Loading...</span>
-      </div>
-      <audio id="birdAudio" controls preload="none">
-        <source src="" type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
-    </div>
-
-    <div class="note" aria-label="How to update this page later">
-      <strong>Now:</strong> Welcome to the magic of Mindo.
-    </div>
-  </aside>
+<div class="audioCard" aria-label="Bird audio">
+  <div class="audioRow">
+    <p class="audioLabel">Listen to the call</p>
+    <span id="audioNote" class="badge">Loading...</span>
+  </div>
+  <audio id="birdAudio" controls preload="none">
+    <source src="" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
 </div>
 
+<div class="note" aria-label="How to update this page later">
+  <strong>Now:</strong> Welcome to the magic of Mindo.
+</div>
+  </aside>
+</div>
 <div class="story" aria-label="Bird description">
   <p id="birdStory1">Loading...</p>
   <p id="birdStory2">Loading...</p>
@@ -429,7 +456,6 @@
       <p class="s">View this week</p>
     </div>
   </a>
-
   <a class="tile" href="#" aria-label="Recent bird 2">
     <img alt="Recent bird 2" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3ERecent%3C/text%3E%3C/g%3E%3C/svg%3E" />
     <div class="tileMeta">
@@ -437,7 +463,6 @@
       <p class="s">View this week</p>
     </div>
   </a>
-
   <a class="tile" href="#" aria-label="Recent bird 3">
     <img alt="Recent bird 3" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3ERecent%3C/text%3E%3C/g%3E%3C/svg%3E" />
     <div class="tileMeta">
@@ -445,7 +470,6 @@
       <p class="s">View this week</p>
     </div>
   </a>
-
   <a class="tile" href="#" aria-label="Recent bird 4">
     <img alt="Recent bird 4" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22800%22%20viewBox%3D%220%200%201200%20800%22%3E%3Crect%20width%3D%221200%22%20height%3D%22800%22%20fill%3D%22%23F3F7F1%22/%3E%3Cg%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20text-anchor%3D%22middle%22%3E%3Ctext%20x%3D%22600%22%20y%3D%22420%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%20fill%3D%22%230D5925%22%3ERecent%3C/text%3E%3C/g%3E%3C/svg%3E" />
     <div class="tileMeta">
@@ -475,7 +499,6 @@
       allowfullscreen></iframe>
     <div class="videoCap">Bird of the Week: Long-wattled Umbrellabird</div>
   </div>
-
   <div class="videoCard" aria-label="Bird of the Week: Plate-billed Mountain-Toucan!">
     <iframe
       class="videoFrame"
@@ -500,9 +523,8 @@
   <script>
     (function () {
       "use strict";
-  if (document.documentElement.dataset.mbwBotwInit === "1") return;
-  document.documentElement.dataset.mbwBotwInit = "1";
-
+      if (document.documentElement.dataset.mbwBotwInit === "1") return;
+      document.documentElement.dataset.mbwBotwInit = "1";
   var BASE = "https://script.google.com/macros/s/AKfycbxfIDGv6fFR48tjEDKSKQiO2mO2OouQ_soUHwUuyBJHGH41qdBjR641YhXa_Uk4iSpLrA/exec";
 
   function $(id){ return document.getElementById(id); }
@@ -515,11 +537,40 @@
     el.textContent = String(val || "");
   }
 
+  function applyOrientationClasses(imgEl) {
+    if (!imgEl) return;
+    function run() {
+      try {
+        var w = imgEl.naturalWidth || 0;
+        var h = imgEl.naturalHeight || 0;
+        if (!w || !h) return;
+
+        var isPortrait = (h / w) > 1.15;
+
+        var mediaFrame = imgEl.closest(".mediaFrame");
+        if (mediaFrame) {
+          mediaFrame.classList.toggle("is-portrait", isPortrait);
+        }
+
+        var tile = imgEl.closest(".tile");
+        if (tile) {
+          tile.classList.toggle("is-portrait", isPortrait);
+        }
+      } catch (e) {
+        /* no-op */
+      }
+    }
+
+    if (imgEl.complete) run();
+    else imgEl.addEventListener("load", run, { once: true });
+  }
+
   function setImage(id, url, alt) {
     var el = $(id);
     if (!el || !url) return;
     el.src = url;
     if (alt) el.alt = alt;
+    applyOrientationClasses(el);
   }
 
   function setAudio(audioId, url) {
@@ -590,6 +641,7 @@
       if (img && isHttpUrl(item.hero_image_url)) {
         img.src = item.hero_image_url;
         img.alt = safeText(item.common_name) || "Recent bird photo";
+        applyOrientationClasses(img);
       }
 
       if (titleEl) titleEl.textContent = safeText(item.common_name) || "Recent Bird";
