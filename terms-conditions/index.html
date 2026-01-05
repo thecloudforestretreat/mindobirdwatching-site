@@ -40,15 +40,22 @@
       box-shadow: var(--shadow);
     }
 
-    /* Hero split into equal halves */
+    /* Hero Grid */
     .hero{
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.05fr .95fr;
       gap:16px;
       align-items:start;
     }
 
+    .heroLeft{
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
+
     h1{ margin:0 0 8px; letter-spacing:-0.02em; }
+
     .lede{
       margin:0;
       max-width: 92ch;
@@ -57,7 +64,6 @@
     }
 
     .metaCard{
-      margin-top: 14px;
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -95,51 +101,133 @@
       line-height: 1.55;
     }
 
-    /* NEW: 4:3 image placeholder (right side) */
-    .heroImageCard{
+    /* At a glance card (fills left column height) */
+    .glanceCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
-      overflow: hidden;
-      width: 100%;
-      margin-top: 0;
+      padding: 14px;
+      display:grid;
+      gap:10px;
     }
+
+    .glanceTop{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .glanceTitle{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing:-0.02em;
+      font-size:16px;
+      line-height:1.25;
+      font-weight:950;
+    }
+
+    .glanceHint{
+      margin:0;
+      color: var(--muted);
+      font-size:12.5px;
+      line-height:1.4;
+    }
+
+    .glanceList{
+      margin:0;
+      padding-left:18px;
+      color: var(--ink);
+      line-height:1.65;
+      font-size:13.5px;
+    }
+
+    .glanceList li{ margin: 6px 0; }
+
+    .glanceContact{
+      margin:0;
+      color: var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .glanceContact strong{ color: var(--ink); }
+
+    /* Hero right: image + compact actions */
+    .heroVisual{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      width:100%;
+      display:grid;
+      gap:0;
+    }
+
     .heroImageFrame{
-      width: 100%;
+      width:100%;
       aspect-ratio: 4 / 3;
       background: rgba(255,255,255,.55);
       display:flex;
       align-items:center;
       justify-content:center;
-      position: relative;
+      position:relative;
     }
+
     .heroImageFrame img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
-    .heroImagePlaceholder{
-      position: absolute;
-      inset: 0;
+
+    .heroActions{
+      border-top:1px solid var(--line);
+      padding:12px;
+      background: rgba(255,255,255,.55);
+      display:grid;
+      gap:10px;
+    }
+
+    .heroActionsTop{
       display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap: 8px;
-      text-align:center;
-      padding: 18px;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .heroActionsTitle{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing:-0.02em;
+      font-size:16px;
+      line-height:1.25;
+      font-weight:950;
+    }
+
+    .heroActionsHint{
+      margin:0;
       color: var(--muted);
+      font-size:12.5px;
+      line-height:1.4;
     }
-    .heroImagePlaceholder strong{
-      color: var(--ink);
-      font-weight: 950;
-      letter-spacing: -0.02em;
+
+    .heroBtnRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
-    .heroImagePlaceholder span{
-      font-size: 13px;
-      line-height: 1.4;
+
+    .heroBtnRow .btn{
+      flex: 1 1 180px;
+      text-align:center;
     }
 
     .section{
@@ -248,6 +336,16 @@
     @media (max-width: 980px){
       .hero{ grid-template-columns: 1fr; }
     }
+
+    @media (max-width: 640px){
+      .page{ padding:16px; margin-top:14px; }
+      .hero{ gap:12px; }
+      .heroLeft{ gap:10px; }
+      .heroActions{ padding:10px; }
+      .heroBtnRow .btn{ flex: 1 1 100%; }
+      .section{ margin-top:14px; padding-top:12px; }
+      .term{ padding:12px; gap:10px; }
+    }
   </style>
 </head>
 <body>
@@ -255,33 +353,55 @@
     <div id="siteHeader"></div>
 <main class="page card">
   <section class="hero" aria-label="Terms and conditions introduction">
-    <div>
-      <h1>Terms &amp; Conditions</h1>
-      <p class="lede">
-        Mindo Bird Watching - Terms and Conditions for Tours and Activities
-      </p>
+    <div class="heroLeft">
+      <div>
+        <h1>Terms &amp; Conditions</h1>
+        <p class="lede">
+          Clear tour terms for bookings in Mindo, including payment, cancellations, rescheduling, responsibilities, and liability.
+        </p>
+      </div>
 
       <div class="metaCard" aria-label="Terms metadata">
         <div class="chips">
-          <span class="chip">Last updated: October 21, 2025</span>
-          <span class="chip">📍Mindo, Ecuador</span>
+          <span class="chip">Last updated: <strong>October 21, 2025</strong></span>
+          <span class="chip">Mindo, Ecuador</span>
           <span class="chip">Tours + Activities</span>
         </div>
         <p class="note">
-          These Terms &amp; Conditions ("Terms") apply to all tours, activities, and guiding services provided by Mindo Bird Watching ("we," "our," "us").
-          By booking or participating in a tour, you agree to these Terms.
+          These Terms &amp; Conditions apply to all tours, activities, and guiding services provided by Mindo Bird Watching. By booking or participating, you agree to them.
         </p>
       </div>
+
+      <aside class="glanceCard" aria-label="Terms at a glance">
+        <div class="glanceTop">
+          <p class="glanceTitle">At a glance</p>
+          <p class="glanceHint">Quick summary before details.</p>
+        </div>
+        <ul class="glanceList">
+          <li>Most tours start at 5:00 AM. Meeting point is confirmed in writing.</li>
+          <li>Bookings are confirmed only after full payment and written confirmation.</li>
+          <li>Refunds depend on when we receive your written cancellation notice.</li>
+          <li>Weather and safety can require changes. If we cancel, you can refund or reschedule.</li>
+        </ul>
+        <p class="glanceContact">
+          Questions: <strong>tours@mindobirdwatching.com</strong>
+        </p>
+      </aside>
     </div>
 
-    <aside class="heroImageCard" aria-label="Hero image placeholder">
+    <aside class="heroVisual" aria-label="Hero image and quick actions">
       <div class="heroImageFrame">
-        <!-- Replace the placeholder below with your real image when ready:
-             <img src="/assets/images/pages/terms/MBW-Assets-terms-conditions-hero.jpg" alt="Birding tour in Mindo cloud forest" loading="lazy" />
-        -->
-        <div class="heroImagePlaceholder" aria-hidden="true">
-          <strong>4:3 Image Placeholder</strong>
-          <span>Add a hero image here (recommended: landscape 4:3).</span>
+        <img src="/assets/images/pages/MBW-Terms-Conditions.jpg" alt="Early morning birding in Mindo cloud forest with guide and trail scenery" loading="lazy" decoding="async" />
+      </div>
+
+      <div class="heroActions" aria-label="Quick actions">
+        <div class="heroActionsTop">
+          <p class="heroActionsTitle">Ready to confirm your plan?</p>
+          <p class="heroActionsHint">Two quick next steps.</p>
+        </div>
+        <div class="heroBtnRow">
+          <a class="btn secondary" href="/contact/">Contact Us</a>
+          <a class="btn primary" href="/book-tour/">Reserve A Tour</a>
         </div>
       </div>
     </aside>
@@ -300,7 +420,7 @@
           <h3>Booking and Payment</h3>
           <ul>
             <li><strong>Preferred booking window:</strong> Please book at least 48 hours in advance.</li>
-            <li><strong>Minimum booking window:</strong> All reservations must be completed and confirmed at least 24 hours before the tour start time. Requests inside 24 hours are subject to availability and may incur a late booking fee.</li>
+            <li><strong>Minimum booking window:</strong> Reservations must be confirmed at least 24 hours before start time. Requests inside 24 hours are subject to availability and may incur a late fee.</li>
             <li><strong>Day-before bookings:</strong> Tours booked the day before must be paid in full, in advance, via Zelle or bank transfer to be confirmed.</li>
             <li><strong>Payment requirement:</strong> All tours must be paid in full in advance. A booking is confirmed only upon receipt of payment and written confirmation from us.</li>
           </ul>
@@ -313,7 +433,7 @@
           <h3>Pricing and Minimum Participants</h3>
           <ul>
             <li><strong>Minimum group size:</strong> Pricing is based on a minimum of two (2) paying participants.</li>
-            <li><strong>Single traveler policy:</strong> If only one person is booked, the single traveler must pay the equivalent of two participants unless we can accommodate you into another group. If we are able to add you to a group, we will adjust and refund any applicable difference.</li>
+            <li><strong>Single traveler policy:</strong> If only one person is booked, the single traveler pays the equivalent of two participants unless we can place you in another group. If we can add you to a group, we will adjust and refund any applicable difference.</li>
           </ul>
         </div>
       </div>
@@ -324,7 +444,7 @@
           <h3>Start Time and Meeting Point</h3>
           <ul>
             <li><strong>Standard start time:</strong> Tours begin at 5:00 AM.</li>
-            <li><strong>Pickup/meeting:</strong> Pickup location or meeting point will be pre-coordinated and confirmed in writing.</li>
+            <li><strong>Pickup/meeting:</strong> Pickup location or meeting point is pre-coordinated and confirmed in writing.</li>
           </ul>
         </div>
       </div>
@@ -333,12 +453,12 @@
         <div class="num">4</div>
         <div>
           <h3>Cancellations and Refunds (Client)</h3>
-          <p>Notify us in writing to cancel your tour. Refunds are based on when we receive your written notice:</p>
+          <p>Notify us in writing to cancel. Refunds are based on when we receive your written notice:</p>
           <ul>
             <li><strong>48 hours or more before the tour:</strong> 100% refund.</li>
             <li><strong>The day before the tour:</strong> 50% refund.</li>
-            <li><strong>Less than 24 hours before the tour or No-Show:</strong> Non-refundable. No-Shows (failure to arrive at the designated meeting point at the scheduled time) are non-refundable.</li>
-            <li><strong>Refund method and timing:</strong> Approved refunds are issued to the original payment method. Processing times may vary by bank/processor.</li>
+            <li><strong>Less than 24 hours before the tour or No-Show:</strong> Non-refundable.</li>
+            <li><strong>Refund method and timing:</strong> Approved refunds are issued to the original payment method. Processing times vary by bank/processor.</li>
           </ul>
         </div>
       </div>
@@ -348,7 +468,7 @@
         <div>
           <h3>Rescheduling</h3>
           <ul>
-            <li>One-time reschedule is permitted if requested at least 48 hours before the start time, subject to availability.</li>
+            <li>One-time reschedule is permitted if requested at least 48 hours before start time, subject to availability.</li>
             <li>Requests inside 48 hours are treated as cancellations under Section 4.</li>
           </ul>
         </div>
@@ -359,14 +479,9 @@
         <div>
           <h3>Changes and Cancellations (Operator)</h3>
           <ul>
-            <li>We may modify, delay, or cancel a tour due to severe weather, safety concerns, guide illness, road closures, park restrictions, or other operational reasons.</li>
-            <li>If we cancel before the tour begins, you may choose:
-              <ul>
-                <li>A full refund of all payments made; or</li>
-                <li>A reschedule to an alternative date (subject to availability).</li>
-              </ul>
-            </li>
-            <li>Tours canceled by the guide/operator are 100% refundable.</li>
+            <li>We may modify, delay, or cancel a tour due to weather, safety, guide illness, road closures, park restrictions, or operational reasons.</li>
+            <li>If we cancel before the tour begins, you may choose a full refund or a reschedule (subject to availability).</li>
+            <li>Tours canceled by the operator are 100% refundable.</li>
           </ul>
         </div>
       </div>
@@ -376,9 +491,9 @@
         <div>
           <h3>Participant Responsibilities and Assumption of Risk</h3>
           <ul>
-            <li><strong>Fitness and readiness:</strong> You are responsible for assessing your fitness and informing us in advance of any medical conditions, allergies, or special requirements.</li>
-            <li><strong>Safety:</strong> Follow guide instructions at all times. Wildlife sightings are not guaranteed.</li>
-            <li><strong>Gear:</strong> Wear appropriate clothing and footwear for early morning birding in cloud forest conditions (rain, mud, uneven terrain).</li>
+            <li><strong>Fitness and readiness:</strong> Inform us in advance of medical conditions, allergies, or special needs.</li>
+            <li><strong>Safety:</strong> Follow guide instructions. Wildlife sightings are not guaranteed.</li>
+            <li><strong>Gear:</strong> Dress for early morning cloud forest conditions (rain, mud, uneven terrain).</li>
           </ul>
         </div>
       </div>
@@ -388,7 +503,7 @@
         <div>
           <h3>Children/Minors</h3>
           <ul>
-            <li>Participants under 18 must be accompanied by a parent/legal guardian or provide a signed consent/waiver. Age limits or ratios may apply depending on route and conditions.</li>
+            <li>Participants under 18 must be accompanied by a parent/legal guardian or provide a signed consent/waiver. Age limits may apply based on route and conditions.</li>
           </ul>
         </div>
       </div>
@@ -398,7 +513,7 @@
         <div>
           <h3>Third-Party Services</h3>
           <ul>
-            <li>Some tours may involve third-party providers (e.g., transport, lodges, reserves). Their terms may apply and can affect scheduling and refunds.</li>
+            <li>Some tours involve third-party providers (transport, lodges, reserves). Their terms may apply and can affect scheduling and refunds.</li>
           </ul>
         </div>
       </div>
@@ -408,7 +523,7 @@
         <div>
           <h3>Force Majeure</h3>
           <ul>
-            <li>We are not responsible for delays, changes, or cancellations caused by events beyond our reasonable control, including extreme weather, natural disasters, strikes, epidemics, government actions, or transportation interruptions. However, we will treat this as a case by case scenario and will work with client to reschedule or refund.</li>
+            <li>We are not responsible for changes caused by events beyond our reasonable control (extreme weather, natural disasters, strikes, epidemics, government actions, transportation interruptions). We handle these case by case and will work with you to reschedule or refund where possible.</li>
           </ul>
         </div>
       </div>
@@ -418,7 +533,7 @@
         <div>
           <h3>Liability</h3>
           <ul>
-            <li>To the fullest extent permitted by law, our liability is limited to the amounts you paid for the applicable tour. We are not liable for indirect, incidental, or consequential damages.</li>
+            <li>To the fullest extent permitted by law, liability is limited to the amounts paid for the applicable tour. We are not liable for indirect, incidental, or consequential damages.</li>
           </ul>
         </div>
       </div>
@@ -430,7 +545,7 @@
           <p>We accept the following payment methods to confirm your booking:</p>
           <ul>
             <li>Zelle (USA)</li>
-            <li>Banco Pichincha (local bank transfer within Ecuador)</li>
+            <li>Banco Pichincha (Ecuador bank transfer)</li>
             <li>PayPal (Europe)</li>
           </ul>
           <p class="divider">
@@ -444,13 +559,13 @@
         <div>
           <h3>Contact</h3>
           <ul>
-            <li>For bookings, changes, or cancellations, please contact: <strong>tours@mindobirdwatching.com</strong></li>
+            <li>For bookings, changes, or cancellations, contact: <strong>tours@mindobirdwatching.com</strong></li>
           </ul>
           <div class="divider">
             <p class="note" style="margin:0;">
               <strong>Notes:</strong><br>
               Currency: All prices are in USD unless otherwise stated.<br>
-              Taxes/fees: Park/entrance fees, government taxes, or third-party charges may change; if they increase prior to your tour, you agree to pay the difference where applicable.
+              Taxes/fees: Park fees, government taxes, or third-party charges may change. If they increase prior to your tour, you agree to pay the difference where applicable.
             </p>
           </div>
         </div>
@@ -468,7 +583,32 @@
 
 <div id="siteFooter"></div>
   </div>
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
+  <script>
+    (function(){
+      async function inject(id, url){
+        const el = document.getElementById(id);
+        if(!el) return;
+        const res = await fetch(url, { cache: "no-store" });
+        el.innerHTML = await res.text();
+      }
+
+      function loadScript(src){
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.defer = true;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+
+      (async function(){
+        await inject("siteHeader", "/assets/includes/header.html");
+        await inject("siteFooter", "/assets/includes/footer.html");
+        await loadScript("/assets/js/site.js");
+      })();
+    })();
+  </script>
 </body>
 </html>
