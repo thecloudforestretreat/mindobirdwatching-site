@@ -1,842 +1,889 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Contact Us | Mindo Bird Watching</title>
-  <meta name="description" content="Contact Mindo Bird Watching in Mindo, Ecuador. Send your questions, dates, and tour goals and we will reply quickly." />
-  <link rel="alternate" hreflang="en" href="/contact/" />
-  <link rel="alternate" hreflang="es" href="/es/contacto/" />
-  <link rel="alternate" hreflang="x-default" href="/contact/" />
+  <title>Galeria de Aves | Mindo Bird Watching</title>
+  <meta name="description" content="Explora la galeria de Mindo Bird Watching con las aves mas coloridas de Ecuador. Fotos de colibries, tucanes, tangaras y el Gallito de las Rocas en Mindo." />
+  <link rel="canonical" href="https://mindobirdwatching.com/es/galeria/" />
+  <link rel="alternate" hreflang="en" href="/bird-gallery/" />
+  <link rel="alternate" hreflang="es" href="/es/galeria/" />
+  <link rel="alternate" hreflang="x-default" href="/bird-gallery/" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Galeria de Aves | Mindo Bird Watching" />
+  <meta property="og:description" content="Explora la galeria de Mindo Bird Watching con las aves mas coloridas de Ecuador. Fotos de colibries, tucanes, tangaras y el Gallito de las Rocas en Mindo." />
+  <meta property="og:url" content="https://mindobirdwatching.com/es/galeria/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - tours guiados de observacion de aves en Mindo, Ecuador" />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Galeria de Aves | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Explora la galeria de Mindo Bird Watching con las aves mas coloridas de Ecuador. Fotos de colibries, tucanes, tangaras y el Gallito de las Rocas en Mindo." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css" />
-  <link rel="stylesheet" href="/assets/css/footer.css" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
   <style>
-    .page{ margin-top:18px; padding:26px; }
-    .page.card{
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
-.hero{
-  display:grid;
-  grid-template-columns: 1.05fr .95fr;
-  gap: 16px;
-  align-items:start;
-}
 
-h1{ margin:0 0 10px; letter-spacing:-0.02em; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
 
-.lede{
-  margin:0;
-  max-width: 92ch;
-  color: var(--ink);
-  line-height: 1.65;
-}
+    .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
 
-.metaCard{
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  background: rgba(255,255,255,.65);
-  box-shadow: var(--shadow);
-  padding: 14px;
-  display:grid;
-  gap: 10px;
-}
+    .heroLeft, .heroRight { display: grid; gap: 12px; align-content: start; }
 
-.chips{
-  display:flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items:center;
-}
+    .heroCard {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
 
-.chip{
-  display:inline-flex;
-  align-items:center;
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.55);
-  font-weight: 900;
-  color: var(--ink);
-  font-size: 12.5px;
-  line-height: 1;
-  white-space: nowrap;
-}
+    .heroCard h2 {
+      margin: 0 0 8px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+    }
 
-.note{
-  margin:0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.55;
-}
+    .heroCard ul { margin: 0; padding-left: 18px; line-height: 1.55; color: var(--ink); }
 
-.section{
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
+    .heroCtas {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-.sectionHead{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
+    .bodHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
 
-.sectionHead h2{
-  margin:0;
-  font-family: var(--font-head);
-  color: var(--forest);
-  letter-spacing:-0.02em;
-  font-size: 20px;
-}
+    .bodTitle { display: grid; gap: 2px; min-width: 0; }
+    .bodTitle h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
+    }
 
-.grid2{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items:start;
-}
+    .bodSub {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-.cardBox{
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  background: rgba(255,255,255,.65);
-  box-shadow: var(--shadow);
-  padding: 14px;
-}
+    .bodPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
 
-.form{
-  display:grid;
-  gap: 10px;
-  margin-top: 10px;
-}
+    .bodMedia {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
 
-.row2{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  align-items:start;
-}
+    .bodImgWrap {
+      background: rgba(255,255,255,.65);
+      display: grid;
+      place-items: center;
+      padding: 12px;
+    }
 
-.rowPhone{
-  display:grid;
-  grid-template-columns: 120px 1fr;
-  gap: 10px;
-  align-items:end;
-}
+    .bodImg {
+      width: 100%;
+      height: 320px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.06);
+    }
 
-label{
-  display:grid;
-  gap: 6px;
-  font-weight: 900;
-  font-size: 13px;
-  color: var(--ink);
-  min-width: 0;
-  width: 100%;
-}
+    .bodAudio {
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+    }
+    .bodAudio audio { width: 100%; display: block; }
 
-.labelText{
-  display:inline-flex;
-  align-items:baseline;
-  gap: 2px;
-  line-height: 1.1;
-}
+    .bodLinks {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
 
-.req{
-  color: rgba(160,0,0,.85);
-  font-weight: 950;
-  margin-left: 0;
-}
+    .bodLinks a {
+      color: inherit;
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
 
-input, select, textarea{
-  width: 100%;
-  max-width: 100%;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.70);
-  box-shadow: 0 10px 25px rgba(0,0,0,.06);
-  padding: 12px 12px;
-  font: inherit;
-  color: var(--ink);
-  outline: none;
-  box-sizing: border-box;
-  min-width: 0;
-  display: block;
-}
+    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
 
-input, select{
-  height: 46px;
-  line-height: 46px;
-  padding-top: 0;
-  padding-bottom: 0;
-}
+    .section {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
 
-textarea{
-  min-height: 120px;
-  resize: vertical;
-  padding: 12px 12px;
-  line-height: 1.5;
-  height: auto;
-}
+    .sectionHead {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
 
-.help{
-  margin: 0;
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.5;
-}
+    .sectionHead h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
 
-.success{
-  display:none;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(13,89,37,.25);
-  background: rgba(13,89,37,.10);
-  color: var(--ink);
-  font-weight: 900;
-  margin-top: 10px;
-}
+    .hint { margin: 0; color: var(--muted); font-size: 13px; }
 
-.errorMsg{
-  display:none;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(160,0,0,.22);
-  background: rgba(160,0,0,.08);
-  color: var(--ink);
-  font-weight: 900;
-  margin-top: 10px;
-  font-size: 12.5px;
-  line-height: 1.35;
-}
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 10px 0 14px;
+    }
 
-.quickRow{
-  display:flex;
-  gap: 10px;
-  align-items:center;
-  flex-wrap: wrap;
-}
+    .chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .chip[aria-pressed="true"] {
+      background: rgba(13,89,37,.14);
+      border-color: rgba(13,89,37,.35);
+    }
 
-.iconBtn{
-  width: 46px;
-  height: 46px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.55);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  padding: 0;
-}
-.iconBtn svg{ width: 18px; height: 18px; fill: var(--ink); opacity: .9; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
 
-.toast{
-  display:none;
-  margin-top: 8px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(3,78,162,.22);
-  background: rgba(3,78,162,.10);
-  color: var(--ink);
-  font-weight: 900;
-  font-size: 12.5px;
-  line-height: 1.35;
-}
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      overflow: hidden;
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      position: relative;
+      min-height: 160px;
+      padding: 0;
+    }
 
-.rowDatesGuests{
-  grid-template-columns: minmax(0, 1fr) 132px;
-  align-items:start;
-  column-gap: 10px;
-}
-.rowDatesGuests > label{ min-width: 0; }
+    .thumb {
+      width: 100%;
+      height: 220px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: rgba(255,255,255,.72);
+      padding: 10px;
+      box-sizing: border-box;
+    }
 
-.rowDatesGuests .guestsLabel{
-  width: 100%;
-  min-width: 0;
-  justify-self: end;
-  align-content: start;
-}
-.rowDatesGuests .guestsLabel .labelText{ white-space: nowrap; }
-.rowDatesGuests .guestsLabel select{
-  width: 100%;
-  min-width: 0;
-  padding-left: 12px;
-  padding-right: 34px;
-}
+    .meta {
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      background: rgba(255,255,255,.55);
+    }
 
-.dateRange{
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  align-items:start;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-}
-.dateRange, .dateRange *{ max-width: 100%; }
+    .name {
+      margin: 0;
+      font-weight: 900;
+      font-size: 13.5px;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-.dateRange > input{
-  width: 100%;
-  min-width: 176px;
-  min-inline-size: 0;
-}
+    .tag {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
 
-input[type="date"]{
-  width: 100%;
-  max-width: 100%;
-  min-inline-size: 0;
-  display: block;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-  background-clip: padding-box;
-  padding-right: 32px;
-}
+    .emptyState {
+      display: none;
+      margin-top: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+    }
+    .emptyState.is-visible { display: block; }
 
-.dateHint{
-  margin: 0;
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.5;
-}
+    .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-.ctaActions{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 12px;
-  align-items: stretch;
-}
+    .videoCard {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
 
-.ctaActions .btn,
-.ctaActions button.btn{
-  width: 100%;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 900;
-  line-height: 1;
-  padding-top: 14px;
-  padding-bottom: 14px;
-  min-height: 46px;
-}
+    .videoFrame { aspect-ratio: 16 / 9; width: 100%; border: 0; display: block; background: rgba(255,255,255,.55); }
 
-.btn[disabled]{
-  opacity: .65;
-  cursor: not-allowed;
-  transform: none !important;
-}
+    .videoCap {
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,.55);
+    }
 
-.linkList{
-  margin: 0;
-  padding-left: 18px;
-  line-height: 1.7;
-  color: var(--ink);
-}
-.linkList a{ font-weight: 900; }
+    .lb {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 18px;
+    }
+    .lb.is-open { display: flex; }
 
-/* New: vertical image cards */
-.vImageCard{
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  background: rgba(255,255,255,.65);
-  box-shadow: var(--shadow);
-  overflow:hidden;
-}
-.vImageFrame{
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  background: rgba(255,255,255,.55);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.vImageFrame img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display:block;
-}
-.vImageBar{
-  padding: 10px 12px;
-  border-top: 1px solid var(--line);
-  background: rgba(255,255,255,.55);
-  display:flex;
-  justify-content:space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items:center;
-}
-.vImageTitle{
-  margin:0;
-  font-weight: 900;
-  color: var(--ink);
-  font-size: 13.5px;
-  letter-spacing: -0.01em;
-}
+    .lbDialog {
+      width: min(980px, 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 30px 80px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
 
-@media (max-width: 980px){
-  .hero{ grid-template-columns: 1fr; }
-  .grid2{ grid-template-columns: 1fr; }
-  .row2{ grid-template-columns: 1fr; }
-  .rowDatesGuests{ grid-template-columns: 1fr; }
-  .rowPhone{ grid-template-columns: 120px 1fr; }
-  .ctaActions{ grid-template-columns: 1fr; }
-  .dateRange{ grid-template-columns: 1fr; }
-  .dateRange > input{ min-width: 0; }
-  .rowDatesGuests .guestsLabel{
-    width: 100%;
-    justify-self: stretch;
-  }
-  .rowDatesGuests .guestsLabel select{
-    width: 100%;
-    min-width: 0;
-  }
-  .rowDatesGuests .guestsLabel .labelText{ white-space: normal; }
-}
+    .lbMedia { position: relative; background: rgba(255,255,255,.55); }
+
+    .lbImg {
+      width: 100%;
+      height: min(70vh, 640px);
+      object-fit: contain;
+      display: block;
+      background: rgba(255,255,255,.55);
+    }
+
+    .lbBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+    }
+
+    .lbTitle {
+      margin: 0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lbSub { margin: 0; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+
+    .lbBtns { display: inline-flex; gap: 8px; align-items: center; flex: 0 0 auto; }
+
+    .iconBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .iconBtn:focus { outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .iconBtn svg { width: 20px; height: 20px; }
+
+    .closeBtn { width: auto; padding: 0 12px; gap: 10px; font-weight: 900; font-size: 13px; }
+
+    @media (max-width: 980px) {
+      .gallery { grid-template-columns: repeat(3, 1fr); }
+      .thumb { height: 200px; }
+      .bodImg { height: 280px; }
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+      .thumb { height: 190px; }
+      .videoGrid { grid-template-columns: 1fr; }
+      .bodImg { height: 320px; }
+    }
+
+    @media (max-width: 520px) {
+      .gallery { grid-template-columns: 1fr; }
+      .thumb { height: 220px; }
+      .lbImg { height: min(65vh, 560px); }
+      .bodImg { height: 260px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div id="siteHeader"></div>
 <main class="page card">
-  <section class="hero" aria-label="Contact us hero">
-    <div>
-      <h1>Contact Us</h1>
-      <p class="lede">
-        Questions, tour planning, dates, special requests, or logistics. Send us a message and we’ll reply quickly.
-      </p>
+  <section class="hero" aria-label="Introduccion de la galeria">
+    <div class="heroLeft">
+      <div>
+        <h1>Galeria de Aves</h1>
+        <p>
+          Explora la galeria de Mindo Bird Watching con las aves mas coloridas de Ecuador. Fotos de colibries, tucanes,
+          tangaras y el Gallito de las Rocas en el bosque nublado de Mindo.
+        </p>
 
-      <div class="metaCard" style="margin-top:12px;">
-        <div class="chips">
-          <span class="chip">📍Mindo, Ecuador</span>
-          <span class="chip">Fast reply by email</span>
-          <span class="chip">Tours and trip planning</span>
+        <div class="heroCtas" aria-label="Acciones principales">
+          <a class="btn primary" href="/es/reservar/">Reservar un Tour</a>
+          <a class="btn secondary" href="/es/tours/">Ver Tours</a>
         </div>
-        <p class="note">Fields marked with <span class="req">*</span> are required.</p>
       </div>
 
-      <!-- Moved here: quick contact buttons under Contact Us -->
-      <div class="metaCard" aria-label="Quick contact" style="margin-top:12px;">
-        <p class="note" style="margin:0;"><strong>Email</strong></p>
-        <div class="quickRow">
-          <a class="btn secondary" id="emailBtn" style="min-height:46px; display:inline-flex; align-items:center;" href="mailto:mindobirdwatching@gmail.com?subject=Contact%20Request%20-%20Mindo%20Bird%20Watching">Email Us</a>
-          <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copy email address">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
-            </svg>
-          </button>
-        </div>
-        <div class="toast" id="copyToast">✅ Copied: mindobirdwatching@gmail.com</div>
-
-        <p class="note" style="margin-top:10px;"><strong>WhatsApp</strong></p>
-        <a class="btn secondary" style="min-height:46px; display:inline-flex; align-items:center; justify-content:center;" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Message on WhatsApp</a>
-      </div>
+      <aside class="heroCard" aria-label="Como usar esta galeria">
+        <h2>Conoce las Aves</h2>
+        <ul>
+          <li>Usa filtros para ir a un grupo (Colibries, Tucanes, etc.)</li>
+          <li>Haz clic en una foto para ver en pantalla completa</li>
+          <li>Usa ← / → para navegar</li>
+        </ul>
+      </aside>
     </div>
 
-    <!-- New top-right vertical image -->
-    <aside class="vImageCard" aria-label="Featured contact image">
-      <div class="vImageFrame">
-        <img src="/assets/images/pages/contact/MBW-Assets-contact-vertical.jpg" alt="Birding in Mindo, Ecuador" loading="lazy" />
-      </div>
-      <div class="vImageBar">
-        <p class="vImageTitle">Plan your Mindo birding trip</p>
-        <span class="chip" style="padding:7px 10px;">Mindo</span>
-      </div>
-    </aside>
+    <div class="heroRight" aria-label="Columna derecha">
+      <aside class="heroCard" aria-label="Ave del Dia">
+        <div class="bodHead">
+          <div class="bodTitle" style="min-width:0;">
+            <h2>Ave del Dia</h2>
+            <div class="bodSub" id="bodSub">Cargando el ave de hoy...</div>
+          </div>
+          <span class="bodPill" id="bodPill">Cargando</span>
+        </div>
+
+        <div class="bodMedia" id="bodMedia" hidden>
+          <div class="bodImgWrap">
+            <a id="bodImgLink" href="#" target="_blank" rel="noopener" aria-label="Abrir fuente de imagen" style="display:block; width:100%;">
+              <img id="bodImg" class="bodImg" src="" alt="" loading="lazy" />
+            </a>
+          </div>
+
+          <div class="bodAudio" id="bodAudioWrap" hidden>
+            <audio id="bodAudio" controls preload="none"></audio>
+
+            <div class="bodLinks">
+              <div>
+                <span id="bodImageCreditWrap" hidden>Credito de imagen: <a id="bodImageCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
+                <span id="bodAudioCreditWrap" hidden style="margin-left:10px;">Credito de audio: <a id="bodAudioCredit" href="#" target="_blank" rel="noopener">Fuente</a></span>
+              </div>
+              <div>
+                <span id="bodAudioSrcWrap" hidden>Fuente del audio: <a id="bodAudioSrc" href="#" target="_blank" rel="noopener">Abrir</a></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bodCtas">
+          <a class="btn secondary" href="/es/reservar/">Aves con Guia</a>
+          <a class="btn secondary" href="/es/calendario/">Calendario de Avistamiento</a>
+          <a class="btn secondary" href="/es/ave-de-la-semana/">Ave de la Semana</a>
+        </div>
+      </aside>
+    </div>
   </section>
 
-  <section class="section" aria-label="Contact form and featured image">
+  <section class="section" aria-label="Seccion de galeria">
     <div class="sectionHead">
-      <h2>Send a Message</h2>
-      <p class="note">We usually reply within 24 hours.</p>
+      <h2>Galeria</h2>
+      <p class="hint">Usando imagenes reales desde <strong>/assets/images/bird-gallery</strong>.</p>
     </div>
 
-    <div class="grid2">
-      <div class="cardBox">
-        <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
-
-        <form class="form" id="contactForm"
-          method="post"
-          target="mbwHiddenFrame"
-          action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
-
-          <div class="row2">
-            <label>
-              <span class="labelText">First Name<span class="req">*</span></span>
-              <input
-                type="text"
-                name="first_name"
-                id="firstName"
-                autocomplete="given-name"
-                autocapitalize="words"
-                autocorrect="off"
-                spellcheck="false"
-                placeholder="First name"
-                required
-              />
-            </label>
-
-            <label>
-              <span class="labelText">Last Name<span class="req">*</span></span>
-              <input
-                type="text"
-                name="last_name"
-                id="lastName"
-                autocomplete="family-name"
-                autocapitalize="words"
-                autocorrect="off"
-                spellcheck="false"
-                placeholder="Last name"
-                required
-              />
-            </label>
-          </div>
-
-          <div class="row2">
-            <label>
-              <span class="labelText">Email<span class="req">*</span></span>
-              <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required />
-            </label>
-
-            <label>
-              <span class="labelText">How Did You Hear About Us?</span>
-              <input type="text" name="how_hear" placeholder="Google, Instagram, friend, hotel, etc." />
-            </label>
-          </div>
-
-          <div class="rowPhone">
-            <label>
-              <span class="labelText">Country Code<span class="req">*</span></span>
-              <input
-                type="text"
-                name="country_code"
-                inputmode="numeric"
-                pattern="[0-9]{1,4}"
-                placeholder="1"
-                value="1"
-                required
-              />
-            </label>
-
-            <label>
-              <span class="labelText">Phone / WhatsApp Number<span class="req">*</span></span>
-              <input
-                type="tel"
-                name="phone_number"
-                autocomplete="tel"
-                inputmode="tel"
-                placeholder="123 456 7890"
-                required
-              />
-            </label>
-          </div>
-
-          <label>
-            <span class="labelText">Message / Questions<span class="req">*</span></span>
-            <textarea name="message" placeholder="Tell us what you need help with. You can include dates, goals, and tour questions." required></textarea>
-          </label>
-
-          <div class="row2 rowDatesGuests">
-            <label>
-              <span class="labelText">Dates of Visit</span>
-              <div class="dateRange">
-                <input type="date" id="dateStart" autocomplete="off" />
-                <input type="date" id="dateEnd" autocomplete="off" />
-              </div>
-              <p class="dateHint">Select a start date and (optional) end date.</p>
-              <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
-            </label>
-
-            <label class="guestsLabel">
-              <span class="labelText">Number of Guests</span>
-              <select name="number_of_guests">
-                <option value="">Select</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3 to 4</option>
-                <option>5 to 8</option>
-                <option>9+</option>
-              </select>
-            </label>
-          </div>
-
-          <label>
-            <span class="labelText">Preferred Tour Type</span>
-            <select name="preferred_tour_type">
-              <option value="">Select</option>
-              <option>Half-Day Tour</option>
-              <option>Full-Day Tour</option>
-              <option>Custom / Private Tour</option>
-              <option>Not Sure Yet</option>
-            </select>
-          </label>
-
-          <label>
-            <span class="labelText">Accommodation Needs</span>
-            <input type="text" name="accommodation_needs" placeholder="Optional (hotel name, pickup notes, etc.)" />
-          </label>
-
-          <label>
-            <span class="labelText">Special Interests</span>
-            <input type="text" name="special_interests" placeholder="Photography, hummingbirds, tanagers, night walk, etc." />
-          </label>
-
-          <input type="hidden" name="source_page" id="sourcePage" value="" />
-          <input type="hidden" name="user_agent" id="uaField" value="" />
-
-          <p class="help">
-            After you submit, you’ll receive an email confirmation. If you don’t see it, check Spam/Promotions.
-          </p>
-
-          <div class="ctaActions">
-            <button class="btn primary" id="submitBtn" type="submit">Send Message</button>
-            <a class="btn secondary" href="/tours/">View Tours</a>
-          </div>
-
-          <div class="success" id="formSuccessMsg">✅ Your message has been sent — we’ll email you a confirmation shortly.</div>
-          <div class="errorMsg" id="formErrorMsg">⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.</div>
-        </form>
-      </div>
-
-      <!-- New right column: vertical image (replaces Help Center in this row) -->
-      <div class="vImageCard" aria-label="Featured vertical image">
-        <div class="vImageFrame">
-          <img src="/assets/images/pages/contact/MBW-Assets-contact-vertical-2.jpg" alt="Cloud forest birding in Mindo" loading="lazy" />
-        </div>
-        <div class="vImageBar">
-          <p class="vImageTitle">Private tours, calm planning</p>
-          <span class="chip" style="padding:7px 10px;">Guided</span>
-        </div>
-      </div>
+    <div class="filters" role="toolbar" aria-label="Filtros de galeria">
+      <button class="chip" type="button" data-filter="all" aria-pressed="true">Todas</button>
+      <button class="chip" type="button" data-filter="hummingbirds" aria-pressed="false">Colibries</button>
+      <button class="chip" type="button" data-filter="toucans" aria-pressed="false">Tucanes</button>
+      <button class="chip" type="button" data-filter="tanagers" aria-pressed="false">Tangaras</button>
+      <button class="chip" type="button" data-filter="cock-of-the-rock" aria-pressed="false">Gallito de las Rocas</button>
+      <button class="chip" type="button" data-filter="other" aria-pressed="false">Otras</button>
+      <button class="chip" type="button" data-filter="videos" aria-pressed="false">Videos</button>
     </div>
 
-    <!-- Moved down: Help Center now sits below to make room for the vertical image -->
-    <div class="cardBox" aria-label="Help center" style="margin-top:12px;">
-      <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Help Center</h3>
-      <p class="note" style="margin-top:0;">
-        Common questions and policies live here.
-      </p>
+    <div id="galleryGrid" class="gallery" aria-label="Cuadricula de fotos"></div>
+    <div id="emptyState" class="emptyState" role="status" aria-live="polite">
+      No hay elementos para este filtro todavia.
+    </div>
+  </section>
 
-      <ul class="linkList" aria-label="Help center links">
-        <li><a href="/faqs/">FAQs</a></li>
-        <li><a href="/terms-of-service/">Terms of Service</a></li>
-        <li><a href="/terms-conditions/">Terms and Conditions</a></li>
-        <li><a href="/privacy-policy/">Privacy Policy</a></li>
-      </ul>
+  <section class="section" aria-label="Seccion de videos">
+    <div class="sectionHead">
+      <h2>Videos</h2>
+      <p class="hint">Reemplaza los IDs de YouTube cuando estes listo.</p>
+    </div>
 
-      <div class="section" style="margin-top:14px; padding-top:14px;">
-        <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">What helps us reply faster</h3>
-        <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
-          <li>Your dates (if known)</li>
-          <li>Group size and pace</li>
-          <li>Target species or photography goals</li>
-          <li>Hotel name or pickup area</li>
-          <li>Any mobility or timing constraints</li>
-        </ul>
-        <p class="note" style="margin-top:10px;">You can keep it simple now and refine later.</p>
+    <div class="videoGrid">
+      <div class="videoCard" aria-label="Video 1">
+        <iframe
+          class="videoFrame"
+          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_1"
+          title="Video 1 de Mindo Bird Watching"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+        <div class="videoCap">Video 1 de ejemplo. Reemplaza <strong>VIDEO_ID_1</strong>.</div>
+      </div>
+
+      <div class="videoCard" aria-label="Video 2">
+        <iframe
+          class="videoFrame"
+          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
+          title="Video 2 de Mindo Bird Watching"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+        <div class="videoCap">Video 2 de ejemplo. Reemplaza <strong>VIDEO_ID_2</strong>.</div>
       </div>
     </div>
   </section>
 </main>
 
 <div id="siteFooter"></div>
-  </div>
-  <script>
-    (function(){
-      var ua = document.getElementById("uaField");
-      if(ua) ua.value = navigator.userAgent || "";
-
-      var sp = document.getElementById("sourcePage");
-      if(sp) sp.value = window.location.href;
-
-      function titleCaseWords(str){
-        return String(str || "")
-          .trim()
-          .replace(/\s+/g, " ")
-          .split(" ")
-          .map(function(w){
-            if(!w) return "";
-            var lower = w.toLowerCase();
-            return lower.charAt(0).toUpperCase() + lower.slice(1);
-          })
-          .join(" ");
-      }
-
-      function attachNameAutoCap(id){
-        var el = document.getElementById(id);
-        if(!el) return;
-        el.addEventListener("blur", function(){
-          el.value = titleCaseWords(el.value);
-        });
-      }
-      attachNameAutoCap("firstName");
-      attachNameAutoCap("lastName");
-
-      function combineDates(){
-        var s = document.getElementById("dateStart");
-        var e = document.getElementById("dateEnd");
-        var out = document.getElementById("datesCombined");
-        if(!out) return;
-
-        var start = (s && s.value) ? s.value : "";
-        var end = (e && e.value) ? e.value : "";
-
-        if(start && end) out.value = start + " to " + end;
-        else if(start) out.value = start;
-        else out.value = "";
-      }
-      var ds = document.getElementById("dateStart");
-      var de = document.getElementById("dateEnd");
-      if(ds) ds.addEventListener("change", combineDates);
-      if(de) de.addEventListener("change", combineDates);
-      combineDates();
-
-      var copyBtn = document.getElementById("copyEmailBtn");
-      var toast = document.getElementById("copyToast");
-      var email = "mindobirdwatching@gmail.com";
-      function showToast(){
-        if(!toast) return;
-        toast.style.display = "block";
-        clearTimeout(window.__mbwCopyT);
-        window.__mbwCopyT = setTimeout(function(){
-          toast.style.display = "none";
-        }, 1800);
-      }
-      if(copyBtn){
-        copyBtn.addEventListener("click", function(){
-          try{
-            if(navigator.clipboard && navigator.clipboard.writeText){
-              navigator.clipboard.writeText(email).then(showToast).catch(function(){});
-              return;
-            }
-          }catch(e){}
-          try{
-            var ta = document.createElement("textarea");
-            ta.value = email;
-            ta.setAttribute("readonly", "readonly");
-            ta.style.position = "absolute";
-            ta.style.left = "-9999px";
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            document.body.removeChild(ta);
-            showToast();
-          }catch(e){}
-        });
-      }
-
-      var form = document.getElementById("contactForm");
-      var successEl = document.getElementById("formSuccessMsg");
-      var errorEl = document.getElementById("formErrorMsg");
-      var submitBtn = document.getElementById("submitBtn");
-      var iframe = document.getElementById("mbwHiddenFrame");
-
-      var pending = false;
-      var done = false;
-      var fallbackTimer = null;
-
-      function hideMsgs(){
-        if(successEl) successEl.style.display = "none";
-        if(errorEl) errorEl.style.display = "none";
-      }
-
-      function setBtnSending(isSending){
-        if(!submitBtn) return;
-        if(isSending){
-          submitBtn.setAttribute("disabled", "disabled");
-          submitBtn.textContent = "Sending...";
-        }else{
-          submitBtn.removeAttribute("disabled");
-          submitBtn.textContent = "Send Message";
-        }
-      }
-
-      function completeOk(){
-        if(done) return;
-        done = true;
-        pending = false;
-        if(fallbackTimer) clearTimeout(fallbackTimer);
-        setBtnSending(false);
-        if(successEl) successEl.style.display = "block";
-        if(errorEl) errorEl.style.display = "none";
-        try{
-          form.reset();
-          if(ds) ds.value = "";
-          if(de) de.value = "";
-          combineDates();
-          if(ua) ua.value = navigator.userAgent || "";
-          if(sp) sp.value = window.location.href;
-        }catch(e){}
-      }
-
-      function completeError(msg){
-        if(done) return;
-        done = true;
-        pending = false;
-        if(fallbackTimer) clearTimeout(fallbackTimer);
-        setBtnSending(false);
-        if(errorEl){
-          errorEl.textContent = msg || "⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.";
-          errorEl.style.display = "block";
-        }
-        if(successEl) successEl.style.display = "none";
-      }
-
-      hideMsgs();
-
-      if(form){
-        form.addEventListener("submit", function(){
-          hideMsgs();
-          done = false;
-          pending = true;
-          setBtnSending(true);
-
-          if(fallbackTimer) clearTimeout(fallbackTimer);
-          fallbackTimer = setTimeout(function(){
-            if(!done){
-              completeError("⚠️ Still waiting… please try again, or email us directly at mindobirdwatching@gmail.com.");
-            }
-          }, 12000);
-        });
-      }
-
-      if(iframe){
-        iframe.addEventListener("load", function(){
-          if(pending && !done){
-            completeOk();
-          }
-        });
-      }
-
-      window.addEventListener("message", function(ev){
-        var data = ev && ev.data ? ev.data : null;
-        if(!data) return;
-
-        if(data.type === "mbw-contact" && data.status === "ok"){
-          completeOk();
-          return;
-        }
-        if(data.type === "mbw-contact" && data.status === "error"){
-          completeError(data.message ? ("⚠️ " + data.message) : null);
-        }
-      });
-    })();
-  </script>
+      </div>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
+  <script>
+    (function () {
+      "use strict";
+
+      if (document.documentElement.dataset.mbwBodInit !== "1") {
+        document.documentElement.dataset.mbwBodInit = "1";
+
+        const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
+        const AUDIO_PROXY = "https://mbw-audio-proxy.mindobirdwatching.workers.dev/?url=";
+
+        const bodSub = document.getElementById("bodSub");
+        const bodPill = document.getElementById("bodPill");
+        const bodMedia = document.getElementById("bodMedia");
+
+        const bodImg = document.getElementById("bodImg");
+        const bodImgLink = document.getElementById("bodImgLink");
+
+        const bodAudioWrap = document.getElementById("bodAudioWrap");
+        const bodAudio = document.getElementById("bodAudio");
+
+        const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
+        const bodImageCredit = document.getElementById("bodImageCredit");
+
+        const bodAudioCreditWrap = document.getElementById("bodAudioCreditWrap");
+        const bodAudioCredit = document.getElementById("bodAudioCredit");
+
+        const bodAudioSrcWrap = document.getElementById("bodAudioSrcWrap");
+        const bodAudioSrc = document.getElementById("bodAudioSrc");
+
+        function safeText(s) { return String(s || "").trim(); }
+        function isHttpUrl(v) { return /^https?:\/\/\S+/i.test(String(v || "").trim()); }
+
+        function setLoading() {
+          if (bodSub) bodSub.textContent = "Cargando el ave de hoy...";
+          if (bodPill) bodPill.textContent = "Cargando";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function setError() {
+          if (bodSub) bodSub.textContent = "Ave del Dia no esta disponible en este momento.";
+          if (bodPill) bodPill.textContent = "Offline";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function renderBod(data) {
+          const birdName = safeText(data.birdName) || "Ave del Dia";
+          const spanishName = safeText(data.spanishName);
+
+          const imageUrl = safeText(data.imageUrl);
+          const imageLink = safeText(data.imageLink) || imageUrl;
+
+          const rawAudioUrl = isHttpUrl(data.audioUrl) ? safeText(data.audioUrl)
+                            : isHttpUrl(data.audioLink) ? safeText(data.audioLink)
+                            : "";
+
+          const audioLink = safeText(data.audioLink) || rawAudioUrl;
+
+          const imageCredit = safeText(data.imageCredit);
+          const audioCredit = safeText(data.audioCredit);
+
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Seleccion de hoy en Mindo";
+          if (bodPill) bodPill.textContent = "Hoy";
+
+          if (bodImg && imageUrl) {
+            bodImg.src = imageUrl;
+            bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
+            if (bodImgLink) bodImgLink.href = imageLink || imageUrl;
+            if (bodMedia) bodMedia.hidden = false;
+          } else {
+            if (bodMedia) bodMedia.hidden = true;
+          }
+
+          if (bodAudio && rawAudioUrl) {
+            const proxied = AUDIO_PROXY + encodeURIComponent(rawAudioUrl);
+
+            bodAudio.innerHTML = "";
+            const src = document.createElement("source");
+            src.src = proxied;
+            src.type = "audio/mpeg";
+            bodAudio.appendChild(src);
+
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+
+            bodAudio.addEventListener("loadstart", () => console.log("[Audio Ave del dia] loadstart", proxied), { once: true });
+            bodAudio.addEventListener("error", () => console.log("[Audio Ave del dia] error", bodAudio.error), { once: true });
+          } else {
+            if (bodAudioWrap) bodAudioWrap.hidden = true;
+          }
+
+          if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
+          if (bodImageCredit && imageCredit) bodImageCredit.href = imageCredit;
+
+          if (bodAudioCreditWrap) bodAudioCreditWrap.hidden = !audioCredit;
+          if (bodAudioCredit && audioCredit) bodAudioCredit.href = audioCredit;
+
+          if (bodAudioSrcWrap) bodAudioSrcWrap.hidden = !audioLink;
+          if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
+        }
+
+        async function loadBod() {
+          setLoading();
+          try {
+            const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
+            const json = await res.json();
+            if (!json || json.ok !== true) throw new Error("Not ok");
+            renderBod(json);
+          } catch (_) {
+            setError();
+          }
+        }
+
+        loadBod();
+      }
+
+      if (document.documentElement.dataset.mbwGalleryInit === "1") return;
+      document.documentElement.dataset.mbwGalleryInit = "1";
+
+      const grid = document.getElementById("galleryGrid");
+      const emptyState = document.getElementById("emptyState");
+      const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
+      if (!grid) return;
+
+      const ITEMS = [
+        { id: "img-01", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari en Mindo, Ecuador" },
+        { id: "img-02", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan en Mindo, Ecuador" },
+        { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet en Mindo, Ecuador" },
+        { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet en Mindo, Ecuador" },
+        { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan en Mindo, Ecuador" },
+
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Gallito de las Rocas en Mindo, Ecuador" },
+
+        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph en Mindo, Ecuador" },
+
+        { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager en Mindo, Ecuador" },
+        { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager en Mindo, Ecuador" },
+        { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager en Mindo, Ecuador" },
+        { id: "img-11", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager en Mindo, Ecuador" },
+        { id: "img-12", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager en Mindo, Ecuador" },
+        { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager en Mindo, Ecuador" },
+        { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager en Mindo, Ecuador" },
+        { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager en Mindo, Ecuador" },
+
+        { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher en Mindo, Ecuador" },
+        { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher en Mindo, Ecuador" },
+        { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot en Mindo, Ecuador" },
+        { id: "img-19", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo en Mindo, Ecuador" },
+        { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker en Mindo, Ecuador" },
+        { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon en Mindo, Ecuador" },
+        { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot en Mindo, Ecuador" },
+
+        { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird en Mindo, Ecuador" },
+        { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra en Mindo, Ecuador" },
+        { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta en Mindo, Ecuador" },
+        { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal en Mindo, Ecuador" },
+        { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon en Mindo, Ecuador" },
+        { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan en Mindo, Ecuador" }
+      ];
+
+      function prettyCategory(c) {
+        const map = {
+          "hummingbirds": "Colibries",
+          "toucans": "Tucanes",
+          "tanagers": "Tangaras",
+          "cock-of-the-rock": "Gallito de las Rocas",
+          "other": "Otras"
+        };
+        return map[c] || "Aves";
+      }
+
+      function setEmptyState(list) {
+        if (!emptyState) return;
+        emptyState.classList.toggle("is-visible", list.length === 0);
+      }
+
+      const lb = document.createElement("div");
+      lb.className = "lb";
+      lb.setAttribute("role", "dialog");
+      lb.setAttribute("aria-modal", "true");
+      lb.setAttribute("aria-label", "Visor de imagenes");
+      lb.innerHTML = `
+        <div class="lbDialog" role="document">
+          <div class="lbMedia">
+            <img class="lbImg" alt="" />
+          </div>
+          <div class="lbBar">
+            <div style="min-width:0;">
+              <p class="lbTitle" style="min-width:0;"></p>
+              <p class="lbSub"></p>
+            </div>
+            <div class="lbBtns">
+              <button class="iconBtn" type="button" data-lb="prev" aria-label="Anterior (flecha izquierda)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn" type="button" data-lb="next" aria-label="Siguiente (flecha derecha)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn closeBtn" type="button" data-lb="close" aria-label="Cerrar (escape)">
+                <span>Cerrar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(lb);
+
+      const lbImg = lb.querySelector(".lbImg");
+      const lbTitle = lb.querySelector(".lbTitle");
+      const lbSub = lb.querySelector(".lbSub");
+      const btnPrev = lb.querySelector('[data-lb="prev"]');
+      const btnNext = lb.querySelector('[data-lb="next"]');
+      const btnClose = lb.querySelector('[data-lb="close"]');
+
+      let activeFilter = "all";
+      let visible = ITEMS.slice();
+      let lbIndex = 0;
+      let lastFocused = null;
+
+      function render() {
+        visible =
+          activeFilter === "all" ? ITEMS :
+          activeFilter === "videos" ? [] :
+          ITEMS.filter(x => x.category === activeFilter);
+
+        grid.innerHTML = "";
+
+        visible.forEach((item, i) => {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "tile";
+          tile.setAttribute("aria-label", "Abrir " + item.title);
+
+          const img = document.createElement("img");
+          img.className = "thumb";
+          img.src = item.src;
+          img.alt = item.alt || item.title;
+          img.loading = "lazy";
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          const name = document.createElement("p");
+          name.className = "name";
+          name.textContent = item.title;
+
+          const tag = document.createElement("p");
+          tag.className = "tag";
+          tag.textContent = prettyCategory(item.category);
+
+          meta.appendChild(name);
+          meta.appendChild(tag);
+
+          tile.appendChild(img);
+          tile.appendChild(meta);
+
+          tile.addEventListener("click", () => openLightbox(i));
+          grid.appendChild(tile);
+        });
+
+        setEmptyState(visible);
+      }
+
+      function clamp(i) {
+        const n = visible.length || 1;
+        return (i % n + n) % n;
+      }
+
+      function openLightbox(i) {
+        if (!visible.length) return;
+        lastFocused = document.activeElement;
+
+        lbIndex = clamp(i);
+        const item = visible[lbIndex];
+
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Foto";
+        lbSub.textContent = prettyCategory(item.category);
+
+        lb.classList.add("is-open");
+        window.setTimeout(() => { btnClose && btnClose.focus(); }, 0);
+      }
+
+      function closeLightbox() {
+        lb.classList.remove("is-open");
+        if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+      }
+
+      function showNext(dir) {
+        if (!visible.length) return;
+        lbIndex = clamp(lbIndex + dir);
+        const item = visible[lbIndex];
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Foto";
+        lbSub.textContent = prettyCategory(item.category);
+      }
+
+      if (!lb.dataset.bound) {
+        lb.dataset.bound = "1";
+        btnPrev && btnPrev.addEventListener("click", () => showNext(-1));
+        btnNext && btnNext.addEventListener("click", () => showNext(1));
+        btnClose && btnClose.addEventListener("click", closeLightbox);
+
+        lb.addEventListener("click", (e) => { if (e.target === lb) closeLightbox(); });
+
+        document.addEventListener("keydown", (e) => {
+          if (!lb.classList.contains("is-open")) return;
+          if (e.key === "Escape") closeLightbox();
+          if (e.key === "ArrowLeft") showNext(-1);
+          if (e.key === "ArrowRight") showNext(1);
+        });
+      }
+
+      if (!document.documentElement.dataset.mbwGalleryFiltersBound) {
+        document.documentElement.dataset.mbwGalleryFiltersBound = "1";
+
+        chips.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            chips.forEach(b => b.setAttribute("aria-pressed", "false"));
+            btn.setAttribute("aria-pressed", "true");
+
+            activeFilter = btn.dataset.filter || "all";
+
+            if (activeFilter === "videos") {
+              render();
+              const videosSection = document.querySelector('section[aria-label="Seccion de videos"]');
+              if (videosSection) videosSection.scrollIntoView({ behavior: "smooth", block: "start" });
+              return;
+            }
+
+            render();
+          });
+        });
+      }
+
+      render();
+    })();
+  </script>
 </body>
 </html>
