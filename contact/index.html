@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contact Us | Mindo Bird Watching</title>
-  <meta name="description" content="Contact Mindo Bird Watching in 📍Mindo, Ecuador. Send your questions, dates, and tour goals — we’ll reply quickly." />
+  <meta name="description" content="Contact Mindo Bird Watching in 📍Mindo, Ecuador. Send your questions, dates, and tour goals - we’ll reply quickly." />
   <link rel="alternate" hreflang="en" href="/contact/" />
   <link rel="alternate" hreflang="es" href="/es/contacto/" />
   <link rel="alternate" hreflang="x-default" href="/contact/" />
@@ -26,10 +26,19 @@
       box-shadow: var(--shadow);
     }
 
-    .hero{
+    /* NEW: Single layout grid so left can continue under the hero while right stays tall */
+    .contactLayout{
       display:grid;
       grid-template-columns: 1.05fr .95fr;
       gap: 16px;
+      align-items:start;
+    }
+
+    .leftStack,
+    .rightStack{
+      display:grid;
+      gap: 12px;
+      align-content:start;
       align-items:start;
     }
 
@@ -52,62 +61,11 @@
       gap: 10px;
     }
 
-    .chips{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items:center;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 12.5px;
-      line-height: 1;
-      white-space: nowrap;
-    }
-
     .note{
       margin:0;
       color: var(--muted);
       font-size: 13px;
       line-height: 1.55;
-    }
-
-    .section{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
-
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .sectionHead h2{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing:-0.02em;
-      font-size: 20px;
-    }
-
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      align-items:start;
     }
 
     .cardBox{
@@ -118,6 +76,24 @@
       padding: 14px;
     }
 
+    .sectionHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 6px 0 0;
+    }
+
+    .sectionHead h2{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing:-0.02em;
+      font-size: 20px;
+    }
+
+    /* Form */
     .form{
       display:grid;
       gap: 10px;
@@ -223,28 +199,6 @@
       line-height: 1.35;
     }
 
-    .quickRow{
-      display:flex;
-      gap: 10px;
-      align-items:center;
-      flex-wrap: wrap;
-    }
-
-    .iconBtn{
-      width: 46px;
-      height: 46px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      padding: 0;
-    }
-    .iconBtn svg{ width: 18px; height: 18px; fill: var(--ink); opacity: .9; }
-
     .toast{
       display:none;
       margin-top: 8px;
@@ -349,9 +303,110 @@
     }
     .linkList a{ font-weight: 900; }
 
+    /* Quick actions */
+    .actionsTitle{
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 16px;
+    }
+    .actionsGrid{
+      display:grid;
+      gap: 10px;
+    }
+    .actionsRow{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: nowrap;
+    }
+    .btnSm{
+      min-height: 40px !important;
+      padding: 10px 12px !important;
+      font-size: 13px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      border-radius: 12px !important;
+      display:inline-flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      white-space: nowrap;
+    }
+
+    .iconBtn{
+      width: 40px;
+      height: 40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      padding: 0;
+      flex: 0 0 auto;
+    }
+    .iconBtn svg{ width: 18px; height: 18px; fill: var(--ink); opacity: .9; }
+
+    .tipBox{
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+    .tipLabel{
+      font-weight: 950;
+      color: var(--ink);
+      font-size: 12.5px;
+      margin: 0 0 4px;
+    }
+    .tipText{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    /* Image card */
+    .vImageCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .vImageFrame{
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position: relative;
+    }
+    .vImageFrame img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+    .vBadge{
+      position:absolute;
+      top: 10px;
+      right: 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      padding: 6px 10px;
+      font-weight: 950;
+      font-size: 12px;
+      line-height: 1;
+      color: var(--ink);
+    }
+
     @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; }
-      .grid2{ grid-template-columns: 1fr; }
+      .contactLayout{ grid-template-columns: 1fr; }
       .row2{ grid-template-columns: 1fr; }
       .rowDatesGuests{ grid-template-columns: 1fr; }
       .rowPhone{ grid-template-columns: 120px 1fr; }
@@ -367,6 +422,13 @@
         min-width: 0;
       }
       .rowDatesGuests .guestsLabel .labelText{ white-space: normal; }
+      .actionsRow{ flex-wrap: wrap; }
+
+      /* Mobile ordering: quick contact -> image -> form -> help center */
+      .rightStack{ order: 2; }
+      .leftStack{ order: 1; }
+      .mobileImageFirst{ order: 1; }
+      .mobileHelpSecond{ order: 3; }
     }
   </style>
 </head>
@@ -374,198 +436,207 @@
   <div class="container">
     <div id="siteHeader"></div>
 <main class="page card">
-  <section class="hero" aria-label="Contact us hero">
-    <div>
-      <h1>Contact Us</h1>
-      <p class="lede">
-        Questions, tour planning, dates, special requests, or logistics. Send us a message and we’ll reply quickly.
-      </p>
+  <div class="contactLayout" aria-label="Contact layout">
+    <!-- LEFT -->
+    <div class="leftStack" aria-label="Left column">
+      <div>
+        <h1>Contact Us</h1>
+        <p class="lede">
+          Questions, tour planning, dates, special requests, or logistics. Send us a message and we’ll reply quickly.
+        </p>
 
-      <div class="metaCard" style="margin-top:12px;">
-        <div class="chips">
-          <span class="chip">📍Mindo, Ecuador</span>
-          <span class="chip">Fast reply by email</span>
-          <span class="chip">Tours and trip planning</span>
+        <div class="metaCard" aria-label="Quick contact and tip" style="margin-top:12px;">
+          <div class="actionsGrid">
+            <p class="actionsTitle">Email</p>
+
+            <div class="actionsRow" aria-label="Email actions">
+              <a class="btn secondary btnSm" id="emailBtn" href="mailto:mindobirdwatching@gmail.com?subject=Contact%20Request%20-%20Mindo%20Bird%20Watching">Email Us</a>
+
+              <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copy email address">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
+                </svg>
+              </button>
+
+              <a class="btn secondary btnSm" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Message on WhatsApp</a>
+            </div>
+
+            <div class="toast" id="copyToast">✅ Copied: mindobirdwatching@gmail.com</div>
+
+            <div class="tipBox" aria-label="Tip">
+              <p class="tipLabel">Tip</p>
+              <p class="tipText">Include your dates and group size for faster planning help.</p>
+            </div>
+          </div>
         </div>
-        <p class="note">Fields marked with <span class="req">*</span> are required.</p>
       </div>
-    </div>
 
-    <aside class="metaCard" aria-label="Quick contact">
-      <p class="note" style="margin:0;"><strong>Email</strong></p>
-      <div class="quickRow">
-        <a class="btn secondary" id="emailBtn" style="min-height:46px; display:inline-flex; align-items:center;" href="mailto:mindobirdwatching@gmail.com?subject=Contact%20Request%20%E2%80%94%20Mindo%20Bird%20Watching">Email Us</a>
-        <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copy email address">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
-          </svg>
-        </button>
-      </div>
-      <div class="toast" id="copyToast">✅ Copied: mindobirdwatching@gmail.com</div>
+      <div>
+        <div class="sectionHead">
+          <h2>Send a Message</h2>
+          <p class="note">We usually reply within 24 hours.</p>
+        </div>
 
-      <p class="note" style="margin-top:10px;"><strong>WhatsApp</strong></p>
-      <a class="btn secondary" style="min-height:46px; display:inline-flex; align-items:center; justify-content:center;" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Message on WhatsApp</a>
-    </aside>
-  </section>
+        <div class="cardBox">
+          <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
 
-  <section class="section" aria-label="Contact form and help center">
-    <div class="sectionHead">
-      <h2>Send a Message</h2>
-      <p class="note">We usually reply within 24 hours.</p>
-    </div>
+          <form class="form" id="contactForm"
+            method="post"
+            target="mbwHiddenFrame"
+            action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
 
-    <div class="grid2">
-      <div class="cardBox">
-        <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
+            <div class="row2">
+              <label>
+                <span class="labelText">First Name<span class="req">*</span></span>
+                <input
+                  type="text"
+                  name="first_name"
+                  id="firstName"
+                  autocomplete="given-name"
+                  autocapitalize="words"
+                  autocorrect="off"
+                  spellcheck="false"
+                  placeholder="First name"
+                  required
+                />
+              </label>
 
-        <form class="form" id="contactForm"
-          method="post"
-          target="mbwHiddenFrame"
-          action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
+              <label>
+                <span class="labelText">Last Name<span class="req">*</span></span>
+                <input
+                  type="text"
+                  name="last_name"
+                  id="lastName"
+                  autocomplete="family-name"
+                  autocapitalize="words"
+                  autocorrect="off"
+                  spellcheck="false"
+                  placeholder="Last name"
+                  required
+                />
+              </label>
+            </div>
 
-          <div class="row2">
-            <label>
-              <span class="labelText">First Name<span class="req">*</span></span>
-              <input
-                type="text"
-                name="first_name"
-                id="firstName"
-                autocomplete="given-name"
-                autocapitalize="words"
-                autocorrect="off"
-                spellcheck="false"
-                placeholder="First name"
-                required
-              />
-            </label>
+            <div class="row2">
+              <label>
+                <span class="labelText">Email<span class="req">*</span></span>
+                <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required />
+              </label>
 
-            <label>
-              <span class="labelText">Last Name<span class="req">*</span></span>
-              <input
-                type="text"
-                name="last_name"
-                id="lastName"
-                autocomplete="family-name"
-                autocapitalize="words"
-                autocorrect="off"
-                spellcheck="false"
-                placeholder="Last name"
-                required
-              />
-            </label>
-          </div>
+              <label>
+                <span class="labelText">How Did You Hear About Us?</span>
+                <input type="text" name="how_hear" placeholder="Google, Instagram, friend, hotel, etc." />
+              </label>
+            </div>
 
-          <div class="row2">
-            <label>
-              <span class="labelText">Email<span class="req">*</span></span>
-              <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required />
-            </label>
+            <div class="rowPhone">
+              <label>
+                <span class="labelText">Country Code<span class="req">*</span></span>
+                <input
+                  type="text"
+                  name="country_code"
+                  inputmode="numeric"
+                  pattern="[0-9]{1,4}"
+                  placeholder="1"
+                  value="1"
+                  required
+                />
+              </label>
 
-            <label>
-              <span class="labelText">How Did You Hear About Us?</span>
-              <input type="text" name="how_hear" placeholder="Google, Instagram, friend, hotel, etc." />
-            </label>
-          </div>
-
-          <div class="rowPhone">
-            <label>
-              <span class="labelText">Country Code<span class="req">*</span></span>
-              <input
-                type="text"
-                name="country_code"
-                inputmode="numeric"
-                pattern="[0-9]{1,4}"
-                placeholder="1"
-                value="1"
-                required
-              />
-            </label>
+              <label>
+                <span class="labelText">Phone / WhatsApp Number<span class="req">*</span></span>
+                <input
+                  type="tel"
+                  name="phone_number"
+                  autocomplete="tel"
+                  inputmode="tel"
+                  placeholder="123 456 7890"
+                  required
+                />
+              </label>
+            </div>
 
             <label>
-              <span class="labelText">Phone / WhatsApp Number<span class="req">*</span></span>
-              <input
-                type="tel"
-                name="phone_number"
-                autocomplete="tel"
-                inputmode="tel"
-                placeholder="123 456 7890"
-                required
-              />
+              <span class="labelText">Message / Questions<span class="req">*</span></span>
+              <textarea name="message" placeholder="Tell us what you need help with. You can include dates, goals, and tour questions." required></textarea>
             </label>
-          </div>
 
-          <label>
-            <span class="labelText">Message / Questions<span class="req">*</span></span>
-            <textarea name="message" placeholder="Tell us what you need help with. You can include dates, goals, and tour questions." required></textarea>
-          </label>
+            <div class="row2 rowDatesGuests">
+              <label>
+                <span class="labelText">Dates of Visit</span>
+                <div class="dateRange">
+                  <input type="date" id="dateStart" autocomplete="off" />
+                  <input type="date" id="dateEnd" autocomplete="off" />
+                </div>
+                <p class="dateHint">Select a start date and (optional) end date.</p>
+                <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
+              </label>
 
-          <div class="row2 rowDatesGuests">
+              <label class="guestsLabel">
+                <span class="labelText">Number of Guests</span>
+                <select name="number_of_guests">
+                  <option value="">Select</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3 to 4</option>
+                  <option>5 to 8</option>
+                  <option>9+</option>
+                </select>
+              </label>
+            </div>
+
             <label>
-              <span class="labelText">Dates of Visit</span>
-              <div class="dateRange">
-                <input type="date" id="dateStart" autocomplete="off" />
-                <input type="date" id="dateEnd" autocomplete="off" />
-              </div>
-              <p class="dateHint">Select a start date and (optional) end date.</p>
-              <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
-            </label>
-
-            <label class="guestsLabel">
-              <span class="labelText">Number of Guests</span>
-              <select name="number_of_guests">
+              <span class="labelText">Preferred Tour Type</span>
+              <select name="preferred_tour_type">
                 <option value="">Select</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3 to 4</option>
-                <option>5 to 8</option>
-                <option>9+</option>
+                <option>Half-Day Tour</option>
+                <option>Full-Day Tour</option>
+                <option>Custom / Private Tour</option>
+                <option>Not Sure Yet</option>
               </select>
             </label>
-          </div>
 
-          <label>
-            <span class="labelText">Preferred Tour Type</span>
-            <select name="preferred_tour_type">
-              <option value="">Select</option>
-              <option>Half-Day Tour</option>
-              <option>Full-Day Tour</option>
-              <option>Custom / Private Tour</option>
-              <option>Not Sure Yet</option>
-            </select>
-          </label>
+            <label>
+              <span class="labelText">Accommodation Needs</span>
+              <input type="text" name="accommodation_needs" placeholder="Optional (hotel name, pickup notes, etc.)" />
+            </label>
 
-          <label>
-            <span class="labelText">Accommodation Needs</span>
-            <input type="text" name="accommodation_needs" placeholder="Optional (hotel name, pickup notes, etc.)" />
-          </label>
+            <label>
+              <span class="labelText">Special Interests</span>
+              <input type="text" name="special_interests" placeholder="Photography, hummingbirds, tanagers, night walk, etc." />
+            </label>
 
-          <label>
-            <span class="labelText">Special Interests</span>
-            <input type="text" name="special_interests" placeholder="Photography, hummingbirds, tanagers, night walk, etc." />
-          </label>
+            <input type="hidden" name="source_page" id="sourcePage" value="" />
+            <input type="hidden" name="user_agent" id="uaField" value="" />
 
-          <input type="hidden" name="source_page" id="sourcePage" value="" />
-          <input type="hidden" name="user_agent" id="uaField" value="" />
+            <p class="help">
+              After you submit, you’ll receive an email confirmation. If you don’t see it, check Spam/Promotions.
+            </p>
 
-          <p class="help">
-            After you submit, you’ll receive an email confirmation. If you don’t see it, check Spam/Promotions.
-          </p>
+            <div class="ctaActions">
+              <button class="btn primary" id="submitBtn" type="submit">Send Message</button>
+              <a class="btn secondary" href="/tours/">View Tours</a>
+            </div>
 
-          <div class="ctaActions">
-            <button class="btn primary" id="submitBtn" type="submit">Send Message</button>
-            <a class="btn secondary" href="/tours/">View Tours</a>
-          </div>
-
-          <div class="success" id="formSuccessMsg">✅ Your message has been sent — we’ll email you a confirmation shortly.</div>
-          <div class="errorMsg" id="formErrorMsg">⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.</div>
-        </form>
+            <div class="success" id="formSuccessMsg">✅ Your message has been sent - we’ll email you a confirmation shortly.</div>
+            <div class="errorMsg" id="formErrorMsg">⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.</div>
+          </form>
+        </div>
       </div>
+    </div>
 
-      <div class="cardBox" aria-label="Help center">
+    <!-- RIGHT -->
+    <div class="rightStack" aria-label="Right column">
+      <aside class="vImageCard mobileImageFirst" aria-label="Featured image (9:16)">
+        <div class="vImageFrame">
+          <img src="/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Featured image" loading="lazy" />
+          <span class="vBadge"></span>
+        </div>
+      </aside>
+
+      <div class="cardBox mobileHelpSecond" aria-label="Help center">
         <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Help Center</h3>
-        <p class="note" style="margin-top:0;">
-          Common questions and policies live here.
-        </p>
+        <p class="note" style="margin-top:0;">Common questions and policies live here.</p>
 
         <ul class="linkList" aria-label="Help center links">
           <li><a href="/faqs/">FAQs</a></li>
@@ -574,7 +645,7 @@
           <li><a href="/privacy-policy/">Privacy Policy</a></li>
         </ul>
 
-        <div class="section" style="margin-top:14px; padding-top:14px;">
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">
           <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">What helps us reply faster</h3>
           <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
             <li>Your dates (if known)</li>
@@ -587,7 +658,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </main>
 
 <div id="siteFooter"></div>
@@ -745,7 +816,7 @@
           if(fallbackTimer) clearTimeout(fallbackTimer);
           fallbackTimer = setTimeout(function(){
             if(!done){
-              completeError("⚠️ Still waiting… please try again, or email us directly at mindobirdwatching@gmail.com.");
+              completeError("⚠️ Still waiting... please try again, or email us directly at mindobirdwatching@gmail.com.");
             }
           }, 12000);
         });
