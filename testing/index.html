@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Transportation | Mindo Bird Watching</title>
-  <meta name="description" content="Estimate transportation between Quito, the airport, and Mindo. View suggested vehicles, travel times, and approximate transfer costs." />
+  <meta name="description" content="Estimate transfers between Quito, the airport, and Mindo. Compare travel time, suggested vehicle type, and planning notes for your group." />
   <link rel="canonical" href="https://mindobirdwatching.com/transportation/" />
   <link rel="alternate" hreflang="en" href="/transportation/" />
   <link rel="alternate" hreflang="es" href="/es/transporte/" />
@@ -12,9 +12,17 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
   <meta property="og:title" content="Transportation | Mindo Bird Watching" />
-  <meta property="og:description" content="Estimate transportation between Quito, the airport, and Mindo. View suggested vehicles, travel times, and approximate transfer costs." />
+  <meta property="og:description" content="Estimate transfers between Quito, the airport, and Mindo. Compare travel time, suggested vehicle type, and planning notes for your group." />
   <meta property="og:url" content="https://mindobirdwatching.com/transportation/" />
   <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - guided birding tours in Ecuador's cloud forest" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Transportation | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Estimate transfers between Quito, the airport, and Mindo. Compare travel time, suggested vehicle type, and planning notes for your group." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -89,6 +97,10 @@
       padding:0 12px;
       font:inherit;
       background:rgba(255,255,255,.7);
+      color: var(--ink);
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .estimateBox{
@@ -113,6 +125,7 @@
       font-size:13px;
       color:var(--muted);
       line-height:1.5;
+      margin: 0;
     }
 
     /* Right hero image: match left card box height */
@@ -178,179 +191,178 @@
   </style>
 </head>
 <body>
-<div class="container">
-  <div id="siteHeader"></div>
-  <main class="page card">
-    <div class="transportLayout">
-  <!-- LEFT -->
-  <div class="leftStack">
-    <div>
-      <h1>Transportation Estimates</h1>
-      <p class="lede">
-        Plan your transfer to and from Mindo. Select your route, group size, and luggage
-        to see estimated travel time and suggested vehicle type.
-      </p>
-    </div>
+  <div class="container">
+    <div id="siteHeader"></div>
+<main class="page card">
+  <div class="transportLayout">
 
-    <div class="cardBox" id="estimateCard">
-      <form class="form" oninput="updateEstimate()">
+    <!-- LEFT -->
+    <div class="leftStack">
+      <div>
+        <h1>Transportation Estimates</h1>
+        <p class="lede">
+          Plan your transfer to and from Mindo. Select your route, group size, and luggage
+          to see estimated travel time and suggested vehicle type.
+        </p>
+      </div>
 
-        <div class="row2">
-          <label>
-            From
-            <select id="from">
-              <option value="">Select</option>
-              <option value="uio">Quito Airport (UIO)</option>
-              <option value="quito">Quito City</option>
-              <option value="mindo">Mindo</option>
-            </select>
-          </label>
+      <div class="cardBox" id="estimateCard">
+        <form class="form" oninput="updateEstimate()">
 
-          <label>
-            To
-            <select id="to">
-              <option value="">Select</option>
-              <option value="uio">Quito Airport (UIO)</option>
-              <option value="quito">Quito City</option>
-              <option value="mindo">Mindo</option>
-            </select>
-          </label>
-        </div>
+          <div class="row2">
+            <label>
+              From
+              <select id="from">
+                <option value="">Select</option>
+                <option value="uio">Quito Airport (UIO)</option>
+                <option value="quito">Quito City</option>
+                <option value="mindo">Mindo</option>
+              </select>
+            </label>
 
-        <div class="row2">
-          <label>
-            Trip Type
-            <select id="trip">
-              <option value="one">One Way</option>
-              <option value="round">Round Trip</option>
-            </select>
-          </label>
-
-          <label>
-            Passengers
-            <select id="pax">
-              <option>1</option><option>2</option><option>3</option>
-              <option>4</option><option>5</option><option>6</option>
-            </select>
-          </label>
-        </div>
-
-        <label>
-          Luggage (total bags)
-          <select id="bags">
-            <option>0</option><option>1</option><option>2</option>
-            <option>3</option><option>4</option><option>5</option>
-          </select>
-        </label>
-
-        <div class="estimateBox">
-          <div class="kv">
-            <div class="k">Estimated time</div>
-            <div class="v" id="timeOut">—</div>
-
-            <div class="k">Suggested vehicle</div>
-            <div class="v" id="vehicleOut">—</div>
-
-            <div class="k">Estimated cost</div>
-            <div class="v" id="costOut">Coming soon</div>
+            <label>
+              To
+              <select id="to">
+                <option value="">Select</option>
+                <option value="uio">Quito Airport (UIO)</option>
+                <option value="quito">Quito City</option>
+                <option value="mindo">Mindo</option>
+              </select>
+            </label>
           </div>
 
-          <p class="note">
-            These are planning estimates only. Final pricing may vary based on traffic,
-            time of day, weather, and vehicle availability.
-          </p>
+          <div class="row2">
+            <label>
+              Trip Type
+              <select id="trip">
+                <option value="one">One Way</option>
+                <option value="round">Round Trip</option>
+              </select>
+            </label>
+
+            <label>
+              Passengers
+              <select id="pax">
+                <option>1</option><option>2</option><option>3</option>
+                <option>4</option><option>5</option><option>6</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Luggage (total bags)
+            <select id="bags">
+              <option>0</option><option>1</option><option>2</option>
+              <option>3</option><option>4</option><option>5</option>
+            </select>
+          </label>
+
+          <div class="estimateBox">
+            <div class="kv">
+              <div class="k">Estimated time</div>
+              <div class="v" id="timeOut">-</div>
+
+              <div class="k">Suggested vehicle</div>
+              <div class="v" id="vehicleOut">-</div>
+
+              <div class="k">Estimated cost</div>
+              <div class="v" id="costOut">Coming soon</div>
+            </div>
+
+            <p class="note">
+              These are planning estimates only. Final pricing may vary based on traffic,
+              time of day, weather, and vehicle availability.
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="rightStack">
+
+      <aside class="vImageCard heroMatch" id="heroCard" aria-label="Transportation hero image">
+        <div class="vImageFrame">
+          <img src="/assets/images/pages/transportation/MBW-Transportation-Hero.jpg" alt="Private transport to and from Mindo, Ecuador" loading="lazy" decoding="async" />
         </div>
-      </form>
+      </aside>
+
+      <div class="cardBox">
+        <h3 style="margin:0 0 10px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Vehicles in Service</h3>
+        <div class="vehicleGrid" aria-label="Vehicles">
+          <img src="/assets/images/pages/transportation/MBW-Transportation-01.jpg" alt="Transportation vehicle 1" loading="lazy" decoding="async" />
+          <img src="/assets/images/pages/transportation/MBW-Transportation-02.jpg" alt="Transportation vehicle 2" loading="lazy" decoding="async" />
+        </div>
+      </div>
+
     </div>
   </div>
+</main>
 
-  <!-- RIGHT -->
-  <div class="rightStack">
-
-    <!-- Hero image: match the height of the left estimator card -->
-    <aside class="vImageCard heroMatch" id="heroCard" aria-label="Transportation hero image">
-      <div class="vImageFrame">
-        <img src="/assets/images/pages/transportation/MBW-Transportation-Hero.jpg" alt="Private transport to and from Mindo, Ecuador" loading="lazy" decoding="async" />
-      </div>
-    </aside>
-
-    <div class="cardBox">
-      <h3 style="margin:0 0 10px;">Vehicles in Service</h3>
-      <div class="vehicleGrid" aria-label="Vehicles">
-        <img src="/assets/images/pages/transportation/MBW-Transportation-01.jpg" alt="Transportation vehicle 1" loading="lazy" decoding="async" />
-        <img src="/assets/images/pages/transportation/MBW-Transportation-02.jpg" alt="Transportation vehicle 2" loading="lazy" decoding="async" />
-      </div>
-    </div>
+<div id="siteFooter"></div>
   </div>
+  <script>
+  (function(){
+    function updateEstimate(){
+      const from = fromSelect.value;
+      const to = toSelect.value;
+      const pax = parseInt(paxSelect.value,10);
+      const bags = parseInt(bagsSelect.value,10);
 
-</div>
-  </main>
-  <div id="siteFooter"></div>
-</div>
-<script>
-(function(){
-  function updateEstimate(){
-    const from = fromSelect.value;
-    const to = toSelect.value;
-    const pax = parseInt(paxSelect.value,10);
-    const bags = parseInt(bagsSelect.value,10);
+      let time = "-";
+      if ((from === "uio" || from === "quito") && to === "mindo") time = "1 hr 45 min to 2 hr";
+      if (from === "mindo" && (to === "uio" || to === "quito")) time = "1 hr 45 min to 2 hr";
 
-    let time = "—";
-    if ((from === "uio" || from === "quito") && to === "mindo") time = "1 hr 45 min to 2 hr";
-    if (from === "mindo" && (to === "uio" || to === "quito")) time = "1 hr 45 min to 2 hr";
+      let vehicle = "Car";
+      if (pax >= 4 || bags >= 4) vehicle = "SUV or Van";
 
-    let vehicle = "Car";
-    if (pax >= 4 || bags >= 4) vehicle = "SUV or Van";
-
-    document.getElementById("timeOut").textContent = time;
-    document.getElementById("vehicleOut").textContent = vehicle;
-  }
-
-  const fromSelect = document.getElementById("from");
-  const toSelect = document.getElementById("to");
-  const paxSelect = document.getElementById("pax");
-  const bagsSelect = document.getElementById("bags");
-
-  window.updateEstimate = updateEstimate;
-
-  function matchHeroHeight(){
-    const left = document.getElementById("estimateCard");
-    const hero = document.getElementById("heroCard");
-    if(!left || !hero) return;
-
-    const h = left.getBoundingClientRect().height;
-    if(window.matchMedia && window.matchMedia("(max-width: 980px)").matches){
-      hero.style.height = "";
-      return;
+      document.getElementById("timeOut").textContent = time;
+      document.getElementById("vehicleOut").textContent = vehicle;
     }
-    hero.style.height = Math.max(240, Math.round(h)) + "px";
-  }
 
-  function onReady(){
-    updateEstimate();
-    matchHeroHeight();
-    window.addEventListener("resize", function(){
+    const fromSelect = document.getElementById("from");
+    const toSelect = document.getElementById("to");
+    const paxSelect = document.getElementById("pax");
+    const bagsSelect = document.getElementById("bags");
+
+    window.updateEstimate = updateEstimate;
+
+    function matchHeroHeight(){
+      const left = document.getElementById("estimateCard");
+      const hero = document.getElementById("heroCard");
+      if(!left || !hero) return;
+
+      const h = left.getBoundingClientRect().height;
+      if(window.matchMedia && window.matchMedia("(max-width: 980px)").matches){
+        hero.style.height = "";
+        return;
+      }
+      hero.style.height = Math.max(240, Math.round(h)) + "px";
+    }
+
+    function onReady(){
+      updateEstimate();
       matchHeroHeight();
-    }, { passive: true });
+      window.addEventListener("resize", function(){
+        matchHeroHeight();
+      }, { passive: true });
 
-    try{
-      const imgs = document.querySelectorAll("#heroCard img");
-      imgs.forEach(function(img){
+      try{
+        const img = document.querySelector("#heroCard img");
         if(img && !img.complete){
           img.addEventListener("load", matchHeroHeight, { once: true });
         }
-      });
-    }catch(e){}
-  }
+      }catch(e){}
+    }
 
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", onReady);
-  }else{
-    onReady();
-  }
-})();
-</script>
-<script src="/assets/js/includes.js?v=1" defer></script>
-<script src="/assets/js/site.js?v=1" defer></script>
+    if(document.readyState === "loading"){
+      document.addEventListener("DOMContentLoaded", onReady);
+    }else{
+      onReady();
+    }
+  })();
+  </script>
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
 </body>
 </html>
