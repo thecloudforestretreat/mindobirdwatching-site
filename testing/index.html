@@ -9,6 +9,7 @@
   <link rel="alternate" hreflang="en" href="/book-tour/" />
   <link rel="alternate" hreflang="es" href="/es/reservar-tour/" />
   <link rel="alternate" hreflang="x-default" href="/book-tour/" />
+
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
   <meta property="og:title" content="Reservar un Tour | Mindo Bird Watching" />
@@ -19,15 +20,18 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Mindo Bird Watching - Cloud forest birding tours in Ecuador" />
+
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Reservar un Tour | Mindo Bird Watching" />
   <meta name="twitter:description" content="Reserva un tour de avistamiento de aves en Mindo, Ecuador. Comparte fechas, tamano del grupo y objetivos, y confirmaremos detalles y te responderemos rapido por email o WhatsApp." />
   <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
@@ -982,9 +986,10 @@
         el.innerHTML = await res.text();
       }
 
+      /* FIX: Do NOT load header-es/footer-es. Use the existing includes only. */
       Promise.all([
-        inject("siteHeader", "/assets/includes/header-es.html"),
-        inject("siteFooter", "/assets/includes/footer-es.html")
+        inject("siteHeader", "/assets/includes/header.html"),
+        inject("siteFooter", "/assets/includes/footer.html")
       ]).then(function(){
         window.dispatchEvent(new Event("mbw:includes:ready"));
       });
