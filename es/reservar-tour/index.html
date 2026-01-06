@@ -3,21 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reservar Un Tour | Mindo Bird Watching</title>
-  <meta name="description" content="Reserva un tour de avistamiento de aves en 📍Mindo, Ecuador. Comparte tus fechas, tamaño de grupo y objetivos — confirmaremos los detalles y te responderemos rápidamente." />
+  <title>Reservar un Tour | Mindo Bird Watching</title>
+  <meta name="description" content="Reserva un tour de avistamiento de aves en Mindo, Ecuador. Comparte fechas, tamano del grupo y objetivos, y confirmaremos detalles y te responderemos rapido por email o WhatsApp." />
+  <link rel="canonical" href="https://mindobirdwatching.com/es/reservar-tour/" />
   <link rel="alternate" hreflang="en" href="/book-tour/" />
   <link rel="alternate" hreflang="es" href="/es/reservar-tour/" />
   <link rel="alternate" hreflang="x-default" href="/book-tour/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Reservar un Tour | Mindo Bird Watching" />
+  <meta property="og:description" content="Reserva un tour de avistamiento de aves en Mindo, Ecuador. Comparte fechas, tamano del grupo y objetivos, y confirmaremos detalles y te responderemos rapido por email o WhatsApp." />
+  <meta property="og:url" content="https://mindobirdwatching.com/es/reservar-tour/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - Cloud forest birding tours in Ecuador" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Reservar un Tour | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Reserva un tour de avistamiento de aves en Mindo, Ecuador. Comparte fechas, tamano del grupo y objetivos, y confirmaremos detalles y te responderemos rapido por email o WhatsApp." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <script src="/assets/js/head.js" defer></script>
+
   <style>
+    /* Page-only styles (main content only) */
     .page{ margin-top:18px; padding:26px; }
     .page.card{
       background: var(--card);
@@ -26,26 +47,47 @@
       box-shadow: var(--shadow);
     }
 
-    .hero{
+    /*
+      FIX FOR THE EMPTY GAP
+      We convert the top area into a 2-column "layout" where:
+      - Left column flows naturally: heroLeft then the form section
+      - Right column is its own stack: heroRight then the tips card
+      This removes the large blank space that happens when the hero row height is defined by the taller right column.
+    */
+    .layout{
       display:grid;
       grid-template-columns: 1.05fr .95fr;
       gap: 16px;
-      align-items: stretch;
+      align-items:start;
     }
 
+    /* Left stack: title/meta/glance then form */
+    .leftStack{
+      display:grid;
+      gap: 18px;
+      align-content:start;
+      min-width:0;
+    }
+
+    /* Right stack: image/actions then tips */
+    .rightStack{
+      display:grid;
+      gap: 12px;
+      align-content:start;
+      min-width:0;
+    }
+
+    /* ===== HERO LEFT ===== */
     .heroLeft{
-      display:flex;
-      flex-direction: column;
-      min-height: 100%;
+      display:grid;
+      gap: 12px;
+      align-content:start;
+      justify-items:stretch;
+      min-width: 0;
     }
-    .heroBottom{
-      margin-top: auto;
-    }
+    .heroLeft > *{ min-width: 0; }
 
-    h1{
-      margin:0 0 10px;
-      letter-spacing:-0.02em;
-    }
+    h1{ margin:0 0 10px; letter-spacing:-0.02em; }
 
     .lede{
       margin:0;
@@ -92,8 +134,168 @@
       line-height: 1.55;
     }
 
+    /* Right hero: image + actions */
+    .heroRight{
+      display:grid;
+      gap: 12px;
+      align-content:start;
+      min-width: 0;
+    }
+
+    .heroImageCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .heroImageFrame{
+      width:100%;
+      aspect-ratio: 4 / 3;
+      background: rgba(255,255,255,.55);
+    }
+
+    .heroImageFrame img{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit: cover;
+      object-position: center;
+      background: rgba(255,255,255,.55);
+    }
+
+    .heroImageBar{
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .heroImageTitle{
+      margin:0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 13.5px;
+      letter-spacing: -0.01em;
+    }
+
+    .heroImageTag{
+      display:inline-flex;
+      align-items:center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 12.5px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .heroActions{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display:grid;
+      gap: 10px;
+    }
+
+    .heroActions .quickRow{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    .heroActions .btn{
+      min-height:46px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      white-space: nowrap;
+    }
+
+    .iconBtn{
+      width: 46px;
+      height: 46px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      padding: 0;
+    }
+    .iconBtn svg{ width: 18px; height: 18px; fill: var(--ink); opacity: .9; }
+
+    .toast{
+      display:none;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(3,78,162,.22);
+      background: rgba(3,78,162,.10);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    /* At a glance (compact, non-fluff) */
+    .glance{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display:grid;
+      gap: 10px;
+    }
+
+    .glanceGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items:start;
+    }
+
+    .glanceItem{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.55);
+      padding: 10px 12px;
+      display:grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .glanceK{
+      font-weight: 950;
+      color: var(--ink);
+      font-size: 12.5px;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+    }
+
+    .glanceV{
+      color: var(--ink);
+      opacity: .95;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    /* ===== SECTION ===== */
     .section{
-      margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
@@ -113,13 +315,6 @@
       color: var(--forest);
       letter-spacing:-0.02em;
       font-size: 20px;
-    }
-
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      align-items:start;
     }
 
     .cardBox{
@@ -219,39 +414,18 @@
       background: rgba(13,89,37,.10);
       color: var(--ink);
       font-weight: 900;
+      margin-top: 10px;
     }
 
-    .quickRow{
-      display:flex;
-      gap: 10px;
-      align-items:center;
-      flex-wrap: wrap;
-    }
-
-    .iconBtn{
-      width: 46px;
-      height: 46px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      padding: 0;
-    }
-    .iconBtn svg{ width: 18px; height: 18px; fill: var(--ink); opacity: .9; }
-
-    .toast{
+    .errorMsg{
       display:none;
-      margin-top: 8px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       border-radius: 14px;
-      border: 1px solid rgba(3,78,162,.22);
-      background: rgba(3,78,162,.10);
+      border: 1px solid rgba(160,0,0,.22);
+      background: rgba(160,0,0,.08);
       color: var(--ink);
       font-weight: 900;
+      margin-top: 10px;
       font-size: 12.5px;
       line-height: 1.35;
     }
@@ -297,7 +471,7 @@
     input[type="date"]{
       width: 100%;
       max-width: 100%;
-      min-width: 0;
+      min-inline-size: 0;
       display: block;
       box-sizing: border-box;
       -webkit-appearance: none;
@@ -306,24 +480,12 @@
       padding-right: 32px;
     }
 
-    @media (max-width: 1180px) and (min-width: 981px){
-      .rowDatesGuests{
-        grid-template-columns: minmax(0, 1fr) 132px;
-      }
-      .dateRange > input{
-        min-width: 156px;
-      }
-    }
-
     .dateHint{
       margin: 0;
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.5;
     }
-
-    .row2 > label{ align-content:start; }
-    .row2 > label select{ margin-top: 0; }
 
     .ctaActions{
       display:grid;
@@ -338,238 +500,338 @@
       width: 100%;
       justify-content: center;
       font-size: 14px;
+      font-weight: 900;
       line-height: 1;
       padding-top: 14px;
       padding-bottom: 14px;
       min-height: 46px;
     }
 
-    @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; align-items:start; }
-      .heroLeft{ min-height: 0; }
-      .heroBottom{ margin-top: 12px; }
+    .btn[disabled]{
+      opacity: .65;
+      cursor: not-allowed;
+      transform: none !important;
+    }
 
-      .grid2{ grid-template-columns: 1fr; }
+    /* ===== MOBILE POLISH ===== */
+    @media (max-width: 980px){
+      .layout{ grid-template-columns: 1fr; }
       .row2{ grid-template-columns: 1fr; }
       .rowDatesGuests{ grid-template-columns: 1fr; }
       .rowPhone{ grid-template-columns: 120px 1fr; }
       .ctaActions{ grid-template-columns: 1fr; }
       .dateRange{ grid-template-columns: 1fr; }
       .dateRange > input{ min-width: 0; }
-      .rowDatesGuests .guestsLabel{
-        width: 100%;
-        justify-self: stretch;
-      }
-      .rowDatesGuests .guestsLabel select{
-        width: 100%;
-        min-width: 0;
-      }
+      .rowDatesGuests .guestsLabel{ width: 100%; justify-self: stretch; }
+      .rowDatesGuests .guestsLabel select{ width: 100%; min-width: 0; }
       .rowDatesGuests .guestsLabel .labelText{ white-space: normal; }
+      .glanceGrid{ grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px){
+      .page{ margin-top:14px; padding:16px; }
+      .metaCard, .glance, .heroActions{ padding: 12px; }
+      .heroImageBar{ padding: 10px 12px; }
+      .heroActions .btn{ width:100%; }
+      .heroActions .quickRow{ gap: 10px; }
+      .heroActions .quickRow .btn{ flex: 1 1 auto; }
+      .iconBtn{ width:46px; height:46px; }
+    }
+
+    @media (max-width: 420px){
+      .rowPhone{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-<main class="page card">
-  <section class="hero" aria-label="Reservar un tour hero">
-    <div class="heroLeft">
-      <h1>Reservar Un Tour</h1>
-      <p class="lede">
-        Comparte tus fechas, tamaño de grupo y objetivos — confirmaremos los detalles y te responderemos rápidamente.
-      </p>
 
-      <div class="heroBottom">
-        <div class="metaCard" style="margin-top:12px;">
-          <div class="chips">
-            <span class="chip">📍Mindo, Ecuador</span>
-            <span class="chip">Respuesta rápida por email</span>
-            <span class="chip">Opciones privadas y personalizadas</span>
-          </div>
-          <p class="note">Los campos marcados con <span class="req">*</span> son obligatorios.</p>
+    <main class="page card">
+      <div class="layout" aria-label="Layout para reservar un tour">
+        <!-- LEFT COLUMN -->
+        <div class="leftStack" aria-label="Columna izquierda">
+          <section class="heroLeft" aria-label="Introduccion para reservar un tour">
+            <h1>Reservar un Tour</h1>
+            <p class="lede">
+              Comparte tus fechas, tamano del grupo y objetivos. Confirmaremos los detalles y te responderemos rapido.
+            </p>
+
+            <div class="metaCard" aria-label="Metadatos de reserva">
+              <div class="chips">
+                <span class="chip">Mindo, Ecuador</span>
+                <span class="chip">Respuesta por email o WhatsApp</span>
+                <span class="chip">Opciones privadas y personalizadas</span>
+              </div>
+              <p class="note">Los campos marcados con <span class="req">*</span> son obligatorios.</p>
+            </div>
+
+            <div class="glance" aria-label="De un vistazo">
+              <div class="chips" aria-label="Chips de resumen">
+                <span class="chip">De un vistazo</span>
+                <span class="chip">2 a 3 minutos</span>
+                <span class="chip">No se requiere pago</span>
+              </div>
+
+              <div class="glanceGrid" aria-label="Grid de resumen">
+                <div class="glanceItem">
+                  <div class="glanceK">Mejor incluir</div>
+                  <div class="glanceV">Especies objetivo, ritmo y prioridad de fotografia.</div>
+                </div>
+                <div class="glanceItem">
+                  <div class="glanceK">Fechas</div>
+                  <div class="glanceV">La fecha de inicio es suficiente; la fecha de fin es opcional.</div>
+                </div>
+                <div class="glanceItem">
+                  <div class="glanceK">Tamano del grupo</div>
+                  <div class="glanceV">Ayuda a ajustar guia y logistica.</div>
+                </div>
+                <div class="glanceItem">
+                  <div class="glanceK">Seguimiento</div>
+                  <div class="glanceV">Confirmamos disponibilidad y el mejor plan segun tus objetivos.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" aria-label="Formulario para reservar tour" id="request-form">
+            <div class="sectionHead">
+              <h2>Solicita tu Tour</h2>
+              <p class="note">Responderemos con disponibilidad, horarios y siguientes pasos.</p>
+            </div>
+
+            <div class="cardBox">
+              <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
+
+              <form class="form" id="bookTourForm"
+                method="post"
+                target="mbwHiddenFrame"
+                action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
+
+                <div class="row2">
+                  <label>
+                    <span class="labelText">Nombre<span class="req">*</span></span>
+                    <input
+                      type="text"
+                      name="first_name"
+                      id="firstName"
+                      autocomplete="given-name"
+                      autocapitalize="words"
+                      autocorrect="off"
+                      spellcheck="false"
+                      placeholder="Nombre"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span class="labelText">Apellido<span class="req">*</span></span>
+                    <input
+                      type="text"
+                      name="last_name"
+                      id="lastName"
+                      autocomplete="family-name"
+                      autocapitalize="words"
+                      autocorrect="off"
+                      spellcheck="false"
+                      placeholder="Apellido"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div class="row2">
+                  <label>
+                    <span class="labelText">Email<span class="req">*</span></span>
+                    <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required />
+                  </label>
+
+                  <label>
+                    <span class="labelText">Como te enteraste de nosotros?</span>
+                    <input type="text" name="how_hear" placeholder="Google, Instagram, amigo, hotel, etc." />
+                  </label>
+                </div>
+
+                <div class="rowPhone">
+                  <label>
+                    <span class="labelText">Codigo de pais<span class="req">*</span></span>
+                    <input
+                      type="text"
+                      name="country_code"
+                      inputmode="numeric"
+                      pattern="[0-9]{1,4}"
+                      placeholder="1"
+                      value="1"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span class="labelText">Telefono / WhatsApp<span class="req">*</span></span>
+                    <input
+                      type="tel"
+                      name="phone_number"
+                      autocomplete="tel"
+                      inputmode="tel"
+                      placeholder="123 456 7890"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <label>
+                  <span class="labelText">Mensaje / Preguntas<span class="req">*</span></span>
+                  <textarea name="message" placeholder="Comparte tus objetivos: especies, fotografia, ritmo, guia privado y cualquier nota de horario." required></textarea>
+                </label>
+
+                <div class="row2 rowDatesGuests">
+                  <label>
+                    <span class="labelText">Fechas de visita</span>
+                    <div class="dateRange">
+                      <input type="date" id="dateStart" autocomplete="off" />
+                      <input type="date" id="dateEnd" autocomplete="off" />
+                    </div>
+                    <p class="dateHint">Selecciona una fecha de inicio y una fecha de fin opcional.</p>
+                    <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
+                  </label>
+
+                  <label class="guestsLabel">
+                    <span class="labelText">Numero de personas</span>
+                    <select name="number_of_guests">
+                      <option value="">Seleccionar</option>
+                      <option>1</option>
+                      <option>2</option>
+                      <option>3 to 4</option>
+                      <option>5 to 8</option>
+                      <option>9+</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label>
+                  <span class="labelText">Tipo de tour preferido</span>
+                  <select name="preferred_tour_type">
+                    <option value="">Seleccionar</option>
+                    <option>Tour de medio dia</option>
+                    <option>Tour de dia completo</option>
+                    <option>Tour privado / personalizado</option>
+                    <option>Aun no estoy seguro</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span class="labelText">Necesidades de alojamiento</span>
+                  <input type="text" name="accommodation_needs" placeholder="Opcional (hotel, notas de recogida, etc.)" />
+                </label>
+
+                <label>
+                  <span class="labelText">Intereses especiales</span>
+                  <input type="text" name="special_interests" placeholder="Fotografia, colibries, tangaras, caminata nocturna, etc." />
+                </label>
+
+                <input type="hidden" name="source_page" value="https://mindobirdwatching.com/es/reservar-tour/" />
+                <input type="hidden" name="user_agent" id="uaField" value="" />
+
+                <p class="help">
+                  Despues de enviar, recibiras una confirmacion por email. Si no la ves, revisa Spam o Promociones.
+                </p>
+
+                <div class="ctaActions">
+                  <button class="btn primary" id="submitBtn" type="submit">Enviar solicitud</button>
+                  <a class="btn secondary" href="/es/tours/">Ver tours</a>
+                </div>
+
+                <div class="success" id="formSuccessMsg">Tu solicitud fue enviada. Te enviaremos una confirmacion por email en breve.</div>
+                <div class="errorMsg" id="formErrorMsg">Algo salio mal. Intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.</div>
+              </form>
+            </div>
+          </section>
         </div>
 
-        <div class="success" id="successMsg">✅ Solicitud recibida — revisa tu email para la confirmación.</div>
-      </div>
-    </div>
-
-    <aside class="metaCard" aria-label="Contacto rápido">
-      <p class="note" style="margin:0;"><strong>Email</strong></p>
-      <div class="quickRow">
-        <a class="btn secondary" id="emailBtn" style="min-height:46px; display:inline-flex; align-items:center;" href="mailto:mindobirdwatching@gmail.com?subject=Solicitud%20de%20Tour%20%E2%80%94%20Mindo%20Bird%20Watching">Escríbenos</a>
-        <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copiar email">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
-          </svg>
-        </button>
-      </div>
-      <div class="toast" id="copyToast">✅ Copiado: mindobirdwatching@gmail.com</div>
-
-      <p class="note" style="margin-top:10px;"><strong>WhatsApp</strong></p>
-      <a class="btn secondary" style="min-height:46px; display:inline-flex; align-items:center; justify-content:center;" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Enviar mensaje por WhatsApp</a>
-    </aside>
-  </section>
-
-  <section class="section" aria-label="Formulario de reserva">
-    <div class="sectionHead">
-      <h2>Solicita tu Tour</h2>
-      <p class="note">Nos vemos pronto.</p>
-    </div>
-
-    <div class="grid2">
-      <div class="cardBox">
-        <form class="form"
-          method="post"
-          action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
-
-          <div class="row2">
-            <label>
-              <span class="labelText">Nombre<span class="req">*</span></span>
-              <input type="text" name="first_name" autocomplete="given-name" placeholder="Nombre" required />
-            </label>
-
-            <label>
-              <span class="labelText">Apellido<span class="req">*</span></span>
-              <input type="text" name="last_name" autocomplete="family-name" placeholder="Apellido" required />
-            </label>
-          </div>
-
-          <div class="row2">
-            <label>
-              <span class="labelText">Email<span class="req">*</span></span>
-              <input type="email" name="email" autocomplete="email" placeholder="tu@email.com" required />
-            </label>
-
-            <label>
-              <span class="labelText">¿Cómo te enteraste de nosotros?</span>
-              <input type="text" name="how_hear" placeholder="Google, Instagram, recomendado, hotel, etc." />
-            </label>
-          </div>
-
-          <div class="rowPhone">
-            <label>
-              <span class="labelText">Código de país<span class="req">*</span></span>
-              <input
-                type="text"
-                name="country_code"
-                inputmode="numeric"
-                pattern="[0-9]{1,4}"
-                placeholder="1"
-                value="1"
-                required
-              />
-            </label>
-
-            <label>
-              <span class="labelText">Teléfono / WhatsApp<span class="req">*</span></span>
-              <input
-                type="tel"
-                name="phone_number"
-                autocomplete="tel"
-                inputmode="tel"
-                placeholder="123 456 7890"
-                required
-              />
-            </label>
-          </div>
-
-          <label>
-            <span class="labelText">Mensaje / Preguntas<span class="req">*</span></span>
-            <textarea name="message" placeholder="Cuéntanos tus objetivos: aves objetivo, fotografía, ritmo, guía privado, etc." required></textarea>
-          </label>
-
-          <div class="row2 rowDatesGuests">
-            <label>
-              <span class="labelText">Fechas de visita</span>
-              <div class="dateRange">
-                <input type="date" id="dateStart" autocomplete="off" />
-                <input type="date" id="dateEnd" autocomplete="off" />
+        <!-- RIGHT COLUMN -->
+        <aside class="rightStack" aria-label="Columna derecha">
+          <div class="heroRight" aria-label="Imagen y acciones">
+            <div class="heroImageCard" aria-label="Imagen de reserva">
+              <div class="heroImageFrame">
+                <img src="/assets/images/pages/tours/MBW-Tours-Custom-Tour.jpg" alt="Avistamiento de aves en el bosque nuboso de Mindo con un guia" loading="lazy" decoding="async" />
               </div>
-              <p class="dateHint">Selecciona una fecha de inicio y (opcional) una fecha de fin.</p>
-              <input type="hidden" name="dates_of_visit" id="datesCombined" value="" />
-            </label>
+              <div class="heroImageBar">
+                <p class="heroImageTitle">Reservar un Tour</p>
+                <span class="heroImageTag"></span>
+              </div>
+            </div>
 
-            <label class="guestsLabel">
-              <span class="labelText">Número de personas</span>
-              <select name="number_of_guests">
-                <option value="">Seleccionar</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3 a 4</option>
-                <option>5 a 8</option>
-                <option>9+</option>
-              </select>
-            </label>
+            <div class="heroActions" aria-label="Acciones rapidas">
+              <div class="quickRow" aria-label="Acciones principales">
+                <a class="btn primary" href="/es/contacto">Preguntas?</a>
+                <a class="btn secondary" href="/es/tours/">Ver tours</a>
+              </div>
+
+              <div class="sectionHead" style="margin:4px 0 0; padding:0; border:0;">
+                <p class="note" style="margin:0;">Prefieres contacto directo? Usa email o WhatsApp.</p>
+              </div>
+
+              <div class="quickRow" aria-label="Acciones de email">
+                <a class="btn secondary" id="emailBtn" href="mailto:mindobirdwatching@gmail.com?subject=Solicitud%20de%20Tour%20-%20Mindo%20Bird%20Watching">Email</a>
+                <button class="iconBtn" type="button" id="copyEmailBtn" aria-label="Copiar email">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16h-9V7h9v14z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="toast" id="copyToast">Copiado: mindobirdwatching@gmail.com</div>
+
+              <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Mensaje por WhatsApp</a>
+            </div>
           </div>
 
-          <label>
-            <span class="labelText">Tipo de tour preferido</span>
-            <select name="preferred_tour_type">
-              <option value="">Seleccionar</option>
-              <option>Tour de medio día</option>
-              <option>Tour de día completo</option>
-              <option>Tour personalizado / privado</option>
-              <option>Aún no estoy seguro</option>
-            </select>
-          </label>
-
-          <label>
-            <span class="labelText">Necesidades de alojamiento</span>
-            <input type="text" name="accommodation_needs" placeholder="Opcional (hotel, notas de pickup, etc.)" />
-          </label>
-
-          <label>
-            <span class="labelText">Intereses especiales</span>
-            <input type="text" name="special_interests" placeholder="Fotografía, colibríes, tangaras, caminata nocturna, etc." />
-          </label>
-
-          <input type="hidden" name="source_page" value="https://www.mindobirdwatching.com/es/reservar-tour/" />
-          <input type="hidden" name="user_agent" id="uaField" value="" />
-
-          <p class="help">
-            Después de enviar, recibirás un email de confirmación. Si no lo ves, revisa Spam/Promociones.
-          </p>
-
-          <div class="ctaActions">
-            <button class="btn primary" type="submit">Enviar Solicitud</button>
-            <a class="btn secondary" href="/es/tours/">Ver Tours</a>
+          <div class="cardBox" aria-label="Que nos ayuda a responder mas rapido">
+            <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Que nos ayuda a responder mas rapido</h3>
+            <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
+              <li>Especies objetivo (si aplica)</li>
+              <li>Prioridad de fotografia vs. lista de aves</li>
+              <li>Ritmo preferido (relajado vs. intensivo)</li>
+              <li>Guia privado (si o no)</li>
+              <li>Cualquier limitacion de movilidad u horario</li>
+            </ul>
+            <p class="note" style="margin-top:10px;">
+              Comparte lo que sepas ahora. Podemos ajustar detalles despues de confirmar disponibilidad.
+            </p>
           </div>
-        </form>
+        </aside>
       </div>
+    </main>
 
-      <div class="cardBox" aria-label="Qué nos ayuda a responder">
-        <h3 style="margin:0 0 8px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Lo que nos ayuda a responder más rápido</h3>
-        <ul style="margin:0; padding-left:18px; line-height:1.7; color:var(--ink);">
-          <li>Especies objetivo (si tienes alguna)</li>
-          <li>Prioridad: fotografía vs. lista de aves</li>
-          <li>Ritmo preferido (relajado vs. intensivo)</li>
-          <li>Solicitud de guía privado (sí/no)</li>
-          <li>Restricciones de movilidad u horarios</li>
-        </ul>
-        <p class="note" style="margin-top:10px;">
-          Puedes mantenerlo simple ahora y afinarlo después.
-        </p>
-      </div>
-    </div>
-  </section>
-</main>
-
-<div id="siteFooter"></div>
+    <div id="siteFooter"></div>
   </div>
-  <script src="/assets/js/includes.js?v=24" defer></script>
-  <script src="/assets/js/site.js?v=22" defer></script>
+
   <script>
     (function(){
-      try{
-        var params = new URLSearchParams(window.location.search);
-        if(params.get("sent") === "1"){
-          var el = document.getElementById("successMsg");
-          if(el) el.style.display = "block";
-        }
-      }catch(e){}
-
       var ua = document.getElementById("uaField");
       if(ua) ua.value = navigator.userAgent || "";
+
+      function titleCaseWords(str){
+        return String(str || "")
+          .trim()
+          .replace(/\s+/g, " ")
+          .split(" ")
+          .map(function(w){
+            if(!w) return "";
+            var lower = w.toLowerCase();
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+          })
+          .join(" ");
+      }
+
+      function attachNameAutoCap(id){
+        var el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener("blur", function(){
+          el.value = titleCaseWords(el.value);
+        });
+      }
+      attachNameAutoCap("firstName");
+      attachNameAutoCap("lastName");
 
       function combineDates(){
         var s = document.getElementById("dateStart");
@@ -580,11 +842,10 @@
         var start = (s && s.value) ? s.value : "";
         var end = (e && e.value) ? e.value : "";
 
-        if(start && end) out.value = start + " to " + end;
+        if(start && end) out.value = start + " a " + end;
         else if(start) out.value = start;
         else out.value = "";
       }
-
       var ds = document.getElementById("dateStart");
       var de = document.getElementById("dateEnd");
       if(ds) ds.addEventListener("change", combineDates);
@@ -594,7 +855,6 @@
       var copyBtn = document.getElementById("copyEmailBtn");
       var toast = document.getElementById("copyToast");
       var email = "mindobirdwatching@gmail.com";
-
       function showToast(){
         if(!toast) return;
         toast.style.display = "block";
@@ -603,7 +863,6 @@
           toast.style.display = "none";
         }, 1800);
       }
-
       if(copyBtn){
         copyBtn.addEventListener("click", async function(){
           try{
@@ -613,7 +872,6 @@
               return;
             }
           }catch(e){}
-
           try{
             var ta = document.createElement("textarea");
             ta.value = email;
@@ -628,7 +886,115 @@
           }catch(e){}
         });
       }
+
+      var form = document.getElementById("bookTourForm");
+      var successEl = document.getElementById("formSuccessMsg");
+      var errorEl = document.getElementById("formErrorMsg");
+      var submitBtn = document.getElementById("submitBtn");
+      var iframe = document.getElementById("mbwHiddenFrame");
+
+      var pending = false;
+      var done = false;
+      var fallbackTimer = null;
+
+      function hideMsgs(){
+        if(successEl) successEl.style.display = "none";
+        if(errorEl) errorEl.style.display = "none";
+      }
+
+      function setBtnSending(isSending){
+        if(!submitBtn) return;
+        if(isSending){
+          submitBtn.setAttribute("disabled", "disabled");
+          submitBtn.textContent = "Enviando...";
+        }else{
+          submitBtn.removeAttribute("disabled");
+          submitBtn.textContent = "Enviar solicitud";
+        }
+      }
+
+      function completeOk(){
+        if(done) return;
+        done = true;
+        pending = false;
+        if(fallbackTimer) clearTimeout(fallbackTimer);
+        setBtnSending(false);
+        if(successEl) successEl.style.display = "block";
+        if(errorEl) errorEl.style.display = "none";
+        try{
+          form.reset();
+          if(ds) ds.value = "";
+          if(de) de.value = "";
+          combineDates();
+        }catch(e){}
+      }
+
+      function completeError(msg){
+        if(done) return;
+        done = true;
+        pending = false;
+        if(fallbackTimer) clearTimeout(fallbackTimer);
+        setBtnSending(false);
+        if(errorEl){
+          errorEl.textContent = msg || "Algo salio mal. Intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.";
+          errorEl.style.display = "block";
+        }
+        if(successEl) successEl.style.display = "none";
+      }
+
+      hideMsgs();
+
+      if(form){
+        form.addEventListener("submit", function(){
+          hideMsgs();
+          done = false;
+          pending = true;
+          setBtnSending(true);
+
+          if(fallbackTimer) clearTimeout(fallbackTimer);
+          fallbackTimer = setTimeout(function(){
+            if(!done){
+              completeError("Aun estamos esperando. Intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.");
+            }
+          }, 12000);
+        });
+      }
+
+      if(iframe){
+        iframe.addEventListener("load", function(){
+          if(pending && !done){
+            completeOk();
+          }
+        });
+      }
+
+      window.addEventListener("message", function(ev){
+        var data = ev && ev.data ? ev.data : null;
+        if(!data || data.type !== "mbw-booktour") return;
+
+        if(data.status === "ok"){
+          completeOk();
+          return;
+        }
+        completeError(data.message ? (data.message) : null);
+      });
+
+      async function inject(id, url){
+        var el = document.getElementById(id);
+        if(!el) return;
+        var res = await fetch(url, { cache: "no-store" });
+        el.innerHTML = await res.text();
+      }
+
+      /* FIX: Do NOT load header-es/footer-es. Use the existing includes only. */
+      Promise.all([
+        inject("siteHeader", "/assets/includes/header.html"),
+        inject("siteFooter", "/assets/includes/footer.html")
+      ]).then(function(){
+        window.dispatchEvent(new Event("mbw:includes:ready"));
+      });
     })();
   </script>
+  <script src="/assets/js/site.js"></script>
 </body>
 </html>
