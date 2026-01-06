@@ -3,20 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tours: Día Entero | Mindo Bird Watching</title>
+  <title>Tours: Dia Completo | Mindo Bird Watching</title>
+  <meta name="description" content="Explora los bosques nublados de Mindo en un tour de avistamiento de aves de dia completo con guias locales expertos. Observa tucanes, colibries, tangaras y mucho mas en Mindo, Ecuador." />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="alternate" hreflang="en" href="/tours/full-day/" />
-  <link rel="alternate" hreflang="es" href="/es/tours/dia-entero/" />
-  <link rel="alternate" hreflang="x-default" href="/tours/full-day/" />
+  <link rel="canonical" href="https://mindobirdwatching.com/es/tours/dia-completo/" />
+  <link rel="alternate" hreflang="en" href="/tours-full-day/" />
+  <link rel="alternate" hreflang="es" href="/es/tours/dia-completo/" />
+  <link rel="alternate" hreflang="x-default" href="/tours-full-day/" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Tours: Dia Completo | Mindo Bird Watching" />
+  <meta property="og:description" content="Explora los bosques nublados de Mindo en un tour de avistamiento de aves de dia completo con guias locales expertos. Observa tucanes, colibries, tangaras y mucho mas en Mindo, Ecuador." />
+  <meta property="og:url" content="https://mindobirdwatching.com/es/tours/dia-completo/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - Tours de avistamiento de aves en el bosque nublado de Mindo, Ecuador" />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Tours: Dia Completo | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Explora los bosques nublados de Mindo en un tour de avistamiento de aves de dia completo con guias locales expertos. Observa tucanes, colibries, tangaras y mucho mas en Mindo, Ecuador." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <!-- Favicons (approved root paths) -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#034EA2">
+  <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <!-- Header dropdown styling -->
+  <link rel="stylesheet" href="/assets/css/header.css?v=1">
+  <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
   <style>
+    /* Page-only styles (no header/footer/menu styles) */
     .page{ margin-top: 18px; padding: 26px; }
     .page.card{
       background: var(--card);
@@ -84,13 +107,6 @@
       object-fit: cover;
       display: block;
     }
-    .slotCap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      font-size: 13px;
-      color: var(--muted);
-      background: rgba(255,255,255,.55);
-    }
 
     .btnRow{
       margin-top: 14px;
@@ -114,6 +130,7 @@
     }
     .hint{ margin: 0 0 12px; color: var(--muted); font-size: 13px; }
 
+    /* Standard MBW carousel */
     .mbwCarousel{
       position: relative;
       border: 1px solid var(--line);
@@ -132,9 +149,9 @@
       will-change: transform;
     }
     .mbwSlide{ flex: 0 0 100%; width: 100%; }
+
     .mbwSlide img{
       width: 100%;
-      height: 420px;
       display: block;
       object-fit: cover;
     }
@@ -180,6 +197,7 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,.78);
       z-index: 2;
+      pointer-events: none;
     }
     .mbwDot{
       width: 8px;
@@ -189,30 +207,70 @@
     }
     .mbwDot.is-active{ background: rgba(13,89,37,.65); }
 
+    /* 9:16 strict height (keeps carousel + video same height) */
+    .frame916{
+      aspect-ratio: 9 / 16;
+      width: 100%;
+      background: rgba(255,255,255,.55);
+    }
+    .frame916 iframe{
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    /* Tall carousel - force FULL height and remove the empty label strip */
+    .mbwCarousel.isTall{
+      height: 100%;
+    }
+    .mbwCarousel.isTall .mbwCarouselViewport{
+      aspect-ratio: 9 / 16;
+      height: 100%;
+      background: rgba(255,255,255,.55);
+    }
+    .mbwCarousel.isTall .mbwCarouselTrack,
+    .mbwCarousel.isTall .mbwSlide{
+      height: 100%;
+    }
+    .mbwCarousel.isTall .mbwSlide img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .mbwCarousel.isTall .mbwSlide .label{
+      display: none;
+    }
+
+    /* Media grid (left gallery + right video) */
     .videoGrid{
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
+      align-items: start;
     }
-    .video.card{
+
+    .mediaCard{
       background: rgba(255,255,255,.65);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-    .video .frame{
-      aspect-ratio: 16 / 9;
-      width: 100%;
+    .mediaCard .head{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
       background: rgba(255,255,255,.55);
     }
-    .video iframe{
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
+    .mediaCard .head h3{
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
     }
-    .video .cap{
+    .mediaCard .cap{
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       font-size: 13px;
@@ -222,7 +280,6 @@
 
     @media (max-width: 900px){
       .hero{ grid-template-columns: 1fr; }
-      .mbwSlide img{ height: 280px; }
       .videoGrid{ grid-template-columns: 1fr; }
     }
 
@@ -233,239 +290,262 @@
 </head>
 <body>
   <div class="container">
-    <div id="siteHeader"></div>
+<!-- Global header mount -->
+<div id="siteHeader"></div>
+
 <main class="page card">
-  <section class="hero" aria-label="Tour día entero encabezado">
+  <section class="hero" aria-label="Hero: tours de dia completo">
     <div class="copy">
-      <h1 style="margin:0 0 6px;">Tour: Día Entero</h1>
+      <h1 style="margin:0 0 6px;">Tours: Dia Completo</h1>
 
-      <p style="font-weight:900; margin: 0 0 10px;">
-        Reserva Tu Aventura de Avistamiento de Aves en Mindo
+      <p>
+        Descubre la magia de los bosques nublados de Ecuador con Mindo Bird Watching. Nuestros guias locales expertos te llevan en recorridos inolvidables
+        para ver algunas de las especies mas iconicas del planeta, desde el vibrante Gallito de la Pena Andino hasta tucanes, tangaras, colibries
+        e incluso el raro Pajaro Paraguas de Gorguera Larga.
       </p>
 
       <p>
-        Descubre la magia de los bosques nublados de Ecuador con Mindo Bird Watching. Nuestros guías locales expertos te llevarán a vivir experiencias inolvidables
-        para observar algunas de las especies más icónicas del planeta, desde el vibrante Gallo de la Peña hasta tucanes, tángaras, colibríes e incluso el raro Pájaro Paraguas.
+        Ya sea que busques una exploracion de medio dia o una aventura inmersiva de dia completo, tenemos un tour para cada nivel de observador de aves y amante de la naturaleza.
       </p>
 
-      <p>
-        Ya sea que busques una exploración de medio día o una aventura completa de todo el día, tenemos un tour diseñado para cada nivel de observador y amante de la naturaleza.
-      </p>
-
-      <ul class="checks" aria-label="Beneficios del tour día entero">
-        <li><span class="tick" aria-hidden="true">✓</span> Guiado por expertos locales</li>
+      <ul class="checks" aria-label="Destacados del tour de dia completo">
+        <li><span class="tick" aria-hidden="true">✓</span> Guiado por expertos locales con experiencia</li>
         <li><span class="tick" aria-hidden="true">✓</span> Equipo de alta calidad incluido</li>
-        <li><span class="tick" aria-hidden="true">✓</span> Transporte cómodo garantizado</li>
+        <li><span class="tick" aria-hidden="true">✓</span> Transporte comodo incluido</li>
       </ul>
 
       <p style="margin-top:12px;">
         Estos son solo algunos de los tours que ofrecemos. Reserva hoy y deja que creemos tu experiencia perfecta de avistamiento de aves en 📍Mindo, Ecuador.
       </p>
 
-      <p style="margin-top:12px; font-weight:900;">
-        ¡Reserva tu tour ahora y comienza tu aventura!
+      <p style="margin-top:12px; font-weight:800;">
+        Reserva tu tour ahora y empieza tu aventura.
       </p>
 
-      <div class="btnRow" aria-label="Acciones del tour">
-        <a class="btn primary" href="/es/reservar-tour/">Reservar Ahora</a>
-        <a class="btn secondary" href="/es/preguntas-frecuentes-faq/">Preguntas Frecuentes</a>
+      <div class="btnRow" aria-label="Acciones de tour">
+        <a class="btn primary" href="/es/reservar-tour/">Reservar ahora</a>
+        <a class="btn secondary" href="/es/preguntas-frecuentes-faq/">Preguntas frecuentes</a>
         <a class="btn secondary" href="/es/tours/">Volver</a>
       </div>
     </div>
 
-    <aside class="slot card" aria-label="Espacio para imagen 9:16 del paquete">
+    <aside class="slot card" aria-label="Imagen del paquete de tour">
       <div class="slotFrame">
         <img
-          src="/assets/images/tour-promos/MBW-Assets-FDT-ES.jpg"
-          alt="Imagen placeholder del paquete del tour día entero (reemplazar)"
+          src="/assets/images/tour-promos/MBW-Assets-FDT-EN.jpg"
+          alt="Paquete de tour de dia completo"
         />
       </div>
     </aside>
   </section>
 
-  <section class="section" aria-label="Sección del carrusel">
-    <h2>Galería del Tour</h2>
-    <p class="hint">Se reproduce automáticamente cada 2.5 segundos. También puedes usar las flechas.</p>
+  <section class="section" aria-label="Seccion de galeria y video">
+    <p class="hint">Desliza la galeria a la izquierda y mira el short a la derecha.</p>
 
-    <div class="mbwCarousel" data-autoplay="true" data-interval="2500" aria-label="Carrusel de imágenes">
-      <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Imagen anterior">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+    <div class="videoGrid" aria-label="Rejilla de medios">
+      <!-- Left: 9:16 image carousel WITH heading -->
+      <article class="mediaCard" aria-label="Galeria de tour de dia completo">
+        <div class="head">
+          <h3>Galeria del tour de dia completo</h3>
+        </div>
 
-      <div class="mbwCarouselViewport" role="region" aria-label="Vista del carrusel">
-        <div class="mbwCarouselTrack">
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-dia-entero-01.jpg" alt="Foto 1 del tour día entero (placeholder)" />
-            <div class="label">Reemplazar imagen 1</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-dia-entero-02.jpg" alt="Foto 2 del tour día entero (placeholder)" />
-            <div class="label">Reemplazar imagen 2</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-dia-entero-03.jpg" alt="Foto 3 del tour día entero (placeholder)" />
-            <div class="label">Reemplazar imagen 3</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-dia-entero-04.jpg" alt="Foto 4 del tour día entero (placeholder)" />
-            <div class="label">Reemplazar imagen 4</div>
-          </div>
-          <div class="mbwSlide">
-            <img src="/assets/images/placeholders/tour-dia-entero-05.jpg" alt="Foto 5 del tour día entero (placeholder)" />
-            <div class="label">Reemplazar imagen 5</div>
+        <div class="frame916">
+          <div class="mbwCarousel isTall" data-autoplay="true" data-interval="2400" aria-label="Carrusel vertical de dia completo">
+            <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Imagen anterior">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <div class="mbwCarouselViewport" role="region" aria-label="Vista del carrusel">
+              <div class="mbwCarouselTrack">
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-59-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 59" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-60-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 60" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-61-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 61" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-62-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 62" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-63-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 63" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-64-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 64" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-65-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 65" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-66-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 66" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-67-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 67" />
+                  <div class="label"></div>
+                </div>
+                <div class="mbwSlide">
+                  <img src="/assets/images/pages/tours/full-day/MBW-Assets-68-Tours-FD-Carousel.jpg" alt="Foto vertical del tour de dia completo 68" />
+                  <div class="label"></div>
+                </div>
+              </div>
+            </div>
+
+            <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente imagen">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <div class="mbwDots" aria-label="Indicadores de posicion del carrusel"></div>
           </div>
         </div>
-      </div>
 
-      <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente imagen">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+        <div class="cap">Momentos del tour de dia completo (galeria vertical)</div>
+      </article>
 
-      <div class="mbwDots" aria-label="Indicadores de posición"></div>
-    </div>
-  </section>
+      <!-- Right: YouTube short WITH heading -->
+      <article class="mediaCard" aria-label="Videos">
+        <div class="head">
+          <h3>Videos</h3>
+        </div>
 
-  <section class="section" aria-label="Sección de videos">
-    <h2>Videos</h2>
-    <p class="hint">Videos de YouTube incrustados. Reemplaza los IDs con los tuyos.</p>
-
-    <div class="videoGrid" aria-label="Cuadrícula de videos">
-      <div class="video card" aria-label="Video 1">
-        <div class="frame">
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID_1"
-            title="Mindo Bird Watching video 1"
-            loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
+        <div class="frame916">
+          <iframe width="487" height="866"
+            src="https://www.youtube.com/embed/53B0Thmq9AQ"
+            title="Toucans in the Wild! Birding at a Secret Spot in Mindo, Ecuador"
+            frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <div class="cap">Reemplaza VIDEO_ID_1 con el ID de tu video.</div>
-      </div>
-
-      <div class="video card" aria-label="Video 2">
-        <div class="frame">
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID_2"
-            title="Mindo Bird Watching video 2"
-            loading="lazy"
             referrerpolicy="strict-origin-when-cross-origin"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-          </iframe>
+            allowfullscreen></iframe>
         </div>
-        <div class="cap">Reemplaza VIDEO_ID_2 con el ID de tu video.</div>
-      </div>
+
+        <div class="cap">Toucans in the Wild! Birding at a Secret Spot in Mindo, Ecuador</div>
+      </article>
     </div>
   </section>
 </main>
 
+<!-- Global footer mount -->
 <div id="siteFooter"></div>
   </div>
+  <!-- Shared includes + header behavior -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
   <script>
     (function(){
-      const root = document.querySelector(".mbwCarousel");
-      if (!root) return;
-
-      const track = root.querySelector(".mbwCarouselTrack");
-      const slides = Array.from(root.querySelectorAll(".mbwSlide"));
-      const prevBtn = root.querySelector(".mbwNavPrev");
-      const nextBtn = root.querySelector(".mbwNavNext");
-      const dotsWrap = root.querySelector(".mbwDots");
-
-      if (!track || slides.length === 0) return;
-
-      let index = 0;
-      const intervalMs = Number(root.getAttribute("data-interval") || "2500");
-      const autoplay = (root.getAttribute("data-autoplay") || "true") === "true";
-      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      function clamp(i){
-        const n = slides.length;
+      function clamp(i, n){
         return (i % n + n) % n;
       }
 
-      function renderDots(){
-        if (!dotsWrap) return;
-        dotsWrap.innerHTML = "";
-        slides.forEach((_, i) => {
-          const d = document.createElement("span");
-          d.className = "mbwDot" + (i === index ? " is-active" : "");
-          d.setAttribute("aria-hidden", "true");
-          dotsWrap.appendChild(d);
-        });
-      }
+      function initCarousel(root){
+        if(!root || root.dataset.carouselInit === "1") return;
+        root.dataset.carouselInit = "1";
 
-      function goTo(i){
-        index = clamp(i);
-        track.style.transform = "translateX(" + (-index * 100) + "%)";
-        renderDots();
-      }
+        const track = root.querySelector(".mbwCarouselTrack");
+        const slides = Array.from(root.querySelectorAll(".mbwSlide"));
+        const prevBtn = root.querySelector(".mbwNavPrev");
+        const nextBtn = root.querySelector(".mbwNavNext");
+        const dotsWrap = root.querySelector(".mbwDots");
 
-      function next(){ goTo(index + 1); }
-      function prev(){ goTo(index - 1); }
+        if(!track || slides.length === 0) return;
 
-      let timer = null;
+        let index = 0;
+        const intervalMs = Number(root.getAttribute("data-interval") || "2500");
+        const autoplay = (root.getAttribute("data-autoplay") || "true") === "true";
+        const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      function stop(){
-        if (timer){
-          window.clearInterval(timer);
-          timer = null;
+        function renderDots(){
+          if(!dotsWrap) return;
+          dotsWrap.innerHTML = "";
+          slides.forEach((_, i) => {
+            const d = document.createElement("span");
+            d.className = "mbwDot" + (i === index ? " is-active" : "");
+            d.setAttribute("aria-hidden", "true");
+            dotsWrap.appendChild(d);
+          });
         }
-      }
 
-      function start(){
-        if (!autoplay || reduceMotion) return;
-        if (timer) return;
-        timer = window.setInterval(next, Math.max(2000, intervalMs));
-      }
+        function goTo(i){
+          index = clamp(i, slides.length);
+          track.style.transform = "translateX(" + (-index * 100) + "%)";
+          renderDots();
+        }
 
-      if (prevBtn) prevBtn.addEventListener("click", () => { stop(); prev(); start(); });
-      if (nextBtn) nextBtn.addEventListener("click", () => { stop(); next(); start(); });
+        function next(){ goTo(index + 1); }
+        function prev(){ goTo(index - 1); }
 
-      let startX = null;
-      let dragging = false;
+        let timer = null;
 
-      function onPointerDown(e){
-        if (e.pointerType === "mouse") return;
-        dragging = true;
-        startX = e.clientX;
-        stop();
-      }
+        function stop(){
+          if(timer){
+            window.clearInterval(timer);
+            timer = null;
+          }
+        }
 
-      function onPointerUp(e){
-        if (!dragging) return;
-        dragging = false;
-        const dx = e.clientX - startX;
-        startX = null;
+        function start(){
+          if(!autoplay || reduceMotion) return;
+          if(timer) return;
+          timer = window.setInterval(next, Math.max(2000, intervalMs));
+        }
 
-        const threshold = 35;
-        if (dx > threshold) prev();
-        else if (dx < -threshold) next();
+        if(prevBtn) prevBtn.addEventListener("click", function(){ stop(); prev(); start(); });
+        if(nextBtn) nextBtn.addEventListener("click", function(){ stop(); next(); start(); });
 
+        let startX = null;
+        let dragging = false;
+
+        function onPointerDown(e){
+          if(e.pointerType === "mouse") return;
+          dragging = true;
+          startX = e.clientX;
+          stop();
+        }
+
+        function onPointerUp(e){
+          if(!dragging) return;
+          dragging = false;
+
+          const dx = e.clientX - startX;
+          startX = null;
+
+          const threshold = 35;
+          if(dx > threshold) prev();
+          else if(dx < -threshold) next();
+
+          start();
+        }
+
+        root.addEventListener("pointerdown", onPointerDown, { passive: true });
+        root.addEventListener("pointerup", onPointerUp, { passive: true });
+        root.addEventListener("pointercancel", function(){ dragging = false; startX = null; start(); }, { passive: true });
+
+        root.addEventListener("mouseenter", stop);
+        root.addEventListener("mouseleave", start);
+        root.addEventListener("focusin", stop);
+        root.addEventListener("focusout", start);
+
+        window.addEventListener("resize", function(){ goTo(index); }, { passive: true });
+
+        goTo(0);
         start();
       }
 
-      root.addEventListener("pointerdown", onPointerDown, { passive: true });
-      root.addEventListener("pointerup", onPointerUp, { passive: true });
-      root.addEventListener("pointercancel", () => { dragging = false; startX = null; start(); }, { passive: true });
-
-      root.addEventListener("mouseenter", stop);
-      root.addEventListener("mouseleave", start);
-      root.addEventListener("focusin", stop);
-      root.addEventListener("focusout", start);
-
-      window.addEventListener("resize", () => { goTo(index); }, { passive: true });
-
-      goTo(0);
-      start();
+      document.addEventListener("DOMContentLoaded", function(){
+        document.querySelectorAll(".mbwCarousel").forEach(initCarousel);
+      });
     })();
   </script>
 </body>
