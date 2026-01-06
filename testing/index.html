@@ -164,12 +164,11 @@
       line-height: 1.45;
     }
 
-    /* Right hero image: match left card box height */
+    /* Right hero image card */
     .heroMatch{
       height:100%;
       display:grid;
     }
-
     .heroMatch .vImageFrame{
       height:100%;
       aspect-ratio:auto;
@@ -224,12 +223,8 @@
       .heroMatch .vImageFrame{ height:auto; }
       .heroMatch{ height:auto; }
 
-      .ctaRow{
-        grid-template-columns: 1fr;
-      }
-      .ctaRow .btn{
-        white-space: normal;
-      }
+      .ctaRow{ grid-template-columns: 1fr; }
+      .ctaRow .btn{ white-space: normal; }
     }
   </style>
 </head>
@@ -240,7 +235,7 @@
   <div class="transportLayout">
 
     <!-- LEFT -->
-    <div class="leftStack">
+    <div class="leftStack" id="leftCol">
       <div>
         <h1>Transportation Estimates</h1>
         <p class="lede">
@@ -321,8 +316,8 @@
         </form>
       </div>
 
-      <!-- NEW: CTA buttons under the estimator -->
-      <div class="cardBox ctaCard" aria-label="Next steps">
+      <!-- CTA buttons under the estimator -->
+      <div class="cardBox ctaCard" id="nextStepsCard" aria-label="Next steps">
         <p class="ctaTitle">Next steps</p>
 
         <div class="ctaRow" aria-label="Actions">
@@ -336,15 +331,16 @@
     </div>
 
     <!-- RIGHT -->
-    <div class="rightStack">
+    <div class="rightStack" id="rightCol">
 
+      <!-- Hero image -->
       <aside class="vImageCard heroMatch" id="heroCard" aria-label="Transportation hero image">
         <div class="vImageFrame">
           <img src="/assets/images/pages/transportation/MBW-Transportation-Hero.jpg" alt="Private transport to and from Mindo, Ecuador" loading="lazy" decoding="async" />
         </div>
       </aside>
 
-      <div class="cardBox">
+      <div class="cardBox" id="vehiclesCard">
         <h3 style="margin:0 0 10px; font-family:var(--font-head); color:var(--forest); letter-spacing:-0.02em;">Vehicles in Service</h3>
         <div class="vehicleGrid" aria-label="Vehicles">
           <img src="/assets/images/pages/transportation/MBW-Transportation-01.jpg" alt="Transportation vehicle 1" loading="lazy" decoding="async" />
@@ -361,53 +357,83 @@
   <script>
   (function(){
     function updateEstimate(){
-      const from = fromSelect.value;
-      const to = toSelect.value;
-      const pax = parseInt(paxSelect.value,10);
-      const bags = parseInt(bagsSelect.value,10);
+      var from = fromSelect.value;
+      var to = toSelect.value;
+      var pax = parseInt(paxSelect.value,10);
+      var bags = parseInt(bagsSelect.value,10);
 
-      let time = "-";
+      var time = "-";
       if ((from === "uio" || from === "quito") && to === "mindo") time = "1 hr 45 min to 2 hr";
       if (from === "mindo" && (to === "uio" || to === "quito")) time = "1 hr 45 min to 2 hr";
 
-      let vehicle = "Car";
+      var vehicle = "Car";
       if (pax >= 4 || bags >= 4) vehicle = "SUV or Van";
 
       document.getElementById("timeOut").textContent = time;
       document.getElementById("vehicleOut").textContent = vehicle;
     }
 
-    const fromSelect = document.getElementById("from");
-    const toSelect = document.getElementById("to");
-    const paxSelect = document.getElementById("pax");
-    const bagsSelect = document.getElementById("bags");
+    var fromSelect = document.getElementById("from");
+    var toSelect = document.getElementById("to");
+    var paxSelect = document.getElementById("pax");
+    var bagsSelect = document.getElementById("bags");
 
     window.updateEstimate = updateEstimate;
 
-    function matchHeroHeight(){
-      const left = document.getElementById("estimateCard");
-      const hero = document.getElementById("heroCard");
-      if(!left || !hero) return;
+    function matchHeroHeightToBottom(){
+      var hero = document.getElementById("heroCard");
+      var vehicles = document.getElementById("vehiclesCard");
+      var leftCol = document.getElementById("leftCol");
+      if(!hero || !vehicles || !leftCol) return;
 
-      const h = left.getBoundingClientRect().height;
       if(window.matchMedia && window.matchMedia("(max-width: 980px)").matches){
         hero.style.height = "";
         return;
       }
-      hero.style.height = Math.max(240, Math.round(h)) + "px";
+
+      var leftH = leftCol.getBoundingClientRect().height;
+      var vehiclesH = vehicles.getBoundingClientRect().height;
+
+      var gap = 12;
+      try{
+        var rs = window.getComputedStyle(document.getElementById("rightCol"));
+        var g = parseFloat(rs.gap || "12");
+        if(!isNaN(g)) gap = g;
+      }catch(e){}
+
+      var targetHero = Math.max(260, Math.round(leftH - vehiclesH - gap));
+      hero.style.height = targetHero + "px";
+    }
+
+    function bindRecalcOnImages(){
+      try{
+        var imgs = document.querySelectorAll("#heroCard img, #vehiclesCard img");
+        for(var i=0;i<imgs.length;i++){
+          (function(img){
+            if(img && !img.complete){
+              img.addEventListener("load", function(){ matchHeroHeightToBottom(); }, { once:true });
+            }
+          })(imgs[i]);
+        }
+      }catch(e){}
     }
 
     function onReady(){
       updateEstimate();
-      matchHeroHeight();
+      matchHeroHeightToBottom();
+      bindRecalcOnImages();
+
       window.addEventListener("resize", function(){
-        matchHeroHeight();
-      }, { passive: true });
+        matchHeroHeightToBottom();
+      }, { passive:true });
 
       try{
-        const img = document.querySelector("#heroCard img");
-        if(img && !img.complete){
-          img.addEventListener("load", matchHeroHeight, { once: true });
+        if(window.ResizeObserver){
+          var ro = new ResizeObserver(function(){
+            matchHeroHeightToBottom();
+          });
+          ro.observe(document.getElementById("leftCol"));
+          ro.observe(document.getElementById("vehiclesCard"));
         }
       }catch(e){}
     }
@@ -423,3 +449,6 @@
   <script src="/assets/js/site.js?v=1" defer></script>
 </body>
 </html>
+
+
+
