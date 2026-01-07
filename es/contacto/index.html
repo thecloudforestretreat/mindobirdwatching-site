@@ -481,7 +481,7 @@ input[type="date"]{
 
   <div>
     <div class="sectionHead">
-      <h2>Enviar un Mensaje</h2>
+      <h2>Enviar un mensaje</h2>
       <p class="note">Normalmente respondemos en 24 horas.</p>
     </div>
 
@@ -717,6 +717,16 @@ input[type="date"]{
     });
   }
 
+  function trackGA(eventName, params){
+    try{
+      if(typeof window.gtag === "function"){
+        window.gtag("event", eventName, params || {});
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+
   var form = document.getElementById("contactForm");
   var successEl = document.getElementById("formSuccessMsg");
   var errorEl = document.getElementById("formErrorMsg");
@@ -751,6 +761,14 @@ input[type="date"]{
     setBtnSending(false);
     if(successEl) successEl.style.display = "block";
     if(errorEl) errorEl.style.display = "none";
+
+    trackGA("contact_submit_es", {
+      form_id: "contactForm",
+      form_name: "contact",
+      page_path: window.location.pathname || "/es/contacto/",
+      page_location: window.location.href
+    });
+
     try{
       form.reset();
       if(ds) ds.value = "";
