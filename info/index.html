@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Staff Info | Mindo Bird Watching</title>
+  <meta name="description" content="Private staff reference page for quick tour, activity, FAQ, and transportation replies. Search, copy, and send accurate info fast." />
+  <link rel="canonical" href="https://staging.mindobirdwatching.com/info/" />
+
+  <link rel="alternate" hreflang="en" href="/info/" />
+  <link rel="alternate" hreflang="es" href="/info/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Staff Info | Mindo Bird Watching" />
+  <meta property="og:description" content="Private staff reference page for quick tour, activity, FAQ, and transportation replies. Search, copy, and send accurate info fast." />
+  <meta property="og:url" content="https://staging.mindobirdwatching.com/info/" />
+  <meta property="og:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:secure_url" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - guided birding tours in Ecuador's cloud forest" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Staff Info | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Private staff reference page for quick tour, activity, FAQ, and transportation replies. Search, copy, and send accurate info fast." />
+  <meta name="twitter:image" content="https://staging.mindobirdwatching.com/MBW-Assets-OG-Image.png" />
+
+  <!-- Favicons (approved root paths) -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#034EA2">
+
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/header.css?v=1">
+  <script src="/assets/js/head.js" defer></script>
+
+  <style>
+    .page{ margin-top:18px; padding:26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    h1{ margin:0 0 8px; letter-spacing:-0.02em; }
+
+    .lede{
+      margin:0;
+      max-width: 92ch;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    .metaCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 12.5px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .note{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .pillRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .seg{
+      display:inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .seg button{
+      appearance:none;
+      border:0;
+      background:transparent;
+      padding: 10px 14px;
+      font-weight: 950;
+      font-size: 12.5px;
+      color: var(--ink);
+      cursor:pointer;
+      line-height: 1;
+      min-height: 40px;
+    }
+
+    .seg button[aria-pressed="true"]{
+      background: rgba(3,78,162,.10);
+      color: var(--forest);
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+
+    .filterPill{
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      padding: 8px 12px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-height: 44px;
+      box-sizing: border-box;
+    }
+
+    .filterPill label{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .filterPill select,
+    .filterPill input{
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-weight: 900;
+      width: 100%;
+      padding: 0;
+      height: 28px;
+      line-height: 28px;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    .section{
+      margin-top:18px;
+      padding-top:14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr .95fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    .list{
+      display:grid;
+      gap: 10px;
+    }
+
+    .itemBtn{
+      width:100%;
+      text-align:left;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 12px 12px;
+      cursor:pointer;
+      display:grid;
+      gap:6px;
+    }
+
+    .itemBtn[aria-current="true"]{
+      outline: 2px solid rgba(3,78,162,.25);
+      outline-offset: 0;
+    }
+
+    .itemTitle{
+      margin:0;
+      font-weight: 950;
+      letter-spacing:-0.01em;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .itemMeta{
+      margin:0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .detail{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display:grid;
+      gap: 12px;
+      position: sticky;
+      top: 92px;
+    }
+
+    .detail h2{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing:-0.02em;
+      font-size: 18px;
+      line-height: 1.25;
+      font-weight: 950;
+    }
+
+    .block{
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      padding: 12px;
+      display:grid;
+      gap: 8px;
+    }
+
+    .blockHead{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .blockTitle{
+      margin:0;
+      font-weight: 950;
+      color: var(--ink);
+      font-size: 13px;
+      letter-spacing:-0.01em;
+    }
+
+    .copyBtn{
+      appearance:none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-weight: 950;
+      font-size: 12.5px;
+      cursor:pointer;
+      line-height: 1;
+    }
+
+    .copyBtn:focus-visible{
+      outline: 2px solid rgba(3,78,162,.35);
+      outline-offset: 2px;
+    }
+
+    .txt{
+      margin:0;
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .linkRow{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .linkItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      padding: 10px 10px;
+    }
+
+    .linkLeft{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .icon{
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display:block;
+      object-fit: contain;
+    }
+
+    .linkLabel{
+      margin:0;
+      font-weight: 950;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .linkUrl{
+      margin:0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.35;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 52ch;
+    }
+
+    .toast{
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17,24,39,.92);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      z-index: 9999;
+    }
+    .toast.show{ opacity: 1; }
+
+    @media (max-width: 980px){
+      .hero{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .detail{ position: relative; top: 0; }
+    }
+
+    @media (max-width: 640px){
+      .page{ padding:16px; margin-top:14px; }
+      .filters{ grid-template-columns: 1fr; }
+      .detail{ padding:12px; }
+      .block{ padding: 10px; }
+      .linkUrl{ max-width: 38ch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="siteHeader"></div>
+
+    <main class="page card" aria-label="Staff info">
+      <section class="hero" aria-label="Staff info introduction">
+        <div>
+          <h1 id="pageTitle">Staff Info</h1>
+          <p class="lede" id="pageLede">
+            Use filters to find the right answer fast. Copy and paste short or detailed replies to chat or email.
+          </p>
+
+          <div class="metaCard" aria-label="Controls">
+            <div class="row">
+              <div class="pillRow" aria-label="Language">
+                <span class="chip">Language</span>
+                <div class="seg" role="group" aria-label="Language toggle">
+                  <button id="langEn" type="button" aria-pressed="true">English</button>
+                  <button id="langEs" type="button" aria-pressed="false">Español</button>
+                </div>
+              </div>
+
+              <div class="chips" aria-label="Status">
+                <span class="chip" id="statusChip">Loading…</span>
+              </div>
+            </div>
+
+            <div class="filters" aria-label="Filters">
+              <div class="filterPill">
+                <label for="subjectSel">Subject</label>
+                <select id="subjectSel"></select>
+              </div>
+
+              <div class="filterPill">
+                <label for="topicSel">Topic</label>
+                <select id="topicSel"></select>
+              </div>
+
+              <div class="filterPill" style="grid-column: 1 / -1;">
+                <label for="q">Search</label>
+                <input id="q" type="search" placeholder="Search titles…" autocomplete="off" />
+              </div>
+            </div>
+
+            <p class="note" id="hintNote">Tip: click an item on the left to open copy buttons on the right.</p>
+          </div>
+        </div>
+
+        <aside class="metaCard" aria-label="Quick actions">
+          <div class="chips">
+            <span class="chip">Protected via Cloudflare Access</span>
+            <span class="chip">Copy buttons for mobile</span>
+          </div>
+          <p class="note" id="quickNote">
+            If a guest asks for prices, confirm the date and group size. For tours: <strong>tours@mindobirdwatching.com</strong>
+          </p>
+        </aside>
+      </section>
+
+      <section class="section" aria-label="Content browser">
+        <div class="grid">
+          <div>
+            <div class="list" id="list"></div>
+          </div>
+
+          <aside class="detail" aria-label="Selected item">
+            <h2 id="detailTitle">Select an item</h2>
+
+            <div id="blocks"></div>
+
+            <div class="block" aria-label="Social links">
+              <div class="blockHead">
+                <p class="blockTitle">Social links</p>
+              </div>
+              <div class="linkRow" id="socialLinks"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <div id="siteFooter"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Copied</div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      async function inject(id, url){
+        const el = document.getElementById(id);
+        if(!el) return;
+        const res = await fetch(url, { cache: "no-store" });
+        el.innerHTML = await res.text();
+      }
+
+      function loadScript(src){
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.defer = true;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+
+      (async function(){
+        await inject("siteHeader", "/assets/includes/header.html");
+        await inject("siteFooter", "/assets/includes/footer.html");
+        await loadScript("/assets/js/site.js");
+      })();
+
+      const DATA_URL = "/info/staff-content.json";
+
+      const els = {
+        langEn: document.getElementById("langEn"),
+        langEs: document.getElementById("langEs"),
+        subjectSel: document.getElementById("subjectSel"),
+        topicSel: document.getElementById("topicSel"),
+        q: document.getElementById("q"),
+        list: document.getElementById("list"),
+        detailTitle: document.getElementById("detailTitle"),
+        blocks: document.getElementById("blocks"),
+        statusChip: document.getElementById("statusChip"),
+        toast: document.getElementById("toast"),
+        socialLinks: document.getElementById("socialLinks"),
+        pageTitle: document.getElementById("pageTitle"),
+        pageLede: document.getElementById("pageLede"),
+        hintNote: document.getElementById("hintNote"),
+        quickNote: document.getElementById("quickNote")
+      };
+
+      function esc(s){
+        return String(s || "")
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+
+      function toast(msg){
+        els.toast.textContent = msg;
+        els.toast.classList.add("show");
+        window.clearTimeout(els.toast._t);
+        els.toast._t = window.setTimeout(() => els.toast.classList.remove("show"), 1200);
+      }
+
+      async function copyText(text){
+        const t = String(text || "").trim();
+        if(!t){
+          toast("Nothing to copy");
+          return;
+        }
+        try{
+          await navigator.clipboard.writeText(t);
+          toast("Copied");
+        }catch(_){
+          const ta = document.createElement("textarea");
+          ta.value = t;
+          ta.setAttribute("readonly", "true");
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          try{ document.execCommand("copy"); toast("Copied"); }catch(__){ toast("Copy failed"); }
+          document.body.removeChild(ta);
+        }
+      }
+
+      function setLangUI(lang){
+        const isEn = (lang === "en");
+        els.langEn.setAttribute("aria-pressed", isEn ? "true" : "false");
+        els.langEs.setAttribute("aria-pressed", isEn ? "false" : "true");
+
+        if(isEn){
+          document.documentElement.lang = "en";
+          els.pageTitle.textContent = "Staff Info";
+          els.pageLede.textContent = "Use filters to find the right answer fast. Copy and paste short or detailed replies to chat or email.";
+          els.hintNote.textContent = "Tip: click an item on the left to open copy buttons on the right.";
+          els.quickNote.innerHTML = "If a guest asks for prices, confirm the date and group size. For tours: <strong>tours@mindobirdwatching.com</strong>";
+          document.querySelector("label[for='subjectSel']").textContent = "Subject";
+          document.querySelector("label[for='topicSel']").textContent = "Topic";
+          document.querySelector("label[for='q']").textContent = "Search";
+          els.q.placeholder = "Search titles…";
+        }else{
+          document.documentElement.lang = "es";
+          els.pageTitle.textContent = "Info para el equipo";
+          els.pageLede.textContent = "Usa los filtros para encontrar la respuesta rápido. Copia una respuesta corta o detallada para WhatsApp, chat o email.";
+          els.hintNote.textContent = "Tip: elige un elemento a la izquierda para ver botones de copia a la derecha.";
+          els.quickNote.innerHTML = "Si un cliente pregunta por precios, confirma la fecha y el tamaño del grupo. Tours: <strong>tours@mindobirdwatching.com</strong>";
+          document.querySelector("label[for='subjectSel']").textContent = "Tema";
+          document.querySelector("label[for='topicSel']").textContent = "Categoría";
+          document.querySelector("label[for='q']").textContent = "Buscar";
+          els.q.placeholder = "Buscar por título…";
+        }
+      }
+
+      let db = null;
+      let lang = "en";
+      let currentItems = [];
+      let selectedId = null;
+
+      function getLangData(){
+        return (db && db.languages && db.languages[lang]) ? db.languages[lang] : {};
+      }
+
+      function subjectsForLang(){
+        const ld = getLangData();
+        return Object.keys(ld).sort();
+      }
+
+      function topicsForSubject(subject){
+        const ld = getLangData();
+        const s = ld[subject] || {};
+        return Object.keys(s).sort();
+      }
+
+      function itemsFor(subject, topic){
+        const ld = getLangData();
+        const s = ld[subject] || {};
+        const arr = s[topic] || [];
+        return Array.isArray(arr) ? arr : [];
+      }
+
+      function setSelectOptions(sel, options, placeholder){
+        sel.innerHTML = "";
+        options.forEach(v => {
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          sel.appendChild(o);
+        });
+        if(placeholder){
+          const o0 = document.createElement("option");
+          o0.value = "";
+          o0.textContent = placeholder;
+          sel.insertBefore(o0, sel.firstChild);
+          sel.value = "";
+        }
+      }
+
+      function updateLists(){
+        const ld = getLangData();
+        const subjects = Object.keys(ld).sort();
+        setSelectOptions(els.subjectSel, subjects, subjects.length ? null : "No content");
+
+        const subject = els.subjectSel.value || subjects[0] || "";
+        if(subject && els.subjectSel.value !== subject) els.subjectSel.value = subject;
+
+        const topics = subject ? topicsForSubject(subject) : [];
+        setSelectOptions(els.topicSel, topics, topics.length ? null : "No topics");
+
+        const topic = els.topicSel.value || topics[0] || "";
+        if(topic && els.topicSel.value !== topic) els.topicSel.value = topic;
+
+        const q = (els.q.value || "").trim().toLowerCase();
+
+        const rows = (subject && topic) ? itemsFor(subject, topic) : [];
+        currentItems = rows.filter(it => {
+          if(!q) return true;
+          return String(it.title || "").toLowerCase().includes(q);
+        });
+
+        els.statusChip.textContent = currentItems.length ? (currentItems.length + " items") : "No matches";
+
+        if(!currentItems.find(x => x.id === selectedId)){
+          selectedId = currentItems[0] ? currentItems[0].id : null;
+        }
+        renderList();
+        renderDetail();
+      }
+
+      function renderList(){
+        els.list.innerHTML = "";
+        if(!currentItems.length){
+          const empty = document.createElement("div");
+          empty.className = "metaCard";
+          empty.innerHTML = "<p class='note'>No items found for this filter.</p>";
+          els.list.appendChild(empty);
+          return;
+        }
+
+        currentItems.forEach(it => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "itemBtn";
+          b.setAttribute("aria-current", (it.id === selectedId) ? "true" : "false");
+          b.addEventListener("click", () => {
+            selectedId = it.id;
+            renderList();
+            renderDetail();
+          });
+
+          const metaBits = [];
+          if(it.subtopic) metaBits.push(it.subtopic);
+          if(it.source_url) metaBits.push("Link");
+          b.innerHTML =
+            "<p class='itemTitle'>" + esc(it.title) + "</p>" +
+            "<p class='itemMeta'>" + esc(metaBits.join(" • ")) + "</p>";
+
+          els.list.appendChild(b);
+        });
+      }
+
+      function blockHtml(title, text, copyLabel, extraLink){
+        const hasLink = extraLink && extraLink.url;
+        const linkHtml = hasLink
+          ? "<div class='divider' style='margin-top:10px; padding-top:10px; border-top:1px solid var(--line);'>" +
+              "<a class='btn secondary' style='display:inline-flex; align-items:center; gap:8px; text-decoration:none;' href='" + esc(extraLink.url) + "' target='_blank' rel='noopener'>" +
+                esc(extraLink.label || "Open") +
+              "</a>" +
+            "</div>"
+          : "";
+
+        return (
+          "<div class='block'>" +
+            "<div class='blockHead'>" +
+              "<p class='blockTitle'>" + esc(title) + "</p>" +
+              "<button class='copyBtn' type='button' data-copy='" + esc(text || "") + "'>" + esc(copyLabel) + "</button>" +
+            "</div>" +
+            "<p class='txt'>" + esc(text || "") + "</p>" +
+            linkHtml +
+          "</div>"
+        );
+      }
+
+      function renderDetail(){
+        const it = currentItems.find(x => x.id === selectedId);
+        els.blocks.innerHTML = "";
+        if(!it){
+          els.detailTitle.textContent = (lang === "en") ? "Select an item" : "Elige un elemento";
+          return;
+        }
+
+        els.detailTitle.textContent = it.title || "";
+
+        const subject = els.subjectSel.value || "";
+        const isFAQ = (subject.toLowerCase() === "questions" || subject.toLowerCase() === "preguntas") && (String(els.topicSel.value || "").toLowerCase().includes("faq"));
+
+        const blocks = [];
+
+        if(isFAQ){
+          const ans = it.message_long || it.message_short || "";
+          blocks.push(blockHtml((lang === "en") ? "Answer" : "Respuesta", ans, (lang === "en") ? "Copy answer" : "Copiar respuesta", null));
+        }else{
+          if(it.message_short){
+            blocks.push(blockHtml((lang === "en") ? "Short reply" : "Respuesta corta", it.message_short, (lang === "en") ? "Copy short" : "Copiar corta", null));
+          }
+          if(it.message_long){
+            blocks.push(blockHtml((lang === "en") ? "Detailed reply" : "Respuesta detallada", it.message_long, (lang === "en") ? "Copy detailed" : "Copiar detallada", null));
+          }
+          if(!it.message_short && !it.message_long){
+            blocks.push(blockHtml((lang === "en") ? "Message" : "Mensaje", "", (lang === "en") ? "Copy" : "Copiar", null));
+          }
+        }
+
+        if(it.source_url){
+          blocks.push(
+            "<div class='block'>" +
+              "<div class='blockHead'>" +
+                "<p class='blockTitle'>" + ((lang === "en") ? "Link" : "Enlace") + "</p>" +
+                "<button class='copyBtn' type='button' data-copy='" + esc(it.source_url) + "'>" + ((lang === "en") ? "Copy link" : "Copiar enlace") + "</button>" +
+              "</div>" +
+              "<p class='txt'>" + esc(it.source_url) + "</p>" +
+              "<div class='divider' style='margin-top:10px; padding-top:10px; border-top:1px solid var(--line);'>" +
+                "<a class='btn secondary' style='text-decoration:none;' href='" + esc(it.source_url) + "' target='_blank' rel='noopener'>" + ((lang === "en") ? "Open link" : "Abrir enlace") + "</a>" +
+              "</div>" +
+            "</div>"
+          );
+        }
+
+        els.blocks.innerHTML = blocks.join("");
+
+        // bind copy buttons
+        els.blocks.querySelectorAll("[data-copy]").forEach(btn => {
+          btn.addEventListener("click", () => copyText(btn.getAttribute("data-copy")));
+        });
+      }
+
+      function renderSocial(){
+        const links = (db && db.globals && Array.isArray(db.globals.social_links)) ? db.globals.social_links : [];
+        els.socialLinks.innerHTML = links.map(l => {
+          const icon = l.icon ? ("<img class='icon' src='" + esc(l.icon) + "' alt='' loading='lazy' decoding='async' />") : "<span class='icon' style='background:rgba(255,255,255,.55); border:1px solid var(--line); display:inline-block;'></span>";
+          return (
+            "<div class='linkItem'>" +
+              "<div class='linkLeft'>" +
+                icon +
+                "<div style='min-width:0;'>" +
+                  "<p class='linkLabel'>" + esc(l.label || "Link") + "</p>" +
+                  "<p class='linkUrl'>" + esc(l.value || "") + "</p>" +
+                "</div>" +
+              "</div>" +
+              "<button class='copyBtn' type='button' data-copy='" + esc(l.value || "") + "'>" + ((lang === "en") ? "Copy" : "Copiar") + "</button>" +
+            "</div>"
+          );
+        }).join("");
+
+        els.socialLinks.querySelectorAll("[data-copy]").forEach(btn => {
+          btn.addEventListener("click", () => copyText(btn.getAttribute("data-copy")));
+        });
+      }
+
+      async function init(){
+        try{
+          els.statusChip.textContent = "Loading…";
+          const res = await fetch(DATA_URL, { cache: "no-store" });
+          db = await res.json();
+        }catch(_){
+          els.statusChip.textContent = "Data failed to load";
+          return;
+        }
+
+        // language buttons
+        els.langEn.addEventListener("click", () => { lang = "en"; setLangUI(lang); updateLists(); renderSocial(); });
+        els.langEs.addEventListener("click", () => { lang = "es"; setLangUI(lang); updateLists(); renderSocial(); });
+
+        // filters
+        els.subjectSel.addEventListener("change", () => updateLists());
+        els.topicSel.addEventListener("change", () => updateLists());
+        els.q.addEventListener("input", () => updateLists());
+
+        setLangUI(lang);
+        renderSocial();
+        updateLists();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
