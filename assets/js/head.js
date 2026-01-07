@@ -29,12 +29,27 @@
     HEAD.appendChild(m);
   }
 
-  // Force-refresh header.css everywhere
+  function addScript(src, attrs = {}) {
+    if (!src) return null;
+    const exists = HEAD.querySelector(`script[src="${src}"]`);
+    if (exists) return exists;
+
+    const s = document.createElement("script");
+    s.src = src;
+    Object.entries(attrs).forEach(([k, v]) => {
+      if (v === true) s.setAttribute(k, k);
+      else if (v !== false && v != null) s.setAttribute(k, String(v));
+    });
+    HEAD.appendChild(s);
+    return s;
+  }
+
   const VERSION = "20251231-final";
 
   function injectHeaderCSS() {
-    const existing = [...HEAD.querySelectorAll('link[rel="stylesheet"]')]
-      .find(l => l.href.includes("/assets/css/header.css"));
+    const existing = [...HEAD.querySelectorAll('link[rel="stylesheet"]')].find(
+      (l) => l.href.includes("/assets/css/header.css")
+    );
 
     const url = `/assets/css/header.css?v=${VERSION}`;
 
@@ -65,4 +80,31 @@
   addMeta("og:type", "website", true);
   addMeta("og:image", "/assets/images/og/og-default-1200x630.jpg", true);
   addMeta("msapplication-TileColor", "#C7DAAC");
+
+  (function injectGA4() {
+    var MEASUREMENT_ID = "G-1ZYLW22XWP";
+
+    try {
+      if (typeof window.gtag === "function") return;
+
+      var existing = HEAD.querySelector(
+        'script[src^="https://www.googletagmanager.com/gtag/js?id="]'
+      );
+      if (existing) return;
+
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () {
+        window.dataLayer.push(arguments);
+      };
+
+      addScript(
+        "https://www.googletagmanager.com/gtag/js?id=" +
+          encodeURIComponent(MEASUREMENT_ID),
+        { async: true }
+      );
+
+      window.gtag("js", new Date());
+      window.gtag("config", MEASUREMENT_ID);
+    } catch (e) {}
+  })();
 })();
