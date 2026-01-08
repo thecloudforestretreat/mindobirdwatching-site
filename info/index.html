@@ -13,49 +13,63 @@
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
   <script src="/assets/js/head.js" defer></script>
-
   <style>
-    :root {
-      --page-max: 1100px;
+    :root{
+      --page-max: 1180px;
     }
 
-    html, body { overflow-x:hidden; }
+    html, body { overflow-x: hidden; }
     body { background: var(--bg, #f6f8fb); }
 
-    .wrap {
+    .wrap{
       max-width: var(--page-max);
       margin: 0 auto;
       padding: 18px 14px 30px;
     }
 
-    .page {
+    .page{
       margin-top: 0;
       padding: 18px;
     }
-    .page.card {
+    .page.card{
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
 
-    .topbar {
+    /* ===== Header / Controls ===== */
+    .topbar{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
-    .topbar h1 {
+    .topLeft{
+      min-width: 260px;
+      flex: 1 1 420px;
+    }
+
+    .topRight{
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-end;
+      gap: 12px;
+      flex: 1 1 520px;
+      min-width: 280px;
+    }
+
+    .topbar h1{
       margin:0;
       letter-spacing:-0.02em;
       line-height:1.1;
-      font-size: 22px;
+      font-size: 24px;
     }
 
-    .subnote {
+    .subnote{
       margin:6px 0 0;
       color: var(--muted);
       font-size: 13px;
@@ -63,16 +77,16 @@
       max-width: 78ch;
     }
 
-    .toolsRow {
+    .controlsBar{
       display:flex;
+      align-items:center;
+      justify-content:flex-start; /* LEFT aligned on desktop */
       gap: 10px;
       flex-wrap: wrap;
-      align-items:center;
-      justify-content:flex-end;
       width: 100%;
     }
 
-    .pillBox {
+    .pillBox{
       border: 1px solid var(--line);
       border-radius: 999px;
       background: rgba(255,255,255,.65);
@@ -86,20 +100,20 @@
       min-width: 0;
     }
 
-    .pillBox label {
+    .pillBox label{
       font-weight: 900;
       font-size: 12.5px;
       color: var(--muted);
       white-space: nowrap;
     }
 
-    .pillBox select {
+    .pillBox select{
       border:0;
       outline:0;
       background:transparent;
       color: var(--ink);
       font-weight: 900;
-      min-width: 160px;
+      min-width: 170px;
       width: 100%;
       padding: 0;
       height: 28px;
@@ -107,27 +121,44 @@
       box-sizing: border-box;
     }
 
-    .quickCopy {
+    .quickCopy{
       display:flex;
       gap: 10px;
       flex-wrap: wrap;
       align-items:center;
-      width: 100%;
-      justify-content:flex-end;
+      margin-left: auto; /* keeps button at the end when space allows */
     }
-    .quickCopy .btn {
-      white-space: nowrap;
+    .quickCopy .btn{ white-space: nowrap; }
+
+    .brandMark{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap: 10px;
+      padding-top: 2px;
+      min-width: 90px;
+    }
+    .brandMark img{
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      object-fit: cover;
+      display:block;
     }
 
-    .layout {
-      margin-top: 12px;
+    /* ===== Main layout ===== */
+    .layout{
+      margin-top: 10px;
       display:grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 340px 1fr;
       gap: 14px;
       align-items:start;
     }
 
-    .panel {
+    .panel{
       border: 1px solid var(--line);
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
@@ -136,7 +167,7 @@
       min-width:0;
     }
 
-    .panelHead {
+    .panelHead{
       padding: 12px 14px;
       border-bottom: 1px solid var(--line);
       background: rgba(255,255,255,.55);
@@ -147,7 +178,7 @@
       flex-wrap: wrap;
     }
 
-    .panelHead h2 {
+    .panelHead h2{
       margin:0;
       font-family: var(--font-head);
       color: var(--forest);
@@ -156,11 +187,23 @@
       line-height: 1.25;
     }
 
-    .panelBody {
+    .panelBody{
       padding: 12px 14px;
     }
 
-    .list {
+    .badge{
+      flex:0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,.78);
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .list{
       display:grid;
       gap: 8px;
       padding: 12px 14px;
@@ -168,7 +211,7 @@
       overflow:auto;
     }
 
-    .itemBtn {
+    .itemBtn{
       width: 100%;
       text-align:left;
       border: 1px solid var(--line);
@@ -183,40 +226,28 @@
       gap: 10px;
       min-width:0;
     }
-    .itemBtn:hover { transform: translateY(-1px); }
-    .itemBtn:active { transform: translateY(0); }
+    .itemBtn:hover{ transform: translateY(-1px); }
+    .itemBtn:active{ transform: translateY(0); }
 
-    .itemTitle {
+    .itemTitle{
       font-weight: 950;
       color: var(--ink);
       line-height: 1.25;
       min-width:0;
     }
 
-    .itemMeta {
+    .itemMeta{
       margin-top: 4px;
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.35;
     }
 
-    .badge {
-      flex:0 0 auto;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 10px;
-      background: rgba(255,255,255,.78);
-      font-weight: 900;
-      font-size: 12px;
-      color: var(--ink);
-      white-space: nowrap;
-    }
-
-    .detail {
+    .detail{
       padding: 12px 14px;
     }
 
-    .detailTop {
+    .detailTop{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
@@ -225,7 +256,7 @@
       margin-bottom: 10px;
     }
 
-    .detailTitle {
+    .detailTitle{
       margin:0;
       font-family: var(--font-head);
       color: var(--forest);
@@ -234,12 +265,12 @@
       line-height: 1.25;
     }
 
-    .copyGrid {
+    .copyGrid{
       display:grid;
       gap: 10px;
     }
 
-    .block {
+    .block{
       border: 1px solid var(--line);
       border-radius: 14px;
       background: rgba(255,255,255,.55);
@@ -247,7 +278,7 @@
       overflow:hidden;
     }
 
-    .blockHead {
+    .blockHead{
       padding: 10px 12px;
       border-bottom: 1px solid var(--line);
       background: rgba(255,255,255,.55);
@@ -258,13 +289,13 @@
       flex-wrap: wrap;
     }
 
-    .blockHead strong {
+    .blockHead strong{
       font-size: 12.5px;
       color: var(--muted);
       letter-spacing: 0.02em;
     }
 
-    .blockBody {
+    .blockBody{
       padding: 10px 12px;
       color: var(--ink);
       line-height: 1.65;
@@ -272,36 +303,7 @@
       overflow-wrap:anywhere;
     }
 
-    .rowCopy {
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-
-    .urlRow {
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items:center;
-      padding: 10px 12px;
-      background: rgba(255,255,255,.55);
-      border-top: 1px solid var(--line);
-    }
-
-    .urlInput {
-      width:100%;
-      min-width:0;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #fff;
-      padding: 10px 12px;
-      font: inherit;
-      color: var(--ink);
-      box-sizing:border-box;
-    }
-
-    .thumbRow {
+    .thumbRow{
       padding: 10px 12px;
       border-top: 1px solid var(--line);
       background: rgba(255,255,255,.55);
@@ -311,7 +313,7 @@
       flex-wrap: wrap;
     }
 
-    .thumb {
+    .thumb{
       width: 58px;
       height: 58px;
       border-radius: 999px;
@@ -324,14 +326,22 @@
       overflow:hidden;
       flex:0 0 auto;
     }
-    .thumb img {
+    .thumb img{
       width:100%;
       height:100%;
       object-fit: cover;
       display:block;
     }
 
-    .toast {
+    .noteSmall{
+      margin:0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.35;
+      overflow-wrap:anywhere;
+    }
+
+    .toast{
       position: fixed;
       left: 50%;
       bottom: 18px;
@@ -350,31 +360,47 @@
       text-align:center;
     }
 
-    /* Social strip always visible */
-    .social {
-      margin-top: 14px;
-    }
-    .socialGrid {
+    /* ===== Social (always visible, aligned) ===== */
+    .social{ margin-top: 14px; }
+
+    .socialGrid{
       margin-top: 10px;
       display:grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(160px, 1fr));
       gap: 10px;
+      align-items: stretch;
     }
-    .socialBtn {
+
+    .socialCard{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .socialLeft{
       display:flex;
       align-items:center;
       gap: 10px;
-      justify-content:flex-start;
+      min-width:0;
     }
-    .socialBtn .ico {
-      width: 26px;
-      height: 26px;
+
+    .socialIco{
+      width: 28px;
+      height: 28px;
       background-size: contain;
       background-repeat: no-repeat;
-      background-position:center;
+      background-position: center;
       flex:0 0 auto;
     }
-    .socialBtn .label {
+
+    .socialName{
       font-weight: 950;
       color: var(--ink);
       min-width:0;
@@ -382,102 +408,123 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .socialRow {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
 
+    /* ===== Responsive ===== */
     @media (max-width: 980px){
-      .layout { grid-template-columns: 1fr; }
-      .list { max-height: 42vh; }
-      .toolsRow { justify-content:flex-start; }
-      .quickCopy { justify-content:flex-start; }
-      .socialGrid { grid-template-columns: 1fr 1fr; }
+      .topRight{ justify-content:flex-start; }
+      .quickCopy{ margin-left: 0; }
+      .layout{ grid-template-columns: 1fr; }
+      .list{ max-height: 42vh; }
+      .socialGrid{ grid-template-columns: 1fr 1fr; }
     }
 
-    @media (max-width: 560px){
-      .page { padding: 16px; }
-      .pillBox select { min-width: 120px; }
-      .socialGrid { grid-template-columns: 1fr; }
+    @media (max-width: 640px){
+      .page{ padding: 16px; }
+      .topbar{ gap: 10px; }
+
+      .topLeft{ flex: 1 1 auto; }
+      .topRight{ flex: 1 1 auto; }
+
+      .controlsBar{
+        display:grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
+      .pillBox{ width: 100%; }
+      .pillBox select{ min-width: 0; }
+
+      .quickCopy{
+        width: 100%;
+        justify-content:flex-start;
+      }
+      .quickCopy .btn{ width: 100%; justify-content:center; }
+
+      .brandMark{
+        width: 100%;
+        justify-content:flex-end;
+      }
+
+      .socialGrid{ grid-template-columns: 1fr; }
+      .socialCard{ padding: 12px; }
     }
   </style>
 </head>
-
 <body>
   <div class="wrap">
     <main class="page card" aria-label="Staff info">
       <div class="topbar">
-        <div>
+        <div class="topLeft">
           <h1 id="pageTitle">Staff Info</h1>
           <p class="subnote" id="pageNote"></p>
         </div>
+    <div class="topRight">
+      <div class="controlsBar" aria-label="Controls">
+        <div class="pillBox" aria-label="Language">
+          <label for="langSel" id="langLbl">Language</label>
+          <select id="langSel">
+            <option value="en">English</option>
+            <option value="es">Espanol</option>
+          </select>
+        </div>
 
-        <div class="toolsRow" aria-label="Controls">
-          <div class="pillBox" aria-label="Language">
-            <label for="langSel" id="langLbl">Language</label>
-            <select id="langSel">
-              <option value="en">English</option>
-              <option value="es">Espanol</option>
-            </select>
-          </div>
+        <div class="pillBox" aria-label="Subject">
+          <label for="subjSel" id="subjLbl">Subject</label>
+          <select id="subjSel"></select>
+        </div>
 
-          <div class="pillBox" aria-label="Subject">
-            <label for="subjSel" id="subjLbl">Subject</label>
-            <select id="subjSel"></select>
-          </div>
+        <div class="pillBox" aria-label="Topic">
+          <label for="topicSel" id="topicLbl">Topic</label>
+          <select id="topicSel"></select>
+        </div>
 
-          <div class="pillBox" aria-label="Topic">
-            <label for="topicSel" id="topicLbl">Topic</label>
-            <select id="topicSel"></select>
-          </div>
-
-          <div class="quickCopy" aria-label="Quick links">
-            <button class="btn secondary" type="button" id="copyBookBtn"></button>
-          </div>
+        <div class="quickCopy" aria-label="Quick links">
+          <button class="btn secondary" type="button" id="copyBookBtn"></button>
         </div>
       </div>
 
-      <div class="layout" aria-label="Content">
-        <section class="panel" aria-label="Items">
-          <div class="panelHead">
-            <h2 id="listTitle">Items</h2>
-            <span class="badge" id="countBadge">0</span>
-          </div>
-          <div class="list" id="itemList"></div>
-        </section>
-
-        <section class="panel" aria-label="Details">
-          <div class="panelHead">
-            <h2 id="detailHead">Details</h2>
-          </div>
-          <div class="detail" id="detailPane">
-            <p class="subnote" id="emptyState"></p>
-          </div>
-        </section>
+      <div class="brandMark" aria-label="Brand mark">
+        <img src="/apple-touch-icon.png" alt="Mindo Bird Watching" loading="lazy" decoding="async" />
       </div>
-
-      <section class="panel social" aria-label="Social links">
-        <div class="panelHead">
-          <h2 id="socialTitle">Social</h2>
-          <span class="badge" id="socialHint"></span>
-        </div>
-        <div class="panelBody">
-          <div class="socialGrid" id="socialGrid"></div>
-        </div>
-      </section>
-    </main>
+    </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="layout" aria-label="Content">
+    <section class="panel" aria-label="Items">
+      <div class="panelHead">
+        <h2 id="listTitle">Items</h2>
+        <span class="badge" id="countBadge">0</span>
+      </div>
+      <div class="list" id="itemList"></div>
+    </section>
 
+    <section class="panel" aria-label="Details">
+      <div class="panelHead">
+        <h2 id="detailHead">Details</h2>
+      </div>
+      <div class="detail" id="detailPane">
+        <p class="subnote" id="emptyState"></p>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel social" aria-label="Social links">
+    <div class="panelHead">
+      <h2 id="socialTitle">Social</h2>
+      <span class="badge" id="socialHint"></span>
+    </div>
+    <div class="panelBody">
+      <div class="socialGrid" id="socialGrid"></div>
+    </div>
+  </section>
+</main>
+  </div>
+  <div class="toast" id="toast"></div>
   <script>
     (function(){
       "use strict";
 
-      const BASE = "https://staging.mindobirdwatching.com";
+      const BASE = "https://mindobirdwatching.com";
       const DATA_URL = "./staff-content.json";
 
       const I18N = {
@@ -501,7 +548,6 @@
           copyUrl: "Copy URL",
           bookBtn: "Copy booking link",
           bookUrl: BASE + "/book-tour/",
-          bookLabel: "Booking link",
           social: "Social links",
           copied: "Copied",
           noData: "Unable to load staff content."
@@ -526,7 +572,6 @@
           copyUrl: "Copiar URL",
           bookBtn: "Copiar link para reservar",
           bookUrl: BASE + "/es/reservar-tour/",
-          bookLabel: "Link de reserva",
           social: "Redes",
           copied: "Copiado",
           noData: "No se pudo cargar el contenido."
@@ -556,25 +601,12 @@
       };
 
       let DATA = null;
-      let state = {
-        lang: "en",
-        subject: "",
-        topic: "",
-        activeId: ""
-      };
+      let state = { lang: "en", subject: "", topic: "", activeId: "" };
 
       function esc(s){
         return String(s || "")
           .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
           .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-      }
-
-      function absUrl(u){
-        const s = String(u || "").trim();
-        if(!s) return "";
-        if(/^https?:\/\//i.test(s)) return s;
-        if(s.startsWith("/")) return BASE + s;
-        return BASE + "/" + s.replace(/^\.\//, "");
       }
 
       function showToast(msg){
@@ -610,9 +642,7 @@
         }catch(e){}
       }
 
-      function t(){
-        return I18N[state.lang] || I18N.en;
-      }
+      function t(){ return I18N[state.lang] || I18N.en; }
 
       function setStaticText(){
         const i = t();
@@ -656,6 +686,70 @@
         else sel.value = arr[0] || "";
       }
 
+      function blockHtml(label, text, copyLabel){
+        if(!String(text || "").trim()) return "";
+        const i = t();
+        return `
+          <div class="block">
+            <div class="blockHead">
+              <strong>${esc(label)}</strong>
+              <button class="btn secondary" type="button" data-copy="${esc(text)}">${esc(copyLabel || i.copy)}</button>
+            </div>
+            <div class="blockBody">${esc(text)}</div>
+          </div>
+        `;
+      }
+
+      function renderDetail(it, skipScroll){
+        const i = t();
+        if(!it){
+          els.detailPane.innerHTML = `<p class="subnote">${esc(i.empty)}</p>`;
+          return;
+        }
+
+        const title = it.title || it.subtopic || it.topic || "Item";
+        const shortText = (it.message_short && it.message_short.trim()) ? it.message_short.trim() : title;
+        const longText = (it.message_long || "").trim();
+        const cost = (it.cost || "").trim();
+        const imgUrl = (it.image_url || "").trim();
+
+        const costBlock = cost ? blockHtml(i.cost, cost, i.copyCost) : "";
+        const imgBlock = imgUrl ? `
+          <div class="block">
+            <div class="blockHead">
+              <strong>${esc(i.image)}</strong>
+              <button class="btn secondary" type="button" data-copy="${esc(imgUrl)}">${esc(i.copyUrl)}</button>
+            </div>
+            <div class="thumbRow">
+              <span class="thumb" aria-hidden="true"><img src="${esc(imgUrl)}" alt="" loading="lazy" /></span>
+              <p class="noteSmall">${esc(imgUrl)}</p>
+            </div>
+          </div>
+        ` : "";
+
+        els.detailPane.innerHTML = `
+          <div class="detailTop">
+            <h3 class="detailTitle">${esc(title)}</h3>
+          </div>
+          <div class="copyGrid">
+            ${blockHtml(i.short, shortText, i.copyShort)}
+            ${blockHtml(i.long, longText, i.copyLong)}
+            ${costBlock}
+            ${imgBlock}
+          </div>
+        `;
+
+        Array.from(els.detailPane.querySelectorAll("[data-copy]")).forEach(b => {
+          b.addEventListener("click", function(){
+            copyText(b.getAttribute("data-copy"));
+          });
+        });
+
+        if(!skipScroll){
+          els.detailPane.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
       function renderList(){
         const items = filterByTopic(itemsFor(state.lang, state.subject), state.topic);
         els.countBadge.textContent = String(items.length);
@@ -683,7 +777,6 @@
           `;
         }).join("");
 
-        // Click binding
         Array.from(els.itemList.querySelectorAll("[data-id]")).forEach(btn => {
           btn.addEventListener("click", function(){
             const id = btn.getAttribute("data-id");
@@ -693,7 +786,6 @@
           });
         });
 
-        // Select first if none
         if(!state.activeId){
           const first = items[0];
           state.activeId = first.id;
@@ -704,120 +796,24 @@
         }
       }
 
-      function blockHtml(label, text, copyLabel){
-        if(!String(text || "").trim()) return "";
-        const i = t();
-        return `
-          <div class="block">
-            <div class="blockHead">
-              <strong>${esc(label)}</strong>
-              <button class="btn secondary" type="button" data-copy="${esc(text)}">${esc(copyLabel || i.copy)}</button>
-            </div>
-            <div class="blockBody">${esc(text)}</div>
-          </div>
-        `;
-      }
-
-      function imageBlockHtml(imgUrl){
-        const url = absUrl(imgUrl);
-        if(!url) return "";
-        const i = t();
-        return `
-          <div class="block">
-            <div class="blockHead">
-              <strong>${esc(i.image)}</strong>
-              <div class="rowCopy">
-                <button class="btn secondary" type="button" data-copy="${esc(url)}">${esc(i.copyUrl)}</button>
-              </div>
-            </div>
-            <div class="thumbRow">
-              <span class="thumb" aria-hidden="true"><img src="${esc(url)}" alt="" loading="lazy" /></span>
-              <span class="note" style="margin:0; color:var(--muted); font-size:12.5px; line-height:1.35;">${esc(url)}</span>
-            </div>
-          </div>
-        `;
-      }
-
-      function renderDetail(it, skipScroll){
-        const i = t();
-        if(!it){
-          els.detailPane.innerHTML = `<p class="subnote">${esc(i.empty)}</p>`;
-          return;
-        }
-
-        const title = it.title || it.subtopic || it.topic || "Item";
-        const shortText = (it.message_short && it.message_short.trim()) ? it.message_short.trim() : title;
-        const longText = (it.message_long || "").trim();
-        const cost = (it.cost || "").trim();
-
-        const costBlock = cost ? blockHtml(i.cost, cost, i.copyCost) : "";
-
-        els.detailPane.innerHTML = `
-          <div class="detailTop">
-            <h3 class="detailTitle">${esc(title)}</h3>
-          </div>
-
-          <div class="copyGrid">
-            ${blockHtml(i.short, shortText, i.copyShort)}
-            ${blockHtml(i.long, longText, i.copyLong)}
-            ${costBlock}
-            ${imageBlockHtml(it.image_url)}
-          </div>
-        `;
-
-        // bind copy buttons
-        Array.from(els.detailPane.querySelectorAll("[data-copy]")).forEach(b => {
-          b.addEventListener("click", function(){
-            copyText(b.getAttribute("data-copy"));
-          });
-        });
-
-        if(!skipScroll){
-          // ensure detail panel is visible (mobile UX)
-          els.detailPane.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
-
       function renderSocial(){
-        const langBlock = (DATA && DATA.languages && DATA.languages[state.lang]) ? DATA.languages[state.lang] : {};
-        const socialKey = Object.keys(langBlock).find(k => /social/i.test(k)) || "";
-        const socials = socialKey ? (langBlock[socialKey] || []) : [];
-
-        // fallback if none
         const fallback = [
           { title: "Instagram", url: "https://instagram.com/mindobirdwatching", icon: "/assets/images/icons/MBW-IG.png" },
           { title: "TikTok", url: "https://www.tiktok.com/@mindobirdwatching", icon: "/assets/images/icons/MBW-Social-TikTok.png" },
           { title: "Facebook", url: "https://www.facebook.com/profile.php?id=61577783327957", icon: "/assets/images/icons/MBW-Social-FB-01.png" },
           { title: "YouTube", url: "https://www.youtube.com/@MindoBirdWatching", icon: "/assets/images/icons/MBW-Social-YouTube.png" },
-          { title: "Reviews", url: "https://g.page/r/CdMlIYMGgBIvEAE/review", icon: "/assets/images/icons/Google-Review-Symbol.png" },
-          { title: "Shop", url: "https://shop.mindobirdwatching.com/", icon: "/assets/images/icons/MBW-Social-Shopify.png" },
+          { title: "Google Reviews", url: "https://g.page/r/CdMlIYMGgBIvEAE/review", icon: "/assets/images/icons/Google-Review-Symbol.png" },
+          { title: "Gift Shop", url: "https://shop.mindobirdwatching.com/", icon: "/assets/images/icons/MBW-Social-Shopify.png" }
         ];
 
-        const rows = socials.length ? socials.map(s => {
-          const name = s.title || "";
-          const u = s.source_url || s.url || "";
-          const icon = s.image_url || "";
-          return { title: name, url: u, icon: icon };
-        }) : fallback;
-
-        // Normalize and limit
-        const norm = rows
-          .filter(r => r.title && r.url)
-          .map(r => ({ title: String(r.title), url: String(r.url), icon: absUrl(r.icon || "") }));
-
-        els.socialGrid.innerHTML = norm.map(r => {
-          const ico = r.icon ? `style="background-image:url('${esc(r.icon)}')"` : "";
+        els.socialGrid.innerHTML = fallback.map(r => {
           return `
-            <div class="block" style="border-radius:14px;">
-              <div class="blockHead">
-                <div class="socialRow" style="width:100%;">
-                  <div class="socialBtn">
-                    <span class="ico" ${ico} aria-hidden="true"></span>
-                    <span class="label">${esc(r.title)}</span>
-                  </div>
-                  <button class="btn secondary" type="button" data-copy="${esc(r.url)}">${esc(t().copy)}</button>
-                </div>
+            <div class="socialCard">
+              <div class="socialLeft">
+                <span class="socialIco" style="background-image:url('${esc(r.icon)}')" aria-hidden="true"></span>
+                <span class="socialName">${esc(r.title)}</span>
               </div>
+              <button class="btn secondary" type="button" data-copy="${esc(r.url)}">${esc(t().copy)}</button>
             </div>
           `;
         }).join("");
@@ -831,25 +827,24 @@
 
       function refreshSelectors(){
         setStaticText();
-
         const subs = subjectsForLang(state.lang);
+
         if(!subs.length){
           els.subjSel.innerHTML = "";
           els.topicSel.innerHTML = "";
           els.itemList.innerHTML = "";
           renderDetail(null);
           els.pageNote.textContent = t().noData;
+          renderSocial();
           return;
         }
 
         if(!state.subject || !subs.includes(state.subject)) state.subject = subs[0];
-
         setSelectOptions(els.subjSel, subs, state.subject);
 
         const items = itemsFor(state.lang, state.subject);
         const topics = topicsFrom(items);
-        if(!state.topic || !topics.includes(state.topic)) state.topic = topics[0] || "";
-
+        state.topic = (topics && topics.length) ? (topics.includes(state.topic) ? state.topic : topics[0]) : "";
         setSelectOptions(els.topicSel, topics.length ? topics : [""], state.topic);
 
         renderList();
@@ -859,18 +854,15 @@
       async function loadData(){
         try{
           const res = await fetch(DATA_URL, { cache: "no-store" });
-          const json = await res.json();
-          DATA = json;
+          DATA = await res.json();
         }catch(e){
           DATA = null;
         }
         refreshSelectors();
       }
 
-      // event bindings
       els.langSel.addEventListener("change", function(){
-        state.lang = els.langSel.value === "es" ? "es" : "en";
-        // clear active selection for UX
+        state.lang = (els.langSel.value === "es") ? "es" : "en";
         state.activeId = "";
         state.topic = "";
         refreshSelectors();
@@ -893,7 +885,6 @@
         copyText(t().bookUrl);
       });
 
-      // init
       state.lang = "en";
       els.langSel.value = "en";
       setStaticText();
