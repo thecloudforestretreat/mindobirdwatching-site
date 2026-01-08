@@ -34,7 +34,6 @@
   <meta name="theme-color" content="#034EA2" />
   <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <!-- Header dropdown styling -->
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
@@ -49,6 +48,34 @@
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
+    }
+
+    /* Mobile-only hero image (under header, hidden on desktop) */
+    .mobileHero{
+      display: none;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .mobileHeroFrame{
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: rgba(255,255,255,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mobileHeroFrame img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    @media (max-width: 900px){
+      .mobileHero{ display: block; }
     }
 
     /* Above-the-fold ordering: Desktop shows weather first, Mobile shows intro first */
@@ -111,7 +138,6 @@
       text-overflow: ellipsis;
     }
 
-    /* Current card header: pin + Mindo */
     .wxPlace{
       display:inline-flex;
       align-items:center;
@@ -126,7 +152,6 @@
       text-overflow: ellipsis;
     }
 
-    /* Desktop-only: remove spacing between pin and "Mindo" */
     @media (min-width: 901px){
       .wxPlace{ gap: 0; }
     }
@@ -140,15 +165,8 @@
       transform: translateY(-0.5px);
     }
 
-    /* Temps block (no second icon on the right) */
-    .wxTempsRow{
-      display:block;
-      min-width: 0;
-    }
-
-    .wxTempsLines{
-      min-width: 0;
-    }
+    .wxTempsRow{ display:block; min-width: 0; }
+    .wxTempsLines{ min-width: 0; }
 
     .wxLine{
       font-weight: 900;
@@ -171,7 +189,6 @@
       flex: 0 0 auto;
     }
 
-    /* Center the rain line (droplet + text) */
     .wxRain{
       font-weight: 900;
       font-size: 12.5px;
@@ -296,7 +313,6 @@
       line-height: 1.5;
     }
 
-    /* CTA band */
     .ctaBand{
       margin-top: 14px;
       border: 1px dashed rgba(13,89,37,.35);
@@ -316,7 +332,6 @@
       line-height: 1.6;
     }
 
-    /* Secure badge card */
     .secureCard{
       margin-top: 14px;
       border: 1px solid var(--line);
@@ -350,9 +365,7 @@
       display:block;
     }
 
-    .secureCopy{
-      min-width: 0;
-    }
+    .secureCopy{ min-width: 0; }
 
     .secureKicker{
       margin: 0 0 6px;
@@ -370,7 +383,6 @@
       line-height: 1.6;
     }
 
-    /* Image + video blocks */
     .mediaGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -454,7 +466,6 @@
       white-space: nowrap;
     }
 
-    /* Quick links */
     .tiles{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -493,7 +504,6 @@
       font-size: 12.5px;
     }
 
-    /* Small photo rail */
     .photoRail{
       display:grid;
       grid-template-columns: repeat(4, 1fr);
@@ -525,7 +535,6 @@
       line-height: 1.45;
     }
 
-    /* Breakpoints */
     @media (max-width: 1180px){
       .wxGrid{ grid-template-columns: repeat(4, 1fr); }
     }
@@ -542,23 +551,23 @@
       .photoRail{ grid-template-columns: 1fr; }
       .photo img{ height: 220px; }
 
-      .secureCard{
-        align-items: flex-start;
-      }
-      .secureImg{
-        width: 152px;
-        height: 152px;
-      }
+      .secureCard{ align-items: flex-start; }
+      .secureImg{ width: 152px; height: 152px; }
 
-      /* Mobile: 8 cards total -> 2 columns -> 4 rows */
       .wxGrid{ grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Shared header mount -->
     <div id="siteHeader"></div>
+<!-- Mobile-only hero image (shows only on mobile, under header) -->
+<section class="mobileHero" aria-label="Mobile hero image">
+  <div class="mobileHeroFrame">
+    <img src="/assets/images/pages/MBW-Assets_Hero_Mobile.jpg" alt="Birdwatching in Mindo cloud forest" loading="eager" decoding="async" />
+  </div>
+</section>
+
 <main class="page card" aria-label="Mindo Bird Watching home">
   <div class="aboveFold">
     <!-- HERO -->
@@ -608,7 +617,6 @@
     <!-- WEATHER (8 cards: current + 7-day) -->
     <section class="wx wxSkeleton" aria-label="Weather">
       <div class="wxGrid" id="wxGrid" aria-label="Current + 7-day forecast">
-        <!-- Skeleton placeholders (8) -->
         <div class="wxDay">
           <div class="wxDayTop">
             <span class="wxDow">--</span>
@@ -743,10 +751,8 @@
   </section>
 </main>
 
-<!-- Shared footer mount -->
 <div id="siteFooter"></div>
   </div>
-  <!-- Include injector + site behavior at bottom -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
   <script>
@@ -762,17 +768,9 @@
       var elGrid = document.getElementById("wxGrid");
       var elNote = document.getElementById("wxNote");
 
-      function cToF(c){
-        return (c * 9 / 5) + 32;
-      }
-
-      function round(n){
-        return Math.round(n);
-      }
-
-      function safeNum(n){
-        return (typeof n === "number" && isFinite(n)) ? n : null;
-      }
+      function cToF(c){ return (c * 9 / 5) + 32; }
+      function round(n){ return Math.round(n); }
+      function safeNum(n){ return (typeof n === "number" && isFinite(n)) ? n : null; }
 
       function fmtTempLine(c){
         var cc = safeNum(c);
@@ -804,28 +802,19 @@
         if (r !== null && r > 0) return "🌦️";
 
         if (c === null) return "🌥️";
-
         if (c === 0) return "☀️";
         if (c === 1 || c === 2) return "🌤️";
         if (c === 3) return "☁️";
-
         if (c === 45 || c === 48) return "🌫️";
-
         if (c === 51 || c === 53 || c === 55) return "🌦️";
         if (c === 56 || c === 57) return "🌧️";
-
         if (c === 61 || c === 63 || c === 65) return "🌧️";
         if (c === 66 || c === 67) return "🌧️";
-
         if (c === 71 || c === 73 || c === 75) return "❄️";
         if (c === 77) return "❄️";
-
         if (c === 80 || c === 81 || c === 82) return "🌧️";
-
         if (c === 85 || c === 86) return "❄️";
-
         if (c === 95 || c === 96 || c === 99) return "⛈️";
-
         return "🌥️";
       }
 
@@ -870,7 +859,6 @@
 
           var html = "";
 
-          /* Card 1: Current (pin + Mindo, hi/lo, rain, single icon) */
           html += ''
             + '<div class="wxDay wxNow" aria-label="Current weather">'
             +   '<div class="wxDayTop">'
@@ -886,7 +874,6 @@
             +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(todayRain) + ' mm</span></div>'
             + '</div>';
 
-          /* Cards 2-8: 7-day (single icon at top only, centered rain line) */
           for (var i = 0; i < 7; i++){
             var d = time[i];
             var maxC = tmax[i];
@@ -964,9 +951,7 @@
         fetchWx().then(function(data){
           writeCache(data);
           renderDaily(data);
-        }).catch(function(){
-          return;
-        });
+        }).catch(function(){ return; });
       }else{
         fetchWx().then(function(data){
           writeCache(data);
