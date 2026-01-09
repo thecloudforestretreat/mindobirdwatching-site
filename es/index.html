@@ -34,7 +34,6 @@
   <meta name="theme-color" content="#034EA2" />
   <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <!-- Header dropdown styling -->
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <!-- Head-only JS -->
   <script src="/assets/js/head.js" defer></script>
@@ -49,6 +48,34 @@
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
+    }
+
+    /* Mobile-only hero image (under header, hidden on desktop) */
+    .mobileHero{
+      display: none;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .mobileHeroFrame{
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: rgba(255,255,255,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mobileHeroFrame img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    @media (max-width: 900px){
+      .mobileHero{ display: block; }
     }
 
     /* Above-the-fold ordering: Desktop shows weather first, Mobile shows intro first */
@@ -559,6 +586,13 @@
   <div class="container">
     <!-- Shared header mount -->
     <div id="siteHeader"></div>
+<!-- Mobile-only hero image (shows only on mobile, under header) -->
+<section class="mobileHero" aria-label="Imagen principal para movil">
+  <div class="mobileHeroFrame">
+    <img src="/assets/images/pages/MBW-Assets_Hero_Mobile.jpg" alt="Avistamiento de aves en el bosque nublado de Mindo" loading="eager" decoding="async" />
+  </div>
+</section>
+
 <main class="page card" aria-label="Pagina de inicio de Mindo Bird Watching">
   <div class="aboveFold">
     <!-- HERO -->
@@ -747,7 +781,7 @@
 <div id="siteFooter"></div>
   </div>
   <!-- Include injector + site behavior at bottom -->
-    <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
   <script>
     (function(){
@@ -870,7 +904,6 @@
 
           var html = "";
 
-          /* Card 1: Current (pin + Mindo, hi/lo, rain, single icon) */
           html += ''
             + '<div class="wxDay wxNow" aria-label="Clima actual">'
             +   '<div class="wxDayTop">'
@@ -886,7 +919,6 @@
             +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(todayRain) + ' mm</span></div>'
             + '</div>';
 
-          /* Cards 2-8: 7-day (single icon at top only, centered rain line) */
           for (var i = 0; i < 7; i++){
             var d = time[i];
             var maxC = tmax[i];
