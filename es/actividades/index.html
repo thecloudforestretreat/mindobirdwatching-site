@@ -234,7 +234,10 @@ body.activities-page .act{
   overflow: hidden;
   display:flex;
   flex-direction: column;
-  min-height: 0;
+
+  /* Standardized height so all cards match and text is never cut */
+  min-height: 258px;
+  height: 100%;
 }
 
 body.activities-page .actTop{
@@ -242,6 +245,9 @@ body.activities-page .actTop{
   gap: 14px;
   padding: 14px 14px 10px;
   align-items: flex-start;
+
+  /* Allow content to grow so chips stay aligned */
+  flex: 1 1 auto;
 }
 
 body.activities-page .avatar{
@@ -277,11 +283,9 @@ body.activities-page .actTitle{
   letter-spacing: -0.01em;
   line-height: 1.15;
 
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  min-height: calc(1.15em * 2);
+  /* No clamping, always show full title */
+  display: block;
+  overflow: visible;
 }
 
 body.activities-page .actSub{
@@ -290,11 +294,9 @@ body.activities-page .actSub{
   font-size: 13.5px;
   line-height: 1.55;
 
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
-  overflow: hidden;
-  min-height: calc(1.55em * 5);
+  /* No clamping, always show full description */
+  display: block;
+  overflow: visible;
 }
 
 body.activities-page .actBody{
@@ -364,8 +366,9 @@ body.activities-page .ctaStrip .actions{
   body.activities-page .hero{ grid-template-columns: 1fr; }
   body.activities-page .grid{ grid-template-columns: repeat(2, 1fr); }
 
+  body.activities-page .act{ min-height: 232px; }
   body.activities-page .actTop{ padding: 12px 12px 8px; gap: 12px; }
-  body.activities-page .actSub{ margin-top: 6px; -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
+  body.activities-page .actSub{ margin-top: 6px; }
   body.activities-page .actBody{ padding: 0 12px 12px; }
   body.activities-page .chips{ max-width: 100%; }
 
@@ -376,8 +379,9 @@ body.activities-page .ctaStrip .actions{
 @media (max-width: 560px){
   body.activities-page .grid{ grid-template-columns: 1fr; }
 
+  body.activities-page .act{ min-height: 222px; }
   body.activities-page .actTop{ padding: 12px 12px 6px; }
-  body.activities-page .actSub{ -webkit-line-clamp: 4; min-height: calc(1.55em * 4); }
+  body.activities-page .actSub{ }
   body.activities-page .actBody{ padding: 0 12px 12px; }
   body.activities-page .chip{ padding: 7px 10px; }
 }
