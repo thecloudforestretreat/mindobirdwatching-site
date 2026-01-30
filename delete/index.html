@@ -1,1 +1,1287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arguello Dentistry | Family Friendly Dental Care in Margate and Lauderdale-by-the-Sea</title>
+  <meta name="description" content="Modern family dentistry with two convenient locations in Margate and Lauderdale-by-the-Sea. Book online, meet the team, and explore our services.">
 
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --surface:#ffffff;
+      --ink:#0f172a;
+      --muted:#5b6474;
+      --line:rgba(15,23,42,.10);
+
+      --brand:#35b5c4;
+      --brand2:#77d36a;
+      --cta:#2563eb;
+      --warm:#ffb020;
+
+      --radius:18px;
+      --shadow-sm:0 8px 18px rgba(0,0,0,.10);
+      --shadow-md:0 14px 34px rgba(0,0,0,.14);
+
+      --container:1160px;
+      --pad:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:var(--bg);
+      color:var(--ink);
+      line-height:1.45;
+    }
+    a{color:inherit; text-decoration:none}
+    img{max-width:100%; height:auto; display:block}
+    .container{width:min(var(--container), 100% - (var(--pad) * 2)); margin:0 auto}
+    .sr-only{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+
+    header.topbar{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:rgba(246,248,251,.86);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:12px 0;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+    .brand img{height:40px; width:auto}
+    .brand .lock{
+      display:flex;
+      flex-direction:column;
+      line-height:1.1;
+      min-width:0;
+    }
+    .brand .lock strong{
+      font-size:14px;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand .lock span{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    nav.primary{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    nav.primary a{
+      font-size:13px;
+      font-weight:700;
+      color:var(--muted);
+      padding:8px 10px;
+      border-radius:999px;
+    }
+    nav.primary a:hover{
+      background:rgba(53,181,196,.10);
+      color:var(--ink);
+    }
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid rgba(15,23,42,.12);
+      background:var(--surface);
+      color:var(--ink);
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:var(--shadow-sm);
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      white-space:nowrap;
+      user-select:none;
+    }
+    .btn:hover{transform:translateY(-1px); box-shadow:var(--shadow-md)}
+    .btn:active{transform:translateY(0); box-shadow:var(--shadow-sm)}
+    .btn-primary{
+      background:linear-gradient(135deg, var(--cta), #3d79ff);
+      border-color:rgba(37,99,235,.25);
+      color:#fff;
+    }
+    .btn-soft{
+      background:rgba(53,181,196,.12);
+      border-color:rgba(53,181,196,.22);
+      color:rgba(15,23,42,.92);
+    }
+    .btn-ghost{
+      background:rgba(255,255,255,.78);
+    }
+    .btn-small{padding:9px 12px; font-size:12px}
+    .icon{width:16px; height:16px; flex:0 0 auto}
+
+    .hamburger{
+      display:none;
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.12);
+      background:rgba(255,255,255,.86);
+      box-shadow:var(--shadow-sm);
+      cursor:pointer;
+    }
+    .hamburger span{
+      display:block;
+      width:18px;
+      height:2px;
+      background:rgba(15,23,42,.78);
+      margin:5px auto;
+      border-radius:2px;
+    }
+    .drawer{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      display:none;
+      z-index:2000;
+    }
+    .drawer-panel{
+      position:absolute;
+      right:0;
+      top:0;
+      height:100%;
+      width:min(380px, 92vw);
+      background:var(--surface);
+      border-left:1px solid var(--line);
+      box-shadow:-18px 0 40px rgba(0,0,0,.18);
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .drawer-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .icon-btn{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.12);
+      background:rgba(255,255,255,.92);
+      box-shadow:var(--shadow-sm);
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .drawer-links{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding-top:6px;
+    }
+    .drawer-links a{
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.10);
+      background:rgba(246,248,251,.92);
+      font-weight:900;
+      font-size:13px;
+    }
+
+    main section{padding:18px 0}
+    .section-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .section-head h2{
+      margin:0;
+      font-size:22px;
+      letter-spacing:-0.3px;
+    }
+    .section-head p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      max-width:64ch;
+    }
+
+    .hero{padding:18px 0 10px}
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    .hero-card{
+      background:rgba(255,255,255,.82);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:22px;
+      box-shadow:var(--shadow-sm);
+      padding:18px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-card:before{
+      content:"";
+      position:absolute;
+      inset:-220px -120px auto -120px;
+      height:520px;
+      background:
+        radial-gradient(45% 60% at 20% 35%, rgba(53,181,196,.22), transparent 62%),
+        radial-gradient(40% 60% at 78% 22%, rgba(119,211,106,.18), transparent 62%),
+        radial-gradient(55% 70% at 55% 70%, rgba(37,99,235,.14), transparent 68%);
+      pointer-events:none;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.10);
+      background:rgba(255,255,255,.90);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+      position:relative;
+      z-index:1;
+    }
+    .hero h1{
+      margin:12px 0 10px;
+      font-size:clamp(28px, 3.2vw, 44px);
+      line-height:1.05;
+      letter-spacing:-0.6px;
+      position:relative;
+      z-index:1;
+    }
+    .hero p{
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size:15px;
+      max-width:60ch;
+      position:relative;
+      z-index:1;
+    }
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:14px 0 16px;
+      position:relative;
+      z-index:1;
+    }
+    .trust-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding-top:12px;
+      border-top:1px solid rgba(15,23,42,.10);
+      position:relative;
+      z-index:1;
+    }
+    .trust{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      padding:12px;
+      border-radius:16px;
+      background:rgba(246,248,251,.92);
+      border:1px solid rgba(15,23,42,.08);
+      min-height:74px;
+    }
+    .badge{
+      width:36px;
+      height:36px;
+      border-radius:14px;
+      background:rgba(53,181,196,.14);
+      border:1px solid rgba(53,181,196,.22);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+    .trust b{font-size:13px}
+    .trust span{display:block; font-size:12px; color:var(--muted); margin-top:2px}
+
+    .carousel{
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(15,23,42,.08);
+      box-shadow:var(--shadow-sm);
+      background:var(--surface);
+      position:relative;
+      min-height:420px;
+      display:flex;
+      flex-direction:column;
+    }
+    .slides{
+      position:relative;
+      flex:1 1 auto;
+      min-height:340px;
+    }
+    .slide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transition:opacity .45s ease;
+    }
+    .slide.active{opacity:1}
+    .slide img{width:100%; height:100%; object-fit:cover}
+    .slide-overlay{
+      position:absolute;
+      inset:auto 14px 14px 14px;
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:18px;
+      padding:12px 12px;
+      box-shadow:var(--shadow-sm);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .slide-overlay strong{font-size:13px}
+    .slide-overlay span{font-size:12px; color:var(--muted)}
+    .dots{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 10px 12px;
+      border-top:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.92);
+    }
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:99px;
+      background:rgba(15,23,42,.18);
+      border:1px solid rgba(15,23,42,.14);
+      cursor:pointer;
+    }
+    .dot.active{
+      background:linear-gradient(135deg, var(--brand), var(--brand2));
+      border-color:rgba(53,181,196,.28);
+      width:22px;
+    }
+
+    .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    .grid-2{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
+    .card{
+      background:var(--surface);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-sm);
+      padding:16px;
+    }
+    .lift{transition:transform .15s ease, box-shadow .2s ease}
+    .lift:hover{transform:translateY(-1px); box-shadow:var(--shadow-md)}
+
+    .service-top{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+    .service-ico{
+      width:42px;
+      height:42px;
+      border-radius:16px;
+      background:rgba(37,99,235,.12);
+      border:1px solid rgba(37,99,235,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .service-ico.a{background:rgba(119,211,106,.14); border-color:rgba(119,211,106,.22)}
+    .service-ico.b{background:rgba(53,181,196,.14); border-color:rgba(53,181,196,.22)}
+    .service-ico.c{background:rgba(255,176,32,.18); border-color:rgba(255,176,32,.22)}
+    .card h3{margin:0 0 6px; font-size:15px}
+    .card p{margin:0; color:var(--muted); font-size:13px}
+
+    .book{
+      display:grid;
+      grid-template-columns:.95fr 1.05fr;
+      gap:12px;
+      align-items:stretch;
+    }
+    .media{
+      border-radius:18px;
+      border:1px solid rgba(15,23,42,.08);
+      overflow:hidden;
+      box-shadow:var(--shadow-sm);
+      height:260px;
+      background:#fff;
+    }
+    .media img{width:100%; height:100%; object-fit:cover}
+    .book-panel{
+      background:var(--surface);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:22px;
+      box-shadow:var(--shadow-md);
+      overflow:hidden;
+    }
+    .book-head{
+      padding:14px 14px 12px;
+      background:
+        radial-gradient(120% 90% at 20% 10%, rgba(255,255,255,.70), rgba(255,255,255,.10)),
+        linear-gradient(135deg, rgba(53,181,196,.18), rgba(119,211,106,.14));
+      border-bottom:1px solid rgba(15,23,42,.08);
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .book-head h3{margin:0; font-size:16px}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab{
+      border:1px solid rgba(15,23,42,.12);
+      background:rgba(255,255,255,.86);
+      color:var(--muted);
+      border-radius:999px;
+      padding:8px 10px;
+      font-weight:900;
+      font-size:12px;
+      cursor:pointer;
+      box-shadow:var(--shadow-sm);
+    }
+    .tab.active{
+      background:linear-gradient(135deg, var(--cta), #3d79ff);
+      border-color:rgba(37,99,235,.26);
+      color:#fff;
+    }
+    .book-body{padding:14px}
+    .form{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .field{display:flex; flex-direction:column; gap:6px}
+    .field label{font-size:12px; font-weight:900; color:rgba(15,23,42,.86)}
+    .input{
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.12);
+      background:rgba(255,255,255,.95);
+      padding:12px 12px;
+      font-weight:700;
+      font-size:13px;
+      outline:none;
+    }
+    .input:focus{border-color:rgba(53,181,196,.55); box-shadow:0 0 0 3px rgba(53,181,196,.16)}
+    .full{grid-column:1 / -1}
+    .hint{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(15,23,42,.10);
+      font-weight:800;
+      font-size:12px;
+    }
+    .note{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .quick{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    .q{display:flex; flex-direction:column; gap:10px}
+    .thumb{
+      height:160px;
+      border-radius:18px;
+      border:1px solid rgba(15,23,42,.08);
+      overflow:hidden;
+      box-shadow:var(--shadow-sm);
+      background:#fff;
+    }
+    .thumb img{width:100%; height:100%; object-fit:cover}
+
+    .quote{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      background:
+        radial-gradient(120% 90% at 20% 10%, rgba(255,255,255,.70), rgba(255,255,255,.10)),
+        linear-gradient(135deg, rgba(37,99,235,.10), rgba(53,181,196,.12));
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:22px;
+      box-shadow:var(--shadow-sm);
+      padding:16px;
+    }
+    blockquote{margin:0; font-size:15px; letter-spacing:-0.2px}
+    .quote footer{font-size:12px; color:var(--muted); font-weight:800}
+    .stars{display:flex; gap:4px; align-items:center}
+    .stars span{width:10px; height:10px; border-radius:99px; background:rgba(255,176,32,.92)}
+
+    .location-card{display:flex; flex-direction:column; gap:10px}
+    .loc-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .loc-brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .loc-brand img{height:34px; width:auto}
+    .kv{
+      background:rgba(246,248,251,.92);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .kv b{color:var(--ink)}
+
+    footer.site-footer{
+      background:#0f1625;
+      color:rgba(255,255,255,.88);
+      margin-top:10px;
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+    .footer-inner{
+      padding:22px 0;
+      display:grid;
+      grid-template-columns:1.2fr 1fr 1fr;
+      gap:16px;
+    }
+    .footer-card{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:14px;
+    }
+    .footer-muted{color:rgba(255,255,255,.62); font-size:12px}
+    .footer-inner h4{margin:0 0 10px; font-size:13px; letter-spacing:.2px}
+    .footer-inner a{color:rgba(255,255,255,.86); text-decoration:none}
+    .footer-inner a:hover{text-decoration:underline}
+    .footer-bottom{
+      border-top:1px solid rgba(255,255,255,.10);
+      padding:12px 0;
+      font-size:12px;
+      color:rgba(255,255,255,.62);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .sticky{
+      position:fixed;
+      left:12px;
+      right:12px;
+      bottom:12px;
+      z-index:1500;
+      display:none;
+    }
+    .sticky .bar{
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(15,23,42,.12);
+      border-radius:18px;
+      box-shadow:0 18px 44px rgba(0,0,0,.22);
+      padding:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .sticky .mini{display:flex; flex-direction:column; gap:2px; min-width:0}
+    .sticky .mini strong{font-size:12px; letter-spacing:.2px}
+    .sticky .mini span{font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:42vw}
+
+    @media (max-width:980px){
+      nav.primary{display:none}
+      .hamburger{display:inline-block}
+      .hero-grid{grid-template-columns:1fr}
+      .carousel{min-height:360px}
+      .slides{min-height:280px}
+      .trust-row{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:1fr}
+      .grid-2{grid-template-columns:1fr}
+      .book{grid-template-columns:1fr}
+      .quick{grid-template-columns:1fr}
+      .footer-inner{grid-template-columns:1fr}
+      .form{grid-template-columns:1fr}
+      .sticky{display:block}
+    }
+    @media (max-width:520px){
+      .brand .lock span{display:none}
+      .hero-card{padding:16px}
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <div class="topbar-inner">
+      <a class="brand" href="#top">
+        <img src="delete/margate_logo.png" alt="Arguello Dentistry logo">
+        <div class="lock">
+          <strong>Arguello Dentistry</strong>
+          <span>Family friendly care in Margate and Lauderdale-by-the-Sea</span>
+        </div>
+      </a>
+
+      <nav class="primary" aria-label="Primary">
+        <a href="#services">Services</a>
+        <a href="#book">Book online</a>
+        <a href="#team">Meet the team</a>
+        <a href="#forms">Patient forms</a>
+        <a href="#gallery">Smile gallery</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#locations">Locations</a>
+      </nav>
+
+      <div class="actions">
+        <a class="btn btn-soft btn-small" href="#book">Book online</a>
+        <button class="hamburger" type="button" aria-label="Open menu" onclick="openDrawer()">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Menu">
+  <div class="drawer-panel">
+    <div class="drawer-header">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <img src="delete/margate_logo.png" alt="Arguello Dentistry" style="height:34px;width:auto">
+        <div style="min-width:0">
+          <div style="font-weight:1000;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Arguello Dentistry</div>
+          <div style="color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Two locations, one caring team</div>
+        </div>
+      </div>
+      <button class="icon-btn" type="button" aria-label="Close menu" onclick="closeDrawer()">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="drawer-links">
+      <a href="#services" onclick="closeDrawer()">Services</a>
+      <a href="#book" onclick="closeDrawer()">Book online</a>
+      <a href="#team" onclick="closeDrawer()">Meet the team</a>
+      <a href="#forms" onclick="closeDrawer()">Patient forms</a>
+      <a href="#gallery" onclick="closeDrawer()">Smile gallery</a>
+      <a href="#reviews" onclick="closeDrawer()">Reviews</a>
+      <a href="#locations" onclick="closeDrawer()">Locations</a>
+    </div>
+
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px">
+      <a class="btn btn-primary" href="#book" onclick="closeDrawer()">Book online</a>
+      <a class="btn btn-ghost" href="#locations" onclick="closeDrawer()">Choose a location</a>
+      <div style="color:var(--muted);font-size:12px; text-align:center">Preview mockup for modernization</div>
+    </div>
+  </div>
+</div>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+
+        <div class="hero-card">
+          <div class="pill">Family friendly dentistry that feels calm and modern</div>
+          <h1>Comfortable care for every smile in your family.</h1>
+          <p>Two convenient locations, a caring team, and simple online booking. From cleanings to cosmetic improvements, we make your visit feel easy from the first click.</p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#book">Book online</a>
+            <a class="btn btn-ghost" href="#services">Explore services</a>
+            <a class="btn btn-soft" href="#locations">Find a location</a>
+          </div>
+
+          <div class="trust-row" aria-label="Trust highlights">
+            <div class="trust">
+              <div class="badge" aria-hidden="true">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3l7 4v6c0 5-3 8-7 9-4-1-7-4-7-9V7l7-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div><b>Gentle and honest care</b><span>Clear recommendations, no pressure</span></div>
+            </div>
+
+            <div class="trust">
+              <div class="badge" aria-hidden="true" style="background:rgba(119,211,106,.14);border-color:rgba(119,211,106,.22)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 12l4 4 12-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div><b>Book online fast</b><span>Pick location, share details, done</span></div>
+            </div>
+
+            <div class="trust">
+              <div class="badge" aria-hidden="true" style="background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.18)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M7 7h10v10H7V7Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M5 9h2M5 15h2M17 9h2M17 15h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div><b>Modern comfort</b><span>Clean space, calm pacing</span></div>
+            </div>
+
+            <div class="trust">
+              <div class="badge" aria-hidden="true" style="background:rgba(255,176,32,.18);border-color:rgba(255,176,32,.22)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </div>
+              <div><b>Family-first visits</b><span>Kid friendly and patient</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel" aria-label="Top carousel">
+          <div class="slides" id="slides">
+            <div class="slide active">
+              <img src="delete/dental_carousel_01.jpg" alt="Dental office interior">
+              <div class="slide-overlay">
+                <div>
+                  <strong>Welcoming, modern offices</strong><br>
+                  <span>Designed to feel calm for kids and adults</span>
+                </div>
+                <a class="btn btn-small btn-primary" href="#book">Book online</a>
+              </div>
+            </div>
+            <div class="slide">
+              <img src="delete/dental_carousel_02.jpg" alt="Dental care team experience">
+              <div class="slide-overlay">
+                <div>
+                  <strong>Friendly team, clear guidance</strong><br>
+                  <span>Know what to expect, every step</span>
+                </div>
+                <a class="btn btn-small btn-primary" href="#services">See services</a>
+              </div>
+            </div>
+          </div>
+          <div class="dots" aria-label="Carousel controls">
+            <button class="dot active" type="button" aria-label="Slide 1" onclick="goSlide(0)"></button>
+            <button class="dot" type="button" aria-label="Slide 2" onclick="goSlide(1)"></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Care that fits real life</h2>
+          <p>From everyday family visits to confidence boosting cosmetic options. These are the services patients look for most often.</p>
+        </div>
+        <a class="btn btn-small btn-ghost" href="#book">Book online</a>
+      </div>
+
+      <div class="grid-3">
+        <div class="card lift">
+          <div class="service-top">
+            <div class="service-ico b" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M5 4h14v16H5V4Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 8h8M8 12h8M8 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Family dentistry</h3>
+              <p>Cleanings, exams, and prevention with a gentle approach for all ages.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card lift">
+          <div class="service-top">
+            <div class="service-ico a" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.4A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Cosmetic dentistry</h3>
+              <p>Whitening, veneers, and smile enhancements designed to look natural.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card lift">
+          <div class="service-top">
+            <div class="service-ico" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Restorative care</h3>
+              <p>Fillings, crowns, and repairs with clear, supportive explanations.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card lift">
+          <div class="service-top">
+            <div class="service-ico c" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l7 4v6c0 7-4 12-7 14-3-2-7-7-7-14V6l7-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Emergency visits</h3>
+              <p>When something hurts, we help you get clarity and relief quickly.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card lift">
+          <div class="service-top">
+            <div class="service-ico b" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M6 7h12v10H6V7Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 10h8M8 14h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Clear aligners</h3>
+              <p>Subtle options that fit into school, work, and busy weeks.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card lift">
+          <div class="service-top">
+            <div class="service-ico a" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M7 12l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Kid friendly visits</h3>
+              <p>Simple language, calm pacing, and a team that helps kids feel safe.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="card">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between">
+          <div>
+            <div class="pill">More trust builders</div>
+            <div style="color:var(--muted); font-size:13px; margin-top:8px">
+              Transparent treatment plans, convenient scheduling, gentle care for anxious patients, and a clean modern environment.
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <span class="pill">Insurance help</span>
+            <span class="pill">Digital reminders</span>
+            <span class="pill">Family scheduling</span>
+            <span class="pill">Comfort focused</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="book">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Book online in under a minute</h2>
+          <p>Choose your location, share a few details, and we will confirm your appointment. This form is a preview mockup for visualization.</p>
+        </div>
+        <span class="pill">Preview only</span>
+      </div>
+
+      <div class="book">
+        <div class="card lift">
+          <div class="media">
+            <img src="delete/HighRes-2978s-quare-1024x1024.jpg" alt="Dentist portrait">
+          </div>
+          <div style="margin-top:12px">
+            <div class="pill">A calm approach</div>
+            <h3 style="margin:10px 0 6px">Care that starts with comfort</h3>
+            <p style="margin:0; color:var(--muted); font-size:13px">Family friendly communication, honest guidance, and a team that respects your time.</p>
+          </div>
+        </div>
+
+        <div class="book-panel">
+          <div class="book-head">
+            <div>
+              <h3>Book online</h3>
+              <div style="font-size:12px;color:rgba(15,23,42,.70);font-weight:800">Select a location to personalize your booking</div>
+            </div>
+            <div class="tabs" role="tablist" aria-label="Location tabs">
+              <button class="tab active" type="button" id="tab-margate" onclick="setLocation('margate')">Margate</button>
+              <button class="tab" type="button" id="tab-lbs" onclick="setLocation('lbs')">Lauderdale-by-the-Sea</button>
+            </div>
+          </div>
+
+          <div class="book-body">
+            <form class="form" onsubmit="event.preventDefault(); alert('Preview mockup only. No submission.');">
+              <div class="field">
+                <label for="first">First name</label>
+                <input class="input" id="first" name="first" type="text" placeholder="Jane" required>
+              </div>
+              <div class="field">
+                <label for="last">Last name</label>
+                <input class="input" id="last" name="last" type="text" placeholder="Smith" required>
+              </div>
+              <div class="field">
+                <label for="phone">Phone</label>
+                <input class="input" id="phone" name="phone" type="tel" placeholder="(123) 456-7890" autocomplete="tel" required>
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input class="input" id="email" name="email" type="email" placeholder="jane@email.com" required>
+              </div>
+              <div class="field">
+                <label for="type">Visit type</label>
+                <select class="input" id="type" name="type">
+                  <option>Cleaning and exam</option>
+                  <option>Tooth pain or emergency</option>
+                  <option>Cosmetic consultation</option>
+                  <option>Clear aligners consultation</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="date">Preferred date</label>
+                <input class="input" id="date" name="date" type="date">
+              </div>
+              <div class="field full">
+                <label for="msg">Anything we should know</label>
+                <textarea class="input" id="msg" name="msg" rows="4" placeholder="Share any details that help us prepare"></textarea>
+              </div>
+
+              <div class="field full" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between">
+                <div class="hint" id="locHint">Booking for: Margate</div>
+                <button class="btn btn-primary" type="submit">Request booking</button>
+              </div>
+
+              <div class="note full">
+                <span>Preview only. This is a modernized UI mockup.</span>
+                <span>Phone auto formats as (xxx) xxx-xxxx</span>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="team">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Helpful shortcuts for busy families</h2>
+          <p>Three quick paths patients look for most often. Clear buttons, friendly visuals, and fewer clicks.</p>
+        </div>
+        <a class="btn btn-small btn-ghost" href="#book">Book online</a>
+      </div>
+
+      <div class="quick">
+        <div class="card lift q" id="gallery">
+          <div class="thumb">
+            <img src="delete/button.png" alt="Smile gallery image">
+          </div>
+          <div>
+            <h3 style="margin:0 0 6px">Smile gallery</h3>
+            <p style="margin:0;color:var(--muted);font-size:13px">Before and after style results that help patients imagine what is possible.</p>
+          </div>
+          <a class="btn btn-primary" href="#gallery">View gallery</a>
+        </div>
+
+        <div class="card lift q" id="forms">
+          <div class="thumb">
+            <img src="delete/DSC_1887-2048x2010.jpg" alt="Patient forms image">
+          </div>
+          <div>
+            <h3 style="margin:0 0 6px">Patient forms</h3>
+            <p style="margin:0;color:var(--muted);font-size:13px">Complete forms at home to save time during your visit.</p>
+          </div>
+          <a class="btn btn-primary" href="#forms">Open forms</a>
+        </div>
+
+        <div class="card lift q">
+          <div class="thumb">
+            <img src="delete/HighRes-3263-150x150.jpg" alt="Meet the team image">
+          </div>
+          <div>
+            <h3 style="margin:0 0 6px">Meet the team</h3>
+            <p style="margin:0;color:var(--muted);font-size:13px">Friendly faces and a calm environment for kids, teens, and adults.</p>
+          </div>
+          <a class="btn btn-primary" href="#teamCards">Meet the team</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reviews">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>What patients say</h2>
+          <p>Short, readable reviews look better on mobile and feel more trustworthy than long walls of text.</p>
+        </div>
+        <a class="btn btn-small btn-ghost" href="#book">Book online</a>
+      </div>
+
+      <div class="grid-3">
+        <div class="quote">
+          <div class="stars" aria-label="5 stars"><span></span><span></span><span></span><span></span><span></span></div>
+          <blockquote>"The team explained everything clearly and helped my child feel comfortable. Scheduling was easy and the visit was smooth."</blockquote>
+          <footer>Family patient</footer>
+        </div>
+
+        <div class="quote">
+          <div class="stars" aria-label="5 stars"><span></span><span></span><span></span><span></span><span></span></div>
+          <blockquote>"Clean office, friendly staff, and I appreciated the honest guidance. The online booking flow is exactly what I needed."</blockquote>
+          <footer>New patient</footer>
+        </div>
+
+        <div class="quote">
+          <div class="stars" aria-label="5 stars"><span></span><span></span><span></span><span></span><span></span></div>
+          <blockquote>"Great experience at both locations. They were patient, kind, and made the process feel simple from start to finish."</blockquote>
+          <footer>Returning patient</footer>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="locations">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Two convenient locations</h2>
+          <p>Modern location cards are easier to scan. Choose the office that fits your schedule.</p>
+        </div>
+        <a class="btn btn-small btn-primary" href="#book">Book online</a>
+      </div>
+
+      <div class="grid-2">
+        <div class="card lift location-card">
+          <div class="loc-top">
+            <div class="loc-brand">
+              <img src="delete/margate_logo.png" alt="Margate logo">
+              <div style="min-width:0">
+                <div style="font-weight:1000">Margate</div>
+                <div style="color:var(--muted);font-size:12px">Family dentistry and cosmetic care</div>
+              </div>
+            </div>
+            <button class="btn btn-small btn-soft" type="button" onclick="setLocation('margate'); document.getElementById('book').scrollIntoView({behavior:'smooth'});">Book Margate</button>
+          </div>
+
+          <div style="display:grid; gap:8px">
+            <div class="kv"><b>Phone:</b> (954) 532-1274</div>
+            <div class="kv"><b>Address:</b> 100 FL-7 STE 300, Margate, FL 33063</div>
+            <div class="kv"><b>Hours:</b> Mon 9am-6pm, Tue-Thu 9am-4pm, Fri 9am-3pm</div>
+          </div>
+        </div>
+
+        <div class="card lift location-card">
+          <div class="loc-top">
+            <div class="loc-brand">
+              <img src="delete/lbs_logo.png" alt="Lauderdale-by-the-Sea logo">
+              <div style="min-width:0">
+                <div style="font-weight:1000">Lauderdale-by-the-Sea</div>
+                <div style="color:var(--muted);font-size:12px">Comfort focused family care</div>
+              </div>
+            </div>
+            <button class="btn btn-small btn-soft" type="button" onclick="setLocation('lbs'); document.getElementById('book').scrollIntoView({behavior:'smooth'});">Book LBTS</button>
+          </div>
+
+          <div style="display:grid; gap:8px">
+            <div class="kv"><b>Phone:</b> (954) 568-8928</div>
+            <div class="kv"><b>Address:</b> 236 Commercial Blvd, Lauderdale-by-the-Sea, FL 33308</div>
+            <div class="kv"><b>Hours:</b> Mon-Fri 9am-4pm</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px">
+          <img src="delete/margate_logo.png" alt="Arguello Dentistry" style="height:38px;width:auto">
+          <div>
+            <div style="font-weight:1000">Arguello Dentistry</div>
+            <div class="footer-muted">Family friendly care in Margate and Lauderdale-by-the-Sea</div>
+          </div>
+        </div>
+        <div class="footer-muted">
+          Standalone modernization preview. No external CSS used. Booking form is a visual mockup only.
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+          <a class="btn btn-primary btn-small" href="#book">Book online</a>
+          <a class="btn btn-ghost btn-small" href="#services">Services</a>
+          <a class="btn btn-soft btn-small" href="#locations">Locations</a>
+        </div>
+      </div>
+
+      <div class="footer-card">
+        <h4>Popular paths</h4>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <a href="#book">Book online</a>
+          <a href="#services">Explore services</a>
+          <a href="#forms">Patient forms</a>
+          <a href="#gallery">Smile gallery</a>
+          <a href="#reviews">Reviews</a>
+        </div>
+        <div class="footer-muted" style="margin-top:12px">Modern UX: clear hierarchy, fewer clicks, better mobile flow.</div>
+      </div>
+
+      <div class="footer-card">
+        <h4>Locations</h4>
+        <div style="display:grid; gap:10px">
+          <div style="display:flex; gap:10px; align-items:center">
+            <img src="delete/margate_logo.png" alt="Margate logo" style="height:26px;width:auto">
+            <div>
+              <div style="font-weight:900">Margate</div>
+              <div class="footer-muted">(954) 532-1274</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center">
+            <img src="delete/lbs_logo.png" alt="LBTS logo" style="height:26px;width:auto">
+            <div>
+              <div style="font-weight:900">Lauderdale-by-the-Sea</div>
+              <div class="footer-muted">(954) 568-8928</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer-muted" style="margin-top:12px">Mobile tip: sticky booking improves conversions.</div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© Arguello Dentistry. Modernization preview mockup.</div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap">
+        <span>Privacy</span>
+        <span>Terms</span>
+        <span>Accessibility</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="sticky" aria-label="Mobile quick actions">
+  <div class="bar">
+    <div class="mini">
+      <strong>Book online</strong>
+      <span>Choose Margate or LBTS</span>
+    </div>
+    <a class="btn btn-primary btn-small" href="#book">Book</a>
+    <a class="btn btn-soft btn-small" href="#locations">Locations</a>
+  </div>
+</div>
+
+<script>
+  function openDrawer(){
+    var d = document.getElementById('drawer');
+    d.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer(){
+    var d = document.getElementById('drawer');
+    d.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  document.getElementById('drawer').addEventListener('click', function(e){
+    if(e.target && e.target.id === 'drawer'){ closeDrawer(); }
+  });
+
+  var slideIndex = 0;
+  function goSlide(i){
+    var slides = document.querySelectorAll('.slide');
+    var dots = document.querySelectorAll('.dot');
+    slideIndex = i;
+    slides.forEach(function(s, idx){ s.classList.toggle('active', idx === i); });
+    dots.forEach(function(d, idx){ d.classList.toggle('active', idx === i); });
+  }
+  setInterval(function(){
+    goSlide((slideIndex + 1) % 2);
+  }, 6500);
+
+  function setLocation(which){
+    var tabM = document.getElementById('tab-margate');
+    var tabL = document.getElementById('tab-lbs');
+    var hint = document.getElementById('locHint');
+    if(!tabM || !tabL || !hint) return;
+
+    if(which === 'lbs'){
+      tabM.classList.remove('active');
+      tabL.classList.add('active');
+      hint.textContent = 'Booking for: Lauderdale-by-the-Sea';
+    } else {
+      tabL.classList.remove('active');
+      tabM.classList.add('active');
+      hint.textContent = 'Booking for: Margate';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var phone = document.getElementById('phone');
+    if(!phone) return;
+    phone.addEventListener('input', function(e){
+      var numbers = (e.target.value || '').replace(/\D/g,'').substring(0,10);
+      var formatted = '';
+      if(numbers.length > 0) formatted = '(' + numbers.substring(0,3);
+      if(numbers.length >= 4) formatted += ') ' + numbers.substring(3,6);
+      if(numbers.length >= 7) formatted += '-' + numbers.substring(6,10);
+      e.target.value = formatted;
+    });
+  });
+</script>
+
+</body>
+</html>
