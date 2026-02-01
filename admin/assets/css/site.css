@@ -1,0 +1,394 @@
+/* ============================
+   Mindo Bird Watching
+   Global Brand Styles (v1.3)
+   Fonts: Playfair Display (headings) + Open Sans (body/UI)
+   Background: #C7DAAC site-wide
+   ============================ */
+
+/* Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap");
+
+:root{
+  /* Brand palette */
+  --bg: #C7DAAC;          /* site background (global) */
+  --forest: #0D5925;      /* primary */
+  --brown: #8B4513;       /* secondary */
+  --sky: #87CEEB;         /* optional accent */
+  --gold: #FFD700;        /* CTA accent */
+
+  /* Neutrals */
+  --ink: #071923;         /* primary text */
+  --muted: rgba(7,25,35,.72);
+  --card: rgba(255,255,255,.72);
+  --card-strong: rgba(255,255,255,.88);
+  --line: rgba(7,25,35,.14);
+
+  /* Radius + shadow */
+  --r: 18px;
+  --shadow: 0 18px 55px rgba(7,25,35,.10);
+
+  /* Typography */
+  --font-body: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
+
+  /* Footer social icon sizing (NO bubbles) */
+  --social-icon-size: 36px; /* icon size */
+  --social-gap: 14px;       /* gap between icons */
+
+  /* Sticky header spacing */
+  --sticky-top: 16px;
+}
+
+/* Base reset */
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
+
+body{
+  margin:0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links: remove default underline/blue */
+a{
+  color: inherit;
+  text-decoration: none;
+}
+a:visited{ color: inherit; }
+a:hover{ text-decoration: none; }
+a:focus-visible{
+  outline: 3px solid rgba(255,215,0,.35);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+img{
+  max-width: 100%;
+  display: block;
+}
+
+/* Layout helper */
+.container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Text defaults */
+h1,h2,h3,h4,h5,h6{
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+p{
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+/* Cards */
+.card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+
+/* Buttons */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  font-weight: 800;
+  background: var(--card-strong);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.btn.primary{
+  background: rgba(255,215,0,.22);
+  border-color: rgba(255,215,0,.55);
+}
+
+.btn.secondary{
+  background: rgba(13,89,37,.14);
+  border-color: rgba(13,89,37,.35);
+}
+
+/* Pills */
+.pill{
+  padding:10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 13px;
+  background: rgba(255,255,255,.55);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  white-space: nowrap;
+}
+
+.pill.active{
+  background: rgba(13,89,37,.14);
+  border-color: rgba(13,89,37,.35);
+  color: var(--ink);
+}
+
+/* ============================
+   Global Header (APPROVED include)
+   Uses header.html classes:
+   .topbar .brand .right .lang .nav
+   .menuBtn #menuPanel .menuList
+   Plus sticky behavior (inside container)
+   ============================ */
+
+/* Sticky mount (keeps header sticky while scrolling) */
+#siteHeader{
+  position: sticky;
+  top: var(--sticky-top);
+  z-index: 2000;
+}
+
+/* If any ancestor sets overflow hidden, sticky can break.
+   We explicitly allow visible overflow on common wrappers. */
+html, body{ overflow-x: visible; }
+.container{ overflow: visible; }
+
+/* Header shell */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.65);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  position: relative; /* anchors menuPanel */
+}
+
+/* Brand */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:900;
+  color: var(--ink);
+  white-space:nowrap;
+  min-width: 0;
+}
+.brand img{
+  height:26px;
+  width:auto;
+  display:block;
+  flex:0 0 auto;
+  border-radius: 8px;
+}
+
+/* Right side (desktop) */
+.right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+/* NOTE: header.css is the primary source of truth for header layout.
+   These base styles remain, desktop overrides are added at the bottom. */
+.nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+/* Language switch */
+.lang{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:rgba(255,255,255,.5);
+}
+.lang a{
+  padding:8px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12.5px;
+  color:var(--muted);
+}
+.lang a.active{
+  background:rgba(13,89,37,.14);
+  border:1px solid rgba(13,89,37,.35);
+  color:var(--ink);
+}
+
+/* Hamburger (mobile) */
+.menuBtn{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.65);
+  cursor:pointer;
+}
+.menuBtn svg{ width:22px; height:22px; }
+
+/* Mobile panel */
+.menuPanel{
+  display:none;
+  position:absolute;
+  right:12px;
+  top: calc(100% + 10px);
+  width: min(320px, calc(100vw - 24px));
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+  z-index: 2100;
+}
+.menuPanel .lang{
+  width:100%;
+  justify-content:center;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,.75);
+}
+.menuList{
+  display:grid;
+  gap:10px;
+}
+.menuList a.pill{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
+
+/* Mobile behavior: hide desktop nav and show hamburger */
+@media (max-width:900px){
+  .right .lang,
+  .right .nav{ display:none; }
+  .menuBtn{ display:inline-flex; }
+  .menuPanel{ display:none; }
+  .menuPanel.is-open{ display:block; }
+}
+
+/* Optional: tighten sticky spacing on small screens */
+@media (max-width:520px){
+  :root{ --sticky-top: 12px; }
+  .container{ padding: 18px; }
+}
+
+/* ============================
+   Footer (NO bubbles, locked sizing)
+   ============================ */
+
+.footer{
+  text-align:center;
+  padding: 28px 0 10px;
+}
+
+.footer-social{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap: var(--social-gap);
+  flex-wrap:wrap;
+  margin-bottom: 14px;
+}
+
+/* IMPORTANT: remove container sizing/padding so Safari can’t blow it up */
+.footer-social a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* IMPORTANT: lock size at IMG level */
+.footer-social img{
+  width: var(--social-icon-size);
+  height: var(--social-icon-size);
+  object-fit: contain;
+  display:block;
+}
+
+/* Bottom line: small logo + text centered */
+.footer-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin-top: 2px;
+}
+
+.footer-bottom img{
+  height: 45px;
+  width:auto;
+  display:block;
+}
+
+.footer small{
+  display:block;
+  font-weight: 900;
+  color: rgba(7,25,35,.78);
+}
+
+/* =========================================================
+   MBW Header Fix – Desktop ES overlap fix (EN/ES vs Inicio)
+   - Force real spacing so first nav pill cannot sit under lang
+   - Keep dropdowns working
+   ========================================================= */
+
+@media (min-width: 901px){
+  header.topbar[data-mbw-header] .right{
+    flex-wrap: nowrap;
+    min-width: 0;
+    gap: 14px; /* stronger separation than header.css */
+  }
+
+  header.topbar[data-mbw-header] .lang{
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 3; /* keep lang above if anything collides */
+  }
+
+  header.topbar[data-mbw-header] nav.nav{
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow: visible; /* dropdowns must render outside nav */
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ✅ THE ACTUAL FIX: push Inicio away from EN/ES on ES desktop */
+  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav > a.pill:first-child{
+    margin-left: 12px; /* hard gap so it cannot overlap the lang pills */
+  }
+}
