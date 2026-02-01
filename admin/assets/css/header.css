@@ -1,0 +1,360 @@
+/* /assets/css/header.css
+   MBW Header (Dropdown v2) - STABLE (works even if markup is div.topbar and/or missing data-mbw-header)
+
+   Fixes:
+   1) ES desktop: EN/ES never overlaps first nav pill (hard spacing)
+   2) Desktop: hamburger + mobile panel never appear
+   3) Mobile: header-row language pills are hidden (language switch lives inside menu panel footer only)
+   4) Mobile: submenus are hidden by default via [hidden] + JS; Safari-safe
+   5) Dropdown font matches pill font (Open Sans)
+
+   IMPORTANT:
+   - Scoped to #siteHeader so it does not affect other .topbar elements
+   - Does NOT require <header> tag or data-mbw-header attribute
+   - ASCII only
+*/
+
+:root{
+  --mbw-header-bg: rgba(243, 247, 241, 0.85);
+  --mbw-pill-bg: rgba(255,255,255,0.65);
+  --mbw-pill-bg-hover: rgba(13,89,37,0.14);
+  --mbw-line: rgba(0,0,0,0.10);
+  --mbw-shadow: 0 14px 40px rgba(0,0,0,.10);
+  --mbw-r: 18px;
+  --mbw-font: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Scope */
+#siteHeader .topbar{
+  font-family: var(--mbw-font);
+}
+
+/* Hard guarantee: any [hidden] inside header is hidden */
+#siteHeader .topbar [hidden]{
+  display: none !important;
+}
+
+/* Header shell */
+#siteHeader .topbar{
+  position: sticky;
+  top: 0;
+  z-index: 5000;
+  margin-top: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--mbw-line);
+  background: var(--mbw-header-bg);
+  box-shadow: var(--mbw-shadow);
+  padding: 14px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  backdrop-filter: blur(10px);
+}
+
+/* Brand */
+#siteHeader .topbar .brand{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 220px;
+}
+#siteHeader .topbar .brand img{
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+#siteHeader .topbar .brand span{
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+/* Right cluster */
+#siteHeader .topbar .right{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Language switch (header-row, desktop) */
+#siteHeader .topbar .lang{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.70);
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
+}
+#siteHeader .topbar .lang a{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13px;
+  border: 1px solid transparent;
+  font-family: var(--mbw-font);
+}
+#siteHeader .topbar .lang a.is-active,
+#siteHeader .topbar .lang a[aria-current="page"],
+#siteHeader .topbar .lang a.active{
+  border-color: rgba(13,89,37,.25);
+  background: rgba(13,89,37,.12);
+}
+
+/* Desktop nav */
+#siteHeader .topbar nav.nav,
+#siteHeader .topbar .nav{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+  font-family: var(--mbw-font);
+}
+
+/* Pills */
+#siteHeader .topbar .pill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--mbw-line);
+  background: var(--mbw-pill-bg);
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  font-family: var(--mbw-font);
+}
+#siteHeader .topbar .pill:hover{
+  background: var(--mbw-pill-bg-hover);
+  border-color: rgba(13,89,37,.28);
+}
+
+/* Dropdown */
+#siteHeader .topbar .dropdown{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+#siteHeader .topbar .dropdown > .pill{
+  gap: 8px;
+}
+#siteHeader .topbar .dropdownMenu{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 240px;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 22px 60px rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
+  z-index: 6000;
+  font-family: var(--mbw-font);
+}
+#siteHeader .topbar .dropdownMenu::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  height: 12px;
+  background: transparent;
+}
+#siteHeader .topbar .dropdownMenu a{
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.70);
+  font-family: var(--mbw-font);
+}
+#siteHeader .topbar .dropdownMenu a:hover{
+  background: rgba(13,89,37,0.12);
+  border-color: rgba(13,89,37,.22);
+}
+
+/* Desktop rules */
+@media (min-width: 901px){
+  #siteHeader .topbar .dropdown:hover .dropdownMenu,
+  #siteHeader .topbar .dropdown:focus-within .dropdownMenu{
+    display: flex;
+  }
+
+  /* Never show hamburger/panel on desktop */
+  #siteHeader .topbar .menuBtn,
+  #siteHeader .topbar .menuPanel,
+  #siteHeader .topbar #menuBtn,
+  #siteHeader .topbar #menuPanel{
+    display: none !important;
+  }
+
+  #siteHeader .topbar .right{
+    flex-wrap: nowrap;
+    min-width: 0;
+    gap: 16px;
+  }
+
+  #siteHeader .topbar nav.nav,
+  #siteHeader .topbar .nav{
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: visible;
+    padding-left: 22px;
+  }
+
+  /* ES desktop: hard extra gap so EN/ES never touches Inicio */
+  html[lang="es"] #siteHeader .topbar .right{
+    gap: 18px;
+  }
+  html[lang="es"] #siteHeader .topbar .lang{
+    margin-right: 26px !important;
+  }
+  html[lang="es"] #siteHeader .topbar nav.nav,
+  html[lang="es"] #siteHeader .topbar .nav{
+    padding-left: 34px !important;
+  }
+  html[lang="es"] #siteHeader .topbar nav.nav > a.pill:first-child,
+  html[lang="es"] #siteHeader .topbar .nav > a.pill:first-child{
+    margin-left: 14px !important;
+  }
+}
+
+/* Mobile hamburger UI (base) */
+#siteHeader .topbar .menuBtn,
+#siteHeader .topbar #menuBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 10px 25px rgba(0,0,0,.07);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+#siteHeader .topbar .menuBtn svg,
+#siteHeader .topbar #menuBtn svg{
+  width: 22px;
+  height: 22px;
+}
+
+#siteHeader .topbar .menuPanel,
+#siteHeader .topbar #menuPanel{
+  display: none;
+  position: absolute;
+  right: 14px;
+  top: calc(100% + 10px);
+  width: min(360px, calc(100vw - 28px));
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid var(--mbw-line);
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 24px 70px rgba(0,0,0,.22);
+}
+
+#siteHeader .topbar .menuPanel.is-open,
+#siteHeader .topbar #menuPanel.is-open{
+  display: block;
+}
+
+#siteHeader .topbar .menuList{
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Mobile behavior */
+@media (max-width: 900px){
+  /* Hide desktop nav */
+  #siteHeader .topbar nav.nav,
+  #siteHeader .topbar .nav{
+    display: none !important;
+  }
+
+  /* Hide header-row language switch on mobile (but KEEP menu footer language switch visible) */
+  #siteHeader .topbar .lang{
+    display: none !important;
+  }
+  #siteHeader .topbar .menuPanel .lang{
+    display: inline-flex !important;
+  }
+
+  /* Left-align rows */
+  #siteHeader .topbar .menuPanel .pill{
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  #siteHeader .topbar .menuPanel a.pill,
+  #siteHeader .topbar .menuPanel button.pill{
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  #siteHeader .topbar .menuPanel .m-next{
+    justify-content: space-between !important;
+    padding-right: 14px;
+  }
+
+  #siteHeader .topbar .menuPanel .m-back{
+    justify-content: flex-start !important;
+  }
+}
+
+#siteHeader .topbar .m-arrow{
+  font-size: 18px;
+  opacity: .65;
+}
+
+#siteHeader .topbar .menuLangFooter{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: grid;
+  gap: 10px;
+}
+
+#siteHeader .topbar .menuLangCurrent{
+  color: rgba(0,0,0,0.55);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
