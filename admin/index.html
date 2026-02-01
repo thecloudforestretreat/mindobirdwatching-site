@@ -8,16 +8,22 @@
   <meta name="theme-color" content="#034EA2" />
   <link rel="canonical" href="https://admin.mindobirdwatching.com/" />
 
+  <!-- Favicons (must exist inside /admin output) -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
 
+  <!-- IMPORTANT:
+       Because the admin Pages project publishes ONLY the /admin folder,
+       these assets must be duplicated into /admin/assets/... in your repo.
+  -->
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
 
   <style>
+    /* Page-only styles. site.css remains the source of truth for fonts/colors. */
     .page { margin-top: 18px; padding: 18px; }
     .page.card{
       background: var(--card);
@@ -231,6 +237,7 @@
       white-space: nowrap;
     }
 
+    /* Drawer */
     .scrim{
       position: fixed;
       inset: 0;
@@ -364,7 +371,7 @@
         <div class="cookieHint" aria-label="Mobile access hint">
           <p>
             If you see "Can't access report" on iPhone, Safari is blocking Google third-party cookies.
-            Use "Open in Looker" to view the report directly, or allow cross-site tracking in Safari settings for this site.
+            Use "Open in Looker" to view the report directly.
           </p>
           <div class="actions">
             <a id="openInLooker2" href="#" target="_blank" rel="noreferrer">Open in Looker</a>
@@ -449,6 +456,10 @@
     </div>
   </aside>
 
+  <!-- IMPORTANT:
+       Because the admin Pages project publishes ONLY the /admin folder,
+       these JS includes must be duplicated into /admin/assets/js/... in your repo.
+  -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
 
@@ -484,10 +495,8 @@
         document.getElementById("panelDesc").textContent = meta.desc;
 
         var link = REPORTS[currentView] || "#";
-        var a1 = document.getElementById("openInLooker");
-        var a2 = document.getElementById("openInLooker2");
-        a1.href = link;
-        a2.href = link;
+        document.getElementById("openInLooker").href = link;
+        document.getElementById("openInLooker2").href = link;
 
         document.getElementById("filterKpis").style.display = (currentView === "kpis") ? "" : "none";
         document.getElementById("filterSite").style.display = (currentView === "site") ? "" : "none";
@@ -535,8 +544,7 @@
       function loadEmbed(){
         var frame = document.getElementById("frame");
         var base = REPORTS[currentView] || "";
-        var state = getState();
-        var url = addParams(base, buildParams(state));
+        var url = addParams(base, buildParams(getState()));
         frame.src = url;
       }
 
@@ -581,9 +589,7 @@
           })(btns[i]);
         }
 
-        document.getElementById("datePreset").addEventListener("change", function(){
-          loadEmbed();
-        });
+        document.getElementById("datePreset").addEventListener("change", loadEmbed);
 
         document.getElementById("openFilters").addEventListener("click", openDrawer);
         document.getElementById("closeFilters").addEventListener("click", closeDrawer);
