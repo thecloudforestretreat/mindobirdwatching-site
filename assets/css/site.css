@@ -395,55 +395,49 @@ html, body{ overflow-x: visible; }
 
 /* ============================
    WhatsApp Smart CTA (MBW)
-   Isolated classes + mobile-safe
+   Bird image button + desktop menu
+   Mobile: tap opens WhatsApp directly
    ============================ */
 
 .mbwWaFab{
   position: fixed;
-  right: calc(16px + env(safe-area-inset-right));
-  bottom: calc(16px + env(safe-area-inset-bottom));
-  z-index: 2500;
+  right: calc(12px + env(safe-area-inset-right));
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 2600;
   font-family: inherit;
 }
 
 .mbwWaFabBtn{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
   border: 0;
-  border-radius: 999px;
-  padding: 12px 14px;
+  padding: 0;
+  background: transparent;
   cursor: pointer;
-  background: #0d5925; /* forest green */
-  color: #ffffff;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.20);
+  border-radius: 18px;
   -webkit-tap-highlight-color: transparent;
-}
-
-.mbwWaFabBtn:hover{ filter: brightness(1.05); }
-
-.mbwWaFabIcon{
   display: inline-flex;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.16);
-  flex: 0 0 auto;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
 }
 
-.mbwWaFabText{
-  font-weight: 900;
-  font-size: 14px;
-  letter-spacing: 0.2px;
+.mbwWaFabBtn:focus{
+  outline: 2px solid rgba(13, 89, 37, 0.35);
+  outline-offset: 4px;
 }
 
-/* Backdrop below panel so options are clickable */
+.mbwWaFabImg{
+  display: block;
+  width: 172px;  /* desktop default */
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Backdrop below panel */
 .mbwWaFabBackdrop{
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.25);
+  background: rgba(2, 6, 23, 0.28);
   opacity: 0;
   pointer-events: none;
   transition: opacity 160ms ease;
@@ -455,12 +449,12 @@ html, body{ overflow-x: visible; }
   pointer-events: auto;
 }
 
-/* Panel above backdrop */
+/* Desktop panel */
 .mbwWaFabPanel{
   position: absolute;
   right: 0;
-  bottom: 54px;
-  width: min(340px, calc(100vw - 32px));
+  bottom: 190px; /* sits above the bird button */
+  width: 320px;
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
@@ -471,8 +465,6 @@ html, body{ overflow-x: visible; }
   transition: opacity 160ms ease, transform 160ms ease;
   border: 1px solid rgba(15, 23, 42, 0.10);
   z-index: 2;
-  max-height: calc(100vh - 120px);
-  overscroll-behavior: contain;
 }
 
 .mbwWaFab.is-open .mbwWaFabPanel{
@@ -516,35 +508,41 @@ html, body{ overflow-x: visible; }
 }
 
 .mbwWaFabAction{
-  display: block !important;
-  width: 100% !important;
-  text-decoration: none !important;
-  padding: 12px 12px !important;
-  border-radius: 14px !important;
-  border: 1px solid rgba(15, 23, 42, 0.10) !important;
-  color: #0f172a !important;
-  background: #ffffff !important;
-  font-weight: 900 !important;
-  font-size: 13px !important;
-  line-height: 1.25 !important;
-  white-space: normal !important;
+  display: block;
+  width: 100%;
+  text-decoration: none;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  color: #0f172a;
+  background: #ffffff;
+  font-weight: 900;
+  font-size: 13px;
+  line-height: 1.25;
+  white-space: normal;
 }
 
 .mbwWaFabAction:hover{
-  background: #f8fafc !important;
-  border-color: rgba(15, 23, 42, 0.18) !important;
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.18);
 }
 
-@media (max-width: 420px){
-  .mbwWaFabBtn{ padding: 12px; }
-  .mbwWaFabText{ display: none; }
-
-  /* Mobile bottom sheet */
-  .mbwWaFabPanel{
-    position: fixed;
-    left: calc(12px + env(safe-area-inset-left));
-    right: calc(12px + env(safe-area-inset-right));
-    bottom: calc(72px + env(safe-area-inset-bottom));
-    width: auto;
+/* Mobile: keep the bird button, but disable the menu UI entirely */
+@media (max-width: 640px){
+  .mbwWaFab{
+    right: calc(10px + env(safe-area-inset-right));
+    bottom: calc(10px + env(safe-area-inset-bottom));
   }
+  .mbwWaFabImg{
+    width: 150px;
+  }
+  .mbwWaFabPanel,
+  .mbwWaFabBackdrop{
+    display: none;
+  }
+}
+
+/* Small phones */
+@media (max-width: 380px){
+  .mbwWaFabImg{ width: 138px; }
 }
