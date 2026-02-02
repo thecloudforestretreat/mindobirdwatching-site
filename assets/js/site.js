@@ -177,7 +177,8 @@
   function isMobileLike() {
     var byWidth = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
     var byPointer = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-    return !!(byWidth || byPointer);
+    var byTouch = ("ontouchstart" in window) || (navigator && navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    return !!(byWidth || byPointer || byTouch);
   }
 
   
