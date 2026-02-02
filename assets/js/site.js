@@ -171,6 +171,22 @@
 /* WhatsApp Smart CTA (MBW) v3 */
 
 (function () {
+  function getInlineWaQuestions() {
+    var el = document.getElementById("mbwWaQuestions");
+    if (!el) return null;
+    try { return JSON.parse(el.textContent || el.innerText || "{}"); } catch (e) { return null; }
+  }
+
+  function normalizePath(p) {
+    p = p || "/";
+    if (p.length > 1 && p.charAt(p.length - 1) !== "/") p = p + "/";
+    return p;
+  }
+
+  function isSpanishPath(p) {
+    return p === "/es/" || p.indexOf("/es/") === 0;
+  }
+
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
@@ -209,7 +225,32 @@ function setImgForViewport(root) {
     var backdrop = qs(".mbwWaBirdBackdrop", root);
     var actions = qsa(".mbwWaBirdAction", root);
 
-    if (!btn) return;
+    
+    // Apply per-page questions from inline JSON in the footer include
+    (function applyPerPageQuestions() {
+      if (!actions || actions.length < 4) return;
+      var data = getInlineWaQuestions();
+      if (!data || !data.pages) return;
+
+      var p = normalizePath(window.location.pathname || "/");
+      var row = data.pages[p];
+      if (!row) {
+        var def = isSpanishPath(p) ? data.default_es : data.default_en;
+        if (!def) return;
+        row = def;
+      }
+
+      if (row.q1) actions[0].textContent = row.q1;
+      if (row.q2) actions[1].textContent = row.q2;
+      if (row.q3) actions[2].textContent = row.q3;
+      if (row.q4) actions[3].textContent = row.q4;
+
+      if (row.t1) actions[0].setAttribute("data-wa-template", row.t1);
+      if (row.t2) actions[1].setAttribute("data-wa-template", row.t2);
+      if (row.t3) actions[2].setAttribute("data-wa-template", row.t3);
+      if (row.t4) actions[3].setAttribute("data-wa-template", row.t4);
+    })();
+if (!btn) return;
 
     function buildLink(template) {
       var numRaw = (root.getAttribute("data-wa-number") || "").toString();
@@ -241,8 +282,15 @@ function setImgForViewport(root) {
       e.preventDefault();
 
       if (isMobileLike()) {
-        var label = getPageLabel() || "a birding tour";
-        goWhatsApp("Hi! I\u2019m interested in:\n" + label + "\n\nPage: {url}");
+        var dataM = getInlineWaQuestions();
+        var pM = normalizePath(window.location.pathname || "/");
+        var rowM = (dataM && dataM.pages) ? dataM.pages[pM] : null;
+        if (!rowM && dataM) rowM = isSpanishPath(pM) ? dataM.default_es : dataM.default_en;
+        var tM = (rowM && rowM.t1) ? rowM.t1 : ("Hi! I am interested in:
+" + (getPageLabel() || "a birding tour") + "
+
+Page: {url}");
+        goWhatsApp(tM);
         return;
       }
 
@@ -280,8 +328,23 @@ function setImgForViewport(root) {
 
   function boot() { qsa(".mbwWaBirdFab").forEach(init); }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
+  // Footer is injected by includes.js on many pages, so the widget may appear AFTER DOMContentLoaded.
+  // Run boot multiple times and observe DOM changes to initialize as soon as it appears.
+  function bootSoon() {
+    boot();
+    window.setTimeout(boot, 400);
+    window.setTimeout(boot, 1200);
+    window.setTimeout(boot, 2500);
+  }
+
+  bootSoon();
+
+  if (!window.__mbwWaBirdObserver && "MutationObserver" in window) {
+    window.__mbwWaBirdObserver = new MutationObserver(function () {
+      boot();
+    });
+    window.__mbwWaBirdObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  }
 })();
 
 /* WhatsApp Legacy Cleanup (FINAL)
@@ -306,104 +369,4 @@ function setImgForViewport(root) {
   removeAll(".mbwWaFabPanel");
   removeAll(".mbwWaFabBackdrop");
   removeAll(".mbwWaFabActions");
-})();
-
-
-/* MBW_WA_BOOTSTRAP_V7
-   Ensures WhatsApp widget is initialized even when footer is injected via includes.js (scripts in injected HTML do not execute).
-*/
-(function () {
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  function ensureInit() {
-    // If the WhatsApp init function isn't present, do nothing.
-    // We detect by looking for the bird button class and binding a basic direct-open handler as a fallback.
-    var fabs = qsa(".mbwWaBirdFab");
-    if (fabs.length === 0) return;
-
-    fabs.forEach(function (root) {
-      if (root.__mbwWaFallbackBound) return;
-      root.__mbwWaFallbackBound = true;
-
-      var btn = qs(".mbwWaBirdBtn", root);
-      if (!btn) return;
-
-      function normalizePath(p) {
-        p = p || "/";
-        if (p.length > 1 && p.charAt(p.length - 1) !== "/") p = p + "/";
-        return p;
-      }
-
-      function isSpanishPath(p) {
-        return p === "/es/" || p.indexOf("/es/") === 0;
-      }
-
-      function getInlineWaQuestions() {
-        var el = document.getElementById("mbwWaQuestions");
-        if (!el) return null;
-        try { return JSON.parse(el.textContent || el.innerText || "{}"); } catch (e) { return null; }
-      }
-
-      function buildFromInline() {
-        var data = getInlineWaQuestions();
-        var p = normalizePath(window.location.pathname || "/");
-        var row = (data && data.pages) ? data.pages[p] : null;
-        if (!row && data) row = isSpanishPath(p) ? data.default_es : data.default_en;
-        return row || null;
-      }
-
-      function goWhatsApp(template) {
-        var numRaw = (root.getAttribute("data-wa-number") || "").toString();
-        var num = numRaw.replace(/[^\d]/g, "");
-        if (!num) return;
-        var url = window.location.href;
-        var msg = (template || "").replace("{url}", url);
-        var link = "https://wa.me/" + num + "?text=" + encodeURIComponent(msg);
-        window.location.href = link;
-      }
-
-      // Fallback behavior:
-      // - Mobile-like: go straight to WhatsApp (reliable for iOS/Android)
-      // - Desktop: do NOT intercept clicks, so the full WhatsApp init can open the question menu panel
-      function isMobileLike() {
-        var byWidth = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
-        var byPointer = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-        var byTouch = ("ontouchstart" in window) || (navigator && navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
-        return !!(byWidth || byPointer || byTouch);
-      }
-
-      function handleMobile(e) {
-        if (root.__mbwWaBirdInit) return;
-        if (!isMobileLike()) return;
-        e.preventDefault();
-        e.stopPropagation();
-        var row = buildFromInline();
-        var t = row && row.t1 ? row.t1 : (isSpanishPath(normalizePath(window.location.pathname || "/")) ? "Hola.\n\nPagina: {url}" : "Hi!\n\nPage: {url}");
-        goWhatsApp(t);
-      }
-
-      // Only attach mobile intercepts
-      btn.addEventListener("touchstart", handleMobile, { passive: false });
-      btn.addEventListener("click", handleMobile, { passive: false });
-        e.stopPropagation();
-        var row = buildFromInline();
-        var t = row && row.t1 ? row.t1 : (isSpanishPath(normalizePath(window.location.pathname || "/")) ? "Hola.\n\nPagina: {url}" : "Hi!\n\nPage: {url}");
-        goWhatsApp(t);
-      }, { passive: false });
-    });
-  }
-
-  // Run now and when footer gets injected
-  ensureInit();
-  window.setTimeout(ensureInit, 400);
-  window.setTimeout(ensureInit, 1200);
-  window.setTimeout(ensureInit, 2500);
-
-  if (!window.__mbwWaBootstrapObs && "MutationObserver" in window) {
-    window.__mbwWaBootstrapObs = new MutationObserver(function () {
-      ensureInit();
-    });
-    window.__mbwWaBootstrapObs.observe(document.documentElement || document.body, { childList: true, subtree: true });
-  }
 })();
