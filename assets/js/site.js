@@ -232,7 +232,7 @@
       e.preventDefault();
 
       if (isMobileLike()) {
-        goWhatsApp("Hi! I would like to book a birding tour. Page: {url}");
+        goWhatsApp("Hi! I would like to book a birding tour.\n\nPage: {url}");
         return;
       }
 
