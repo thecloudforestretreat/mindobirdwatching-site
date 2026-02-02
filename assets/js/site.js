@@ -168,25 +168,20 @@
   else boot();
 })();
 
-/* ============================
-   WhatsApp Smart CTA (MBW)
-   Desktop: bird button opens menu
-   Mobile (coarse pointer): bird button opens WhatsApp directly
-   ============================ */
+/* WhatsApp Smart CTA (MBW) v3 */
 
 (function () {
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function isMobileLike() {
-    // Works in real phones AND in some preview containers where width can be misleading
     var byWidth = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
     var byPointer = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
     return !!(byWidth || byPointer);
   }
 
   function setImgForViewport(root) {
-    var img = qs(".mbwWaFabImg", root);
+    var img = qs(".mbwWaBirdImg", root);
     if (!img) return;
 
     var d = (root.getAttribute("data-wa-img-desktop") || "").toString();
@@ -196,33 +191,25 @@
     if (target && img.getAttribute("src") !== target) img.setAttribute("src", target);
   }
 
-  function initFab(root) {
-    if (!root || root.__mbwWaInit) return;
-    root.__mbwWaInit = true;
+  function init(root) {
+    if (!root || root.__mbwWaBirdInit) return;
+    root.__mbwWaBirdInit = true;
 
-    var btn = qs(".mbwWaFabBtn", root);
-    var closeBtn = qs(".mbwWaFabClose", root);
-    var backdrop = qs(".mbwWaFabBackdrop", root);
-    var actions = qsa(".mbwWaFabAction", root);
+    var btn = qs(".mbwWaBirdBtn", root);
+    var closeBtn = qs(".mbwWaBirdClose", root);
+    var backdrop = qs(".mbwWaBirdBackdrop", root);
+    var actions = qsa(".mbwWaBirdAction", root);
 
     if (!btn) return;
 
-    function buildWaLink(template) {
+    function buildLink(template) {
       var numRaw = (root.getAttribute("data-wa-number") || "").toString();
       var num = numRaw.replace(/[^\d]/g, "");
       if (!num) return "";
 
       var url = window.location.href;
       var msg = (template || "").replace("{url}", url);
-      var encoded = encodeURIComponent(msg);
-
-      return "https://wa.me/" + num + "?text=" + encoded;
-    }
-
-    function openLink(link) {
-      // window.open can be blocked on mobile; fall back to location change
-      var w = window.open(link, "_blank", "noopener,noreferrer");
-      if (!w) window.location.href = link;
+      return "https://wa.me/" + num + "?text=" + encodeURIComponent(msg);
     }
 
     function openPanel() {
@@ -235,71 +222,52 @@
       btn.setAttribute("aria-expanded", "false");
     }
 
-    function togglePanel(e) {
-      if (e) e.preventDefault();
+    function goWhatsApp(template) {
+      var link = buildLink(template);
+      if (!link) return;
+      window.location.href = link;
+    }
 
-      // Mobile-like: go straight to WhatsApp with a general message
+    function onBtnClick(e) {
+      e.preventDefault();
+
       if (isMobileLike()) {
-        var link = buildWaLink("Hi! I would like to book a birding tour. Page: {url}");
-        if (link) openLink(link);
+        goWhatsApp("Hi! I would like to book a birding tour. Page: {url}");
         return;
       }
 
-      // Desktop: open/close menu
       if (root.classList.contains("is-open")) closePanel();
       else openPanel();
     }
 
-    // Set correct image on load and when media conditions change
     setImgForViewport(root);
-    if (window.matchMedia) {
-      var mq1 = window.matchMedia("(max-width: 900px)");
-      var mq2 = window.matchMedia("(hover: none) and (pointer: coarse)");
 
-      function onChange() { setImgForViewport(root); closePanel(); }
-
-      if (mq1.addEventListener) mq1.addEventListener("change", onChange);
-      else if (mq1.addListener) mq1.addListener(onChange);
-
-      if (mq2.addEventListener) mq2.addEventListener("change", onChange);
-      else if (mq2.addListener) mq2.addListener(onChange);
-    }
-
-    btn.addEventListener("click", togglePanel, { passive: false });
+    btn.addEventListener("click", onBtnClick, { passive: false });
 
     if (closeBtn) closeBtn.addEventListener("click", function (e) { e.preventDefault(); closePanel(); }, { passive: false });
     if (backdrop) backdrop.addEventListener("click", function () { closePanel(); }, { passive: true });
 
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closePanel();
-    });
-
-    // Desktop menu actions
     actions.forEach(function (a) {
       a.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        // Just in case: if a preview shows the panel on a touch device
         if (isMobileLike()) {
-          var linkM = buildWaLink("Hi! I would like to book a birding tour. Page: {url}");
-          if (linkM) openLink(linkM);
+          goWhatsApp("Hi! I would like to book a birding tour. Page: {url}");
           return;
         }
 
         var template = a.getAttribute("data-wa-template") || "";
-        var link = buildWaLink(template);
+        var link = buildLink(template);
         if (!link) return;
 
         closePanel();
-        openLink(link);
+        window.open(link, "_blank", "noopener,noreferrer");
       }, { passive: false });
     });
   }
 
-  function boot() {
-    qsa(".mbwWaFab").forEach(initFab);
-  }
+  function boot() { qsa(".mbwWaBirdFab").forEach(init); }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
