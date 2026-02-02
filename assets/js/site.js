@@ -280,8 +280,25 @@ function setImgForViewport(root) {
 
   function boot() { qsa(".mbwWaBirdFab").forEach(init); }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
+  // Footer is injected by includes.js on some pages, so the widget may appear AFTER DOMContentLoaded.
+  // We re-run boot a few times and also observe DOM mutations to initialize when it appears.
+  function bootSoon() {
+    boot();
+    window.setTimeout(boot, 500);
+    window.setTimeout(boot, 1500);
+    window.setTimeout(boot, 3000);
+  }
+
+  // Run once when script executes (defer means DOM is parsed, but includes may still be loading)
+  bootSoon();
+
+  // Observe for late-inserted widget
+  if (!window.__mbwWaObserver && "MutationObserver" in window) {
+    window.__mbwWaObserver = new MutationObserver(function () {
+      boot();
+    });
+    window.__mbwWaObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  }
 })();
 
 /* WhatsApp Legacy Cleanup (FINAL)
@@ -306,4 +323,19 @@ function setImgForViewport(root) {
   removeAll(".mbwWaFabPanel");
   removeAll(".mbwWaFabBackdrop");
   removeAll(".mbwWaFabActions");
+
+  // Also clean up any legacy widgets inserted later by includes or cached HTML
+  if (!window.__mbwWaCleanupObserver && "MutationObserver" in window) {
+    window.__mbwWaCleanupObserver = new MutationObserver(function () {
+      removeAll(".mbwWaFab");
+      removeAll(".mbwWaFabPanel");
+      removeAll(".mbwWaFabBackdrop");
+      removeAll(".mbwWaFabActions");
+      var birds2 = Array.prototype.slice.call(document.querySelectorAll(".mbwWaBirdFab"));
+      if (birds2.length > 1) {
+        birds2.slice(0, birds2.length - 1).forEach(function (n) { n.remove(); });
+      }
+    });
+    window.__mbwWaCleanupObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  }
 })();
