@@ -171,15 +171,18 @@
 /* ============================
    WhatsApp Smart CTA (MBW)
    Desktop: bird button opens menu
-   Mobile: bird button opens WhatsApp directly
+   Mobile (coarse pointer): bird button opens WhatsApp directly
    ============================ */
 
 (function () {
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-  function isMobile() {
-    return window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+  function isMobileLike() {
+    // Works in real phones AND in some preview containers where width can be misleading
+    var byWidth = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+    var byPointer = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    return !!(byWidth || byPointer);
   }
 
   function setImgForViewport(root) {
@@ -188,7 +191,7 @@
 
     var d = (root.getAttribute("data-wa-img-desktop") || "").toString();
     var m = (root.getAttribute("data-wa-img-mobile") || "").toString();
-    var target = isMobile() ? (m || d) : (d || m);
+    var target = isMobileLike() ? (m || d) : (d || m);
 
     if (target && img.getAttribute("src") !== target) img.setAttribute("src", target);
   }
@@ -235,8 +238,8 @@
     function togglePanel(e) {
       if (e) e.preventDefault();
 
-      // Mobile: go straight to WhatsApp with a general message
-      if (isMobile()) {
+      // Mobile-like: go straight to WhatsApp with a general message
+      if (isMobileLike()) {
         var link = buildWaLink("Hi! I would like to book a birding tour. Page: {url}");
         if (link) openLink(link);
         return;
@@ -247,12 +250,19 @@
       else openPanel();
     }
 
-    // Set correct image on load and when viewport changes
+    // Set correct image on load and when media conditions change
     setImgForViewport(root);
     if (window.matchMedia) {
-      var mq = window.matchMedia("(max-width: 640px)");
-      if (mq && mq.addEventListener) mq.addEventListener("change", function () { setImgForViewport(root); });
-      else if (mq && mq.addListener) mq.addListener(function () { setImgForViewport(root); });
+      var mq1 = window.matchMedia("(max-width: 900px)");
+      var mq2 = window.matchMedia("(hover: none) and (pointer: coarse)");
+
+      function onChange() { setImgForViewport(root); closePanel(); }
+
+      if (mq1.addEventListener) mq1.addEventListener("change", onChange);
+      else if (mq1.addListener) mq1.addListener(onChange);
+
+      if (mq2.addEventListener) mq2.addEventListener("change", onChange);
+      else if (mq2.addListener) mq2.addListener(onChange);
     }
 
     btn.addEventListener("click", togglePanel, { passive: false });
@@ -270,8 +280,8 @@
         e.preventDefault();
         e.stopPropagation();
 
-        // Safety: on mobile these actions should not exist visually, but just in case
-        if (isMobile()) {
+        // Just in case: if a preview shows the panel on a touch device
+        if (isMobileLike()) {
           var linkM = buildWaLink("Hi! I would like to book a birding tour. Page: {url}");
           if (linkM) openLink(linkM);
           return;
