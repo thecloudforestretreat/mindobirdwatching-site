@@ -272,3 +272,27 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 })();
+
+/* WhatsApp Legacy Cleanup (FINAL)
+   This removes older widgets from previous attempts and prevents duplicate UI on mobile.
+*/
+
+(function () {
+  function removeAll(sel) {
+    document.querySelectorAll(sel).forEach(function (n) { n.remove(); });
+  }
+
+  // Remove legacy widgets from earlier attempts
+  removeAll(".mbwWaFab"); // old namespace
+
+  // If multiple bird widgets exist, keep ONLY the last one
+  var birds = Array.prototype.slice.call(document.querySelectorAll(".mbwWaBirdFab"));
+  if (birds.length > 1) {
+    birds.slice(0, birds.length - 1).forEach(function (n) { n.remove(); });
+  }
+
+  // Remove any leftover legacy UI parts
+  removeAll(".mbwWaFabPanel");
+  removeAll(".mbwWaFabBackdrop");
+  removeAll(".mbwWaFabActions");
+})();
