@@ -311,8 +311,15 @@ Page: {url}");
         e.stopPropagation();
 
         if (isMobileLike()) {
-          var labelA = getPageLabel() || "a birding tour";
-          goWhatsApp("Hi! I\u2019m interested in:\n" + labelA + "\n\nPage: {url}");
+          var dataMA = getInlineWaQuestions();
+          var pMA = normalizePath(window.location.pathname || "/");
+          var rowMA = (dataMA && dataMA.pages) ? dataMA.pages[pMA] : null;
+          if (!rowMA && dataMA) rowMA = isSpanishPath(pMA) ? dataMA.default_es : dataMA.default_en;
+          var tMA = (rowMA && rowMA.t1) ? rowMA.t1 : ("Hi! I am interested in:
+" + (getPageLabel() || "a birding tour") + "
+
+Page: {url}");
+          goWhatsApp(tMA);
           return;
         }
 
