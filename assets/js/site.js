@@ -170,14 +170,28 @@
 
 /* ============================
    WhatsApp Smart CTA (MBW)
-   - Uses wa.me Click to Chat
-   - Encodes message
-   - Fix: panel above backdrop so options clickable
+   Desktop: bird button opens menu
+   Mobile: bird button opens WhatsApp directly
    ============================ */
 
 (function () {
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function isMobile() {
+    return window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+  }
+
+  function setImgForViewport(root) {
+    var img = qs(".mbwWaFabImg", root);
+    if (!img) return;
+
+    var d = (root.getAttribute("data-wa-img-desktop") || "").toString();
+    var m = (root.getAttribute("data-wa-img-mobile") || "").toString();
+    var target = isMobile() ? (m || d) : (d || m);
+
+    if (target && img.getAttribute("src") !== target) img.setAttribute("src", target);
+  }
 
   function initFab(root) {
     if (!root || root.__mbwWaInit) return;
@@ -188,7 +202,25 @@
     var backdrop = qs(".mbwWaFabBackdrop", root);
     var actions = qsa(".mbwWaFabAction", root);
 
-    if (!btn || !closeBtn || !backdrop || actions.length === 0) return;
+    if (!btn) return;
+
+    function buildWaLink(template) {
+      var numRaw = (root.getAttribute("data-wa-number") || "").toString();
+      var num = numRaw.replace(/[^\d]/g, "");
+      if (!num) return "";
+
+      var url = window.location.href;
+      var msg = (template || "").replace("{url}", url);
+      var encoded = encodeURIComponent(msg);
+
+      return "https://wa.me/" + num + "?text=" + encoded;
+    }
+
+    function openLink(link) {
+      // window.open can be blocked on mobile; fall back to location change
+      var w = window.open(link, "_blank", "noopener,noreferrer");
+      if (!w) window.location.href = link;
+    }
 
     function openPanel() {
       root.classList.add("is-open");
@@ -202,42 +234,53 @@
 
     function togglePanel(e) {
       if (e) e.preventDefault();
+
+      // Mobile: go straight to WhatsApp with a general message
+      if (isMobile()) {
+        var link = buildWaLink("Hi! I would like to book a birding tour. Page: {url}");
+        if (link) openLink(link);
+        return;
+      }
+
+      // Desktop: open/close menu
       if (root.classList.contains("is-open")) closePanel();
       else openPanel();
     }
 
-    function buildWaLink(template) {
-      var numRaw = (root.getAttribute("data-wa-number") || "").toString();
-      var num = numRaw.replace(/[^\d]/g, "");
-      if (!num) return "";
-
-      var url = window.location.href;
-      var msg = (template || "").replace("{url}", url);
-
-      var encoded = encodeURIComponent(msg);
-      return "https://wa.me/" + num + "?text=" + encoded;
-    }
-
-    function openLink(link) {
-      var w = window.open(link, "_blank", "noopener,noreferrer");
-      if (!w) window.location.href = link;
+    // Set correct image on load and when viewport changes
+    setImgForViewport(root);
+    if (window.matchMedia) {
+      var mq = window.matchMedia("(max-width: 640px)");
+      if (mq && mq.addEventListener) mq.addEventListener("change", function () { setImgForViewport(root); });
+      else if (mq && mq.addListener) mq.addListener(function () { setImgForViewport(root); });
     }
 
     btn.addEventListener("click", togglePanel, { passive: false });
-    closeBtn.addEventListener("click", function (e) { e.preventDefault(); closePanel(); }, { passive: false });
-    backdrop.addEventListener("click", function () { closePanel(); }, { passive: true });
+
+    if (closeBtn) closeBtn.addEventListener("click", function (e) { e.preventDefault(); closePanel(); }, { passive: false });
+    if (backdrop) backdrop.addEventListener("click", function () { closePanel(); }, { passive: true });
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closePanel();
     });
 
+    // Desktop menu actions
     actions.forEach(function (a) {
       a.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
+
+        // Safety: on mobile these actions should not exist visually, but just in case
+        if (isMobile()) {
+          var linkM = buildWaLink("Hi! I would like to book a birding tour. Page: {url}");
+          if (linkM) openLink(linkM);
+          return;
+        }
+
         var template = a.getAttribute("data-wa-template") || "";
         var link = buildWaLink(template);
         if (!link) return;
+
         closePanel();
         openLink(link);
       }, { passive: false });
