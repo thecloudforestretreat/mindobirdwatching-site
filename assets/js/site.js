@@ -328,8 +328,23 @@ Page: {url}");
 
   function boot() { qsa(".mbwWaBirdFab").forEach(init); }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
+  // Footer is injected by includes.js on many pages, so the widget may appear AFTER DOMContentLoaded.
+  // Run boot multiple times and observe DOM changes to initialize as soon as it appears.
+  function bootSoon() {
+    boot();
+    window.setTimeout(boot, 400);
+    window.setTimeout(boot, 1200);
+    window.setTimeout(boot, 2500);
+  }
+
+  bootSoon();
+
+  if (!window.__mbwWaBirdObserver && "MutationObserver" in window) {
+    window.__mbwWaBirdObserver = new MutationObserver(function () {
+      boot();
+    });
+    window.__mbwWaBirdObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  }
 })();
 
 /* WhatsApp Legacy Cleanup (FINAL)
