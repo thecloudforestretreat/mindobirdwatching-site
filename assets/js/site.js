@@ -180,7 +180,15 @@
     return !!(byWidth || byPointer);
   }
 
-  function setImgForViewport(root) {
+  
+
+  function getPageLabel() {
+    var t = document.title || "";
+    // Remove trailing site name: " | Mindo Bird Watching"
+    t = t.replace(/\s*\|\s*Mindo Bird Watching\s*$/i, "");
+    return t.trim();
+  }
+function setImgForViewport(root) {
     var img = qs(".mbwWaBirdImg", root);
     if (!img) return;
 
@@ -232,7 +240,8 @@
       e.preventDefault();
 
       if (isMobileLike()) {
-        goWhatsApp("Hi! I would like to book a birding tour.\n\nPage: {url}");
+        var label = getPageLabel() || "a birding tour";
+        goWhatsApp("Hi! I\u2019m interested in:\n" + label + "\n\nPage: {url}");
         return;
       }
 
@@ -253,7 +262,8 @@
         e.stopPropagation();
 
         if (isMobileLike()) {
-          goWhatsApp("Hi! I would like to book a birding tour. Page: {url}");
+          var labelA = getPageLabel() || "a birding tour";
+          goWhatsApp("Hi! I\u2019m interested in:\n" + labelA + "\n\nPage: {url}");
           return;
         }
 
