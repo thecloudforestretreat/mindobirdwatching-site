@@ -172,7 +172,7 @@
    WhatsApp Smart CTA (MBW)
    - Uses wa.me Click to Chat
    - Encodes message
-   - Injects {url} and {brand}
+   - Fix: panel above backdrop so options clickable
    ============================ */
 
 (function () {
@@ -184,12 +184,11 @@
     root.__mbwWaInit = true;
 
     var btn = qs(".mbwWaFabBtn", root);
-    var panel = qs(".mbwWaFabPanel", root);
     var closeBtn = qs(".mbwWaFabClose", root);
     var backdrop = qs(".mbwWaFabBackdrop", root);
     var actions = qsa(".mbwWaFabAction", root);
 
-    if (!btn || !panel || !closeBtn || !backdrop || actions.length === 0) return;
+    if (!btn || !closeBtn || !backdrop || actions.length === 0) return;
 
     function openPanel() {
       root.classList.add("is-open");
@@ -212,20 +211,21 @@
       var num = numRaw.replace(/[^\d]/g, "");
       if (!num) return "";
 
-      var brand = (root.getAttribute("data-wa-brand") || "").toString();
       var url = window.location.href;
-
-      var msg = (template || "")
-        .replace("{url}", url)
-        .replace("{brand}", brand);
+      var msg = (template || "").replace("{url}", url);
 
       var encoded = encodeURIComponent(msg);
       return "https://wa.me/" + num + "?text=" + encoded;
     }
 
+    function openLink(link) {
+      var w = window.open(link, "_blank", "noopener,noreferrer");
+      if (!w) window.location.href = link;
+    }
+
     btn.addEventListener("click", togglePanel, { passive: false });
     closeBtn.addEventListener("click", function (e) { e.preventDefault(); closePanel(); }, { passive: false });
-    backdrop.addEventListener("click", function () { closePanel(); });
+    backdrop.addEventListener("click", function () { closePanel(); }, { passive: true });
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closePanel();
@@ -234,11 +234,12 @@
     actions.forEach(function (a) {
       a.addEventListener("click", function (e) {
         e.preventDefault();
+        e.stopPropagation();
         var template = a.getAttribute("data-wa-template") || "";
         var link = buildWaLink(template);
         if (!link) return;
-        window.open(link, "_blank", "noopener,noreferrer");
         closePanel();
+        openLink(link);
       }, { passive: false });
     });
   }
