@@ -393,25 +393,25 @@ html, body{ overflow-x: visible; }
   }
 }
 
-/* ============================
-   WhatsApp Smart CTA (MBW)
-   Bird image button + desktop menu
-   Mobile: tap opens WhatsApp directly
-   ============================ */
+/* WhatsApp Smart CTA (MBW) v3
+   Desktop size: change --mbwWaDeskW (e.g. 200px)
+*/
 
-.mbwWaFab{
-  position: fixed;
-  right: calc(12px + env(safe-area-inset-right));
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  z-index: 2600;
+.mbwWaBirdFab{
+  --mbwWaDeskW: 172px;
+  --mbwWaMobW: 150px;
+  position: fixed !important;
+  right: calc(12px + env(safe-area-inset-right)) !important;
+  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  z-index: 2700 !important;
   font-family: inherit;
 }
 
-.mbwWaFabBtn{
+.mbwWaBirdBtn{
   border: 0;
   padding: 0;
   margin: 0;
-  background: transparent !important; /* prevent any UA background */
+  background: transparent !important;
   cursor: pointer;
   border-radius: 18px;
   -webkit-tap-highlight-color: transparent;
@@ -419,25 +419,24 @@ html, body{ overflow-x: visible; }
   align-items: center;
   justify-content: center;
   line-height: 0;
-  box-shadow: none; /* remove the "square background" effect */
 }
 
-.mbwWaFabBtn:focus{
+.mbwWaBirdBtn:focus{
   outline: 2px solid rgba(13, 89, 37, 0.35);
   outline-offset: 4px;
 }
 
-.mbwWaFabImg{
+.mbwWaBirdImg{
   display: block;
-  width: 172px;  /* desktop default */
+  width: var(--mbwWaDeskW);
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
-  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.18)); /* shadow without a background fill */
+  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.18));
 }
 
 /* Backdrop below panel */
-.mbwWaFabBackdrop{
+.mbwWaBirdBackdrop{
   position: fixed;
   inset: 0;
   background: rgba(2, 6, 23, 0.28);
@@ -447,16 +446,16 @@ html, body{ overflow-x: visible; }
   z-index: 1;
 }
 
-.mbwWaFab.is-open .mbwWaFabBackdrop{
+.mbwWaBirdFab.is-open .mbwWaBirdBackdrop{
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Desktop panel */
-.mbwWaFabPanel{
+/* Desktop menu */
+.mbwWaBirdPanel{
   position: absolute;
   right: 0;
-  bottom: 190px; /* sits above the bird button */
+  bottom: calc(var(--mbwWaDeskW) + 18px);
   width: 320px;
   background: #ffffff;
   border-radius: 16px;
@@ -470,13 +469,13 @@ html, body{ overflow-x: visible; }
   z-index: 2;
 }
 
-.mbwWaFab.is-open .mbwWaFabPanel{
+.mbwWaBirdFab.is-open .mbwWaBirdPanel{
   transform: translateY(0);
   opacity: 1;
   pointer-events: auto;
 }
 
-.mbwWaFabHead{
+.mbwWaBirdHead{
   padding: 12px 12px 10px;
   background: #f3f6fb;
   display: flex;
@@ -485,13 +484,13 @@ html, body{ overflow-x: visible; }
   gap: 10px;
 }
 
-.mbwWaFabTitle{
+.mbwWaBirdTitle{
   font-weight: 900;
   font-size: 13px;
   color: #0f172a;
 }
 
-.mbwWaFabClose{
+.mbwWaBirdClose{
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -502,15 +501,13 @@ html, body{ overflow-x: visible; }
   border-radius: 10px;
 }
 
-.mbwWaFabClose:hover{ background: rgba(15, 23, 42, 0.06); }
-
-.mbwWaFabActions{
+.mbwWaBirdActions{
   padding: 10px;
   display: grid;
   gap: 8px;
 }
 
-.mbwWaFabAction{
+.mbwWaBirdAction{
   display: block;
   width: 100%;
   text-decoration: none;
@@ -525,25 +522,13 @@ html, body{ overflow-x: visible; }
   white-space: normal;
 }
 
-.mbwWaFabAction:hover{
-  background: #f8fafc;
-  border-color: rgba(15, 23, 42, 0.18);
-}
-
-/* MOBILE RULES (robust):
-   Use both width and coarse-pointer detection so it works even inside previews/iframes */
+/* Mobile-like: hide menu UI, keep button */
 @media (max-width: 900px), (hover: none) and (pointer: coarse){
-  .mbwWaFab{
-    right: calc(10px + env(safe-area-inset-right));
-    bottom: calc(10px + env(safe-area-inset-bottom));
-  }
-  .mbwWaFabImg{ width: 150px; }
-
-  .mbwWaFabPanel{ display: none !important; }
-  .mbwWaFabBackdrop{ display: none !important; }
+  .mbwWaBirdImg{ width: var(--mbwWaMobW); }
+  .mbwWaBirdPanel{ display: none !important; }
+  .mbwWaBirdBackdrop{ display: none !important; }
 }
 
-/* Small phones */
 @media (max-width: 380px){
-  .mbwWaFabImg{ width: 138px; }
+  .mbwWaBirdFab{ --mbwWaMobW: 138px; }
 }
