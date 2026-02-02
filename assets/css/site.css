@@ -410,14 +410,16 @@ html, body{ overflow-x: visible; }
 .mbwWaFabBtn{
   border: 0;
   padding: 0;
-  background: transparent;
+  margin: 0;
+  background: transparent !important; /* prevent any UA background */
   cursor: pointer;
   border-radius: 18px;
   -webkit-tap-highlight-color: transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  line-height: 0;
+  box-shadow: none; /* remove the "square background" effect */
 }
 
 .mbwWaFabBtn:focus{
@@ -431,6 +433,7 @@ html, body{ overflow-x: visible; }
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
+  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.18)); /* shadow without a background fill */
 }
 
 /* Backdrop below panel */
@@ -527,19 +530,17 @@ html, body{ overflow-x: visible; }
   border-color: rgba(15, 23, 42, 0.18);
 }
 
-/* Mobile: keep the bird button, but disable the menu UI entirely */
-@media (max-width: 640px){
+/* MOBILE RULES (robust):
+   Use both width and coarse-pointer detection so it works even inside previews/iframes */
+@media (max-width: 900px), (hover: none) and (pointer: coarse){
   .mbwWaFab{
     right: calc(10px + env(safe-area-inset-right));
     bottom: calc(10px + env(safe-area-inset-bottom));
   }
-  .mbwWaFabImg{
-    width: 150px;
-  }
-  .mbwWaFabPanel,
-  .mbwWaFabBackdrop{
-    display: none;
-  }
+  .mbwWaFabImg{ width: 150px; }
+
+  .mbwWaFabPanel{ display: none !important; }
+  .mbwWaFabBackdrop{ display: none !important; }
 }
 
 /* Small phones */
