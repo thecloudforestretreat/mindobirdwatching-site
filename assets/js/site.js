@@ -167,3 +167,86 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 })();
+
+/* ============================
+   WhatsApp Smart CTA (MBW)
+   - Uses wa.me Click to Chat
+   - Encodes message
+   - Injects {url} and {brand}
+   ============================ */
+
+(function () {
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function initFab(root) {
+    if (!root || root.__mbwWaInit) return;
+    root.__mbwWaInit = true;
+
+    var btn = qs(".mbwWaFabBtn", root);
+    var panel = qs(".mbwWaFabPanel", root);
+    var closeBtn = qs(".mbwWaFabClose", root);
+    var backdrop = qs(".mbwWaFabBackdrop", root);
+    var actions = qsa(".mbwWaFabAction", root);
+
+    if (!btn || !panel || !closeBtn || !backdrop || actions.length === 0) return;
+
+    function openPanel() {
+      root.classList.add("is-open");
+      btn.setAttribute("aria-expanded", "true");
+    }
+
+    function closePanel() {
+      root.classList.remove("is-open");
+      btn.setAttribute("aria-expanded", "false");
+    }
+
+    function togglePanel(e) {
+      if (e) e.preventDefault();
+      if (root.classList.contains("is-open")) closePanel();
+      else openPanel();
+    }
+
+    function buildWaLink(template) {
+      var numRaw = (root.getAttribute("data-wa-number") || "").toString();
+      var num = numRaw.replace(/[^\d]/g, "");
+      if (!num) return "";
+
+      var brand = (root.getAttribute("data-wa-brand") || "").toString();
+      var url = window.location.href;
+
+      var msg = (template || "")
+        .replace("{url}", url)
+        .replace("{brand}", brand);
+
+      var encoded = encodeURIComponent(msg);
+      return "https://wa.me/" + num + "?text=" + encoded;
+    }
+
+    btn.addEventListener("click", togglePanel, { passive: false });
+    closeBtn.addEventListener("click", function (e) { e.preventDefault(); closePanel(); }, { passive: false });
+    backdrop.addEventListener("click", function () { closePanel(); });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closePanel();
+    });
+
+    actions.forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        var template = a.getAttribute("data-wa-template") || "";
+        var link = buildWaLink(template);
+        if (!link) return;
+        window.open(link, "_blank", "noopener,noreferrer");
+        closePanel();
+      }, { passive: false });
+    });
+  }
+
+  function boot() {
+    qsa(".mbwWaFab").forEach(initFab);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
