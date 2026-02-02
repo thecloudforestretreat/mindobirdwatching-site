@@ -1,341 +1,534 @@
-/* /assets/js/site.js
-   MBW mobile menu controller (drill-down) - STABLE
-   Works even if:
-   - header is <div class="topbar"> (not <header>)
-   - data-mbw-header attribute is missing
-   - menu button/panel use ids (#menuBtn/#menuPanel) or classes (.menuBtn/.menuPanel)
-   - legacy CSS shipped submenus visible
+/* ============================
+   Mindo Bird Watching
+   Global Brand Styles (v1.3)
+   Fonts: Playfair Display (headings) + Open Sans (body/UI)
+   Background: #C7DAAC site-wide
+   ============================ */
 
-   Behavior:
-   - Hamburger toggles panel
-   - On open: show main menu only, hide all submenus
-   - .m-next opens submenu via data-target selector
-   - .m-back goes back via data-back selector
+/* Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap");
+
+:root{
+  /* Brand palette */
+  --bg: #C7DAAC;          /* site background (global) */
+  --forest: #0D5925;      /* primary */
+  --brown: #8B4513;       /* secondary */
+  --sky: #87CEEB;         /* optional accent */
+  --gold: #FFD700;        /* CTA accent */
+
+  /* Neutrals */
+  --ink: #071923;         /* primary text */
+  --muted: rgba(7,25,35,.72);
+  --card: rgba(255,255,255,.72);
+  --card-strong: rgba(255,255,255,.88);
+  --line: rgba(7,25,35,.14);
+
+  /* Radius + shadow */
+  --r: 18px;
+  --shadow: 0 18px 55px rgba(7,25,35,.10);
+
+  /* Typography */
+  --font-body: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
+
+  /* Footer social icon sizing (NO bubbles) */
+  --social-icon-size: 36px; /* icon size */
+  --social-gap: 14px;       /* gap between icons */
+
+  /* Sticky header spacing */
+  --sticky-top: 16px;
+}
+
+/* Base reset */
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
+
+body{
+  margin:0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links: remove default underline/blue */
+a{
+  color: inherit;
+  text-decoration: none;
+}
+a:visited{ color: inherit; }
+a:hover{ text-decoration: none; }
+a:focus-visible{
+  outline: 3px solid rgba(255,215,0,.35);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+img{
+  max-width: 100%;
+  display: block;
+}
+
+/* Layout helper */
+.container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Text defaults */
+h1,h2,h3,h4,h5,h6{
+  font-family: var(--font-head);
+  color: var(--forest);
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+p{
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+/* Cards */
+.card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+
+/* Buttons */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  font-weight: 800;
+  background: var(--card-strong);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.btn.primary{
+  background: rgba(255,215,0,.22);
+  border-color: rgba(255,215,0,.55);
+}
+
+.btn.secondary{
+  background: rgba(13,89,37,.14);
+  border-color: rgba(13,89,37,.35);
+}
+
+/* Pills */
+.pill{
+  padding:10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 13px;
+  background: rgba(255,255,255,.55);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  white-space: nowrap;
+}
+
+.pill.active{
+  background: rgba(13,89,37,.14);
+  border-color: rgba(13,89,37,.35);
+  color: var(--ink);
+}
+
+/* ============================
+   Global Header (APPROVED include)
+   Uses header.html classes:
+   .topbar .brand .right .lang .nav
+   .menuBtn #menuPanel .menuList
+   Plus sticky behavior (inside container)
+   ============================ */
+
+/* Sticky mount (keeps header sticky while scrolling) */
+#siteHeader{
+  position: sticky;
+  top: var(--sticky-top);
+  z-index: 2000;
+}
+
+/* If any ancestor sets overflow hidden, sticky can break.
+   We explicitly allow visible overflow on common wrappers. */
+html, body{ overflow-x: visible; }
+.container{ overflow: visible; }
+
+/* Header shell */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.65);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  position: relative; /* anchors menuPanel */
+}
+
+/* Brand */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:900;
+  color: var(--ink);
+  white-space:nowrap;
+  min-width: 0;
+}
+.brand img{
+  height:26px;
+  width:auto;
+  display:block;
+  flex:0 0 auto;
+  border-radius: 8px;
+}
+
+/* Right side (desktop) */
+.right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+/* NOTE: header.css is the primary source of truth for header layout.
+   These base styles remain, desktop overrides are added at the bottom. */
+.nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+/* Language switch */
+.lang{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:rgba(255,255,255,.5);
+}
+.lang a{
+  padding:8px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12.5px;
+  color:var(--muted);
+}
+.lang a.active{
+  background:rgba(13,89,37,.14);
+  border:1px solid rgba(13,89,37,.35);
+  color:var(--ink);
+}
+
+/* Hamburger (mobile) */
+.menuBtn{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.65);
+  cursor:pointer;
+}
+.menuBtn svg{ width:22px; height:22px; }
+
+/* Mobile panel */
+.menuPanel{
+  display:none;
+  position:absolute;
+  right:12px;
+  top: calc(100% + 10px);
+  width: min(320px, calc(100vw - 24px));
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+  z-index: 2100;
+}
+.menuPanel .lang{
+  width:100%;
+  justify-content:center;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,.75);
+}
+.menuList{
+  display:grid;
+  gap:10px;
+}
+.menuList a.pill{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
+
+/* Mobile behavior: hide desktop nav and show hamburger */
+@media (max-width:900px){
+  .right .lang,
+  .right .nav{ display:none; }
+  .menuBtn{ display:inline-flex; }
+  .menuPanel{ display:none; }
+  .menuPanel.is-open{ display:block; }
+}
+
+/* Optional: tighten sticky spacing on small screens */
+@media (max-width:520px){
+  :root{ --sticky-top: 12px; }
+  .container{ padding: 18px; }
+}
+
+/* ============================
+   Footer (NO bubbles, locked sizing)
+   ============================ */
+
+.footer{
+  text-align:center;
+  padding: 28px 0 10px;
+}
+
+.footer-social{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap: var(--social-gap);
+  flex-wrap:wrap;
+  margin-bottom: 14px;
+}
+
+/* IMPORTANT: remove container sizing/padding so Safari can’t blow it up */
+.footer-social a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* IMPORTANT: lock size at IMG level */
+.footer-social img{
+  width: var(--social-icon-size);
+  height: var(--social-icon-size);
+  object-fit: contain;
+  display:block;
+}
+
+/* Bottom line: small logo + text centered */
+.footer-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin-top: 2px;
+}
+
+.footer-bottom img{
+  height: 45px;
+  width:auto;
+  display:block;
+}
+
+.footer small{
+  display:block;
+  font-weight: 900;
+  color: rgba(7,25,35,.78);
+}
+
+/* =========================================================
+   MBW Header Fix – Desktop ES overlap fix (EN/ES vs Inicio)
+   - Force real spacing so first nav pill cannot sit under lang
+   - Keep dropdowns working
+   ========================================================= */
+
+@media (min-width: 901px){
+  header.topbar[data-mbw-header] .right{
+    flex-wrap: nowrap;
+    min-width: 0;
+    gap: 14px; /* stronger separation than header.css */
+  }
+
+  header.topbar[data-mbw-header] .lang{
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 3; /* keep lang above if anything collides */
+  }
+
+  header.topbar[data-mbw-header] nav.nav{
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow: visible; /* dropdowns must render outside nav */
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ✅ THE ACTUAL FIX: push Inicio away from EN/ES on ES desktop */
+  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav > a.pill:first-child{
+    margin-left: 12px; /* hard gap so it cannot overlap the lang pills */
+  }
+}
+
+/* WhatsApp Smart CTA (MBW) v3
+   Desktop size: change --mbwWaDeskW (e.g. 200px)
 */
 
-(function () {
-  function qs(root, sel) { return (root || document).querySelector(sel); }
-  function qsa(root, sel) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+.mbwWaBirdFab{
+  --mbwWaDeskW: 193px;
+  --mbwWaMobW: 150px;
+  position: fixed !important;
+  right: calc(12px + env(safe-area-inset-right)) !important;
+  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  z-index: 2700 !important;
+  font-family: inherit;
+}
 
-  function findBtn(header) {
-    return qs(header, ".menuBtn") || qs(header, "#menuBtn") || qs(header, "[data-menu-btn]");
-  }
+.mbwWaBirdBtn{
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent !important;
+  cursor: pointer;
+  border-radius: 18px;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
 
-  function findPanel(header) {
-    return qs(header, ".menuPanel") || qs(header, "#menuPanel") || qs(header, "[data-menu-panel]");
-  }
+.mbwWaBirdBtn:focus{
+  outline: 2px solid rgba(13, 89, 37, 0.35);
+  outline-offset: 4px;
+}
 
-  function forceHide(el) {
-    if (!el) return;
-    el.setAttribute("hidden", "");
-    el.style.display = "none";
-    el.setAttribute("aria-hidden", "true");
-  }
+.mbwWaBirdImg{
+  display: block;
+  width: var(--mbwWaDeskW);
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.18));
+}
 
-  function forceShow(el) {
-    if (!el) return;
-    el.removeAttribute("hidden");
-    el.style.display = "";
-    el.setAttribute("aria-hidden", "false");
-  }
+/* Backdrop below panel */
+.mbwWaBirdBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+  z-index: 1;
+}
 
-  function initHeader(topbar) {
-    if (!topbar) return;
+.mbwWaBirdFab.is-open .mbwWaBirdBackdrop{
+  opacity: 1;
+  pointer-events: auto;
+}
 
-    var btn = findBtn(topbar);
-    var panel = findPanel(topbar);
-    if (!btn || !panel) return;
+/* Desktop menu */
+.mbwWaBirdPanel{
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--mbwWaDeskW) + 18px);
+  width: 320px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  transform: translateY(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  z-index: 2;
+}
 
-    var mainView =
-      qs(panel, ".m-main") ||
-      qs(panel, ".menuList") ||
-      panel;
+.mbwWaBirdFab.is-open .mbwWaBirdPanel{
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
 
-    var subViews = qsa(panel, ".m-submenu");
+.mbwWaBirdHead{
+  padding: 12px 12px 10px;
+  background: #f3f6fb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
 
-    if (subViews.length === 0) {
-      qsa(panel, "[id^='m-']").forEach(function (el) {
-        if (el !== mainView) subViews.push(el);
-      });
-    }
+.mbwWaBirdTitle{
+  font-weight: 900;
+  font-size: 13px;
+  color: #0f172a;
+}
 
-    function legacySubmenuBlocks() {
-      return qsa(panel, ".submenu, .subMenu, .submenuList, .menuSub, ul ul, ol ol");
-    }
+.mbwWaBirdClose{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  color: #334155;
+  padding: 4px 8px;
+  border-radius: 10px;
+}
 
-    function resetDrilldown() {
-      subViews.forEach(forceHide);
-      legacySubmenuBlocks().forEach(function (el) {
-        if (el === mainView) return;
-        forceHide(el);
-      });
-      forceShow(mainView);
-    }
+.mbwWaBirdActions{
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
 
-    function openPanel() {
-      panel.classList.add("is-open");
-      btn.setAttribute("aria-expanded", "true");
-      resetDrilldown();
-    }
+.mbwWaBirdAction{
+  display: block;
+  width: 100%;
+  text-decoration: none;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  color: #0f172a;
+  background: #ffffff;
+  font-weight: 900;
+  font-size: 13px;
+  line-height: 1.25;
+  white-space: normal;
+}
 
-    function closePanel() {
-      panel.classList.remove("is-open");
-      btn.setAttribute("aria-expanded", "false");
-      resetDrilldown();
-    }
+/* Mobile-like: hide menu UI, keep button */
+@media (max-width: 900px), (hover: none) and (pointer: coarse){
+  .mbwWaBirdImg{ width: var(--mbwWaMobW); }
+  .mbwWaBirdPanel{ display: none !important; }
+  .mbwWaBirdBackdrop{ display: none !important; }
+}
 
-    function togglePanel(e) {
-      if (e) e.preventDefault();
-      if (panel.classList.contains("is-open")) closePanel();
-      else openPanel();
-    }
-
-    if (!btn.__mbwBound) {
-      btn.__mbwBound = true;
-      btn.addEventListener("click", togglePanel, { passive: false });
-      btn.addEventListener("touchend", togglePanel, { passive: false });
-    }
-
-    if (!document.__mbwDocBound) {
-      document.__mbwDocBound = true;
-      document.addEventListener("click", function (e) {
-        var openPanels = qsa(document, "#siteHeader .menuPanel.is-open, #siteHeader #menuPanel.is-open");
-        if (openPanels.length === 0) return;
-
-        openPanels.forEach(function (p) {
-          var h = p.closest("#siteHeader .topbar") || p.closest(".topbar");
-          if (h && h.contains(e.target)) return;
-          p.classList.remove("is-open");
-        });
-      });
-    }
-
-    if (!panel.__mbwBound) {
-      panel.__mbwBound = true;
-      panel.addEventListener("click", function (e) {
-        var el = e.target;
-
-        while (el && el !== panel && !(el.classList && el.classList.contains("m-next"))) {
-          el = el.parentNode;
-        }
-        if (el && el.classList && el.classList.contains("m-next")) {
-          var targetSel = el.getAttribute("data-target");
-          if (!targetSel) return;
-          var targetMenu = qs(panel, targetSel);
-          if (!targetMenu) return;
-
-          forceHide(mainView);
-          subViews.forEach(forceHide);
-          forceShow(targetMenu);
-          e.preventDefault();
-          return;
-        }
-
-        el = e.target;
-        while (el && el !== panel && !(el.classList && el.classList.contains("m-back"))) {
-          el = el.parentNode;
-        }
-        if (el && el.classList && el.classList.contains("m-back")) {
-          var backSel = el.getAttribute("data-back");
-
-          subViews.forEach(forceHide);
-
-          if (backSel) {
-            var backMenu = qs(panel, backSel);
-            if (backMenu) forceShow(backMenu);
-            else forceShow(mainView);
-          } else {
-            forceShow(mainView);
-          }
-
-          e.preventDefault();
-          return;
-        }
-      });
-    }
-
-    resetDrilldown();
-    btn.setAttribute("aria-expanded", "false");
-  }
-
-  function boot() {
-    var bars = qsa(document, "#siteHeader .topbar");
-    if (bars.length === 0) bars = qsa(document, ".topbar");
-    bars.forEach(initHeader);
-  }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
-})();
-
-/* WhatsApp Smart CTA (MBW) v3 */
-
-(function () {
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  function isMobileLike() {
-    var byWidth = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
-    var byPointer = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-    var byTouch = ("ontouchstart" in window) || (navigator && navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
-    return !!(byWidth || byPointer || byTouch);
-  }
-
-  
-
-  function getPageLabel() {
-    var t = document.title || "";
-    // Remove trailing site name: " | Mindo Bird Watching"
-    t = t.replace(/\s*\|\s*Mindo Bird Watching\s*$/i, "");
-    return t.trim();
-  }
-function setImgForViewport(root) {
-    var img = qs(".mbwWaBirdImg", root);
-    if (!img) return;
-
-    var d = (root.getAttribute("data-wa-img-desktop") || "").toString();
-    var m = (root.getAttribute("data-wa-img-mobile") || "").toString();
-    var target = isMobileLike() ? (m || d) : (d || m);
-
-    if (target && img.getAttribute("src") !== target) img.setAttribute("src", target);
-  }
-
-  function init(root) {
-    if (!root || root.__mbwWaBirdInit) return;
-    root.__mbwWaBirdInit = true;
-
-    var btn = qs(".mbwWaBirdBtn", root);
-    var closeBtn = qs(".mbwWaBirdClose", root);
-    var backdrop = qs(".mbwWaBirdBackdrop", root);
-    var actions = qsa(".mbwWaBirdAction", root);
-
-    if (!btn) return;
-
-    function buildLink(template) {
-      var numRaw = (root.getAttribute("data-wa-number") || "").toString();
-      var num = numRaw.replace(/[^\d]/g, "");
-      if (!num) return "";
-
-      var url = window.location.href;
-      var msg = (template || "").replace("{url}", url);
-      return "https://wa.me/" + num + "?text=" + encodeURIComponent(msg);
-    }
-
-    function openPanel() {
-      root.classList.add("is-open");
-      btn.setAttribute("aria-expanded", "true");
-    }
-
-    function closePanel() {
-      root.classList.remove("is-open");
-      btn.setAttribute("aria-expanded", "false");
-    }
-
-    function goWhatsApp(template) {
-      var link = buildLink(template);
-      if (!link) return;
-      window.location.href = link;
-    }
-
-    function onBtnClick(e) {
-      e.preventDefault();
-
-      if (isMobileLike()) {
-        var label = getPageLabel() || "a birding tour";
-        goWhatsApp("Hi! I\u2019m interested in:\n" + label + "\n\nPage: {url}");
-        return;
-      }
-
-      if (root.classList.contains("is-open")) closePanel();
-      else openPanel();
-    }
-
-    setImgForViewport(root);
-
-    btn.addEventListener("click", onBtnClick, { passive: false });
-
-    if (closeBtn) closeBtn.addEventListener("click", function (e) { e.preventDefault(); closePanel(); }, { passive: false });
-    if (backdrop) backdrop.addEventListener("click", function () { closePanel(); }, { passive: true });
-
-    actions.forEach(function (a) {
-      a.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (isMobileLike()) {
-          var labelA = getPageLabel() || "a birding tour";
-          goWhatsApp("Hi! I\u2019m interested in:\n" + labelA + "\n\nPage: {url}");
-          return;
-        }
-
-        var template = a.getAttribute("data-wa-template") || "";
-        var link = buildLink(template);
-        if (!link) return;
-
-        closePanel();
-        window.open(link, "_blank", "noopener,noreferrer");
-      }, { passive: false });
-    });
-  }
-
-  function boot() { qsa(".mbwWaBirdFab").forEach(init); }
-
-  // Footer is injected by includes.js on some pages, so the widget may appear AFTER DOMContentLoaded.
-  // We re-run boot a few times and also observe DOM mutations to initialize when it appears.
-  function bootSoon() {
-    boot();
-    window.setTimeout(boot, 500);
-    window.setTimeout(boot, 1500);
-    window.setTimeout(boot, 3000);
-  }
-
-  // Run once when script executes (defer means DOM is parsed, but includes may still be loading)
-  bootSoon();
-
-  // Observe for late-inserted widget
-  if (!window.__mbwWaObserver && "MutationObserver" in window) {
-    window.__mbwWaObserver = new MutationObserver(function () {
-      boot();
-    });
-    window.__mbwWaObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
-  }
-})();
-
-/* WhatsApp Legacy Cleanup (FINAL)
-   This removes older widgets from previous attempts and prevents duplicate UI on mobile.
-*/
-
-(function () {
-  function removeAll(sel) {
-    document.querySelectorAll(sel).forEach(function (n) { n.remove(); });
-  }
-
-  // Remove legacy widgets from earlier attempts
-  removeAll(".mbwWaFab"); // old namespace
-
-  // If multiple bird widgets exist, keep ONLY the last one
-  var birds = Array.prototype.slice.call(document.querySelectorAll(".mbwWaBirdFab"));
-  if (birds.length > 1) {
-    birds.slice(0, birds.length - 1).forEach(function (n) { n.remove(); });
-  }
-
-  // Remove any leftover legacy UI parts
-  removeAll(".mbwWaFabPanel");
-  removeAll(".mbwWaFabBackdrop");
-  removeAll(".mbwWaFabActions");
-
-  // Also clean up any legacy widgets inserted later by includes or cached HTML
-  if (!window.__mbwWaCleanupObserver && "MutationObserver" in window) {
-    window.__mbwWaCleanupObserver = new MutationObserver(function () {
-      removeAll(".mbwWaFab");
-      removeAll(".mbwWaFabPanel");
-      removeAll(".mbwWaFabBackdrop");
-      removeAll(".mbwWaFabActions");
-      var birds2 = Array.prototype.slice.call(document.querySelectorAll(".mbwWaBirdFab"));
-      if (birds2.length > 1) {
-        birds2.slice(0, birds2.length - 1).forEach(function (n) { n.remove(); });
-      }
-    });
-    window.__mbwWaCleanupObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
-  }
-})();
+@media (max-width: 380px){
+  .mbwWaBirdFab{ --mbwWaMobW: 138px; }
+}
