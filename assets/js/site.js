@@ -286,10 +286,7 @@ if (!btn) return;
         var pM = normalizePath(window.location.pathname || "/");
         var rowM = (dataM && dataM.pages) ? dataM.pages[pM] : null;
         if (!rowM && dataM) rowM = isSpanishPath(pM) ? dataM.default_es : dataM.default_en;
-        var tM = (rowM && rowM.t1) ? rowM.t1 : ("Hi! I am interested in:
-" + (getPageLabel() || "a birding tour") + "
-
-Page: {url}");
+        var tM = (rowM && rowM.t1) ? rowM.t1 : ("Hi! I am interested in:\n" + (getPageLabel() || "a birding tour") + "\n\nPage: {url}");
         goWhatsApp(tM);
         return;
       }
@@ -301,6 +298,13 @@ Page: {url}");
     setImgForViewport(root);
 
     btn.addEventListener("click", onBtnClick, { passive: false });
+
+    btn.addEventListener("touchstart", function (e) {
+      if (!isMobileLike()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      onBtnClick(e);
+    }, { passive: false });
 
     if (closeBtn) closeBtn.addEventListener("click", function (e) { e.preventDefault(); closePanel(); }, { passive: false });
     if (backdrop) backdrop.addEventListener("click", function () { closePanel(); }, { passive: true });
@@ -315,10 +319,7 @@ Page: {url}");
           var pMA = normalizePath(window.location.pathname || "/");
           var rowMA = (dataMA && dataMA.pages) ? dataMA.pages[pMA] : null;
           if (!rowMA && dataMA) rowMA = isSpanishPath(pMA) ? dataMA.default_es : dataMA.default_en;
-          var tMA = (rowMA && rowMA.t1) ? rowMA.t1 : ("Hi! I am interested in:
-" + (getPageLabel() || "a birding tour") + "
-
-Page: {url}");
+          var tMA = (rowMA && rowMA.t1) ? rowMA.t1 : ("Hi! I am interested in:\n" + (getPageLabel() || "a birding tour") + "\n\nPage: {url}");
           goWhatsApp(tMA);
           return;
         }
