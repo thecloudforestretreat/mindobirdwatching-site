@@ -363,19 +363,29 @@ function setImgForViewport(root) {
         window.location.href = link;
       }
 
-      // Fallback click: open WhatsApp direct on mobile-like, open menu on desktop if your full init is present elsewhere.
-      btn.addEventListener("click", function (e) {
-        // If the real init already bound, it will set __mbwWaBirdInit on root. Respect that.
+      // Fallback behavior:
+      // - Mobile-like: go straight to WhatsApp (reliable for iOS/Android)
+      // - Desktop: do NOT intercept clicks, so the full WhatsApp init can open the question menu panel
+      function isMobileLike() {
+        var byWidth = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+        var byPointer = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+        var byTouch = ("ontouchstart" in window) || (navigator && navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+        return !!(byWidth || byPointer || byTouch);
+      }
+
+      function handleMobile(e) {
         if (root.__mbwWaBirdInit) return;
+        if (!isMobileLike()) return;
         e.preventDefault();
+        e.stopPropagation();
         var row = buildFromInline();
         var t = row && row.t1 ? row.t1 : (isSpanishPath(normalizePath(window.location.pathname || "/")) ? "Hola.\n\nPagina: {url}" : "Hi!\n\nPage: {url}");
         goWhatsApp(t);
-      }, { passive: false });
+      }
 
-      btn.addEventListener("touchstart", function (e) {
-        if (root.__mbwWaBirdInit) return;
-        e.preventDefault();
+      // Only attach mobile intercepts
+      btn.addEventListener("touchstart", handleMobile, { passive: false });
+      btn.addEventListener("click", handleMobile, { passive: false });
         e.stopPropagation();
         var row = buildFromInline();
         var t = row && row.t1 ? row.t1 : (isSpanishPath(normalizePath(window.location.pathname || "/")) ? "Hola.\n\nPagina: {url}" : "Hi!\n\nPage: {url}");
