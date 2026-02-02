@@ -392,3 +392,139 @@ html, body{ overflow-x: visible; }
     margin-left: 12px; /* hard gap so it cannot overlap the lang pills */
   }
 }
+
+/* ============================
+   WhatsApp Smart CTA (MBW)
+   Safe, isolated classes
+   ============================ */
+
+.mbwWaFab{
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2500; /* above header/menu */
+  font-family: inherit;
+}
+
+.mbwWaFabBtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 14px;
+  cursor: pointer;
+  background: #0b5bd3;
+  color: #ffffff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.20);
+}
+
+.mbwWaFabBtn:hover{ filter: brightness(1.05); }
+
+.mbwWaFabIcon{
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.16);
+  flex: 0 0 auto;
+}
+
+.mbwWaFabText{
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.mbwWaFabPanel{
+  position: absolute;
+  right: 0;
+  bottom: 54px;
+  width: min(320px, calc(100vw - 32px));
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  transform: translateY(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+}
+
+.mbwWaFab.is-open .mbwWaFabPanel{
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mbwWaFabHead{
+  padding: 12px 12px 10px;
+  background: #f3f6fb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mbwWaFabTitle{
+  font-weight: 900;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.mbwWaFabClose{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  color: #334155;
+  padding: 4px 8px;
+  border-radius: 10px;
+}
+
+.mbwWaFabClose:hover{ background: rgba(15, 23, 42, 0.06); }
+
+.mbwWaFabActions{
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.mbwWaFabAction{
+  display: block;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  color: #0f172a;
+  background: #ffffff;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.mbwWaFabAction:hover{
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.18);
+}
+
+.mbwWaFabBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.mbwWaFab.is-open .mbwWaFabBackdrop{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 420px){
+  .mbwWaFabBtn{ padding: 12px; }
+  .mbwWaFabText{ display: none; }
+}
