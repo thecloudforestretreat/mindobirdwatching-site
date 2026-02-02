@@ -171,6 +171,22 @@
 /* WhatsApp Smart CTA (MBW) v3 */
 
 (function () {
+  function getInlineWaQuestions() {
+    var el = document.getElementById("mbwWaQuestions");
+    if (!el) return null;
+    try { return JSON.parse(el.textContent || el.innerText || "{}"); } catch (e) { return null; }
+  }
+
+  function normalizePath(p) {
+    p = p || "/";
+    if (p.length > 1 && p.charAt(p.length - 1) !== "/") p = p + "/";
+    return p;
+  }
+
+  function isSpanishPath(p) {
+    return p === "/es/" || p.indexOf("/es/") === 0;
+  }
+
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
@@ -209,7 +225,32 @@ function setImgForViewport(root) {
     var backdrop = qs(".mbwWaBirdBackdrop", root);
     var actions = qsa(".mbwWaBirdAction", root);
 
-    if (!btn) return;
+    
+    // Apply per-page questions from inline JSON in the footer include
+    (function applyPerPageQuestions() {
+      if (!actions || actions.length < 4) return;
+      var data = getInlineWaQuestions();
+      if (!data || !data.pages) return;
+
+      var p = normalizePath(window.location.pathname || "/");
+      var row = data.pages[p];
+      if (!row) {
+        var def = isSpanishPath(p) ? data.default_es : data.default_en;
+        if (!def) return;
+        row = def;
+      }
+
+      if (row.q1) actions[0].textContent = row.q1;
+      if (row.q2) actions[1].textContent = row.q2;
+      if (row.q3) actions[2].textContent = row.q3;
+      if (row.q4) actions[3].textContent = row.q4;
+
+      if (row.t1) actions[0].setAttribute("data-wa-template", row.t1);
+      if (row.t2) actions[1].setAttribute("data-wa-template", row.t2);
+      if (row.t3) actions[2].setAttribute("data-wa-template", row.t3);
+      if (row.t4) actions[3].setAttribute("data-wa-template", row.t4);
+    })();
+if (!btn) return;
 
     function buildLink(template) {
       var numRaw = (root.getAttribute("data-wa-number") || "").toString();
@@ -241,8 +282,15 @@ function setImgForViewport(root) {
       e.preventDefault();
 
       if (isMobileLike()) {
-        var label = getPageLabel() || "a birding tour";
-        goWhatsApp("Hi! I\u2019m interested in:\n" + label + "\n\nPage: {url}");
+        var dataM = getInlineWaQuestions();
+        var pM = normalizePath(window.location.pathname || "/");
+        var rowM = (dataM && dataM.pages) ? dataM.pages[pM] : null;
+        if (!rowM && dataM) rowM = isSpanishPath(pM) ? dataM.default_es : dataM.default_en;
+        var tM = (rowM && rowM.t1) ? rowM.t1 : ("Hi! I am interested in:
+" + (getPageLabel() || "a birding tour") + "
+
+Page: {url}");
+        goWhatsApp(tM);
         return;
       }
 
@@ -280,25 +328,8 @@ function setImgForViewport(root) {
 
   function boot() { qsa(".mbwWaBirdFab").forEach(init); }
 
-  // Footer is injected by includes.js on some pages, so the widget may appear AFTER DOMContentLoaded.
-  // We re-run boot a few times and also observe DOM mutations to initialize when it appears.
-  function bootSoon() {
-    boot();
-    window.setTimeout(boot, 500);
-    window.setTimeout(boot, 1500);
-    window.setTimeout(boot, 3000);
-  }
-
-  // Run once when script executes (defer means DOM is parsed, but includes may still be loading)
-  bootSoon();
-
-  // Observe for late-inserted widget
-  if (!window.__mbwWaObserver && "MutationObserver" in window) {
-    window.__mbwWaObserver = new MutationObserver(function () {
-      boot();
-    });
-    window.__mbwWaObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
 })();
 
 /* WhatsApp Legacy Cleanup (FINAL)
@@ -323,19 +354,4 @@ function setImgForViewport(root) {
   removeAll(".mbwWaFabPanel");
   removeAll(".mbwWaFabBackdrop");
   removeAll(".mbwWaFabActions");
-
-  // Also clean up any legacy widgets inserted later by includes or cached HTML
-  if (!window.__mbwWaCleanupObserver && "MutationObserver" in window) {
-    window.__mbwWaCleanupObserver = new MutationObserver(function () {
-      removeAll(".mbwWaFab");
-      removeAll(".mbwWaFabPanel");
-      removeAll(".mbwWaFabBackdrop");
-      removeAll(".mbwWaFabActions");
-      var birds2 = Array.prototype.slice.call(document.querySelectorAll(".mbwWaBirdFab"));
-      if (birds2.length > 1) {
-        birds2.slice(0, birds2.length - 1).forEach(function (n) { n.remove(); });
-      }
-    });
-    window.__mbwWaCleanupObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
-  }
 })();
