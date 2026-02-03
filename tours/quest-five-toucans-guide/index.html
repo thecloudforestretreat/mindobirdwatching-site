@@ -27,7 +27,7 @@
   <meta name="twitter:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
 
   <link rel="alternate" hreflang="en" href="/tours/quest-five-toucans-guide/" />
-  <link rel="alternate" hreflang="es" href="/es/tours/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/" />
+  <link rel="alternate" hreflang="es" href="/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/" />
   <link rel="alternate" hreflang="x-default" href="/tours/quest-five-toucans-guide/" />
 
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -76,6 +76,7 @@
       object-fit: cover;
       display:block;
     }
+
     .heroBody{
       padding: 16px;
       border: 1px solid var(--line);
@@ -84,8 +85,9 @@
       background: rgba(255,255,255,.65);
       display:flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 10px;
+      min-width: 0;
     }
 
     .kicker{
@@ -122,8 +124,49 @@
       align-items:center;
     }
 
+    .trustPanel{
+      margin-top: 6px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      display:none;
+    }
+    .trustPanel h2{
+      margin: 0 0 10px;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .trustGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .trustItem{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.65);
+      padding: 10px 12px;
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .trustSub{
+      display:block;
+      margin-top: 4px;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .metaWrap{
-      margin-top: 14px;
+      margin-top: 12px;
       padding: 12px;
       border: 1px solid var(--line);
       border-radius: var(--r);
@@ -141,6 +184,7 @@
       display:grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
+      align-items: stretch;
     }
     .metaCard{
       padding: 14px 14px 12px;
@@ -148,6 +192,7 @@
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
+      min-width: 0;
     }
     .metaLabel{
       display:block;
@@ -171,21 +216,11 @@
       font-size: 13px;
     }
 
-    @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .heroMedia{ min-height: 240px; }
-      .metaGrid{ grid-template-columns: 1fr; }
-    }
-    @media (max-width: 520px){
-      .heroBody h1{ font-size: 28px; }
-    }
-
     .section{
       margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
-
     .sectionHead{
       display:flex;
       align-items:flex-end;
@@ -210,10 +245,6 @@
       gap: 16px;
       align-items: start;
     }
-    @media (max-width: 900px){
-      .twoCol{ grid-template-columns: 1fr; }
-    }
-
     .softCard{
       background: rgba(255,255,255,.65);
       border: 1px solid var(--line);
@@ -239,13 +270,6 @@
       grid-template-columns: repeat(6, 1fr);
       gap: 12px;
     }
-    @media (max-width: 1000px){
-      .speciesGrid{ grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 520px){
-      .speciesGrid{ grid-template-columns: repeat(2, 1fr); }
-    }
-
     .species{
       background: rgba(255,255,255,.65);
       border: 1px solid var(--line);
@@ -255,6 +279,7 @@
       text-decoration:none;
       color: var(--ink);
       display:block;
+      min-width: 0;
     }
     .species img{
       width:100%;
@@ -280,9 +305,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 16px;
       align-items: start;
-    }
-    @media (max-width: 900px){
-      .faqGrid{ grid-template-columns: 1fr; }
     }
     .faqCard{
       background: rgba(255,255,255,.65);
@@ -325,17 +347,105 @@
       border-radius: var(--r);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 14px;
+      align-items: start;
     }
     .finalCta p{
       margin: 0;
       color: var(--muted);
       max-width: 70ch;
       line-height: 1.6;
+    }
+    .finalTitle{
+      margin: 0 0 6px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      font-size: 16px;
+    }
+    .finalActions{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    .nextSteps{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.55);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+    }
+    .nextSteps h3{
+      margin: 0 0 10px;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .steps{
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    @media (min-width: 901px){
+      .trustPanel{ display:block; }
+    }
+
+    @media (max-width: 1000px){
+      .speciesGrid{ grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 900px){
+      .hero{ grid-template-columns: 1fr; }
+      .heroMedia{ min-height: 240px; }
+      .twoCol{ grid-template-columns: 1fr; }
+      .faqGrid{ grid-template-columns: 1fr; }
+      .finalCta{ grid-template-columns: 1fr; }
+
+      .ctaRow{
+        display:grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        align-items: stretch;
+      }
+      .ctaRow a{
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .metaGrid{
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .metaCard.focus,
+      .metaCard.included{
+        grid-column: 1 / -1;
+      }
+
+      .finalActions{
+        display:grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        align-items: stretch;
+      }
+      .finalActions a{
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .heroBody h1{ font-size: 28px; }
+    }
+
+    @media (max-width: 520px){
+      .speciesGrid{ grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -367,30 +477,52 @@
 
           <div class="ctaRow" aria-label="Primary actions">
             <a class="btn primary" href="/book-tour/" target="_blank" rel="noopener">Reserve This Tour</a>
+            <a class="btn primary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Reserve Via WhatsApp</a>
             <a class="btn secondary" href="/tours/" rel="noopener">Back to Tours</a>
             <a class="btn secondary" href="/birding/toucans-of-mindo/" rel="noopener">Toucans in Mindo</a>
-            <a class="btn primary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Reserve Via WhatsApp</a>
           </div>
+
+          <aside class="trustPanel" aria-label="Trust panel">
+            <h2>Why this tour works</h2>
+            <div class="trustGrid" aria-label="Trust points">
+              <div class="trustItem">
+                Route based on activity
+                <span class="trustSub">We adapt to conditions, not a fixed checklist.</span>
+              </div>
+              <div class="trustItem">
+                Calm, photo-friendly pace
+                <span class="trustSub">More waiting and listening, less rushing.</span>
+              </div>
+              <div class="trustItem">
+                Reserve entrances included
+                <span class="trustSub">We handle the access details when needed.</span>
+              </div>
+              <div class="trustItem">
+                Local guiding support
+                <span class="trustSub">Calls, movement patterns, and feeding trees.</span>
+              </div>
+            </div>
+          </aside>
 
           <div class="metaWrap" aria-label="Logistics module">
             <p class="metaTitle">Logistics</p>
             <div class="metaGrid" aria-label="Logistics snapshot">
-              <div class="metaCard">
+              <div class="metaCard start">
                 <span class="metaLabel">Start</span>
                 <p class="metaValue">Dawn</p>
                 <p class="metaSub">5:00am to 3:00pm</p>
               </div>
-              <div class="metaCard">
+              <div class="metaCard duration">
                 <span class="metaLabel">Duration</span>
                 <p class="metaValue">10 hours</p>
                 <p class="metaSub">Full day route</p>
               </div>
-              <div class="metaCard">
+              <div class="metaCard focus">
                 <span class="metaLabel">Focus</span>
                 <p class="metaValue">Toucans and Cock-of-the-Rock</p>
                 <p class="metaSub">Species-driven guiding</p>
               </div>
-              <div class="metaCard">
+              <div class="metaCard included">
                 <span class="metaLabel">Included</span>
                 <p class="metaValue">Guide, reserve entrances, transportation</p>
                 <p class="metaSub">Plus binocular access</p>
@@ -542,14 +674,25 @@
       </section>
 
       <section class="finalCta" aria-label="Final call to action">
-        <p>
-          Ready for a focused full-day cloud forest experience built around toucans and the Andean Cock-of-the-Rock?
-          Reserve now to lock in your preferred date.
-        </p>
-        <div class="ctaRow" aria-label="Final actions">
-          <a class="btn primary" href="/book-tour/" target="_blank" rel="noopener">Reserve This Tour</a>
-          <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask On WhatsApp</a>
+        <div aria-label="Final message">
+          <p class="finalTitle">Ready to reserve?</p>
+          <p>
+            Reserve now to lock in your preferred date. After you book, we confirm meeting details and adjust the route for current activity.
+          </p>
+          <div class="finalActions" aria-label="Final actions">
+            <a class="btn primary" href="/book-tour/" target="_blank" rel="noopener">Reserve This Tour</a>
+            <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener">Ask On WhatsApp</a>
+          </div>
         </div>
+
+        <aside class="nextSteps" aria-label="What happens next">
+          <h3>What happens next</h3>
+          <ol class="steps">
+            <li>We confirm your date and meeting point</li>
+            <li>We confirm reserve access and timing</li>
+            <li>We guide based on weather and activity</li>
+          </ol>
+        </aside>
       </section>
 
     </main>
