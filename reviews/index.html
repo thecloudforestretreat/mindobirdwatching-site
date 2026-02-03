@@ -829,6 +829,7 @@
     </div>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
+  <script src="/assets/data/reviews-data.js?v=1"></script>
   <script>
     (function () {
       "use strict";
@@ -997,13 +998,21 @@
         var hint = byId("reviewsHint");
         var empty = byId("reviewsEmpty");
         if(hint) hint.textContent = "Loading…";
+        if(empty) empty.style.display = "none";
 
+        // Prefer local static data (assets/data/reviews-data.js)
+        if(window.MBW_REVIEWS_DATA && window.MBW_REVIEWS_DATA.ok){
+          applyData(window.MBW_REVIEWS_DATA, "reviews-data.js");
+          return;
+        }
+
+        // Fallback to API only if present (optional)
         var url = "/api/reviews?ts=" + Date.now();
 
         fetchJson(url).then(function(data){
           applyData(data, "/api/reviews");
         }).catch(function(e){
-          if(hint) hint.textContent = "Reviews failed to load: " + String(e && e.message ? e.message : e);
+          if(hint) hint.textContent = "Reviews failed to load.";
           if(empty) empty.style.display = "block";
         });
       }
