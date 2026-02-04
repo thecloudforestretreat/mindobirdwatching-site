@@ -49,7 +49,6 @@
   <script src="/assets/js/head.js" defer></script>
 
   <style>
-
     /* Page-only styles only */
 
     .page{
@@ -68,6 +67,98 @@
       margin-top: 10px;
     }
     .lede p{ margin: 0 0 12px; }
+
+    .ledeGrid{
+      display:grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 22px;
+      align-items: start;
+      max-width: none;
+    }
+    .ledeMain{ min-width: 0; }
+    .ledeBullets{
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+    .ledeBullets li{ margin: 6px 0; }
+    .socialProof{
+      background: rgba(255,255,255,.70);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 14px 14px 12px;
+      max-width: 360px;
+      justify-self: end;
+    }
+    .spHead{
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 900;
+      color: #1f5b3a;
+      margin: 0 0 8px;
+    }
+    .spRating{
+      display:flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0 0 10px;
+    }
+    .spStars{
+      font-weight: 900;
+      letter-spacing: .10em;
+    }
+    .spScore{
+      font-weight: 900;
+    }
+    .spCount a{
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 900;
+      border-bottom: 1px dotted rgba(0,0,0,.25);
+    }
+    .spPills{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0 12px;
+    }
+    .spPill{
+      display:inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(25,85,54,.18);
+      background: rgba(215,244,216,.55);
+      font-weight: 900;
+      color: #1f5b3a;
+      font-size: 13px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .spQuote{
+      margin: 0;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(0,0,0,.15);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .spQuote strong{ color: var(--ink); font-weight: 900; }
+
+    @media (max-width: 900px){
+      .ledeGrid{
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .socialProof{
+        max-width: none;
+        width: 100%;
+        justify-self: start;
+      }
+    }
+
 
     .ctaRow{
       margin-top: 14px;
@@ -368,28 +459,6 @@
 @media (max-width: 720px){
   .mini-links{margin-top:12px}
 }
-
-/* Tours hero copy refresh */
-.heroCopy{margin-top:10px;display:grid;gap:10px}
-.heroCopy .lead{margin:0;font-size:15px;line-height:1.55}
-.heroSplit{display:grid;gap:10px}
-.heroBullets{margin:0;padding-left:18px;display:grid;gap:6px}
-.heroProof{background:rgba(255,255,255,.7);border:1px solid rgba(18,66,44,.12);border-radius:18px;padding:14px;display:grid;gap:10px;align-content:start}
-.heroProofTop{display:grid;gap:6px}
-.heroProofKicker{font-size:12px;font-weight:900;letter-spacing:.02em;text-transform:uppercase;color:rgba(18,66,44,.72)}
-.heroProofRating{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.heroStars{font-size:14px;letter-spacing:1px}
-.heroScore{font-weight:900}
-.heroProofLink{font-weight:800;text-decoration:underline;text-underline-offset:3px}
-.heroProofPills{display:flex;flex-wrap:wrap;gap:8px}
-.heroProofPills .heroBadge{font-size:12px;padding:8px 12px}
-.heroQuote{font-size:13px;line-height:1.35;color:rgba(18,66,44,.85);padding-top:2px;border-top:1px dashed rgba(18,66,44,.18);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-.heroQuoteBy{font-weight:800;color:rgba(18,66,44,.72)}
-.heroBadge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#f6fbf3;border:1px solid #d8e8d0;font-weight:800;font-size:12px;color:#1f4f2b;white-space:nowrap}
-@media (min-width: 901px){
-  .heroSplit{grid-template-columns:1.35fr .65fr;align-items:start}
-}
-
 </style>
 </head>
 
@@ -401,64 +470,40 @@
     <main class="page card">
       <h1 style="margin:0 0 6px;">Tours</h1>
 
-      <div class="lede" aria-label="Tours intro">
-        <div class="heroCopy">
-          <p class="lead">
-            Guided birding tours in Mindo's cloud forest, built around peak morning activity. Choose a half-day or full-day route, and let local experts adjust the plan to current conditions.
-          </p>
-          <div class="heroSplit">
-            <ul class="heroBullets">
-              <li>Target species: toucans, tanagers, hummingbirds, and the Andean Cock-of-the-Rock</li>
-              <li>Small groups and calm pacing for better sightings and photos</li>
-              <li>Simple booking, fast confirmations, and WhatsApp support</li>
-            </ul>
-            <aside class="heroProof" aria-label="Social proof">
-          <div class="heroProofTop">
-            <div class="heroProofKicker">Google Reviews</div>
-            <div class="heroProofRating">
-              <span class="heroStars" aria-hidden="true">★★★★★</span>
-              <span class="heroScore">4.9</span>
-              <a class="heroProofLink" href="/reviews/" aria-label="Read Google reviews">78 reviews</a>
-            </div>
-          </div>
+      
+<div class="lede ledeGrid" aria-label="Tours intro">
+  <div class="ledeMain">
+    <p>Guided birding tours in Mindo's cloud forest, built around peak morning activity. Choose a half-day or full-day route, and let local experts adjust the plan to current conditions.</p>
+    <ul class="ledeBullets">
+      <li>Target species: toucans, tanagers, hummingbirds, and the Andean Cock-of-the-Rock</li>
+      <li>Small groups and calm pacing for better sightings and photos</li>
+      <li>Simple booking, fast confirmations, and WhatsApp support</li>
+    </ul>
+    <div class="cta-row" role="group" aria-label="Primary actions">
+      <a class="btn btn-primary" href="/book-tour/">Reserve Now</a>
+      <a class="btn btn-soft" href="/birding-calendar/">Birding Calendar</a>
+      <a class="btn btn-soft" href="/faqs/">FAQs</a>
+      <a class="btn btn-primary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Reserve Via WhatsApp</a>
+    </div>
+  </div>
 
-          <div class="heroProofPills" aria-label="Key benefits">
-            <span class="heroBadge">Small groups</span>
-            <span class="heroBadge">Local guides</span>
-            <span class="heroBadge">Flexible routing</span>
-          </div>
+  <aside class="socialProof" aria-label="Social proof">
+    <div class="spHead">Google Reviews</div>
+    <div class="spRating">
+      <div class="spStars" aria-label="5 out of 5 stars">★★★★★</div>
+      <div class="spScore">4.9</div>
+      <div class="spCount"><a href="/reviews/">78 reviews</a></div>
+    </div>
+    <div class="spPills" aria-label="Key benefits">
+      <span class="spPill">Small groups</span>
+      <span class="spPill">Local guides</span>
+      <span class="spPill">Flexible routing</span>
+    </div>
+    <p class="spQuote">&ldquo;Just wow... such a blast.&rdquo; <strong>- Matthias</strong></p>
+  </aside>
+</div>
 
-          <div class="heroQuote" aria-label="Guest quote">
-            “Just wow... such a blast.” <span class="heroQuoteBy">- Matthias, Google review</span>
-          </div>
-        </aside>
-        </div>
-        </div>
-
-        <div class="ctaRow" aria-label="Primary actions">
-          <a class="btn primary" href="/book-tour" target="_blank" rel="noopener">Reserve Now</a>
-          <a class="btn secondary" href="/birding-calendar">Birding Calendar</a>
-          <a class="btn secondary" href="/faqs">FAQs</a>
-          <a class="btn primary" href="https://wa.me/13054585402">Reserve Via WhatsApp</a>
-        </div>
-
-        <div class="checks" aria-label="Highlights">
-          <div class="check">
-            <strong>Guided By Local Experts</strong>
-            <p>Calm, focused guiding that helps you see more.</p>
-          </div>
-          <div class="check">
-            <strong>Equipment Support</strong>
-            <p>We can help with optics guidance and field tips.</p>
-          </div>
-          <div class="check">
-            <strong>Comfort Included</strong>
-            <p>Transportation planning and smooth logistics.</p>
-          </div>
-        </div>
-      </div>
-
-      <section class="cards" aria-label="Tour options">
+<section class="cards aria-label="Tour options">
         <!-- Full-day tour card -->
         <article class="tourCard" aria-label="Full-day tours">
           <div class="mbwCarousel" data-autoplay="true" data-interval="2500" aria-label="Full-day carousel">
