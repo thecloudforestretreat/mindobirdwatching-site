@@ -68,6 +68,99 @@
     }
     .lede p{ margin: 0 0 12px; }
 
+    .ledeGrid{
+      display:grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 22px;
+      align-items: start;
+      max-width: none;
+    }
+    .ledeMain{ min-width: 0; }
+    .ledeBullets{
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+    .ledeBullets li{ margin: 6px 0; }
+    .socialProof{
+      background: rgba(255,255,255,.70);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 14px 14px 12px;
+      max-width: 360px;
+      justify-self: end;
+    }
+    .spHead{
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 900;
+      color: #1f5b3a;
+      margin: 0 0 8px;
+    }
+    .spRating{
+      display:flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0 0 10px;
+    }
+    .spStars{
+      font-weight: 900;
+      letter-spacing: .10em;
+      color: #fbbc05;
+    }
+    .spScore{
+      font-weight: 900;
+    }
+    .spCount a{
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 900;
+      border-bottom: 1px dotted rgba(0,0,0,.25);
+    }
+    .spPills{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0 12px;
+    }
+    .spPill{
+      display:inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(25,85,54,.18);
+      background: rgba(215,244,216,.55);
+      font-weight: 900;
+      color: #1f5b3a;
+      font-size: 13px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .spQuote{
+      margin: 0;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(0,0,0,.15);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .spQuote strong{ color: var(--ink); font-weight: 900; }
+
+    @media (max-width: 900px){
+      .ledeGrid{
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .socialProof{
+        max-width: none;
+        width: 100%;
+        justify-self: start;
+      }
+    }
+
+
     .ctaRow{
       margin-top: 14px;
       display:flex;
@@ -358,7 +451,16 @@
     @media (prefers-reduced-motion: reduce){
       .mbwCarouselTrack{ transition: none; }
     }
-  </style>
+  
+/* Tour spotlights inside tour type cards */
+.mini-links{margin-top:10px;padding:10px 12px;border:1px solid rgba(11,59,28,.14);border-radius:14px;background:rgba(255,255,255,.55)}
+.mini-links__label{font-weight:800;font-size:12px;letter-spacing:.02em;text-transform:uppercase;color:#0b3b1c;margin-bottom:4px}
+.mini-links__link{color:#0b3b1c;text-decoration:underline;text-underline-offset:3px;font-weight:700}
+.mini-links__sep{margin:0 8px;color:rgba(11,59,28,.5);font-weight:900}
+@media (max-width: 720px){
+  .mini-links{margin-top:12px}
+}
+</style>
 </head>
 
 <body>
@@ -369,47 +471,41 @@
     <main class="page card">
       <h1 style="margin:0 0 6px;">Tours</h1>
 
-      <div class="lede" aria-label="Tours intro">
-        <p>
-          Join Mindo Bird Watching on immersive guided birding tours in Ecuador’s cloud forests.
-          Witness toucans, hummingbirds, tanagers, and the iconic Andean Cock-of-the-Rock.
-          Expert local guides, small groups, and customizable itineraries, perfect for bird lovers and nature photographers.
-        </p>
+      
+<div class="lede ledeGrid" aria-label="Tours intro">
+  <div class="ledeMain">
+    <p>Guided birding tours in Mindo's cloud forest, built around peak morning activity. Choose a half-day or full-day route, and let local experts adjust the plan to current conditions.</p>
+    <ul class="ledeBullets">
+      <li>Target species: toucans, tanagers, hummingbirds, and the Andean Cock-of-the-Rock</li>
+      <li>Small groups and calm pacing for better sightings and photos</li>
+      <li>Simple booking, fast confirmations, and WhatsApp support</li>
+    </ul>
+    <div class="cta-row" role="group" aria-label="Primary actions">
+      <a class="btn btn-primary" href="/book-tour/">Reserve Now</a>
+      <a class="btn btn-soft" href="/birding-calendar/">Birding Calendar</a>
+      <a class="btn btn-soft" href="/faqs/">FAQs</a>
+      <a class="btn btn-primary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">Reserve Via WhatsApp</a>
+    </div>
+  </div>
 
-        <p>
-          Discover the magic of Ecuador’s cloud forests with Mindo Bird Watching. Our expert local guides will take you on unforgettable journeys
-          to spot some of the most iconic species on the planet, from the vibrant Andean Cock-of-the-Rock to toucans, tanagers, hummingbirds,
-          and the rare Long-wattled Umbrella-bird.
-        </p>
+  <aside class="socialProof" aria-label="Social proof">
+    <div class="spHead">Google Reviews</div>
+    <div class="spRating">
+      <div class="spStars" aria-label="5 out of 5 stars">★★★★★</div>
+      <div class="spScore">4.9</div>
+      <div class="spCount"><a href="/reviews/">78 reviews</a></div>
+    </div>
+    <div class="spPills" aria-label="Key benefits">
+      <span class="spPill">Small groups</span>
+      <span class="spPill">Local guides</span>
+      <span class="spPill">Flexible routing</span>
+      <span class="spPill">Magical</span>
+    </div>
+    <p class="spQuote">&ldquo;Just wow... such a blast.&rdquo; <strong>- Matthias</strong></p>
+  </aside>
+</div>
 
-        <p>
-          Whether you’re looking for a half-day exploration or a full-day immersive adventure, we have a tour designed for every level of birder and nature lover.
-        </p>
-
-        <div class="ctaRow" aria-label="Primary actions">
-          <a class="btn primary" href="/book-tour" target="_blank" rel="noopener">Reserve Now</a>
-          <a class="btn secondary" href="/birding-calendar">Birding Calendar</a>
-          <a class="btn secondary" href="/faqs">FAQs</a>
-          <a class="btn primary" href="https://wa.me/13054585402">Reserve Via WhatsApp</a>
-        </div>
-
-        <div class="checks" aria-label="Highlights">
-          <div class="check">
-            <strong>Guided By Local Experts</strong>
-            <p>Calm, focused guiding that helps you see more.</p>
-          </div>
-          <div class="check">
-            <strong>Equipment Support</strong>
-            <p>We can help with optics guidance and field tips.</p>
-          </div>
-          <div class="check">
-            <strong>Comfort Included</strong>
-            <p>Transportation planning and smooth logistics.</p>
-          </div>
-        </div>
-      </div>
-
-      <section class="cards" aria-label="Tour options">
+<section class="cards aria-label="Tour options">
         <!-- Full-day tour card -->
         <article class="tourCard" aria-label="Full-day tours">
           <div class="mbwCarousel" data-autoplay="true" data-interval="2500" aria-label="Full-day carousel">
@@ -459,6 +555,11 @@
               Go deeper into Mindo’s best routes with a full-day itinerary built around current bird activity, weather, and your goals.
               Ideal for photographers and serious birders who want more time and more variety.
             </p>
+<div class="mini-links" aria-label="Full-day tour spotlight">
+  <div class="mini-links__label">Spotlight tour:</div>
+  <a class="mini-links__link" href="/tours/quest-five-toucans-guide/">Quest for Five Toucans and the Andean Cock-of-the-Rock</a>
+</div>
+
 
             <div class="tourActions">
               <a class="btn primary" href="/tours-full-day/">View Full-Day Tours</a>
@@ -516,6 +617,13 @@
               A focused outing designed to maximize sightings in a shorter time window. Great if you are fitting birding into a larger Ecuador itinerary.
               A couple of hours and you can still capture the magic of Mindo.
             </p>
+<div class="mini-links" aria-label="Half-day tour spotlights">
+  <div class="mini-links__label">Spotlight tours:</div>
+  <a class="mini-links__link" href="/tours/jewels-morning-forest-birding/">Jewels of the Morning Forest</a>
+  <span class="mini-links__sep">•</span>
+  <a class="mini-links__link" href="/tours/andean-cock-of-the-rock-dawn/">Andean Cock-of-the-Rock at Dawn</a>
+</div>
+
 
             <div class="tourActions">
               <a class="btn primary" href="/tours-half-day/">View Half-Day Tours</a>
