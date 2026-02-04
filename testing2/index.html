@@ -343,7 +343,46 @@
       box-shadow: var(--shadow);
     }
     .routeLinks a:hover{ transform: translateY(-1px); }
-</style>
+
+    /* Route spotlight (featured tour + guides) */
+    .routeSpotlight{display:grid;gap:16px;margin-top:14px}
+    .spotlightTourCard{display:grid;grid-template-columns:160px 1fr;gap:14px;align-items:stretch;border:1px solid rgba(0,0,0,.08);border-radius:18px;overflow:hidden;background:#fff}
+    .spotlightMedia img{width:100%;height:100%;object-fit:cover;display:block}
+    .spotlightBody{padding:14px}
+    .spotlightKicker{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-bottom:6px}
+    .spotlightTitle{margin:0 0 8px 0;font-size:18px;line-height:1.2}
+    .spotlightCopy{margin:0 0 12px 0;opacity:.9}
+    .spotlightMeta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px 0}
+    .spotlightMeta span{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(3,78,162,.08);font-size:13px;font-weight:800}
+    .spotlightActions{display:flex;gap:10px;flex-wrap:wrap}
+
+    .guideCardGrid{display:grid;gap:12px}
+    .guideCard{display:grid;grid-template-columns:84px 1fr auto;gap:12px;align-items:center;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:10px 12px;background:#fff;text-decoration:none;color:inherit}
+    .guideCard:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    .guideThumb{width:84px;height:64px;border-radius:12px;object-fit:cover;display:block}
+    .guideTitle{font-weight:900}
+    .guideSub{font-size:13px;opacity:.85;margin-top:2px}
+    .guideArrow{font-size:18px;opacity:.6}
+
+    /* Make the three reassurance tags fill the row evenly */
+    .socialProof .proofTags{grid-template-columns:repeat(3,1fr)}
+    .socialProof .proofTags .tag{justify-content:center}
+
+    @media (min-width: 901px){
+      .routeSpotlight{grid-template-columns:1fr}
+      .spotlightTourCard{grid-template-columns:210px 1fr}
+      .spotlightTitle{font-size:20px}
+      .guideCardGrid{grid-template-columns:repeat(3,1fr)}
+      .guideCard{grid-template-columns:84px 1fr auto;height:100%}
+    }
+
+    @media (max-width: 560px){
+      .spotlightTourCard{grid-template-columns:1fr}
+      .spotlightMedia{height:160px}
+      .guideCardGrid{grid-template-columns:1fr}
+    }
+
+  </style>
 </head>
 
 <body>
