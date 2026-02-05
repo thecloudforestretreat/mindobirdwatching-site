@@ -1,13 +1,12 @@
 // functions/api/book-tour/index.js
 // MBW Book Tour proxy: Turnstile verify -> forward to Google Apps Script web app
-// Expects Cloudflare Pages env vars (Production):
+// Env vars (Production):
 // - TURNSTILE_SECRET_KEY
 // - GAS_BOOK_TOUR_URL
 
 export async function onRequest(context) {
   const { request, env } = context;
 
-  // Only POST is allowed
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", {
       status: 405,
@@ -20,7 +19,7 @@ export async function onRequest(context) {
       .replace(/\\/g, "\\\\")
       .replace(/"/g, '\\"')
       .replace(/\n/g, " ")
-      .slice(0, 500);
+      .slice(0, 800);
 
     return new Response(
       `<!doctype html><html><head><meta charset="utf-8"></head><body>
@@ -42,32 +41,17 @@ export async function onRequest(context) {
     );
   }
 
-  // Read env vars
   const turnstileSecret = (env && env.TURNSTILE_SECRET_KEY) ? String(env.TURNSTILE_SECRET_KEY) : "";
   const gasUrl = (env && env.GAS_BOOK_TOUR_URL) ? String(env.GAS_BOOK_TOUR_URL) : "";
 
-  if (!turnstileSecret) {
-    return iframeReply(
-      "error",
-      "Server config error: missing TURNSTILE_SECRET_KEY in Pages environment variables (Production)."
-    );
-  }
-  if (!gasUrl) {
-    return iframeReply(
-      "error",
-      "Server config error: missing GAS_BOOK_TOUR_URL in Pages environment variables (Production)."
-    );
-  }
+  if (!turnstileSecret) return iframeReply("error", "Server config error: missing TURNSTILE_SECRET_KEY.");
+  if (!gasUrl) return iframeReply("error", "Server config error: missing GAS_BOOK_TOUR_URL.");
 
-  // Must be a normal form POST
   const contentType = request.headers.get("content-type") || "";
   const isForm =
     contentType.includes("application/x-www-form-urlencoded") ||
     contentType.includes("multipart/form-data");
-
-  if (!isForm) {
-    return iframeReply("error", "Invalid submission.");
-  }
+  if (!isForm) return iframeReply("error", "Invalid submission.");
 
   let formData;
   try {
@@ -89,9 +73,7 @@ export async function onRequest(context) {
 
   // Turnstile token
   const token = formData.get("cf-turnstile-response");
-  if (!token) {
-    return iframeReply("error", "Security check failed. Please refresh and try again.");
-  }
+  if (!token) return iframeReply("error", "Security check failed. Please refresh and try again.");
 
   // Verify Turnstile
   let verify;
@@ -111,11 +93,8 @@ export async function onRequest(context) {
   }
 
   if (!verify || !verify.success) {
-    const codes = Array.isArray(verify && verify["error-codes"])
-      ? verify["error-codes"].join(",")
-      : "";
-    const diag = codes ? " (" + codes + ")" : "";
-    return iframeReply("error", "Security check failed. Try again." + diag);
+    const codes = Array.isArray(verify && verify["error-codes"]) ? verify["error-codes"].join(",") : "";
+    return iframeReply("error", codes ? ("Security check failed. (" + codes + ")") : "Security check failed.");
   }
 
   // Forward to Apps Script
@@ -126,31 +105,45 @@ export async function onRequest(context) {
   }
 
   let upstream;
+  let text = "";
+  let status = 0;
+
   try {
     upstream = await fetch(gasUrl, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body: body.toString()
     });
+    status = upstream.status;
+    text = await upstream.text();
   } catch (e) {
-    return iframeReply("error", "Booking service unreachable.");
+    return iframeReply("error", "Booking service unreachable (fetch failed).");
   }
 
-  const text = await upstream.text();
+  // Accept a few common "ok" formats
+  const ok =
+    (status >= 200 && status < 300) &&
+    (
+      text.includes('status:"ok"') ||
+      text.includes("status:'ok'") ||
+      text.includes('"status":"ok"') ||
+      text.includes('"status": "ok"') ||
+      text.includes("status=ok") ||
+      text.trim() === "ok" ||
+      text.trim() === "OK"
+    );
 
-  if (!upstream.ok) {
-    return iframeReply("error", "Booking failed. Please try again.");
+  if (!ok) {
+    const preview = String(text || "")
+      .replace(/\s+/g, " ")
+      .slice(0, 220);
+    return iframeReply(
+      "error",
+      "Booking failed. Upstream status=" + status + ". Response preview: " + preview
+    );
   }
 
-  // Apps Script returns HTML that posts status:"ok" back to the parent
-  if (
-    !text.includes('status:"ok"') &&
-    !text.includes("status:'ok'") &&
-    !text.includes('"status":"ok"')
-  ) {
-    return iframeReply("error", "Booking failed. Please try again.");
-  }
-
+  // Pass through the Apps Script response (expected to postMessage success)
   return new Response(text, {
     status: 200,
     headers: {
