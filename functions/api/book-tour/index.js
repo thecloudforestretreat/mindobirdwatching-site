@@ -1,12 +1,13 @@
 // functions/api/book-tour/index.js
 // MBW Book Tour proxy: Turnstile verify -> forward to Google Apps Script web app
-// Required CF Pages env vars (Production):
+// Cloudflare Pages env vars (Production):
 // - TURNSTILE_SECRET_KEY
 // - GAS_BOOK_TOUR_URL
 
 export async function onRequest(context) {
   const { request, env } = context;
 
+  // Only POST is allowed
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", {
       status: 405,
@@ -125,55 +126,67 @@ export async function onRequest(context) {
     return iframeReply("error", "Security check failed. Try again." + diag);
   }
 
-  // Forward to Apps Script (urlencoded)
+  // Forward to Apps Script as x-www-form-urlencoded
   const body = new URLSearchParams();
   for (const [k, v] of formData.entries()) {
     if (k === "cf-turnstile-response" || k === "website" || k === "ts_start") continue;
     body.append(k, v.toString());
   }
+  const upstreamBody = body.toString();
+
+  async function postOnce(url) {
+    // IMPORTANT: manual redirect so we can re-POST to Location
+    return fetch(url, {
+      method: "POST",
+      redirect: "manual",
+      headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: upstreamBody,
+    });
+  }
+
+  async function postFollow302(url, maxHops) {
+    let currentUrl = url;
+    for (let hop = 0; hop <= maxHops; hop++) {
+      const resp = await postOnce(currentUrl);
+
+      // Success
+      if (resp.status >= 200 && resp.status < 300) return resp;
+
+      // GAS typically returns 302 to script.googleusercontent.com
+      if (resp.status === 301 || resp.status === 302 || resp.status === 303 || resp.status === 307 || resp.status === 308) {
+        const loc = resp.headers.get("location");
+        if (!loc) return resp;
+
+        // For safety, only follow to Google script hosts
+        if (!/^https:\/\/script\.googleusercontent\.com\//.test(loc) && !/^https:\/\/script\.google\.com\//.test(loc)) {
+          return new Response("Bad redirect location", { status: 502 });
+        }
+
+        currentUrl = loc;
+        continue;
+      }
+
+      // Other errors
+      return resp;
+    }
+    return new Response("Too many redirects", { status: 508 });
+  }
 
   let upstreamResp;
   let upstreamText = "";
   try {
-    // Do NOT auto-follow redirects. We'll handle 302 deterministically.
-    upstreamResp = await fetch(gasUrl, {
-      method: "POST",
-      redirect: "manual",
-      headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body: body.toString(),
-    });
-
-    // If Apps Script responds with 302 to googleusercontent, follow with GET
-    if (
-      (upstreamResp.status === 301 ||
-        upstreamResp.status === 302 ||
-        upstreamResp.status === 303) &&
-      upstreamResp.headers.get("location")
-    ) {
-      const loc = upstreamResp.headers.get("location");
-
-      const followResp = await fetch(loc, {
-        method: "GET",
-        headers: { accept: "application/json" },
-      });
-
-      upstreamText = await followResp.text();
-
-      if (!followResp.ok) {
-        return iframeReply("error", `Booking failed. Upstream status=${followResp.status}.`);
-      }
-    } else {
-      upstreamText = await upstreamResp.text();
-
-      if (!upstreamResp.ok) {
-        return iframeReply("error", `Booking failed. Upstream status=${upstreamResp.status}.`);
-      }
-    }
+    upstreamResp = await postFollow302(gasUrl, 3);
+    upstreamText = await upstreamResp.text();
   } catch (e) {
     return iframeReply("error", "Booking service unreachable.");
   }
 
-  // Expect JSON from GAS: { ok:true } or { ok:false, message:"..." }
+  if (!upstreamResp || !upstreamResp.ok) {
+    const status = upstreamResp ? upstreamResp.status : 0;
+    return iframeReply("error", `Booking failed. Upstream status=${status}.`);
+  }
+
+  // Expect JSON from GAS: { ok: true } or { ok:false, message:"..." }
   let payload = null;
   try {
     payload = JSON.parse(upstreamText);
@@ -181,15 +194,20 @@ export async function onRequest(context) {
     const preview = upstreamText.replace(/\s+/g, " ").slice(0, 180);
     return iframeReply(
       "error",
-      "Booking failed. Apps Script returned non-JSON. Preview: " + preview
+      "Booking failed. Apps Script must return JSON, but returned non-JSON. Preview: " + preview
     );
   }
 
+  // If GAS says ok=false, show its message
   if (!payload || payload.ok !== true) {
     const msg =
-      payload && payload.message ? String(payload.message) : "Booking failed. Please try again.";
+      (payload && payload.message) ? String(payload.message) : "Booking failed. Please try again.";
     return iframeReply("error", msg);
   }
+
+  // If GAS includes a warning, you can surface it, but still return ok
+  // (Optional) Show warning:
+  // if (payload.warning) return iframeReply("ok", payload.warning);
 
   return iframeReply("ok", "");
 }
