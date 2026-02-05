@@ -7,11 +7,10 @@
 export async function onRequest(context) {
   const { request, env } = context;
 
-  // Only POST is allowed
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", {
       status: 405,
-      headers: { "content-type": "text/plain; charset=utf-8" }
+      headers: { "content-type": "text/plain; charset=utf-8" },
     });
   }
 
@@ -36,17 +35,21 @@ export async function onRequest(context) {
         status: 200,
         headers: {
           "content-type": "text/html; charset=utf-8",
-          "cache-control": "no-store"
-        }
+          "cache-control": "no-store",
+        },
       }
     );
   }
 
-  // Read env vars
   const turnstileSecret =
-    (env && (env.TURNSTILE_SECRET_KEY || env.TURNSTILE_SECRET || env.TURNSTILE_SECRETKEY)) || "";
+    (env &&
+      (env.TURNSTILE_SECRET_KEY ||
+        env.TURNSTILE_SECRET ||
+        env.TURNSTILE_SECRETKEY)) ||
+    "";
   const gasUrl =
-    (env && (env.GAS_BOOK_TOUR_URL || env.GAS_URL || env.GAS_BOOKTOUR_URL)) || "";
+    (env && (env.GAS_BOOK_TOUR_URL || env.GAS_URL || env.GAS_BOOKTOUR_URL)) ||
+    "";
 
   if (!turnstileSecret) {
     return iframeReply(
@@ -61,7 +64,6 @@ export async function onRequest(context) {
     );
   }
 
-  // Accept standard form posts from the HTML form.
   const contentType = request.headers.get("content-type") || "";
   const isForm =
     contentType.includes("application/x-www-form-urlencoded") ||
@@ -98,15 +100,18 @@ export async function onRequest(context) {
   // Verify Turnstile
   let verify;
   try {
-    const verifyResp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret: turnstileSecret,
-        response: token.toString(),
-        remoteip: request.headers.get("CF-Connecting-IP") || ""
-      })
-    });
+    const verifyResp = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret: turnstileSecret,
+          response: token.toString(),
+          remoteip: request.headers.get("CF-Connecting-IP") || "",
+        }),
+      }
+    );
     verify = await verifyResp.json();
   } catch (e) {
     return iframeReply("error", "Security service unavailable. Please try again.");
@@ -120,78 +125,60 @@ export async function onRequest(context) {
     return iframeReply("error", "Security check failed. Try again." + diag);
   }
 
-  // Build URL encoded body for Apps Script
+  // Forward to Apps Script (urlencoded)
   const body = new URLSearchParams();
   for (const [k, v] of formData.entries()) {
     if (k === "cf-turnstile-response" || k === "website" || k === "ts_start") continue;
     body.append(k, v.toString());
   }
 
-  // Send POST to Apps Script but DO NOT auto-follow redirects.
-  // Apps Script often returns 302 and expects the client to GET the Location next.
   let upstreamResp;
   let upstreamText = "";
-
   try {
+    // Do NOT auto-follow redirects. We'll handle 302 deterministically.
     upstreamResp = await fetch(gasUrl, {
       method: "POST",
       redirect: "manual",
-      headers: {
-        "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
-      },
-      body: body.toString()
+      headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: body.toString(),
     });
+
+    // If Apps Script responds with 302 to googleusercontent, follow with GET
+    if (
+      (upstreamResp.status === 301 ||
+        upstreamResp.status === 302 ||
+        upstreamResp.status === 303) &&
+      upstreamResp.headers.get("location")
+    ) {
+      const loc = upstreamResp.headers.get("location");
+
+      const followResp = await fetch(loc, {
+        method: "GET",
+        headers: { accept: "application/json" },
+      });
+
+      upstreamText = await followResp.text();
+
+      if (!followResp.ok) {
+        return iframeReply("error", `Booking failed. Upstream status=${followResp.status}.`);
+      }
+    } else {
+      upstreamText = await upstreamResp.text();
+
+      if (!upstreamResp.ok) {
+        return iframeReply("error", `Booking failed. Upstream status=${upstreamResp.status}.`);
+      }
+    }
   } catch (e) {
     return iframeReply("error", "Booking service unreachable.");
   }
 
-  // If Apps Script returns a redirect, follow it with GET (browser behavior for POST->302).
-  if (upstreamResp.status === 301 || upstreamResp.status === 302 || upstreamResp.status === 303) {
-    const loc = upstreamResp.headers.get("location");
-    if (!loc) {
-      return iframeReply("error", "Booking failed. Missing redirect location from Apps Script.");
-    }
-
-    let followUrl;
-    try {
-      followUrl = new URL(loc, gasUrl).toString();
-    } catch (e) {
-      followUrl = loc;
-    }
-
-    let followResp;
-    try {
-      followResp = await fetch(followUrl, {
-        method: "GET",
-        redirect: "follow",
-        headers: {
-          "accept": "application/json, text/plain, */*"
-        }
-      });
-      upstreamText = await followResp.text();
-      upstreamResp = followResp;
-    } catch (e) {
-      return iframeReply("error", "Booking failed. Could not follow Apps Script redirect.");
-    }
-  } else {
-    try {
-      upstreamText = await upstreamResp.text();
-    } catch (e) {
-      upstreamText = "";
-    }
-  }
-
-  if (!upstreamResp.ok) {
-    const preview = String(upstreamText || "").replace(/\s+/g, " ").slice(0, 220);
-    return iframeReply("error", `Booking failed. Upstream status=${upstreamResp.status}. Preview: ${preview}`);
-  }
-
-  // Parse expected JSON from Apps Script: { ok:true } or { ok:false, message:"..." }
+  // Expect JSON from GAS: { ok:true } or { ok:false, message:"..." }
   let payload = null;
   try {
     payload = JSON.parse(upstreamText);
   } catch (e) {
-    const preview = String(upstreamText || "").replace(/\s+/g, " ").slice(0, 220);
+    const preview = upstreamText.replace(/\s+/g, " ").slice(0, 180);
     return iframeReply(
       "error",
       "Booking failed. Apps Script returned non-JSON. Preview: " + preview
@@ -199,7 +186,8 @@ export async function onRequest(context) {
   }
 
   if (!payload || payload.ok !== true) {
-    const msg = payload && payload.message ? String(payload.message) : "Booking failed. Please try again.";
+    const msg =
+      payload && payload.message ? String(payload.message) : "Booking failed. Please try again.";
     return iframeReply("error", msg);
   }
 
