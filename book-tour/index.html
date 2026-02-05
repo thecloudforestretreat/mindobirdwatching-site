@@ -585,7 +585,7 @@
           <form class="form" id="bookTourForm"
             method="post"
             target="mbwHiddenFrame"
-            action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
+            action="/api/book-tour">
 
             <div class="row2">
               <label>
@@ -678,6 +678,18 @@
 
             <!-- Cloudflare Turnstile -->
             <div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk"></div>
+
+            <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+              <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+            </div>
+
+            <input type="hidden" name="ts_start" id="tsStart" value="" />
+            <script>
+              (function(){
+                var el = document.getElementById("tsStart");
+                if (el) el.value = String(Date.now());
+              })();
+            </script>
 
             <p class="help">
               After you submit, you will receive an email confirmation. If you do not see it, check Spam or Promotions.
