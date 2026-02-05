@@ -2,7 +2,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   function iframeReply(status, message) {
-    const safeMsg = (message || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeMsg = (message || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ");
     return new Response(
       `<!doctype html><html><head><meta charset="utf-8"></head><body>
         <script>
@@ -21,7 +21,6 @@ export async function onRequestPost(context) {
   const isForm =
     contentType.includes("application/x-www-form-urlencoded") ||
     contentType.includes("multipart/form-data");
-
   if (!isForm) return iframeReply("error", "Unsupported content type.");
 
   const formData = await request.formData();
@@ -35,7 +34,7 @@ export async function onRequestPost(context) {
 
   // Turnstile verification
   const token = formData.get("cf-turnstile-response");
-  if (!token) return iframeReply("error", "Turnstile token missing. Please refresh and try again.");
+  if (!token) return iframeReply("error", "Turnstile token missing. Refresh and try again.");
 
   const ip = request.headers.get("CF-Connecting-IP") || "";
 
@@ -53,11 +52,11 @@ export async function onRequestPost(context) {
     });
     verifyJson = await verifyRes.json();
   } catch (e) {
-    return iframeReply("error", "Turnstile verification failed. Please try again.");
+    return iframeReply("error", "Turnstile verification failed. Try again.");
   }
 
   if (!verifyJson || !verifyJson.success) {
-    return iframeReply("error", "Turnstile failed. Please refresh and try again.");
+    return iframeReply("error", "Turnstile failed. Refresh and try again.");
   }
 
   // Forward to Apps Script
@@ -67,26 +66,32 @@ export async function onRequestPost(context) {
     forwardBody.append(k, v.toString());
   }
 
-  let forwardRes;
+  let forwardRes, text;
   try {
     forwardRes = await fetch(env.GAS_BOOK_TOUR_URL, {
       method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      headers: {
+        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "user-agent": "MBW-BookTour-Proxy/1.0"
+      },
       body: forwardBody.toString(),
       redirect: "follow",
     });
+    text = await forwardRes.text();
   } catch (e) {
-    return iframeReply("error", "Could not reach the booking server. Please try again.");
+    return iframeReply("error", "Could not reach the booking server. Try again.");
   }
 
-  // If Apps Script returned HTML (it does), pass it through to the iframe
-  const text = await forwardRes.text();
+  // STRICT success:
+  // Your Apps Script success response contains status:"ok" in the HTML.
+  const looksOk = forwardRes.ok && text && text.indexOf('status:"ok"') !== -1;
 
-  // If something went wrong upstream, still respond with iframe postMessage
-  if (!forwardRes.ok) {
-    return iframeReply("error", "Server error. Please try again in a moment.");
+  if (looksOk) {
+    // Return Apps Script HTML so the browser receives the same postMessage as before
+    return new Response(text, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
   }
 
-  // Best case: return the exact Apps Script HTML response
-  return new Response(text, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
+  // If it does not look OK, show a real error (and include debug info)
+  const short = (text || "").replace(/\s+/g, " ").slice(0, 220);
+  return iframeReply("error", "Upstream did not confirm success. HTTP=" + String(forwardRes.status) + " Body=" + short);
 }
