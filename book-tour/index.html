@@ -929,6 +929,13 @@
           hideMsgs();
           done = false;
           pending = true;
+
+        // If no postMessage arrives, do not assume success
+        window.setTimeout(function(){
+          if (pending && !done){
+            completeErr("Submission did not complete. Please try again. If this continues, email mindobirdwatching@gmail.com.");
+          }
+        }, 10000);
           setBtnSending(true);
 
           if(fallbackTimer) clearTimeout(fallbackTimer);
@@ -941,12 +948,8 @@
       }
 
       if(iframe){
-        iframe.addEventListener("load", function(){
-          if(pending && !done){
-            completeOk();
-          }
-        });
-      }
+        /* iframe load fallback disabled: success requires postMessage */
+}
 
       window.addEventListener("message", function(ev){
         var data = ev && ev.data ? ev.data : null;
