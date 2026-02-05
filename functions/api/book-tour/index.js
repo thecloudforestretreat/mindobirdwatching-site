@@ -1,6 +1,6 @@
 // functions/api/book-tour/index.js
 // MBW Book Tour proxy: Turnstile verify -> forward to Google Apps Script web app
-// Cloudflare Pages env vars (Production):
+// Required CF Pages env vars (Production):
 // - TURNSTILE_SECRET_KEY
 // - GAS_BOOK_TOUR_URL
 
@@ -48,6 +48,7 @@ export async function onRequest(context) {
         env.TURNSTILE_SECRET ||
         env.TURNSTILE_SECRETKEY)) ||
     "";
+
   const gasUrl =
     (env && (env.GAS_BOOK_TOUR_URL || env.GAS_URL || env.GAS_BOOKTOUR_URL)) ||
     "";
@@ -126,56 +127,57 @@ export async function onRequest(context) {
     return iframeReply("error", "Security check failed. Try again." + diag);
   }
 
-  // Forward to Apps Script as x-www-form-urlencoded
+  // Build urlencoded payload to Apps Script
   const body = new URLSearchParams();
   for (const [k, v] of formData.entries()) {
     if (k === "cf-turnstile-response" || k === "website" || k === "ts_start") continue;
     body.append(k, v.toString());
   }
-  const upstreamBody = body.toString();
+  const bodyString = body.toString();
 
-  async function postOnce(url) {
-    // IMPORTANT: manual redirect so we can re-POST to Location
-    return fetch(url, {
-      method: "POST",
-      redirect: "manual",
-      headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body: upstreamBody,
-    });
-  }
-
-  async function postFollow302(url, maxHops) {
+  // IMPORTANT:
+  // Apps Script exec often returns 302 to script.googleusercontent.com.
+  // If fetch auto-follows, some clients switch POST -> GET, causing 405.
+  // So we do redirect: "manual", then re-POST to Location ourselves.
+  async function postWithManualRedirect(url, maxHops = 2) {
     let currentUrl = url;
-    for (let hop = 0; hop <= maxHops; hop++) {
-      const resp = await postOnce(currentUrl);
 
-      // Success
-      if (resp.status >= 200 && resp.status < 300) return resp;
+    for (let hop = 0; hop < maxHops; hop++) {
+      const resp = await fetch(currentUrl, {
+        method: "POST",
+        redirect: "manual",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+        },
+        body: bodyString,
+      });
 
-      // GAS typically returns 302 to script.googleusercontent.com
-      if (resp.status === 301 || resp.status === 302 || resp.status === 303 || resp.status === 307 || resp.status === 308) {
+      // 200-299: done
+      if (resp.status >= 200 && resp.status < 300) {
+        return resp;
+      }
+
+      // Handle 301/302/303/307/308 by re-POSTing to Location
+      if ([301, 302, 303, 307, 308].includes(resp.status)) {
         const loc = resp.headers.get("location");
         if (!loc) return resp;
-
-        // For safety, only follow to Google script hosts
-        if (!/^https:\/\/script\.googleusercontent\.com\//.test(loc) && !/^https:\/\/script\.google\.com\//.test(loc)) {
-          return new Response("Bad redirect location", { status: 502 });
-        }
-
         currentUrl = loc;
         continue;
       }
 
-      // Other errors
+      // Any other status: return it
       return resp;
     }
+
+    // Too many hops
     return new Response("Too many redirects", { status: 508 });
   }
 
   let upstreamResp;
   let upstreamText = "";
+
   try {
-    upstreamResp = await postFollow302(gasUrl, 3);
+    upstreamResp = await postWithManualRedirect(gasUrl, 3);
     upstreamText = await upstreamResp.text();
   } catch (e) {
     return iframeReply("error", "Booking service unreachable.");
@@ -198,16 +200,11 @@ export async function onRequest(context) {
     );
   }
 
-  // If GAS says ok=false, show its message
   if (!payload || payload.ok !== true) {
     const msg =
-      (payload && payload.message) ? String(payload.message) : "Booking failed. Please try again.";
+      payload && payload.message ? String(payload.message) : "Booking failed. Please try again.";
     return iframeReply("error", msg);
   }
-
-  // If GAS includes a warning, you can surface it, but still return ok
-  // (Optional) Show warning:
-  // if (payload.warning) return iframeReply("ok", payload.warning);
 
   return iframeReply("ok", "");
 }
