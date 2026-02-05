@@ -49,14 +49,17 @@
       box-shadow: var(--shadow);
     }
 
-    .hero{
+    .hero {
       display: grid;
       grid-template-columns: 1.15fr .85fr;
       gap: 16px;
-      align-items: start;
+      align-items: stretch;
     }
 
-    .copy{ max-width: 92ch; }
+    .copy{ max-width: 92ch;   display: flex;
+  flex-direction: column;
+  height: 100%;
+}
     .copy p{ margin: 0 0 12px; line-height: 1.6; }
 
     .checks{
@@ -109,13 +112,15 @@
       display: block;
     }
 
-    .btnRow{
+    .btnRow {
       margin-top: 14px;
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       align-items: center;
-    }
+    
+  margin-bottom: 14px;
+}
 
     .section{
       margin-top: 18px;
@@ -294,6 +299,10 @@
   
     /* Full-day plan micro-panel (fills left-column whitespace on desktop) */
     .routeNote{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
       margin-top: 14px;
       padding: 14px 16px;
       border: 1px solid var(--line);
@@ -416,7 +425,9 @@
 @media (min-width: 901px) {
   .hero { align-items: stretch; }
   .hero .copy { display: flex; flex-direction: column; min-height: 100%; }
-  .hero .routeNote { margin-top: auto; }
+  .hero .routeNote {
+ margin-top: auto; }
+.routeNote .miniBtn { margin-top: auto; }
 }
 
 /* Tighter route card copy so it stays aligned */
@@ -449,14 +460,18 @@
 <a class="btn secondary" href="https://wa.me/593995258065?text=Hi%20Mindo%20Bird%20Watching!%20I%27d%20like%20to%20book%20a%20Full-Day%20Birding%20Tour." target="_blank" rel="noopener noreferrer">WhatsApp</a>
 </div>
       <div aria-label="Your full-day plan" class="routeNote">
-        <h2>Your full-day plan (set route)</h2>
-        <p>This tour follows a reliable loop for timing and variety. If you want a different pace, extra stops, or a private itinerary, choose below.</p>
-        <ul class="routeBullets">
-          <li><strong>Start early:</strong> best light and peak activity.</li>
-          <li><strong>Core route:</strong> Cock-of-the-Rock lek, then a forest walk for toucans and mixed flocks.</li>
-          <li><strong>Included:</strong> guide, optics help, and transportation coordination.</li>
-        </ul>
-        <a class="miniBtn" href="/custom-private-tour/">Custom Private Tour</a>
+        <h3>Your full-day plan (set route)</h3>
+<p>
+  This tour follows a reliable loop for timing and variety. Want a different pace, extra stops, or a private itinerary? Choose a
+  <a href="/custom-private-tour/">Custom Private Tour</a>.
+</p>
+<ul>
+  <li><strong>Start early:</strong> best light and peak activity.</li>
+  <li><strong>Core route:</strong> Cock-of-the-Rock lek, then a forest walk for toucans and mixed flocks.</li>
+  <li><strong>Lunch stop:</strong> we will pause at a local place and recommend good options. Lunch is optional and paid by guests.</li>
+  <li><strong>Included:</strong> guide, optics help, and transportation coordination.</li>
+</ul>
+<a class="miniBtn" href="/custom-private-tour/">Custom Private Tour</a>
       </div>
       </div>
 
