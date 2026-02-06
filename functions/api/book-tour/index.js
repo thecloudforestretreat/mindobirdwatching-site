@@ -24,10 +24,7 @@ export async function onRequest(context) {
 <script>
 (function(){
   try{
-    parent.postMessage(
-      { type:"mbw-booktour", status:"${status}", message:"${safeMsg}" },
-      "*"
-    );
+    parent.postMessage({ type:"mbw-booktour", status:"${status}", message:"${safeMsg}" }, "*");
   }catch(e){}
 })();
 </script>
@@ -41,82 +38,73 @@ export async function onRequest(context) {
     );
   }
 
-  const turnstileSecret = (env.TURNSTILE_SECRET_KEY || "").trim();
-  const gasUrl = (env.GAS_BOOK_TOUR_URL || "").trim();
-  const sharedSecret = (env.CF_SHARED_SECRET || "").trim();
+  const turnstileSecret = env.TURNSTILE_SECRET_KEY || "";
+  const gasUrl = env.GAS_BOOK_TOUR_URL || "";
+  const sharedSecret = env.CF_SHARED_SECRET || "";
 
   if (!turnstileSecret || !gasUrl || !sharedSecret) {
     return iframeReply("error", "Server configuration error.");
   }
 
-  const contentType = request.headers.get("content-type") || "";
-  if (!contentType.includes("application/x-www-form-urlencoded")) {
-    return iframeReply("error", "Invalid submission.");
-  }
-
   let formData;
   try {
+    // Works for both multipart/form-data and application/x-www-form-urlencoded
     formData = await request.formData();
   } catch (e) {
     return iframeReply("error", "Invalid form data.");
   }
 
-  // Honeypot (bots often fill hidden fields)
+  // Honeypot (keep your hidden input named "website")
   if ((formData.get("website") || "").toString().trim() !== "") {
     return iframeReply("ok", "");
   }
 
-  // Turnstile token must be present in the submission
+  // Turnstile token (Cloudflare Turnstile uses this name)
   const token = (formData.get("cf-turnstile-response") || "").toString().trim();
   if (!token) {
-    return iframeReply(
-      "error",
-      "Security check missing token. Please refresh and try again."
-    );
+    return iframeReply("error", "Security check failed. Please refresh and try again.");
   }
 
-  // Verify Turnstile with Cloudflare
+  // Verify Turnstile
   let verify;
   try {
-    const resp = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          secret: turnstileSecret,
-          response: token,
-          remoteip: request.headers.get("CF-Connecting-IP") || ""
-        })
-      }
-    );
+    const ip = (request.headers.get("CF-Connecting-IP") || "").toString();
+    const resp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret: turnstileSecret,
+        response: token,
+        remoteip: ip
+      })
+    });
     verify = await resp.json();
   } catch (e) {
     return iframeReply("error", "Security service unavailable. Try again.");
   }
 
-  if (!verify || !verify.success) {
-    const code =
-      verify && verify["error-codes"] ? verify["error-codes"].join(",") : "unknown";
-    return iframeReply("error", `Security check failed. (${code})`);
+  if (!verify || verify.success !== true) {
+    const code = (verify && verify["error-codes"] && verify["error-codes"][0]) ? verify["error-codes"][0] : "invalid-input-response";
+    return iframeReply("error", `Security check failed. Try again. (${code})`);
   }
 
   // Build payload for Apps Script
-  // IMPORTANT: Apps Script expects cf_secret in the POST body (not just a header).
   const body = new URLSearchParams();
+
   for (const [k, v] of formData.entries()) {
     if (k === "cf-turnstile-response") continue;
-    if (k === "website") continue; // honeypot
+    if (k === "website") continue;
     body.append(k, v.toString());
   }
 
-  // Add shared secret so Apps Script can block direct bot hits
-  body.set("cf_secret", sharedSecret);
+  // IMPORTANT: Apps Script expects this param
+  body.append("cf_secret", sharedSecret);
 
-  async function postWithRedirect(url) {
-    let current = url;
+  // POST to GAS and manually follow 302 redirect, re-POSTing to the Location.
+  async function postWithRedirect(startUrl) {
+    let current = startUrl;
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const res = await fetch(current, {
         method: "POST",
         redirect: "manual",
@@ -129,11 +117,12 @@ export async function onRequest(context) {
       // Success
       if (res.status >= 200 && res.status < 300) return res;
 
-      // Google Apps Script often responds 302 to a script.googleusercontent.com URL
+      // GAS returns 302 to script.googleusercontent.com
       if ([301, 302, 303, 307, 308].includes(res.status)) {
         const loc = res.headers.get("location");
         if (!loc) return res;
-        current = loc;
+        // Handle relative Locations safely
+        current = new URL(loc, current).toString();
         continue;
       }
 
@@ -161,9 +150,10 @@ export async function onRequest(context) {
     return iframeReply("error", "Invalid server response.");
   }
 
-  if (!payload || !payload.ok) {
-    return iframeReply("error", (payload && payload.message) || "Booking failed.");
+  if (!payload || payload.ok !== true) {
+    return iframeReply("error", (payload && payload.message) ? payload.message : "Booking failed.");
   }
 
-  return iframeReply("ok", "");
+  // Success (UI shows success already)
+  return iframeReply("ok", payload.warning || "");
 }
