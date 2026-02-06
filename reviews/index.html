@@ -829,8 +829,7 @@
     </div>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
-  <script src="/assets/data/reviews-data.js?v=1"></script>
-  <script>
+<script>
     (function () {
       "use strict";
 
@@ -872,7 +871,7 @@
       }
 
       function buildReviewCard(r){
-        var name = r.author || "Google user";
+        var name = r.author || "Usuario de Google";
         var sub = r.relative_time || "";
         var text = r.text || "";
         var ratingNum = (r.rating != null) ? r.rating : 5;
@@ -883,7 +882,7 @@
           : esc(name);
 
         return (
-          '<article class="reviewCard" aria-label="Review">' +
+          '<article class="reviewCard" aria-label="Resena">' +
             '<div class="reviewTop">' +
               '<div class="who">' +
                 '<div class="avatar" aria-hidden="true">' + esc(makeAvatarLetters(name)) + '</div>' +
@@ -892,10 +891,10 @@
                   '<p class="sub">' + esc(sub) + '</p>' +
                 '</div>' +
               '</div>' +
-              '<div class="reviewBadges" aria-label="Rating and source">' +
-                '<span class="starsPill"><span class="starsTextInline" aria-label="Stars">' + esc(starsInline(ratingNum)) + '</span></span>' +
-                '<span class="gMark" aria-label="Google Reviews">' +
-                  '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews">' +
+              '<div class="reviewBadges" aria-label="Calificacion y fuente">' +
+                '<span class="starsPill"><span class="starsTextInline" aria-label="Estrellas">' + esc(starsInline(ratingNum)) + '</span></span>' +
+                '<span class="gMark" aria-label="Reseñas de Google">' +
+                  '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="Reseñas de Google">' +
                 '</span>' +
               '</div>' +
             '</div>' +
@@ -907,15 +906,15 @@
       function buildReadMoreCard(mapsUrl){
         var safeUrl = mapsUrl || "https://www.google.com/maps";
         return (
-          '<article class="reviewCard" aria-label="More reviews">' +
+          '<article class="reviewCard" aria-label="Mas reviews">' +
             '<div style="display:flex; gap:12px; align-items:flex-start;">' +
               '<div class="avatar" aria-hidden="true" style="border-color: rgba(3,78,162,.20); background: rgba(3,78,162,.10); color: rgba(3,78,162,.95);">G</div>' +
               '<div style="min-width:0;">' +
-                '<p class="name" style="margin:0 0 4px;">Want more reviews?</p>' +
-                '<p class="sub" style="margin:0; white-space:normal; line-height:1.55;">Open Google Maps to see every review (Google may limit what sites can display).</p>' +
+                '<p class="name" style="margin:0 0 4px;">Want to see more reviews?</p>' +
+                '<p class="sub" style="margin:0; white-space:normal; line-height:1.55;">Abre Google Maps para ver todas las resenas (Google puede limitar lo que los sitios pueden mostrar).</p>' +
                 '<div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">' +
                   '<a class="btn secondary" href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">Open on Maps</a>' +
-                  '<a class="btn primary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">Leave a Review</a>' +
+                  '<a class="btn primary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">Dejar una resena</a>' +
                 '</div>' +
               '</div>' +
             '</div>' +
@@ -950,8 +949,8 @@
 
         if(hint){
           hint.textContent = reviews.length
-            ? ("Loaded " + reviews.length + " review(s) (" + sourceLabel + ")")
-            : ("No reviews returned (" + sourceLabel + ")");
+            ? ("Loaded " + reviews.length + " resena(s) (" + sourceLabel + ")")
+            : ("No se devolvieron reviews (" + sourceLabel + ")");
         }
 
         if(!reviews.length){
@@ -997,22 +996,14 @@
       function loadReviews(){
         var hint = byId("reviewsHint");
         var empty = byId("reviewsEmpty");
-        if(hint) hint.textContent = "Loading…";
-        if(empty) empty.style.display = "none";
+        if(hint) hint.textContent = "Cargando…";
 
-        // Prefer local static data (assets/data/reviews-data.js)
-        if(window.MBW_REVIEWS_DATA && window.MBW_REVIEWS_DATA.ok){
-          applyData(window.MBW_REVIEWS_DATA, "reviews-data.js");
-          return;
-        }
-
-        // Fallback to API only if present (optional)
         var url = "/api/reviews?ts=" + Date.now();
 
         fetchJson(url).then(function(data){
           applyData(data, "/api/reviews");
         }).catch(function(e){
-          if(hint) hint.textContent = "Reviews failed to load.";
+          if(hint) hint.textContent = "No se pudieron cargar las reviews: " + String(e && e.message ? e.message : e);
           if(empty) empty.style.display = "block";
         });
       }
@@ -1032,7 +1023,7 @@
 
         function renderDots(){
           dotsWrap.innerHTML = imgs.map(function(_, i){
-            return '<button class="vDot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Go to image ' + (i+1) + '" data-i="' + i + '"></button>';
+            return '<button class="vDot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Ir a la imagen ' + (i+1) + '" data-i="' + i + '"></button>';
           }).join("");
         }
 
