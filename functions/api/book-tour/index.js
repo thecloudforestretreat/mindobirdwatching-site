@@ -2,11 +2,12 @@
 // MBW Book Tour proxy: Turnstile verify -> forward to Google Apps Script web app
 // Required CF Pages env vars (Production):
 // - TURNSTILE_SECRET_KEY
-// - GAS_WEB_APP_URL
+// - GAS_WEB_APP_URL   (preferred)
+//   OR GAS_BOOK_TOUR_URL (legacy name supported)
 // - CF_SHARED_SECRET
 
 export async function onRequestPost({ request, env }) {
-  const gasUrl = env.GAS_WEB_APP_URL;
+  const gasUrl = env.GAS_WEB_APP_URL || env.GAS_BOOK_TOUR_URL;
   const turnstileSecret = env.TURNSTILE_SECRET_KEY;
   const sharedSecret = env.CF_SHARED_SECRET;
 
@@ -32,7 +33,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    if (!gasUrl) return iframeReply("error", "Server misconfigured. Missing GAS_WEB_APP_URL.");
+    if (!gasUrl) return iframeReply("error", "Server misconfigured. Missing GAS_WEB_APP_URL (or GAS_BOOK_TOUR_URL).");
     if (!turnstileSecret) return iframeReply("error", "Server misconfigured. Missing TURNSTILE_SECRET_KEY.");
     if (!sharedSecret) return iframeReply("error", "Server misconfigured. Missing CF_SHARED_SECRET.");
 
@@ -74,9 +75,7 @@ export async function onRequestPost({ request, env }) {
 
     if (!verify || !verify.success) {
       const code =
-        (verify && verify["error-codes"] && verify["error-codes"][0])
-          ? verify["error-codes"][0]
-          : "invalid";
+        (verify && verify["error-codes"] && verify["error-codes"][0]) ? verify["error-codes"][0] : "invalid";
       return iframeReply("error", `Security check failed. Try again. (${code})`);
     }
 
@@ -157,7 +156,7 @@ export async function onRequestPost({ request, env }) {
   }
 }
 
-// Optional: keep GET returning 405, or you can add a small health response:
+// Keep GET returning 405 (this is fine and expected)
 export async function onRequestGet() {
   return new Response("Method Not Allowed", { status: 405 });
 }
