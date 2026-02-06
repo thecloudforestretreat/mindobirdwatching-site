@@ -8,8 +8,12 @@
 export async function onRequest(context) {
   const { request, env } = context;
 
+  // Only POST is allowed
   if (request.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+    return new Response("Method Not Allowed", {
+      status: 405,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
   }
 
   function iframeReply(status, message) {
@@ -17,7 +21,7 @@ export async function onRequest(context) {
       .replace(/\\/g, "\\\\")
       .replace(/"/g, '\\"')
       .replace(/\n/g, " ")
-      .slice(0, 800);
+      .slice(0, 900);
 
     return new Response(
       `<!doctype html><html><head><meta charset="utf-8"></head><body>
@@ -30,37 +34,78 @@ export async function onRequest(context) {
 </script>
 </body></html>`,
       {
+        status: 200,
         headers: {
           "content-type": "text/html; charset=utf-8",
-          "cache-control": "no-store"
-        }
+          "cache-control": "no-store",
+        },
       }
     );
   }
 
-  const turnstileSecret = env.TURNSTILE_SECRET_KEY || "";
-  const gasUrl = env.GAS_BOOK_TOUR_URL || "";
-  const sharedSecret = env.CF_SHARED_SECRET || "";
+  const turnstileSecret =
+    (env &&
+      (env.TURNSTILE_SECRET_KEY ||
+        env.TURNSTILE_SECRET ||
+        env.TURNSTILE_SECRETKEY)) ||
+    "";
 
-  if (!turnstileSecret || !gasUrl || !sharedSecret) {
-    return iframeReply("error", "Server configuration error.");
+  const gasUrl =
+    (env && (env.GAS_BOOK_TOUR_URL || env.GAS_URL || env.GAS_BOOKTOUR_URL)) ||
+    "";
+
+  const cfSharedSecret =
+    (env && (env.CF_SHARED_SECRET || env.CF_SECRET || env.CF_SHARED_SECRET_KEY)) ||
+    "";
+
+  if (!turnstileSecret) {
+    return iframeReply(
+      "error",
+      "Server config error: missing TURNSTILE_SECRET_KEY in Cloudflare Pages (Production)."
+    );
+  }
+  if (!gasUrl) {
+    return iframeReply(
+      "error",
+      "Server config error: missing GAS_BOOK_TOUR_URL in Cloudflare Pages (Production)."
+    );
+  }
+  if (!cfSharedSecret) {
+    return iframeReply(
+      "error",
+      "Server config error: missing CF_SHARED_SECRET in Cloudflare Pages (Production)."
+    );
+  }
+
+  const contentType = request.headers.get("content-type") || "";
+  const isForm =
+    contentType.includes("application/x-www-form-urlencoded") ||
+    contentType.includes("multipart/form-data");
+
+  if (!isForm) {
+    return iframeReply("error", "Invalid submission.");
   }
 
   let formData;
   try {
-    // Works for both multipart/form-data and application/x-www-form-urlencoded
     formData = await request.formData();
   } catch (e) {
     return iframeReply("error", "Invalid form data.");
   }
 
-  // Honeypot (keep your hidden input named "website")
+  // Honeypot
   if ((formData.get("website") || "").toString().trim() !== "") {
     return iframeReply("ok", "");
   }
 
-  // Turnstile token (Cloudflare Turnstile uses this name)
-  const token = (formData.get("cf-turnstile-response") || "").toString().trim();
+  // Timing check
+  const tsStart = Number(formData.get("ts_start") || "0");
+  if (tsStart && Date.now() - tsStart < 4000) {
+    return iframeReply("error", "Please slow down and try again.");
+  }
+
+  // Turnstile token
+  const token = formData.get("cf-turnstile-response");
   if (!token) {
     return iframeReply("error", "Security check failed. Please refresh and try again.");
   }
@@ -68,92 +113,113 @@ export async function onRequest(context) {
   // Verify Turnstile
   let verify;
   try {
-    const ip = (request.headers.get("CF-Connecting-IP") || "").toString();
-    const resp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret: turnstileSecret,
-        response: token,
-        remoteip: ip
-      })
-    });
-    verify = await resp.json();
+    const verifyResp = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret: turnstileSecret,
+          response: token.toString(),
+          remoteip: request.headers.get("CF-Connecting-IP") || "",
+        }),
+      }
+    );
+    verify = await verifyResp.json();
   } catch (e) {
-    return iframeReply("error", "Security service unavailable. Try again.");
+    return iframeReply("error", "Security service unavailable. Please try again.");
   }
 
-  if (!verify || verify.success !== true) {
-    const code = (verify && verify["error-codes"] && verify["error-codes"][0]) ? verify["error-codes"][0] : "invalid-input-response";
-    return iframeReply("error", `Security check failed. Try again. (${code})`);
+  if (!verify || !verify.success) {
+    const codes = Array.isArray(verify && verify["error-codes"])
+      ? verify["error-codes"].join(",")
+      : "";
+    const diag = codes ? ` (${codes})` : "";
+    return iframeReply("error", "Security check failed. Try again." + diag);
   }
 
-  // Build payload for Apps Script
+  // Build urlencoded body for GAS
   const body = new URLSearchParams();
 
+  // Add shared secret so GAS blocks direct hits
+  body.append("cf_secret", cfSharedSecret);
+
   for (const [k, v] of formData.entries()) {
-    if (k === "cf-turnstile-response") continue;
-    if (k === "website") continue;
+    if (k === "cf-turnstile-response" || k === "website" || k === "ts_start") continue;
     body.append(k, v.toString());
   }
 
-  // IMPORTANT: Apps Script expects this param
-  body.append("cf_secret", sharedSecret);
+  // Manual redirect helper: re-POST to the Location (do NOT turn into GET)
+  async function postWithManualRedirect(url, bodyString) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-  // POST to GAS and manually follow 302 redirect, re-POSTing to the Location.
-  async function postWithRedirect(startUrl) {
-    let current = startUrl;
-
-    for (let i = 0; i < 3; i++) {
-      const res = await fetch(current, {
+    try {
+      // 1) POST to /exec with redirect: manual
+      const r1 = await fetch(url, {
         method: "POST",
         redirect: "manual",
-        headers: {
-          "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
-        },
-        body: body.toString()
+        headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body: bodyString,
+        signal: controller.signal,
       });
 
-      // Success
-      if (res.status >= 200 && res.status < 300) return res;
+      // If Google returns 302/303/301 to script.googleusercontent.com, we must re-POST to Location
+      if (r1.status === 301 || r1.status === 302 || r1.status === 303 || r1.status === 307 || r1.status === 308) {
+        const loc = r1.headers.get("location");
+        if (!loc) return { ok: false, status: r1.status, text: "", note: "Missing redirect Location header." };
 
-      // GAS returns 302 to script.googleusercontent.com
-      if ([301, 302, 303, 307, 308].includes(res.status)) {
-        const loc = res.headers.get("location");
-        if (!loc) return res;
-        // Handle relative Locations safely
-        current = new URL(loc, current).toString();
-        continue;
+        const redirectUrl = new URL(loc, url).toString();
+
+        // 2) Re-POST to redirect target
+        const r2 = await fetch(redirectUrl, {
+          method: "POST",
+          redirect: "manual",
+          headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body: bodyString,
+          signal: controller.signal,
+        });
+
+        const t2 = await r2.text();
+        return { ok: r2.ok, status: r2.status, text: t2 };
       }
 
-      return res;
+      // No redirect, just read response
+      const t1 = await r1.text();
+      return { ok: r1.ok, status: r1.status, text: t1 };
+    } finally {
+      clearTimeout(timeout);
     }
-
-    return new Response("Too many redirects", { status: 508 });
   }
 
   let upstream;
   try {
-    upstream = await postWithRedirect(gasUrl);
+    upstream = await postWithManualRedirect(gasUrl, body.toString());
   } catch (e) {
     return iframeReply("error", "Booking service unreachable.");
   }
 
-  if (!upstream.ok) {
-    return iframeReply("error", `Booking failed. Upstream status=${upstream.status}.`);
+  if (!upstream || upstream.ok !== true) {
+    const st = upstream && typeof upstream.status === "number" ? upstream.status : 0;
+    return iframeReply("error", `Booking failed. Upstream status=${st || "unknown"}.`);
   }
 
-  let payload;
+  // Expect JSON from GAS: { ok: true } or { ok:false, message:"..." }
+  let payload = null;
   try {
-    payload = await upstream.json();
+    payload = JSON.parse(upstream.text || "");
   } catch (e) {
-    return iframeReply("error", "Invalid server response.");
+    const preview = String(upstream.text || "").replace(/\s+/g, " ").slice(0, 180);
+    return iframeReply(
+      "error",
+      "Booking failed. Apps Script must return JSON, but returned non-JSON. Preview: " + preview
+    );
   }
 
   if (!payload || payload.ok !== true) {
-    return iframeReply("error", (payload && payload.message) ? payload.message : "Booking failed.");
+    const msg = payload && payload.message ? String(payload.message) : "Booking failed. Please try again.";
+    return iframeReply("error", msg);
   }
 
-  // Success (UI shows success already)
-  return iframeReply("ok", payload.warning || "");
+  return iframeReply("ok", payload.warning ? String(payload.warning) : "");
 }
