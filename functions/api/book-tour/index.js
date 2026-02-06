@@ -2,7 +2,7 @@
 // MBW Book Tour proxy: Turnstile verify -> forward to Google Apps Script web app
 // Required CF Pages env vars (Production):
 // - TURNSTILE_SECRET_KEY
-// - GAS_BOOK_TOUR_URL
+// - GAS_WEB_APP_URL
 // - CF_SHARED_SECRET
 
 export async function onRequestPost({ request, env }) {
@@ -73,7 +73,10 @@ export async function onRequestPost({ request, env }) {
     }
 
     if (!verify || !verify.success) {
-      const code = (verify && verify["error-codes"] && verify["error-codes"][0]) ? verify["error-codes"][0] : "invalid";
+      const code =
+        (verify && verify["error-codes"] && verify["error-codes"][0])
+          ? verify["error-codes"][0]
+          : "invalid";
       return iframeReply("error", `Security check failed. Try again. (${code})`);
     }
 
@@ -84,6 +87,7 @@ export async function onRequestPost({ request, env }) {
       if (k === "website") continue;
       body.append(k, v.toString());
     }
+
     // This is what your Apps Script checks:
     body.append("cf_secret", sharedSecret);
 
