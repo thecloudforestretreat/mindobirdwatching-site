@@ -300,6 +300,9 @@
       .info3{ grid-template-columns: 1fr; }
     }
   </style>
+  <script defer="" src="/assets/js/includes.js?v=1"></script>
+  <script defer="" src="/assets/js/site.js?v=1"></script>
+
 </head>
 <body>
   <div class="container">
@@ -557,23 +560,5 @@
 
 <div id="siteFooter"></div>
   </div>
-  <script>
-    (function(){
-      async function inject(id, url){
-        const el = document.getElementById(id);
-        if(!el) return;
-        const res = await fetch(url, { cache: "no-store" });
-        el.innerHTML = await res.text();
-      }
-
-      Promise.all([
-        inject("siteHeader", "/assets/includes/header.html"),
-        inject("siteFooter", "/assets/includes/footer.html")
-      ]).then(() => {
-        window.dispatchEvent(new Event("mbw:includes:ready"));
-      });
-    })();
-  </script>
-  <script src="/assets/js/site.js"></script>
 </body>
 </html>
