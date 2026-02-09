@@ -415,220 +415,268 @@
       .grid4{ grid-template-columns: 1fr; }
     }
   </style>
+
+  <style>
+    /* Shop page (scoped) */
+    .shopPage{ padding: 26px 26px 34px; }
+    .shopHero{ display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 26px; align-items: start; }
+    .shopHero .kicker{ font-weight: 900; letter-spacing: .12em; color: #1e5f3b; font-size: 12px; }
+    .shopHero h1{ margin: 8px 0 10px; font-size: 44px; line-height: 1.05; }
+    .shopHero .lead{ margin: 0 0 14px; max-width: 56ch; color: #2a3a2f; font-size: 16px; }
+    .shopHero-ctas{ display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 10px; }
+    .shopHero-points{ display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 0; padding: 0; list-style: none; color: #2a3a2f; font-size: 13px; }
+    .shopHero-points li{ position: relative; padding-left: 14px; }
+    .shopHero-points li:before{ content: ""; position: absolute; left: 0; top: 6px; width: 6px; height: 6px; border-radius: 999px; background: rgba(30,95,59,.45); }
+    .shopTrust{ margin-top: 16px; }
+    .trustCard{ background: rgba(255,255,255,.75); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 14px; }
+    .trustTitle{ font-weight: 900; margin-bottom: 10px; color: #1e5f3b; }
+    .trustGrid{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+    .trustItem{ background: rgba(255,255,255,.7); border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 10px; }
+    .trustLabel{ font-weight: 900; font-size: 13px; margin-bottom: 4px; }
+    .trustText{ font-size: 13px; color: #2a3a2f; }
+
+    .previewCard{ background: rgba(255,255,255,.75); border: 1px solid rgba(0,0,0,.08); border-radius: 20px; padding: 14px; }
+    .previewTag{ font-size: 13px; font-weight: 800; color: #1e5f3b; margin-bottom: 10px; }
+    .previewMedia{ border-radius: 18px; overflow: hidden; background: rgba(30,95,59,.06); border: 1px dashed rgba(30,95,59,.35); min-height: 320px; display: grid; place-items: center; }
+    .previewPlaceholder{ font-weight: 900; color: rgba(30,95,59,.65); padding: 14px; text-align: center; }
+    .previewNote{ margin-top: 10px; font-size: 13px; color: #2a3a2f; }
+
+    .shopSection{ margin-top: 28px; }
+    .sectionHead{ display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+    .sectionHead h2{ margin: 0; font-size: 22px; }
+    .sectionHead .sub{ margin: 0; color: #2a3a2f; font-size: 13px; }
+
+    .productGrid{ margin-top: 14px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+    .pCard{ background: rgba(255,255,255,.78); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; }
+    .pMedia{ border-radius: 16px; overflow: hidden; background: rgba(30,95,59,.06); border: 1px dashed rgba(30,95,59,.35); height: 170px; display: grid; place-items: center; }
+    .pPh{ font-weight: 900; color: rgba(30,95,59,.65); }
+    .pTitle{ margin: 10px 0 6px; font-size: 16px; }
+    .pDesc{ margin: 0 0 12px; color: #2a3a2f; font-size: 13px; }
+    .pMeta{ margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .pPrice{ font-weight: 900; color: #1e5f3b; }
+
+    .howGrid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .howCard{ background: rgba(255,255,255,.78); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 14px; }
+    .howCard h2{ margin: 0 0 10px; font-size: 18px; }
+    .howSteps{ margin: 0; padding-left: 18px; color: #2a3a2f; font-size: 13px; }
+    .howSteps li{ margin: 8px 0; }
+    .howCtas{ margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .howBullets{ margin: 0; padding-left: 18px; color: #2a3a2f; font-size: 13px; }
+    .howBullets li{ margin: 8px 0; }
+    .smallNote{ margin-top: 10px; font-size: 13px; color: #2a3a2f; opacity: .85; }
+
+    .helpRow{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 14px; }
+    .helpCard{ background: rgba(255,255,255,.78); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 14px; text-decoration: none; color: inherit; }
+    .helpTitle{ font-weight: 900; font-size: 16px; margin-bottom: 6px; color: #1e5f3b; }
+    .helpText{ font-size: 13px; color: #2a3a2f; margin-bottom: 10px; }
+    .helpCTA{ font-weight: 900; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; color: #1e5f3b; }
+
+    @media (max-width: 980px){
+      .shopHero{ grid-template-columns: 1fr; }
+      .trustGrid{ grid-template-columns: 1fr; }
+      .productGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .howGrid{ grid-template-columns: 1fr; }
+      .helpRow{ grid-template-columns: 1fr; }
+      .shopHero h1{ font-size: 34px; }
+    }
+    @media (max-width: 560px){
+      .shopPage{ padding: 18px 16px 26px; }
+      .productGrid{ grid-template-columns: 1fr; }
+      .pMedia{ height: 190px; }
+      .previewMedia{ min-height: 240px; }
+    }
+  </style>
+
 </head>
 
 <body>
   <div id="pageShell">
-    <div id="siteHeader"></div>
+    
+  <div id="siteHeader"></div>
 
-    <main class="shop-wrap">
-      <section class="shop-hero">
-        <div class="heroCard">
-          <div class="kicker">SHOP</div>
-          <h1 class="shopTitle">Bird inspired prints from the cloud forest</h1>
-          <p class="shopLead">
-            A small, curated collection inspired by our tours in 📍Mindo, Ecuador.
-            Produced on demand through our print partner and shipped to you.
-          </p>
+  <main class="page card shopPage" aria-label="Shop">
+    <section class="shopHero">
+      <div class="shopHero-left">
+        <div class="kicker">SHOP</div>
+        <h1>Bird-inspired prints from the cloud forest</h1>
+        <p class="lead">
+          A small, curated collection of printable styles and simple gifts inspired by our tours in
+          📍Mindo, Ecuador. Produced on demand through our print partner, shipped to you.
+        </p>
 
-          <ul class="pillRow" aria-label="Shop highlights">
-            <li>Made to order</li>
-            <li>Worldwide shipping</li>
-            <li>Curated selection</li>
-            <li>Supports local guiding</li>
-          </ul>
+        <div class="shopHero-ctas">
+          <a class="btn primary" href="#products">Browse products</a>
+          <a class="btn" href="/contact/">Ask a question</a>
+        </div>
 
-          <div class="ctaRow">
-            <a class="primary" href="#products">Browse products</a>
-            <a href="/contact/">Ask a question</a>
-          </div>
+        <ul class="shopHero-points" role="list">
+          <li>Made to order</li>
+          <li>Worldwide shipping</li>
+          <li>Limited, curated selection</li>
+        </ul>
 
-          <div class="trustStrip" aria-label="Trust">
-            <div class="trustItem">
-              <strong>Fast decisions</strong>
-              <span>Simple choices, no overwhelm. Pick a print, choose a size, done.</span>
-            </div>
-            <div class="trustItem">
-              <strong>Great gifts</strong>
-              <span>Easy to send to birders, travelers, and nature lovers.</span>
-            </div>
-            <div class="trustItem">
-              <strong>Quality first</strong>
-              <span>We only list designs we would hang ourselves.</span>
+        <div class="shopTrust">
+          <div class="trustCard">
+            <div class="trustTitle">What you get</div>
+            <div class="trustGrid">
+              <div class="trustItem">
+                <div class="trustLabel">Gallery-quality</div>
+                <div class="trustText">Clean color, sharp detail, and print-ready layouts.</div>
+              </div>
+              <div class="trustItem">
+                <div class="trustLabel">Tour-inspired</div>
+                <div class="trustText">Birds and moments you can actually see around Mindo.</div>
+              </div>
+              <div class="trustItem">
+                <div class="trustLabel">Simple checkout</div>
+                <div class="trustText">We will link each product to its secure print checkout.</div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <aside class="previewCard" aria-label="Shop preview">
-          <div class="previewTop">
-            <div class="label">Shop preview</div>
-            <div class="note">Replace this with a real product photo</div>
+      <div class="shopHero-right">
+        <div class="previewCard">
+          <div class="previewTag">Birding print shop preview</div>
+          <div class="previewMedia" aria-label="Shop preview image">
+            <div class="previewPlaceholder">Hero product image placeholder</div>
           </div>
-
-          <div class="previewMedia">
-            <!-- Placeholder: swap src to a real lifestyle image or product mockup -->
-            <img class="ph" src="/assets/images/placeholders/product-lifestyle-01.jpg" alt="Product preview placeholder" />
-            <div class="overlay">Add a lifestyle mockup here for instant credibility.</div>
+          <div class="previewNote">
+            Replace this with a real Printify mockup or a lifestyle photo.
           </div>
-
-          <div class="previewBottom">
-            Tip: Use one strong lifestyle image that shows a framed print in a room. It lifts conversions.
-          </div>
-        </aside>
-      </section>
-
-      <section id="products" class="section">
-        <div class="sectionHead">
-          <h2>Featured prints</h2>
-          <p>Swap placeholders for Printify product mockups and links.</p>
         </div>
+      </div>
+    </section>
 
-        <div class="grid4">
-          <article class="productCard">
-            <div class="img">
-              <img src="/assets/images/placeholders/product-01.jpg" alt="Product image placeholder" />
-            </div>
-            <div class="body">
-              <h3>Cloud Forest Toucan Print</h3>
-              <p class="desc">A bold, colorful piece for bird lovers and travel memories.</p>
-              <div class="meta">
-                <span class="chip">Best seller</span>
-                <span class="chip">Multiple sizes</span>
-              </div>
-            </div>
-            <div class="actions">
-              <a href="#" class="buy">View product</a>
-              <a href="/contact/">Questions</a>
-            </div>
-          </article>
+    <section class="shopSection" id="products">
+      <div class="sectionHead">
+        <h2>Featured prints</h2>
+        <p class="sub">Swap the placeholders with your Printify product mockups and links.</p>
+      </div>
 
-          <article class="productCard">
-            <div class="img">
-              <img src="/assets/images/placeholders/product-02.jpg" alt="Product image placeholder" />
-            </div>
-            <div class="body">
-              <h3>Andean Cock of the Rock Poster</h3>
-              <p class="desc">A classic icon of Mindo, perfect for a study or office wall.</p>
-              <div class="meta">
-                <span class="chip">Fan favorite</span>
-                <span class="chip">Matte finish</span>
-              </div>
-            </div>
-            <div class="actions">
-              <a href="#" class="buy">View product</a>
-              <a href="/contact/">Questions</a>
-            </div>
-          </article>
+      <div class="productGrid">
+        <article class="pCard">
+          <div class="pMedia"><div class="pPh">Product image</div></div>
+          <h3 class="pTitle">Toucan sunset poster</h3>
+          <p class="pDesc">Bold color for offices, studios, and birders corners.</p>
+          <div class="pMeta">
+            <span class="pPrice">$--</span>
+            <a class="btn small primary" href="#" aria-label="Buy Toucan sunset poster">View product</a>
+          </div>
+        </article>
 
-          <article class="productCard">
-            <div class="img">
-              <img src="/assets/images/placeholders/product-03.jpg" alt="Product image placeholder" />
-            </div>
-            <div class="body">
-              <h3>Hummingbird Mini Print Set</h3>
-              <p class="desc">Small prints that look great together as a set or gallery wall.</p>
-              <div class="meta">
-                <span class="chip">Gift ready</span>
-                <span class="chip">Set of 3</span>
-              </div>
-            </div>
-            <div class="actions">
-              <a href="#" class="buy">View product</a>
-              <a href="/contact/">Questions</a>
-            </div>
-          </article>
+        <article class="pCard">
+          <div class="pMedia"><div class="pPh">Product image</div></div>
+          <h3 class="pTitle">Cock-of-the-Rock print</h3>
+          <p class="pDesc">A clean, modern look inspired by the dawn lek.</p>
+          <div class="pMeta">
+            <span class="pPrice">$--</span>
+            <a class="btn small primary" href="#" aria-label="Buy Cock-of-the-Rock print">View product</a>
+          </div>
+        </article>
 
-          <article class="productCard">
-            <div class="img">
-              <img src="/assets/images/placeholders/product-04.jpg" alt="Product image placeholder" />
-            </div>
-            <div class="body">
-              <h3>Mindo Birding Sticker Pack</h3>
-              <p class="desc">A small add on for laptops, notebooks, and field gear.</p>
-              <div class="meta">
-                <span class="chip">Budget friendly</span>
-                <span class="chip">Durable</span>
-              </div>
-            </div>
-            <div class="actions">
-              <a href="#" class="buy">View product</a>
-              <a href="/contact/">Questions</a>
-            </div>
-          </article>
-        </div>
-      </section>
+        <article class="pCard">
+          <div class="pMedia"><div class="pPh">Product image</div></div>
+          <h3 class="pTitle">Hummingbird minis set</h3>
+          <p class="pDesc">Small-format prints that look great as a trio.</p>
+          <div class="pMeta">
+            <span class="pPrice">$--</span>
+            <a class="btn small primary" href="#" aria-label="Buy Hummingbird minis set">View product</a>
+          </div>
+        </article>
 
-      <section class="section">
-        <div class="sectionHead">
+        <article class="pCard">
+          <div class="pMedia"><div class="pPh">Product image</div></div>
+          <h3 class="pTitle">Tanagers color study</h3>
+          <p class="pDesc">A bright, layered palette for a calm room.</p>
+          <div class="pMeta">
+            <span class="pPrice">$--</span>
+            <a class="btn small primary" href="#" aria-label="Buy Tanagers color study">View product</a>
+          </div>
+        </article>
+
+        <article class="pCard">
+          <div class="pMedia"><div class="pPh">Product image</div></div>
+          <h3 class="pTitle">Mindo field notes poster</h3>
+          <p class="pDesc">A simple checklist vibe for planning your next trip.</p>
+          <div class="pMeta">
+            <span class="pPrice">$--</span>
+            <a class="btn small primary" href="#" aria-label="Buy Mindo field notes poster">View product</a>
+          </div>
+        </article>
+
+        <article class="pCard">
+          <div class="pMedia"><div class="pPh">Product image</div></div>
+          <h3 class="pTitle">Gift card (digital)</h3>
+          <p class="pDesc">A quick gift for birders, photographers, and families.</p>
+          <div class="pMeta">
+            <span class="pPrice">$--</span>
+            <a class="btn small primary" href="#" aria-label="Buy Gift card">View product</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="shopSection">
+      <div class="howGrid">
+        <div class="howCard">
           <h2>How it works</h2>
-          <p>Simple, calm, and reliable.</p>
-        </div>
-
-        <div class="howGrid">
-          <div class="howCard">
-            <strong>1) Choose a print</strong>
-            <p>Pick a style and size. We keep the selection small so choosing is easy.</p>
-          </div>
-          <div class="howCard">
-            <strong>2) Produced on demand</strong>
-            <p>Your order is made when you purchase. No warehouse, no leftover stock.</p>
-          </div>
-          <div class="howCard">
-            <strong>3) Ships to your door</strong>
-            <p>Delivered to you. If you have timing questions, message us before ordering.</p>
+          <ol class="howSteps">
+            <li><strong>Pick a print</strong> from the curated set below.</li>
+            <li><strong>Open the product</strong> to see sizes, paper, and pricing.</li>
+            <li><strong>Checkout</strong> through our print partner and receive delivery updates.</li>
+          </ol>
+          <div class="howCtas">
+            <a class="btn primary" href="#products">Browse products</a>
+            <a class="btn" href="/tours/">Prefer a tour?</a>
           </div>
         </div>
 
-        <div class="shopFooterCta">
-          <div class="card">
-            <h3>Want a custom bird or location?</h3>
-            <p>
-              If you have a favorite species from your trip, tell us and we can suggest the closest match
-              or plan a custom design for a future release.
-            </p>
-            <div class="ctaRow">
-              <a class="primary" href="/contact/">Request a custom idea</a>
-              <a href="/tours/custom-private-tour/">Book a private tour</a>
-            </div>
-          </div>
-          <div class="card">
-            <h3>Notes</h3>
-            <p>
-              Product images and pricing will be finalized once your Printify items are selected.
-              Keep one main bestseller at the top to reduce choice overload.
-            </p>
+        <div class="howCard">
+          <h2>Shipping and returns</h2>
+          <ul class="howBullets" role="list">
+            <li>Made to order. Production times vary by item.</li>
+            <li>Worldwide shipping options depend on the product.</li>
+            <li>If anything arrives damaged, contact us and we will help resolve it quickly.</li>
+          </ul>
+          <div class="smallNote">
+            Tip: Add your Printify policy links here once your catalog is live.
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="section" aria-label="Shop FAQ">
-        <div class="sectionHead">
-          <h2>Shop FAQ</h2>
-          <p>Quick answers before you buy.</p>
-        </div>
+    <section class="shopSection">
+      <div class="sectionHead">
+        <h2>Need help choosing?</h2>
+        <p class="sub">Tell us your style and we will recommend 1 to 2 prints that match your space.</p>
+      </div>
 
-        <div class="faqGrid">
-          <details>
-            <summary>Do you ship internationally?</summary>
-            <p>Yes. Shipping availability and timelines depend on destination and the print partner.</p>
-          </details>
-          <details>
-            <summary>Are items made in Ecuador?</summary>
-            <p>Orders are produced on demand through our print partner for faster delivery and reliable quality.</p>
-          </details>
-          <details>
-            <summary>Can I return an item?</summary>
-            <p>Return rules depend on the product category and print partner policies. Contact us if something arrives damaged.</p>
-          </details>
-          <details>
-            <summary>Can I buy a gift card?</summary>
-            <p>We can provide a simple gift option by email. If you want this, message us and we will set it up.</p>
-          </details>
-        </div>
-      </section>
-    </main>
+      <div class="helpRow">
+        <a class="helpCard" href="/contact/">
+          <div class="helpTitle">Ask a question</div>
+          <div class="helpText">Sizes, framing, shipping, or gifting, we can help.</div>
+          <div class="helpCTA">Contact us</div>
+        </a>
 
-    <div id="siteFooter"></div>
+        <a class="helpCard" href="https://wa.me/13054585402" target="_blank" rel="noopener">
+          <div class="helpTitle">WhatsApp support</div>
+          <div class="helpText">Fast replies for product questions and tour planning.</div>
+          <div class="helpCTA">Message on WhatsApp</div>
+        </a>
+
+        <a class="helpCard" href="/reviews/">
+          <div class="helpTitle">See guest stories</div>
+          <div class="helpText">Photos, highlights, and why visitors love Mindo.</div>
+          <div class="helpCTA">Read reviews</div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <div id="siteFooter"></div>
+
   </div>
 
   <!-- Shared includes and behavior -->
