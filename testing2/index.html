@@ -3,684 +3,458 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>Shop | Mindo Bird Watching</title>
-  <meta name="description" content="Bird inspired prints and small gifts from Mindo, Ecuador. A curated on demand collection produced through our print partner and shipped to you." />
+  <meta name="description" content="A small, curated collection of bird inspired prints and simple gifts from Mindo, Ecuador. Made to order with worldwide shipping via our print partner." />
 
-  <meta property="og:title" content="Shop | Mindo Bird Watching" />
-  <meta property="og:description" content="Bird inspired prints and small gifts from Mindo, Ecuador. Produced on demand and shipped to you." />
+  <!-- Canonical + hreflang -->
+  <link rel="canonical" href="https://mindobirdwatching.com/shop/" />
+  <link rel="alternate" hreflang="en" href="/shop/" />
+  <link rel="alternate" hreflang="es" href="/es/tienda/" />
+  <link rel="alternate" hreflang="x-default" href="/shop/" />
+
+  <!-- Open Graph -->
   <meta property="og:type" content="website" />
+  <meta property="og:title" content="Shop | Mindo Bird Watching" />
+  <meta property="og:description" content="Bird inspired prints and simple gifts from the cloud forest of Mindo, Ecuador. Made to order and shipped worldwide." />
   <meta property="og:url" content="https://mindobirdwatching.com/shop/" />
-  <meta property="og:image" content="/assets/images/og/mbw_og_default.jpg" />
+  <meta property="og:image" content="https://mindobirdwatching.com/assets/img/og.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
 
   <!-- Favicons -->
-  <link rel="icon" href="/favicon.ico" sizes="any" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" href="/assets/img/favicon.ico" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" />
 
-  <!-- Site styles -->
-  <link rel="stylesheet" href="/assets/css/site.css" />
+  <!-- Site styles (match global layout/colors) -->
+  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
 
-  <!-- Head scripts -->
-  <script src="/assets/js/head.js" defer></script>
+  <!-- Head behavior (if present on other pages) -->
+  <script src="/assets/js/head.js?v=1" defer></script>
 
   <style>
-    /* Page-only (keep layout consistent with site.css) */
-    .shop-wrap{
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 22px 16px 34px;
+    /* Page-specific styles only (do NOT restyle header/footer) */
+    .shopPage .kicker {
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-size: 12px;
+      opacity: .75;
+      margin: 0 0 8px;
+    }
+    .shopPage h1 {
+      margin: 0 0 10px;
+      line-height: 1.05;
+    }
+    .shopPage .lead {
+      margin: 0 0 16px;
+      max-width: 62ch;
+      opacity: .92;
+    }
+    .shopPage .metaRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+      margin: 10px 0 0;
+      opacity: .85;
+      font-size: 13px;
+    }
+    .shopPage .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: .45;
+      display: inline-block;
+      transform: translateY(-1px);
     }
 
-    .shop-hero{
+    .shopHero {
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
+      grid-template-columns: 1.15fr .85fr;
       gap: 18px;
       align-items: stretch;
-      margin-top: 10px;
     }
-
-    .shop-hero .heroCard{
-      background: rgba(255,255,255,0.35);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 22px;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.06);
-      padding: 22px;
-      backdrop-filter: blur(6px);
+    .shopHeroCard {
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      background: rgba(255,255,255,.45);
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
     }
-
-    .kicker{
-      font-size: 12px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      opacity: 0.9;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .shopTitle{
-      font-family: Georgia, "Times New Roman", Times, serif;
-      font-size: clamp(30px, 3.6vw, 44px);
-      line-height: 1.05;
-      margin: 0 0 10px;
-      font-weight: 800;
-      color: #124b2a;
-    }
-
-    .shopLead{
-      font-size: 16px;
-      line-height: 1.5;
-      max-width: 48ch;
-      margin: 0 0 16px;
-      color: rgba(0,0,0,0.78);
-    }
-
-    .pillRow{
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 10px 0 14px;
-      padding: 0;
-      list-style: none;
-    }
-    .pillRow li{
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.12);
-      background: rgba(255,255,255,0.35);
-      font-size: 12px;
-      font-weight: 700;
-      color: rgba(0,0,0,0.78);
-      white-space: nowrap;
-    }
-
-    .ctaRow{
-      display: flex;
-      flex-wrap: wrap;
+    .heroPreview {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
       gap: 10px;
+      min-height: 340px;
+    }
+    .previewFrame {
+      border: 2px dashed rgba(0,0,0,.12);
+      border-radius: 16px;
+      background: rgba(255,255,255,.30);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 14px;
+    }
+    .previewFrame strong {
+      display: block;
+      font-weight: 900;
+      opacity: .8;
+    }
+    .previewFrame span {
+      display: block;
+      font-size: 13px;
+      opacity: .7;
       margin-top: 6px;
     }
-    .ctaRow a{
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,0.18);
-      font-weight: 800;
-      text-decoration: none;
-      color: rgba(0,0,0,0.88);
-      background: rgba(255,255,255,0.5);
-    }
-    .ctaRow a.primary{
-      background: #fff2a6;
-      border-color: rgba(0,0,0,0.14);
-    }
-    .ctaRow a:hover{ filter: brightness(0.98); }
-
-    .trustStrip{
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px dashed rgba(0,0,0,0.12);
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    .ctaRow {
+      display: flex;
+      flex-wrap: wrap;
       gap: 10px;
+      margin-top: 14px;
     }
-    .trustItem{
+
+    .valueGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .miniCard {
+      border: 1px solid rgba(0,0,0,.08);
       border-radius: 16px;
-      background: rgba(255,255,255,0.35);
-      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,.55);
       padding: 12px 12px;
-      min-height: 70px;
     }
-    .trustItem strong{
+    .miniCard b {
       display: block;
       font-weight: 900;
       margin-bottom: 4px;
-      color: #124b2a;
     }
-    .trustItem span{
-      display: block;
+    .miniCard p {
+      margin: 0;
       font-size: 13px;
-      color: rgba(0,0,0,0.72);
-      line-height: 1.35;
+      opacity: .86;
     }
 
-    .previewCard{
-      background: rgba(255,255,255,0.35);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 22px;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.06);
-      overflow: hidden;
+    .sectionHead {
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: baseline;
+      margin: 26px 0 12px;
     }
-    .previewTop{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-      background: rgba(255,255,255,0.25);
+    .sectionHead h2 {
+      margin: 0;
     }
-    .previewTop .label{
-      font-weight: 900;
-      color: #124b2a;
+    .sectionHead .subline {
+      margin: 0;
       font-size: 13px;
-    }
-    .previewTop .note{
-      font-size: 12px;
-      color: rgba(0,0,0,0.62);
+      opacity: .8;
       text-align: right;
     }
-    .previewMedia{
-      aspect-ratio: 16 / 11;
-      background: rgba(255,255,255,0.25);
+
+    .productGrid {
       display: grid;
-      place-items: center;
-      position: relative;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
     }
-    .previewMedia .ph{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      filter: saturate(0.95);
-    }
-    .previewMedia .overlay{
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 16px;
-      text-align: center;
-      color: rgba(0,0,0,0.72);
-      font-weight: 800;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.0), rgba(255,255,255,0.35));
-    }
-    .previewBottom{
-      padding: 12px 16px;
-      border-top: 1px solid rgba(0,0,0,0.08);
-      font-size: 13px;
-      color: rgba(0,0,0,0.72);
-    }
-
-    .section{
-      margin-top: 18px;
-      background: rgba(255,255,255,0.22);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 22px;
-      padding: 18px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.05);
-    }
-
-    .sectionHead{
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .sectionHead h2{
-      margin: 0;
-      font-family: Georgia, "Times New Roman", Times, serif;
-      color: #124b2a;
-      font-size: 22px;
-      font-weight: 900;
-    }
-    .sectionHead p{
-      margin: 0;
-      font-size: 13px;
-      color: rgba(0,0,0,0.68);
-      white-space: nowrap;
-    }
-
-    .grid4{
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .productCard{
-      background: rgba(255,255,255,0.42);
-      border: 1px solid rgba(0,0,0,0.10);
+    .productCard {
+      border: 1px solid rgba(0,0,0,.08);
       border-radius: 18px;
-      overflow: hidden;
+      background: rgba(255,255,255,.55);
+      padding: 14px;
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      min-height: 320px;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.05);
+      min-height: 260px;
     }
-    .productCard .img{
-      aspect-ratio: 4 / 3;
-      background: rgba(255,255,255,0.25);
+    .productImg {
+      border-radius: 14px;
+      background: rgba(0,0,0,.03);
+      border: 1px dashed rgba(0,0,0,.12);
+      aspect-ratio: 16 / 10;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 10px;
+      overflow: hidden;
     }
-    .productCard .img img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+    .productImg span {
+      font-size: 13px;
+      opacity: .75;
+      font-weight: 800;
     }
-    .productCard .body{
-      padding: 12px 12px 10px;
-    }
-    .productCard h3{
-      margin: 0 0 6px;
-      font-size: 14px;
+    .productTitle {
       font-weight: 900;
-      color: #124b2a;
+      margin: 0;
       line-height: 1.2;
     }
-    .productCard .desc{
+    .productDesc {
       margin: 0;
       font-size: 13px;
-      color: rgba(0,0,0,0.72);
-      line-height: 1.35;
+      opacity: .86;
     }
-    .productCard .meta{
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .chip{
-      font-size: 11px;
-      font-weight: 800;
-      padding: 6px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.10);
-      background: rgba(255,255,255,0.30);
-      color: rgba(0,0,0,0.72);
-    }
-    .productCard .actions{
-      padding: 10px 12px 12px;
-      border-top: 1px solid rgba(0,0,0,0.08);
+    .productRow {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 10px;
-      align-items: center;
+      margin-top: 2px;
     }
-    .productCard .actions a{
-      text-decoration: none;
+    .priceTag {
       font-weight: 900;
-      font-size: 13px;
-      padding: 9px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.16);
-      background: rgba(255,255,255,0.55);
-      color: rgba(0,0,0,0.86);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      white-space: nowrap;
-    }
-    .productCard .actions a.buy{
-      background: #fff2a6;
-      border-color: rgba(0,0,0,0.14);
+      opacity: .9;
     }
 
-    .howGrid{
+    .infoGrid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 12px;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      margin-top: 18px;
     }
-    .howCard{
-      background: rgba(255,255,255,0.35);
-      border: 1px solid rgba(0,0,0,0.10);
+    .infoCard {
+      border: 1px solid rgba(0,0,0,.08);
       border-radius: 18px;
-      padding: 14px;
-      min-height: 120px;
+      background: rgba(255,255,255,.55);
+      padding: 16px;
     }
-    .howCard strong{
-      display: block;
-      color: #124b2a;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-    .howCard p{
-      margin: 0;
-      color: rgba(0,0,0,0.72);
-      font-size: 13px;
-      line-height: 1.4;
-    }
-
-    .faqGrid{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 10px;
-    }
-    .faqGrid details{
-      background: rgba(255,255,255,0.35);
-      border: 1px solid rgba(0,0,0,0.10);
-      border-radius: 16px;
-      padding: 10px 12px;
-    }
-    .faqGrid summary{
-      cursor: pointer;
-      font-weight: 900;
-      color: rgba(0,0,0,0.86);
-    }
-    .faqGrid p{
-      margin: 8px 0 0;
-      font-size: 13px;
-      color: rgba(0,0,0,0.72);
-      line-height: 1.45;
-    }
-
-    .shopFooterCta{
-      margin-top: 14px;
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 12px;
-      align-items: stretch;
-    }
-    .shopFooterCta .card{
-      border-radius: 18px;
-      border: 1px solid rgba(0,0,0,0.10);
-      background: rgba(255,255,255,0.35);
-      padding: 14px;
-    }
-    .shopFooterCta .card h3{
+    .infoCard h3 {
       margin: 0 0 8px;
-      font-weight: 900;
-      color: #124b2a;
     }
-    .shopFooterCta .card p{
+    .infoCard ol, .infoCard ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .infoCard li {
+      margin: 6px 0;
+      font-size: 14px;
+      opacity: .92;
+    }
+    .helpGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .helpCard {
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+      min-height: 140px;
+    }
+    .helpCard h3 {
+      margin: 0;
+    }
+    .helpCard p {
       margin: 0;
       font-size: 13px;
-      color: rgba(0,0,0,0.72);
-      line-height: 1.45;
+      opacity: .86;
     }
-    .shopFooterCta .card .ctaRow{
-      margin-top: 10px;
+    .helpCard a {
+      font-weight: 900;
     }
 
-    @media (max-width: 980px){
-      .grid4{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .shopFooterCta{ grid-template-columns: 1fr; }
-    }
-    @media (max-width: 860px){
-      .shop-hero{ grid-template-columns: 1fr; }
-      .trustStrip{ grid-template-columns: 1fr; }
-      .faqGrid{ grid-template-columns: 1fr; }
-      .productCard{ min-height: 300px; }
-    }
-    @media (max-width: 520px){
-      .sectionHead p{ white-space: normal; }
-      .grid4{ grid-template-columns: 1fr; }
+    /* Responsive */
+    @media (max-width: 980px) {
+      .shopHero { grid-template-columns: 1fr; }
+      .heroPreview { min-height: 280px; }
+      .valueGrid { grid-template-columns: 1fr; }
+      .productGrid { grid-template-columns: 1fr; }
+      .infoGrid { grid-template-columns: 1fr; }
+      .helpGrid { grid-template-columns: 1fr; }
+      .sectionHead { grid-template-columns: 1fr; }
+      .sectionHead .subline { text-align: left; }
     }
   </style>
-
-  <style>
-    /* Shop page (scoped) */
-    .shopPage{ padding: 26px 26px 34px; }
-    .shopHero{ display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 26px; align-items: start; }
-    .shopHero .kicker{ font-weight: 900; letter-spacing: .12em; color: #1e5f3b; font-size: 12px; }
-    .shopHero h1{ margin: 8px 0 10px; font-size: 44px; line-height: 1.05; }
-    .shopHero .lead{ margin: 0 0 14px; max-width: 56ch; color: #2a3a2f; font-size: 16px; }
-    .shopHero-ctas{ display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 10px; }
-    .shopHero-points{ display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 0; padding: 0; list-style: none; color: #2a3a2f; font-size: 13px; }
-    .shopHero-points li{ position: relative; padding-left: 14px; }
-    .shopHero-points li:before{ content: ""; position: absolute; left: 0; top: 6px; width: 6px; height: 6px; border-radius: 999px; background: rgba(30,95,59,.45); }
-    .shopTrust{ margin-top: 16px; }
-    .trustCard{ background: rgba(255,255,255,.75); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 14px; }
-    .trustTitle{ font-weight: 900; margin-bottom: 10px; color: #1e5f3b; }
-    .trustGrid{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
-    .trustItem{ background: rgba(255,255,255,.7); border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 10px; }
-    .trustLabel{ font-weight: 900; font-size: 13px; margin-bottom: 4px; }
-    .trustText{ font-size: 13px; color: #2a3a2f; }
-
-    .previewCard{ background: rgba(255,255,255,.75); border: 1px solid rgba(0,0,0,.08); border-radius: 20px; padding: 14px; }
-    .previewTag{ font-size: 13px; font-weight: 800; color: #1e5f3b; margin-bottom: 10px; }
-    .previewMedia{ border-radius: 18px; overflow: hidden; background: rgba(30,95,59,.06); border: 1px dashed rgba(30,95,59,.35); min-height: 320px; display: grid; place-items: center; }
-    .previewPlaceholder{ font-weight: 900; color: rgba(30,95,59,.65); padding: 14px; text-align: center; }
-    .previewNote{ margin-top: 10px; font-size: 13px; color: #2a3a2f; }
-
-    .shopSection{ margin-top: 28px; }
-    .sectionHead{ display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-    .sectionHead h2{ margin: 0; font-size: 22px; }
-    .sectionHead .sub{ margin: 0; color: #2a3a2f; font-size: 13px; }
-
-    .productGrid{ margin-top: 14px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
-    .pCard{ background: rgba(255,255,255,.78); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; }
-    .pMedia{ border-radius: 16px; overflow: hidden; background: rgba(30,95,59,.06); border: 1px dashed rgba(30,95,59,.35); height: 170px; display: grid; place-items: center; }
-    .pPh{ font-weight: 900; color: rgba(30,95,59,.65); }
-    .pTitle{ margin: 10px 0 6px; font-size: 16px; }
-    .pDesc{ margin: 0 0 12px; color: #2a3a2f; font-size: 13px; }
-    .pMeta{ margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .pPrice{ font-weight: 900; color: #1e5f3b; }
-
-    .howGrid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .howCard{ background: rgba(255,255,255,.78); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 14px; }
-    .howCard h2{ margin: 0 0 10px; font-size: 18px; }
-    .howSteps{ margin: 0; padding-left: 18px; color: #2a3a2f; font-size: 13px; }
-    .howSteps li{ margin: 8px 0; }
-    .howCtas{ margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
-    .howBullets{ margin: 0; padding-left: 18px; color: #2a3a2f; font-size: 13px; }
-    .howBullets li{ margin: 8px 0; }
-    .smallNote{ margin-top: 10px; font-size: 13px; color: #2a3a2f; opacity: .85; }
-
-    .helpRow{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 14px; }
-    .helpCard{ background: rgba(255,255,255,.78); border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 14px; text-decoration: none; color: inherit; }
-    .helpTitle{ font-weight: 900; font-size: 16px; margin-bottom: 6px; color: #1e5f3b; }
-    .helpText{ font-size: 13px; color: #2a3a2f; margin-bottom: 10px; }
-    .helpCTA{ font-weight: 900; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; color: #1e5f3b; }
-
-    @media (max-width: 980px){
-      .shopHero{ grid-template-columns: 1fr; }
-      .trustGrid{ grid-template-columns: 1fr; }
-      .productGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .howGrid{ grid-template-columns: 1fr; }
-      .helpRow{ grid-template-columns: 1fr; }
-      .shopHero h1{ font-size: 34px; }
-    }
-    @media (max-width: 560px){
-      .shopPage{ padding: 18px 16px 26px; }
-      .productGrid{ grid-template-columns: 1fr; }
-      .pMedia{ height: 190px; }
-      .previewMedia{ min-height: 240px; }
-    }
-  </style>
-
 </head>
 
 <body>
-  <div id="pageShell">
-    
-  <div id="siteHeader"></div>
+  <div class="container">
+    <div id="siteHeader"></div>
 
-  <main class="page card shopPage" aria-label="Shop">
-    <section class="shopHero">
-      <div class="shopHero-left">
-        <div class="kicker">SHOP</div>
-        <h1>Bird-inspired prints from the cloud forest</h1>
-        <p class="lead">
-          A small, curated collection of printable styles and simple gifts inspired by our tours in
-          📍Mindo, Ecuador. Produced on demand through our print partner, shipped to you.
-        </p>
+    <main class="page card shopPage" role="main">
+      <section class="shopHero">
+        <div class="shopHeroCard">
+          <p class="kicker">SHOP</p>
+          <h1>Bird-inspired prints from the cloud forest</h1>
+          <p class="lead">
+            A small, curated collection of printable styles and simple gifts inspired by our tours in 📍Mindo, Ecuador.
+            Made to order through our print partner and shipped to you.
+          </p>
 
-        <div class="shopHero-ctas">
-          <a class="btn primary" href="#products">Browse products</a>
-          <a class="btn" href="/contact/">Ask a question</a>
-        </div>
+          <div class="ctaRow">
+            <a class="btn primary" href="#products">Browse products</a>
+            <a class="btn" href="/contact/">Ask a question</a>
+          </div>
 
-        <ul class="shopHero-points" role="list">
-          <li>Made to order</li>
-          <li>Worldwide shipping</li>
-          <li>Limited, curated selection</li>
-        </ul>
+          <div class="metaRow" aria-label="Shop highlights">
+            <span><span class="dot"></span> Made to order</span>
+            <span><span class="dot"></span> Worldwide shipping</span>
+            <span><span class="dot"></span> Limited, curated selection</span>
+          </div>
 
-        <div class="shopTrust">
-          <div class="trustCard">
-            <div class="trustTitle">What you get</div>
-            <div class="trustGrid">
-              <div class="trustItem">
-                <div class="trustLabel">Gallery-quality</div>
-                <div class="trustText">Clean color, sharp detail, and print-ready layouts.</div>
-              </div>
-              <div class="trustItem">
-                <div class="trustLabel">Tour-inspired</div>
-                <div class="trustText">Birds and moments you can actually see around Mindo.</div>
-              </div>
-              <div class="trustItem">
-                <div class="trustLabel">Simple checkout</div>
-                <div class="trustText">We will link each product to its secure print checkout.</div>
-              </div>
+          <div class="valueGrid" aria-label="What you get">
+            <div class="miniCard">
+              <b>Gallery-quality</b>
+              <p>Clean color, sharp detail, and print-ready layouts.</p>
+            </div>
+            <div class="miniCard">
+              <b>Tour-inspired</b>
+              <p>Birds and moments you can actually see around Mindo.</p>
+            </div>
+            <div class="miniCard">
+              <b>Simple checkout</b>
+              <p>Each item links to its secure print checkout page.</p>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="shopHero-right">
-        <div class="previewCard">
-          <div class="previewTag">Birding print shop preview</div>
-          <div class="previewMedia" aria-label="Shop preview image">
-            <div class="previewPlaceholder">Hero product image placeholder</div>
+        <aside class="shopHeroCard heroPreview" aria-label="Hero product preview">
+          <div><b>Birding print shop preview</b></div>
+          <div class="previewFrame">
+            <div>
+              <strong>Hero product image placeholder</strong>
+              <span>Replace this with a real Printify mockup or a lifestyle photo.</span>
+            </div>
           </div>
-          <div class="previewNote">
-            Replace this with a real Printify mockup or a lifestyle photo.
+          <div style="font-size:13px;opacity:.78;">
+            Tip: Use one strong lifestyle photo here to set the tone, then let the grid do the selling.
           </div>
-        </div>
-      </div>
-    </section>
+        </aside>
+      </section>
 
-    <section class="shopSection" id="products">
-      <div class="sectionHead">
+      <div class="sectionHead" id="products">
         <h2>Featured prints</h2>
-        <p class="sub">Swap the placeholders with your Printify product mockups and links.</p>
+        <p class="subline">Swap placeholders with your Printify product mockups and links.</p>
       </div>
 
-      <div class="productGrid">
-        <article class="pCard">
-          <div class="pMedia"><div class="pPh">Product image</div></div>
-          <h3 class="pTitle">Toucan sunset poster</h3>
-          <p class="pDesc">Bold color for offices, studios, and birders corners.</p>
-          <div class="pMeta">
-            <span class="pPrice">$--</span>
-            <a class="btn small primary" href="#" aria-label="Buy Toucan sunset poster">View product</a>
+      <section class="productGrid" aria-label="Featured products">
+        <article class="productCard">
+          <div class="productImg"><span>Product image</span></div>
+          <h3 class="productTitle">Toucan sunset poster</h3>
+          <p class="productDesc">Bold color for offices, studios, and birder corners.</p>
+          <div class="productRow">
+            <span class="priceTag">$--</span>
+            <a class="btn primary" href="#" aria-label="View product: Toucan sunset poster">View product</a>
           </div>
         </article>
 
-        <article class="pCard">
-          <div class="pMedia"><div class="pPh">Product image</div></div>
-          <h3 class="pTitle">Cock-of-the-Rock print</h3>
-          <p class="pDesc">A clean, modern look inspired by the dawn lek.</p>
-          <div class="pMeta">
-            <span class="pPrice">$--</span>
-            <a class="btn small primary" href="#" aria-label="Buy Cock-of-the-Rock print">View product</a>
+        <article class="productCard">
+          <div class="productImg"><span>Product image</span></div>
+          <h3 class="productTitle">Cock-of-the-Rock print</h3>
+          <p class="productDesc">A clean, modern look inspired by the dawn lek.</p>
+          <div class="productRow">
+            <span class="priceTag">$--</span>
+            <a class="btn primary" href="#" aria-label="View product: Cock-of-the-Rock print">View product</a>
           </div>
         </article>
 
-        <article class="pCard">
-          <div class="pMedia"><div class="pPh">Product image</div></div>
-          <h3 class="pTitle">Hummingbird minis set</h3>
-          <p class="pDesc">Small-format prints that look great as a trio.</p>
-          <div class="pMeta">
-            <span class="pPrice">$--</span>
-            <a class="btn small primary" href="#" aria-label="Buy Hummingbird minis set">View product</a>
+        <article class="productCard">
+          <div class="productImg"><span>Product image</span></div>
+          <h3 class="productTitle">Hummingbird minis set</h3>
+          <p class="productDesc">Small-format prints that look great as a trio.</p>
+          <div class="productRow">
+            <span class="priceTag">$--</span>
+            <a class="btn primary" href="#" aria-label="View product: Hummingbird minis set">View product</a>
           </div>
         </article>
 
-        <article class="pCard">
-          <div class="pMedia"><div class="pPh">Product image</div></div>
-          <h3 class="pTitle">Tanagers color study</h3>
-          <p class="pDesc">A bright, layered palette for a calm room.</p>
-          <div class="pMeta">
-            <span class="pPrice">$--</span>
-            <a class="btn small primary" href="#" aria-label="Buy Tanagers color study">View product</a>
+        <article class="productCard">
+          <div class="productImg"><span>Product image</span></div>
+          <h3 class="productTitle">Tanagers color study</h3>
+          <p class="productDesc">A bright, layered palette for a calm room.</p>
+          <div class="productRow">
+            <span class="priceTag">$--</span>
+            <a class="btn primary" href="#" aria-label="View product: Tanagers color study">View product</a>
           </div>
         </article>
 
-        <article class="pCard">
-          <div class="pMedia"><div class="pPh">Product image</div></div>
-          <h3 class="pTitle">Mindo field notes poster</h3>
-          <p class="pDesc">A simple checklist vibe for planning your next trip.</p>
-          <div class="pMeta">
-            <span class="pPrice">$--</span>
-            <a class="btn small primary" href="#" aria-label="Buy Mindo field notes poster">View product</a>
+        <article class="productCard">
+          <div class="productImg"><span>Product image</span></div>
+          <h3 class="productTitle">Mindo field notes poster</h3>
+          <p class="productDesc">A simple checklist vibe for planning your next trip.</p>
+          <div class="productRow">
+            <span class="priceTag">$--</span>
+            <a class="btn primary" href="#" aria-label="View product: Mindo field notes poster">View product</a>
           </div>
         </article>
 
-        <article class="pCard">
-          <div class="pMedia"><div class="pPh">Product image</div></div>
-          <h3 class="pTitle">Gift card (digital)</h3>
-          <p class="pDesc">A quick gift for birders, photographers, and families.</p>
-          <div class="pMeta">
-            <span class="pPrice">$--</span>
-            <a class="btn small primary" href="#" aria-label="Buy Gift card">View product</a>
+        <article class="productCard">
+          <div class="productImg"><span>Product image</span></div>
+          <h3 class="productTitle">Gift card (digital)</h3>
+          <p class="productDesc">A quick gift for birders, photographers, and families.</p>
+          <div class="productRow">
+            <span class="priceTag">$--</span>
+            <a class="btn primary" href="#" aria-label="View product: Gift card (digital)">View product</a>
           </div>
         </article>
-      </div>
-    </section>
+      </section>
 
-    <section class="shopSection">
-      <div class="howGrid">
-        <div class="howCard">
-          <h2>How it works</h2>
-          <ol class="howSteps">
-            <li><strong>Pick a print</strong> from the curated set below.</li>
-            <li><strong>Open the product</strong> to see sizes, paper, and pricing.</li>
-            <li><strong>Checkout</strong> through our print partner and receive delivery updates.</li>
+      <section class="infoGrid" aria-label="How it works and policies">
+        <div class="infoCard">
+          <h3>How it works</h3>
+          <ol>
+            <li><b>Pick a print</b> from the curated set above.</li>
+            <li><b>Open the product</b> to see sizes, paper, and pricing.</li>
+            <li><b>Checkout</b> through our print partner and receive delivery updates.</li>
           </ol>
-          <div class="howCtas">
+          <div class="ctaRow" style="margin-top:12px;">
             <a class="btn primary" href="#products">Browse products</a>
             <a class="btn" href="/tours/">Prefer a tour?</a>
           </div>
         </div>
 
-        <div class="howCard">
-          <h2>Shipping and returns</h2>
-          <ul class="howBullets" role="list">
+        <div class="infoCard">
+          <h3>Shipping and returns</h3>
+          <ul>
             <li>Made to order. Production times vary by item.</li>
             <li>Worldwide shipping options depend on the product.</li>
             <li>If anything arrives damaged, contact us and we will help resolve it quickly.</li>
           </ul>
-          <div class="smallNote">
+          <p style="margin:10px 0 0;font-size:13px;opacity:.82;">
             Tip: Add your Printify policy links here once your catalog is live.
-          </div>
+          </p>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="shopSection">
       <div class="sectionHead">
         <h2>Need help choosing?</h2>
-        <p class="sub">Tell us your style and we will recommend 1 to 2 prints that match your space.</p>
+        <p class="subline">Tell us your style and we will recommend 1 to 2 prints that fit your space.</p>
       </div>
 
-      <div class="helpRow">
-        <a class="helpCard" href="/contact/">
-          <div class="helpTitle">Ask a question</div>
-          <div class="helpText">Sizes, framing, shipping, or gifting, we can help.</div>
-          <div class="helpCTA">Contact us</div>
-        </a>
+      <section class="helpGrid" aria-label="Help options">
+        <div class="helpCard">
+          <h3>Ask a question</h3>
+          <p>Sizes, framing, shipping, or gifting - we can help.</p>
+          <a href="/contact/">Contact us</a>
+        </div>
+        <div class="helpCard">
+          <h3>WhatsApp support</h3>
+          <p>Fast replies for product questions and tour planning.</p>
+          <a href="https://wa.me/13054585402" target="_blank" rel="noopener">Message on WhatsApp</a>
+        </div>
+        <div class="helpCard">
+          <h3>See guest stories</h3>
+          <p>Photos, highlights, and why visitors love Mindo.</p>
+          <a href="/reviews/">Read reviews</a>
+        </div>
+      </section>
 
-        <a class="helpCard" href="https://wa.me/13054585402" target="_blank" rel="noopener">
-          <div class="helpTitle">WhatsApp support</div>
-          <div class="helpText">Fast replies for product questions and tour planning.</div>
-          <div class="helpCTA">Message on WhatsApp</div>
-        </a>
+      <p style="margin:22px 0 0;font-size:12px;opacity:.75;">
+        Last updated: 2026-02-09
+      </p>
+    </main>
 
-        <a class="helpCard" href="/reviews/">
-          <div class="helpTitle">See guest stories</div>
-          <div class="helpText">Photos, highlights, and why visitors love Mindo.</div>
-          <div class="helpCTA">Read reviews</div>
-        </a>
-      </div>
-    </section>
-  </main>
-
-  <div id="siteFooter"></div>
-
+    <div id="siteFooter"></div>
   </div>
 
-  <!-- Shared includes and behavior -->
-  <script src="/assets/js/includes.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
+  <script src="/assets/js/includes.js?v=1"></script>
+  <script src="/assets/js/site.js?v=1"></script>
 </body>
 </html>
