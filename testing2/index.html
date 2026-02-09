@@ -1,799 +1,629 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Birding Shop | Mindo Bird Watching</title>
-  <meta name="description" content="Bird-inspired prints and simple gifts from Mindo Bird Watching. Order through our print partner and support local conservation-focused guiding." />
-  <!-- Canonical + hreflang (PRODUCTION URLs) -->
-  <link rel="canonical" href="https://mindobirdwatching.com/shop/" />
-  <link rel="alternate" hreflang="en" href="https://mindobirdwatching.com/shop/" />
-  <link rel="alternate" hreflang="es" href="https://mindobirdwatching.com/es/tienda/" />
-  <link rel="alternate" hreflang="x-default" href="https://mindobirdwatching.com/shop/" />
-  <!-- Open Graph (PRODUCTION URLs) -->
+
+  <title>Shop | Mindo Bird Watching</title>
+  <meta name="description" content="Bird inspired prints and small gifts from Mindo, Ecuador. A curated on demand collection produced through our print partner and shipped to you." />
+
+  <meta property="og:title" content="Shop | Mindo Bird Watching" />
+  <meta property="og:description" content="Bird inspired prints and small gifts from Mindo, Ecuador. Produced on demand and shipped to you." />
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Mindo Bird Watching" />
-  <meta property="og:title" content="Birding Shop | Mindo Bird Watching" />
-  <meta property="og:description" content="Bird-inspired prints and simple gifts from Mindo Bird Watching. Order through our print partner and support local conservation-focused guiding." />
   <meta property="og:url" content="https://mindobirdwatching.com/shop/" />
-  <meta property="og:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
-  <meta property="og:image:secure_url" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Mindo Bird Watching featured image" />
-  <!-- Twitter (PRODUCTION URLs) -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Birding Shop | Mindo Bird Watching" />
-  <meta name="twitter:description" content="Bird-inspired prints and simple gifts from Mindo Bird Watching. Order through our print partner and support local conservation-focused guiding." />
-  <meta name="twitter:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
-  <!-- Favicons (approved root paths) -->
+  <meta property="og:image" content="/assets/images/og/mbw_og_default.jpg" />
+
+  <!-- Favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#034EA2" />
-  <!-- Global / shared CSS -->
+
+  <!-- Site styles -->
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <!-- Head-only JS -->
+
+  <!-- Head scripts -->
   <script src="/assets/js/head.js" defer></script>
+
   <style>
-    /* =========================
-       Page-only styles (main content only)
-       ========================= */
-
-    .page { margin-top: 18px; padding: 26px; }
-    .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
+    /* Page-only (keep layout consistent with site.css) */
+    .shop-wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 22px 16px 34px;
     }
 
-    /* Mobile-only hero image (under header, hidden on desktop) */
-    .mobileHero{
-      display: none;
-      margin-top: 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
+    .shop-hero{
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 10px;
     }
-    .mobileHeroFrame{
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: rgba(255,255,255,.55);
+
+    .shop-hero .heroCard{
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 22px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.06);
+      padding: 22px;
+      backdrop-filter: blur(6px);
+    }
+
+    .kicker{
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .shopTitle{
+      font-family: Georgia, "Times New Roman", Times, serif;
+      font-size: clamp(30px, 3.6vw, 44px);
+      line-height: 1.05;
+      margin: 0 0 10px;
+      font-weight: 800;
+      color: #124b2a;
+    }
+
+    .shopLead{
+      font-size: 16px;
+      line-height: 1.5;
+      max-width: 48ch;
+      margin: 0 0 16px;
+      color: rgba(0,0,0,0.78);
+    }
+
+    .pillRow{
       display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 14px;
+      padding: 0;
+      list-style: none;
+    }
+    .pillRow li{
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(255,255,255,0.35);
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.78);
+      white-space: nowrap;
+    }
+
+    .ctaRow{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .ctaRow a{
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.18);
+      font-weight: 800;
+      text-decoration: none;
+      color: rgba(0,0,0,0.88);
+      background: rgba(255,255,255,0.5);
     }
-    .mobileHeroFrame img{
+    .ctaRow a.primary{
+      background: #fff2a6;
+      border-color: rgba(0,0,0,0.14);
+    }
+    .ctaRow a:hover{ filter: brightness(0.98); }
+
+    .trustStrip{
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(0,0,0,0.12);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .trustItem{
+      border-radius: 16px;
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 12px 12px;
+      min-height: 70px;
+    }
+    .trustItem strong{
+      display: block;
+      font-weight: 900;
+      margin-bottom: 4px;
+      color: #124b2a;
+    }
+    .trustItem span{
+      display: block;
+      font-size: 13px;
+      color: rgba(0,0,0,0.72);
+      line-height: 1.35;
+    }
+
+    .previewCard{
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 22px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.06);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .previewTop{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.25);
+    }
+    .previewTop .label{
+      font-weight: 900;
+      color: #124b2a;
+      font-size: 13px;
+    }
+    .previewTop .note{
+      font-size: 12px;
+      color: rgba(0,0,0,0.62);
+      text-align: right;
+    }
+    .previewMedia{
+      aspect-ratio: 16 / 11;
+      background: rgba(255,255,255,0.25);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .previewMedia .ph{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.95);
+    }
+    .previewMedia .overlay{
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      text-align: center;
+      color: rgba(0,0,0,0.72);
+      font-weight: 800;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.0), rgba(255,255,255,0.35));
+    }
+    .previewBottom{
+      padding: 12px 16px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      font-size: 13px;
+      color: rgba(0,0,0,0.72);
+    }
+
+    .section{
+      margin-top: 18px;
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.05);
+    }
+
+    .sectionHead{
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .sectionHead h2{
+      margin: 0;
+      font-family: Georgia, "Times New Roman", Times, serif;
+      color: #124b2a;
+      font-size: 22px;
+      font-weight: 900;
+    }
+    .sectionHead p{
+      margin: 0;
+      font-size: 13px;
+      color: rgba(0,0,0,0.68);
+      white-space: nowrap;
+    }
+
+    .grid4{
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .productCard{
+      background: rgba(255,255,255,0.42);
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 18px;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 320px;
+    }
+    .productCard .img{
+      aspect-ratio: 4 / 3;
+      background: rgba(255,255,255,0.25);
+    }
+    .productCard .img img{
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
-    @media (max-width: 900px){
-      .mobileHero{ display: block; }
+    .productCard .body{
+      padding: 12px 12px 10px;
     }
-
-    /* Above-the-fold ordering: Desktop shows weather first, Mobile shows intro first */
-    .aboveFold{
-      display:flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .aboveFold .wx{ order: 1; }
-    .aboveFold .hero{ order: 2; }
-    @media (max-width: 900px){
-      .aboveFold .hero{ order: 1; }
-      .aboveFold .wx{ order: 2; }
-    }
-
-    /* Weather card (8 cards total: 1 current + 7 days) */
-    .wx{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      margin: 0;
-    }
-
-    .wxGrid{
-      display:grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 10px;
-      align-items: stretch;
-    }
-
-    .wxDay{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-      padding: 10px;
-      display:flex;
-      flex-direction: column;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .wxDayTop{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .wxDow{
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .wxPlace{
-      display:inline-flex;
-      align-items:center;
-      gap: 2px;
-      min-width: 0;
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    @media (min-width: 901px){
-      .wxPlace{ gap: 0; }
-    }
-
-    .wxPinDot{
-      font-size: 14px;
-      line-height: 1;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      transform: translateY(-0.5px);
-    }
-
-    .wxTempsRow{ display:block; min-width: 0; }
-    .wxTempsLines{ min-width: 0; }
-
-    .wxLine{
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.25;
-    }
-
-    .wxIcon{
-      font-size: 18px;
-      line-height: 1;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width: 22px;
-      flex: 0 0 auto;
-    }
-
-    .wxRain{
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 6px;
-      text-align:center;
-    }
-
-    .wxNote{
-      margin: 10px 0 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-    }
-
-    .wxNote[hidden]{ display:none; }
-
-    .wxSkeleton .wxDay{
-      position: relative;
-      overflow: hidden;
-    }
-
-    .wxSkeleton .wxDay:before{
-      content:"";
-      position:absolute;
-      inset:-40% -60%;
-      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0));
-      transform: translateX(-40%);
-      animation: wxShimmer 1.35s linear infinite;
-      pointer-events:none;
-    }
-
-    @keyframes wxShimmer{
-      0%{ transform: translateX(-40%); }
-      100%{ transform: translateX(40%); }
-    }
-
-    .hero{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .hero h1{
-      margin: 0 0 10px;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-    }
-
-    .hero p{
-      margin: 0;
-      color: var(--ink);
-      line-height: 1.75;
-      max-width: 85ch;
-    }
-
-    .heroCtas{
-      margin-top: 14px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-
-    .heroAside{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-    }
-
-    .heroAside h2{
-      margin:0 0 10px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
-
-    .heroList{
-      margin: 0;
-      padding-left: 18px;
-      color: var(--ink);
-      line-height: 1.7;
-    }
-
-    .section{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
-
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .sectionHead h2{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 20px;
-    }
-
-    .hint{
-      margin:0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .ctaBand{
-      margin-top: 14px;
-      border: 1px dashed rgba(13,89,37,.35);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .ctaBand p{
-      margin:0;
-      color: var(--ink);
-      line-height: 1.6;
-    }
-
-    .secureCard{
-      margin-top: 14px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      display:flex;
-      gap: 14px;
-      align-items:center;
-      width: 100%;
-    }
-
-    .secureImg{
-      width: 210px;
-      height: 210px;
-      flex: 0 0 auto;
-      border-radius: 22px;
-      background: rgba(255,255,255,.55);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      border: 1px solid var(--line);
-    }
-
-    .secureImg img{
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display:block;
-    }
-
-    .secureCopy{ min-width: 0; }
-
-    .secureKicker{
+    .productCard h3{
       margin: 0 0 6px;
+      font-size: 14px;
       font-weight: 900;
-      letter-spacing: -0.01em;
-      color: var(--ink);
-      font-size: 15px;
+      color: #124b2a;
       line-height: 1.2;
     }
-
-    .secureText{
+    .productCard .desc{
       margin: 0;
-      color: var(--muted);
       font-size: 13px;
-      line-height: 1.6;
+      color: rgba(0,0,0,0.72);
+      line-height: 1.35;
     }
-
-    .mediaGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .mediaCol{
-      display:flex;
-      flex-direction: column;
-      gap: 14px;
-      align-items: stretch;
-      min-width: 0;
-    }
-
-    .mediaCard{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .mediaFrame{
-      width:100%;
-      aspect-ratio: 16 / 10;
-      background: rgba(255,255,255,.55);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-    }
-
-    .mediaFrame img{
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      display:block;
-    }
-
-    .videoFrame{
-      width:100%;
-      aspect-ratio: 9 / 16;
-      border:0;
-      display:block;
-      background: rgba(255,255,255,.55);
-    }
-
-    .mediaBar{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      display:flex;
-      justify-content:space-between;
-      gap: 10px;
+    .productCard .meta{
+      margin-top: 10px;
+      display: flex;
       flex-wrap: wrap;
-      align-items:center;
+      gap: 6px;
     }
-
-    .mediaTitle{
-      margin:0;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 13.5px;
-      letter-spacing: -0.01em;
-    }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
+    .chip{
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 8px;
       border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.30);
+      color: rgba(0,0,0,0.72);
+    }
+    .productCard .actions{
+      padding: 10px 12px 12px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+    .productCard .actions a{
+      text-decoration: none;
       font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
+      font-size: 13px;
+      padding: 9px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.16);
+      background: rgba(255,255,255,0.55);
+      color: rgba(0,0,0,0.86);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       white-space: nowrap;
     }
-
-    .tiles{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+    .productCard .actions a.buy{
+      background: #fff2a6;
+      border-color: rgba(0,0,0,0.14);
     }
 
-    .tile{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
+    .howGrid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .howCard{
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 18px;
       padding: 14px;
-      text-decoration:none;
-      color: inherit;
-      display:block;
       min-height: 120px;
     }
-
-    .tile h3{
-      margin:0 0 6px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.01em;
-      font-size: 16.5px;
+    .howCard strong{
+      display: block;
+      color: #124b2a;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .howCard p{
+      margin: 0;
+      color: rgba(0,0,0,0.72);
+      font-size: 13px;
+      line-height: 1.4;
     }
 
-    .tile p{
-      margin:0;
-      color: var(--ink);
-      line-height: 1.65;
-    }
-
-    .tile .sub{
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12.5px;
-    }
-
-    .photoRail{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
+    .faqGrid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 12px;
+      margin-top: 10px;
     }
-
-    .photo{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .photo img{
-      width:100%;
-      height: 170px;
-      object-fit: cover;
-      display:block;
-      background: rgba(255,255,255,.55);
-    }
-
-    .photoCap{
+    .faqGrid details{
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 16px;
       padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      color: var(--muted);
-      font-size: 12.5px;
+    }
+    .faqGrid summary{
+      cursor: pointer;
+      font-weight: 900;
+      color: rgba(0,0,0,0.86);
+    }
+    .faqGrid p{
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: rgba(0,0,0,0.72);
       line-height: 1.45;
     }
 
-    @media (max-width: 1180px){
-      .wxGrid{ grid-template-columns: repeat(4, 1fr); }
+    .shopFooterCta{
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .shopFooterCta .card{
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.35);
+      padding: 14px;
+    }
+    .shopFooterCta .card h3{
+      margin: 0 0 8px;
+      font-weight: 900;
+      color: #124b2a;
+    }
+    .shopFooterCta .card p{
+      margin: 0;
+      font-size: 13px;
+      color: rgba(0,0,0,0.72);
+      line-height: 1.45;
+    }
+    .shopFooterCta .card .ctaRow{
+      margin-top: 10px;
     }
 
     @media (max-width: 980px){
-      .photoRail{ grid-template-columns: repeat(2, 1fr); }
-      .photo img{ height: 180px; }
+      .grid4{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .shopFooterCta{ grid-template-columns: 1fr; }
     }
-
-    @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .mediaGrid{ grid-template-columns: 1fr; }
-      .tiles{ grid-template-columns: 1fr; }
-      .photoRail{ grid-template-columns: 1fr; }
-      .photo img{ height: 220px; }
-
-      .secureCard{ align-items: flex-start; }
-      .secureImg{ width: 152px; height: 152px; }
-
-      .wxGrid{ grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 860px){
+      .shop-hero{ grid-template-columns: 1fr; }
+      .trustStrip{ grid-template-columns: 1fr; }
+      .faqGrid{ grid-template-columns: 1fr; }
+      .productCard{ min-height: 300px; }
     }
-  </style>
-
-  <style>
-    /* Page-specific layout for /shop/ (kept minimal, relies on site.css for typography/buttons) */
-    .page-hero{ padding: 28px 0 18px; }
-    .hero-grid{ display:grid; grid-template-columns: 1.15fr 0.85fr; gap: 22px; align-items: start; }
-    .eyebrow{ font-weight: 800; letter-spacing: .02em; text-transform: uppercase; opacity: .85; margin-bottom: 6px; }
-    .lead{ font-size: 1.05rem; line-height: 1.5; margin-top: 10px; }
-    .hero-cta{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
-    .hero-notes{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
-    .note-item{ display:flex; align-items:center; gap: 8px; font-size: .95rem; opacity: .9; }
-    .note-dot{ width: 8px; height: 8px; border-radius: 999px; background: rgba(0,0,0,.18); display:inline-block; }
-
-    .media-card{ border-radius: 18px; overflow:hidden; border: 1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.6); }
-    .media-card img{ width: 100%; height: auto; display:block; aspect-ratio: 4/3; object-fit: cover; }
-    .media-caption{ font-size: .9rem; opacity: .75; margin-top: 8px; }
-
-    .page-card{ padding: 18px 0; }
-    .section-head{ display:flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
-    .section-head .muted{ margin: 0; }
-
-    .product-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-    .product-card{ border: 1px solid rgba(0,0,0,.08); border-radius: 18px; overflow:hidden; background: rgba(255,255,255,.7); display:flex; flex-direction:column; }
-    .product-media img{ width: 100%; height: auto; display:block; aspect-ratio: 4/3; object-fit: cover; }
-    .product-body{ padding: 14px; display:flex; flex-direction:column; gap: 10px; flex: 1; }
-    .product-title{ margin: 0; font-size: 1.05rem; line-height: 1.25; }
-    .product-desc{ margin: 0; opacity: .85; }
-    .product-meta{ display:flex; flex-wrap: wrap; gap: 8px; }
-    .pill{ display:inline-flex; align-items:center; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,.10); font-size: .85rem; background: rgba(255,255,255,.55); }
-    .product-cta{ margin-top: auto; }
-
-    .shop-note{ margin-top: 16px; border-radius: 18px; border: 1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.65); }
-    .shop-note-inner{ padding: 16px; }
-    .steps{ margin: 10px 0 0; padding-left: 18px; }
-    .steps li{ margin: 6px 0; }
-
-    .faq-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .faq-item{ border: 1px solid rgba(0,0,0,.08); border-radius: 14px; padding: 10px 12px; background: rgba(255,255,255,.65); }
-    .faq-item summary{ cursor:pointer; font-weight: 800; }
-    .faq-body{ margin-top: 10px; opacity: .88; }
-
-    .cta-band{ margin-top: 16px; border-radius: 18px; border: 1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.70); padding: 14px; display:flex; align-items:center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-    .cta-band h3{ margin: 0; }
-    .cta-actions{ display:flex; gap: 10px; flex-wrap: wrap; }
-
-    @media (max-width: 900px){
-      .hero-grid{ grid-template-columns: 1fr; }
-      .product-grid{ grid-template-columns: 1fr 1fr; }
-      .faq-grid{ grid-template-columns: 1fr; }
-    }
-
     @media (max-width: 520px){
-      .product-grid{ grid-template-columns: 1fr; }
+      .sectionHead p{ white-space: normal; }
+      .grid4{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
-  <div class="site">
+
+<body>
+  <div id="pageShell">
     <div id="siteHeader"></div>
 
-    <main class="page" id="mainContent">
-      <section class="page-hero">
-        <div class="container">
-          <div class="hero-grid">
-            <div class="hero-copy">
-              <div class="eyebrow">Shop</div>
-              <h1>Bird-inspired prints from the cloud forest</h1>
-              <p class="lead">
-                A small collection of printable styles and simple gifts inspired by our tours in 📍Mindo, Ecuador.
-                Produced on demand through our print partner, shipped to you.
-              </p>
-              <div class="hero-cta">
-                <a class="btn primary" href="#shop-products">Browse products</a>
-                <a class="btn secondary" href="/contact/">Ask a question</a>
-              </div>
-              <div class="hero-notes">
-                <div class="note-item"><span class="note-dot"></span>Made to order</div>
-                <div class="note-item"><span class="note-dot"></span>Worldwide shipping</div>
-                <div class="note-item"><span class="note-dot"></span>Limited, curated selection</div>
-              </div>
-            </div>
+    <main class="shop-wrap">
+      <section class="shop-hero">
+        <div class="heroCard">
+          <div class="kicker">SHOP</div>
+          <h1 class="shopTitle">Bird inspired prints from the cloud forest</h1>
+          <p class="shopLead">
+            A small, curated collection inspired by our tours in 📍Mindo, Ecuador.
+            Produced on demand through our print partner and shipped to you.
+          </p>
 
-            <div class="hero-media">
-              <div class="media-card">
-                <img src="/assets/images/placeholders/shop_hero_placeholder.jpg" alt="Birding print shop preview">
-              </div>
-              <div class="media-caption">
-                Placeholder image. Replace with a real product photo or a lifestyle mockup.
+          <ul class="pillRow" aria-label="Shop highlights">
+            <li>Made to order</li>
+            <li>Worldwide shipping</li>
+            <li>Curated selection</li>
+            <li>Supports local guiding</li>
+          </ul>
+
+          <div class="ctaRow">
+            <a class="primary" href="#products">Browse products</a>
+            <a href="/contact/">Ask a question</a>
+          </div>
+
+          <div class="trustStrip" aria-label="Trust">
+            <div class="trustItem">
+              <strong>Fast decisions</strong>
+              <span>Simple choices, no overwhelm. Pick a print, choose a size, done.</span>
+            </div>
+            <div class="trustItem">
+              <strong>Great gifts</strong>
+              <span>Easy to send to birders, travelers, and nature lovers.</span>
+            </div>
+            <div class="trustItem">
+              <strong>Quality first</strong>
+              <span>We only list designs we would hang ourselves.</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="previewCard" aria-label="Shop preview">
+          <div class="previewTop">
+            <div class="label">Shop preview</div>
+            <div class="note">Replace this with a real product photo</div>
+          </div>
+
+          <div class="previewMedia">
+            <!-- Placeholder: swap src to a real lifestyle image or product mockup -->
+            <img class="ph" src="/assets/images/placeholders/product-lifestyle-01.jpg" alt="Product preview placeholder" />
+            <div class="overlay">Add a lifestyle mockup here for instant credibility.</div>
+          </div>
+
+          <div class="previewBottom">
+            Tip: Use one strong lifestyle image that shows a framed print in a room. It lifts conversions.
+          </div>
+        </aside>
+      </section>
+
+      <section id="products" class="section">
+        <div class="sectionHead">
+          <h2>Featured prints</h2>
+          <p>Swap placeholders for Printify product mockups and links.</p>
+        </div>
+
+        <div class="grid4">
+          <article class="productCard">
+            <div class="img">
+              <img src="/assets/images/placeholders/product-01.jpg" alt="Product image placeholder" />
+            </div>
+            <div class="body">
+              <h3>Cloud Forest Toucan Print</h3>
+              <p class="desc">A bold, colorful piece for bird lovers and travel memories.</p>
+              <div class="meta">
+                <span class="chip">Best seller</span>
+                <span class="chip">Multiple sizes</span>
               </div>
             </div>
+            <div class="actions">
+              <a href="#" class="buy">View product</a>
+              <a href="/contact/">Questions</a>
+            </div>
+          </article>
+
+          <article class="productCard">
+            <div class="img">
+              <img src="/assets/images/placeholders/product-02.jpg" alt="Product image placeholder" />
+            </div>
+            <div class="body">
+              <h3>Andean Cock of the Rock Poster</h3>
+              <p class="desc">A classic icon of Mindo, perfect for a study or office wall.</p>
+              <div class="meta">
+                <span class="chip">Fan favorite</span>
+                <span class="chip">Matte finish</span>
+              </div>
+            </div>
+            <div class="actions">
+              <a href="#" class="buy">View product</a>
+              <a href="/contact/">Questions</a>
+            </div>
+          </article>
+
+          <article class="productCard">
+            <div class="img">
+              <img src="/assets/images/placeholders/product-03.jpg" alt="Product image placeholder" />
+            </div>
+            <div class="body">
+              <h3>Hummingbird Mini Print Set</h3>
+              <p class="desc">Small prints that look great together as a set or gallery wall.</p>
+              <div class="meta">
+                <span class="chip">Gift ready</span>
+                <span class="chip">Set of 3</span>
+              </div>
+            </div>
+            <div class="actions">
+              <a href="#" class="buy">View product</a>
+              <a href="/contact/">Questions</a>
+            </div>
+          </article>
+
+          <article class="productCard">
+            <div class="img">
+              <img src="/assets/images/placeholders/product-04.jpg" alt="Product image placeholder" />
+            </div>
+            <div class="body">
+              <h3>Mindo Birding Sticker Pack</h3>
+              <p class="desc">A small add on for laptops, notebooks, and field gear.</p>
+              <div class="meta">
+                <span class="chip">Budget friendly</span>
+                <span class="chip">Durable</span>
+              </div>
+            </div>
+            <div class="actions">
+              <a href="#" class="buy">View product</a>
+              <a href="/contact/">Questions</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="sectionHead">
+          <h2>How it works</h2>
+          <p>Simple, calm, and reliable.</p>
+        </div>
+
+        <div class="howGrid">
+          <div class="howCard">
+            <strong>1) Choose a print</strong>
+            <p>Pick a style and size. We keep the selection small so choosing is easy.</p>
+          </div>
+          <div class="howCard">
+            <strong>2) Produced on demand</strong>
+            <p>Your order is made when you purchase. No warehouse, no leftover stock.</p>
+          </div>
+          <div class="howCard">
+            <strong>3) Ships to your door</strong>
+            <p>Delivered to you. If you have timing questions, message us before ordering.</p>
+          </div>
+        </div>
+
+        <div class="shopFooterCta">
+          <div class="card">
+            <h3>Want a custom bird or location?</h3>
+            <p>
+              If you have a favorite species from your trip, tell us and we can suggest the closest match
+              or plan a custom design for a future release.
+            </p>
+            <div class="ctaRow">
+              <a class="primary" href="/contact/">Request a custom idea</a>
+              <a href="/tours/custom-private-tour/">Book a private tour</a>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Notes</h3>
+            <p>
+              Product images and pricing will be finalized once your Printify items are selected.
+              Keep one main bestseller at the top to reduce choice overload.
+            </p>
           </div>
         </div>
       </section>
 
-      <section class="page-card" id="shop-products">
-        <div class="container">
-          <div class="section-head">
-            <h2>Featured prints</h2>
-            <p class="muted">Swap the placeholders with your Printify product mockups and links.</p>
-          </div>
-
-          <div class="product-grid">
-            <article class="product-card">
-              <div class="product-media">
-                <img src="/assets/images/placeholders/product_01.jpg" alt="Product image placeholder">
-              </div>
-              <div class="product-body">
-                <h3 class="product-title">Cloud Forest Tanager Poster</h3>
-                <p class="product-desc">Museum-quality poster. Multiple sizes available.</p>
-                <div class="product-meta">
-                  <span class="pill">Poster</span>
-                  <span class="pill">Multiple sizes</span>
-                  <span class="pill">Matte</span>
-                </div>
-                <div class="product-cta">
-                  <a class="btn primary" href="#" target="_blank" rel="noopener noreferrer">Buy on Printify</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="product-card">
-              <div class="product-media">
-                <img src="/assets/images/placeholders/product_02.jpg" alt="Product image placeholder">
-              </div>
-              <div class="product-body">
-                <h3 class="product-title">Andean Cock-of-the-Rock Art Print</h3>
-                <p class="product-desc">A bold statement piece for bird lovers and photographers.</p>
-                <div class="product-meta">
-                  <span class="pill">Art print</span>
-                  <span class="pill">High detail</span>
-                  <span class="pill">Gift-ready</span>
-                </div>
-                <div class="product-cta">
-                  <a class="btn primary" href="#" target="_blank" rel="noopener noreferrer">Buy on Printify</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="product-card">
-              <div class="product-media">
-                <img src="/assets/images/placeholders/product_03.jpg" alt="Product image placeholder">
-              </div>
-              <div class="product-body">
-                <h3 class="product-title">Mindo Hummingbird Mug</h3>
-                <p class="product-desc">Daily coffee, cloud forest energy.</p>
-                <div class="product-meta">
-                  <span class="pill">Mug</span>
-                  <span class="pill">Dishwasher safe</span>
-                  <span class="pill">Great gift</span>
-                </div>
-                <div class="product-cta">
-                  <a class="btn primary" href="#" target="_blank" rel="noopener noreferrer">Buy on Printify</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="product-card">
-              <div class="product-media">
-                <img src="/assets/images/placeholders/product_04.jpg" alt="Product image placeholder">
-              </div>
-              <div class="product-body">
-                <h3 class="product-title">Five Toucans Canvas</h3>
-                <p class="product-desc">A vibrant canvas option for home or office.</p>
-                <div class="product-meta">
-                  <span class="pill">Canvas</span>
-                  <span class="pill">Premium</span>
-                  <span class="pill">Wall-ready</span>
-                </div>
-                <div class="product-cta">
-                  <a class="btn primary" href="#" target="_blank" rel="noopener noreferrer">Buy on Printify</a>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div class="shop-note">
-            <div class="shop-note-inner">
-              <h3>How ordering works</h3>
-              <ol class="steps">
-                <li><strong>Choose a product</strong> and open the Printify link.</li>
-                <li><strong>Checkout securely</strong> through the print partner.</li>
-                <li><strong>Production + shipping</strong> are handled on demand.</li>
-              </ol>
-              <p class="muted">
-                You will receive order and shipping emails from the print partner. If you need help choosing sizes,
-                framing, or gifts, contact us anytime.
-              </p>
-            </div>
-          </div>
+      <section class="section" aria-label="Shop FAQ">
+        <div class="sectionHead">
+          <h2>Shop FAQ</h2>
+          <p>Quick answers before you buy.</p>
         </div>
-      </section>
 
-      <section class="page-card">
-        <div class="container">
-          <div class="section-head">
-            <h2>Shop FAQ</h2>
-            <p class="muted">Clear expectations for made-to-order items.</p>
-          </div>
-
-          <div class="faq-grid">
-            <details class="faq-item">
-              <summary>Do you ship internationally?</summary>
-              <div class="faq-body">
-                Yes. Shipping availability and rates depend on the product and destination shown at checkout.
-              </div>
-            </details>
-
-            <details class="faq-item">
-              <summary>How long does it take?</summary>
-              <div class="faq-body">
-                Items are made to order. Expect production time plus shipping. Exact estimates appear at checkout.
-              </div>
-            </details>
-
-            <details class="faq-item">
-              <summary>Can I request a custom design?</summary>
-              <div class="faq-body">
-                Yes. If you want a specific bird, photo style, or a personalized label, contact us and we will tell you what is possible.
-              </div>
-            </details>
-
-            <details class="faq-item">
-              <summary>Returns and exchanges</summary>
-              <div class="faq-body">
-                Because items are made to order, return policies depend on the print partner and the product type. If something arrives damaged, contact us and we will help you resolve it.
-              </div>
-            </details>
-          </div>
-
-          <div class="cta-band">
-            <div class="cta-copy">
-              <h3>Want something tour-specific?</h3>
-              <p class="muted">We can recommend prints that match your favorite tour species.</p>
-            </div>
-            <div class="cta-actions">
-              <a class="btn primary" href="/tours/">Explore tours</a>
-              <a class="btn secondary" href="/contact/">Contact</a>
-            </div>
-          </div>
+        <div class="faqGrid">
+          <details>
+            <summary>Do you ship internationally?</summary>
+            <p>Yes. Shipping availability and timelines depend on destination and the print partner.</p>
+          </details>
+          <details>
+            <summary>Are items made in Ecuador?</summary>
+            <p>Orders are produced on demand through our print partner for faster delivery and reliable quality.</p>
+          </details>
+          <details>
+            <summary>Can I return an item?</summary>
+            <p>Return rules depend on the product category and print partner policies. Contact us if something arrives damaged.</p>
+          </details>
+          <details>
+            <summary>Can I buy a gift card?</summary>
+            <p>We can provide a simple gift option by email. If you want this, message us and we will set it up.</p>
+          </details>
         </div>
       </section>
     </main>
@@ -801,8 +631,8 @@
     <div id="siteFooter"></div>
   </div>
 
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
-
+  <!-- Shared includes and behavior -->
+  <script src="/assets/js/includes.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
 </body>
 </html>
