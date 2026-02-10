@@ -45,7 +45,7 @@
   <script src="/assets/js/head.js" defer></script>
 
   <style>
-    /* Page-only styles */
+/* Page-only styles */
     .page{ margin-top:18px; padding:26px; }
     .page.card{
       background: var(--card);
@@ -169,11 +169,11 @@
       display:inline-flex;
       align-items:center;
       gap: 10px;
-      color: #FBBC04;
+      color: var(--ink);
       font-weight: 900;
     }
     .stars .starRow{ letter-spacing: 1px; }
-    .stars .who{ font-weight: 800; color: #000000; }
+    .stars .who{ font-weight: 800; color: var(--ink); }
 
     .reviewLink{
       color: var(--ink);
@@ -320,35 +320,203 @@
       .grid{ grid-template-columns:1fr; }
       .leftFill{ max-width: none; }
     }
-  </style>
+  
+
+/* --- About page layout refresh (partners row) --- */
+.aboutHeroNew{
+  display:grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 6px;
+}
+
+.aboutHeroNew .aboutLeft{
+  min-width: 0;
+}
+
+.aboutHeroNew .aboutRight{
+  min-width: 0;
+}
+
+.aboutHeroNew .aboutRight .sideImage{
+  height: 100%;
+}
+
+.aboutHeroNew .aboutRight .sideImage img{
+  width: 100%;
+  height: 100%;
+  min-height: 560px;
+  object-fit: cover;
+}
+
+.partnerRow{
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.partnerHead{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.partnerHead h2{
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.partnerHead p{
+  margin: 0;
+  color: rgba(0,0,0,0.65);
+  max-width: 560px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.partnerGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.partnerCard{
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 16px;
+  align-items: start;
+  background: rgba(255,255,255,0.70);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.partnerMedia{
+  width: 140px;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.partnerMedia img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.partnerKicker{
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.55);
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.partnerBody h3{
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.partnerBody p{
+  margin: 0 0 12px 0;
+  color: rgba(0,0,0,0.72);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.partnerActions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.partnerNote{
+  margin: 12px 0 0 0;
+  color: rgba(0,0,0,0.55);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+@media (max-width: 1100px){
+  .partnerGrid{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 980px){
+  .aboutHeroNew{
+    grid-template-columns: 1fr;
+  }
+  .aboutHeroNew .aboutRight .sideImage img{
+    min-height: 360px;
+  }
+  .partnerHead{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .partnerGrid{
+    grid-template-columns: 1fr;
+  }
+  .partnerCard{
+    grid-template-columns: 96px 1fr;
+  }
+  .partnerMedia{
+    width: 96px;
+  }
+}
+
+    .introCard h1{ margin:0 0 10px; }
+    .introCard p{ margin:0 0 10px; }
+    .introCard p:last-child{ margin-bottom:0; }
+
+/* --- Patch: keep About page on the same "card" surface as other MBW pages --- */
+.page.card{
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 900px){
+  .page.card{ padding: 18px; }
+}
+
+</style>
 </head>
 
 <body>
   <div class="container">
     <div id="siteHeader"></div>
 
-    <main class="page card">
-      <h1>About Us</h1>
-
-      <div class="aboutLayout" aria-label="About us layout">
-        <div>
-          <div class="copy" aria-label="About us copy">
+    <main class="page card" id="mainContent">
+  <div class="wrap">
+    <section class="aboutHeroNew" aria-label="About Mindo Bird Watching">
+      <div class="aboutLeft">
+          <section class="fillCard introCard" aria-label="About us overview">
+            <h1>About Us</h1>
             <p>
               At Mindo Bird Watching, we are passionate about sharing the breathtaking beauty of Ecuador's cloud forest and its incredible birdlife.
               With years of experience as a birdwatching guide, I specialize in helping visitors discover the vibrant world of toucans, hummingbirds,
               tanagers, and countless other species that call Mindo home.
-            </p>
-            <p>
+            </p><p>
               Our tours are designed to provide a unique and immersive experience, whether you're a seasoned birder or a first-time nature enthusiast.
               With expert guidance, personalized attention, and access to some of the best birding spots in the region, we ensure every moment is unforgettable.
-            </p>
-            <p>
+            </p><p>
               Join us to explore the wonders of Mindo and create memories surrounded by the songs and colors of nature.
             </p>
-          </div>
+          </section>
 
-          <div class="leftFill" aria-label="Trust and social section">
-            <section class="fillCard" aria-label="Testimonial">
+          <section class="fillCard" aria-label="Testimonial">
               <h2 class="fillTitle">Traveler Highlight</h2>
 
               <p class="quote">
@@ -363,8 +531,7 @@
                 <a class="reviewLink" href="https://maps.app.goo.gl/eBu55MP1F5mZJWtt9" target="_blank" rel="noopener">Read on Google</a>
               </div>
             </section>
-
-            <section class="fillCard" aria-label="Our guide snippet and social follow">
+        <section class="fillCard" aria-label="Our guide snippet and social follow">
               <!-- ICONS LIVE HERE (easy swap later):
                    IG: /assets/images/icons/mbw_ig.png
                    FB: /assets/images/icons/mbw_fb.png
@@ -413,9 +580,9 @@
                 </a>
               </div>
             </section>
-          </div>
-        </div>
+      </div>
 
+      <div class="aboutRight">
         <aside class="sideImage" aria-label="Cloud forest image">
           <img src="/assets/images/pages/MBW-Assets-93-AboutUs.jpg" alt="Mindo cloud forest scenery in Ecuador" />
           <div class="sideImageCaption">
@@ -424,27 +591,70 @@
           </div>
         </aside>
       </div>
+    </section>
 
-      <div class="grid" aria-label="Key points">
-        <div class="mini">
-          <h2>Local Guide</h2>
-          <p>Years of experience guiding birders through Mindo's cloud forest.</p>
-        </div>
-        <div class="mini">
-          <h2>Personalized Tours</h2>
-          <p>Great for both experienced birders and first-time nature lovers.</p>
-        </div>
-        <div class="mini">
-          <h2>Best Birding Spots</h2>
-          <p>Access to some of the strongest routes and habitats in the region.</p>
-        </div>
+    <section class="partnerRow" aria-label="Extend your journey">
+      <header class="partnerHead">
+        <h2>Extend your journey</h2>
+        <p>If you are flying into Quito, here are two easy ways to add more value to your Ecuador trip.</p>
+      </header>
+
+      <div class="partnerGrid">
+        <article class="partnerCard" aria-label="The Cloud Forest Retreat">
+          <div class="partnerMedia">
+            <img src="/assets/images/promos/mbw_promo_tcfr_002.jpg" alt="The Cloud Forest Retreat - mountain view" loading="lazy" />
+          </div>
+          <div class="partnerBody">
+            <div class="partnerKicker">Suggested stay near Quito</div>
+            <h3>The Cloud Forest Retreat</h3>
+            <p>A calm 1 to 3 night reset before or after Mindo. About 1.5 to 2 hours from Mindo - perfect for decompressing, scenic views, and slow mornings.</p>
+            <div class="partnerActions">
+              <a class="btn primary" href="https://www.thecloudforestretreat.com/" target="_blank" rel="noopener">Explore The Retreat</a>
+              <a class="btn secondary" href="/contact/">Ask Us How To Combine</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="partnerCard" aria-label="Experience Ecuador">
+          <div class="partnerMedia">
+            <img src="/assets/images/promos/mbw_promo_ee_001.jpg" alt="Experience Ecuador - travel highlights" loading="lazy" />
+          </div>
+          <div class="partnerBody">
+            <div class="partnerKicker">More ideas for your trip</div>
+            <h3>Experience Ecuador</h3>
+            <p>Looking for other destinations and experiences while you are in Ecuador? Browse hand-picked itineraries and inspiration beyond Mindo.</p>
+            <div class="partnerActions">
+              <a class="btn primary" href="https://experienceecuador.com/" target="_blank" rel="noopener">Browse Ideas</a>
+              <a class="btn secondary" href="https://experienceecuador.com/trip-builder/">Plan Your Trip</a>
+            </div>
+          </div>
+        </article>
       </div>
 
-      <div class="ctaRow">
-        <a class="btn primary" href="/book-tour/">Book A Tour</a>
-        <a class="btn secondary" href="/tours/">Explore Tours</a>
+      <p class="partnerNote"></p>
+    </section>
+
+    <div class="grid" aria-label="Key points">
+      <div class="mini">
+        <h2>Local Guide</h2>
+        <p>Years of experience guiding birders through Mindo's cloud forest.</p>
       </div>
-    </main>
+      <div class="mini">
+        <h2>Personalized Tours</h2>
+        <p>Great for both experienced birders and first-time nature lovers.</p>
+      </div>
+      <div class="mini">
+        <h2>Best Birding Spots</h2>
+        <p>Access to some of the strongest routes and habitats in the region.</p>
+      </div>
+    </div>
+
+    <div class="ctaRow">
+      <a class="btn primary" href="/book-tour/">Book A Tour</a>
+      <a class="btn secondary" href="/tours/">Explore Tours</a>
+    </div>
+  </div>
+</main>
 
     <div id="siteFooter"></div>
   </div>
