@@ -491,6 +491,7 @@ input[type="date"]{
 
       <form class="form" id="contactForm"
         method="post"
+        target="mbwHiddenFrame"
         action="/api/contact">
 
         <div class="row2">
@@ -639,14 +640,105 @@ input[type="date"]{
   <script>
     (function(){
       var ua = document.getElementById("uaField");
-      if(ua) ua.value = naviga<script>
-(function(){
+      if(ua) ua.value = navigator.userAgent || "";
+  var sp = document.getElementById("sourcePage");
+  if(sp) sp.value = window.location.href;
+
+  function titleCaseWords(str){
+    return String(str || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .split(" ")
+      .map(function(w){
+        if(!w) return "";
+        var lower = w.toLowerCase();
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      })
+      .join(" ");
+  }
+
+  function attachNameAutoCap(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("blur", function(){
+      el.value = titleCaseWords(el.value);
+    });
+  }
+  attachNameAutoCap("firstName");
+  attachNameAutoCap("lastName");
+
+  function combineDates(){
+    var s = document.getElementById("dateStart");
+    var e = document.getElementById("dateEnd");
+    var out = document.getElementById("datesCombined");
+    if(!out) return;
+
+    var start = (s && s.value) ? s.value : "";
+    var end = (e && e.value) ? e.value : "";
+
+    if(start && end) out.value = start + " to " + end;
+    else if(start) out.value = start;
+    else out.value = "";
+  }
+  var ds = document.getElementById("dateStart");
+  var de = document.getElementById("dateEnd");
+  if(ds) ds.addEventListener("change", combineDates);
+  if(de) de.addEventListener("change", combineDates);
+  combineDates();
+
+  var copyBtn = document.getElementById("copyEmailBtn");
+  var toast = document.getElementById("copyToast");
+  var email = "mindobirdwatching@gmail.com";
+  function showToast(){
+    if(!toast) return;
+    toast.style.display = "block";
+    clearTimeout(window.__mbwCopyT);
+    window.__mbwCopyT = setTimeout(function(){
+      toast.style.display = "none";
+    }, 1800);
+  }
+  if(copyBtn){
+    copyBtn.addEventListener("click", function(){
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(email).then(showToast).catch(function(){});
+          return;
+        }
+      }catch(e){}
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = email;
+        ta.setAttribute("readonly", "readonly");
+        ta.style.position = "absolute";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast();
+      }catch(e){}
+    });
+  }
+
+  function trackGA(eventName, params){
+    try{
+      if(typeof window.gtag === "function"){
+        window.gtag("event", eventName, params || {});
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+
   var form = document.getElementById("contactForm");
-  var btn = document.getElementById("submitBtn");
   var successEl = document.getElementById("formSuccessMsg");
   var errorEl = document.getElementById("formErrorMsg");
-  var sourceEl = document.getElementById("sourcePage");
-  var uaEl = document.getElementById("uaField");
+  var submitBtn = document.getElementById("submitBtn");
+  var iframe = document.getElementById("mbwHiddenFrame");
+
+  var pending = false;
+  var done = false;
+  var fallbackTimer = null;
 
   function hideMsgs(){
     if(successEl) successEl.style.display = "none";
@@ -654,75 +746,94 @@ input[type="date"]{
   }
 
   function setBtnSending(isSending){
-    if(!btn) return;
-    btn.disabled = !!isSending;
-    btn.textContent = isSending ? "Sending..." : "Send Message";
+    if(!submitBtn) return;
+    if(isSending){
+      submitBtn.setAttribute("disabled", "disabled");
+      submitBtn.textContent = "Sending...";
+    }else{
+      submitBtn.removeAttribute("disabled");
+      submitBtn.textContent = "Send Message";
+    }
   }
 
-  function showOk(){
+  function completeOk(){
+    if(done) return;
+    done = true;
+    pending = false;
+    if(fallbackTimer) clearTimeout(fallbackTimer);
+    setBtnSending(false);
     if(successEl) successEl.style.display = "block";
+    if(errorEl) errorEl.style.display = "none";
+
+    trackGA("contact_submit_en", {
+      form_id: "contactForm",
+      form_name: "contact",
+      page_path: window.location.pathname || "/contact/",
+      page_location: window.location.href
+    });
+
+    try{
+      form.reset();
+      if(ds) ds.value = "";
+      if(de) de.value = "";
+      combineDates();
+      if(ua) ua.value = navigator.userAgent || "";
+      if(sp) sp.value = window.location.href;
+    }catch(e){}
   }
 
-  function showErr(msg){
+  function completeError(msg){
+    if(done) return;
+    done = true;
+    pending = false;
+    if(fallbackTimer) clearTimeout(fallbackTimer);
+    setBtnSending(false);
     if(errorEl){
       errorEl.textContent = msg || "⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.";
       errorEl.style.display = "block";
     }
+    if(successEl) successEl.style.display = "none";
   }
-
-  // Fill hidden fields
-  try {
-    if(sourceEl) sourceEl.value = window.location.pathname || "";
-    if(uaEl) uaEl.value = navigator.userAgent || "";
-  } catch (e) {}
-
-  if(!form) return;
 
   hideMsgs();
 
-  form.addEventListener("submit", function(ev){
-    ev.preventDefault();
-    hideMsgs();
-    setBtnSending(true);
+  if(form){
+    form.addEventListener("submit", function(){
+      hideMsgs();
+      done = false;
+      pending = true;
+      setBtnSending(true);
 
-    var fd = new FormData(form);
+      if(fallbackTimer) clearTimeout(fallbackTimer);
+      fallbackTimer = setTimeout(function(){
+        if(!done){
+          completeError("⚠️ Still waiting... please try again, or email us directly at mindobirdwatching@gmail.com.");
+        }
+      }, 12000);
+    });
+  }
+  if(iframe){
+    iframe.addEventListener("load", function(){
+      // Intentionally no auto-success here.
+      // We only mark success when the /api/contact response posts a message to the parent.
+    });
+  }
 
-    // Turnstile token must be present
-    var ts = fd.get("cf-turnstile-response");
-    if(!ts){
-      setBtnSending(false);
-      showErr("⚠️ Please complete the security check and try again.");
+  window.addEventListener("message", function(ev){
+    var data = ev && ev.data ? ev.data : null;
+    if(!data) return;
+
+    if(data.type === "mbw-contact" && data.status === "ok"){
+      completeOk();
       return;
     }
-
-    fetch("/api/contact", { method: "POST", body: fd })
-      .then(function(r){ return r.json().catch(function(){ return null; }); })
-      .then(function(json){
-        if(json && json.ok){
-          showOk();
-          form.reset();
-
-          // Re-fill hidden fields after reset
-          try {
-            if(sourceEl) sourceEl.value = window.location.pathname || "";
-            if(uaEl) uaEl.value = navigator.userAgent || "";
-          } catch (e) {}
-
-          // Reset Turnstile widget if available
-          try { if(window.turnstile && window.turnstile.reset) window.turnstile.reset(); } catch (e) {}
-        } else {
-          var m = (json && (json.message || json.error)) ? String(json.message || json.error) : null;
-          showErr(m ? ("⚠️ " + m) : null);
-        }
-      })
-      .catch(function(){
-        showErr();
-      })
-      .finally(function(){
-        setBtnSending(false);
-      });
+    if(data.type === "mbw-contact" && data.status === "error"){
+      completeError(data.message ? ("⚠️ " + data.message) : null);
+    }
   });
 })();
-</script>script>
+  </script>
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
 </body>
 </html>
