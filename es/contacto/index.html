@@ -487,12 +487,12 @@ input[type="date"]{
     </div>
 
     <div class="cardBox">
-      <iframe name="mbwHiddenFrame" id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1"></iframe>
+      <iframe id="mbwHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" aria-hidden="true" tabindex="-1" name="mbwHiddenFrame"></iframe>
 
       <form class="form" id="contactForm"
-        method="post"
-        target="mbwHiddenFrame"
-        action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
+       
+       
+        method="post" action="/api/contact" target="mbwHiddenFrame">
 
         <div class="row2">
           <label>
@@ -514,7 +514,7 @@ input[type="date"]{
 
           <label>
             <span class="labelText">Como nos encontraste?</span>
-            <input type="text" name="how_hear" placeholder="Google, Instagram, amigo, hotel, etc." />
+            <input type="text" name="how_did_you_hear_about_us" placeholder="Google, Instagram, amigo, hotel, etc." />
           </label>
         </div>
 
@@ -532,7 +532,7 @@ input[type="date"]{
 
         <label>
           <span class="labelText">Mensaje / Preguntas<span class="req">*</span></span>
-          <textarea name="message" placeholder="Cuentanos en que necesitas ayuda. Puedes incluir fechas, objetivos y preguntas sobre el tour." required></textarea>
+          <textarea name="message_questions" placeholder="Cuentanos en que necesitas ayuda. Puedes incluir fechas, objetivos y preguntas sobre el tour." required></textarea>
         </label>
 
         <div class="row2 rowDatesGuests">
@@ -637,8 +637,11 @@ input[type="date"]{
 </main>
 <div id="siteFooter"></div>
       </div>
-  <script>
-    (function(){
+  
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
+<script>
+(function(){
       var ua = document.getElementById("uaField");
       if(ua) ua.value = navigator.userAgent || "";
   var sp = document.getElementById("sourcePage");
@@ -789,7 +792,7 @@ input[type="date"]{
     if(fallbackTimer) clearTimeout(fallbackTimer);
     setBtnSending(false);
     if(errorEl){
-      errorEl.textContent = msg || "⚠️ Algo salio mal. Intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.";
+      errorEl.textContent = msg || "⚠️ Something went wrong. Please try again, or email us directly at mindobirdwatching@gmail.com.";
       errorEl.style.display = "block";
     }
     if(successEl) successEl.style.display = "none";
@@ -807,17 +810,15 @@ input[type="date"]{
       if(fallbackTimer) clearTimeout(fallbackTimer);
       fallbackTimer = setTimeout(function(){
         if(!done){
-          completeError("⚠️ Aun esperando... intentalo de nuevo o escribenos a mindobirdwatching@gmail.com.");
+          completeError("⚠️ Still waiting... please try again, or email us directly at mindobirdwatching@gmail.com.");
         }
       }, 12000);
     });
   }
-
   if(iframe){
     iframe.addEventListener("load", function(){
-      if(pending && !done){
-        completeOk();
-      }
+      // Intentionally no auto-success here.
+      // We only mark success when the /api/contact response posts a message to the parent.
     });
   }
 
@@ -825,17 +826,16 @@ input[type="date"]{
     var data = ev && ev.data ? ev.data : null;
     if(!data) return;
 
-    if(data.type === "mbw-contact" && data.status === "ok"){
+    var isExpected = (data.type === "mbw-contact" || data.type === "mbw-booktour");
+    if(isExpected && data.status === "ok"){
       completeOk();
       return;
     }
-    if(data.type === "mbw-contact" && data.status === "error"){
+    if(isExpected && data.status === "error"){
       completeError(data.message ? ("⚠️ " + data.message) : null);
     }
   });
 })();
-  </script>
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
+</script>
 </body>
 </html>
