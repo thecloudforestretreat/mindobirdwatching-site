@@ -492,7 +492,7 @@ input[type="date"]{
       <form class="form" id="contactForm"
         method="post"
         target="mbwHiddenFrame"
-        action="https://script.google.com/macros/s/AKfycbzxu84JtF-mS5MzxywHBFVrgr3f8vWsPAKTg7wD-kyDNbZ6Gsd-6RTXtKTziNzEVYouzA/exec">
+        action="/api/contact">
 
         <div class="row2">
           <label>
@@ -514,7 +514,7 @@ input[type="date"]{
 
           <label>
             <span class="labelText">How Did You Hear About Us?</span>
-            <input type="text" name="how_hear" placeholder="Google, Instagram, friend, hotel, etc." />
+            <input type="text" name="how_did_you_hear_about_us" placeholder="Google, Instagram, friend, hotel, etc." />
           </label>
         </div>
 
@@ -532,7 +532,7 @@ input[type="date"]{
 
         <label>
           <span class="labelText">Message / Questions<span class="req">*</span></span>
-          <textarea name="message" placeholder="Tell us what you need help with. You can include dates, goals, and tour questions." required></textarea>
+          <textarea name="message_questions" placeholder="Tell us what you need help with. You can include dates, goals, and tour questions." required></textarea>
         </label>
 
         <div class="row2 rowDatesGuests">
@@ -812,12 +812,10 @@ input[type="date"]{
       }, 12000);
     });
   }
-
   if(iframe){
     iframe.addEventListener("load", function(){
-      if(pending && !done){
-        completeOk();
-      }
+      // Intentionally no auto-success here.
+      // We only mark success when the /api/contact response posts a message to the parent.
     });
   }
 
@@ -825,11 +823,12 @@ input[type="date"]{
     var data = ev && ev.data ? ev.data : null;
     if(!data) return;
 
-    if(data.type === "mbw-contact" && data.status === "ok"){
+    var isExpected = (data.type === "mbw-contact" || data.type === "mbw-booktour");
+    if(isExpected && data.status === "ok"){
       completeOk();
       return;
     }
-    if(data.type === "mbw-contact" && data.status === "error"){
+    if(isExpected && data.status === "error"){
       completeError(data.message ? ("⚠️ " + data.message) : null);
     }
   });
