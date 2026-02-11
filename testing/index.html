@@ -823,11 +823,12 @@ input[type="date"]{
     var data = ev && ev.data ? ev.data : null;
     if(!data) return;
 
-    if(data.type === "mbw-contact" && data.status === "ok"){
+    var isExpected = (data.type === "mbw-contact" || data.type === "mbw-booktour");
+    if(isExpected && data.status === "ok"){
       completeOk();
       return;
     }
-    if(data.type === "mbw-contact" && data.status === "error"){
+    if(isExpected && data.status === "error"){
       completeError(data.message ? ("⚠️ " + data.message) : null);
     }
   });
