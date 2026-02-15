@@ -57,11 +57,10 @@
     }
 
     .rightStack{
-      display:flex;
-      flex-direction:column;
+      display:grid;
       gap: 12px;
+      align-content:start;
       min-width:0;
-      height:100%;
     }
 
     .heroLeft{
@@ -524,26 +523,29 @@
       .rowPhone{ grid-template-columns: 1fr; }
     }
 
-        .promoFill{
-      display:none;
-      border-radius:16px;
-      overflow:hidden;
-      box-shadow: 0 10px 30px rgba(11,27,17,0.12);
-      flex:1 1 auto;
-      min-height:0;
-    }
-    .promoFill img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
     @media (min-width:901px){
       .promoFill{display:block;}
-      .rightStack{height:100%;}
     }
 
   </style>
+
+<style>
+/* --- Desktop column symmetry fix --- */
+@media (min-width: 1024px) {
+  .promo-sync {
+    height: var(--left-col-height, auto);
+    overflow: hidden;
+    border-radius: 18px;
+  }
+  .promo-sync img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+</style>
+
 </head>
 <body>
   <div class="container">
@@ -993,5 +995,23 @@
   </script>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
+
+<script>
+(function(){
+  function syncPromoHeight(){
+    var left = document.querySelector('.left-column');
+    var promo = document.querySelector('.promo-sync');
+    if(!left || !promo) return;
+    var h = left.getBoundingClientRect().height;
+    promo.style.setProperty('--left-col-height', Math.round(h) + 'px');
+  }
+  window.addEventListener('load', syncPromoHeight);
+  window.addEventListener('resize', function(){
+    clearTimeout(window.__promoSyncT);
+    window.__promoSyncT = setTimeout(syncPromoHeight, 120);
+  });
+})();
+</script>
+
 </body>
 </html>
