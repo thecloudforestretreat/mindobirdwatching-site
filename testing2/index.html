@@ -46,7 +46,7 @@
       display:grid;
       grid-template-columns: 1.05fr .95fr;
       gap: 16px;
-      align-items:stretch;
+      align-items:start;
     }
 
     .leftStack{
@@ -61,8 +61,6 @@
       gap: 12px;
       align-content:start;
       min-width:0;
-      height:100%;
-      grid-template-rows:auto auto 1fr;
     }
 
     .heroLeft{
@@ -251,7 +249,7 @@
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      align-items:stretch;
+      align-items:start;
     }
 
     .glanceItem{
@@ -319,7 +317,7 @@
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      align-items:stretch;
+      align-items:start;
     }
 
     .rowPhone{
@@ -416,7 +414,7 @@
 
     .rowDatesGuests{
       grid-template-columns: minmax(0, 1fr) 132px;
-      align-items:stretch;
+      align-items:start;
       column-gap: 10px;
     }
     .rowDatesGuests > label{ min-width: 0; }
@@ -439,7 +437,7 @@
       display:grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      align-items:stretch;
+      align-items:start;
       width: 100%;
       min-width: 0;
       max-width: 100%;
@@ -526,8 +524,7 @@
     }
 
     @media (min-width:901px){
-      .promoFill{flex:1 1 auto;min-height:260px;height:100%;border-radius:16px;overflow:hidden;display:flex;}
-.promoFill img{width:100%;height:100%;object-fit:cover;display:block;}
+      .promoFill{display:block;}
     }
 
   </style>
@@ -537,7 +534,7 @@
     <div id="siteHeader"></div>
 <main class="page card">
   <div class="layout" aria-label="Book a tour layout grid">
-    <div class="leftStack" aria-label="Left content stack">
+    <div class="leftStack" id="leftStack" aria-label="Left content stack">
       <section class="heroLeft" aria-label="Book a tour intro">
         <h1>Book a Tour</h1>
         <p class="lede">
@@ -715,7 +712,7 @@
       </section>
     </div>
 
-    <aside class="rightStack" aria-label="Right content stack">
+    <aside class="rightStack" id="rightStack" aria-label="Right content stack">
       <div class="heroRight" aria-label="Hero image and actions">
         <div class="heroImageCard" aria-label="Tour booking image">
           <div class="heroImageFrame">
@@ -766,7 +763,7 @@
       </div>
     
 
-      <div class="promoFill" aria-hidden="true">
+      <div class="promoFill" id="promoFill" aria-hidden="true">
         <img src="/assets/images/pages/mbw_assets_pages_about_us_02.jpg" alt="Tour options" loading="lazy" decoding="async">
       </div>
 </aside>
@@ -980,5 +977,48 @@
   </script>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
+
+<script>
+(function(){
+  function fitPromo(){
+    var left = document.getElementById('leftStack');
+    var right = document.getElementById('rightStack');
+    var promo = document.getElementById('promoFill');
+    if (!left || !right || !promo) return;
+
+    // Reset so we can measure natural heights
+    promo.style.height = 'auto';
+
+    // After layout, compute required promo height so right column matches left column
+    requestAnimationFrame(function(){
+      var leftH = left.getBoundingClientRect().height;
+      var rightH = right.getBoundingClientRect().height;
+      var promoH = promo.getBoundingClientRect().height;
+
+      // rightH includes promo already. Remove promo to get the non-promo height.
+      var nonPromoH = rightH - promoH;
+
+      // Target promo height so total right == left
+      var target = Math.max(220, leftH - nonPromoH);
+
+      promo.style.height = target + 'px';
+    });
+  }
+
+  // Run after everything is laid out and images are available
+  window.addEventListener('load', fitPromo);
+  window.addEventListener('resize', function(){
+    clearTimeout(window.__fitPromoT);
+    window.__fitPromoT = setTimeout(fitPromo, 120);
+  });
+
+  // Safety: also run after DOM ready
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(fitPromo, 0);
+    setTimeout(fitPromo, 300);
+  });
+})();
+</script>
+
 </body>
 </html>
