@@ -537,6 +537,10 @@
 @media (max-width: 900px){
   .promoFill{display:none;}
 }
+
+@media (min-width: 901px){
+  .promoFill{ flex: 0 0 auto; }
+}
 </style>
 </head>
 <body>
@@ -987,5 +991,53 @@
   </script>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
+
+<script>
+(function(){
+  function syncPromoHeight(){
+    var mq = window.matchMedia("(min-width: 901px)");
+    var left = document.querySelector(".leftStack");
+    var right = document.querySelector(".rightStack");
+    var promo = document.querySelector(".promoFill");
+    if(!left || !right || !promo) return;
+
+    if(!mq.matches){
+      promo.style.height = "";
+      return;
+    }
+
+    // reset to measure natural sizes
+    promo.style.height = "";
+    // force layout
+    var leftH = left.getBoundingClientRect().height;
+    var promoH = promo.getBoundingClientRect().height;
+    var rightH = right.getBoundingClientRect().height;
+
+    var other = rightH - promoH;
+    var target = Math.max(220, Math.floor(leftH - other));
+
+    promo.style.height = target + "px";
+  }
+
+  var rafId = null;
+  function schedule(){
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(syncPromoHeight);
+  }
+
+  window.addEventListener("load", function(){ setTimeout(syncPromoHeight, 0); });
+  window.addEventListener("resize", schedule);
+
+  if("ResizeObserver" in window){
+    try{
+      var ro = new ResizeObserver(schedule);
+      var left = document.querySelector(".leftStack");
+      var right = document.querySelector(".rightStack");
+      if(left) ro.observe(left);
+      if(right) ro.observe(right);
+    }catch(e){}
+  }
+})();
+</script>
 </body>
 </html>
