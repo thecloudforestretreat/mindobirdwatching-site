@@ -44,23 +44,26 @@
 
     .layout{
       display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 16px;
-      align-items:start;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      align-items: stretch;
     }
 
     .leftStack{
       display:grid;
-      gap: 18px;
-      align-content:start;
-      min-width:0;
-    }
-
-    .rightStack{
-      display:grid;
       gap: 12px;
       align-content:start;
       min-width:0;
+      min-height:0;
+    }
+
+    .rightStack{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      min-width:0;
+      height:100%;
+      min-height:0;
     }
 
     .heroLeft{
@@ -496,7 +499,12 @@
     }
 
     @media (max-width: 980px){
-      .layout{ grid-template-columns: 1fr; }
+      .layout{
+      display:grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      align-items: stretch;
+    }
       .row2{ grid-template-columns: 1fr; }
       .rowDatesGuests{ grid-template-columns: 1fr; }
       .rowPhone{ grid-template-columns: 120px 1fr; }
@@ -524,17 +532,36 @@
     }
 
     @media (min-width:901px){
-      .promoFill{display:block;}
+      .promoFill{
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(14, 65, 33, 0.20);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.35);
+      flex: 1 1 auto;
+      min-height:0;
+      display:flex;
+    }
+    .promoFill img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
     }
 
-  </style>
+  
+@media (max-width: 900px){
+  .promoFill{display:none;}
+}
+</style>
 </head>
 <body>
   <div class="container">
     <div id="siteHeader"></div>
 <main class="page card">
   <div class="layout" aria-label="Book a tour layout grid">
-    <div class="leftStack" id="leftStack" aria-label="Left content stack">
+    <div class="leftStack" aria-label="Left content stack">
       <section class="heroLeft" aria-label="Book a tour intro">
         <h1>Book a Tour</h1>
         <p class="lede">
@@ -712,7 +739,7 @@
       </section>
     </div>
 
-    <aside class="rightStack" id="rightStack" aria-label="Right content stack">
+    <aside class="rightStack" aria-label="Right content stack">
       <div class="heroRight" aria-label="Hero image and actions">
         <div class="heroImageCard" aria-label="Tour booking image">
           <div class="heroImageFrame">
@@ -763,7 +790,7 @@
       </div>
     
 
-      <div class="promoFill" id="promoFill" aria-hidden="true">
+      <div class="promoFill" aria-hidden="true">
         <img src="/assets/images/pages/mbw_assets_pages_about_us_02.jpg" alt="Tour options" loading="lazy" decoding="async">
       </div>
 </aside>
@@ -977,48 +1004,5 @@
   </script>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
-
-<script>
-(function(){
-  function fitPromo(){
-    var left = document.getElementById('leftStack');
-    var right = document.getElementById('rightStack');
-    var promo = document.getElementById('promoFill');
-    if (!left || !right || !promo) return;
-
-    // Reset so we can measure natural heights
-    promo.style.height = 'auto';
-
-    // After layout, compute required promo height so right column matches left column
-    requestAnimationFrame(function(){
-      var leftH = left.getBoundingClientRect().height;
-      var rightH = right.getBoundingClientRect().height;
-      var promoH = promo.getBoundingClientRect().height;
-
-      // rightH includes promo already. Remove promo to get the non-promo height.
-      var nonPromoH = rightH - promoH;
-
-      // Target promo height so total right == left
-      var target = Math.max(220, leftH - nonPromoH);
-
-      promo.style.height = target + 'px';
-    });
-  }
-
-  // Run after everything is laid out and images are available
-  window.addEventListener('load', fitPromo);
-  window.addEventListener('resize', function(){
-    clearTimeout(window.__fitPromoT);
-    window.__fitPromoT = setTimeout(fitPromo, 120);
-  });
-
-  // Safety: also run after DOM ready
-  document.addEventListener('DOMContentLoaded', function(){
-    setTimeout(fitPromo, 0);
-    setTimeout(fitPromo, 300);
-  });
-})();
-</script>
-
 </body>
 </html>
