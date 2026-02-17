@@ -514,25 +514,27 @@
       .rowPhone{ grid-template-columns: 1fr; }
     }
 
-    @media (min-width:901px) {
-  /* Make the right column match the left column height, and let the promo image
-     fill ONLY the remaining space so both columns end at the same baseline. */
-  .rightStack { min-height: 0; }
-  .promoFill{
-    margin-top: 14px;
-    flex: 1 1 auto;
-    min-height: 0;
-    border-radius: 20px;
-    overflow: hidden;
-    background: #e7f0e3;
-  }
-  .promoFill img{
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-  }
-}
+    @media (min-width: 901px){
+      .rightStack{ min-height: 0; }
+
+      /* Do NOT stretch to match left column */
+      .promoFill{
+        margin-top: 14px;
+        flex: 0 0 auto;                 /* key change */
+        height: clamp(180px, 22vh, 320px); /* adjust to taste */
+        border-radius: 20px;
+        overflow: hidden;
+        background: #e7f0e3;
+      }
+
+      .promoFill img{
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        object-position: center;
+      }
+    }
 
   
 @media (max-width: 900px){
