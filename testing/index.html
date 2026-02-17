@@ -337,6 +337,89 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
   object-fit:cover;
   display:block;
 }
+
+
+/* Hero carousel (5 images, auto-rotate, manual transparent toggles) */
+.heroCarousel{
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.heroCarousel .hcRadio{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+}
+.heroCarousel .hcSlides{
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.heroCarousel .hcSlide{
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+.heroCarousel .hcSlide img{
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Show slide when corresponding radio is checked */
+#hc1:checked ~ .hcSlides .hcS1,
+#hc2:checked ~ .hcSlides .hcS2,
+#hc3:checked ~ .hcSlides .hcS3,
+#hc4:checked ~ .hcSlides .hcS4,
+#hc5:checked ~ .hcSlides .hcS5{
+  opacity: 1;
+}
+
+/* Transparent toggles (clickable dots) */
+.heroCarousel .hcToggles{
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.14);
+  border: 1px solid rgba(255,255,255,0.38);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.heroCarousel .hcDot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.70);
+  transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+  opacity: 0.9;
+}
+.heroCarousel .hcDot:hover{
+  transform: scale(1.12);
+}
+#hc1:checked ~ .hcToggles label[for="hc1"],
+#hc2:checked ~ .hcToggles label[for="hc2"],
+#hc3:checked ~ .hcToggles label[for="hc3"],
+#hc4:checked ~ .hcToggles label[for="hc4"],
+#hc5:checked ~ .hcToggles label[for="hc5"]{
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(255,255,255,0.92);
+  opacity: 1;
+}
+
 </style>
 </head>
 <body>
@@ -378,7 +461,31 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 </div>
 <aside aria-label="Hero product preview" class="shopHeroCard heroPreview">
 <div><b>Birding print shop preview</b></div>
-<div class="previewFrame"><img alt="Birding print shop preview placeholder" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"/></div>
+<div class="previewFrame">
+  <div class="heroCarousel" data-interval="2500" aria-label="Hero preview carousel">
+    <input class="hcRadio" type="radio" name="heroCarousel" id="hc1" checked>
+    <input class="hcRadio" type="radio" name="heroCarousel" id="hc2">
+    <input class="hcRadio" type="radio" name="heroCarousel" id="hc3">
+    <input class="hcRadio" type="radio" name="heroCarousel" id="hc4">
+    <input class="hcRadio" type="radio" name="heroCarousel" id="hc5">
+
+    <div class="hcSlides" aria-live="polite">
+      <div class="hcSlide hcS1"><img alt="Shop preview image 1" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
+      <div class="hcSlide hcS2"><img alt="Shop preview image 2" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
+      <div class="hcSlide hcS3"><img alt="Shop preview image 3" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
+      <div class="hcSlide hcS4"><img alt="Shop preview image 4" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
+      <div class="hcSlide hcS5"><img alt="Shop preview image 5" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
+    </div>
+
+    <div class="hcToggles" role="tablist" aria-label="Select preview image">
+      <label class="hcDot" for="hc1" aria-label="Preview image 1"></label>
+      <label class="hcDot" for="hc2" aria-label="Preview image 2"></label>
+      <label class="hcDot" for="hc3" aria-label="Preview image 3"></label>
+      <label class="hcDot" for="hc4" aria-label="Preview image 4"></label>
+      <label class="hcDot" for="hc5" aria-label="Preview image 5"></label>
+    </div>
+  </div>
+</div>
 <div style="font-size:13px;opacity:.78;">
             Tip: Use one strong lifestyle photo here to set the tone, then let the grid do the selling.
           </div>
@@ -501,5 +608,52 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 </div>
 <script src="/assets/js/includes.js?v=1"></script>
 <script src="/assets/js/site.js?v=1"></script>
+
+<script>
+(function(){
+  var root = document.querySelector('.heroCarousel');
+  if (!root) return;
+
+  var intervalMs = Number(root.getAttribute('data-interval')) || 2500;
+  var radios = Array.prototype.slice.call(root.querySelectorAll('input.hcRadio'));
+  if (!radios.length) return;
+
+  var idx = radios.findIndex(function(r){ return r.checked; });
+  if (idx < 0) idx = 0;
+
+  var timer = null;
+
+  function go(nextIdx){
+    idx = (nextIdx + radios.length) % radios.length;
+    radios[idx].checked = true;
+  }
+
+  function stop(){
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  function start(){
+    stop();
+    timer = setInterval(function(){ go(idx + 1); }, intervalMs);
+  }
+
+  radios.forEach(function(r, i){
+    r.addEventListener('change', function(){
+      if (r.checked) idx = i;
+      start();
+    });
+  });
+
+  // Pause rotation on hover or while interacting
+  root.addEventListener('mouseenter', stop);
+  root.addEventListener('mouseleave', start);
+  root.addEventListener('focusin', stop);
+  root.addEventListener('focusout', start);
+
+  start();
+})();
+</script>
+
 </body>
 </html>
