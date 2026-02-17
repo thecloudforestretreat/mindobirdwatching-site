@@ -517,11 +517,13 @@
     @media (min-width: 901px){
       .rightStack{ min-height: 0; }
 
-      /* Do NOT stretch to match left column */
+      /* Promo image: JS will size this to align with the left column */
       .promoFill{
         margin-top: 14px;
-        flex: 0 0 auto;                 /* key change */
-        height: clamp(180px, 22vh, 320px); /* adjust to taste */
+        flex: 0 0 auto;
+        height: 220px;          /* default, JS will override on desktop */
+        min-height: 160px;
+        max-height: 320px;
         border-radius: 20px;
         overflow: hidden;
         background: #e7f0e3;
@@ -777,7 +779,7 @@
       </div>
     
 
-      <div class="promoFill" aria-hidden="true">
+      <div class="promoFill" id="promoFill" aria-hidden="true">
         <img src="/assets/images/pages/mbw_assets_pages_about_us_02.jpg" alt="Tour options" loading="lazy" decoding="async">
       </div>
 </aside>
@@ -957,7 +959,7 @@
         // If no postMessage arrives, do not assume success
         window.setTimeout(function(){
           if (pending && !done){
-            completeErr("Submission did not complete. Please try again. If this continues, email mindobirdwatching@gmail.com.");
+            completeError("Submission did not complete. Please try again. If this continues, email mindobirdwatching@gmail.com.");
           }
         }, 10000);
           setBtnSending(true);
@@ -974,6 +976,48 @@
       if(iframe){
         /* iframe load fallback disabled: success requires postMessage */
 }
+
+      
+      function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+      function syncPromoFillHeight(){
+        try{
+          if(!window.matchMedia || !window.matchMedia("(min-width: 901px)").matches) return;
+
+          var left = document.querySelector(".leftStack");
+          var right = document.querySelector(".rightStack");
+          var promo = document.getElementById("promoFill");
+          if(!left || !right || !promo) return;
+
+          // Measure right column WITHOUT the promo image
+          var prevH = promo.style.height;
+          promo.style.height = "0px";
+          promo.getBoundingClientRect(); // force reflow
+
+          var leftH = left.getBoundingClientRect().height;
+          var rightHNoPromo = right.getBoundingClientRect().height;
+
+          promo.style.height = prevH || "";
+
+          // Remaining space so the promo's bottom aligns with the left column bottom
+          var remaining = leftH - rightHNoPromo - 14; // 14px = promoFill margin-top
+          var target = clamp(Math.round(remaining), 160, 320);
+
+          if(!isFinite(target) || target < 160) target = 160;
+          promo.style.height = target + "px";
+        }catch(e){}
+      }
+
+      window.addEventListener("load", function(){
+        syncPromoFillHeight();
+        window.setTimeout(syncPromoFillHeight, 250);
+        window.setTimeout(syncPromoFillHeight, 800);
+      });
+
+      window.addEventListener("resize", function(){
+        window.clearTimeout(window.__mbwPromoT);
+        window.__mbwPromoT = window.setTimeout(syncPromoFillHeight, 120);
+      });
 
       window.addEventListener("message", function(ev){
         var data = ev && ev.data ? ev.data : null;
