@@ -36,13 +36,6 @@
 @media (max-width: 900px){
   .shopWrap{ padding: 16px; }
 }
-@media (min-width: 901px){
-  /* Prevent hero carousel image cropping on desktop */
-  .heroPreview .heroMedia{ aspect-ratio: 16 / 9; max-height: 420px; }
-  .heroPreview .heroMedia img{ object-fit: contain; }
-  .heroCarousel .hcSlide img{ object-fit: contain; }
-}
-
 
 
     /* Page-specific styles only (do NOT restyle header/footer) */
@@ -326,8 +319,136 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 }
 
 
-    .previewFrame { overflow: hidden; }
-    .previewImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Preview carousel (shop) */
+.previewCarousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+}
+/* Keep the dashed frame from the existing heroMedia */
+.previewFrame .previewCarousel {
+  aspect-ratio: 16 / 9;
+  background: #fff;
+}
+@media (max-width: 700px) {
+  .previewFrame .previewCarousel {
+    aspect-ratio: 4 / 3;
+  }
+}
+.previewCarousel .slides {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.previewCarousel .slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 350ms ease;
+  pointer-events: none;
+}
+.previewCarousel .slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.previewCarousel img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain; /* default: do not crop */
+}
+.previewCarousel.is-fill img {
+  object-fit: cover; /* optional: fill frame */
+}
+.previewCarousel .dots {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.18);
+}
+.previewCarousel .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,.72);
+  background: transparent;
+  opacity: 0.75;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+}
+.previewCarousel .dot[aria-current="true"] {
+  background: rgba(255,255,255,.95);
+  opacity: 1;
+}
+
+/* Transparent toggle switches under the preview */
+.previewControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  margin-top: 12px;
+}
+.tSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(0,0,0,.70);
+}
+.tSwitch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.tTrack {
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.22);
+  background: rgba(255,255,255,.08); /* transparent look */
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+  position: relative;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.tThumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.15);
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  transition: left 150ms ease;
+}
+.tSwitch input:checked + .tTrack {
+  border-color: rgba(0,0,0,.28);
+  background: rgba(34, 197, 94, 0.18);
+}
+.tSwitch input:checked + .tTrack .tThumb {
+  left: 21px;
+}
+.tSwitch input:focus-visible + .tTrack {
+  outline: 3px solid rgba(2, 132, 199, 0.28);
+  outline-offset: 2px;
+}
     .productImg { background: rgba(0,0,0,.02); border: 1px solid rgba(0,0,0,.08); }
     .productImg img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
@@ -344,89 +465,6 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
   object-fit:cover;
   display:block;
 }
-
-
-/* Hero carousel (5 images, auto-rotate, manual transparent toggles) */
-.heroCarousel{
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-.heroCarousel .hcRadio{
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  border: 0;
-  padding: 0;
-  clip: rect(0 0 0 0);
-  overflow: hidden;
-}
-.heroCarousel .hcSlides{
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-.heroCarousel .hcSlide{
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 420ms ease;
-}
-.heroCarousel .hcSlide img{
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-/* Show slide when corresponding radio is checked */
-#hc1:checked ~ .hcSlides .hcS1,
-#hc2:checked ~ .hcSlides .hcS2,
-#hc3:checked ~ .hcSlides .hcS3,
-#hc4:checked ~ .hcSlides .hcS4,
-#hc5:checked ~ .hcSlides .hcS5{
-  opacity: 1;
-}
-
-/* Transparent toggles (clickable dots) */
-.heroCarousel .hcToggles{
-  position: absolute;
-  left: 50%;
-  bottom: 10px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.14);
-  border: 1px solid rgba(255,255,255,0.38);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-.heroCarousel .hcDot{
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  cursor: pointer;
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.70);
-  transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
-  opacity: 0.9;
-}
-.heroCarousel .hcDot:hover{
-  transform: scale(1.12);
-}
-#hc1:checked ~ .hcToggles label[for="hc1"],
-#hc2:checked ~ .hcToggles label[for="hc2"],
-#hc3:checked ~ .hcToggles label[for="hc3"],
-#hc4:checked ~ .hcToggles label[for="hc4"],
-#hc5:checked ~ .hcToggles label[for="hc5"]{
-  background: rgba(255,255,255,0.92);
-  border-color: rgba(255,255,255,0.92);
-  opacity: 1;
-}
-
 </style>
 </head>
 <body>
@@ -469,28 +507,36 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 <aside aria-label="Hero product preview" class="shopHeroCard heroPreview">
 <div><b>Birding print shop preview</b></div>
 <div class="previewFrame">
-  <div class="heroCarousel" data-interval="2500" aria-label="Hero preview carousel">
-    <input class="hcRadio" type="radio" name="heroCarousel" id="hc1" checked>
-    <input class="hcRadio" type="radio" name="heroCarousel" id="hc2">
-    <input class="hcRadio" type="radio" name="heroCarousel" id="hc3">
-    <input class="hcRadio" type="radio" name="heroCarousel" id="hc4">
-    <input class="hcRadio" type="radio" name="heroCarousel" id="hc5">
-
-    <div class="hcSlides" aria-live="polite">
-      <div class="hcSlide hcS1"><img alt="Shop preview image 1" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
-      <div class="hcSlide hcS2"><img alt="Shop preview image 2" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
-      <div class="hcSlide hcS3"><img alt="Shop preview image 3" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
-      <div class="hcSlide hcS4"><img alt="Shop preview image 4" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
-      <div class="hcSlide hcS5"><img alt="Shop preview image 5" class="previewImg" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg"></div>
+  <div class="previewCarousel" id="shopPreview" aria-label="Birding print shop preview carousel">
+    <div class="slides">
+      <div class="slide is-active"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 1"/></div>
+      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 2"/></div>
+      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 3"/></div>
+      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 4"/></div>
+      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 5"/></div>
     </div>
 
-    <div class="hcToggles" role="tablist" aria-label="Select preview image">
-      <label class="hcDot" for="hc1" aria-label="Preview image 1"></label>
-      <label class="hcDot" for="hc2" aria-label="Preview image 2"></label>
-      <label class="hcDot" for="hc3" aria-label="Preview image 3"></label>
-      <label class="hcDot" for="hc4" aria-label="Preview image 4"></label>
-      <label class="hcDot" for="hc5" aria-label="Preview image 5"></label>
+    <div class="dots" aria-label="Preview image selector">
+      <button class="dot" type="button" aria-label="Show image 1" aria-current="true" data-slide="0"></button>
+      <button class="dot" type="button" aria-label="Show image 2" aria-current="false" data-slide="1"></button>
+      <button class="dot" type="button" aria-label="Show image 3" aria-current="false" data-slide="2"></button>
+      <button class="dot" type="button" aria-label="Show image 4" aria-current="false" data-slide="3"></button>
+      <button class="dot" type="button" aria-label="Show image 5" aria-current="false" data-slide="4"></button>
     </div>
+  </div>
+
+  <div class="previewControls" aria-label="Preview controls">
+    <label class="tSwitch">
+      <input id="toggleAutoplay" type="checkbox" checked>
+      <span class="tTrack" aria-hidden="true"><span class="tThumb"></span></span>
+      <span>Auto rotate</span>
+    </label>
+
+    <label class="tSwitch">
+      <input id="toggleFill" type="checkbox">
+      <span class="tTrack" aria-hidden="true"><span class="tThumb"></span></span>
+      <span>Fill frame</span>
+    </label>
   </div>
 </div>
 <div style="font-size:13px;opacity:.78;">
@@ -615,52 +661,84 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 </div>
 <script src="/assets/js/includes.js?v=1"></script>
 <script src="/assets/js/site.js?v=1"></script>
-
 <script>
-(function(){
-  var root = document.querySelector('.heroCarousel');
+(function () {
+  var root = document.getElementById('shopPreview');
   if (!root) return;
 
-  var intervalMs = Number(root.getAttribute('data-interval')) || 2500;
-  var radios = Array.prototype.slice.call(root.querySelectorAll('input.hcRadio'));
-  if (!radios.length) return;
+  var slides = Array.prototype.slice.call(root.querySelectorAll('.slide'));
+  var dots = Array.prototype.slice.call(root.querySelectorAll('.dot'));
+  var autoplayToggle = document.getElementById('toggleAutoplay');
+  var fillToggle = document.getElementById('toggleFill');
 
-  var idx = radios.findIndex(function(r){ return r.checked; });
-  if (idx < 0) idx = 0;
-
+  var index = 0;
   var timer = null;
+  var intervalMs = 2500;
 
-  function go(nextIdx){
-    idx = (nextIdx + radios.length) % radios.length;
-    radios[idx].checked = true;
+  function setActive(i) {
+    index = (i + slides.length) % slides.length;
+    for (var s = 0; s < slides.length; s++) {
+      slides[s].classList.toggle('is-active', s === index);
+    }
+    for (var d = 0; d < dots.length; d++) {
+      dots[d].setAttribute('aria-current', d === index ? 'true' : 'false');
+    }
   }
 
-  function stop(){
-    if (timer) clearInterval(timer);
-    timer = null;
+  function stop() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
   }
 
-  function start(){
+  function start() {
     stop();
-    timer = setInterval(function(){ go(idx + 1); }, intervalMs);
+    if (autoplayToggle && !autoplayToggle.checked) return;
+    timer = setInterval(function () {
+      setActive(index + 1);
+    }, intervalMs);
   }
 
-  radios.forEach(function(r, i){
-    r.addEventListener('change', function(){
-      if (r.checked) idx = i;
+  function restart() {
+    stop();
+    start();
+  }
+
+  for (var i = 0; i < dots.length; i++) {
+    (function (btn) {
+      btn.addEventListener('click', function () {
+        var n = Number(btn.getAttribute('data-slide')) || 0;
+        setActive(n);
+        restart();
+      });
+    })(dots[i]);
+  }
+
+  if (autoplayToggle) {
+    autoplayToggle.addEventListener('change', function () {
       start();
     });
-  });
+  }
 
-  // Pause rotation on hover or while interacting
-  root.addEventListener('mouseenter', stop);
-  root.addEventListener('mouseleave', start);
-  root.addEventListener('focusin', stop);
-  root.addEventListener('focusout', start);
+  if (fillToggle) {
+    fillToggle.addEventListener('change', function () {
+      root.classList.toggle('is-fill', !!fillToggle.checked);
+    });
+  }
 
+  root.addEventListener('mouseenter', function () { stop(); });
+  root.addEventListener('mouseleave', function () { start(); });
+
+  root.addEventListener('touchstart', function () {
+    // User interaction: stop autoplay on mobile unless they turn it back on.
+    if (autoplayToggle) autoplayToggle.checked = false;
+    stop();
+  }, { passive: true });
+
+  setActive(0);
   start();
 })();
 </script>
-
 </body>
 </html>
