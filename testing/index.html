@@ -319,135 +319,46 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 }
 
 
-    /* Preview carousel (shop) */
-.previewCarousel {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 18px;
-}
-/* Keep the dashed frame from the existing heroMedia */
-.previewFrame .previewCarousel {
-  aspect-ratio: 16 / 9;
-  background: #fff;
-}
-@media (max-width: 700px) {
-  .previewFrame .previewCarousel {
-    aspect-ratio: 4 / 3;
-  }
-}
-.previewCarousel .slides {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-}
-.previewCarousel .slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 350ms ease;
-  pointer-events: none;
-}
-.previewCarousel .slide.is-active {
-  opacity: 1;
-  pointer-events: auto;
-}
-.previewCarousel img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain; /* default: do not crop */
-}
-.previewCarousel.is-fill img {
-  object-fit: cover; /* optional: fill frame */
-}
-.previewCarousel .dots {
+    .previewFrame { overflow: hidden; }
+    .previewImg { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.previewCarousel { position: relative; width: 100%; height: 100%; touch-action: pan-y; }
+.previewSlides { display: flex; width: 100%; height: 100%; transform: translate3d(0,0,0); transition: transform 420ms ease; }
+.previewSlide { flex: 0 0 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.previewSlide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.previewDots {
   position: absolute;
   left: 50%;
-  bottom: 12px;
+  bottom: 14px;
   transform: translateX(-50%);
   display: flex;
   gap: 10px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: rgba(10, 10, 10, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,.18);
-}
-.previewCarousel .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  border: 2px solid rgba(255,255,255,.72);
-  background: transparent;
-  opacity: 0.75;
-  cursor: pointer;
-  padding: 0;
-  line-height: 0;
-}
-.previewCarousel .dot[aria-current="true"] {
-  background: rgba(255,255,255,.95);
-  opacity: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-/* Transparent toggle switches under the preview */
-.previewControls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  align-items: center;
-  margin-top: 12px;
-}
-.tSwitch {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  user-select: none;
+.previewDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.70);
+  background: transparent;
+  padding: 0;
   cursor: pointer;
-  font-size: 14px;
-  color: rgba(0,0,0,.70);
 }
-.tSwitch input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+
+.previewDot.isActive {
+  background: rgba(255, 255, 255, 0.92);
 }
-.tTrack {
-  width: 44px;
-  height: 26px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.22);
-  background: rgba(255,255,255,.08); /* transparent look */
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
-  position: relative;
-  transition: border-color 150ms ease, background 150ms ease;
-}
-.tThumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(0,0,0,.15);
-  position: absolute;
-  top: 50%;
-  left: 3px;
-  transform: translateY(-50%);
-  transition: left 150ms ease;
-}
-.tSwitch input:checked + .tTrack {
-  border-color: rgba(0,0,0,.28);
-  background: rgba(34, 197, 94, 0.18);
-}
-.tSwitch input:checked + .tTrack .tThumb {
-  left: 21px;
-}
-.tSwitch input:focus-visible + .tTrack {
-  outline: 3px solid rgba(2, 132, 199, 0.28);
-  outline-offset: 2px;
+
+.previewDot:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
 }
     .productImg { background: rgba(0,0,0,.02); border: 1px solid rgba(0,0,0,.08); }
     .productImg img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -506,37 +417,23 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 </div>
 <aside aria-label="Hero product preview" class="shopHeroCard heroPreview">
 <div><b>Birding print shop preview</b></div>
-<div class="previewFrame">
-  <div class="previewCarousel" id="shopPreview" aria-label="Birding print shop preview carousel">
-    <div class="slides">
-      <div class="slide is-active"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 1"/></div>
-      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 2"/></div>
-      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 3"/></div>
-      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 4"/></div>
-      <div class="slide"><img src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_01.jpg" alt="Birding print shop preview image 5"/></div>
+<div class="previewFrame" aria-label="Product preview carousel">
+  <div class="previewCarousel" data-carousel="preview">
+    <div class="previewSlides" role="list">
+      <div class="previewSlide" role="listitem"><img src="https://i.ibb.co/4NhZcb3/MBW-Shirt.png" alt="Featured print preview 1" loading="lazy" decoding="async"></div>
+      <div class="previewSlide" role="listitem"><img src="https://i.ibb.co/4NhZcb3/MBW-Shirt.png" alt="Featured print preview 2" loading="lazy" decoding="async"></div>
+      <div class="previewSlide" role="listitem"><img src="https://i.ibb.co/4NhZcb3/MBW-Shirt.png" alt="Featured print preview 3" loading="lazy" decoding="async"></div>
+      <div class="previewSlide" role="listitem"><img src="https://i.ibb.co/4NhZcb3/MBW-Shirt.png" alt="Featured print preview 4" loading="lazy" decoding="async"></div>
+      <div class="previewSlide" role="listitem"><img src="https://i.ibb.co/4NhZcb3/MBW-Shirt.png" alt="Featured print preview 5" loading="lazy" decoding="async"></div>
     </div>
 
-    <div class="dots" aria-label="Preview image selector">
-      <button class="dot" type="button" aria-label="Show image 1" aria-current="true" data-slide="0"></button>
-      <button class="dot" type="button" aria-label="Show image 2" aria-current="false" data-slide="1"></button>
-      <button class="dot" type="button" aria-label="Show image 3" aria-current="false" data-slide="2"></button>
-      <button class="dot" type="button" aria-label="Show image 4" aria-current="false" data-slide="3"></button>
-      <button class="dot" type="button" aria-label="Show image 5" aria-current="false" data-slide="4"></button>
+    <div class="previewDots" role="tablist" aria-label="Select preview image">
+      <button class="previewDot isActive" type="button" aria-label="Slide 1" aria-selected="true"></button>
+      <button class="previewDot" type="button" aria-label="Slide 2" aria-selected="false"></button>
+      <button class="previewDot" type="button" aria-label="Slide 3" aria-selected="false"></button>
+      <button class="previewDot" type="button" aria-label="Slide 4" aria-selected="false"></button>
+      <button class="previewDot" type="button" aria-label="Slide 5" aria-selected="false"></button>
     </div>
-  </div>
-
-  <div class="previewControls" aria-label="Preview controls">
-    <label class="tSwitch">
-      <input id="toggleAutoplay" type="checkbox" checked>
-      <span class="tTrack" aria-hidden="true"><span class="tThumb"></span></span>
-      <span>Auto rotate</span>
-    </label>
-
-    <label class="tSwitch">
-      <input id="toggleFill" type="checkbox">
-      <span class="tTrack" aria-hidden="true"><span class="tThumb"></span></span>
-      <span>Fill frame</span>
-    </label>
   </div>
 </div>
 <div style="font-size:13px;opacity:.78;">
@@ -663,81 +560,146 @@ main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
 <script src="/assets/js/site.js?v=1"></script>
 <script>
 (function () {
-  var root = document.getElementById('shopPreview');
-  if (!root) return;
+  function initPreviewCarousel(root) {
+    var slidesEl = root.querySelector(".previewSlides");
+    var dots = Array.prototype.slice.call(root.querySelectorAll(".previewDot"));
+    if (!slidesEl || dots.length === 0) return;
 
-  var slides = Array.prototype.slice.call(root.querySelectorAll('.slide'));
-  var dots = Array.prototype.slice.call(root.querySelectorAll('.dot'));
-  var autoplayToggle = document.getElementById('toggleAutoplay');
-  var fillToggle = document.getElementById('toggleFill');
+    var slideCount = slidesEl.children.length;
+    var index = 0;
+    var timer = null;
+    var intervalMs = 2500;
 
-  var index = 0;
-  var timer = null;
-  var intervalMs = 2500;
-
-  function setActive(i) {
-    index = (i + slides.length) % slides.length;
-    for (var s = 0; s < slides.length; s++) {
-      slides[s].classList.toggle('is-active', s === index);
+    function clamp(i) {
+      if (i < 0) return slideCount - 1;
+      if (i >= slideCount) return 0;
+      return i;
     }
-    for (var d = 0; d < dots.length; d++) {
-      dots[d].setAttribute('aria-current', d === index ? 'true' : 'false');
-    }
-  }
 
-  function stop() {
-    if (timer) {
-      clearInterval(timer);
+    function setActiveDot(i) {
+      dots.forEach(function (d, di) {
+        var active = di === i;
+        d.classList.toggle("isActive", active);
+        d.setAttribute("aria-selected", active ? "true" : "false");
+      });
+    }
+
+    function goTo(i, opts) {
+      index = clamp(i);
+      var x = -index * 100;
+      if (opts && opts.noAnim) slidesEl.style.transition = "none";
+      else slidesEl.style.transition = "";
+      slidesEl.style.transform = "translate3d(" + x + "%,0,0)";
+      setActiveDot(index);
+      if (opts && opts.noAnim) {
+        // force reflow then restore
+        slidesEl.offsetHeight;
+        slidesEl.style.transition = "";
+      }
+    }
+
+    function start() {
+      stop();
+      timer = setInterval(function () { goTo(index + 1); }, intervalMs);
+    }
+
+    function stop() {
+      if (timer) clearInterval(timer);
       timer = null;
     }
-  }
 
-  function start() {
-    stop();
-    if (autoplayToggle && !autoplayToggle.checked) return;
-    timer = setInterval(function () {
-      setActive(index + 1);
-    }, intervalMs);
-  }
+    // Dots click
+    dots.forEach(function (d, di) {
+      d.addEventListener("click", function () {
+        stop();
+        goTo(di);
+        start();
+      });
+    });
 
-  function restart() {
-    stop();
+    // Swipe / drag
+    var isDown = false;
+    var startX = 0;
+    var lastX = 0;
+    var moved = 0;
+
+    function onDown(clientX) {
+      isDown = true;
+      startX = clientX;
+      lastX = clientX;
+      moved = 0;
+      stop();
+    }
+
+    function onMove(clientX) {
+      if (!isDown) return;
+      var dx = clientX - lastX;
+      lastX = clientX;
+      moved += dx;
+
+      var pct = (-index * 100) + (moved / root.clientWidth) * 100;
+      slidesEl.style.transition = "none";
+      slidesEl.style.transform = "translate3d(" + pct + "%,0,0)";
+    }
+
+    function onUp() {
+      if (!isDown) return;
+      isDown = false;
+
+      var threshold = Math.max(40, root.clientWidth * 0.12);
+      if (Math.abs(moved) > threshold) {
+        if (moved < 0) goTo(index + 1);
+        else goTo(index - 1);
+      } else {
+        goTo(index);
+      }
+      start();
+    }
+
+    root.addEventListener("touchstart", function (e) {
+      if (!e.touches || !e.touches[0]) return;
+      onDown(e.touches[0].clientX);
+    }, { passive: true });
+
+    root.addEventListener("touchmove", function (e) {
+      if (!e.touches || !e.touches[0]) return;
+      onMove(e.touches[0].clientX);
+    }, { passive: true });
+
+    root.addEventListener("touchend", function () { onUp(); });
+
+    root.addEventListener("mousedown", function (e) {
+      onDown(e.clientX);
+    });
+
+    window.addEventListener("mousemove", function (e) {
+      onMove(e.clientX);
+    });
+
+    window.addEventListener("mouseup", function () { onUp(); });
+
+    // Pause on hover/focus (desktop)
+    root.addEventListener("mouseenter", stop);
+    root.addEventListener("mouseleave", start);
+    root.addEventListener("focusin", stop);
+    root.addEventListener("focusout", start);
+
+    // Keyboard
+    root.setAttribute("tabindex", "0");
+    root.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft") { stop(); goTo(index - 1); start(); }
+      if (e.key === "ArrowRight") { stop(); goTo(index + 1); start(); }
+    });
+
+    // Init
+    goTo(0, { noAnim: true });
     start();
   }
 
-  for (var i = 0; i < dots.length; i++) {
-    (function (btn) {
-      btn.addEventListener('click', function () {
-        var n = Number(btn.getAttribute('data-slide')) || 0;
-        setActive(n);
-        restart();
-      });
-    })(dots[i]);
-  }
-
-  if (autoplayToggle) {
-    autoplayToggle.addEventListener('change', function () {
-      start();
-    });
-  }
-
-  if (fillToggle) {
-    fillToggle.addEventListener('change', function () {
-      root.classList.toggle('is-fill', !!fillToggle.checked);
-    });
-  }
-
-  root.addEventListener('mouseenter', function () { stop(); });
-  root.addEventListener('mouseleave', function () { start(); });
-
-  root.addEventListener('touchstart', function () {
-    // User interaction: stop autoplay on mobile unless they turn it back on.
-    if (autoplayToggle) autoplayToggle.checked = false;
-    stop();
-  }, { passive: true });
-
-  setActive(0);
-  start();
+  document.addEventListener("DOMContentLoaded", function () {
+    var root = document.querySelector('[data-carousel="preview"]');
+    if (root) initPreviewCarousel(root);
+  });
 })();
 </script>
 </body>
