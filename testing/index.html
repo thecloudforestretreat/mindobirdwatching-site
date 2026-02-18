@@ -79,8 +79,8 @@
     .videoCard { border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.58); box-shadow: 0 14px 30px rgba(0,0,0,0.10); overflow: hidden; }
     .videoHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); }
     .videoHead h3 { margin: 0; font-size: 13px; }
-    .videoFrame { aspect-ratio: 9 / 16; width: 100%; }
-    .videoFrame iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .videoFrame { aspect-ratio: 9 / 16; width: 100%; overflow: hidden; }
+    .videoFrame iframe { width: 100%; height: 100%; border: 0; display: block; border-radius: 16px; }
 
     .tocCard { border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.58); box-shadow: 0 14px 30px rgba(0,0,0,0.10); padding: 12px; }
     .tocHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
@@ -137,30 +137,30 @@
   .page{max-width:760px}
 }
 
-
 /* --- Right rail filler: Quest cards + merch promo --- */
-.questStack{display:grid;gap:10px}
-.questCard{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;
-  text-decoration:none;color:inherit;border:1px solid rgba(0,0,0,0.10);border-radius:14px;
-  background:rgba(255,255,255,0.72);overflow:hidden}
+.questStack{display:grid;gap:12px}
+.questCard{display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  border:1px solid rgba(0,0,0,0.10);border-radius:16px;background:rgba(255,255,255,0.72);
+  overflow:hidden}
 .questCard:hover{background:#fff}
-.questImg{aspect-ratio:16/10;width:110px;overflow:hidden}
+.questImg{width:100%;aspect-ratio:4/3;overflow:hidden}
 .questImg img{width:100%;height:100%;object-fit:cover;display:block}
-.questMeta{display:flex;flex-direction:column;gap:2px;padding:10px 10px 10px 0}
-.questMeta strong{font-size:13px;line-height:1.2}
-.questMeta span{font-size:12px;opacity:.78;line-height:1.2}
-.merchCard{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;
-  text-decoration:none;color:inherit;border:1px solid rgba(0,0,0,0.10);border-radius:14px;
-  background:rgba(255,255,255,0.72);overflow:hidden}
+.questMeta{display:flex;flex-direction:column;gap:4px;padding:12px}
+.questMeta strong{font-size:13px;line-height:1.25}
+.questMeta span{font-size:12px;opacity:.78;line-height:1.25}
+
+.merchCard{display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  border:1px solid rgba(0,0,0,0.10);border-radius:16px;background:rgba(255,255,255,0.72);
+  overflow:hidden}
 .merchCard:hover{background:#fff}
-.merchImg{aspect-ratio:16/10;width:110px;overflow:hidden}
+.merchImg{width:100%;aspect-ratio:4/3;overflow:hidden}
 .merchImg img{width:100%;height:100%;object-fit:cover;display:block}
-.merchMeta{display:flex;flex-direction:column;gap:2px;padding:10px 10px 10px 0}
-.merchMeta strong{font-size:13px;line-height:1.2}
-.merchMeta span{font-size:12px;opacity:.78;line-height:1.2}
+.merchMeta{display:flex;flex-direction:column;gap:4px;padding:12px}
+.merchMeta strong{font-size:13px;line-height:1.25}
+.merchMeta span{font-size:12px;opacity:.78;line-height:1.25}
+
 @media (max-width: 900px){
-  .questCard,.merchCard{grid-template-columns:100px 1fr}
-  .questImg,.merchImg{width:100px}
+  .questImg,.merchImg{aspect-ratio:16/10}
 }
 
 </style>
@@ -230,11 +230,7 @@
 
           <aside class="rail" aria-label="Right rail">
             <div class="videoCard">
-              <div class="videoHead">
-                <h3>In the field</h3>
-                <span class="pill">YouTube Short</span>
-              </div>
-              <div class="videoFrame">
+<div class="videoFrame">
                 <iframe
                   title="In the field video"
                   src="https://www.youtube-nocookie.com/embed/4B0u1MlcwA8"
