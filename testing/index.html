@@ -74,7 +74,7 @@
     .quickAnswer h2 { margin: 0 0 8px; font-size: 14px; }
     .quickAnswer ul { margin: 0; padding-left: 18px; }
 
-    .rail { display: grid; gap: 12px; }
+    .rail { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
 
     .videoCard { border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.58); box-shadow: 0 14px 30px rgba(0,0,0,0.10); overflow: hidden; }
     .videoHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); }
@@ -162,6 +162,18 @@
 @media (max-width: 900px){
   .questImg,.merchImg{aspect-ratio:16/10}
 }
+
+/* --- Rail shop fill (keeps right column visually complete) --- */
+.shopFill{flex:1;display:flex;flex-direction:column}
+.shopFillCard{flex:1;display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  border:1px solid rgba(0,0,0,0.10);border-radius:16px;background:rgba(255,255,255,0.72);
+  overflow:hidden}
+.shopFillCard:hover{background:#fff}
+.shopFillImg{flex:1;min-height:220px;overflow:hidden}
+.shopFillImg img{width:100%;height:100%;object-fit:cover;display:block}
+.shopFillMeta{padding:12px;display:flex;flex-direction:column;gap:4px}
+.shopFillMeta strong{font-size:13px;line-height:1.25}
+.shopFillMeta span{font-size:12px;opacity:.78;line-height:1.25}
 
 </style>
 </head>
@@ -367,10 +379,10 @@
           </article>
 
           <aside class="rail" aria-label="Desktop rail continuation">
-            <div class="tocCard sticky" aria-label="Quest: Toucan species">
+            <div class="tocCard" aria-label="Quest: Toucan species">
               <div class="tocHead">
                 <h3>Quest: Toucan species</h3>
-                <span class="pill">6 cards</span>
+                <span class="pill">5 cards</span>
               </div>
 
               <div class="questStack" role="list">
@@ -414,16 +426,16 @@
                   </div>
                 </a>
 
-                <a class="questCard" href="#quest" role="listitem" aria-label="Plate-billed Mountain-Toucan">
+                <a class="questCard" href="#quest" role="listitem" aria-label="Emerald Toucanet">
                   <div class="questImg">
-                    <img src="/assets/images/pages/mbw_assets_pages_about_us_06.jpg" alt="Plate-billed Mountain-Toucan (placeholder image)" loading="lazy" decoding="async" />
+                    <img src="/assets/images/pages/mbw_assets_pages_about_us_06.jpg" alt="Emerald Toucanet (placeholder image)" loading="lazy" decoding="async" />
                   </div>
                   <div class="questMeta">
-                    <strong>Plate-billed Mountain-Toucan</strong>
-                    <span>Higher elevation bonus</span>
+                    <strong>Emerald Toucanet</strong>
+                    <span>Edge and fruit trees</span>
                   </div>
                 </a>
-              </div>
+</div>
 
               <div class="railCtas" style="margin-top:12px;">
                 <a class="btn primary" href="/book-tour/">Make it a quest</a>
@@ -431,21 +443,22 @@
               </div>
             </div>
 
-            <div class="tocCard" aria-label="Merch promo" style="margin-top:12px;">
+            <div class="tocCard shopFill" aria-label="Shop" style="margin-top:12px;">
               <div class="tocHead">
-                <h3>Toucan merch</h3>
-                <span class="pill">Shop</span>
+                <h3>Shop</h3>
+                <span class="pill">Merch</span>
               </div>
-              <a class="merchCard" href="/shop/" aria-label="Toucan shirt and merch">
-                <div class="merchImg">
-                  <img src="/assets/images/pages/mbw_assets_pages_about_us_06.jpg" alt="Toucan shirt (placeholder image)" loading="lazy" decoding="async" />
+              <a class="shopFillCard" href="/shop/" aria-label="Shop toucan merch">
+                <div class="shopFillImg">
+                  <img src="/assets/images/pages/mbw_assets_pages_about_us_06.jpg" alt="Toucan merch (placeholder image)" loading="lazy" decoding="async" />
                 </div>
-                <div class="merchMeta">
+                <div class="shopFillMeta">
                   <strong>Support local birding</strong>
                   <span>Grab a toucan tee or sticker</span>
                 </div>
               </a>
             </div>
+
           </aside>
 
         </section>
