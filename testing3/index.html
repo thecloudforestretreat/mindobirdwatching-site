@@ -31,8 +31,7 @@
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
-  <style><style>
-
+  <style>
     /* =========================
        Page-only styles (main content only)
        ========================= */
@@ -299,10 +298,14 @@
   pointer-events:none;
   z-index: 7;
   overflow-x: auto;
-  white-space: nowrap;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.recBadgeRow::-webkit-scrollbar{ display:none; }
 
 .tag{
+  flex: 0 0 auto;
   display:inline-flex;
   align-items:center;
   gap: 8px;
@@ -326,7 +329,7 @@
 }
 
 .recBody{
-  padding: 18px 18px 18px;
+  padding: 14px;
   display:flex;
   flex-direction: column;
   gap: 10px;
@@ -335,9 +338,9 @@
 }
 
 .recTitleRow{
-  display:flex;
-  align-items: center;
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
   gap: 10px;
   min-width: 0;
 }
@@ -350,16 +353,16 @@
   font-size: 18px;
   line-height: 1.15;
   min-width: 0;
-  flex: 1 1 auto;
 }
 
 .recMeta{
   display:flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items:center;
-  justify-content: flex-end;
-  flex: 0 0 auto;
+  justify-self: end;
+  max-width: 52%;
+  overflow: hidden;
 }
 
 .chip{
@@ -387,7 +390,7 @@
   border-radius: 16px;
   background: rgba(255,255,255,.55);
   box-shadow: var(--shadow);
-  padding: 12px 14px;
+  padding: 10px 12px;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.55;
@@ -395,10 +398,11 @@
 
 .recBtns{
   display:flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items:center;
   margin-top: auto;
+  padding-top: 4px;
 }
 
 .recBtns .btn{
@@ -473,13 +477,10 @@
   .recNav{ width: 40px; height: 40px; }
 }
   
-.recBadgeRow::-webkit-scrollbar{display:none;}
-.recBadgeRow{scrollbar-width:none;}
-
-@media (min-width: 740px){
-  .recMeta{flex-wrap:nowrap;}
+@media (max-width: 640px){
+  .recMeta{ max-width: 100%; flex-wrap: wrap; overflow: visible; }
+  .recTitleRow{ grid-template-columns: 1fr; }
 }
-
 </style>
 </head>
 <body>
