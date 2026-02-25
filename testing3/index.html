@@ -333,7 +333,7 @@
 
 .recTitleRow{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:space-between;
   gap: 10px;
   min-width: 0;
@@ -352,23 +352,10 @@
 .recMeta{
   display:flex;
   gap: 8px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items:center;
-  justify-content:flex-end;
-  max-width: 52%;
-  min-width: 0;
-  overflow: hidden;
 }
 
-
-@media (max-width: 560px){
-  .recMeta{
-    max-width: 100%;
-    flex-wrap: wrap;
-    justify-content:flex-start;
-    overflow: visible;
-  }
-}
 .chip{
   display:inline-flex;
   align-items:center;
@@ -479,7 +466,33 @@
 @media (max-width: 480px){
   .recNav{ width: 40px; height: 40px; }
 }
-  </style>
+  
+/* ---- Fix: keep title meta pills on same row when possible, wrap instead of clipping ---- */
+.recTitleRow{
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.recTitleRow .recTitle{
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+.recTitleRow .recMeta{
+  flex: 1 1 220px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 180px;
+}
+.recTitleRow .pill{
+  white-space: nowrap;
+}
+
+/* ---- Fix: remove "gradient-like" bleed by using solid card surfaces ---- */
+.recCard{
+  background: #f7fbf2;
+}
+
+</style>
 </head>
 <body>
   <div class="container">
