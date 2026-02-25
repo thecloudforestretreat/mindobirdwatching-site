@@ -297,11 +297,12 @@ border: 1px solid rgba(0,0,0,0.10);
  flex: 1;
 }
 .recTitleRow{
- display:flex;
- align-items:flex-start;
- justify-content:space-between;
- gap: 10px;
- min-width: 0;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:start;
+  column-gap: 12px;
+  row-gap: 8px;
+  min-width: 0;
 }
 .recTitle{
  margin:0;
@@ -313,12 +314,13 @@ border: 1px solid rgba(0,0,0,0.10);
  min-width: 0;
 }
 .recMeta{
-display:flex;
- gap: 8px;
- flex-wrap: wrap;
- align-items:center;
- justify-content:flex-end;
- max-width: 50%;
+  display:flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items:center;
+  justify-content:flex-end;
+  max-width: none;
+  min-width: 0;
 }
 .chip{
  display:inline-flex;
@@ -421,19 +423,25 @@ display:flex;
 }
 /* ---- Fix: keep title meta pills on same row when possible, wrap instead of clipping ---- */
 .recTitleRow{
- flex-wrap: wrap;
- align-items: flex-start;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:start;
+  column-gap: 12px;
+  row-gap: 8px;
+  min-width: 0;
 }
 .recTitleRow .recTitle{
  flex: 1 1 260px;
  min-width: 220px;
 }
 .recTitleRow .recMeta{
- flex: 1 1 220px;
- justify-content: flex-end;
- flex-wrap: wrap;
- gap: 10px;
- min-width: 180px;
+  display:flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items:center;
+  justify-content:flex-end;
+  max-width: none;
+  min-width: 0;
 }
 .recTitleRow .pill{
  white-space: nowrap;
@@ -447,14 +455,36 @@ display:flex;
 .recCard{height:100%;display:flex;flex-direction:column;}
 .recBody{flex:1 1 auto;display:flex;flex-direction:column;background-image:none !important;}
 /* Title row: keep same level */
-.recTitleRow{display:flex;gap:12px;align-items:flex-start;flex-wrap:nowrap;}
+.recTitleRow{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:start;
+  column-gap: 12px;
+  row-gap: 8px;
+  min-width: 0;
+}
 .recTitleRow .recTitle{flex:1 1 auto;min-width:0;}
-.recTitleRow .recMeta{flex:0 1 auto;min-width:0;max-width:60%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;}
+.recTitleRow .recMeta{
+  display:flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items:center;
+  justify-content:flex-end;
+  max-width: none;
+  min-width: 0;
+}
 .recTitleRow .recMeta .pill{max-width:100%;}
 /* Ensure chips never clip */
 .recCard{background-image:none !important;}
 /* CTA row pinned to bottom of card */
 .recBtns{margin-top:auto;}
+
+
+/* recMeta responsive */
+@media (max-width: 560px){
+  .recTitleRow{ grid-template-columns: 1fr; }
+  .recMeta{ justify-content:flex-start; flex-wrap:wrap; }
+}
 </style>
 </head>
 <body>
