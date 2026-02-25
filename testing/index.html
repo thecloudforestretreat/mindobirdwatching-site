@@ -29,6 +29,7 @@
 
   <style>
     /* Page-only styles (main content only) */
+
     .page { margin-top: 18px; padding: 26px; }
     .page.card{
       background: var(--card);
@@ -59,337 +60,375 @@
       align-items: stretch;
     }
 
-    .heroCopy{
+    .heroCard{
       border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
+      border-radius: calc(var(--r) + 4px);
+      background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.86));
       box-shadow: var(--shadow);
-      padding: 16px;
-      display:flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .heroTitleRow{
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      padding: 18px;
+      min-height: 320px;
     }
 
     .heroTitle{
       margin: 0;
-      letter-spacing: -0.02em;
-      line-height: 1.06;
+      font-size: clamp(24px, 2.3vw, 34px);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+    .heroSub{
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 62ch;
+      font-weight: 700;
+      line-height: 1.45;
     }
 
-    .heroLede{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.75;
-      max-width: 88ch;
+    .pillRow{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(3, 78, 162, .08);
+      border: 1px solid rgba(3, 78, 162, .16);
+      color: #10325d;
+      letter-spacing: -0.01em;
+    }
+    .pill.dot::before{
+      content:"";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(3, 78, 162, .8);
+      display:inline-block;
     }
 
     .hostCard{
-      display:flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 12px;
+      margin-top: 14px;
       border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
+      border-radius: calc(var(--r) + 2px);
+      padding: 14px;
+      background: rgba(255,255,255,.85);
     }
-
-    .hostTop{
+    .hostHdr{
       display:flex;
+      gap: 10px;
       align-items:flex-start;
       justify-content: space-between;
-      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .hostTitle{
+      margin: 0;
+      font-size: 14.5px;
+      font-weight: 1000;
+      letter-spacing: -0.02em;
+    }
+    .langRow{
+      display:flex;
+      gap: 7px;
       flex-wrap: wrap;
     }
-
-    .hostName{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.01em;
-      font-size: 18px;
-      line-height: 1.15;
+    .lang{
+      display:inline-flex;
+      font-weight: 900;
+      font-size: 11.5px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.9);
     }
-
-    .chipRow{
+    .hostCopy{
+      margin: 0;
+      color: var(--text);
+      font-weight: 700;
+      line-height: 1.45;
+    }
+    .hostStats{
       display:flex;
       gap: 8px;
       flex-wrap: wrap;
-      align-items: center;
+      margin-top: 10px;
     }
-
-    .chip{
+    .stat{
       display:inline-flex;
       align-items:center;
-      padding: 7px 10px;
-      border-radius: 999px;
+      gap: 8px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
+      background: rgba(255,255,255,.9);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
       font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      white-space: nowrap;
+      color: #163d20;
     }
-
-    .hostNote{
-      margin: 0;
-      color: var(--ink);
-      line-height: 1.65;
+    .stat::before{
+      content:"";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(28, 166, 64, .85);
+      display:inline-block;
     }
 
     .heroActions{
       display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .btn{
+      appearance: none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-weight: 1000;
+      text-decoration: none;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: 0 8px 18px rgba(0,0,0,.06);
+    }
+    .btn.primary{
+      background: rgba(255, 214, 83, .95);
+      border-color: rgba(255, 214, 83, 1);
+      color: #1f2a17;
+    }
+    .btn.primary:hover{ filter: brightness(0.98); }
+    .btn.secondary{
+      background: rgba(3, 78, 162, .10);
+      border-color: rgba(3, 78, 162, .18);
+      color: #10325d;
+      box-shadow: none;
+    }
+    .btn.secondary:hover{ background: rgba(3, 78, 162, .12); }
+
+    .micro{
+      margin-top: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Hero vertical carousel (desktop), normal carousel (mobile) */
+
+    .vCarousel{
+      border: 1px solid var(--line);
+      border-radius: calc(var(--r) + 6px);
+      background: #fff;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto auto;
+      min-height: 320px;
+    }
+    .vTop{
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
       gap: 10px;
       flex-wrap: wrap;
-      align-items:center;
-      margin-top: 2px;
     }
-    .heroActions .btn{ text-decoration: none; }
-
-    .disclosure{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-      padding: 12px 14px;
-      color: var(--muted);
-      font-size: 12.8px;
-      line-height: 1.55;
-    }
-
-    /* Hero carousel */
-    .heroMedia{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      min-width: 0;
-      position: relative;
-    }
-
-    .heroMedia .mediaShell{
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      min-height: 340px;
-      background: rgba(255,255,255,.55);
-      position: relative;
-      overflow:hidden;
-    }
-
-    .recCarousel .recViewport{
-      position:absolute;
-      inset:0;
-      overflow:hidden;
-      touch-action: pan-y;
-    }
-
-    .recCarousel .recTrack{
-      height:100%;
+    .vTop b{ font-weight: 1100; letter-spacing: -0.02em; }
+    .vMeta{
       display:flex;
-      transform: translateX(0);
-      transition: transform 450ms ease;
-      will-change: transform;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .vMeta .k{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.9);
+      padding: 6px 9px;
+      border-radius: 999px;
+      color: var(--text);
+      font-weight: 1000;
     }
 
-    .recCarousel .recSlide{
-      min-width:100%;
-      height:100%;
-      position:relative;
-      background: rgba(255,255,255,.55);
+    .vBody{
+      display:grid;
+      grid-template-columns: 1fr 108px;
+      min-height: 270px;
     }
-
-    .recCarousel .recSlide img{
-      width:100%;
-      height:100%;
+    .vStage{
+      position: relative;
+      background: #0b1220;
+      display:flex;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+    .vStage img{
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       display:block;
     }
 
-    .recNav{
+    .vThumbs{
+      border-left: 1px solid var(--line);
+      background: rgba(247,248,250,1);
+      padding: 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+    }
+    .vThumb{
+      border-radius: 12px;
+      border: 2px solid rgba(0,0,0,.08);
+      overflow:hidden;
+      cursor:pointer;
+      outline: none;
+      padding: 0;
+      background: #000;
+      height: 52px;
+    }
+    .vThumb img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .88;
+      display:block;
+    }
+    .vThumb[aria-current="true"]{
+      border-color: rgba(3, 78, 162, .65);
+      box-shadow: 0 8px 18px rgba(3, 78, 162, .12);
+    }
+    .vThumb[aria-current="true"] img{ opacity: 1; }
+
+    .vNav{
       position:absolute;
-      top:50%;
-      transform: translateY(-50%);
-      width: 44px;
-      height: 44px;
+      inset: 10px 10px auto auto;
+      display:flex;
+      gap: 8px;
+      z-index: 2;
+    }
+    .vBtn{
+      width: 38px;
+      height: 38px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.35);
-      background: rgba(0,0,0,0.26);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.28);
+      color: #fff;
       cursor:pointer;
       display:flex;
       align-items:center;
       justify-content:center;
-      z-index: 6;
-      padding: 0;
+      font-weight: 1200;
     }
-    .recNav:hover{ background: rgba(0,0,0,0.38); }
-    .recNav.prev{ left: 12px; }
-    .recNav.next{ right: 12px; }
+    .vBtn:hover{ background: rgba(0,0,0,.36); }
 
-    .recNav span{
-      display:block;
-      width: 10px;
-      height: 10px;
-      border-right: 2px solid rgba(255,255,255,0.95);
-      border-bottom: 2px solid rgba(255,255,255,0.95);
-      opacity: 0.95;
-    }
-    .recNav.prev span{ transform: rotate(135deg); }
-    .recNav.next span{ transform: rotate(-45deg); }
-
-    .recDots{
+    .vBadges{
       position:absolute;
       left: 12px;
-      right: 12px;
-      top: 12px;
-      display:flex;
-      justify-content:flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
-      z-index: 6;
-      pointer-events: none;
-    }
-
-    .recDot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.45);
-      background: rgba(255,255,255,0.22);
-      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
-      pointer-events: none;
-    }
-    .recDot.active{
-      background: rgba(255,255,255,0.85);
-      border-color: rgba(255,255,255,0.85);
-    }
-
-    .badgeRow{
-      position:absolute;
-      left: 12px;
-      right: 12px;
       bottom: 12px;
       display:flex;
       gap: 8px;
       flex-wrap: wrap;
-      align-items:center;
-      pointer-events:none;
-      z-index: 7;
+      z-index: 2;
+      max-width: calc(100% - 24px);
     }
-
     .tag{
       display:inline-flex;
       align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
+      padding: 6px 9px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.35);
-      background: rgba(0,0,0,.34);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      color: rgba(255,255,255,.96);
-      font-weight: 900;
-      font-size: 12.5px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+      font-weight: 1000;
+      font-size: 11.5px;
       letter-spacing: -0.01em;
-      line-height: 1;
-      white-space: nowrap;
+      backdrop-filter: blur(8px);
     }
-    .tag.featured{
-      border-color: rgba(255,255,255,.45);
-      background: rgba(3,78,162,.60);
+    .tag.featured{ background: rgba(255,214,83,.92); border-color: rgba(255,214,83,1); color: #1f2a17; }
+
+    .heroRightFoot{
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: rgba(255,255,255,.92);
+    }
+    .footCard{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: rgba(255,255,255,.92);
+    }
+    .footCard b{
+      display:block;
+      font-weight: 1100;
+      letter-spacing: -0.02em;
+      margin-bottom: 3px;
+    }
+    .footCard span{
+      display:block;
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.35;
+      font-size: 12.5px;
     }
 
     /* Properties */
-    .section{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
 
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .sectionHead h2{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
+    .sectionTitle{
+      margin: 18px 0 10px;
+      font-size: 15px;
+      font-weight: 1100;
       letter-spacing: -0.02em;
-      font-size: 20px;
-    }
-    .hint{
-      margin:0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-      max-width: 86ch;
     }
 
     .propStack{
-      display:flex;
-      flex-direction: column;
+      display:grid;
       gap: 14px;
     }
 
     .propCard{
       border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
+      border-radius: calc(var(--r) + 6px);
+      background: rgba(255,255,255,.92);
       box-shadow: var(--shadow);
-      overflow:hidden;
+      overflow: hidden;
     }
 
     .propGrid{
       display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 0;
+      grid-template-columns: 380px 1fr;
       align-items: stretch;
     }
 
-    .propGrid.reverse{
-      grid-template-columns: .95fr 1.05fr;
-    }
-    .propGrid.reverse .propMedia{ order: 2; }
-    .propGrid.reverse .propBody{ order: 1; }
-
     .propMedia{
-      position: relative;
-      background: rgba(255,255,255,.55);
-      min-width: 0;
-    }
-
-    .propMedia .mediaShell{
-      width: 100%;
-      aspect-ratio: 16 / 10;
-      min-height: 320px;
-      position: relative;
-      overflow:hidden;
       border-right: 1px solid var(--line);
+      background: #0b1220;
     }
-    .propGrid.reverse .propMedia .mediaShell{ border-right: 0; border-left: 1px solid var(--line); }
 
     .propBody{
-      padding: 16px;
+      padding: 14px 16px 16px;
       display:flex;
       flex-direction: column;
-      gap: 12px;
-      min-width: 0;
+      gap: 10px;
     }
 
     .propTitleRow{
@@ -401,650 +440,828 @@
     }
 
     .propTitle{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
+      margin: 0;
+      font-size: 18px;
+      font-weight: 1150;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+
+    .chipRow{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.95);
+      font-weight: 950;
+      font-size: 11.5px;
+      color: var(--text);
       letter-spacing: -0.01em;
-      font-size: 20px;
-      line-height: 1.15;
+      white-space: nowrap;
     }
 
     .propText{
-      margin:0;
-      color: var(--ink);
-      line-height: 1.75;
+      margin: 0;
+      color: var(--text);
+      font-weight: 750;
+      line-height: 1.5;
+      max-width: 80ch;
     }
 
     .highlights{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
     }
 
     .hl{
       display:flex;
       gap: 10px;
-      align-items:flex-start;
-      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 10px;
+      background: rgba(255,255,255,.95);
+      min-height: 62px;
     }
 
     .hlIcon{
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 10px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow);
-      flex: 0 0 auto;
+      background: rgba(3, 78, 162, .10);
+      border: 1px solid rgba(3, 78, 162, .18);
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 14px;
-      line-height: 1;
+      font-weight: 1100;
+      color: #10325d;
+      flex: 0 0 auto;
     }
 
     .hl b{
       display:block;
-      font-weight: 900;
-      font-size: 13.5px;
-      letter-spacing: -0.01em;
-      color: var(--ink);
+      font-weight: 1100;
+      letter-spacing: -0.02em;
       margin-bottom: 2px;
     }
 
     .hl span{
       display:block;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
+      font-weight: 800;
+      line-height: 1.35;
+      font-size: 12.5px;
+    }
+
+    .reviewGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .review{
+      border: 1px solid var(--line);
+      background: rgba(247,248,250,1);
+      border-radius: 16px;
+      padding: 10px 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 92px;
+    }
+
+    .reviewTop{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .reviewName{
+      font-weight: 1100;
+      letter-spacing: -0.02em;
+      font-size: 12.5px;
+      color: var(--text);
+    }
+    .reviewMeta{
+      font-weight: 950;
+      font-size: 12px;
+      color: #163d20;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .reviewMeta::before{
+      content:"";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(28, 166, 64, .85);
+      display:inline-block;
+    }
+
+    .reviewQuote{
+      margin: 0;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+      font-size: 12.5px;
     }
 
     .propActions{
       display:flex;
       gap: 10px;
       flex-wrap: wrap;
-      align-items:center;
+      margin-top: 2px;
     }
-    .propActions .btn{ text-decoration:none; }
 
-    .micro{
+    .note{
       margin: 0;
       color: var(--muted);
-      font-size: 12.8px;
-      line-height: 1.55;
+      font-weight: 850;
+      font-size: 12px;
+      line-height: 1.35;
     }
 
-    .ctaBand{
+    /* Horizontal carousel used inside each property card */
+
+    .recCarousel{ position: relative; height: 100%; min-height: 280px; }
+    .recViewport{ overflow: hidden; height: 100%; }
+    .recTrack{
+      display:flex;
+      height: 100%;
+      transition: transform 420ms ease;
+      will-change: transform;
+    }
+    .recSlide{
+      flex: 0 0 100%;
+      height: 100%;
+    }
+    .recSlide img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .recNav{
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.28);
+      cursor:pointer;
       display:flex;
       align-items:center;
-      justify-content: space-between;
-      gap: 12px;
+      justify-content:center;
+      z-index: 3;
+    }
+    .recNav:hover{ background: rgba(0,0,0,.36); }
+    .recNav.prev{ left: 10px; }
+    .recNav.next{ right: 10px; }
+    .recNav span{
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid rgba(255,255,255,.92);
+      border-bottom: 2px solid rgba(255,255,255,.92);
+      transform: rotate(135deg);
+      display:block;
+      margin-left: 3px;
+    }
+    .recNav.next span{ transform: rotate(-45deg); margin-left: -3px; }
+
+    .recDots{
+      position:absolute;
+      left: 0;
+      right: 0;
+      bottom: 10px;
+      display:flex;
+      justify-content:center;
+      gap: 7px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .recDot{
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: 0 6px 14px rgba(0,0,0,.15);
+    }
+    .recDot.active{ background: rgba(255,255,255,.95); }
+
+    .badgeRow{
+      position:absolute;
+      left: 12px;
+      right: 12px;
+      top: 12px;
+      display:flex;
+      gap: 8px;
       flex-wrap: wrap;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
+      z-index: 3;
+      pointer-events: none;
     }
-    .ctaBand p{
-      margin:0;
-      color: var(--ink);
-      line-height: 1.65;
-      max-width: 90ch;
-    }
+    .badgeRow .tag{ background: rgba(0,0,0,.48); }
+    .badgeRow .tag.featured{ background: rgba(255,214,83,.92); border-color: rgba(255,214,83,1); color: #1f2a17; }
 
     /* Responsive */
+
     @media (max-width: 980px){
       .hero{ grid-template-columns: 1fr; }
-      .heroMedia .mediaShell{ min-height: 280px; }
-      .propGrid, .propGrid.reverse{ grid-template-columns: 1fr; }
-      .propMedia .mediaShell{ border-right: 0; border-left: 0; border-bottom: 1px solid var(--line); min-height: 280px; }
-      .highlights{ grid-template-columns: 1fr; }
+      .vBody{ grid-template-columns: 1fr; }
+      .vThumbs{ display:none; }
+      .heroRightFoot{ grid-template-columns: 1fr; }
+      .vCarousel{ min-height: 260px; }
     }
 
-    @media (max-width: 480px){
+    @media (max-width: 920px){
+      .propGrid{ grid-template-columns: 1fr; }
+      .propMedia{ border-right: 0; border-bottom: 1px solid var(--line); }
+      .recCarousel{ min-height: 240px; }
+    }
+
+    @media (max-width: 720px){
       .page{ padding: 18px; }
-      .recNav{ width: 40px; height: 40px; }
-      .heroMedia .mediaShell{ min-height: 240px; }
-      .propMedia .mediaShell{ min-height: 240px; }
+      .highlights{ grid-template-columns: 1fr; }
+      .reviewGrid{ grid-template-columns: 1fr; }
+      .heroCard{ padding: 16px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <div id="siteHeader"></div>
+  <div id="siteHeader"></div>
 
-    <main class="page card" aria-label="Dominique recommendations">
-
-      <div class="crumbs" aria-label="Breadcrumbs">
+  <main class="container">
+    <section class="page card" aria-label="Dominique recommendations page">
+      <nav class="crumbs" aria-label="Breadcrumb">
         <a href="/recommendations/">Recommendations</a>
-        <span class="crumbDot">•</span>
+        <span class="crumbDot" aria-hidden="true">•</span>
         <span>Dominique</span>
-      </div>
+      </nav>
 
-      <section class="hero" aria-label="Host overview">
+      <div class="hero" aria-label="Page hero">
+        <div class="heroCard" aria-label="Hero copy">
+          <h1 class="heroTitle">Dominique's Top Stays in Mindo</h1>
+          <p class="heroSub">
+            For travelers who want that cloud forest feeling on day one: river sound at night, birds at sunrise,
+            and a base that makes it easy to explore waterfalls, trails, and town without stress.
+          </p>
 
-        <div class="heroCopy">
-          <div class="heroTitleRow">
-            <div>
-              <h1 class="heroTitle">Dominique's Top Stays in Mindo</h1>
-              <p class="heroLede">
-                For travelers who want that cloud forest feeling on day one: river sound at night, bird calls in the morning, and a base that makes it easy to explore waterfalls, trails, and town without stress.
-              </p>
-            </div>
-            <div class="chipRow" aria-label="Quick host signals">
-              <span class="chip">Superhost</span>
-              <span class="chip">Fast replies</span>
-              <span class="chip">Nature-first</span>
-            </div>
+          <div class="pillRow" aria-label="Hero quick tags">
+            <span class="pill dot">Superhost</span>
+            <span class="pill dot">Fast replies</span>
+            <span class="pill dot">Nature-first</span>
           </div>
 
-          <div class="hostCard" aria-label="Host card">
-            <div class="hostTop">
-              <h2 class="hostName">Meet your host: Dominique</h2>
-              <div class="chipRow" aria-label="Host meta">
-                <span class="chip">English</span>
-                <span class="chip">French</span>
-                <span class="chip">Spanish</span>
+          <div class="hostCard" aria-label="Host info">
+            <div class="hostHdr">
+              <div>
+                <p class="hostTitle">Meet your host: Dominique</p>
+              </div>
+              <div class="langRow" aria-label="Languages">
+                <span class="lang">English</span>
+                <span class="lang">French</span>
+                <span class="lang">Spanish</span>
               </div>
             </div>
-            <p class="hostNote">
-              Dominique hosts calm, practical stays built for nature travelers. Expect straightforward logistics, a peaceful setting, and the kind of place you can truly reset between big mornings in the forest.
+
+            <p class="hostCopy">
+              Dominique hosts calm, practical stays built for nature travelers. Expect straightforward logistics,
+              a peaceful setting, and the kind of place you can truly reset between big mornings in the forest.
             </p>
-            <div class="chipRow" aria-label="Host trust signals">
-              <span class="chip">11+ years hosting</span>
-              <span class="chip">Strong ratings</span>
-              <span class="chip">Local support</span>
+
+            <div class="hostStats" aria-label="Host stats">
+              <span class="stat">11+ years hosting</span>
+              <span class="stat">Strong guest ratings</span>
+              <span class="stat">Local activity help</span>
             </div>
           </div>
 
-          <div class="heroActions" aria-label="Top actions">
-            <a class="btn primary" href="https://www.airbnb.com.ec/rooms/6013792?_set_bev_on_new_domain=1771451483_EANDNjZDY0MzAxMz&set_everest_cookie_on_new_domain=1771451483.EANmU3MWZiN2VmYzFlZG.nNb4-PB_9okjNiXSXmLChJscNCf6daaEMP0NIXzZmPE&source_impression_id=p3_1771451484_P3wa0QUNRduas70A" target="_blank" rel="noopener">View on Airbnb</a>
-            <a class="btn secondary" href="/contact/">Ask MBW for help choosing</a>
+          <div class="heroActions" aria-label="Primary actions">
+            <a class="btn primary" href="#stays">Explore the 3 stays</a>
             <a class="btn secondary" href="/recommendations/">Back to all recommendations</a>
           </div>
 
-          <div class="disclosure" aria-label="Disclosure">
+          <p class="micro">
             You will not book on MBW. These pages help you discover trusted stays and then continue to Airbnb to check availability, pricing, and rules.
-          </div>
-        </div>
-
-        <div class="heroMedia" aria-label="Host highlight carousel">
-          <div class="mediaShell recCarousel" data-interval="3200" aria-label="Image carousel">
-            <div class="recViewport" aria-label="Carousel viewport">
-              <div class="recTrack">
-                <div class="recSlide">
-                  <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="Mindo Eco Chalet exterior and setting" loading="eager" decoding="async" />
-                </div>
-                <div class="recSlide">
-                  <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="Mindo Eco Chalet view and nature surroundings" loading="lazy" decoding="async" />
-                </div>
-                <div class="recSlide">
-                  <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="Mindo Eco Chalet interior details" loading="lazy" decoding="async" />
-                </div>
-                <div class="recSlide">
-                  <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="Mindo Eco Chalet terrace or common area" loading="lazy" decoding="async" />
-                </div>
-                <div class="recSlide">
-                  <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="Mindo Eco Chalet forest feel and calm vibe" loading="lazy" decoding="async" />
-                </div>
-              </div>
-            </div>
-
-            <button class="recNav prev" type="button" aria-label="Previous image"><span aria-hidden="true"></span></button>
-            <button class="recNav next" type="button" aria-label="Next image"><span aria-hidden="true"></span></button>
-
-            <div class="recDots" aria-hidden="true">
-              <span class="recDot active"></span>
-              <span class="recDot"></span>
-              <span class="recDot"></span>
-              <span class="recDot"></span>
-              <span class="recDot"></span>
-            </div>
-
-            <div class="badgeRow" aria-hidden="true">
-              <span class="tag featured">Featured Host</span>
-              <span class="tag">Cloud forest</span>
-              <span class="tag">Quiet nights</span>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <section class="section" aria-label="Properties">
-        <div class="sectionHead">
-          <h2>Three properties (pick your vibe)</h2>
-          <p class="hint">
-            Same trusted host, three different ways to stay. Below, property #2 and #3 use the same placeholder content so you can approve the layout first.
           </p>
         </div>
 
-        <div class="propStack" aria-label="Property list">
+        <div class="vCarousel" aria-label="Hero vertical carousel">
+          <div class="vTop" aria-label="Hero carousel header">
+            <b>First look: Eco Chalet mood</b>
+            <div class="vMeta" aria-label="Hero carousel meta">
+              <span class="k">River-side</span>
+              <span class="k">Cloud forest</span>
+              <span class="k">Quiet nights</span>
+            </div>
+          </div>
 
-          <!-- PROPERTY 1 -->
-          <article class="propCard" aria-label="Property 1: Mindo Eco Chalet">
-            <div class="propGrid">
-              <div class="propMedia" aria-label="Property 1 media">
-                <div class="mediaShell recCarousel" data-interval="2800" aria-label="Property 1 carousel">
-                  <div class="recViewport" aria-label="Carousel viewport">
-                    <div class="recTrack">
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="Mindo Eco Chalet photo 1" loading="eager" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="Mindo Eco Chalet photo 2" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="Mindo Eco Chalet photo 3" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="Mindo Eco Chalet photo 4" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="Mindo Eco Chalet photo 5" loading="lazy" decoding="async" /></div>
-                    </div>
-                  </div>
-
-                  <button class="recNav prev" type="button" aria-label="Previous image"><span aria-hidden="true"></span></button>
-                  <button class="recNav next" type="button" aria-label="Next image"><span aria-hidden="true"></span></button>
-
-                  <div class="recDots" aria-hidden="true">
-                    <span class="recDot active"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                  </div>
-
-                  <div class="badgeRow" aria-hidden="true">
-                    <span class="tag featured">Top-rated</span>
-                    <span class="tag">River + forest</span>
-                    <span class="tag">Near cascades</span>
-                  </div>
-                </div>
+          <div class="vBody">
+            <div class="vStage" aria-label="Hero main image">
+              <div class="vNav" aria-label="Hero image controls">
+                <button class="vBtn" type="button" data-vprev aria-label="Previous image">‹</button>
+                <button class="vBtn" type="button" data-vnext aria-label="Next image">›</button>
               </div>
 
-              <div class="propBody" aria-label="Property 1 details">
-                <div class="propTitleRow">
-                  <h3 class="propTitle">Mindo Eco Chalet</h3>
-                  <div class="chipRow" aria-label="Property 1 chips">
-                    <span class="chip">3 bedrooms</span>
-                    <span class="chip">1.5 baths</span>
-                    <span class="chip">Solar power</span>
-                  </div>
-                </div>
+              <img
+                data-vimg
+                src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg"
+                alt="Mindo Eco Chalet photo 1"
+                loading="eager"
+                decoding="async"
+              />
 
-                <p class="propText">
-                  A calm, eco-forward base at the edge of the cloud forest. You are close enough for quick trips into town, but far enough to feel like you have your own private slice of green. Think birds at sunrise, river sound at night, and an easy rhythm for nature days.
-                </p>
-
-                <div class="highlights" aria-label="Property 1 highlights">
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">1</div>
-                    <div>
-                      <b>Nature immersion</b>
-                      <span>Set by cloud forest and river, with waterfall energy nearby.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">2</div>
-                    <div>
-                      <b>Great for groups</b>
-                      <span>Room to spread out, reset, and still stay connected.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">3</div>
-                    <div>
-                      <b>Work-friendly</b>
-                      <span>WiFi and a practical setup for light remote work.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">4</div>
-                    <div>
-                      <b>Simple logistics</b>
-                      <span>Private access and on-site parking makes arrivals easy.</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="chipRow" aria-label="Property 1 trust chips">
-                  <span class="chip">Guest favorite</span>
-                  <span class="chip">Strong reviews</span>
-                  <span class="chip">Quiet setting</span>
-                  <span class="chip">Pets welcome</span>
-                </div>
-
-                <div class="propActions" aria-label="Property 1 actions">
-                  <a class="btn primary" href="https://www.airbnb.com.ec/rooms/6013792?_set_bev_on_new_domain=1771451483_EANDNjZDY0MzAxMz&set_everest_cookie_on_new_domain=1771451483.EANmU3MWZiN2VmYzFlZG.nNb4-PB_9okjNiXSXmLChJscNCf6daaEMP0NIXzZmPE&source_impression_id=p3_1771451484_P3wa0QUNRduas70A" target="_blank" rel="noopener">Check dates on Airbnb</a>
-                  <a class="btn secondary" href="/book-tour/">Add a birding tour</a>
-                  <a class="btn secondary" href="/contact/">Ask a question</a>
-                </div>
-
-                <p class="micro">
-                  Tip: If your plan includes early birding mornings, choose this as your base and keep afternoons flexible for waterfalls, chocolate, or a relaxed town dinner.
-                </p>
+              <div class="vBadges" aria-hidden="true">
+                <span class="tag featured">Featured host</span>
+                <span class="tag">Forest calm</span>
+                <span class="tag">Near waterfalls</span>
               </div>
             </div>
-          </article>
 
-          <!-- PROPERTY 2 (placeholder content) -->
-          <article class="propCard" aria-label="Property 2 placeholder">
-            <div class="propGrid reverse">
-              <div class="propMedia" aria-label="Property 2 media">
-                <div class="mediaShell recCarousel" data-interval="3000" aria-label="Property 2 carousel">
-                  <div class="recViewport" aria-label="Carousel viewport">
-                    <div class="recTrack">
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="Property 2 photo 1" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="Property 2 photo 2" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="Property 2 photo 3" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="Property 2 photo 4" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="Property 2 photo 5" loading="lazy" decoding="async" /></div>
-                    </div>
-                  </div>
-
-                  <button class="recNav prev" type="button" aria-label="Previous image"><span aria-hidden="true"></span></button>
-                  <button class="recNav next" type="button" aria-label="Next image"><span aria-hidden="true"></span></button>
-
-                  <div class="recDots" aria-hidden="true">
-                    <span class="recDot active"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                  </div>
-
-                  <div class="badgeRow" aria-hidden="true">
-                    <span class="tag featured">Placeholder</span>
-                    <span class="tag">Couples</span>
-                    <span class="tag">Cozy</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="propBody" aria-label="Property 2 details">
-                <div class="propTitleRow">
-                  <h3 class="propTitle">Property #2 (replace later)</h3>
-                  <div class="chipRow" aria-label="Property 2 chips">
-                    <span class="chip">3 bedrooms</span>
-                    <span class="chip">1.5 baths</span>
-                    <span class="chip">Solar power</span>
-                  </div>
-                </div>
-
-                <p class="propText">
-                  Placeholder copy using the same content. Use this card for a second listing that feels distinct: more romantic, more compact, or more elevated views. The layout supports a different story without changing structure.
-                </p>
-
-                <div class="highlights" aria-label="Property 2 highlights">
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">1</div>
-                    <div>
-                      <b>Signature setting</b>
-                      <span>Keep the best part: forest mood and total calm.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">2</div>
-                    <div>
-                      <b>Easy planning</b>
-                      <span>Built for nature schedules and smooth check-in.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">3</div>
-                    <div>
-                      <b>Comfort basics</b>
-                      <span>Hot water, kitchen, and space to breathe.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">4</div>
-                    <div>
-                      <b>Quiet reset</b>
-                      <span>Perfect between long mornings and sunset walks.</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="propActions" aria-label="Property 2 actions">
-                  <a class="btn primary" href="https://www.airbnb.com.ec/rooms/6013792?_set_bev_on_new_domain=1771451483_EANDNjZDY0MzAxMz&set_everest_cookie_on_new_domain=1771451483.EANmU3MWZiN2VmYzFlZG.nNb4-PB_9okjNiXSXmLChJscNCf6daaEMP0NIXzZmPE&source_impression_id=p3_1771451484_P3wa0QUNRduas70A" target="_blank" rel="noopener">View placeholder Airbnb link</a>
-                  <a class="btn secondary" href="/contact/">Ask a question</a>
-                </div>
-
-                <p class="micro">
-                  Replace: title, chips, highlight bullets, and link. Keep the same layout for consistency across Dominique's listings.
-                </p>
-              </div>
+            <div class="vThumbs" aria-label="Hero thumbnails">
+              <button class="vThumb" type="button" aria-current="true" data-vidx="0" aria-label="View photo 1">
+                <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="" loading="lazy" decoding="async" />
+              </button>
+              <button class="vThumb" type="button" aria-current="false" data-vidx="1" aria-label="View photo 2">
+                <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="" loading="lazy" decoding="async" />
+              </button>
+              <button class="vThumb" type="button" aria-current="false" data-vidx="2" aria-label="View photo 3">
+                <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="" loading="lazy" decoding="async" />
+              </button>
+              <button class="vThumb" type="button" aria-current="false" data-vidx="3" aria-label="View photo 4">
+                <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="" loading="lazy" decoding="async" />
+              </button>
+              <button class="vThumb" type="button" aria-current="false" data-vidx="4" aria-label="View photo 5">
+                <img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="" loading="lazy" decoding="async" />
+              </button>
             </div>
-          </article>
+          </div>
 
-          <!-- PROPERTY 3 (placeholder content) -->
-          <article class="propCard" aria-label="Property 3 placeholder">
-            <div class="propGrid">
-              <div class="propMedia" aria-label="Property 3 media">
-                <div class="mediaShell recCarousel" data-interval="2900" aria-label="Property 3 carousel">
-                  <div class="recViewport" aria-label="Carousel viewport">
-                    <div class="recTrack">
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="Property 3 photo 1" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="Property 3 photo 2" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="Property 3 photo 3" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="Property 3 photo 4" loading="lazy" decoding="async" /></div>
-                      <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="Property 3 photo 5" loading="lazy" decoding="async" /></div>
-                    </div>
-                  </div>
-
-                  <button class="recNav prev" type="button" aria-label="Previous image"><span aria-hidden="true"></span></button>
-                  <button class="recNav next" type="button" aria-label="Next image"><span aria-hidden="true"></span></button>
-
-                  <div class="recDots" aria-hidden="true">
-                    <span class="recDot active"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                    <span class="recDot"></span>
-                  </div>
-
-                  <div class="badgeRow" aria-hidden="true">
-                    <span class="tag featured">Placeholder</span>
-                    <span class="tag">Families</span>
-                    <span class="tag">Space</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="propBody" aria-label="Property 3 details">
-                <div class="propTitleRow">
-                  <h3 class="propTitle">Property #3 (replace later)</h3>
-                  <div class="chipRow" aria-label="Property 3 chips">
-                    <span class="chip">3 bedrooms</span>
-                    <span class="chip">1.5 baths</span>
-                    <span class="chip">WiFi</span>
-                  </div>
-                </div>
-
-                <p class="propText">
-                  Placeholder copy using the same content. This third slot is ideal for a different trip type: larger groups, longer stays, or a retreat vibe. The spacing and rhythm are designed to feel premium without feeling heavy.
-                </p>
-
-                <div class="highlights" aria-label="Property 3 highlights">
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">1</div>
-                    <div>
-                      <b>Forest-first calm</b>
-                      <span>Visitors come for nature, quiet, and the reset.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">2</div>
-                    <div>
-                      <b>Good base camp</b>
-                      <span>Works well for day trips and dawn schedules.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">3</div>
-                    <div>
-                      <b>Practical comforts</b>
-                      <span>Kitchen, hot water, and easy arrivals.</span>
-                    </div>
-                  </div>
-                  <div class="hl">
-                    <div class="hlIcon" aria-hidden="true">4</div>
-                    <div>
-                      <b>Low-friction stay</b>
-                      <span>Spend energy on exploring, not coordinating.</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="propActions" aria-label="Property 3 actions">
-                  <a class="btn primary" href="https://www.airbnb.com.ec/rooms/6013792?_set_bev_on_new_domain=1771451483_EANDNjZDY0MzAxMz&set_everest_cookie_on_new_domain=1771451483.EANmU3MWZiN2VmYzFlZG.nNb4-PB_9okjNiXSXmLChJscNCf6daaEMP0NIXzZmPE&source_impression_id=p3_1771451484_P3wa0QUNRduas70A" target="_blank" rel="noopener">View placeholder Airbnb link</a>
-                  <a class="btn secondary" href="/book-tour/">Pair with a guide</a>
-                  <a class="btn secondary" href="/contact/">Ask a question</a>
-                </div>
-
-                <p class="micro">
-                  Replace later: swap the chips to match the real listing (capacity, baths, standout feature) and update the CTA link.
-                </p>
-              </div>
+          <div class="heroRightFoot" aria-label="Hero support cards">
+            <div class="footCard">
+              <b>How to use this page</b>
+              <span>Pick the stay vibe, skim highlights and reviews, then book on Airbnb.</span>
             </div>
-          </article>
-
-        </div>
-      </section>
-
-      <section class="section" aria-label="Bottom CTA">
-        <div class="sectionHead">
-          <h2>Want the best fit in 60 seconds?</h2>
-          <p class="hint">Tell us your group size, vibe, and birding intensity. We will point you to the right stay and a tour plan that makes sense.</p>
-        </div>
-        <div class="ctaBand" aria-label="CTA band">
-          <p><strong>MBW recommendation:</strong> Choose your stay first, then we help you map mornings (birding) and afternoons (waterfalls, chocolate, town).</p>
-          <div class="heroActions" aria-label="CTA actions">
-            <a class="btn primary" href="/contact/">Get a quick recommendation</a>
-            <a class="btn secondary" href="/book-tour/">Book a birding tour</a>
+            <div class="footCard">
+              <b>Best for</b>
+              <span>Birders, waterfall chasers, couples, and families who want nature outside the door.</span>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-    </main>
+      <h2 id="stays" class="sectionTitle">Three stays, three trip vibes</h2>
 
-    <div id="siteFooter"></div>
-  </div>
+      <div class="propStack" aria-label="Properties list">
+        <!-- PROPERTY 1 -->
+        <article class="propCard" aria-label="Mindo Eco Chalet">
+          <div class="propGrid">
+            <div class="propMedia" aria-label="Eco Chalet media">
+              <div class="mediaShell recCarousel" data-interval="3200" aria-label="Eco Chalet carousel">
+                <div class="recViewport" aria-label="Carousel viewport">
+                  <div class="recTrack">
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="Mindo Eco Chalet photo 1" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="Mindo Eco Chalet photo 2" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="Mindo Eco Chalet photo 3" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="Mindo Eco Chalet photo 4" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="Mindo Eco Chalet photo 5" loading="lazy" decoding="async" /></div>
+                  </div>
+                </div>
 
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
+                <button class="recNav prev" type="button" aria-label="Previous image"><span aria-hidden="true"></span></button>
+                <button class="recNav next" type="button" aria-label="Next image"><span aria-hidden="true"></span></button>
+
+                <div class="recDots" aria-hidden="true">
+                  <span class="recDot active"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                </div>
+
+                <div class="badgeRow" aria-hidden="true">
+                  <span class="tag featured">Guest favorite</span>
+                  <span class="tag">River sounds</span>
+                  <span class="tag">Great for groups</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="propBody" aria-label="Eco Chalet details">
+              <div class="propTitleRow">
+                <h3 class="propTitle">Mindo Eco Chalet (River and Waterfalls)</h3>
+                <div class="chipRow" aria-label="Eco Chalet chips">
+                  <span class="chip">Sleeps 8</span>
+                  <span class="chip">3 bedrooms</span>
+                  <span class="chip">1.5 baths</span>
+                  <span class="chip">Solar-powered</span>
+                  <span class="chip">4.75 rating</span>
+                  <span class="chip">153 reviews</span>
+                </div>
+              </div>
+
+              <p class="propText">
+                The classic "we can actually hear the forest" stay. A full chalet on a 6000 m2 property at the edge of the cloud forest,
+                with a small river beside the home and waterfalls nearby. It is a comfortable base for birding mornings, tubing afternoons,
+                and slow dinners on the terrace.
+              </p>
+
+              <div class="highlights" aria-label="Eco Chalet highlights">
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">1</div>
+                  <div>
+                    <b>Nature outside the terrace</b>
+                    <span>Sleep to the river, wake up to birds, and spot hummingbirds in the garden.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">2</div>
+                  <div>
+                    <b>Great for families and friends</b>
+                    <span>Flexible bedroom setups and room to spread out without feeling remote from town.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">3</div>
+                  <div>
+                    <b>Hot water and a real kitchen</b>
+                    <span>Cook in, grill on the terrace, then head out early without fuss.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">4</div>
+                  <div>
+                    <b>Pets welcome</b>
+                    <span>Bring your dog and enjoy an easy, nature-forward setup.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reviewGrid" aria-label="Eco Chalet reviews">
+                <div class="review" aria-label="Eco Chalet review 1">
+                  <div class="reviewTop">
+                    <span class="reviewName">Fernanda</span>
+                    <span class="reviewMeta">5-star</span>
+                  </div>
+                  <p class="reviewQuote">"Hermosa casa... rodeada de naturaleza... ideal para descansar y desconectarse."</p>
+                </div>
+                <div class="review" aria-label="Eco Chalet review 2">
+                  <div class="reviewTop">
+                    <span class="reviewName">Janell</span>
+                    <span class="reviewMeta">5-star</span>
+                  </div>
+                  <p class="reviewQuote">"Nos quedamos dormidos con el sonido pacifico de un arroyo... y nos despertamos con pajaros."</p>
+                </div>
+              </div>
+
+              <div class="propActions" aria-label="Eco Chalet actions">
+                <a class="btn primary" href="https://www.airbnb.com.ec/rooms/6013792?_set_bev_on_new_domain=1771451483_EANDNjZDY0MzAxMz&set_everest_cookie_on_new_domain=1771451483.EANmU3MWZiN2VmYzFlZG.nNb4-PB_9okjNiXSXmLChJscNCf6daaEMP0NIXzZmPE&source_impression_id=p3_1771451484_P3wa0QUNRduas70A" target="_blank" rel="noopener">View on Airbnb</a>
+                <a class="btn secondary" href="/contact/">Ask MBW for help choosing</a>
+              </div>
+
+              <p class="note">
+                Tip: If you want easy day trips plus a quiet return at night, this is the most flexible base.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPERTY 2 -->
+        <article class="propCard" aria-label="Mindo Eco Suite">
+          <div class="propGrid">
+            <div class="propMedia" aria-label="Eco Suite media">
+              <div class="mediaShell recCarousel" data-interval="3100" aria-label="Eco Suite carousel">
+                <div class="recViewport" aria-label="Carousel viewport">
+                  <div class="recTrack">
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="Mindo Eco Suite placeholder photo 1" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="Mindo Eco Suite placeholder photo 2" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="Mindo Eco Suite placeholder photo 3" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="Mindo Eco Suite placeholder photo 4" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="Mindo Eco Suite placeholder photo 5" loading="lazy" decoding="async" /></div>
+                  </div>
+                </div>
+
+                <button class="recNav prev" type="button" aria-label="Previous image"><span aria-hidden="true"></span></button>
+                <button class="recNav next" type="button" aria-label="Next image"><span aria-hidden="true"></span></button>
+
+                <div class="recDots" aria-hidden="true">
+                  <span class="recDot active"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                </div>
+
+                <div class="badgeRow" aria-hidden="true">
+                  <span class="tag featured">Couples pick</span>
+                  <span class="tag">Outdoor shower</span>
+                  <span class="tag">Work-friendly</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="propBody" aria-label="Eco Suite details">
+              <div class="propTitleRow">
+                <h3 class="propTitle">Mindo Eco Suite (River and Cascadita)</h3>
+                <div class="chipRow" aria-label="Eco Suite chips">
+                  <span class="chip">Sleeps 4</span>
+                  <span class="chip">1 bedroom</span>
+                  <span class="chip">1 bath</span>
+                  <span class="chip">Outdoor hot shower</span>
+                  <span class="chip">4.89 rating</span>
+                  <span class="chip">178 reviews</span>
+                </div>
+              </div>
+
+              <p class="propText">
+                A cozy, private cabin for two to four guests, with the river just steps away and a little waterfall vibe built in.
+                It is the "quiet but not isolated" option: perfect for slow mornings on the terrace, a quick birding session,
+                then a clean return to hot water and a fully equipped kitchen.
+              </p>
+
+              <div class="highlights" aria-label="Eco Suite highlights">
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">1</div>
+                  <div>
+                    <b>Riverside calm, close-in feel</b>
+                    <span>The river is right there, and Mindo is still an easy walk when you want it.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">2</div>
+                  <div>
+                    <b>Panoramic outdoor shower</b>
+                    <span>Hot water outdoors is a very Mindo way to end a day in the forest.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">3</div>
+                  <div>
+                    <b>Remote-work ready</b>
+                    <span>Designed for those who want nature and a productive rhythm.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">4</div>
+                  <div>
+                    <b>Pet friendly</b>
+                    <span>Bring your pup and enjoy the safe, natural setting.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reviewGrid" aria-label="Eco Suite reviews">
+                <div class="review" aria-label="Eco Suite review 1">
+                  <div class="reviewTop">
+                    <span class="reviewName">Melanie</span>
+                    <span class="reviewMeta">5-star</span>
+                  </div>
+                  <p class="reviewQuote">"Hermoso y muy acogedor... muy cerca del rio... impecable y muy limpio."</p>
+                </div>
+                <div class="review" aria-label="Eco Suite review 2">
+                  <div class="reviewTop">
+                    <span class="reviewName">Exequiel</span>
+                    <span class="reviewMeta">5-star</span>
+                  </div>
+                  <p class="reviewQuote">"Un sorprendente sendero... sonido del riachuelo... aves, mariposas y luciernagas."</p>
+                </div>
+              </div>
+
+              <div class="propActions" aria-label="Eco Suite actions">
+                <a class="btn primary" href="https://www.airbnb.com.ec/rooms/44239092?source_impression_id=p3_1771451947_P3GLBFiZ-cHcwgnN" target="_blank" rel="noopener">View on Airbnb</a>
+                <a class="btn secondary" href="/contact/">Ask MBW for help choosing</a>
+              </div>
+
+              <p class="note">
+                Tip: Ideal if you want a smaller footprint, strong comfort, and a river soundtrack while you work or unwind.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPERTY 3 -->
+        <article class="propCard" aria-label="Mindo Glamping">
+          <div class="propGrid">
+            <div class="propMedia" aria-label="Glamping media">
+              <div class="mediaShell recCarousel" data-interval="3000" aria-label="Glamping carousel">
+                <div class="recViewport" aria-label="Carousel viewport">
+                  <div class="recTrack">
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg" alt="Mindo Glamping placeholder photo 1" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg" alt="Mindo Glamping placeholder photo 2" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg" alt="Mindo Glamping placeholder photo 3" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg" alt="Mindo Glamping placeholder photo 4" loading="lazy" decoding="async" /></div>
+                    <div class="recSlide"><img src="/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg" alt="Mindo Glamping placeholder photo 5" loading="lazy" decoding="async" /></div>
+                  </div>
+                </div>
+
+                <button class="recNav prev" type="button" aria-label="Previous image"><span aria-hidden="true"></span></button>
+                <button class="recNav next" type="button" aria-label="Next image"><span aria-hidden="true"></span></button>
+
+                <div class="recDots" aria-hidden="true">
+                  <span class="recDot active"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                  <span class="recDot"></span>
+                </div>
+
+                <div class="badgeRow" aria-hidden="true">
+                  <span class="tag featured">Adventure mode</span>
+                  <span class="tag">Firepit</span>
+                  <span class="tag">Optional no-wifi</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="propBody" aria-label="Glamping details">
+              <div class="propTitleRow">
+                <h3 class="propTitle">Mindo Glamping / Yurt (River and Cascadita)</h3>
+                <div class="chipRow" aria-label="Glamping chips">
+                  <span class="chip">Sleeps 3</span>
+                  <span class="chip">1 room</span>
+                  <span class="chip">1 bath</span>
+                  <span class="chip">Outdoor hot shower</span>
+                  <span class="chip">4.78 rating</span>
+                  <span class="chip">40 reviews</span>
+                </div>
+              </div>
+
+              <p class="propText">
+                This is the "nature in the first row" stay. A glamping tent by a small river near a little waterfall,
+                designed for couples or friends who want a real reset. Choose your level of unplug: stay fully off-grid,
+                or request help with wifi and charging if you need it.
+              </p>
+
+              <div class="highlights" aria-label="Glamping highlights">
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">1</div>
+                  <div>
+                    <b>Unplug on purpose</b>
+                    <span>Pick adventure mode with no electricity, or ask for support to stay connected.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">2</div>
+                  <div>
+                    <b>Riverside nights, fire-ready</b>
+                    <span>A simple setup that turns rain sounds and river flow into your soundtrack.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">3</div>
+                  <div>
+                    <b>Breakfast delivered</b>
+                    <span>Start with a served breakfast, then add brunch or dinner if you want.</span>
+                  </div>
+                </div>
+                <div class="hl">
+                  <div class="hlIcon" aria-hidden="true">4</div>
+                  <div>
+                    <b>Guides and tours available</b>
+                    <span>Birding, night walks, adventure activities, transfers, and massages.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reviewGrid" aria-label="Glamping reviews">
+                <div class="review" aria-label="Glamping review 1">
+                  <div class="reviewTop">
+                    <span class="reviewName">Javier</span>
+                    <span class="reviewMeta">5-star</span>
+                  </div>
+                  <p class="reviewQuote">"Cumplio con todas mis expectativas... lleno de naturaleza y mucha paz... desayuno casero."</p>
+                </div>
+                <div class="review" aria-label="Glamping review 2">
+                  <div class="reviewTop">
+                    <span class="reviewName">Jose</span>
+                    <span class="reviewMeta">5-star</span>
+                  </div>
+                  <p class="reviewQuote">"El mejor lugar si buscas paz y tranquilidad... acampada magica junto al rio."</p>
+                </div>
+              </div>
+
+              <div class="propActions" aria-label="Glamping actions">
+                <a class="btn primary" href="https://www.airbnb.com.ec/rooms/963276999172293109?source_impression_id=p3_1771452120_P3tO1ZFtmFPNHJdb" target="_blank" rel="noopener">View on Airbnb</a>
+                <a class="btn secondary" href="/contact/">Ask MBW for help choosing</a>
+              </div>
+
+              <p class="note">
+                Tip: Choose this if you want the most immersive nature feel and do not mind a simpler setup.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="siteFooter"></div>
+  <script src="/assets/js/includes.js"></script>
+  <script src="/assets/js/site.js"></script>
+
   <script>
     (function(){
       "use strict";
 
-      function initCarousel(root){
-        var viewport = root.querySelector(".recViewport");
-        var track = root.querySelector(".recTrack");
-        var slides = Array.prototype.slice.call(root.querySelectorAll(".recSlide"));
-        var prevBtn = root.querySelector(".recNav.prev");
-        var nextBtn = root.querySelector(".recNav.next");
-        var dotsWrap = root.querySelector(".recDots");
-        var dots = dotsWrap ? Array.prototype.slice.call(dotsWrap.querySelectorAll(".recDot")) : [];
+      // Hero vertical carousel
+      var heroImages = [
+        "/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_03.jpg",
+        "/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_05.jpg",
+        "/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_06.jpg",
+        "/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_07.jpg",
+        "/assets/images/pages/recommendations/dominique/mbw_mindo_eco_chalet_08.jpg"
+      ];
 
-        if(!viewport || !track || !slides.length) return;
+      var vImg = document.querySelector("[data-vimg]");
+      var thumbs = Array.prototype.slice.call(document.querySelectorAll(".vThumb"));
+      var btnPrev = document.querySelector("[data-vprev]");
+      var btnNext = document.querySelector("[data-vnext]");
+      var vIndex = 0;
 
-        var index = 0;
-        var intervalMs = Number(root.getAttribute("data-interval") || "3000");
+      function setHero(i){
+        vIndex = (i + heroImages.length) % heroImages.length;
+        if (vImg) vImg.src = heroImages[vIndex];
+        thumbs.forEach(function(t){
+          var idx = Number(t.getAttribute("data-vidx"));
+          t.setAttribute("aria-current", idx === vIndex ? "true" : "false");
+        });
+      }
+
+      if (btnPrev) btnPrev.addEventListener("click", function(){ setHero(vIndex - 1); });
+      if (btnNext) btnNext.addEventListener("click", function(){ setHero(vIndex + 1); });
+      thumbs.forEach(function(t){
+        t.addEventListener("click", function(){
+          var idx = Number(t.getAttribute("data-vidx"));
+          setHero(idx);
+        });
+      });
+
+      // Property carousels
+      var carousels = Array.prototype.slice.call(document.querySelectorAll(".recCarousel"));
+      carousels.forEach(function(car){
+        var track = car.querySelector(".recTrack");
+        var slides = car.querySelectorAll(".recSlide");
+        var dots = Array.prototype.slice.call(car.querySelectorAll(".recDot"));
+        var prev = car.querySelector(".recNav.prev");
+        var next = car.querySelector(".recNav.next");
+        var interval = Number(car.getAttribute("data-interval") || "0");
+        var idx = 0;
         var timer = null;
 
-        var prefersReducedMotion = false;
-        try{
-          prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        }catch(_){ prefersReducedMotion = false; }
-
-        var autoplay = !prefersReducedMotion;
-
-        function update(){
-          track.style.transform = "translateX(-" + (index * 100) + "%)";
-          if(dots.length){
-            for(var i=0; i<dots.length; i++){
-              if(i === index) dots[i].classList.add("active");
-              else dots[i].classList.remove("active");
-            }
+        function paint(){
+          if (!track) return;
+          track.style.transform = "translate3d(" + (-idx * 100) + "%, 0, 0)";
+          if (dots.length){
+            dots.forEach(function(d, i){
+              if (i === idx) d.classList.add("active"); else d.classList.remove("active");
+            });
           }
         }
 
-        function setIndex(next){
-          var n = next;
-          if(n < 0) n = slides.length - 1;
-          if(n >= slides.length) n = 0;
-          index = n;
-          update();
-        }
-
-        function next(){ setIndex(index + 1); }
-        function prev(){ setIndex(index - 1); }
-
-        function stop(){
-          if(timer){
-            clearInterval(timer);
-            timer = null;
-          }
+        function go(n){
+          var count = slides.length || 1;
+          idx = (n + count) % count;
+          paint();
         }
 
         function start(){
-          if(!autoplay) return;
+          if (!interval || interval < 1200) return;
           stop();
-          timer = setInterval(function(){ next(); }, intervalMs);
+          timer = window.setInterval(function(){ go(idx + 1); }, interval);
         }
 
-        if(prevBtn){
-          prevBtn.addEventListener("click", function(){
-            prev();
-            stop();
-          });
+        function stop(){
+          if (timer) window.clearInterval(timer);
+          timer = null;
         }
 
-        if(nextBtn){
-          nextBtn.addEventListener("click", function(){
-            next();
-            stop();
-          });
-        }
+        if (prev) prev.addEventListener("click", function(){ go(idx - 1); start(); });
+        if (next) next.addEventListener("click", function(){ go(idx + 1); start(); });
 
-        root.addEventListener("mouseenter", stop);
-        root.addEventListener("mouseleave", start);
-        root.addEventListener("focusin", stop);
-        root.addEventListener("focusout", start);
+        car.addEventListener("mouseenter", stop);
+        car.addEventListener("mouseleave", start);
+        car.addEventListener("focusin", stop);
+        car.addEventListener("focusout", start);
 
-        var startX = 0;
-        var isDown = false;
-
-        viewport.addEventListener("pointerdown", function(e){
-          isDown = true;
-          startX = e.clientX;
-          try{ viewport.setPointerCapture(e.pointerId); }catch(_){}
-        });
-
-        viewport.addEventListener("pointerup", function(e){
-          if(!isDown) return;
-          isDown = false;
-          var dx = e.clientX - startX;
-          var threshold = 40;
-          if(dx > threshold){ prev(); stop(); }
-          if(dx < -threshold){ next(); stop(); }
-        });
-
-        viewport.addEventListener("pointercancel", function(){
-          isDown = false;
-        });
-
-        update();
+        paint();
         start();
-      }
-
-      var carousels = document.querySelectorAll(".recCarousel");
-      for(var i=0; i<carousels.length; i++){
-        initCarousel(carousels[i]);
-      }
+      });
     })();
   </script>
 </body>
