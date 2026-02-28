@@ -1,1 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Payment Success | Mindo Bird Watching</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
+  <style>
+    .cardBox{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(0,0,0,.04)}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}
+    .kvs{display:grid;gap:10px;margin-top:10px}
+    .kv{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid rgba(0,0,0,.10);border-radius:12px;background:#fafbff}
+    .kv b{font-weight:800}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .btnPrimary{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer;background:#034EA2;color:#fff}
+    .btnGhost{appearance:none;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:12px 14px;font-weight:750;cursor:pointer;background:#fff}
+    .hint{opacity:.85}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="page card">
+    <div class="cardBox">
+      <h1 style="margin:0 0 6px 0">Thanks for your payment</h1>
+      <p class="hint" style="margin:0">Your tour booking has been received. We will follow up if we need any extra details.</p>
+  <div class="grid" style="margin-top:14px">
+    <section aria-label="Booking summary" class="cardBox" style="box-shadow:none">
+      <h2 style="margin:0 0 8px 0;font-size:18px">Booking summary</h2>
+
+      <div class="kvs" id="summaryKvs">
+        <div class="kv"><span>Tour</span><b id="tourLabel">Loading...</b></div>
+        <div class="kv"><span>Tour date</span><b id="tourDate">-</b></div>
+        <div class="kv"><span>Days until tour</span><b id="countdown">-</b></div>
+        <div class="kv"><span>Pickup window</span><b id="pickupWindow">5:00 AM to 5:15 AM</b></div>
+      </div>
+
+      <p class="hint" style="margin:12px 0 0 0">
+        Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.
+      </p>
+
+      <div class="actions">
+        <a class="btnPrimary" href="/shop/" target="_blank" rel="noopener">Visit our store</a>
+        <a class="btnGhost" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp us</a>
+        <a class="btnGhost" href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a>
+        <a class="btnGhost" href="https://facebook.com/" target="_blank" rel="noopener">Facebook</a>
+      </div>
+
+      <p class="hint" style="margin:12px 0 0 0;font-size:12px">
+        You can close this page anytime. The countdown is only useful while this page is open.
+      </p>
+    </section>
+
+    <aside aria-label="What happens next" class="cardBox" style="box-shadow:none">
+      <h2 style="margin:0 0 8px 0;font-size:18px">What happens next</h2>
+      <ul style="margin:0;padding-left:18px;opacity:.9">
+        <li>We have your booking details and payment confirmation.</li>
+        <li>If we need anything, we will contact you by email or WhatsApp.</li>
+        <li>Keep an eye out for a message if your pickup location needs clarification.</li>
+      </ul>
+      <p class="hint" style="margin:12px 0 0 0">
+        Terms and Conditions are available <a href="/terms-conditions/" target="_blank" rel="noopener">here</a>.
+      </p>
+    </aside>
+  </div>
+</div>
+  </main>
+  <div id="siteFooter"></div>
+  <script>
+    (function(){
+      "use strict";
+
+      const API_BASE = "https://mbw-stripe-checkout.thecloudforestretreat.workers.dev";
+      const LANG = "en";
+
+      function qs(name){
+        const u = new URL(location.href);
+        return u.searchParams.get(name) || "";
+      }
+
+      function formatDaysUntil(dateISO){
+        const d = new Date(dateISO + "T00:00:00");
+        if (isNaN(d.getTime())) return null;
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diff = Math.round((d.getTime() - start.getTime()) / (24*60*60*1000));
+        return diff;
+      }
+
+      async function loadTourLabel(tourCode){
+        if (!tourCode){
+          document.getElementById("tourLabel").textContent = "Tour booked";
+          return;
+        }
+        try{
+          const res = await fetch(API_BASE + "/api/tours?lang=" + encodeURIComponent(LANG), { headers: { "accept":"application/json" } });
+          const data = await res.json().catch(() => null);
+          if (!res.ok || !data || data.ok !== true) throw new Error("bad response");
+          const t = (data.tours || []).find(x => x.tour_code === tourCode);
+          if (!t){
+            document.getElementById("tourLabel").textContent = tourCode;
+            return;
+          }
+          document.getElementById("tourLabel").textContent = tourCode + " - " + (t.tour_title || "");
+          if (t.pickup_time_local){
+            document.getElementById("pickupWindow").textContent = t.pickup_time_local + " to " + addMinutesLabel(t.pickup_time_local, Number(t.pickup_window_minutes || 15));
+          }
+        } catch(e){
+          document.getElementById("tourLabel").textContent = tourCode || "Tour booked";
+        }
+      }
+
+      function addMinutesLabel(timeStr, minutesToAdd){
+        try{
+          const m = String(timeStr).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+          if (!m) return timeStr;
+          let h = Number(m[1]);
+          const min = Number(m[2]);
+          const ampm = m[3].toUpperCase();
+          if (ampm === "PM" && h !== 12) h += 12;
+          if (ampm === "AM" && h === 12) h = 0;
+
+          const total = (h * 60 + min + minutesToAdd) % (24 * 60);
+          let nh = Math.floor(total / 60);
+          const nmin = total % 60;
+
+          let nampm = nh >= 12 ? "PM" : "AM";
+          let dispH = nh % 12;
+          if (dispH === 0) dispH = 12;
+
+          return dispH + ":" + String(nmin).padStart(2, "0") + " " + nampm;
+        } catch(e){
+          return timeStr;
+        }
+      }
+
+      const tourCode = qs("tour_code");
+      const tourDate = qs("tour_date");
+
+      document.getElementById("tourDate").textContent = tourDate || "-";
+
+      const days = tourDate ? formatDaysUntil(tourDate) : null;
+      document.getElementById("countdown").textContent = (days === null) ? "-" : String(days);
+
+      loadTourLabel(tourCode);
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
+
 
