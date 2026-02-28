@@ -1,1 +1,525 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pagar un Tour | Mindo Bird Watching</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+  <style>
+    .payGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
+    .payCard{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:16px;box-shadow:0 10px 24px rgba(0,0,0,.04)}
+    .payHeader{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    .payHeader h1{margin:0}
+    .payHeader .lede{margin:0;opacity:.85}
+    .tourList{display:grid;gap:12px}
+    .tourItem{display:grid;grid-template-columns:120px 1fr;gap:12px;border:1px solid rgba(0,0,0,.10);border-radius:14px;overflow:hidden;background:#fff}
+    .tourItem button{appearance:none;border:0;background:transparent;padding:0;margin:0;text-align:left;cursor:pointer;width:100%}
+    .tourMedia{position:relative;background:#f2f4f8;min-height:90px}
+    .tourMedia img{display:block;width:100%;height:100%;object-fit:cover}
+    .tourBody{padding:12px}
+    .tourTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .tourTitle{font-weight:700;font-size:16px;line-height:1.25;margin:0}
+    .tourMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.10);background:#fafbff;font-size:12px;white-space:nowrap}
+    .priceTag{font-weight:800}
+    .selected{outline:3px solid rgba(3,78,162,.22);border-color:rgba(3,78,162,.35)}
+    .detailHero{display:flex;gap:12px;align-items:center}
+    .detailHero img{width:92px;height:92px;border-radius:14px;object-fit:cover;border:1px solid rgba(0,0,0,.08)}
+    .detailHero h2{margin:0;font-size:18px}
+    .detailHero .sub{margin:4px 0 0 0;opacity:.85}
+    .formGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .formRow{display:flex;flex-direction:column;gap:6px}
+    .formRow label{font-weight:650}
+    .formRow input,.formRow select,.formRow textarea{width:100%;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:10px 12px;font:inherit;background:#fff}
+    .formRow textarea{min-height:92px;resize:vertical}
+    .span2{grid-column:1 / -1}
+    .agreeRow{display:flex;gap:10px;align-items:flex-start}
+    .agreeRow input{width:auto;margin-top:3px}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+    .btnPrimary{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer;background:#034EA2;color:#fff}
+    .btnPrimary[disabled]{opacity:.55;cursor:not-allowed}
+    .btnGhost{appearance:none;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:12px 14px;font-weight:750;cursor:pointer;background:#fff}
+    .hint{font-size:13px;opacity:.82;margin:8px 0 0 0}
+    .errorBox{display:none;margin-top:10px;border:1px solid rgba(190,0,0,.25);background:rgba(190,0,0,.06);padding:10px 12px;border-radius:12px}
+    .errorBox strong{display:block;margin-bottom:6px}
+    .loadingLine{display:none;margin-top:10px;opacity:.85}
+    .small{font-size:12px;opacity:.8}
+    @media(max-width:900px){
+      .payGrid{grid-template-columns:1fr}
+      .tourItem{grid-template-columns:100px 1fr}
+    }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="page card">
+    <div class="payHeader" aria-label="Encabezado de pago">
+      <h1>Pagar un Tour</h1>
+      <p class="lede">Selecciona un tour, elige la fecha, ingresa los datos de recogida y paga de forma segura con Stripe.</p>
+      <p class="small">El precio es por persona. La hora de recogida usa la zona horaria local: America/Guayaquil.</p>
+    </div>
+<div class="payGrid" aria-label="Cuadricula de pago">
+  <section class="payCard" aria-label="Lista de tours">
+    <div class="chips" aria-label="Chips">
+      <span class="chip">Lista desde Stripe</span>
+      <span class="chip">Pago rapido</span>
+      <span class="chip">Pago seguro</span>
+    </div>
 
+    <div id="tourList" class="tourList" aria-label="Tours disponibles"></div>
+
+    <div id="tourListLoading" class="loadingLine">Cargando tours...</div>
+    <div id="tourListError" class="errorBox" role="alert" aria-live="polite">
+      <strong>No se pudieron cargar los tours.</strong>
+      <div id="tourListErrorMsg"></div>
+    </div>
+  </section>
+
+  <section class="payCard" aria-label="Detalles y formulario">
+    <div id="detailEmpty">
+      <h2 style="margin:0 0 6px 0">Elige un tour para continuar</h2>
+      <p class="hint">Selecciona un tour en la izquierda. El formulario aparecera aqui.</p>
+    </div>
+
+    <div id="detailWrap" style="display:none">
+      <div class="detailHero" aria-label="Resumen del tour">
+        <img id="detailImg" alt="" src="" />
+        <div>
+          <h2 id="detailTitle"></h2>
+          <p class="sub" id="detailSub"></p>
+          <div class="tourMeta" aria-label="Meta">
+            <span class="badge"><span class="priceTag" id="detailPrice"></span> por persona</span>
+            <span class="badge" id="detailDuration"></span>
+            <span class="badge" id="detailPickup"></span>
+          </div>
+          <p class="hint" id="detailOneLiner"></p>
+          <p class="hint"><a id="detailTourPage" href="#" target="_blank" rel="noopener">Ver detalles del tour</a></p>
+        </div>
+      </div>
+
+      <form id="payForm" novalidate>
+        <div class="formGrid" aria-label="Campos">
+          <div class="formRow">
+            <label for="people">Numero de personas <span class="req">*</span></label>
+            <input id="people" name="people" type="number" inputmode="numeric" min="1" step="1" value="2" required />
+          </div>
+
+          <div class="formRow">
+            <label for="tourDate">Fecha del tour <span class="req">*</span></label>
+            <input id="tourDate" name="tourDate" type="date" required />
+          </div>
+
+          <div class="formRow">
+            <label for="contactName">Nombre del contacto <span class="req">*</span></label>
+            <input id="contactName" name="contactName" type="text" autocomplete="name" required />
+          </div>
+
+          <div class="formRow">
+            <label for="contactEmail">Correo <span class="req">*</span></label>
+            <input id="contactEmail" name="contactEmail" type="email" autocomplete="email" required />
+          </div>
+
+          <div class="formRow">
+            <label for="contactPhone">Telefono <span class="req">*</span></label>
+            <input id="contactPhone" name="contactPhone" type="tel" autocomplete="tel" required />
+          </div>
+
+          <div class="formRow">
+            <label for="whatsapp">Numero de WhatsApp <span class="req">*</span></label>
+            <input id="whatsapp" name="whatsapp" type="tel" required />
+          </div>
+
+          <div class="formRow span2">
+            <label for="pickupAddress">Hotel o direccion exacta de recogida (en Mindo) <span class="req">*</span></label>
+            <input id="pickupAddress" name="pickupAddress" type="text" required />
+          </div>
+
+          <div class="formRow span2">
+            <label for="notes">Notas o solicitudes especiales</label>
+            <textarea id="notes" name="notes"></textarea>
+          </div>
+
+          <div class="formRow span2">
+            <div class="agreeRow">
+              <input id="agree" name="agree" type="checkbox" required />
+              <label for="agree">
+                Acepto los <a href="/es/terminos-y-condiciones/" target="_blank" rel="noopener">Terminos y Condiciones</a> <span class="req">*</span>
+              </label>
+            </div>
+            <p class="hint">La recogida sera a la hora indicada en el tour. Por favor permite una ventana de 15 minutos.</p>
+          </div>
+
+          <div class="formRow span2">
+            <div id="turnstileBox" class="cf-turnstile" data-sitekey="__TURNSTILE_SITE_KEY__" data-theme="light"></div>
+            <p class="hint">Esto ayuda a prevenir spam y proteger tu reserva.</p>
+          </div>
+        </div>
+
+        <div id="formError" class="errorBox" role="alert" aria-live="polite">
+          <strong>No se pudo iniciar el pago.</strong>
+          <div id="formErrorMsg"></div>
+        </div>
+
+        <div id="formLoading" class="loadingLine">Creando sesion segura de pago...</div>
+
+        <div class="actions">
+          <button id="payBtn" type="submit" class="btnPrimary" disabled>Continuar al pago seguro</button>
+          <button id="resetBtn" type="button" class="btnGhost">Reiniciar</button>
+        </div>
+
+        <p class="hint small">
+          Despues del pago, volveras a nuestra pagina de exito. Si cierras la pagina, aun puedes escribirnos por WhatsApp.
+        </p>
+      </form>
+    </div>
+  </section>
+</div>
+  </main>
+  <div id="siteFooter"></div>
+  <script>
+    (function(){
+      "use strict";
+
+      const API_BASE = "https://mbw-stripe-checkout.thecloudforestretreat.workers.dev";
+      const LANG = "es";
+
+      const els = {
+        tourList: document.getElementById("tourList"),
+        tourListLoading: document.getElementById("tourListLoading"),
+        tourListError: document.getElementById("tourListError"),
+        tourListErrorMsg: document.getElementById("tourListErrorMsg"),
+
+        detailEmpty: document.getElementById("detailEmpty"),
+        detailWrap: document.getElementById("detailWrap"),
+        detailImg: document.getElementById("detailImg"),
+        detailTitle: document.getElementById("detailTitle"),
+        detailSub: document.getElementById("detailSub"),
+        detailPrice: document.getElementById("detailPrice"),
+        detailDuration: document.getElementById("detailDuration"),
+        detailPickup: document.getElementById("detailPickup"),
+        detailOneLiner: document.getElementById("detailOneLiner"),
+        detailTourPage: document.getElementById("detailTourPage"),
+
+        payForm: document.getElementById("payForm"),
+        people: document.getElementById("people"),
+        tourDate: document.getElementById("tourDate"),
+        contactName: document.getElementById("contactName"),
+        contactEmail: document.getElementById("contactEmail"),
+        contactPhone: document.getElementById("contactPhone"),
+        whatsapp: document.getElementById("whatsapp"),
+        pickupAddress: document.getElementById("pickupAddress"),
+        notes: document.getElementById("notes"),
+        agree: document.getElementById("agree"),
+
+        payBtn: document.getElementById("payBtn"),
+        resetBtn: document.getElementById("resetBtn"),
+
+        formError: document.getElementById("formError"),
+        formErrorMsg: document.getElementById("formErrorMsg"),
+        formLoading: document.getElementById("formLoading")
+      };
+
+      let tours = [];
+      let selectedTour = null;
+
+      function esc(s){
+        return String(s || "").replace(/[&<>"']/g, (c) => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[c]));
+      }
+
+      function show(el){ el.style.display = ""; }
+      function hide(el){ el.style.display = "none"; }
+
+      function setListError(msg){
+        els.tourListErrorMsg.textContent = msg || "Error desconocido.";
+        show(els.tourListError);
+      }
+
+      function clearListError(){
+        hide(els.tourListError);
+        els.tourListErrorMsg.textContent = "";
+      }
+
+      function setFormError(msg){
+        els.formErrorMsg.textContent = msg || "Error desconocido.";
+        show(els.formError);
+      }
+
+      function clearFormError(){
+        hide(els.formError);
+        els.formErrorMsg.textContent = "";
+      }
+
+      function setBusy(isBusy){
+        if (isBusy){
+          show(els.formLoading);
+          els.payBtn.disabled = true;
+        } else {
+          hide(els.formLoading);
+          validateForm();
+        }
+      }
+
+      function validateForm(){
+        if (!selectedTour){
+          els.payBtn.disabled = true;
+          return;
+        }
+        const people = Number(els.people.value || 0);
+        const ok =
+          people >= 1 &&
+          !!els.tourDate.value &&
+          !!els.contactName.value.trim() &&
+          !!els.contactEmail.value.trim() &&
+          !!els.contactPhone.value.trim() &&
+          !!els.whatsapp.value.trim() &&
+          !!els.pickupAddress.value.trim() &&
+          els.agree.checked;
+
+        els.payBtn.disabled = !ok;
+      }
+
+      function pickupLabel(t){
+        const time = t.pickup_time_local || "";
+        const mins = Number(t.pickup_window_minutes || 15);
+        if (!time) return "Recogida: 15 min";
+        return "Recogida: " + time + " a " + addMinutesLabel(time, mins);
+      }
+
+      function addMinutesLabel(timeStr, minutesToAdd){
+        try{
+          const m = String(timeStr).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+          if (!m) return timeStr;
+          let h = Number(m[1]);
+          const min = Number(m[2]);
+          const ampm = m[3].toUpperCase();
+          if (ampm === "PM" && h !== 12) h += 12;
+          if (ampm === "AM" && h === 12) h = 0;
+
+          const total = (h * 60 + min + minutesToAdd) % (24 * 60);
+          let nh = Math.floor(total / 60);
+          const nmin = total % 60;
+
+          let nampm = nh >= 12 ? "PM" : "AM";
+          let dispH = nh % 12;
+          if (dispH === 0) dispH = 12;
+
+          return dispH + ":" + String(nmin).padStart(2, "0") + " " + nampm;
+        } catch(e){
+          return timeStr;
+        }
+      }
+
+      function renderList(){
+        els.tourList.innerHTML = "";
+        tours.forEach((t, idx) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "tourItem";
+          wrapper.dataset.code = t.tour_code;
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.setAttribute("aria-label", "Seleccionar tour " + t.tour_code);
+
+          btn.innerHTML =
+            '<div class="tourMedia">' +
+              '<img alt="' + esc(t.tour_title) + '" src="' + esc(t.hero_image_url) + '">' +
+            '</div>' +
+            '<div class="tourBody">' +
+              '<div class="tourTop">' +
+                '<div>' +
+                  '<p class="tourTitle">' + esc(t.tour_code) + " - " + esc(t.tour_title) + '</p>' +
+                '</div>' +
+                '<div class="badge"><span class="priceTag">' + esc(t.amount_display) + '</span></div>' +
+              '</div>' +
+              '<div class="tourMeta">' +
+                '<span class="badge">' + esc(t.duration_label || "Dia completo") + '</span>' +
+                '<span class="badge">' + esc(pickupLabel(t)) + '</span>' +
+              '</div>' +
+              (t.description_one_liner ? '<p class="hint" style="margin:10px 0 0 0">' + esc(t.description_one_liner) + '</p>' : '') +
+            '</div>';
+
+          btn.addEventListener("click", () => selectTour(idx));
+          wrapper.appendChild(btn);
+          els.tourList.appendChild(wrapper);
+        });
+      }
+
+      function markSelected(){
+        const items = els.tourList.querySelectorAll(".tourItem");
+        items.forEach((it) => {
+          if (selectedTour && it.dataset.code === selectedTour.tour_code){
+            it.classList.add("selected");
+          } else {
+            it.classList.remove("selected");
+          }
+        });
+      }
+
+      function selectTour(index){
+        selectedTour = tours[index] || null;
+        if (!selectedTour) return;
+
+        els.detailImg.src = selectedTour.hero_image_url || "";
+        els.detailImg.alt = selectedTour.tour_title || "Imagen del tour";
+        els.detailTitle.textContent = (selectedTour.tour_code || "") + " - " + (selectedTour.tour_title || "");
+        els.detailSub.textContent = "Zona horaria: " + (selectedTour.timezone || "America/Guayaquil") + " | Ventana: " + (selectedTour.pickup_window_minutes || 15) + " min";
+        els.detailPrice.textContent = selectedTour.amount_display || "";
+        els.detailDuration.textContent = selectedTour.duration_label || "Dia completo";
+        els.detailPickup.textContent = pickupLabel(selectedTour);
+        els.detailOneLiner.textContent = selectedTour.description_one_liner || "";
+        els.detailTourPage.href = selectedTour.tour_page_url || "#";
+
+        hide(els.detailEmpty);
+        show(els.detailWrap);
+
+        markSelected();
+        validateForm();
+        clearFormError();
+
+        if (selectedTour.min_person){
+          els.people.min = String(selectedTour.min_person);
+          if (Number(els.people.value) < Number(selectedTour.min_person)){
+            els.people.value = String(selectedTour.min_person);
+          }
+        } else {
+          els.people.min = "1";
+        }
+      }
+
+      async function loadTours(){
+        show(els.tourListLoading);
+        clearListError();
+
+        try{
+          const res = await fetch(API_BASE + "/api/tours?lang=" + encodeURIComponent(LANG), {
+            method: "GET",
+            headers: { "accept":"application/json" }
+          });
+          const data = await res.json().catch(() => null);
+          if (!res.ok || !data || data.ok !== true){
+            const msg = (data && (data.error || data.message)) ? String(data.error || data.message) : ("HTTP " + res.status);
+            throw new Error(msg);
+          }
+          tours = Array.isArray(data.tours) ? data.tours : [];
+          if (!tours.length) throw new Error("No hay tours en la respuesta.");
+
+          renderList();
+          hide(els.tourListLoading);
+
+        } catch(err){
+          hide(els.tourListLoading);
+          setListError(String(err && err.message ? err.message : err));
+        }
+      }
+
+      function getTurnstileToken(){
+        const el = document.querySelector('[name="cf-turnstile-response"]');
+        return el ? el.value : "";
+      }
+
+      function todayISO(){
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        return yyyy + "-" + mm + "-" + dd;
+      }
+
+      function resetForm(){
+        els.payForm.reset();
+        els.people.value = selectedTour && selectedTour.min_person ? String(selectedTour.min_person) : "2";
+        els.tourDate.value = "";
+        clearFormError();
+        validateForm();
+      }
+
+      async function onSubmit(e){
+        e.preventDefault();
+        clearFormError();
+        validateForm();
+        if (els.payBtn.disabled) return;
+
+        const token = getTurnstileToken();
+        if (!token){
+          setFormError("Por favor completa Turnstile.");
+          return;
+        }
+
+        const people = Number(els.people.value || 0);
+        if (!Number.isFinite(people) || people < 1){
+          setFormError("Ingresa un numero de personas valido.");
+          return;
+        }
+
+        const tourDate = els.tourDate.value;
+        if (!tourDate){
+          setFormError("La fecha del tour es obligatoria.");
+          return;
+        }
+
+        const payload = {
+          lang: LANG,
+          tour_code: selectedTour.tour_code,
+          people: people,
+          tour_date: tourDate,
+          contact: {
+            name: els.contactName.value.trim(),
+            email: els.contactEmail.value.trim(),
+            phone: els.contactPhone.value.trim(),
+            whatsapp: els.whatsapp.value.trim()
+          },
+          pickup: {
+            pickup_address_or_hotel: els.pickupAddress.value.trim()
+          },
+          notes: (els.notes.value || "").trim(),
+          agreement_accepted: !!els.agree.checked,
+          turnstile_token: token,
+          client: {
+            page: location.pathname,
+            user_agent: navigator.userAgent
+          }
+        };
+
+        setBusy(true);
+
+        try{
+          const res = await fetch(API_BASE + "/api/checkout/session", {
+            method: "POST",
+            headers: { "content-type":"application/json", "accept":"application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json().catch(() => null);
+          if (!res.ok || !data || data.ok !== true || !data.url){
+            const msg = (data && (data.error || data.message)) ? String(data.error || data.message) : ("HTTP " + res.status);
+            throw new Error(msg);
+          }
+
+          location.href = data.url;
+
+        } catch(err){
+          setBusy(false);
+          setFormError(String(err && err.message ? err.message : err));
+        }
+      }
+
+      els.payForm.addEventListener("submit", onSubmit);
+      ["input","change","keyup"].forEach((ev) => {
+        els.payForm.addEventListener(ev, validateForm, true);
+      });
+      els.resetBtn.addEventListener("click", resetForm);
+
+      els.tourDate.min = todayISO();
+
+      loadTours();
+    })();
+  </script>
+</body>
+</html>
