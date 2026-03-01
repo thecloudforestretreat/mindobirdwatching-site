@@ -2,488 +2,582 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Create a payment link | Mindo Bird Watching</title>
 
-  <!-- Use the site's real styles/scripts without pinning old cache-busting versions -->
+  <!-- Use the site's global styling so palette stays consistent -->
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
 
   <style>
-    /* Page-only layout. Do NOT restyle the global header/footer. */
+    /* Page-only styles: keep minimal, do not restyle global header/footer */
     :root{
-      --mbw-accent: #1f5b2f; /* used only for buttons; should already match site */
-      --mbw-danger: #b02a2a;
-      --panel-bg: rgba(255,255,255,0.35);
-      --panel-border: rgba(0,0,0,0.08);
-      --panel-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      --radius-xl: 22px;
-      --radius-lg: 16px;
+      --mbw-panel: rgba(255,255,255,.18);
+      --mbw-panel-2: rgba(255,255,255,.12);
+      --mbw-stroke: rgba(0,0,0,.10);
+      --mbw-shadow: 0 14px 40px rgba(0,0,0,.12);
+      --mbw-radius: 22px;
+      --mbw-radius-sm: 16px;
+      --mbw-text: #0f2b1e;
+      --mbw-muted: rgba(15,43,30,.70);
+      --mbw-danger: #c0392b;
+      --mbw-green: #0b5b2a;
+      --mbw-green-2: #0f6b31;
+      --mbw-chip: rgba(255,255,255,.30);
+      --mbw-focus: rgba(11,91,42,.22);
     }
 
-    main{ display:block; }
+    body{
+      color: var(--mbw-text);
+    }
 
-    .mbw-page{
+    .pageWrap{
       max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
+      margin: 28px auto 60px;
+      padding: 0 18px;
     }
 
-    .mbw-shell{
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--panel-shadow);
+    .heroPanel{
+      border-radius: 28px;
       padding: 28px;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: var(--mbw-panel);
+      box-shadow: var(--mbw-shadow);
+      border: 1px solid var(--mbw-stroke);
     }
 
-    .mbw-title{
-      margin: 0 0 6px;
+    .heroTitle{
+      font-family: inherit;
+      margin: 0 0 8px 0;
+      font-size: clamp(28px, 3.2vw, 42px);
       line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: #1b5a33;
     }
 
-    .mbw-sub{
-      margin: 0 0 18px;
-      max-width: 72ch;
-      opacity: 0.9;
+    .heroSub{
+      margin: 0;
+      max-width: 62ch;
+      color: var(--mbw-muted);
+      font-size: 16px;
+      line-height: 1.55;
     }
 
-    .mbw-grid{
+    .grid{
+      margin-top: 18px;
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
       gap: 18px;
+      grid-template-columns: 1.4fr 1fr;
       align-items: start;
     }
 
-    .mbw-card{
-      background: rgba(255,255,255,0.30);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-lg);
+    @media (max-width: 940px){
+      .grid{ grid-template-columns: 1fr; }
+      .heroPanel{ padding: 22px; }
+    }
+
+    .card{
+      background: var(--mbw-panel-2);
+      border: 1px solid var(--mbw-stroke);
+      border-radius: var(--mbw-radius);
       padding: 18px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 26px rgba(0,0,0,.08);
     }
 
-    .mbw-card h2{
-      margin: 0 0 10px;
-      font-size: 18px;
-    }
-
-    .mbw-hint{
-      font-size: 13px;
-      opacity: 0.85;
-      margin: 6px 0 0;
-    }
-
-    .req{ color: var(--mbw-danger); font-weight: 900; }
-
-    label{ display:block; font-weight: 800; font-size: 14px; margin: 14px 0 6px; }
-
-    .mbw-field{
-      width: 100%;
-      box-sizing: border-box;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,0.14);
-      background: rgba(255,255,255,0.65);
-      padding: 12px 14px;
+    .card h2{
+      margin: 0 0 10px 0;
       font-size: 16px;
-      line-height: 1.2;
-      height: 46px;
+      font-weight: 800;
+      color: #1b5a33;
     }
 
-    /* iOS date inputs can become visually taller, enforce consistent height */
-    input[type="date"].mbw-field{ 
-      -webkit-appearance: none;
-      appearance: none;
-      height: 46px;
-      padding-top: 12px;
-      padding-bottom: 12px;
-      max-width: 100%;
+    .hint{
+      margin: 0 0 14px 0;
+      font-size: 13px;
+      color: var(--mbw-muted);
     }
 
-    .mbw-actions{
-      display: flex;
+    .reqStar{ color: var(--mbw-danger); font-weight: 900; }
+
+    .field{
+      margin: 14px 0;
+    }
+    .labelRow{
+      display:flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+    .labelRow label{
+      font-size: 14px;
+    }
+
+    .control{
+      width: 100%;
+      height: 46px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.42);
+      outline: none;
+      font-size: 16px;
+      color: var(--mbw-text);
+    }
+    select.control{
+      padding-right: 42px;
+    }
+    .control:focus{
+      border-color: rgba(11,91,42,.45);
+      box-shadow: 0 0 0 4px var(--mbw-focus);
+    }
+
+    .metaLine{
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--mbw-muted);
+    }
+
+    .actions{
+      margin-top: 16px;
+      display:flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-top: 16px;
     }
 
     .btn{
+      height: 40px;
+      padding: 0 14px;
       border-radius: 999px;
-      padding: 12px 16px;
-      font-weight: 900;
-      border: 1px solid rgba(0,0,0,0.14);
-      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.30);
+      color: var(--mbw-text);
+      font-weight: 800;
       cursor: pointer;
     }
-
-    .btn-primary{
-      background: var(--mbw-accent);
-      border-color: rgba(0,0,0,0.18);
+    .btn:disabled{
+      opacity: .55;
+      cursor: not-allowed;
+    }
+    .btnPrimary{
+      background: var(--mbw-green);
+      border-color: rgba(0,0,0,.14);
       color: #fff;
     }
-
-    .btn:disabled{ opacity: 0.6; cursor:not-allowed; }
-
-    .mbw-pill{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.10);
-      background: rgba(255,255,255,0.28);
-      font-size: 13px;
-      font-weight: 800;
-      margin-top: 10px;
+    .btnPrimary:hover{ background: var(--mbw-green-2); }
+    .btnGhost{
+      background: rgba(255,255,255,.26);
     }
 
-    .mbw-linkbox{
-      border: 1px dashed rgba(0,0,0,0.25);
+    .linkBox{
+      border: 1px dashed rgba(0,0,0,.25);
       border-radius: 14px;
+      background: rgba(255,255,255,.26);
       padding: 12px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 13px;
-      background: rgba(255,255,255,0.35);
-      overflow-wrap: anywhere;
+      font-size: 12px;
+      line-height: 1.35;
+      word-break: break-all;
+      min-height: 44px;
     }
 
-    .mbw-status{
-      font-size: 13px;
+    .status{
       margin-top: 10px;
-      font-weight: 800;
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(11,91,42,.95);
     }
 
-    .mbw-status.ok{ color: #1e5d2f; }
-    .mbw-status.err{ color: #8a1b1b; }
-
-    @media (max-width: 860px){
-      .mbw-grid{ grid-template-columns: 1fr; }
-      .mbw-shell{ padding: 20px; }
+    .error{
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #8b1f15;
+      background: rgba(192,57,43,.10);
+      border: 1px solid rgba(192,57,43,.28);
+      padding: 10px 12px;
+      border-radius: 14px;
     }
   </style>
 </head>
+
 <body>
+  <!-- Global header mount (do not hardcode header per page) -->
   <div id="siteHeader"></div>
 
-  <main>
-    <div class="mbw-page">
-      <section class="mbw-shell" aria-label="Create a payment link">
-        <h1 class="mbw-title">Create a payment link</h1>
-        <p class="mbw-sub">Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
+  <main class="pageWrap" role="main">
+    <section class="heroPanel" aria-label="Create payment link">
+      <h1 class="heroTitle">Create a payment link</h1>
+      <p class="heroSub">
+        Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.
+      </p>
 
-        <div class="mbw-grid">
-          <div class="mbw-card">
-            <div class="mbw-hint">Required fields are marked with <span class="req">*</span>.</div>
+      <div class="grid">
+        <div class="card">
+          <div class="hint">Required fields are marked with <span class="reqStar">*</span>.</div>
 
-            <label for="tourSelect">Tour <span class="req">*</span></label>
-            <select id="tourSelect" class="mbw-field" aria-describedby="tourHelp">
-              <option value="" selected>Loading tours...</option>
+          <div class="field">
+            <div class="labelRow">
+              <label for="tourSelect">Tour</label><span class="reqStar">*</span>
+            </div>
+            <select id="tourSelect" class="control" disabled>
+              <option value="">Loading tours...</option>
             </select>
-            <div id="tourHelp" class="mbw-hint">This list is Stripe-driven via the Tours API.</div>
-            <div id="priceLine" class="mbw-hint" style="margin-top:6px;"></div>
+            <div class="metaLine">This list is Stripe-driven via the Tours API.</div>
+            <div class="metaLine" id="priceLine" style="display:none;"></div>
+          </div>
 
-            <label for="dateInput">Tour date <span class="req">*</span></label>
-            <input id="dateInput" class="mbw-field" type="date" />
-            <div class="mbw-hint">Today and past dates are blocked (America/Guayaquil).</div>
+          <div class="field">
+            <div class="labelRow">
+              <label for="tourDate">Tour date</label><span class="reqStar">*</span>
+            </div>
+            <input id="tourDate" class="control" type="date" />
+            <div class="metaLine" id="dateHelp">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
+          </div>
 
-            <label for="partyInput">Number of people <span class="req">*</span></label>
-            <input id="partyInput" class="mbw-field" type="number" inputmode="numeric" min="1" max="8" step="1" value="2" />
-            <div class="mbw-hint">Must be 1 to 8.</div>
+          <div class="field">
+            <div class="labelRow">
+              <label for="partySelect">Number of people</label><span class="reqStar">*</span>
+            </div>
+            <select id="partySelect" class="control" aria-label="Number of people">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+            </select>
+            <div class="metaLine">Must be 1 to 8.</div>
+          </div>
 
-            <label for="langSelect">Language</label>
-            <select id="langSelect" class="mbw-field">
+          <div class="field">
+            <div class="labelRow">
+              <label for="langSelect">Language</label>
+            </div>
+            <select id="langSelect" class="control">
               <option value="en" selected>English</option>
               <option value="es">Spanish</option>
             </select>
-            <div class="mbw-hint">Generates a link to the correct language pay page.</div>
-
-            <div class="mbw-actions">
-              <button id="btnGenerate" class="btn btn-primary" type="button">Generate link</button>
-              <button id="btnCopy" class="btn" type="button" disabled>Copy link</button>
-              <button id="btnOpen" class="btn" type="button" disabled>Open link</button>
-            </div>
-
-            <div class="mbw-pill" id="loadedPill">Tours loaded: 0</div>
-            <div class="mbw-status" id="statusLine"></div>
+            <div class="metaLine">Generates a link to the correct language pay page.</div>
           </div>
 
-          <aside class="mbw-card" aria-label="Generated payment link">
-            <h2>Payment link</h2>
-            <div class="mbw-linkbox" id="linkBox">Generate a link to display it here.</div>
-            <p class="mbw-hint" style="margin-top:10px;">The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link. On the pay page, the guest may increase party size, but cannot reduce it below the locked size.</p>
-          </aside>
+          <div class="actions">
+            <button id="btnGenerate" class="btn btnPrimary" type="button">Generate link</button>
+            <button id="btnCopy" class="btn btnGhost" type="button" disabled>Copy link</button>
+            <button id="btnOpen" class="btn btnGhost" type="button" disabled>Open link</button>
+          </div>
+
+          <div id="status" class="status" style="display:none;"></div>
+          <div id="error" class="error" style="display:none;"></div>
         </div>
-      </section>
-    </div>
+
+        <div class="card">
+          <h2>Payment link</h2>
+          <div id="linkBox" class="linkBox">Generate a link to display it here.</div>
+          <p class="hint" style="margin-top:10px;">
+            The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
+            On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
+          </p>
+        </div>
+      </div>
+    </section>
   </main>
 
+  <!-- Global footer mount -->
   <div id="siteFooter"></div>
 
+  <!-- Global include loader + menu behavior -->
   <script src="/assets/js/includes.js"></script>
   <script src="/assets/js/site.js"></script>
 
   <script>
-    const TZ = "America/Guayaquil";
-    const MBW_API_BASE = "/api";
+    // ---------------------------
+    // Fixes being applied here:
+    // 1) Header: use global include mounts (siteHeader/siteFooter) and site.js.
+    // 2) Tours not loading: fix JS syntax so tour fetch runs; add better error reporting.
+    // 3) Date rules: enforce "tomorrow or later" with min attribute + runtime guard (mobile + desktop).
+    // 4) Party size: dropdown 1-8 (no free typing).
+    // 5) Remove "Tours loaded" counter (not needed).
+    // ---------------------------
 
-    const elTour = document.getElementById('tourSelect');
-    const elDate = document.getElementById('dateInput');
-    const elParty = document.getElementById('partyInput');
-    const elLang = document.getElementById('langSelect');
-    const elLink = document.getElementById('linkBox');
-    const elStatus = document.getElementById('statusLine');
-    const elLoaded = document.getElementById('loadedPill');
-    const elPriceLine = document.getElementById('priceLine');
+    const tz = 'America/Guayaquil';
 
-    const btnGenerate = document.getElementById('btnGenerate');
-    const btnCopy = document.getElementById('btnCopy');
-    const btnOpen = document.getElementById('btnOpen');
+    // Adjust this ONLY if your API lives elsewhere. Keep relative path for same-domain deployments.
+    const TOURS_ENDPOINT = '/api/tours';
 
-    let toursByLang = { en: [], es: [] };
-    let allTours = [];
-    let latestLink = "";
+    const els = {
+      tourSelect: document.getElementById('tourSelect'),
+      tourDate: document.getElementById('tourDate'),
+      partySelect: document.getElementById('partySelect'),
+      langSelect: document.getElementById('langSelect'),
+      btnGenerate: document.getElementById('btnGenerate'),
+      btnCopy: document.getElementById('btnCopy'),
+      btnOpen: document.getElementById('btnOpen'),
+      linkBox: document.getElementById('linkBox'),
+      status: document.getElementById('status'),
+      error: document.getElementById('error'),
+      priceLine: document.getElementById('priceLine'),
+      dateHelp: document.getElementById('dateHelp')
+    };
 
-    function isoDateInTZ(timeZone){
-      // returns YYYY-MM-DD in a timezone
-      const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(new Date());
-      const y = parts.find(p=>p.type==='year').value;
-      const m = parts.find(p=>p.type==='month').value;
-      const d = parts.find(p=>p.type==='day').value;
-      return `${y}-${m}-${d}`;
+    let allTours = []; // unfiltered set from API
+    let lastLink = '';
+
+    function showError(msg){
+      els.error.textContent = msg;
+      els.error.style.display = 'block';
+    }
+    function clearError(){
+      els.error.textContent = '';
+      els.error.style.display = 'none';
+    }
+    function showStatus(msg){
+      els.status.textContent = msg;
+      els.status.style.display = 'block';
+    }
+    function clearStatus(){
+      els.status.textContent = '';
+      els.status.style.display = 'none';
     }
 
-    function addDays(iso, days){
-      const [y,m,d] = iso.split('-').map(Number);
-      const dt = new Date(Date.UTC(y, m-1, d));
-      dt.setUTCDate(dt.getUTCDate() + days);
-      const yy = dt.getUTCFullYear();
-      const mm = String(dt.getUTCMonth()+1).padStart(2,'0');
-      const dd = String(dt.getUTCDate()).padStart(2,'0');
-      return `${yy}-${mm}-${dd}`;
+    // Get YYYY-MM-DD for "tomorrow" in the target timezone.
+    function getTomorrowISOInTZ(timeZone){
+      const now = new Date();
+      const fmt = new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      // "today" in TZ
+      const parts = fmt.formatToParts(now).reduce((acc,p)=>{ acc[p.type]=p.value; return acc; }, {});
+      const todayISO = `${parts.year}-${parts.month}-${parts.day}`;
+
+      // Build a Date from todayISO at midnight UTC, then add 1 day, then return ISO.
+      const base = new Date(`${todayISO}T00:00:00Z`);
+      base.setUTCDate(base.getUTCDate() + 1);
+      return base.toISOString().slice(0,10);
     }
 
-    function setMinDateTomorrow(){
-      const todayTz = isoDateInTZ(TZ);
-      const min = addDays(todayTz, 1);
-      elDate.min = min;
-      if(!elDate.value || elDate.value < min){
-        elDate.value = min;
+    function enforceMinDate(){
+      const minISO = getTomorrowISOInTZ(tz);
+      els.tourDate.min = minISO;
+
+      // If empty, prefill to min (makes workflow faster)
+      if (!els.tourDate.value) els.tourDate.value = minISO;
+
+      // Guard for mobile browsers that still allow choosing earlier dates in the picker UI.
+      if (els.tourDate.value && els.tourDate.value < minISO){
+        els.tourDate.value = minISO;
+      }
+      els.dateHelp.textContent = `Only tomorrow and future dates are allowed (${tz}).`;
+    }
+
+    function normalizeTour(raw){
+      // Defensive normalization across possible API shapes.
+      const code = raw.code || raw.tour_code || raw.id || '';
+      const name = raw.name || raw.title || raw.tour_name || code || 'Tour';
+      const lang = (raw.lang || raw.language || '').toLowerCase() || 'en';
+      const price = raw.price || raw.unit_amount || raw.amount || raw.price_per_person || '';
+      const currency = (raw.currency || 'USD').toUpperCase();
+      return { raw, code, name, lang, price, currency };
+    }
+
+    function formatMoney(price, currency){
+      const n = Number(price);
+      if (!isFinite(n)) return '';
+      try{
+        return new Intl.NumberFormat('en-US', { style:'currency', currency }).format(n);
+      }catch(e){
+        return `$${n.toFixed(2)}`;
       }
     }
 
-    function clampParty(){
-      const v = Number(elParty.value || 0);
-      if(!Number.isFinite(v) || v < 1) elParty.value = 1;
-      if(v > 8) elParty.value = 8;
-    }
+    function populateTours(){
+      const lang = els.langSelect.value;
 
-    function setStatus(msg, kind){
-      elStatus.textContent = msg || "";
-      elStatus.className = 'mbw-status' + (kind ? ' ' + kind : '');
-    }
+      // Prefer tours matching selected language, but do not hide everything if API doesn't tag language.
+      const candidates = allTours
+        .map(normalizeTour)
+        .filter(t => t.code)
+        .filter(t => {
+          // If language is unknown, keep it.
+          if (!t.lang) return true;
+          return t.lang === lang;
+        });
 
-    function currentTour(){
-      const val = elTour.value;
-      return allTours.find(t => String(t.tour_code) === String(val) && String(t.language) === String(elLang.value))
-        || allTours.find(t => String(t.tour_code) === String(val))
-        || null;
-    }
+      els.tourSelect.innerHTML = '';
 
-    function updatePriceLine(){
-      const t = currentTour();
-      if(!t){ elPriceLine.textContent = ""; return; }
-      const price = (t.amount_display || '').trim();
-      elPriceLine.textContent = price ? `Selected price: ${price} per person` : "";
-    }
-
-    function populateTourOptions(){
-      const lang = elLang.value;
-      const list = toursByLang[lang] || [];
-
-      // keep selection if possible
-      const current = elTour.value;
-      elTour.innerHTML = "";
-
-      if(!list.length){
+      if (!candidates.length){
         const opt = document.createElement('option');
-        opt.value = "";
-        opt.textContent = "No tours available";
-        elTour.appendChild(opt);
-        elLoaded.textContent = 'Tours loaded: 0';
-        updatePriceLine();
+        opt.value = '';
+        opt.textContent = 'No tours found';
+        els.tourSelect.appendChild(opt);
+        els.tourSelect.disabled = true;
+        els.priceLine.style.display = 'none';
         return;
       }
 
-      for(const t of list){
+      // Sort by code then name.
+      candidates.sort((a,b) => (a.code||'').localeCompare(b.code||'') || (a.name||'').localeCompare(b.name||''));
+
+      for (const t of candidates){
         const opt = document.createElement('option');
-        opt.value = t.tour_code;
-        const price = t.amount_display ? ` (${t.amount_display} per person)` : "";
-        opt.textContent = `${t.tour_code} - ${t.tour_title}${price}`;
-        elTour.appendChild(opt);
+        opt.value = t.code;
+        const priceTxt = t.price !== '' ? `${formatMoney(t.price, t.currency)} per person` : '';
+        opt.textContent = priceTxt ? `${t.code} - ${t.name} (${priceTxt})` : `${t.code} - ${t.name}`;
+        opt.dataset.price = t.price;
+        opt.dataset.currency = t.currency;
+        opt.dataset.name = t.name;
+        els.tourSelect.appendChild(opt);
       }
 
-      // restore selection if still exists
-      const exists = [...elTour.options].some(o => o.value === current);
-      elTour.value = exists ? current : list[0].tour_code;
-
-      elLoaded.textContent = `Tours loaded: ${list.length}`;
+      els.tourSelect.disabled = false;
       updatePriceLine();
     }
 
-    async async function fetchToursForLang(lang){
-      const url = `${MBW_API_BASE}/tours?lang=${encodeURIComponent(lang)}`;
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      if(!res.ok) throw new Error(`Tours API failed (${res.status})`);
-      const data = await res.json();
-      if(!data || !data.ok || !Array.isArray(data.tours)) return [];
-      return data.tours;
+    function updatePriceLine(){
+      const sel = els.tourSelect.options[els.tourSelect.selectedIndex];
+      if (!sel){ els.priceLine.style.display = 'none'; return; }
+      const price = sel.dataset.price;
+      const currency = sel.dataset.currency || 'USD';
+      const money = price !== undefined && price !== '' ? formatMoney(price, currency) : '';
+      if (!money){ els.priceLine.style.display = 'none'; return; }
+      els.priceLine.textContent = `Selected price: ${money} per person`;
+      els.priceLine.style.display = 'block';
     }
 
-    async function fetchToursAllBestEffort(){
-      // Best effort: try en + es; also try without lang if supported.
-      const out = [];
-      const seen = new Set();
+    async function loadTours(){
+      clearError();
+      clearStatus();
 
-      async function addList(list){
-        for(const t of list){
-          const key = `${t.tour_code}::${t.language}`;
-          if(seen.has(key)) continue;
-          seen.add(key);
-          out.push(t);
-        }
-      }
+      els.tourSelect.disabled = true;
+      els.tourSelect.innerHTML = '<option value="">Loading tours...</option>';
 
-      const [en, es] = await Promise.allSettled([fetchToursForLang('en'), fetchToursForLang('es')]);
-      if(en.status === 'fulfilled') await addList(en.value);
-      if(es.status === 'fulfilled') await addList(es.value);
-
-      // Optional: endpoint without lang may return all.
       try{
-        const res = await fetch(`${MBW_API_BASE}/tours`, { headers: { 'Accept': 'application/json' } });
-        if(res.ok){
-          const data = await res.json();
-          if(data && data.ok && Array.isArray(data.tours)) await addList(data.tours);
+        const res = await fetch(TOURS_ENDPOINT, { credentials: 'same-origin' });
+
+        if (!res.ok){
+          throw new Error(`Tours API returned ${res.status}`);
         }
-      }catch(_){ }
+        const data = await res.json();
 
-      return out;
-    }
+        // Support either {tours:[...]} or [...].
+        const toursArray = Array.isArray(data) ? data : (Array.isArray(data.tours) ? data.tours : []);
+        allTours = toursArray;
 
-    function rebuildToursByLang(){
-      toursByLang = { en: [], es: [] };
-      for(const t of allTours){
-        const raw = String(t.language || '').toLowerCase();
-        const l = (raw === 'en' || raw === 'english' || raw === 'inglés' || raw === 'ingles') ? 'en'
-                : (raw === 'es' || raw === 'spanish' || raw === 'español' || raw === 'espanol') ? 'es'
-                : (String(t.lang || '').toLowerCase() === 'es' ? 'es' : (String(t.lang || '').toLowerCase() === 'en' ? 'en' : '');
-        if(l === 'en' || l === 'es') toursByLang[l].push(t);
-      }
-
-      // Sort by code then title
-      for(const k of Object.keys(toursByLang)){
-        toursByLang[k].sort((a,b)=>{
-          const ac = String(a.tour_code||'');
-          const bc = String(b.tour_code||'');
-          if(ac !== bc) return ac.localeCompare(bc);
-          return String(a.tour_title||'').localeCompare(String(b.tour_title||''));
-        });
+        populateTours();
+        showStatus('Tours loaded.');
+      }catch(err){
+        allTours = [];
+        els.tourSelect.innerHTML = '<option value="">Unable to load tours</option>';
+        els.tourSelect.disabled = true;
+        showError(`Tours did not load. ${err && err.message ? err.message : ''}`.trim());
       }
     }
 
-    function validateDate(){
-      const min = elDate.min;
-      if(elDate.value && min && elDate.value < min){
-        elDate.value = min;
-        setStatus('Past dates are not allowed. Date adjusted to the next available day.', 'err');
+    function buildPayLink(){
+      clearError();
+      clearStatus();
+
+      const tour = els.tourSelect.value;
+      const date = els.tourDate.value;
+      const party = els.partySelect.value;
+      const lang = els.langSelect.value;
+
+      if (!tour){
+        showError('Please select a tour.');
+        return '';
       }
+      if (!date){
+        showError('Please select a tour date.');
+        return '';
+      }
+      enforceMinDate();
+      const minISO = els.tourDate.min;
+      if (date < minISO){
+        showError('Tour date must be tomorrow or later.');
+        els.tourDate.value = minISO;
+        return '';
+      }
+      if (!party){
+        showError('Please select number of people.');
+        return '';
+      }
+
+      const params = new URLSearchParams({ tour, date, party, lang });
+      return `${location.origin}/book-tour/pay/?${params.toString()}`;
     }
 
-    function buildPayUrl(){
-      const t = currentTour();
-      const tourCode = t ? t.tour_code : elTour.value;
-      const date = elDate.value;
-      const party = Number(elParty.value || 0);
-      const lang = elLang.value;
-
-      if(!tourCode){ setStatus('Please select a tour.', 'err'); return ''; }
-      if(!date){ setStatus('Please select a tour date.', 'err'); return ''; }
-      if(!Number.isFinite(party) || party < 1 || party > 8){ setStatus('Party size must be between 1 and 8.', 'err'); return ''; }
-
-      const qs = new URLSearchParams({ tour: tourCode, date, party: String(party), lang });
-      return `${location.origin}/book-tour/pay/?${qs.toString()}`;
+    function setLink(link){
+      lastLink = link || '';
+      if (!lastLink){
+        els.linkBox.textContent = 'Generate a link to display it here.';
+        els.btnCopy.disabled = true;
+        els.btnOpen.disabled = true;
+        return;
+      }
+      els.linkBox.textContent = lastLink;
+      els.btnCopy.disabled = false;
+      els.btnOpen.disabled = false;
     }
 
-    function setLink(url){
-      latestLink = url || '';
-      elLink.textContent = url || 'Generate a link to display it here.';
-      btnCopy.disabled = !url;
-      btnOpen.disabled = !url;
-    }
-
-    btnGenerate.addEventListener('click', ()=>{
-      clampParty();
-      validateDate();
-      const url = buildPayUrl();
-      if(!url){ setLink(''); return; }
-      setLink(url);
-      setStatus('Link generated.', 'ok');
-    });
-
-    btnCopy.addEventListener('click', async ()=>{
-      if(!latestLink) return;
+    async function copyLink(){
+      if (!lastLink) return;
       try{
-        await navigator.clipboard.writeText(latestLink);
-        setStatus('Copied to clipboard.', 'ok');
-      }catch(_){
-        // fallback
+        await navigator.clipboard.writeText(lastLink);
+        showStatus('Link copied.');
+      }catch(e){
+        // Fallback
         const ta = document.createElement('textarea');
-        ta.value = latestLink;
+        ta.value = lastLink;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
-        ta.remove();
-        setStatus('Copied to clipboard.', 'ok');
+        document.body.removeChild(ta);
+        showStatus('Link copied.');
       }
-    });
+    }
 
-    btnOpen.addEventListener('click', ()=>{
-      if(!latestLink) return;
-      window.open(latestLink, '_blank', 'noopener');
-    });
-
-    elLang.addEventListener('change', ()=>{
-      populateTourOptions();
+    // Event wiring (keep simple, deterministic)
+    els.langSelect.addEventListener('change', () => {
+      populateTours();
       setLink('');
-      setStatus('', '');
+      clearStatus();
     });
-
-    elTour.addEventListener('change', ()=>{
+    els.tourSelect.addEventListener('change', () => {
       updatePriceLine();
       setLink('');
-      setStatus('', '');
+      clearStatus();
+    });
+    els.tourDate.addEventListener('change', () => {
+      enforceMinDate();
+      setLink('');
+      clearStatus();
+    });
+    els.partySelect.addEventListener('change', () => {
+      setLink('');
+      clearStatus();
     });
 
-    elParty.addEventListener('input', clampParty);
-    elDate.addEventListener('change', ()=>{ validateDate(); setLink(''); });
-
-    (async function init(){
-      setMinDateTomorrow();
-      clampParty();
-      setStatus('Loading tours...', '');
-
-      try{
-        allTours = await fetchToursAllBestEffort();
-        rebuildToursByLang();
-        populateTourOptions();
-        setStatus(allTours.length ? 'Tours loaded.' : 'No tours returned from the API.', allTours.length ? 'ok' : 'err');
-      }catch(e){
-        setStatus('Could not load tours. Please refresh.', 'err');
-        elTour.innerHTML = '<option value="">Could not load tours</option>';
-        elLoaded.textContent = 'Tours loaded: 0';
+    els.btnGenerate.addEventListener('click', () => {
+      const link = buildPayLink();
+      if (link){
+        setLink(link);
+        showStatus('Link generated.');
       }
-    })();
+    });
+    els.btnCopy.addEventListener('click', copyLink);
+    els.btnOpen.addEventListener('click', () => { if (lastLink) window.open(lastLink, '_blank', 'noopener'); });
+
+    // Init
+    enforceMinDate();
+    loadTours();
   </script>
 </body>
 </html>
