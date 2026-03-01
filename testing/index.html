@@ -1,7 +1,7 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Pay for a Tour | Mindo Bird Watching</title>
@@ -29,9 +29,9 @@
 <link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/site.webmanifest" rel="manifest"/>
 <meta content="#034EA2" name="theme-color"/>
-<link href="/assets/css/site.css" rel="stylesheet">
-<link href="/assets/css/header.css" rel="stylesheet">
-<link href="/assets/css/footer.css" rel="stylesheet">
+<link href="/assets/css/site.css" rel="stylesheet"/>
+<link href="/assets/css/header.css" rel="stylesheet"/>
+<link href="/assets/css/footer.css" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <style>
     /* Page-only styles (main content only) */
@@ -540,68 +540,55 @@
       .rowPhone{ grid-template-columns: 1fr; }
     }
   </style>
-</link></link></link>
 </head>
-
 <body data-current-lang="en">
 <div class="container">
-  <div id="siteHeader"></div>
-
-  <main class="page card">
-    <div class="layout" aria-label="Pay for a tour layout grid">
-
-      <div class="leftStack" aria-label="Left content stack">
-        <section class="heroLeft" aria-label="Pay for a tour intro">
-          <h1>Pay for a Tour</h1>
-          <p class="lede">
+<div id="siteHeader"></div>
+<main class="page card">
+<div aria-label="Pay for a tour layout grid" class="layout">
+<div aria-label="Left content stack" class="leftStack">
+<section aria-label="Pay for a tour intro" class="heroLeft">
+<h1>Pay for a Tour</h1>
+<p class="lede">
             Select a tour, choose your date, enter pickup details, and complete payment securely with Stripe.
           </p>
-
-          <div class="metaCard" aria-label="Checkout metadata">
-            <div class="chips" aria-label="Metadata chips">
-              <span class="chip">Price is per person</span>
-              <span class="chip">Timezone: America/Guayaquil</span>
-              <span class="chip">Pickup window: 15 minutes</span>
-            </div>
-            <p class="note">Fields marked with <span class="req">*</span> are required.</p>
-          </div>
-        </section>
-
-        <section class="cardBlock" aria-label="Available tours">
-          <div class="blockHead">
-            <h2>Available tours</h2>
-            <p class="subtle">Pick one tour to continue.</p>
-          </div>
-
-          <div id="tourList" class="tourList" aria-live="polite">
-            <div class="notice">Loading tours...</div>
-          </div>
-
-          <div id="tourLoadError" class="notice noticeError" hidden>
+<div aria-label="Checkout metadata" class="metaCard">
+<div aria-label="Metadata chips" class="chips">
+<span class="chip">Price is per person</span>
+<span class="chip">Timezone: America/Guayaquil</span>
+<span class="chip">Pickup window: 15 minutes</span>
+</div>
+<p class="note">Fields marked with <span class="req">*</span> are required.</p>
+</div>
+</section>
+<section aria-label="Available tours" class="cardBlock">
+<div class="blockHead">
+<h2>Available tours</h2>
+<p class="subtle">Pick one tour to continue.</p>
+</div>
+<div aria-live="polite" class="tourList" id="tourList">
+<div class="notice">Loading tours...</div>
+</div>
+<div class="notice noticeError" hidden="" id="tourLoadError">
             Could not load tours. Please refresh the page. If the issue persists, message us on WhatsApp.
           </div>
-        </section>
-      </div>
-
-      <aside class="rightStack" aria-label="Checkout details">
-        <section class="cardBlock">
-          <div class="blockHead">
-            <h2>Checkout details</h2>
-            <p class="subtle">Choose a tour on the left. The checkout form will appear here.</p>
-          </div>
-
-          <div id="checkoutPanel" class="checkoutPanel">
-            <div class="notice">Select a tour on the left to begin.</div>
-          </div>
-        </section>
-      </aside>
-
-    </div>
-  </main>
-
-  <div id="siteFooter"></div>
+</section>
 </div>
-
+<aside aria-label="Checkout details" class="rightStack">
+<section class="cardBlock">
+<div class="blockHead">
+<h2>Checkout details</h2>
+<p class="subtle">Choose a tour on the left. The checkout form will appear here.</p>
+</div>
+<div class="checkoutPanel" id="checkoutPanel">
+<div class="notice">Select a tour on the left to begin.</div>
+</div>
+</section>
+</aside>
+</div>
+</main>
+<div id="siteFooter"></div>
+</div>
 <style>
 /* Page-only styling (kept minimal so global site CSS stays in control) */
 .layout {
@@ -886,7 +873,6 @@
   }
 }
 </style>
-
 <script>
   // Use SAME-ORIGIN API route on mindobirdwatching.com to avoid CORS.
   const MBW_API_BASE = "/api";
@@ -939,12 +925,23 @@
         });
 
         if (t.hero_image_url) {
-          card.appendChild(el("img", {
+          const imgEl = el("img", {
             class: "tourThumb",
             src: t.hero_image_url,
             alt: t.tour_title ? `Promo image for ${t.tour_title}` : "Tour image",
             loading: "lazy"
-          }));
+          });
+          imgEl.addEventListener("error", () => {
+            // Lightweight fallback for common promo image naming differences
+            if (imgEl.dataset.fallbackTried) return;
+            imgEl.dataset.fallbackTried = "1";
+            if (imgEl.src.includes("MBW_Tour_Options-4-")) {
+              imgEl.src = imgEl.src.replace("MBW_Tour_Options-4-", "MBW_Tour_Options-2-");
+            } else if (imgEl.src.includes("MBW_Tour_Options-2-")) {
+              imgEl.src = imgEl.src.replace("MBW_Tour_Options-2-", "MBW_Tour_Options-4-");
+            }
+          });
+          card.appendChild(imgEl);
         }
 
         card.appendChild(el("div", { class: "tourTitleWrap" }, [
@@ -1023,11 +1020,18 @@
     agree.appendChild(agreeRow);
     form.appendChild(agree);
 
-    // Turnstile placeholder (will render when we add the widget)
-    const ts = el("div", { class: "turnstileWrap" }, [
-      el("div", { class: "fieldHelp", text: "Turnstile verification will appear here." })
-    ]);
-    form.appendChild(ts);
+    // Turnstile
+    const tsWrap = el("div", { class: "turnstileWrap" });
+    const tsEl = el("div", { class: "cf-turnstile" });
+    tsEl.setAttribute("data-sitekey", "0x4AAAAAACYIFF7ZNXiqieGk");
+    tsEl.setAttribute("data-theme", "light");
+    tsWrap.appendChild(tsEl);
+    form.appendChild(tsWrap);
+
+    // If Turnstile script already loaded, render immediately for dynamically inserted widget
+    if (window.turnstile && typeof window.turnstile.render === "function") {
+      try { window.turnstile.render(tsEl); } catch (_) {}
+    }
 
     // Actions
     const actions = el("div", { class: "actions" });
@@ -1111,6 +1115,5 @@
   // Start
   loadTours();
 </script>
-
-</body>
+<script src="/assets/js/includes.js"></script><script src="/assets/js/site.js"></script><script async="" defer="" src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script></body>
 </html>
