@@ -199,19 +199,12 @@
       padding: 10px 12px;
       border-radius: 14px;
     }
-  
-    /* payCreatePage guard */
-    .payCreateRoot * { box-sizing: border-box; }
-    /* Do not override global header/footer layout */
-    #siteHeader, #siteHeader * { box-sizing: border-box; }
-    
-</style>
+  </style>
 </head>
 
-<body class="payCreatePage">
+<body>
   <!-- Global header mount (do not hardcode header per page) -->
   <div id="siteHeader"></div>
-  <main class="payCreateRoot">
 
   <main class="pageWrap" role="main">
     <section class="heroPanel" aria-label="Create payment link">
@@ -294,7 +287,6 @@
   </main>
 
   <!-- Global footer mount -->
-    </main>
   <div id="siteFooter"></div>
 
   <!-- Global include loader + menu behavior -->
@@ -308,18 +300,13 @@
     // 2) Tours not loading: fix JS syntax so tour fetch runs; add better error reporting.
     // 3) Date rules: enforce "tomorrow or later" with min attribute + runtime guard (mobile + desktop).
     // 4) Party size: dropdown 1-8 (no free typing).
-    // 5) Remove "" counter (not needed).
+    // 5) Remove "Tours loaded" counter (not needed).
     // ---------------------------
 
     const tz = 'America/Guayaquil';
 
     // Adjust this ONLY if your API lives elsewhere. Keep relative path for same-domain deployments.
-    const TOURS_ENDPOINTS = [
-      '/api/tours',
-      '/api/tours/',
-      '/book-tour/api/tours',
-      '/book-tour/api/tours/',
-    ];
+    const TOURS_ENDPOINT = '/api/tours';
 
     const els = {
       tourSelect: document.getElementById('tourSelect'),
@@ -391,12 +378,24 @@
 
     function normalizeTour(raw){
       // Defensive normalization across possible API shapes.
-      const code = raw.code || raw.tour_code || raw.id || '';
-      const name = raw.name || raw.title || raw.tour_name || code || 'Tour';
-      const lang = (raw.lang || raw.language || '').toLowerCase() || 'en';
-      const price = raw.price || raw.unit_amount || raw.amount || raw.price_per_person || '';
-      const currency = (raw.currency || 'USD').toUpperCase();
-      return { raw, code, name, lang, price, currency };
+      const nameRaw = raw.name || raw.title || raw.tour_name || '';
+      const codeFromName = (typeof nameRaw === 'string' ? (nameRaw.trim().match(/^([A-Z]{2,6}\d{2,6})\b/) || [])[1] : '') || '';
+      const code = (raw.code || raw.tour_code || raw.tourCode || codeFromName || raw.id || '').toString();
+
+      // Keep the full display name, but also provide a clean name without duplicated code prefix.
+      const displayName = (nameRaw || code || 'Tour').toString();
+      const escCode = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const cleanName = code ? displayName.replace(new RegExp('^' + escCode + '\\s*[-–]?\\s*', 'i'), '').trim() : displayName.trim();
+
+      // IMPORTANT: do not force a default language. Only set lang if the API provides it.
+      const lang = ((raw.lang || raw.language || raw.locale || '') + '').toLowerCase().slice(0, 2);
+
+      // Price (Stripe often returns unit_amount in cents)
+      const currency = ((raw.currency || 'USD') + '').toUpperCase();
+      const priceRaw = raw.price ?? raw.unit_amount ?? raw.amount ?? raw.price_per_person ?? '';
+      const price = (typeof priceRaw === 'number' || (typeof priceRaw === 'string' && priceRaw.trim() !== '')) ? Number(priceRaw) : '';
+
+      return { raw, code, displayName, cleanName, lang, price, currency };
     }
 
     function formatMoney(price, currency){
@@ -410,57 +409,51 @@
     }
 
     function populateTours(){
-      const lang = els.langSelect.value;
+      const lang = (els.lang.value || 'en').toLowerCase();
 
-      // Prefer tours matching selected language, but do not hide everything if API doesn't tag language.
-      const candidates = allTours
-        .map(normalizeTour)
-        .filter(t => t.code)
-        .filter(t => {
-          // If language is unknown, keep it.
-          if (!t.lang) return true;
-          return t.lang === lang;
-        });
+      // If the API provides language tags for at least one tour, we will filter by it.
+      // If no language tags exist, we will show all tours.
+      const hasLangTags = allTours.some(t => !!t.lang);
+      let candidates = hasLangTags ? allTours.filter(t => t.lang === lang) : allTours.slice();
 
-      els.tourSelect.innerHTML = '';
+      // If filtering produced nothing (bad/missing tags), fall back to showing everything.
+      if (!candidates.length) candidates = allTours.slice();
 
-      if (!candidates.length){
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No tours found';
-        els.tourSelect.appendChild(opt);
-        els.tourSelect.disabled = true;
-        els.priceLine.style.display = 'none';
-        return;
-      }
+      // Stable ordering: code asc, then name
+      candidates.sort((a,b) => (a.code||'').localeCompare(b.code||'') || (a.cleanName||a.displayName||'').localeCompare(b.cleanName||b.displayName||''));
 
-      // Sort by code then name.
-      candidates.sort((a,b) => (a.code||'').localeCompare(b.code||'') || (a.name||'').localeCompare(b.name||''));
+      els.tour.innerHTML = '';
+      const ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = candidates.length ? 'Select a tour...' : 'No tours available';
+      ph.disabled = true;
+      ph.selected = true;
+      els.tour.appendChild(ph);
 
       for (const t of candidates){
         const opt = document.createElement('option');
         opt.value = t.code;
-        const priceTxt = t.price !== '' ? `${formatMoney(t.price, t.currency)} per person` : '';
-        opt.textContent = priceTxt ? `${t.code} - ${t.name} (${priceTxt})` : `${t.code} - ${t.name}`;
-        opt.dataset.price = t.price;
-        opt.dataset.currency = t.currency;
-        opt.dataset.name = t.name;
-        els.tourSelect.appendChild(opt);
+        const priceLabel = (t.price !== '' && isFinite(t.price))
+          ? (' (' + formatMoney(normalizeStripeAmount(t.price), t.currency) + ' per person)')
+          : '';
+        opt.textContent = (t.code ? (t.code + ' - ') : '') + (t.cleanName || t.displayName || 'Tour') + priceLabel;
+        opt.dataset.code = t.code;
+        opt.dataset.price = String(t.price ?? '');
+        opt.dataset.currency = t.currency || 'USD';
+        els.tour.appendChild(opt);
       }
 
-      els.tourSelect.disabled = false;
-      updatePriceLine();
-    }
-
-    function updatePriceLine(){
-      const sel = els.tourSelect.options[els.tourSelect.selectedIndex];
-      if (!sel){ els.priceLine.style.display = 'none'; return; }
-      const price = sel.dataset.price;
-      const currency = sel.dataset.currency || 'USD';
-      const money = price !== undefined && price !== '' ? formatMoney(price, currency) : '';
-      if (!money){ els.priceLine.style.display = 'none'; return; }
-      els.priceLine.textContent = `Selected price: ${money} per person`;
-      els.priceLine.style.display = 'block';
+      // Attempt to keep current selection if still present
+      if (selectedTourCode){
+        const found = Array.from(els.tour.options).find(o => o.value === selectedTourCode);
+        if (found){
+          els.tour.value = selectedTourCode;
+          updateSelectedPrice();
+        }else{
+          selectedTourCode = '';
+          updateSelectedPrice();
+        }
+      }
     }
 
     async function loadTours(){
@@ -483,7 +476,7 @@
         allTours = toursArray;
 
         populateTours();
-        showStatus('');
+        showStatus('Tours loaded.');
       }catch(err){
         allTours = [];
         els.tourSelect.innerHTML = '<option value="">Unable to load tours</option>';
