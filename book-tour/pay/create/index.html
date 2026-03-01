@@ -132,6 +132,14 @@
     }
   
   .reqStar{color:#b42318;font-weight:800;}
+
+/* date fix */
+.field input[type="date"]{
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+}
 </style>
 </head>
 
@@ -157,6 +165,7 @@
               <option>Loading tours...</option>
             </select>
             <div class="muted" id="tourHelp">This list is Stripe-driven via the Tours API.</div>
+<div id="tourSummary" class="hint strong"></div>
           </div>
 
           <div class="row">
@@ -253,12 +262,15 @@
       return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth()+1)}-${pad2(dt.getUTCDate())}`;
     }
 
-    function setDateMin() {
-      const todayTz = tzTodayISO(TZ);
-      const min = addDaysISO(todayTz, 1); // block today and past
-      dateSel.min = min;
-      if (!dateSel.value || dateSel.value < min) dateSel.value = min;
-    }
+    function setDateMin(){
+  const min = tzTomorrowISO();
+  dateInput.min = min;
+  if (!dateInput.value) dateInput.value = min;
+  if (dateInput.value && !/^\d{4}-\d{2}-\d{2}$/.test(dateInput.value)) {
+    dateInput.value = min;
+  }
+}
+
 
     function showStatus(ok, text) {
       statusPill.style.display = "inline-flex";
@@ -290,56 +302,64 @@
       return url.toString();
     }
 
-    async function loadTours() {
-      const lang = langSel.value;
-      tourSel.disabled = true;
-      tourSel.innerHTML = "<option>Loading tours...</option>";
+    async function loadTours(){
+  statusEl.textContent = "Loading tours...";
+  tours = [];
+  tourSelect.innerHTML = "";
 
-      try {
-        const res = await fetch(`${API_BASE}/tours?lang=${encodeURIComponent(lang)}`, { credentials: "omit" });
-        const data = await res.json();
-        if (!data || !data.ok || !Array.isArray(data.tours)) throw new Error("Bad tours response");
+  try{
+    const lang = (langSelect.value || "en").toLowerCase();
 
-        tours = data.tours.map((t, i) => ({
-          ...t,
-          _key: `${t.tour_code}__${t.language || lang}__${i}`
-        }));
+    const r1 = await fetch(`${API_BASE}/tours?lang=${encodeURIComponent(lang)}`, { cache: "no-store" });
+    const j1 = await r1.json();
+    let list = Array.isArray(j1?.tours) ? j1.tours.slice() : [];
 
-        tourSel.innerHTML = "";
-        tours.forEach(t => {
-          const opt = document.createElement("option");
-          opt.value = t._key;
-          opt.textContent = `${t.tour_code} - ${t.tour_title} (${t.amount_display} per person)`;
-          tourSel.appendChild(opt);
-        });
-// If the API returns a partial list for a language, fetch the other language
-// and merge any missing tour_codes so staff can generate links for any tour.
-if (tours.length < 2) {
-  try {
-    const otherLang = (lang === "es" ? "en" : "es");
-    const otherRes = await fetch(`${API_BASE}/tours?lang=${encodeURIComponent(otherLang)}`, { headers: { "Accept": "application/json" } });
-    const otherData = await otherRes.json();
-    const otherTours = Array.isArray(otherData.tours) ? otherData.tours : [];
-    const seen = new Set(tours.map(t => t.tour_code));
-    for (const t of otherTours) {
-      if (!t || !t.tour_code) continue;
-      if (!seen.has(t.tour_code)) {
-        tours.push(t);
-        seen.add(t.tour_code);
-      }
+    if (list.length < 2){
+      const r2 = await fetch(`${API_BASE}/tours`, { cache: "no-store" });
+      const j2 = await r2.json();
+      const all = Array.isArray(j2?.tours) ? j2.tours : [];
+      const filtered = all.filter(t => String(t.language || "").toLowerCase() === lang);
+      if (filtered.length) list = filtered;
+      else if (all.length) list = all;
     }
-  } catch (_) {}
+
+    list.sort((a,b)=>{
+      const ac = String(a.tour_code||"").localeCompare(String(b.tour_code||""));
+      if (ac) return ac;
+      return String(a.tour_title||"").localeCompare(String(b.tour_title||""));
+    });
+
+    tours = list;
+
+    for (const t of tours){
+      const opt = document.createElement("option");
+      opt.value = t.tour_code;
+      const price = t.amount_display ? ` (${t.amount_display} per person)` : "";
+      opt.textContent = `${t.tour_code} - ${t.tour_title}${price}`;
+      tourSelect.appendChild(opt);
+    }
+
+    statusEl.textContent = `Tours loaded: ${tours.length}`;
+    updateTourSummary();
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = "Could not load tours.";
+  }
+}
+
+function updateTourSummary(){
+  const code = tourSelect.value;
+  const t = tours.find(x => String(x.tour_code) === String(code));
+  const elSum = document.getElementById("tourSummary");
+  if (!elSum) return;
+  if (!t){ elSum.textContent = ""; return; }
+  const amount = t.amount_display ? String(t.amount_display) : "";
+  const cur = t.currency ? ` ${t.currency}` : "";
+  const dur = t.duration_label ? `, ${t.duration_label}` : "";
+  elSum.textContent = amount ? `${amount}${cur} per person${dur}` : "";
 }
 
 
-        tourSel.disabled = false;
-        showStatus(true, `Tours loaded: ${tours.length}`);
-      } catch (e) {
-        tours = [];
-        tourSel.innerHTML = "<option>Could not load tours</option>";
-        showStatus(false, "Could not load tours (check /api/tours and Worker route).");
-      }
-    }
 
     function setLinkUI(url) {
       lastLink = url;
