@@ -1,558 +1,385 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pay for a Tour | Mindo Bird Watching</title>
-  <link rel="icon" href="/favicon.ico" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/footer.css?v=1">
-<script src="/assets/js/includes.js?v=1" defer></script>
+
+  <!-- Match site-wide CSS includes (NO cache-busting params here, because your host rewrites ?v=... to HTML) -->
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/header.css">
+  <link rel="stylesheet" href="/assets/css/footer.css">
+
+  <!-- Favicons (keep consistent with site) -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <!-- Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <!-- Site header/footer injection + mobile menu behavior -->
+  <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+
   <style>
-    .payGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
-    .payCard{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:16px;box-shadow:0 10px 24px rgba(0,0,0,.04)}
-    .payHeader{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-    .payHeader h1{margin:0}
-    .payHeader .lede{margin:0;opacity:.85}
-    .tourList{display:grid;gap:12px}
-    .tourItem{display:grid;grid-template-columns:120px 1fr;gap:12px;border:1px solid rgba(0,0,0,.10);border-radius:14px;overflow:hidden;background:#fff}
-    .tourItem button{appearance:none;border:0;background:transparent;padding:0;margin:0;text-align:left;cursor:pointer;width:100%}
-    .tourMedia{position:relative;background:#f2f4f8;min-height:90px}
-    .tourMedia img{display:block;width:100%;height:100%;object-fit:cover}
-    .tourBody{padding:12px}
-    .tourTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .tourTitle{font-weight:700;font-size:16px;line-height:1.25;margin:0}
-    .tourMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.10);background:#fafbff;font-size:12px;white-space:nowrap}
-    .priceTag{font-weight:800}
-    .selected{outline:3px solid rgba(3,78,162,.22);border-color:rgba(3,78,162,.35)}
-    .detailHero{display:flex;gap:12px;align-items:center}
-    .detailHero img{width:92px;height:92px;border-radius:14px;object-fit:cover;border:1px solid rgba(0,0,0,.08)}
-    .detailHero h2{margin:0;font-size:18px}
-    .detailHero .sub{margin:4px 0 0 0;opacity:.85}
-    .formGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-    .formRow{display:flex;flex-direction:column;gap:6px}
-    .formRow label{font-weight:650}
-    .formRow input,.formRow select,.formRow textarea{width:100%;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:10px 12px;font:inherit;background:#fff}
-    .formRow textarea{min-height:92px;resize:vertical}
-    .span2{grid-column:1 / -1}
-    .agreeRow{display:flex;gap:10px;align-items:flex-start}
-    .agreeRow input{width:auto;margin-top:3px}
-    .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
-    .btnPrimary{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer;background:#034EA2;color:#fff}
-    .btnPrimary[disabled]{opacity:.55;cursor:not-allowed}
-    .btnGhost{appearance:none;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:12px 14px;font-weight:750;cursor:pointer;background:#fff}
-    .hint{font-size:13px;opacity:.82;margin:8px 0 0 0}
-    .errorBox{display:none;margin-top:10px;border:1px solid rgba(190,0,0,.25);background:rgba(190,0,0,.06);padding:10px 12px;border-radius:12px}
-    .errorBox strong{display:block;margin-bottom:6px}
-    .loadingLine{display:none;margin-top:10px;opacity:.85}
-    .small{font-size:12px;opacity:.8}
-    @media(max-width:900px){
-      .payGrid{grid-template-columns:1fr}
-      .tourItem{grid-template-columns:100px 1fr}
+    /* Page-only layout. Keep styling neutral so it inherits the site's look. */
+    .payWrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 28px; }
+    .payCard { background: rgba(255,255,255,0.78); border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.10); padding: 18px; }
+    .payHeader h1 { margin: 0 0 8px; }
+    .payHeader .lede { margin: 0 0 6px; opacity: 0.9; }
+    .payHeader .subtle { margin: 0; font-size: 13px; opacity: 0.75; }
+
+    .payGrid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 16px; margin-top: 16px; align-items: start; }
+    .panel { background: rgba(255,255,255,0.86); border-radius: 16px; padding: 14px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+    .panel h2 { margin: 0 0 8px; font-size: 18px; }
+    .panel p { margin: 0; opacity: 0.85; }
+
+    .tourList { display: grid; gap: 10px; margin-top: 12px; }
+    .tourItem { display: grid; grid-template-columns: 104px 1fr; gap: 12px; padding: 10px; border-radius: 14px; cursor: pointer; background: rgba(255,255,255,0.92); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+    .tourItem:hover { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.10); }
+    .tourItem[aria-selected="true"] { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18); }
+    .tourThumb { width: 104px; height: 78px; border-radius: 12px; object-fit: cover; background: rgba(0,0,0,0.06); }
+    .tourMeta { display: grid; gap: 4px; }
+    .tourTitle { font-weight: 700; line-height: 1.15; }
+    .tourLine { font-size: 13px; opacity: 0.82; }
+    .tourPrice { font-weight: 700; }
+
+    .formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .formRow { display: grid; gap: 6px; }
+    label { font-size: 13px; opacity: 0.9; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.16);
+      background: rgba(255,255,255,0.92);
+      font: inherit;
     }
+    textarea { min-height: 90px; resize: vertical; }
+    .full { grid-column: 1 / -1; }
+    .help { font-size: 12px; opacity: 0.74; margin-top: 2px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
+    .primaryBtn {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: rgba(0,0,0,0.86);
+      color: #fff;
+    }
+    .primaryBtn[disabled] { opacity: 0.5; cursor: not-allowed; }
+    .ghostLink { font-weight: 700; text-decoration: underline; opacity: 0.9; }
+    .errorBox {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(220, 38, 38, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.18);
+      display: none;
+    }
+    .errorBox.show { display: block; }
+    .small { font-size: 12px; opacity: 0.75; }
 
-/* Page overrides: remove the old blue accent (#034EA2) for this flow */
-:root{
-  --mbw-pay-primary: #1f4d2e;
-  --mbw-pay-primary-hover: #173c24;
-}
-
-/* Primary buttons */
-a.btnPrimary, button.btnPrimary, .btnPrimary{
-  background: var(--mbw-pay-primary) !important;
-  border-color: var(--mbw-pay-primary) !important;
-}
-a.btnPrimary:hover, button.btnPrimary:hover, .btnPrimary:hover{
-  background: var(--mbw-pay-primary-hover) !important;
-  border-color: var(--mbw-pay-primary-hover) !important;
-}
-
-/* If your site uses .btn.primary */
-a.btn.primary, button.btn.primary, .btn.primary{
-  background: var(--mbw-pay-primary) !important;
-  border-color: var(--mbw-pay-primary) !important;
-}
-a.btn.primary:hover, button.btn.primary:hover, .btn.primary:hover{
-  background: var(--mbw-pay-primary-hover) !important;
-  border-color: var(--mbw-pay-primary-hover) !important;
-}
-
-/* Make secondary buttons match site look */
-a.btnSecondary, button.btnSecondary, .btnSecondary{
-  border-color: rgba(0,0,0,.12) !important;
-}
-</style>
-<script defer src="/assets/js/head.js?v=1"></script>
+    @media (max-width: 900px) {
+      .payGrid { grid-template-columns: 1fr; }
+      .tourItem { grid-template-columns: 92px 1fr; }
+      .tourThumb { width: 92px; height: 72px; }
+      .formGrid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
+
 <body>
   <div id="siteHeader"></div>
-  <div class="container">
-    <main class="page card">
-    <div class="payHeader" aria-label="Pay page header">
-      <h1>Pay for a Tour</h1>
-      <p class="lede">Select a tour, choose your date, enter pickup details, and complete payment securely with Stripe.</p>
-      <p class="small">Price is per person. Tour pickup time uses the local timezone: America/Guayaquil.</p>
-    </div>
-<div class="payGrid" aria-label="Pay layout grid">
-  <section class="payCard" aria-label="Tour list">
-    <div class="chips" aria-label="Tour list chips">
-      <span class="chip">Stripe driven list</span>
-      <span class="chip">Instant checkout</span>
-      <span class="chip">Secure payment</span>
-    </div>
 
-    <div id="tourList" class="tourList" aria-label="Available tours"></div>
+  <main class="payWrap">
+    <section class="payCard">
+      <header class="payHeader">
+        <h1>Pay for a Tour</h1>
+        <p class="lede">Select a tour, choose your date, enter pickup details, and complete payment securely with Stripe.</p>
+        <p class="subtle">Price is per person. Tour pickup time uses the local timezone: America/Guayaquil.</p>
+      </header>
 
-    <div id="tourListLoading" class="loadingLine">Loading tours...</div>
-    <div id="tourListError" class="errorBox" role="alert" aria-live="polite">
-      <strong>Could not load tours.</strong>
-      <div id="tourListErrorMsg"></div>
-    </div>
-  </section>
+      <div class="payGrid">
+        <section class="panel" aria-label="Tour list">
+          <h2>Available tours</h2>
+          <p class="small">Pick one tour to continue.</p>
 
-  <section class="payCard" aria-label="Tour details and checkout form">
-    <div id="detailEmpty">
-      <h2 style="margin:0 0 6px 0">Choose a tour to continue</h2>
-      <p class="hint">Pick a tour on the left. The checkout form will appear here.</p>
-    </div>
+          <div id="tourList" class="tourList" aria-live="polite"></div>
 
-    <div id="detailWrap" style="display:none">
-      <div class="detailHero" aria-label="Selected tour summary">
-        <img id="detailImg" alt="" src="" />
-        <div>
-          <h2 id="detailTitle"></h2>
-          <p class="sub" id="detailSub"></p>
-          <div class="tourMeta" aria-label="Selected tour meta">
-            <span class="badge"><span class="priceTag" id="detailPrice"></span> per person</span>
-            <span class="badge" id="detailDuration"></span>
-            <span class="badge" id="detailPickup"></span>
-          </div>
-          <p class="hint" id="detailOneLiner"></p>
-          <p class="hint"><a id="detailTourPage" href="#" target="_blank" rel="noopener">View tour details</a></p>
-        </div>
-      </div>
+          <div id="tourListError" class="errorBox" role="alert"></div>
 
-      <form id="payForm" novalidate>
-        <div class="formGrid" aria-label="Checkout form fields">
-          <div class="formRow">
-            <label for="people">Number of people <span class="req">*</span></label>
-            <input id="people" name="people" type="number" inputmode="numeric" min="1" step="1" value="2" required />
-          </div>
+          <p class="help">
+            Having trouble loading the list? This is usually a CORS or security setting on the API endpoint.
+          </p>
+        </section>
 
-          <div class="formRow">
-            <label for="tourDate">Tour date <span class="req">*</span></label>
-            <input id="tourDate" name="tourDate" type="date" required />
-          </div>
+        <section class="panel" aria-label="Checkout details">
+          <h2 id="formTitle">Choose a tour to continue</h2>
+          <p id="formHint" class="small">Pick a tour on the left. The checkout form will appear here.</p>
 
-          <div class="formRow">
-            <label for="contactName">Main contact name <span class="req">*</span></label>
-            <input id="contactName" name="contactName" type="text" autocomplete="name" required />
-          </div>
+          <form id="payForm" novalidate style="display:none;">
+            <div class="formGrid">
+              <div class="formRow full">
+                <label for="tourDate">Tour date (required)</label>
+                <input id="tourDate" name="tour_date" type="date" required>
+              </div>
 
-          <div class="formRow">
-            <label for="contactEmail">Email <span class="req">*</span></label>
-            <input id="contactEmail" name="contactEmail" type="email" autocomplete="email" required />
-          </div>
+              <div class="formRow">
+                <label for="people">Number of people (required)</label>
+                <input id="people" name="people" type="number" min="1" value="2" required>
+              </div>
 
-          <div class="formRow">
-            <label for="contactPhone">Phone <span class="req">*</span></label>
-            <input id="contactPhone" name="contactPhone" type="tel" autocomplete="tel" required />
-          </div>
+              <div class="formRow">
+                <label for="whatsapp">WhatsApp number (required)</label>
+                <input id="whatsapp" name="whatsapp" type="tel" placeholder="+593..." required>
+              </div>
 
-          <div class="formRow">
-            <label for="whatsapp">WhatsApp number <span class="req">*</span></label>
-            <input id="whatsapp" name="whatsapp" type="tel" required />
-          </div>
+              <div class="formRow">
+                <label for="name">Main contact name (required)</label>
+                <input id="name" name="contact_name" type="text" autocomplete="name" required>
+              </div>
 
-          <div class="formRow span2">
-            <label for="pickupAddress">Hotel or exact pickup address (in Mindo) <span class="req">*</span></label>
-            <input id="pickupAddress" name="pickupAddress" type="text" required />
-          </div>
+              <div class="formRow">
+                <label for="email">Email (required)</label>
+                <input id="email" name="email" type="email" autocomplete="email" required>
+              </div>
 
-          <div class="formRow span2">
-            <label for="notes">Notes or special requests</label>
-            <textarea id="notes" name="notes"></textarea>
-          </div>
+              <div class="formRow full">
+                <label for="pickupAddress">Hotel or exact pickup address (required)</label>
+                <input id="pickupAddress" name="pickup_address_or_hotel" type="text" required>
+                <div class="help">Most pickups are in Mindo. Add hotel name and street details if possible.</div>
+              </div>
 
-          <div class="formRow span2">
-            <div class="agreeRow">
-              <input id="agree" name="agree" type="checkbox" required />
-              <label for="agree">
-                I agree to the <a href="/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span>
-              </label>
+              <div class="formRow full">
+                <label for="notes">Notes or special requests</label>
+                <textarea id="notes" name="notes" placeholder="Dietary needs, mobility considerations, etc."></textarea>
+              </div>
+
+              <div class="formRow full">
+                <label style="display:flex; gap:10px; align-items:flex-start;">
+                  <input id="agree" name="agree_terms" type="checkbox" required style="width:auto; margin-top:3px;">
+                  <span>
+                    I agree to the <a href="/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a>.
+                  </span>
+                </label>
+              </div>
+
+              <div class="formRow full">
+                <!-- Turnstile widget -->
+                <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITEKEY" data-theme="light"></div>
+                <div class="help">This helps protect the form from abuse.</div>
+              </div>
             </div>
-            <p class="hint">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
-          </div>
 
-          <div class="formRow span2">
-            <div id="turnstileBox" class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-theme="light"></div>
-            <p class="hint">This helps us prevent spam and protect your booking.</p>
-          </div>
-        </div>
+            <div id="formError" class="errorBox" role="alert"></div>
 
-        <div id="formError" class="errorBox" role="alert" aria-live="polite">
-          <strong>Checkout could not start.</strong>
-          <div id="formErrorMsg"></div>
-        </div>
+            <div class="actions">
+              <button id="payBtn" class="primaryBtn" type="submit" disabled>Continue to secure payment</button>
+              <a class="ghostLink" href="/book-tour/">Back to Book a Tour</a>
+            </div>
 
-        <div id="formLoading" class="loadingLine">Creating secure checkout session...</div>
-
-        <div class="actions">
-          <button id="payBtn" type="submit" class="btnPrimary" disabled>Continue to secure payment</button>
-          <button id="resetBtn" type="button" class="btnGhost">Reset</button>
-        </div>
-
-        <p class="hint small">
-          After payment, you will return to our success page. If you close the success page, you can still contact us anytime via WhatsApp.
-        </p>
-      </form>
-    </div>
-  </section>
-</div>
+            <p class="help">
+              After payment, you will be redirected to the success page with your pickup window.
+            </p>
+          </form>
+        </section>
+      </div>
+    </section>
   </main>
-  </div>
+
   <div id="siteFooter"></div>
+
   <script>
-    (function(){
-      "use strict";
-
-      const API_BASE = "https://mbw-stripe-checkout.thecloudforestretreat.workers.dev";
-      const LANG = "en";
-
-      const els = {
-        tourList: document.getElementById("tourList"),
-        tourListLoading: document.getElementById("tourListLoading"),
-        tourListError: document.getElementById("tourListError"),
-        tourListErrorMsg: document.getElementById("tourListErrorMsg"),
-
-        detailEmpty: document.getElementById("detailEmpty"),
-        detailWrap: document.getElementById("detailWrap"),
-        detailImg: document.getElementById("detailImg"),
-        detailTitle: document.getElementById("detailTitle"),
-        detailSub: document.getElementById("detailSub"),
-        detailPrice: document.getElementById("detailPrice"),
-        detailDuration: document.getElementById("detailDuration"),
-        detailPickup: document.getElementById("detailPickup"),
-        detailOneLiner: document.getElementById("detailOneLiner"),
-        detailTourPage: document.getElementById("detailTourPage"),
-
-        payForm: document.getElementById("payForm"),
-        people: document.getElementById("people"),
-        tourDate: document.getElementById("tourDate"),
-        contactName: document.getElementById("contactName"),
-        contactEmail: document.getElementById("contactEmail"),
-        contactPhone: document.getElementById("contactPhone"),
-        whatsapp: document.getElementById("whatsapp"),
-        pickupAddress: document.getElementById("pickupAddress"),
-        notes: document.getElementById("notes"),
-        agree: document.getElementById("agree"),
-
-        payBtn: document.getElementById("payBtn"),
-        resetBtn: document.getElementById("resetBtn"),
-
-        formError: document.getElementById("formError"),
-        formErrorMsg: document.getElementById("formErrorMsg"),
-        formLoading: document.getElementById("formLoading")
+    (function () {
+      const state = {
+        lang: "en",
+        tours: [],
+        selected: null
       };
 
-      let tours = [];
-      let selectedTour = null;
+      // Prefer same-origin API (recommended). Fallback to workers.dev if you haven't added a route yet.
+      const sameOriginToursUrl = "/api/tours?lang=" + encodeURIComponent(state.lang);
+      const fallbackToursUrl = "https://mbw-stripe-checkout.thecloudforestretreat.workers.dev/api/tours?lang=" + encodeURIComponent(state.lang);
 
-      function esc(s){
-        return String(s || "").replace(/[&<>"']/g, (c) => ({
-          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-        }[c]));
+      const elTourList = document.getElementById("tourList");
+      const elTourListError = document.getElementById("tourListError");
+
+      const elForm = document.getElementById("payForm");
+      const elFormTitle = document.getElementById("formTitle");
+      const elFormHint = document.getElementById("formHint");
+      const elPayBtn = document.getElementById("payBtn");
+      const elFormError = document.getElementById("formError");
+
+      function showListError(msg) {
+        elTourListError.textContent = msg;
+        elTourListError.classList.add("show");
       }
 
-      function show(el){ el.style.display = ""; }
-      function hide(el){ el.style.display = "none"; }
-
-      function setListError(msg){
-        els.tourListErrorMsg.textContent = msg || "Unknown error.";
-        show(els.tourListError);
+      function clearListError() {
+        elTourListError.textContent = "";
+        elTourListError.classList.remove("show");
       }
 
-      function clearListError(){
-        hide(els.tourListError);
-        els.tourListErrorMsg.textContent = "";
+      function showFormError(msg) {
+        elFormError.textContent = msg;
+        elFormError.classList.add("show");
       }
 
-      function setFormError(msg){
-        els.formErrorMsg.textContent = msg || "Unknown error.";
-        show(els.formError);
+      function clearFormError() {
+        elFormError.textContent = "";
+        elFormError.classList.remove("show");
       }
 
-      function clearFormError(){
-        hide(els.formError);
-        els.formErrorMsg.textContent = "";
+      async function fetchJson(url) {
+        const res = await fetch(url, { method: "GET", credentials: "omit" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return await res.json();
       }
 
-      function setBusy(isBusy){
-        if (isBusy){
-          show(els.formLoading);
-          els.payBtn.disabled = true;
-        } else {
-          hide(els.formLoading);
-          validateForm();
+      async function loadTours() {
+        clearListError();
+        elTourList.innerHTML = "";
+
+        let data;
+        try {
+          data = await fetchJson(sameOriginToursUrl);
+        } catch (e1) {
+          try {
+            data = await fetchJson(fallbackToursUrl);
+          } catch (e2) {
+            showListError("Could not load tours. If you see a CORS error in DevTools, the API endpoint must return Access-Control-Allow-Origin for https://mindobirdwatching.com (or use a same-origin Worker route).");
+            return;
+          }
         }
-      }
 
-      function validateForm(){
-        if (!selectedTour){
-          els.payBtn.disabled = true;
+        if (!data || !data.ok || !Array.isArray(data.tours)) {
+          showListError("Unexpected API response while loading tours.");
           return;
         }
-        const people = Number(els.people.value || 0);
-        const ok =
-          people >= 1 &&
-          !!els.tourDate.value &&
-          !!els.contactName.value.trim() &&
-          !!els.contactEmail.value.trim() &&
-          !!els.contactPhone.value.trim() &&
-          !!els.whatsapp.value.trim() &&
-          !!els.pickupAddress.value.trim() &&
-          els.agree.checked;
 
-        els.payBtn.disabled = !ok;
-      }
-
-      function pickupLabel(t){
-        const time = t.pickup_time_local || "";
-        const mins = Number(t.pickup_window_minutes || 15);
-        if (!time) return "Pickup window: 15 min";
-        return "Pickup: " + time + " to " + addMinutesLabel(time, mins);
-      }
-
-      function addMinutesLabel(timeStr, minutesToAdd){
-        try{
-          const m = String(timeStr).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-          if (!m) return timeStr;
-          let h = Number(m[1]);
-          const min = Number(m[2]);
-          const ampm = m[3].toUpperCase();
-          if (ampm === "PM" && h !== 12) h += 12;
-          if (ampm === "AM" && h === 12) h = 0;
-
-          const total = (h * 60 + min + minutesToAdd) % (24 * 60);
-          let nh = Math.floor(total / 60);
-          const nmin = total % 60;
-
-          let nampm = nh >= 12 ? "PM" : "AM";
-          let dispH = nh % 12;
-          if (dispH === 0) dispH = 12;
-
-          return dispH + ":" + String(nmin).padStart(2, "0") + " " + nampm;
-        } catch(e){
-          return timeStr;
+        state.tours = data.tours;
+        if (state.tours.length === 0) {
+          showListError("No tours found for this language.");
+          return;
         }
-      }
 
-      function renderList(){
-        els.tourList.innerHTML = "";
-        tours.forEach((t, idx) => {
-          const wrapper = document.createElement("div");
-          wrapper.className = "tourItem";
-          wrapper.dataset.code = t.tour_code;
+        for (const t of state.tours) {
+          const item = document.createElement("div");
+          item.className = "tourItem";
+          item.setAttribute("role", "button");
+          item.setAttribute("tabindex", "0");
+          item.setAttribute("aria-selected", "false");
 
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.setAttribute("aria-label", "Select tour " + t.tour_code);
+          const img = document.createElement("img");
+          img.className = "tourThumb";
+          img.alt = t.tour_title || t.tour_code || "Tour";
+          img.src = t.hero_image_url || "";
 
-          btn.innerHTML =
-            '<div class="tourMedia">' +
-              '<img alt="' + esc(t.tour_title) + '" src="' + esc(t.hero_image_url) + '">' +
-            '</div>' +
-            '<div class="tourBody">' +
-              '<div class="tourTop">' +
-                '<div>' +
-                  '<p class="tourTitle">' + esc(t.tour_code) + " - " + esc(t.tour_title) + '</p>' +
-                '</div>' +
-                '<div class="badge"><span class="priceTag">' + esc(t.amount_display) + '</span></div>' +
-              '</div>' +
-              '<div class="tourMeta">' +
-                '<span class="badge">' + esc(t.duration_label || "Full day") + '</span>' +
-                '<span class="badge">' + esc(pickupLabel(t)) + '</span>' +
-              '</div>' +
-              (t.description_one_liner ? '<p class="hint" style="margin:10px 0 0 0">' + esc(t.description_one_liner) + '</p>' : '') +
-            '</div>';
+          const meta = document.createElement("div");
+          meta.className = "tourMeta";
 
-          btn.addEventListener("click", () => selectTour(idx));
-          wrapper.appendChild(btn);
-          els.tourList.appendChild(wrapper);
-        });
-      }
+          const title = document.createElement("div");
+          title.className = "tourTitle";
+          title.textContent = (t.tour_code ? (t.tour_code + " - ") : "") + (t.tour_title || "");
 
-      function markSelected(){
-        const items = els.tourList.querySelectorAll(".tourItem");
-        items.forEach((it) => {
-          if (selectedTour && it.dataset.code === selectedTour.tour_code){
-            it.classList.add("selected");
-          } else {
-            it.classList.remove("selected");
+          const line1 = document.createElement("div");
+          line1.className = "tourLine";
+          line1.textContent = (t.duration_label || "") + (t.pickup_time_local ? (" | Pickup " + t.pickup_time_local) : "");
+
+          const line2 = document.createElement("div");
+          line2.className = "tourLine";
+          line2.textContent = t.description_one_liner || "";
+
+          const price = document.createElement("div");
+          price.className = "tourPrice";
+          price.textContent = t.amount_display || "";
+
+          meta.appendChild(title);
+          meta.appendChild(line1);
+          meta.appendChild(line2);
+          meta.appendChild(price);
+
+          item.appendChild(img);
+          item.appendChild(meta);
+
+          function selectThis() {
+            for (const node of elTourList.querySelectorAll(".tourItem")) node.setAttribute("aria-selected", "false");
+            item.setAttribute("aria-selected", "true");
+            state.selected = t;
+
+            elFormTitle.textContent = "Checkout details";
+            elFormHint.textContent = "Tour selected: " + (t.tour_code || "") + " - " + (t.tour_title || "");
+            elForm.style.display = "block";
+
+            // Enable button when required fields are valid (Turnstile handled by server; we only require checkbox + fields here).
+            validate();
           }
-        });
-      }
 
-      function selectTour(index){
-        selectedTour = tours[index] || null;
-        if (!selectedTour) return;
-
-        els.detailImg.src = selectedTour.hero_image_url || "";
-        els.detailImg.alt = selectedTour.tour_title || "Tour image";
-        els.detailTitle.textContent = (selectedTour.tour_code || "") + " - " + (selectedTour.tour_title || "");
-        els.detailSub.textContent = "Timezone: " + (selectedTour.timezone || "America/Guayaquil") + " | Pickup window: " + (selectedTour.pickup_window_minutes || 15) + " min";
-        els.detailPrice.textContent = selectedTour.amount_display || "";
-        els.detailDuration.textContent = selectedTour.duration_label || "Full day";
-        els.detailPickup.textContent = pickupLabel(selectedTour);
-        els.detailOneLiner.textContent = selectedTour.description_one_liner || "";
-        els.detailTourPage.href = selectedTour.tour_page_url || "#";
-
-        hide(els.detailEmpty);
-        show(els.detailWrap);
-
-        markSelected();
-        validateForm();
-        clearFormError();
-
-        if (selectedTour.min_person){
-          els.people.min = String(selectedTour.min_person);
-          if (Number(els.people.value) < Number(selectedTour.min_person)){
-            els.people.value = String(selectedTour.min_person);
-          }
-        } else {
-          els.people.min = "1";
-        }
-      }
-
-      async function loadTours(){
-        hide(els.tourListLoading);
-        show(els.tourListLoading);
-        clearListError();
-
-        try{
-          const res = await fetch(API_BASE + "/api/tours?lang=" + encodeURIComponent(LANG), {
-            method: "GET",
-            headers: { "accept":"application/json" }
+          item.addEventListener("click", selectThis);
+          item.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              selectThis();
+            }
           });
-          const data = await res.json().catch(() => null);
-          if (!res.ok || !data || data.ok !== true){
-            const msg = (data && (data.error || data.message)) ? String(data.error || data.message) : ("HTTP " + res.status);
-            throw new Error(msg);
-          }
-          tours = Array.isArray(data.tours) ? data.tours : [];
-          if (!tours.length) throw new Error("No tours returned by the API.");
 
-          renderList();
-          hide(els.tourListLoading);
-
-        } catch(err){
-          hide(els.tourListLoading);
-          setListError(String(err && err.message ? err.message : err));
+          elTourList.appendChild(item);
         }
       }
 
-      function getTurnstileToken(){
-        const el = document.querySelector('[name="cf-turnstile-response"]');
-        return el ? el.value : "";
-      }
-
-      function todayISO(){
-        const d = new Date();
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth()+1).padStart(2,"0");
-        const dd = String(d.getDate()).padStart(2,"0");
-        return yyyy + "-" + mm + "-" + dd;
-      }
-
-      function resetForm(){
-        els.payForm.reset();
-        els.people.value = selectedTour && selectedTour.min_person ? String(selectedTour.min_person) : "2";
-        els.tourDate.value = "";
+      function validate() {
         clearFormError();
-        validateForm();
+        if (!state.selected) { elPayBtn.disabled = true; return; }
+
+        const tourDate = document.getElementById("tourDate").value;
+        const people = document.getElementById("people").value;
+        const whatsapp = document.getElementById("whatsapp").value.trim();
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const pickup = document.getElementById("pickupAddress").value.trim();
+        const agree = document.getElementById("agree").checked;
+
+        const ok = !!tourDate && !!people && Number(people) >= 1 && whatsapp && name && email && pickup && agree;
+        elPayBtn.disabled = !ok;
       }
 
-      async function onSubmit(e){
+      document.addEventListener("input", function (e) {
+        if (e.target && e.target.closest("#payForm")) validate();
+      });
+
+      document.addEventListener("change", function (e) {
+        if (e.target && e.target.closest("#payForm")) validate();
+      });
+
+      elForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         clearFormError();
-        validateForm();
-        if (els.payBtn.disabled) return;
 
-        const token = getTurnstileToken();
-        if (!token){
-          setFormError("Please complete the Turnstile check.");
+        if (!state.selected) {
+          showFormError("Please select a tour first.");
           return;
         }
 
-        const people = Number(els.people.value || 0);
-        if (!Number.isFinite(people) || people < 1){
-          setFormError("Please enter a valid number of people.");
+        validate();
+        if (elPayBtn.disabled) {
+          showFormError("Please complete all required fields and accept the Terms and Conditions.");
           return;
         }
 
-        const tourDate = els.tourDate.value;
-        if (!tourDate){
-          setFormError("Tour date is required.");
-          return;
-        }
+        // NOTE:
+        // This page only collects fields. The next step (Worker endpoint) should:
+        // 1) verify Turnstile server-side, then
+        // 2) create a Stripe Checkout Session using your Price ID, quantity = people, and metadata = collected fields,
+        // 3) redirect user to session.url.
+        //
+        // For now, we show a clear message so you can wire the Worker next without confusion.
 
-        const payload = {
-          lang: LANG,
-          tour_code: selectedTour.tour_code,
-          people: people,
-          tour_date: tourDate,
-          contact: {
-            name: els.contactName.value.trim(),
-            email: els.contactEmail.value.trim(),
-            phone: els.contactPhone.value.trim(),
-            whatsapp: els.whatsapp.value.trim()
-          },
-          pickup: {
-            pickup_address_or_hotel: els.pickupAddress.value.trim()
-          },
-          notes: (els.notes.value || "").trim(),
-          agreement_accepted: !!els.agree.checked,
-          turnstile_token: token,
-          client: {
-            page: location.pathname,
-            user_agent: navigator.userAgent
-          }
-        };
-
-        setBusy(true);
-
-        try{
-          const res = await fetch(API_BASE + "/api/checkout/session", {
-            method: "POST",
-            headers: { "content-type":"application/json", "accept":"application/json" },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await res.json().catch(() => null);
-          if (!res.ok || !data || data.ok !== true || !data.url){
-            const msg = (data && (data.error || data.message)) ? String(data.error || data.message) : ("HTTP " + res.status);
-            throw new Error(msg);
-          }
-
-          location.href = data.url;
-
-        } catch(err){
-          setBusy(false);
-          setFormError(String(err && err.message ? err.message : err));
-        }
-      }
-
-      els.payForm.addEventListener("submit", onSubmit);
-      ["input","change","keyup"].forEach((ev) => {
-        els.payForm.addEventListener(ev, validateForm, true);
+        showFormError("Form is ready. Next step: connect this form to your Worker endpoint that creates the Stripe Checkout Session (with metadata) and redirects to Stripe.");
       });
-      els.resetBtn.addEventListener("click", resetForm);
-
-      els.tourDate.min = todayISO();
 
       loadTours();
     })();
