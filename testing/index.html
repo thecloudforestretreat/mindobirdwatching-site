@@ -539,7 +539,13 @@
     @media (max-width: 420px){
       .rowPhone{ grid-template-columns: 1fr; }
     }
-  </style>
+  
+  .agreeInline{display:flex;align-items:flex-start;gap:10px;line-height:1.25}
+  .agreeInline input[type="checkbox"]{margin-top:3px}
+  .termsLink{color:#1a73e8;text-decoration:underline}
+  .requiredNote{margin-top:6px;color:var(--muted);font-size:13px}
+  .requiredNote .req{color:var(--danger);font-weight:700}
+</style>
 </head>
 <body data-current-lang="en">
 <div class="container">
@@ -578,7 +584,7 @@
 <section class="cardBlock">
 <div class="blockHead">
 <h2>Checkout details</h2>
-<p class="subtle">Choose a tour on the left. The checkout form will appear here.</p>
+<p class="subtle">Choose a tour on the left. The checkout form will appear here.<div class="requiredNote">Required fields are marked with <span class="req">*</span>.</div></p>
 </div>
 <div class="checkoutPanel" id="checkoutPanel">
 <div class="notice">Select a tour on the left to begin.</div>
@@ -938,7 +944,7 @@
             if (imgEl.src.includes("MBW_Tour_Options-4-")) {
               imgEl.src = imgEl.src.replace("MBW_Tour_Options-4-", "MBW_Tour_Options-2-");
             } else if (imgEl.src.includes("MBW_Tour_Options-2-")) {
-              imgEl.src = imgEl.src.replace("MBW_Tour_Options-2-", "MBW_Tour_Options-4-");
+              imgEl.src = imgEl.src.replace("MBW_Tour_Options-4-", "MBW_Tour_Options-2-");
             }
           });
           card.appendChild(imgEl);
@@ -995,8 +1001,35 @@
     // People (required)
     form.appendChild(field("Number of people", "people", "number", true, "2", "Minimum may apply based on the tour."));
 
+    // Enforce date min (tomorrow) and people min (1)
+    const dateEl = form.querySelector('[name="tour_date"]');
+    if (dateEl) {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      dateEl.min = `${yyyy}-${mm}-${dd}`;
+    }
+    const peopleEl = form.querySelector('[name="people"]');
+    if (peopleEl) {
+      peopleEl.min = "1";
+    // Auto-capitalize first/last names
+    const cap = (s) => (s || "").toLowerCase().replace(/\b\p{L}/gu, (c) => c.toUpperCase());
+    for (const nm of ["contact_first_name", "contact_last_name"]) {
+      const elx = form.querySelector(`[name="${nm}"]`);
+      if (elx) {
+        elx.addEventListener("blur", () => { elx.value = cap(elx.value); });
+      }
+    }
+
+      peopleEl.step = "1";
+      if (!peopleEl.value || Number(peopleEl.value) < 1) peopleEl.value = "1";
+    }
+
     // Contact (required)
-    form.appendChild(field("Main contact name", "contact_name", "text", true, "", ""));
+    form.appendChild(field("Main contact first name", "contact_first_name", "text", true, "", ""));
+    form.appendChild(field("Main contact last name", "contact_last_name", "text", true, "", ""));
     form.appendChild(field("Email", "contact_email", "email", true, "", ""));
     form.appendChild(field("Phone", "contact_phone", "tel", true, "", ""));
 
@@ -1005,23 +1038,23 @@
 
     // Pickup (free text only per your requirement)
     form.appendChild(field("Pickup location (free text)", "pickup_location", "text", true, "", "Example: Mindo town center, hotel name, or landmark."));
-    form.appendChild(field("Hotel or exact pickup address", "pickup_address_or_hotel", "text", true, "", ""));
+    form.appendChild(field("Hotel or exact pickup address", "pickup_address_or_hotel", "text", false, "", ""));
 
     // Notes (optional)
     form.appendChild(textArea("Notes or special requests", "notes", false, "Any allergies, mobility needs, or pickup clarifications."));
 
     // Terms checkbox (required)
     const agree = el("div", { class: "field" });
-    agree.appendChild(el("label", { html: `I agree to the Terms and Conditions${requiredStar()}` }));
-    const agreeRow = el("div", { class: "agreeRow" }, [
-      el("input", { type: "checkbox", id: "agree_terms", name: "agree_terms", required: "required" }),
-      el("div", { class: "fieldHelp", html: `Open in a new tab: <a href="/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a>` })
-    ]);
+    const agreeRow = el("label", { class: "agreeInline", for: "agree_terms" });
+    const agreeCb = el("input", { type: "checkbox", id: "agree_terms", name: "agree_terms", required: "required" });
+    agreeRow.appendChild(agreeCb);
+    agreeRow.appendChild(el("span", { html: `I agree to the <a href="/terms-conditions/" target="_blank" rel="noopener" class="termsLink">Terms and Conditions</a>${requiredStar()}` }));
     agree.appendChild(agreeRow);
     form.appendChild(agree);
 
     // Turnstile
     const tsWrap = el("div", { class: "turnstileWrap" });
+    tsWrap.appendChild(el("div", { class: "fieldHelp", text: "Turnstile verification will appear here." }));
     const tsEl = el("div", { class: "cf-turnstile" });
     tsEl.setAttribute("data-sitekey", "0x4AAAAAACYIFF7ZNXiqieGk");
     tsEl.setAttribute("data-theme", "light");
@@ -1049,7 +1082,8 @@
         tour_code: t.tour_code || "",
         tour_date: val("tour_date"),
         people: Number(val("people") || 0),
-        contact_name: val("contact_name"),
+        contact_first_name: val("contact_first_name"),
+        contact_last_name: val("contact_last_name"),
         contact_email: val("contact_email"),
         contact_phone: val("contact_phone"),
         whatsapp: val("whatsapp"),
