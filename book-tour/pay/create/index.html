@@ -1,1 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create payment link | Mindo Bird Watching</title>
+  <link rel="canonical" href="https://mindobirdwatching.com/book-tour/pay/create/">
+  <link rel="stylesheet" href="/assets/css/site.css?v=1">
+  <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final">
+  <link rel="stylesheet" href="/assets/css/footer.css?v=1">
+  <style>
+    .shell { max-width: 1100px; margin: 0 auto; padding: 28px 18px 60px; }
+    .panel { background: rgba(255,255,255,0.35); border: 1px solid rgba(0,0,0,0.06); border-radius: 18px; padding: 20px; box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
+    h1 { margin: 0 0 6px; }
+    .sub { margin: 0 0 18px; opacity: 0.85; }
+    .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; align-items: start; }
+    @media (max-width: 900px){ .grid { grid-template-columns: 1fr; } }
 
+    .field { margin: 10px 0 12px; }
+    label { display:block; font-weight: 700; margin: 0 0 6px; }
+    .req { color: #c0362c; font-weight: 900; margin-left: 3px; }
+    select, input { width: 100%; border-radius: 12px; border: 1px solid rgba(0,0,0,0.15); padding: 12px 12px; background: rgba(255,255,255,0.7); }
+    .help { font-size: 13px; opacity: 0.8; margin-top: 6px; }
+
+    .btnRow { display:flex; gap:10px; flex-wrap: wrap; margin-top: 12px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.15); background: rgba(255,255,255,0.65); text-decoration:none; color: inherit; cursor:pointer; font-weight: 800; }
+    .btnPrimary { background: #0f6b3a; color:#fff; border-color: rgba(0,0,0,0.12); }
+    .btnGhost { background: rgba(255,255,255,0.55); }
+    .out { border-radius: 14px; border: 1px dashed rgba(0,0,0,0.25); padding: 12px; background: rgba(255,255,255,0.45); word-break: break-all; }
+    .mini { font-size: 13px; opacity: 0.85; margin-top: 8px; }
+    .ok { color: #0f6b3a; font-weight: 800; }
+    .err { color: #b03127; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+
+  <main class="shell">
+    <div class="panel">
+      <h1>Create a payment link</h1>
+      <p class="sub">Internal tool for staff. Select the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
+
+      <div class="grid">
+        <section>
+          <div class="field">
+            <label for="tourSel">Tour <span class="req">*</span></label>
+            <select id="tourSel"></select>
+            <div class="help">This list is Stripe-driven via the Tours API.</div>
+          </div>
+
+          <div class="field">
+            <label for="dateSel">Tour date <span class="req">*</span></label>
+            <input id="dateSel" type="date" required>
+            <div class="help">Today and past dates are blocked.</div>
+          </div>
+
+          <div class="field">
+            <label for="peopleSel">Number of people <span class="req">*</span></label>
+            <input id="peopleSel" type="number" min="1" step="1" value="2" required>
+            <div class="help">Must be 1 or more.</div>
+          </div>
+
+          <div class="field">
+            <label for="langSel">Language</label>
+            <select id="langSel">
+              <option value="en" selected>English</option>
+              <option value="es">Spanish</option>
+            </select>
+            <div class="help">Generates a link to the correct language pay page.</div>
+          </div>
+
+          <div class="btnRow">
+            <button class="btn btnPrimary" id="buildBtn" type="button">Generate link</button>
+            <button class="btn btnGhost" id="copyBtn" type="button" disabled>Copy link</button>
+            <a class="btn btnGhost" id="openBtn" href="#" target="_blank" rel="noopener" style="pointer-events:none; opacity:0.6;">Open link</a>
+          </div>
+
+          <div class="mini" id="status"></div>
+        </section>
+
+        <aside>
+          <label>Payment link</label>
+          <div class="out" id="outLink">Generate a link to display it here.</div>
+          <div class="mini">The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.</div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <div id="siteFooter"></div>
+
+  <script>
+    const API_BASE = "/api/tours?lang=";
+    const tourSel = document.getElementById("tourSel");
+    const dateSel = document.getElementById("dateSel");
+    const peopleSel = document.getElementById("peopleSel");
+    const langSel = document.getElementById("langSel");
+    const buildBtn = document.getElementById("buildBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const openBtn = document.getElementById("openBtn");
+    const outLink = document.getElementById("outLink");
+    const status = document.getElementById("status");
+
+    function setStatus(msg, kind){
+      status.textContent = msg || "";
+      status.className = "mini " + (kind || "");
+    }
+
+    // Block past + today (must be future)
+    const minDate = (function(){
+      const d = new Date();
+      d.setDate(d.getDate()+1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    })();
+    dateSel.min = minDate;
+
+    async function loadTours(lang){
+      setStatus("Loading tours...", "");
+      tourSel.innerHTML = "";
+      try {
+        const res = await fetch(API_BASE + encodeURIComponent(lang || "en"), { credentials: "same-origin" });
+        if (!res.ok) throw new Error("Tours API error: " + res.status);
+        const data = await res.json();
+        const tours = (data.tours || []);
+        if (!tours.length) throw new Error("No tours returned");
+        for (const t of tours){
+          const opt = document.createElement("option");
+          opt.value = t.tour_code;
+          opt.textContent = `${t.tour_code} - ${t.tour_title} (${t.amount_display} per person)`;
+          tourSel.appendChild(opt);
+        }
+        setStatus("Tours loaded.", "ok");
+      } catch(e){
+        console.error(e);
+        setStatus("Could not load tours. Check /api/tours?lang=" + (lang || "en"), "err");
+      }
+    }
+
+    langSel.addEventListener("change", () => loadTours(langSel.value));
+
+    function buildLink(){
+      const tour = (tourSel.value || "").trim();
+      const date = (dateSel.value || "").trim();
+      const people = String(parseInt(peopleSel.value || "0", 10));
+      const lang = (langSel.value || "en").trim();
+
+      if (!tour){ setStatus("Select a tour.", "err"); return null; }
+      if (!date){ setStatus("Select a tour date.", "err"); return null; }
+      if (!people || Number(people) < 1){ setStatus("People must be 1 or more.", "err"); return null; }
+
+      const base = (lang === "es") ? "https://mindobirdwatching.com/es/reservar-tour/pago/" : "https://mindobirdwatching.com/book-tour/pay/";
+      const u = new URL(base);
+      u.searchParams.set("tour", tour);
+      u.searchParams.set("date", date);
+      u.searchParams.set("people", people);
+      u.searchParams.set("lang", lang);
+      return u.toString();
+    }
+
+    buildBtn.addEventListener("click", () => {
+      const link = buildLink();
+      if (!link) return;
+      outLink.textContent = link;
+      copyBtn.disabled = false;
+      openBtn.href = link;
+      openBtn.style.pointerEvents = "auto";
+      openBtn.style.opacity = "1";
+      setStatus("Link generated. Copy it and send to the guest.", "ok");
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(outLink.textContent);
+        setStatus("Copied to clipboard.", "ok");
+      } catch(e){
+        setStatus("Could not copy automatically. Select and copy the link manually.", "err");
+      }
+    });
+
+    loadTours("en");
+  </script>
+
+  <script src="/assets/js/includes.js"></script>
+  <script src="/assets/js/site.js"></script>
+</body>
+</html>
