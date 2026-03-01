@@ -130,7 +130,9 @@
       .btn { flex: 1 1 100%; min-width: 0; }
       .card { padding: 14px; }
     }
-  </style>
+  
+  .reqStar{color:#b42318;font-weight:800;}
+</style>
 </head>
 
 <body>
@@ -165,8 +167,8 @@
 
           <div class="row">
             <label for="peopleSel">Number of people <span class="req">*</span></label>
-            <input id="peopleSel" type="number" min="1" step="1" value="2" />
-            <div class="muted">Must be 1 or more.</div>
+            <input id="peopleSel" type="number" min="1" step="1" value="2" / max="8" inputmode="numeric">
+            <div class="muted">Must be 1 to 8.</div>
           </div>
 
           <div class="row">
@@ -276,7 +278,7 @@
       const t = tours.find(x => x._key === sel);
       if (!t) return "";
       const date = dateSel.value;
-      const party = Math.max(1, parseInt(peopleSel.value || "1", 10));
+      const party = Math.min(8, Math.max(1, parseInt(peopleSel.value || "1", 10)));
       const lang = langSel.value;
 
       const base = payBaseForLang(lang);
@@ -310,6 +312,25 @@
           opt.textContent = `${t.tour_code} - ${t.tour_title} (${t.amount_display} per person)`;
           tourSel.appendChild(opt);
         });
+// If the API returns a partial list for a language, fetch the other language
+// and merge any missing tour_codes so staff can generate links for any tour.
+if (tours.length < 2) {
+  try {
+    const otherLang = (lang === "es" ? "en" : "es");
+    const otherRes = await fetch(`${API_BASE}/tours?lang=${encodeURIComponent(otherLang)}`, { headers: { "Accept": "application/json" } });
+    const otherData = await otherRes.json();
+    const otherTours = Array.isArray(otherData.tours) ? otherData.tours : [];
+    const seen = new Set(tours.map(t => t.tour_code));
+    for (const t of otherTours) {
+      if (!t || !t.tour_code) continue;
+      if (!seen.has(t.tour_code)) {
+        tours.push(t);
+        seen.add(t.tour_code);
+      }
+    }
+  } catch (_) {}
+}
+
 
         tourSel.disabled = false;
         showStatus(true, `Tours loaded: ${tours.length}`);
@@ -352,7 +373,25 @@
       window.open(lastLink, "_blank", "noopener");
     });
 
-    langSel.addEventListener("change", async () => {
+    
+    function clampPeopleInput() {
+      const n = parseInt(peopleSel.value || "1", 10);
+      if (!Number.isFinite(n)) { peopleSel.value = "1"; return; }
+      if (n < 1) peopleSel.value = "1";
+      if (n > 8) peopleSel.value = "8";
+    }
+    peopleSel.addEventListener("input", clampPeopleInput);
+    peopleSel.addEventListener("blur", clampPeopleInput);
+
+    function enforceMinDate() {
+      // Also clamp manually on iOS where typing can bypass min
+      const v = dateSel.value;
+      if (!v) return;
+      if (dateSel.min && v < dateSel.min) dateSel.value = dateSel.min;
+    }
+    dateSel.addEventListener("change", enforceMinDate);
+    dateSel.addEventListener("blur", enforceMinDate);
+langSel.addEventListener("change", async () => {
       await loadTours();
       setLinkUI("");
     });
