@@ -5,420 +5,442 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Create a payment link | Mindo Bird Watching</title>
 
-  <!-- Site CSS -->
+  <!-- Global site assets (do not duplicate header/footer markup in this file) -->
   <link rel="stylesheet" href="/assets/css/site.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <link rel="stylesheet" href="/assets/css/footer.css?v=1" />
 
   <style>
-    /* Page-only layout (keeps global header/footer) */
-    .page {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
+    :root{
+      --mbw-bg: #b7d99a;
+      --panel: rgba(255,255,255,0.18);
+      --card: rgba(255,255,255,0.28);
+      --stroke: rgba(0,0,0,0.10);
+      --stroke2: rgba(0,0,0,0.12);
+      --text: #0c1b10;
+      --muted: rgba(0,0,0,0.60);
+      --green: #0f5a2a;
+      --green2: #0c4a22;
+      --danger: #c32626;
+      --radius: 22px;
+      --radius2: 16px;
+      --shadow: 0 18px 60px rgba(0,0,0,0.12);
+      --shadow2: 0 12px 28px rgba(0,0,0,0.10);
     }
-    .shell {
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 22px;
-      padding: 22px;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.08);
-    }
-    .hgroup h1 { margin: 0 0 6px; }
-    .hgroup p { margin: 0; opacity: 0.85; }
 
-    .grid {
+    body{
+      background: var(--mbw-bg);
+    }
+
+    .page{
+      max-width: 1060px;
+      margin: 28px auto 70px;
+      padding: 0 18px;
+    }
+
+    .shell{
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.10));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      padding: 28px 22px;
+    }
+
+    .title{
+      margin: 0 0 6px 0;
+      font-family: "Playfair Display", ui-serif, Georgia, serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1a6a2f;
+      font-size: 44px;
+      line-height: 1.05;
+    }
+    .subtitle{
+      margin: 0 0 18px 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.45;
+      max-width: 78ch;
+    }
+
+    .grid{
       display: grid;
       grid-template-columns: 1.25fr 0.85fr;
-      gap: 18px;
-      margin-top: 18px;
+      gap: 16px;
       align-items: start;
     }
 
-    .card {
-      background: rgba(255,255,255,0.36);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 18px;
-      padding: 16px;
+    .card{
+      background: var(--card);
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      padding: 18px;
     }
-    .card h2 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-    .muted { opacity: 0.8; font-size: 13px; }
-    .row { display: grid; gap: 6px; margin-top: 12px; }
-    label { font-weight: 700; font-size: 14px; }
-    .req { color: #c0392b; font-weight: 900; margin-left: 4px; }
 
-    select, input {
+    .card h2{
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .note{
+      margin: 0 0 14px 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .reqStar{ color: var(--danger); font-weight: 800; }
+
+    .formRow{ margin: 14px 0; }
+    label{
+      display: block;
+      font-weight: 800;
+      color: var(--text);
+      font-size: 16px;
+      margin: 0 0 8px 0;
+    }
+    .help{
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input, select, textarea{
       width: 100%;
-      padding: 12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,0.15);
-      background: rgba(255,255,255,0.75);
-      font-size: 15px;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 14px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.62);
+      color: #0b1a0f;
+      font-size: 16px;
+      line-height: 1.25;
       outline: none;
     }
-    input[type="number"] { appearance: textfield; }
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    .actions {
+    /* iOS: normalize date input look and size */
+    input[type="date"]{
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 14px 14px;
+      min-height: 50px;
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(15,90,42,0.55);
+      box-shadow: 0 0 0 4px rgba(15,90,42,0.12);
+    }
+
+    .actions{
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-top: 14px;
       align-items: center;
+      margin-top: 16px;
     }
-
-    .btn {
+    .btn{
       border-radius: 999px;
       padding: 12px 16px;
-      border: 1px solid rgba(0,0,0,0.15);
-      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.14);
       font-weight: 800;
       cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 132px;
+      background: rgba(255,255,255,0.55);
+      color: #0c1b10;
     }
-    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-    .btn-primary {
-      background: #1f6b3f; /* MBW green */
+    .btn.primary{
+      background: var(--green);
+      border-color: rgba(0,0,0,0.10);
       color: #fff;
-      border-color: rgba(0,0,0,0.08);
-      box-shadow: 0 10px 16px rgba(0,0,0,0.10);
+    }
+    .btn.primary:hover{ background: var(--green2); }
+    .btn:disabled{
+      opacity: 0.55;
+      cursor: not-allowed;
     }
 
-    .linkBox {
-      border: 1px dashed rgba(0,0,0,0.25);
-      border-radius: 16px;
-      padding: 12px;
-      background: rgba(255,255,255,0.35);
-      min-height: 54px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .linkText {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 12px;
-      word-break: break-all;
-      line-height: 1.35;
-    }
-    .pill {
+    .pill{
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 8px 10px;
+      padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(0,0,0,0.10);
-      margin-top: 12px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.44);
+      color: rgba(0,0,0,0.72);
+      font-size: 13px;
+      font-weight: 800;
     }
-    .pill strong { font-weight: 900; }
+    .pill.ok{ color: #0f5a2a; }
+    .pill.err{ color: #9d1e1e; }
 
-    /* Mobile */
-    @media (max-width: 860px) {
-      .grid { grid-template-columns: 1fr; }
-      .actions { gap: 8px; }
-      .btn { flex: 1 1 100%; min-width: 0; }
-      .card { padding: 14px; }
+    .linkBox{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      border: 1px dashed rgba(0,0,0,0.28);
+      background: rgba(255,255,255,0.40);
+      word-break: break-all;
     }
-  
-  .reqStar{color:#b42318;font-weight:800;}
+    .linkHelp{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
 
-/* date fix */
-.field input[type="date"]{
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  font-size: 16px;
-}
-</style>
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+      .title{ font-size: 38px; }
+      .shell{ padding: 22px 16px; }
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Global header include -->
+  <!-- Global header mount -->
   <div id="siteHeader"></div>
 
   <main class="page">
     <section class="shell">
-      <div class="hgroup">
-        <h1>Create a payment link</h1>
-        <p class="muted">Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
-      </div>
+      <h1 class="title">Create a payment link</h1>
+      <p class="subtitle">
+        Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.
+      </p>
 
       <div class="grid">
-        <!-- Left: inputs -->
-        <div class="card" aria-label="Create link inputs">
-          <div class="muted">Required fields are marked with <span class="req">*</span>.</div>
+        <div class="card">
+          <p class="note">Required fields are marked with <span class="reqStar">*</span>.</p>
 
-          <div class="row">
-            <label for="tourSel">Tour <span class="req">*</span></label>
-            <select id="tourSel" disabled>
+          <div class="formRow">
+            <label for="tourSel">Tour <span class="reqStar">*</span></label>
+            <select id="tourSel" aria-label="Tour" disabled>
               <option>Loading tours...</option>
             </select>
-            <div class="muted" id="tourHelp">This list is Stripe-driven via the Tours API.</div>
-<div id="tourSummary" class="hint strong"></div>
+            <p class="help" id="tourHelp">This list is Stripe-driven via the Tours API.</p>
+            <p class="help" id="tourPriceLine"></p>
           </div>
 
-          <div class="row">
-            <label for="dateSel">Tour date <span class="req">*</span></label>
-            <input id="dateSel" type="date" />
-            <div class="muted">Today and past dates are blocked (America/Guayaquil).</div>
+          <div class="formRow">
+            <label for="tourDate">Tour date <span class="reqStar">*</span></label>
+            <input id="tourDate" type="date" />
+            <p class="help" id="dateHelp">Today and past dates are blocked (America/Guayaquil).</p>
           </div>
 
-          <div class="row">
-            <label for="peopleSel">Number of people <span class="req">*</span></label>
-            <input id="peopleSel" type="number" min="1" step="1" value="2" / max="8" inputmode="numeric">
-            <div class="muted">Must be 1 to 8.</div>
+          <div class="formRow">
+            <label for="partySize">Number of people <span class="reqStar">*</span></label>
+            <input id="partySize" type="number" min="1" max="8" step="1" inputmode="numeric" value="2" />
+            <p class="help">Must be 1 to 8.</p>
           </div>
 
-          <div class="row">
+          <div class="formRow">
             <label for="langSel">Language</label>
-            <select id="langSel">
-              <option value="en" selected>English</option>
+            <select id="langSel" aria-label="Language">
+              <option value="en">English</option>
               <option value="es">Spanish</option>
             </select>
-            <div class="muted">Generates a link to the correct language pay page.</div>
+            <p class="help">Generates a link to the correct language pay page.</p>
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" id="genBtn" type="button">Generate link</button>
+            <button class="btn primary" id="genBtn" type="button">Generate link</button>
             <button class="btn" id="copyBtn" type="button" disabled>Copy link</button>
             <button class="btn" id="openBtn" type="button" disabled>Open link</button>
           </div>
 
-          <div class="pill" id="statusPill" style="display:none;"></div>
+          <div style="margin-top:12px;">
+            <span class="pill" id="statusPill">Loading tours...</span>
+          </div>
         </div>
 
-        <!-- Right: generated link -->
-        <div class="card" aria-label="Generated payment link">
+        <div class="card">
           <h2>Payment link</h2>
-          <div class="linkBox" id="linkBox">
-            <div class="linkText" id="linkText">Generate a link to display it here.</div>
-          </div>
-          <p class="muted" style="margin:10px 0 0;">
+          <div class="linkBox" id="linkBox">Generate a link to display it here.</div>
+          <div class="linkHelp">
             The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
             On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
-          </p>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Global footer include -->
+  <!-- Global footer mount -->
   <div id="siteFooter"></div>
 
-  <!-- Includes + site behavior -->
-  <script src="/assets/js/includes.js?v=1"></script>
-  <script src="/assets/js/site.js?v=1"></script>
+  <!-- Include system -->
+  <script src="/assets/js/includes.js"></script>
+  <script src="/assets/js/site.js"></script>
 
   <script>
-    const API_BASE = "https://mindobirdwatching.com/api";
-    const TZ = "America/Guayaquil";
+    (function(){
+      const MBW_API_BASE = "/api";
+      const TZ = "America/Guayaquil";
 
-    const tourSel = document.getElementById("tourSel");
-    const dateSel = document.getElementById("dateSel");
-    const peopleSel = document.getElementById("peopleSel");
-    const langSel = document.getElementById("langSel");
+      const tourSel = document.getElementById("tourSel");
+      const langSel = document.getElementById("langSel");
+      const tourDate = document.getElementById("tourDate");
+      const tourPriceLine = document.getElementById("tourPriceLine");
+      const partySize = document.getElementById("partySize");
 
-    const genBtn = document.getElementById("genBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const openBtn = document.getElementById("openBtn");
+      const statusPill = document.getElementById("statusPill");
+      const genBtn = document.getElementById("genBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const openBtn = document.getElementById("openBtn");
+      const linkBox = document.getElementById("linkBox");
 
-    const linkText = document.getElementById("linkText");
-    const statusPill = document.getElementById("statusPill");
-
-    let tours = [];
-    let lastLink = "";
-
-    function pad2(n){ return String(n).padStart(2,"0"); }
-
-    function tzTodayISO(tz) {
-      // Builds YYYY-MM-DD for the given timezone
-      const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: tz,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      }).formatToParts(new Date());
-      const y = parts.find(p => p.type === "year").value;
-      const m = parts.find(p => p.type === "month").value;
-      const d = parts.find(p => p.type === "day").value;
-      return `${y}-${m}-${d}`;
-    }
-
-    function addDaysISO(iso, days) {
-      const [y,m,d] = iso.split("-").map(Number);
-      const dt = new Date(Date.UTC(y, m-1, d));
-      dt.setUTCDate(dt.getUTCDate() + days);
-      return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth()+1)}-${pad2(dt.getUTCDate())}`;
-    }
-
-    function setDateMin(){
-  const min = tzTomorrowISO();
-  dateInput.min = min;
-  if (!dateInput.value) dateInput.value = min;
-  if (dateInput.value && !/^\d{4}-\d{2}-\d{2}$/.test(dateInput.value)) {
-    dateInput.value = min;
-  }
-}
-
-
-    function showStatus(ok, text) {
-      statusPill.style.display = "inline-flex";
-      statusPill.style.borderColor = ok ? "rgba(31,107,63,0.35)" : "rgba(192,57,43,0.35)";
-      statusPill.style.background = ok ? "rgba(31,107,63,0.10)" : "rgba(192,57,43,0.10)";
-      statusPill.textContent = text;
-    }
-
-    function payBaseForLang(lang) {
-      return (lang === "es")
-        ? "https://mindobirdwatching.com/es/reservar-tour/pago/"
-        : "https://mindobirdwatching.com/book-tour/pay/";
-    }
-
-    function buildLink() {
-      const sel = tourSel.value;
-      const t = tours.find(x => x._key === sel);
-      if (!t) return "";
-      const date = dateSel.value;
-      const party = Math.min(8, Math.max(1, parseInt(peopleSel.value || "1", 10)));
-      const lang = langSel.value;
-
-      const base = payBaseForLang(lang);
-      const url = new URL(base);
-      url.searchParams.set("tour", t.tour_code);
-      url.searchParams.set("date", date);
-      url.searchParams.set("party", String(party));
-      url.searchParams.set("lang", lang);
-      return url.toString();
-    }
-
-    async function loadTours(){
-  statusEl.textContent = "Loading tours...";
-  tours = [];
-  tourSelect.innerHTML = "";
-
-  try{
-    const lang = (langSelect.value || "en").toLowerCase();
-
-    const r1 = await fetch(`${API_BASE}/tours?lang=${encodeURIComponent(lang)}`, { cache: "no-store" });
-    const j1 = await r1.json();
-    let list = Array.isArray(j1?.tours) ? j1.tours.slice() : [];
-
-    if (list.length < 2){
-      const r2 = await fetch(`${API_BASE}/tours`, { cache: "no-store" });
-      const j2 = await r2.json();
-      const all = Array.isArray(j2?.tours) ? j2.tours : [];
-      const filtered = all.filter(t => String(t.language || "").toLowerCase() === lang);
-      if (filtered.length) list = filtered;
-      else if (all.length) list = all;
-    }
-
-    list.sort((a,b)=>{
-      const ac = String(a.tour_code||"").localeCompare(String(b.tour_code||""));
-      if (ac) return ac;
-      return String(a.tour_title||"").localeCompare(String(b.tour_title||""));
-    });
-
-    tours = list;
-
-    for (const t of tours){
-      const opt = document.createElement("option");
-      opt.value = t.tour_code;
-      const price = t.amount_display ? ` (${t.amount_display} per person)` : "";
-      opt.textContent = `${t.tour_code} - ${t.tour_title}${price}`;
-      tourSelect.appendChild(opt);
-    }
-
-    statusEl.textContent = `Tours loaded: ${tours.length}`;
-    updateTourSummary();
-  }catch(err){
-    console.error(err);
-    statusEl.textContent = "Could not load tours.";
-  }
-}
-
-function updateTourSummary(){
-  const code = tourSelect.value;
-  const t = tours.find(x => String(x.tour_code) === String(code));
-  const elSum = document.getElementById("tourSummary");
-  if (!elSum) return;
-  if (!t){ elSum.textContent = ""; return; }
-  const amount = t.amount_display ? String(t.amount_display) : "";
-  const cur = t.currency ? ` ${t.currency}` : "";
-  const dur = t.duration_label ? `, ${t.duration_label}` : "";
-  elSum.textContent = amount ? `${amount}${cur} per person${dur}` : "";
-}
-
-
-
-    function setLinkUI(url) {
-      lastLink = url;
-      linkText.textContent = url || "Generate a link to display it here.";
-      copyBtn.disabled = !url;
-      openBtn.disabled = !url;
-    }
-
-    genBtn.addEventListener("click", () => {
-      const url = buildLink();
-      if (!url) {
-        showStatus(false, "Please select a tour first.");
-        return;
+      function setStatus(kind, text){
+        statusPill.className = "pill" + (kind === "ok" ? " ok" : kind === "err" ? " err" : "");
+        statusPill.textContent = text;
       }
-      setLinkUI(url);
-      showStatus(true, "Link generated. Copy and send to the guest.");
-    });
 
-    copyBtn.addEventListener("click", async () => {
-      if (!lastLink) return;
-      try {
-        await navigator.clipboard.writeText(lastLink);
-        showStatus(true, "Copied to clipboard.");
-      } catch (e) {
-        showStatus(false, "Could not copy (browser blocked clipboard).");
+      function tzTodayISO(){
+        const parts = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year:"numeric", month:"2-digit", day:"2-digit" }).formatToParts(new Date());
+        const y = parts.find(p=>p.type==="year").value;
+        const m = parts.find(p=>p.type==="month").value;
+        const d = parts.find(p=>p.type==="day").value;
+        return y + "-" + m + "-" + d;
       }
-    });
 
-    openBtn.addEventListener("click", () => {
-      if (!lastLink) return;
-      window.open(lastLink, "_blank", "noopener");
-    });
+      function addDaysISO(iso, days){
+        const [y,m,d] = iso.split("-").map(Number);
+        const dt = new Date(Date.UTC(y, m-1, d));
+        dt.setUTCDate(dt.getUTCDate() + days);
+        const yy = dt.getUTCFullYear();
+        const mm = String(dt.getUTCMonth()+1).padStart(2,"0");
+        const dd = String(dt.getUTCDate()).padStart(2,"0");
+        return yy + "-" + mm + "-" + dd;
+      }
 
-    
-    function clampPeopleInput() {
-      const n = parseInt(peopleSel.value || "1", 10);
-      if (!Number.isFinite(n)) { peopleSel.value = "1"; return; }
-      if (n < 1) peopleSel.value = "1";
-      if (n > 8) peopleSel.value = "8";
-    }
-    peopleSel.addEventListener("input", clampPeopleInput);
-    peopleSel.addEventListener("blur", clampPeopleInput);
+      function tzTomorrowISO(){
+        return addDaysISO(tzTodayISO(), 1);
+      }
 
-    function enforceMinDate() {
-      // Also clamp manually on iOS where typing can bypass min
-      const v = dateSel.value;
-      if (!v) return;
-      if (dateSel.min && v < dateSel.min) dateSel.value = dateSel.min;
-    }
-    dateSel.addEventListener("change", enforceMinDate);
-    dateSel.addEventListener("blur", enforceMinDate);
-langSel.addEventListener("change", async () => {
-      await loadTours();
-      setLinkUI("");
-    });
+      function clampParty(){
+        let v = parseInt(partySize.value || "1", 10);
+        if (!Number.isFinite(v)) v = 1;
+        if (v < 1) v = 1;
+        if (v > 8) v = 8;
+        partySize.value = String(v);
+      }
 
-    // init
-    setDateMin();
-    loadTours();
+      // Set min date to tomorrow in Guayaquil (works for desktop and mobile)
+      function initDate(){
+        const min = tzTomorrowISO();
+        tourDate.min = min;
+        if (!tourDate.value || tourDate.value < min) tourDate.value = min;
+
+        tourDate.addEventListener("change", () => {
+          if (tourDate.value < min) tourDate.value = min;
+        });
+      }
+
+      async function loadTours(lang){
+        tourSel.disabled = true;
+        tourSel.innerHTML = "<option>Loading tours...</option>";
+        setStatus("", "Loading tours...");
+        try{
+          const res = await fetch(MBW_API_BASE + "/tours?lang=" + encodeURIComponent(lang), { headers: { "Accept":"application/json" }, cache: "no-store" });
+          const data = await res.json().catch(()=>({}));
+          if (!res.ok || !data || !data.ok || !Array.isArray(data.tours)) throw new Error("Could not load tours");
+          const tours = data.tours;
+
+          tourSel.innerHTML = "";
+          for (const t of tours){
+            const opt = document.createElement("option");
+            opt.value = t.tour_code;
+            const price = t.amount_display ? (" " + t.amount_display) : "";
+            opt.textContent = (t.tour_code || "") + " - " + (t.tour_title || "Tour") + " (" + (price ? price.trim() : "Price") + " per person)";
+            tourSel.appendChild(opt);
+          }
+
+          tourSel.disabled = false;
+          function updatePriceLine(){
+            const t = tours.find(x => (x.tour_code || "") === tourSel.value) || tours[0];
+            tourPriceLine.textContent = (t && t.amount_display) ? ("Selected price: " + t.amount_display + " per person") : "";
+          }
+          updatePriceLine();
+          tourSel.addEventListener("change", updatePriceLine);
+          setStatus("ok", "Tours loaded: " + tours.length);
+        }catch(e){
+          console.error(e);
+          tourSel.innerHTML = "<option value=''>Could not load tours</option>";
+          setStatus("err", "Could not load tours.");
+        }
+      }
+
+      function buildLink(){
+        clampParty();
+        const lang = langSel.value || "en";
+        const tour = tourSel.value || "";
+        const date = tourDate.value || "";
+        const party = partySize.value || "1";
+
+        if (!tour){ setStatus("err", "Select a tour."); return ""; }
+        if (!date){ setStatus("err", "Select a date."); return ""; }
+
+        const url = new URL(window.location.origin + "/book-tour/pay/");
+        url.searchParams.set("tour", tour);
+        url.searchParams.set("date", date);
+        url.searchParams.set("party", party);
+        url.searchParams.set("lang", lang);
+        return url.toString();
+      }
+
+      function setLink(url){
+        linkBox.textContent = url || "Generate a link to display it here.";
+        copyBtn.disabled = !url;
+        openBtn.disabled = !url;
+      }
+
+      genBtn.addEventListener("click", () => {
+        const url = buildLink();
+        if (url){
+          setLink(url);
+          setStatus("ok", "Link generated.");
+        }
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        const url = linkBox.textContent.trim();
+        if (!url || url.indexOf("http") !== 0) return;
+        try{
+          await navigator.clipboard.writeText(url);
+          setStatus("ok", "Copied.");
+        }catch(e){
+          // fallback
+          const ta = document.createElement("textarea");
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+          setStatus("ok", "Copied.");
+        }
+      });
+
+      openBtn.addEventListener("click", () => {
+        const url = linkBox.textContent.trim();
+        if (!url || url.indexOf("http") !== 0) return;
+        window.open(url, "_blank", "noopener");
+      });
+
+      partySize.addEventListener("input", clampParty);
+      partySize.addEventListener("blur", clampParty);
+
+      langSel.addEventListener("change", () => {
+        setLink("");
+        loadTours(langSel.value || "en");
+      });
+
+      // Init
+      initDate();
+      loadTours(langSel.value || "en");
+    })();
   </script>
 </body>
 </html>
