@@ -159,6 +159,21 @@
       .tourHero{ height: 190px; }
       .pricePill{ justify-self:start; }
     }
+  
+    .turnstileWrap{
+      border: 1px dashed rgba(0,0,0,0.25);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,0.25);
+      margin-top: 10px;
+    }
+    .turnstileWrap .help{
+      font-size: 13px;
+      opacity: 0.85;
+      margin: 0 0 8px;
+      font-weight: 800;
+    }
+
   </style>
 </head>
 <body>
@@ -234,9 +249,9 @@
               </div>
             </div>
 
-            <div class="turnstileBox" id="turnstileBox">
-              <div class="hint" style="margin:0 0 8px;">Turnstile verification will appear here.</div>
-              <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="light"></div>
+            <div class="turnstileWrap" id="turnstileBox">
+              <div class="help">Turnstile verification will appear here.</div>
+              <div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-theme="light"></div>
             </div>
 
             <button id="btnPay" class="btnPrimary" type="button">Continue to secure payment</button>
@@ -439,7 +454,8 @@
                 notes
               },
               terms_accepted: true,
-              turnstile_token: token
+              turnstile_token: token,
+              cf_turnstile_response: token
             })
           });
 
