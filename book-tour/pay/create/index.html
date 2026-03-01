@@ -332,7 +332,7 @@
       updatePriceLine();
     }
 
-    async function fetchToursForLang(lang){
+    async async function fetchToursForLang(lang){
       const url = `${MBW_API_BASE}/tours?lang=${encodeURIComponent(lang)}`;
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if(!res.ok) throw new Error(`Tours API failed (${res.status})`);
@@ -374,7 +374,10 @@
     function rebuildToursByLang(){
       toursByLang = { en: [], es: [] };
       for(const t of allTours){
-        const l = String(t.language || '').toLowerCase();
+        const raw = String(t.language || '').toLowerCase();
+        const l = (raw === 'en' || raw === 'english' || raw === 'inglés' || raw === 'ingles') ? 'en'
+                : (raw === 'es' || raw === 'spanish' || raw === 'español' || raw === 'espanol') ? 'es'
+                : (String(t.lang || '').toLowerCase() === 'es' ? 'es' : (String(t.lang || '').toLowerCase() === 'en' ? 'en' : '');
         if(l === 'en' || l === 'es') toursByLang[l].push(t);
       }
 
