@@ -1,191 +1,158 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pay for a Tour | Mindo Bird Watching</title>
-  <link rel="icon" href="/favicon.ico" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
-  <style>
-    .payGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
-    .payCard{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:16px;box-shadow:0 10px 24px rgba(0,0,0,.04)}
-    .payHeader{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-    .payHeader h1{margin:0}
-    .payHeader .lede{margin:0;opacity:.85}
-    .tourList{display:grid;gap:12px}
-    .tourItem{display:grid;grid-template-columns:120px 1fr;gap:12px;border:1px solid rgba(0,0,0,.10);border-radius:14px;overflow:hidden;background:#fff}
-    .tourItem button{appearance:none;border:0;background:transparent;padding:0;margin:0;text-align:left;cursor:pointer;width:100%}
-    .tourMedia{position:relative;background:#f2f4f8;min-height:90px}
-    .tourMedia img{display:block;width:100%;height:100%;object-fit:cover}
-    .tourBody{padding:12px}
-    .tourTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .tourTitle{font-weight:700;font-size:16px;line-height:1.25;margin:0}
-    .tourMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.10);background:#fafbff;font-size:12px;white-space:nowrap}
-    .priceTag{font-weight:800}
-    .selected{outline:3px solid rgba(3,78,162,.22);border-color:rgba(3,78,162,.35)}
-    .detailHero{display:flex;gap:12px;align-items:center}
-    .detailHero img{width:92px;height:92px;border-radius:14px;object-fit:cover;border:1px solid rgba(0,0,0,.08)}
-    .detailHero h2{margin:0;font-size:18px}
-    .detailHero .sub{margin:4px 0 0 0;opacity:.85}
-    .formGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-    .formRow{display:flex;flex-direction:column;gap:6px}
-    .formRow label{font-weight:650}
-    .formRow input,.formRow select,.formRow textarea{width:100%;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:10px 12px;font:inherit;background:#fff}
-    .formRow textarea{min-height:92px;resize:vertical}
-    .span2{grid-column:1 / -1}
-    .agreeRow{display:flex;gap:10px;align-items:flex-start}
-    .agreeRow input{width:auto;margin-top:3px}
-    .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
-    .btnPrimary{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer;background:#2f6b3e;color:#fff}
-    .btnPrimary[disabled]{opacity:.55;cursor:not-allowed}
-    .btnGhost{appearance:none;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:12px 14px;font-weight:750;cursor:pointer;background:#fff}
-    .hint{font-size:13px;opacity:.82;margin:8px 0 0 0}
-    .errorBox{display:none;margin-top:10px;border:1px solid rgba(190,0,0,.25);background:rgba(190,0,0,.06);padding:10px 12px;border-radius:12px}
-    .errorBox strong{display:block;margin-bottom:6px}
-    .loadingLine{display:none;margin-top:10px;opacity:.85}
-    .small{font-size:12px;opacity:.8}
-    @media(max-width:900px){
-      .payGrid{grid-template-columns:1fr}
-      .tourItem{grid-template-columns:100px 1fr}
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Pay for a Tour | Mindo Bird Watching</title>
+<link href="/favicon.ico" rel="icon"/>
+<link href="/assets/css/site.css?v=1" rel="stylesheet"/>
+
+<script defer="" src="/assets/js/includes.js?v=1"></script>
+<script defer="" src="/assets/js/site.js?v=1"></script>
+<script defer="" src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+<style>.payPage { max-width: 1100px; margin: 0 auto; padding: 18px 14px 28px; }
+.payHero { margin-bottom: 14px; }
+.payHero h1 { margin: 0 0 6px 0; }
+.payHero p { margin: 0 0 6px 0; }
+
+.payGrid { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .payGrid { grid-template-columns: 1fr; } }
+
+.payPanel { background: rgba(255,255,255,0.9); border-radius: 16px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+.payPanel h2 { margin: 0 0 6px 0; }
+.payPanel .sub { margin: 0 0 10px 0; opacity: 0.8; font-size: 14px; }
+
+.tourList { display: grid; gap: 10px; }
+.tourCard { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; background: rgba(255,255,255,0.92); cursor: pointer; }
+.tourCard:hover { border-color: rgba(0,0,0,0.18); }
+.tourThumb { width: 96px; height: 72px; border-radius: 10px; object-fit: cover; flex: 0 0 auto; }
+.tourMeta { flex: 1 1 auto; min-width: 0; }
+.tourTop { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.tourCode { font-weight: 700; opacity: 0.8; }
+.tourPrice { font-weight: 800; padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,0.05); font-size: 13px; white-space: nowrap; }
+.tourTitle { margin: 6px 0 6px 0; font-weight: 800; line-height: 1.25; }
+.tourBadges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.badge { font-size: 12px; padding: 3px 8px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.10); background: rgba(255,255,255,0.7); }
+.tourDesc { margin: 0; font-size: 13px; opacity: 0.85; }
+
+.formPlaceholder { padding: 12px; border: 1px dashed rgba(0,0,0,0.18); border-radius: 14px; background: rgba(255,255,255,0.6); font-size: 14px; opacity: 0.85; }
+
+.err { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(180, 60, 60, 0.35); background: rgba(255, 235, 235, 0.8); color: rgba(120, 30, 30, 1); font-size: 14px; }</style>
 </head>
 <body>
-  <div id="siteHeader"></div>
-  <main class="page card">
-    <div class="payHeader" aria-label="Pay page header">
-      <h1>Pay for a Tour</h1>
-      <p class="lede">Select a tour, choose your date, enter pickup details, and complete payment securely with Stripe.</p>
-      <p class="small">Price is per person. Tour pickup time uses the local timezone: America/Guayaquil.</p>
-    </div>
-<div class="payGrid" aria-label="Pay layout grid">
-  <section class="payCard" aria-label="Tour list">
-    <div class="chips" aria-label="Tour list chips">
-      <span class="chip">Stripe driven list</span>
-      <span class="chip">Instant checkout</span>
-      <span class="chip">Secure payment</span>
-    </div>
-
-    <div id="tourList" class="tourList" aria-label="Available tours"></div>
-
-    <div id="tourListLoading" class="loadingLine">Loading tours...</div>
-    <div id="tourListError" class="errorBox" role="alert" aria-live="polite">
-      <strong>Could not load tours.</strong>
-      <div id="tourListErrorMsg"></div>
-    </div>
-  </section>
-
-  <section class="payCard" aria-label="Tour details and checkout form">
-    <div id="detailEmpty">
-      <h2 style="margin:0 0 6px 0">Choose a tour to continue</h2>
-      <p class="hint">Pick a tour on the left. The checkout form will appear here.</p>
-    </div>
-
-    <div id="detailWrap" style="display:none">
-      <div class="detailHero" aria-label="Selected tour summary">
-        <img id="detailImg" alt="" src="" />
-        <div>
-          <h2 id="detailTitle"></h2>
-          <p class="sub" id="detailSub"></p>
-          <div class="tourMeta" aria-label="Selected tour meta">
-            <span class="badge"><span class="priceTag" id="detailPrice"></span> per person</span>
-            <span class="badge" id="detailDuration"></span>
-            <span class="badge" id="detailPickup"></span>
-          </div>
-          <p class="hint" id="detailOneLiner"></p>
-          <p class="hint"><a id="detailTourPage" href="#" target="_blank" rel="noopener">View tour details</a></p>
-        </div>
-      </div>
-
-      <form id="payForm" novalidate>
-        <div class="formGrid" aria-label="Checkout form fields">
-          <div class="formRow">
-            <label for="people">Number of people <span class="req">*</span></label>
-            <input id="people" name="people" type="number" inputmode="numeric" min="1" step="1" value="2" required />
-          </div>
-
-          <div class="formRow">
-            <label for="tourDate">Tour date <span class="req">*</span></label>
-            <input id="tourDate" name="tourDate" type="date" required />
-          </div>
-
-          <div class="formRow">
-            <label for="contactName">Main contact name <span class="req">*</span></label>
-            <input id="contactName" name="contactName" type="text" autocomplete="name" required />
-          </div>
-
-          <div class="formRow">
-            <label for="contactEmail">Email <span class="req">*</span></label>
-            <input id="contactEmail" name="contactEmail" type="email" autocomplete="email" required />
-          </div>
-
-          <div class="formRow">
-            <label for="contactPhone">Phone <span class="req">*</span></label>
-            <input id="contactPhone" name="contactPhone" type="tel" autocomplete="tel" required />
-          </div>
-
-          <div class="formRow">
-            <label for="whatsapp">WhatsApp number <span class="req">*</span></label>
-            <input id="whatsapp" name="whatsapp" type="tel" required />
-          </div>
-
-          <div class="formRow span2">
-            <label for="pickupAddress">Hotel or exact pickup address (in Mindo) <span class="req">*</span></label>
-            <input id="pickupAddress" name="pickupAddress" type="text" required />
-          </div>
-
-          <div class="formRow span2">
-            <label for="notes">Notes or special requests</label>
-            <textarea id="notes" name="notes"></textarea>
-          </div>
-
-          <div class="formRow span2">
-            <div class="agreeRow">
-              <input id="agree" name="agree" type="checkbox" required />
-              <label for="agree">
-                I agree to the <a href="/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span>
-              </label>
-            </div>
-            <p class="hint">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
-          </div>
-
-          <div class="formRow span2">
-            <div id="turnstileBox" class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-theme="light"></div>
-            <p class="hint">This helps us prevent spam and protect your booking.</p>
-          </div>
-        </div>
-
-        <div id="formError" class="errorBox" role="alert" aria-live="polite">
-          <strong>Checkout could not start.</strong>
-          <div id="formErrorMsg"></div>
-        </div>
-
-        <div id="formLoading" class="loadingLine">Creating secure checkout session...</div>
-
-        <div class="actions">
-          <button id="payBtn" type="submit" class="btnPrimary" disabled>Continue to secure payment</button>
-          <button id="resetBtn" type="button" class="btnGhost">Reset</button>
-        </div>
-
-        <p class="hint small">
+<div id="siteHeader"></div>
+<main class="page card">
+<div aria-label="Pay page header" class="payHeader">
+<h1>Pay for a Tour</h1>
+<p class="lede">Select a tour, choose your date, enter pickup details, and complete payment securely with Stripe.</p>
+<p class="small">Price is per person. Tour pickup time uses the local timezone: America/Guayaquil.</p>
+</div>
+<div aria-label="Pay layout grid" class="payGrid">
+<section aria-label="Tour list" class="payCard">
+<div aria-label="Tour list chips" class="chips">
+<span class="chip">Stripe driven list</span>
+<span class="chip">Instant checkout</span>
+<span class="chip">Secure payment</span>
+</div>
+<div aria-label="Available tours" class="tourList" id="tourList"></div>
+<div class="loadingLine" id="tourListLoading">Loading tours...</div>
+<div aria-live="polite" class="errorBox" id="tourListError" role="alert">
+<strong>Could not load tours.</strong>
+<div id="tourListErrorMsg"></div>
+</div>
+</section>
+<section aria-label="Tour details and checkout form" class="payCard">
+<div id="detailEmpty">
+<h2 style="margin:0 0 6px 0">Choose a tour to continue</h2>
+<p class="hint">Pick a tour on the left. The checkout form will appear here.</p>
+</div>
+<div id="detailWrap" style="display:none">
+<div aria-label="Selected tour summary" class="detailHero">
+<img alt="" id="detailImg" src=""/>
+<div>
+<h2 id="detailTitle"></h2>
+<p class="sub" id="detailSub"></p>
+<div aria-label="Selected tour meta" class="tourMeta">
+<span class="badge"><span class="priceTag" id="detailPrice"></span> per person</span>
+<span class="badge" id="detailDuration"></span>
+<span class="badge" id="detailPickup"></span>
+</div>
+<p class="hint" id="detailOneLiner"></p>
+<p class="hint"><a href="#" id="detailTourPage" rel="noopener" target="_blank">View tour details</a></p>
+</div>
+</div>
+<form id="payForm" novalidate="">
+<div aria-label="Checkout form fields" class="formGrid">
+<div class="formRow">
+<label for="people">Number of people <span class="req">*</span></label>
+<input id="people" inputmode="numeric" min="1" name="people" required="" step="1" type="number" value="2"/>
+</div>
+<div class="formRow">
+<label for="tourDate">Tour date <span class="req">*</span></label>
+<input id="tourDate" name="tourDate" required="" type="date"/>
+</div>
+<div class="formRow">
+<label for="contactName">Main contact name <span class="req">*</span></label>
+<input autocomplete="name" id="contactName" name="contactName" required="" type="text"/>
+</div>
+<div class="formRow">
+<label for="contactEmail">Email <span class="req">*</span></label>
+<input autocomplete="email" id="contactEmail" name="contactEmail" required="" type="email"/>
+</div>
+<div class="formRow">
+<label for="contactPhone">Phone <span class="req">*</span></label>
+<input autocomplete="tel" id="contactPhone" name="contactPhone" required="" type="tel"/>
+</div>
+<div class="formRow">
+<label for="whatsapp">WhatsApp number <span class="req">*</span></label>
+<input id="whatsapp" name="whatsapp" required="" type="tel"/>
+</div>
+<div class="formRow span2">
+<label for="pickupAddress">Hotel or exact pickup address (in Mindo) <span class="req">*</span></label>
+<input id="pickupAddress" name="pickupAddress" required="" type="text"/>
+</div>
+<div class="formRow span2">
+<label for="notes">Notes or special requests</label>
+<textarea id="notes" name="notes"></textarea>
+</div>
+<div class="formRow span2">
+<div class="agreeRow">
+<input id="agree" name="agree" required="" type="checkbox"/>
+<label for="agree">
+                I agree to the <a href="/terms-conditions/" rel="noopener" target="_blank">Terms and Conditions</a> <span class="req">*</span>
+</label>
+</div>
+<p class="hint">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
+</div>
+<div class="formRow span2">
+<div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-theme="light" id="turnstileBox"></div>
+<p class="hint">This helps us prevent spam and protect your booking.</p>
+</div>
+</div>
+<div aria-live="polite" class="errorBox" id="formError" role="alert">
+<strong>Checkout could not start.</strong>
+<div id="formErrorMsg"></div>
+</div>
+<div class="loadingLine" id="formLoading">Creating secure checkout session...</div>
+<div class="actions">
+<button class="btnPrimary" disabled="" id="payBtn" type="submit">Continue to secure payment</button>
+<button class="btnGhost" id="resetBtn" type="button">Reset</button>
+</div>
+<p class="hint small">
           After payment, you will return to our success page. If you close the success page, you can still contact us anytime via WhatsApp.
         </p>
-      </form>
-    </div>
-  </section>
+</form>
 </div>
-  </main>
-  <div id="siteFooter"></div>
-  <script>
+</section>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script>
     (function(){
       "use strict";
 
-      const API_BASE = "";
+      const API_BASE = "https://mbw-stripe-checkout.thecloudforestretreat.workers.dev";
       const LANG = "en";
 
       const els = {
