@@ -1,904 +1,663 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pay for a Tour | Mindo Bird Watching</title>
-  <meta name="description" content="Request a birdwatching tour in Mindo, Ecuador. Share dates, group size, and goals, and we will confirm details and follow up quickly by email or WhatsApp." />
 
-  <link rel="canonical" href="https://mindobirdwatching.com/book-tour/" />
-  <link rel="alternate" hreflang="en" href="/book-tour/" />
-  <link rel="alternate" hreflang="es" href="/es/reservar-tour/" />
-  <link rel="alternate" hreflang="x-default" href="/book-tour/" />
+  <!-- Global site assets -->
+  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <link rel="stylesheet" href="/assets/css/footer.css?v=1" />
 
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Mindo Bird Watching" />
-  <meta property="og:title" content="Book a Tour | Mindo Bird Watching" />
-  <meta property="og:description" content="Request a birdwatching tour in Mindo, Ecuador. Share dates, group size, and goals, and we will confirm details and follow up quickly by email or WhatsApp." />
-  <meta property="og:url" content="https://mindobirdwatching.com/book-tour/" />
-  <meta property="og:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
-  <meta property="og:image:secure_url" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Mindo Bird Watching - Cloud forest birding tours in Ecuador" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Book a Tour | Mindo Bird Watching" />
-  <meta name="twitter:description" content="Request a birdwatching tour in Mindo, Ecuador. Share dates, group size, and goals, and we will confirm details and follow up quickly by email or WhatsApp." />
-  <meta name="twitter:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
-
-  <link rel="icon" sizes="any" href="/favicon.ico" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#1f6d3a" />
-
-  <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css" />
-  <link rel="stylesheet" href="/assets/css/footer.css" />
-  <script defer src="/assets/js/head.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
-    /* Page-only styles (main content only). Do NOT style header/footer here. */
-
-    .page { margin-top: 18px; padding: 26px; }
-    .page.card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
+    :root{
+      --mbw-bg: #b7d99a;
+      --panel: rgba(255,255,255,0.18);
+      --card: rgba(255,255,255,0.28);
+      --stroke: rgba(0,0,0,0.10);
+      --stroke2: rgba(0,0,0,0.12);
+      --text: #0c1b10;
+      --muted: rgba(0,0,0,0.60);
+      --green: #0f5a2a;
+      --green2: #0c4a22;
+      --danger: #c32626;
+      --radius: 22px;
+      --shadow: 0 18px 60px rgba(0,0,0,0.12);
+      --shadow2: 0 12px 28px rgba(0,0,0,0.10);
     }
 
-    .layout {
+    body{ background: var(--mbw-bg); }
+
+    .page{
+      max-width: 1180px;
+      margin: 28px auto 70px;
+      padding: 0 18px;
+    }
+
+    .shell{
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.10));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      padding: 28px 22px;
+    }
+
+    .grid{
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
+      grid-template-columns: 0.95fr 1.05fr;
       gap: 16px;
       align-items: start;
     }
 
-    .leftStack { display: grid; gap: 18px; align-content: start; min-width: 0; }
-    .rightStack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-
-    h1 { margin: 0 0 10px; letter-spacing: -0.02em; }
-    .lede { margin: 0; max-width: 92ch; color: var(--ink); line-height: 1.65; }
-
-    .metaCard {
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,0.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      display: grid;
-      gap: 10px;
+    .card{
+      background: var(--card);
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      padding: 18px;
     }
 
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .chip {
+    h1{
+      margin: 0 0 6px 0;
+      font-family: "Playfair Display", ui-serif, Georgia, serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1a6a2f;
+      font-size: 44px;
+      line-height: 1.05;
+    }
+
+    .subtitle{
+      margin: 0 0 18px 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.45;
+      max-width: 78ch;
+    }
+
+    .badgeRow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0 0;
+    }
+    .pill{
       display: inline-flex;
       align-items: center;
-      padding: 7px 10px;
+      gap: 8px;
+      padding: 10px 12px;
       border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.55);
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 12.5px;
-      line-height: 1;
-      white-space: nowrap;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.44);
+      color: rgba(0,0,0,0.78);
+      font-size: 13px;
+      font-weight: 800;
     }
+    .reqStar{ color: var(--danger); font-weight: 900; }
 
-    .note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
-
-    .cardBlock {
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,0.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      min-width: 0;
+    .tourCard{
+      margin-top: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,0.12);
+      overflow: hidden;
+      background: rgba(255,255,255,0.34);
     }
-
-    .blockHead {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .blockHead h2 {
-      margin: 0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 20px;
-    }
-
-    .subtle { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
-
-    .requiredNote { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
-    .req { color: #b00020; font-weight: 950; }
-
-    /* Tours list */
-    .tourList { display: grid; gap: 12px; }
-    .notice {
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(17,24,39,0.12);
-      background: rgba(255,255,255,0.55);
-      color: var(--ink);
-      font-weight: 900;
-      font-size: 12.5px;
-      line-height: 1.35;
-    }
-    .noticeError { border-color: rgba(160,0,0,0.22); background: rgba(160,0,0,0.08); }
-
-    .tourCard {
-      width: 100%;
-      text-align: left;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: var(--card);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease;
-    }
-    .tourCard:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,0,0,0.08); }
-    .tourCard[aria-pressed="true"] { border-color: rgba(31,109,58,0.55); }
-
-    /* Image presentation: bigger, centered, no cropping.
-       Note: This promo is tall/narrow. We "contain" it, but make the frame taller so it reads.
-    */
-    .thumbFrame {
-      width: 100%;
-      height: 280px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(17,24,39,0.10);
+    .tourMedia{
+      height: 190px;
+      background: rgba(255,255,255,0.26);
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      margin: 0 0 10px;
+      padding: 10px;
     }
-    .tourThumb {
+    .tourMedia img{
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: center;
-      display: block;
-      cursor: zoom-in;
+      border-radius: 14px;
     }
-
-    .tourTitleWrap { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-    .tourCode { font-weight: 950; color: var(--muted); font-size: 12.5px; }
-    .tourPrice {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(17,24,39,0.12);
-      background: rgba(255,255,255,0.60);
-      font-weight: 950;
-      color: var(--ink);
-      font-size: 12.5px;
-      white-space: nowrap;
+    .tourBody{
+      padding: 12px 14px 14px;
     }
-    .tourName { margin-top: 4px; font-weight: 950; color: var(--ink); }
-    .tourChips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-    .chipSm {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(17,24,39,0.12);
-      background: rgba(255,255,255,0.60);
+    .tourTop{
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .tourCode{
       font-weight: 900;
-      color: var(--ink);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .tourOneLiner { margin-top: 8px; color: var(--muted); font-size: 12.8px; line-height: 1.5; }
-
-    /* Checkout */
-    .checkoutPanel { min-width: 0; }
-    .checkoutHeader { margin-bottom: 10px; }
-    .checkoutTourTitle { font-weight: 950; color: var(--ink); }
-    .checkoutTourMeta { margin-top: 2px; color: var(--muted); font-size: 13px; }
-
-    .checkoutForm { display: grid; gap: 10px; margin-top: 10px; }
-    .field { display: grid; gap: 6px; }
-
-    label {
-      font-weight: 900;
+      color: rgba(0,0,0,0.70);
       font-size: 13px;
-      color: var(--ink);
-      width: 100%;
-      min-width: 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+    }
+    .tourTitle{
+      font-weight: 900;
+      color: #0c1b10;
+      font-size: 16px;
+      line-height: 1.25;
+      margin: 4px 0 0;
+    }
+    .tourMeta{
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
       flex-wrap: wrap;
+      align-items: center;
+      color: rgba(0,0,0,0.70);
+      font-size: 13px;
+    }
+    .priceTag{
+      font-weight: 900;
+      background: rgba(255,255,255,0.62);
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 999px;
+      padding: 6px 10px;
+      white-space: nowrap;
     }
 
-    /* Failsafe visual capitalization for names (JS also normalizes actual value). */
-    .capName { text-transform: capitalize; }
+    .sectionTitle{
+      margin: 0 0 8px 0;
+      font-family: "Playfair Display", ui-serif, Georgia, serif;
+      font-weight: 700;
+      color: #1a6a2f;
+      font-size: 26px;
+      line-height: 1.1;
+    }
+    .sectionHelp{
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
 
-    input, select, textarea {
+    .formRow{ margin: 14px 0; }
+    label{
+      display: block;
+      font-weight: 900;
+      color: var(--text);
+      font-size: 14px;
+      margin: 0 0 8px 0;
+    }
+
+    input, textarea{
       width: 100%;
       max-width: 100%;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.70);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
-      padding: 12px;
-      font: inherit;
-      color: var(--ink);
-      outline: none;
       box-sizing: border-box;
-      min-width: 0;
-      display: block;
-    }
-
-    input, select {
-      height: 46px;
-      line-height: 46px;
-      padding-top: 0;
-      padding-bottom: 0;
-    }
-
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-      line-height: 1.5;
-      height: auto;
-    }
-
-    .fieldHelp { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
-
-    /* Terms checkbox row */
-    .agreeInline {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.62);
+      color: #0b1a0f;
+      font-size: 16px;
       line-height: 1.25;
+      outline: none;
     }
-    .agreeInline input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      margin: 0;
+    input:focus, textarea:focus{
+      border-color: rgba(15,90,42,0.55);
+      box-shadow: 0 0 0 4px rgba(15,90,42,0.12);
+    }
+
+    .readonlyBox{
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.46);
+      color: rgba(0,0,0,0.82);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .help{
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .agreeInline{
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-weight: 800;
+      color: rgba(0,0,0,0.78);
+      font-size: 14px;
+    }
+    .agreeInline input{
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
       flex: 0 0 auto;
     }
-    .termsLink { color: #1a73e8; text-decoration: underline; }
-
-    /* Primary CTA */
-    .primaryBtn {
-      background: #1f6d3a;
-      color: #ffffff;
-      border: 1px solid #1f6d3a;
-      border-radius: 999px;
-      padding: 12px 16px;
-      font-weight: 950;
-      cursor: pointer;
-      min-height: 46px;
-      width: fit-content;
+    .termsLink{
+      color: #165dd8;
+      text-decoration: underline;
+      font-weight: 900;
     }
-    .primaryBtn:hover { background: #185a30; border-color: #185a30; }
-    .primaryBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .actions { margin-top: 8px; display: flex; justify-content: flex-start; }
-
-    .turnstileWrap {
-      border: 1px dashed rgba(17,24,39,0.18);
-      border-radius: 14px;
-      background: rgba(255,255,255,0.55);
+    .turnstileWrap{
+      margin-top: 12px;
+      border: 1px dashed rgba(0,0,0,0.22);
+      border-radius: 16px;
       padding: 12px;
-      display: grid;
-      gap: 10px;
+      background: rgba(255,255,255,0.34);
     }
 
-    @media (max-width: 980px) {
-      .layout { grid-template-columns: 1fr; }
-      .page { padding: 18px; }
+    .actions{ margin-top: 16px; }
+    .primaryBtn{
+      width: 100%;
+      border-radius: 999px;
+      padding: 14px 16px;
+      border: 1px solid rgba(0,0,0,0.14);
+      font-weight: 900;
+      cursor: pointer;
+      background: var(--green);
+      color: #fff;
+      font-size: 16px;
     }
-  
-  .reqStar{color:#b42318;font-weight:800;}
+    .primaryBtn:hover{ background: var(--green2); }
+    .primaryBtn:disabled{ opacity: 0.55; cursor: not-allowed; }
 
-/* date fix */
-.field input[type="date"]{
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  font-size: 16px;
-}
-</style>
+    .errorBox{
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(195,38,38,0.35);
+      background: rgba(195,38,38,0.10);
+      color: rgba(0,0,0,0.80);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      h1{ font-size: 38px; }
+      .shell{ padding: 22px 16px; }
+      .tourMedia{ height: 210px; }
+    }
+  </style>
 </head>
 
-<body data-current-lang="en">
-  <div class="container">
-    <div id="siteHeader"></div>
+<body>
+  <div id="siteHeader"></div>
 
-    <main class="page card">
-      <div class="layout" aria-label="Pay for a tour layout grid">
-        <div class="leftStack" aria-label="Left content stack">
-          <section aria-label="Pay for a tour intro">
-            <h1>Pay for a Tour</h1>
-            <p class="lede">Select a tour, choose your date, enter pickup details, and complete payment securely with Stripe.</p>
+  <main class="page">
+    <section class="shell">
+      <div class="grid">
+        <div class="card">
+          <h1>Pay for a Tour</h1>
+          <p class="subtitle">
+            Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.
+          </p>
 
-            <div class="metaCard" aria-label="Checkout metadata">
-              <div class="chips" aria-label="Metadata chips">
-                <span class="chip">Price is per person</span>
-                <span class="chip">Timezone: America/Guayaquil</span>
-                <span class="chip">Pickup window: 15 minutes</span>
+          <div class="badgeRow">
+            <span class="pill">Price is per person</span>
+            <span class="pill">Timezone: America/Guayaquil</span>
+            <span class="pill">Pickup window: 15 minutes</span>
+          </div>
+
+          <div class="tourCard" id="tourCard" style="display:none;">
+            <div class="tourMedia">
+              <img id="tourImg" alt="" />
+            </div>
+            <div class="tourBody">
+              <div class="tourTop">
+                <div>
+                  <div class="tourCode" id="tourCode"></div>
+                  <div class="tourTitle" id="tourTitle"></div>
+                </div>
+                <div class="priceTag" id="tourPrice"></div>
               </div>
-              <p class="note">Fields marked with <span class="req">*</span> are required.</p>
+              <div class="tourMeta" id="tourMeta"></div>
             </div>
-          </section>
+          </div>
 
-          <section class="cardBlock" aria-label="Available tours">
-            <div class="blockHead">
-              <h2>Available tours</h2>
-              <p class="subtle">Pick one tour to continue.</p>
-            </div>
-
-            <div id="tourList" class="tourList" aria-live="polite">
-              <div class="notice">Loading tours...</div>
-            </div>
-
-            <div id="tourLoadError" class="notice noticeError" hidden>
-              Could not load tours. Please refresh the page. If the issue persists, message us on WhatsApp.
-            </div>
-          </section>
+          <div class="errorBox" id="tourError" style="display:none;"></div>
         </div>
 
-        <aside class="rightStack" aria-label="Checkout details">
-          <section class="cardBlock">
-            <div class="blockHead">
-              <h2>Checkout details</h2>
-              <p class="subtle">Choose a tour on the left. The checkout form will appear here.</p>
-              <p class="requiredNote">Required fields are marked with <span class="req">*</span>.</p>
+        <div class="card">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+            <div>
+              <div class="sectionTitle">Checkout details</div>
+              <div class="sectionHelp">
+                Required fields are marked with <span class="reqStar">*</span>.
+              </div>
+            </div>
+          </div>
+
+          <form id="payForm" novalidate>
+            <!-- Locked values (rendered as read-only UI plus hidden inputs for submit) -->
+            <div class="formRow">
+              <label>Tour</label>
+              <div class="readonlyBox" id="lockTourText">Loading...</div>
+              <input type="hidden" name="tour_code" id="lockTour" />
             </div>
 
-            <div id="checkoutPanel" class="checkoutPanel">
-              <div class="notice">Select a tour on the left to begin.</div>
+            <div class="formRow">
+              <label>Tour date</label>
+              <div class="readonlyBox" id="lockDateText">Loading...</div>
+              <input type="hidden" name="tour_date" id="lockDate" />
+              <p class="help">Past dates are not allowed.</p>
             </div>
-          </section>
-        </aside>
+
+            <div class="formRow">
+              <label for="people">Number of people <span class="reqStar">*</span></label>
+              <input id="people" name="people" type="number" min="1" max="8" step="1" inputmode="numeric" />
+              <p class="help" id="peopleHelp"></p>
+            </div>
+
+            <div class="formRow">
+              <label for="contact_first_name">Main contact first name <span class="reqStar">*</span></label>
+              <input id="contact_first_name" name="contact_first_name" type="text" required />
+            </div>
+
+            <div class="formRow">
+              <label for="contact_last_name">Main contact last name <span class="reqStar">*</span></label>
+              <input id="contact_last_name" name="contact_last_name" type="text" required />
+            </div>
+
+            <div class="formRow">
+              <label for="contact_email">Email <span class="reqStar">*</span></label>
+              <input id="contact_email" name="contact_email" type="email" required />
+            </div>
+
+            <div class="formRow">
+              <label for="contact_phone">Phone <span class="reqStar">*</span></label>
+              <input id="contact_phone" name="contact_phone" type="tel" required />
+            </div>
+
+            <div class="formRow">
+              <label for="whatsapp">WhatsApp number <span class="reqStar">*</span></label>
+              <input id="whatsapp" name="whatsapp" type="tel" required />
+              <p class="help">Include country code if possible.</p>
+            </div>
+
+            <div class="formRow">
+              <label for="pickup_location">Pickup location (free text) <span class="reqStar">*</span></label>
+              <input id="pickup_location" name="pickup_location" type="text" required />
+              <p class="help">Example: Mindo town center, hotel name, or landmark.</p>
+            </div>
+
+            <div class="formRow">
+              <label for="pickup_address_or_hotel">Hotel or exact pickup address</label>
+              <input id="pickup_address_or_hotel" name="pickup_address_or_hotel" type="text" />
+            </div>
+
+            <div class="formRow">
+              <label for="notes">Notes or special requests</label>
+              <textarea id="notes" name="notes" rows="4"></textarea>
+              <p class="help">Any allergies, mobility needs, or pickup clarifications.</p>
+            </div>
+
+            <div class="formRow">
+              <label class="agreeInline" for="agree_terms">
+                <input type="checkbox" id="agree_terms" required />
+                <span>I agree to the <a href="/terms-conditions/" target="_blank" rel="noopener" class="termsLink">Terms and Conditions</a> <span class="reqStar">*</span></span>
+              </label>
+            </div>
+
+            <div class="turnstileWrap">
+              <div class="help">Turnstile verification will appear here.</div>
+              <div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-theme="light"></div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="primaryBtn" id="payBtn">Continue to secure payment</button>
+            </div>
+
+            <div class="errorBox" id="formError" style="display:none;"></div>
+          </form>
+        </div>
       </div>
-    </main>
+    </section>
+  </main>
 
-    <div id="siteFooter"></div>
-  </div>
+  <div id="siteFooter"></div>
+
+  <script src="/assets/js/includes.js"></script>
+  <script src="/assets/js/site.js"></script>
 
   <script>
-    // Use SAME-ORIGIN API route on mindobirdwatching.com to avoid CORS.
-    const MBW_API_BASE = "/api";
-    const MBW_LANG = (LOCK_LANG === "es" ? "es" : "en");
-const TZ = "America/Guayaquil";
-function tzTodayISO(){
-  const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year:"numeric", month:"2-digit", day:"2-digit" });
-  return fmt.format(new Date());
-}
-function tzTomorrowISO(){
-  const t = tzTodayISO();
-  const d = new Date(t + "T00:00:00");
-  d.setDate(d.getDate() + 1);
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2,"0");
-  const dd = String(d.getDate()).padStart(2,"0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-function applyDateBounds(){
-  if (LOCK_DATE){
-    dateInput.min = LOCK_DATE;
-    dateInput.value = LOCK_DATE;
-    dateInput.disabled = true;
-    return;
-  }
-  const min = tzTomorrowISO();
-  dateInput.min = min;
-  if (!dateInput.value) dateInput.value = min;
-}
+    (function(){
+      const MBW_API_BASE = "/api";
+      const TZ = "America/Guayaquil";
 
+      const qs = new URLSearchParams(window.location.search);
+      const LOCK_TOUR = (qs.get("tour") || "").trim();
+      const LOCK_DATE = (qs.get("date") || "").trim();
+      const LOCK_PARTY = parseInt((qs.get("party") || "1").trim(), 10) || 1;
+      const MBW_LANG = (qs.get("lang") || "en").trim();
 
+      const tourCard = document.getElementById("tourCard");
+      const tourImg = document.getElementById("tourImg");
+      const tourCode = document.getElementById("tourCode");
+      const tourTitle = document.getElementById("tourTitle");
+      const tourPrice = document.getElementById("tourPrice");
+      const tourMeta = document.getElementById("tourMeta");
+      const tourError = document.getElementById("tourError");
 
-    // Invite-only link params (generated by staff via /book-tour/pay/create/)
-    const _qs = new URLSearchParams(window.location.search || "");
-    const LOCK_TOUR = (_qs.get("tour") || _qs.get("tour_code") || "").trim();
-    const LOCK_DATE = (_qs.get("date") || "").trim(); // YYYY-MM-DD
-    const LOCK_PEOPLE = (_qs.get("people") || _qs.get("party") || "").trim(); // integer string
-    const LOCK_LANG = (_qs.get("lang") || document.documentElement.getAttribute("lang") || MBW_LANG || "en").trim().toLowerCase();
+      const lockTourText = document.getElementById("lockTourText");
+      const lockDateText = document.getElementById("lockDateText");
+      const lockTour = document.getElementById("lockTour");
+      const lockDate = document.getElementById("lockDate");
 
-    // Guests should only arrive via a staff-generated link that includes tour, date, and people.
-    const INVITE_OK = Boolean(LOCK_TOUR && LOCK_DATE && LOCK_PEOPLE);
+      const people = document.getElementById("people");
+      const peopleHelp = document.getElementById("peopleHelp");
 
-    function showInviteOnlyMessage() {
-      const list = document.getElementById("tourList");
-      const details = document.getElementById("tourDetails");
-      if (list) {
-        list.innerHTML = "";
-        const card = document.createElement("div");
-        card.className = "emptyCard";
-        card.innerHTML = `
-          <div class="emptyTitle">Payment link required</div>
-          <div class="emptyText">
-            This page is used to send confirmed tour payment links to guests.
-            Please contact us and we will send you a secure payment link.
-          </div>
-          <div class="emptyActions">
-            <a class="btn btnPrimary" href="/contact/">Contact us</a>
-            <a class="btn btnGhost" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp us</a>
-          </div>
-        `;
-        list.appendChild(card);
+      const firstName = document.getElementById("contact_first_name");
+      const lastName = document.getElementById("contact_last_name");
+
+      const payForm = document.getElementById("payForm");
+      const payBtn = document.getElementById("payBtn");
+      const formError = document.getElementById("formError");
+
+      function showError(el, msg){
+        el.style.display = "block";
+        el.textContent = msg;
       }
-      if (details) {
-        details.innerHTML = "";
-        const box = document.createElement("div");
-        box.className = "detailsPlaceholder";
-        box.textContent = "Once you receive a payment link, open it to continue.";
-        details.appendChild(box);
-      }
-    }
-    function el(tag, attrs = {}, children = []) {
-      const n = document.createElement(tag);
-      for (const [k, v] of Object.entries(attrs)) {
-        if (k === "class") n.className = v;
-        else if (k === "text") n.textContent = v;
-        else if (k === "html") n.innerHTML = v;
-        else n.setAttribute(k, v);
-      }
-      for (const c of children) n.appendChild(c);
-      return n;
-    }
-
-    function requiredStar() {
-      return ' <span class="req">*</span>';
-    }
-
-    function toTitle(s) {
-      return (s || "").toLowerCase().replace(/(^|[\s\-'])\S/g, (m) => m.toUpperCase());
-    }
-
-    function wireAutoCapitalize(form) {
-      for (const nm of ["contact_first_name", "contact_last_name"]) {
-        const input = form.querySelector(`[name="${nm}"]`);
-        if (!input) continue;
-
-        const apply = () => {
-          const v = input.value;
-          if (!v) return;
-          const start = input.selectionStart;
-          const end = input.selectionEnd;
-          input.value = toTitle(v);
-          try { input.setSelectionRange(start, end); } catch (e) {}
-        };
-
-        input.addEventListener("input", apply);
-        input.addEventListener("change", apply);
-        input.addEventListener("paste", () => setTimeout(apply, 0));
-        input.addEventListener("blur", apply);
-
-        // Normalize any prefilled value immediately.
-        setTimeout(apply, 0);
-      }
-    }
-
-    async function loadTours(){
-  const list = document.getElementById("tourList");
-  const err = document.getElementById("tourLoadError");
-  err.hidden = true;
-
-  list.innerHTML = "";
-  tours = [];
-  try{
-    const lang = (LOCK_LANG || MBW_LANG || "en").toLowerCase();
-
-    const r1 = await fetch(`/api/tours?lang=${encodeURIComponent(lang)}`, { cache: "no-store" });
-    const j1 = await r1.json();
-    let items = Array.isArray(j1?.tours) ? j1.tours.slice() : [];
-
-    if (items.length < 2){
-      const r2 = await fetch(`/api/tours`, { cache: "no-store" });
-      const j2 = await r2.json();
-      const all = Array.isArray(j2?.tours) ? j2.tours : [];
-      const filtered = all.filter(t => String(t.language || "").toLowerCase() === lang);
-      if (filtered.length) items = filtered;
-      else if (all.length) items = all;
-    }
-
-    items.sort((a,b)=>{
-      const ac = String(a.tour_code||"").localeCompare(String(b.tour_code||""));
-      if (ac) return ac;
-      return String(a.tour_title||"").localeCompare(String(b.tour_title||""));
-    });
-
-    tours = items;
-
-    let lockedCard = null;
-    let lockedTourObj = null;
-
-    for (const t of tours){
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "tourCard";
-      card.setAttribute("data-code", t.tour_code);
-      card.setAttribute("aria-pressed", "false");
-
-      const img = document.createElement("img");
-      img.className = "tourImg";
-      img.alt = t.tour_title || t.tour_code;
-      img.loading = "lazy";
-      img.src = t.image_url || "";
-      card.appendChild(img);
-
-      const body = document.createElement("div");
-      body.className = "tourBody";
-      body.appendChild(el("div", { class: "tourCode", text: t.tour_code }));
-      body.appendChild(el("div", { class: "tourTitle", text: t.tour_title || "" }));
-      body.appendChild(el("div", { class: "tourPrice", text: (t.amount_display ? `${t.amount_display} per person` : "") }));
-      card.appendChild(body);
-
-      const chips = document.createElement("div");
-      chips.className = "tourChips";
-      const pickupLabel = t.pickup_time_local ? `Pickup: ${t.pickup_time_local}` : "";
-      if (t.day_type_label) chips.appendChild(el("span", { class: "chipSm", text: t.day_type_label }));
-      if (t.duration_label) chips.appendChild(el("span", { class: "chipSm", text: t.duration_label }));
-      if (pickupLabel) chips.appendChild(el("span", { class: "chipSm", text: pickupLabel }));
-      card.appendChild(chips);
-
-      if (t.description_one_liner){
-        card.appendChild(el("div", { class: "tourOneLiner", text: t.description_one_liner }));
+      function hideError(el){
+        el.style.display = "none";
+        el.textContent = "";
       }
 
-      card.addEventListener("click", () => renderCheckout(t, card));
-      list.appendChild(card);
-
-      if (LOCK_TOUR && String(t.tour_code||"").toUpperCase() === String(LOCK_TOUR).toUpperCase()){
-        lockedCard = card;
-        lockedTourObj = t;
-      }
-    }
-
-    if (lockedTourObj && lockedCard){
-      renderCheckout(lockedTourObj, lockedCard);
-    } else if (LOCK_TOUR){
-      checkoutTitle.textContent = "Selected tour not found.";
-      checkoutHint.textContent = "Please ask staff for a new payment link.";
-    }
-
-  }catch(e){
-    list.innerHTML = "";
-    err.hidden = false;
-    console.error("Failed to load tours:", e);
-  }
-}
-
-
-    function renderCheckout(t, clickedCard) {
-      for (const b of document.querySelectorAll(".tourCard")) b.setAttribute("aria-pressed", "false");
-      if (clickedCard) clickedCard.setAttribute("aria-pressed", "true");
-
-      const panel = document.getElementById("checkoutPanel");
-      panel.innerHTML = "";
-
-      panel.appendChild(el("div", { class: "checkoutHeader" }, [
-        el("div", { class: "checkoutTourTitle", text: `${t.tour_code || ""} - ${t.tour_title || ""}` }),
-        el("div", { class: "checkoutTourMeta", text: `${t.amount_display || ""} per person` })
-      ]));
-
-      const form = el("form", { class: "checkoutForm", id: "mbwCheckoutForm" });
-
-      // Tour date (required): disable today and previous by setting min to tomorrow.
-      form.appendChild(field("Tour date", "tour_date", "date", true, "", "Required"));
-
-      // People (required): prevent 0 or negative.
-      form.appendChild(field("Number of people", "people", "number", true, "2", "Minimum may apply based on the tour."));
-// Lock pre-selected values from the invite link:
-// - Tour date is fixed (guest cannot change it)
-// - People cannot be reduced below the pre-approved party size, but can be increased up to 8.
-const tz = "America/Guayaquil";
-const minDate = (function(){
-  // tomorrow in the tour timezone
-  const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year:"numeric", month:"2-digit", day:"2-digit" });
-  const parts = fmt.formatToParts(new Date());
-  const y = parts.find(p=>p.type==="year").value;
-  const mo = parts.find(p=>p.type==="month").value;
-  const da = parts.find(p=>p.type==="day").value;
-  const d = new Date(Date.UTC(parseInt(y,10), parseInt(mo,10)-1, parseInt(da,10)));
-  d.setUTCDate(d.getUTCDate()+1);
-  const yy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth()+1).padStart(2,"0");
-  const dd = String(d.getUTCDate()).padStart(2,"0");
-  return `${yy}-${mm}-${dd}`;
-})();
-
-const dateInput = form.querySelector('input[name="tour_date"]');
-if (dateInput) {
-  dateInput.min = minDate;
-  if (LOCK_DATE) dateInput.value = LOCK_DATE;
-  dateInput.setAttribute("readonly","readonly");
-  dateInput.setAttribute("aria-readonly","true");
-  dateInput.addEventListener("keydown", (e)=> e.preventDefault());
-  dateInput.addEventListener("focus", (e)=> e.target.blur());
-  // keep a hidden, enabled copy for form submission
-  const hiddenDate = document.createElement("input");
-  hiddenDate.type = "hidden";
-  hiddenDate.name = "tour_date";
-  hiddenDate.value = LOCK_DATE || dateInput.value || "";
-  form.appendChild(hiddenDate);
-  dateInput.disabled = true;
-}
-
-const peopleInput = form.querySelector('input[name="people"]');
-if (peopleInput) {
-  const minPeople = Math.max(1, parseInt(LOCK_PARTY || "1", 10));
-  peopleInput.min = String(minPeople);
-  peopleInput.max = "8";
-  peopleInput.step = "1";
-  peopleInput.inputMode = "numeric";
-  peopleInput.value = String(minPeople);
-
-  const clampPeople = () => {
-    let v = parseInt(peopleInput.value || String(minPeople), 10);
-    if (!Number.isFinite(v)) v = minPeople;
-    if (v < minPeople) v = minPeople;
-    if (v > 8) v = 8;
-    peopleInput.value = String(v);
-  };
-  peopleInput.addEventListener("input", clampPeople);
-  peopleInput.addEventListener("blur", clampPeople);
-}
-
-const capFirstLetter = (s) => {
-  const t = (s || "").trim();
-  if (!t) return "";
-  return t.split(/\s+/).map(w => w ? (w.charAt(0).toUpperCase() + w.slice(1)) : "").join(" ");
-};
-const firstNameInput = form.querySelector('input[name="contact_first_name"]');
-const lastNameInput = form.querySelector('input[name="contact_last_name"]');
-[firstNameInput, lastNameInput].forEach(inp => {
-  if (!inp) return;
-  inp.autocapitalize = "words";
-  inp.addEventListener("blur", () => { inp.value = capFirstLetter(inp.value); });
-  inp.addEventListener("input", () => {
-    if (inp.value.endsWith(" ")) inp.value = capFirstLetter(inp.value);
-  });
-});
-
-
-      // Contact
-      form.appendChild(field("Main contact first name", "contact_first_name", "text", true, "", ""));
-      form.appendChild(field("Main contact last name", "contact_last_name", "text", true, "", ""));
-      form.appendChild(field("Email", "contact_email", "email", true, "", ""));
-      form.appendChild(field("Phone", "contact_phone", "tel", true, "", ""));
-      form.appendChild(field("WhatsApp number", "whatsapp", "tel", true, "", "Include country code if possible."));
-
-      // Pickup
-      form.appendChild(field("Pickup location (free text)", "pickup_location", "text", true, "", "Example: Mindo town center, hotel name, or landmark."));
-      form.appendChild(field("Hotel or exact pickup address", "pickup_address_or_hotel", "text", false, "", ""));
-
-      // Notes
-      form.appendChild(textArea("Notes or special requests", "notes", false, "Any allergies, mobility needs, or pickup clarifications."));
-
-      // Enforce min date = tomorrow
-      const dateEl = form.querySelector('[name="tour_date"]');
-      if (dateEl) {
-        const d = new Date();
-        d.setDate(d.getDate() + 1);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        dateEl.min = `${yyyy}-${mm}-${dd}`;
+      function capWords(s){
+        const t = (s || "").trim();
+        if (!t) return "";
+        return t.split(/\s+/).map(w => w ? (w.charAt(0).toUpperCase() + w.slice(1)) : "").join(" ");
       }
 
-      // Enforce people min = 1
-      const peopleEl = form.querySelector('[name="people"]');
-      if (peopleEl) {
-        peopleEl.min = "1";
-        peopleEl.step = "1";
-        if (!peopleEl.value || Number(peopleEl.value) < 1) peopleEl.value = "1";
+      function wireNameCaps(input){
+        input.autocapitalize = "words";
+        input.addEventListener("blur", () => { input.value = capWords(input.value); });
+        input.addEventListener("input", () => {
+          if (input.value.endsWith(" ")) input.value = capWords(input.value);
+        });
       }
 
-      // Auto-capitalize (wire after fields exist)
-      wireAutoCapitalize(form);
+      function tzTodayISO(){
+        const parts = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year:"numeric", month:"2-digit", day:"2-digit" }).formatToParts(new Date());
+        const y = parts.find(p=>p.type==="year").value;
+        const m = parts.find(p=>p.type==="month").value;
+        const d = parts.find(p=>p.type==="day").value;
+        return y + "-" + m + "-" + d;
+      }
+      function addDaysISO(iso, days){
+        const [y,m,d] = iso.split("-").map(Number);
+        const dt = new Date(Date.UTC(y, m-1, d));
+        dt.setUTCDate(dt.getUTCDate() + days);
+        const yy = dt.getUTCFullYear();
+        const mm = String(dt.getUTCMonth()+1).padStart(2,"0");
+        const dd = String(dt.getUTCDate()).padStart(2,"0");
+        return yy + "-" + mm + "-" + dd;
+      }
+      function tzTomorrowISO(){ return addDaysISO(tzTodayISO(), 1); }
 
-      // Terms checkbox (required), checkbox left of text.
-      const agree = el("div", { class: "field" });
-      const agreeRow = el("label", { class: "agreeInline", for: "agree_terms" });
-      const agreeCb = el("input", { type: "checkbox", id: "agree_terms", name: "agree_terms", required: "required" });
-      agreeRow.appendChild(agreeCb);
-      agreeRow.appendChild(el("span", { html: `I agree to the <a href="/terms-conditions/" target="_blank" rel="noopener" class="termsLink">Terms and Conditions</a>${requiredStar()}` }));
-      agree.appendChild(agreeRow);
-      form.appendChild(agree);
-
-      // Turnstile placeholder + widget container
-      const tsWrap = el("div", { class: "turnstileWrap" });
-      tsWrap.appendChild(el("div", { class: "fieldHelp", text: "Turnstile verification will appear here." }));
-      const tsEl = el("div", { class: "cf-turnstile" });
-      tsEl.setAttribute("data-sitekey", "0x4AAAAAACYIFF7ZNXiqieGk");
-      tsEl.setAttribute("data-theme", "light");
-      tsWrap.appendChild(tsEl);
-      form.appendChild(tsWrap);
-
-      if (window.turnstile && typeof window.turnstile.render === "function") {
-        try { window.turnstile.render(tsEl); } catch (e) {}
+      function validateLocked(){
+        if (!LOCK_TOUR || !LOCK_DATE){
+          showError(tourError, "This payment link is missing required details. Please request a new link.");
+          return false;
+        }
+        const min = tzTomorrowISO();
+        if (LOCK_DATE < min){
+          showError(tourError, "This payment link has an invalid date. Please request a new link.");
+          return false;
+        }
+        return true;
       }
 
-      // Actions
-      const actions = el("div", { class: "actions" });
-      const payBtn = el("button", { type: "submit", class: "primaryBtn", text: "Continue to secure payment" });
-      actions.appendChild(payBtn);
-      form.appendChild(actions);
+      function safeImageUrl(url){
+        if (!url) return "";
+        // If the upstream ever changes the number and one variant 404s, we try Options-2 as fallback.
+        // This does not ping the server; it only swaps if the first image fails to load.
+        return url;
+      }
 
-      form.addEventListener("submit", async (ev) => {
+      function renderTour(t){
+        lockTour.value = t.tour_code || LOCK_TOUR;
+        lockTourText.textContent = (t.tour_code || LOCK_TOUR) + " - " + (t.tour_title || "Tour");
+        lockDate.value = LOCK_DATE;
+        lockDateText.textContent = LOCK_DATE;
+
+        tourCode.textContent = t.tour_code || "";
+        tourTitle.textContent = t.tour_title || "";
+        tourPrice.textContent = (t.amount_display || "") + " per person";
+
+        const meta = [];
+        if (t.duration_label) meta.push("Duration: " + t.duration_label);
+        if (t.pickup_time_local) meta.push("Pickup: " + t.pickup_time_local);
+        tourMeta.textContent = meta.join(" | ");
+
+        const primary = safeImageUrl(t.hero_image_url || "");
+        if (primary){
+          tourImg.src = primary;
+          tourImg.alt = "Promo image for " + (t.tour_title || "tour");
+          tourImg.onerror = function(){
+            // Fallback to Options-2 variant if possible
+            const fallback = primary.replace(/MBW_Tour_Options-\d+-/g, "MBW_Tour_Options-2-");
+            if (fallback !== primary) tourImg.src = fallback;
+            tourImg.onerror = null;
+          };
+        } else {
+          tourImg.removeAttribute("src");
+        }
+
+        tourCard.style.display = "block";
+      }
+
+      async function loadAndRender(){
+        if (!validateLocked()) return;
+
+        hideError(tourError);
+
+        // People constraints: can increase but never decrease below locked party size; cap at 8.
+        const minPeople = Math.max(1, Math.min(8, LOCK_PARTY));
+        people.min = String(minPeople);
+        people.max = "8";
+        people.step = "1";
+        people.inputMode = "numeric";
+        people.value = String(minPeople);
+        peopleHelp.textContent = "Minimum is " + minPeople + ". You may increase up to 8, but cannot reduce below the minimum.";
+
+        function clampPeople(){
+          let v = parseInt(people.value || String(minPeople), 10);
+          if (!Number.isFinite(v)) v = minPeople;
+          if (v < minPeople) v = minPeople;
+          if (v > 8) v = 8;
+          people.value = String(v);
+        }
+        people.addEventListener("input", clampPeople);
+        people.addEventListener("blur", clampPeople);
+
+        wireNameCaps(firstName);
+        wireNameCaps(lastName);
+
+        try{
+          const res = await fetch(MBW_API_BASE + "/tours?lang=" + encodeURIComponent(MBW_LANG), { headers: { "Accept":"application/json" }, cache: "no-store" });
+          const data = await res.json().catch(()=>({}));
+          if (!res.ok || !data || !data.ok || !Array.isArray(data.tours)) throw new Error("Tours fetch failed");
+          const tour = data.tours.find(x => (x.tour_code || "") === LOCK_TOUR);
+          if (!tour){
+            showError(tourError, "We could not find that tour for the selected language. Please request a new link.");
+            return;
+          }
+          renderTour(tour);
+        }catch(e){
+          console.error(e);
+          showError(tourError, "Could not load tour details. Please refresh, or request a new link.");
+        }
+      }
+
+      function showFormError(msg){
+        formError.style.display = "block";
+        formError.textContent = msg;
+      }
+      function clearFormError(){
+        formError.style.display = "none";
+        formError.textContent = "";
+      }
+
+      payForm.addEventListener("submit", async (ev) => {
         ev.preventDefault();
-        payBtn.disabled = true;
+        clearFormError();
+
+        if (!validateLocked()) return;
+
+        // Basic required checks
+        if (!document.getElementById("agree_terms").checked){
+          showFormError("Please agree to the Terms and Conditions.");
+          return;
+        }
 
         const payload = {
           lang: MBW_LANG,
-          tour_code: t.tour_code || "",
-          tour_date: val("tour_date"),
-          people: Number(val("people") || 0),
-          contact_first_name: val("contact_first_name"),
-          contact_last_name: val("contact_last_name"),
-          contact_email: val("contact_email"),
-          contact_phone: val("contact_phone"),
-          whatsapp: val("whatsapp"),
-          pickup_location: val("pickup_location"),
-          pickup_address_or_hotel: val("pickup_address_or_hotel"),
-          notes: val("notes") || ""
+          tour_code: LOCK_TOUR,
+          tour_date: LOCK_DATE,
+          people: Number(people.value || "0"),
+          contact_first_name: firstName.value || "",
+          contact_last_name: lastName.value || "",
+          contact_email: document.getElementById("contact_email").value || "",
+          contact_phone: document.getElementById("contact_phone").value || "",
+          whatsapp: document.getElementById("whatsapp").value || "",
+          pickup_location: document.getElementById("pickup_location").value || "",
+          pickup_address_or_hotel: document.getElementById("pickup_address_or_hotel").value || "",
+          notes: document.getElementById("notes").value || ""
         };
 
-        try {
-          const res = await fetch(`${MBW_API_BASE}/checkout/create-session`, {
+        if (!payload.people || payload.people < Math.max(1, LOCK_PARTY)){
+          showFormError("Number of people must be at least " + Math.max(1, LOCK_PARTY) + ".");
+          return;
+        }
+        if (payload.people > 8){
+          showFormError("Number of people must be 8 or less.");
+          return;
+        }
+
+        payBtn.disabled = true;
+
+        try{
+          const res = await fetch(MBW_API_BASE + "/checkout/create-session", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            headers: { "Content-Type":"application/json", "Accept":"application/json" },
             credentials: "same-origin",
             body: JSON.stringify(payload)
           });
-
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok || !data || !data.ok || !data.url) {
-            throw new Error(data && data.error ? data.error : `Checkout failed (HTTP ${res.status})`);
+          const data = await res.json().catch(()=>({}));
+          if (!res.ok || !data || !data.ok || !data.url){
+            throw new Error((data && data.error) ? data.error : ("Checkout failed (HTTP " + res.status + ")"));
           }
-
           window.location.href = data.url;
-        } catch (e) {
-          alert("Could not start checkout. Please try again, or message us on WhatsApp.");
+        }catch(e){
           console.error(e);
+          showFormError("Could not start checkout. Please try again, or message us on WhatsApp.");
           payBtn.disabled = false;
         }
       });
 
-      
-      // Prefill and lock staff-provided values.
-      // Date: disable picker but submit via hidden input.
-      const dateInput = form.querySelector("#tour_date");
-      if (dateInput) {
-        dateInput.value = LOCK_DATE;
-        dateInput.disabled = true;
-        const hiddenDate = el("input", { type: "hidden", name: "tour_date", value: LOCK_DATE });
-        form.appendChild(hiddenDate);
-      }
-
-      // People: disable number input but submit via hidden input.
-      const peopleInput = form.querySelector("#num_people");
-      if (peopleInput) {
-        peopleInput.value = LOCK_PEOPLE;
-        peopleInput.disabled = true;
-        const hiddenPeople = el("input", { type: "hidden", name: "num_people", value: LOCK_PEOPLE });
-        form.appendChild(hiddenPeople);
-      }
-
-      // Tour code: submit and match link.
-      const codeHidden = el("input", { type: "hidden", name: "tour_code", value: String(tour.tour_code || LOCK_TOUR) });
-      form.appendChild(codeHidden);
-
-      panel.appendChild(form);
-    }
-
-    function field(label, id, type, required, placeholder, help) {
-      const wrap = document.createElement("div");
-      wrap.className = "formRow";
-
-      const lab = document.createElement("label");
-      lab.className = "fieldLabel";
-      lab.setAttribute("for", id);
-
-      // label + required star (same line)
-      const labText = document.createElement("span");
-      labText.textContent = label;
-
-      lab.appendChild(labText);
-
-      if (required) {
-        const star = document.createElement("span");
-        star.className = "reqStar";
-        star.textContent = " *";
-        lab.appendChild(star);
-      }
-
-      const input = document.createElement(type === "textarea" ? "textarea" : "input");
-      input.id = id;
-      input.name = id;
-
-      if (type !== "textarea") input.type = type;
-
-      if (placeholder) input.placeholder = placeholder;
-      if (required) input.required = true;
-
-      // Special constraints
-      if (id === "tour_date") {
-        input.min = MIN_DATE;
-        input.value = LOCK_DATE || MIN_DATE;
-        input.disabled = !!LOCK_DATE;
-      }
-
-      if (id === "people") {
-        input.min = String(LOCK_PARTY || 1);
-        input.step = "1";
-        input.value = String(LOCK_PARTY || 1);
-
-        // Allow increasing only (never below locked value)
-        input.addEventListener("input", () => {
-          const v = parseInt(input.value || "0", 10);
-          if (!Number.isFinite(v) || v < (LOCK_PARTY || 1)) {
-            input.value = String(LOCK_PARTY || 1);
-          }
-        });
-      }
-
-      if (id === "contact_first_name" || id === "contact_last_name") {
-        input.addEventListener("input", () => {
-          const v = input.value || "";
-          if (!v) return;
-          input.value = v.charAt(0).toUpperCase() + v.slice(1);
-        });
-      }
-
-      wrap.appendChild(lab);
-      wrap.appendChild(input);
-
-      if (help) {
-        const p = document.createElement("div");
-        p.className = "fieldHelp";
-        p.textContent = help;
-        wrap.appendChild(p);
-      }
-
-      return wrap;
-    }
-
-      if (required) input.setAttribute("required", "required");
-      wrap.appendChild(input);
-      if (help) wrap.appendChild(el("div", { class: "fieldHelp", text: help }));
-      return wrap;
-    }
-
-    function textArea(labelText, name, required, help) {
-      const wrap = el("div", { class: "field" });
-      wrap.appendChild(el("label", { for: name, html: `${labelText}${required ? requiredStar() : ""}` }));
-      const ta = el("textarea", { id: name, name: name });
-      if (required) ta.setAttribute("required", "required");
-      wrap.appendChild(ta);
-      if (help) wrap.appendChild(el("div", { class: "fieldHelp", text: help }));
-      return wrap;
-    }
-
-    function val(id) {
-      const n = document.getElementById(id);
-      return n ? String(n.value || "").trim() : "";
-    }
-
-    applyDateBounds();
-    loadTours();
+      // Init
+      loadAndRender();
+    })();
   </script>
-
-  <script src="/assets/js/includes.js"></script>
-  <script src="/assets/js/site.js"></script>
-  <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 </body>
 </html>
