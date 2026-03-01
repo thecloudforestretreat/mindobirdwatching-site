@@ -199,12 +199,19 @@
       padding: 10px 12px;
       border-radius: 14px;
     }
-  </style>
+  
+    /* payCreatePage guard */
+    .payCreateRoot * { box-sizing: border-box; }
+    /* Do not override global header/footer layout */
+    #siteHeader, #siteHeader * { box-sizing: border-box; }
+    
+</style>
 </head>
 
-<body>
+<body class="payCreatePage">
   <!-- Global header mount (do not hardcode header per page) -->
   <div id="siteHeader"></div>
+  <main class="payCreateRoot">
 
   <main class="pageWrap" role="main">
     <section class="heroPanel" aria-label="Create payment link">
@@ -287,6 +294,7 @@
   </main>
 
   <!-- Global footer mount -->
+    </main>
   <div id="siteFooter"></div>
 
   <!-- Global include loader + menu behavior -->
@@ -300,13 +308,18 @@
     // 2) Tours not loading: fix JS syntax so tour fetch runs; add better error reporting.
     // 3) Date rules: enforce "tomorrow or later" with min attribute + runtime guard (mobile + desktop).
     // 4) Party size: dropdown 1-8 (no free typing).
-    // 5) Remove "Tours loaded" counter (not needed).
+    // 5) Remove "" counter (not needed).
     // ---------------------------
 
     const tz = 'America/Guayaquil';
 
     // Adjust this ONLY if your API lives elsewhere. Keep relative path for same-domain deployments.
-    const TOURS_ENDPOINT = '/api/tours';
+    const TOURS_ENDPOINTS = [
+      '/api/tours',
+      '/api/tours/',
+      '/book-tour/api/tours',
+      '/book-tour/api/tours/',
+    ];
 
     const els = {
       tourSelect: document.getElementById('tourSelect'),
@@ -470,7 +483,7 @@
         allTours = toursArray;
 
         populateTours();
-        showStatus('Tours loaded.');
+        showStatus('');
       }catch(err){
         allTours = [];
         els.tourSelect.innerHTML = '<option value="">Unable to load tours</option>';
