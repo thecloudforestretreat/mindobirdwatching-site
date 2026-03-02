@@ -3,68 +3,137 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Create Payment Link | Mindo Bird Watching</title>
+  <title>Create a payment link | Mindo Bird Watching</title>
 
-  <!-- Global site styles (absolute paths so nested routes work) -->
   <link rel="stylesheet" href="/assets/css/site.css">
-  <link rel="stylesheet" href="/assets/css/header.css">
-  <!-- NOTE: footer.css is currently serving text/html on this route (strict MIME blocks it).
-       We intentionally do NOT load it here. Footer styling falls back to site.css. -->
+  <link rel="stylesheet" href="/assets/css/header.css?v=1">
 
-  <!-- Global head + includes + mobile menu behavior -->
-  <script defer src="/assets/js/head.js"></script>
-  <script defer src="/assets/js/includes.js"></script>
-  <script defer src="/assets/js/site.js"></script>
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
 
   <style>
-    /* Page-specific tweaks only (scoped) */
-    main.page.card.payCreate { border: 1px solid rgba(0,0,0,.08); }
-    .payCreate .layout { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; align-items: start; }
-    .payCreate .leftStack { display: grid; gap: 16px; }
-    .payCreate .rightStack { display: grid; gap: 16px; }
-    .payCreate .panel { border: 1px solid rgba(0,0,0,.08); border-radius: 18px; background: rgba(255,255,255,.35); padding: 18px; }
-    .payCreate .muted { opacity: .75; }
-    .payCreate label { display: block; font-weight: 800; font-size: 15px; margin: 0 0 8px; }
-    .payCreate .req { color: #b42318; font-weight: 900; margin-left: 4px; }
-    .payCreate .field { display: grid; gap: 10px; margin: 0 0 14px; }
-    .payCreate select, .payCreate input[type="date"] {
+    /* Page-specific styles only. Do not touch global header/footer classes. */
+    main.page.card.payCreate {
+      /* keep global card visuals from site.css; only adjust spacing */
+      padding-top: 26px;
+      padding-bottom: 26px;
+    }
+    .payCreate .payIntro {
+      margin: 0 0 18px 0;
+      max-width: 980px;
+    }
+    .payCreate h1 {
+      margin: 0 0 8px 0;
+      line-height: 1.05;
+    }
+    .payCreate .sub {
+      margin: 0;
+      color: rgba(0,0,0,0.65);
+      max-width: 70ch;
+    }
+    .payCreate .payGrid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .payCreate .panel {
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+    .payCreate .panel h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+    }
+    .payCreate .req {
+      margin: 0 0 16px 0;
+      color: rgba(0,0,0,0.6);
+      font-size: 13px;
+    }
+    .payCreate label {
+      display: block;
+      font-weight: 800;
+      margin: 14px 0 6px 0;
+    }
+    .payCreate .star {
+      color: #b22323;
+      margin-left: 4px;
+    }
+    .payCreate select,
+    .payCreate input[type="date"],
+    .payCreate input[type="text"] {
       width: 100%;
-      height: 48px;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.65);
       font-size: 16px;
       outline: none;
     }
-    .payCreate select:focus, .payCreate input[type="date"]:focus { border-color: rgba(0,0,0,.35); box-shadow: 0 0 0 4px rgba(3,78,162,.12); }
-    .payCreate .help { font-size: 13px; opacity: .75; margin-top: -2px; }
-    .payCreate .btnRow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    .payCreate .help {
+      margin: 6px 0 0 0;
+      font-size: 12px;
+      color: rgba(0,0,0,0.55);
+    }
+    .payCreate .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
     .payCreate button {
-      height: 42px;
-      padding: 0 16px;
+      border: 1px solid rgba(0,0,0,0.14);
       border-radius: 999px;
-      border: 1px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.55);
+      padding: 10px 14px;
       font-weight: 800;
       cursor: pointer;
+      background: rgba(255,255,255,0.5);
     }
-    .payCreate button.primary { background: #0b5f2b; color: #fff; border-color: rgba(0,0,0,.12); }
-    .payCreate button:disabled { opacity: .45; cursor: not-allowed; }
-    .payCreate .statusOk { margin-top: 10px; font-weight: 800; color: #0b5f2b; }
-    .payCreate .statusErr { margin-top: 10px; font-weight: 800; color: #b42318; }
-    .payCreate .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; }
+    .payCreate button.primary {
+      background: #0b5b2b;
+      border-color: #0b5b2b;
+      color: #fff;
+    }
+    .payCreate button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .payCreate .status {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .payCreate .status.ok {
+      color: #0b5b2b;
+    }
+    .payCreate .status.bad {
+      color: #b22323;
+    }
     .payCreate .linkBox {
-      border: 1px dashed rgba(0,0,0,.25);
-      background: rgba(255,255,255,.35);
-      border-radius: 14px;
-      padding: 12px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: pre-wrap;
       overflow-wrap: anywhere;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px dashed rgba(0,0,0,0.30);
+      background: rgba(255,255,255,0.55);
+      min-height: 58px;
     }
-
+    .payCreate .muted {
+      color: rgba(0,0,0,0.60);
+      font-size: 13px;
+      margin: 8px 0 0 0;
+    }
     @media (max-width: 900px) {
-      .payCreate .layout { grid-template-columns: 1fr; }
-      .payCreate .panel { border-radius: 20px; }
+      .payCreate .payGrid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -73,266 +142,307 @@
   <div class="container">
     <div id="siteHeader"></div>
 
-    <main class="page card payCreate">
-      <header>
+    <main class="page card payCreate" role="main" aria-label="Create payment link">
+      <div class="payIntro">
         <h1>Create a payment link</h1>
-        <p class="muted">Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
-      </header>
+        <p class="sub">Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
+      </div>
 
-      <div class="layout" aria-label="Create payment link layout">
-        <section class="leftStack panel" aria-label="Create link form">
-          <div class="muted" style="font-size:13px;margin-bottom:6px;">Required fields are marked with <span class="req">*</span>.</div>
+      <div class="payGrid">
+        <section class="panel" aria-label="Payment link settings">
+          <p class="req">Required fields are marked with <span class="star">*</span>.</p>
 
-          <div class="field">
-            <label for="tourSelect">Tour <span class="req">*</span></label>
-            <select id="tourSelect" autocomplete="off">
-              <option value="" selected>Loading tours...</option>
-            </select>
-            <div class="help">This list is Stripe-driven via the Tours API.</div>
-            <div id="priceLine" class="help" style="display:none;"></div>
-          </div>
+          <label for="tourSelect">Tour <span class="star">*</span></label>
+          <select id="tourSelect" required>
+            <option value="">Select a tour...</option>
+          </select>
+          <p class="help">This list is Stripe-driven via the Tours API.</p>
+          <p class="help" id="priceLine" style="display:none;"></p>
 
-          <div class="field">
-            <label for="tourDate">Tour date <span class="req">*</span></label>
-            <input id="tourDate" type="date" inputmode="numeric" autocomplete="off">
-            <div id="dateHelp" class="help">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
-          </div>
+          <label for="tourDate">Tour date <span class="star">*</span></label>
+          <input id="tourDate" type="date" required>
+          <p class="help">Only tomorrow and future dates are allowed (America/Guayaquil).</p>
 
-          <div class="field">
-            <label for="partySelect">Number of people <span class="req">*</span></label>
-            <select id="partySelect" autocomplete="off"></select>
-            <div class="help">Must be 1 to 8.</div>
-          </div>
+          <label for="partySelect">Number of people <span class="star">*</span></label>
+          <select id="partySelect" required>
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+          <p class="help">Must be 1 to 8.</p>
 
-          <div class="field">
-            <label for="langSelect">Language</label>
-            <select id="langSelect" autocomplete="off">
-              <option value="en" selected>English</option>
-              <option value="es">Espanol</option>
-            </select>
-            <div class="help">Generates a link to the correct language pay page.</div>
-          </div>
+          <label for="langSelect">Language</label>
+          <select id="langSelect">
+            <option value="en" selected>English</option>
+            <option value="es">Espanol</option>
+          </select>
+          <p class="help">Generates a link to the correct language pay page.</p>
 
-          <div class="btnRow" aria-label="Actions">
+          <div class="actions">
             <button id="btnGenerate" class="primary" type="button">Generate link</button>
             <button id="btnCopy" type="button" disabled>Copy link</button>
             <button id="btnOpen" type="button" disabled>Open link</button>
           </div>
 
-          <div id="status" class="statusOk" style="display:none;"></div>
-          <div id="error" class="statusErr" style="display:none;"></div>
+          <div id="status" class="status" aria-live="polite"></div>
         </section>
 
-        <aside class="rightStack panel" aria-label="Generated link panel">
-          <h2 style="margin:0 0 10px;">Payment link</h2>
-          <div id="linkBox" class="linkBox mono">Generate a link to display it here.</div>
-          <p class="help" style="margin-top:10px;">
-            The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
-            On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
-          </p>
+        <aside class="panel" aria-label="Generated payment link">
+          <h2>Payment link</h2>
+          <div id="linkBox" class="linkBox">Generate a link to display it here.</div>
+          <p class="muted">The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link. On the pay page, the guest may increase party size, but cannot reduce it below the locked size.</p>
         </aside>
       </div>
     </main>
 
-    <div id="siteFooter"></div>
+    <!-- Intentionally no siteFooter on this internal tool page to avoid footer CSS dependency issues. -->
   </div>
 
   <script>
-    (function () {
-      const TZ = 'America/Guayaquil';
-      const TOURS_ENDPOINT = '/api/tours';
+  (function() {
+    const tz = "America/Guayaquil";
+    const TOURS_ENDPOINT = "/api/tours";
+    const FALLBACK_TOURS = [{"code": "MBW006", "language": "es", "title": "En Busca de Cinco Tucanes y el Gallo de Pena", "amount": "$99.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-4-MBW006_FDT_Image_Es.jpg"}, {"code": "MBW006", "language": "en", "title": "Quest for Five Toucans & the Andean Cock-of-the-Rock", "amount": "$99.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/tours/quest-five-toucans-guide/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-2-MBW006_FDT_Image_En.jpg"}, {"code": "MBW005", "language": "es", "title": "Danza del Gallo de Pena", "amount": "$75.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/es/tours/gallo-de-la-pena-andino-al-amanecer/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-8-MBW005_HDT_Image_Es.jpg"}, {"code": "MBW005", "language": "en", "title": "Dance of the Andean Cock-of-the-Rock", "amount": "$75.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-6-MBW005_HDT_Image_En.jpg"}, {"code": "MBW004", "language": "es", "title": "Joyas del Bosque Nublado", "amount": "$50.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/es/tours/joyas-del-bosque-matutino/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-12-MBW004_HDT_Image_Es.jpg"}, {"code": "MBW004", "language": "en", "title": "Jewels of the Morning Forest", "amount": "$50.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-10-MBW004_HDT_Image_En.jpg"}, {"code": "MBW006", "language": "es", "title": "En Busca de Cinco Tucanes y el Gallo de Pena", "amount": "$99.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-4-MBW006_FDT_Image_Es.jpg"}, {"code": "MBW006", "language": "en", "title": "Quest for Five Toucans & the Andean Cock-of-the-Rock", "amount": "$99.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/tours/quest-five-toucans-guide/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-2-MBW006_FDT_Image_En.jpg"}, {"code": "MBW005", "language": "es", "title": "Danza del Gallo de Pena", "amount": "$75.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/es/tours/gallo-de-la-pena-andino-al-amanecer/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-8-MBW005_HDT_Image_Es.jpg"}, {"code": "MBW005", "language": "en", "title": "Dance of the Andean Cock-of-the-Rock", "amount": "$75.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-6-MBW005_HDT_Image_En.jpg"}, {"code": "MBW004", "language": "es", "title": "Joyas del Bosque Nublado", "amount": "$50.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/es/tours/joyas-del-bosque-matutino/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-12-MBW004_HDT_Image_Es.jpg"}, {"code": "MBW004", "language": "en", "title": "Jewels of the Morning Forest", "amount": "$50.00", "currency": "USD", "min_person": 2, "max_person": "unlimited", "tour_page_url": "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-10-MBW004_HDT_Image_En.jpg"}];
 
-      const els = {
-        tourSelect: document.getElementById('tourSelect'),
-        tourDate: document.getElementById('tourDate'),
-        partySelect: document.getElementById('partySelect'),
-        langSelect: document.getElementById('langSelect'),
-        btnGenerate: document.getElementById('btnGenerate'),
-        btnCopy: document.getElementById('btnCopy'),
-        btnOpen: document.getElementById('btnOpen'),
-        linkBox: document.getElementById('linkBox'),
-        status: document.getElementById('status'),
-        error: document.getElementById('error'),
-        priceLine: document.getElementById('priceLine'),
-        dateHelp: document.getElementById('dateHelp')
-      };
+    const els = {
+      tourSelect: document.getElementById("tourSelect"),
+      tourDate: document.getElementById("tourDate"),
+      partySelect: document.getElementById("partySelect"),
+      langSelect: document.getElementById("langSelect"),
+      btnGenerate: document.getElementById("btnGenerate"),
+      btnCopy: document.getElementById("btnCopy"),
+      btnOpen: document.getElementById("btnOpen"),
+      linkBox: document.getElementById("linkBox"),
+      status: document.getElementById("status"),
+      priceLine: document.getElementById("priceLine")
+    };
 
-      const state = { tours: [], link: '' };
+    function setStatus(msg, kind) {
+      els.status.textContent = msg || "";
+      els.status.className = "status" + (kind ? (" " + kind) : "");
+    }
 
-      function show(el) { el.style.display = ''; }
-      function hide(el) { el.style.display = 'none'; }
-      function setText(el, t) { el.textContent = t; }
+    function formatTourLabel(t) {
+      const title = t.tour_title || t.title || "";
+      const code = t.tour_code || t.code || "";
+      const amount = t.amount_display || t.amount || "";
+      const per = amount ? (" (" + amount + " per person)") : "";
+      return (code + " - " + title + per).trim();
+    }
 
-      function isoTomorrowInTZ() {
-        // Build "tomorrow" in the target timezone, then output YYYY-MM-DD (for input[type=date]).
-        const now = new Date();
-        const parts = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
-        const y = parts.find(p => p.type === 'year').value;
-        const m = parts.find(p => p.type === 'month').value;
-        const d = parts.find(p => p.type === 'day').value;
-        // Create an approximate UTC date for that local date, then add 1 day (safe for min constraint).
-        const localDate = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
-        localDate.setUTCDate(localDate.getUTCDate() + 1);
-        const y2 = localDate.getUTCFullYear();
-        const m2 = String(localDate.getUTCMonth() + 1).padStart(2, '0');
-        const d2 = String(localDate.getUTCDate()).padStart(2, '0');
-        return `${y2}-${m2}-${d2}`;
+    function todayInTZ() {
+      const d = new Date();
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(d).reduce((acc, p) => { acc[p.type] = p.value; return acc; }, {});
+      return parts.year + "-" + parts.month + "-" + parts.day;
+    }
+
+    function addDays(iso, days) {
+      const seg = iso.split("-");
+      const y = parseInt(seg[0], 10);
+      const m = parseInt(seg[1], 10);
+      const dd = parseInt(seg[2], 10);
+      const dt = new Date(Date.UTC(y, m - 1, dd));
+      dt.setUTCDate(dt.getUTCDate() + days);
+      const y2 = dt.getUTCFullYear();
+      const m2 = String(dt.getUTCMonth() + 1).padStart(2, "0");
+      const d2 = String(dt.getUTCDate()).padStart(2, "0");
+      return y2 + "-" + m2 + "-" + d2;
+    }
+
+    function enforceMinDate() {
+      const today = todayInTZ();
+      const min = addDays(today, 1);
+      els.tourDate.min = min;
+      if (!els.tourDate.value) {
+        els.tourDate.value = min;
+      } else if (els.tourDate.value < min) {
+        els.tourDate.value = min;
       }
+    }
 
-      function initPartySelect() {
-        els.partySelect.innerHTML = '';
-        for (let i = 1; i <= 8; i++) {
-          const opt = document.createElement('option');
-          opt.value = String(i);
-          opt.textContent = String(i);
-          if (i === 2) opt.selected = true;
-          els.partySelect.appendChild(opt);
-        }
-      }
+    function clearTourOptions() {
+      els.tourSelect.innerHTML = '<option value="">Select a tour...</option>';
+    }
 
-      function enforceDateMin() {
-        const min = isoTomorrowInTZ();
-        els.tourDate.min = min;
-        if (!els.tourDate.value) els.tourDate.value = min;
+    function populateTours(tours) {
+      clearTourOptions();
+      const lang = els.langSelect.value;
+      const filtered = (tours || []).filter(t => (t.language || "en") === lang);
 
-        els.tourDate.addEventListener('change', () => {
-          if (els.tourDate.value && els.tourDate.value < min) {
-            els.tourDate.value = min;
-            hide(els.status);
-            setText(els.error, `Date must be ${min} or later.`);
-            show(els.error);
-          } else {
-            hide(els.error);
-          }
-        });
-      }
-
-      function normalizeToursPayload(payload) {
-        const tours = (payload && payload.tours && Array.isArray(payload.tours)) ? payload.tours : [];
-        return tours.map(t => ({
-          tour_code: t.tour_code || '',
-          tour_title: t.tour_title || t.name || '',
-          amount_display: t.amount_display || '',
-          currency: t.currency || '',
-          language: t.language || 'en'
-        })).filter(t => t.tour_code);
-      }
-
-      async function loadTours() {
-        try {
-          hide(els.error);
-          setText(els.tourSelect, '');
-          els.tourSelect.innerHTML = '<option value="" selected>Loading tours...</option>';
-
-          const res = await fetch(TOURS_ENDPOINT, { credentials: 'same-origin' });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-          const data = await res.json();
-          state.tours = normalizeToursPayload(data);
-
-          els.tourSelect.innerHTML = '<option value="" selected>Select a tour...</option>';
-
-          if (!state.tours.length) {
-            els.tourSelect.innerHTML = '<option value="" selected>No tours returned by API</option>';
-            throw new Error('No tours returned by API');
-          }
-
-          for (const t of state.tours) {
-            const opt = document.createElement('option');
-            opt.value = t.tour_code;
-            const price = t.amount_display ? ` (${t.amount_display} per person)` : '';
-            opt.textContent = `${t.tour_code} - ${t.tour_title}${price}`;
-            els.tourSelect.appendChild(opt);
-          }
-
-          // If API only returns a single tour, auto-select it for speed.
-          if (state.tours.length === 1) els.tourSelect.selectedIndex = 1;
-
-          els.tourSelect.addEventListener('change', () => {
-            const code = els.tourSelect.value;
-            const t = state.tours.find(x => x.tour_code === code);
-            if (t && t.amount_display) {
-              setText(els.priceLine, `Selected price: ${t.amount_display} per person`);
-              show(els.priceLine);
-            } else {
-              hide(els.priceLine);
-            }
-          });
-
-          // trigger initial price line if auto-selected
-          els.tourSelect.dispatchEvent(new Event('change'));
-
-        } catch (e) {
-          setText(els.error, `Tours did not load. ${e && e.message ? e.message : 'Unknown error.'}`);
-          show(els.error);
-          // Keep a usable fallback option
-          els.tourSelect.innerHTML = '<option value="" selected>Unable to load tours</option>';
-        }
-      }
-
-      function buildPayUrl() {
-        const tour = els.tourSelect.value;
-        const date = els.tourDate.value;
-        const party = els.partySelect.value;
-        const lang = els.langSelect.value || 'en';
-
-        if (!tour) throw new Error('Select a tour.');
-        if (!date) throw new Error('Select a date.');
-        if (!party) throw new Error('Select party size.');
-
-        const qs = new URLSearchParams({ tour: tour, date: date, party: party, lang: lang });
-        return `${location.origin}/book-tour/pay/?${qs.toString()}`;
-      }
-
-      function setLink(url) {
-        state.link = url;
-        setText(els.linkBox, url);
-        els.btnCopy.disabled = false;
-        els.btnOpen.disabled = false;
-      }
-
-      els.btnGenerate.addEventListener('click', () => {
-        try {
-          hide(els.error);
-          const url = buildPayUrl();
-          setLink(url);
-          setText(els.status, 'Link generated.');
-          show(els.status);
-        } catch (e) {
-          hide(els.status);
-          setText(els.error, e && e.message ? e.message : 'Unable to generate link.');
-          show(els.error);
-        }
+      filtered.sort((a, b) => {
+        const ac = (a.tour_code || a.code || "").localeCompare(b.tour_code || b.code || "");
+        if (ac !== 0) return ac;
+        return (a.tour_title || a.title || "").localeCompare(b.tour_title || b.title || "");
       });
 
-      els.btnCopy.addEventListener('click', async () => {
-        if (!state.link) return;
-        try {
-          await navigator.clipboard.writeText(state.link);
-          setText(els.status, 'Link copied.');
-          show(els.status);
-        } catch (_) {
-          // fallback
-          const ta = document.createElement('textarea');
-          ta.value = state.link;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand('copy');
-          ta.remove();
-          setText(els.status, 'Link copied.');
-          show(els.status);
-        }
-      });
+      for (const t of filtered) {
+        const opt = document.createElement("option");
+        opt.value = t.tour_code || t.code || "";
+        opt.dataset.amount = t.amount_display || t.amount || "";
+        opt.dataset.title = t.tour_title || t.title || "";
+        opt.textContent = formatTourLabel(t);
+        els.tourSelect.appendChild(opt);
+      }
+    }
 
-      els.btnOpen.addEventListener('click', () => {
-        if (!state.link) return;
-        window.open(state.link, '_blank', 'noopener');
+    async function fetchToursFromAPI() {
+      const res = await fetch(TOURS_ENDPOINT, {
+        method: "GET",
+        credentials: "same-origin",
+        headers: { "Accept": "application/json" },
+        cache: "no-store"
       });
+      if (!res.ok) throw new Error("Tours API HTTP " + res.status);
+      const data = await res.json();
+      if (!data || data.ok !== true || !Array.isArray(data.tours)) {
+        throw new Error("Tours API returned unexpected JSON shape");
+      }
+      return data.tours;
+    }
 
-      initPartySelect();
-      enforceDateMin();
+    async function loadTours() {
+      setStatus("Loading tours...", "");
+      let tours = [];
+      try {
+        tours = await fetchToursFromAPI();
+      } catch (e) {
+        tours = [];
+      }
+
+      const merged = [];
+      const seen = new Set();
+
+      for (const t of (tours || [])) {
+        const code = t.tour_code || t.code || "";
+        const lang = t.language || "en";
+        const k = code + "|" + lang;
+        if (!code || seen.has(k)) continue;
+        seen.add(k);
+        merged.push(t);
+      }
+
+      for (const t of (FALLBACK_TOURS || [])) {
+        const code = t.code || t.tour_code || "";
+        const lang = t.language || "en";
+        const k = code + "|" + lang;
+        if (!code || seen.has(k)) continue;
+        seen.add(k);
+        merged.push(t);
+      }
+
+      populateTours(merged);
+
+      if (els.tourSelect.options.length <= 1) {
+        setStatus("No tours available. Check the Tours API.", "bad");
+      } else {
+        setStatus("Tours loaded.", "ok");
+      }
+      updatePriceLine();
+    }
+
+    function updatePriceLine() {
+      const opt = els.tourSelect.selectedOptions && els.tourSelect.selectedOptions[0];
+      const amount = opt ? (opt.dataset.amount || "") : "";
+      if (amount) {
+        els.priceLine.style.display = "block";
+        els.priceLine.textContent = "Selected price: " + amount + " per person";
+      } else {
+        els.priceLine.style.display = "none";
+        els.priceLine.textContent = "";
+      }
+    }
+
+    function buildLink() {
+      const tour = els.tourSelect.value;
+      const date = els.tourDate.value;
+      const party = els.partySelect.value;
+      const lang = els.langSelect.value;
+
+      if (!tour) throw new Error("Select a tour.");
+      if (!date) throw new Error("Select a tour date.");
+      if (!party) throw new Error("Select party size.");
+
+      const min = els.tourDate.min;
+      if (min && date < min) throw new Error("Tour date must be tomorrow or later.");
+
+      const base = (lang === "es") ? "https://mindobirdwatching.com/es/book-tour/pay/" : "https://mindobirdwatching.com/book-tour/pay/";
+      const qs = new URLSearchParams({
+        tour: tour,
+        date: date,
+        party: party,
+        lang: lang
+      });
+      return base + "?" + qs.toString();
+    }
+
+    function setLink(link) {
+      els.linkBox.textContent = link;
+      els.btnCopy.disabled = !link;
+      els.btnOpen.disabled = !link;
+    }
+
+    async function copyToClipboard(text) {
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+
+    els.langSelect.addEventListener("change", () => {
       loadTours();
-    })();
+    });
+    els.tourSelect.addEventListener("change", updatePriceLine);
+
+    els.btnGenerate.addEventListener("click", () => {
+      try {
+        const link = buildLink();
+        setLink(link);
+        setStatus("Link generated.", "ok");
+      } catch (e) {
+        setLink("");
+        setStatus(e.message || "Could not generate link.", "bad");
+      }
+    });
+
+    els.btnCopy.addEventListener("click", async () => {
+      const link = els.linkBox.textContent.trim();
+      try {
+        await copyToClipboard(link);
+        setStatus("Link copied.", "ok");
+      } catch (e) {
+        setStatus("Copy failed. Select and copy manually.", "bad");
+      }
+    });
+
+    els.btnOpen.addEventListener("click", () => {
+      const link = els.linkBox.textContent.trim();
+      if (!link) return;
+      window.open(link, "_blank", "noopener,noreferrer");
+    });
+
+    enforceMinDate();
+    loadTours();
+  })();
   </script>
 </body>
 </html>
