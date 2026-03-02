@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Create a payment link | Mindo Bird Watching</title>
 
-  <!-- Use the site's global styling so palette stays consistent -->
+  <!-- Global styling (absolute paths so nested routes work) -->
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css" />
-  <link rel="stylesheet" href="/assets/css/footer.css" />
+  <!-- NOTE: footer.css is currently being served as text/html on the live site (MIME error),
+       so it is intentionally not linked here to avoid breaking styles on this page. -->
 
   <style>
     /* Page-only styles: keep minimal, do not restyle global header/footer */
@@ -24,13 +25,10 @@
       --mbw-danger: #c0392b;
       --mbw-green: #0b5b2a;
       --mbw-green-2: #0f6b31;
-      --mbw-chip: rgba(255,255,255,.30);
       --mbw-focus: rgba(11,91,42,.22);
     }
 
-    body{
-      color: var(--mbw-text);
-    }
+    body{ color: var(--mbw-text); }
 
     .pageWrap{
       max-width: 1100px;
@@ -47,7 +45,6 @@
     }
 
     .heroTitle{
-      font-family: inherit;
       margin: 0 0 8px 0;
       font-size: clamp(28px, 3.2vw, 42px);
       line-height: 1.05;
@@ -100,9 +97,8 @@
 
     .reqStar{ color: var(--mbw-danger); font-weight: 900; }
 
-    .field{
-      margin: 14px 0;
-    }
+    .field{ margin: 14px 0; }
+
     .labelRow{
       display:flex;
       align-items: baseline;
@@ -110,9 +106,7 @@
       margin-bottom: 8px;
       font-weight: 800;
     }
-    .labelRow label{
-      font-size: 14px;
-    }
+    .labelRow label{ font-size: 14px; }
 
     .control{
       width: 100%;
@@ -125,9 +119,8 @@
       font-size: 16px;
       color: var(--mbw-text);
     }
-    select.control{
-      padding-right: 42px;
-    }
+    select.control{ padding-right: 42px; }
+
     .control:focus{
       border-color: rgba(11,91,42,.45);
       box-shadow: 0 0 0 4px var(--mbw-focus);
@@ -156,19 +149,14 @@
       font-weight: 800;
       cursor: pointer;
     }
-    .btn:disabled{
-      opacity: .55;
-      cursor: not-allowed;
-    }
+    .btn:disabled{ opacity: .55; cursor: not-allowed; }
     .btnPrimary{
       background: var(--mbw-green);
       border-color: rgba(0,0,0,.14);
       color: #fff;
     }
     .btnPrimary:hover{ background: var(--mbw-green-2); }
-    .btnGhost{
-      background: rgba(255,255,255,.26);
-    }
+    .btnGhost{ background: rgba(255,255,255,.26); }
 
     .linkBox{
       border: 1px dashed rgba(0,0,0,.25);
@@ -203,7 +191,7 @@
 </head>
 
 <body>
-  <!-- Global header mount (do not hardcode header per page) -->
+  <!-- Global header mount -->
   <div id="siteHeader"></div>
 
   <main class="pageWrap" role="main">
@@ -233,7 +221,7 @@
               <label for="tourDate">Tour date</label><span class="reqStar">*</span>
             </div>
             <input id="tourDate" class="control" type="date" />
-            <div class="metaLine" id="dateHelp">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
+            <div class="metaLine" id="dateHelp"></div>
           </div>
 
           <div class="field">
@@ -289,23 +277,12 @@
   <!-- Global footer mount -->
   <div id="siteFooter"></div>
 
-  <!-- Global include loader + menu behavior -->
+  <!-- Global include loader + menu behavior (absolute paths so nested routes work) -->
   <script src="/assets/js/includes.js"></script>
   <script src="/assets/js/site.js"></script>
 
   <script>
-    // ---------------------------
-    // Fixes being applied here:
-    // 1) Header: use global include mounts (siteHeader/siteFooter) and site.js.
-    // 2) Tours not loading: fix JS syntax so tour fetch runs; add better error reporting.
-    // 3) Date rules: enforce "tomorrow or later" with min attribute + runtime guard (mobile + desktop).
-    // 4) Party size: dropdown 1-8 (no free typing).
-    // 5) Remove "Tours loaded" counter (not needed).
-    // ---------------------------
-
     const tz = 'America/Guayaquil';
-
-    // Adjust this ONLY if your API lives elsewhere. Keep relative path for same-domain deployments.
     const TOURS_ENDPOINT = '/api/tours';
 
     const els = {
@@ -323,7 +300,7 @@
       dateHelp: document.getElementById('dateHelp')
     };
 
-    let allTours = []; // unfiltered set from API
+    let allTours = [];
     let lastLink = '';
 
     function showError(msg){
@@ -343,7 +320,6 @@
       els.status.style.display = 'none';
     }
 
-    // Get YYYY-MM-DD for "tomorrow" in the target timezone.
     function getTomorrowISOInTZ(timeZone){
       const now = new Date();
       const fmt = new Intl.DateTimeFormat('en-CA', {
@@ -352,11 +328,9 @@
         month: '2-digit',
         day: '2-digit'
       });
-      // "today" in TZ
       const parts = fmt.formatToParts(now).reduce((acc,p)=>{ acc[p.type]=p.value; return acc; }, {});
       const todayISO = `${parts.year}-${parts.month}-${parts.day}`;
 
-      // Build a Date from todayISO at midnight UTC, then add 1 day, then return ISO.
       const base = new Date(`${todayISO}T00:00:00Z`);
       base.setUTCDate(base.getUTCDate() + 1);
       return base.toISOString().slice(0,10);
@@ -366,93 +340,64 @@
       const minISO = getTomorrowISOInTZ(tz);
       els.tourDate.min = minISO;
 
-      // If empty, prefill to min (makes workflow faster)
-      if (!els.tourDate.value) els.tourDate.value = minISO;
-
-      // Guard for mobile browsers that still allow choosing earlier dates in the picker UI.
-      if (els.tourDate.value && els.tourDate.value < minISO){
+      if (!els.tourDate.value){
+        els.tourDate.value = minISO;
+      } else if (els.tourDate.value < minISO){
         els.tourDate.value = minISO;
       }
+
       els.dateHelp.textContent = `Only tomorrow and future dates are allowed (${tz}).`;
     }
 
-    function normalizeTour(raw){
-      // Defensive normalization across possible API shapes.
-      const nameRaw = raw.name || raw.title || raw.tour_name || '';
-      const codeFromName = (typeof nameRaw === 'string' ? (nameRaw.trim().match(/^([A-Z]{2,6}\d{2,6})\b/) || [])[1] : '') || '';
-      const code = (raw.code || raw.tour_code || raw.tourCode || codeFromName || raw.id || '').toString();
-
-      // Keep the full display name, but also provide a clean name without duplicated code prefix.
-      const displayName = (nameRaw || code || 'Tour').toString();
-      const escCode = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const cleanName = code ? displayName.replace(new RegExp('^' + escCode + '\\s*[-–]?\\s*', 'i'), '').trim() : displayName.trim();
-
-      // IMPORTANT: do not force a default language. Only set lang if the API provides it.
-      const lang = ((raw.lang || raw.language || raw.locale || '') + '').toLowerCase().slice(0, 2);
-
-      // Price (Stripe often returns unit_amount in cents)
-      const currency = ((raw.currency || 'USD') + '').toUpperCase();
-      const priceRaw = raw.price ?? raw.unit_amount ?? raw.amount ?? raw.price_per_person ?? '';
-      const price = (typeof priceRaw === 'number' || (typeof priceRaw === 'string' && priceRaw.trim() !== '')) ? Number(priceRaw) : '';
-
-      return { raw, code, displayName, cleanName, lang, price, currency };
-    }
-
-    function formatMoney(price, currency){
-      const n = Number(price);
-      if (!isFinite(n)) return '';
-      try{
-        return new Intl.NumberFormat('en-US', { style:'currency', currency }).format(n);
-      }catch(e){
-        return `$${n.toFixed(2)}`;
-      }
+    function normalizeTour(apiTour){
+      const code = String(apiTour.tour_code || apiTour.code || '').trim();
+      const title = String(apiTour.tour_title || apiTour.title || '').trim();
+      const language = String(apiTour.language || apiTour.lang || '').trim().toLowerCase().slice(0,2);
+      const amountDisplay = String(apiTour.amount_display || apiTour.price_display || '').trim();
+      const currency = String(apiTour.currency || 'USD').trim().toUpperCase();
+      return { code, title, language, amountDisplay, currency, raw: apiTour };
     }
 
     function populateTours(){
-      const lang = (els.lang.value || 'en').toLowerCase();
+      const lang = (els.langSelect.value || 'en').toLowerCase();
+      const normalized = allTours.map(normalizeTour).filter(t => t.code);
 
-      // If the API provides language tags for at least one tour, we will filter by it.
-      // If no language tags exist, we will show all tours.
-      const hasLangTags = allTours.some(t => !!t.lang);
-      let candidates = hasLangTags ? allTours.filter(t => t.lang === lang) : allTours.slice();
+      const hasLang = normalized.some(t => !!t.language);
+      let list = hasLang ? normalized.filter(t => t.language === lang) : normalized.slice();
+      if (!list.length) list = normalized.slice();
 
-      // If filtering produced nothing (bad/missing tags), fall back to showing everything.
-      if (!candidates.length) candidates = allTours.slice();
+      list.sort((a,b) => a.code.localeCompare(b.code) || a.title.localeCompare(b.title));
 
-      // Stable ordering: code asc, then name
-      candidates.sort((a,b) => (a.code||'').localeCompare(b.code||'') || (a.cleanName||a.displayName||'').localeCompare(b.cleanName||b.displayName||''));
-
-      els.tour.innerHTML = '';
+      els.tourSelect.innerHTML = '';
       const ph = document.createElement('option');
       ph.value = '';
-      ph.textContent = candidates.length ? 'Select a tour...' : 'No tours available';
+      ph.textContent = list.length ? 'Select a tour...' : 'No tours available';
       ph.disabled = true;
       ph.selected = true;
-      els.tour.appendChild(ph);
+      els.tourSelect.appendChild(ph);
 
-      for (const t of candidates){
+      for (const t of list){
         const opt = document.createElement('option');
         opt.value = t.code;
-        const priceLabel = (t.price !== '' && isFinite(t.price))
-          ? (' (' + formatMoney(normalizeStripeAmount(t.price), t.currency) + ' per person)')
-          : '';
-        opt.textContent = (t.code ? (t.code + ' - ') : '') + (t.cleanName || t.displayName || 'Tour') + priceLabel;
-        opt.dataset.code = t.code;
-        opt.dataset.price = String(t.price ?? '');
-        opt.dataset.currency = t.currency || 'USD';
-        els.tour.appendChild(opt);
+        const priceLabel = t.amountDisplay ? ` (${t.amountDisplay} per person)` : '';
+        opt.textContent = `${t.code} - ${t.title || t.code}${priceLabel}`;
+        opt.dataset.amountDisplay = t.amountDisplay || '';
+        els.tourSelect.appendChild(opt);
       }
 
-      // Attempt to keep current selection if still present
-      if (selectedTourCode){
-        const found = Array.from(els.tour.options).find(o => o.value === selectedTourCode);
-        if (found){
-          els.tour.value = selectedTourCode;
-          updateSelectedPrice();
-        }else{
-          selectedTourCode = '';
-          updateSelectedPrice();
-        }
+      els.tourSelect.disabled = false;
+      updatePriceLine();
+    }
+
+    function updatePriceLine(){
+      const opt = els.tourSelect.selectedOptions && els.tourSelect.selectedOptions[0];
+      const amountDisplay = opt ? (opt.dataset.amountDisplay || '') : '';
+      if (amountDisplay){
+        els.priceLine.textContent = `Selected price: ${amountDisplay} per person`;
+        els.priceLine.style.display = 'block';
+      } else {
+        els.priceLine.textContent = '';
+        els.priceLine.style.display = 'none';
       }
     }
 
@@ -465,13 +410,9 @@
 
       try{
         const res = await fetch(TOURS_ENDPOINT, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error(`Tours API returned ${res.status}`);
 
-        if (!res.ok){
-          throw new Error(`Tours API returned ${res.status}`);
-        }
         const data = await res.json();
-
-        // Support either {tours:[...]} or [...].
         const toursArray = Array.isArray(data) ? data : (Array.isArray(data.tours) ? data.tours : []);
         allTours = toursArray;
 
@@ -494,23 +435,14 @@
       const party = els.partySelect.value;
       const lang = els.langSelect.value;
 
-      if (!tour){
-        showError('Please select a tour.');
-        return '';
-      }
-      if (!date){
-        showError('Please select a tour date.');
-        return '';
-      }
+      if (!tour){ showError('Please select a tour.'); return ''; }
+      if (!date){ showError('Please select a tour date.'); return ''; }
+
       enforceMinDate();
       const minISO = els.tourDate.min;
       if (date < minISO){
         showError('Tour date must be tomorrow or later.');
         els.tourDate.value = minISO;
-        return '';
-      }
-      if (!party){
-        showError('Please select number of people.');
         return '';
       }
 
@@ -537,7 +469,6 @@
         await navigator.clipboard.writeText(lastLink);
         showStatus('Link copied.');
       }catch(e){
-        // Fallback
         const ta = document.createElement('textarea');
         ta.value = lastLink;
         ta.style.position = 'fixed';
@@ -550,7 +481,6 @@
       }
     }
 
-    // Event wiring (keep simple, deterministic)
     els.langSelect.addEventListener('change', () => {
       populateTours();
       setLink('');
@@ -581,7 +511,6 @@
     els.btnCopy.addEventListener('click', copyLink);
     els.btnOpen.addEventListener('click', () => { if (lastLink) window.open(lastLink, '_blank', 'noopener'); });
 
-    // Init
     enforceMinDate();
     loadTours();
   </script>
