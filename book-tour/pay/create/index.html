@@ -1,532 +1,508 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Create a payment link | Mindo Bird Watching</title>
+  <title>Create Payment Link | Mindo Bird Watching</title>
 
-  <!-- Global styling (absolute paths so nested routes work) -->
+  <!-- Global site CSS (absolute paths so nested pages load correctly) -->
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css" />
-  <!-- NOTE: footer.css is currently being served as text/html on the live site (MIME error),
-       so it is intentionally not linked here to avoid breaking styles on this page. -->
+  <link rel="stylesheet" href="/assets/css/footer.css" />
+
+  <!-- Fonts (match site) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
+  <!-- Global include loader + menu behavior -->
+  <script defer src="/assets/js/includes.js"></script>
+  <script defer src="/assets/js/site.js"></script>
 
   <style>
-    /* Page-only styles: keep minimal, do not restyle global header/footer */
-    :root{
-      --mbw-panel: rgba(255,255,255,.18);
-      --mbw-panel-2: rgba(255,255,255,.12);
-      --mbw-stroke: rgba(0,0,0,.10);
-      --mbw-shadow: 0 14px 40px rgba(0,0,0,.12);
-      --mbw-radius: 22px;
-      --mbw-radius-sm: 16px;
-      --mbw-text: #0f2b1e;
-      --mbw-muted: rgba(15,43,30,.70);
-      --mbw-danger: #c0392b;
-      --mbw-green: #0b5b2a;
-      --mbw-green-2: #0f6b31;
-      --mbw-focus: rgba(11,91,42,.22);
+    /* Page-only styles. Keep minimal so site.css stays authoritative. */
+    .payCreateWrap {
+      padding: 28px 0 60px;
     }
-
-    body{ color: var(--mbw-text); }
-
-    .pageWrap{
-      max-width: 1100px;
-      margin: 28px auto 60px;
-      padding: 0 18px;
+    .payCreateCard {
+      max-width: 1120px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 22px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.10);
+      backdrop-filter: blur(6px);
+      overflow: hidden;
     }
-
-    .heroPanel{
-      border-radius: 28px;
-      padding: 28px;
-      background: var(--mbw-panel);
-      box-shadow: var(--mbw-shadow);
-      border: 1px solid var(--mbw-stroke);
+    .payCreateInner {
+      padding: 34px 34px 30px;
     }
-
-    .heroTitle{
-      margin: 0 0 8px 0;
-      font-size: clamp(28px, 3.2vw, 42px);
-      line-height: 1.05;
-      font-weight: 800;
-      letter-spacing: -.02em;
-      color: #1b5a33;
+    .payCreateHeader h1 {
+      margin: 0 0 8px;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-size: clamp(34px, 4.2vw, 56px);
+      line-height: 1.02;
+      color: #0b5a2a;
     }
-
-    .heroSub{
+    .payCreateHeader p {
       margin: 0;
-      max-width: 62ch;
-      color: var(--mbw-muted);
+      max-width: 68ch;
+      color: rgba(0,0,0,0.62);
       font-size: 16px;
       line-height: 1.55;
     }
-
-    .grid{
-      margin-top: 18px;
+    .payCreateGrid {
       display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
       gap: 18px;
-      grid-template-columns: 1.4fr 1fr;
-      align-items: start;
+      margin-top: 22px;
     }
-
-    @media (max-width: 940px){
-      .grid{ grid-template-columns: 1fr; }
-      .heroPanel{ padding: 22px; }
-    }
-
-    .card{
-      background: var(--mbw-panel-2);
-      border: 1px solid var(--mbw-stroke);
-      border-radius: var(--mbw-radius);
+    .panel {
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 18px;
       padding: 18px;
-      box-shadow: 0 10px 26px rgba(0,0,0,.08);
     }
-
-    .card h2{
-      margin: 0 0 10px 0;
-      font-size: 16px;
-      font-weight: 800;
-      color: #1b5a33;
+    .panelTitle {
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      color: #0b5a2a;
+      margin: 0 0 10px;
+      font-size: 18px;
     }
-
-    .hint{
-      margin: 0 0 14px 0;
+    .hint {
+      color: rgba(0,0,0,0.55);
       font-size: 13px;
-      color: var(--mbw-muted);
-    }
-
-    .reqStar{ color: var(--mbw-danger); font-weight: 900; }
-
-    .field{ margin: 14px 0; }
-
-    .labelRow{
-      display:flex;
-      align-items: baseline;
-      gap: 8px;
-      margin-bottom: 8px;
-      font-weight: 800;
-    }
-    .labelRow label{ font-size: 14px; }
-
-    .control{
-      width: 100%;
-      height: 46px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.42);
-      outline: none;
-      font-size: 16px;
-      color: var(--mbw-text);
-    }
-    select.control{ padding-right: 42px; }
-
-    .control:focus{
-      border-color: rgba(11,91,42,.45);
-      box-shadow: 0 0 0 4px var(--mbw-focus);
-    }
-
-    .metaLine{
+      line-height: 1.35;
       margin-top: 8px;
-      font-size: 12px;
-      color: var(--mbw-muted);
     }
-
-    .actions{
-      margin-top: 16px;
-      display:flex;
+    .field {
+      margin-top: 12px;
+    }
+    label {
+      display: block;
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: rgba(0,0,0,0.80);
+    }
+    .req {
+      color: #c0392b;
+      margin-left: 6px;
+    }
+    select, input[type="date"] {
+      width: 100%;
+      height: 52px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.55);
+      padding: 0 14px;
+      font-size: 16px;
+      outline: none;
+    }
+    select:focus, input[type="date"]:focus {
+      border-color: rgba(11,90,42,0.55);
+      box-shadow: 0 0 0 4px rgba(11,90,42,0.12);
+    }
+    .helpLine {
+      font-size: 12px;
+      color: rgba(0,0,0,0.56);
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+    .actions {
+      display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      margin-top: 14px;
     }
-
-    .btn{
-      height: 40px;
-      padding: 0 14px;
+    .btn {
+      height: 44px;
+      padding: 0 16px;
       border-radius: 999px;
-      border: 1px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.30);
-      color: var(--mbw-text);
+      border: 1px solid rgba(0,0,0,0.10);
       font-weight: 800;
+      font-size: 13px;
       cursor: pointer;
     }
-    .btn:disabled{ opacity: .55; cursor: not-allowed; }
-    .btnPrimary{
-      background: var(--mbw-green);
-      border-color: rgba(0,0,0,.14);
+    .btnPrimary {
+      background: #0b5a2a;
       color: #fff;
+      border-color: rgba(0,0,0,0.0);
     }
-    .btnPrimary:hover{ background: var(--mbw-green-2); }
-    .btnGhost{ background: rgba(255,255,255,.26); }
-
-    .linkBox{
-      border: 1px dashed rgba(0,0,0,.25);
-      border-radius: 14px;
-      background: rgba(255,255,255,.26);
-      padding: 12px;
+    .btnGhost {
+      background: rgba(255,255,255,0.26);
+      color: rgba(0,0,0,0.75);
+    }
+    .btn[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .linkBox {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 12px;
+      background: rgba(255,255,255,0.35);
+      border: 1px dashed rgba(0,0,0,0.22);
+      border-radius: 14px;
+      padding: 12px 12px;
+      font-size: 13px;
       line-height: 1.35;
       word-break: break-all;
-      min-height: 44px;
+      min-height: 46px;
     }
-
-    .status{
+    .statusOk {
       margin-top: 10px;
-      font-size: 13px;
-      font-weight: 700;
-      color: rgba(11,91,42,.95);
-    }
-
-    .error{
-      margin-top: 10px;
-      font-size: 13px;
+      color: #0b5a2a;
       font-weight: 800;
-      color: #8b1f15;
-      background: rgba(192,57,43,.10);
-      border: 1px solid rgba(192,57,43,.28);
+      font-size: 13px;
+    }
+    .statusErr {
+      margin-top: 10px;
+      color: #8e2b23;
+      background: rgba(192, 57, 43, 0.10);
+      border: 1px solid rgba(192, 57, 43, 0.25);
       padding: 10px 12px;
-      border-radius: 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
     }
-
-    /* Form control consistency (esp. iOS date inputs) */
-    .field input,
-    .field select{
-      text-align: left;
+    .priceLine {
+      margin-top: 8px;
+      font-size: 13px;
+      color: rgba(0,0,0,0.58);
     }
-    input[type="date"]{
-      text-align: left;
-      font-variant-numeric: tabular-nums;
+    @media (max-width: 980px) {
+      .payCreateInner { padding: 22px 18px 22px; }
+      .payCreateGrid { grid-template-columns: 1fr; }
     }
-    input[type="date"]::-webkit-date-and-time-value{
-      text-align: left;
-    }
-
-</style>
+  </style>
 </head>
 
 <body>
-  <!-- Global header mount -->
   <div id="siteHeader"></div>
 
-  <main class="pageWrap" role="main">
-    <section class="heroPanel" aria-label="Create payment link">
-      <h1 class="heroTitle">Create a payment link</h1>
-      <p class="heroSub">
-        Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.
-      </p>
+  <main class="payCreateWrap">
+    <section class="payCreateCard">
+      <div class="payCreateInner">
+        <header class="payCreateHeader">
+          <h1>Create a payment link</h1>
+          <p>Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
+        </header>
 
-      <div class="grid">
-        <div class="card">
-          <div class="hint">Required fields are marked with <span class="reqStar">*</span>.</div>
+        <div class="payCreateGrid">
+          <section class="panel" aria-label="Create payment link form">
+            <div class="hint">Required fields are marked with <span class="req">*</span>.</div>
 
-          <div class="field">
-            <div class="labelRow">
-              <label for="tourSelect">Tour</label><span class="reqStar">*</span>
+            <div class="field">
+              <label for="tourSelect">Tour <span class="req">*</span></label>
+              <select id="tourSelect">
+                <option value="">Loading tours...</option>
+              </select>
+              <div class="helpLine">This list is Stripe-driven via the Tours API.</div>
+              <div id="priceLine" class="priceLine" hidden></div>
             </div>
-            <select id="tourSelect" class="control" disabled>
-              <option value="">Loading tours...</option>
-            </select>
-            <div class="metaLine">This list is Stripe-driven via the Tours API.</div>
-            <div class="metaLine" id="priceLine" style="display:none;"></div>
-          </div>
 
-          <div class="field">
-            <div class="labelRow">
-              <label for="tourDate">Tour date</label><span class="reqStar">*</span>
+            <div class="field">
+              <label for="tourDate">Tour date <span class="req">*</span></label>
+              <input id="tourDate" type="date" />
+              <div id="dateHelp" class="helpLine">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
             </div>
-            <input id="tourDate" class="control" type="date" />
-            <div class="metaLine" id="dateHelp"></div>
-          </div>
 
-          <div class="field">
-            <div class="labelRow">
-              <label for="partySelect">Number of people</label><span class="reqStar">*</span>
+            <div class="field">
+              <label for="partySelect">Number of people <span class="req">*</span></label>
+              <select id="partySelect"></select>
+              <div class="helpLine">Must be 1 to 8.</div>
             </div>
-            <select id="partySelect" class="control" aria-label="Number of people">
-              <option value="1">1</option>
-              <option value="2" selected>2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-            </select>
-            <div class="metaLine">Must be 1 to 8.</div>
-          </div>
 
-          <div class="field">
-            <div class="labelRow">
+            <div class="field">
               <label for="langSelect">Language</label>
+              <select id="langSelect">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+              </select>
+              <div class="helpLine">Generates a link to the correct language pay page.</div>
             </div>
-            <select id="langSelect" class="control">
-              <option value="en" selected>English</option>
-              <option value="es">Spanish</option>
-            </select>
-            <div class="metaLine">Generates a link to the correct language pay page.</div>
-          </div>
 
-          <div class="actions">
-            <button id="btnGenerate" class="btn btnPrimary" type="button">Generate link</button>
-            <button id="btnCopy" class="btn btnGhost" type="button" disabled>Copy link</button>
-            <button id="btnOpen" class="btn btnGhost" type="button" disabled>Open link</button>
-          </div>
+            <div class="actions">
+              <button id="btnGenerate" class="btn btnPrimary" type="button">Generate link</button>
+              <button id="btnCopy" class="btn btnGhost" type="button" disabled>Copy link</button>
+              <button id="btnOpen" class="btn btnGhost" type="button" disabled>Open link</button>
+            </div>
 
-          <div id="status" class="status" style="display:none;"></div>
-          <div id="error" class="error" style="display:none;"></div>
-        </div>
+            <div id="status" class="statusOk" hidden></div>
+            <div id="error" class="statusErr" hidden></div>
+          </section>
 
-        <div class="card">
-          <h2>Payment link</h2>
-          <div id="linkBox" class="linkBox">Generate a link to display it here.</div>
-          <p class="hint" style="margin-top:10px;">
-            The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
-            On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
-          </p>
+          <aside class="panel" aria-label="Payment link output">
+            <h2 class="panelTitle">Payment link</h2>
+            <div id="linkBox" class="linkBox">Generate a link to display it here.</div>
+            <p class="hint" style="margin-top:10px;">
+              The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
+              On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
+            </p>
+          </aside>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Global footer mount -->
   <div id="siteFooter"></div>
 
-  <!-- Global include loader + menu behavior (absolute paths so nested routes work) -->
-  <script src="/assets/js/includes.js"></script>
-  <script src="/assets/js/site.js"></script>
+  <script id="tourCatalog" type="application/json">{"ok": true, "tours": [{"tour_code": "MBW006", "language": "es", "tour_title": "En Busca de Cinco Tucanes y el Gallo de Pena", "currency": "USD", "amount_display": "$99.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-4-MBW006_FDT_Image_Es.jpg", "tour_page_url": "https://mindobirdwatching.com/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/", "description_one_liner": "Expedici\u00f3n guiada de observaci\u00f3n de aves de d\u00eda completo en el bosque nublado de Mindo, comenzando al amanecer. El tour inicia con la observaci\u00f3n del gallo de pena andino en su lek, seguido de una caminata extendida en busca de cinco especies de tucanes, incluyendo el tuc\u00e1n andino piquigrueso, tuc\u00e1n garganta amarilla, tuc\u00e1n del Choc\u00f3, arasar\u00ed de pico p\u00e1lido y tucanete culirrojo. Se realiza una pausa para el almuerzo. Incluye transporte, entradas y binoculares."}, {"tour_code": "MBW006", "language": "en", "tour_title": "Quest for Five Toucans & the Andean Cock-of-the-Rock", "currency": "USD", "amount_display": "$99.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-2-MBW006_FDT_Image_En.jpg", "tour_page_url": "https://mindobirdwatching.com/tours/quest-five-toucans-guide/", "description_one_liner": "Full-day guided birdwatching expedition in the cloud forest of Mindo, starting at dawn. The tour begins with early-morning observation of the Andean Cock-of-the-rock at its lek, followed by an extended forest hike in search of five toucan species, including the Plate-billed Mountain Toucan, Yellow-throated Toucan, Choco Toucan, Pale-mandibled Aracari, and Crimson-rumped Toucanet. A lunch break is scheduled. Includes transportation, park fees, and binoculars."}, {"tour_code": "MBW005", "language": "es", "tour_title": "Danza del Gallo de Pena", "currency": "USD", "amount_display": "$75.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-8-MBW005_HDT_Image_Es.jpg", "tour_page_url": "https://mindobirdwatching.com/es/tours/gallo-de-la-pena-andino-al-amanecer/", "description_one_liner": "Experiencia guiada de observacion de aves de medio dia en el bosque nublado de Mindo, comenzando al amanecer.El enfoque principal es ver el gallo de pena andino en su lek, seguido de una caminata por el bosque para buscar tucanes y encuentros con varias especies de tangaras y colibries. Incluye transporte y uso de binoculares."}, {"tour_code": "MBW005", "language": "en", "tour_title": "Dance of the Andean Cock-of-the-Rock", "currency": "USD", "amount_display": "$75.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-6-MBW005_HDT_Image_En.jpg", "tour_page_url": "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/", "description_one_liner": "Half-day guided birdwatching experience beginning at dawn in the cloud forest of Mindo.Starting at 5:00 AM, this immersive tour focuses on observing the spectacular Andean Cock-of-the-rock at its lek, followed by a forest hike in search of toucans, tanagers, and hummingbirds. Includes certified guide, transportation, and use of binoculars."}, {"tour_code": "MBW004", "language": "es", "tour_title": "Joyas del Bosque Nublado", "currency": "USD", "amount_display": "$50.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "6:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-12-MBW004_HDT_Image_Es.jpg", "tour_page_url": "https://mindobirdwatching.com/es/tours/joyas-del-bosque-matutino/", "description_one_liner": "Experiencia guiada de observaci\u00f3n de aves de medio d\u00eda en el bosque nublado de Mindo.Recorre senderos naturales en busca de tucanes, t\u00e1ngaras y colibr\u00edes durante la actividad matutina. Incluye gu\u00eda certificado, equipo y transporte."}, {"tour_code": "MBW004", "language": "en", "tour_title": "Jewels of the Morning Forest", "currency": "USD", "amount_display": "$50.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "6:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-10-MBW004_HDT_Image_En.jpg", "tour_page_url": "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/", "description_one_liner": "Half-day guided birdwatching experience in the cloud forest of Mindo.Explore lush forest trails in search of toucans, tanagers, and hummingbirds during peak morning activity. Includes certified guide, equipment, and transportation."}, {"tour_code": "MBW006", "language": "es", "tour_title": "En Busca de Cinco Tucanes y el Gallo de Pena", "currency": "USD", "amount_display": "$99.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-4-MBW006_FDT_Image_Es.jpg", "tour_page_url": "https://mindobirdwatching.com/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/", "description_one_liner": "Expedici\u00f3n guiada de observaci\u00f3n de aves de d\u00eda completo en el bosque nublado de Mindo, comenzando al amanecer. El tour inicia con la observaci\u00f3n del gallo de pena andino en su lek, seguido de una caminata extendida en busca de cinco especies de tucanes, incluyendo el tuc\u00e1n andino piquigrueso, tuc\u00e1n garganta amarilla, tuc\u00e1n del Choc\u00f3, arasar\u00ed de pico p\u00e1lido y tucanete culirrojo. Se realiza una pausa para el almuerzo. Incluye transporte, entradas y binoculares."}, {"tour_code": "MBW006", "language": "en", "tour_title": "Quest for Five Toucans & the Andean Cock-of-the-Rock", "currency": "USD", "amount_display": "$99.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-2-MBW006_FDT_Image_En.jpg", "tour_page_url": "https://mindobirdwatching.com/tours/quest-five-toucans-guide/", "description_one_liner": "Full-day guided birdwatching expedition in the cloud forest of Mindo, starting at dawn. The tour begins with early-morning observation of the Andean Cock-of-the-rock at its lek, followed by an extended forest hike in search of five toucan species, including the Plate-billed Mountain Toucan, Yellow-throated Toucan, Choco Toucan, Pale-mandibled Aracari, and Crimson-rumped Toucanet. A lunch break is scheduled. Includes transportation, park fees, and binoculars."}, {"tour_code": "MBW005", "language": "es", "tour_title": "Danza del Gallo de Pena", "currency": "USD", "amount_display": "$75.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-8-MBW005_HDT_Image_Es.jpg", "tour_page_url": "https://mindobirdwatching.com/es/tours/gallo-de-la-pena-andino-al-amanecer/", "description_one_liner": "Experiencia guiada de observacion de aves de medio dia en el bosque nublado de Mindo, comenzando al amanecer.El enfoque principal es ver el gallo de pena andino en su lek, seguido de una caminata por el bosque para buscar tucanes y encuentros con varias especies de tangaras y colibries. Incluye transporte y uso de binoculares."}, {"tour_code": "MBW005", "language": "en", "tour_title": "Dance of the Andean Cock-of-the-Rock", "currency": "USD", "amount_display": "$75.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "5:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-6-MBW005_HDT_Image_En.jpg", "tour_page_url": "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/", "description_one_liner": "Half-day guided birdwatching experience beginning at dawn in the cloud forest of Mindo.Starting at 5:00 AM, this immersive tour focuses on observing the spectacular Andean Cock-of-the-rock at its lek, followed by a forest hike in search of toucans, tanagers, and hummingbirds. Includes certified guide, transportation, and use of binoculars."}, {"tour_code": "MBW004", "language": "es", "tour_title": "Joyas del Bosque Nublado", "currency": "USD", "amount_display": "$50.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "6:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-12-MBW004_HDT_Image_Es.jpg", "tour_page_url": "https://mindobirdwatching.com/es/tours/joyas-del-bosque-matutino/", "description_one_liner": "Experiencia guiada de observaci\u00f3n de aves de medio d\u00eda en el bosque nublado de Mindo.Recorre senderos naturales en busca de tucanes, t\u00e1ngaras y colibr\u00edes durante la actividad matutina. Incluye gu\u00eda certificado, equipo y transporte."}, {"tour_code": "MBW004", "language": "en", "tour_title": "Jewels of the Morning Forest", "currency": "USD", "amount_display": "$50.00", "min_person": 2, "max_person": "unlimited", "pickup_time_local": "6:00 AM", "pickup_window_minutes": 15, "timezone": "America/Guayaquil", "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-10-MBW004_HDT_Image_En.jpg", "tour_page_url": "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/", "description_one_liner": "Half-day guided birdwatching experience in the cloud forest of Mindo.Explore lush forest trails in search of toucans, tanagers, and hummingbirds during peak morning activity. Includes certified guide, equipment, and transportation."}]}</script>
 
   <script>
-    const tz = 'America/Guayaquil';
-    const TOURS_ENDPOINT = '/api/tours';
+    (function () {
+      const tz = "America/Guayaquil";
+      const TOURS_ENDPOINT = "/api/tours";
 
-    const els = {
-      tourSelect: document.getElementById('tourSelect'),
-      tourDate: document.getElementById('tourDate'),
-      partySelect: document.getElementById('partySelect'),
-      langSelect: document.getElementById('langSelect'),
-      btnGenerate: document.getElementById('btnGenerate'),
-      btnCopy: document.getElementById('btnCopy'),
-      btnOpen: document.getElementById('btnOpen'),
-      linkBox: document.getElementById('linkBox'),
-      status: document.getElementById('status'),
-      error: document.getElementById('error'),
-      priceLine: document.getElementById('priceLine'),
-      dateHelp: document.getElementById('dateHelp')
-    };
+      const els = {
+        tourSelect: document.getElementById("tourSelect"),
+        tourDate: document.getElementById("tourDate"),
+        partySelect: document.getElementById("partySelect"),
+        langSelect: document.getElementById("langSelect"),
+        btnGenerate: document.getElementById("btnGenerate"),
+        btnCopy: document.getElementById("btnCopy"),
+        btnOpen: document.getElementById("btnOpen"),
+        linkBox: document.getElementById("linkBox"),
+        status: document.getElementById("status"),
+        error: document.getElementById("error"),
+        priceLine: document.getElementById("priceLine"),
+        dateHelp: document.getElementById("dateHelp")
+      };
 
-    let allTours = [];
-    let lastLink = '';
+      function showError(msg) {
+        els.error.textContent = msg;
+        els.error.hidden = false;
+      }
+      function clearError() {
+        els.error.hidden = true;
+        els.error.textContent = "";
+      }
+      function showStatus(msg) {
+        els.status.textContent = msg;
+        els.status.hidden = false;
+      }
+      function clearStatus() {
+        els.status.hidden = true;
+        els.status.textContent = "";
+      }
 
-    function showError(msg){
-      els.error.textContent = msg;
-      els.error.style.display = 'block';
-    }
-    function clearError(){
-      els.error.textContent = '';
-      els.error.style.display = 'none';
-    }
-    function showStatus(msg){
-      els.status.textContent = msg;
-      els.status.style.display = 'block';
-    }
-    function clearStatus(){
-      els.status.textContent = '';
-      els.status.style.display = 'none';
-    }
+      function getTomorrowISOInTZ(timeZone) {
+        const now = new Date();
+        const fmt = new Intl.DateTimeFormat("en-CA", {
+          timeZone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        });
+        const parts = fmt.formatToParts(now);
+        const y = parts.find(p => p.type === "year").value;
+        const m = parts.find(p => p.type === "month").value;
+        const d = parts.find(p => p.type === "day").value;
+        const todayLocal = new Date(`${y}-${m}-${d}T00:00:00`);
+        todayLocal.setDate(todayLocal.getDate() + 1);
+        const yy = String(todayLocal.getFullYear()).padStart(4, "0");
+        const mm = String(todayLocal.getMonth() + 1).padStart(2, "0");
+        const dd = String(todayLocal.getDate()).padStart(2, "0");
+        return `${yy}-${mm}-${dd}`;
+      }
 
-    function getTomorrowISOInTZ(timeZone){
-      const now = new Date();
-      const fmt = new Intl.DateTimeFormat('en-CA', {
-        timeZone,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+      function setDateMin() {
+        const minISO = getTomorrowISOInTZ(tz);
+        els.tourDate.min = minISO;
+        if (!els.tourDate.value) {
+          els.tourDate.value = minISO;
+        }
+      }
+
+      function enforceDateRules() {
+        const min = els.tourDate.min;
+        if (els.tourDate.value && min && els.tourDate.value < min) {
+          els.tourDate.value = min;
+          showError("Tour date must be tomorrow or later.");
+        }
+      }
+
+      function fillPartySizes() {
+        els.partySelect.innerHTML = "";
+        for (let i = 1; i <= 8; i++) {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = String(i);
+          if (i === 2) opt.selected = true;
+          els.partySelect.appendChild(opt);
+        }
+      }
+
+      function normalizeApiTours(payload) {
+        if (!payload) return [];
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload.tours)) return payload.tours;
+        return [];
+      }
+
+      function getEmbeddedCatalog() {
+        try {
+          const raw = document.getElementById("tourCatalog").textContent || "";
+          const parsed = JSON.parse(raw);
+          return normalizeApiTours(parsed);
+        } catch (e) {
+          return [];
+        }
+      }
+
+      async function fetchToursFromApi() {
+        const res = await fetch(TOURS_ENDPOINT, { credentials: "same-origin" });
+        if (!res.ok) throw new Error(`Tours API HTTP ${res.status}`);
+        const json = await res.json();
+        return normalizeApiTours(json);
+      }
+
+      function renderTours(tours) {
+        const lang = els.langSelect.value || "en";
+        const filtered = tours.filter(t => (t.language || "en") === lang);
+
+        els.tourSelect.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select a tour...";
+        els.tourSelect.appendChild(placeholder);
+
+        filtered.forEach(t => {
+          const opt = document.createElement("option");
+          opt.value = t.tour_code;
+          const title = t.tour_title ? `${t.tour_title}` : t.tour_code;
+          const price = t.amount_display ? ` (${t.amount_display} per person)` : "";
+          opt.textContent = `${t.tour_code} - ${title}${price}`;
+          opt.dataset.amountDisplay = t.amount_display || "";
+          opt.dataset.minPerson = String(t.min_person || "");
+          els.tourSelect.appendChild(opt);
+        });
+
+        if (filtered.length === 1) {
+          els.tourSelect.selectedIndex = 1;
+          updatePriceLine();
+        } else {
+          els.priceLine.hidden = true;
+          els.priceLine.textContent = "";
+        }
+      }
+
+      function updatePriceLine() {
+        const opt = els.tourSelect.options[els.tourSelect.selectedIndex];
+        const amount = opt ? (opt.dataset.amountDisplay || "") : "";
+        if (!amount) {
+          els.priceLine.hidden = true;
+          els.priceLine.textContent = "";
+          return;
+        }
+        els.priceLine.textContent = `Selected price: ${amount} per person`;
+        els.priceLine.hidden = false;
+      }
+
+      function buildPayUrl() {
+        const tour = els.tourSelect.value;
+        const date = els.tourDate.value;
+        const party = els.partySelect.value;
+        const lang = els.langSelect.value;
+
+        if (!tour) {
+          showError("Please select a tour.");
+          return null;
+        }
+        if (!date) {
+          showError("Please select a tour date.");
+          return null;
+        }
+        if (date < els.tourDate.min) {
+          showError("Tour date must be tomorrow or later.");
+          return null;
+        }
+        if (!party) {
+          showError("Please select number of people.");
+          return null;
+        }
+
+        const qs = new URLSearchParams({
+          tour,
+          date,
+          party,
+          lang
+        });
+        return `${location.origin}/book-tour/pay/?${qs.toString()}`;
+      }
+
+      function setLink(url) {
+        els.linkBox.textContent = url;
+        els.btnCopy.disabled = false;
+        els.btnOpen.disabled = false;
+        els.btnOpen.dataset.url = url;
+      }
+
+      async function loadTours() {
+        clearError();
+        clearStatus();
+
+        let tours = [];
+        try {
+          tours = await fetchToursFromApi();
+        } catch (e) {
+          // Fallback to embedded catalog so the UI can still be used.
+          tours = getEmbeddedCatalog();
+        }
+
+        if (!tours || tours.length === 0) {
+          showError("Tours did not load. The Tours API returned no tours.");
+          els.tourSelect.innerHTML = '<option value="">Unable to load tours</option>';
+          return;
+        }
+
+        renderTours(tours);
+        showStatus("Tours loaded.");
+      }
+
+      // Wire events
+      els.langSelect.addEventListener("change", () => {
+        // Re-render from whichever source last succeeded: easiest is to re-run loadTours.
+        loadTours();
       });
-      const parts = fmt.formatToParts(now).reduce((acc,p)=>{ acc[p.type]=p.value; return acc; }, {});
-      const todayISO = `${parts.year}-${parts.month}-${parts.day}`;
+      els.tourSelect.addEventListener("change", () => {
+        updatePriceLine();
+      });
+      els.tourDate.addEventListener("change", () => {
+        clearError();
+        enforceDateRules();
+      });
+      els.btnGenerate.addEventListener("click", () => {
+        clearError();
+        clearStatus();
+        const url = buildPayUrl();
+        if (!url) return;
+        setLink(url);
+        showStatus("Link generated.");
+      });
+      els.btnCopy.addEventListener("click", async () => {
+        const text = els.linkBox.textContent || "";
+        if (!text || text.indexOf("http") !== 0) return;
+        try {
+          await navigator.clipboard.writeText(text);
+          showStatus("Copied to clipboard.");
+        } catch (e) {
+          showError("Could not copy automatically. Please copy manually.");
+        }
+      });
+      els.btnOpen.addEventListener("click", () => {
+        const url = els.btnOpen.dataset.url;
+        if (url) window.open(url, "_blank", "noopener");
+      });
 
-      const base = new Date(`${todayISO}T00:00:00Z`);
-      base.setUTCDate(base.getUTCDate() + 1);
-      return base.toISOString().slice(0,10);
-    }
-
-    function enforceMinDate(){
-      const minISO = getTomorrowISOInTZ(tz);
-      els.tourDate.min = minISO;
-
-      if (!els.tourDate.value){
-        els.tourDate.value = minISO;
-      } else if (els.tourDate.value < minISO){
-        els.tourDate.value = minISO;
-      }
-
-      els.dateHelp.textContent = `Only tomorrow and future dates are allowed (${tz}).`;
-    }
-
-    function normalizeTour(apiTour){
-      const code = String(apiTour.tour_code || apiTour.code || '').trim();
-      const title = String(apiTour.tour_title || apiTour.title || '').trim();
-      const language = String(apiTour.language || apiTour.lang || '').trim().toLowerCase().slice(0,2);
-      const amountDisplay = String(apiTour.amount_display || apiTour.price_display || '').trim();
-      const currency = String(apiTour.currency || 'USD').trim().toUpperCase();
-      return { code, title, language, amountDisplay, currency, raw: apiTour };
-    }
-
-    function populateTours(){
-      const lang = (els.langSelect.value || 'en').toLowerCase();
-      const normalized = allTours.map(normalizeTour).filter(t => t.code);
-
-      const hasLang = normalized.some(t => !!t.language);
-      let list = hasLang ? normalized.filter(t => t.language === lang) : normalized.slice();
-      if (!list.length) list = normalized.slice();
-
-      list.sort((a,b) => a.code.localeCompare(b.code) || a.title.localeCompare(b.title));
-
-      els.tourSelect.innerHTML = '';
-      const ph = document.createElement('option');
-      ph.value = '';
-      ph.textContent = list.length ? 'Select a tour...' : 'No tours available';
-      ph.disabled = true;
-      ph.selected = true;
-      els.tourSelect.appendChild(ph);
-
-      for (const t of list){
-        const opt = document.createElement('option');
-        opt.value = t.code;
-        const priceLabel = t.amountDisplay ? ` (${t.amountDisplay} per person)` : '';
-        opt.textContent = `${t.code} - ${t.title || t.code}${priceLabel}`;
-        opt.dataset.amountDisplay = t.amountDisplay || '';
-        els.tourSelect.appendChild(opt);
-      }
-
-      els.tourSelect.disabled = false;
-      updatePriceLine();
-    }
-
-    function updatePriceLine(){
-      const opt = els.tourSelect.selectedOptions && els.tourSelect.selectedOptions[0];
-      const amountDisplay = opt ? (opt.dataset.amountDisplay || '') : '';
-      if (amountDisplay){
-        els.priceLine.textContent = `Selected price: ${amountDisplay} per person`;
-        els.priceLine.style.display = 'block';
-      } else {
-        els.priceLine.textContent = '';
-        els.priceLine.style.display = 'none';
-      }
-    }
-
-    async function loadTours(){
-      clearError();
-      clearStatus();
-
-      els.tourSelect.disabled = true;
-      els.tourSelect.innerHTML = '<option value="">Loading tours...</option>';
-
-      try{
-        const res = await fetch(TOURS_ENDPOINT, { credentials: 'same-origin' });
-        if (!res.ok) throw new Error(`Tours API returned ${res.status}`);
-
-        const data = await res.json();
-        const toursArray = Array.isArray(data) ? data : (Array.isArray(data.tours) ? data.tours : []);
-        allTours = toursArray;
-
-        populateTours();
-        showStatus('');
-      }catch(err){
-        allTours = [];
-        els.tourSelect.innerHTML = '<option value="">Unable to load tours</option>';
-        els.tourSelect.disabled = true;
-        showError(`Tours did not load. ${err && err.message ? err.message : ''}`.trim());
-      }
-    }
-
-    function buildPayLink(){
-      clearError();
-      clearStatus();
-
-      const tour = els.tourSelect.value;
-      const date = els.tourDate.value;
-      const party = els.partySelect.value;
-      const lang = els.langSelect.value;
-
-      if (!tour){ showError('Please select a tour.'); return ''; }
-      if (!date){ showError('Please select a tour date.'); return ''; }
-
-      enforceMinDate();
-      const minISO = els.tourDate.min;
-      if (date < minISO){
-        showError('Tour date must be tomorrow or later.');
-        els.tourDate.value = minISO;
-        return '';
-      }
-
-      const params = new URLSearchParams({ tour, date, party, lang });
-      return `${location.origin}/book-tour/pay/?${params.toString()}`;
-    }
-
-    function setLink(link){
-      lastLink = link || '';
-      if (!lastLink){
-        els.linkBox.textContent = 'Generate a link to display it here.';
-        els.btnCopy.disabled = true;
-        els.btnOpen.disabled = true;
-        return;
-      }
-      els.linkBox.textContent = lastLink;
-      els.btnCopy.disabled = false;
-      els.btnOpen.disabled = false;
-    }
-
-    async function copyLink(){
-      if (!lastLink) return;
-      try{
-        await navigator.clipboard.writeText(lastLink);
-        showStatus('Link copied.');
-      }catch(e){
-        const ta = document.createElement('textarea');
-        ta.value = lastLink;
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showStatus('Link copied.');
-      }
-    }
-
-    els.langSelect.addEventListener('change', () => {
-      populateTours();
-      setLink('');
-      clearStatus();
-    });
-    els.tourSelect.addEventListener('change', () => {
-      updatePriceLine();
-      setLink('');
-      clearStatus();
-    });
-    els.tourDate.addEventListener('change', () => {
-      enforceMinDate();
-      setLink('');
-      clearStatus();
-    });
-    els.partySelect.addEventListener('change', () => {
-      setLink('');
-      clearStatus();
-    });
-
-    els.btnGenerate.addEventListener('click', () => {
-      const link = buildPayLink();
-      if (link){
-        setLink(link);
-        showStatus('Link generated.');
-      }
-    });
-    els.btnCopy.addEventListener('click', copyLink);
-    els.btnOpen.addEventListener('click', () => { if (lastLink) window.open(lastLink, '_blank', 'noopener'); });
-
-    enforceMinDate();
-    loadTours();
+      // Init
+      fillPartySizes();
+      setDateMin();
+      els.tourDate.addEventListener("blur", enforceDateRules);
+      loadTours();
+    })();
   </script>
 </body>
 </html>
