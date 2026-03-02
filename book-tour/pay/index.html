@@ -20,9 +20,44 @@
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
-
   <style>
     /* Page-local styles ONLY for the guest pay page */
+
+    /* HARDEN header shell for this page (guards against selector mismatches in header.css) */
+    #siteHeader{
+      display:flex;
+      justify-content:center;
+      margin-bottom: 14px;
+    }
+    #siteHeader > *{
+      width:100%;
+      max-width: 1120px;
+    }
+    #siteHeader .topbar,
+    #siteHeader header.topbar,
+    #siteHeader div.topbar{
+      width:100%;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+      padding: 10px 12px;
+      margin: 16px auto 0;
+    }
+    /* Desktop nowrap to prevent wrap/overlap */
+    @media (min-width: 901px){
+      #siteHeader .topbar .right,
+      #siteHeader .topbar nav.nav{
+        flex-wrap: nowrap !important;
+        min-width: 0 !important;
+      }
+      #siteHeader .topbar nav.nav{
+        padding-left: 8px;
+        overflow: hidden;
+      }
+      #siteHeader .topbar .lang{ flex: 0 0 auto; }
+    }
+
     .payPage { padding: 22px 22px 26px; }
     @media (max-width: 900px) { .payPage { padding: 18px 14px 20px; } }
 
@@ -236,10 +271,6 @@
     .statusError{
       color: #b42318;
     }
-
-    /* Spacing under injected header */
-    #siteHeader { margin-bottom: 14px; }
-    @media (max-width: 900px) { #siteHeader { margin-bottom: 12px; } }
   </style>
 </head>
 
