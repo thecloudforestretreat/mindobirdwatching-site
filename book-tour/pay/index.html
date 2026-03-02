@@ -636,7 +636,7 @@
       }
 
       async function fetchTours(lang){
-        var res = await fetch("/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
+        var res = await fetch("https://mindobirdwatching.com/api/tours?lang=" + encodeURIComponent(lang) + "&_=" + Date.now(), { method: "GET" });
         if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
         var data = await res.json();
         if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
@@ -818,6 +818,16 @@
         // Summary card
         els.tourCode.textContent = tour.tour_code;
         els.tourTitle.textContent = tour.tour_title || "Tour";
+
+        // Promo image
+        if (tour.hero_image_url){
+          els.tourHero.src = tour.hero_image_url;
+          els.tourHero.alt = "Promo image for " + (tour.tour_title || tour.tour_code);
+          els.tourHero.style.display = "block";
+        } else {
+          els.tourHero.removeAttribute("src");
+          els.tourHero.alt = "Promo image";
+        }
 
         var pickupWindow = String(tour.pickup_window_minutes || 15);
         var pickupTime = tour.pickup_time_local || "-";
