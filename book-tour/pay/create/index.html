@@ -15,6 +15,7 @@
 
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
 
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/includes.js" defer></script>
@@ -32,9 +33,9 @@
       font-weight: 700;
       letter-spacing: -0.02em;
       line-height: 1.05;
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       color: #0e4b2e;
-      font-size: clamp(30px, 3.2vw, 32px);
+      font-size: clamp(30px, 3.2vw, 32px) !important;
     }
     .payCreateHero p {
       margin: 0;
@@ -326,58 +327,73 @@
       async function loadTours() {
         try {
           setStatus("Loading tours...");
-          const res = await fetch("https://mindobirdwatching.com/api/tours", { credentials: "omit" });
+          const res = await fetch("/api/tours", {
+            credentials: "same-origin",
+            headers: { "Accept": "application/json" }
+          });
           if (!res.ok) throw new Error("Tours API HTTP " + res.status);
           const data = await res.json();
 
-          const tours = Array.isArray(data) ? data : (data && Array.isArray(data.tours) ? data.tours : []);
-          toursByCode = {};
+          const items = Array.isArray(data) ? data : (data && (data.tours || data.items || data.data)) ? (data.tours || data.items || data.data) : [];
+          const toursBy = {};
+          const list = [];
 
-          // Normalize list: prefer items with code/id and a name, and sort by code then name.
-          const normalized = tours
-            .map(function (t) {
-              const code = (t && (t.code || t.tour_code || t.id || t.slug)) ? String(t.code || t.tour_code || t.id || t.slug) : "";
-              const name = (t && (t.name || t.title || t.product_name)) ? String(t.name || t.title || t.product_name) : "";
-              const price = (t && (t.price_cents || t.price || t.unit_amount)) ? Number(t.price_cents || t.price || t.unit_amount) : null;
-              return { raw: t, code: code, name: name, price_cents: price };
-            })
-            .filter(function (t) { return !!t.code && !!t.name; })
-            .sort(function (a, b) {
-              const ac = a.code.toLowerCase();
-              const bc = b.code.toLowerCase();
-              if (ac < bc) return -1;
-              if (ac > bc) return 1;
-              const an = a.name.toLowerCase();
-              const bn = b.name.toLowerCase();
-              if (an < bn) return -1;
-              if (an > bn) return 1;
-              return 0;
-            });
-
-          // Fill select
-          while (els.tourSelect.options.length > 1) els.tourSelect.remove(1);
-
-          normalized.forEach(function (t) {
-            toursByCode[t.code] = t;
-            const opt = document.createElement("option");
-            const priceText = t.price_cents != null ? (" (" + formatPriceUSD(t.price_cents) + ")") : "";
-            opt.value = t.code;
-            opt.textContent = t.code + " - " + t.name + priceText;
-            els.tourSelect.appendChild(opt);
-          });
-
-          if (normalized.length) {
-            els.tourSelect.value = normalized[0].code;
-            updatePriceLabel();
-            setStatus("Tours loaded.");
-          } else {
-            setStatus("No tours returned from API.");
+          function str(v){ return (typeof v === "string") ? v.trim() : ""; }
+          function nameOf(t){
+            return str(t.name) || str(t.tour_name) || str(t.tourName) || str(t.title) || str(t.product_name) || str(t.productName) || str(t.display_name);
           }
-        } catch (e) {
-          setStatus("Tours failed to load.");
-          els.priceLabel.textContent = "Selected price: -";
-          // eslint-disable-next-line no-console
-          console.error(e);
+          function codeOf(t, name){
+            const candidates = [
+              t.code, t.tour_code, t.tourCode, t.sku, t.product_code, t.productCode, t.slug, t.id
+            ].map(str).filter(Boolean);
+
+            for (const c of candidates){
+              const mm = c.match(/MBW\d{3}/i);
+              if (mm) return mm[0].toUpperCase();
+            }
+            const mmn = str(name).match(/MBW\d{3}/i);
+            return mmn ? mmn[0].toUpperCase() : "";
+          }
+          function priceOf(t){
+            const raw = (t.price != null) ? t.price
+              : (t.price_usd != null) ? t.price_usd
+              : (t.priceUsd != null) ? t.priceUsd
+              : (t.amount != null) ? t.amount
+              : (t.unit_amount != null) ? t.unit_amount
+              : (t.unitAmount != null) ? t.unitAmount
+              : null;
+
+            const n = Number(raw);
+            if (!isFinite(n)) return null;
+            return (n >= 1000) ? (n / 100) : n;
+          }
+
+          for (const t of items){
+            if (!t || typeof t !== "object") continue;
+            const name = nameOf(t);
+            const code = codeOf(t, name);
+            if (!code || !name) continue;
+
+            if (!toursBy[code]){
+              toursBy[code] = { code, name, price: priceOf(t), raw: t };
+              list.push(toursBy[code]);
+            }
+          }
+
+          // Sort + populate
+          list.sort((a,b)=> (a.code.localeCompare(b.code) || a.name.localeCompare(b.name)));
+          toursByCode = toursBy;
+
+          populateTourSelect(list);
+
+          if (!list.length) {
+            setStatus("No tours returned from API.");
+          } else {
+            setStatus("");
+          }
+        } catch (err) {
+          console.error(err);
+          setStatus("Could not load tours. Check API and CORS.");
         }
       }
 
