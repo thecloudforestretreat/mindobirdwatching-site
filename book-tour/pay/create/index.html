@@ -1,221 +1,135 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Create a payment link | Mindo Bird Watching</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create Payment Link | Mindo Bird Watching</title>
 
-  <!-- Global site styles (match home page) -->
-  <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-<link rel="stylesheet" href="/assets/css/footer.css" />
+  <!-- Global site styles (absolute paths so nested routes work) -->
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/header.css">
+  <!-- NOTE: footer.css is currently serving text/html on this route (strict MIME blocks it).
+       We intentionally do NOT load it here. Footer styling falls back to site.css. -->
 
-  <!-- Global head helper (match home page) -->
-  <script src="/assets/js/head.js" defer></script>
+  <!-- Global head + includes + mobile menu behavior -->
+  <script defer src="/assets/js/head.js"></script>
+  <script defer src="/assets/js/includes.js"></script>
+  <script defer src="/assets/js/site.js"></script>
 
   <style>
-    /* Page specific styles only. Keep global header/footer untouched. */
-
-    .payCreateGrid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 18px;
-      align-items: start;
-    }
-
-    @media (max-width: 980px) {
-      .payCreateGrid { grid-template-columns: 1fr; }
-    }
-
-    .panelCard {
-      background: rgba(255, 255, 255, 0.45);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      backdrop-filter: blur(6px);
-    }
-
-    .panelCard h2 {
-      margin: 0 0 6px;
-      font-size: 18px;
-    }
-
-    .muted {
-      color: rgba(0, 0, 0, 0.62);
-      font-size: 13px;
-    }
-
-    .formRow { margin-top: 14px; }
-    .formRow label {
-      display: block;
-      font-weight: 800;
-      margin: 0 0 8px;
-    }
-
-    .req { color: #b11d1d; font-weight: 900; margin-left: 4px; }
-
-    select, input[type="date"], input[type="text"] {
+    /* Page-specific tweaks only (scoped) */
+    main.page.card.payCreate { border: 1px solid rgba(0,0,0,.08); }
+    .payCreate .layout { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; align-items: start; }
+    .payCreate .leftStack { display: grid; gap: 16px; }
+    .payCreate .rightStack { display: grid; gap: 16px; }
+    .payCreate .panel { border: 1px solid rgba(0,0,0,.08); border-radius: 18px; background: rgba(255,255,255,.35); padding: 18px; }
+    .payCreate .muted { opacity: .75; }
+    .payCreate label { display: block; font-weight: 800; font-size: 15px; margin: 0 0 8px; }
+    .payCreate .req { color: #b42318; font-weight: 900; margin-left: 4px; }
+    .payCreate .field { display: grid; gap: 10px; margin: 0 0 14px; }
+    .payCreate select, .payCreate input[type="date"] {
       width: 100%;
-      height: 46px;
+      height: 48px;
+      padding: 10px 14px;
       border-radius: 14px;
-      border: 1px solid rgba(0, 0, 0, 0.18);
-      padding: 0 14px;
-      background: rgba(255, 255, 255, 0.6);
-      font: inherit;
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.55);
+      font-size: 16px;
       outline: none;
     }
-
-    select:focus, input[type="date"]:focus, input[type="text"]:focus {
-      border-color: rgba(0, 0, 0, 0.35);
-      box-shadow: 0 0 0 4px rgba(3, 78, 162, 0.12);
-    }
-
-    .btnRow {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
-    .btn {
+    .payCreate select:focus, .payCreate input[type="date"]:focus { border-color: rgba(0,0,0,.35); box-shadow: 0 0 0 4px rgba(3,78,162,.12); }
+    .payCreate .help { font-size: 13px; opacity: .75; margin-top: -2px; }
+    .payCreate .btnRow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    .payCreate button {
+      height: 42px;
+      padding: 0 16px;
       border-radius: 999px;
-      padding: 10px 14px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
-      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.55);
       font-weight: 800;
       cursor: pointer;
     }
-
-    .btnPrimary {
-      background: #0b5f2a;
-      border-color: rgba(0, 0, 0, 0.2);
-      color: #fff;
-    }
-
-    .btn:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .linkBox {
-      margin-top: 10px;
-      padding: 12px 12px;
+    .payCreate button.primary { background: #0b5f2b; color: #fff; border-color: rgba(0,0,0,.12); }
+    .payCreate button:disabled { opacity: .45; cursor: not-allowed; }
+    .payCreate .statusOk { margin-top: 10px; font-weight: 800; color: #0b5f2b; }
+    .payCreate .statusErr { margin-top: 10px; font-weight: 800; color: #b42318; }
+    .payCreate .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; }
+    .payCreate .linkBox {
+      border: 1px dashed rgba(0,0,0,.25);
+      background: rgba(255,255,255,.35);
       border-radius: 14px;
-      border: 1px dashed rgba(0, 0, 0, 0.25);
-      background: rgba(255, 255, 255, 0.35);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 13px;
-      word-break: break-all;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
+      padding: 12px 14px;
+      overflow-wrap: anywhere;
     }
 
-    .statusOk {
-      margin-top: 10px;
-      color: #0b5f2a;
-      font-weight: 800;
-      font-size: 13px;
+    @media (max-width: 900px) {
+      .payCreate .layout { grid-template-columns: 1fr; }
+      .payCreate .panel { border-radius: 20px; }
     }
-
-    .statusErr {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(177, 29, 29, 0.10);
-      border: 1px solid rgba(177, 29, 29, 0.30);
-      color: #7f1616;
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    .priceLine { margin-top: 8px; }
-
-    /* Make native date input feel consistent across devices */
-    input[type="date"] {
-      appearance: none;
-      -webkit-appearance: none;
-    }
-
-    @media (max-width: 520px) {
-      .btnRow .btn { flex: 1 1 100%; }
-    }
-  
-
-  /* Match site card edge (home page) */
-  main.page.card {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-  }
-  
-</style>
+  </style>
 </head>
 
 <body>
   <div class="container">
     <div id="siteHeader"></div>
 
-    <main class="page card">
-      <h1>Create a payment link</h1>
-      <p class="muted">Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
+    <main class="page card payCreate">
+      <header>
+        <h1>Create a payment link</h1>
+        <p class="muted">Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
+      </header>
 
-      <div class="payCreateGrid">
-        <section class="panelCard" aria-label="Create payment link form">
-          <div class="muted">Required fields are marked with <span class="req">*</span>.</div>
+      <div class="layout" aria-label="Create payment link layout">
+        <section class="leftStack panel" aria-label="Create link form">
+          <div class="muted" style="font-size:13px;margin-bottom:6px;">Required fields are marked with <span class="req">*</span>.</div>
 
-          <div class="formRow">
+          <div class="field">
             <label for="tourSelect">Tour <span class="req">*</span></label>
-            <select id="tourSelect" aria-label="Select a tour">
-              <option value="" selected disabled>Loading tours...</option>
+            <select id="tourSelect" autocomplete="off">
+              <option value="" selected>Loading tours...</option>
             </select>
-            <div class="muted" style="margin-top:8px;">This list is Stripe-driven via the Tours API.</div>
-            <div id="priceLine" class="muted priceLine"></div>
+            <div class="help">This list is Stripe-driven via the Tours API.</div>
+            <div id="priceLine" class="help" style="display:none;"></div>
           </div>
 
-          <div class="formRow">
+          <div class="field">
             <label for="tourDate">Tour date <span class="req">*</span></label>
-            <input id="tourDate" type="date" inputmode="numeric" />
-            <div id="dateHelp" class="muted" style="margin-top:8px;">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
+            <input id="tourDate" type="date" inputmode="numeric" autocomplete="off">
+            <div id="dateHelp" class="help">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
           </div>
 
-          <div class="formRow">
+          <div class="field">
             <label for="partySelect">Number of people <span class="req">*</span></label>
-            <select id="partySelect" aria-label="Party size">
-              <option value="1">1</option>
-              <option value="2" selected>2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-            </select>
-            <div class="muted" style="margin-top:8px;">Must be 1 to 8.</div>
+            <select id="partySelect" autocomplete="off"></select>
+            <div class="help">Must be 1 to 8.</div>
           </div>
 
-          <div class="formRow">
+          <div class="field">
             <label for="langSelect">Language</label>
-            <select id="langSelect" aria-label="Language">
+            <select id="langSelect" autocomplete="off">
               <option value="en" selected>English</option>
               <option value="es">Espanol</option>
             </select>
-            <div class="muted" style="margin-top:8px;">Generates a link to the correct language pay page.</div>
+            <div class="help">Generates a link to the correct language pay page.</div>
           </div>
 
-          <div class="btnRow">
-            <button class="btn btnPrimary" id="btnGenerate" type="button">Generate link</button>
-            <button class="btn" id="btnCopy" type="button" disabled>Copy link</button>
-            <button class="btn" id="btnOpen" type="button" disabled>Open link</button>
+          <div class="btnRow" aria-label="Actions">
+            <button id="btnGenerate" class="primary" type="button">Generate link</button>
+            <button id="btnCopy" type="button" disabled>Copy link</button>
+            <button id="btnOpen" type="button" disabled>Open link</button>
           </div>
 
           <div id="status" class="statusOk" style="display:none;"></div>
           <div id="error" class="statusErr" style="display:none;"></div>
         </section>
 
-        <aside class="panelCard" aria-label="Generated payment link">
-          <h2>Payment link</h2>
-          <div id="linkBox" class="linkBox">Generate a link to display it here.</div>
-          <p class="muted" style="margin-top:10px;">The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link. On the pay page, the guest may increase party size, but cannot reduce it below the locked size.</p>
+        <aside class="rightStack panel" aria-label="Generated link panel">
+          <h2 style="margin:0 0 10px;">Payment link</h2>
+          <div id="linkBox" class="linkBox mono">Generate a link to display it here.</div>
+          <p class="help" style="margin-top:10px;">
+            The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
+            On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
+          </p>
         </aside>
       </div>
     </main>
@@ -223,13 +137,9 @@
     <div id="siteFooter"></div>
   </div>
 
-  <!-- Global include loader and menu behavior (match home page) -->
-  <script src="/assets/js/includes.js?v=1"></script>
-  <script src="/assets/js/site.js?v=1"></script>
-
   <script>
     (function () {
-      const tz = 'America/Guayaquil';
+      const TZ = 'America/Guayaquil';
       const TOURS_ENDPOINT = '/api/tours';
 
       const els = {
@@ -247,241 +157,181 @@
         dateHelp: document.getElementById('dateHelp')
       };
 
-      function showError(msg) {
-        els.error.textContent = msg;
-        els.error.style.display = 'block';
-        els.status.style.display = 'none';
+      const state = { tours: [], link: '' };
+
+      function show(el) { el.style.display = ''; }
+      function hide(el) { el.style.display = 'none'; }
+      function setText(el, t) { el.textContent = t; }
+
+      function isoTomorrowInTZ() {
+        // Build "tomorrow" in the target timezone, then output YYYY-MM-DD (for input[type=date]).
+        const now = new Date();
+        const parts = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+        const y = parts.find(p => p.type === 'year').value;
+        const m = parts.find(p => p.type === 'month').value;
+        const d = parts.find(p => p.type === 'day').value;
+        // Create an approximate UTC date for that local date, then add 1 day (safe for min constraint).
+        const localDate = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
+        localDate.setUTCDate(localDate.getUTCDate() + 1);
+        const y2 = localDate.getUTCFullYear();
+        const m2 = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+        const d2 = String(localDate.getUTCDate()).padStart(2, '0');
+        return `${y2}-${m2}-${d2}`;
       }
 
-      function showOk(msg) {
-        els.status.textContent = msg;
-        els.status.style.display = 'block';
-        els.error.style.display = 'none';
-      }
-
-      function hideStatus() {
-        els.status.style.display = 'none';
-        els.error.style.display = 'none';
-      }
-
-      function toISODate(d) {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return y + '-' + m + '-' + day;
-      }
-
-      // Get "today" in target TZ, then force min to tomorrow.
-      function computeMinDateISO() {
-        // Use Intl to get date parts in a specific timezone.
-        const parts = new Intl.DateTimeFormat('en-CA', {
-          timeZone: tz,
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        }).formatToParts(new Date());
-
-        const y = Number(parts.find(p => p.type === 'year').value);
-        const m = Number(parts.find(p => p.type === 'month').value);
-        const d = Number(parts.find(p => p.type === 'day').value);
-
-        // Construct a Date in local time from the TZ parts.
-        const todayLocal = new Date(y, m - 1, d);
-        const tomorrowLocal = new Date(todayLocal);
-        tomorrowLocal.setDate(tomorrowLocal.getDate() + 1);
-        return toISODate(tomorrowLocal);
-      }
-
-      function applyDateMin() {
-        const minISO = computeMinDateISO();
-        els.tourDate.min = minISO;
-
-        // If empty or invalid, set to min.
-        if (!els.tourDate.value || els.tourDate.value < minISO) {
-          els.tourDate.value = minISO;
+      function initPartySelect() {
+        els.partySelect.innerHTML = '';
+        for (let i = 1; i <= 8; i++) {
+          const opt = document.createElement('option');
+          opt.value = String(i);
+          opt.textContent = String(i);
+          if (i === 2) opt.selected = true;
+          els.partySelect.appendChild(opt);
         }
       }
 
-      function parseTours(json) {
-        if (!json || json.ok !== true) return [];
-        if (!Array.isArray(json.tours)) return [];
-        return json.tours;
-      }
+      function enforceDateMin() {
+        const min = isoTomorrowInTZ();
+        els.tourDate.min = min;
+        if (!els.tourDate.value) els.tourDate.value = min;
 
-      function renderTours(tours) {
-        els.tourSelect.innerHTML = '';
-
-        if (!tours.length) {
-          const opt = document.createElement('option');
-          opt.value = '';
-          opt.textContent = 'No tours available';
-          opt.disabled = true;
-          opt.selected = true;
-          els.tourSelect.appendChild(opt);
-          return;
-        }
-
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = 'Select a tour...';
-        placeholder.disabled = true;
-        placeholder.selected = true;
-        els.tourSelect.appendChild(placeholder);
-
-        tours.forEach(t => {
-          const code = t.tour_code || '';
-          const title = t.tour_title || code;
-          const price = t.amount_display ? ' (' + t.amount_display + ' per person)' : '';
-
-          const opt = document.createElement('option');
-          opt.value = code;
-          opt.textContent = code + ' - ' + title + price;
-          opt.dataset.amountDisplay = t.amount_display || '';
-          opt.dataset.title = title;
-          els.tourSelect.appendChild(opt);
+        els.tourDate.addEventListener('change', () => {
+          if (els.tourDate.value && els.tourDate.value < min) {
+            els.tourDate.value = min;
+            hide(els.status);
+            setText(els.error, `Date must be ${min} or later.`);
+            show(els.error);
+          } else {
+            hide(els.error);
+          }
         });
-
-        // Auto-select first tour if only one.
-        if (tours.length === 1) {
-          els.tourSelect.selectedIndex = 1;
-          updatePriceLine();
-        }
       }
 
-      function updatePriceLine() {
-        const opt = els.tourSelect.options[els.tourSelect.selectedIndex];
-        if (!opt || !opt.dataset) {
-          els.priceLine.textContent = '';
-          return;
-        }
-        const amt = opt.dataset.amountDisplay;
-        els.priceLine.textContent = amt ? ('Selected price: ' + amt + ' per person') : '';
+      function normalizeToursPayload(payload) {
+        const tours = (payload && payload.tours && Array.isArray(payload.tours)) ? payload.tours : [];
+        return tours.map(t => ({
+          tour_code: t.tour_code || '',
+          tour_title: t.tour_title || t.name || '',
+          amount_display: t.amount_display || '',
+          currency: t.currency || '',
+          language: t.language || 'en'
+        })).filter(t => t.tour_code);
       }
 
       async function loadTours() {
-        hideStatus();
-
         try {
+          hide(els.error);
+          setText(els.tourSelect, '');
+          els.tourSelect.innerHTML = '<option value="" selected>Loading tours...</option>';
+
           const res = await fetch(TOURS_ENDPOINT, { credentials: 'same-origin' });
-          if (!res.ok) throw new Error('HTTP ' + res.status);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-          const json = await res.json();
-          const tours = parseTours(json);
-          renderTours(tours);
+          const data = await res.json();
+          state.tours = normalizeToursPayload(data);
 
-          // If the API returns only one tour, that is server-side.
-          // The UI will display whatever the endpoint returns.
+          els.tourSelect.innerHTML = '<option value="" selected>Select a tour...</option>';
+
+          if (!state.tours.length) {
+            els.tourSelect.innerHTML = '<option value="" selected>No tours returned by API</option>';
+            throw new Error('No tours returned by API');
+          }
+
+          for (const t of state.tours) {
+            const opt = document.createElement('option');
+            opt.value = t.tour_code;
+            const price = t.amount_display ? ` (${t.amount_display} per person)` : '';
+            opt.textContent = `${t.tour_code} - ${t.tour_title}${price}`;
+            els.tourSelect.appendChild(opt);
+          }
+
+          // If API only returns a single tour, auto-select it for speed.
+          if (state.tours.length === 1) els.tourSelect.selectedIndex = 1;
+
+          els.tourSelect.addEventListener('change', () => {
+            const code = els.tourSelect.value;
+            const t = state.tours.find(x => x.tour_code === code);
+            if (t && t.amount_display) {
+              setText(els.priceLine, `Selected price: ${t.amount_display} per person`);
+              show(els.priceLine);
+            } else {
+              hide(els.priceLine);
+            }
+          });
+
+          // trigger initial price line if auto-selected
+          els.tourSelect.dispatchEvent(new Event('change'));
+
         } catch (e) {
-          els.tourSelect.innerHTML = '';
-          const opt = document.createElement('option');
-          opt.value = '';
-          opt.textContent = 'Unable to load tours';
-          opt.disabled = true;
-          opt.selected = true;
-          els.tourSelect.appendChild(opt);
-
-          showError('Tours did not load. ' + (e && e.message ? e.message : 'Unknown error'));
+          setText(els.error, `Tours did not load. ${e && e.message ? e.message : 'Unknown error.'}`);
+          show(els.error);
+          // Keep a usable fallback option
+          els.tourSelect.innerHTML = '<option value="" selected>Unable to load tours</option>';
         }
       }
 
       function buildPayUrl() {
         const tour = els.tourSelect.value;
-        const dateISO = els.tourDate.value;
+        const date = els.tourDate.value;
         const party = els.partySelect.value;
-        const lang = els.langSelect.value;
+        const lang = els.langSelect.value || 'en';
 
-        if (!tour) throw new Error('Please select a tour.');
-        if (!dateISO) throw new Error('Please choose a tour date.');
-        if (!party) throw new Error('Please choose party size.');
+        if (!tour) throw new Error('Select a tour.');
+        if (!date) throw new Error('Select a date.');
+        if (!party) throw new Error('Select party size.');
 
-        const minISO = els.tourDate.min;
-        if (minISO && dateISO < minISO) {
-          throw new Error('Tour date must be tomorrow or later (' + tz + ').');
-        }
-
-        const params = new URLSearchParams({
-          tour: tour,
-          date: dateISO,
-          party: party,
-          lang: lang
-        });
-
-        return window.location.origin + '/book-tour/pay/?' + params.toString();
+        const qs = new URLSearchParams({ tour: tour, date: date, party: party, lang: lang });
+        return `${location.origin}/book-tour/pay/?${qs.toString()}`;
       }
 
       function setLink(url) {
-        els.linkBox.textContent = url;
+        state.link = url;
+        setText(els.linkBox, url);
         els.btnCopy.disabled = false;
         els.btnOpen.disabled = false;
       }
 
-      async function copyLink() {
-        const url = els.linkBox.textContent.trim();
-        if (!url || url.indexOf('http') !== 0) return;
-
+      els.btnGenerate.addEventListener('click', () => {
         try {
-          await navigator.clipboard.writeText(url);
-          showOk('Link copied.');
+          hide(els.error);
+          const url = buildPayUrl();
+          setLink(url);
+          setText(els.status, 'Link generated.');
+          show(els.status);
         } catch (e) {
-          // Fallback copy
+          hide(els.status);
+          setText(els.error, e && e.message ? e.message : 'Unable to generate link.');
+          show(els.error);
+        }
+      });
+
+      els.btnCopy.addEventListener('click', async () => {
+        if (!state.link) return;
+        try {
+          await navigator.clipboard.writeText(state.link);
+          setText(els.status, 'Link copied.');
+          show(els.status);
+        } catch (_) {
+          // fallback
           const ta = document.createElement('textarea');
-          ta.value = url;
-          ta.style.position = 'fixed';
-          ta.style.left = '-9999px';
+          ta.value = state.link;
           document.body.appendChild(ta);
           ta.select();
           document.execCommand('copy');
-          document.body.removeChild(ta);
-          showOk('Link copied.');
+          ta.remove();
+          setText(els.status, 'Link copied.');
+          show(els.status);
         }
-      }
+      });
 
-      function openLink() {
-        const url = els.linkBox.textContent.trim();
-        if (!url || url.indexOf('http') !== 0) return;
-        window.open(url, '_blank', 'noopener');
-      }
+      els.btnOpen.addEventListener('click', () => {
+        if (!state.link) return;
+        window.open(state.link, '_blank', 'noopener');
+      });
 
-      function wire() {
-        applyDateMin();
-        loadTours();
-
-        els.tourSelect.addEventListener('change', function () {
-          updatePriceLine();
-          hideStatus();
-        });
-
-        els.tourDate.addEventListener('change', function () {
-          const minISO = els.tourDate.min;
-          if (minISO && els.tourDate.value && els.tourDate.value < minISO) {
-            els.tourDate.value = minISO;
-          }
-          hideStatus();
-        });
-
-        els.partySelect.addEventListener('change', hideStatus);
-        els.langSelect.addEventListener('change', hideStatus);
-
-        els.btnGenerate.addEventListener('click', function () {
-          hideStatus();
-          try {
-            const url = buildPayUrl();
-            setLink(url);
-            showOk('Link generated.');
-          } catch (e) {
-            showError(e && e.message ? e.message : 'Unable to generate link.');
-          }
-        });
-
-        els.btnCopy.addEventListener('click', copyLink);
-        els.btnOpen.addEventListener('click', openLink);
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', wire);
-      } else {
-        wire();
-      }
+      initPartySelect();
+      enforceDateMin();
+      loadTours();
     })();
   </script>
 </body>
