@@ -86,45 +86,58 @@
     .req { color: #b42318; font-weight: 800; }
 
     /* Controls */
-:root{
-  --mbw-control-h: 44px;
-  --mbw-control-radius: 14px;
-  --mbw-control-py: 10px;
-  --mbw-control-px: 14px;
-}
+    :root{
+      --mbw-control-h: 44px;
+      --mbw-control-radius: 14px;
+      --mbw-control-py: 10px;
+      --mbw-control-px: 14px;
+    }
 
-.payCreatePage .control{width:100%;appearance:none;-webkit-appearance:none;font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;min-height:44px;line-height:1.2;box-shadow:0 1px 0 rgba(0,0,0,.02) inset;}
+    .payCreatePage .control{
+      width:100%;
+      appearance:none;
+      -webkit-appearance:none;
+      font:inherit;
+      color:var(--ink);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 14px;
+      min-height:44px;
+      line-height:1.2;
+      box-shadow:0 1px 0 rgba(0,0,0,.02) inset;
+    }
 
-.payCreatePage select.control{
-  background-color:#fff;
-}
+    .payCreatePage select.control{
+      background-color:#fff;
+    }
 
-.payCreatePage .control:focus{
-  border-color: rgba(16, 185, 129, 0.55);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
-}
+    .payCreatePage .control:focus{
+      border-color: rgba(16, 185, 129, 0.55);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
+    }
 
-/* Date input: keep consistent height, avoid iOS overflow */
-.payCreatePage input[type="date"].control{
-  -webkit-appearance: none;
-  appearance: none;
-  background-color:#fff;
-  padding-right: 44px; /* room for calendar icon */
-}
+    /* Date input: keep consistent height, avoid iOS overflow */
+    .payCreatePage input[type="date"].control{
+      -webkit-appearance: none;
+      appearance: none;
+      background-color:#fff;
+      padding-right: 44px; /* room for calendar icon */
+    }
 
-/* Make the date value slightly larger, without changing the box size */
-.payCreatePage input[type="date"].dateBig{
-  font-size: 17px;
-  font-weight: 500;
-}
+    /* Make the date value slightly larger, without changing the box size */
+    .payCreatePage input[type="date"].dateBig{
+      font-size: 17px;
+      font-weight: 500;
+    }
 
-/* Prevent iOS zoom + keep text readable */
-@media (max-width: 900px){
-  .payCreatePage .control{ font-size: 16px; }
-  .payCreatePage input[type="date"].dateBig{ font-size: 17px; }
-}
+    /* Prevent iOS zoom + keep text readable */
+    @media (max-width: 900px){
+      .payCreatePage .control{ font-size: 16px; }
+      .payCreatePage input[type="date"].dateBig{ font-size: 17px; }
+    }
 
-.btn {
+    .btn {
       border-radius: 999px;
       border: 1px solid rgba(0,0,0,0.18);
       background: rgba(255,255,255,0.70);
@@ -185,11 +198,9 @@
     /* Ensure the tool does not visually "stick" to the header */
     #siteHeader { margin-bottom: 14px; }
     @media (max-width: 900px) { #siteHeader { margin-bottom: 12px; } }
-  
-  
 
-@media (min-width: 901px){.payCreateHero h1{font-size:32px !important;}}
-</style>
+    @media (min-width: 901px){ .payCreateHero h1{ font-size:32px !important; } }
+  </style>
 </head>
 
 <body>
@@ -290,7 +301,7 @@
       }
 
       function formatPriceUSD(amountCents) {
-        if (!amountCents && amountCents !== 0) return "-";
+        if (amountCents == null) return "-";
         const dollars = (amountCents / 100).toFixed(2);
         return "$" + dollars + " per person";
       }
@@ -311,6 +322,35 @@
         }
       }
 
+      function populateTourSelect(list) {
+        // reset dropdown
+        els.tourSelect.innerHTML = '<option value="">Select a tour...</option>';
+
+        for (const t of list) {
+          const opt = document.createElement("option");
+          opt.value = t.code;
+          opt.textContent = t.code + " - " + t.name;
+          els.tourSelect.appendChild(opt);
+        }
+
+        // auto-select if only one tour exists
+        if (list.length === 1) {
+          els.tourSelect.value = list[0].code;
+        }
+
+        updatePriceLabel();
+      }
+
+      function parseAmountDisplayToCents(s) {
+        // Accept "$99.00", "USD 99.00", "99", "99.0"
+        if (typeof s !== "string") return null;
+        const cleaned = s.replace(/[^0-9.]/g, "");
+        if (!cleaned) return null;
+        const n = Number(cleaned);
+        if (!isFinite(n)) return null;
+        return Math.round(n * 100);
+      }
+
       async function loadTours() {
         try {
           setStatus("Loading tours...");
@@ -321,14 +361,23 @@
           if (!res.ok) throw new Error("Tours API HTTP " + res.status);
           const data = await res.json();
 
-          const items = Array.isArray(data) ? data : (data && (data.tours || data.items || data.data)) ? (data.tours || data.items || data.data) : [];
+          // Accept: { ok:true, tours:[...] } OR { tours:[...] } OR bare array
+          const items = Array.isArray(data)
+            ? data
+            : (data && (data.tours || data.items || data.data))
+              ? (data.tours || data.items || data.data)
+              : [];
+
           const toursBy = {};
           const list = [];
 
           function str(v){ return (typeof v === "string") ? v.trim() : ""; }
+
           function nameOf(t){
-            return str(t.name) || str(t.tour_name) || str(t.tourName) || str(t.title) || str(t.product_name) || str(t.productName) || str(t.display_name);
+            // Your API uses "tour_title"
+            return str(t.tour_title) || str(t.name) || str(t.tour_name) || str(t.tourName) || str(t.title) || str(t.product_name) || str(t.productName) || str(t.display_name);
           }
+
           function codeOf(t, name){
             const candidates = [
               t.code, t.tour_code, t.tourCode, t.sku, t.product_code, t.productCode, t.slug, t.id
@@ -341,18 +390,34 @@
             const mmn = str(name).match(/MBW\d{3}/i);
             return mmn ? mmn[0].toUpperCase() : "";
           }
-          function priceOf(t){
-            const raw = (t.price != null) ? t.price
-              : (t.price_usd != null) ? t.price_usd
+
+          function priceCentsOf(t){
+            // Prefer numeric cents if you add it later
+            const candidates = [
+              t.amount_cents, t.amountCents, t.price_cents, t.priceCents, t.unit_amount, t.unitAmount
+            ];
+
+            for (const c of candidates) {
+              const n = Number(c);
+              if (isFinite(n) && n >= 0) return Math.round(n);
+            }
+
+            // Fall back to amount_display like "$99.00"
+            const p = parseAmountDisplayToCents(t.amount_display);
+            if (p != null) return p;
+
+            // Fall back to numeric dollars if present
+            const raw = (t.price_usd != null) ? t.price_usd
               : (t.priceUsd != null) ? t.priceUsd
               : (t.amount != null) ? t.amount
-              : (t.unit_amount != null) ? t.unit_amount
-              : (t.unitAmount != null) ? t.unitAmount
+              : (t.price != null) ? t.price
               : null;
 
             const n = Number(raw);
             if (!isFinite(n)) return null;
-            return (n >= 1000) ? (n / 100) : n;
+            // If it looks like dollars (e.g., 99.00), convert to cents.
+            // If it looks like cents (e.g., 9900), keep.
+            return (n >= 1000) ? Math.round(n) : Math.round(n * 100);
           }
 
           for (const t of items){
@@ -362,7 +427,7 @@
             if (!code || !name) continue;
 
             if (!toursBy[code]){
-              toursBy[code] = { code, name, price: priceOf(t), raw: t };
+              toursBy[code] = { code, name, price_cents: priceCentsOf(t), raw: t };
               list.push(toursBy[code]);
             }
           }
@@ -380,7 +445,7 @@
           }
         } catch (err) {
           console.error(err);
-          setStatus("Could not load tours. Check API and CORS.");
+          setStatus("Could not load tours. Open DevTools Console for details.");
         }
       }
 
@@ -389,6 +454,13 @@
         const t = toursByCode[code];
         const p = t && t.price_cents != null ? formatPriceUSD(t.price_cents) : "-";
         els.priceLabel.textContent = "Selected price: " + p;
+      }
+
+      function setLink(url) {
+        els.linkBox.textContent = url || "Generate a link to display it here.";
+        const has = !!url;
+        els.btnCopy.disabled = !has;
+        els.btnOpen.disabled = !has;
       }
 
       els.tourSelect.addEventListener("change", function () {
@@ -438,13 +510,6 @@
           "&party=" + party + "&lang=" + lang;
 
         return url;
-      }
-
-      function setLink(url) {
-        els.linkBox.textContent = url || "Generate a link to display it here.";
-        const has = !!url;
-        els.btnCopy.disabled = !has;
-        els.btnOpen.disabled = !has;
       }
 
       els.btnGenerate.addEventListener("click", function () {
