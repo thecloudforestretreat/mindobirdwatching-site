@@ -34,7 +34,7 @@
       line-height: 1.05;
       margin: 0 0 8px;
       color: #0e4b2e;
-      font-size: clamp(36px, 4.2vw, 56px);
+      font-size: clamp(30px, 3.2vw, 32px);
     }
     .payCreateHero p {
       margin: 0;
@@ -196,7 +196,49 @@
     /* Ensure the tool does not visually "stick" to the header */
     #siteHeader { margin-bottom: 14px; }
     @media (max-width: 900px) { #siteHeader { margin-bottom: 12px; } }
-  </style>
+  
+  /* Form controls - match site-wide look (compact, rounded, consistent) */
+  .payCreatePage .control{
+    width:100%;
+    box-sizing:border-box;
+    min-height:46px;
+    padding:10px 14px;
+    border-radius:16px;
+    border:1px solid rgba(0,0,0,.18);
+    background: rgba(255,255,255,.65);
+    color: var(--ink, #0b1f16);
+    font-family: inherit;
+    font-size:15px;
+    line-height:1.25;
+    outline:none;
+  }
+  .payCreatePage .control::placeholder{color: rgba(11,31,22,.45);}
+  .payCreatePage select.control{cursor:pointer;}
+  .payCreatePage .control:focus{
+    border-color: rgba(3,78,162,.35);
+    box-shadow: 0 0 0 3px rgba(3,78,162,.16);
+    background: rgba(255,255,255,.82);
+  }
+
+  /* Tour date - intentionally a touch larger than the other controls */
+  .payCreatePage input[type="date"].control.dateBig{
+    min-height:50px;
+    padding:12px 14px;
+    font-size:17px;
+    letter-spacing:.2px;
+  }
+
+  /* Prevent iOS date input from visually ballooning */
+  @supports (-webkit-touch-callout: none){
+    .payCreatePage input[type="date"].control{
+      font-size:16px;
+    }
+    .payCreatePage input[type="date"].control.dateBig{
+      font-size:17px;
+    }
+  }
+
+</style>
 </head>
 
 <body>
