@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="turnstile-sitekey" content="" />
   <title>Pay for a Tour | Mindo Bird Watching</title>
 
   <link rel="icon" href="/favicon.ico" />
@@ -275,10 +276,14 @@
       font-weight: 900;
       font-size: 13px;
     }
+    #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
+    #termsLink:hover{ text-decoration: none; }
+
     .statusError{
       color: #b42318;
     }
   </style>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
@@ -376,7 +381,7 @@
 
           <div class="field">
             <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name <span class="req">*</span></label>
-            <input id="pickupAddress" class="control" type="text" required />
+            <input id="pickupAddress" class="control" type="text" />
           </div>
 
           <div class="field">
@@ -384,9 +389,15 @@
             <textarea id="notes" class="control" rows="3"></textarea>
           </div>
 
+          <div class="field" id="turnstileWrap" style="margin-top:12px;display:none;">
+  <label id="tTurnstileLabel">Verification</label>
+  <div id="turnstileEl" class="cf-turnstile" data-sitekey=""></div>
+  <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
+</div>
+
           <div class="checkRow">
             <input id="agree" type="checkbox" />
-            <label for="agree" id="agreeLabel">I agree to the <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
+            <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
           </div>
 
           <div class="actions">
@@ -518,9 +529,11 @@
             notes: "Notes (optional)",
             payBtn: "Continue to Stripe",
             resetBtn: "Reset",
-            termsText: "I agree to the ",
+            termsText: "I agree to the",
             termsName: "Terms and Conditions",
-            termsUrl: "https://mindobirdwatching.com/terms-conditions/"
+            termsUrl: "https://mindobirdwatching.com/terms-conditions/",
+            turnstileLabel: "Verification",
+            turnstileHint: "Please verify before continuing."
           },
           es: {
             title: "Pagar un Tour",
@@ -538,13 +551,35 @@
             notes: "Notas (opcional)",
             payBtn: "Continuar a Stripe",
             resetBtn: "Reiniciar",
-            termsText: "Acepto los ",
+            termsText: "Acepto los",
             termsName: "Terminos y Condiciones",
-            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"
+            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/",
+            turnstileLabel: "Verificacion",
+            turnstileHint: "Por favor verifica antes de continuar."
           }
         };
 
         const L = I18N[p.lang] || I18N.en;
+        // Turnstile sitekey (optional). Set via <meta name="turnstile-sitekey" content="YOUR_SITE_KEY">
+        const siteKeyMeta = document.querySelector('meta[name="turnstile-sitekey"]');
+        const siteKey = (siteKeyMeta && siteKeyMeta.getAttribute("content")) ? siteKeyMeta.getAttribute("content").trim() : "";
+        const turnstileWrap = document.getElementById("turnstileWrap");
+        const turnstileEl = document.getElementById("turnstileEl");
+        let turnstileWidgetId = null;
+
+        if (turnstileEl){
+          if (siteKey){
+            turnstileEl.setAttribute("data-sitekey", siteKey);
+            if (turnstileWrap) turnstileWrap.style.display = "block";
+            // widget renders automatically via api.js
+            // we can grab the response later via turnstile.getResponse()
+          } else {
+            // If no sitekey configured, hide the widget and skip token
+            if (turnstileWrap) turnstileWrap.style.display = "none";
+          }
+        }
+
+
 
         const tTitle = document.getElementById("tTitle");
         const tSubtitle = document.getElementById("tSubtitle");
@@ -575,6 +610,11 @@
         setLabel("tPickupLabel", L.pickupLabel);
         setLabel("tPickupAddrLabel", L.pickupAddr);
 
+        const tTurnstileLabel = document.getElementById("tTurnstileLabel");
+        const tTurnstileHint = document.getElementById("tTurnstileHint");
+        if (tTurnstileLabel) tTurnstileLabel.textContent = L.turnstileLabel;
+        if (tTurnstileHint) tTurnstileHint.textContent = L.turnstileHint;
+
         const notesLabel = document.getElementById("tNotesLabel");
         if (notesLabel) notesLabel.textContent = L.notes;
 
@@ -584,13 +624,11 @@
         const tResetBtn = document.getElementById("tResetBtn");
         if (tResetBtn) tResetBtn.textContent = L.resetBtn;
 
-        const agreeLabel = document.getElementById("agreeLabel");
-        if (agreeLabel) {
-          agreeLabel.innerHTML = L.termsText + '<a id="termsLink" href="' + L.termsUrl + '" target="_blank" rel="noopener">' + L.termsName + '</a> <span class="req">*</span>';
-        }
-
-
-        if (!p.tour){
+        const agreePrefix = document.getElementById("tAgreePrefix");
+        const termsLink = document.getElementById("termsLink");
+        if (agreePrefix) agreePrefix.textContent = L.termsText;
+        if (termsLink){ termsLink.href = L.termsUrl; termsLink.textContent = L.termsName; }
+if (!p.tour){
           setStatus("Missing tour code in the link.", true);
           els.btnPay.disabled = true;
           return;
