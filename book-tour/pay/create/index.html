@@ -84,58 +84,59 @@
     }
     .req { color: #b42318; font-weight: 800; }
 
-    /* Match the site's "pill" form look */
-    .control,
-    select.control,
-    input.control {
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid rgba(0,0,0,0.20);
-      background: rgba(255,255,255,0.70);
-      color: rgba(0,0,0,0.86);
-      border-radius: 14px;
-      padding: 14px 14px;
-      min-height: 52px;
-      font-size: 16px;
-      line-height: 1.2;
-      font-family: inherit;
-      outline: none;
-    }
-    .control:focus {
-      border-color: rgba(3,78,162,0.70);
-      box-shadow: 0 0 0 3px rgba(3,78,162,0.12);
-      background: rgba(255,255,255,0.85);
-    }
-    select.control { padding-right: 42px; }
+    /* Controls */
+:root{
+  --mbw-control-h: 44px;
+  --mbw-control-radius: 14px;
+  --mbw-control-py: 10px;
+  --mbw-control-px: 14px;
+}
 
-    /* Date input: slightly larger than other controls, consistent on desktop and mobile */
-    input.control.dateBig {
-      min-height: 58px;
-      font-size: 18px;
-      padding: 16px 14px;
-    }
-    @media (max-width: 900px) {
-      input.control.dateBig {
-        min-height: 60px;
-        font-size: 18px;
-      }
-    }
+.payCreatePage .control{
+  width:100%;
+  min-height: var(--mbw-control-h);
+  padding: var(--mbw-control-py) var(--mbw-control-px);
+  border: 1px solid rgba(15, 23, 42, 0.22);
+  border-radius: var(--mbw-control-radius);
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.25;
+  outline: none;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+}
 
-    .subtext {
-      margin-top: 8px;
-      color: rgba(0,0,0,0.55);
-      font-size: 12.5px;
-      line-height: 1.35;
-    }
+.payCreatePage select.control{
+  background-color:#fff;
+}
 
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
+.payCreatePage .control:focus{
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
+}
 
-    .btn {
+/* Date input: keep consistent height, avoid iOS overflow */
+.payCreatePage input[type="date"].control{
+  -webkit-appearance: none;
+  appearance: none;
+  background-color:#fff;
+  padding-right: 44px; /* room for calendar icon */
+}
+
+/* Make the date value slightly larger, without changing the box size */
+.payCreatePage input[type="date"].dateBig{
+  font-size: 17px;
+  font-weight: 500;
+}
+
+/* Prevent iOS zoom + keep text readable */
+@media (max-width: 900px){
+  .payCreatePage .control{ font-size: 16px; }
+  .payCreatePage input[type="date"].dateBig{ font-size: 17px; }
+}
+
+.btn {
       border-radius: 999px;
       border: 1px solid rgba(0,0,0,0.18);
       background: rgba(255,255,255,0.70);
@@ -197,47 +198,9 @@
     #siteHeader { margin-bottom: 14px; }
     @media (max-width: 900px) { #siteHeader { margin-bottom: 12px; } }
   
-  /* Form controls - match site-wide look (compact, rounded, consistent) */
-  .payCreatePage .control{
-    width:100%;
-    box-sizing:border-box;
-    min-height:46px;
-    padding:10px 14px;
-    border-radius:16px;
-    border:1px solid rgba(0,0,0,.18);
-    background: rgba(255,255,255,.65);
-    color: var(--ink, #0b1f16);
-    font-family: inherit;
-    font-size:15px;
-    line-height:1.25;
-    outline:none;
-  }
-  .payCreatePage .control::placeholder{color: rgba(11,31,22,.45);}
-  .payCreatePage select.control{cursor:pointer;}
-  .payCreatePage .control:focus{
-    border-color: rgba(3,78,162,.35);
-    box-shadow: 0 0 0 3px rgba(3,78,162,.16);
-    background: rgba(255,255,255,.82);
-  }
+  
 
-  /* Tour date - intentionally a touch larger than the other controls */
-  .payCreatePage input[type="date"].control.dateBig{
-    min-height:50px;
-    padding:12px 14px;
-    font-size:17px;
-    letter-spacing:.2px;
-  }
-
-  /* Prevent iOS date input from visually ballooning */
-  @supports (-webkit-touch-callout: none){
-    .payCreatePage input[type="date"].control{
-      font-size:16px;
-    }
-    .payCreatePage input[type="date"].control.dateBig{
-      font-size:17px;
-    }
-  }
-
+@media (min-width: 901px){.payCreateHero h1{font-size:32px !important;} }
 </style>
 </head>
 
