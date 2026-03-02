@@ -187,7 +187,21 @@
       padding: 10px 12px;
       border-radius: 14px;
     }
-  </style>
+
+    /* Form control consistency (esp. iOS date inputs) */
+    .field input,
+    .field select{
+      text-align: left;
+    }
+    input[type="date"]{
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+    }
+    input[type="date"]::-webkit-date-and-time-value{
+      text-align: left;
+    }
+
+</style>
 </head>
 
 <body>
@@ -417,7 +431,7 @@
         allTours = toursArray;
 
         populateTours();
-        showStatus('Tours loaded.');
+        showStatus('');
       }catch(err){
         allTours = [];
         els.tourSelect.innerHTML = '<option value="">Unable to load tours</option>';
