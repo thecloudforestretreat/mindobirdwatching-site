@@ -18,7 +18,27 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
 
-  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/head.js" defer>
+    // Turnstile globals (explicit render)
+    let TURNSTILE_WIDGET_ID = null;
+    function onTurnstileLoad(){
+      try{
+        const meta = document.querySelector('meta[name="turnstile-sitekey"]');
+        const siteKey = meta ? (meta.getAttribute("content") || "").trim() : "";
+        const el = document.getElementById("turnstileEl");
+        const wrap = document.getElementById("turnstileWrap");
+        if (!siteKey || !el || !window.turnstile){
+          if (wrap) wrap.style.display = "none";
+          return;
+        }
+        if (wrap) wrap.style.display = "block";
+        TURNSTILE_WIDGET_ID = window.turnstile.render(el, { sitekey: siteKey });
+      }catch(e){
+        console.log("Turnstile render failed", e);
+      }
+    }
+
+</script>
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
   <style>
@@ -283,7 +303,7 @@
       color: #b42318;
     }
   </style>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>
 </head>
 
 <body>
@@ -391,7 +411,7 @@
 
           <div class="field" id="turnstileWrap" style="margin-top:12px;">
   <label id="tTurnstileLabel">Verification</label>
-  <div id="turnstileEl" class="cf-turnstile" data-sitekey=""></div>
+  <div id="turnstileEl" style="min-height:65px;"></div>
   <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
 </div>
 
@@ -507,6 +527,31 @@
         if (!d) return "-";
         return d;
       }
+
+      function capWordsPreserve(s){
+        const parts = String(s || "").split(/(\s+)/);
+        return parts.map(p => {
+          if (/^\s+$/.test(p)) return p;
+          if (!p) return p;
+          return p.charAt(0).toUpperCase() + p.slice(1);
+        }).join("");
+      }
+
+      function attachAutoCapInput(el){
+        if (!el) return;
+        const apply = () => {
+          const v = capWordsPreserve(el.value);
+          if (v !== el.value) el.value = v;
+        };
+        el.addEventListener("blur", apply);
+        el.addEventListener("change", apply);
+        el.addEventListener("input", () => {
+          const val = el.value || "";
+          if (!val) return;
+          if (val.charAt(val.length - 1) === " ") apply();
+        });
+      }
+
 
       async function init(){
         setStatus("");
