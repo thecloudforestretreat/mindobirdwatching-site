@@ -217,6 +217,13 @@
     }
     @media (max-width: 520px){ .twoCol { grid-template-columns: 1fr; } }
 
+    .twoCol .field{ margin-top: 0; }
+    .twoCol label{ min-height: 18px; }
+    .control{ box-sizing: border-box; }
+    input.control{ height: 44px; }
+    select.control{ height: 44px; }
+    textarea.control{ height: auto; }
+
     .actions{
       margin-top: 14px;
       display: flex;
@@ -280,9 +287,8 @@
 
     <main class="page card payPage">
       <header class="payHero">
-        <h1>Pay for a Tour</h1>
-        <p>
-          Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.
+        <h1 id="tTitle">Pay for a Tour</h1>
+        <p id="tSubtitle">Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.
         </p>
 
         <div class="pillRow" aria-label="Key details">
@@ -311,7 +317,8 @@
         </aside>
 
         <div class="panel" aria-label="Checkout form">
-          <p class="hint">Required fields are marked with <span class="req">*</span>.</p>
+          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:\"Playfair Display\",serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
+          <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
 
           <div class="hint" id="lockedHint"></div>
 
@@ -328,65 +335,63 @@
           </div>
 
           <div class="field">
-            <label for="partyInput">Number of people <span class="req">*</span></label>
+            <label for="partyInput" id="tPartyLabel">Number of people <span class="req">*</span></label>
             <select id="partyInput" class="control" required></select>
             <div class="subtext" id="partyHelp"></div>
           </div>
 
           <div class="twoCol">
             <div class="field">
-              <label for="firstName">Main contact first name <span class="req">*</span></label>
-              <input id="firstName" class="control" type="text" autocomplete="given-name" required />
+              <label for="firstName" id="tFirstLabel">Main contact first name <span class="req">*</span></label>
+              <input id="firstName" class="control" type="text" autocomplete="given-name" autocapitalize="words" required />
             </div>
             <div class="field">
-              <label for="lastName">Main contact last name <span class="req">*</span></label>
-              <input id="lastName" class="control" type="text" autocomplete="family-name" required />
+              <label for="lastName" id="tLastLabel">Main contact last name <span class="req">*</span></label>
+              <input id="lastName" class="control" type="text" autocomplete="family-name" autocapitalize="words" required />
             </div>
           </div>
 
           <div class="twoCol">
             <div class="field">
-              <label for="email">Email <span class="req">*</span></label>
+              <label for="email" id="tEmailLabel">Email <span class="req">*</span></label>
               <input id="email" class="control" type="email" autocomplete="email" required />
             </div>
             <div class="field">
-              <label for="phone">Phone <span class="req">*</span></label>
+              <label for="phone" id="tPhoneLabel">Phone <span class="req">*</span></label>
               <input id="phone" class="control" type="tel" autocomplete="tel" required />
             </div>
           </div>
 
           <div class="field">
-            <label for="whatsapp">WhatsApp number <span class="req">*</span></label>
+            <label for="whatsapp" id="tWhatsLabel">WhatsApp number <span class="req">*</span></label>
             <input id="whatsapp" class="control" type="tel" autocomplete="tel" required />
             <div class="subtext">Include country code if possible.</div>
           </div>
 
           <div class="field">
-            <label for="pickupLabel">Pickup location label <span class="req">*</span></label>
+            <label for="pickupLabel" id="tPickupLabel">Pickup location label <span class="req">*</span></label>
             <input id="pickupLabel" class="control" type="text" required />
             <div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
           </div>
 
           <div class="field">
-            <label for="pickupAddress">Pickup address or hotel name <span class="req">*</span></label>
+            <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name <span class="req">*</span></label>
             <input id="pickupAddress" class="control" type="text" required />
           </div>
 
           <div class="field">
-            <label for="notes">Notes (optional)</label>
+            <label for="notes" id="tNotesLabel">Notes (optional)</label>
             <textarea id="notes" class="control" rows="3"></textarea>
           </div>
 
           <div class="checkRow">
             <input id="agree" type="checkbox" />
-            <label for="agree">
-              I agree to the Terms and Conditions <span class="req">*</span>
-            </label>
+            <label for="agree" id="agreeLabel">I agree to the <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
           </div>
 
           <div class="actions">
-            <button id="btnPay" class="btn btnPrimary" type="button">Continue to Stripe</button>
-            <button id="btnReset" class="btn" type="button">Reset</button>
+            <button id="btnPay" class="btn btnPrimary" type="button"><span id="tPayBtn">Continue to Stripe</span></button>
+            <button id="btnReset" class="btn" type="button"><span id="tResetBtn">Reset</span></button>
           </div>
 
           <div id="status" class="status" aria-live="polite"></div>
@@ -496,6 +501,94 @@
         setStatus("");
 
         const p = qp();
+        const I18N = {
+          en: {
+            title: "Pay for a Tour",
+            subtitle: "Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.",
+            checkoutTitle: "Checkout details",
+            requiredHint: "Required fields are marked with ",
+            partyLabel: "Number of people",
+            first: "Main contact first name",
+            last: "Main contact last name",
+            email: "Email",
+            phone: "Phone",
+            whatsapp: "WhatsApp number",
+            pickupLabel: "Pickup location label",
+            pickupAddr: "Pickup address or hotel name",
+            notes: "Notes (optional)",
+            payBtn: "Continue to Stripe",
+            resetBtn: "Reset",
+            termsText: "I agree to the ",
+            termsName: "Terms and Conditions",
+            termsUrl: "https://mindobirdwatching.com/terms-conditions/"
+          },
+          es: {
+            title: "Pagar un Tour",
+            subtitle: "Completa el pago de forma segura con Stripe. Tu tour, fecha y tamano minimo del grupo vienen preconfirmados desde el enlace que recibiste.",
+            checkoutTitle: "Detalles de pago",
+            requiredHint: "Los campos obligatorios estan marcados con ",
+            partyLabel: "Numero de personas",
+            first: "Nombre del contacto principal",
+            last: "Apellido del contacto principal",
+            email: "Correo",
+            phone: "Telefono",
+            whatsapp: "Numero de WhatsApp",
+            pickupLabel: "Etiqueta del lugar de recogida",
+            pickupAddr: "Direccion o nombre del hotel",
+            notes: "Notas (opcional)",
+            payBtn: "Continuar a Stripe",
+            resetBtn: "Reiniciar",
+            termsText: "Acepto los ",
+            termsName: "Terminos y Condiciones",
+            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"
+          }
+        };
+
+        const L = I18N[p.lang] || I18N.en;
+
+        const tTitle = document.getElementById("tTitle");
+        const tSubtitle = document.getElementById("tSubtitle");
+        const tCheckoutTitle = document.getElementById("tCheckoutTitle");
+        const tRequiredHint = document.getElementById("tRequiredHint");
+
+        if (tTitle) tTitle.textContent = L.title;
+        if (tSubtitle) tSubtitle.textContent = L.subtitle;
+        if (tCheckoutTitle) tCheckoutTitle.textContent = L.checkoutTitle;
+
+        if (tRequiredHint){
+          tRequiredHint.innerHTML = L.requiredHint + '<span class="req">*</span>.';
+        }
+
+        const setLabel = (id, txt) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const hasReq = el.innerHTML.indexOf('class="req"') !== -1;
+          el.innerHTML = txt + (hasReq ? ' <span class="req">*</span>' : "");
+        };
+
+        setLabel("tPartyLabel", L.partyLabel);
+        setLabel("tFirstLabel", L.first);
+        setLabel("tLastLabel", L.last);
+        setLabel("tEmailLabel", L.email);
+        setLabel("tPhoneLabel", L.phone);
+        setLabel("tWhatsLabel", L.whatsapp);
+        setLabel("tPickupLabel", L.pickupLabel);
+        setLabel("tPickupAddrLabel", L.pickupAddr);
+
+        const notesLabel = document.getElementById("tNotesLabel");
+        if (notesLabel) notesLabel.textContent = L.notes;
+
+        const tPayBtn = document.getElementById("tPayBtn");
+        if (tPayBtn) tPayBtn.textContent = L.payBtn;
+
+        const tResetBtn = document.getElementById("tResetBtn");
+        if (tResetBtn) tResetBtn.textContent = L.resetBtn;
+
+        const agreeLabel = document.getElementById("agreeLabel");
+        if (agreeLabel) {
+          agreeLabel.innerHTML = L.termsText + '<a id="termsLink" href="' + L.termsUrl + '" target="_blank" rel="noopener">' + L.termsName + '</a> <span class="req">*</span>';
+        }
+
 
         if (!p.tour){
           setStatus("Missing tour code in the link.", true);
