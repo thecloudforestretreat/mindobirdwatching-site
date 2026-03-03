@@ -1,623 +1,339 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment success | Mindo Bird Watching</title>
 
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Payment Success | Mindo Bird Watching</title>
-<link href="/favicon.ico" rel="icon"/>
-<link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
-<link href="/site.webmanifest" rel="manifest"/>
-<link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/header.css?v=20251231-final" rel="stylesheet"/>
-<link href="/assets/css/footer.css" rel="stylesheet"/>
-<script defer="" src="/assets/js/head.js"></script>
-<script defer="" src="/assets/js/includes.js"></script>
-<script defer="" src="/assets/js/site.js"></script>
-<style>
-    /* Page-local styles ONLY for the payment success page.
-       Keep header/footer untouched by scoping to .successPage. */
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
 
-    /* Match other pages: centered injected header shell */
-    #siteHeader{
-      display:flex;
-      justify-content:center;
-      margin-bottom:14px;
-    }
-    #siteHeader > *{
-      width:100%;
-      max-width:1120px;
-    }
-    #siteHeader .topbar,
-    #siteHeader header.topbar,
-    #siteHeader div.topbar{
-      width:100%;
-      border-radius:22px;
-      background:rgba(255,255,255,0.55);
-      border:1px solid rgba(0,0,0,0.10);
-      box-shadow:0 18px 40px rgba(0,0,0,0.10);
-      padding:10px 12px;
-      margin:16px auto 0;
-    }
-    @media (min-width:901px){
-      #siteHeader .topbar .right,
-      #siteHeader .topbar nav.nav{
-        flex-wrap:nowrap !important;
-        min-width:0 !important;
-      }
-      #siteHeader .topbar nav.nav{
-        padding-left:8px;
-        overflow:hidden;
-      }
-      #siteHeader .topbar .lang{ flex:0 0 auto; }
-    }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
 
-    main.successPage{
-      --bg:#cfe2b7;
-      --card:#f3f6ef;
-      --ink:#173425;
-      --muted:#55655d;
-      --line:rgba(0,0,0,0.08);
-      --shadow:0 16px 40px rgba(0,0,0,0.10);
-      --shadowSoft:0 10px 28px rgba(0,0,0,0.08);
-      --radius:22px;
-      --radius2:18px;
-      --green:#0e5c34;
-      color:var(--ink);
-    }
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
 
-    body{ background:var(--bg); }
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/includes.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
 
-    main.successPage .sp-pageShell{
-      max-width:1140px;
-      margin:26px auto 60px;
-      padding:0 16px;
-    }
+  <style>
+    /* Page-local styles only. Match the internal tool shell + button system used on /book-tour/create/. */
+    .paySuccessPage { padding: 22px 22px 26px; }
+    @media (max-width: 900px){ .paySuccessPage { padding: 18px 14px 20px; } }
 
-    main.successPage .sp-shellCard{
-      background:linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.70));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:26px;
-      overflow:hidden;
-    }
-
-    main.successPage .sp-shellHead{
+    .paySuccessHero{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:16px;
-      margin-bottom:18px;
+      gap:14px;
+      margin:0 0 14px;
     }
-
-    main.successPage .sp-title{
-      margin:0;
+    .paySuccessHero h1{
       font-family:"Playfair Display", serif;
       font-weight:700;
-      font-size:44px;
-      line-height:1.05;
       letter-spacing:-0.02em;
-      color:#154528;
+      line-height:1.05;
+      margin:0 0 6px;
+      color:#0e4b2e;
+      font-size:clamp(30px, 3.2vw, 32px) !important;
     }
-
-    main.successPage .sp-subtitle{
-      margin:8px 0 0;
-      color:var(--muted);
-      font-size:15px;
-      max-width:64ch;
+    .paySuccessHero p{
+      margin:0;
+      max-width:78ch;
+      color:rgba(0,0,0,0.62);
+      font-size:16px;
       line-height:1.55;
     }
 
-    main.successPage .sp-badge{
+    .badge{
       display:inline-flex;
       align-items:center;
       gap:10px;
-      padding:10px 12px;
+      padding:10px 14px;
       border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,0.80);
-      box-shadow:var(--shadowSoft);
+      border:1px solid rgba(0,0,0,0.10);
+      background:rgba(255,255,255,0.70);
+      box-shadow:0 10px 24px rgba(0,0,0,0.10);
       font-weight:800;
-      color:#2a3b33;
+      font-size:13px;
+      color:rgba(0,0,0,0.78);
       white-space:nowrap;
-      margin-top:6px;
+      margin-top:2px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background:#0b5a33;
+      box-shadow:0 0 0 3px rgba(11,90,51,0.18);
     }
 
-    main.successPage .sp-dot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      background:var(--green);
-      box-shadow:0 0 0 4px rgba(14,92,52,0.12);
-    }
-
-    main.successPage .sp-grid{
+    .paySuccessGrid{
+      margin-top:14px;
       display:grid;
-      grid-template-columns:1.2fr 0.9fr;
-      gap:16px;
-      align-items:start;
-      margin-top:16px;
+      grid-template-columns:1.15fr 0.85fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .paySuccessHero{ flex-direction:column; align-items:flex-start; }
+      .badge{ margin-top:0; }
+      .paySuccessGrid{ grid-template-columns:1fr; }
     }
 
-    main.successPage .sp-panel{
-      background:rgba(255,255,255,0.82);
-      border:1px solid var(--line);
-      border-radius:var(--radius2);
-      box-shadow:var(--shadowSoft);
+    .panel{
+      background:rgba(255,255,255,0.45);
+      border:1px solid rgba(0,0,0,0.10);
+      border-radius:18px;
+      box-shadow:0 18px 40px rgba(0,0,0,0.10);
       padding:18px;
     }
+    @media (max-width: 900px){ .panel{ padding:16px; } }
 
-    main.successPage .sp-panel h3{
+    .panelTitle{
+      font-family:"Playfair Display", serif;
+      font-weight:700;
+      color:#0e4b2e;
+      font-size:18px;
       margin:0 0 10px;
-      font-size:16px;
-      color:#154528;
     }
 
-    main.successPage .sp-summaryTable{
+    .summaryTable{
       width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      border:1px solid var(--line);
+      border:1px solid rgba(0,0,0,0.10);
+      background:rgba(255,255,255,0.60);
       border-radius:14px;
-      background:rgba(255,255,255,0.72);
       overflow:hidden;
     }
-
-    main.successPage .sp-summaryTable td{
-      padding:12px 14px;
-      border-top:1px solid var(--line);
-      font-size:14px;
-      color:#21352a;
-    }
-
-    main.successPage .sp-summaryTable tr:first-child td{ border-top:none; }
-    main.successPage .sp-summaryTable td:first-child{ width:42%; color:#5b6b63; }
-    main.successPage .sp-summaryTable td:last-child{ text-align:right; font-weight:800; }
-
-    main.successPage .sp-hint{
-      margin:12px 0 0;
-      color:#5b6b63;
-      font-size:13px;
-      line-height:1.4;
-    }
-
-    /* Primary action buttons (4) */
-    main.successPage .sp-actions{
+    .summaryRow{
       display:grid;
-      grid-template-columns:repeat(4, minmax(0, 1fr));
-      gap:12px;
-      margin-top:14px;
+      grid-template-columns: 1fr 1.4fr;
+      gap:10px;
+      padding:10px 12px;
+      border-top:1px solid rgba(0,0,0,0.08);
+      font-size:13px;
+      line-height:1.35;
+      color:rgba(0,0,0,0.78);
+    }
+    .summaryRow:first-child{ border-top:0; }
+    .summaryKey{ color:rgba(0,0,0,0.58); }
+    .summaryVal{ text-align:right; font-weight:700; color:rgba(0,0,0,0.86); }
+
+    .subtext{
+      margin:10px 0 0;
+      color:rgba(0,0,0,0.55);
+      font-size:13px;
+      line-height:1.45;
     }
 
-    /* Button base */
-    main.successPage .sp-btn,
-    main.successPage .sp-chip{
-      width:100%;
-      min-height:46px;
+    .btnRow{
+      margin-top:14px;
       display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    /* Approved pill buttons (copied from /book-tour/create/) */
+    .btn{
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,0.18);
+      background:rgba(255,255,255,0.70);
+      color:rgba(0,0,0,0.86);
+      padding:10px 14px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+      text-decoration:none;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      text-align:center;
-      line-height:1.15;
-      padding:12px 14px;
-      box-sizing:border-box;
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,0.08);
-      background:#fff;
-      color:#233;
-      box-shadow:0 6px 18px rgba(0,0,0,0.06);
-      font-weight:800;
-      text-decoration:none;
-      white-space:normal;
+      line-height:1;
+    }
+    .btnPrimary{
+      background:#0b5a33;
+      border-color:rgba(0,0,0,0.10);
+      color:#ffffff;
+      padding:10px 16px;
     }
 
-    main.successPage .sp-btnPrimary{
-      background:linear-gradient(135deg, #0e5c34, #0a3e23);
-      color:#fff;
-      border-color:transparent;
+    .leftCol{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:18px;
+      align-content:start;
     }
 
-    main.successPage .sp-btn:hover,
-    main.successPage .sp-chip:hover{
-      transform:translateY(-1px);
+    .twoCards{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .twoCards{ grid-template-columns:1fr; }
     }
 
-    main.successPage .sp-btnPrimary:hover{ filter:brightness(1.03); }
-
-    main.successPage .sp-nextList{
-      margin:10px 0 0;
+    .list{
+      margin:0;
       padding-left:18px;
-      color:#33443d;
-      font-size:14px;
-      line-height:1.55;
-    }
-
-    main.successPage .sp-terms{
-      margin-top:10px;
+      color:rgba(0,0,0,0.70);
       font-size:13px;
-      color:#5b6b63;
+      line-height:1.55;
     }
+    .list li{ margin:6px 0; }
 
-    main.successPage .sp-terms a{
-      color:#0e5c34;
-      font-weight:900;
+    .termsLink{
+      color:#0b5a33;
+      font-weight:800;
       text-decoration:underline;
-      text-underline-offset:3px;
     }
 
-    /* Lower 3 cards */
-    main.successPage .sp-lower{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:14px;
-      margin-top:14px;
+    .rightImageWrap{
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,0.10);
+      box-shadow:0 18px 40px rgba(0,0,0,0.10);
+      background:rgba(255,255,255,0.35);
+      min-height: 520px;
+    }
+    @media (max-width: 900px){
+      .rightImageWrap{ min-height: 260px; }
+    }
+    .rightImageWrap img{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:cover;
     }
 
-    main.successPage .sp-card{
-      background:rgba(255,255,255,0.82);
-      border:1px solid var(--line);
-      border-radius:var(--radius2);
-      box-shadow:var(--shadowSoft);
-      padding:16px;
-      min-height:170px;
-    }
+    /* Ensure the page does not visually "stick" to the header */
+    #siteHeader{ margin-bottom:14px; }
+    @media (max-width: 900px){ #siteHeader{ margin-bottom:12px; } }
 
-    main.successPage .sp-card h4{
-      margin:0 0 10px;
-      font-size:15px;
-      color:#1b3f2a;
-    }
-
-    main.successPage .sp-checklist{
-      margin:0;
-      padding-left:18px;
-      color:#33443d;
-      font-size:13.5px;
-      line-height:1.55;
-    }
-
-    main.successPage .sp-callout{
-      margin:0;
-      color:#5b6b63;
-      font-size:13.5px;
-      line-height:1.55;
-    }
-
-    /* 6 even buttons in Need anything card */
-    main.successPage .sp-chips{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:10px;
-      margin-top:12px;
-    }
-
-    /* Responsive */
-    @media (max-width:980px){
-      main.successPage .sp-title{ font-size:36px; }
-      main.successPage .sp-grid{ grid-template-columns:1fr; }
-      main.successPage .sp-lower{ grid-template-columns:1fr; }
-      main.successPage .sp-badge{ align-self:flex-start; }
-      main.successPage .sp-actions{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-      main.successPage .sp-chips{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width:520px){
-      main.successPage .sp-shellCard{ padding:18px; }
-      main.successPage .sp-title{ font-size:30px; }
-      main.successPage .sp-subtitle{ font-size:14px; }
-      main.successPage .sp-panel{ padding:14px; }
-      main.successPage .sp-summaryTable td{ padding:11px 12px; }
-      main.successPage .sp-summaryTable td:first-child{ width:46%; }
-      main.successPage .sp-actions{ grid-template-columns:1fr; }
-      main.successPage .sp-chips{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    }
+    @media (min-width: 901px){ .paySuccessHero h1{ font-size:32px !important; } }
   </style>
-
-<style>
-/* Page layout tweaks for payment success */
-:root{
-  --card-radius: 18px;
-  --card-border: rgba(0,0,0,.06);
-  --card-shadow: 0 10px 25px rgba(0,0,0,.08);
-}
-
-/* Approved button styles (match book-tour/create) */
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:10px 14px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.12);
-  background:#ffffff;
-  color:#0b2b1b;
-  font-weight:700;
-  font-size:13px;
-  text-decoration:none;
-  box-shadow:0 6px 14px rgba(0,0,0,.08);
-  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
-  user-select:none;
-}
-.btn:hover{
-  transform:translateY(-1px);
-  box-shadow:0 10px 22px rgba(0,0,0,.10);
-}
-.btn:active{
-  transform:translateY(0);
-  box-shadow:0 6px 14px rgba(0,0,0,.08);
-}
-.btnPrimary{
-  background:#0b5a2a;
-  color:#ffffff;
-  border-color:rgba(0,0,0,.06);
-}
-.btnPrimary:hover{ background:#0a4f25; }
-
-/* Ensure button labels stay neat */
-.btn span{ line-height:1.1; }
-.btnWrap{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(0, 1fr));
-  gap:12px;
-  margin-top:14px;
-}
-.btnWrap a.btn{ width:100%; }
-
-/* Main shell */
-main{ padding:24px 16px 40px; }
-.successShell{
-  max-width:1100px;
-  margin:0 auto;
-  background:rgba(255,255,255,.22);
-  border:1px solid rgba(255,255,255,.35);
-  border-radius:22px;
-  box-shadow:0 16px 40px rgba(0,0,0,.10);
-  padding:22px;
-  backdrop-filter:saturate(120%) blur(6px);
-}
-.successTop{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
-  margin-bottom:16px;
-}
-.statusPill{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 14px;
-  border-radius:999px;
-  background:rgba(255,255,255,.65);
-  border:1px solid rgba(0,0,0,.08);
-  box-shadow:0 8px 18px rgba(0,0,0,.10);
-  font-weight:700;
-  color:#1f2f26;
-  white-space:nowrap;
-}
-.statusDot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:#0b5a2a;
-  box-shadow:0 0 0 4px rgba(11,90,42,.16);
-}
-.successTop h1{ margin:0; }
-.successTop p{ margin:8px 0 0; }
-
-/* Two-column layout */
-.layout{
-  display:grid;
-  grid-template-columns:minmax(0, 1.25fr) minmax(0, .95fr);
-  gap:18px;
-  align-items:stretch;
-}
-.leftCol{
-  display:grid;
-  grid-template-rows:auto auto;
-  gap:18px;
-}
-.leftBottom{
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:18px;
-}
-.card{
-  background:rgba(255,255,255,.70);
-  border:1px solid var(--card-border);
-  border-radius:var(--card-radius);
-  box-shadow:var(--card-shadow);
-  padding:16px;
-}
-.card h3{
-  margin:0 0 10px;
-  font-size:16px;
-  color:#0b2b1b;
-}
-.summaryTable{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-  overflow:hidden;
-  border-radius:14px;
-  border:1px solid rgba(0,0,0,.08);
-  background:rgba(255,255,255,.85);
-}
-.summaryTable td{
-  padding:10px 12px;
-  border-bottom:1px solid rgba(0,0,0,.06);
-  font-size:13px;
-}
-.summaryTable tr:last-child td{ border-bottom:none; }
-.summaryTable td:first-child{ color:rgba(0,0,0,.55); width:42%; }
-.summaryTable td:last-child{ text-align:right; font-weight:700; color:#0b2b1b; }
-
-.helperText{
-  margin:10px 0 0;
-  font-size:13px;
-  color:rgba(0,0,0,.55);
-}
-
-/* Right visual fills full height */
-.rightVisual{
-  border-radius:var(--card-radius);
-  border:1px solid var(--card-border);
-  box-shadow:var(--card-shadow);
-  overflow:hidden;
-  background:rgba(255,255,255,.55);
-  min-height:520px;
-}
-.rightVisual img{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:cover;
-}
-
-/* Checklist list */
-.bullets{
-  margin:0;
-  padding-left:18px;
-  color:rgba(0,0,0,.70);
-  font-size:13px;
-}
-.bullets li{ margin:8px 0; }
-
-/* Terms link should look like your site */
-.termsLink{
-  color:#0b5a2a;
-  font-weight:800;
-  text-decoration:underline;
-}
-
-/* Responsive */
-@media (max-width: 980px){
-  .layout{ grid-template-columns:1fr; }
-  .rightVisual{ min-height:320px; }
-}
-@media (max-width: 700px){
-  .successShell{ padding:16px; }
-  .successTop{ flex-direction:column; align-items:flex-start; }
-  .btnWrap{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-  .leftBottom{ grid-template-columns:1fr; }
-}
-</style>
-
 </head>
 
 <body>
-  <div id="siteHeader"></div>
+  <div class="container">
+    <div id="siteHeader"></div>
 
-  <main>
-    <section class="successShell" aria-label="Payment success">
-      <div class="successTop">
+    <main class="page card paySuccessPage">
+      <header class="paySuccessHero">
         <div>
           <h1>Thanks for your payment</h1>
           <p>Your tour booking has been received. We will follow up if we need any extra details.</p>
         </div>
-        <div class="statusPill" aria-label="Payment received">
-          <span class="statusDot" aria-hidden="true"></span>
-          <span>Payment received</span>
+
+        <div class="badge" aria-label="Payment received">
+          <span class="dot" aria-hidden="true"></span>
+          Payment received
         </div>
-      </div>
+      </header>
 
-      <div class="layout">
+      <section class="paySuccessGrid" aria-label="Payment confirmation content">
+        <!-- LEFT -->
         <div class="leftCol">
-          <div class="card">
-            <h3>Booking summary</h3>
-            <table class="summaryTable" role="table" aria-label="Booking summary table">
-              <tr>
-                <td>Tour</td>
-                <td id="tourTitle">Jewels of the Morning Forest</td>
-              </tr>
-              <tr>
-                <td>Tour date</td>
-                <td id="tourDate">2026-03-04</td>
-              </tr>
-              <tr>
-                <td>Days until tour</td>
-                <td id="daysUntil">1</td>
-              </tr>
-              <tr>
-                <td>Pickup window</td>
-                <td id="pickupWindow">6:00 AM to 6:15 AM</td>
-              </tr>
-            </table>
+          <!-- Top-left: Booking summary -->
+          <section class="panel" aria-label="Booking summary">
+            <h2 class="panelTitle">Booking summary</h2>
 
-            <p class="helperText">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
-
-            <div class="btnWrap" aria-label="Quick actions">
-              <a class="btn btnPrimary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer"><span>Visit Gift Shop</span></a>
-              <a class="btn" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer"><span>WhatsApp us</span></a>
-              <a class="btn" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer"><span>Instagram</span></a>
-              <a class="btn" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer"><span>Facebook</span></a>
+            <div class="summaryTable" role="table" aria-label="Booking details">
+              <div class="summaryRow" role="row">
+                <div class="summaryKey" role="cell">Tour</div>
+                <div class="summaryVal" id="sumTour" role="cell">-</div>
+              </div>
+              <div class="summaryRow" role="row">
+                <div class="summaryKey" role="cell">Tour date</div>
+                <div class="summaryVal" id="sumDate" role="cell">-</div>
+              </div>
+              <div class="summaryRow" role="row">
+                <div class="summaryKey" role="cell">Days until tour</div>
+                <div class="summaryVal" id="sumDays" role="cell">-</div>
+              </div>
+              <div class="summaryRow" role="row">
+                <div class="summaryKey" role="cell">Pickup window</div>
+                <div class="summaryVal" id="sumPickup" role="cell">-</div>
+              </div>
             </div>
-          </div>
 
-          <div class="leftBottom">
-            <div class="card">
-              <h3>Quick checklist</h3>
-              <ul class="bullets">
+            <p class="subtext">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
+
+            <div class="btnRow" aria-label="Quick actions">
+              <a class="btn btnPrimary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
+              <a class="btn" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+              <a class="btn" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a class="btn" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
+            </div>
+          </section>
+
+          <!-- Bottom-left: Quick checklist + What happens next -->
+          <section class="twoCards" aria-label="Next steps">
+            <div class="panel" aria-label="Quick checklist">
+              <h2 class="panelTitle">Quick checklist</h2>
+              <ul class="list">
                 <li>Save your tour date and pickup window.</li>
                 <li>If pickup is a hotel, double check the lobby name and street.</li>
                 <li>If anything changes, message us on WhatsApp.</li>
               </ul>
             </div>
 
-            <div class="card">
-              <h3>What happens next</h3>
-              <ul class="bullets">
+            <div class="panel" aria-label="What happens next">
+              <h2 class="panelTitle">What happens next</h2>
+              <ul class="list">
                 <li>We have your booking details and payment confirmation.</li>
                 <li>If we need anything, we will contact you by email or WhatsApp.</li>
                 <li>Keep an eye out for a message if your pickup location needs clarification.</li>
               </ul>
-              <p class="helperText"><a class="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms and Conditions</a> are available here.</p>
+
+              <p class="subtext">
+                <a class="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>
+                are available here.
+              </p>
             </div>
-          </div>
+          </section>
         </div>
 
-        <aside class="rightVisual" aria-label="Mindo Bird Watching image">
-          <img src="https://mindobirdwatching.com/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Mindo cloud forest scenery">
+        <!-- RIGHT: Full-height image -->
+        <aside class="rightImageWrap" aria-label="Mindo image">
+          <img src="https://mindobirdwatching.com/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Cloud forest scenery in Mindo" />
         </aside>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
 
-  <div id="siteFooter"></div>
+    <div id="siteFooter"></div>
+  </div>
 
-  <script src="/assets/js/includes.js"></script>
-  <script src="/assets/js/site.js"></script>
   <script>
-    (function(){
-      function qs(name){ return new URLSearchParams(window.location.search).get(name) || ""; }
-
-      var tourTitle = document.getElementById("tourTitle");
-      var tourDate = document.getElementById("tourDate");
-      var daysUntil = document.getElementById("daysUntil");
-
-      var mdTourTitle = qs("tour_title") || qs("title");
-      var mdTourDate = qs("tour_date") || qs("date");
-
-      if (mdTourTitle) tourTitle.textContent = mdTourTitle;
-      if (mdTourDate) tourDate.textContent = mdTourDate;
-
-      function calcDaysUntil(dateStr){
-        if (!dateStr) return "";
-        var parts = dateStr.split("-");
-        if (parts.length !== 3) return "";
-        var y = Number(parts[0]), m = Number(parts[1]) - 1, d = Number(parts[2]);
-        if (!y || m < 0 || d < 1) return "";
-        var target = new Date(Date.UTC(y, m, d));
-        var now = new Date();
-        var todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-        var diffMs = target.getTime() - todayUTC.getTime();
-        return Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+    (function () {
+      function qs(name) {
+        const u = new URL(window.location.href);
+        return u.searchParams.get(name) || "";
       }
 
-      var d = calcDaysUntil(mdTourDate || tourDate.textContent);
-      if (d !== "") daysUntil.textContent = String(d);
+      // Support both:
+      // /success/?tour=...&date=... and /success/?session_id=cs_...
+      const tour = qs("tour") || "Jewels of the Morning Forest";
+      const date = qs("date") || "2026-03-04";
+
+      // Days until tour (simple local calc; keeps UI consistent)
+      function daysUntil(iso) {
+        const d = new Date(iso + "T00:00:00");
+        if (isNaN(d.getTime())) return "-";
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diff = d.getTime() - today.getTime();
+        return String(Math.max(0, Math.round(diff / 86400000)));
+      }
+
+      document.getElementById("sumTour").textContent = tour;
+      document.getElementById("sumDate").textContent = date;
+      document.getElementById("sumDays").textContent = daysUntil(date);
+      document.getElementById("sumPickup").textContent = "6:00 AM to 6:15 AM";
     })();
   </script>
 </body>
