@@ -1,220 +1,213 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Payment success | Mindo Bird Watching</title>
+  <title>Payment Success | Mindo Bird Watching</title>
 
-  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#034EA2" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-
+  <!-- Site-wide CSS -->
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
+  <link rel="stylesheet" href="/assets/css/header.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
-
-  <script src="/assets/js/head.js" defer></script>
-  <script src="/assets/js/includes.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
+  <script defer src="/assets/js/head.js"></script>
 
   <style>
-    /* Page-local styles only. Match the internal tool shell + button system used on /book-tour/create/. */
-    .paySuccessPage { padding: 22px 22px 26px; }
-    @media (max-width: 900px){ .paySuccessPage { padding: 18px 14px 20px; } }
+    /* Page-only styles (do NOT redefine .btn; use site-wide button classes) */
 
-    .paySuccessHero{
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .successShell{
+      background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+      border-radius: calc(var(--r) + 4px);
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    .successTop{
       display:flex;
+      gap: 14px;
       align-items:flex-start;
       justify-content:space-between;
-      gap:14px;
-      margin:0 0 14px;
-    }
-    .paySuccessHero h1{
-      font-family:"Playfair Display", serif;
-      font-weight:700;
-      letter-spacing:-0.02em;
-      line-height:1.05;
-      margin:0 0 6px;
-      color:#0e4b2e;
-      font-size:clamp(30px, 3.2vw, 32px) !important;
-    }
-    .paySuccessHero p{
-      margin:0;
-      max-width:78ch;
-      color:rgba(0,0,0,0.62);
-      font-size:16px;
-      line-height:1.55;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
     }
 
-    .badge{
+    .successTitleWrap{ min-width: 260px; }
+    .successTitle{
+      margin: 0 0 6px 0;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      color: #0e4b2e;
+      font-size: 44px;
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+    }
+    .successSub{
+      margin: 0;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .statusPill{
       display:inline-flex;
       align-items:center;
-      gap:10px;
-      padding:10px 14px;
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,0.10);
-      background:rgba(255,255,255,0.70);
-      box-shadow:0 10px 24px rgba(0,0,0,0.10);
-      font-weight:800;
-      font-size:13px;
-      color:rgba(0,0,0,0.78);
-      white-space:nowrap;
-      margin-top:2px;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      font-weight: 650;
+      color: #1f3a2c;
+      white-space: nowrap;
     }
-    .dot{
-      width:10px;height:10px;border-radius:999px;
-      background:#0b5a33;
-      box-shadow:0 0 0 3px rgba(11,90,51,0.18);
+    .statusDot{
+      width: 10px; height: 10px; border-radius: 999px;
+      background: #0e7a3e;
+      box-shadow: 0 0 0 3px rgba(14,122,62,0.18);
+      flex: 0 0 auto;
     }
 
-    .paySuccessGrid{
-      margin-top:14px;
+    .successGrid{
       display:grid;
-      grid-template-columns:1.15fr 0.85fr;
-      gap:18px;
-      align-items:stretch;
-    }
-    @media (max-width: 900px){
-      .paySuccessHero{ flex-direction:column; align-items:flex-start; }
-      .badge{ margin-top:0; }
-      .paySuccessGrid{ grid-template-columns:1fr; }
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      align-items: stretch;
     }
 
-    .panel{
-      background:rgba(255,255,255,0.45);
-      border:1px solid rgba(0,0,0,0.10);
-      border-radius:18px;
-      box-shadow:0 18px 40px rgba(0,0,0,0.10);
-      padding:18px;
+    .leftStack{
+      display:grid;
+      gap: 14px;
+      align-content:start;
+      min-width:0;
     }
-    @media (max-width: 900px){ .panel{ padding:16px; } }
 
-    .panelTitle{
-      font-family:"Playfair Display", serif;
-      font-weight:700;
-      color:#0e4b2e;
-      font-size:18px;
-      margin:0 0 10px;
+    .cardInner{
+      background: rgba(255,255,255,0.76);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.06);
+      min-width:0;
+    }
+
+    .summaryTitle{
+      margin: 0 0 10px 0;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      color: #0e4b2e;
+      font-size: 20px;
     }
 
     .summaryTable{
       width:100%;
-      border:1px solid rgba(0,0,0,0.10);
-      background:rgba(255,255,255,0.60);
-      border-radius:14px;
+      border-collapse: separate;
+      border-spacing: 0;
       overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.7);
     }
     .summaryRow{
       display:grid;
-      grid-template-columns: 1fr 1.4fr;
-      gap:10px;
-      padding:10px 12px;
-      border-top:1px solid rgba(0,0,0,0.08);
-      font-size:13px;
-      line-height:1.35;
-      color:rgba(0,0,0,0.78);
-    }
-    .summaryRow:first-child{ border-top:0; }
-    .summaryKey{ color:rgba(0,0,0,0.58); }
-    .summaryVal{ text-align:right; font-weight:700; color:rgba(0,0,0,0.86); }
-
-    .subtext{
-      margin:10px 0 0;
-      color:rgba(0,0,0,0.55);
-      font-size:13px;
-      line-height:1.45;
-    }
-
-    .btnRow{
-      margin-top:14px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    /* Approved pill buttons (copied from /book-tour/create/) */
-    .btn{
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,0.18);
-      background:rgba(255,255,255,0.70);
-      color:rgba(0,0,0,0.86);
-      padding:10px 14px;
-      font-weight:700;
-      font-size:13px;
-      cursor:pointer;
-      user-select:none;
-      text-decoration:none;
-      display:inline-flex;
+      grid-template-columns: 160px 1fr;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
       align-items:center;
-      justify-content:center;
-      line-height:1;
     }
-    .btnPrimary{
-      background:#0b5a33;
-      border-color:rgba(0,0,0,0.10);
-      color:#ffffff;
-      padding:10px 16px;
+    .summaryRow:first-child{ border-top: 0; }
+    .summaryKey{ color: rgba(0,0,0,0.55); }
+    .summaryVal{ font-weight: 650; text-align:right; color: rgba(0,0,0,0.78); }
+
+    .helperText{
+      margin: 10px 0 0 0;
+      color: rgba(0,0,0,0.58);
+      font-size: 13px;
     }
 
-    .leftCol{
+    .actionRow{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .successBottom{
       display:grid;
-      grid-template-columns:1fr;
-      gap:18px;
-      align-content:start;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
 
-    .twoCards{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-      align-items:stretch;
+    .sectionTitle{
+      margin: 0 0 10px 0;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      color: #0e4b2e;
+      font-size: 18px;
     }
-    @media (max-width: 900px){
-      .twoCards{ grid-template-columns:1fr; }
+    .bullets{
+      margin: 0;
+      padding-left: 18px;
+      color: rgba(0,0,0,0.68);
     }
+    .bullets li{ margin: 6px 0; }
 
-    .list{
-      margin:0;
-      padding-left:18px;
-      color:rgba(0,0,0,0.70);
-      font-size:13px;
-      line-height:1.55;
+    .termsLine{
+      margin-top: 12px;
+      color: rgba(0,0,0,0.55);
+      font-size: 13px;
     }
-    .list li{ margin:6px 0; }
+    .termsLine a{ font-weight: 650; }
 
-    .termsLink{
-      color:#0b5a33;
-      font-weight:800;
-      text-decoration:underline;
-    }
-
-    .rightImageWrap{
-      border-radius:18px;
+    .imageCard{
+      padding: 0;
       overflow:hidden;
-      border:1px solid rgba(0,0,0,0.10);
-      box-shadow:0 18px 40px rgba(0,0,0,0.10);
-      background:rgba(255,255,255,0.35);
+      position: relative;
       min-height: 520px;
     }
-    @media (max-width: 900px){
-      .rightImageWrap{ min-height: 260px; }
-    }
-    .rightImageWrap img{
+    .imageCard img{
+      position:absolute;
+      inset: 0;
       width:100%;
       height:100%;
+      object-fit: cover;
       display:block;
-      object-fit:cover;
+    }
+    .imageShade{
+      position:absolute;
+      inset: 0;
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,0.30), rgba(255,255,255,0.00));
+      pointer-events:none;
     }
 
-    /* Ensure the page does not visually "stick" to the header */
-    #siteHeader{ margin-bottom:14px; }
-    @media (max-width: 900px){ #siteHeader{ margin-bottom:12px; } }
-
-    @media (min-width: 901px){ .paySuccessHero h1{ font-size:32px !important; } }
+    @media (max-width: 980px){
+      .successGrid{ grid-template-columns: 1fr; }
+      .imageCard{ min-height: 280px; }
+      .successBottom{ grid-template-columns: 1fr; }
+      .summaryRow{ grid-template-columns: 140px 1fr; }
+      .successTitle{ font-size: 36px; }
+      .page{ padding: 18px; }
+      .successShell{ padding: 14px; }
+    }
+    @media (max-width: 520px){
+      .summaryRow{ grid-template-columns: 1fr; }
+      .summaryVal{ text-align:left; }
+      .actionRow{ gap: 8px; }
+      .successTitle{ font-size: 32px; }
+    }
   </style>
 </head>
 
@@ -222,118 +215,130 @@
   <div class="container">
     <div id="siteHeader"></div>
 
-    <main class="page card paySuccessPage">
-      <header class="paySuccessHero">
-        <div>
-          <h1>Thanks for your payment</h1>
-          <p>Your tour booking has been received. We will follow up if we need any extra details.</p>
+    <main class="page card">
+      <div class="successShell" aria-label="Payment success">
+        <div class="successTop">
+          <div class="successTitleWrap">
+            <h1 class="successTitle">Thanks for your payment</h1>
+            <p class="successSub">Your tour booking has been received. We will follow up if we need any extra details.</p>
+          </div>
+
+          <div class="statusPill" aria-label="Payment received">
+            <span class="statusDot" aria-hidden="true"></span>
+            <span>Payment received</span>
+          </div>
         </div>
 
-        <div class="badge" aria-label="Payment received">
-          <span class="dot" aria-hidden="true"></span>
-          Payment received
-        </div>
-      </header>
+        <section class="successGrid" aria-label="Summary and photo">
+          <div class="leftStack" aria-label="Booking details">
+            <section class="cardInner" aria-label="Booking summary">
+              <h2 class="summaryTitle">Booking summary</h2>
 
-      <section class="paySuccessGrid" aria-label="Payment confirmation content">
-        <!-- LEFT -->
-        <div class="leftCol">
-          <!-- Top-left: Booking summary -->
-          <section class="panel" aria-label="Booking summary">
-            <h2 class="panelTitle">Booking summary</h2>
-
-            <div class="summaryTable" role="table" aria-label="Booking details">
-              <div class="summaryRow" role="row">
-                <div class="summaryKey" role="cell">Tour</div>
-                <div class="summaryVal" id="sumTour" role="cell">-</div>
+              <div class="summaryTable" role="table" aria-label="Booking summary table">
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Tour</div>
+                  <div class="summaryVal" role="cell" id="sumTour">-</div>
+                </div>
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Tour date</div>
+                  <div class="summaryVal" role="cell" id="sumDate">-</div>
+                </div>
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Days until tour</div>
+                  <div class="summaryVal" role="cell" id="sumDays">-</div>
+                </div>
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Pickup window</div>
+                  <div class="summaryVal" role="cell" id="sumPickup">-</div>
+                </div>
               </div>
-              <div class="summaryRow" role="row">
-                <div class="summaryKey" role="cell">Tour date</div>
-                <div class="summaryVal" id="sumDate" role="cell">-</div>
+
+              <p class="helperText">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
+
+              <div class="actionRow" aria-label="Quick actions">
+                <a class="btn primary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
+                <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+                <a class="btn secondary" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a class="btn secondary" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
               </div>
-              <div class="summaryRow" role="row">
-                <div class="summaryKey" role="cell">Days until tour</div>
-                <div class="summaryVal" id="sumDays" role="cell">-</div>
+            </section>
+
+            <section class="successBottom" aria-label="Next steps">
+              <div class="cardInner" aria-label="Quick checklist">
+                <h2 class="sectionTitle">Quick checklist</h2>
+                <ul class="bullets">
+                  <li>Save your tour date and pickup window.</li>
+                  <li>If pickup is a hotel, double check the lobby name and street.</li>
+                  <li>If anything changes, message us on WhatsApp.</li>
+                </ul>
               </div>
-              <div class="summaryRow" role="row">
-                <div class="summaryKey" role="cell">Pickup window</div>
-                <div class="summaryVal" id="sumPickup" role="cell">-</div>
+
+              <div class="cardInner" aria-label="What happens next">
+                <h2 class="sectionTitle">What happens next</h2>
+                <ul class="bullets">
+                  <li>We have your booking details and payment confirmation.</li>
+                  <li>If we need anything, we will contact you by email or WhatsApp.</li>
+                  <li>Keep an eye out for a message if your pickup location needs clarification.</li>
+                </ul>
+
+                <div class="termsLine">
+                  <a href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms and Conditions</a> are available here.
+                </div>
               </div>
-            </div>
+            </section>
+          </div>
 
-            <p class="subtext">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
-
-            <div class="btnRow" aria-label="Quick actions">
-              <a class="btn btnPrimary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
-              <a class="btn" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
-              <a class="btn" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
-              <a class="btn" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
-            </div>
-          </section>
-
-          <!-- Bottom-left: Quick checklist + What happens next -->
-          <section class="twoCards" aria-label="Next steps">
-            <div class="panel" aria-label="Quick checklist">
-              <h2 class="panelTitle">Quick checklist</h2>
-              <ul class="list">
-                <li>Save your tour date and pickup window.</li>
-                <li>If pickup is a hotel, double check the lobby name and street.</li>
-                <li>If anything changes, message us on WhatsApp.</li>
-              </ul>
-            </div>
-
-            <div class="panel" aria-label="What happens next">
-              <h2 class="panelTitle">What happens next</h2>
-              <ul class="list">
-                <li>We have your booking details and payment confirmation.</li>
-                <li>If we need anything, we will contact you by email or WhatsApp.</li>
-                <li>Keep an eye out for a message if your pickup location needs clarification.</li>
-              </ul>
-
-              <p class="subtext">
-                <a class="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>
-                are available here.
-              </p>
-            </div>
-          </section>
-        </div>
-
-        <!-- RIGHT: Full-height image -->
-        <aside class="rightImageWrap" aria-label="Mindo image">
-          <img src="https://mindobirdwatching.com/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Cloud forest scenery in Mindo" />
-        </aside>
-      </section>
+          <aside class="cardInner imageCard" aria-label="Mindo photo">
+            <img src="https://mindobirdwatching.com/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Mindo cloud forest" loading="eager" />
+            <div class="imageShade" aria-hidden="true"></div>
+          </aside>
+        </section>
+      </div>
     </main>
 
     <div id="siteFooter"></div>
   </div>
 
+  <script src="/assets/js/includes.js"></script>
+  <script src="/assets/js/site.js"></script>
+
   <script>
     (function () {
       function qs(name) {
-        const u = new URL(window.location.href);
-        return u.searchParams.get(name) || "";
+        return new URLSearchParams(window.location.search).get(name) || "";
       }
 
-      // Support both:
-      // /success/?tour=...&date=... and /success/?session_id=cs_...
-      const tour = qs("tour") || "Jewels of the Morning Forest";
-      const date = qs("date") || "2026-03-04";
-
-      // Days until tour (simple local calc; keeps UI consistent)
-      function daysUntil(iso) {
-        const d = new Date(iso + "T00:00:00");
-        if (isNaN(d.getTime())) return "-";
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const diff = d.getTime() - today.getTime();
-        return String(Math.max(0, Math.round(diff / 86400000)));
+      function safeText(el, value) {
+        if (!el) return;
+        el.textContent = value || "-";
       }
 
-      document.getElementById("sumTour").textContent = tour;
-      document.getElementById("sumDate").textContent = date;
-      document.getElementById("sumDays").textContent = daysUntil(date);
-      document.getElementById("sumPickup").textContent = "6:00 AM to 6:15 AM";
+      var tour = qs("tour") || qs("tour_code") || "";
+      var date = qs("date") || qs("tour_date") || "";
+      var pickup = qs("pickup") || qs("pickup_window") || "6:00 AM to 6:15 AM";
+
+      var tourTitleMap = { "MBW004": "Jewels of the Morning Forest" };
+      var tourLabel = tourTitleMap[tour] || tour || "Jewels of the Morning Forest";
+
+      safeText(document.getElementById("sumTour"), tourLabel);
+      safeText(document.getElementById("sumDate"), date || "2026-03-04");
+      safeText(document.getElementById("sumPickup"), pickup);
+
+      var daysEl = document.getElementById("sumDays");
+      try {
+        if (date) {
+          var d = new Date(date + "T00:00:00");
+          var now = new Date();
+          var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          var diffMs = d.getTime() - startToday.getTime();
+          var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+          safeText(daysEl, String(Math.max(diffDays, 0)));
+        } else {
+          safeText(daysEl, "1");
+        }
+      } catch (e) {
+        safeText(daysEl, "1");
+      }
     })();
   </script>
 </body>
