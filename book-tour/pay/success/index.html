@@ -9,6 +9,10 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
@@ -59,13 +63,13 @@
       --bg:#cfe2b7;
       --card:#f3f6ef;
       --ink:#173425;
-      --muted:#55655d;
-      --line:rgba(0,0,0,0.08);
-      --shadow:0 16px 40px rgba(0,0,0,0.10);
+      --muted:rgba(0,0,0,0.62);
+      --line:rgba(0,0,0,0.10);
+      --shadow:0 18px 40px rgba(0,0,0,0.10);
       --shadowSoft:0 10px 28px rgba(0,0,0,0.08);
       --radius:22px;
       --radius2:18px;
-      --green:#0e5c34;
+      --green:#0b5a33;
       color:var(--ink);
     }
 
@@ -85,6 +89,9 @@
       padding:26px;
       overflow:hidden;
     }
+    @media (max-width:900px){
+      main.successPage .sp-shellCard{ padding:18px; }
+    }
 
     main.successPage .sp-shellHead{
       display:flex;
@@ -95,20 +102,20 @@
     }
 
     main.successPage .sp-title{
-      margin:0;
+      margin:0 0 6px;
       font-family:"Playfair Display", serif;
       font-weight:700;
-      font-size:44px;
-      line-height:1.05;
       letter-spacing:-0.02em;
-      color:#154528;
+      line-height:1.05;
+      color:#0e4b2e;
+      font-size:clamp(30px, 3.2vw, 32px) !important;
     }
 
     main.successPage .sp-subtitle{
-      margin:8px 0 0;
+      margin:0;
+      max-width:78ch;
       color:var(--muted);
-      font-size:15px;
-      max-width:64ch;
+      font-size:16px;
       line-height:1.55;
     }
 
@@ -118,13 +125,14 @@
       gap:10px;
       padding:10px 12px;
       border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,0.80);
+      border:1px solid rgba(0,0,0,0.18);
+      background:rgba(255,255,255,0.70);
       box-shadow:var(--shadowSoft);
       font-weight:800;
-      color:#2a3b33;
+      color:rgba(0,0,0,0.80);
       white-space:nowrap;
-      margin-top:6px;
+      margin-top:4px;
+      flex:0 0 auto;
     }
 
     main.successPage .sp-dot{
@@ -135,101 +143,120 @@
       box-shadow:0 0 0 4px rgba(14,92,52,0.12);
     }
 
+    /* Two column layout: left content, right image */
     main.successPage .sp-grid{
       display:grid;
-      grid-template-columns:1.2fr 0.9fr;
-      gap:16px;
+      grid-template-columns:1.2fr 0.8fr;
+      gap:18px;
       align-items:start;
       margin-top:16px;
+    }
+    @media (max-width:980px){
+      main.successPage .sp-grid{ grid-template-columns:1fr; }
     }
 
     main.successPage .sp-panel{
       background:rgba(255,255,255,0.82);
-      border:1px solid var(--line);
+      border:1px solid rgba(0,0,0,0.08);
       border-radius:var(--radius2);
       box-shadow:var(--shadowSoft);
       padding:18px;
+    }
+    @media (max-width:900px){
+      main.successPage .sp-panel{ padding:14px; }
     }
 
     main.successPage .sp-panel h3{
       margin:0 0 10px;
       font-size:16px;
-      color:#154528;
+      color:#0e4b2e;
     }
 
+    /* Booking summary table */
     main.successPage .sp-summaryTable{
       width:100%;
       border-collapse:separate;
       border-spacing:0;
-      border:1px solid var(--line);
+      border:1px solid rgba(0,0,0,0.10);
       border-radius:14px;
       background:rgba(255,255,255,0.72);
       overflow:hidden;
     }
-
     main.successPage .sp-summaryTable td{
       padding:12px 14px;
-      border-top:1px solid var(--line);
+      border-top:1px solid rgba(0,0,0,0.10);
       font-size:14px;
       color:#21352a;
     }
-
     main.successPage .sp-summaryTable tr:first-child td{ border-top:none; }
-    main.successPage .sp-summaryTable td:first-child{ width:42%; color:#5b6b63; }
+    main.successPage .sp-summaryTable td:first-child{ width:42%; color:rgba(0,0,0,0.55); }
     main.successPage .sp-summaryTable td:last-child{ text-align:right; font-weight:800; }
 
     main.successPage .sp-hint{
       margin:12px 0 0;
-      color:#5b6b63;
+      color:rgba(0,0,0,0.55);
       font-size:13px;
       line-height:1.4;
     }
 
-    /* Primary action buttons (4) */
-    main.successPage .sp-actions{
+    /* Button system: match create page look */
+    main.successPage .btnRow{
+      margin-top:14px;
       display:grid;
       grid-template-columns:repeat(4, minmax(0, 1fr));
       gap:12px;
-      margin-top:14px;
+    }
+    @media (max-width:980px){
+      main.successPage .btnRow{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width:520px){
+      main.successPage .btnRow{ grid-template-columns:1fr; }
     }
 
-    /* Button base */
-    main.successPage .sp-btn,
-    main.successPage .sp-chip{
+    main.successPage .btn{
       width:100%;
       min-height:46px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,0.18);
+      background:rgba(255,255,255,0.70);
+      color:rgba(0,0,0,0.86);
+      padding:10px 14px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+      text-decoration:none;
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
       line-height:1.15;
-      padding:12px 14px;
-      box-sizing:border-box;
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,0.08);
-      background:#fff;
-      color:#233;
       box-shadow:0 6px 18px rgba(0,0,0,0.06);
-      font-weight:800;
-      text-decoration:none;
-      white-space:normal;
     }
 
-    main.successPage .sp-btnPrimary{
-      background:linear-gradient(135deg, #0e5c34, #0a3e23);
-      color:#fff;
-      border-color:transparent;
+    main.successPage .btnPrimary{
+      background:#0b5a33;
+      border-color:rgba(0,0,0,0.10);
+      color:#ffffff;
+      padding:10px 16px;
     }
 
-    main.successPage .sp-btn:hover,
-    main.successPage .sp-chip:hover{
-      transform:translateY(-1px);
+    main.successPage .btn:hover{ transform:translateY(-1px); }
+    main.successPage .btnPrimary:hover{ filter:brightness(1.03); }
+
+    /* Bottom-left combined section: checklist + what next */
+    main.successPage .sp-bottom{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    @media (max-width:980px){
+      main.successPage .sp-bottom{ grid-template-columns:1fr; }
     }
 
-    main.successPage .sp-btnPrimary:hover{ filter:brightness(1.03); }
-
-    main.successPage .sp-nextList{
-      margin:10px 0 0;
+    main.successPage .sp-list{
+      margin:0;
       padding-left:18px;
       color:#33443d;
       font-size:14px;
@@ -239,81 +266,29 @@
     main.successPage .sp-terms{
       margin-top:10px;
       font-size:13px;
-      color:#5b6b63;
+      color:rgba(0,0,0,0.55);
     }
-
     main.successPage .sp-terms a{
-      color:#0e5c34;
+      color:#0b5a33;
       font-weight:900;
       text-decoration:underline;
       text-underline-offset:3px;
     }
 
-    /* Lower 3 cards */
-    main.successPage .sp-lower{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:14px;
-      margin-top:14px;
+    /* Right image panel */
+    main.successPage .sp-imageWrap{
+      padding:0;
+      overflow:hidden;
     }
-
-    main.successPage .sp-card{
-      background:rgba(255,255,255,0.82);
-      border:1px solid var(--line);
-      border-radius:var(--radius2);
-      box-shadow:var(--shadowSoft);
-      padding:16px;
-      min-height:170px;
+    main.successPage .sp-image{
+      width:100%;
+      height:auto;
+      display:block;
+      aspect-ratio:4 / 5;
+      object-fit:cover;
     }
-
-    main.successPage .sp-card h4{
-      margin:0 0 10px;
-      font-size:15px;
-      color:#1b3f2a;
-    }
-
-    main.successPage .sp-checklist{
-      margin:0;
-      padding-left:18px;
-      color:#33443d;
-      font-size:13.5px;
-      line-height:1.55;
-    }
-
-    main.successPage .sp-callout{
-      margin:0;
-      color:#5b6b63;
-      font-size:13.5px;
-      line-height:1.55;
-    }
-
-    /* 6 even buttons in Need anything card */
-    main.successPage .sp-chips{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:10px;
-      margin-top:12px;
-    }
-
-    /* Responsive */
     @media (max-width:980px){
-      main.successPage .sp-title{ font-size:36px; }
-      main.successPage .sp-grid{ grid-template-columns:1fr; }
-      main.successPage .sp-lower{ grid-template-columns:1fr; }
-      main.successPage .sp-badge{ align-self:flex-start; }
-      main.successPage .sp-actions{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-      main.successPage .sp-chips{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width:520px){
-      main.successPage .sp-shellCard{ padding:18px; }
-      main.successPage .sp-title{ font-size:30px; }
-      main.successPage .sp-subtitle{ font-size:14px; }
-      main.successPage .sp-panel{ padding:14px; }
-      main.successPage .sp-summaryTable td{ padding:11px 12px; }
-      main.successPage .sp-summaryTable td:first-child{ width:46%; }
-      main.successPage .sp-actions{ grid-template-columns:1fr; }
-      main.successPage .sp-chips{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+      main.successPage .sp-image{ aspect-ratio:16 / 10; }
     }
   </style>
 </head>
@@ -337,80 +312,70 @@
           </div>
 
           <div class="sp-grid">
-            <div class="sp-panel" aria-label="Booking summary">
-              <h3>Booking summary</h3>
+            <!-- LEFT COLUMN -->
+            <div>
+              <!-- Top-left: booking summary -->
+              <div class="sp-panel" aria-label="Booking summary">
+                <h3>Booking summary</h3>
 
-              <table class="sp-summaryTable" role="table" aria-label="Booking summary table">
-                <tr>
-                  <td>Tour</td>
-                  <td id="tourTitle">Jewels of the Morning Forest</td>
-                </tr>
-                <tr>
-                  <td>Tour date</td>
-                  <td id="tourDate">2026-03-04</td>
-                </tr>
-                <tr>
-                  <td>Days until tour</td>
-                  <td id="daysUntil">1</td>
-                </tr>
-                <tr>
-                  <td>Pickup window</td>
-                  <td id="pickupWindow">6:00 AM to 6:15 AM</td>
-                </tr>
-              </table>
+                <table class="sp-summaryTable" role="table" aria-label="Booking summary table">
+                  <tr>
+                    <td>Tour</td>
+                    <td id="tourTitle">Jewels of the Morning Forest</td>
+                  </tr>
+                  <tr>
+                    <td>Tour date</td>
+                    <td id="tourDate">2026-03-04</td>
+                  </tr>
+                  <tr>
+                    <td>Days until tour</td>
+                    <td id="daysUntil">1</td>
+                  </tr>
+                  <tr>
+                    <td>Pickup window</td>
+                    <td id="pickupWindow">6:00 AM to 6:15 AM</td>
+                  </tr>
+                </table>
 
-              <p class="sp-hint">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
+                <p class="sp-hint">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
 
-              <div class="sp-actions" aria-label="Quick actions">
-                <a class="sp-btn sp-btnPrimary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
-                <a class="sp-btn" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
-                <a class="sp-btn" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
-                <a class="sp-btn" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
+                <div class="btnRow" aria-label="Quick actions">
+                  <a class="btn btnPrimary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
+                  <a class="btn" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+                  <a class="btn" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
+                  <a class="btn" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
+                </div>
+              </div>
+
+              <!-- Bottom-left: checklist + what happens next -->
+              <div class="sp-bottom" aria-label="Next steps and checklist">
+                <div class="sp-panel" aria-label="Quick checklist">
+                  <h3>Quick checklist</h3>
+                  <ul class="sp-list">
+                    <li>Save your tour date and pickup window.</li>
+                    <li>If pickup is a hotel, double check the lobby name and street.</li>
+                    <li>If anything changes, message us on WhatsApp.</li>
+                  </ul>
+                </div>
+
+                <div class="sp-panel" aria-label="What happens next">
+                  <h3>What happens next</h3>
+                  <ul class="sp-list">
+                    <li>We have your booking details and payment confirmation.</li>
+                    <li>If we need anything, we will contact you by email or WhatsApp.</li>
+                    <li>Keep an eye out for a message if your pickup location needs clarification.</li>
+                  </ul>
+
+                  <div class="sp-terms">
+                    <a href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms and Conditions</a> are available here.
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="sp-panel" aria-label="What happens next">
-              <h3>What happens next</h3>
-              <ul class="sp-nextList">
-                <li>We have your booking details and payment confirmation.</li>
-                <li>If we need anything, we will contact you by email or WhatsApp.</li>
-                <li>Keep an eye out for a message if your pickup location needs clarification.</li>
-              </ul>
-
-              <div class="sp-terms">
-                <a href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms and Conditions</a> are available here.
-              </div>
-            </div>
-          </div>
-
-          <div class="sp-lower" aria-label="Helpful info">
-            <div class="sp-card" aria-label="Quick checklist">
-              <h4>Quick checklist</h4>
-              <ol class="sp-checklist">
-                <li>Save your tour date and pickup window.</li>
-                <li>If pickup is a hotel, double check the lobby name and street.</li>
-                <li>If anything changes, message us on WhatsApp.</li>
-              </ol>
-            </div>
-
-            <div class="sp-card" aria-label="Need anything">
-              <h4>Need anything before your tour?</h4>
-              <p class="sp-callout">The fastest way to reach us is WhatsApp. If you prefer, you can also message via Instagram or Facebook.</p>
-
-              <div class="sp-chips" aria-label="Contact shortcuts">
-                <a class="sp-chip" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                <a class="sp-chip" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
-                <a class="sp-chip" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
-                <a class="sp-chip" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Gift Shop</a>
-                <a class="sp-chip" href="https://mindobirdwatching.com/tours/" target="_blank" rel="noopener noreferrer">Tours</a>
-                <a class="sp-chip" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms</a>
-              </div>
-            </div>
-
-            <div class="sp-card" aria-label="Good to know">
-              <h4>Good to know</h4>
-              <p class="sp-callout"><strong>Stripe does not charge you just for landing on checkout.</strong> Refunds apply only when a payment completes successfully.</p>
-              <p class="sp-callout" style="margin-top:10px;">Questions about policies? Open Terms and Conditions.</p>
+            <!-- RIGHT COLUMN: image -->
+            <div class="sp-panel sp-imageWrap" aria-label="About Mindo Bird Watching">
+              <img class="sp-image" src="https://mindobirdwatching.com/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Mindo Bird Watching" />
             </div>
           </div>
         </section>
