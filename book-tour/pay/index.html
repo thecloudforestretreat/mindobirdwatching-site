@@ -6,6 +6,7 @@
   <!-- Turnstile site key -->
   <meta name="turnstile-sitekey" content="0x4AAAAAACYIFF7ZNXiqieG" />
   <title>Pay for a Tour | Mindo Bird Watching</title>
+  <meta name="cf-turnstile-sitekey" content="0x4AAAAAACYIFF7ZNXiqieG">
   <link rel="icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -341,7 +342,7 @@
       }
     }
   </script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=turnstileOnload" async defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
@@ -450,7 +451,7 @@
           <div class="field" id="turnstileWrap" style="margin-top:12px;">
             <label id="tTurnstileLabel">Verification</label>
             <input type="hidden" id="turnstileToken" value="">
-            <div id="turnstileEl"></div>
+            <div id="turnstileEl" class="cf-turnstile" data-sitekey="" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileError"></div>
             <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
             <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
           </div>
@@ -889,62 +890,39 @@
   </script>
 
   <script>
-    // Turnstile (explicit render) - robust mount + gentle fallback
-    function onTurnstileSuccess(token){
-      var el = document.getElementById("turnstileToken");
-      if (el) el.value = token || "";
-      var soft = document.getElementById("turnstileSoftMsg");
-      if (soft){ soft.style.display = "none"; }
-    }
-    function onTurnstileExpired(){
-      var el = document.getElementById("turnstileToken");
-      if (el) el.value = "";
-    }
-
-    var __tsRendered = false;
-    function __renderTurnstile(){
-      if (__tsRendered) return;
-      if (!window.turnstile || typeof window.turnstile.render !== "function") return;
-      var box = document.getElementById("turnstileBox");
-      if (!box) return;
-
-      // Avoid double-render if HTML already contains iframe
-      if (box.querySelector("iframe")) { __tsRendered = true; return; }
-
-      try {
-        window.turnstile.render(box, {
-          sitekey: "0x4AAAAAACYIFF7ZNXiqieG",
-          callback: onTurnstileSuccess,
-          "expired-callback": onTurnstileExpired
-        });
-        __tsRendered = true;
-      } catch (e) {
-        // If something blocks it, show a gentle message (no red banner)
-        var soft = document.getElementById("turnstileSoftMsg");
-        if (soft){ soft.style.display = "block"; }
-      }
-    }
-
-    // Called by Turnstile API script (onload=turnstileOnload)
-    function turnstileOnload(){
-      __renderTurnstile();
-    }
-
-    // Safety: retry for slow networks / script ordering
+    // Turnstile init (implicit render)
     (function(){
-      var tries = 0;
-      function tick(){
-        tries++;
-        __renderTurnstile();
-        if (__tsRendered) return;
-        if (tries >= 20){
-          var soft = document.getElementById("turnstileSoftMsg");
-          if (soft){ soft.style.display = "block"; }
-          return;
-        }
-        setTimeout(tick, 350);
+      function getSiteKey(){
+        var meta = document.querySelector('meta[name="cf-turnstile-sitekey"]');
+        var v = meta && meta.getAttribute("content");
+        if (v && v.trim()) return v.trim();
+        return "0x4AAAAAACYIFF7ZNXiqieG";
       }
-      setTimeout(tick, 350);
+
+      function init(){
+        var el = document.getElementById("turnstileEl");
+        var diag = document.getElementById("turnstileDiag");
+        if (!el) return;
+
+        el.setAttribute("data-sitekey", getSiteKey());
+
+        // If widget never injects (blocked), show a message.
+        setTimeout(function(){
+          var iframe = el.querySelector("iframe");
+          var tokenEl = document.getElementById("turnstileToken");
+          var hasToken = tokenEl && tokenEl.value;
+          if (!iframe && !hasToken && diag){
+            diag.style.display = "block";
+            diag.textContent = "Could not load verification. Please disable blockers or try another browser.";
+          }
+        }, 2500);
+      }
+
+      if (document.readyState === "loading"){
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
     })();
   </script>
 
