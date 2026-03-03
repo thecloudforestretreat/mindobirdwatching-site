@@ -9,7 +9,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#034EA2" />
+  <meta name="theme-color" content="#0b5b32" />
 
   <!-- Site-wide CSS -->
   <link rel="stylesheet" href="/assets/css/site.css" />
@@ -18,7 +18,7 @@
   <script defer src="/assets/js/head.js"></script>
 
   <style>
-    /* Page-only styles (do NOT redefine .btn; use site-wide button classes) */
+/* Page-only styles (do NOT redefine .btn; use site-wide button classes) */
 
     .page { margin-top: 18px; padding: 26px; }
     .page.card{
@@ -139,13 +139,20 @@
     }
 
     .actionRow{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .successBottom{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  margin-top:14px;
+}
+@media (min-width: 901px){
+  .actionRow{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
+}
+.actionRow .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+}
+.successBottom{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
@@ -205,10 +212,23 @@
     @media (max-width: 520px){
       .summaryRow{ grid-template-columns: 1fr; }
       .summaryVal{ text-align:left; }
-      .actionRow{ gap: 8px; }
-      .successTitle{ font-size: 32px; }
+      .actionRow{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  margin-top:14px;
+}
+@media (min-width: 901px){
+  .actionRow{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
+}
+.actionRow .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+}
+.successTitle{ font-size: 32px; }
     }
-  </style>
+</style>
 </head>
 
 <body>
@@ -258,8 +278,10 @@
               <div class="actionRow" aria-label="Quick actions">
                 <a class="btn primary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
                 <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
-                <a class="btn secondary" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
-                <a class="btn secondary" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
+                <a class="btn secondary" href="https://mindobirdwatching.com/contact/" target="_blank" rel="noopener noreferrer">Contact</a>
+                <a class="btn ghost" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms & Conditions</a>
+                <a class="btn ghost" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a class="btn ghost" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener noreferrer">Facebook</a>
               </div>
             </section>
 
@@ -289,7 +311,7 @@
           </div>
 
           <aside class="cardInner imageCard" aria-label="Mindo photo">
-            <img src="https://mindobirdwatching.com/assets/images/pages/MBW-Assets-90-AboutUs.jpg" alt="Mindo cloud forest" loading="eager" />
+            <img src="/assets/images/pages/mbw_payment_success_01.jpg" alt="Mindo cloud forest" loading="eager" />
             <div class="imageShade" aria-hidden="true"></div>
           </aside>
         </section>
