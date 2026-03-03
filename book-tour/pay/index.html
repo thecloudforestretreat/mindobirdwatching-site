@@ -1,50 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <script>
-    // Cloudflare Turnstile callbacks (token is stored for submit)
-    function onTurnstileSuccess(token){
-      var el = document.getElementById("turnstileToken");
-      if (el) el.value = token || "";
-      var diag = document.getElementById("turnstileDiag");
-      if (diag){ diag.style.display = "none"; diag.textContent = ""; }
-    }
-    function onTurnstileExpired(){
-      var el = document.getElementById("turnstileToken");
-      if (el) el.value = "";
-      var diag = document.getElementById("turnstileDiag");
-      if (diag){ diag.style.display = "block"; diag.textContent = "Verification expired. Please verify again."; }
-    }
-    function onTurnstileError(){
-      var el = document.getElementById("turnstileToken");
-      if (el) el.value = "";
-      var diag = document.getElementById("turnstileDiag");
-      if (diag){ diag.style.display = "block"; diag.textContent = "Could not load verification. Please disable blockers or try another browser."; }
-    }
-  </script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Turnstile site key -->
   <meta name="turnstile-sitekey" content="0x4AAAAAACYIFF7ZNXiqieG" />
   <title>Pay for a Tour | Mindo Bird Watching</title>
-
   <link rel="icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
-
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
-
   <style>
     /* Page-local styles ONLY for the guest pay page */
     #siteHeader{
@@ -299,18 +272,37 @@
     #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
     #termsLink:hover{ text-decoration: none; }
   </style>
-
   <script>
-    // IMPORTANT: This must be a standalone script tag (no src), otherwise the browser ignores inline code.
+    // Cloudflare Turnstile callbacks (token is stored for submit)
+    function onTurnstileSuccess(token){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = token || "";
+      var diag = document.getElementById("turnstileDiag");
+      if (diag){ diag.style.display = "none"; diag.textContent = ""; }
+    }
+    function onTurnstileExpired(){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = "";
+      var diag = document.getElementById("turnstileDiag");
+      if (diag){ diag.style.display = "block"; diag.textContent = "Verification expired. Please verify again."; }
+    }
+    function onTurnstileError(){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = "";
+      var diag = document.getElementById("turnstileDiag");
+      if (diag){ diag.style.display = "block"; diag.textContent = "Could not load verification. Please disable blockers or try another browser."; }
+    }
+
+    // Explicit render mode state
     var TURNSTILE_WIDGET_ID = null;
 
     function onTurnstileLoad(){
       try{
         var meta = document.querySelector('meta[name="turnstile-sitekey"]');
         var siteKey = meta ? (meta.getAttribute("content") || "").trim() : "";
-        var el = document.getElementById("turnstileEl");
         var wrap = document.getElementById("turnstileWrap");
         var diag = document.getElementById("turnstileDiag");
+        var mount = document.getElementById("turnstileEl");
 
         function showDiag(msg){
           if (!diag) return;
@@ -318,7 +310,6 @@
           diag.textContent = msg;
         }
 
-        // If no sitekey, hide verification entirely.
         if (!siteKey){
           if (wrap) wrap.style.display = "none";
           return;
@@ -326,182 +317,165 @@
 
         if (wrap) wrap.style.display = "block";
 
-        // If script was blocked by extension/CSP, window.turnstile is missing.
         if (!window.turnstile || typeof window.turnstile.render !== "function"){
-          showDiag("Verification could not load. If you are using an ad blocker or privacy extension, disable it for this page and refresh.");
+          showDiag("Verification could not load. Disable blockers/privacy extensions for this page and refresh.");
           return;
         }
 
-        // Render once
-        TURNSTILE_WIDGET_ID = window.turnstile.render(el, { sitekey: siteKey });
+        // Prevent double render if includes/scripts rerun
+        if (TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined) return;
 
-        // If render returns null/undefined, retry briefly (race condition fallback)
+        TURNSTILE_WIDGET_ID = window.turnstile.render(mount, {
+          sitekey: siteKey,
+          callback: onTurnstileSuccess,
+          "expired-callback": onTurnstileExpired,
+          "error-callback": onTurnstileError
+        });
+
         if (TURNSTILE_WIDGET_ID === null || TURNSTILE_WIDGET_ID === undefined){
-          var tries = 0;
-          var timer = setInterval(function(){
-            tries++;
-            try{
-              if (TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined){
-                clearInterval(timer);
-                return;
-              }
-              if (window.turnstile && typeof window.turnstile.render === "function"){
-                TURNSTILE_WIDGET_ID = window.turnstile.render(el, { sitekey: siteKey });
-                if (TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined){
-                  clearInterval(timer);
-                }
-              }
-            }catch(e){
-              clearInterval(timer);
-              showDiag("Verification failed to render. This is usually a Turnstile domain setting issue. Ensure your Turnstile widget allows mindobirdwatching.com.");
-            }
-            if (tries >= 10){
-              clearInterval(timer);
-              showDiag("Verification did not load. Check Turnstile allowed domains (mindobirdwatching.com) and refresh.");
-            }
-          }, 300);
+          showDiag("Verification did not render. Check Turnstile allowed domains include mindobirdwatching.com.");
         }
       }catch(e){
-        var diag = document.getElementById("turnstileDiag");
-        if (diag){
-          diag.style.display = "block";
-          diag.textContent = "Verification failed to load. Check Turnstile configuration and refresh.";
+        var diag2 = document.getElementById("turnstileDiag");
+        if (diag2){
+          diag2.style.display = "block";
+          diag2.textContent = "Verification failed to load. Check Turnstile configuration and refresh.";
         }
         console.log("Turnstile render failed", e);
       }
     }
   </script>
+  <!-- IMPORTANT CHANGE: explicit render + onload -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>
 </head>
-
 <body>
   <div class="container">
     <div id="siteHeader"></div>
+<main class="page card payPage">
+  <header class="payHero">
+    <h1 id="tTitle">Pay for a Tour</h1>
+    <p id="tSubtitle">Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.</p>
 
-    <main class="page card payPage">
-      <header class="payHero">
-        <h1 id="tTitle">Pay for a Tour</h1>
-        <p id="tSubtitle">Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.</p>
+    <div class="pillRow" aria-label="Key details">
+      <div class="pill">Price is per person</div>
+      <div class="pill" id="pillTimezone">Timezone: America/Guayaquil</div>
+      <div class="pill" id="pillPickupWindow">Pickup window: 15 minutes</div>
+    </div>
+  </header>
 
-        <div class="pillRow" aria-label="Key details">
-          <div class="pill">Price is per person</div>
-          <div class="pill" id="pillTimezone">Timezone: America/Guayaquil</div>
-          <div class="pill" id="pillPickupWindow">Pickup window: 15 minutes</div>
+  <section class="payGrid" aria-label="Tour checkout">
+    <aside class="panel tourCard" aria-label="Tour summary">
+      <div class="tourMedia">
+        <img id="tourImage" src="" alt="Promo image" loading="lazy" />
+      </div>
+
+      <div class="tourMetaRow">
+        <div>
+          <div class="tourCode" id="tourCode">MBW---</div>
+          <div class="tourTitle" id="tourTitle">Loading tour...</div>
+          <p class="tourSubtitle" id="tourSubtitle">Duration: - | Pickup: -</p>
         </div>
-      </header>
+        <div class="tourPrice" id="tourPrice">$0.00 per person</div>
+      </div>
 
-      <section class="payGrid" aria-label="Tour checkout">
-        <aside class="panel tourCard" aria-label="Tour summary">
-          <div class="tourMedia">
-            <img id="tourImage" src="" alt="Promo image" loading="lazy" />
-          </div>
+      <p class="tourSubtitle" id="tourOneLiner"></p>
+    </aside>
 
-          <div class="tourMetaRow">
-            <div>
-              <div class="tourCode" id="tourCode">MBW---</div>
-              <div class="tourTitle" id="tourTitle">Loading tour...</div>
-              <p class="tourSubtitle" id="tourSubtitle">Duration: - | Pickup: -</p>
-            </div>
-            <div class="tourPrice" id="tourPrice">$0.00 per person</div>
-          </div>
+    <div class="panel" aria-label="Checkout form">
+      <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:&quot;Playfair Display&quot;,serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
+      <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
 
-          <p class="tourSubtitle" id="tourOneLiner"></p>
-        </aside>
+      <div class="hint" id="lockedHint"></div>
 
-        <div class="panel" aria-label="Checkout form">
-          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:\"Playfair Display\",serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
-          <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
+      <div class="field">
+        <label>Tour</label>
+        <input id="tourLocked" class="control" type="text" readonly />
+        <div class="subtext">This is locked from the payment link.</div>
+      </div>
 
-          <div class="hint" id="lockedHint"></div>
+      <div class="field">
+        <label>Tour date</label>
+        <input id="dateLocked" class="control" type="text" readonly />
+        <div class="subtext">Past dates are not allowed.</div>
+      </div>
 
-          <div class="field">
-            <label>Tour</label>
-            <input id="tourLocked" class="control" type="text" readonly />
-            <div class="subtext">This is locked from the payment link.</div>
-          </div>
+      <div class="field">
+        <label for="partyInput" id="tPartyLabel">Number of people <span class="req">*</span></label>
+        <select id="partyInput" class="control" required></select>
+        <div class="subtext" id="partyHelp"></div>
+      </div>
 
-          <div class="field">
-            <label>Tour date</label>
-            <input id="dateLocked" class="control" type="text" readonly />
-            <div class="subtext">Past dates are not allowed.</div>
-          </div>
-
-          <div class="field">
-            <label for="partyInput" id="tPartyLabel">Number of people <span class="req">*</span></label>
-            <select id="partyInput" class="control" required></select>
-            <div class="subtext" id="partyHelp"></div>
-          </div>
-
-          <div class="twoCol">
-            <div class="field">
-              <label for="firstName" id="tFirstLabel">Main contact first name <span class="req">*</span></label>
-              <input id="firstName" class="control" type="text" autocomplete="given-name" autocapitalize="words" required />
-            </div>
-            <div class="field">
-              <label for="lastName" id="tLastLabel">Main contact last name <span class="req">*</span></label>
-              <input id="lastName" class="control" type="text" autocomplete="family-name" autocapitalize="words" required />
-            </div>
-          </div>
-
-          <div class="twoCol">
-            <div class="field">
-              <label for="email" id="tEmailLabel">Email <span class="req">*</span></label>
-              <input id="email" class="control" type="email" autocomplete="email" required />
-            </div>
-            <div class="field">
-              <label for="phone" id="tPhoneLabel">Phone <span class="req">*</span></label>
-              <input id="phone" class="control" type="tel" autocomplete="tel" required />
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="whatsapp" id="tWhatsLabel">WhatsApp number <span class="req">*</span></label>
-            <input id="whatsapp" class="control" type="tel" autocomplete="tel" required />
-            <div class="subtext">Include country code if possible.</div>
-          </div>
-
-          <div class="field">
-            <label for="pickupLabel" id="tPickupLabel">Pickup location label <span class="req">*</span></label>
-            <input id="pickupLabel" class="control" type="text" required />
-            <div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
-          </div>
-
-          <div class="field">
-            <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name</label>
-            <input id="pickupAddress" class="control" type="text" />
-            <div class="subtext">Optional.</div>
-          </div>
-
-          <div class="field">
-            <label for="notes" id="tNotesLabel">Notes (optional)</label>
-            <textarea id="notes" class="control" rows="3"></textarea>
-          </div>
-
-          <div class="field" id="turnstileWrap" style="margin-top:12px;">
-            <label id="tTurnstileLabel">Verification</label>
-            <input type="hidden" id="turnstileToken" value="">
-            <div id="turnstileEl" class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieG" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileError"></div>
-            <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
-            <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
-          </div>
-
-          <div class="checkRow">
-            <input id="agree" type="checkbox" />
-            <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
-          </div>
-
-          <div class="actions">
-            <button id="btnPay" class="btn btnPrimary" type="button"><span id="tPayBtn">Continue to Stripe</span></button>
-            <button id="btnReset" class="btn" type="button"><span id="tResetBtn">Reset</span></button>
-          </div>
-
-          <div id="status" class="status" aria-live="polite"></div>
+      <div class="twoCol">
+        <div class="field">
+          <label for="firstName" id="tFirstLabel">Main contact first name <span class="req">*</span></label>
+          <input id="firstName" class="control" type="text" autocomplete="given-name" autocapitalize="words" required />
         </div>
-      </section>
-    </main>
+        <div class="field">
+          <label for="lastName" id="tLastLabel">Main contact last name <span class="req">*</span></label>
+          <input id="lastName" class="control" type="text" autocomplete="family-name" autocapitalize="words" required />
+        </div>
+      </div>
 
-    <div id="siteFooter"></div>
+      <div class="twoCol">
+        <div class="field">
+          <label for="email" id="tEmailLabel">Email <span class="req">*</span></label>
+          <input id="email" class="control" type="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="phone" id="tPhoneLabel">Phone <span class="req">*</span></label>
+          <input id="phone" class="control" type="tel" autocomplete="tel" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="whatsapp" id="tWhatsLabel">WhatsApp number <span class="req">*</span></label>
+        <input id="whatsapp" class="control" type="tel" autocomplete="tel" required />
+        <div class="subtext">Include country code if possible.</div>
+      </div>
+
+      <div class="field">
+        <label for="pickupLabel" id="tPickupLabel">Pickup location label <span class="req">*</span></label>
+        <input id="pickupLabel" class="control" type="text" required />
+        <div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
+      </div>
+
+      <div class="field">
+        <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name</label>
+        <input id="pickupAddress" class="control" type="text" />
+        <div class="subtext">Optional.</div>
+      </div>
+
+      <div class="field">
+        <label for="notes" id="tNotesLabel">Notes (optional)</label>
+        <textarea id="notes" class="control" rows="3"></textarea>
+      </div>
+
+      <div class="field" id="turnstileWrap" style="margin-top:12px;">
+        <label id="tTurnstileLabel">Verification</label>
+        <input type="hidden" id="turnstileToken" value="">
+        <!-- IMPORTANT CHANGE: no cf-turnstile + no data-* attributes (explicit render handles it) -->
+        <div id="turnstileEl"></div>
+        <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
+        <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
+      </div>
+
+      <div class="checkRow">
+        <input id="agree" type="checkbox" />
+        <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
+      </div>
+
+      <div class="actions">
+        <button id="btnPay" class="btn btnPrimary" type="button"><span id="tPayBtn">Continue to Stripe</span></button>
+        <button id="btnReset" class="btn" type="button"><span id="tResetBtn">Reset</span></button>
+      </div>
+
+      <div id="status" class="status" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+
+<div id="siteFooter"></div>
   </div>
-
   <script>
     (function(){
       var els = {
@@ -618,29 +592,29 @@
       }
 
       function getTurnstileToken(){
-      // Prefer the token captured by callback (auto-render mode)
-      try{
-        var el = document.getElementById("turnstileToken");
-        if (el && el.value) return String(el.value || "").trim();
-      }catch(e){}
+        try{
+          var el = document.getElementById("turnstileToken");
+          if (el && el.value) return String(el.value || "").trim();
+        }catch(e){}
 
-      // Fallback: attempt to read from the Turnstile widget API if present
-      try{
-        if (window.turnstile && typeof window.turnstile.getResponse === "function"){
-          var t = window.turnstile.getResponse();
-          return (t ? String(t).trim() : "");
-        }
-      }catch(e){}
+        try{
+          if (window.turnstile && typeof window.turnstile.getResponse === "function"){
+            var t = (TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined)
+              ? window.turnstile.getResponse(TURNSTILE_WIDGET_ID)
+              : window.turnstile.getResponse();
+            return (t ? String(t).trim() : "");
+          }
+        }catch(e){}
 
-      return "";
-    }
+        return "";
+      }
 
       async function init(){
         setStatus("");
 
         var p = qp();
 
-        // Attach auto-capitalization (this was missing before)
+        // Auto-capitalize
         attachAutoCapInput(els.firstName);
         attachAutoCapInput(els.lastName);
 
@@ -847,7 +821,6 @@
               throw new Error("Invalid party size.");
             }
 
-            // If Turnstile is configured, require a token
             var meta = document.querySelector('meta[name="turnstile-sitekey"]');
             var siteKey = meta ? (meta.getAttribute("content") || "").trim() : "";
             var tsToken = siteKey ? getTurnstileToken() : "";
@@ -907,7 +880,9 @@
           els.agree.checked = false;
           setStatus("");
           try{
-            if (window.turnstile && TURNSTILE_WIDGET_ID !== null) window.turnstile.reset(TURNSTILE_WIDGET_ID);
+            if (window.turnstile && TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined){
+              window.turnstile.reset(TURNSTILE_WIDGET_ID);
+            }
           }catch(e){}
         });
       }
