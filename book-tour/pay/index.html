@@ -721,7 +721,7 @@
             }
 
             var payload = {
-              stripe_environment: "live",
+              stripe_environment: (new URLSearchParams(location.search).get("env") || "live"),
               language: p.lang,
               tour_code: p.tour,
               tour_date: p.date,
