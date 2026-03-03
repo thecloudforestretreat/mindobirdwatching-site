@@ -341,7 +341,7 @@
       }
     }
   </script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=turnstileOnload" async defer></script>
 </head>
 
 <body>
@@ -887,5 +887,66 @@
       init();
     })();
   </script>
+
+  <script>
+    // Turnstile (explicit render) - robust mount + gentle fallback
+    function onTurnstileSuccess(token){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = token || "";
+      var soft = document.getElementById("turnstileSoftMsg");
+      if (soft){ soft.style.display = "none"; }
+    }
+    function onTurnstileExpired(){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = "";
+    }
+
+    var __tsRendered = false;
+    function __renderTurnstile(){
+      if (__tsRendered) return;
+      if (!window.turnstile || typeof window.turnstile.render !== "function") return;
+      var box = document.getElementById("turnstileBox");
+      if (!box) return;
+
+      // Avoid double-render if HTML already contains iframe
+      if (box.querySelector("iframe")) { __tsRendered = true; return; }
+
+      try {
+        window.turnstile.render(box, {
+          sitekey: "0x4AAAAAACYIFF7ZNXiqieG",
+          callback: onTurnstileSuccess,
+          "expired-callback": onTurnstileExpired
+        });
+        __tsRendered = true;
+      } catch (e) {
+        // If something blocks it, show a gentle message (no red banner)
+        var soft = document.getElementById("turnstileSoftMsg");
+        if (soft){ soft.style.display = "block"; }
+      }
+    }
+
+    // Called by Turnstile API script (onload=turnstileOnload)
+    function turnstileOnload(){
+      __renderTurnstile();
+    }
+
+    // Safety: retry for slow networks / script ordering
+    (function(){
+      var tries = 0;
+      function tick(){
+        tries++;
+        __renderTurnstile();
+        if (__tsRendered) return;
+        if (tries >= 20){
+          var soft = document.getElementById("turnstileSoftMsg");
+          if (soft){ soft.style.display = "block"; }
+          return;
+        }
+        setTimeout(tick, 350);
+      }
+      setTimeout(tick, 350);
+    })();
+  </script>
+
 </body>
 </html>
