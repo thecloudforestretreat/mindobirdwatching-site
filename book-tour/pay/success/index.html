@@ -1,227 +1,581 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Payment Success | Mindo Bird Watching</title>
+<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Payment success | Mindo Bird Watching</title>
+
   <link rel="icon" href="/favicon.ico" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
+
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/includes.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+
   <style>
-    .cardBox{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(0,0,0,.04)}
-    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}
-    .kvs{display:grid;gap:10px;margin-top:10px}
-    .kv{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid rgba(0,0,0,.10);border-radius:12px;background:#fafbff}
-    .kv b{font-weight:800}
-    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    /* Page-local styles ONLY for the guest pay page */
+    #siteHeader{
+      display:flex;
+      justify-content:center;
+      margin-bottom: 14px;
+    }
+    #siteHeader > *{
+      width:100%;
+      max-width: 1120px;
+    }
+    #siteHeader .topbar,
+    #siteHeader header.topbar,
+    #siteHeader div.topbar{
+      width:100%;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+      padding: 10px 12px;
+      margin: 16px auto 0;
+    }
+    @media (min-width: 901px){
+      #siteHeader .topbar .right,
+      #siteHeader .topbar nav.nav{
+        flex-wrap: nowrap !important;
+        min-width: 0 !important;
+      }
+      #siteHeader .topbar nav.nav{
+        padding-left: 8px;
+        overflow: hidden;
+      }
+      #siteHeader .topbar .lang{ flex: 0 0 auto; }
+    }
+
+    .payPage { padding: 22px 22px 26px; }
+    @media (max-width: 900px) { .payPage { padding: 18px 14px 20px; } }
+
+    .payHero h1{
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      margin: 0 0 6px;
+      color: #0e4b2e;
+      font-size: clamp(30px, 3.2vw, 36px);
+    }
+    .payHero p{
+      margin: 0;
+      max-width: 78ch;
+      color: rgba(0,0,0,0.62);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .pillRow{
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.75);
+    }
+
+    .payGrid{
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 900px){ .payGrid { grid-template-columns: 1fr; } }
+
+    .panel{
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+      padding: 18px;
+    }
+    @media (max-width: 900px){ .panel { padding: 16px; } }
+
+    .tourCard{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .tourMedia{
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.55);
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tourMedia img{
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .tourMetaRow{
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .tourCode{
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.55);
+    }
+    .tourTitle{
+      margin: 4px 0 2px;
+      font-weight: 900;
+      font-size: 18px;
+      color: rgba(0,0,0,0.85);
+    }
+    .tourSubtitle{
+      margin: 0;
+      color: rgba(0,0,0,0.62);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .tourPrice{
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      font-size: 13px;
+      font-weight: 900;
+      color: rgba(0,0,0,0.78);
+      white-space: nowrap;
+    }
+
+    .hint{
+      margin: 0 0 12px;
+      color: rgba(0,0,0,0.55);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .req{ color: #b42318; font-weight: 900; }
+
+    .field{ margin-top: 12px; }
+    .field:first-of-type{ margin-top: 0; }
+
+    label{
+      display: block;
+      font-weight: 800;
+      font-size: 13px;
+      color: rgba(0,0,0,0.78);
+      margin-bottom: 6px;
+    }
+    .control{
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.75);
+      padding: 12px 12px;
+      font-size: 14px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .control:focus{
+      border-color: rgba(11,90,51,0.55);
+      box-shadow: 0 0 0 3px rgba(11,90,51,0.14);
+    }
+    input.control{ height: 44px; }
+    select.control{ height: 44px; }
+    textarea.control{ height: auto; }
+
+    .subtext{
+      margin-top: 6px;
+      font-size: 12px;
+      color: rgba(0,0,0,0.55);
+      line-height: 1.35;
+    }
+
+    .twoCol{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px){ .twoCol { grid-template-columns: 1fr; } }
+    .twoCol .field{ margin-top: 0; }
+    .twoCol label{ min-height: 18px; }
+
+    .actions{
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn{
+      appearance: none;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.72);
+      color: rgba(0,0,0,0.78);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 12px 20px rgba(0,0,0,0.10);
+    }
     .btnPrimary{
       border-color: rgba(11,90,51,0.32);
       background: #0b5a33;
       color: #ffffff;
     }
-    .btn{appearance:none;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:12px 14px;font-weight:750;cursor:pointer;background:#fff}
-    .hint{opacity:.85}
-    .err{margin-top:12px;padding:10px 12px;border-radius:12px;background:#fff5f5;border:1px solid rgba(180,0,0,.25);color:#7a0000;display:none}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    .btn:hover{ filter: brightness(0.98); }
+    .btn:disabled{ opacity: 0.55; cursor: not-allowed; }
+
+    .checkRow{
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 12px;
+    }
+    .checkRow input{ margin-top: 3px; }
+    .checkRow label{
+      margin: 0;
+      font-weight: 700;
+      font-size: 13px;
+      color: rgba(0,0,0,0.72);
+      line-height: 1.35;
+    }
+
+    .status{
+      margin-top: 10px;
+      color: #0b5a33;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .statusError{ color: #b42318; }
+
+    #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
+    #termsLink:hover{ text-decoration: none; }
   </style>
+
+  <style>
+    /* Success/Cancel pages reuse the pay page look and spacing */
+    .pageShell{ padding: 18px 14px 28px; }
+    .shellCard{
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.84);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 18px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.08);
+      padding: 18px;
+    }
+    .shellHead{ margin-bottom: 14px; }
+    .h1{ margin: 0; font-size: 34px; line-height: 1.1; color: #1f5a35; letter-spacing: -0.01em; }
+    .sub{ margin: 6px 0 0; color: rgba(0,0,0,0.62); font-size: 13px; }
+    .grid2{ display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; }
+    @media (max-width: 980px){ .grid2{ grid-template-columns: 1fr; } }
+    .card{
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .h2{ margin: 0 0 10px; font-size: 14px; color: #1f5a35; }
+    .kv{ border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.7); }
+    .kvRow{ display:flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-top: 1px solid rgba(0,0,0,0.06); }
+    .kvRow:first-child{ border-top: none; }
+    .kvKey{ font-size: 12px; color: rgba(0,0,0,0.64); }
+    .kvVal{ font-size: 12px; color: rgba(0,0,0,0.9); font-weight: 600; text-align: right; }
+    .help{ margin: 10px 0 12px; font-size: 12px; color: rgba(0,0,0,0.58); }
+    .actions{ display:flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .bullets{ margin: 8px 0 0 18px; color: rgba(0,0,0,0.74); font-size: 12px; }
+    .muted{ margin: 10px 0 0; font-size: 12px; color: rgba(0,0,0,0.58); }
+    .statusBox{
+      margin-top: 10px;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .statusWarn{ background: rgba(255, 0, 0, 0.06); border: 1px solid rgba(255, 0, 0, 0.25); color: #8f1d1d; }
+    .statusOk{ background: rgba(11, 90, 51, 0.08); border: 1px solid rgba(11, 90, 51, 0.22); color: #0b5a33; }
+  </style>
+
 </head>
 <body>
-  <div id="siteHeader"></div>
+  <div class="container">
+    <div id="siteHeader"></div>
 
-  <main class="page card">
-    <div class="cardBox">
-      <h1 style="margin:0 0 6px 0">Thanks for your payment</h1>
-      <p class="hint" style="margin:0">Your tour booking has been received. We will follow up if we need any extra details.</p>
+    <main class="pageShell">
+      <div class="shellCard">
+        <div class="shellHead">
+          <h1 class="h1" id="pageTitle"></h1>
+          <p class="sub" id="pageSub"></p>
+        </div>
 
-      <div class="grid" style="margin-top:14px">
-        <section aria-label="Booking summary" class="cardBox" style="box-shadow:none">
-          <h2 style="margin:0 0 8px 0;font-size:18px">Booking summary</h2>
+        <div class="grid grid2">
+          <section class="card" aria-label="Booking summary">
+            <h2 class="h2" id="summaryTitle">Booking summary</h2>
 
-          <div class="kvs" id="summaryKvs">
-            <div class="kv"><span>Tour</span><b id="tourLabel">Loading...</b></div>
-            <div class="kv"><span>Tour date</span><b id="tourDate">-</b></div>
-            <div class="kv"><span>Days until tour</span><b id="countdown">-</b></div>
-            <div class="kv"><span>Pickup window</span><b id="pickupWindow">-</b></div>
-          </div>
+            <div class="kv">
+              <div class="kvRow">
+                <div class="kvKey" id="kTour">Tour</div>
+                <div class="kvVal" id="vTour">-</div>
+              </div>
+              <div class="kvRow">
+                <div class="kvKey" id="kDate">Tour date</div>
+                <div class="kvVal" id="vDate">-</div>
+              </div>
+              <div class="kvRow">
+                <div class="kvKey" id="kDays">Days until tour</div>
+                <div class="kvVal" id="vDays">-</div>
+              </div>
+              <div class="kvRow">
+                <div class="kvKey" id="kPickup">Pickup window</div>
+                <div class="kvVal" id="vPickup">-</div>
+              </div>
+            </div>
 
-          <p class="hint" style="margin:12px 0 0 0">
-            Pickup will be at the time listed on the tour. Please allow the pickup window shown above.
-          </p>
+            <p class="help" id="pickupHelp">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
 
-          <div class="actions">
-            <a class="btnPrimary" href="/shop/" target="_blank" rel="noopener">Visit our store</a>
-            <a class="btn" id="waLink" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp us</a>
-            <a class="btn" href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a>
-            <a class="btn" href="https://facebook.com/" target="_blank" rel="noopener">Facebook</a>
-          </div>
+            <div class="actions">
+              <a class="btn btnPrimary" id="btnPrimary" href="#">Visit our store</a>
+              <a class="btn" id="btnWhats" href="#" rel="noopener">WhatsApp us</a>
+              <a class="btn" id="btnIG" href="#" rel="noopener">Instagram</a>
+              <a class="btn" id="btnFB" href="#" rel="noopener">Facebook</a>
+            </div>
 
-          <p class="hint" style="margin:12px 0 0 0;font-size:12px">
-            You can close this page anytime. The countdown is only useful while this page is open.
-          </p>
+            <div class="statusBox statusWarn" id="statusBox" style="display:none;"></div>
+          </section>
 
-          <div class="err" id="errBox"></div>
-        </section>
-
-        <aside aria-label="What happens next" class="cardBox" style="box-shadow:none">
-          <h2 style="margin:0 0 8px 0;font-size:18px">What happens next</h2>
-          <ul style="margin:0;padding-left:18px;opacity:.9">
-            <li>We have your booking details and payment confirmation.</li>
-            <li>If we need anything, we will contact you by email or WhatsApp.</li>
-            <li>Keep an eye out for a message if your pickup location needs clarification.</li>
-          </ul>
-          <p class="hint" style="margin:12px 0 0 0">
-            Terms and Conditions are available <a id="termsLink" href="/terms-conditions/" target="_blank" rel="noopener">here</a>.
-          </p>
-        </aside>
+          <aside class="card" aria-label="What happens next">
+            <h2 class="h2" id="nextTitle">What happens next</h2>
+            <ul class="bullets" id="nextList">
+              <li>We have your booking details and payment confirmation.</li>
+              <li>If we need anything, we will contact you by email or WhatsApp.</li>
+              <li>Keep an eye out for a message if your pickup location needs clarification.</li>
+            </ul>
+            <p class="muted">
+              <a id="termsLink" href="/terms-and-conditions/">Terms and Conditions</a> are available here.
+            </p>
+          </aside>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <div id="siteFooter"></div>
+    <div id="siteFooter"></div>
+  </div>
+
+  <script src="/assets/js/includes.js"></script>
+  <script src="/assets/js/site.js"></script>
 
   <script>
     (function(){
-      "use strict";
+      function qs(k){ return new URLSearchParams(window.location.search).get(k); }
 
-      // Same-origin Worker route
-      const API_BASE = "/stripe";
-
-      function qs(name){
-        const u = new URL(location.href);
-        return u.searchParams.get(name) || "";
+      function setText(id, txt){
+        var el = document.getElementById(id);
+        if (el) el.textContent = (txt == null || txt === "") ? "-" : String(txt);
       }
-
-      function setErr(msg){
-        var box = document.getElementById("errBox");
+      function setStatus(msg){
+        var box = document.getElementById("statusBox");
         if (!box) return;
         if (!msg){
           box.style.display = "none";
           box.textContent = "";
+          box.className = "statusBox statusWarn";
           return;
         }
         box.style.display = "block";
         box.textContent = msg;
+        box.className = "statusBox statusWarn";
       }
-
-      function formatDaysUntil(dateISO){
-        const d = new Date(dateISO + "T00:00:00");
-        if (isNaN(d.getTime())) return null;
-        const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const diff = Math.round((d.getTime() - start.getTime()) / (24*60*60*1000));
-        return diff;
+      function pad2(n){ return String(n).padStart(2,"0"); }
+      function formatDate(iso){
+        // iso = YYYY-MM-DD
+        if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || "-";
+        var parts = iso.split("-");
+        return parts[0] + "-" + parts[1] + "-" + parts[2];
       }
+      function daysUntil(iso){
+        if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "-";
+        var today = new Date();
+        var y = today.getFullYear();
+        var m = today.getMonth();
+        var d = today.getDate();
+        var start = new Date(y, m, d, 0,0,0,0);
+        var p = iso.split("-");
+        var target = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 0,0,0,0);
+        var diff = Math.round((target.getTime() - start.getTime()) / 86400000);
+        return String(diff);
+      }
+      function pickupWindowLabel(pickupTime, minutes){
+        if (!pickupTime) return "-";
+        var mm = Number(minutes || 15);
+        if (!Number.isFinite(mm) || mm <= 0) mm = 15;
 
-      function addMinutesLabel(timeStr, minutesToAdd){
-        try{
-          const m = String(timeStr).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-          if (!m) return timeStr;
-          let h = Number(m[1]);
-          const min = Number(m[2]);
-          const ampm = m[3].toUpperCase();
-          if (ampm === "PM" && h !== 12) h += 12;
-          if (ampm === "AM" && h === 12) h = 0;
+        // pickupTime like "5:00 AM"
+        var m = String(pickupTime).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (!m) return pickupTime + " (+ " + mm + " min)";
+        var h = Number(m[1]);
+        var min = Number(m[2]);
+        var ap = m[3].toUpperCase();
 
-          const total = (h * 60 + min + (Number(minutesToAdd)||0)) % (24 * 60);
-          let nh = Math.floor(total / 60);
-          const nmin = total % 60;
+        if (ap === "PM" && h !== 12) h += 12;
+        if (ap === "AM" && h === 12) h = 0;
 
-          let nampm = nh >= 12 ? "PM" : "AM";
-          let dispH = nh % 12;
-          if (dispH === 0) dispH = 12;
+        var base = new Date(2000,0,1,h,min,0,0);
+        var end = new Date(base.getTime() + mm * 60000);
 
-          return dispH + ":" + String(nmin).padStart(2, "0") + " " + nampm;
-        } catch(e){
-          return timeStr;
+        function fmt(dt){
+          var hh = dt.getHours();
+          var ap2 = hh >= 12 ? "PM" : "AM";
+          var h12 = hh % 12; if (h12 === 0) h12 = 12;
+          return h12 + ":" + pad2(dt.getMinutes()) + " " + ap2;
         }
+        return fmt(base) + " to " + fmt(end);
       }
 
-      function detectLang(){
-        const u = new URL(location.href);
-        const p = (u.pathname || "").toLowerCase();
-        const q = (u.searchParams.get("lang") || "").toLowerCase();
-        if (q === "es" || q === "en") return q;
-        if (p.indexOf("/es/") === 0) return "es";
-        return "en";
+      function setLangUI(lang){
+        var terms = document.getElementById("termsLink");
+        if (terms){
+          terms.href = (lang === "es") ? "/es/terminos-y-condiciones/" : "/terms-and-conditions/";
+          // keep visible text as "Terms and Conditions" in both, matches pay page
+        }
+        // primary button is store link
+        var btn = document.getElementById("btnPrimary");
+        if (btn) btn.href = (lang === "es") ? "/es/" : "/";
       }
 
       async function fetchSession(sessionId){
-        // Your Worker defaults to sandbox if env is missing, so we try live first then sandbox.
-        const tries = [
-          API_BASE + "/api/session?session_id=" + encodeURIComponent(sessionId) + "&env=live",
-          API_BASE + "/api/session?session_id=" + encodeURIComponent(sessionId) + "&env=sandbox"
-        ];
-
-        let lastErr = null;
-        for (const url of tries){
+        // Try live first, then sandbox. This avoids the "missing" issue when Stripe is live.
+        var bases = ["/stripe/api/session?env=live&session_id=", "/stripe/api/session?env=sandbox&session_id="];
+        var lastErr = "";
+        for (var i=0;i<bases.length;i++){
           try{
-            const res = await fetch(url, { headers: { "accept":"application/json" } });
-            const data = await res.json().catch(() => null);
-            if (res.ok && data && data.ok === true && data.session) return data.session;
-            lastErr = (data && data.error) ? data.error : ("Request failed (" + res.status + ")");
-          } catch(e){
-            lastErr = "Request failed";
+            var r = await fetch(bases[i] + encodeURIComponent(sessionId), { credentials: "omit" });
+            var j = await r.json().catch(function(){ return null; });
+            if (r.ok && j && j.ok) return j;
+            lastErr = (j && j.error) ? j.error : ("Request failed (" + r.status + ")");
+          }catch(e){
+            lastErr = e && e.message ? e.message : "Network error";
           }
         }
-        throw new Error(lastErr || "Could not load session");
+        throw new Error(lastErr || "Could not load session details.");
       }
 
-      async function loadFromWorker(sessionId, lang){
-        const session = await fetchSession(sessionId);
-        const md = session.metadata || {};
+      function hydrateFromMetadata(md){
+        var tourTitle = md.tour_title || md.tour_code || "-";
+        var tourDate = md.tour_date || "-";
+        var days = daysUntil(md.tour_date);
 
-        const tourCode = md.tour_code || "";
-        const tourTitle = md.tour_title || "";
-        const tourDate = md.tour_date || "";
-        const pickupTime = md.pickup_time_local || "";
-        const pickupWindow = Number(md.pickup_window_minutes || 15);
+        var pickup = pickupWindowLabel(md.pickup_time_local, md.pickup_window_minutes);
 
-        document.getElementById("tourLabel").textContent = tourCode ? (tourCode + (tourTitle ? (" - " + tourTitle) : "")) : "Tour booked";
-        document.getElementById("tourDate").textContent = tourDate || "-";
+        setText("vTour", tourTitle);
+        setText("vDate", formatDate(tourDate));
+        setText("vDays", days);
+        setText("vPickup", pickup);
 
-        const days = tourDate ? formatDaysUntil(tourDate) : null;
-        document.getElementById("countdown").textContent = (days === null) ? "-" : String(days);
-
-        if (pickupTime){
-          const end = addMinutesLabel(pickupTime, pickupWindow);
-          document.getElementById("pickupWindow").textContent = pickupTime + " to " + end;
-        } else {
-          document.getElementById("pickupWindow").textContent = "-";
+        var help = document.getElementById("pickupHelp");
+        if (help){
+          if (md.pickup_window_minutes){
+            help.textContent = "Pickup will be at the time listed on the tour. Please allow a " + md.pickup_window_minutes + " minute pickup window.";
+          }else{
+            help.textContent = "Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.";
+          }
         }
 
-        // Terms link EN/ES
-        var termsHref = (lang === "es") ? "/es/terminos-y-condiciones/" : "/terms-conditions/";
-        var termsLink = document.getElementById("termsLink");
-        if (termsLink) termsLink.setAttribute("href", termsHref);
+        // also set header labels
+        var title = document.getElementById("pageTitle");
+        if (title) title.textContent = (md.language === "es") ? "Gracias por tu pago" : "Thanks for your payment";
+        var sub = document.getElementById("pageSub");
+        if (sub) sub.textContent = (md.language === "es")
+          ? "Hemos recibido tu reserva. Te contactaremos si necesitamos detalles adicionales."
+          : "Your tour booking has been received. We will follow up if we need any extra details.";
+
+        var summaryTitle = document.getElementById("summaryTitle");
+        if (summaryTitle) summaryTitle.textContent = (md.language === "es") ? "Resumen de reserva" : "Booking summary";
+        var nextTitle = document.getElementById("nextTitle");
+        if (nextTitle) nextTitle.textContent = (md.language === "es") ? "Que sigue" : "What happens next";
+
+        var nextList = document.getElementById("nextList");
+        if (nextList){
+          nextList.innerHTML = "";
+          var items = (md.language === "es")
+            ? [
+                "Tenemos tus detalles de reserva y confirmacion de pago.",
+                "Si necesitamos algo, te contactaremos por email o WhatsApp.",
+                "Estate atento por si necesitamos aclarar tu ubicacion de recogida."
+              ]
+            : [
+                "We have your booking details and payment confirmation.",
+                "If we need anything, we will contact you by email or WhatsApp.",
+                "Keep an eye out for a message if your pickup location needs clarification."
+              ];
+          for (var i=0;i<items.length;i++){
+            var li = document.createElement("li");
+            li.textContent = items[i];
+            nextList.appendChild(li);
+          }
+        }
+
+        setLangUI(md.language === "es" ? "es" : "en");
       }
 
-      (async function init(){
-        const sessionId = qs("session_id");
-        const lang = detectLang();
+      function initButtons(){
+        var btnWhats = document.getElementById("btnWhats");
+        if (btnWhats) btnWhats.href = "https://wa.me/593992794464";
+        var btnIG = document.getElementById("btnIG");
+        if (btnIG) btnIG.href = "https://www.instagram.com/mindobirdwatching/";
+        var btnFB = document.getElementById("btnFB");
+        if (btnFB) btnFB.href = "https://www.facebook.com/mindobirdwatching/";
+        // store handled by setLangUI
+      }
 
-        // Ensure terms link is correct even if API fails
-        var termsHref = (lang === "es") ? "/es/terminos-y-condiciones/" : "/terms-conditions/";
-        var termsLink = document.getElementById("termsLink");
-        if (termsLink) termsLink.setAttribute("href", termsHref);
+      async function init(){
+        document.getElementById("pageTitle").textContent = "Thanks for your payment";
+        document.getElementById("pageSub").textContent = "Your tour booking has been received. We will follow up if we need any extra details.";
+        initButtons();
 
-        if (!sessionId){
-          document.getElementById("tourLabel").textContent = "Payment received";
-          document.getElementById("pickupWindow").textContent = "-";
-          setErr("Missing session_id in URL. Stripe should redirect here with ?session_id=...");
+        var sid = qs("session_id");
+        if (!sid){
+          setStatus("Missing session_id in URL. Stripe should redirect here with ?session_id=...");
           return;
         }
 
         try{
-          await loadFromWorker(sessionId, lang);
-          setErr("");
-        } catch(e){
-          document.getElementById("tourLabel").textContent = "Payment received";
-          document.getElementById("pickupWindow").textContent = "-";
-          setErr("Could not load booking details. Your payment is still successful. If needed, message us on WhatsApp with your email.");
+          var data = await fetchSession(sid);
+          var md = (data.session && data.session.metadata) ? data.session.metadata : {};
+          hydrateFromMetadata(md);
+          setStatus("");
+        }catch(e){
+          setStatus((e && e.message) ? e.message : "Could not load session details.");
         }
-      })();
+      }
+
+      if (document.readyState === "loading"){
+        document.addEventListener("DOMContentLoaded", init);
+      }else{
+        init();
+      }
     })();
   </script>
 </body>
