@@ -18,6 +18,7 @@
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
+
   <style>
     /* Page-local styles ONLY for the guest pay page */
     #siteHeader{
@@ -272,8 +273,9 @@
     #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
     #termsLink:hover{ text-decoration: none; }
   </style>
+
   <script>
-    // Cloudflare Turnstile callbacks (token is stored for submit)
+    // Turnstile callbacks (token is stored for submit)
     function onTurnstileSuccess(token){
       var el = document.getElementById("turnstileToken");
       if (el) el.value = token || "";
@@ -285,12 +287,6 @@
       if (el) el.value = "";
       var diag = document.getElementById("turnstileDiag");
       if (diag){ diag.style.display = "block"; diag.textContent = "Verification expired. Please verify again."; }
-    }
-    function onTurnstileError(){
-      var el = document.getElementById("turnstileToken");
-      if (el) el.value = "";
-      var diag = document.getElementById("turnstileDiag");
-      if (diag){ diag.style.display = "block"; diag.textContent = "Could not load verification. Please disable blockers or try another browser."; }
     }
 
     // Explicit render mode state
@@ -325,11 +321,11 @@
         // Prevent double render if includes/scripts rerun
         if (TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined) return;
 
+        // NOTE: no error-callback here.
         TURNSTILE_WIDGET_ID = window.turnstile.render(mount, {
           sitekey: siteKey,
           callback: onTurnstileSuccess,
-          "expired-callback": onTurnstileExpired,
-          "error-callback": onTurnstileError
+          "expired-callback": onTurnstileExpired
         });
 
         if (TURNSTILE_WIDGET_ID === null || TURNSTILE_WIDGET_ID === undefined){
@@ -345,137 +341,138 @@
       }
     }
   </script>
-  <!-- IMPORTANT CHANGE: explicit render + onload -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>
 </head>
+
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-<main class="page card payPage">
-  <header class="payHero">
-    <h1 id="tTitle">Pay for a Tour</h1>
-    <p id="tSubtitle">Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.</p>
 
-    <div class="pillRow" aria-label="Key details">
-      <div class="pill">Price is per person</div>
-      <div class="pill" id="pillTimezone">Timezone: America/Guayaquil</div>
-      <div class="pill" id="pillPickupWindow">Pickup window: 15 minutes</div>
-    </div>
-  </header>
+    <main class="page card payPage">
+      <header class="payHero">
+        <h1 id="tTitle">Pay for a Tour</h1>
+        <p id="tSubtitle">Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.</p>
 
-  <section class="payGrid" aria-label="Tour checkout">
-    <aside class="panel tourCard" aria-label="Tour summary">
-      <div class="tourMedia">
-        <img id="tourImage" src="" alt="Promo image" loading="lazy" />
-      </div>
-
-      <div class="tourMetaRow">
-        <div>
-          <div class="tourCode" id="tourCode">MBW---</div>
-          <div class="tourTitle" id="tourTitle">Loading tour...</div>
-          <p class="tourSubtitle" id="tourSubtitle">Duration: - | Pickup: -</p>
+        <div class="pillRow" aria-label="Key details">
+          <div class="pill">Price is per person</div>
+          <div class="pill" id="pillTimezone">Timezone: America/Guayaquil</div>
+          <div class="pill" id="pillPickupWindow">Pickup window: 15 minutes</div>
         </div>
-        <div class="tourPrice" id="tourPrice">$0.00 per person</div>
-      </div>
+      </header>
 
-      <p class="tourSubtitle" id="tourOneLiner"></p>
-    </aside>
+      <section class="payGrid" aria-label="Tour checkout">
+        <aside class="panel tourCard" aria-label="Tour summary">
+          <div class="tourMedia">
+            <img id="tourImage" src="" alt="Promo image" loading="lazy" />
+          </div>
 
-    <div class="panel" aria-label="Checkout form">
-      <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:&quot;Playfair Display&quot;,serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
-      <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
+          <div class="tourMetaRow">
+            <div>
+              <div class="tourCode" id="tourCode">MBW---</div>
+              <div class="tourTitle" id="tourTitle">Loading tour...</div>
+              <p class="tourSubtitle" id="tourSubtitle">Duration: - | Pickup: -</p>
+            </div>
+            <div class="tourPrice" id="tourPrice">$0.00 per person</div>
+          </div>
 
-      <div class="hint" id="lockedHint"></div>
+          <p class="tourSubtitle" id="tourOneLiner"></p>
+        </aside>
 
-      <div class="field">
-        <label>Tour</label>
-        <input id="tourLocked" class="control" type="text" readonly />
-        <div class="subtext">This is locked from the payment link.</div>
-      </div>
+        <div class="panel" aria-label="Checkout form">
+          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:&quot;Playfair Display&quot;,serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
+          <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
 
-      <div class="field">
-        <label>Tour date</label>
-        <input id="dateLocked" class="control" type="text" readonly />
-        <div class="subtext">Past dates are not allowed.</div>
-      </div>
+          <div class="hint" id="lockedHint"></div>
 
-      <div class="field">
-        <label for="partyInput" id="tPartyLabel">Number of people <span class="req">*</span></label>
-        <select id="partyInput" class="control" required></select>
-        <div class="subtext" id="partyHelp"></div>
-      </div>
+          <div class="field">
+            <label>Tour</label>
+            <input id="tourLocked" class="control" type="text" readonly />
+            <div class="subtext">This is locked from the payment link.</div>
+          </div>
 
-      <div class="twoCol">
-        <div class="field">
-          <label for="firstName" id="tFirstLabel">Main contact first name <span class="req">*</span></label>
-          <input id="firstName" class="control" type="text" autocomplete="given-name" autocapitalize="words" required />
+          <div class="field">
+            <label>Tour date</label>
+            <input id="dateLocked" class="control" type="text" readonly />
+            <div class="subtext">Past dates are not allowed.</div>
+          </div>
+
+          <div class="field">
+            <label for="partyInput" id="tPartyLabel">Number of people <span class="req">*</span></label>
+            <select id="partyInput" class="control" required></select>
+            <div class="subtext" id="partyHelp"></div>
+          </div>
+
+          <div class="twoCol">
+            <div class="field">
+              <label for="firstName" id="tFirstLabel">Main contact first name <span class="req">*</span></label>
+              <input id="firstName" class="control" type="text" autocomplete="given-name" autocapitalize="words" required />
+            </div>
+            <div class="field">
+              <label for="lastName" id="tLastLabel">Main contact last name <span class="req">*</span></label>
+              <input id="lastName" class="control" type="text" autocomplete="family-name" autocapitalize="words" required />
+            </div>
+          </div>
+
+          <div class="twoCol">
+            <div class="field">
+              <label for="email" id="tEmailLabel">Email <span class="req">*</span></label>
+              <input id="email" class="control" type="email" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="phone" id="tPhoneLabel">Phone <span class="req">*</span></label>
+              <input id="phone" class="control" type="tel" autocomplete="tel" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="whatsapp" id="tWhatsLabel">WhatsApp number <span class="req">*</span></label>
+            <input id="whatsapp" class="control" type="tel" autocomplete="tel" required />
+            <div class="subtext">Include country code if possible.</div>
+          </div>
+
+          <div class="field">
+            <label for="pickupLabel" id="tPickupLabel">Pickup location label <span class="req">*</span></label>
+            <input id="pickupLabel" class="control" type="text" required />
+            <div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
+          </div>
+
+          <div class="field">
+            <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name</label>
+            <input id="pickupAddress" class="control" type="text" />
+            <div class="subtext">Optional.</div>
+          </div>
+
+          <div class="field">
+            <label for="notes" id="tNotesLabel">Notes (optional)</label>
+            <textarea id="notes" class="control" rows="3"></textarea>
+          </div>
+
+          <div class="field" id="turnstileWrap" style="margin-top:12px;">
+            <label id="tTurnstileLabel">Verification</label>
+            <input type="hidden" id="turnstileToken" value="">
+            <div id="turnstileEl"></div>
+            <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
+            <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
+          </div>
+
+          <div class="checkRow">
+            <input id="agree" type="checkbox" />
+            <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
+          </div>
+
+          <div class="actions">
+            <button id="btnPay" class="btn btnPrimary" type="button"><span id="tPayBtn">Continue to Stripe</span></button>
+            <button id="btnReset" class="btn" type="button"><span id="tResetBtn">Reset</span></button>
+          </div>
+
+          <div id="status" class="status" aria-live="polite"></div>
         </div>
-        <div class="field">
-          <label for="lastName" id="tLastLabel">Main contact last name <span class="req">*</span></label>
-          <input id="lastName" class="control" type="text" autocomplete="family-name" autocapitalize="words" required />
-        </div>
-      </div>
+      </section>
+    </main>
 
-      <div class="twoCol">
-        <div class="field">
-          <label for="email" id="tEmailLabel">Email <span class="req">*</span></label>
-          <input id="email" class="control" type="email" autocomplete="email" required />
-        </div>
-        <div class="field">
-          <label for="phone" id="tPhoneLabel">Phone <span class="req">*</span></label>
-          <input id="phone" class="control" type="tel" autocomplete="tel" required />
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="whatsapp" id="tWhatsLabel">WhatsApp number <span class="req">*</span></label>
-        <input id="whatsapp" class="control" type="tel" autocomplete="tel" required />
-        <div class="subtext">Include country code if possible.</div>
-      </div>
-
-      <div class="field">
-        <label for="pickupLabel" id="tPickupLabel">Pickup location label <span class="req">*</span></label>
-        <input id="pickupLabel" class="control" type="text" required />
-        <div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
-      </div>
-
-      <div class="field">
-        <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name</label>
-        <input id="pickupAddress" class="control" type="text" />
-        <div class="subtext">Optional.</div>
-      </div>
-
-      <div class="field">
-        <label for="notes" id="tNotesLabel">Notes (optional)</label>
-        <textarea id="notes" class="control" rows="3"></textarea>
-      </div>
-
-      <div class="field" id="turnstileWrap" style="margin-top:12px;">
-        <label id="tTurnstileLabel">Verification</label>
-        <input type="hidden" id="turnstileToken" value="">
-        <!-- IMPORTANT CHANGE: no cf-turnstile + no data-* attributes (explicit render handles it) -->
-        <div id="turnstileEl"></div>
-        <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
-        <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
-      </div>
-
-      <div class="checkRow">
-        <input id="agree" type="checkbox" />
-        <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
-      </div>
-
-      <div class="actions">
-        <button id="btnPay" class="btn btnPrimary" type="button"><span id="tPayBtn">Continue to Stripe</span></button>
-        <button id="btnReset" class="btn" type="button"><span id="tResetBtn">Reset</span></button>
-      </div>
-
-      <div id="status" class="status" aria-live="polite"></div>
-    </div>
-  </section>
-</main>
-
-<div id="siteFooter"></div>
+    <div id="siteFooter"></div>
   </div>
+
   <script>
     (function(){
       var els = {
