@@ -1,6 +1,29 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script>
+    (function(){
+      var s = document.createElement("script");
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad";
+      s.async = true;
+      s.defer = true;
+      s.onerror = function(){
+        var diag = document.getElementById("turnstileDiag");
+        var wrap = document.getElementById("turnstileWrap");
+        if (wrap) wrap.style.display = "block";
+        if (diag){
+          diag.style.display = "block";
+          diag.textContent = "Verification script failed to load. Often caused by an ad blocker, a network filter, or a restrictive Content Security Policy. Disable blockers for this page and refresh.";
+        }
+      };
+      document.head.appendChild(s);
+
+      // Fallback: if onload does not fire, attempt rendering after a short delay.
+      setTimeout(function(){
+        if (typeof window.onTurnstileLoad === "function") window.onTurnstileLoad();
+      }, 1200);
+    })();
+  </script>
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -280,70 +303,32 @@
 
   <script>
     // IMPORTANT: This must be a standalone script tag (no src), otherwise the browser ignores inline code.
-    
     var TURNSTILE_WIDGET_ID = null;
-    var TURNSTILE_LAST_TOKEN = "";
 
-    function showTurnstileDiag(msg){
-      var diag = document.getElementById("turnstileDiag");
-      if (!diag) return;
-      diag.style.display = "block";
-      diag.textContent = msg;
-    }
-
-    function clearTurnstileDiag(){
-      var diag = document.getElementById("turnstileDiag");
-      if (!diag) return;
-      diag.style.display = "none";
-      diag.textContent = "";
-    }
-
-    // Called by Turnstile when the user completes verification
-    function onTurnstileSuccess(token){
-      TURNSTILE_LAST_TOKEN = token || "";
-      clearTurnstileDiag();
-    }
-
-    function onTurnstileError(){
-      TURNSTILE_LAST_TOKEN = "";
-      showTurnstileDiag("Verification could not load. Please disable ad blockers/privacy extensions for this page and refresh.");
-    }
-
-    function onTurnstileExpired(){
-      TURNSTILE_LAST_TOKEN = "";
-      showTurnstileDiag("Verification expired. Please verify again.");
-    }
-
-    // After Turnstile script loads, it should inject an iframe into the widget.
-    // If that iframe never appears, show a clear diagnostic message.
-    function checkTurnstileRendered(){
-      var meta = document.querySelector('meta[name="turnstile-sitekey"]');
-      var siteKey = meta ? (meta.getAttribute("content") || "").trim() : "";
-      var wrap = document.getElementById("turnstileWrap");
-      var el = document.getElementById("turnstileEl");
-
-      if (!siteKey){
-        if (wrap) wrap.style.display = "none";
-        return;
-      }
-      if (wrap) wrap.style.display = "block";
-
-      // If the global object is missing, api.js was blocked.
-      if (!window.turnstile || typeof window.turnstile.getResponse !== "function"){
-        showTurnstileDiag("Verification is blocked. If you have an ad blocker or privacy extension, disable it for this page and refresh.");
-        return;
+    function onTurnstileLoad(){
+        // Turnstile auto-renders elements with class="cf-turnstile"
+        // We keep this for compatibility if api.js is loaded with onload.
       }
 
-      // If no iframe is injected, the most common cause is a bad sitekey or blocked third party resources.
-      var hasIframe = !!(el && el.querySelector("iframe"));
-      if (!hasIframe){
-        showTurnstileDiag("Verification did not render. Confirm the Turnstile site key is correct for this domain, then refresh.");
-        return;
+      function onTurnstileSuccess(token){
+        var t = document.getElementById("turnstileToken");
+        if (t) t.value = token || "";
+        var diag = document.getElementById("turnstileDiag");
+        if (diag) { diag.style.display = "none"; diag.textContent = ""; }
       }
 
-      clearTurnstileDiag();
-    }
+      function onTurnstileError(){
+        var diag = document.getElementById("turnstileDiag");
+        if (diag){
+          diag.style.display = "block";
+          diag.textContent = "Verification failed to load. Check Turnstile allowed hostnames for mindobirdwatching.com.";
+        }
+      }
 
+      function onTurnstileExpired(){
+        var t = document.getElementById("turnstileToken");
+        if (t) t.value = "";
+      }
 
         // If no sitekey, hide verification entirely.
         if (!siteKey){
@@ -506,6 +491,7 @@
           <div class="field" id="turnstileWrap" style="margin-top:12px;">
             <label id="tTurnstileLabel">Verification</label>
             <div id="turnstileEl" class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-callback="onTurnstileSuccess" data-error-callback="onTurnstileError" data-expired-callback="onTurnstileExpired"></div>
+            <input type="hidden" id="turnstileToken" value="">
             <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
             <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
           </div>
@@ -636,7 +622,7 @@
       }
 
       async function fetchTours(lang){
-        var res = await fetch("https://mindobirdwatching.com/api/tours?lang=" + encodeURIComponent(lang) + "&_=" + Date.now(), { method: "GET" });
+        var res = await fetch("/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
         if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
         var data = await res.json();
         if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
@@ -644,22 +630,15 @@
       }
 
       function getTurnstileToken(){
-        try{
-          if (TURNSTILE_LAST_TOKEN) return TURNSTILE_LAST_TOKEN;
-          if (!window.turnstile || typeof window.turnstile.getResponse !== "function") return "";
-          if (TURNSTILE_WIDGET_ID !== null) return window.turnstile.getResponse(TURNSTILE_WIDGET_ID) || "";
-          return window.turnstile.getResponse() || "";
-        } catch(e){
+        var el = document.getElementById("turnstileToken");
+        return el ? (el.value || "").trim() : "";
+      }catch(e){
           return "";
         }
       }
 
       async function init(){
         setStatus("");
-
-        // Turnstile: show a diagnostic if it does not render
-        setTimeout(checkTurnstileRendered, 1500);
-        setTimeout(checkTurnstileRendered, 3500);
 
         var p = qp();
 
@@ -819,16 +798,6 @@
         els.tourCode.textContent = tour.tour_code;
         els.tourTitle.textContent = tour.tour_title || "Tour";
 
-        // Promo image
-        if (tour.hero_image_url){
-          els.tourHero.src = tour.hero_image_url;
-          els.tourHero.alt = "Promo image for " + (tour.tour_title || tour.tour_code);
-          els.tourHero.style.display = "block";
-        } else {
-          els.tourHero.removeAttribute("src");
-          els.tourHero.alt = "Promo image";
-        }
-
         var pickupWindow = String(tour.pickup_window_minutes || 15);
         var pickupTime = tour.pickup_time_local || "-";
         els.tourSubtitle.textContent =
@@ -940,10 +909,7 @@
           els.agree.checked = false;
           setStatus("");
           try{
-            if (window.turnstile && typeof window.turnstile.reset === "function") {
-              if (TURNSTILE_WIDGET_ID !== null) window.turnstile.reset(TURNSTILE_WIDGET_ID);
-              else window.turnstile.reset();
-            }
+            if (window.turnstile && TURNSTILE_WIDGET_ID !== null) window.turnstile.reset(TURNSTILE_WIDGET_ID);
           }catch(e){}
         });
       }
@@ -951,6 +917,5 @@
       init();
     })();
   </script>
-  <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 </body>
 </html>
