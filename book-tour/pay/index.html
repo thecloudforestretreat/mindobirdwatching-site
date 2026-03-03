@@ -1,9 +1,32 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+  <script>
+    // Cloudflare Turnstile callbacks (token is stored for submit)
+    function onTurnstileSuccess(token){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = token || "";
+      var diag = document.getElementById("turnstileDiag");
+      if (diag){ diag.style.display = "none"; diag.textContent = ""; }
+    }
+    function onTurnstileExpired(){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = "";
+      var diag = document.getElementById("turnstileDiag");
+      if (diag){ diag.style.display = "block"; diag.textContent = "Verification expired. Please verify again."; }
+    }
+    function onTurnstileError(){
+      var el = document.getElementById("turnstileToken");
+      if (el) el.value = "";
+      var diag = document.getElementById("turnstileDiag");
+      if (diag){ diag.style.display = "block"; diag.textContent = "Could not load verification. Please disable blockers or try another browser."; }
+    }
+  </script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="turnstile-sitekey" content="0x4AAAAAACYIFF7ZNXiqieGk" />
+  <meta name="turnstile-sitekey" content="0x4AAAAAACYIFF7ZNXiqieG" />
   <title>Pay for a Tour | Mindo Bird Watching</title>
 
   <link rel="icon" href="/favicon.ico" />
@@ -281,7 +304,21 @@
     // IMPORTANT: This must be a standalone script tag (no src), otherwise the browser ignores inline code.
     var TURNSTILE_WIDGET_ID = null;
 
-    // If no sitekey, hide verification entirely.
+    function onTurnstileLoad(){
+      try{
+        var meta = document.querySelector('meta[name="turnstile-sitekey"]');
+        var siteKey = meta ? (meta.getAttribute("content") || "").trim() : "";
+        var el = document.getElementById("turnstileEl");
+        var wrap = document.getElementById("turnstileWrap");
+        var diag = document.getElementById("turnstileDiag");
+
+        function showDiag(msg){
+          if (!diag) return;
+          diag.style.display = "block";
+          diag.textContent = msg;
+        }
+
+        // If no sitekey, hide verification entirely.
         if (!siteKey){
           if (wrap) wrap.style.display = "none";
           return;
@@ -334,7 +371,6 @@
       }
     }
   </script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
@@ -442,7 +478,8 @@
 
           <div class="field" id="turnstileWrap" style="margin-top:12px;">
             <label id="tTurnstileLabel">Verification</label>
-            <div id="turnstileEl" style="min-height:65px;"></div>
+            <input type="hidden" id="turnstileToken" value="">
+            <div id="turnstileEl" class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieG" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileError"></div>
             <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
             <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
           </div>
@@ -581,14 +618,22 @@
       }
 
       function getTurnstileToken(){
-        try{
-          if (!window.turnstile || typeof window.turnstile.getResponse !== "function") return "";
-          if (TURNSTILE_WIDGET_ID !== null) return window.turnstile.getResponse(TURNSTILE_WIDGET_ID) || "";
-          return window.turnstile.getResponse() || "";
-        }catch(e){
-          return "";
+      // Prefer the token captured by callback (auto-render mode)
+      try{
+        var el = document.getElementById("turnstileToken");
+        if (el && el.value) return String(el.value || "").trim();
+      }catch(e){}
+
+      // Fallback: attempt to read from the Turnstile widget API if present
+      try{
+        if (window.turnstile && typeof window.turnstile.getResponse === "function"){
+          var t = window.turnstile.getResponse();
+          return (t ? String(t).trim() : "");
         }
-      }
+      }catch(e){}
+
+      return "";
+    }
 
       async function init(){
         setStatus("");
@@ -870,53 +915,5 @@
       init();
     })();
   </script>
-
-<script>
-  function showTurnstileDiag(msg){
-    var d = document.getElementById("turnstileDiag");
-    if (!d) return;
-    d.style.display = "block";
-    d.textContent = msg;
-  }
-
-  function onTurnstileSuccess(token){
-    try {
-      var hidden = document.getElementById("turnstileToken");
-      if (hidden) hidden.value = token || "";
-      // Clear diag if any
-      var d = document.getElementById("turnstileDiag");
-      if (d) d.style.display = "none";
-    } catch(e) {}
-  }
-
-  function onTurnstileExpired(){
-    try {
-      var hidden = document.getElementById("turnstileToken");
-      if (hidden) hidden.value = "";
-      showTurnstileDiag("Verification expired. Please verify again.");
-    } catch(e) {}
-  }
-
-  function onTurnstileError(){
-    try {
-      var hidden = document.getElementById("turnstileToken");
-      if (hidden) hidden.value = "";
-      showTurnstileDiag("Verification could not load. Disable ad blockers for this page, and ensure Turnstile allows mindobirdwatching.com.");
-    } catch(e) {}
-  }
-
-  // If the script is blocked, cf-turnstile never injects an iframe. Show a helpful message.
-  window.addEventListener("load", function(){
-    setTimeout(function(){
-      var el = document.getElementById("turnstileEl");
-      if (!el) return;
-      var hasIframe = el.querySelector("iframe");
-      if (!hasIframe) {
-        showTurnstileDiag("Verification did not render. If you use an ad blocker, disable it for this page. Also confirm Turnstile allowed hostnames include mindobirdwatching.com.");
-      }
-    }, 1200);
-  });
-</script>
-
 </body>
 </html>
