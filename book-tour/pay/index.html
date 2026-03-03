@@ -506,7 +506,7 @@
       }
 
       async function fetchTours(lang){
-        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
+        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang) + "&_=" + Date.now(), { method: "GET", cache: "no-store" });
         if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
         var data = await res.json();
         if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
@@ -679,6 +679,10 @@
 
         if (tour.hero_image_url){
           els.tourImage.src = tour.hero_image_url;
+          els.tourImage.onerror = function(){
+            this.removeAttribute("src");
+            this.alt = "Promo image";
+          };
           els.tourImage.alt = "Promo image for " + (tour.tour_title || tour.tour_code);
         }else{
           els.tourImage.removeAttribute("src");
@@ -769,7 +773,19 @@
         });
       }
 
-      init();
+      if (document.readyState === "loading"){
+
+
+        document.addEventListener("DOMContentLoaded", init);
+
+
+      }else{
+
+
+        init();
+
+
+      }
     })();
   </script>
 </body>
