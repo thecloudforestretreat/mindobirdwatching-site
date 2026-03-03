@@ -1,82 +1,791 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Payment Canceled | Mindo Bird Watching</title>
+<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pay for a Tour | Mindo Bird Watching</title>
+
   <link rel="icon" href="/favicon.ico" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
+
+  <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/includes.js" defer></script>
+  <script src="/assets/js/site.js" defer></script>
+
   <style>
-    .cardBox{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(0,0,0,.04)}
-    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    /* Page-local styles ONLY for the guest pay page */
+    #siteHeader{
+      display:flex;
+      justify-content:center;
+      margin-bottom: 14px;
+    }
+    #siteHeader > *{
+      width:100%;
+      max-width: 1120px;
+    }
+    #siteHeader .topbar,
+    #siteHeader header.topbar,
+    #siteHeader div.topbar{
+      width:100%;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+      padding: 10px 12px;
+      margin: 16px auto 0;
+    }
+    @media (min-width: 901px){
+      #siteHeader .topbar .right,
+      #siteHeader .topbar nav.nav{
+        flex-wrap: nowrap !important;
+        min-width: 0 !important;
+      }
+      #siteHeader .topbar nav.nav{
+        padding-left: 8px;
+        overflow: hidden;
+      }
+      #siteHeader .topbar .lang{ flex: 0 0 auto; }
+    }
+
+    .payPage { padding: 22px 22px 26px; }
+    @media (max-width: 900px) { .payPage { padding: 18px 14px 20px; } }
+
+    .payHero h1{
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      margin: 0 0 6px;
+      color: #0e4b2e;
+      font-size: clamp(30px, 3.2vw, 36px);
+    }
+    .payHero p{
+      margin: 0;
+      max-width: 78ch;
+      color: rgba(0,0,0,0.62);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .pillRow{
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.75);
+    }
+
+    .payGrid{
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 900px){ .payGrid { grid-template-columns: 1fr; } }
+
+    .panel{
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+      padding: 18px;
+    }
+    @media (max-width: 900px){ .panel { padding: 16px; } }
+
+    .tourCard{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .tourMedia{
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.55);
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tourMedia img{
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .tourMetaRow{
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .tourCode{
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.55);
+    }
+    .tourTitle{
+      margin: 4px 0 2px;
+      font-weight: 900;
+      font-size: 18px;
+      color: rgba(0,0,0,0.85);
+    }
+    .tourSubtitle{
+      margin: 0;
+      color: rgba(0,0,0,0.62);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .tourPrice{
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      font-size: 13px;
+      font-weight: 900;
+      color: rgba(0,0,0,0.78);
+      white-space: nowrap;
+    }
+
+    .hint{
+      margin: 0 0 12px;
+      color: rgba(0,0,0,0.55);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .req{ color: #b42318; font-weight: 900; }
+
+    .field{ margin-top: 12px; }
+    .field:first-of-type{ margin-top: 0; }
+
+    label{
+      display: block;
+      font-weight: 800;
+      font-size: 13px;
+      color: rgba(0,0,0,0.78);
+      margin-bottom: 6px;
+    }
+    .control{
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.75);
+      padding: 12px 12px;
+      font-size: 14px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .control:focus{
+      border-color: rgba(11,90,51,0.55);
+      box-shadow: 0 0 0 3px rgba(11,90,51,0.14);
+    }
+    input.control{ height: 44px; }
+    select.control{ height: 44px; }
+    textarea.control{ height: auto; }
+
+    .subtext{
+      margin-top: 6px;
+      font-size: 12px;
+      color: rgba(0,0,0,0.55);
+      line-height: 1.35;
+    }
+
+    .twoCol{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px){ .twoCol { grid-template-columns: 1fr; } }
+    .twoCol .field{ margin-top: 0; }
+    .twoCol label{ min-height: 18px; }
+
+    .actions{
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn{
+      appearance: none;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.72);
+      color: rgba(0,0,0,0.78);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 12px 20px rgba(0,0,0,0.10);
+    }
     .btnPrimary{
       border-color: rgba(11,90,51,0.32);
       background: #0b5a33;
       color: #ffffff;
     }
-    .btn{appearance:none;border:1px solid rgba(0,0,0,.16);border-radius:12px;padding:12px 14px;font-weight:750;cursor:pointer;background:#fff}
-    .hint{opacity:.85}
+    .btn:hover{ filter: brightness(0.98); }
+    .btn:disabled{ opacity: 0.55; cursor: not-allowed; }
+
+    .checkRow{
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 12px;
+    }
+    .checkRow input{ margin-top: 3px; }
+    .checkRow label{
+      margin: 0;
+      font-weight: 700;
+      font-size: 13px;
+      color: rgba(0,0,0,0.72);
+      line-height: 1.35;
+    }
+
+    .status{
+      margin-top: 10px;
+      color: #0b5a33;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .statusError{ color: #b42318; }
+
+    #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
+    #termsLink:hover{ text-decoration: none; }
   </style>
 </head>
+
 <body>
-  <div id="siteHeader"></div>
+  <div class="container">
+    <div id="siteHeader"></div>
 
-  <main class="page card">
-    <div class="cardBox">
-      <h1 style="margin:0 0 6px 0">Payment canceled</h1>
-      <p class="hint" style="margin:0">
-        No charge was completed. If you still want to book, you can try again or message us on WhatsApp.
-      </p>
+    <main class="page card payPage">
+      <header class="payHero">
+        <h1 id="tTitle">Pay for a Tour</h1>
+        <p id="tSubtitle">Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.</p>
 
-      <div class="actions">
-        <a class="btnPrimary" id="retryLink" href="/book-tour/pay/">Try payment again</a>
-        <a class="btn" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp us</a>
-        <a class="btn" id="termsLink" href="/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a>
-      </div>
+        <div class="pillRow" aria-label="Key details">
+          <div class="pill">Price is per person</div>
+          <div class="pill" id="pillTimezone">Timezone: America/Guayaquil</div>
+          <div class="pill" id="pillPickupWindow">Pickup window: 15 minutes</div>
+        </div>
+      </header>
 
-      <p class="hint" style="margin:14px 0 0 0;font-size:12px">
-        Stripe does not charge you just for landing on checkout. Refunds are handled only when a payment actually completes.
-      </p>
-    </div>
-  </main>
+      <section class="payGrid" aria-label="Tour checkout">
+        <aside class="panel tourCard" aria-label="Tour summary">
+          <div class="tourMedia">
+            <img id="tourImage" src="" alt="Promo image" loading="lazy" />
+          </div>
 
-  <div id="siteFooter"></div>
+          <div class="tourMetaRow">
+            <div>
+              <div class="tourCode" id="tourCode">MBW---</div>
+              <div class="tourTitle" id="tourTitle">Loading tour...</div>
+              <p class="tourSubtitle" id="tourSubtitle">Duration: - | Pickup: -</p>
+            </div>
+            <div class="tourPrice" id="tourPrice">$0.00 per person</div>
+          </div>
+
+          <p class="tourSubtitle" id="tourOneLiner"></p>
+        </aside>
+
+        <div class="panel" aria-label="Checkout form">
+          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:\"Playfair Display\",serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
+          <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
+
+          <div class="hint" id="lockedHint"></div>
+
+          <div class="field">
+            <label>Tour</label>
+            <input id="tourLocked" class="control" type="text" readonly />
+            <div class="subtext">This is locked from the payment link.</div>
+          </div>
+
+          <div class="field">
+            <label>Tour date</label>
+            <input id="dateLocked" class="control" type="text" readonly />
+            <div class="subtext">Past dates are not allowed.</div>
+          </div>
+
+          <div class="field">
+            <label for="partyInput" id="tPartyLabel">Number of people <span class="req">*</span></label>
+            <select id="partyInput" class="control" required></select>
+            <div class="subtext" id="partyHelp"></div>
+          </div>
+
+          <div class="twoCol">
+            <div class="field">
+              <label for="firstName" id="tFirstLabel">Main contact first name <span class="req">*</span></label>
+              <input id="firstName" class="control" type="text" autocomplete="given-name" autocapitalize="words" required />
+            </div>
+            <div class="field">
+              <label for="lastName" id="tLastLabel">Main contact last name <span class="req">*</span></label>
+              <input id="lastName" class="control" type="text" autocomplete="family-name" autocapitalize="words" required />
+            </div>
+          </div>
+
+          <div class="twoCol">
+            <div class="field">
+              <label for="email" id="tEmailLabel">Email <span class="req">*</span></label>
+              <input id="email" class="control" type="email" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="phone" id="tPhoneLabel">Phone <span class="req">*</span></label>
+              <input id="phone" class="control" type="tel" autocomplete="tel" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="whatsapp" id="tWhatsLabel">WhatsApp number <span class="req">*</span></label>
+            <input id="whatsapp" class="control" type="tel" autocomplete="tel" required />
+            <div class="subtext">Include country code if possible.</div>
+          </div>
+
+          <div class="field">
+            <label for="pickupLabel" id="tPickupLabel">Pickup location label <span class="req">*</span></label>
+            <input id="pickupLabel" class="control" type="text" required />
+            <div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
+          </div>
+
+          <div class="field">
+            <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name</label>
+            <input id="pickupAddress" class="control" type="text" />
+            <div class="subtext">Optional.</div>
+          </div>
+
+          <div class="field">
+            <label for="notes" id="tNotesLabel">Notes (optional)</label>
+            <textarea id="notes" class="control" rows="3"></textarea>
+          </div>
+
+          <div class="checkRow">
+            <input id="agree" type="checkbox" />
+            <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
+          </div>
+
+          <div class="actions">
+            <button id="btnPay" class="btn btnPrimary" type="button"><span id="tPayBtn">Continue to Stripe</span></button>
+            <button id="btnReset" class="btn" type="button"><span id="tResetBtn">Reset</span></button>
+          </div>
+
+          <div id="status" class="status" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="siteFooter"></div>
+  </div>
 
   <script>
     (function(){
-      "use strict";
+      var els = {
+        tourImage: document.getElementById("tourImage"),
+        tourCode: document.getElementById("tourCode"),
+        tourTitle: document.getElementById("tourTitle"),
+        tourSubtitle: document.getElementById("tourSubtitle"),
+        tourPrice: document.getElementById("tourPrice"),
+        tourOneLiner: document.getElementById("tourOneLiner"),
 
-      function detectLang(){
-        const u = new URL(location.href);
-        const p = (u.pathname || "").toLowerCase();
-        const q = (u.searchParams.get("lang") || "").toLowerCase();
-        if (q === "es" || q === "en") return q;
-        if (p.indexOf("/es/") === 0) return "es";
-        return "en";
+        pillTimezone: document.getElementById("pillTimezone"),
+        pillPickupWindow: document.getElementById("pillPickupWindow"),
+
+        lockedHint: document.getElementById("lockedHint"),
+        tourLocked: document.getElementById("tourLocked"),
+        dateLocked: document.getElementById("dateLocked"),
+        partyInput: document.getElementById("partyInput"),
+        partyHelp: document.getElementById("partyHelp"),
+
+        firstName: document.getElementById("firstName"),
+        lastName: document.getElementById("lastName"),
+        email: document.getElementById("email"),
+        phone: document.getElementById("phone"),
+        whatsapp: document.getElementById("whatsapp"),
+        pickupLabel: document.getElementById("pickupLabel"),
+        pickupAddress: document.getElementById("pickupAddress"),
+        notes: document.getElementById("notes"),
+        agree: document.getElementById("agree"),
+
+        btnPay: document.getElementById("btnPay"),
+        btnReset: document.getElementById("btnReset"),
+        status: document.getElementById("status")
+      };
+
+      function setStatus(msg, isError){
+        els.status.textContent = msg || "";
+        if (isError) els.status.classList.add("statusError");
+        else els.status.classList.remove("statusError");
       }
 
-      // Preserve tour/date/party/lang if they exist so "Try again" lands on the same selection
-      const u = new URL(location.href);
-      const tour = u.searchParams.get("tour") || "";
-      const date = u.searchParams.get("date") || "";
-      const party = u.searchParams.get("party") || "";
-      const lang = detectLang();
+      function qp(){
+        var u = new URL(window.location.href);
+        return {
+          tour: (u.searchParams.get("tour") || "").trim(),
+          date: (u.searchParams.get("date") || "").trim(),
+          party: (u.searchParams.get("party") || "").trim(),
+          lang: (u.searchParams.get("lang") || "en").trim().toLowerCase()
+        };
+      }
 
-      const retry = new URL("/book-tour/pay/", location.origin);
-      if (tour) retry.searchParams.set("tour", tour);
-      if (date) retry.searchParams.set("date", date);
-      if (party) retry.searchParams.set("party", party);
-      if (lang) retry.searchParams.set("lang", lang);
+      function isValidISODate(s){
+        return /^\d{4}-\d{2}-\d{2}$/.test(s);
+      }
 
-      var retryLink = document.getElementById("retryLink");
-      if (retryLink) retryLink.setAttribute("href", retry.pathname + retry.search);
+      function todayISO(){
+        var d = new Date();
+        var yyyy = String(d.getFullYear());
+        var mm = String(d.getMonth() + 1).padStart(2, "0");
+        var dd = String(d.getDate()).padStart(2, "0");
+        return yyyy + "-" + mm + "-" + dd;
+      }
 
-      var termsHref = (lang === "es") ? "/es/terminos-y-condiciones/" : "/terms-conditions/";
-      var termsLink = document.getElementById("termsLink");
-      if (termsLink) termsLink.setAttribute("href", termsHref);
+      function parseMaxPerson(v){
+        if (!v) return null;
+        if (typeof v === "number") return v;
+        var s = String(v).trim().toLowerCase();
+        if (s === "unlimited") return null;
+        var n = Number(s);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function buildPartyOptions(min, max){
+        var upper = Math.min(max || 8, 8);
+        els.partyInput.innerHTML = "";
+        for (var i = 1; i <= upper; i++){
+          if (i < min) continue;
+          var opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = String(i);
+          els.partyInput.appendChild(opt);
+        }
+      }
+
+      function capWordsPreserve(s){
+        var parts = String(s || "").split(/(\s+)/);
+        return parts.map(function(p){
+          if (/^\s+$/.test(p)) return p;
+          if (!p) return p;
+          return p.charAt(0).toUpperCase() + p.slice(1);
+        }).join("");
+      }
+
+      function attachAutoCapInput(el){
+        if (!el) return;
+        var apply = function(){
+          var v = capWordsPreserve(el.value);
+          if (v !== el.value) el.value = v;
+        };
+        el.addEventListener("blur", apply);
+        el.addEventListener("change", apply);
+        el.addEventListener("input", function(){
+          var val = el.value || "";
+          if (!val) return;
+          if (val.charAt(val.length - 1) === " ") apply();
+        });
+      }
+
+      async function fetchTours(lang){
+        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang) + "&_=" + Date.now(), { method: "GET", cache: "no-store" });
+        if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
+        var data = await res.json();
+        if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
+        return data.tours;
+      }
+
+      async function init(){
+        setStatus("");
+
+        var p = qp();
+
+        // Auto-capitalization behavior (in addition to autocapitalize attr)
+        attachAutoCapInput(els.firstName);
+        attachAutoCapInput(els.lastName);
+
+        var I18N = {
+          en: {
+            title: "Pay for a Tour",
+            subtitle: "Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.",
+            checkoutTitle: "Checkout details",
+            requiredHint: "Required fields are marked with ",
+            partyLabel: "Number of people",
+            first: "Main contact first name",
+            last: "Main contact last name",
+            email: "Email",
+            phone: "Phone",
+            whatsapp: "WhatsApp number",
+            pickupLabel: "Pickup location label",
+            pickupAddr: "Pickup address or hotel name",
+            notes: "Notes (optional)",
+            payBtn: "Continue to Stripe",
+            resetBtn: "Reset",
+            termsText: "I agree to the",
+            termsName: "Terms and Conditions",
+            termsUrl: "https://mindobirdwatching.com/terms-conditions/"
+          },
+          es: {
+            title: "Pagar un Tour",
+            subtitle: "Completa el pago de forma segura con Stripe. Tu tour, fecha y tamano minimo del grupo vienen preconfirmados desde el enlace que recibiste.",
+            checkoutTitle: "Detalles de pago",
+            requiredHint: "Los campos obligatorios estan marcados con ",
+            partyLabel: "Numero de personas",
+            first: "Nombre del contacto principal",
+            last: "Apellido del contacto principal",
+            email: "Correo",
+            phone: "Telefono",
+            whatsapp: "Numero de WhatsApp",
+            pickupLabel: "Etiqueta del lugar de recogida",
+            pickupAddr: "Direccion o nombre del hotel",
+            notes: "Notas (opcional)",
+            payBtn: "Continuar a Stripe",
+            resetBtn: "Reiniciar",
+            termsText: "Acepto los",
+            termsName: "Terminos y Condiciones",
+            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"
+          }
+        };
+
+        var L = I18N[p.lang] || I18N.en;
+
+        // Set text
+        var tTitle = document.getElementById("tTitle");
+        var tSubtitle = document.getElementById("tSubtitle");
+        var tCheckoutTitle = document.getElementById("tCheckoutTitle");
+        var tRequiredHint = document.getElementById("tRequiredHint");
+        if (tTitle) tTitle.textContent = L.title;
+        if (tSubtitle) tSubtitle.textContent = L.subtitle;
+        if (tCheckoutTitle) tCheckoutTitle.textContent = L.checkoutTitle;
+        if (tRequiredHint){
+          tRequiredHint.innerHTML = L.requiredHint + '<span class="req">*</span>.';
+        }
+
+        function setLabel(id, txt){
+          var el = document.getElementById(id);
+          if (!el) return;
+          var hasReq = el.innerHTML.indexOf('class="req"') !== -1;
+          el.innerHTML = txt + (hasReq ? ' <span class="req">*</span>' : "");
+        }
+
+        setLabel("tPartyLabel", L.partyLabel);
+        setLabel("tFirstLabel", L.first);
+        setLabel("tLastLabel", L.last);
+        setLabel("tEmailLabel", L.email);
+        setLabel("tPhoneLabel", L.phone);
+        setLabel("tWhatsLabel", L.whatsapp);
+        setLabel("tPickupLabel", L.pickupLabel);
+        setLabel("tPickupAddrLabel", L.pickupAddr);
+
+        var notesLabel = document.getElementById("tNotesLabel");
+        if (notesLabel) notesLabel.textContent = L.notes;
+
+        var tPayBtn = document.getElementById("tPayBtn");
+        if (tPayBtn) tPayBtn.textContent = L.payBtn;
+
+        var tResetBtn = document.getElementById("tResetBtn");
+        if (tResetBtn) tResetBtn.textContent = L.resetBtn;
+
+        var agreePrefix = document.getElementById("tAgreePrefix");
+        var termsLink = document.getElementById("termsLink");
+        if (agreePrefix) agreePrefix.textContent = L.termsText;
+        if (termsLink){ termsLink.href = L.termsUrl; termsLink.textContent = L.termsName; }
+
+        if (!p.tour){
+          setStatus("Missing tour code in the link.", true);
+          els.btnPay.disabled = true;
+          return;
+        }
+        if (!isValidISODate(p.date)){
+          setStatus("Missing or invalid tour date in the link.", true);
+          els.btnPay.disabled = true;
+          return;
+        }
+        var today = todayISO();
+        if (p.date < today){
+          setStatus("This link has a past date. Please request a new payment link.", true);
+          els.btnPay.disabled = true;
+          return;
+        }
+
+        var lockedParty = Number(p.party || "0");
+        if (!Number.isInteger(lockedParty) || lockedParty <= 0){
+          setStatus("Missing or invalid party size in the link.", true);
+          els.btnPay.disabled = true;
+          return;
+        }
+
+        els.lockedHint.textContent = "Tour code " + p.tour + " and tour date " + p.date + " are locked from this link.";
+        els.dateLocked.value = p.date;
+
+        var tours;
+        try{
+          tours = await fetchTours(p.lang);
+        }catch(e){
+          setStatus("Could not load tours. Please try again.", true);
+          els.btnPay.disabled = true;
+          return;
+        }
+
+        var tour = tours.find(function(t){ return String(t.tour_code) === p.tour; });
+        if (!tour){
+          setStatus("Tour not found for this language. Please request a new payment link.", true);
+          els.btnPay.disabled = true;
+          return;
+        }
+
+        var minPerson = Number(tour.min_person || 1);
+        var maxPerson = parseMaxPerson(tour.max_person);
+        var maxSelectable = Math.min(maxPerson || 8, 8);
+
+        buildPartyOptions(Math.max(minPerson, lockedParty), maxSelectable);
+        els.partyInput.value = String(Math.max(minPerson, lockedParty));
+        els.partyHelp.textContent =
+          "Minimum is " + Math.max(minPerson, lockedParty) + ". You may increase up to " + maxSelectable + ", but cannot reduce below the minimum.";
+
+        // Summary card
+        els.tourCode.textContent = tour.tour_code;
+        els.tourTitle.textContent = tour.tour_title || "Tour";
+
+        var pickupWindow = String(tour.pickup_window_minutes || 15);
+        var pickupTime = tour.pickup_time_local || "-";
+        els.tourSubtitle.textContent =
+          "Duration: " + (tour.duration_label || "-") + " | Pickup: " + pickupTime + " (+" + pickupWindow + " min)";
+
+        els.tourPrice.textContent = (tour.amount_display || "$0.00") + " per person";
+        els.tourOneLiner.textContent = tour.description_one_liner || "";
+        els.tourLocked.value = tour.tour_code + " - " + (tour.tour_title || "Tour");
+
+        els.pillTimezone.textContent = "Timezone: " + (tour.timezone || "America/Guayaquil");
+        els.pillPickupWindow.textContent = "Pickup window: " + pickupWindow + " minutes";
+
+        if (tour.hero_image_url){
+          els.tourImage.src = tour.hero_image_url;
+          els.tourImage.onerror = function(){
+            this.removeAttribute("src");
+            this.alt = "Promo image";
+          };
+          els.tourImage.alt = "Promo image for " + (tour.tour_title || tour.tour_code);
+        }else{
+          els.tourImage.removeAttribute("src");
+          els.tourImage.alt = "Promo image";
+        }
+
+        els.btnPay.addEventListener("click", async function(){
+          try{
+            setStatus("");
+            els.btnPay.disabled = true;
+
+            // Apply capitalization on submit too
+            els.firstName.value = capWordsPreserve(els.firstName.value);
+            els.lastName.value = capWordsPreserve(els.lastName.value);
+
+            var first = (els.firstName.value || "").trim();
+            var last = (els.lastName.value || "").trim();
+            var email = (els.email.value || "").trim();
+            var phone = (els.phone.value || "").trim();
+            var whatsapp = (els.whatsapp.value || "").trim();
+            var pickupLabel = (els.pickupLabel.value || "").trim();
+            var pickupAddress = (els.pickupAddress.value || "").trim();
+            var notes = (els.notes.value || "").trim();
+            var agreed = els.agree.checked === true;
+
+            var partyVal = Number(els.partyInput.value || "0");
+
+            if (!first || !last || !email || !phone || !whatsapp || !pickupLabel){
+              throw new Error("Please fill all required fields.");
+            }
+            if (!agreed){
+              throw new Error("Please agree to the Terms and Conditions.");
+            }
+            if (!Number.isInteger(partyVal) || partyVal <= 0){
+              throw new Error("Invalid party size.");
+            }
+
+            var payload = {
+              stripe_environment: "live",
+              language: p.lang,
+              tour_code: p.tour,
+              tour_date: p.date,
+              number_of_people: partyVal,
+
+              main_contact_name: first + " " + last,
+              main_contact_email: email,
+              main_contact_phone: phone,
+              whatsapp_number: whatsapp,
+
+              pickup_location_label: pickupLabel,
+              pickup_address_or_hotel: (pickupAddress && pickupAddress.trim()) ? pickupAddress.trim() : "Not provided",
+              notes: notes,
+
+              agreed_to_terms: true
+            };
+
+            var r = await fetch("/stripe/api/create-checkout-session", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+
+            var data = await r.json().catch(function(){ return null; });
+            if (!r.ok || !data || data.ok !== true || !data.url){
+              var msg = (data && data.error) ? data.error : "Could not start checkout.";
+              throw new Error(msg);
+            }
+
+            setStatus("Redirecting to Stripe...");
+            window.location.href = data.url;
+          }catch(err){
+            setStatus(err.message || "Checkout error.", true);
+            els.btnPay.disabled = false;
+          }
+        });
+
+        els.btnReset.addEventListener("click", function(){
+          els.firstName.value = "";
+          els.lastName.value = "";
+          els.email.value = "";
+          els.phone.value = "";
+          els.whatsapp.value = "";
+          els.pickupLabel.value = "";
+          els.pickupAddress.value = "";
+          els.notes.value = "";
+          els.agree.checked = false;
+          setStatus("");
+        });
+      }
+
+      if (document.readyState === "loading"){
+
+
+        document.addEventListener("DOMContentLoaded", init);
+
+
+      }else{
+
+
+        init();
+
+
+      }
     })();
   </script>
 </body>
