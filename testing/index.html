@@ -1,18 +1,22 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+<meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pay for a Tour | Mindo Bird Watching</title>
+<title>Pay for a Tour | Mindo Bird Watching</title>
+
   <link rel="icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
+
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
@@ -308,7 +312,7 @@
         </aside>
 
         <div class="panel" aria-label="Checkout form">
-          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:&quot;Playfair Display&quot;,serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
+          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:\"Playfair Display\",serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
           <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
 
           <div class="hint" id="lockedHint"></div>
@@ -502,15 +506,11 @@
       }
 
       async function fetchTours(lang){
-        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
+        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang) + "&_=" + Date.now(), { method: "GET", cache: "no-store" });
         if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
         var data = await res.json();
         if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
         return data.tours;
-      }
-        }catch(e){}
-
-        return "";
       }
 
       async function init(){
@@ -518,7 +518,7 @@
 
         var p = qp();
 
-        // Auto-capitalize
+        // Auto-capitalization behavior (in addition to autocapitalize attr)
         attachAutoCapInput(els.firstName);
         attachAutoCapInput(els.lastName);
 
@@ -541,7 +541,8 @@
             resetBtn: "Reset",
             termsText: "I agree to the",
             termsName: "Terms and Conditions",
-            termsUrl: "https://mindobirdwatching.com/terms-conditions/"},
+            termsUrl: "https://mindobirdwatching.com/terms-conditions/"
+          },
           es: {
             title: "Pagar un Tour",
             subtitle: "Completa el pago de forma segura con Stripe. Tu tour, fecha y tamano minimo del grupo vienen preconfirmados desde el enlace que recibiste.",
@@ -560,7 +561,8 @@
             resetBtn: "Reiniciar",
             termsText: "Acepto los",
             termsName: "Terminos y Condiciones",
-            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"}
+            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"
+          }
         };
 
         var L = I18N[p.lang] || I18N.en;
@@ -592,6 +594,26 @@
         setLabel("tWhatsLabel", L.whatsapp);
         setLabel("tPickupLabel", L.pickupLabel);
         setLabel("tPickupAddrLabel", L.pickupAddr);
+
+        var notesLabel = document.getElementById("tNotesLabel");
+        if (notesLabel) notesLabel.textContent = L.notes;
+
+        var tPayBtn = document.getElementById("tPayBtn");
+        if (tPayBtn) tPayBtn.textContent = L.payBtn;
+
+        var tResetBtn = document.getElementById("tResetBtn");
+        if (tResetBtn) tResetBtn.textContent = L.resetBtn;
+
+        var agreePrefix = document.getElementById("tAgreePrefix");
+        var termsLink = document.getElementById("termsLink");
+        if (agreePrefix) agreePrefix.textContent = L.termsText;
+        if (termsLink){ termsLink.href = L.termsUrl; termsLink.textContent = L.termsName; }
+
+        if (!p.tour){
+          setStatus("Missing tour code in the link.", true);
+          els.btnPay.disabled = true;
+          return;
+        }
         if (!isValidISODate(p.date)){
           setStatus("Missing or invalid tour date in the link.", true);
           els.btnPay.disabled = true;
@@ -657,6 +679,10 @@
 
         if (tour.hero_image_url){
           els.tourImage.src = tour.hero_image_url;
+          els.tourImage.onerror = function(){
+            this.removeAttribute("src");
+            this.alt = "Promo image";
+          };
           els.tourImage.alt = "Promo image for " + (tour.tour_title || tour.tour_code);
         }else{
           els.tourImage.removeAttribute("src");
@@ -707,7 +733,7 @@
               whatsapp_number: whatsapp,
 
               pickup_location_label: pickupLabel,
-              pickup_address_or_hotel: pickupAddress,
+              pickup_address_or_hotel: (pickupAddress && pickupAddress.trim()) ? pickupAddress.trim() : "Not provided",
               notes: notes,
 
               agreed_to_terms: true
@@ -744,10 +770,22 @@
           els.notes.value = "";
           els.agree.checked = false;
           setStatus("");
-});
+        });
       }
 
-      init();
+      if (document.readyState === "loading"){
+
+
+        document.addEventListener("DOMContentLoaded", init);
+
+
+      }else{
+
+
+        init();
+
+
+      }
     })();
   </script>
 </body>
