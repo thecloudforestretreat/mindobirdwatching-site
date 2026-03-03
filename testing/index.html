@@ -1,47 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <script>
-    (function(){
-      var s = document.createElement("script");
-      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad";
-      s.async = true;
-      s.defer = true;
-      s.onerror = function(){
-        var diag = document.getElementById("turnstileDiag");
-        var wrap = document.getElementById("turnstileWrap");
-        if (wrap) wrap.style.display = "block";
-        if (diag){
-          diag.style.display = "block";
-          diag.textContent = "Verification script failed to load. Often caused by an ad blocker, a network filter, or a restrictive Content Security Policy. Disable blockers for this page and refresh.";
-        }
-      };
-      document.head.appendChild(s);
-
-      // Fallback: if onload does not fire, attempt rendering after a short delay.
-      setTimeout(function(){
-        if (typeof window.onTurnstileLoad === "function") window.onTurnstileLoad();
-      }, 1200);
-    })();
-  </script>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="turnstile-sitekey" content="0x4AAAAAACYIFF7ZNXiqieGk" />
   <title>Pay for a Tour | Mindo Bird Watching</title>
-
   <link rel="icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
-
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
@@ -300,89 +271,6 @@
     #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
     #termsLink:hover{ text-decoration: none; }
   </style>
-
-  <script>
-    // IMPORTANT: This must be a standalone script tag (no src), otherwise the browser ignores inline code.
-    var TURNSTILE_WIDGET_ID = null;
-
-    function onTurnstileLoad(){
-        // Turnstile auto-renders elements with class="cf-turnstile"
-        // We keep this for compatibility if api.js is loaded with onload.
-      }
-
-      function onTurnstileSuccess(token){
-        var t = document.getElementById("turnstileToken");
-        if (t) t.value = token || "";
-        var diag = document.getElementById("turnstileDiag");
-        if (diag) { diag.style.display = "none"; diag.textContent = ""; }
-      }
-
-      function onTurnstileError(){
-        var diag = document.getElementById("turnstileDiag");
-        if (diag){
-          diag.style.display = "block";
-          diag.textContent = "Verification failed to load. Check Turnstile allowed hostnames for mindobirdwatching.com.";
-        }
-      }
-
-      function onTurnstileExpired(){
-        var t = document.getElementById("turnstileToken");
-        if (t) t.value = "";
-      }
-
-        // If no sitekey, hide verification entirely.
-        if (!siteKey){
-          if (wrap) wrap.style.display = "none";
-          return;
-        }
-
-        if (wrap) wrap.style.display = "block";
-
-        // If script was blocked by extension/CSP, window.turnstile is missing.
-        if (!window.turnstile || typeof window.turnstile.render !== "function"){
-          showDiag("Verification could not load. If you are using an ad blocker or privacy extension, disable it for this page and refresh.");
-          return;
-        }
-
-        // Render once
-        TURNSTILE_WIDGET_ID = window.turnstile.render(el, { sitekey: siteKey });
-
-        // If render returns null/undefined, retry briefly (race condition fallback)
-        if (TURNSTILE_WIDGET_ID === null || TURNSTILE_WIDGET_ID === undefined){
-          var tries = 0;
-          var timer = setInterval(function(){
-            tries++;
-            try{
-              if (TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined){
-                clearInterval(timer);
-                return;
-              }
-              if (window.turnstile && typeof window.turnstile.render === "function"){
-                TURNSTILE_WIDGET_ID = window.turnstile.render(el, { sitekey: siteKey });
-                if (TURNSTILE_WIDGET_ID !== null && TURNSTILE_WIDGET_ID !== undefined){
-                  clearInterval(timer);
-                }
-              }
-            }catch(e){
-              clearInterval(timer);
-              showDiag("Verification failed to render. This is usually a Turnstile domain setting issue. Ensure your Turnstile widget allows mindobirdwatching.com.");
-            }
-            if (tries >= 10){
-              clearInterval(timer);
-              showDiag("Verification did not load. Check Turnstile allowed domains (mindobirdwatching.com) and refresh.");
-            }
-          }, 300);
-        }
-      }catch(e){
-        var diag = document.getElementById("turnstileDiag");
-        if (diag){
-          diag.style.display = "block";
-          diag.textContent = "Verification failed to load. Check Turnstile configuration and refresh.";
-        }
-        console.log("Turnstile render failed", e);
-      }
-    }
-  </script>
 </head>
 
 <body>
@@ -420,7 +308,7 @@
         </aside>
 
         <div class="panel" aria-label="Checkout form">
-          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:\"Playfair Display\",serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
+          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:&quot;Playfair Display&quot;,serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
           <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
 
           <div class="hint" id="lockedHint"></div>
@@ -486,14 +374,6 @@
           <div class="field">
             <label for="notes" id="tNotesLabel">Notes (optional)</label>
             <textarea id="notes" class="control" rows="3"></textarea>
-          </div>
-
-          <div class="field" id="turnstileWrap" style="margin-top:12px;">
-            <label id="tTurnstileLabel">Verification</label>
-            <div id="turnstileEl" class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-callback="onTurnstileSuccess" data-error-callback="onTurnstileError" data-expired-callback="onTurnstileExpired"></div>
-            <input type="hidden" id="turnstileToken" value="">
-            <div class="subtext" id="tTurnstileHint">Please verify before continuing.</div>
-            <div class="subtext" id="turnstileDiag" style="display:none;color:#b42318;font-weight:800;margin-top:6px;"></div>
           </div>
 
           <div class="checkRow">
@@ -622,19 +502,15 @@
       }
 
       async function fetchTours(lang){
-        var res = await fetch("/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
+        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
         if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
         var data = await res.json();
         if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
         return data.tours;
       }
+        }catch(e){}
 
-      function getTurnstileToken(){
-        var el = document.getElementById("turnstileToken");
-        return el ? (el.value || "").trim() : "";
-      }catch(e){
-          return "";
-        }
+        return "";
       }
 
       async function init(){
@@ -642,7 +518,7 @@
 
         var p = qp();
 
-        // Attach auto-capitalization (this was missing before)
+        // Auto-capitalize
         attachAutoCapInput(els.firstName);
         attachAutoCapInput(els.lastName);
 
@@ -665,10 +541,7 @@
             resetBtn: "Reset",
             termsText: "I agree to the",
             termsName: "Terms and Conditions",
-            termsUrl: "https://mindobirdwatching.com/terms-conditions/",
-            turnstileLabel: "Verification",
-            turnstileHint: "Please verify before continuing."
-          },
+            termsUrl: "https://mindobirdwatching.com/terms-conditions/"},
           es: {
             title: "Pagar un Tour",
             subtitle: "Completa el pago de forma segura con Stripe. Tu tour, fecha y tamano minimo del grupo vienen preconfirmados desde el enlace que recibiste.",
@@ -687,10 +560,7 @@
             resetBtn: "Reiniciar",
             termsText: "Acepto los",
             termsName: "Terminos y Condiciones",
-            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/",
-            turnstileLabel: "Verificacion",
-            turnstileHint: "Por favor verifica antes de continuar."
-          }
+            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"}
         };
 
         var L = I18N[p.lang] || I18N.en;
@@ -722,31 +592,6 @@
         setLabel("tWhatsLabel", L.whatsapp);
         setLabel("tPickupLabel", L.pickupLabel);
         setLabel("tPickupAddrLabel", L.pickupAddr);
-
-        var tTurnstileLabel = document.getElementById("tTurnstileLabel");
-        var tTurnstileHint = document.getElementById("tTurnstileHint");
-        if (tTurnstileLabel) tTurnstileLabel.textContent = L.turnstileLabel;
-        if (tTurnstileHint) tTurnstileHint.textContent = L.turnstileHint;
-
-        var notesLabel = document.getElementById("tNotesLabel");
-        if (notesLabel) notesLabel.textContent = L.notes;
-
-        var tPayBtn = document.getElementById("tPayBtn");
-        if (tPayBtn) tPayBtn.textContent = L.payBtn;
-
-        var tResetBtn = document.getElementById("tResetBtn");
-        if (tResetBtn) tResetBtn.textContent = L.resetBtn;
-
-        var agreePrefix = document.getElementById("tAgreePrefix");
-        var termsLink = document.getElementById("termsLink");
-        if (agreePrefix) agreePrefix.textContent = L.termsText;
-        if (termsLink){ termsLink.href = L.termsUrl; termsLink.textContent = L.termsName; }
-
-        if (!p.tour){
-          setStatus("Missing tour code in the link.", true);
-          els.btnPay.disabled = true;
-          return;
-        }
         if (!isValidISODate(p.date)){
           setStatus("Missing or invalid tour date in the link.", true);
           els.btnPay.disabled = true;
@@ -849,14 +694,6 @@
               throw new Error("Invalid party size.");
             }
 
-            // If Turnstile is configured, require a token
-            var meta = document.querySelector('meta[name="turnstile-sitekey"]');
-            var siteKey = meta ? (meta.getAttribute("content") || "").trim() : "";
-            var tsToken = siteKey ? getTurnstileToken() : "";
-            if (siteKey && !tsToken){
-              throw new Error("Please complete verification.");
-            }
-
             var payload = {
               stripe_environment: "live",
               language: p.lang,
@@ -873,11 +710,10 @@
               pickup_address_or_hotel: pickupAddress,
               notes: notes,
 
-              agreed_to_terms: true,
-              turnstile_token: tsToken
+              agreed_to_terms: true
             };
 
-            var r = await fetch("/api/create-checkout-session", {
+            var r = await fetch("/stripe/api/create-checkout-session", {
               method: "POST",
               headers: { "content-type": "application/json" },
               body: JSON.stringify(payload)
@@ -908,10 +744,7 @@
           els.notes.value = "";
           els.agree.checked = false;
           setStatus("");
-          try{
-            if (window.turnstile && TURNSTILE_WIDGET_ID !== null) window.turnstile.reset(TURNSTILE_WIDGET_ID);
-          }catch(e){}
-        });
+});
       }
 
       init();
