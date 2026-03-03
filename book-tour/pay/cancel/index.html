@@ -19,23 +19,61 @@
 </head>
 <body>
   <div id="siteHeader"></div>
+
   <main class="page card">
     <div class="cardBox">
       <h1 style="margin:0 0 6px 0">Payment canceled</h1>
       <p class="hint" style="margin:0">
         No charge was completed. If you still want to book, you can try again or message us on WhatsApp.
       </p>
-  <div class="actions">
-    <a class="btnPrimary" href="/book-tour/pay/">Try payment again</a>
-    <a class="btnGhost" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp us</a>
-    <a class="btnGhost" href="/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a>
-  </div>
 
-  <p class="hint" style="margin:14px 0 0 0;font-size:12px">
-    Stripe does not charge you just for landing on checkout. Refunds are handled only when a payment actually completes.
-  </p>
-</div>
+      <div class="actions">
+        <a class="btnPrimary" id="retryLink" href="/book-tour/pay/">Try payment again</a>
+        <a class="btnGhost" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp us</a>
+        <a class="btnGhost" id="termsLink" href="/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a>
+      </div>
+
+      <p class="hint" style="margin:14px 0 0 0;font-size:12px">
+        Stripe does not charge you just for landing on checkout. Refunds are handled only when a payment actually completes.
+      </p>
+    </div>
   </main>
+
   <div id="siteFooter"></div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      function detectLang(){
+        const u = new URL(location.href);
+        const p = (u.pathname || "").toLowerCase();
+        const q = (u.searchParams.get("lang") || "").toLowerCase();
+        if (q === "es" || q === "en") return q;
+        if (p.indexOf("/es/") === 0) return "es";
+        return "en";
+      }
+
+      // Preserve tour/date/party/lang if they exist so "Try again" lands on the same selection
+      const u = new URL(location.href);
+      const tour = u.searchParams.get("tour") || "";
+      const date = u.searchParams.get("date") || "";
+      const party = u.searchParams.get("party") || "";
+      const lang = detectLang();
+
+      const retry = new URL("/book-tour/pay/", location.origin);
+      if (tour) retry.searchParams.set("tour", tour);
+      if (date) retry.searchParams.set("date", date);
+      if (party) retry.searchParams.set("party", party);
+      if (lang) retry.searchParams.set("lang", lang);
+
+      var retryLink = document.getElementById("retryLink");
+      if (retryLink) retryLink.setAttribute("href", retry.pathname + retry.search);
+
+      var termsHref = (lang === "es") ? "/es/terminos-y-condiciones/" : "/terms-conditions/";
+      var termsLink = document.getElementById("termsLink");
+      if (termsLink) termsLink.setAttribute("href", termsHref);
+    })();
+  </script>
 </body>
 </html>
