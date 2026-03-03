@@ -582,7 +582,7 @@
       }
 
       async function fetchTours(lang){
-        var res = await fetch("/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
+        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang), { method: "GET" });
         if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
         var data = await res.json();
         if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
@@ -846,7 +846,7 @@
               turnstile_token: tsToken
             };
 
-            var r = await fetch("/api/create-checkout-session", {
+            var r = await fetch("/stripe/api/create-checkout-session", {
               method: "POST",
               headers: { "content-type": "application/json" },
               body: JSON.stringify(payload)
