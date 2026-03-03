@@ -379,7 +379,8 @@
             <label for="notes" id="tNotesLabel">Notes (optional)</label>
             <textarea id="notes" class="control" rows="3"></textarea>
           </div>
-<div class="checkRow">
+
+          <div class="checkRow">
             <input id="agree" type="checkbox" />
             <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
           </div>
@@ -511,17 +512,13 @@
         if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
         return data.tours;
       }
-      }catch(e){}
-
-      return "";
-    }
 
       async function init(){
         setStatus("");
 
         var p = qp();
 
-        // Attach auto-capitalization (this was missing before)
+        // Auto-capitalization behavior (in addition to autocapitalize attr)
         attachAutoCapInput(els.firstName);
         attachAutoCapInput(els.lastName);
 
@@ -544,7 +541,7 @@
             resetBtn: "Reset",
             termsText: "I agree to the",
             termsName: "Terms and Conditions",
-            termsUrl: "https://mindobirdwatching.com/terms-conditions/",
+            termsUrl: "https://mindobirdwatching.com/terms-conditions/"
           },
           es: {
             title: "Pagar un Tour",
@@ -564,7 +561,7 @@
             resetBtn: "Reiniciar",
             termsText: "Acepto los",
             termsName: "Terminos y Condiciones",
-            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/",
+            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"
           }
         };
 
@@ -597,7 +594,6 @@
         setLabel("tWhatsLabel", L.whatsapp);
         setLabel("tPickupLabel", L.pickupLabel);
         setLabel("tPickupAddrLabel", L.pickupAddr);
-
 
         var notesLabel = document.getElementById("tNotesLabel");
         if (notesLabel) notesLabel.textContent = L.notes;
@@ -770,8 +766,6 @@
           els.notes.value = "";
           els.agree.checked = false;
           setStatus("");
-          try{
-          }catch(e){}
         });
       }
 
