@@ -1,455 +1,390 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Payment canceled | Mindo Bird Watching</title>
-<link href="/favicon.ico" rel="icon"/>
-<link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
-<link href="/site.webmanifest" rel="manifest"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
-<link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/header.css?v=20251231-final" rel="stylesheet"/>
-<link href="/assets/css/footer.css" rel="stylesheet"/>
-<script defer="" src="/assets/js/head.js"></script>
-<script defer="" src="/assets/js/includes.js"></script>
-<script defer="" src="/assets/js/site.js"></script>
+
+<link rel="icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="/assets/css/site.css" />
+<link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
+<link rel="stylesheet" href="/assets/css/footer.css" />
+
+<script src="/assets/js/head.js" defer></script>
+<script src="/assets/js/includes.js" defer></script>
+<script src="/assets/js/site.js" defer></script>
+
 <style>
-    /* Page-local styles ONLY for the guest pay page */
-    #siteHeader{
-      display:flex;
-      justify-content:center;
-      margin-bottom: 14px;
-    }
-    #siteHeader > *{
-      width:100%;
-      max-width: 1120px;
-    }
-    #siteHeader .topbar,
-    #siteHeader header.topbar,
-    #siteHeader div.topbar{
-      width:100%;
-      border-radius: 22px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(0,0,0,0.10);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
-      padding: 10px 12px;
-      margin: 16px auto 0;
-    }
-    @media (min-width: 901px){
-      #siteHeader .topbar .right,
-      #siteHeader .topbar nav.nav{
-        flex-wrap: nowrap !important;
-        min-width: 0 !important;
-      }
-      #siteHeader .topbar nav.nav{
-        padding-left: 8px;
-        overflow: hidden;
-      }
-      #siteHeader .topbar .lang{ flex: 0 0 auto; }
-    }
+/* Keep header centered like the rest of the site */
+#siteHeader{
+  display:flex;
+  justify-content:center;
+  margin-bottom: 14px;
+}
+#siteHeader > *{
+  width:100%;
+  max-width: 1120px;
+}
+#siteHeader .topbar,
+#siteHeader header.topbar,
+#siteHeader div.topbar{
+  width:100%;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(0,0,0,0.10);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+  padding: 10px 12px;
+  margin: 16px auto 0;
+}
+@media (min-width: 901px){
+  #siteHeader .topbar .right,
+  #siteHeader .topbar nav.nav{
+    flex-wrap: nowrap !important;
+    min-width: 0 !important;
+  }
+  #siteHeader .topbar nav.nav{
+    padding-left: 8px;
+    overflow: hidden;
+  }
+  #siteHeader .topbar .lang{ flex: 0 0 auto; }
+}
 
-    .payPage { padding: 22px 22px 26px; }
-    @media (max-width: 900px) { .payPage { padding: 18px 14px 20px; } }
+/* Shell to match the success page */
+.pageShell{ padding: 18px 14px 28px; }
+.shellCard{
+  max-width: 1200px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.84);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.08);
+  padding: 18px;
+}
+.shellHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.titleWrap{ min-width: 280px; flex: 1 1 auto; }
+.h1{
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: #0e4b2e;
+  font-size: 32px; /* must match site-wide */
+}
+.sub{
+  margin: 6px 0 0;
+  color: rgba(0,0,0,0.62);
+  font-size: 13px;
+  line-height: 1.45;
+  max-width: 86ch;
+}
+.statusPill{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(0,0,0,0.10);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.10);
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(0,0,0,0.78);
+  white-space: nowrap;
+}
+.statusDot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(185, 28, 28, 0.95);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.14);
+}
 
-    .payHero h1{
-      font-family: "Playfair Display", serif;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      margin: 0 0 6px;
-      color: #0e4b2e;
-      font-size: clamp(30px, 3.2vw, 36px);
-    }
-    .payHero p{
-      margin: 0;
-      max-width: 78ch;
-      color: rgba(0,0,0,0.62);
-      font-size: 16px;
-      line-height: 1.55;
-    }
+.grid2{
+  display:grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 14px;
+  align-items:start;
+}
+@media (max-width: 980px){
+  .grid2{ grid-template-columns: 1fr; }
+}
 
-    .pillRow{
-      margin-top: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .pill{
-      display: inline-flex;
-      align-items: center;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(0,0,0,0.10);
-      font-size: 13px;
-      font-weight: 700;
-      color: rgba(0,0,0,0.75);
-    }
+.card{
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  padding: 14px;
+}
+.h2{
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #1f5a35;
+}
 
-    .payGrid{
-      margin-top: 18px;
-      display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
-      gap: 18px;
-      align-items: start;
-    }
-    @media (max-width: 900px){ .payGrid { grid-template-columns: 1fr; } }
+.kv{
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.7);
+}
+.kvRow{
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.kvRow:first-child{ border-top: none; }
+.kvKey{ font-size: 12px; color: rgba(0,0,0,0.64); }
+.kvVal{ font-size: 12px; color: rgba(0,0,0,0.9); font-weight: 600; text-align: right; }
 
-    .panel{
-      background: rgba(255,255,255,0.45);
-      border: 1px solid rgba(0,0,0,0.10);
-      border-radius: 18px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
-      padding: 18px;
-    }
-    @media (max-width: 900px){ .panel { padding: 16px; } }
+.help{
+  margin: 10px 0 12px;
+  font-size: 12px;
+  color: rgba(0,0,0,0.58);
+  line-height: 1.35;
+}
 
-    .tourCard{
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .tourMedia{
-      width: 100%;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.10);
-      background: rgba(255,255,255,0.55);
-      min-height: 240px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .tourMedia img{
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    .tourMetaRow{
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .tourCode{
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(0,0,0,0.55);
-    }
-    .tourTitle{
-      margin: 4px 0 2px;
-      font-weight: 900;
-      font-size: 18px;
-      color: rgba(0,0,0,0.85);
-    }
-    .tourSubtitle{
-      margin: 0;
-      color: rgba(0,0,0,0.62);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    .tourPrice{
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(0,0,0,0.10);
-      font-size: 13px;
-      font-weight: 900;
-      color: rgba(0,0,0,0.78);
-      white-space: nowrap;
-    }
+/* Use global .btn from site.css, just arrange them nicely */
+.buttonGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+@media (max-width: 560px){
+  .buttonGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+.buttonGrid .btn{ width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; }
 
-    .hint{
-      margin: 0 0 12px;
-      color: rgba(0,0,0,0.55);
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .req{ color: #b42318; font-weight: 900; }
+.bullets{
+  margin: 8px 0 0 18px;
+  color: rgba(0,0,0,0.74);
+  font-size: 12px;
+}
+.muted{
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: rgba(0,0,0,0.58);
+}
 
-    .field{ margin-top: 12px; }
-    .field:first-of-type{ margin-top: 0; }
+.termsLine{
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: rgba(0,0,0,0.58);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
 
-    label{
-      display: block;
-      font-weight: 800;
-      font-size: 13px;
-      color: rgba(0,0,0,0.78);
-      margin-bottom: 6px;
-    }
-    .control{
-      width: 100%;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,0.14);
-      background: rgba(255,255,255,0.75);
-      padding: 12px 12px;
-      font-size: 14px;
-      outline: none;
-      box-sizing: border-box;
-    }
-    .control:focus{
-      border-color: rgba(11,90,51,0.55);
-      box-shadow: 0 0 0 3px rgba(11,90,51,0.14);
-    }
-    input.control{ height: 44px; }
-    select.control{ height: 44px; }
-    textarea.control{ height: auto; }
-
-    .subtext{
-      margin-top: 6px;
-      font-size: 12px;
-      color: rgba(0,0,0,0.55);
-      line-height: 1.35;
-    }
-
-    .twoCol{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 520px){ .twoCol { grid-template-columns: 1fr; } }
-    .twoCol .field{ margin-top: 0; }
-    .twoCol label{ min-height: 18px; }
-
-    .actions{
-      margin-top: 14px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .btn:hover{ filter: brightness(0.98); }
-    .btn:disabled{ opacity: 0.55; cursor: not-allowed; }
-
-    .checkRow{
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      margin-top: 12px;
-    }
-    .checkRow input{ margin-top: 3px; }
-    .checkRow label{
-      margin: 0;
-      font-weight: 700;
-      font-size: 13px;
-      color: rgba(0,0,0,0.72);
-      line-height: 1.35;
-    }
-
-    .status{
-      margin-top: 10px;
-      color: #0b5a33;
-      font-weight: 900;
-      font-size: 13px;
-    }
-    .statusError{ color: #b42318; }
-
-    #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
-    #termsLink:hover{ text-decoration: none; }
-  </style>
-<style>
-    /* Success/Cancel pages reuse the pay page look and spacing */
-    .pageShell{ padding: 18px 14px 28px; }
-    .shellCard{
-      max-width: 1200px;
-      margin: 0 auto;
-      background: rgba(255,255,255,0.84);
-      border: 1px solid rgba(0,0,0,0.06);
-      border-radius: 18px;
-      box-shadow: 0 10px 26px rgba(0,0,0,0.08);
-      padding: 18px;
-    }
-    .shellHead{ margin-bottom: 14px; }
-    .h1{ margin: 0; font-size: 32px; line-height: 1.1; color: #1f5a35; letter-spacing: -0.01em; }
-    .sub{ margin: 6px 0 0; color: rgba(0,0,0,0.62); font-size: 32px; }
-    .grid2{ display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; }
-    @media (max-width: 980px){ .grid2{ grid-template-columns: 1fr; } }
-    .card{
-      background: rgba(255,255,255,0.78);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 14px;
-      padding: 14px;
-    }
-    .h2{ margin: 0 0 10px; font-size: 32px; color: #1f5a35; }
-    .kv{ border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.7); }
-    .kvRow{ display:flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-top: 1px solid rgba(0,0,0,0.06); }
-    .kvRow:first-child{ border-top: none; }
-    .kvKey{ font-size: 32px; color: rgba(0,0,0,0.64); }
-    .kvVal{ font-size: 32px; color: rgba(0,0,0,0.9); font-weight: 600; text-align: right; }
-    .help{ margin: 10px 0 12px; font-size: 32px; color: rgba(0,0,0,0.58); }
-    .actions{ display:flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .bullets{ margin: 8px 0 0 18px; color: rgba(0,0,0,0.74); font-size: 32px; }
-    .muted{ margin: 10px 0 0; font-size: 32px; color: rgba(0,0,0,0.58); }
-    .statusBox{
-      margin-top: 10px;
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 32px;
-    }
-    .statusWarn{ background: rgba(255, 0, 0, 0.06); border: 1px solid rgba(255, 0, 0, 0.25); color: #8f1d1d; }
-    .statusOk{ background: rgba(11, 90, 51, 0.08); border: 1px solid rgba(11, 90, 51, 0.22); color: #0b5a33; }
-  </style>
+#termsLink{
+  color: #0b5a33;
+  font-weight: 900;
+  text-decoration: underline;
+}
+#termsLink:hover{ text-decoration: none; }
+</style>
 </head>
+
 <body>
 <div class="container">
-<div id="siteHeader"></div>
-<main class="pageShell">
-<div class="shellCard">
-<div class="shellHead">
-<h1 class="h1" id="pageTitle"></h1>
-<p class="sub" id="pageSub"></p>
+  <div id="siteHeader"></div>
+
+  <main class="pageShell">
+    <div class="shellCard" aria-label="Payment canceled">
+      <div class="shellHead">
+        <div class="titleWrap">
+          <h1 class="h1" id="pageTitle">Payment canceled</h1>
+          <p class="sub" id="pageSub">No charge was completed. If you still want to book, you can try again or message us on WhatsApp.</p>
+        </div>
+        <div class="statusPill" aria-label="Payment canceled status">
+          <span class="statusDot" aria-hidden="true"></span>
+          <span id="pillText">Payment canceled</span>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <section class="card" aria-label="Next step">
+          <h2 class="h2" id="summaryTitle">Next step</h2>
+
+          <div class="kv" aria-label="Action and notes">
+            <div class="kvRow">
+              <div class="kvKey" id="kAction">Action</div>
+              <div class="kvVal" id="vAction">Try again</div>
+            </div>
+            <div class="kvRow">
+              <div class="kvKey" id="kWhats">WhatsApp</div>
+              <div class="kvVal" id="vWhats">+1 305 458 5402</div>
+            </div>
+            <div class="kvRow">
+              <div class="kvKey" id="kNote">Note</div>
+              <div class="kvVal" id="vNote">Stripe does not charge you just for landing on checkout.</div>
+            </div>
+            <div class="kvRow">
+              <div class="kvKey" id="kRefunds">Refunds</div>
+              <div class="kvVal" id="vRefunds">Only when a payment actually completes.</div>
+            </div>
+          </div>
+
+          <p class="help" id="helpText">If your payment failed, you can go back and try again. If you need help, message us on WhatsApp.</p>
+
+          <div class="buttonGrid" aria-label="Actions">
+            <a class="btn primary" id="btnPrimary" href="/book-tour/create/" target="_blank" rel="noopener">Try payment again</a>
+            <a class="btn secondary" id="btnWhats" href="https://wa.me/13054585402" target="_blank" rel="noopener">WhatsApp us</a>
+            <a class="btn" id="btnIG" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener">Instagram</a>
+            <a class="btn" id="btnFB" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener">Facebook</a>
+            <a class="btn" id="btnTerms" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a>
+            <a class="btn secondary" id="btnContact" href="/contact/" target="_blank" rel="noopener">Contact</a>
+          </div>
+        </section>
+
+        <aside class="card" aria-label="Help">
+          <h2 class="h2" id="nextTitle">Help</h2>
+          <ul class="bullets" id="nextList">
+            <li>Check that your card has available funds.</li>
+            <li>If you keep having issues, message us on WhatsApp.</li>
+            <li>You can try the payment again whenever you are ready.</li>
+          </ul>
+          <p class="termsLine">
+            <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener" target="_blank" rel="noopener">Terms and Conditions</a> are available here.
+          </p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <div id="siteFooter"></div>
 </div>
-<div class="grid grid2">
-<section aria-label="Booking summary" class="card">
-<h2 class="h2" id="summaryTitle">Booking summary</h2>
-<div class="kv">
-<div class="kvRow">
-<div class="kvKey" id="kTour">Tour</div>
-<div class="kvVal" id="vTour">-</div>
-</div>
-<div class="kvRow">
-<div class="kvKey" id="kDate">Tour date</div>
-<div class="kvVal" id="vDate">-</div>
-</div>
-<div class="kvRow">
-<div class="kvKey" id="kDays">Days until tour</div>
-<div class="kvVal" id="vDays">-</div>
-</div>
-<div class="kvRow">
-<div class="kvKey" id="kPickup">Pickup window</div>
-<div class="kvVal" id="vPickup">-</div>
-</div>
-</div>
-<p class="help" id="pickupHelp">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
-<div class="actions">
-<a class="btn primary" href="#" id="btnPrimary" rel="noopener" target="_blank">Try payment again</a>
-<a class="btn" href="#" id="btnWhats" rel="noopener">WhatsApp us</a>
-<a class="btn" href="#" id="btnIG" rel="noopener">Instagram</a>
-<a class="btn" href="#" id="btnFB" rel="noopener">Facebook</a>
-</div>
-<div class="statusBox statusWarn" id="statusBox" style="display:none;"></div>
-</section>
-<aside aria-label="What happens next" class="card">
-<h2 class="h2" id="nextTitle">What happens next</h2>
-<ul class="bullets" id="nextList">
-<li>We have your booking details and payment confirmation.</li>
-<li>If we need anything, we will contact you by email or WhatsApp.</li>
-<li>Keep an eye out for a message if your pickup location needs clarification.</li>
-</ul>
-<p class="muted">
-<a href="https://mindobirdwatching.com/terms-conditions/" id="termsLink" rel="noopener" target="_blank">Terms and Conditions</a> are available here.
-            </p>
-</aside>
-</div>
-</div>
-</main>
-<div id="siteFooter"></div>
-</div>
-<script src="/assets/js/includes.js"></script>
-<script src="/assets/js/site.js"></script>
+
 <script>
-    (function(){
-      function qs(k){ return new URLSearchParams(window.location.search).get(k); }
-      function setLangUI(lang){
-        var terms = document.getElementById("termsLink");
-        if (terms) terms.href = (lang === "es") ? "/es/terminos-y-condiciones/" : "/terms-and-conditions/";
-        var btn = document.getElementById("btnPrimary");
-        if (btn){
-          // Try to return to last pay URL if we have one, else send to create page.
-          var last = "";
-          try{ last = localStorage.getItem("mbw_last_pay_url") || ""; }catch(e){}
-          btn.href = last || ((lang === "es") ? "/es/reservar-tour/" : "/book-tour/create/");
-          btn.textContent = (lang === "es") ? "Intentar de nuevo" : "Try payment again";
-        }
+(function(){
+  function qs(k){ return new URLSearchParams(window.location.search).get(k); }
+
+  function init(){
+    var lang = (qs("lang") || "").toLowerCase();
+    if (lang !== "es" && lang !== "en"){
+      lang = (window.location.pathname.indexOf("/es/") === 0) ? "es" : "en";
+    }
+
+    // Labels/text
+    document.getElementById("pageTitle").textContent = (lang === "es") ? "Pago cancelado" : "Payment canceled";
+    document.getElementById("pageSub").textContent = (lang === "es")
+      ? "No se completo ningun cargo. Si aun quieres reservar, puedes intentarlo de nuevo o escribirnos por WhatsApp."
+      : "No charge was completed. If you still want to book, you can try again or message us on WhatsApp.";
+    document.getElementById("pillText").textContent = (lang === "es") ? "Pago cancelado" : "Payment canceled";
+
+    document.getElementById("summaryTitle").textContent = (lang === "es") ? "Siguiente paso" : "Next step";
+    document.getElementById("nextTitle").textContent = (lang === "es") ? "Ayuda" : "Help";
+
+    document.getElementById("kAction").textContent = (lang === "es") ? "Accion" : "Action";
+    document.getElementById("vAction").textContent = (lang === "es") ? "Intentar de nuevo" : "Try again";
+
+    document.getElementById("kWhats").textContent = "WhatsApp";
+    document.getElementById("vWhats").textContent = "+1 305 458 5402";
+
+    document.getElementById("kNote").textContent = (lang === "es") ? "Nota" : "Note";
+    document.getElementById("vNote").textContent = (lang === "es")
+      ? "Stripe no te cobra por entrar."
+      : "Stripe does not charge you just for landing on checkout.";
+
+    document.getElementById("kRefunds").textContent = (lang === "es") ? "Reembolsos" : "Refunds";
+    document.getElementById("vRefunds").textContent = (lang === "es")
+      ? "Solo si un pago se completa."
+      : "Only when a payment actually completes.";
+
+    document.getElementById("helpText").textContent = (lang === "es")
+      ? "Si tu pago fallo, puedes regresar e intentarlo de nuevo. Si necesitas ayuda, escribenos por WhatsApp."
+      : "If your payment failed, you can go back and try again. If you need help, message us on WhatsApp.";
+
+    var nextList = document.getElementById("nextList");
+    if (nextList){
+      nextList.innerHTML = "";
+      var items = (lang === "es")
+        ? [
+            "Revisa que tu tarjeta tenga fondos disponibles.",
+            "Si sigues teniendo problemas, escribenos por WhatsApp.",
+            "Puedes intentar el pago nuevamente cuando estes listo."
+          ]
+        : [
+            "Check that your card has available funds.",
+            "If you keep having issues, message us on WhatsApp.",
+            "You can try the payment again whenever you are ready."
+          ];
+      for (var i=0;i<items.length;i++){
+        var li = document.createElement("li");
+        li.textContent = items[i];
+        nextList.appendChild(li);
+      }
+    }
+
+    // Primary link: reopen the pay page (not staff-only create page)
+    var btnPrimary = document.getElementById("btnPrimary");
+    if (btnPrimary){
+      var last = "";
+      try{ last = localStorage.getItem("mbw_last_pay_url") || ""; }catch(e){}
+
+      var ref = document.referrer || "";
+      var qp = new URLSearchParams(window.location.search);
+
+      // Try to rebuild a guest pay URL from known params if we do not have localStorage.
+      var tour = qp.get("tour") || qp.get("t") || "";
+      var date = qp.get("date") || qp.get("d") || "";
+      var party = qp.get("party") || qp.get("p") || "";
+      var langp = qp.get("lang") || lang || "en";
+
+      var rebuilt = "";
+      if (tour || date || party){
+        rebuilt = "/book-tour/pay/?tour=" + encodeURIComponent(tour) +
+                  "&date=" + encodeURIComponent(date) +
+                  "&party=" + encodeURIComponent(party) +
+                  "&lang=" + encodeURIComponent(langp);
       }
 
-      function init(){
-        var lang = (qs("lang") || "").toLowerCase();
-        if (lang !== "es" && lang !== "en"){
-          // try infer from path
-          lang = (window.location.pathname.indexOf("/es/") === 0) ? "es" : "en";
-        }
+      // Fallback to the guest pay page root (works even if params are missing).
+      var fallback = (lang === "es") ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
 
-        document.getElementById("pageTitle").textContent = (lang === "es") ? "Pago cancelado" : "Payment canceled";
-        document.getElementById("pageSub").textContent = (lang === "es")
-          ? "No se completo ningun cargo. Si aun quieres reservar, puedes intentarlo de nuevo o escribirnos por WhatsApp."
-          : "No charge was completed. If you still want to book, you can try again or message us on WhatsApp.";
+      // Prefer last pay URL, then referrer if it looks like the pay page, then rebuilt, then fallback.
+      var href = last ||
+                 ((ref.indexOf("/book-tour/pay/") !== -1 || ref.indexOf("/es/reservar-tour/pago/") !== -1) ? ref : "") ||
+                 rebuilt ||
+                 fallback;
 
-        document.getElementById("summaryTitle").textContent = (lang === "es") ? "Siguiente paso" : "Next step";
-        document.getElementById("nextTitle").textContent = (lang === "es") ? "Ayuda" : "Help";
+      btnPrimary.href = href;
+      btnPrimary.target = "_blank";
+      btnPrimary.rel = "noopener";
+      btnPrimary.textContent = (lang === "es") ? "Intentar pago de nuevo" : "Try payment again";
+    }
 
-        // Left card repurposed
-        document.getElementById("kTour").textContent = (lang === "es") ? "Accion" : "Action";
-        document.getElementById("vTour").textContent = (lang === "es") ? "Intentar de nuevo" : "Try again";
-        document.getElementById("kDate").textContent = (lang === "es") ? "WhatsApp" : "WhatsApp";
-        document.getElementById("vDate").textContent = "+593 99 279 4464";
-        document.getElementById("kDays").textContent = (lang === "es") ? "Nota" : "Note";
-        document.getElementById("vDays").textContent = (lang === "es") ? "Stripe no te cobra por entrar." : "Stripe does not charge you just for landing on checkout.";
-        document.getElementById("kPickup").textContent = (lang === "es") ? "Reembolsos" : "Refunds";
-        document.getElementById("vPickup").textContent = (lang === "es") ? "Solo si un pago se completa." : "Only when a payment actually completes.";
+    // Contact/terms in correct language
+    var termsUrl = (lang === "es") ? "/es/terminos-y-condiciones/" : "/terms-and-conditions/";
+    // The site uses /terms-conditions/ as canonical now; keep that external link for consistency.
+    // We still update the muted link only if you want internal language routes later.
+    var termsLink = document.getElementById("termsLink");
+    if (termsLink) termsLink.href = "https://mindobirdwatching.com/terms-conditions/";
+  }
 
-        var help = document.getElementById("pickupHelp");
-        if (help){
-          help.textContent = (lang === "es")
-            ? "Si tu pago fallo, puedes regresar e intentarlo de nuevo. Si necesitas ayuda, escribenos por WhatsApp."
-            : "If your payment failed, you can go back and try again. If you need help, message us on WhatsApp.";
-        }
-
-        // Right card bullets
-        var nextList = document.getElementById("nextList");
-        if (nextList){
-          nextList.innerHTML = "";
-          var items = (lang === "es")
-            ? [
-                "Revisa que tu tarjeta tenga fondos disponibles.",
-                "Si sigues teniendo problemas, escribenos por WhatsApp.",
-                "Puedes intentar el pago nuevamente cuando estes listo."
-              ]
-            : [
-                "Check that your card has available funds.",
-                "If you keep having issues, message us on WhatsApp.",
-                "You can try the payment again whenever you are ready."
-              ];
-          for (var i=0;i<items.length;i++){
-            var li = document.createElement("li");
-            li.textContent = items[i];
-            nextList.appendChild(li);
-          }
-        }
-
-        // Buttons
-        var btnWhats = document.getElementById("btnWhats");
-        if (btnWhats) btnWhats.href = "https://wa.me/593992794464";
-        var btnIG = document.getElementById("btnIG");
-        if (btnIG) btnIG.href = "https://www.instagram.com/mindobirdwatching/";
-        var btnFB = document.getElementById("btnFB");
-        if (btnFB) btnFB.href = "https://www.facebook.com/mindobirdwatching/";
-
-        var btnPrimary = document.getElementById("btnPrimary");
-        if (btnPrimary){
-          btnPrimary.className = "btn btnPrimary";
-        }
-
-        // Hide status box on cancel page
-        var box = document.getElementById("statusBox");
-        if (box) box.style.display = "none";
-
-        setLangUI(lang);
-      }
-
-      if (document.readyState === "loading"){
-        document.addEventListener("DOMContentLoaded", init);
-      }else{
-        init();
-      }
-    })();
-  </script>
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  }else{
+    init();
+  }
+})();
+</script>
 </body>
 </html>
