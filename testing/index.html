@@ -170,7 +170,7 @@
 @media (max-width: 560px){
   .buttonGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
-.buttonGrid .btn{ width: 100%; }
+.buttonGrid .btn{ width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; }
 
 .bullets{
   margin: 8px 0 0 18px;
@@ -182,6 +182,17 @@
   font-size: 12px;
   color: rgba(0,0,0,0.58);
 }
+
+.termsLine{
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: rgba(0,0,0,0.58);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
 #termsLink{
   color: #0b5a33;
   font-weight: 900;
@@ -250,8 +261,8 @@
             <li>If you keep having issues, message us on WhatsApp.</li>
             <li>You can try the payment again whenever you are ready.</li>
           </ul>
-          <p class="muted">
-            <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> are available here.
+          <p class="termsLine">
+            <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener" target="_blank" rel="noopener">Terms and Conditions</a> are available here.
           </p>
         </aside>
       </div>
@@ -322,12 +333,41 @@
       }
     }
 
-    // Primary link: open last pay URL in new tab if available
+    // Primary link: reopen the pay page (not staff-only create page)
     var btnPrimary = document.getElementById("btnPrimary");
     if (btnPrimary){
       var last = "";
       try{ last = localStorage.getItem("mbw_last_pay_url") || ""; }catch(e){}
-      btnPrimary.href = last || ((lang === "es") ? "/es/reservar-tour/" : "/book-tour/create/");
+
+      var ref = document.referrer || "";
+      var qp = new URLSearchParams(window.location.search);
+
+      // Try to rebuild a guest pay URL from known params if we do not have localStorage.
+      var tour = qp.get("tour") || qp.get("t") || "";
+      var date = qp.get("date") || qp.get("d") || "";
+      var party = qp.get("party") || qp.get("p") || "";
+      var langp = qp.get("lang") || lang || "en";
+
+      var rebuilt = "";
+      if (tour || date || party){
+        rebuilt = "/book-tour/pay/?tour=" + encodeURIComponent(tour) +
+                  "&date=" + encodeURIComponent(date) +
+                  "&party=" + encodeURIComponent(party) +
+                  "&lang=" + encodeURIComponent(langp);
+      }
+
+      // Fallback to the guest pay page root (works even if params are missing).
+      var fallback = (lang === "es") ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
+
+      // Prefer last pay URL, then referrer if it looks like the pay page, then rebuilt, then fallback.
+      var href = last ||
+                 ((ref.indexOf("/book-tour/pay/") !== -1 || ref.indexOf("/es/reservar-tour/pago/") !== -1) ? ref : "") ||
+                 rebuilt ||
+                 fallback;
+
+      btnPrimary.href = href;
+      btnPrimary.target = "_blank";
+      btnPrimary.rel = "noopener";
       btnPrimary.textContent = (lang === "es") ? "Intentar pago de nuevo" : "Try payment again";
     }
 
