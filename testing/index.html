@@ -643,20 +643,31 @@ els.btnCopy.addEventListener("click", async function () {
       setActionMode("link");
     })();
  
-function capitalizeFirstLetter(s) {
-  const t = (s || "").trim();
-  if (!t) return "";
-  return t.charAt(0).toUpperCase() + t.slice(1);
+
+// Auto-capitalize first and last name (first letter of each word)
+function titleCaseWords(s) {
+  if (!s) return "";
+  return String(s)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(function (w) {
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    })
+    .join(" ");
 }
 
-["firstName", "lastName"].forEach((id) => {
-  const el = document.getElementById(id);
+function attachAutoCap(id) {
+  var el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener("blur", () => {
-    el.value = capitalizeFirstLetter(el.value);
+  el.setAttribute("autocapitalize", "words");
+  el.addEventListener("blur", function () {
+    el.value = titleCaseWords(el.value);
   });
-});
+}
 
- </script>
+attachAutoCap("inv_first_name");
+attachAutoCap("inv_last_name");
+
+</script>
 </body>
 </html>
