@@ -1,518 +1,291 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Create a payment link | Mindo Bird Watching</title>
-<link href="/favicon.ico" rel="icon"/>
-<link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
-<link href="/site.webmanifest" rel="manifest"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
-<link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/header.css?v=20251231-final" rel="stylesheet"/>
-<link href="/assets/css/footer.css" rel="stylesheet"/>
-<script defer="" src="/assets/js/head.js"></script>
-<script defer="" src="/assets/js/includes.js"></script>
-<script defer="" src="/assets/js/site.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Payment Success | Mindo Bird Watching</title>
+
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#0b5b32" />
+
+<link rel="stylesheet" href="/assets/css/site.css" />
+<link rel="stylesheet" href="/assets/css/header.css" />
+<link rel="stylesheet" href="/assets/css/footer.css" />
+<script defer src="/assets/js/head.js"></script>
+
 <style>
-    /* Page-local styles ONLY for this internal tool. Keep typography from site.css. */
-    .payCreatePage { padding: 22px 22px 26px; }
-    @media (max-width: 900px) {
-      .payCreatePage { padding: 18px 14px 20px; }
-    }
-
-    .payCreateHero h1 {
-      font-family: "Playfair Display", serif;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      margin: 0 0 6px;
-      color: #0e4b2e;
-      font-size: clamp(30px, 3.2vw, 32px) !important;
-    }
-    .payCreateHero p {
-      margin: 0;
-      max-width: 78ch;
-      color: rgba(0,0,0,0.62);
-      font-size: 16px;
-      line-height: 1.55;
-    }
-
-    .payCreateGrid {
-      margin-top: 18px;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 18px;
-      align-items: start;
-    }
-    @media (max-width: 900px) {
-      .payCreateGrid { grid-template-columns: 1fr; }
-    }
-
-    .payPanel {
-      background: rgba(255,255,255,0.45);
-      border: 1px solid rgba(0,0,0,0.10);
-      border-radius: 18px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
-      padding: 18px;
-      font-family: inherit;
-    }
-    @media (max-width: 900px) { .payPanel { padding: 16px; } }
-
-    .payPanel .hint {
-      margin: 0 0 12px;
-      color: rgba(0,0,0,0.55);
-      font-size: 13px;
-      line-height: 1.35;
-    }
-
-    .field { margin: 14px 0; }
-    .field label {
-      display: inline-flex;
-      align-items: baseline;
-      gap: 6px;
-      font-weight: 700;
-      font-size: 15px;
-      margin-bottom: 8px;
-      color: rgba(0,0,0,0.86);
-    }
-    .req { color: #b42318; font-weight: 800; }
-
-    /* Controls */
-    :root{
-      --mbw-control-h: 44px;
-      --mbw-control-radius: 14px;
-      --mbw-control-py: 10px;
-      --mbw-control-px: 14px;
-    }
-
-    .payCreatePage .control{
-      width:100%;
-      appearance:none;
-      -webkit-appearance:none;
-      font:inherit;
-      color:var(--ink);
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 14px;
-      min-height:44px;
-      line-height:1.2;
-      box-shadow:0 1px 0 rgba(0,0,0,.02) inset;
-    }
-
-    .payCreatePage select.control{
-      background-color:#fff;
-    }
-
-    .payCreatePage .control:focus{
-      border-color: rgba(16, 185, 129, 0.55);
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
-    }
-
-    /* Date input: keep consistent height, avoid iOS overflow */
-    .payCreatePage input[type="date"].control{
-      -webkit-appearance: none;
-      appearance: none;
-      background-color:#fff;
-      padding-right: 44px; /* room for calendar icon */
-    }
-
-    /* Make the date value slightly larger, without changing the box size */
-    .payCreatePage input[type="date"].dateBig{
-      font-size: 17px;
-      font-weight: 500;
-    }
-
-    /* Prevent iOS zoom + keep text readable */
-    @media (max-width: 900px){
-      .payCreatePage .control{ font-size: 16px; }
-      .payCreatePage input[type="date"].dateBig{ font-size: 17px; }
-    }
-
-    
-    
-    
-
-    .status {
-      margin-top: 10px;
-      color: #0b5a33;
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    .payLinkTitle {
-      font-family: "Playfair Display", serif;
-      font-weight: 700;
-      color: #0e4b2e;
-      font-size: 18px;
-      margin: 0 0 10px;
-    }
-
-    .linkBox {
-      border: 1px dashed rgba(0,0,0,0.28);
-      background: rgba(255,255,255,0.45);
-      border-radius: 14px;
-      padding: 12px;
-      font-size: 13px;
-      line-height: 1.35;
-      color: rgba(0,0,0,0.82);
-      word-break: break-all;
-      min-height: 46px;
-      display: flex;
-      align-items: center;
-    }
-
-    .payLinkHelp {
-      margin: 10px 0 0;
-      color: rgba(0,0,0,0.55);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    /* Ensure the tool does not visually "stick" to the header */
-    #siteHeader { margin-bottom: 14px; }
-    @media (max-width: 900px) { #siteHeader { margin-bottom: 12px; } }
-
-    @media (min-width: 901px){ .payCreateHero h1{ font-size:32px !important; } }
-  
+.page { margin-top: 18px; padding: 26px; }
+.page.card{
+background: var(--card);
+border: 1px solid var(--line);
+border-radius: var(--r);
+box-shadow: var(--shadow);
+}
+.successShell{
+background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+border-radius: calc(var(--r) + 4px);
+padding: 18px;
+border: 1px solid rgba(255,255,255,0.35);
+}
+.successTop{
+display:flex;
+gap:14px;
+align-items:flex-start;
+justify-content:space-between;
+flex-wrap:wrap;
+margin-bottom:14px;
+}
+.successTitle{
+margin:0 0 6px 0;
+font-family:"Playfair Display", serif;
+font-weight:700;
+color:#0e4b2e;
+font-size:44px;
+line-height:1.04;
+}
+.successSub{
+margin:0;
+color:var(--muted);
+}
+.statusPill{
+display:inline-flex;
+align-items:center;
+gap:10px;
+padding:10px 14px;
+background:rgba(255,255,255,0.85);
+border:1px solid var(--line);
+border-radius:999px;
+font-weight:650;
+}
+.statusDot{
+width:10px;
+height:10px;
+border-radius:999px;
+background:#0e7a3e;
+}
+.successGrid{
+display:grid;
+grid-template-columns:1.15fr 0.85fr;
+gap:16px;
+}
+.cardInner{
+background:rgba(255,255,255,0.76);
+border:1px solid var(--line);
+border-radius:16px;
+padding:16px;
+}
+.summaryTitle{
+margin:0 0 10px 0;
+font-family:"Playfair Display", serif;
+font-weight:700;
+color:#0e4b2e;
+}
+.summaryTable{
+width:100%;
+border-radius:14px;
+border:1px solid var(--line);
+}
+.summaryRow{
+display:grid;
+grid-template-columns:160px 1fr;
+padding:10px 12px;
+border-top:1px solid rgba(0,0,0,0.06);
+}
+.summaryRow:first-child{border-top:0;}
+.summaryVal{
+text-align:right;
+font-weight:650;
+}
+.helperText{
+margin-top:10px;
+font-size:13px;
+color:rgba(0,0,0,0.58);
+}
+.actionRow{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:12px;
+margin-top:14px;
+}
+@media (min-width:901px){
+.actionRow{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+.actionRow .btn{
+width:100%;
+justify-content:center;
+}
+.imageCard{
+padding:0;
+overflow:hidden;
+position:relative;
+min-height:520px;
+}
+.imageCard img{
+position:absolute;
+inset:0;
+width:100%;
+height:100%;
+object-fit:cover;
+}
 </style>
 </head>
+
 <body>
+
 <div class="container">
 <div id="siteHeader"></div>
-<main class="page card payCreatePage">
-<header class="payCreateHero">
-<h1>Create a payment link</h1>
-<p>Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
-</header>
-<section aria-label="Payment link generator" class="payCreateGrid">
-<div class="payPanel">
-<p class="hint">Required fields are marked with <span class="req">*</span>.</p>
-<div class="field">
-<label for="tourSelect">Tour <span class="req">*</span></label>
-<select class="control" id="tourSelect" required="">
-<option value="">Select a tour...</option>
-</select>
-<div class="subtext">This list is Stripe-driven via the Tours API.</div>
-<div class="subtext" id="priceLabel">Selected price: -</div>
+
+<main class="page card">
+
+<div class="successShell">
+
+<div class="successTop">
+<div>
+<h1 class="successTitle">Thanks for your payment</h1>
+<p class="successSub">Your tour booking has been received.</p>
 </div>
-<div class="field">
-<label for="dateInput">Tour date <span class="req">*</span></label>
-<input class="control dateBig" id="dateInput" required="" type="date"/>
-<div class="subtext">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
+
+<div class="statusPill">
+<span class="statusDot"></span>
+<span>Payment received</span>
 </div>
-<div class="field">
-<label for="partySelect">Number of people <span class="req">*</span></label>
-<select class="control" id="partySelect" required="">
-<option value="1">1</option>
-<option selected="" value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
-<option value="6">6</option>
-<option value="7">7</option>
-<option value="8">8</option>
-</select>
-<div class="subtext">Must be 1 to 8.</div>
 </div>
-<div class="field">
-<label for="langSelect">Language</label>
-<select class="control" id="langSelect">
-<option selected="" value="en">English</option>
-<option value="es">Espanol</option>
-</select>
-<div class="subtext">Generates a link to the correct language pay page.</div>
+
+<section class="successGrid">
+
+<div>
+
+<section class="cardInner">
+
+<h2 class="summaryTitle">Booking summary</h2>
+
+<div class="summaryTable">
+
+<div class="summaryRow">
+<div>Tour</div>
+<div class="summaryVal" id="sumTour">-</div>
 </div>
-<div class="actions">
-<button class="btn primary" id="btnGenerate" type="button">Generate link</button>
-<button class="btn secondary" disabled="" id="btnCopy" type="button">Copy link</button>
-<button class="btn secondary" disabled="" id="btnOpen" type="button">Open link</button>
+
+<div class="summaryRow">
+<div>Tour date</div>
+<div class="summaryVal" id="sumDate">-</div>
 </div>
-<div aria-live="polite" class="status" id="status"></div>
+
+<div class="summaryRow">
+<div>Days until tour</div>
+<div class="summaryVal" id="sumDays">-</div>
 </div>
-<aside class="payPanel">
-<h2 class="payLinkTitle">Payment link</h2>
-<div class="linkBox" id="linkBox">Generate a link to display it here.</div>
-<p class="payLinkHelp">
-            The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
-            On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
-          </p>
-</aside>
+
+<div class="summaryRow">
+<div>Pickup window</div>
+<div class="summaryVal" id="sumPickup">-</div>
+</div>
+
+</div>
+
+<p class="helperText">Pickup will be at the time listed on the tour.</p>
+
+<div class="actionRow">
+
+<a id="receiptBtn" class="btn primary" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Receipt</a>
+
+<a class="btn primary" href="https://mindobirdwatching.com/shop/" target="_blank">Visit Gift Shop</a>
+
+<a class="btn secondary" href="https://wa.me/13054585402" target="_blank">WhatsApp us</a>
+
+<a class="btn secondary" href="https://mindobirdwatching.com/contact/" target="_blank">Contact</a>
+
+<a class="btn ghost" href="https://mindobirdwatching.com/terms-conditions/" target="_blank">Terms & Conditions</a>
+
+<a class="btn ghost" href="https://instagram.com/mindobirdwatching" target="_blank">Instagram</a>
+
+</div>
+
 </section>
+
+</div>
+
+<aside class="cardInner imageCard">
+<img src="/assets/images/pages/mbw_payment_success_01.jpg" alt="Mindo cloud forest">
+</aside>
+
+</section>
+
+</div>
+
 </main>
+
 <div id="siteFooter"></div>
 </div>
+
+<script src="/assets/js/includes.js"></script>
+<script src="/assets/js/site.js"></script>
+
 <script>
-    (function () {
-      const els = {
-        tourSelect: document.getElementById("tourSelect"),
-        dateInput: document.getElementById("dateInput"),
-        partySelect: document.getElementById("partySelect"),
-        langSelect: document.getElementById("langSelect"),
-        priceLabel: document.getElementById("priceLabel"),
-        linkBox: document.getElementById("linkBox"),
-        btnGenerate: document.getElementById("btnGenerate"),
-        btnCopy: document.getElementById("btnCopy"),
-        btnOpen: document.getElementById("btnOpen"),
-        status: document.getElementById("status")
-      };
 
-      let toursByCode = {};
+(function(){
 
-      function setStatus(msg) {
-        els.status.textContent = msg || "";
-      }
+function qs(name){
+return new URLSearchParams(window.location.search).get(name) || "";
+}
 
-      function formatPriceUSD(amountCents) {
-        if (amountCents == null) return "-";
-        const dollars = (amountCents / 100).toFixed(2);
-        return "$" + dollars + " per person";
-      }
+function safeText(el,val){
+if(!el) return;
+el.textContent = val || "-";
+}
 
-      function ensureMinTomorrow() {
-        const now = new Date();
-        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        const yyyy = String(tomorrow.getFullYear());
-        const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
-        const dd = String(tomorrow.getDate()).padStart(2, "0");
-        const min = yyyy + "-" + mm + "-" + dd;
-        els.dateInput.min = min;
+var tour = qs("tour") || qs("tour_code") || "";
+var date = qs("date") || qs("tour_date") || "";
+var pickup = qs("pickup") || qs("pickup_window") || "6:00 AM to 6:15 AM";
 
-        if (!els.dateInput.value) {
-          els.dateInput.value = min;
-        } else if (els.dateInput.value < min) {
-          els.dateInput.value = min;
-        }
-      }
+safeText(document.getElementById("sumTour"), tour);
+safeText(document.getElementById("sumDate"), date);
+safeText(document.getElementById("sumPickup"), pickup);
 
-      function populateTourSelect(list) {
-        // reset dropdown
-        els.tourSelect.innerHTML = '<option value="">Select a tour...</option>';
+var daysEl = document.getElementById("sumDays");
 
-        for (const t of list) {
-          const opt = document.createElement("option");
-          opt.value = t.code;
-          opt.textContent = t.code + " - " + t.name;
-          els.tourSelect.appendChild(opt);
-        }
+try{
+if(date){
+var d = new Date(date + "T00:00:00");
+var now = new Date();
+var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+var diffMs = d.getTime() - startToday.getTime();
+var diffDays = Math.round(diffMs / (1000*60*60*24));
+safeText(daysEl,String(Math.max(diffDays,0)));
+}
+}catch(e){
+safeText(daysEl,"1");
+}
 
-        // auto-select if only one tour exists
-        if (list.length === 1) {
-          els.tourSelect.value = list[0].code;
-        }
+var sessionId = qs("session_id");
 
-        updatePriceLabel();
-      }
+if(sessionId){
 
-      function parseAmountDisplayToCents(s) {
-        // Accept "$99.00", "USD 99.00", "99", "99.0"
-        if (typeof s !== "string") return null;
-        const cleaned = s.replace(/[^0-9.]/g, "");
-        if (!cleaned) return null;
-        const n = Number(cleaned);
-        if (!isFinite(n)) return null;
-        return Math.round(n * 100);
-      }
+fetch("/stripe/api/session?session_id=" + encodeURIComponent(sessionId))
+.then(function(r){return r.json();})
+.then(function(data){
 
-      async function loadTours() {
-        try {
-          setStatus("Loading tours...");
-          const res = await fetch("/stripe/api/tours", {
-            credentials: "same-origin",
-            headers: { "Accept": "application/json" }
-          });
-          if (!res.ok) throw new Error("Tours API HTTP " + res.status);
-          const data = await res.json();
+if(!data || !data.ok) return;
 
-          // Accept: { ok:true, tours:[...] } OR { tours:[...] } OR bare array
-          const items = Array.isArray(data)
-            ? data
-            : (data && (data.tours || data.items || data.data))
-              ? (data.tours || data.items || data.data)
-              : [];
+var receiptUrl = data.session && data.session.stripe_receipt_url;
 
-          const toursBy = {};
-          const list = [];
+if(receiptUrl){
+var btn = document.getElementById("receiptBtn");
+btn.href = receiptUrl;
+btn.style.display = "inline-flex";
+}
 
-          function str(v){ return (typeof v === "string") ? v.trim() : ""; }
+})
+.catch(function(){});
 
-          function nameOf(t){
-            // Your API uses "tour_title"
-            return str(t.tour_title) || str(t.name) || str(t.tour_name) || str(t.tourName) || str(t.title) || str(t.product_name) || str(t.productName) || str(t.display_name);
-          }
+}
 
-          function codeOf(t, name){
-            const candidates = [
-              t.code, t.tour_code, t.tourCode, t.sku, t.product_code, t.productCode, t.slug, t.id
-            ].map(str).filter(Boolean);
+})();
 
-            for (const c of candidates){
-              const mm = c.match(/MBW\d{3}/i);
-              if (mm) return mm[0].toUpperCase();
-            }
-            const mmn = str(name).match(/MBW\d{3}/i);
-            return mmn ? mmn[0].toUpperCase() : "";
-          }
+</script>
 
-          function priceCentsOf(t){
-            // Prefer numeric cents if you add it later
-            const candidates = [
-              t.amount_cents, t.amountCents, t.price_cents, t.priceCents, t.unit_amount, t.unitAmount
-            ];
-
-            for (const c of candidates) {
-              const n = Number(c);
-              if (isFinite(n) && n >= 0) return Math.round(n);
-            }
-
-            // Fall back to amount_display like "$99.00"
-            const p = parseAmountDisplayToCents(t.amount_display);
-            if (p != null) return p;
-
-            // Fall back to numeric dollars if present
-            const raw = (t.price_usd != null) ? t.price_usd
-              : (t.priceUsd != null) ? t.priceUsd
-              : (t.amount != null) ? t.amount
-              : (t.price != null) ? t.price
-              : null;
-
-            const n = Number(raw);
-            if (!isFinite(n)) return null;
-            // If it looks like dollars (e.g., 99.00), convert to cents.
-            // If it looks like cents (e.g., 9900), keep.
-            return (n >= 1000) ? Math.round(n) : Math.round(n * 100);
-          }
-
-          for (const t of items){
-            if (!t || typeof t !== "object") continue;
-            const name = nameOf(t);
-            const code = codeOf(t, name);
-            if (!code || !name) continue;
-
-            if (!toursBy[code]){
-              toursBy[code] = { code, name, price_cents: priceCentsOf(t), raw: t };
-              list.push(toursBy[code]);
-            }
-          }
-
-          // Sort + populate
-          list.sort((a,b)=> (a.code.localeCompare(b.code) || a.name.localeCompare(b.name)));
-          toursByCode = toursBy;
-
-          populateTourSelect(list);
-
-          if (!list.length) {
-            setStatus("No tours returned from API.");
-          } else {
-            setStatus("");
-          }
-        } catch (err) {
-          console.error(err);
-          setStatus("Could not load tours. Open DevTools Console for details.");
-        }
-      }
-
-      function updatePriceLabel() {
-        const code = els.tourSelect.value;
-        const t = toursByCode[code];
-        const p = t && t.price_cents != null ? formatPriceUSD(t.price_cents) : "-";
-        els.priceLabel.textContent = "Selected price: " + p;
-      }
-
-      function setLink(url) {
-        els.linkBox.textContent = url || "Generate a link to display it here.";
-        const has = !!url;
-        els.btnCopy.disabled = !has;
-        els.btnOpen.disabled = !has;
-      }
-
-      els.tourSelect.addEventListener("change", function () {
-        updatePriceLabel();
-        setLink("");
-        setStatus("");
-      });
-
-      els.dateInput.addEventListener("change", function () {
-        setLink("");
-        setStatus("");
-      });
-
-      els.partySelect.addEventListener("change", function () {
-        setLink("");
-        setStatus("");
-      });
-
-      els.langSelect.addEventListener("change", function () {
-        setLink("");
-        setStatus("");
-      });
-
-      function buildLink() {
-        const tourCode = els.tourSelect.value;
-        if (!tourCode) {
-          setStatus("Please select a tour.");
-          return "";
-        }
-
-        const date = els.dateInput.value;
-        if (!date) {
-          setStatus("Please select a date.");
-          return "";
-        }
-
-        if (els.dateInput.min && date < els.dateInput.min) {
-          setStatus("Date must be tomorrow or later.");
-          return "";
-        }
-
-        const party = encodeURIComponent(els.partySelect.value);
-        const lang = encodeURIComponent(els.langSelect.value || "en");
-
-        const url = "https://mindobirdwatching.com/book-tour/pay/?" +
-          "tour=" + encodeURIComponent(tourCode) + "&date=" + encodeURIComponent(date) +
-          "&party=" + party + "&lang=" + lang;
-
-        return url;
-      }
-
-      els.btnGenerate.addEventListener("click", function () {
-        const url = buildLink();
-        if (!url) return;
-        setLink(url);
-        setStatus("Link generated.");
-      });
-
-      els.btnCopy.addEventListener("click", async function () {
-        const url = els.linkBox.textContent.trim();
-        if (!url || url.indexOf("http") !== 0) return;
-        try {
-          await navigator.clipboard.writeText(url);
-          setStatus("Link copied.");
-        } catch (e) {
-          const ta = document.createElement("textarea");
-          ta.value = url;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          document.body.removeChild(ta);
-          setStatus("Link copied.");
-        }
-      });
-
-      els.btnOpen.addEventListener("click", function () {
-        const url = els.linkBox.textContent.trim();
-        if (!url || url.indexOf("http") !== 0) return;
-        window.open(url, "_blank", "noopener,noreferrer");
-      });
-
-      ensureMinTomorrow();
-      loadTours();
-      setLink("");
-    })();
-  </script>
 </body>
 </html>
