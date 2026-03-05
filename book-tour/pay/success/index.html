@@ -276,6 +276,7 @@
               <p class="helperText">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
 
               <div class="actionRow" aria-label="Quick actions">
+                <a id="receiptBtn" class="btn primary" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Receipt</a>
                 <a class="btn primary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
                 <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
                 <a class="btn secondary" href="https://mindobirdwatching.com/contact/" target="_blank" rel="noopener noreferrer">Contact</a>
@@ -360,6 +361,31 @@
       } catch (e) {
         safeText(daysEl, "1");
       }
+
+      var sessionId = qs("session_id");
+
+if (sessionId) {
+  fetch("/stripe/api/session?session_id=" + encodeURIComponent(sessionId))
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+
+      if (!data || !data.ok) return;
+
+      var receiptUrl = "";
+
+      if (data.session && data.session.stripe_receipt_url) {
+        receiptUrl = data.session.stripe_receipt_url;
+      }
+
+      if (receiptUrl) {
+        var btn = document.getElementById("receiptBtn");
+        btn.href = receiptUrl;
+        btn.style.display = "inline-flex";
+      }
+
+    })
+    .catch(function(){});
+    }  
     })();
   </script>
 </body>
