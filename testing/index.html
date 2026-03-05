@@ -1,291 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Payment Success | Mindo Bird Watching</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Success | Mindo Bird Watching</title>
 
-<link rel="icon" href="/favicon.ico" sizes="any" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<meta name="theme-color" content="#0b5b32" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#0b5b32" />
 
-<link rel="stylesheet" href="/assets/css/site.css" />
-<link rel="stylesheet" href="/assets/css/header.css" />
-<link rel="stylesheet" href="/assets/css/footer.css" />
-<script defer src="/assets/js/head.js"></script>
+  <!-- Site-wide CSS -->
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/header.css" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
+  <script defer src="/assets/js/head.js"></script>
 
-<style>
-.page { margin-top: 18px; padding: 26px; }
-.page.card{
-background: var(--card);
-border: 1px solid var(--line);
-border-radius: var(--r);
-box-shadow: var(--shadow);
+  <style>
+/* Page-only styles (do NOT redefine .btn; use site-wide button classes) */
+
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .successShell{
+      background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+      border-radius: calc(var(--r) + 4px);
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    .successTop{
+      display:flex;
+      gap: 14px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .successTitleWrap{ min-width: 260px; }
+    .successTitle{
+      margin: 0 0 6px 0;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      color: #0e4b2e;
+      font-size: 44px;
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+    }
+    .successSub{
+      margin: 0;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      font-weight: 650;
+      color: #1f3a2c;
+      white-space: nowrap;
+    }
+    .statusDot{
+      width: 10px; height: 10px; border-radius: 999px;
+      background: #0e7a3e;
+      box-shadow: 0 0 0 3px rgba(14,122,62,0.18);
+      flex: 0 0 auto;
+    }
+
+    .successGrid{
+      display:grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .leftStack{
+      display:grid;
+      gap: 14px;
+      align-content:start;
+      min-width:0;
+    }
+
+    .cardInner{
+      background: rgba(255,255,255,0.76);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.06);
+      min-width:0;
+    }
+
+    .summaryTitle{
+      margin: 0 0 10px 0;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      color: #0e4b2e;
+      font-size: 20px;
+    }
+
+    .summaryTable{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.7);
+    }
+    .summaryRow{
+      display:grid;
+      grid-template-columns: 160px 1fr;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      align-items:center;
+    }
+    .summaryRow:first-child{ border-top: 0; }
+    .summaryKey{ color: rgba(0,0,0,0.55); }
+    .summaryVal{ font-weight: 650; text-align:right; color: rgba(0,0,0,0.78); }
+
+    .helperText{
+      margin: 10px 0 0 0;
+      color: rgba(0,0,0,0.58);
+      font-size: 13px;
+    }
+
+    .actionRow{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  margin-top:14px;
 }
-.successShell{
-background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
-border-radius: calc(var(--r) + 4px);
-padding: 18px;
-border: 1px solid rgba(255,255,255,0.35);
-}
-.successTop{
-display:flex;
-gap:14px;
-align-items:flex-start;
-justify-content:space-between;
-flex-wrap:wrap;
-margin-bottom:14px;
-}
-.successTitle{
-margin:0 0 6px 0;
-font-family:"Playfair Display", serif;
-font-weight:700;
-color:#0e4b2e;
-font-size:44px;
-line-height:1.04;
-}
-.successSub{
-margin:0;
-color:var(--muted);
-}
-.statusPill{
-display:inline-flex;
-align-items:center;
-gap:10px;
-padding:10px 14px;
-background:rgba(255,255,255,0.85);
-border:1px solid var(--line);
-border-radius:999px;
-font-weight:650;
-}
-.statusDot{
-width:10px;
-height:10px;
-border-radius:999px;
-background:#0e7a3e;
-}
-.successGrid{
-display:grid;
-grid-template-columns:1.15fr 0.85fr;
-gap:16px;
-}
-.cardInner{
-background:rgba(255,255,255,0.76);
-border:1px solid var(--line);
-border-radius:16px;
-padding:16px;
-}
-.summaryTitle{
-margin:0 0 10px 0;
-font-family:"Playfair Display", serif;
-font-weight:700;
-color:#0e4b2e;
-}
-.summaryTable{
-width:100%;
-border-radius:14px;
-border:1px solid var(--line);
-}
-.summaryRow{
-display:grid;
-grid-template-columns:160px 1fr;
-padding:10px 12px;
-border-top:1px solid rgba(0,0,0,0.06);
-}
-.summaryRow:first-child{border-top:0;}
-.summaryVal{
-text-align:right;
-font-weight:650;
-}
-.helperText{
-margin-top:10px;
-font-size:13px;
-color:rgba(0,0,0,0.58);
-}
-.actionRow{
-display:grid;
-grid-template-columns:repeat(2,minmax(0,1fr));
-gap:12px;
-margin-top:14px;
-}
-@media (min-width:901px){
-.actionRow{grid-template-columns:repeat(3,minmax(0,1fr));}
+@media (min-width: 901px){
+  .actionRow{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
 }
 .actionRow .btn{
-width:100%;
-justify-content:center;
+  width:100%;
+  justify-content:center;
+  text-align:center;
 }
-.imageCard{
-padding:0;
-overflow:hidden;
-position:relative;
-min-height:520px;
+.successBottom{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .sectionTitle{
+      margin: 0 0 10px 0;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      color: #0e4b2e;
+      font-size: 18px;
+    }
+    .bullets{
+      margin: 0;
+      padding-left: 18px;
+      color: rgba(0,0,0,0.68);
+    }
+    .bullets li{ margin: 6px 0; }
+
+    .termsLine{
+      margin-top: 12px;
+      color: rgba(0,0,0,0.55);
+      font-size: 13px;
+    }
+    .termsLine a{ font-weight: 650; }
+
+    .imageCard{
+      padding: 0;
+      overflow:hidden;
+      position: relative;
+      min-height: 520px;
+    }
+    .imageCard img{
+      position:absolute;
+      inset: 0;
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .imageShade{
+      position:absolute;
+      inset: 0;
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,0.30), rgba(255,255,255,0.00));
+      pointer-events:none;
+    }
+
+    @media (max-width: 980px){
+      .successGrid{ grid-template-columns: 1fr; }
+      .imageCard{ min-height: 280px; }
+      .successBottom{ grid-template-columns: 1fr; }
+      .summaryRow{ grid-template-columns: 140px 1fr; }
+      .successTitle{ font-size: 36px; }
+      .page{ padding: 18px; }
+      .successShell{ padding: 14px; }
+    }
+    @media (max-width: 520px){
+      .summaryRow{ grid-template-columns: 1fr; }
+      .summaryVal{ text-align:left; }
+      .actionRow{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  margin-top:14px;
 }
-.imageCard img{
-position:absolute;
-inset:0;
-width:100%;
-height:100%;
-object-fit:cover;
+@media (min-width: 901px){
+  .actionRow{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
 }
+.actionRow .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+}
+.successTitle{ font-size: 32px; }
+    }
 </style>
 </head>
 
 <body>
+  <div class="container">
+    <div id="siteHeader"></div>
 
-<div class="container">
-<div id="siteHeader"></div>
+    <main class="page card">
+      <div class="successShell" aria-label="Payment success">
+        <div class="successTop">
+          <div class="successTitleWrap">
+            <h1 class="successTitle">Thanks for your payment</h1>
+            <p class="successSub">Your tour booking has been received. We will follow up if we need any extra details.</p>
+          </div>
 
-<main class="page card">
+          <div class="statusPill" aria-label="Payment received">
+            <span class="statusDot" aria-hidden="true"></span>
+            <span>Payment received</span>
+          </div>
+        </div>
 
-<div class="successShell">
+        <section class="successGrid" aria-label="Summary and photo">
+          <div class="leftStack" aria-label="Booking details">
+            <section class="cardInner" aria-label="Booking summary">
+              <h2 class="summaryTitle">Booking summary</h2>
 
-<div class="successTop">
-<div>
-<h1 class="successTitle">Thanks for your payment</h1>
-<p class="successSub">Your tour booking has been received.</p>
-</div>
+              <div class="summaryTable" role="table" aria-label="Booking summary table">
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Tour</div>
+                  <div class="summaryVal" role="cell" id="sumTour">-</div>
+                </div>
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Tour date</div>
+                  <div class="summaryVal" role="cell" id="sumDate">-</div>
+                </div>
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Days until tour</div>
+                  <div class="summaryVal" role="cell" id="sumDays">-</div>
+                </div>
+                <div class="summaryRow" role="row">
+                  <div class="summaryKey" role="cell">Pickup window</div>
+                  <div class="summaryVal" role="cell" id="sumPickup">-</div>
+                </div>
+              </div>
 
-<div class="statusPill">
-<span class="statusDot"></span>
-<span>Payment received</span>
-</div>
-</div>
+              <p class="helperText">Pickup will be at the time listed on the tour. Please allow a 15 minute pickup window.</p>
 
-<section class="successGrid">
+              <div class="actionRow" aria-label="Quick actions">
+                <a class="btn primary" href="https://mindobirdwatching.com/shop/" target="_blank" rel="noopener noreferrer">Visit Gift Shop</a>
+                <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener noreferrer">WhatsApp us</a>
+                <a class="btn secondary" href="https://mindobirdwatching.com/contact/" target="_blank" rel="noopener noreferrer">Contact</a>
+                <a class="btn ghost" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms & Conditions</a>
+                <a class="btn ghost" href="https://instagram.com/mindobirdwatching" target="_blank" rel="noopener noreferrer">Instagram</a>
+              </div>
+            </section>
 
-<div>
+            <section class="successBottom" aria-label="Next steps">
+              <div class="cardInner" aria-label="Quick checklist">
+                <h2 class="sectionTitle">Quick checklist</h2>
+                <ul class="bullets">
+                  <li>Save your tour date and pickup window.</li>
+                  <li>If pickup is a hotel, double check the lobby name and street.</li>
+                  <li>If anything changes, message us on WhatsApp.</li>
+                </ul>
+              </div>
 
-<section class="cardInner">
+              <div class="cardInner" aria-label="What happens next">
+                <h2 class="sectionTitle">What happens next</h2>
+                <ul class="bullets">
+                  <li>We have your booking details and payment confirmation.</li>
+                  <li>If we need anything, we will contact you by email or WhatsApp.</li>
+                  <li>Keep an eye out for a message if your pickup location needs clarification.</li>
+                </ul>
 
-<h2 class="summaryTitle">Booking summary</h2>
+                <div class="termsLine">
+                  <a href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener noreferrer">Terms and Conditions</a> are available here.
+                </div>
+              </div>
+            </section>
+          </div>
 
-<div class="summaryTable">
+          <aside class="cardInner imageCard" aria-label="Mindo photo">
+            <img src="/assets/images/pages/mbw_payment_success_01.jpg" alt="Mindo cloud forest" loading="eager" />
+            <div class="imageShade" aria-hidden="true"></div>
+          </aside>
+        </section>
+      </div>
+    </main>
 
-<div class="summaryRow">
-<div>Tour</div>
-<div class="summaryVal" id="sumTour">-</div>
-</div>
+    <div id="siteFooter"></div>
+  </div>
 
-<div class="summaryRow">
-<div>Tour date</div>
-<div class="summaryVal" id="sumDate">-</div>
-</div>
+  <script src="/assets/js/includes.js"></script>
+  <script src="/assets/js/site.js"></script>
 
-<div class="summaryRow">
-<div>Days until tour</div>
-<div class="summaryVal" id="sumDays">-</div>
-</div>
+  <script>
+    (function () {
+      function qs(name) {
+        return new URLSearchParams(window.location.search).get(name) || "";
+      }
 
-<div class="summaryRow">
-<div>Pickup window</div>
-<div class="summaryVal" id="sumPickup">-</div>
-</div>
+      function safeText(el, value) {
+        if (!el) return;
+        el.textContent = value || "-";
+      }
 
-</div>
+      var tour = qs("tour") || qs("tour_code") || "";
+      var date = qs("date") || qs("tour_date") || "";
+      var pickup = qs("pickup") || qs("pickup_window") || "6:00 AM to 6:15 AM";
 
-<p class="helperText">Pickup will be at the time listed on the tour.</p>
+      var tourTitleMap = { "MBW004": "Jewels of the Morning Forest" };
+      var tourLabel = tourTitleMap[tour] || tour || "Jewels of the Morning Forest";
 
-<div class="actionRow">
+      safeText(document.getElementById("sumTour"), tourLabel);
+      safeText(document.getElementById("sumDate"), date || "2026-03-04");
+      safeText(document.getElementById("sumPickup"), pickup);
 
-<a id="receiptBtn" class="btn primary" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Receipt</a>
-
-<a class="btn primary" href="https://mindobirdwatching.com/shop/" target="_blank">Visit Gift Shop</a>
-
-<a class="btn secondary" href="https://wa.me/13054585402" target="_blank">WhatsApp us</a>
-
-<a class="btn secondary" href="https://mindobirdwatching.com/contact/" target="_blank">Contact</a>
-
-<a class="btn ghost" href="https://mindobirdwatching.com/terms-conditions/" target="_blank">Terms & Conditions</a>
-
-<a class="btn ghost" href="https://instagram.com/mindobirdwatching" target="_blank">Instagram</a>
-
-</div>
-
-</section>
-
-</div>
-
-<aside class="cardInner imageCard">
-<img src="/assets/images/pages/mbw_payment_success_01.jpg" alt="Mindo cloud forest">
-</aside>
-
-</section>
-
-</div>
-
-</main>
-
-<div id="siteFooter"></div>
-</div>
-
-<script src="/assets/js/includes.js"></script>
-<script src="/assets/js/site.js"></script>
-
-<script>
-
-(function(){
-
-function qs(name){
-return new URLSearchParams(window.location.search).get(name) || "";
-}
-
-function safeText(el,val){
-if(!el) return;
-el.textContent = val || "-";
-}
-
-var tour = qs("tour") || qs("tour_code") || "";
-var date = qs("date") || qs("tour_date") || "";
-var pickup = qs("pickup") || qs("pickup_window") || "6:00 AM to 6:15 AM";
-
-safeText(document.getElementById("sumTour"), tour);
-safeText(document.getElementById("sumDate"), date);
-safeText(document.getElementById("sumPickup"), pickup);
-
-var daysEl = document.getElementById("sumDays");
-
-try{
-if(date){
-var d = new Date(date + "T00:00:00");
-var now = new Date();
-var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-var diffMs = d.getTime() - startToday.getTime();
-var diffDays = Math.round(diffMs / (1000*60*60*24));
-safeText(daysEl,String(Math.max(diffDays,0)));
-}
-}catch(e){
-safeText(daysEl,"1");
-}
-
-var sessionId = qs("session_id");
-
-if(sessionId){
-
-fetch("/stripe/api/session?session_id=" + encodeURIComponent(sessionId))
-.then(function(r){return r.json();})
-.then(function(data){
-
-if(!data || !data.ok) return;
-
-var receiptUrl = data.session && data.session.stripe_receipt_url;
-
-if(receiptUrl){
-var btn = document.getElementById("receiptBtn");
-btn.href = receiptUrl;
-btn.style.display = "inline-flex";
-}
-
-})
-.catch(function(){});
-
-}
-
-})();
-
-</script>
-
+      var daysEl = document.getElementById("sumDays");
+      try {
+        if (date) {
+          var d = new Date(date + "T00:00:00");
+          var now = new Date();
+          var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          var diffMs = d.getTime() - startToday.getTime();
+          var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+          safeText(daysEl, String(Math.max(diffDays, 0)));
+        } else {
+          safeText(daysEl, "1");
+        }
+      } catch (e) {
+        safeText(daysEl, "1");
+      }
+    })();
+  </script>
 </body>
 </html>
