@@ -179,6 +179,11 @@
 
     @media (min-width: 901px){ .payCreateHero h1{ font-size:32px !important; } }
   
+
+
+/* Agent mode toggle */
+.modeRow { display: flex; gap: 10px; flex-wrap: wrap; }
+.modeRow .btn.secondary.active { outline: 2px solid rgba(3,78,162,0.35); }
 </style>
 </head>
 <body>
@@ -228,90 +233,86 @@
 <div class="subtext">Generates a link to the correct language pay page.</div>
 </div>
 
-      <div class="field">
-        <label>Agent action</label>
-        <div class="actions">
-          <button type="button" id="modeLinkBtn" class="btn primary">Generate Link</button>
-          <button type="button" id="modeInvoiceBtn" class="btn">Email Invoice</button>
-        </div>
-        <div class="hint">
-          Generate Link keeps the current workflow (guest completes details). Email Invoice collects all details now and sends a Stripe invoice email.
-        </div>
-      </div>
+<div class="field">
+<label>Agent action</label>
+<div class="modeRow">
+<button type="button" class="btn secondary active" id="modePayLink" aria-pressed="true">Generate Link</button>
+<button type="button" class="btn secondary" id="modeInvoice" aria-pressed="false">Email Invoice</button>
+</div>
+<div class="subtext">Generate Link keeps the current workflow (guest completes details). Email Invoice collects all details now and sends a Stripe invoice email.</div>
+</div>
 
-      <div id="invoiceFields" style="display:none;">
-        <div class="field">
-          <label for="stripeEnv">Stripe environment <span class="req">*</span></label>
-          <select class="control" id="stripeEnv">
-              <option value="sandbox" selected>Sandbox</option>
-              <option value="live">Live</option>
-            </select>
-          <div class="hint">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
-        </div>
+<div id="invoiceFields" hidden>
+<div class="field">
+<label for="stripeEnv">Stripe environment <span class="req">*</span></label>
+<select class="control" id="stripeEnv">
+<option value="sandbox" selected>Sandbox</option>
+<option value="live">Live</option>
+</select>
+<div class="subtext">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
+</div>
 
-        <div class="field">
-          <label for="firstName">Main contact first name <span class="req">*</span></label>
-          <input class="control" id="firstName" type="text" autocomplete="given-name" / autocapitalize="words" autocomplete="given-name">
-        </div>
+<div class="field">
+<label for="firstName">Main contact first name <span class="req">*</span></label>
+<input class="control" id="firstName" type="text" autocomplete="given-name" autocapitalize="words" />
+</div>
 
-        <div class="field">
-          <label for="lastName">Main contact last name <span class="req">*</span></label>
-          <input class="control" id="lastName" type="text" autocomplete="family-name" / autocapitalize="words" autocomplete="family-name">
-        </div>
+<div class="field">
+<label for="lastName">Main contact last name <span class="req">*</span></label>
+<input class="control" id="lastName" type="text" autocomplete="family-name" autocapitalize="words" />
+</div>
 
-        <div class="field">
-          <label for="email">Email <span class="req">*</span></label>
-          <input class="control" id="email" type="email" autocomplete="email" />
-        </div>
+<div class="field">
+<label for="email">Email <span class="req">*</span></label>
+<input class="control" id="email" type="email" autocomplete="email" />
+</div>
 
-        <div class="field">
-          <label for="phone">Phone <span class="req">*</span></label>
-          <input class="control" id="phone" type="tel" autocomplete="tel" />
-        </div>
+<div class="field">
+<label for="phone">Phone <span class="req">*</span></label>
+<input class="control" id="phone" type="tel" autocomplete="tel" />
+</div>
 
-        <div class="field">
-          <label for="whatsapp">WhatsApp number <span class="req">*</span></label>
-          <input class="control" id="whatsapp" type="tel" />
-          <div class="hint">Include country code if possible.</div>
-        </div>
+<div class="field">
+<label for="whatsapp">WhatsApp number <span class="req">*</span></label>
+<input class="control" id="whatsapp" type="tel" autocomplete="tel" />
+<div class="subtext">Include country code if possible.</div>
+</div>
 
-        <div class="field">
-          <label for="pickupLabel">Pickup location label <span class="req">*</span></label>
-          <input class="control" id="pickupLabel" type="text" />
-          <div class="hint">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
-        </div>
+<div class="field">
+<label for="pickupLabel">Pickup location label <span class="req">*</span></label>
+<input class="control" id="pickupLabel" type="text" />
+<div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
+</div>
 
-        <div class="field">
-          <label for="pickupAddress">Pickup address or hotel name</label>
-          <input class="control" id="pickupAddress" type="text" />
-        </div>
+<div class="field">
+<label for="pickupAddress">Pickup address or hotel name</label>
+<input class="control" id="pickupAddress" type="text" />
+<div class="subtext">Optional.</div>
+</div>
 
-        <div class="field">
-          <label for="notes">Notes (optional)</label>
-          <textarea class="control" id="notes" rows="4"></textarea>
-        </div>
+<div class="field">
+<label for="notes">Notes (optional)</label>
+<textarea class="control" id="notes" rows="3"></textarea>
+</div>
 
-        <div class="field">
-          <label for="dueDays">Invoice due (days)</label>
-          <select class="control" id="dueDays">
-              <option value="1" selected>1 day</option>
-              <option value="3">3 days</option>
-              <option value="7">7 days</option>
-            </select>
-        </div>
-
-        <div class="field">
-          <label>
-            <input id="agree" type="checkbox" style="margin-right:8px;" />
-            I agree to the Terms and Conditions <span class="req">*</span>
-          </label>
-        </div>
-      </div>
+<div class="field">
+<label for="invoiceDueDays">Invoice due (days)</label>
+<select class="control" id="invoiceDueDays">
+<option value="1" selected>1 day</option>
+<option value="2">2 days</option>
+<option value="3">3 days</option>
+<option value="5">5 days</option>
+<option value="7">7 days</option>
+<option value="14">14 days</option>
+<option value="30">30 days</option>
+</select>
+</div>
+</div>
 <div class="actions">
-<button class="btn primary" id="btnGenerateLink" type="button">Generate Link</button>
+<button class="btn primary" id="btnGenerate" type="button">Generate link</button>
 <button class="btn primary" id="btnSendInvoice" type="button" hidden>Send invoice email</button>
-<button class="btn secondary" id="btnCopy" type="button" hidden>Copy link</button>
-<button class="btn secondary" id="btnOpen" type="button" hidden>Open link</button>
+<button class="btn secondary" disabled="" id="btnCopy" type="button">Copy link</button>
+<button class="btn secondary" disabled="" id="btnOpen" type="button">Open link</button>
 </div>
 <div aria-live="polite" class="status" id="status"></div>
 </div>
@@ -336,72 +337,11 @@
         langSelect: document.getElementById("langSelect"),
         priceLabel: document.getElementById("priceLabel"),
         linkBox: document.getElementById("linkBox"),
-        btnGenerateLink: document.getElementById("btnGenerateLink"),
-    btnSendInvoice: document.getElementById("btnSendInvoice"),
+        btnGenerate: document.getElementById("btnGenerate"),
         btnCopy: document.getElementById("btnCopy"),
-        modeLinkBtn: document.getElementById("modeLinkBtn"),
-        modeInvoiceBtn: document.getElementById("modeInvoiceBtn"),
-        invoiceFields: document.getElementById("invoiceFields"),
-        stripeEnv: document.getElementById("stripeEnv"),
-        firstName: document.getElementById("firstName"),
-        lastName: document.getElementById("lastName"),
-        email: document.getElementById("email"),
-        phone: document.getElementById("phone"),
-        whatsapp: document.getElementById("whatsapp"),
-        pickupLabel: document.getElementById("pickupLabel"),
-        pickupAddress: document.getElementById("pickupAddress"),
-        notes: document.getElementById("notes"),
-        dueDays: document.getElementById("dueDays"),
-        agree: document.getElementById("agree"),
         btnOpen: document.getElementById("btnOpen"),
         status: document.getElementById("status")
       };
-
-  // Agent action mode (default: payment link)
-  let actionMode = "link";
-let generatedLink = "";
-
-  function setActionMode(mode) {
-  actionMode = mode;
-
-  const isInvoice = mode === "invoice";
-  els.modeLinkBtn.classList.toggle("is-active", !isInvoice);
-  els.modeInvoiceBtn.classList.toggle("is-active", isInvoice);
-
-  // Show invoice-only fields
-  els.invoiceExtras.hidden = !isInvoice;
-
-  // Primary action buttons
-  els.btnGenerateLink.hidden = isInvoice;
-  els.btnSendInvoice.hidden = !isInvoice;
-
-  // Link-only buttons appear only after a link is generated
-  const hasLink = !!generatedLink;
-  els.btnCopy.hidden = !hasLink || isInvoice;
-  els.btnOpen.hidden = !hasLink || isInvoice;
-
-  // If switching to invoice mode, clear link UI
-  if (isInvoice) {
-    generatedLink = "";
-    els.linkBox.value = "";
-    els.btnCopy.disabled = true;
-    els.btnOpen.disabled = true;
-  }
-}
-} else {
-      els.invoiceFields.style.display = "none";
-      els.modeInvoiceBtn.classList.remove("primary");
-      els.modeLinkBtn.classList.add("primary");
-      els.btnGenerateLink.textContent = "Generate Link";
-      els.linkLabel.textContent = "Payment link";
-    }
-
-    // Reset UI output
-    hide(els.linkBox);
-    els.linkEl.value = "";
-    setStatus("");
-  }
-
 
       let toursByCode = {};
 
@@ -566,56 +506,69 @@ let generatedLink = "";
       }
 
       function setLink(url) {
-  generatedLink = url || "";
-  els.linkBox.value = generatedLink;
+        els.linkBox.textContent = url || "Generate a link to display it here.";
+        const has = !!url;
+        els.btnCopy.disabled = !has;
+        els.btnOpen.disabled = !has;
+      }
 
-  const enable = !!generatedLink && actionMode === "link";
-  els.btnCopy.disabled = !enable;
-  els.btnOpen.disabled = !enable;
+      els.tourSelect.addEventListener("change", function () {
+        updatePriceLabel();
+        setLink("");
+        setStatus("");
+      });
 
-  // Show the buttons only when link mode AND link exists
-  els.btnCopy.hidden = !enable;
-  els.btnOpen.hidden = !enable;
-});
+      els.dateInput.addEventListener("change", function () {
+        setLink("");
+        setStatus("");
+      });
 
-els.btnSendInvoice.addEventListener("click", async () => {
-  setStatus("");
-  els.btnSendInvoice.disabled = true;
+      els.partySelect.addEventListener("change", function () {
+        setLink("");
+        setStatus("");
+      });
 
-  try {
-    if (!invoiceFormIsValid()) {
-      setStatus("Please fill out all required fields.");
-      return;
-    }
+      els.langSelect.addEventListener("change", function () {
+        setLink("");
+        setStatus("");
+      });
 
-    const payload = buildInvoicePayload();
-    const res = await fetch("/stripe/api/create-invoice", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      function buildLink() {
+        const tourCode = els.tourSelect.value;
+        if (!tourCode) {
+          setStatus("Please select a tour.");
+          return "";
+        }
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) {
-      const msg = (data && data.error) ? data.error : "Invoice creation failed";
-      setStatus(msg);
-      return;
-    }
+        const date = els.dateInput.value;
+        if (!date) {
+          setStatus("Please select a date.");
+          return "";
+        }
 
-    setStatus("Invoice email sent to " + payload.main_contact_email + ".");
-    // Keep the hosted invoice URL available for support/debugging
-    if (data.hosted_invoice_url) {
-      generatedLink = data.hosted_invoice_url;
-      els.linkBox.value = data.hosted_invoice_url;
-    }
-  } catch (e) {
-    setStatus("Invoice creation failed.");
-  } finally {
-    els.btnSendInvoice.disabled = false;
-  }
-});
+        if (els.dateInput.min && date < els.dateInput.min) {
+          setStatus("Date must be tomorrow or later.");
+          return "";
+        }
 
-els.btnCopy.addEventListener("click", async function () {
+        const party = encodeURIComponent(els.partySelect.value);
+        const lang = encodeURIComponent(els.langSelect.value || "en");
+
+        const url = "https://mindobirdwatching.com/book-tour/pay/?" +
+          "tour=" + encodeURIComponent(tourCode) + "&date=" + encodeURIComponent(date) +
+          "&party=" + party + "&lang=" + lang;
+
+        return url;
+      }
+
+      els.btnGenerate.addEventListener("click", function () {
+        const url = buildLink();
+        if (!url) return;
+        setLink(url);
+        setStatus("Link generated.");
+      });
+
+      els.btnCopy.addEventListener("click", async function () {
         const url = els.linkBox.textContent.trim();
         if (!url || url.indexOf("http") !== 0) return;
         try {
@@ -640,33 +593,139 @@ els.btnCopy.addEventListener("click", async function () {
 
       ensureMinTomorrow();
       loadTours();
-      setActionMode("link");
+      setLink("");
     })();
- 
+  
 
-// Auto-capitalize first and last name (first letter of each word)
-function titleCaseWords(s) {
-  if (!s) return "";
-  return String(s)
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(function (w) {
-      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-    })
-    .join(" ");
-}
 
-function attachAutoCap(id) {
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.setAttribute("autocapitalize", "words");
-  el.addEventListener("blur", function () {
-    el.value = titleCaseWords(el.value);
-  });
-}
+  // --- Agent invoice mode (adds "Email Invoice" without changing link flow) ---
+  const modePayLink = document.getElementById("modePayLink");
+  const modeInvoice = document.getElementById("modeInvoice");
+  const invoiceFields = document.getElementById("invoiceFields");
+  const btnSendInvoice = document.getElementById("btnSendInvoice");
 
-attachAutoCap("inv_first_name");
-attachAutoCap("inv_last_name");
+  const stripeEnvSelect = document.getElementById("stripeEnv");
+  const firstNameInput = document.getElementById("firstName");
+  const lastNameInput = document.getElementById("lastName");
+  const emailInput = document.getElementById("email");
+  const phoneInput = document.getElementById("phone");
+  const whatsappInput = document.getElementById("whatsapp");
+  const pickupLabelInput = document.getElementById("pickupLabel");
+  const pickupAddressInput = document.getElementById("pickupAddress");
+  const notesInput = document.getElementById("notes");
+  const invoiceDueDaysSelect = document.getElementById("invoiceDueDays");
+
+  let agentMode = "link"; // "link" | "invoice"
+
+  function capitalizeFirstLetter(s) {
+    const v = (s || "").trim();
+    if (!v) return "";
+    return v.charAt(0).toUpperCase() + v.slice(1);
+  }
+
+  function attachAutoCap(el) {
+    if (!el) return;
+    el.addEventListener("blur", () => {
+      el.value = capitalizeFirstLetter(el.value);
+    });
+  }
+  attachAutoCap(firstNameInput);
+  attachAutoCap(lastNameInput);
+
+  function setAgentMode(nextMode) {
+    agentMode = nextMode;
+
+    if (modePayLink && modeInvoice) {
+      modePayLink.classList.toggle("active", agentMode === "link");
+      modeInvoice.classList.toggle("active", agentMode === "invoice");
+      modePayLink.setAttribute("aria-pressed", agentMode === "link" ? "true" : "false");
+      modeInvoice.setAttribute("aria-pressed", agentMode === "invoice" ? "true" : "false");
+    }
+
+    if (invoiceFields) invoiceFields.hidden = agentMode !== "invoice";
+
+    // Bottom actions: link mode shows Generate/Copy/Open, invoice mode shows Send invoice email
+    btnGenerate.hidden = agentMode !== "link";
+    btnCopy.hidden = agentMode !== "link";
+    btnOpen.hidden = agentMode !== "link";
+    if (btnSendInvoice) btnSendInvoice.hidden = agentMode !== "invoice";
+
+    status.textContent = "";
+  }
+
+  if (modePayLink) modePayLink.addEventListener("click", () => setAgentMode("link"));
+  if (modeInvoice) modeInvoice.addEventListener("click", () => setAgentMode("invoice"));
+  setAgentMode("link");
+
+  function mustValue(el, label) {
+    const v = (el && typeof el.value === "string") ? el.value.trim() : "";
+    if (!v) throw new Error("Missing " + label);
+    return v;
+  }
+
+  async function sendInvoiceEmail() {
+    const selected = tourSelect.value;
+    if (!selected) throw new Error("Select a tour");
+
+    const tourCode = selected.split("|")[0];
+    const tourDate = mustValue(dateInput, "tour date");
+
+    const party = Number(partySelect.value);
+    if (!Number.isInteger(party) || party < 1) throw new Error("Invalid number of people");
+
+    if (!termsCheckbox.checked) throw new Error("Must agree to Terms and Conditions");
+
+    const payload = {
+      language: langSelect.value || "en",
+      stripe_environment: (stripeEnvSelect && stripeEnvSelect.value) ? stripeEnvSelect.value : "sandbox",
+
+      tour_code: tourCode,
+      tour_date: tourDate,
+      number_of_people: party,
+
+      main_contact_name: (capitalizeFirstLetter(mustValue(firstNameInput, "first name")) + " " + capitalizeFirstLetter(mustValue(lastNameInput, "last name"))).trim(),
+      main_contact_email: mustValue(emailInput, "email"),
+      main_contact_phone: mustValue(phoneInput, "phone"),
+      whatsapp_number: mustValue(whatsappInput, "WhatsApp number"),
+
+      pickup_location_label: mustValue(pickupLabelInput, "pickup location label"),
+      pickup_address_or_hotel: (pickupAddressInput && pickupAddressInput.value ? pickupAddressInput.value.trim() : ""),
+      notes: (notesInput && notesInput.value ? notesInput.value.trim() : ""),
+
+      invoice_due_days: Number((invoiceDueDaysSelect && invoiceDueDaysSelect.value) ? invoiceDueDaysSelect.value : 1),
+
+      agreed_to_terms: true,
+      turnstile_token: ""
+    };
+
+    status.textContent = "Sending invoice email...";
+    status.style.color = "";
+
+    const res = await fetch("/stripe/api/create-invoice", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data || !data.ok) {
+      throw new Error((data && data.error) ? data.error : "Invoice request failed");
+    }
+
+    status.textContent = "Invoice email created in Stripe.";
+    status.style.color = "#1b5e20";
+  }
+
+  if (btnSendInvoice) {
+    btnSendInvoice.addEventListener("click", async () => {
+      try {
+        await sendInvoiceEmail();
+      } catch (e) {
+        status.textContent = e && e.message ? e.message : "Invoice failed";
+        status.style.color = "#8b0000";
+      }
+    });
+  }
 
 </script>
 </body>
