@@ -231,11 +231,11 @@
       <div class="field">
         <label>Agent action</label>
         <div class="actions">
-          <button type="button" id="modeLinkBtn" class="btn primary">Create payment link</button>
-          <button type="button" id="modeInvoiceBtn" class="btn">Email invoice</button>
+          <button type="button" id="modeLinkBtn" class="btn primary">Generate Link</button>
+          <button type="button" id="modeInvoiceBtn" class="btn">Email Invoice</button>
         </div>
         <div class="hint">
-          Create payment link keeps the current workflow (guest completes details). Email invoice collects all details now and sends a Stripe invoice email.
+          Generate Link keeps the current workflow (guest completes details). Email Invoice collects all details now and sends a Stripe invoice email.
         </div>
       </div>
 
@@ -251,12 +251,12 @@
 
         <div class="field">
           <label for="firstName">Main contact first name <span class="req">*</span></label>
-          <input class="control" id="firstName" type="text" autocomplete="given-name" />
+          <input class="control" id="firstName" type="text" autocomplete="given-name" / autocapitalize="words" autocomplete="given-name">
         </div>
 
         <div class="field">
           <label for="lastName">Main contact last name <span class="req">*</span></label>
-          <input class="control" id="lastName" type="text" autocomplete="family-name" />
+          <input class="control" id="lastName" type="text" autocomplete="family-name" / autocapitalize="words" autocomplete="family-name">
         </div>
 
         <div class="field">
@@ -308,9 +308,10 @@
         </div>
       </div>
 <div class="actions">
-<button class="btn primary" id="btnGenerate" type="button">Generate link</button>
-<button class="btn secondary" disabled="" id="btnCopy" type="button">Copy link</button>
-<button class="btn secondary" disabled="" id="btnOpen" type="button">Open link</button>
+<button class="btn primary" id="btnGenerateLink" type="button">Generate Link</button>
+<button class="btn primary" id="btnSendInvoice" type="button" hidden>Send invoice email</button>
+<button class="btn secondary" id="btnCopy" type="button" hidden>Copy link</button>
+<button class="btn secondary" id="btnOpen" type="button" hidden>Open link</button>
 </div>
 <div aria-live="polite" class="status" id="status"></div>
 </div>
@@ -335,7 +336,8 @@
         langSelect: document.getElementById("langSelect"),
         priceLabel: document.getElementById("priceLabel"),
         linkBox: document.getElementById("linkBox"),
-        btnGenerate: document.getElementById("btnGenerate"),
+        btnGenerateLink: document.getElementById("btnGenerateLink"),
+    btnSendInvoice: document.getElementById("btnSendInvoice"),
         btnCopy: document.getElementById("btnCopy"),
         modeLinkBtn: document.getElementById("modeLinkBtn"),
         modeInvoiceBtn: document.getElementById("modeInvoiceBtn"),
@@ -357,21 +359,40 @@
 
   // Agent action mode (default: payment link)
   let actionMode = "link";
+let generatedLink = "";
 
   function setActionMode(mode) {
-    actionMode = mode === "invoice" ? "invoice" : "link";
+  actionMode = mode;
 
-    if (actionMode === "invoice") {
-      els.invoiceFields.style.display = "";
-      els.modeLinkBtn.classList.remove("primary");
-      els.modeInvoiceBtn.classList.add("primary");
-      els.btnGenerate.textContent = "Send invoice email";
-      els.linkLabel.textContent = "Invoice link";
-    } else {
+  const isInvoice = mode === "invoice";
+  els.modeLinkBtn.classList.toggle("is-active", !isInvoice);
+  els.modeInvoiceBtn.classList.toggle("is-active", isInvoice);
+
+  // Show invoice-only fields
+  els.invoiceExtras.hidden = !isInvoice;
+
+  // Primary action buttons
+  els.btnGenerateLink.hidden = isInvoice;
+  els.btnSendInvoice.hidden = !isInvoice;
+
+  // Link-only buttons appear only after a link is generated
+  const hasLink = !!generatedLink;
+  els.btnCopy.hidden = !hasLink || isInvoice;
+  els.btnOpen.hidden = !hasLink || isInvoice;
+
+  // If switching to invoice mode, clear link UI
+  if (isInvoice) {
+    generatedLink = "";
+    els.linkBox.value = "";
+    els.btnCopy.disabled = true;
+    els.btnOpen.disabled = true;
+  }
+}
+} else {
       els.invoiceFields.style.display = "none";
       els.modeInvoiceBtn.classList.remove("primary");
       els.modeLinkBtn.classList.add("primary");
-      els.btnGenerate.textContent = "Generate payment link";
+      els.btnGenerateLink.textContent = "Generate Link";
       els.linkLabel.textContent = "Payment link";
     }
 
@@ -545,133 +566,55 @@
       }
 
       function setLink(url) {
-        els.linkBox.textContent = url || "Generate a link to display it here.";
-        const has = !!url;
-        els.btnCopy.disabled = !has;
-        els.btnOpen.disabled = !has;
-      }
+  generatedLink = url || "";
+  els.linkBox.value = generatedLink;
 
-      els.tourSelect.addEventListener("change", function () {
-        updatePriceLabel();
-        setActionMode("link");
-        setStatus("");
-      });
+  const enable = !!generatedLink && actionMode === "link";
+  els.btnCopy.disabled = !enable;
+  els.btnOpen.disabled = !enable;
 
-      els.dateInput.addEventListener("change", function () {
-        setActionMode("link");
-        setStatus("");
-      });
+  // Show the buttons only when link mode AND link exists
+  els.btnCopy.hidden = !enable;
+  els.btnOpen.hidden = !enable;
+});
 
-      els.partySelect.addEventListener("change", function () {
-        setActionMode("link");
-        setStatus("");
-      });
+els.btnSendInvoice.addEventListener("click", async () => {
+  setStatus("");
+  els.btnSendInvoice.disabled = true;
 
-      els.langSelect.addEventListener("change", function () {
-        setActionMode("link");
-        setStatus("");
-      });
+  try {
+    if (!invoiceFormIsValid()) {
+      setStatus("Please fill out all required fields.");
+      return;
+    }
 
-      function buildLink() {
-        const tourCode = els.tourSelect.value;
-        if (!tourCode) {
-          setStatus("Please select a tour.");
-          return "";
-        }
+    const payload = buildInvoicePayload();
+    const res = await fetch("/stripe/api/create-invoice", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-        const date = els.dateInput.value;
-        if (!date) {
-          setStatus("Please select a date.");
-          return "";
-        }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      const msg = (data && data.error) ? data.error : "Invoice creation failed";
+      setStatus(msg);
+      return;
+    }
 
-        if (els.dateInput.min && date < els.dateInput.min) {
-          setStatus("Date must be tomorrow or later.");
-          return "";
-        }
+    setStatus("Invoice email sent to " + payload.main_contact_email + ".");
+    // Keep the hosted invoice URL available for support/debugging
+    if (data.hosted_invoice_url) {
+      generatedLink = data.hosted_invoice_url;
+      els.linkBox.value = data.hosted_invoice_url;
+    }
+  } catch (e) {
+    setStatus("Invoice creation failed.");
+  } finally {
+    els.btnSendInvoice.disabled = false;
+  }
+});
 
-        const party = encodeURIComponent(els.partySelect.value);
-        const lang = encodeURIComponent(els.langSelect.value || "en");
-
-        const url = "https://mindobirdwatching.com/book-tour/pay/?" +
-          "tour=" + encodeURIComponent(tourCode) + "&date=" + encodeURIComponent(date) +
-          "&party=" + party + "&lang=" + lang;
-
-        return url;
-      }
-
-      els.btnGenerate.addEventListener("click", async function () {
-        if (actionMode === "invoice") {
-          const payload = {
-            language: els.language.value,
-            tour_code: els.tour.value,
-            tour_date: els.date.value,
-            number_of_people: Number(els.party.value),
-            stripe_environment: els.stripeEnv.value,
-
-            main_contact_name: ((els.firstName.value || "").trim() + " " + (els.lastName.value || "").trim()).trim(),
-            main_contact_email: (els.email.value || "").trim(),
-            main_contact_phone: (els.phone.value || "").trim(),
-            whatsapp_number: (els.whatsapp.value || "").trim(),
-
-            pickup_location_label: (els.pickupLabel.value || "").trim(),
-            pickup_address_or_hotel: (els.pickupAddress.value || "").trim(),
-            notes: (els.notes.value || "").trim(),
-
-            invoice_due_days: Number(els.dueDays.value || "1"),
-            agreed_to_terms: els.agree.checked === true,
-          };
-
-          const missing = [];
-          if (!payload.main_contact_name) missing.push("Main contact name");
-          if (!payload.main_contact_email) missing.push("Email");
-          if (!payload.main_contact_phone) missing.push("Phone");
-          if (!payload.whatsapp_number) missing.push("WhatsApp number");
-          if (!payload.pickup_location_label) missing.push("Pickup location label");
-          if (!payload.agreed_to_terms) missing.push("Terms and Conditions");
-
-          if (missing.length) {
-            setStatus("Missing: " + missing.join(", "));
-            return;
-          }
-
-          try {
-            els.btnGenerate.disabled = true;
-            setStatus("Creating and sending invoice...");
-            hide(els.linkBox);
-
-            const res = await fetch("/stripe/api/create-invoice", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-
-            const data = await res.json().catch(() => null);
-            if (!res.ok || !data || !data.ok) {
-              const msg = data && data.error ? data.error : "Invoice creation failed";
-              setStatus(msg);
-              return;
-            }
-
-            if (data.hosted_invoice_url) setLink(data.hosted_invoice_url);
-            setStatus("Invoice sent to " + payload.main_contact_email + ".");
-          } catch (e) {
-            setStatus("Invoice creation failed.");
-          } finally {
-            els.btnGenerate.disabled = false;
-          }
-          return;
-        }
-
-        const url = buildLink();
-        if (!url) return;
-        setLink(url);
-        setStatus("Link generated.");
-      });
-
-      
-  els.modeLinkBtn.addEventListener("click", () => setActionMode("link"));
-  els.modeInvoiceBtn.addEventListener("click", () => setActionMode("invoice"));
 els.btnCopy.addEventListener("click", async function () {
         const url = els.linkBox.textContent.trim();
         if (!url || url.indexOf("http") !== 0) return;
@@ -699,6 +642,21 @@ els.btnCopy.addEventListener("click", async function () {
       loadTours();
       setActionMode("link");
     })();
-  </script>
+ 
+function capitalizeFirstLetter(s) {
+  const t = (s || "").trim();
+  if (!t) return "";
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+["firstName", "lastName"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener("blur", () => {
+    el.value = capitalizeFirstLetter(el.value);
+  });
+});
+
+ </script>
 </body>
 </html>
