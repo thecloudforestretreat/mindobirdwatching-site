@@ -1,778 +1,1208 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Create a payment link | Mindo Bird Watching</title>
-<link href="/favicon.ico" rel="icon"/>
-<link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
-<link href="/site.webmanifest" rel="manifest"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
-<link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/header.css?v=20251231-final" rel="stylesheet"/>
-<link href="/assets/css/footer.css" rel="stylesheet"/>
-<script defer="" src="/assets/js/head.js"></script>
-<script defer="" src="/assets/js/includes.js"></script>
-<script defer="" src="/assets/js/site.js"></script>
-<style>
-    /* Page-local styles ONLY for this internal tool. Keep typography from site.css. */
-    .payCreatePage { padding: 22px 22px 26px; }
-    @media (max-width: 900px) {
-      .payCreatePage { padding: 18px 14px 20px; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mindo Bird Watching - Agent Booking Builder</title>
+  <style>
+    :root {
+      --bg: #dfe8d4;
+      --panel: #eef2e8;
+      --panel-2: #f6f8f2;
+      --text: #223322;
+      --muted: #5f6f5f;
+      --line: #c7d3be;
+      --brand: #1f5f45;
+      --brand-2: #2c7a58;
+      --yellow: #f2df6c;
+      --green-btn: #c7dfc6;
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --danger: #9d2f2f;
+      --ok: #1c6b38;
     }
 
-    .payCreateHero h1 {
-      font-family: "Playfair Display", serif;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      margin: 0 0 6px;
-      color: #0e4b2e;
-      font-size: clamp(30px, 3.2vw, 32px) !important;
+    * {
+      box-sizing: border-box;
     }
-    .payCreateHero p {
+
+    body {
       margin: 0;
-      max-width: 78ch;
-      color: rgba(0,0,0,0.62);
-      font-size: 16px;
-      line-height: 1.55;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
     }
 
-    .payCreateGrid {
-      margin-top: 18px;
+    .page {
+      max-width: 1320px;
+      margin: 24px auto;
+      padding: 0 20px 40px;
+    }
+
+    .topbar {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 22px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      color: #173b2a;
+      white-space: nowrap;
+    }
+
+    .brand-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #2f6e47;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .lang {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid #d8e1d0;
+      background: #fff;
+      color: #233223;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pill.active {
+      background: #e6efe2;
+      border-color: #9cb89b;
+    }
+
+    .layout {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
       gap: 18px;
       align-items: start;
     }
-    @media (max-width: 900px) {
-      .payCreateGrid { grid-template-columns: 1fr; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
     }
 
-    .payPanel {
-      background: rgba(255,255,255,0.45);
-      border: 1px solid rgba(0,0,0,0.10);
-      border-radius: 18px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
-      padding: 18px;
-      font-family: inherit;
-    }
-    @media (max-width: 900px) { .payPanel { padding: 16px; } }
-
-    .payPanel .hint {
-      margin: 0 0 12px;
-      color: rgba(0,0,0,0.55);
-      font-size: 13px;
-      line-height: 1.35;
+    .builder {
+      padding: 22px;
     }
 
-    .field { margin: 14px 0; }
-    .field label {
-      display: inline-flex;
-      align-items: baseline;
-      gap: 6px;
-      font-weight: 700;
+    .summary {
+      padding: 22px;
+      position: sticky;
+      top: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 44px;
+      line-height: 1.05;
+      color: var(--brand);
+    }
+
+    .intro {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 760px;
+    }
+
+    .section-title {
+      margin: 22px 0 12px;
       font-size: 15px;
-      margin-bottom: 8px;
-      color: rgba(0,0,0,0.86);
-    }
-    .req { color: #b42318; font-weight: 800; }
-
-    /* Controls */
-    :root{
-      --mbw-control-h: 44px;
-      --mbw-control-radius: 14px;
-      --mbw-control-py: 10px;
-      --mbw-control-px: 14px;
-    }
-
-    .payCreatePage .control{
-      width:100%;
-      appearance:none;
-      -webkit-appearance:none;
-      font:inherit;
-      color:var(--ink);
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 14px;
-      min-height:44px;
-      line-height:1.2;
-      box-shadow:0 1px 0 rgba(0,0,0,.02) inset;
-    }
-
-    .payCreatePage select.control{
-      background-color:#fff;
-    }
-
-    .payCreatePage .control:focus{
-      border-color: rgba(16, 185, 129, 0.55);
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
-    }
-
-    /* Date input: keep consistent height, avoid iOS overflow */
-    .payCreatePage input[type="date"].control{
-      -webkit-appearance: none;
-      appearance: none;
-      background-color:#fff;
-      padding-right: 44px; /* room for calendar icon */
-    }
-
-    /* Make the date value slightly larger, without changing the box size */
-    .payCreatePage input[type="date"].dateBig{
-      font-size: 17px;
-      font-weight: 500;
-    }
-
-    /* Prevent iOS zoom + keep text readable */
-    @media (max-width: 900px){
-      .payCreatePage .control{ font-size: 16px; }
-      .payCreatePage input[type="date"].dateBig{ font-size: 17px; }
-    }
-
-    
-    
-    
-
-    .status {
-      margin-top: 10px;
-      color: #0b5a33;
       font-weight: 800;
+      color: #27402e;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    label {
       font-size: 13px;
+      font-weight: 800;
+      color: #2b3a2d;
     }
 
-    .payLinkTitle {
-      font-family: "Playfair Display", serif;
-      font-weight: 700;
-      color: #0e4b2e;
-      font-size: 18px;
-      margin: 0 0 10px;
+    .req::after {
+      content: " *";
+      color: #b52c2c;
     }
 
-    .linkBox {
-      border: 1px dashed rgba(0,0,0,0.28);
-      background: rgba(255,255,255,0.45);
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #c7d3be;
+      background: #fff;
+      color: #223322;
       border-radius: 14px;
-      padding: 12px;
-      font-size: 13px;
-      line-height: 1.35;
-      color: rgba(0,0,0,0.82);
-      word-break: break-all;
-      min-height: 46px;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .hint {
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .items-wrap {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .item-card {
+      border: 1px solid #d8e1d0;
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .item-card + .item-card {
+      margin-top: 14px;
+    }
+
+    .item-top {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
-    .payLinkHelp {
-      margin: 10px 0 0;
-      color: rgba(0,0,0,0.55);
+    .item-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #294331;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mini-btn,
+    .action-btn,
+    .link-btn {
+      appearance: none;
+      border: 1px solid #9fb39b;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #fff;
+      color: #203020;
+    }
+
+    .mini-btn {
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+
+    .mini-btn.danger {
+      border-color: #d5aaaa;
+      color: var(--danger);
+      background: #fff7f7;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .action-btn.primary {
+      background: var(--yellow);
+      border-color: #d7c349;
+    }
+
+    .action-btn.secondary {
+      background: var(--green-btn);
+    }
+
+    .action-btn:disabled,
+    .mini-btn:disabled,
+    .link-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .mode-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #e7efe4;
+      border: 1px solid #bdd0b7;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #26422d;
+      margin-bottom: 14px;
+    }
+
+    .summary-box {
+      border: 1px dashed #b7c8af;
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .summary-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin: 0 0 10px;
+      color: #28422f;
+    }
+
+    .summary-empty {
+      color: var(--muted);
       font-size: 13px;
       line-height: 1.45;
     }
 
-    /* Ensure the tool does not visually "stick" to the header */
-    #siteHeader { margin-bottom: 14px; }
-    @media (max-width: 900px) { #siteHeader { margin-bottom: 12px; } }
+    .summary-item {
+      border: 1px solid #dbe5d5;
+      border-radius: 14px;
+      padding: 12px;
+      background: #f9fbf7;
+    }
 
-    @media (min-width: 901px){ .payCreateHero h1{ font-size:32px !important; } }
-  
+    .summary-item + .summary-item {
+      margin-top: 10px;
+    }
 
+    .summary-item-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #24402b;
+      margin-bottom: 6px;
+    }
 
-/* Agent mode toggle */
-.modeRow { display: flex; gap: 10px; flex-wrap: wrap; }
-.modeRow .btn.secondary.active { outline: 2px solid rgba(3,78,162,0.35); }
-</style>
+    .summary-meta {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .money {
+      font-weight: 800;
+      color: #21462e;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.ok {
+      background: #e7f5e9;
+      border: 1px solid #b8d8be;
+      color: var(--ok);
+    }
+
+    .status.error {
+      background: #fff0f0;
+      border: 1px solid #e1b6b6;
+      color: var(--danger);
+    }
+
+    .status.info {
+      background: #eef4ff;
+      border: 1px solid #c7d7f3;
+      color: #224f96;
+    }
+
+    .link-box {
+      margin-top: 14px;
+      border: 1px dashed #b7c8af;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      word-break: break-word;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #314631;
+    }
+
+    .small-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .pricing-note {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #38503d;
+      line-height: 1.45;
+    }
+
+    .divider {
+      height: 1px;
+      background: #d7e1d0;
+      margin: 18px 0;
+    }
+
+    @media (max-width: 1024px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .builder,
+      .summary {
+        padding: 16px;
+      }
+
+      .item-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-<div id="siteHeader"></div>
-<main class="page card payCreatePage">
-<header class="payCreateHero">
-<h1>Create a payment link</h1>
-<p>Internal tool for staff. Confirm the tour, tour date, and party size. Then copy the link and send it to the guest.</p>
-</header>
-<section aria-label="Payment link generator" class="payCreateGrid">
-<div class="payPanel">
-<p class="hint">Required fields are marked with <span class="req">*</span>.</p>
-<div class="field">
-<label for="tourSelect">Tour <span class="req">*</span></label>
-<select class="control" id="tourSelect" required="">
-<option value="">Select a tour...</option>
-</select>
-<div class="subtext">This list is Stripe-driven via the Tours API.</div>
-<div class="subtext" id="priceLabel">Selected price: -</div>
-</div>
-<div class="field">
-<label for="dateInput">Tour date <span class="req">*</span></label>
-<input class="control dateBig" id="dateInput" required="" type="date"/>
-<div class="subtext">Only tomorrow and future dates are allowed (America/Guayaquil).</div>
-</div>
-<div class="field">
-<label for="partySelect">Number of people <span class="req">*</span></label>
-<select class="control" id="partySelect" required="">
-<option value="1">1</option>
-<option selected="" value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
-<option value="6">6</option>
-<option value="7">7</option>
-<option value="8">8</option>
-</select>
-<div class="subtext">Must be 1 to 8.</div>
-</div>
-<div class="field">
-<label for="langSelect">Language</label>
-<select class="control" id="langSelect">
-<option selected="" value="en">English</option>
-<option value="es">Espanol</option>
-</select>
-<div class="subtext">Generates a link to the correct language pay page.</div>
-</div>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">MBW</div>
+        <div>Mindo Bird Watching</div>
+      </div>
+      <div class="lang">
+        <button class="pill active" type="button">EN</button>
+        <button class="pill" type="button">ES</button>
+        <button class="pill" type="button">Home</button>
+        <button class="pill" type="button">Plan Your Trip</button>
+        <button class="pill" type="button">Tours</button>
+        <button class="pill" type="button">Birds</button>
+        <button class="pill" type="button">About Us</button>
+        <button class="pill" type="button">Contact</button>
+        <button class="pill" type="button">Book A Tour</button>
+      </div>
+    </div>
 
-<div class="field">
-<label>Agent action</label>
-<div class="modeRow">
-<button type="button" class="btn secondary active" id="modePayLink" aria-pressed="true">Generate Link</button>
-<button type="button" class="btn secondary" id="modeInvoice" aria-pressed="false">Email Invoice</button>
-</div>
-<div class="subtext">Generate Link keeps the current workflow (guest completes details). Email Invoice collects all details now and sends a Stripe invoice email.</div>
-</div>
+    <div class="layout">
+      <div class="card builder">
+        <h1>Create a payment link</h1>
+        <p class="intro">
+          Internal tool for staff. Build a single booking or a multi-item itinerary, then copy the payment link or send a Stripe invoice.
+        </p>
 
-<div id="invoiceFields" hidden>
-<div class="field">
-<label for="stripeEnv">Stripe environment <span class="req">*</span></label>
-<select class="control" id="stripeEnv">
-<option value="sandbox" selected>Sandbox</option>
-<option value="live">Live</option>
-</select>
-<div class="subtext">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
-</div>
+        <div id="modeChip" class="mode-chip">Single item mode</div>
 
-<div class="field">
-<label for="firstName">Main contact first name <span class="req">*</span></label>
-<input class="control" id="firstName" type="text" autocomplete="given-name" autocapitalize="words" />
-</div>
+        <div class="section-title">Guest and invoice details</div>
 
-<div class="field">
-<label for="lastName">Main contact last name <span class="req">*</span></label>
-<input class="control" id="lastName" type="text" autocomplete="family-name" autocapitalize="words" />
-</div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="stripeEnvironment">Stripe environment</label>
+            <select id="stripeEnvironment">
+              <option value="sandbox">Sandbox</option>
+              <option value="live">Live</option>
+            </select>
+            <div class="hint">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
+          </div>
 
-<div class="field">
-<label for="email">Email <span class="req">*</span></label>
-<input class="control" id="email" type="email" autocomplete="email" />
-</div>
+          <div class="field">
+            <label class="req" for="invoiceDueDays">Invoice due (days)</label>
+            <input id="invoiceDueDays" type="number" min="1" step="1" value="2" />
+          </div>
+        </div>
 
-<div class="field">
-<label for="phone">Phone <span class="req">*</span></label>
-<input class="control" id="phone" type="tel" autocomplete="tel" />
-</div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="mainFirstName">Main contact first name</label>
+            <input id="mainFirstName" type="text" placeholder="First name" />
+          </div>
 
-<div class="field">
-<label for="whatsapp">WhatsApp number <span class="req">*</span></label>
-<input class="control" id="whatsapp" type="tel" autocomplete="tel" />
-<div class="subtext">Include country code if possible.</div>
-</div>
+          <div class="field">
+            <label class="req" for="mainLastName">Main contact last name</label>
+            <input id="mainLastName" type="text" placeholder="Last name" />
+          </div>
+        </div>
 
-<div class="field">
-<label for="pickupLabel">Pickup location label <span class="req">*</span></label>
-<input class="control" id="pickupLabel" type="text" />
-<div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
-</div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="mainEmail">Email</label>
+            <input id="mainEmail" type="email" placeholder="guest@email.com" />
+          </div>
 
-<div class="field">
-<label for="pickupAddress">Pickup address or hotel name</label>
-<input class="control" id="pickupAddress" type="text" />
-<div class="subtext">Optional.</div>
-</div>
+          <div class="field">
+            <label class="req" for="mainPhone">Phone</label>
+            <input id="mainPhone" type="text" placeholder="Phone number" />
+          </div>
+        </div>
 
-<div class="field">
-<label for="notes">Notes (optional)</label>
-<textarea class="control" id="notes" rows="3"></textarea>
-</div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="whatsappNumber">WhatsApp number</label>
+            <input id="whatsappNumber" type="text" placeholder="WhatsApp number" />
+            <div class="hint">Include country code if possible.</div>
+          </div>
 
-<div class="field">
-<label for="invoiceDueDays">Invoice due (days)</label>
-<select class="control" id="invoiceDueDays">
-<option value="1" selected>1 day</option>
-<option value="2">2 days</option>
-<option value="3">3 days</option>
-<option value="5">5 days</option>
-<option value="7">7 days</option>
-<option value="14">14 days</option>
-<option value="30">30 days</option>
-</select>
-</div>
-</div>
-<div class="actions">
-<button class="btn primary" id="btnGenerate" type="button">Generate link</button>
-<button class="btn primary" id="btnSendInvoice" type="button" hidden>Send invoice email</button>
-<button class="btn secondary" disabled="" id="btnCopy" type="button">Copy link</button>
-<button class="btn secondary" disabled="" id="btnOpen" type="button">Open link</button>
-</div>
-<div aria-live="polite" class="status" id="status"></div>
-</div>
-<aside class="payPanel">
-<h2 class="payLinkTitle">Payment link</h2>
-<div class="linkBox" id="linkBox">Generate a link to display it here.</div>
-<p class="payLinkHelp">
-            The guest will fill the remaining details and pay. The tour, date, and party size are locked from this link.
-            On the pay page, the guest may increase party size, but cannot reduce it below the locked size.
-          </p>
-</aside>
-</section>
-</main>
-<div id="siteFooter"></div>
-</div>
-<script>
-    (function () {
-      const els = {
-        tourSelect: document.getElementById("tourSelect"),
-        dateInput: document.getElementById("dateInput"),
-        partySelect: document.getElementById("partySelect"),
-        langSelect: document.getElementById("langSelect"),
-        priceLabel: document.getElementById("priceLabel"),
-        linkBox: document.getElementById("linkBox"),
-        btnGenerate: document.getElementById("btnGenerate"),
-        btnCopy: document.getElementById("btnCopy"),
-        btnOpen: document.getElementById("btnOpen"),
-        status: document.getElementById("status")
+          <div class="field">
+            <label class="req" for="defaultLanguage">Default language</label>
+            <select id="defaultLanguage">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+            </select>
+            <div class="hint">Used as the default for newly added items.</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="pickupLocationLabel">Pickup location label</label>
+            <input id="pickupLocationLabel" type="text" placeholder="Hotel, Airbnb, Meeting point" />
+          </div>
+
+          <div class="field">
+            <label class="req" for="pickupAddress">Pickup address or hotel name</label>
+            <input id="pickupAddress" type="text" placeholder="Pickup address or hotel name" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="globalNotes">General notes</label>
+          <textarea id="globalNotes" placeholder="Internal notes for the booking or invoice"></textarea>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title">Booking items</div>
+
+        <div class="items-wrap">
+          <div id="itemsContainer"></div>
+
+          <div class="action-row" style="margin-top:14px;">
+            <button id="addItemBtn" class="action-btn secondary" type="button">+ Add another tour or activity</button>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button id="generateLinkBtn" class="action-btn primary" type="button">Generate link</button>
+          <button id="sendInvoiceBtn" class="action-btn secondary" type="button">Send invoice</button>
+          <button id="copyBtn" class="action-btn secondary" type="button" disabled>Copy link</button>
+          <button id="openBtn" class="action-btn secondary" type="button" disabled>Open link</button>
+        </div>
+
+        <div class="small-note">
+          Generate Link is available only for a single item. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
+        </div>
+
+        <div id="statusBox" class="status"></div>
+      </div>
+
+      <div class="card summary">
+        <div class="summary-box">
+          <div class="summary-title">Booking summary</div>
+          <div id="summaryItems"></div>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-title">Action summary</div>
+          <div id="actionSummary" class="summary-empty">
+            Generate a payment link or create an invoice to display the result here.
+          </div>
+        </div>
+
+        <div id="resultLinkBox" class="link-box" style="display:none;"></div>
+
+        <div class="small-note">
+          Single item mode:
+          <br />
+          - Generate Link can keep your current guest flow
+          <br />
+          - Send Invoice uses your existing single-item invoice route
+          <br /><br />
+          Multi-item mode:
+          <br />
+          - Generate Link is disabled
+          <br />
+          - Send Invoice will use the multi-item invoice route
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="itemTemplate">
+    <div class="item-card" data-item-card>
+      <div class="item-top">
+        <div class="item-title" data-item-heading>Booking Item</div>
+        <div class="item-actions">
+          <button type="button" class="mini-btn danger" data-remove-item>Remove</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="req">Tour</label>
+        <select data-field="tour_code">
+          <option value="">Select a tour...</option>
+        </select>
+        <div class="pricing-note" data-tour-meta>Select a tour to preview the price and details.</div>
+      </div>
+
+      <div class="grid-3">
+        <div class="field">
+          <label class="req">Tour date</label>
+          <input data-field="tour_date" type="date" />
+        </div>
+
+        <div class="field">
+          <label class="req">Number of people</label>
+          <input data-field="quantity" type="number" min="1" step="1" value="2" />
+        </div>
+
+        <div class="field">
+          <label class="req">Language</label>
+          <select data-field="language">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Item notes</label>
+        <textarea data-field="item_notes" placeholder="Optional internal note for this line item"></textarea>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const state = {
+      tours: [],
+      items: [],
+      generatedUrl: "",
+      generatedOpenUrl: "",
+    };
+
+    const els = {
+      itemsContainer: document.getElementById("itemsContainer"),
+      itemTemplate: document.getElementById("itemTemplate"),
+      addItemBtn: document.getElementById("addItemBtn"),
+      generateLinkBtn: document.getElementById("generateLinkBtn"),
+      sendInvoiceBtn: document.getElementById("sendInvoiceBtn"),
+      copyBtn: document.getElementById("copyBtn"),
+      openBtn: document.getElementById("openBtn"),
+      statusBox: document.getElementById("statusBox"),
+      modeChip: document.getElementById("modeChip"),
+      summaryItems: document.getElementById("summaryItems"),
+      actionSummary: document.getElementById("actionSummary"),
+      resultLinkBox: document.getElementById("resultLinkBox"),
+      stripeEnvironment: document.getElementById("stripeEnvironment"),
+      invoiceDueDays: document.getElementById("invoiceDueDays"),
+      mainFirstName: document.getElementById("mainFirstName"),
+      mainLastName: document.getElementById("mainLastName"),
+      mainEmail: document.getElementById("mainEmail"),
+      mainPhone: document.getElementById("mainPhone"),
+      whatsappNumber: document.getElementById("whatsappNumber"),
+      defaultLanguage: document.getElementById("defaultLanguage"),
+      pickupLocationLabel: document.getElementById("pickupLocationLabel"),
+      pickupAddress: document.getElementById("pickupAddress"),
+      globalNotes: document.getElementById("globalNotes"),
+    };
+
+    function showStatus(message, type = "info") {
+      els.statusBox.textContent = message;
+      els.statusBox.className = `status show ${type}`;
+    }
+
+    function clearStatus() {
+      els.statusBox.textContent = "";
+      els.statusBox.className = "status";
+    }
+
+    function formatCurrencyDisplay(v) {
+      return v || "-";
+    }
+
+    function buildFullName() {
+      return `${els.mainFirstName.value.trim()} ${els.mainLastName.value.trim()}`.trim();
+    }
+
+    function getDefaultTomorrowISO() {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function getTourByCodeAndLanguage(code, language) {
+      return state.tours.find(t => t.tour_code === code && t.language === language) || null;
+    }
+
+    async function loadTours() {
+      const res = await fetch("/stripe/api/tours?lang=en");
+      const data = await res.json();
+      if (!data.ok) {
+        throw new Error(data.error || "Failed to load tours");
+      }
+      state.tours = data.tours || [];
+    }
+
+    function createItem(initial = {}) {
+      return {
+        id: crypto.randomUUID(),
+        tour_code: initial.tour_code || "",
+        tour_date: initial.tour_date || getDefaultTomorrowISO(),
+        quantity: initial.quantity || 2,
+        language: initial.language || els.defaultLanguage.value || "en",
+        item_notes: initial.item_notes || "",
       };
+    }
 
-  const status = els.status;
+    function addItem(initial = {}) {
+      state.items.push(createItem(initial));
+      renderItems();
+      renderSummary();
+      updateModeUI();
+    }
 
-      let toursByCode = {};
-
-      function setStatus(msg) {
-        els.status.textContent = msg || "";
+    function removeItem(id) {
+      if (state.items.length === 1) {
+        showStatus("At least one booking item is required.", "error");
+        return;
       }
+      state.items = state.items.filter(item => item.id !== id);
+      renderItems();
+      renderSummary();
+      updateModeUI();
+      clearStatus();
+    }
 
-      function setBusy(btn, busy) {
-        if (!btn) return;
-        if (busy) {
-          btn.disabled = true;
-          btn.dataset.originalText = btn.textContent;
-          btn.textContent = "Processing...";
-        } else {
-          btn.disabled = false;
-          if (btn.dataset.originalText) {
-            btn.textContent = btn.dataset.originalText;
-          }
-        }
-      }
+    function updateItem(id, key, value) {
+      const item = state.items.find(x => x.id === id);
+      if (!item) return;
+      item[key] = value;
+      renderSummary();
+      updateModeUI();
+    }
 
-      function formatPriceUSD(amountCents) {
-        if (amountCents == null) return "-";
-        const dollars = (amountCents / 100).toFixed(2);
-        return "$" + dollars + " per person";
-      }
+    function renderItems() {
+      els.itemsContainer.innerHTML = "";
 
-      function ensureMinTomorrow() {
-        const now = new Date();
-        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        const yyyy = String(tomorrow.getFullYear());
-        const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
-        const dd = String(tomorrow.getDate()).padStart(2, "0");
-        const min = yyyy + "-" + mm + "-" + dd;
-        els.dateInput.min = min;
+      state.items.forEach((item, index) => {
+        const node = els.itemTemplate.content.firstElementChild.cloneNode(true);
+        node.dataset.itemId = item.id;
 
-        if (!els.dateInput.value) {
-          els.dateInput.value = min;
-        } else if (els.dateInput.value < min) {
-          els.dateInput.value = min;
-        }
-      }
+        const heading = node.querySelector("[data-item-heading]");
+        heading.textContent = `Booking Item ${index + 1}`;
 
-      function populateTourSelect(list) {
-        // reset dropdown
-        els.tourSelect.innerHTML = '<option value="">Select a tour...</option>';
+        const removeBtn = node.querySelector("[data-remove-item]");
+        removeBtn.disabled = state.items.length === 1;
+        removeBtn.addEventListener("click", () => removeItem(item.id));
 
-        for (const t of list) {
+        const tourSelect = node.querySelector('[data-field="tour_code"]');
+        const dateInput = node.querySelector('[data-field="tour_date"]');
+        const qtyInput = node.querySelector('[data-field="quantity"]');
+        const langSelect = node.querySelector('[data-field="language"]');
+        const notesInput = node.querySelector('[data-field="item_notes"]');
+        const metaText = node.querySelector("[data-tour-meta]");
+
+        const currentLangTours = state.tours
+          .filter(t => t.language === item.language)
+          .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
+
+        currentLangTours.forEach(tour => {
           const opt = document.createElement("option");
-          opt.value = t.code;
-          opt.textContent = t.code + " - " + t.name;
-          els.tourSelect.appendChild(opt);
-        }
-
-        // auto-select if only one tour exists
-        if (list.length === 1) {
-          els.tourSelect.value = list[0].code;
-        }
-
-        updatePriceLabel();
-      }
-
-      function parseAmountDisplayToCents(s) {
-        // Accept "$99.00", "USD 99.00", "99", "99.0"
-        if (typeof s !== "string") return null;
-        const cleaned = s.replace(/[^0-9.]/g, "");
-        if (!cleaned) return null;
-        const n = Number(cleaned);
-        if (!isFinite(n)) return null;
-        return Math.round(n * 100);
-      }
-
-      async function loadTours() {
-        try {
-          setStatus("Loading tours...");
-          const res = await fetch("/stripe/api/tours", {
-            credentials: "same-origin",
-            headers: { "Accept": "application/json" }
-          });
-          if (!res.ok) throw new Error("Tours API HTTP " + res.status);
-          const data = await res.json();
-
-          // Accept: { ok:true, tours:[...] } OR { tours:[...] } OR bare array
-          const items = Array.isArray(data)
-            ? data
-            : (data && (data.tours || data.items || data.data))
-              ? (data.tours || data.items || data.data)
-              : [];
-
-          const toursBy = {};
-          const list = [];
-
-          function str(v){ return (typeof v === "string") ? v.trim() : ""; }
-
-          function nameOf(t){
-            // Your API uses "tour_title"
-            return str(t.tour_title) || str(t.name) || str(t.tour_name) || str(t.tourName) || str(t.title) || str(t.product_name) || str(t.productName) || str(t.display_name);
-          }
-
-          function codeOf(t, name){
-            const candidates = [
-              t.code, t.tour_code, t.tourCode, t.sku, t.product_code, t.productCode, t.slug, t.id
-            ].map(str).filter(Boolean);
-
-            for (const c of candidates){
-              const mm = c.match(/MBW\d{3}/i);
-              if (mm) return mm[0].toUpperCase();
-            }
-            const mmn = str(name).match(/MBW\d{3}/i);
-            return mmn ? mmn[0].toUpperCase() : "";
-          }
-
-          function priceCentsOf(t){
-            // Prefer numeric cents if you add it later
-            const candidates = [
-              t.amount_cents, t.amountCents, t.price_cents, t.priceCents, t.unit_amount, t.unitAmount
-            ];
-
-            for (const c of candidates) {
-              const n = Number(c);
-              if (isFinite(n) && n >= 0) return Math.round(n);
-            }
-
-            // Fall back to amount_display like "$99.00"
-            const p = parseAmountDisplayToCents(t.amount_display);
-            if (p != null) return p;
-
-            // Fall back to numeric dollars if present
-            const raw = (t.price_usd != null) ? t.price_usd
-              : (t.priceUsd != null) ? t.priceUsd
-              : (t.amount != null) ? t.amount
-              : (t.price != null) ? t.price
-              : null;
-
-            const n = Number(raw);
-            if (!isFinite(n)) return null;
-            // If it looks like dollars (e.g., 99.00), convert to cents.
-            // If it looks like cents (e.g., 9900), keep.
-            return (n >= 1000) ? Math.round(n) : Math.round(n * 100);
-          }
-
-          for (const t of items){
-            if (!t || typeof t !== "object") continue;
-            const name = nameOf(t);
-            const code = codeOf(t, name);
-            if (!code || !name) continue;
-
-            if (!toursBy[code]){
-              toursBy[code] = { code, name, price_cents: priceCentsOf(t), raw: t };
-              list.push(toursBy[code]);
-            }
-          }
-
-          // Sort + populate
-          list.sort((a,b)=> (a.code.localeCompare(b.code) || a.name.localeCompare(b.name)));
-          toursByCode = toursBy;
-
-          populateTourSelect(list);
-
-          if (!list.length) {
-            setStatus("No tours returned from API.");
-          } else {
-            setStatus("");
-          }
-        } catch (err) {
-          console.error(err);
-          setStatus("Could not load tours. Open DevTools Console for details.");
-        }
-      }
-
-      function updatePriceLabel() {
-        const code = els.tourSelect.value;
-        const t = toursByCode[code];
-        const p = t && t.price_cents != null ? formatPriceUSD(t.price_cents) : "-";
-        els.priceLabel.textContent = "Selected price: " + p;
-      }
-
-      function setLink(url) {
-        els.linkBox.textContent = url || "Generate a link to display it here.";
-        const has = !!url;
-        els.btnCopy.disabled = !has;
-        els.btnOpen.disabled = !has;
-      }
-
-      els.tourSelect.addEventListener("change", function () {
-        updatePriceLabel();
-        setLink("");
-        setStatus("");
-      });
-
-      els.dateInput.addEventListener("change", function () {
-        setLink("");
-        setStatus("");
-      });
-
-      els.partySelect.addEventListener("change", function () {
-        setLink("");
-        setStatus("");
-      });
-
-      els.langSelect.addEventListener("change", function () {
-        setLink("");
-        setStatus("");
-      });
-
-      function buildLink() {
-        const tourCode = els.tourSelect.value;
-        if (!tourCode) {
-          setStatus("Please select a tour.");
-          return "";
-        }
-
-        const date = els.dateInput.value;
-        if (!date) {
-          setStatus("Please select a date.");
-          return "";
-        }
-
-        if (els.dateInput.min && date < els.dateInput.min) {
-          setStatus("Date must be tomorrow or later.");
-          return "";
-        }
-
-        const party = encodeURIComponent(els.partySelect.value);
-        const lang = encodeURIComponent(els.langSelect.value || "en");
-
-        const url = "https://mindobirdwatching.com/book-tour/pay/?" +
-          "tour=" + encodeURIComponent(tourCode) + "&date=" + encodeURIComponent(date) +
-          "&party=" + party + "&lang=" + lang;
-
-        return url;
-      }
-
-      els.btnGenerate.addEventListener("click", function () {
-        const url = buildLink();
-        if (!url) return;
-        setLink(url);
-        setStatus("Link generated.");
-      });
-
-      els.btnCopy.addEventListener("click", async function () {
-        const url = els.linkBox.textContent.trim();
-        if (!url || url.indexOf("http") !== 0) return;
-        try {
-          await navigator.clipboard.writeText(url);
-          setStatus("Link copied.");
-        } catch (e) {
-          const ta = document.createElement("textarea");
-          ta.value = url;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          document.body.removeChild(ta);
-          setStatus("Link copied.");
-        }
-      });
-
-      els.btnOpen.addEventListener("click", function () {
-        const url = els.linkBox.textContent.trim();
-        if (!url || url.indexOf("http") !== 0) return;
-        window.open(url, "_blank", "noopener,noreferrer");
-      });
-
-      
-      // Agent action mode: Generate Link vs Email Invoice
-      // We do NOT rely on global variables created from element ids (e.g., window.status).
-      const modePayLink = document.getElementById("modePayLink");
-      const modeInvoice = document.getElementById("modeInvoice");
-      const invoiceFields = document.getElementById("invoiceFields");
-      const stripeEnv = document.getElementById("stripeEnv");
-
-      const firstNameEl = document.getElementById("firstName");
-      const lastNameEl = document.getElementById("lastName");
-      const emailEl = document.getElementById("email");
-      const phoneEl = document.getElementById("phone");
-      const whatsappEl = document.getElementById("whatsapp");
-      const pickupLabelEl = document.getElementById("pickupLabel");
-      const pickupAddressEl = document.getElementById("pickupAddress");
-      const notesEl = document.getElementById("notes");
-      const invoiceDueDaysEl = document.getElementById("invoiceDueDays");
-
-      const btnSendInvoice = document.getElementById("btnSendInvoice");
-
-      function toTitleCaseFirstLetters(s) {
-        const raw = (s || "").trim();
-        if (!raw) return "";
-        return raw
-          .split(/\s+/)
-          .filter(Boolean)
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(" ");
-      }
-
-      function autoCapitalizeNameInput(el) {
-        if (!el) return;
-        el.addEventListener("blur", () => {
-          const v = toTitleCaseFirstLetters(el.value);
-          if (v) el.value = v;
+          opt.value = tour.tour_code;
+          opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
+          tourSelect.appendChild(opt);
         });
-        el.setAttribute("autocapitalize", "words");
+
+        langSelect.value = item.language;
+        tourSelect.value = item.tour_code;
+        dateInput.value = item.tour_date;
+        qtyInput.value = item.quantity;
+        notesInput.value = item.item_notes;
+
+        function refreshMeta() {
+          const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
+          if (!selectedTour) {
+            metaText.textContent = "Select a tour to preview the price and details.";
+            return;
+          }
+          metaText.innerHTML = `
+            <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} per person
+            <br />
+            <strong>Type:</strong> ${selectedTour.duration_label || "-"}
+            <br />
+            <strong>Summary:</strong> ${selectedTour.description_one_liner || "-"}
+          `;
+        }
+
+        langSelect.addEventListener("change", (e) => {
+          updateItem(item.id, "language", e.target.value);
+
+          const prevCode = item.tour_code;
+          const refreshedTours = state.tours
+            .filter(t => t.language === e.target.value)
+            .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
+
+          tourSelect.innerHTML = '<option value="">Select a tour...</option>';
+          refreshedTours.forEach(tour => {
+            const opt = document.createElement("option");
+            opt.value = tour.tour_code;
+            opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
+            tourSelect.appendChild(opt);
+          });
+
+          const existsInLang = refreshedTours.some(t => t.tour_code === prevCode);
+          if (existsInLang) {
+            tourSelect.value = prevCode;
+          } else {
+            updateItem(item.id, "tour_code", "");
+            tourSelect.value = "";
+          }
+
+          refreshMeta();
+        });
+
+        tourSelect.addEventListener("change", (e) => {
+          updateItem(item.id, "tour_code", e.target.value);
+          refreshMeta();
+        });
+
+        dateInput.addEventListener("change", (e) => {
+          updateItem(item.id, "tour_date", e.target.value);
+        });
+
+        qtyInput.addEventListener("input", (e) => {
+          updateItem(item.id, "quantity", e.target.value);
+        });
+
+        notesInput.addEventListener("input", (e) => {
+          updateItem(item.id, "item_notes", e.target.value);
+        });
+
+        refreshMeta();
+        els.itemsContainer.appendChild(node);
+      });
+    }
+
+    function renderSummary() {
+      const items = state.items;
+      if (!items.length) {
+        els.summaryItems.innerHTML = '<div class="summary-empty">No booking items yet.</div>';
+        return;
       }
 
-      autoCapitalizeNameInput(firstNameEl);
-      autoCapitalizeNameInput(lastNameEl);
+      els.summaryItems.innerHTML = "";
+      let knownCount = 0;
 
-      let agentMode = "link";
+      items.forEach((item, index) => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        const div = document.createElement("div");
+        div.className = "summary-item";
 
-      function setAgentMode(mode) {
-        agentMode = mode === "invoice" ? "invoice" : "link";
+        const name = tour
+          ? `${tour.tour_code} - ${tour.tour_title}`
+          : `Item ${index + 1}`;
 
-        const isInvoice = agentMode === "invoice";
+        const priceLine = tour
+          ? `${tour.amount_display} x ${item.quantity || 0}`
+          : "Select a tour";
 
-        if (modePayLink) modePayLink.setAttribute("aria-pressed", String(!isInvoice));
-        if (modeInvoice) modeInvoice.setAttribute("aria-pressed", String(isInvoice));
+        if (tour) knownCount += 1;
 
-        if (invoiceFields) invoiceFields.hidden = !isInvoice;
+        div.innerHTML = `
+          <div class="summary-item-name">${name}</div>
+          <div class="summary-meta">
+            Date: ${item.tour_date || "-"}
+            <br />
+            People: ${item.quantity || "-"}
+            <br />
+            Language: ${item.language === "es" ? "Spanish" : "English"}
+            <br />
+            Price: <span class="money">${priceLine}</span>
+          </div>
+        `;
 
-        // Primary action buttons
-        btnGenerate.hidden = isInvoice;      // existing, working workflow
-        btnSendInvoice.hidden = !isInvoice;  // new invoice workflow
+        els.summaryItems.appendChild(div);
+      });
 
-        // Secondary actions are always available if there is a URL
-        // (Generate Link creates a payment URL, Email Invoice returns hosted invoice URL)
-        setStatus("");
+      if (knownCount < items.length) {
+        const warn = document.createElement("div");
+        warn.className = "small-note";
+        warn.textContent = "Some items are incomplete. Select a tour for every row before creating a link or invoice.";
+        els.summaryItems.appendChild(warn);
+      }
+    }
+
+    function updateModeUI() {
+      const multi = state.items.length > 1;
+
+      els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
+      els.generateLinkBtn.disabled = multi;
+      els.copyBtn.disabled = !state.generatedUrl;
+      els.openBtn.disabled = !state.generatedOpenUrl;
+
+      if (multi) {
+        els.actionSummary.innerHTML = `
+          Multi-item mode is active.
+          <br />
+          Generate Link is disabled.
+          <br />
+          Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
+        `;
+      } else {
+        els.actionSummary.innerHTML = `
+          Single item mode is active.
+          <br />
+          Generate Link can use your current one-tour flow.
+          <br />
+          Send Invoice will call <strong>/stripe/api/create-invoice</strong>.
+        `;
+      }
+    }
+
+    function validateSharedFields() {
+      const errors = [];
+
+      if (!els.mainFirstName.value.trim()) errors.push("Main contact first name is required.");
+      if (!els.mainLastName.value.trim()) errors.push("Main contact last name is required.");
+      if (!els.mainEmail.value.trim()) errors.push("Email is required.");
+      if (!els.mainPhone.value.trim()) errors.push("Phone is required.");
+      if (!els.whatsappNumber.value.trim()) errors.push("WhatsApp number is required.");
+      if (!els.pickupLocationLabel.value.trim()) errors.push("Pickup location label is required.");
+      if (!els.pickupAddress.value.trim()) errors.push("Pickup address or hotel name is required.");
+
+      return errors;
+    }
+
+    function validateItems() {
+      const errors = [];
+
+      state.items.forEach((item, idx) => {
+        if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);
+        if (!item.tour_date) errors.push(`Item ${idx + 1}: Tour date is required.`);
+        if (!item.quantity || Number(item.quantity) <= 0) errors.push(`Item ${idx + 1}: Number of people must be greater than 0.`);
+        if (!item.language) errors.push(`Item ${idx + 1}: Language is required.`);
+
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
+      });
+
+      return errors;
+    }
+
+    function buildSingleItemInvoicePayload(item) {
+      return {
+        language: item.language,
+        stripe_environment: els.stripeEnvironment.value,
+        tour_code: item.tour_code,
+        number_of_people: Number(item.quantity),
+        main_contact_name: buildFullName(),
+        main_contact_email: els.mainEmail.value.trim(),
+        main_contact_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: buildCombinedNotes(item),
+        tour_date: item.tour_date,
+        invoice_due_days: Number(els.invoiceDueDays.value || 2),
+      };
+    }
+
+    function buildCombinedNotes(item) {
+      const parts = [];
+      if (els.globalNotes.value.trim()) {
+        parts.push(`General notes: ${els.globalNotes.value.trim()}`);
+      }
+      if (item && item.item_notes && item.item_notes.trim()) {
+        parts.push(`Item notes: ${item.item_notes.trim()}`);
+      }
+      return parts.join("\n");
+    }
+
+    function buildMultiItemInvoicePayload() {
+      return {
+        stripe_environment: els.stripeEnvironment.value,
+        main_contact_name: buildFullName(),
+        main_contact_email: els.mainEmail.value.trim(),
+        main_contact_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: els.globalNotes.value.trim(),
+        invoice_due_days: Number(els.invoiceDueDays.value || 2),
+        items: state.items.map(item => ({
+          tour_code: item.tour_code,
+          quantity: Number(item.quantity),
+          tour_date: item.tour_date,
+          language: item.language,
+          item_notes: item.item_notes || "",
+        })),
+      };
+    }
+
+    function buildSingleLinkUrl(item) {
+      const params = new URLSearchParams({
+        tour: item.tour_code,
+        date: item.tour_date,
+        party: String(item.quantity),
+        lang: item.language,
+      });
+
+      const path = item.language === "es" ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
+      return `${window.location.origin}${path}?${params.toString()}`;
+    }
+
+    async function onGenerateLink() {
+      clearStatus();
+
+      const sharedErrors = validateSharedFields();
+      const itemErrors = validateItems();
+      const errors = [...sharedErrors, ...itemErrors];
+
+      if (state.items.length !== 1) {
+        showStatus("Generate Link is only available for a single booking item.", "error");
+        return;
       }
 
-      function requireInput(el, label) {
-        const v = el && typeof el.value === "string" ? el.value.trim() : "";
-        if (!v) throw new Error(`Missing ${label}`);
-        return v;
+      if (errors.length) {
+        showStatus(errors[0], "error");
+        return;
       }
 
-      function buildInvoicePayload() {
-        const tour_code = requireInput(els.tourSelect, "tour");
-        const tour_date = requireInput(els.dateInput, "tour date");
-        const number_of_people = Number(els.partySelect.value);
-        if (!Number.isFinite(number_of_people) || number_of_people < 1) throw new Error("Invalid number of people");
+      const item = state.items[0];
+      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
 
-        const language = (els.langSelect.value || "en").toLowerCase();
-        const stripe_environment = (stripeEnv && stripeEnv.value ? stripeEnv.value : "sandbox");
-
-        const first = requireInput(firstNameEl, "first name");
-        const last = requireInput(lastNameEl, "last name");
-        const main_contact_name = `${toTitleCaseFirstLetters(first)} ${toTitleCaseFirstLetters(last)}`.trim();
-
-        const main_contact_email = requireInput(emailEl, "email");
-        const main_contact_phone = requireInput(phoneEl, "phone");
-        const whatsapp_number = requireInput(whatsappEl, "WhatsApp number");
-
-        const pickup_location_label = requireInput(pickupLabelEl, "pickup location label");
-        const pickup_address_or_hotel = (pickupAddressEl && pickupAddressEl.value ? pickupAddressEl.value.trim() : "") || "";
-
-        const notes = (notesEl && notesEl.value ? notesEl.value.trim() : "") || "";
-
-        const invoice_due_days = invoiceDueDaysEl && invoiceDueDaysEl.value ? Number(invoiceDueDaysEl.value) : 1;
-
-        const agreed_to_terms = true;
-
-        return {
-          tour_code,
-          tour_date,
-          number_of_people,
-          language,
-          stripe_environment,
-
-          main_contact_name,
-          main_contact_email,
-          main_contact_phone,
-          whatsapp_number,
-
-          pickup_location_label,
-          pickup_address_or_hotel,
-          notes,
-
-          invoice_due_days,
-          agreed_to_terms,
-        };
+      if (!tour) {
+        showStatus("Selected tour was not found.", "error");
+        return;
       }
 
-      async function sendInvoiceEmail() {
-        const payload = buildInvoicePayload();
+      const generatedUrl = buildSingleLinkUrl(item);
+      state.generatedUrl = generatedUrl;
+      state.generatedOpenUrl = generatedUrl;
 
-        const res = await fetch("/stripe/api/create-invoice", {
+      els.copyBtn.disabled = false;
+      els.openBtn.disabled = false;
+      els.resultLinkBox.style.display = "block";
+      els.resultLinkBox.textContent = generatedUrl;
+
+      els.actionSummary.innerHTML = `
+        Link generated for:
+        <br />
+        <strong>${tour.tour_code} - ${tour.tour_title}</strong>
+        <br />
+        Date: ${item.tour_date}
+        <br />
+        Party size: ${item.quantity}
+        <br />
+        Language: ${item.language === "es" ? "Spanish" : "English"}
+      `;
+
+      showStatus("Link generated.", "ok");
+    }
+
+    async function onSendInvoice() {
+      clearStatus();
+
+      const sharedErrors = validateSharedFields();
+      const itemErrors = validateItems();
+      const errors = [...sharedErrors, ...itemErrors];
+
+      if (errors.length) {
+        showStatus(errors[0], "error");
+        return;
+      }
+
+      const multi = state.items.length > 1;
+      const endpoint = multi ? "/stripe/api/create-invoice-multi" : "/stripe/api/create-invoice";
+      const payload = multi
+        ? buildMultiItemInvoicePayload()
+        : buildSingleItemInvoicePayload(state.items[0]);
+
+      try {
+        showStatus("Creating invoice...", "info");
+
+        const res = await fetch(endpoint, {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(payload),
         });
 
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data || !data.ok) {
-          const msg = (data && data.error) ? data.error : "Invoice request failed";
-          throw new Error(msg);
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Invoice creation failed.");
         }
 
-        // Prefer the hosted invoice url for Copy/Open buttons
-        const urlToShow = data.hosted_invoice_url || data.invoice_pdf || "";
-        if (urlToShow) {
-          setLink(urlToShow);
-        }
+        const hostedUrl = data.hosted_invoice_url || "";
+        const invoiceId = data.invoice_id || "";
+        const invoiceNumber = data.invoice_number || "";
+        const invoiceStatus = data.invoice_status || "";
 
-        setStatus("Invoice created.", true);
-        return data;
+        state.generatedUrl = hostedUrl;
+        state.generatedOpenUrl = hostedUrl;
+
+        els.copyBtn.disabled = !hostedUrl;
+        els.openBtn.disabled = !hostedUrl;
+        els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
+        els.resultLinkBox.textContent = hostedUrl || "";
+
+        els.actionSummary.innerHTML = `
+          Invoice created successfully.
+          <br />
+          Invoice ID: <strong>${invoiceId || "-"}</strong>
+          <br />
+          Invoice number: <strong>${invoiceNumber || "-"}</strong>
+          <br />
+          Status: <strong>${invoiceStatus || "-"}</strong>
+          <br />
+          Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
+        `;
+
+        showStatus(data.message || "Invoice created.", "ok");
+      } catch (err) {
+        showStatus(err.message || "Something went wrong while creating the invoice.", "error");
       }
+    }
 
-      if (modePayLink) modePayLink.addEventListener("click", () => setAgentMode("link"));
-      if (modeInvoice) modeInvoice.addEventListener("click", () => setAgentMode("invoice"));
-
-      if (btnSendInvoice) {
-        btnSendInvoice.addEventListener("click", async () => {
-          try {
-            setBusy(btnSendInvoice, true);
-            setStatus("Sending invoice email...", true);
-
-            await sendInvoiceEmail();
-          } catch (err) {
-            setStatus(err && err.message ? err.message : "Invoice request failed", false);
-          } finally {
-            setBusy(btnSendInvoice, false);
-          }
-        });
+    async function onCopy() {
+      if (!state.generatedUrl) return;
+      try {
+        await navigator.clipboard.writeText(state.generatedUrl);
+        showStatus("Copied to clipboard.", "ok");
+      } catch (_) {
+        showStatus("Unable to copy automatically. Please copy the link manually.", "error");
       }
+    }
 
-      // Default mode is the existing, working payment link workflow
-      setAgentMode("link");
+    function onOpen() {
+      if (!state.generatedOpenUrl) return;
+      window.open(state.generatedOpenUrl, "_blank", "noopener,noreferrer");
+    }
 
-      ensureMinTomorrow();
-      loadTours();
-      setLink("");
-    })();
-</script>
+    async function init() {
+      try {
+        await loadTours();
+        addItem();
+        renderSummary();
+        updateModeUI();
+      } catch (err) {
+        showStatus(err.message || "Failed to initialize page.", "error");
+      }
+    }
+
+    els.addItemBtn.addEventListener("click", () => {
+      addItem({
+        language: els.defaultLanguage.value,
+      });
+      state.generatedUrl = "";
+      state.generatedOpenUrl = "";
+      els.copyBtn.disabled = true;
+      els.openBtn.disabled = true;
+      els.resultLinkBox.style.display = "none";
+      els.resultLinkBox.textContent = "";
+    });
+
+    els.generateLinkBtn.addEventListener("click", onGenerateLink);
+    els.sendInvoiceBtn.addEventListener("click", onSendInvoice);
+    els.copyBtn.addEventListener("click", onCopy);
+    els.openBtn.addEventListener("click", onOpen);
+
+    els.defaultLanguage.addEventListener("change", () => {
+      renderItems();
+      renderSummary();
+    });
+
+    init();
+  </script>
 </body>
 </html>
