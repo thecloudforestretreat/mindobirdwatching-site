@@ -1,1307 +1,1236 @@
-/**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v11
- *
- * v11 updates:
- * - Keeps all existing single-item checkout and invoice behavior
- * - Adds stable multi-item invoice creation route
- * - Multi-item paid invoices now write ONE Google Sheet row PER invoice line item
- * - Multi-item fee handling uses proportional split per line item
- * - Adds tour_key for stable per-line dedupe in Google Sheets
- * - Keeps stripe_receipt_url and stripe_charge_id enrichment for paid invoices
- */
-
-const TOURS = [
-  {
-    tour_code: "MBW004",
-    language: "en",
-    status: "active",
-    tour_title: "Jewels of the Morning Forest",
-    service_type: "Birdwatching",
-    product_id_live: "prod_U3loQ08bCP8CXq",
-    price_id_live: "price_1T5eHI0wAAlYwqaVRkLFrsjW",
-    product_id_test: "prod_TxMfI02wvlxxqx",
-    price_id_test: "price_1SzRwU1v3u4QBG7ytelNO0Nu",
-    currency: "USD",
-    amount_display: "$50.00",
-    min_person: 2,
-    max_person: "unlimited",
-    duration_label: "Half Day",
-    pickup_time_local: "6:00 AM",
-    dropoff_time_local: "10:00 AM",
-    pickup_window_minutes: 15,
-    timezone: "America/Guayaquil",
-    hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-10-MBW004_HDT_Image_En.jpg",
-    tour_page_url: "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/",
-    description_one_liner:
-      "Aves de manana en el bosque nublado: senderos naturales para observar tucanes, tangaras y colibries en plena actividad.",
-  },
-  {
-    tour_code: "MBW004",
-    language: "es",
-    status: "active",
-    tour_title: "Joyas del Bosque Nublado",
-    service_type: "Birdwatching",
-    product_id_live: "prod_U3lo0zterNy2fn",
-    price_id_live: "price_1T5eHG0wAAlYwqaVOTk4QH1f",
-    product_id_test: "prod_TxMluaAM4qUCyx",
-    price_id_test: "price_1SzS271v3u4QBG7yCXlXMxR8",
-    currency: "USD",
-    amount_display: "$50.00",
-    min_person: 2,
-    max_person: "unlimited",
-    duration_label: "Half Day",
-    pickup_time_local: "6:00 AM",
-    dropoff_time_local: "10:00 AM",
-    pickup_window_minutes: 15,
-    timezone: "America/Guayaquil",
-    hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-12-MBW004_HDT_Image_Es.jpg",
-    tour_page_url: "https://mindobirdwatching.com/es/tours/joyas-del-bosque-matutino/",
-    description_one_liner:
-      "Morning cloud-forest birding on lush trails, looking for toucans, tanagers, and hummingbirds at peak activity.",
-  },
-  {
-    tour_code: "MBW005",
-    language: "en",
-    status: "active",
-    tour_title: "Dance of the Andean Cock-of-the-Rock",
-    service_type: "Birdwatching",
-    product_id_live: "prod_U3loSPhygfpu0k",
-    price_id_live: "price_1T5eH10wAAlYwqaVz8tpOkD0",
-    product_id_test: "prod_TxMsCnPIsKWPWl",
-    price_id_test: "price_1SzS8a1v3u4QBG7yIxvBRI18",
-    currency: "USD",
-    amount_display: "$75.00",
-    min_person: 2,
-    max_person: "unlimited",
-    duration_label: "Half Day",
-    pickup_time_local: "5:00 AM",
-    dropoff_time_local: "10:00 AM",
-    pickup_window_minutes: 15,
-    timezone: "America/Guayaquil",
-    hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-6-MBW005_HDT_Image_En.jpg",
-    tour_page_url: "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/",
-    description_one_liner:
-      "Sunrise birding focused on the Andean Cock-of-the-Rock dance, then a forest walk for toucans, tanagers, and hummingbirds.",
-  },
-  {
-    tour_code: "MBW005",
-    language: "es",
-    status: "active",
-    tour_title: "Danza del Gallo de Pena",
-    service_type: "Birdwatching",
-    product_id_live: "prod_U3loiPBHvnR5Fs",
-    price_id_live: "price_1T5eGx0wAAlYwqaV5TCuyECE",
-    product_id_test: "prod_TxNGYbehErFv8q",
-    price_id_test: "price_1SzSVo1v3u4QBG7yqeBPDNhM",
-    currency: "USD",
-    amount_display: "$75.00",
-    min_person: 2,
-    max_person: "unlimited",
-    duration_label: "Half Day",
-    pickup_time_local: "5:00 AM",
-    dropoff_time_local: "10:00 AM",
-    pickup_window_minutes: 15,
-    timezone: "America/Guayaquil",
-    hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-8-MBW005_HDT_Image_Es.jpg",
-    tour_page_url: "https://mindobirdwatching.com/es/tours/gallo-de-la-pena-andino-al-amanecer/",
-    description_one_liner:
-      "Amanecer con la Danza del Gallo de Pena, seguido de caminata para buscar tucanes, tangaras y colibries.",
-  },
-  {
-    tour_code: "MBW006",
-    language: "en",
-    status: "active",
-    tour_title: "Quest for Five Toucans & the Andean Cock-of-the-Rock",
-    service_type: "Birdwatching",
-    product_id_live: "prod_U3lowfXD94ZCLM",
-    price_id_live: "price_1T5eGd0wAAlYwqaV9nCLg8TA",
-    product_id_test: "prod_TxNPuLa91G6HQm",
-    price_id_test: "price_1SzSep1v3u4QBG7y4hTEBstM",
-    currency: "USD",
-    amount_display: "$99.00",
-    min_person: 2,
-    max_person: "unlimited",
-    duration_label: "Full Day",
-    pickup_time_local: "5:00 AM",
-    dropoff_time_local: "3:00 PM",
-    pickup_window_minutes: 15,
-    timezone: "America/Guayaquil",
-    hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-2-MBW006_FDT_Image_En.jpg",
-    tour_page_url: "https://mindobirdwatching.com/tours/quest-five-toucans-guide/",
-    description_one_liner:
-      "Dawn-to-dusk Mindo birding: Cock-of-the-Rock lek plus a forest hike for five toucan species. Lunch and transport included.",
-  },
-  {
-    tour_code: "MBW006",
-    language: "es",
-    status: "active",
-    tour_title: "En Busca de Cinco Tucanes y el Gallo de Pena",
-    service_type: "Birdwatching",
-    product_id_live: "prod_U3lk731ViBgrPH",
-    price_id_live: "price_1T5eCv0wAAlYwqaVImHv8K8g",
-    product_id_test: "prod_TxNWoy9Td5pAmI",
-    price_id_test: "price_1SzSlc1v3u4QBG7yJBcCumEn",
-    currency: "USD",
-    amount_display: "$99.00",
-    min_person: 2,
-    max_person: "unlimited",
-    duration_label: "Full Day",
-    pickup_time_local: "5:00 AM",
-    dropoff_time_local: "3:00 PM",
-    pickup_window_minutes: 15,
-    timezone: "America/Guayaquil",
-    hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-4-MBW006_FDT_Image_Es.jpg",
-    tour_page_url: "https://mindobirdwatching.com/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/",
-    description_one_liner:
-      "Aves todo el dia en Mindo: lek del Gallo de Pena y caminata para buscar cinco especies de tucanes. Incluye almuerzo y transporte.",
-  },
-  { tour_code: "MBW007", language: "en", status: "active", tour_title: "Custom Half Day Tour", service_type: "Experience", product_id_live: "prod_U4RvDweP9xpb7S", price_id_live: "price_1T6J1T0wAAlYwqaVcGLLxSYz", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$75.00", min_person: 2, max_person: "unlimited", duration_label: "Half Day", pickup_time_local: "5:00 AM", dropoff_time_local: "10:00 AM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW007_CHDT_Image_Es.jpg", tour_page_url: "https://mindobirdwatching.com/tours/custom-private-tour/", description_one_liner: "A private, flexible half-day nature tour tailored to your interests." },
-  { tour_code: "MBW007", language: "es", status: "active", tour_title: "Tour Personalizado de Medio Da", service_type: "Experience", product_id_live: "prod_U4RrB8SyfoyZiN", price_id_live: "price_1T6Ixj0wAAlYwqaVWSx0Tftn", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$75.00", min_person: 2, max_person: "unlimited", duration_label: "Half Day", pickup_time_local: "5:00 AM", dropoff_time_local: "10:00 AM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW007_CHDT_Image_En.jpg", tour_page_url: "https://mindobirdwatching.com/es/tours/tour-personalizado-privado/", description_one_liner: "Tour privado y flexible de medio da adaptado a tus intereses de naturaleza y aves." },
-  { tour_code: "MBW008", language: "en", status: "active", tour_title: "Custom Full Day Tour", service_type: "Adventure", product_id_live: "prod_U4S3IZLYYElblm", price_id_live: "price_1T6J9K0wAAlYwqaVsvHjxEha", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$120.00", min_person: 2, max_person: "unlimited", duration_label: "Full Day", pickup_time_local: "5:00 AM", dropoff_time_local: "3:00 PM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW008_CFDT_Image_En.jpg", tour_page_url: "https://mindobirdwatching.com/tours/custom-private-tour/", description_one_liner: "A fully customized full-day experience in the cloud forest." },
-  { tour_code: "MBW008", language: "es", status: "active", tour_title: "Tour Personalizado de Da Entero", service_type: "Adventure", product_id_live: "prod_U4RyVJeCKCckHT", price_id_live: "price_1T6J4w0wAAlYwqaVCyBPx7tE", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$120.00", min_person: 2, max_person: "unlimited", duration_label: "Full Day", pickup_time_local: "5:00 AM", dropoff_time_local: "3:00 PM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW008_CFDT_Image_Es.jpg", tour_page_url: "https://mindobirdwatching.com/es/tours/tour-personalizado-privado/", description_one_liner: "Experiencia privada de da completo diseada segn tus objetivos de observacin." },
-  { tour_code: "MBW009", language: "en", status: "active", tour_title: "Flora Excursion Tour", service_type: "Nature Excursion", product_id_live: "prod_U4SClDcBRAs8jP", price_id_live: "price_1T6JI80wAAlYwqaV15kuQSxC", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$30.00", min_person: 2, max_person: "unlimited", duration_label: "Half Day", pickup_time_local: "6:00 AM", dropoff_time_local: "10:00 AM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW009_HDT_Image_En.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "A guided walk focused on the cloud forests plant diversity." },
-  { tour_code: "MBW009", language: "es", status: "active", tour_title: "Excursin Botnica", service_type: "Nature Excursion", product_id_live: "prod_U4S7pkbz2wkKKT", price_id_live: "price_1T6JDT0wAAlYwqaVEnhrqHag", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$30.00", min_person: 2, max_person: "unlimited", duration_label: "Half Day", pickup_time_local: "6:00 AM", dropoff_time_local: "10:00 AM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW009_HDT_Image_Es.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Recorrido guiado enfocado en la diversidad vegetal del bosque nublado." },
-  { tour_code: "MBW010", language: "en", status: "active", tour_title: "Solo Birdwatching Experience", service_type: "Birdwatching", product_id_live: "prod_U4SI6ClQHc3hnU", price_id_live: "price_1T6JNf0wAAlYwqaVLbVBR91F", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$70.00", min_person: 1, max_person: "1", duration_label: "Half Day", pickup_time_local: "6:15 AM", dropoff_time_local: "9:30 AM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW010_HDT_Image_En.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "A one-on-one birdwatching experience with a dedicated guide." },
-  { tour_code: "MBW010", language: "es", status: "active", tour_title: "Experiencia Individual de Avistamiento de Aves", service_type: "Birdwatching", product_id_live: "prod_U4SH6LLn7jVzx8", price_id_live: "price_1T6JN80wAAlYwqaVP3oec2w2", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$70.00", min_person: 1, max_person: "1", duration_label: "Half Day", pickup_time_local: "6:15 AM", dropoff_time_local: "9:30 AM", pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/tour-promos/MBW010_HDT_Image_Es.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Salida individual de observacin de aves con gua especializado." },
-  { tour_code: "MBW011", language: "en", status: "active", tour_title: "Chocolate Tour", service_type: "Experience", product_id_live: "prod_U6DwLwzLMZeiqk", price_id_live: "price_1T81V60wAAlYwqaVFgNhmyTt", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$15.00", min_person: 1, max_person: "unlimited", duration_label: "Flexible", pickup_time_local: null, dropoff_time_local: null, pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Learn the cacao-to-chocolate process and enjoy a tasting of artisanal Ecuadorian chocolate." },
-  { tour_code: "MBW012", language: "en", status: "active", tour_title: "Coffee Tour", service_type: "Experience", product_id_live: "prod_U6E1sf8yvF7013", price_id_live: "price_1T81ZT0wAAlYwqaV1xlWLO7c", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$15.00", min_person: 1, max_person: "unlimited", duration_label: "Flexible", pickup_time_local: null, dropoff_time_local: null, pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-14-CoffeTour.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Discover how coffee goes from bean to cup and enjoy a tasting of fresh Ecuadorian coffee." },
-  { tour_code: "MBW013", language: "en", status: "active", tour_title: "Waterfall Hike", service_type: "Nature Excursion", product_id_live: "prod_U6E6B7qgd4L77T", price_id_live: "price_1T81dp0wAAlYwqaV1yFQ47p2", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$10.00", min_person: 1, max_person: "unlimited", duration_label: "Half Day", pickup_time_local: null, dropoff_time_local: null, pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-3-WaterfallTour.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Cross with the world famous yellow cable car to the other side of the cloud forest and hike to scenic waterfalls near Mindo." },
-  { tour_code: "MBW014", language: "en", status: "active", tour_title: "Ziplining", service_type: "Adventure", product_id_live: "prod_U6E9sr3BOCvaYp", price_id_live: "price_1T81hI0wAAlYwqaVmrGFVSpu", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$25.00", min_person: 1, max_person: "unlimited", duration_label: "Flexible", pickup_time_local: null, dropoff_time_local: null, pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Zipline across the cloud forest canopy and enjoy an unforgettable aerial adventure." },
-  { tour_code: "MBW015", language: "en", status: "active", tour_title: "Butterfly Garden", service_type: "Nature", product_id_live: "prod_U6EC5jW6ndT675", price_id_live: "price_1T81kK0wAAlYwqaVzzzFFdQH", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$10.00", min_person: 1, max_person: "unlimited", duration_label: "Flexible", pickup_time_local: null, dropoff_time_local: null, pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-5-ButterflyTour.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Visit a butterfly sanctuary and observe colorful species of the cloud forest." },
-  { tour_code: "MBW016", language: "en", status: "active", tour_title: "Night Walk", service_type: "Wildlife", product_id_live: "prod_U6EFlYwN9Zn4fy", price_id_live: "price_1T81ml0wAAlYwqaVlv4UBHg1", product_id_test: null, price_id_test: null, currency: "USD", amount_display: "$25.00", min_person: 1, max_person: "unlimited", duration_label: "Flexible", pickup_time_local: null, dropoff_time_local: null, pickup_window_minutes: 15, timezone: "America/Guayaquil", hero_image_url: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg", tour_page_url: "https://mindobirdwatching.com/activities/", description_one_liner: "Explore the cloud forest at night and discover frogs and nocturnal wildlife." },
-];
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8" },
-  });
-}
-
-function text(msg, status = 200) {
-  return new Response(msg, { status, headers: { "content-type": "text/plain; charset=utf-8" } });
-}
-
-function requiredString(v, field) {
-  if (!v || typeof v !== "string" || !v.trim()) throw new Error(`Missing ${field}`);
-  return v.trim();
-}
-
-function requiredInt(v, field) {
-  const n = Number(v);
-  if (!Number.isInteger(n) || n <= 0) throw new Error(`Invalid ${field}`);
-  return n;
-}
-
-function resolveTourIdsStrict(tour, isTest) {
-  const product_id = isTest ? tour.product_id_test : tour.product_id_live;
-  const price_id = isTest ? tour.price_id_test : tour.price_id_live;
-  return { product_id: product_id || null, price_id: price_id || null };
-}
-
-function findTour(tour_code, language) {
-  return TOURS.find((t) => t.status === "active" && t.tour_code === tour_code && t.language === language);
-}
-
-function getStripeKey(env, isTest) {
-  if (isTest && env.STRIPE_SECRET_KEY_TEST) return env.STRIPE_SECRET_KEY_TEST;
-  if (!isTest && env.STRIPE_SECRET_KEY) return env.STRIPE_SECRET_KEY;
-  return env.STRIPE_SECRET_KEY_TEST || env.STRIPE_SECRET_KEY || null;
-}
-
-async function stripeRequest(env, isTest, method, path, formBody) {
-  const key = getStripeKey(env, isTest);
-  if (!key) throw new Error("Stripe secret key not configured");
-
-  const init = { method, headers: { Authorization: `Bearer ${key}` } };
-
-  if (method !== "GET") {
-    init.headers["Content-Type"] = "application/x-www-form-urlencoded";
-    init.body = formBody;
-  }
-
-  const res = await fetch(`https://api.stripe.com${path}`, init);
-  const txt = await res.text();
-  let data;
-  try {
-    data = JSON.parse(txt);
-  } catch {
-    data = { raw: txt };
-  }
-
-  if (!res.ok) {
-    const msg = data && data.error && data.error.message ? data.error.message : `Stripe API error (${res.status})`;
-    throw new Error(msg);
-  }
-  return data;
-}
-
-async function verifyTurnstileIfConfigured(env, token, ip) {
-  if (!env.TURNSTILE_SECRET_KEY) return { ok: true, skipped: true };
-  if (!token) return { ok: false, error: "Missing Turnstile token" };
-
-  const form = new URLSearchParams();
-  form.set("secret", env.TURNSTILE_SECRET_KEY);
-  form.set("response", token);
-  if (ip) form.set("remoteip", ip);
-
-  const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    body: form,
-  });
-  const data = await r.json();
-  if (!data.success) return { ok: false, error: "Turnstile failed" };
-  return { ok: true, skipped: false };
-}
-
-async function verifyStripeSignature(payload, signatureHeader, webhookSecrets) {
-  const parts = signatureHeader.split(",").map((p) => p.trim());
-  const tPart = parts.find((p) => p.startsWith("t="));
-  const v1Part = parts.find((p) => p.startsWith("v1="));
-  if (!tPart || !v1Part) throw new Error("Invalid Stripe-Signature header");
-
-  const timestamp = tPart.split("=")[1];
-  const signature = v1Part.split("=")[1];
-  const signedPayload = `${timestamp}.${payload}`;
-
-  for (const secret of webhookSecrets) {
-    if (!secret) continue;
-    const expected = await hmacSha256Hex(secret, signedPayload);
-    if (timingSafeEqual(signature, expected)) {
-      return JSON.parse(payload);
-    }
-  }
-
-  throw new Error("Bad signature");
-}
-
-async function hmacSha256Hex(secret, message) {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(message));
-  return bufToHex(sig);
-}
-
-function bufToHex(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let hex = "";
-  for (const b of bytes) hex += b.toString(16).padStart(2, "0");
-  return hex;
-}
-
-function timingSafeEqual(a, b) {
-  if (a.length !== b.length) return false;
-  let out = 0;
-  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return out === 0;
-}
-
-function randomToken() {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  let hex = "";
-  for (const b of bytes) hex += b.toString(16).padStart(2, "0");
-  return hex;
-}
-
-function normalizeStripeEnv(v) {
-  const s = (typeof v === "string" ? v : "").toLowerCase().trim();
-  return s === "live" ? "live" : "sandbox";
-}
-
-function formatDateNY(date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-
-  const get = (t) => {
-    const p = parts.find((x) => x.type === t);
-    return p ? p.value : "";
-  };
-
-  return `${get("year")}-${get("month")}-${get("day")}`;
-}
-
-function formatISOInNY(date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-
-  const get = (t) => {
-    const p = parts.find((x) => x.type === t);
-    return p ? p.value : "";
-  };
-
-  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")} ET`;
-}
-
-function splitName(fullName) {
-  const s = (fullName || "").trim();
-  if (!s) return { first: "", last: "" };
-  const parts = s.split(/\s+/).filter(Boolean);
-  if (parts.length === 1) return { first: parts[0], last: "" };
-  return { first: parts[0], last: parts.slice(1).join(" ") };
-}
-
-function centsToDollarsString(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "";
-  return (n / 100).toFixed(2);
-}
-
-function splitFeeProportionally(totalFeeCents, lineAmountsCents) {
-  const totalFee = Number(totalFeeCents || 0);
-  const amounts = Array.isArray(lineAmountsCents) ? lineAmountsCents.map((n) => Number(n || 0)) : [];
-  const subtotal = amounts.reduce((sum, n) => sum + n, 0);
-  if (!totalFee || !subtotal || !amounts.length) return amounts.map(() => 0);
-
-  const raw = amounts.map((amount) => (totalFee * amount) / subtotal);
-  const rounded = raw.map((v) => Math.floor(v));
-  let remainder = totalFee - rounded.reduce((sum, n) => sum + n, 0);
-
-  const order = raw
-    .map((value, idx) => ({ idx, frac: value - Math.floor(value) }))
-    .sort((a, b) => b.frac - a.frac);
-
-  let i = 0;
-  while (remainder > 0 && order.length) {
-    rounded[order[i % order.length].idx] += 1;
-    remainder -= 1;
-    i += 1;
-  }
-
-  return rounded;
-}
-
-function buildTourKey(invoiceId, itemIndex, tourCode, tourDate, quantity) {
-  return [invoiceId || "", itemIndex || "", tourCode || "", tourDate || "", quantity || ""].join("|");
-}
-
-async function postToSheetsLogger(env, payloadObj) {
-  if (!env.GSHEET_WEBAPP_URL) return { ok: false, skipped: true, reason: "GSHEET_WEBAPP_URL not set" };
-
-  const hasToken = !!env.GSHEET_WEBAPP_TOKEN;
-  const url = hasToken ? `${env.GSHEET_WEBAPP_URL}?token=${encodeURIComponent(env.GSHEET_WEBAPP_TOKEN)}` : env.GSHEET_WEBAPP_URL;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payloadObj),
-  });
-
-  const txt = await res.text();
-  let data;
-  try {
-    data = JSON.parse(txt);
-  } catch {
-    data = { raw: txt };
-  }
-
-  if (!res.ok) {
-    const msg = data && data.error ? data.error : `Sheets logger error (${res.status})`;
-    throw new Error(msg);
-  }
-  return data;
-}
-
-async function enrichChargeAndFees(env, isTest, paymentIntentId) {
-  const out = {
-    stripe_charge_id: "",
-    stripe_receipt_url: "",
-    transaction_fee_total: "",
-    transaction_fee_total_cents: 0,
-  };
-
-  if (!paymentIntentId) return out;
-
-  const pi = await stripeRequest(env, isTest, "GET", `/v1/payment_intents/${encodeURIComponent(paymentIntentId)}?expand[]=latest_charge`, null);
-
-  let chargeObj = null;
-  if (pi && pi.latest_charge) {
-    if (typeof pi.latest_charge === "string") {
-      chargeObj = await stripeRequest(env, isTest, "GET", `/v1/charges/${encodeURIComponent(pi.latest_charge)}?expand[]=balance_transaction`, null);
-    } else {
-      chargeObj = pi.latest_charge;
-      if (chargeObj && chargeObj.id && typeof chargeObj.balance_transaction === "string") {
-        chargeObj = await stripeRequest(env, isTest, "GET", `/v1/charges/${encodeURIComponent(chargeObj.id)}?expand[]=balance_transaction`, null);
-      }
-    }
-  }
-
-  if (chargeObj) {
-    out.stripe_charge_id = chargeObj.id || "";
-    out.stripe_receipt_url = chargeObj.receipt_url || "";
-
-    const bt = chargeObj.balance_transaction;
-    if (bt && typeof bt === "object" && bt.fee != null) {
-      out.transaction_fee_total_cents = Number(bt.fee || 0);
-      out.transaction_fee_total = centsToDollarsString(bt.fee);
-    }
-  }
-
-  return out;
-}
-
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const routePrefix = "/stripe";
-    const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
-
-    if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running.", 200);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mindo Bird Watching - Agent Booking Builder</title>
+  <style>
+    :root {
+      --bg: #dfe8d4;
+      --panel: #eef2e8;
+      --panel-2: #f6f8f2;
+      --text: #223322;
+      --muted: #5f6f5f;
+      --line: #c7d3be;
+      --brand: #1f5f45;
+      --brand-2: #2c7a58;
+      --yellow: #f2df6c;
+      --green-btn: #c7dfc6;
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --danger: #9d2f2f;
+      --ok: #1c6b38;
     }
 
-    if (path === "/api/tours" && request.method === "GET") {
-      const lang = (url.searchParams.get("lang") || "en").toLowerCase();
-      const tours = TOURS.filter((t) => t.status === "active" && t.language === lang).map((t) => ({
-        tour_code: t.tour_code,
-        language: t.language,
-        tour_title: t.tour_title,
-        currency: t.currency,
-        amount_display: t.amount_display,
-        duration_label: t.duration_label,
-        pickup_time_local: t.pickup_time_local,
-        pickup_window_minutes: t.pickup_window_minutes,
-        timezone: t.timezone,
-        hero_image_url: t.hero_image_url,
-        tour_page_url: t.tour_page_url,
-        description_one_liner: t.description_one_liner,
-        min_person: t.min_person,
-        max_person: t.max_person,
-      }));
-      return json({ ok: true, tours }, 200);
+    * {
+      box-sizing: border-box;
     }
 
-    if (path === "/api/retry" && request.method === "GET") {
-      const token = (url.searchParams.get("token") || "").trim();
-      if (!token) return json({ ok: false, error: "Missing token" }, 400);
-      if (!env.RETRY_KV) return json({ ok: false, error: "RETRY_KV not configured" }, 400);
-      const val = await env.RETRY_KV.get(`retry:${token}`);
-      if (!val) return json({ ok: false, error: "Not found" }, 404);
-      return json({ ok: true, url: val }, 200);
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
     }
 
-    if (path === "/api/retry-redirect" && request.method === "GET") {
-      const token = (url.searchParams.get("token") || "").trim();
-      if (!token) return text("Missing token", 400);
-      if (!env.RETRY_KV) return Response.redirect("https://mindobirdwatching.com/book-tour/pay/", 302);
-      const val = await env.RETRY_KV.get(`retry:${token}`);
-      if (!val) return Response.redirect("https://mindobirdwatching.com/book-tour/pay/", 302);
-      return Response.redirect(val, 302);
+    .page {
+      max-width: 1320px;
+      margin: 24px auto;
+      padding: 0 20px 40px;
     }
 
-    if (path === "/api/create-checkout-session" && request.method === "POST") {
-      let body;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ ok: false, error: "Invalid JSON body" }, 400);
+    .topbar {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 22px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      color: #173b2a;
+      white-space: nowrap;
+    }
+
+    .brand-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #2f6e47;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .lang {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid #d8e1d0;
+      background: #fff;
+      color: #233223;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pill.active {
+      background: #e6efe2;
+      border-color: #9cb89b;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .builder {
+      padding: 22px;
+    }
+
+    .summary {
+      padding: 22px;
+      position: sticky;
+      top: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 44px;
+      line-height: 1.05;
+      color: var(--brand);
+    }
+
+    .intro {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 760px;
+    }
+
+    .section-title {
+      margin: 22px 0 12px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #27402e;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #2b3a2d;
+    }
+
+    .req::after {
+      content: " *";
+      color: #b52c2c;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #c7d3be;
+      background: #fff;
+      color: #223322;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .hint {
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .items-wrap {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .item-card {
+      border: 1px solid #d8e1d0;
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .item-card + .item-card {
+      margin-top: 14px;
+    }
+
+    .item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .item-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #294331;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mini-btn,
+    .action-btn,
+    .link-btn {
+      appearance: none;
+      border: 1px solid #9fb39b;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #fff;
+      color: #203020;
+    }
+
+    .mini-btn {
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+
+    .mini-btn.danger {
+      border-color: #d5aaaa;
+      color: var(--danger);
+      background: #fff7f7;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .action-btn.primary {
+      background: var(--yellow);
+      border-color: #d7c349;
+    }
+
+    .action-btn.secondary {
+      background: var(--green-btn);
+    }
+
+    .action-btn:disabled,
+    .mini-btn:disabled,
+    .link-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .mode-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #e7efe4;
+      border: 1px solid #bdd0b7;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #26422d;
+      margin-bottom: 14px;
+    }
+
+    .summary-box {
+      border: 1px dashed #b7c8af;
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .summary-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin: 0 0 10px;
+      color: #28422f;
+    }
+
+    .summary-empty {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .summary-item {
+      border: 1px solid #dbe5d5;
+      border-radius: 14px;
+      padding: 12px;
+      background: #f9fbf7;
+    }
+
+    .summary-item + .summary-item {
+      margin-top: 10px;
+    }
+
+    .summary-item-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #24402b;
+      margin-bottom: 6px;
+    }
+
+    .summary-meta {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .money {
+      font-weight: 800;
+      color: #21462e;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.ok {
+      background: #e7f5e9;
+      border: 1px solid #b8d8be;
+      color: var(--ok);
+    }
+
+    .status.error {
+      background: #fff0f0;
+      border: 1px solid #e1b6b6;
+      color: var(--danger);
+    }
+
+    .status.info {
+      background: #eef4ff;
+      border: 1px solid #c7d7f3;
+      color: #224f96;
+    }
+
+    .link-box {
+      margin-top: 14px;
+      border: 1px dashed #b7c8af;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      word-break: break-word;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #314631;
+    }
+
+    .small-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .pricing-note {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #38503d;
+      line-height: 1.45;
+    }
+
+    .divider {
+      height: 1px;
+      background: #d7e1d0;
+      margin: 18px 0;
+    }
+
+    @media (max-width: 1024px) {
+      .layout {
+        grid-template-columns: 1fr;
       }
 
-      try {
-        const language = requiredString(body.language, "language").toLowerCase();
-        const tour_code = requiredString(body.tour_code, "tour_code");
-        const number_of_people = requiredInt(body.number_of_people, "number_of_people");
-        const main_name = requiredString(body.main_contact_name, "main_contact_name");
-        const main_email = requiredString(body.main_contact_email, "main_contact_email");
-        const main_phone = requiredString(body.main_contact_phone, "main_contact_phone");
-        const whatsapp_number = requiredString(body.whatsapp_number, "whatsapp_number");
-        const pickup_location_label = requiredString(body.pickup_location_label, "pickup_location_label");
-        const pickup_address_or_hotel = requiredString(body.pickup_address_or_hotel, "pickup_address_or_hotel");
-        const notes = (typeof body.notes === "string" ? body.notes.trim() : "") || "";
-        const tour_date = requiredString(body.tour_date, "tour_date");
+      .summary {
+        position: static;
+      }
+    }
 
-        const ip = request.headers.get("CF-Connecting-IP") || "";
-        const ts = await verifyTurnstileIfConfigured(env, body.turnstile_token, ip);
-        if (!ts.ok) return json({ ok: false, error: ts.error }, 400);
+    @media (max-width: 720px) {
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
 
-        const stripeEnv = normalizeStripeEnv(body.stripe_environment);
-        const isTest = stripeEnv !== "live";
-        const tour = findTour(tour_code, language);
-        if (!tour) throw new Error("Tour not found for selected language");
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
 
-        const ids = resolveTourIdsStrict(tour, isTest);
-        if (!ids.price_id) throw new Error("Tour price_id is not configured for this environment");
-        if (!ids.product_id) throw new Error("Tour product_id is not configured for this environment");
-        if (tour.min_person && number_of_people < Number(tour.min_person)) throw new Error(`Minimum ${tour.min_person} people required`);
+      h1 {
+        font-size: 34px;
+      }
 
-        const successUrl = language === "es"
-          ? "https://mindobirdwatching.com/es/reservar-tour/pago/exito/?session_id={CHECKOUT_SESSION_ID}"
-          : "https://mindobirdwatching.com/book-tour/pay/success/?session_id={CHECKOUT_SESSION_ID}";
+      .builder,
+      .summary {
+        padding: 16px;
+      }
 
-        const retryToken = randomToken();
-        const cancelQs =
-          `retry=${encodeURIComponent(retryToken)}` +
-          `&tour=${encodeURIComponent(tour_code)}` +
-          `&date=${encodeURIComponent(tour_date)}` +
-          `&party=${encodeURIComponent(String(number_of_people))}` +
-          `&lang=${encodeURIComponent(language)}` +
-          `&env=${encodeURIComponent(stripeEnv)}`;
+      .item-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">MBW</div>
+        <div>Mindo Bird Watching</div>
+      </div>
+      <div class="lang">
+        <button class="pill active" type="button">EN</button>
+        <button class="pill" type="button">ES</button>
+        <button class="pill" type="button">Home</button>
+        <button class="pill" type="button">Plan Your Trip</button>
+        <button class="pill" type="button">Tours</button>
+        <button class="pill" type="button">Birds</button>
+        <button class="pill" type="button">About Us</button>
+        <button class="pill" type="button">Contact</button>
+        <button class="pill" type="button">Book A Tour</button>
+      </div>
+    </div>
 
-        const cancelUrl = language === "es"
-          ? `https://mindobirdwatching.com/es/reservar-tour/pago/cancelado/?${cancelQs}`
-          : `https://mindobirdwatching.com/book-tour/pay/cancel/?${cancelQs}`;
+    <div class="layout">
+      <div class="card builder">
+        <h1>Create a payment link</h1>
+        <p class="intro">
+          Internal tool for staff. Build a single booking or a multi-item itinerary, then copy the payment link or send a Stripe invoice.
+        </p>
 
-        const form = new URLSearchParams();
-        form.set("mode", "payment");
-        form.set("success_url", successUrl);
-        form.set("cancel_url", cancelUrl);
-        form.set("line_items[0][price]", ids.price_id);
-        form.set("line_items[0][quantity]", String(number_of_people));
-        form.set("customer_email", main_email);
-        form.set("payment_intent_data[receipt_email]", main_email);
-        form.set("client_reference_id", `${tour_code}-${tour_date}-${main_email}`);
+        <div id="modeChip" class="mode-chip">Single item mode</div>
 
-        const md = {
-          tour_code: tour.tour_code,
-          language,
-          tour_title: tour.tour_title,
-          service_type: tour.service_type || "",
-          product_id: ids.product_id,
-          price_id: ids.price_id,
-          number_of_people: String(number_of_people),
-          main_contact_name: main_name,
-          main_contact_email: main_email,
-          main_contact_phone: main_phone,
-          whatsapp_number,
-          pickup_location_label,
-          pickup_address_or_hotel,
-          notes,
-          tour_date,
-          pickup_time_local: tour.pickup_time_local,
-          pickup_window_minutes: String(tour.pickup_window_minutes || 15),
-          timezone: tour.timezone || "America/Guayaquil",
-          retry_token: retryToken,
-          stripe_environment: stripeEnv,
-        };
+        <div class="section-title">Guest and invoice details</div>
 
-        Object.keys(md).forEach((k) => {
-          const v = md[k];
-          if (v !== undefined && v !== null) form.set(`metadata[${k}]`, String(v));
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="stripeEnvironment">Stripe environment</label>
+            <select id="stripeEnvironment">
+              <option value="sandbox">Sandbox</option>
+              <option value="live">Live</option>
+            </select>
+            <div class="hint">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
+          </div>
+
+          <div class="field">
+            <label class="req" for="invoiceDueDays">Invoice due (days)</label>
+            <input id="invoiceDueDays" type="number" min="1" step="1" value="2" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="mainFirstName">Main contact first name</label>
+            <input id="mainFirstName" type="text" placeholder="First name" />
+          </div>
+
+          <div class="field">
+            <label class="req" for="mainLastName">Main contact last name</label>
+            <input id="mainLastName" type="text" placeholder="Last name" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="mainEmail">Email</label>
+            <input id="mainEmail" type="email" placeholder="guest@email.com" />
+          </div>
+
+          <div class="field">
+            <label class="req" for="mainPhone">Phone</label>
+            <input id="mainPhone" type="text" placeholder="Phone number" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="whatsappNumber">WhatsApp number</label>
+            <input id="whatsappNumber" type="text" placeholder="WhatsApp number" />
+            <div class="hint">Include country code if possible.</div>
+          </div>
+
+          <div class="field">
+            <label class="req" for="defaultLanguage">Default language</label>
+            <select id="defaultLanguage">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+            </select>
+            <div class="hint">Used as the default for newly added items.</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="req" for="pickupLocationLabel">Pickup location label</label>
+            <input id="pickupLocationLabel" type="text" placeholder="Hotel, Airbnb, Meeting point" />
+          </div>
+
+          <div class="field">
+            <label class="req" for="pickupAddress">Pickup address or hotel name</label>
+            <input id="pickupAddress" type="text" placeholder="Pickup address or hotel name" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="globalNotes">General notes</label>
+          <textarea id="globalNotes" placeholder="Internal notes for the booking or invoice"></textarea>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title">Booking items</div>
+
+        <div class="items-wrap">
+          <div id="itemsContainer"></div>
+
+          <div class="action-row" style="margin-top:14px;">
+            <button id="addItemBtn" class="action-btn secondary" type="button">+ Add another tour or activity</button>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button id="generateLinkBtn" class="action-btn primary" type="button">Generate link</button>
+          <button id="sendInvoiceBtn" class="action-btn secondary" type="button">Send invoice</button>
+          <button id="copyBtn" class="action-btn secondary" type="button" disabled>Copy link</button>
+          <button id="openBtn" class="action-btn secondary" type="button" disabled>Open link</button>
+        </div>
+
+        <div class="small-note">
+          Generate Link is available only for a single item. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
+        </div>
+
+        <div id="statusBox" class="status"></div>
+      </div>
+
+      <div class="card summary">
+        <div class="summary-box">
+          <div class="summary-title">Booking summary</div>
+          <div id="summaryItems"></div>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-title">Action summary</div>
+          <div id="actionSummary" class="summary-empty">
+            Generate a payment link or create an invoice to display the result here.
+          </div>
+        </div>
+
+        <div id="resultLinkBox" class="link-box" style="display:none;"></div>
+
+        <div class="small-note">
+          Single item mode:
+          <br />
+          - Generate Link can keep your current guest flow
+          <br />
+          - Send Invoice uses your existing single-item invoice route
+          <br /><br />
+          Multi-item mode:
+          <br />
+          - Generate Link is disabled
+          <br />
+          - Send Invoice will use the multi-item invoice route
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="itemTemplate">
+    <div class="item-card" data-item-card>
+      <div class="item-top">
+        <div class="item-title" data-item-heading>Booking Item</div>
+        <div class="item-actions">
+          <button type="button" class="mini-btn danger" data-remove-item>Remove</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="req">Tour</label>
+        <select data-field="tour_code">
+          <option value="">Select a tour...</option>
+        </select>
+        <div class="pricing-note" data-tour-meta>Select a tour to preview the price and details.</div>
+      </div>
+
+      <div class="grid-3">
+        <div class="field">
+          <label class="req">Tour date</label>
+          <input data-field="tour_date" type="date" />
+        </div>
+
+        <div class="field">
+          <label class="req">Number of people</label>
+          <input data-field="quantity" type="number" min="1" step="1" value="2" />
+        </div>
+
+        <div class="field">
+          <label class="req">Language</label>
+          <select data-field="language">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Item notes</label>
+        <textarea data-field="item_notes" placeholder="Optional internal note for this line item"></textarea>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const state = {
+      tours: [],
+      items: [],
+      generatedUrl: "",
+      generatedOpenUrl: "",
+    };
+
+    const els = {
+      itemsContainer: document.getElementById("itemsContainer"),
+      itemTemplate: document.getElementById("itemTemplate"),
+      addItemBtn: document.getElementById("addItemBtn"),
+      generateLinkBtn: document.getElementById("generateLinkBtn"),
+      sendInvoiceBtn: document.getElementById("sendInvoiceBtn"),
+      copyBtn: document.getElementById("copyBtn"),
+      openBtn: document.getElementById("openBtn"),
+      statusBox: document.getElementById("statusBox"),
+      modeChip: document.getElementById("modeChip"),
+      summaryItems: document.getElementById("summaryItems"),
+      actionSummary: document.getElementById("actionSummary"),
+      resultLinkBox: document.getElementById("resultLinkBox"),
+      stripeEnvironment: document.getElementById("stripeEnvironment"),
+      invoiceDueDays: document.getElementById("invoiceDueDays"),
+      mainFirstName: document.getElementById("mainFirstName"),
+      mainLastName: document.getElementById("mainLastName"),
+      mainEmail: document.getElementById("mainEmail"),
+      mainPhone: document.getElementById("mainPhone"),
+      whatsappNumber: document.getElementById("whatsappNumber"),
+      defaultLanguage: document.getElementById("defaultLanguage"),
+      pickupLocationLabel: document.getElementById("pickupLocationLabel"),
+      pickupAddress: document.getElementById("pickupAddress"),
+      globalNotes: document.getElementById("globalNotes"),
+    };
+
+    function showStatus(message, type = "info") {
+      els.statusBox.textContent = message;
+      els.statusBox.className = `status show ${type}`;
+    }
+
+    function clearStatus() {
+      els.statusBox.textContent = "";
+      els.statusBox.className = "status";
+    }
+
+    function formatCurrencyDisplay(v) {
+      return v || "-";
+    }
+
+    function titleCaseWords(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+    }
+
+    function normalizeNameInput(el) {
+      if (!el) return;
+      el.value = titleCaseWords(el.value);
+    }
+
+
+    function buildFullName() {
+      return `${els.mainFirstName.value.trim()} ${els.mainLastName.value.trim()}`.trim();
+    }
+
+    function getDefaultTomorrowISO() {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function getTourByCodeAndLanguage(code, language) {
+      return state.tours.find(t => t.tour_code === code && t.language === language) || null;
+    }
+
+    async function loadTours() {
+      const res = await fetch("/stripe/api/tours?lang=en");
+      const data = await res.json();
+      if (!data.ok) {
+        throw new Error(data.error || "Failed to load tours");
+      }
+      state.tours = data.tours || [];
+    }
+
+    function createItem(initial = {}) {
+      return {
+        id: crypto.randomUUID(),
+        tour_code: initial.tour_code || "",
+        tour_date: initial.tour_date || getDefaultTomorrowISO(),
+        quantity: initial.quantity || 2,
+        language: initial.language || els.defaultLanguage.value || "en",
+        item_notes: initial.item_notes || "",
+      };
+    }
+
+    function addItem(initial = {}) {
+      state.items.push(createItem(initial));
+      renderItems();
+      renderSummary();
+      updateModeUI();
+    }
+
+    function removeItem(id) {
+      if (state.items.length === 1) {
+        showStatus("At least one booking item is required.", "error");
+        return;
+      }
+      state.items = state.items.filter(item => item.id !== id);
+      renderItems();
+      renderSummary();
+      updateModeUI();
+      clearStatus();
+    }
+
+    function updateItem(id, key, value) {
+      const item = state.items.find(x => x.id === id);
+      if (!item) return;
+      item[key] = value;
+      renderSummary();
+      updateModeUI();
+    }
+
+    function renderItems() {
+      els.itemsContainer.innerHTML = "";
+
+      state.items.forEach((item, index) => {
+        const node = els.itemTemplate.content.firstElementChild.cloneNode(true);
+        node.dataset.itemId = item.id;
+
+        const heading = node.querySelector("[data-item-heading]");
+        heading.textContent = `Booking Item ${index + 1}`;
+
+        const removeBtn = node.querySelector("[data-remove-item]");
+        removeBtn.disabled = state.items.length === 1;
+        removeBtn.addEventListener("click", () => removeItem(item.id));
+
+        const tourSelect = node.querySelector('[data-field="tour_code"]');
+        const dateInput = node.querySelector('[data-field="tour_date"]');
+        const qtyInput = node.querySelector('[data-field="quantity"]');
+        const langSelect = node.querySelector('[data-field="language"]');
+        const notesInput = node.querySelector('[data-field="item_notes"]');
+        const metaText = node.querySelector("[data-tour-meta]");
+
+        const currentLangTours = state.tours
+          .filter(t => t.language === item.language)
+          .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
+
+        currentLangTours.forEach(tour => {
+          const opt = document.createElement("option");
+          opt.value = tour.tour_code;
+          opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
+          tourSelect.appendChild(opt);
         });
-        Object.keys(md).forEach((k) => {
-          const v = md[k];
-          if (v !== undefined && v !== null) form.set(`payment_intent_data[metadata][${k}]`, String(v));
-        });
-        form.set("payment_intent_data[description]", `${tour_code} ${tour.tour_title} (${number_of_people} pax) ${tour_date}`);
 
-        const session = await stripeRequest(env, isTest, "POST", "/v1/checkout/sessions", form);
+        langSelect.value = item.language;
+        tourSelect.value = item.tour_code;
+        dateInput.value = item.tour_date;
+        qtyInput.value = item.quantity;
+        notesInput.value = item.item_notes;
 
-        if (env.RETRY_KV && session && session.url) {
-          ctx.waitUntil(env.RETRY_KV.put(`retry:${retryToken}`, session.url, { expirationTtl: 60 * 60 * 24 * 2 }));
+        function refreshMeta() {
+          const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
+          if (!selectedTour) {
+            metaText.textContent = "Select a tour to preview the price and details.";
+            return;
+          }
+          metaText.innerHTML = `
+            <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} per person
+            <br />
+            <strong>Type:</strong> ${selectedTour.duration_label || "-"}
+            <br />
+            <strong>Summary:</strong> ${selectedTour.description_one_liner || "-"}
+          `;
         }
 
-        return json({ ok: true, url: session.url, id: session.id, retry_token: retryToken, env: stripeEnv }, 200);
-      } catch (err) {
-        return json({ ok: false, error: err.message || "Unknown error" }, 400);
-      }
-    }
+        langSelect.addEventListener("change", (e) => {
+          updateItem(item.id, "language", e.target.value);
 
-    if (path === "/api/create-invoice" && request.method === "POST") {
-      let body;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ ok: false, error: "Invalid JSON body" }, 400);
-      }
+          const prevCode = item.tour_code;
+          const refreshedTours = state.tours
+            .filter(t => t.language === e.target.value)
+            .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
 
-      try {
-        const language = requiredString(body.language, "language").toLowerCase();
-        const tour_code = requiredString(body.tour_code, "tour_code");
-        const number_of_people = requiredInt(body.number_of_people, "number_of_people");
-        const main_name = requiredString(body.main_contact_name, "main_contact_name");
-        const main_email = requiredString(body.main_contact_email, "main_contact_email");
-        const main_phone = requiredString(body.main_contact_phone, "main_contact_phone");
-        const whatsapp_number = requiredString(body.whatsapp_number, "whatsapp_number");
-        const pickup_location_label = requiredString(body.pickup_location_label, "pickup_location_label");
-        const pickup_address_or_hotel = requiredString(body.pickup_address_or_hotel, "pickup_address_or_hotel");
-        const notes = (typeof body.notes === "string" ? body.notes.trim() : "") || "";
-        const tour_date = requiredString(body.tour_date, "tour_date");
-        const dueDaysRaw = body.invoice_due_days != null ? Number(body.invoice_due_days) : 1;
-        const invoice_due_days = Number.isFinite(dueDaysRaw) && dueDaysRaw > 0 ? Math.floor(dueDaysRaw) : 1;
-        const stripeEnv = normalizeStripeEnv(body.stripe_environment);
-        const isTest = stripeEnv !== "live";
-        const tour = findTour(tour_code, language);
-        if (!tour) throw new Error("Tour not found for selected language");
-
-        const ids = resolveTourIdsStrict(tour, isTest);
-        if (!ids.price_id) throw new Error("Tour price_id is not configured for this environment");
-        if (!ids.product_id) throw new Error("Tour product_id is not configured for this environment");
-        if (tour.min_person && number_of_people < Number(tour.min_person)) throw new Error(`Minimum ${tour.min_person} people required`);
-
-        const md = {
-          tour_code: tour.tour_code,
-          language,
-          tour_title: tour.tour_title,
-          service_type: tour.service_type || "",
-          product_id: ids.product_id,
-          price_id: ids.price_id,
-          number_of_people: String(number_of_people),
-          main_contact_name: main_name,
-          main_contact_email: main_email,
-          main_contact_phone: main_phone,
-          whatsapp_number,
-          pickup_location_label,
-          pickup_address_or_hotel,
-          notes,
-          tour_date,
-          pickup_time_local: tour.pickup_time_local,
-          pickup_window_minutes: String(tour.pickup_window_minutes || 15),
-          timezone: tour.timezone || "America/Guayaquil",
-          stripe_environment: stripeEnv,
-        };
-
-        const custForm = new URLSearchParams();
-        custForm.set("email", main_email);
-        custForm.set("name", main_name);
-        custForm.set("phone", main_phone);
-        Object.keys(md).forEach((k) => {
-          const v = md[k];
-          if (v !== undefined && v !== null) custForm.set(`metadata[${k}]`, String(v));
-        });
-        const customer = await stripeRequest(env, isTest, "POST", "/v1/customers", custForm);
-
-        const itemForm = new URLSearchParams();
-        itemForm.set("customer", customer.id);
-        itemForm.set("pricing[price]", ids.price_id);
-        itemForm.set("quantity", String(number_of_people));
-        itemForm.set("description", `${tour_code} ${tour.tour_title} (${number_of_people} pax) ${tour_date}`);
-        Object.keys(md).forEach((k) => {
-          const v = md[k];
-          if (v !== undefined && v !== null) itemForm.set(`metadata[${k}]`, String(v));
-        });
-        await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", itemForm);
-
-        const invForm = new URLSearchParams();
-        invForm.set("customer", customer.id);
-        invForm.set("collection_method", "send_invoice");
-        invForm.set("days_until_due", String(invoice_due_days));
-        invForm.set("auto_advance", "true");
-        invForm.set("pending_invoice_items_behavior", "include");
-        Object.keys(md).forEach((k) => {
-          const v = md[k];
-          if (v !== undefined && v !== null) invForm.set(`metadata[${k}]`, String(v));
-        });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm);
-
-        const finalized = await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/finalize`, new URLSearchParams());
-        if (!isTest) {
-          await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
-        }
-
-        return json({
-          ok: true,
-          invoice_id: finalized.id,
-          invoice_number: finalized.number || "",
-          hosted_invoice_url: finalized.hosted_invoice_url || "",
-          invoice_pdf: finalized.invoice_pdf || "",
-          customer_email: main_email,
-          env: stripeEnv,
-        }, 200);
-      } catch (err) {
-        return json({ ok: false, error: err.message || "Unknown error" }, 400);
-      }
-    }
-
-    if (path === "/api/create-invoice-multi" && request.method === "POST") {
-      let body;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ ok: false, error: "Invalid JSON body" }, 400);
-      }
-
-      try {
-        const stripeEnv = normalizeStripeEnv(body.stripe_environment);
-        const isTest = stripeEnv !== "live";
-        const main_name = requiredString(body.main_contact_name, "main_contact_name");
-        const main_email = requiredString(body.main_contact_email, "main_contact_email");
-        const main_phone = requiredString(body.main_contact_phone, "main_contact_phone");
-        const whatsapp_number = requiredString(body.whatsapp_number, "whatsapp_number");
-        const pickup_location_label = requiredString(body.pickup_location_label, "pickup_location_label");
-        const pickup_address_or_hotel = requiredString(body.pickup_address_or_hotel, "pickup_address_or_hotel");
-        const notes = (typeof body.notes === "string" ? body.notes.trim() : "") || "";
-        const dueDaysRaw = body.invoice_due_days != null ? Number(body.invoice_due_days) : 1;
-        const invoice_due_days = Number.isFinite(dueDaysRaw) && dueDaysRaw > 0 ? Math.floor(dueDaysRaw) : 1;
-
-        const items = Array.isArray(body.items) ? body.items : [];
-        if (!items.length) throw new Error("At least one invoice item is required");
-
-        const normalizedItems = items.map((raw, index) => {
-          const language = requiredString(raw.language, `items[${index}].language`).toLowerCase();
-          const tour_code = requiredString(raw.tour_code, `items[${index}].tour_code`);
-          const quantity = requiredInt(raw.quantity, `items[${index}].quantity`);
-          const tour_date = requiredString(raw.tour_date, `items[${index}].tour_date`);
-          const item_notes = (typeof raw.item_notes === "string" ? raw.item_notes.trim() : "") || "";
-          const tour = findTour(tour_code, language);
-          if (!tour) throw new Error(`Tour not found for item ${index + 1}`);
-
-          const ids = resolveTourIdsStrict(tour, isTest);
-          if (!ids.price_id) throw new Error(`Tour price_id is not configured for item ${index + 1} in this environment`);
-          if (!ids.product_id) throw new Error(`Tour product_id is not configured for item ${index + 1} in this environment`);
-          if (tour.min_person && quantity < Number(tour.min_person)) throw new Error(`Item ${index + 1}: minimum ${tour.min_person} people required`);
-
-          return { index, language, tour_code, quantity, tour_date, item_notes, tour, ids };
-        });
-
-        const itinerary_summary = normalizedItems.map((item) => `${item.tour_code}:${item.quantity}:${item.tour_date}:${item.language}`).join(" | ");
-
-        const custMd = {
-          stripe_environment: stripeEnv,
-          booking_mode: "multi_item",
-          itinerary_summary,
-          main_contact_name: main_name,
-          main_contact_email: main_email,
-          main_contact_phone: main_phone,
-          whatsapp_number,
-          pickup_location_label,
-          pickup_address_or_hotel,
-          notes,
-        };
-
-        const custForm = new URLSearchParams();
-        custForm.set("email", main_email);
-        custForm.set("name", main_name);
-        custForm.set("phone", main_phone);
-        Object.keys(custMd).forEach((k) => {
-          const v = custMd[k];
-          if (v !== undefined && v !== null && v !== "") custForm.set(`metadata[${k}]`, String(v));
-        });
-        const customer = await stripeRequest(env, isTest, "POST", "/v1/customers", custForm);
-
-        for (const item of normalizedItems) {
-          const lineMd = {
-            stripe_environment: stripeEnv,
-            booking_mode: "multi_item",
-            item_index: String(item.index + 1),
-            tour_code: item.tour_code,
-            language: item.language,
-            tour_title: item.tour.tour_title,
-            service_type: item.tour.service_type || "",
-            product_id: item.ids.product_id,
-            price_id: item.ids.price_id,
-            number_of_people: String(item.quantity),
-            main_contact_name: main_name,
-            main_contact_email: main_email,
-            main_contact_phone: main_phone,
-            whatsapp_number,
-            pickup_location_label,
-            pickup_address_or_hotel,
-            notes,
-            item_notes: item.item_notes,
-            tour_date: item.tour_date,
-            pickup_time_local: item.tour.pickup_time_local || "",
-            pickup_window_minutes: String(item.tour.pickup_window_minutes || 15),
-            timezone: item.tour.timezone || "America/Guayaquil",
-          };
-
-          const itemForm = new URLSearchParams();
-          itemForm.set("customer", customer.id);
-          itemForm.set("pricing[price]", item.ids.price_id);
-          itemForm.set("quantity", String(item.quantity));
-          const descriptionBase = `${item.tour_code} ${item.tour.tour_title} (${item.quantity} pax) ${item.tour_date}`;
-          itemForm.set("description", item.item_notes ? `${descriptionBase} | Notes: ${item.item_notes}` : descriptionBase);
-          Object.keys(lineMd).forEach((k) => {
-            const v = lineMd[k];
-            if (v !== undefined && v !== null && v !== "") itemForm.set(`metadata[${k}]`, String(v));
+          tourSelect.innerHTML = '<option value="">Select a tour...</option>';
+          refreshedTours.forEach(tour => {
+            const opt = document.createElement("option");
+            opt.value = tour.tour_code;
+            opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
+            tourSelect.appendChild(opt);
           });
-          await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", itemForm);
-        }
 
-        const invMd = {
-          stripe_environment: stripeEnv,
-          booking_mode: "multi_item",
-          itinerary_summary,
-          main_contact_name: main_name,
-          main_contact_email: main_email,
-          main_contact_phone: main_phone,
-          whatsapp_number,
-          pickup_location_label,
-          pickup_address_or_hotel,
-          notes,
-          total_items: String(normalizedItems.length),
-        };
+          const existsInLang = refreshedTours.some(t => t.tour_code === prevCode);
+          if (existsInLang) {
+            tourSelect.value = prevCode;
+          } else {
+            updateItem(item.id, "tour_code", "");
+            tourSelect.value = "";
+          }
 
-        const invForm = new URLSearchParams();
-        invForm.set("customer", customer.id);
-        invForm.set("collection_method", "send_invoice");
-        invForm.set("days_until_due", String(invoice_due_days));
-        invForm.set("auto_advance", "true");
-        invForm.set("pending_invoice_items_behavior", "include");
-        Object.keys(invMd).forEach((k) => {
-          const v = invMd[k];
-          if (v !== undefined && v !== null && v !== "") invForm.set(`metadata[${k}]`, String(v));
+          refreshMeta();
         });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm);
 
-        const finalized = await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/finalize`, new URLSearchParams());
-        if (!isTest) {
-          await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
-        }
+        tourSelect.addEventListener("change", (e) => {
+          updateItem(item.id, "tour_code", e.target.value);
+          refreshMeta();
+        });
 
-        return json({
-          ok: true,
-          message: isTest ? "Multi-item invoice created in sandbox." : "Multi-item invoice created and email sent.",
-          invoice_id: finalized.id,
-          invoice_number: finalized.number || "",
-          invoice_status: finalized.status || "",
-          hosted_invoice_url: finalized.hosted_invoice_url || "",
-          invoice_pdf: finalized.invoice_pdf || "",
-          customer_email: main_email,
-          env: stripeEnv,
-          total_items: normalizedItems.length,
-        }, 200);
-      } catch (err) {
-        return json({ ok: false, error: err.message || "Unknown error" }, 400);
+        dateInput.addEventListener("change", (e) => {
+          updateItem(item.id, "tour_date", e.target.value);
+        });
+
+        qtyInput.addEventListener("input", (e) => {
+          updateItem(item.id, "quantity", e.target.value);
+        });
+
+        notesInput.addEventListener("input", (e) => {
+          updateItem(item.id, "item_notes", e.target.value);
+        });
+
+        refreshMeta();
+        els.itemsContainer.appendChild(node);
+      });
+    }
+
+    function renderSummary() {
+      const items = state.items;
+      if (!items.length) {
+        els.summaryItems.innerHTML = '<div class="summary-empty">No booking items yet.</div>';
+        return;
+      }
+
+      els.summaryItems.innerHTML = "";
+      let knownCount = 0;
+
+      items.forEach((item, index) => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        const div = document.createElement("div");
+        div.className = "summary-item";
+
+        const name = tour
+          ? `${tour.tour_code} - ${tour.tour_title}`
+          : `Item ${index + 1}`;
+
+        const priceLine = tour
+          ? `${tour.amount_display} x ${item.quantity || 0}`
+          : "Select a tour";
+
+        if (tour) knownCount += 1;
+
+        div.innerHTML = `
+          <div class="summary-item-name">${name}</div>
+          <div class="summary-meta">
+            Date: ${item.tour_date || "-"}
+            <br />
+            People: ${item.quantity || "-"}
+            <br />
+            Language: ${item.language === "es" ? "Spanish" : "English"}
+            <br />
+            Price: <span class="money">${priceLine}</span>
+          </div>
+        `;
+
+        els.summaryItems.appendChild(div);
+      });
+
+      if (knownCount < items.length) {
+        const warn = document.createElement("div");
+        warn.className = "small-note";
+        warn.textContent = "Some items are incomplete. Select a tour for every row before creating a link or invoice.";
+        els.summaryItems.appendChild(warn);
       }
     }
 
-    if (path === "/api/invoice" && request.method === "GET") {
+    function updateModeUI() {
+      const multi = state.items.length > 1;
+
+      els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
+      els.generateLinkBtn.disabled = multi;
+      els.copyBtn.disabled = !state.generatedUrl;
+      els.openBtn.disabled = !state.generatedOpenUrl;
+
+      if (multi) {
+        els.actionSummary.innerHTML = `
+          Multi-item mode is active.
+          <br />
+          Generate Link is disabled.
+          <br />
+          Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
+        `;
+      } else {
+        els.actionSummary.innerHTML = `
+          Single item mode is active.
+          <br />
+          Generate Link can use your current one-tour flow.
+          <br />
+          Send Invoice will call <strong>/stripe/api/create-invoice</strong>.
+        `;
+      }
+    }
+
+    function validateSharedFields() {
+      const errors = [];
+
+      if (!els.mainFirstName.value.trim()) errors.push("Main contact first name is required.");
+      if (!els.mainLastName.value.trim()) errors.push("Main contact last name is required.");
+      if (!els.mainEmail.value.trim()) errors.push("Email is required.");
+      if (!els.mainPhone.value.trim()) errors.push("Phone is required.");
+      if (!els.whatsappNumber.value.trim()) errors.push("WhatsApp number is required.");
+      if (!els.pickupLocationLabel.value.trim()) errors.push("Pickup location label is required.");
+      if (!els.pickupAddress.value.trim()) errors.push("Pickup address or hotel name is required.");
+
+      return errors;
+    }
+
+    function validateItems() {
+      const errors = [];
+
+      state.items.forEach((item, idx) => {
+        if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);
+        if (!item.tour_date) errors.push(`Item ${idx + 1}: Tour date is required.`);
+        if (!item.quantity || Number(item.quantity) <= 0) errors.push(`Item ${idx + 1}: Number of people must be greater than 0.`);
+        if (!item.language) errors.push(`Item ${idx + 1}: Language is required.`);
+
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
+      });
+
+      return errors;
+    }
+
+    function buildSingleItemInvoicePayload(item) {
+      return {
+        language: item.language,
+        stripe_environment: els.stripeEnvironment.value,
+        tour_code: item.tour_code,
+        number_of_people: Number(item.quantity),
+        main_contact_name: buildFullName(),
+        main_contact_email: els.mainEmail.value.trim(),
+        main_contact_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: buildCombinedNotes(item),
+        tour_date: item.tour_date,
+        invoice_due_days: Number(els.invoiceDueDays.value || 2),
+      };
+    }
+
+    function buildCombinedNotes(item) {
+      const parts = [];
+      if (els.globalNotes.value.trim()) {
+        parts.push(`General notes: ${els.globalNotes.value.trim()}`);
+      }
+      if (item && item.item_notes && item.item_notes.trim()) {
+        parts.push(`Item notes: ${item.item_notes.trim()}`);
+      }
+      return parts.join("\n");
+    }
+
+    function buildMultiItemInvoicePayload() {
+      return {
+        stripe_environment: els.stripeEnvironment.value,
+        main_contact_name: buildFullName(),
+        main_contact_email: els.mainEmail.value.trim(),
+        main_contact_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: els.globalNotes.value.trim(),
+        invoice_due_days: Number(els.invoiceDueDays.value || 2),
+        items: state.items.map(item => ({
+          tour_code: item.tour_code,
+          quantity: Number(item.quantity),
+          tour_date: item.tour_date,
+          language: item.language,
+          item_notes: item.item_notes || "",
+        })),
+      };
+    }
+
+    function buildSingleLinkUrl(item) {
+      const params = new URLSearchParams({
+        tour: item.tour_code,
+        date: item.tour_date,
+        party: String(item.quantity),
+        lang: item.language,
+      });
+
+      const path = item.language === "es" ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
+      return `${window.location.origin}${path}?${params.toString()}`;
+    }
+
+    async function onGenerateLink() {
+      clearStatus();
+
+      const sharedErrors = validateSharedFields();
+      const itemErrors = validateItems();
+      const errors = [...sharedErrors, ...itemErrors];
+
+      if (state.items.length !== 1) {
+        showStatus("Generate Link is only available for a single booking item.", "error");
+        return;
+      }
+
+      if (errors.length) {
+        showStatus(errors[0], "error");
+        return;
+      }
+
+      const item = state.items[0];
+      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+
+      if (!tour) {
+        showStatus("Selected tour was not found.", "error");
+        return;
+      }
+
+      const generatedUrl = buildSingleLinkUrl(item);
+      state.generatedUrl = generatedUrl;
+      state.generatedOpenUrl = generatedUrl;
+
+      els.copyBtn.disabled = false;
+      els.openBtn.disabled = false;
+      els.resultLinkBox.style.display = "block";
+      els.resultLinkBox.textContent = generatedUrl;
+
+      els.actionSummary.innerHTML = `
+        Link generated for:
+        <br />
+        <strong>${tour.tour_code} - ${tour.tour_title}</strong>
+        <br />
+        Date: ${item.tour_date}
+        <br />
+        Party size: ${item.quantity}
+        <br />
+        Language: ${item.language === "es" ? "Spanish" : "English"}
+      `;
+
+      showStatus("Link generated.", "ok");
+    }
+
+    async function onSendInvoice() {
+      clearStatus();
+
+      const sharedErrors = validateSharedFields();
+      const itemErrors = validateItems();
+      const errors = [...sharedErrors, ...itemErrors];
+
+      if (errors.length) {
+        showStatus(errors[0], "error");
+        return;
+      }
+
+      const multi = state.items.length > 1;
+      const endpoint = multi ? "/stripe/api/create-invoice-multi" : "/stripe/api/create-invoice";
+      const payload = multi
+        ? buildMultiItemInvoicePayload()
+        : buildSingleItemInvoicePayload(state.items[0]);
+
       try {
-        const invoice_id = requiredString(url.searchParams.get("invoice_id") || "", "invoice_id");
-        const isTest = normalizeStripeEnv(url.searchParams.get("env")) !== "live";
+        showStatus("Creating invoice...", "info");
 
-        const invoice = await stripeRequest(env, isTest, "GET", `/v1/invoices/${encodeURIComponent(invoice_id)}?expand[]=customer&expand[]=lines.data.price&expand[]=payment_intent&expand[]=charge`, null);
-
-        return json({
-          ok: true,
-          invoice: {
-            id: invoice.id || "",
-            number: invoice.number || "",
-            status: invoice.status || "",
-            collection_method: invoice.collection_method || "",
-            amount_due: invoice.amount_due != null ? invoice.amount_due : null,
-            amount_paid: invoice.amount_paid != null ? invoice.amount_paid : null,
-            amount_remaining: invoice.amount_remaining != null ? invoice.amount_remaining : null,
-            subtotal: invoice.subtotal != null ? invoice.subtotal : null,
-            total: invoice.total != null ? invoice.total : null,
-            currency: invoice.currency || "",
-            hosted_invoice_url: invoice.hosted_invoice_url || "",
-            invoice_pdf: invoice.invoice_pdf || "",
-            customer_email: invoice.customer_email || (invoice.customer && invoice.customer.email ? invoice.customer.email : ""),
-            metadata: invoice.metadata || {},
-            lines: invoice.lines && Array.isArray(invoice.lines.data)
-              ? invoice.lines.data.map((line) => ({
-                  id: line.id || "",
-                  description: line.description || "",
-                  amount: line.amount != null ? line.amount : null,
-                  quantity: line.quantity != null ? line.quantity : null,
-                  currency: line.currency || "",
-                  price_id: line.price && line.price.id ? line.price.id : "",
-                  price_type: line.price && line.price.type ? line.price.type : "",
-                  unit_amount: line.price && line.price.unit_amount != null ? line.price.unit_amount : null,
-                  metadata: line.metadata || {},
-                }))
-              : [],
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }, 200);
-      } catch (err) {
-        return json({ ok: false, error: err.message || "Unknown error" }, 400);
-      }
-    }
+          body: JSON.stringify(payload),
+        });
 
-    if (path === "/api/session" && request.method === "GET") {
-      try {
-        const session_id = requiredString(url.searchParams.get("session_id") || "", "session_id");
-        const isTest = normalizeStripeEnv(url.searchParams.get("env")) !== "live";
-        const session = await stripeRequest(env, isTest, "GET", `/v1/checkout/sessions/${session_id}`, null);
-        const md = session.metadata || {};
-
-        let stripe_charge_id = "";
-        let stripe_receipt_url = "";
+        const raw = await res.text();
+        let data;
         try {
-          const paymentIntentId = session.payment_intent || "";
-          if (paymentIntentId) {
-            const enriched = await enrichChargeAndFees(env, isTest, paymentIntentId);
-            stripe_charge_id = enriched.stripe_charge_id || "";
-            stripe_receipt_url = enriched.stripe_receipt_url || "";
-          }
-        } catch (_) {}
+          data = JSON.parse(raw);
+        } catch (_) {
+          throw new Error(raw || "Unexpected server response");
+        }
 
-        return json({
-          ok: true,
-          session: {
-            id: session.id,
-            payment_status: session.payment_status,
-            amount_total: session.amount_total,
-            currency: session.currency,
-            customer_email: session.customer_details && session.customer_details.email ? session.customer_details.email : session.customer_email || null,
-            metadata: md,
-            stripe_charge_id,
-            stripe_receipt_url,
-          },
-        }, 200);
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Invoice creation failed.");
+        }
+
+        const hostedUrl = data.hosted_invoice_url || "";
+        const invoiceId = data.invoice_id || "";
+        const invoiceNumber = data.invoice_number || "";
+        const invoiceStatus = data.invoice_status || "";
+
+        state.generatedUrl = hostedUrl;
+        state.generatedOpenUrl = hostedUrl;
+
+        els.copyBtn.disabled = !hostedUrl;
+        els.openBtn.disabled = !hostedUrl;
+        els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
+        els.resultLinkBox.textContent = hostedUrl || "";
+
+        els.actionSummary.innerHTML = `
+          Invoice created successfully.
+          <br />
+          Invoice ID: <strong>${invoiceId || "-"}</strong>
+          <br />
+          Invoice number: <strong>${invoiceNumber || "-"}</strong>
+          <br />
+          Status: <strong>${invoiceStatus || "-"}</strong>
+          <br />
+          Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
+        `;
+
+        showStatus(data.message || "Invoice created.", "ok");
       } catch (err) {
-        return json({ ok: false, error: err.message || "Unknown error" }, 400);
+        showStatus(err.message || "Something went wrong while creating the invoice.", "error");
       }
     }
 
-    if (path === "/webhook" && request.method === "POST") {
-      const sig = request.headers.get("stripe-signature");
-      if (!sig) return text("Missing stripe-signature", 400);
-
-      const payload = await request.text();
-      let event;
+    async function onCopy() {
+      if (!state.generatedUrl) return;
       try {
-        event = await verifyStripeSignature(payload, sig, [env.STRIPE_WEBHOOK_SECRET_TEST, env.STRIPE_WEBHOOK_SECRET]);
-      } catch (err) {
-        return text(`Webhook signature verification failed: ${err.message}`, 400);
+        await navigator.clipboard.writeText(state.generatedUrl);
+        showStatus("Copied to clipboard.", "ok");
+      } catch (_) {
+        showStatus("Unable to copy automatically. Please copy the link manually.", "error");
       }
-
-      if (event.type === "checkout.session.completed") {
-        const session = event.data && event.data.object ? event.data.object : {};
-        const md = session.metadata || {};
-        const isTest = !event.livemode;
-        const createdAt = new Date((event.created ? Number(event.created) : Math.floor(Date.now() / 1000)) * 1000);
-        const customerName = session.customer_details && session.customer_details.name ? session.customer_details.name : md.main_contact_name || "";
-        const nameParts = splitName(customerName);
-        const guestEmail = session.customer_details && session.customer_details.email ? session.customer_details.email : session.customer_email || md.main_contact_email || "";
-        const guestPhone = md.main_contact_phone || (session.customer_details && session.customer_details.phone ? session.customer_details.phone : "");
-        const amountTotalCents = session.amount_total != null ? Number(session.amount_total) : null;
-
-        const fields = {
-          created_at_iso: formatISOInNY(createdAt),
-          stripe_environment: md.stripe_environment || (event.livemode ? "live" : "sandbox"),
-          stripe_event_id: event.id || "",
-          stripe_session_id: session.id || "",
-          stripe_payment_intent: session.payment_intent || "",
-          stripe_charge_id: "",
-          stripe_product_id: md.product_id || "",
-          stripe_price_id: md.price_id || "",
-          stripe_payment_link_id: session.payment_link || "",
-          stripe_receipt_url: "",
-          invoice_no: "",
-          date_paid: formatDateNY(createdAt),
-          tour_date: md.tour_date || "",
-          tour_completed: "",
-          guest_first_name: nameParts.first,
-          guest_last_name: nameParts.last,
-          guest_email: guestEmail,
-          guest_phone: guestPhone,
-          home_country: session.customer_details && session.customer_details.address && session.customer_details.address.country ? String(session.customer_details.address.country) : "",
-          party_size: md.number_of_people ? String(md.number_of_people) : "",
-          service_type: md.service_type || "",
-          tour_title: md.tour_title || "",
-          tour_guide: "",
-          payment_method: "Stripe",
-          invoice_id: "",
-          transaction_id: session.payment_intent || "",
-          product_selected: md.tour_code ? String(md.tour_code) : "",
-          guest_rate_override: "",
-          discount_rate_guest: "",
-          discount_reason: "",
-          amount_received: amountTotalCents != null ? centsToDollarsString(amountTotalCents) : "",
-          transaction_fee_total: "",
-          fee_pct_of_amount_received: "",
-          mbw_fee_pct_override: "",
-          total_tip_collected: "",
-          tip_paid_to_guide_override: "",
-          pickup_location: md.pickup_location_label || "",
-          pickup_address_or_hotel: md.pickup_address_or_hotel || "",
-          other_guests: "",
-          notes: md.notes || "",
-          month_ky: "",
-          guest_rate_per_person: "",
-          subtotal_guest: "",
-          discount_amount: "",
-          final_invoice_total: "",
-          expected_total_with_tip: "",
-          variance_received_minus_expected: "",
-          fee_mode: "",
-          default_mbw_fee_pct: "",
-          mbw_fee_pct_used: "",
-          fees_charged_to_mbw: "",
-          fees_charged_to_guide: "",
-          guide_pay_model: "",
-          guide_base_rate: "",
-          guide_base_payout: "",
-          guide_tip_pct_used: "",
-          tip_paid_to_guide: "",
-          tip_paid_to_mbw: "",
-          total_amount_owed_to_guide: "",
-          mbw_gross_expected: "",
-          mbw_gross_actual: "",
-          gross_discrepency: "",
-          mbw_profit_expected: "",
-          mbw_profit_accrual: "",
-          net_discrepency: "",
-          mbw_profit_margin: "",
-          mbw_cash_expected: "",
-          mbw_cash_actual: "",
-          cash_discrepency: "",
-          mbw_cash_profit_margin: "",
-          reconciliation_status: "",
-          guide_paid_actual: "",
-          fees_paid_actual: "",
-          expense_reconciled_flag: "",
-          invoice_no_txt: "",
-          tour_key: "",
-        };
-
-        ctx.waitUntil((async () => {
-          try {
-            const enriched = await enrichChargeAndFees(env, isTest, session.payment_intent || "");
-            fields.stripe_charge_id = enriched.stripe_charge_id || "";
-            fields.stripe_receipt_url = enriched.stripe_receipt_url || "";
-            fields.transaction_fee_total = enriched.transaction_fee_total || "";
-            await postToSheetsLogger(env, { fields });
-          } catch (err) {
-            try {
-              await postToSheetsLogger(env, { fields });
-            } catch (_) {}
-            console.log("Sheets logging failed", { error: String(err && err.message ? err.message : err) });
-          }
-        })());
-      }
-
-      if (event.type === "invoice_payment.paid") {
-        const isTest = !event.livemode;
-        let invoiceId = "";
-        const eventObj = event.data && event.data.object ? event.data.object : null;
-
-        if (eventObj) {
-          if (eventObj.object === "invoice") invoiceId = eventObj.id || "";
-          if (eventObj.object === "invoice_payment") invoiceId = eventObj.invoice || "";
-        }
-
-        if (invoiceId) {
-          ctx.waitUntil((async () => {
-            try {
-              const inv = await stripeRequest(
-                env,
-                isTest,
-                "GET",
-                `/v1/invoices/${encodeURIComponent(invoiceId)}?expand[]=customer&expand[]=payment_intent&expand[]=charge&expand[]=lines.data.price`,
-                null
-              );
-
-              const invMd = inv.metadata || {};
-              const paidAtSec = inv.status_transitions && inv.status_transitions.paid_at ? Number(inv.status_transitions.paid_at) : event.created ? Number(event.created) : Math.floor(Date.now() / 1000);
-              const paidAt = new Date(paidAtSec * 1000);
-              const customerObj = inv.customer && typeof inv.customer === "object" ? inv.customer : null;
-              const customerName = inv.customer_name || (customerObj && customerObj.name ? customerObj.name : "") || invMd.main_contact_name || "";
-              const nameParts = splitName(customerName);
-              const guestEmail = inv.customer_email || (customerObj && customerObj.email ? customerObj.email : "") || invMd.main_contact_email || "";
-              const guestPhone = (customerObj && customerObj.phone ? customerObj.phone : "") || invMd.main_contact_phone || "";
-
-              const eventPaymentIntentId = eventObj && eventObj.object === "invoice_payment" && eventObj.payment && eventObj.payment.payment_intent ? String(eventObj.payment.payment_intent) : "";
-              const invoicePaymentIntentId = inv.payment_intent && typeof inv.payment_intent === "string" ? inv.payment_intent : inv.payment_intent && inv.payment_intent.id ? inv.payment_intent.id : "";
-              const paymentIntentId = eventPaymentIntentId || invoicePaymentIntentId;
-
-              let enriched = {
-                stripe_charge_id: "",
-                stripe_receipt_url: "",
-                transaction_fee_total: "",
-                transaction_fee_total_cents: 0,
-              };
-              if (paymentIntentId) {
-                try {
-                  enriched = await enrichChargeAndFees(env, isTest, paymentIntentId);
-                } catch (_) {}
-              }
-
-              const lines = inv.lines && Array.isArray(inv.lines.data) ? inv.lines.data : [];
-              const isMultiItem = String(invMd.booking_mode || "") === "multi_item" && lines.length > 1;
-
-              if (isMultiItem) {
-                const lineAmountsCents = lines.map((line) => Number(line.amount || 0));
-                const feeSplitsCents = splitFeeProportionally(enriched.transaction_fee_total_cents || 0, lineAmountsCents);
-
-                for (let i = 0; i < lines.length; i++) {
-                  const line = lines[i] || {};
-                  const lineMd = line.metadata || {};
-                  const linePriceId = lineMd.price_id || (line.price && line.price.id ? line.price.id : line.pricing && line.pricing.price_details && line.pricing.price_details.price ? line.pricing.price_details.price : "");
-                  const lineProductId = lineMd.product_id || (line.price && line.price.product ? line.price.product : line.pricing && line.pricing.price_details && line.pricing.price_details.product ? line.pricing.price_details.product : "");
-                  const lineQty = line.quantity != null ? String(line.quantity) : lineMd.number_of_people || "";
-                  const lineAmountCents = Number(line.amount || 0);
-                  const feeCents = feeSplitsCents[i] || 0;
-                  const itemIndex = lineMd.item_index || String(i + 1);
-
-                  const fields = {
-                    created_at_iso: formatISOInNY(paidAt),
-                    stripe_environment: lineMd.stripe_environment || invMd.stripe_environment || (event.livemode ? "live" : "sandbox"),
-                    stripe_event_id: event.id || "",
-                    stripe_session_id: "",
-                    stripe_payment_intent: paymentIntentId,
-                    stripe_charge_id: enriched.stripe_charge_id || "",
-                    stripe_product_id: lineProductId || "",
-                    stripe_price_id: linePriceId || "",
-                    stripe_payment_link_id: "",
-                    stripe_receipt_url: enriched.stripe_receipt_url || "",
-                    invoice_no: inv.number || "",
-                    date_paid: formatDateNY(paidAt),
-                    tour_date: lineMd.tour_date || "",
-                    tour_completed: "",
-                    guest_first_name: nameParts.first,
-                    guest_last_name: nameParts.last,
-                    guest_email: guestEmail,
-                    guest_phone: guestPhone,
-                    home_country: customerObj && customerObj.address && customerObj.address.country ? String(customerObj.address.country) : "",
-                    party_size: lineQty,
-                    service_type: lineMd.service_type || "",
-                    tour_title: lineMd.tour_title || "",
-                    tour_guide: "",
-                    payment_method: "Stripe",
-                    invoice_id: inv.id || "",
-                    transaction_id: paymentIntentId,
-                    product_selected: lineMd.tour_code ? String(lineMd.tour_code) : "",
-                    guest_rate_override: "",
-                    discount_rate_guest: "",
-                    discount_reason: "",
-                    amount_received: centsToDollarsString(lineAmountCents),
-                    transaction_fee_total: centsToDollarsString(feeCents),
-                    fee_pct_of_amount_received: "",
-                    mbw_fee_pct_override: "",
-                    total_tip_collected: "",
-                    tip_paid_to_guide_override: "",
-                    pickup_location: lineMd.pickup_location_label || invMd.pickup_location_label || "",
-                    pickup_address_or_hotel: lineMd.pickup_address_or_hotel || invMd.pickup_address_or_hotel || "",
-                    other_guests: "",
-                    notes: lineMd.item_notes || lineMd.notes || invMd.notes || "",
-                    month_ky: "",
-                    guest_rate_per_person: "",
-                    subtotal_guest: centsToDollarsString(lineAmountCents),
-                    discount_amount: "",
-                    final_invoice_total: centsToDollarsString(lineAmountCents),
-                    expected_total_with_tip: "",
-                    variance_received_minus_expected: "",
-                    fee_mode: "",
-                    default_mbw_fee_pct: "",
-                    mbw_fee_pct_used: "",
-                    fees_charged_to_mbw: "",
-                    fees_charged_to_guide: "",
-                    guide_pay_model: "",
-                    guide_base_rate: "",
-                    guide_base_payout: "",
-                    guide_tip_pct_used: "",
-                    tip_paid_to_guide: "",
-                    tip_paid_to_mbw: "",
-                    total_amount_owed_to_guide: "",
-                    mbw_gross_expected: "",
-                    mbw_gross_actual: "",
-                    gross_discrepency: "",
-                    mbw_profit_expected: "",
-                    mbw_profit_accrual: "",
-                    net_discrepency: "",
-                    mbw_profit_margin: "",
-                    mbw_cash_expected: "",
-                    mbw_cash_actual: "",
-                    cash_discrepency: "",
-                    mbw_cash_profit_margin: "",
-                    reconciliation_status: "",
-                    guide_paid_actual: "",
-                    fees_paid_actual: "",
-                    expense_reconciled_flag: "",
-                    invoice_no_txt: inv.number || "",
-                    tour_key: buildTourKey(inv.id || "", itemIndex, lineMd.tour_code || "", lineMd.tour_date || "", lineQty),
-                  };
-
-                  await postToSheetsLogger(env, { fields });
-                }
-              } else {
-                const md = invMd;
-                const amountPaidCents = inv.amount_paid != null ? Number(inv.amount_paid) : null;
-                const fields = {
-                  created_at_iso: formatISOInNY(paidAt),
-                  stripe_environment: md.stripe_environment || (event.livemode ? "live" : "sandbox"),
-                  stripe_event_id: event.id || "",
-                  stripe_session_id: "",
-                  stripe_payment_intent: paymentIntentId,
-                  stripe_charge_id: enriched.stripe_charge_id || "",
-                  stripe_product_id: md.product_id || "",
-                  stripe_price_id: md.price_id || "",
-                  stripe_payment_link_id: "",
-                  stripe_receipt_url: enriched.stripe_receipt_url || "",
-                  invoice_no: inv.number || "",
-                  date_paid: formatDateNY(paidAt),
-                  tour_date: md.tour_date || "",
-                  tour_completed: "",
-                  guest_first_name: nameParts.first,
-                  guest_last_name: nameParts.last,
-                  guest_email: guestEmail,
-                  guest_phone: guestPhone,
-                  home_country: customerObj && customerObj.address && customerObj.address.country ? String(customerObj.address.country) : "",
-                  party_size: md.number_of_people ? String(md.number_of_people) : "",
-                  service_type: md.service_type || "",
-                  tour_title: md.tour_title || "",
-                  tour_guide: "",
-                  payment_method: "Stripe",
-                  invoice_id: inv.id || "",
-                  transaction_id: paymentIntentId,
-                  product_selected: md.tour_code ? String(md.tour_code) : "",
-                  guest_rate_override: "",
-                  discount_rate_guest: "",
-                  discount_reason: "",
-                  amount_received: amountPaidCents != null ? centsToDollarsString(amountPaidCents) : "",
-                  transaction_fee_total: enriched.transaction_fee_total || "",
-                  fee_pct_of_amount_received: "",
-                  mbw_fee_pct_override: "",
-                  total_tip_collected: "",
-                  tip_paid_to_guide_override: "",
-                  pickup_location: md.pickup_location_label || "",
-                  pickup_address_or_hotel: md.pickup_address_or_hotel || "",
-                  other_guests: "",
-                  notes: md.notes || "",
-                  month_ky: "",
-                  guest_rate_per_person: "",
-                  subtotal_guest: "",
-                  discount_amount: "",
-                  final_invoice_total: "",
-                  expected_total_with_tip: "",
-                  variance_received_minus_expected: "",
-                  fee_mode: "",
-                  default_mbw_fee_pct: "",
-                  mbw_fee_pct_used: "",
-                  fees_charged_to_mbw: "",
-                  fees_charged_to_guide: "",
-                  guide_pay_model: "",
-                  guide_base_rate: "",
-                  guide_base_payout: "",
-                  guide_tip_pct_used: "",
-                  tip_paid_to_guide: "",
-                  tip_paid_to_mbw: "",
-                  total_amount_owed_to_guide: "",
-                  mbw_gross_expected: "",
-                  mbw_gross_actual: "",
-                  gross_discrepency: "",
-                  mbw_profit_expected: "",
-                  mbw_profit_accrual: "",
-                  net_discrepency: "",
-                  mbw_profit_margin: "",
-                  mbw_cash_expected: "",
-                  mbw_cash_actual: "",
-                  cash_discrepency: "",
-                  mbw_cash_profit_margin: "",
-                  reconciliation_status: "",
-                  guide_paid_actual: "",
-                  fees_paid_actual: "",
-                  expense_reconciled_flag: "",
-                  invoice_no_txt: inv.number || "",
-                  tour_key: buildTourKey(inv.id || "", "1", md.tour_code || "", md.tour_date || "", md.number_of_people || ""),
-                };
-                await postToSheetsLogger(env, { fields });
-              }
-            } catch (err) {
-              console.log("Invoice sheets logging failed", { error: String(err && err.message ? err.message : err) });
-            }
-          })());
-        }
-      }
-
-      return text("ok", 200);
     }
 
-    return text("Not found", 404);
-  },
-};
+    function onOpen() {
+      if (!state.generatedOpenUrl) return;
+      window.open(state.generatedOpenUrl, "_blank", "noopener,noreferrer");
+    }
+
+    async function init() {
+      try {
+        await loadTours();
+        addItem();
+        renderSummary();
+        updateModeUI();
+
+        ["blur", "change"].forEach(evt => {
+          els.mainFirstName.addEventListener(evt, () => normalizeNameInput(els.mainFirstName));
+          els.mainLastName.addEventListener(evt, () => normalizeNameInput(els.mainLastName));
+        });
+      } catch (err) {
+        showStatus(err.message || "Failed to initialize page.", "error");
+      }
+    }
+
+    els.addItemBtn.addEventListener("click", () => {
+      addItem({
+        language: els.defaultLanguage.value,
+      });
+      state.generatedUrl = "";
+      state.generatedOpenUrl = "";
+      els.copyBtn.disabled = true;
+      els.openBtn.disabled = true;
+      els.resultLinkBox.style.display = "none";
+      els.resultLinkBox.textContent = "";
+    });
+
+    els.generateLinkBtn.addEventListener("click", onGenerateLink);
+    els.sendInvoiceBtn.addEventListener("click", onSendInvoice);
+    els.copyBtn.addEventListener("click", onCopy);
+    els.openBtn.addEventListener("click", onOpen);
+
+    els.defaultLanguage.addEventListener("change", () => {
+      renderItems();
+      renderSummary();
+    });
+
+    init();
+  </script>
+</body>
+</html>
