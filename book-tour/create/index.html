@@ -179,6 +179,11 @@
 
     @media (min-width: 901px){ .payCreateHero h1{ font-size:32px !important; } }
   
+
+
+/* Agent mode toggle */
+.modeRow { display: flex; gap: 10px; flex-wrap: wrap; }
+.modeRow .btn.secondary.active { outline: 2px solid rgba(3,78,162,0.35); }
 </style>
 </head>
 <body>
@@ -227,8 +232,85 @@
 </select>
 <div class="subtext">Generates a link to the correct language pay page.</div>
 </div>
+
+<div class="field">
+<label>Agent action</label>
+<div class="modeRow">
+<button type="button" class="btn secondary active" id="modePayLink" aria-pressed="true">Generate Link</button>
+<button type="button" class="btn secondary" id="modeInvoice" aria-pressed="false">Email Invoice</button>
+</div>
+<div class="subtext">Generate Link keeps the current workflow (guest completes details). Email Invoice collects all details now and sends a Stripe invoice email.</div>
+</div>
+
+<div id="invoiceFields" hidden>
+<div class="field">
+<label for="stripeEnv">Stripe environment <span class="req">*</span></label>
+<select class="control" id="stripeEnv">
+<option value="sandbox" selected>Sandbox</option>
+<option value="live">Live</option>
+</select>
+<div class="subtext">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
+</div>
+
+<div class="field">
+<label for="firstName">Main contact first name <span class="req">*</span></label>
+<input class="control" id="firstName" type="text" autocomplete="given-name" autocapitalize="words" />
+</div>
+
+<div class="field">
+<label for="lastName">Main contact last name <span class="req">*</span></label>
+<input class="control" id="lastName" type="text" autocomplete="family-name" autocapitalize="words" />
+</div>
+
+<div class="field">
+<label for="email">Email <span class="req">*</span></label>
+<input class="control" id="email" type="email" autocomplete="email" />
+</div>
+
+<div class="field">
+<label for="phone">Phone <span class="req">*</span></label>
+<input class="control" id="phone" type="tel" autocomplete="tel" />
+</div>
+
+<div class="field">
+<label for="whatsapp">WhatsApp number <span class="req">*</span></label>
+<input class="control" id="whatsapp" type="tel" autocomplete="tel" />
+<div class="subtext">Include country code if possible.</div>
+</div>
+
+<div class="field">
+<label for="pickupLabel">Pickup location label <span class="req">*</span></label>
+<input class="control" id="pickupLabel" type="text" />
+<div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
+</div>
+
+<div class="field">
+<label for="pickupAddress">Pickup address or hotel name</label>
+<input class="control" id="pickupAddress" type="text" />
+<div class="subtext">Optional.</div>
+</div>
+
+<div class="field">
+<label for="notes">Notes (optional)</label>
+<textarea class="control" id="notes" rows="3"></textarea>
+</div>
+
+<div class="field">
+<label for="invoiceDueDays">Invoice due (days)</label>
+<select class="control" id="invoiceDueDays">
+<option value="1" selected>1 day</option>
+<option value="2">2 days</option>
+<option value="3">3 days</option>
+<option value="5">5 days</option>
+<option value="7">7 days</option>
+<option value="14">14 days</option>
+<option value="30">30 days</option>
+</select>
+</div>
+</div>
 <div class="actions">
 <button class="btn primary" id="btnGenerate" type="button">Generate link</button>
+<button class="btn primary" id="btnSendInvoice" type="button" hidden>Send invoice email</button>
 <button class="btn secondary" disabled="" id="btnCopy" type="button">Copy link</button>
 <button class="btn secondary" disabled="" id="btnOpen" type="button">Open link</button>
 </div>
@@ -261,10 +343,26 @@
         status: document.getElementById("status")
       };
 
+  const status = els.status;
+
       let toursByCode = {};
 
       function setStatus(msg) {
         els.status.textContent = msg || "";
+      }
+
+      function setBusy(btn, busy) {
+        if (!btn) return;
+        if (busy) {
+          btn.disabled = true;
+          btn.dataset.originalText = btn.textContent;
+          btn.textContent = "Processing...";
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.originalText) {
+            btn.textContent = btn.dataset.originalText;
+          }
+        }
       }
 
       function formatPriceUSD(amountCents) {
@@ -509,10 +607,172 @@
         window.open(url, "_blank", "noopener,noreferrer");
       });
 
+      
+      // Agent action mode: Generate Link vs Email Invoice
+      // We do NOT rely on global variables created from element ids (e.g., window.status).
+      const modePayLink = document.getElementById("modePayLink");
+      const modeInvoice = document.getElementById("modeInvoice");
+      const invoiceFields = document.getElementById("invoiceFields");
+      const stripeEnv = document.getElementById("stripeEnv");
+
+      const firstNameEl = document.getElementById("firstName");
+      const lastNameEl = document.getElementById("lastName");
+      const emailEl = document.getElementById("email");
+      const phoneEl = document.getElementById("phone");
+      const whatsappEl = document.getElementById("whatsapp");
+      const pickupLabelEl = document.getElementById("pickupLabel");
+      const pickupAddressEl = document.getElementById("pickupAddress");
+      const notesEl = document.getElementById("notes");
+      const invoiceDueDaysEl = document.getElementById("invoiceDueDays");
+
+      const btnSendInvoice = document.getElementById("btnSendInvoice");
+
+      function toTitleCaseFirstLetters(s) {
+        const raw = (s || "").trim();
+        if (!raw) return "";
+        return raw
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+      }
+
+      function autoCapitalizeNameInput(el) {
+        if (!el) return;
+        el.addEventListener("blur", () => {
+          const v = toTitleCaseFirstLetters(el.value);
+          if (v) el.value = v;
+        });
+        el.setAttribute("autocapitalize", "words");
+      }
+
+      autoCapitalizeNameInput(firstNameEl);
+      autoCapitalizeNameInput(lastNameEl);
+
+      let agentMode = "link";
+
+      function setAgentMode(mode) {
+        agentMode = mode === "invoice" ? "invoice" : "link";
+
+        const isInvoice = agentMode === "invoice";
+
+        if (modePayLink) modePayLink.setAttribute("aria-pressed", String(!isInvoice));
+        if (modeInvoice) modeInvoice.setAttribute("aria-pressed", String(isInvoice));
+
+        if (invoiceFields) invoiceFields.hidden = !isInvoice;
+
+        // Primary action buttons
+        btnGenerate.hidden = isInvoice;      // existing, working workflow
+        btnSendInvoice.hidden = !isInvoice;  // new invoice workflow
+
+        // Secondary actions are always available if there is a URL
+        // (Generate Link creates a payment URL, Email Invoice returns hosted invoice URL)
+        setStatus("");
+      }
+
+      function requireInput(el, label) {
+        const v = el && typeof el.value === "string" ? el.value.trim() : "";
+        if (!v) throw new Error(`Missing ${label}`);
+        return v;
+      }
+
+      function buildInvoicePayload() {
+        const tour_code = requireInput(els.tourSelect, "tour");
+        const tour_date = requireInput(els.dateInput, "tour date");
+        const number_of_people = Number(els.partySelect.value);
+        if (!Number.isFinite(number_of_people) || number_of_people < 1) throw new Error("Invalid number of people");
+
+        const language = (els.langSelect.value || "en").toLowerCase();
+        const stripe_environment = (stripeEnv && stripeEnv.value ? stripeEnv.value : "sandbox");
+
+        const first = requireInput(firstNameEl, "first name");
+        const last = requireInput(lastNameEl, "last name");
+        const main_contact_name = `${toTitleCaseFirstLetters(first)} ${toTitleCaseFirstLetters(last)}`.trim();
+
+        const main_contact_email = requireInput(emailEl, "email");
+        const main_contact_phone = requireInput(phoneEl, "phone");
+        const whatsapp_number = requireInput(whatsappEl, "WhatsApp number");
+
+        const pickup_location_label = requireInput(pickupLabelEl, "pickup location label");
+        const pickup_address_or_hotel = (pickupAddressEl && pickupAddressEl.value ? pickupAddressEl.value.trim() : "") || "";
+
+        const notes = (notesEl && notesEl.value ? notesEl.value.trim() : "") || "";
+
+        const invoice_due_days = invoiceDueDaysEl && invoiceDueDaysEl.value ? Number(invoiceDueDaysEl.value) : 1;
+
+        const agreed_to_terms = true;
+
+        return {
+          tour_code,
+          tour_date,
+          number_of_people,
+          language,
+          stripe_environment,
+
+          main_contact_name,
+          main_contact_email,
+          main_contact_phone,
+          whatsapp_number,
+
+          pickup_location_label,
+          pickup_address_or_hotel,
+          notes,
+
+          invoice_due_days,
+          agreed_to_terms,
+        };
+      }
+
+      async function sendInvoiceEmail() {
+        const payload = buildInvoicePayload();
+
+        const res = await fetch("/stripe/api/create-invoice", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data || !data.ok) {
+          const msg = (data && data.error) ? data.error : "Invoice request failed";
+          throw new Error(msg);
+        }
+
+        // Prefer the hosted invoice url for Copy/Open buttons
+        const urlToShow = data.hosted_invoice_url || data.invoice_pdf || "";
+        if (urlToShow) {
+          setLink(urlToShow);
+        }
+
+        setStatus("Invoice created.", true);
+        return data;
+      }
+
+      if (modePayLink) modePayLink.addEventListener("click", () => setAgentMode("link"));
+      if (modeInvoice) modeInvoice.addEventListener("click", () => setAgentMode("invoice"));
+
+      if (btnSendInvoice) {
+        btnSendInvoice.addEventListener("click", async () => {
+          try {
+            setBusy(btnSendInvoice, true);
+            setStatus("Sending invoice email...", true);
+
+            await sendInvoiceEmail();
+          } catch (err) {
+            setStatus(err && err.message ? err.message : "Invoice request failed", false);
+          } finally {
+            setBusy(btnSendInvoice, false);
+          }
+        });
+      }
+
+      // Default mode is the existing, working payment link workflow
+      setAgentMode("link");
+
       ensureMinTomorrow();
       loadTours();
       setLink("");
     })();
-  </script>
+</script>
 </body>
 </html>
