@@ -705,6 +705,23 @@
       return v || "-";
     }
 
+    function titleCaseWords(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+    }
+
+    function normalizeNameInput(el) {
+      if (!el) return;
+      el.value = titleCaseWords(el.value);
+    }
+
+
     function buildFullName() {
       return `${els.mainFirstName.value.trim()} ${els.mainLastName.value.trim()}`.trim();
     }
@@ -1117,7 +1134,13 @@
           body: JSON.stringify(payload),
         });
 
-        const data = await res.json();
+        const raw = await res.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (_) {
+          throw new Error(raw || "Unexpected server response");
+        }
 
         if (!res.ok || !data.ok) {
           throw new Error(data.error || "Invoice creation failed.");
@@ -1175,6 +1198,11 @@
         addItem();
         renderSummary();
         updateModeUI();
+
+        ["blur", "change"].forEach(evt => {
+          els.mainFirstName.addEventListener(evt, () => normalizeNameInput(els.mainFirstName));
+          els.mainLastName.addEventListener(evt, () => normalizeNameInput(els.mainLastName));
+        });
       } catch (err) {
         showStatus(err.message || "Failed to initialize page.", "error");
       }
