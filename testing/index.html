@@ -351,6 +351,20 @@
         els.status.textContent = msg || "";
       }
 
+      function setBusy(btn, busy) {
+        if (!btn) return;
+        if (busy) {
+          btn.disabled = true;
+          btn.dataset.originalText = btn.textContent;
+          btn.textContent = "Processing...";
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.originalText) {
+            btn.textContent = btn.dataset.originalText;
+          }
+        }
+      }
+
       function formatPriceUSD(amountCents) {
         if (amountCents == null) return "-";
         const dollars = (amountCents / 100).toFixed(2);
@@ -664,12 +678,12 @@
       }
 
       function buildInvoicePayload() {
-        const tour_code = requireInput(tourSelect, "tour");
-        const tour_date = requireInput(tourDate, "tour date");
-        const number_of_people = Number(partySize.value);
+        const tour_code = requireInput(els.tourSelect, "tour");
+        const tour_date = requireInput(els.dateInput, "tour date");
+        const number_of_people = Number(els.partySelect.value);
         if (!Number.isFinite(number_of_people) || number_of_people < 1) throw new Error("Invalid number of people");
 
-        const language = (langSelect.value || "en").toLowerCase();
+        const language = (els.langSelect.value || "en").toLowerCase();
         const stripe_environment = (stripeEnv && stripeEnv.value ? stripeEnv.value : "sandbox");
 
         const first = requireInput(firstNameEl, "first name");
