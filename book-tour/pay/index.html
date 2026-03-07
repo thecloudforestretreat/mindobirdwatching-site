@@ -426,7 +426,16 @@
           tour: (u.searchParams.get("tour") || "").trim(),
           date: (u.searchParams.get("date") || "").trim(),
           party: (u.searchParams.get("party") || "").trim(),
-          lang: (u.searchParams.get("lang") || "en").trim().toLowerCase()
+          lang: (u.searchParams.get("lang") || "en").trim().toLowerCase(),
+          agent_id: (u.searchParams.get("agent_id") || "").trim(),
+          guest_first_name: (u.searchParams.get("guest_first_name") || "").trim(),
+          guest_last_name: (u.searchParams.get("guest_last_name") || "").trim(),
+          guest_email: (u.searchParams.get("guest_email") || "").trim(),
+          guest_phone: (u.searchParams.get("guest_phone") || "").trim(),
+          whatsapp_number: (u.searchParams.get("whatsapp_number") || "").trim(),
+          pickup_location_label: (u.searchParams.get("pickup_location_label") || "").trim(),
+          pickup_address_or_hotel: (u.searchParams.get("pickup_address_or_hotel") || "").trim(),
+          notes: (u.searchParams.get("notes") || "").trim()
         };
       }
 
@@ -659,6 +668,26 @@
         els.pillTimezone.textContent = "Timezone: " + (tour.timezone || "America/Guayaquil");
         els.pillPickupWindow.textContent = "Pickup window: " + pickupWindow + " minutes";
 
+        var initialFormState = {
+          firstName: p.guest_first_name || "",
+          lastName: p.guest_last_name || "",
+          email: p.guest_email || "",
+          phone: p.guest_phone || "",
+          whatsapp: p.whatsapp_number || "",
+          pickupLabel: p.pickup_location_label || "",
+          pickupAddress: p.pickup_address_or_hotel || "",
+          notes: p.notes || ""
+        };
+
+        els.firstName.value = initialFormState.firstName;
+        els.lastName.value = initialFormState.lastName;
+        els.email.value = initialFormState.email;
+        els.phone.value = initialFormState.phone;
+        els.whatsapp.value = initialFormState.whatsapp;
+        els.pickupLabel.value = initialFormState.pickupLabel;
+        els.pickupAddress.value = initialFormState.pickupAddress;
+        els.notes.value = initialFormState.notes;
+
         if (tour.hero_image_url){
           els.tourImage.src = tour.hero_image_url;
           els.tourImage.onerror = function(){
@@ -742,14 +771,14 @@
         });
 
         els.btnReset.addEventListener("click", function(){
-          els.firstName.value = "";
-          els.lastName.value = "";
-          els.email.value = "";
-          els.phone.value = "";
-          els.whatsapp.value = "";
-          els.pickupLabel.value = "";
-          els.pickupAddress.value = "";
-          els.notes.value = "";
+          els.firstName.value = initialFormState.firstName;
+          els.lastName.value = initialFormState.lastName;
+          els.email.value = initialFormState.email;
+          els.phone.value = initialFormState.phone;
+          els.whatsapp.value = initialFormState.whatsapp;
+          els.pickupLabel.value = initialFormState.pickupLabel;
+          els.pickupAddress.value = initialFormState.pickupAddress;
+          els.notes.value = initialFormState.notes;
           els.agree.checked = false;
           setStatus("");
         });
