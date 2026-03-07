@@ -85,26 +85,11 @@
       flex: 0 0 auto;
     }
 
-    .brand-mark {
-      width: 34px;
+    .brand-logo {
       height: 34px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #2d7a54, #19543b);
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      flex: 0 0 auto;
-    }
-
-    .brand-name {
-      font-size: 15px;
-      font-weight: 800;
-      color: #173423;
-      white-space: nowrap;
+      width: auto;
+      display: block;
+      object-fit: contain;
     }
 
     .topbar-nav {
@@ -517,8 +502,7 @@
   <div class="site-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">MBW</div>
-        <div class="brand-name">Mindo Bird Watching</div>
+        <img class="brand-logo" src="/assets/images/logo/mbw-logo-full-2000x600.png" alt="Mindo Bird Watching" />
       </div>
 
       <nav class="topbar-nav" aria-label="Primary">
@@ -646,7 +630,7 @@
           </div>
 
           <div class="small-note">
-            Generate Link is available only for a single item. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
+            Generate Link is available only for a single item and does not require guest contact details. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
           </div>
 
           <div id="statusBox" class="status"></div>
@@ -1036,9 +1020,11 @@
       }
     }
 
-    function validateSharedFields() {
+    function validateSharedFieldsForInvoice() {
       const errors = [];
 
+      if (!els.stripeEnvironment.value.trim()) errors.push("Stripe environment is required.");
+      if (!els.invoiceDueDays.value.trim()) errors.push("Invoice due days is required.");
       if (!els.mainFirstName.value.trim()) errors.push("Main contact first name is required.");
       if (!els.mainLastName.value.trim()) errors.push("Main contact last name is required.");
       if (!els.mainEmail.value.trim()) errors.push("Email is required.");
@@ -1047,6 +1033,12 @@
       if (!els.pickupLocationLabel.value.trim()) errors.push("Pickup location label is required.");
       if (!els.pickupAddress.value.trim()) errors.push("Pickup address or hotel name is required.");
 
+      return errors;
+    }
+
+    function validateGenerateLinkFields() {
+      const errors = [];
+      if (!els.stripeEnvironment.value.trim()) errors.push("Stripe environment is required.");
       return errors;
     }
 
@@ -1132,7 +1124,7 @@
     async function onGenerateLink() {
       clearStatus();
 
-      const errors = [...validateSharedFields(), ...validateItems()];
+      const errors = [...validateGenerateLinkFields(), ...validateItems()];
       if (state.items.length !== 1) {
         showStatus("Generate Link is only available for a single booking item.", "error");
         return;
@@ -1171,12 +1163,12 @@
         ${agentLine}
       `;
 
-      showStatus("Link generated.", "ok");
+      showStatus("Link generated. Guest contact details will be collected on the payment page.", "ok");
     }
 
     async function onSendInvoice() {
       clearStatus();
-      const errors = [...validateSharedFields(), ...validateItems()];
+      const errors = [...validateSharedFieldsForInvoice(), ...validateItems()];
       if (errors.length) {
         showStatus(errors[0], "error");
         return;
