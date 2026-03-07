@@ -1150,7 +1150,48 @@
       return `${window.location.origin}${path}?${params.toString()}`;
     }
 
+    async function logAgentActivity(eventType, payload = {}) {
+      try {
+        await fetch("/stripe/api/agent-activity", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            event_type: eventType,
+            ...payload
+          })
+        });
+      } catch (err) {
+        console.warn("Agent activity logging failed", err);
+      }
+    }
+
+    function buildAgentActivityBase(item, options = {}) {
+      const tour = item ? getTourByCodeAndLanguage(item.tour_code, item.language) : null;
+      return {
+        agent_id: els.agentId.value.trim(),
+        stripe_environment: els.stripeEnvironment.value,
+        booking_mode: state.items.length > 1 ? "multi_item" : "single_item",
+        tour_code: item ? item.tour_code : "",
+        tour_title: tour ? tour.tour_title : (item ? item.tour_code : ""),
+        tour_date: item ? item.tour_date : "",
+        language: item ? item.language : (els.defaultLanguage.value || "en"),
+        party_size: item ? String(item.quantity || "") : "",
+        guest_first_name: els.mainFirstName.value.trim(),
+        guest_last_name: els.mainLastName.value.trim(),
+        guest_email: els.mainEmail.value.trim(),
+        guest_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: els.globalNotes.value.trim(),
+        ...options,
+      };
+    }
+
     async function onGenerateLink() {
+
       clearStatus();
 
       const errors = [...validateSharedFields({ requireGuest: false }), ...validateItems()];
@@ -1191,6 +1232,10 @@
         Language: ${item.language === "es" ? "Spanish" : "English"}
         ${agentLine}
       `;
+
+      await logAgentActivity("payment_link_generated", buildAgentActivityBase(item, {
+        generated_url: generatedUrl,
+      }));
 
       showStatus("Link generated.", "ok");
     }
@@ -1250,6 +1295,32 @@
           Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
           ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
         `;
+
+        await logAgentActivity("invoice_created", {
+          agent_id: agentId,
+          stripe_environment: els.stripeEnvironment.value,
+          booking_mode: multi ? "multi_item" : "single_item",
+          guest_first_name: els.mainFirstName.value.trim(),
+          guest_last_name: els.mainLastName.value.trim(),
+          guest_email: els.mainEmail.value.trim(),
+          guest_phone: els.mainPhone.value.trim(),
+          whatsapp_number: els.whatsappNumber.value.trim(),
+          pickup_location_label: els.pickupLocationLabel.value.trim(),
+          pickup_address_or_hotel: els.pickupAddress.value.trim(),
+          notes: els.globalNotes.value.trim(),
+          invoice_id: invoiceId,
+          invoice_number: invoiceNumber,
+          invoice_status: invoiceStatus,
+          hosted_invoice_url: hostedUrl,
+          total_items: String(state.items.length),
+          items: state.items.map(item => ({
+            tour_code: item.tour_code,
+            tour_date: item.tour_date,
+            quantity: String(item.quantity || ""),
+            language: item.language,
+            item_notes: item.item_notes || "",
+          })),
+        });
 
         showStatus(data.message || "Invoice created.", "ok");
       } catch (err) {
