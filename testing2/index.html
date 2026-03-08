@@ -1,803 +1,1385 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Pay for a Tour | Mindo Bird Watching</title>
-
-  <link rel="icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
-  <link rel="stylesheet" href="/assets/css/footer.css" />
-
-  <script src="/assets/js/head.js" defer></script>
-  <script src="/assets/js/includes.js" defer></script>
-  <script src="/assets/js/site.js" defer></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mindo Bird Watching - Agent Booking Builder</title>
   <style>
-    /* Page-local styles ONLY for the guest pay page */
-    #siteHeader{
-      display:flex;
-      justify-content:center;
-      margin-bottom: 14px;
-    }
-    #siteHeader > *{
-      width:100%;
-      max-width: 1120px;
-    }
-    #siteHeader .topbar,
-    #siteHeader header.topbar,
-    #siteHeader div.topbar{
-      width:100%;
-      border-radius: 22px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(0,0,0,0.10);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
-      padding: 10px 12px;
-      margin: 16px auto 0;
-    }
-    @media (min-width: 901px){
-      #siteHeader .topbar .right,
-      #siteHeader .topbar nav.nav{
-        flex-wrap: nowrap !important;
-        min-width: 0 !important;
-      }
-      #siteHeader .topbar nav.nav{
-        padding-left: 8px;
-        overflow: hidden;
-      }
-      #siteHeader .topbar .lang{ flex: 0 0 auto; }
+    :root {
+      --page-bg: #cfe0b7;
+      --shell: #f4f6ef;
+      --panel: #eef3e7;
+      --panel-soft: #f8faf5;
+      --card: #ffffff;
+      --text: #243425;
+      --muted: #5e6e5d;
+      --line: #d8e1d2;
+      --line-strong: #c5d1bf;
+      --brand: #1f5f45;
+      --brand-dark: #174c37;
+      --brand-soft: #dfeadc;
+      --accent: #f0e08b;
+      --success-bg: #e6f3e7;
+      --success-line: #b8d3bc;
+      --error-bg: #fff0f0;
+      --error-line: #e3bcbc;
+      --info-bg: #edf4ff;
+      --info-line: #c7d8f5;
+      --shadow: 0 10px 30px rgba(35, 49, 34, 0.08);
+      --radius-xl: 26px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --max-width: 1280px;
+      --nav-height: 70px;
     }
 
-    .payPage { padding: 22px 22px 26px; }
-    @media (max-width: 900px) { .payPage { padding: 18px 14px 20px; } }
+    * { box-sizing: border-box; }
 
-    .payHero h1{
-      font-family: "Playfair Display", serif;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      margin: 0 0 6px;
-      color: #0e4b2e;
-      font-size: clamp(28px, 3vw, 32px);
-    }
-    .payHero p{
+    html, body {
       margin: 0;
-      max-width: 78ch;
-      color: rgba(0,0,0,0.62);
-      font-size: 16px;
-      line-height: 1.55;
+      padding: 0;
+      min-height: 100%;
     }
 
-    .pillRow{
-      margin-top: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .pill{
-      display: inline-flex;
-      align-items: center;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(0,0,0,0.10);
-      font-size: 13px;
-      font-weight: 700;
-      color: rgba(0,0,0,0.75);
+    body {
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--page-bg);
     }
 
-    .payGrid{
-      margin-top: 18px;
-      display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
-      gap: 18px;
-      align-items: start;
-    }
-    @media (max-width: 900px){ .payGrid { grid-template-columns: 1fr; } }
-
-    .panel{
-      background: rgba(255,255,255,0.45);
-      border: 1px solid rgba(0,0,0,0.10);
-      border-radius: 18px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
-      padding: 18px;
-    }
-    @media (max-width: 900px){ .panel { padding: 16px; } }
-
-    .tourCard{
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .tourMedia{
-      width: 100%;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.10);
-      background: rgba(255,255,255,0.55);
-      min-height: 240px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .tourMedia img{
-      width: 100%;
-      height: auto;
+    img {
+      max-width: 100%;
       display: block;
     }
-    .tourMetaRow{
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .site-shell {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+
+    .topbar {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+      border-radius: 24px;
+      min-height: var(--nav-height);
+      padding: 12px 18px;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 18px;
     }
-    .tourCode{
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(0,0,0,0.55);
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 0 0 auto;
     }
-    .tourTitle{
-      margin: 4px 0 2px;
-      font-weight: 900;
-      font-size: 18px;
-      color: rgba(0,0,0,0.85);
-    }
-    .tourSubtitle{
-      margin: 0;
-      color: rgba(0,0,0,0.62);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    .tourPrice{
-      padding: 8px 12px;
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(0,0,0,0.10);
-      font-size: 13px;
-      font-weight: 900;
-      color: rgba(0,0,0,0.78);
+      background: linear-gradient(135deg, #2d7a54, #19543b);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      flex: 0 0 auto;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #173423;
       white-space: nowrap;
     }
 
-    .hint{
-      margin: 0 0 12px;
-      color: rgba(0,0,0,0.55);
-      font-size: 13px;
-      line-height: 1.35;
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
-    .req{ color: #b42318; font-weight: 900; }
 
-    .field{ margin-top: 12px; }
-    .field:first-of-type{ margin-top: 0; }
-
-    label{
-      display: block;
+    .nav-pill {
+      border: 1px solid #d5ddd0;
+      background: #ffffff;
+      color: #1f2f1f;
+      border-radius: 999px;
+      padding: 10px 15px;
+      font-size: 12px;
+      line-height: 1;
       font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .nav-pill:hover {
+      transform: translateY(-1px);
+      background: #fbfcfa;
+    }
+
+    .nav-pill.is-lang-active {
+      background: #e4eee0;
+      border-color: #9eb79a;
+      color: #173f2d;
+    }
+
+    .page-card {
+      background: var(--shell);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .builder,
+    .summary {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 22px;
+    }
+
+    .summary {
+      position: sticky;
+      top: 18px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 42px;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--brand);
+    }
+
+    .intro {
+      margin: 0 0 18px;
+      max-width: 760px;
+      color: #5a6958;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .mode-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid #b8cab1;
+      background: #e7efe2;
+      color: #26442e;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      margin: 16px 0 12px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #2a4030;
+    }
+
+    .divider {
+      height: 1px;
+      background: #d5dfcf;
+      margin: 18px 0;
+    }
+
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .grid-3 {
+      grid-template-columns: 1.2fr 1fr 1fr;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    label {
       font-size: 13px;
-      color: rgba(0,0,0,0.78);
+      font-weight: 800;
+      color: #2b3b2c;
+    }
+
+    .req::after {
+      content: " *";
+      color: #be3a3a;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      background: #ffffff;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #8ead90;
+      box-shadow: 0 0 0 3px rgba(117, 156, 121, 0.14);
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .hint,
+    .small-note {
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .items-wrap {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-soft);
+      padding: 14px;
+    }
+
+    .item-card {
+      border: 1px solid #d9e2d3;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .item-card + .item-card {
+      margin-top: 14px;
+    }
+
+    .item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .item-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #2a4331;
+    }
+
+    .pricing-note {
+      margin-top: 6px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #3d5341;
+    }
+
+    .summary-box {
+      border: 1px dashed #bccdb4;
+      background: #fdfefd;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .summary-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #294130;
+    }
+
+    .summary-empty {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .summary-item {
+      border: 1px solid #dbe4d6;
+      border-radius: 14px;
+      background: #fafcf8;
+      padding: 12px;
+    }
+
+    .summary-item + .summary-item {
+      margin-top: 10px;
+    }
+
+    .summary-item-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #25402d;
       margin-bottom: 6px;
     }
-    .control{
-      width: 100%;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,0.14);
-      background: rgba(255,255,255,0.75);
-      padding: 12px 12px;
-      font-size: 14px;
-      outline: none;
-      box-sizing: border-box;
-    }
-    .control:focus{
-      border-color: rgba(11,90,51,0.55);
-      box-shadow: 0 0 0 3px rgba(11,90,51,0.14);
-    }
-    input.control{ height: 44px; }
-    select.control{ height: 44px; }
-    textarea.control{ height: auto; }
 
-    .subtext{
-      margin-top: 6px;
+    .summary-meta {
       font-size: 12px;
-      color: rgba(0,0,0,0.55);
-      line-height: 1.35;
+      line-height: 1.5;
+      color: var(--muted);
     }
 
-    .twoCol{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    .money {
+      font-weight: 800;
+      color: #22452f;
     }
-    @media (max-width: 520px){ .twoCol { grid-template-columns: 1fr; } }
-    .twoCol .field{ margin-top: 0; }
-    .twoCol label{ min-height: 18px; }
 
-    .actions{
-      margin-top: 14px;
+    .action-row {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
-      align-items: center;
-    }
-    
-
-    .checkRow{
-      display: flex;
       gap: 10px;
-      align-items: flex-start;
-      margin-top: 12px;
+      margin-top: 18px;
     }
-    .checkRow input{ margin-top: 3px; }
-    .checkRow label{
-      margin: 0;
+
+    .mini-btn,
+    .action-btn {
+      appearance: none;
+      border-radius: 12px;
+      border: 1px solid #9eb29a;
+      background: #ffffff;
+      color: #213221;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .mini-btn:hover,
+    .action-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .mini-btn {
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+
+    .mini-btn.danger {
+      border-color: #dfc2c2;
+      background: #fff8f8;
+      color: #a03d3d;
+    }
+
+    .action-btn.primary {
+      background: var(--accent);
+      border-color: #d3c063;
+    }
+
+    .action-btn.secondary {
+      background: #d6e8d4;
+      border-color: #a9c0a5;
+    }
+
+    .action-btn:disabled,
+    .mini-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13px;
       font-weight: 700;
-      font-size: 13px;
-      color: rgba(0,0,0,0.72);
-      line-height: 1.35;
+      line-height: 1.45;
     }
 
-    .status{
-      margin-top: 10px;
-      color: #0b5a33;
-      font-weight: 900;
-      font-size: 13px;
+    .status.show {
+      display: block;
     }
-    .statusError{ color: #b42318; }
 
-    #termsLink{ color: #0b5a33; font-weight: 900; text-decoration: underline; }
-    #termsLink:hover{ text-decoration: none; }
+    .status.ok {
+      background: var(--success-bg);
+      border: 1px solid var(--success-line);
+      color: #1f6437;
+    }
+
+    .status.error {
+      background: var(--error-bg);
+      border: 1px solid var(--error-line);
+      color: #a13333;
+    }
+
+    .status.info {
+      background: var(--info-bg);
+      border: 1px solid var(--info-line);
+      color: #29539a;
+    }
+
+    .link-box {
+      display: none;
+      margin-top: 14px;
+      border: 1px dashed #bcccb4;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #314632;
+      word-break: break-word;
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .site-shell {
+        padding: 16px 12px 28px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar-nav {
+        justify-content: flex-start;
+      }
+
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .page-card,
+      .builder,
+      .summary {
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .item-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <div id="siteHeader"></div>
+  <div class="site-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">MBW</div>
+        <div class="brand-name">Mindo Bird Watching</div>
+      </div>
 
-    <main class="page card payPage">
-      <header class="payHero">
-        <h1 id="tTitle">Pay for a Tour</h1>
-        <p id="tSubtitle">Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.</p>
+      <nav class="topbar-nav" aria-label="Primary">
+        <a class="nav-pill is-lang-active" href="#">EN</a>
+        <a class="nav-pill" href="#">ES</a>
+        <a class="nav-pill" href="/home/">Home</a>
+        <a class="nav-pill" href="/plan-your-trip/">Plan Your Trip</a>
+        <a class="nav-pill" href="/tours/">Tours</a>
+        <a class="nav-pill" href="/birds/">Birds</a>
+        <a class="nav-pill" href="/about-us/">About Us</a>
+        <a class="nav-pill" href="/contact/">Contact</a>
+        <a class="nav-pill" href="/book-a-tour/">Book A Tour</a>
+      </nav>
+    </header>
 
-        <div class="pillRow" aria-label="Key details">
-          <div class="pill">Price is per person</div>
-          <div class="pill" id="pillTimezone">Timezone: America/Guayaquil</div>
-          <div class="pill" id="pillPickupWindow">Pickup window: 15 minutes</div>
-        </div>
-      </header>
+    <div class="page-card">
+      <div class="layout">
+        <section class="builder">
+          <h1>Create a payment link</h1>
+          <p class="intro">
+            Internal tool for staff. Build a single booking or a multi-item itinerary, then copy the payment link or send a Stripe invoice.
+          </p>
 
-      <section class="payGrid" aria-label="Tour checkout">
-        <aside class="panel tourCard" aria-label="Tour summary">
-          <div class="tourMedia">
-            <img id="tourImage" src="" alt="Promo image" loading="lazy" />
-          </div>
+          <div id="modeChip" class="mode-chip">Single item mode</div>
 
-          <div class="tourMetaRow">
-            <div>
-              <div class="tourCode" id="tourCode">MBW---</div>
-              <div class="tourTitle" id="tourTitle">Loading tour...</div>
-              <p class="tourSubtitle" id="tourSubtitle">Duration: - | Pickup: -</p>
+          <div class="section-title">Guest and invoice details</div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label class="req" for="stripeEnvironment">Stripe environment</label>
+              <select id="stripeEnvironment">
+                <option value="sandbox">Sandbox</option>
+                <option value="live">Live</option>
+              </select>
+              <div class="hint">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
             </div>
-            <div class="tourPrice" id="tourPrice">$0.00 per person</div>
+
+            <div class="field">
+              <label class="req" for="invoiceDueDays">Invoice due (days)</label>
+              <input id="invoiceDueDays" type="number" min="1" step="1" value="2" />
+            </div>
           </div>
 
-          <p class="tourSubtitle" id="tourOneLiner"></p>
+          <div class="grid-2">
+            <div class="field">
+              <label class="req" for="mainFirstName">Main contact first name</label>
+              <input id="mainFirstName" type="text" placeholder="First name" />
+            </div>
+
+            <div class="field">
+              <label class="req" for="mainLastName">Main contact last name</label>
+              <input id="mainLastName" type="text" placeholder="Last name" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label class="req" for="mainEmail">Email</label>
+              <input id="mainEmail" type="email" placeholder="guest@email.com" />
+            </div>
+
+            <div class="field">
+              <label class="req" for="mainPhone">Phone</label>
+              <input id="mainPhone" type="text" placeholder="Phone number" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label class="req" for="whatsappNumber">WhatsApp number</label>
+              <input id="whatsappNumber" type="text" placeholder="WhatsApp number" />
+              <div class="hint">Include country code if possible.</div>
+            </div>
+
+            <div class="field">
+              <label for="agentId">Agent ID</label>
+              <input id="agentId" type="text" placeholder="003" />
+              <div class="hint">Optional internal attribution code for the agent who created the link or invoice.</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label class="req" for="defaultLanguage">Default language</label>
+              <select id="defaultLanguage">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+              </select>
+              <div class="hint">Used as the default for newly added items.</div>
+            </div>
+
+            <div class="field">
+              <label class="req" for="pickupLocationLabel">Pickup location label</label>
+              <input id="pickupLocationLabel" type="text" placeholder="Hotel, Airbnb, Meeting point" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="req" for="pickupAddress">Pickup address or hotel name</label>
+            <input id="pickupAddress" type="text" placeholder="Pickup address or hotel name" />
+          </div>
+
+          <div class="field">
+            <label for="globalNotes">General notes</label>
+            <textarea id="globalNotes" placeholder="Internal notes for the booking or invoice"></textarea>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Booking items</div>
+
+          <div class="items-wrap">
+            <div id="itemsContainer"></div>
+
+            <div class="action-row" style="margin-top:14px;">
+              <button id="addItemBtn" class="action-btn secondary" type="button">+ Add another tour or activity</button>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="generateLinkBtn" class="action-btn primary" type="button">Generate link</button>
+            <button id="sendInvoiceBtn" class="action-btn secondary" type="button">Send invoice</button>
+            <button id="copyBtn" class="action-btn secondary" type="button" disabled>Copy link</button>
+            <button id="openBtn" class="action-btn secondary" type="button" disabled>Open link</button>
+          </div>
+
+          <div class="small-note">
+            Generate Link is available only for a single item. It can include optional prefilled guest details. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
+          </div>
+
+          <div id="statusBox" class="status"></div>
+        </section>
+
+        <aside class="summary">
+          <div class="summary-box">
+            <div class="summary-title">Booking summary</div>
+            <div id="summaryItems"></div>
+          </div>
+
+          <div class="summary-box">
+            <div class="summary-title">Action summary</div>
+            <div id="actionSummary" class="summary-empty">
+              Generate a payment link or create an invoice to display the result here.
+            </div>
+          </div>
+
+          <div id="resultLinkBox" class="link-box"></div>
+
+          <div class="small-note">
+            Single item mode:
+            <br />
+            - Generate Link can keep your current guest flow
+            <br />
+            - Send Invoice uses your existing single-item invoice route
+            <br /><br />
+            Multi-item mode:
+            <br />
+            - Generate Link is disabled
+            <br />
+            - Send Invoice will use the multi-item invoice route
+          </div>
         </aside>
-
-        <div class="panel" aria-label="Checkout form">
-          <h2 id="tCheckoutTitle" style="margin:0 0 10px;font-family:\"Playfair Display\",serif;font-weight:700;color:#0e4b2e;font-size:22px;">Checkout details</h2>
-          <p class="hint" id="tRequiredHint">Required fields are marked with <span class="req">*</span>.</p>
-
-          <div class="hint" id="lockedHint"></div>
-
-          <div class="field">
-            <label>Tour</label>
-            <input id="tourLocked" class="control" type="text" readonly />
-            <div class="subtext">This is locked from the payment link.</div>
-          </div>
-
-          <div class="field">
-            <label>Tour date</label>
-            <input id="dateLocked" class="control" type="text" readonly />
-            <div class="subtext">Past dates are not allowed.</div>
-          </div>
-
-          <div class="field">
-            <label for="partyInput" id="tPartyLabel">Number of people <span class="req">*</span></label>
-            <select id="partyInput" class="control" required></select>
-            <div class="subtext" id="partyHelp"></div>
-          </div>
-
-          <div class="twoCol">
-            <div class="field">
-              <label for="firstName" id="tFirstLabel">Main contact first name <span class="req">*</span></label>
-              <input id="firstName" class="control" type="text" autocomplete="given-name" autocapitalize="words" required />
-            </div>
-            <div class="field">
-              <label for="lastName" id="tLastLabel">Main contact last name <span class="req">*</span></label>
-              <input id="lastName" class="control" type="text" autocomplete="family-name" autocapitalize="words" required />
-            </div>
-          </div>
-
-          <div class="twoCol">
-            <div class="field">
-              <label for="email" id="tEmailLabel">Email <span class="req">*</span></label>
-              <input id="email" class="control" type="email" autocomplete="email" required />
-            </div>
-            <div class="field">
-              <label for="phone" id="tPhoneLabel">Phone <span class="req">*</span></label>
-              <input id="phone" class="control" type="tel" autocomplete="tel" required />
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="whatsapp" id="tWhatsLabel">WhatsApp number <span class="req">*</span></label>
-            <input id="whatsapp" class="control" type="tel" autocomplete="tel" required />
-            <div class="subtext">Include country code if possible.</div>
-          </div>
-
-          <div class="field">
-            <label for="pickupLabel" id="tPickupLabel">Pickup location label <span class="req">*</span></label>
-            <input id="pickupLabel" class="control" type="text" required />
-            <div class="subtext">Example: Hotel, Hostel, Airbnb, Meeting point.</div>
-          </div>
-
-          <div class="field">
-            <label for="pickupAddress" id="tPickupAddrLabel">Pickup address or hotel name</label>
-            <input id="pickupAddress" class="control" type="text" />
-            <div class="subtext">Optional.</div>
-          </div>
-
-          <div class="field">
-            <label for="notes" id="tNotesLabel">Notes (optional)</label>
-            <textarea id="notes" class="control" rows="3"></textarea>
-          </div>
-
-          <div class="checkRow">
-            <input id="agree" type="checkbox" />
-            <label for="agree" id="agreeLabel"><span id="tAgreePrefix">I agree to the</span> <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> <span class="req">*</span></label>
-          </div>
-
-          <div class="actions">
-            <button id="btnPay" class="btn primary" type="button"><span id="tPayBtn">Continue to Stripe</span></button>
-            <button id="btnReset" class="btn" type="button"><span id="tResetBtn">Reset</span></button>
-          </div>
-
-          <div id="status" class="status" aria-live="polite"></div>
-        </div>
-      </section>
-    </main>
-
-    <div id="siteFooter"></div>
+      </div>
+    </div>
   </div>
 
+  <template id="itemTemplate">
+    <div class="item-card" data-item-card>
+      <div class="item-top">
+        <div class="item-title" data-item-heading>Booking Item</div>
+        <div class="item-actions">
+          <button type="button" class="mini-btn danger" data-remove-item>Remove</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="req">Tour</label>
+        <select data-field="tour_code">
+          <option value="">Select a tour...</option>
+        </select>
+        <div class="pricing-note" data-tour-meta>Select a tour to preview the price and details.</div>
+      </div>
+
+      <div class="grid-3">
+        <div class="field">
+          <label class="req">Tour date</label>
+          <input data-field="tour_date" type="date" />
+        </div>
+
+        <div class="field">
+          <label class="req">Number of people</label>
+          <input data-field="quantity" type="number" min="1" step="1" value="2" />
+        </div>
+
+        <div class="field">
+          <label class="req">Language</label>
+          <select data-field="language">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Item notes</label>
+        <textarea data-field="item_notes" placeholder="Optional internal note for this line item"></textarea>
+      </div>
+    </div>
+  </template>
+
   <script>
-    (function(){
-      var els = {
-        tourImage: document.getElementById("tourImage"),
-        tourCode: document.getElementById("tourCode"),
-        tourTitle: document.getElementById("tourTitle"),
-        tourSubtitle: document.getElementById("tourSubtitle"),
-        tourPrice: document.getElementById("tourPrice"),
-        tourOneLiner: document.getElementById("tourOneLiner"),
+    const state = {
+      tours: [],
+      items: [],
+      generatedUrl: "",
+      generatedOpenUrl: "",
+    };
 
-        pillTimezone: document.getElementById("pillTimezone"),
-        pillPickupWindow: document.getElementById("pillPickupWindow"),
+    const els = {
+      itemsContainer: document.getElementById("itemsContainer"),
+      itemTemplate: document.getElementById("itemTemplate"),
+      addItemBtn: document.getElementById("addItemBtn"),
+      generateLinkBtn: document.getElementById("generateLinkBtn"),
+      sendInvoiceBtn: document.getElementById("sendInvoiceBtn"),
+      copyBtn: document.getElementById("copyBtn"),
+      openBtn: document.getElementById("openBtn"),
+      statusBox: document.getElementById("statusBox"),
+      modeChip: document.getElementById("modeChip"),
+      summaryItems: document.getElementById("summaryItems"),
+      actionSummary: document.getElementById("actionSummary"),
+      resultLinkBox: document.getElementById("resultLinkBox"),
+      stripeEnvironment: document.getElementById("stripeEnvironment"),
+      invoiceDueDays: document.getElementById("invoiceDueDays"),
+      mainFirstName: document.getElementById("mainFirstName"),
+      mainLastName: document.getElementById("mainLastName"),
+      mainEmail: document.getElementById("mainEmail"),
+      mainPhone: document.getElementById("mainPhone"),
+      whatsappNumber: document.getElementById("whatsappNumber"),
+      agentId: document.getElementById("agentId"),
+      defaultLanguage: document.getElementById("defaultLanguage"),
+      pickupLocationLabel: document.getElementById("pickupLocationLabel"),
+      pickupAddress: document.getElementById("pickupAddress"),
+      globalNotes: document.getElementById("globalNotes"),
+    };
 
-        lockedHint: document.getElementById("lockedHint"),
-        tourLocked: document.getElementById("tourLocked"),
-        dateLocked: document.getElementById("dateLocked"),
-        partyInput: document.getElementById("partyInput"),
-        partyHelp: document.getElementById("partyHelp"),
+    function showStatus(message, type = "info") {
+      els.statusBox.textContent = message;
+      els.statusBox.className = `status show ${type}`;
+    }
 
-        firstName: document.getElementById("firstName"),
-        lastName: document.getElementById("lastName"),
-        email: document.getElementById("email"),
-        phone: document.getElementById("phone"),
-        whatsapp: document.getElementById("whatsapp"),
-        pickupLabel: document.getElementById("pickupLabel"),
-        pickupAddress: document.getElementById("pickupAddress"),
-        notes: document.getElementById("notes"),
-        agree: document.getElementById("agree"),
+    function clearStatus() {
+      els.statusBox.textContent = "";
+      els.statusBox.className = "status";
+    }
 
-        btnPay: document.getElementById("btnPay"),
-        btnReset: document.getElementById("btnReset"),
-        status: document.getElementById("status")
+    function formatCurrencyDisplay(v) {
+      return v || "-";
+    }
+
+    function titleCaseWords(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+    }
+
+    function normalizeNameInput(el) {
+      if (!el) return;
+      el.value = titleCaseWords(el.value);
+    }
+
+    function buildFullName() {
+      return `${els.mainFirstName.value.trim()} ${els.mainLastName.value.trim()}`.trim();
+    }
+
+    function getDefaultTomorrowISO() {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function getTourByCodeAndLanguage(code, language) {
+      return state.tours.find(t => t.tour_code === code && t.language === language) || null;
+    }
+
+    async function loadTours() {
+      const res = await fetch("/stripe/api/tours?lang=en");
+      const data = await res.json();
+      if (!data.ok) {
+        throw new Error(data.error || "Failed to load tours");
+      }
+      state.tours = data.tours || [];
+    }
+
+    function createItem(initial = {}) {
+      return {
+        id: crypto.randomUUID(),
+        tour_code: initial.tour_code || "",
+        tour_date: initial.tour_date || getDefaultTomorrowISO(),
+        quantity: initial.quantity || 2,
+        language: initial.language || els.defaultLanguage.value || "en",
+        item_notes: initial.item_notes || "",
       };
+    }
 
-      function setStatus(msg, isError){
-        els.status.textContent = msg || "";
-        if (isError) els.status.classList.add("statusError");
-        else els.status.classList.remove("statusError");
+    function addItem(initial = {}) {
+      state.items.push(createItem(initial));
+      renderItems();
+      renderSummary();
+      updateModeUI();
+    }
+
+    function removeItem(id) {
+      if (state.items.length === 1) {
+        showStatus("At least one booking item is required.", "error");
+        return;
       }
+      state.items = state.items.filter(item => item.id !== id);
+      renderItems();
+      renderSummary();
+      updateModeUI();
+      clearStatus();
+    }
 
-      function qp(){
-        var u = new URL(window.location.href);
-        return {
-          tour: (u.searchParams.get("tour") || "").trim(),
-          date: (u.searchParams.get("date") || "").trim(),
-          party: (u.searchParams.get("party") || "").trim(),
-          lang: (u.searchParams.get("lang") || "en").trim().toLowerCase(),
-          agent_id: (u.searchParams.get("agent_id") || "").trim(),
-          guest_first_name: (u.searchParams.get("guest_first_name") || "").trim(),
-          guest_last_name: (u.searchParams.get("guest_last_name") || "").trim(),
-          guest_email: (u.searchParams.get("guest_email") || "").trim(),
-          guest_phone: (u.searchParams.get("guest_phone") || "").trim(),
-          whatsapp_number: (u.searchParams.get("whatsapp_number") || "").trim(),
-          pickup_location_label: (u.searchParams.get("pickup_location_label") || "").trim(),
-          pickup_address_or_hotel: (u.searchParams.get("pickup_address_or_hotel") || "").trim(),
-          notes: (u.searchParams.get("notes") || "").trim()
-        };
-      }
+    function updateItem(id, key, value) {
+      const item = state.items.find(x => x.id === id);
+      if (!item) return;
+      item[key] = value;
+      renderSummary();
+      updateModeUI();
+    }
 
-      function isValidISODate(s){
-        return /^\d{4}-\d{2}-\d{2}$/.test(s);
-      }
+    function renderItems() {
+      els.itemsContainer.innerHTML = "";
 
-      function todayISO(){
-        var d = new Date();
-        var yyyy = String(d.getFullYear());
-        var mm = String(d.getMonth() + 1).padStart(2, "0");
-        var dd = String(d.getDate()).padStart(2, "0");
-        return yyyy + "-" + mm + "-" + dd;
-      }
+      state.items.forEach((item, index) => {
+        const node = els.itemTemplate.content.firstElementChild.cloneNode(true);
+        node.dataset.itemId = item.id;
 
-      function parseMaxPerson(v){
-        if (!v) return null;
-        if (typeof v === "number") return v;
-        var s = String(v).trim().toLowerCase();
-        if (s === "unlimited") return null;
-        var n = Number(s);
-        return Number.isFinite(n) ? n : null;
-      }
+        const heading = node.querySelector("[data-item-heading]");
+        heading.textContent = `Booking Item ${index + 1}`;
 
-      function buildPartyOptions(min, max){
-        var upper = Math.min(max || 8, 8);
-        els.partyInput.innerHTML = "";
-        for (var i = 1; i <= upper; i++){
-          if (i < min) continue;
-          var opt = document.createElement("option");
-          opt.value = String(i);
-          opt.textContent = String(i);
-          els.partyInput.appendChild(opt);
-        }
-      }
+        const removeBtn = node.querySelector("[data-remove-item]");
+        removeBtn.disabled = state.items.length === 1;
+        removeBtn.addEventListener("click", () => removeItem(item.id));
 
-      function capWordsPreserve(s){
-        var parts = String(s || "").split(/(\s+)/);
-        return parts.map(function(p){
-          if (/^\s+$/.test(p)) return p;
-          if (!p) return p;
-          return p.charAt(0).toUpperCase() + p.slice(1);
-        }).join("");
-      }
+        const tourSelect = node.querySelector('[data-field="tour_code"]');
+        const dateInput = node.querySelector('[data-field="tour_date"]');
+        const qtyInput = node.querySelector('[data-field="quantity"]');
+        const langSelect = node.querySelector('[data-field="language"]');
+        const notesInput = node.querySelector('[data-field="item_notes"]');
+        const metaText = node.querySelector("[data-tour-meta]");
 
-      function attachAutoCapInput(el){
-        if (!el) return;
-        var apply = function(){
-          var v = capWordsPreserve(el.value);
-          if (v !== el.value) el.value = v;
-        };
-        el.addEventListener("blur", apply);
-        el.addEventListener("change", apply);
-        el.addEventListener("input", function(){
-          var val = el.value || "";
-          if (!val) return;
-          if (val.charAt(val.length - 1) === " ") apply();
+        const currentLangTours = state.tours
+          .filter(t => t.language === item.language)
+          .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
+
+        currentLangTours.forEach(tour => {
+          const opt = document.createElement("option");
+          opt.value = tour.tour_code;
+          opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
+          tourSelect.appendChild(opt);
         });
+
+        langSelect.value = item.language;
+        tourSelect.value = item.tour_code;
+        dateInput.value = item.tour_date;
+        qtyInput.value = item.quantity;
+        notesInput.value = item.item_notes;
+
+        function refreshMeta() {
+          const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
+          if (!selectedTour) {
+            metaText.textContent = "Select a tour to preview the price and details.";
+            return;
+          }
+          metaText.innerHTML = `
+            <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} per person
+            <br />
+            <strong>Type:</strong> ${selectedTour.duration_label || "-"}
+            <br />
+            <strong>Summary:</strong> ${selectedTour.description_one_liner || "-"}
+          `;
+        }
+
+        langSelect.addEventListener("change", (e) => {
+          updateItem(item.id, "language", e.target.value);
+
+          const prevCode = item.tour_code;
+          const refreshedTours = state.tours
+            .filter(t => t.language === e.target.value)
+            .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
+
+          tourSelect.innerHTML = '<option value="">Select a tour...</option>';
+          refreshedTours.forEach(tour => {
+            const opt = document.createElement("option");
+            opt.value = tour.tour_code;
+            opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
+            tourSelect.appendChild(opt);
+          });
+
+          const existsInLang = refreshedTours.some(t => t.tour_code === prevCode);
+          if (existsInLang) {
+            tourSelect.value = prevCode;
+          } else {
+            updateItem(item.id, "tour_code", "");
+            tourSelect.value = "";
+          }
+
+          refreshMeta();
+        });
+
+        tourSelect.addEventListener("change", (e) => {
+          updateItem(item.id, "tour_code", e.target.value);
+          refreshMeta();
+        });
+
+        dateInput.addEventListener("change", (e) => {
+          updateItem(item.id, "tour_date", e.target.value);
+        });
+
+        qtyInput.addEventListener("input", (e) => {
+          updateItem(item.id, "quantity", e.target.value);
+        });
+
+        notesInput.addEventListener("input", (e) => {
+          updateItem(item.id, "item_notes", e.target.value);
+        });
+
+        refreshMeta();
+        els.itemsContainer.appendChild(node);
+      });
+    }
+
+    function renderSummary() {
+      const items = state.items;
+      if (!items.length) {
+        els.summaryItems.innerHTML = '<div class="summary-empty">No booking items yet.</div>';
+        return;
       }
 
-      async function fetchTours(lang){
-        var res = await fetch("/stripe/api/tours?lang=" + encodeURIComponent(lang) + "&_=" + Date.now(), { method: "GET", cache: "no-store" });
-        if (!res.ok) throw new Error("Tours API error (" + res.status + ")");
-        var data = await res.json();
-        if (!data || data.ok !== true || !Array.isArray(data.tours)) throw new Error("Bad tours response");
-        return data.tours;
+      els.summaryItems.innerHTML = "";
+      let knownCount = 0;
+
+      items.forEach((item, index) => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        const div = document.createElement("div");
+        div.className = "summary-item";
+
+        const name = tour
+          ? `${tour.tour_code} - ${tour.tour_title}`
+          : `Item ${index + 1}`;
+
+        const priceLine = tour
+          ? `${tour.amount_display} x ${item.quantity || 0}`
+          : "Select a tour";
+
+        if (tour) knownCount += 1;
+
+        div.innerHTML = `
+          <div class="summary-item-name">${name}</div>
+          <div class="summary-meta">
+            Date: ${item.tour_date || "-"}
+            <br />
+            People: ${item.quantity || "-"}
+            <br />
+            Language: ${item.language === "es" ? "Spanish" : "English"}
+            <br />
+            Price: <span class="money">${priceLine}</span>
+          </div>
+        `;
+
+        els.summaryItems.appendChild(div);
+      });
+
+      if (knownCount < items.length) {
+        const warn = document.createElement("div");
+        warn.className = "small-note";
+        warn.textContent = "Some items are incomplete. Select a tour for every row before creating a link or invoice.";
+        els.summaryItems.appendChild(warn);
+      }
+    }
+
+    function updateModeUI() {
+      const multi = state.items.length > 1;
+
+      els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
+      els.generateLinkBtn.disabled = multi;
+      els.copyBtn.disabled = !state.generatedUrl;
+      els.openBtn.disabled = !state.generatedOpenUrl;
+
+      if (multi) {
+        els.actionSummary.innerHTML = `
+          Multi-item mode is active.
+          <br />
+          Generate Link is disabled.
+          <br />
+          Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
+        `;
+      } else {
+        els.actionSummary.innerHTML = `
+          Single item mode is active.
+          <br />
+          Generate Link can use your current one-tour flow.
+          <br />
+          Send Invoice will call <strong>/stripe/api/create-invoice</strong>.
+        `;
+      }
+    }
+
+    function validateSharedFields(options = {}) {
+      const requireGuest = !!options.requireGuest;
+      const errors = [];
+
+      if (requireGuest) {
+        if (!els.mainFirstName.value.trim()) errors.push("Main contact first name is required.");
+        if (!els.mainLastName.value.trim()) errors.push("Main contact last name is required.");
+        if (!els.mainEmail.value.trim()) errors.push("Email is required.");
+        if (!els.mainPhone.value.trim()) errors.push("Phone is required.");
+        if (!els.whatsappNumber.value.trim()) errors.push("WhatsApp number is required.");
+        if (!els.pickupLocationLabel.value.trim()) errors.push("Pickup location label is required.");
+        if (!els.pickupAddress.value.trim()) errors.push("Pickup address or hotel name is required.");
       }
 
-      async function init(){
-        setStatus("");
+      return errors;
+    }
 
-        var p = qp();
+    function validateItems() {
+      const errors = [];
 
-        // Auto-capitalization behavior (in addition to autocapitalize attr)
-        attachAutoCapInput(els.firstName);
-        attachAutoCapInput(els.lastName);
+      state.items.forEach((item, idx) => {
+        if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);
+        if (!item.tour_date) errors.push(`Item ${idx + 1}: Tour date is required.`);
+        if (!item.quantity || Number(item.quantity) <= 0) errors.push(`Item ${idx + 1}: Number of people must be greater than 0.`);
+        if (!item.language) errors.push(`Item ${idx + 1}: Language is required.`);
 
-        var I18N = {
-          en: {
-            title: "Pay for a Tour",
-            subtitle: "Complete payment securely with Stripe. Your tour, date, and minimum party size are pre-confirmed from the link you received.",
-            checkoutTitle: "Checkout details",
-            requiredHint: "Required fields are marked with ",
-            partyLabel: "Number of people",
-            first: "Main contact first name",
-            last: "Main contact last name",
-            email: "Email",
-            phone: "Phone",
-            whatsapp: "WhatsApp number",
-            pickupLabel: "Pickup location label",
-            pickupAddr: "Pickup address or hotel name",
-            notes: "Notes (optional)",
-            payBtn: "Continue to Stripe",
-            resetBtn: "Reset",
-            termsText: "I agree to the",
-            termsName: "Terms and Conditions",
-            termsUrl: "https://mindobirdwatching.com/terms-conditions/"
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
+      });
+
+      return errors;
+    }
+
+    function buildCombinedNotes(item) {
+      const parts = [];
+      if (els.globalNotes.value.trim()) parts.push(`General notes: ${els.globalNotes.value.trim()}`);
+      if (item && item.item_notes && item.item_notes.trim()) parts.push(`Item notes: ${item.item_notes.trim()}`);
+      return parts.join("\n");
+    }
+
+    function buildSingleItemInvoicePayload(item) {
+      return {
+        language: item.language,
+        stripe_environment: els.stripeEnvironment.value,
+        tour_code: item.tour_code,
+        number_of_people: Number(item.quantity),
+        main_contact_name: buildFullName(),
+        main_contact_email: els.mainEmail.value.trim(),
+        main_contact_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: buildCombinedNotes(item),
+        tour_date: item.tour_date,
+        invoice_due_days: Number(els.invoiceDueDays.value || 2),
+        agent_id: els.agentId.value.trim(),
+      };
+    }
+
+    function buildMultiItemInvoicePayload() {
+      return {
+        stripe_environment: els.stripeEnvironment.value,
+        main_contact_name: buildFullName(),
+        main_contact_email: els.mainEmail.value.trim(),
+        main_contact_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: els.globalNotes.value.trim(),
+        invoice_due_days: Number(els.invoiceDueDays.value || 2),
+        agent_id: els.agentId.value.trim(),
+        items: state.items.map(item => ({
+          tour_code: item.tour_code,
+          quantity: Number(item.quantity),
+          tour_date: item.tour_date,
+          language: item.language,
+          item_notes: item.item_notes || "",
+        })),
+      };
+    }
+
+    function buildSingleLinkUrl(item) {
+      const params = new URLSearchParams({
+        tour: item.tour_code,
+        date: item.tour_date,
+        party: String(item.quantity),
+        lang: item.language,
+      });
+
+      const agentId = els.agentId.value.trim();
+      if (agentId) params.set("agent_id", agentId);
+
+      const firstName = els.mainFirstName.value.trim();
+      const lastName = els.mainLastName.value.trim();
+      const email = els.mainEmail.value.trim();
+      const phone = els.mainPhone.value.trim();
+      const whatsapp = els.whatsappNumber.value.trim();
+      const pickupLabel = els.pickupLocationLabel.value.trim();
+      const pickupAddress = els.pickupAddress.value.trim();
+      const notes = els.globalNotes.value.trim();
+
+      if (firstName) params.set("guest_first_name", firstName);
+      if (lastName) params.set("guest_last_name", lastName);
+      if (email) params.set("guest_email", email);
+      if (phone) params.set("guest_phone", phone);
+      if (whatsapp) params.set("whatsapp_number", whatsapp);
+      if (pickupLabel) params.set("pickup_location_label", pickupLabel);
+      if (pickupAddress) params.set("pickup_address_or_hotel", pickupAddress);
+      if (notes) params.set("notes", notes);
+
+      const path = item.language === "es" ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
+      return `${window.location.origin}${path}?${params.toString()}`;
+    }
+
+    async function logAgentActivity(eventType, payload = {}) {
+      try {
+        await fetch("/stripe/api/agent-activity", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
           },
-          es: {
-            title: "Pagar un Tour",
-            subtitle: "Completa el pago de forma segura con Stripe. Tu tour, fecha y tamano minimo del grupo vienen preconfirmados desde el enlace que recibiste.",
-            checkoutTitle: "Detalles de pago",
-            requiredHint: "Los campos obligatorios estan marcados con ",
-            partyLabel: "Numero de personas",
-            first: "Nombre del contacto principal",
-            last: "Apellido del contacto principal",
-            email: "Correo",
-            phone: "Telefono",
-            whatsapp: "Numero de WhatsApp",
-            pickupLabel: "Etiqueta del lugar de recogida",
-            pickupAddr: "Direccion o nombre del hotel",
-            notes: "Notas (opcional)",
-            payBtn: "Continuar a Stripe",
-            resetBtn: "Reiniciar",
-            termsText: "Acepto los",
-            termsName: "Terminos y Condiciones",
-            termsUrl: "https://mindobirdwatching.com/es/terminos-y-condiciones/"
-          }
-        };
-
-        var L = I18N[p.lang] || I18N.en;
-
-        // Set text
-        var tTitle = document.getElementById("tTitle");
-        var tSubtitle = document.getElementById("tSubtitle");
-        var tCheckoutTitle = document.getElementById("tCheckoutTitle");
-        var tRequiredHint = document.getElementById("tRequiredHint");
-        if (tTitle) tTitle.textContent = L.title;
-        if (tSubtitle) tSubtitle.textContent = L.subtitle;
-        if (tCheckoutTitle) tCheckoutTitle.textContent = L.checkoutTitle;
-        if (tRequiredHint){
-          tRequiredHint.innerHTML = L.requiredHint + '<span class="req">*</span>.';
-        }
-
-        function setLabel(id, txt){
-          var el = document.getElementById(id);
-          if (!el) return;
-          var hasReq = el.innerHTML.indexOf('class="req"') !== -1;
-          el.innerHTML = txt + (hasReq ? ' <span class="req">*</span>' : "");
-        }
-
-        setLabel("tPartyLabel", L.partyLabel);
-        setLabel("tFirstLabel", L.first);
-        setLabel("tLastLabel", L.last);
-        setLabel("tEmailLabel", L.email);
-        setLabel("tPhoneLabel", L.phone);
-        setLabel("tWhatsLabel", L.whatsapp);
-        setLabel("tPickupLabel", L.pickupLabel);
-        setLabel("tPickupAddrLabel", L.pickupAddr);
-
-        var notesLabel = document.getElementById("tNotesLabel");
-        if (notesLabel) notesLabel.textContent = L.notes;
-
-        var tPayBtn = document.getElementById("tPayBtn");
-        if (tPayBtn) tPayBtn.textContent = L.payBtn;
-
-        var tResetBtn = document.getElementById("tResetBtn");
-        if (tResetBtn) tResetBtn.textContent = L.resetBtn;
-
-        var agreePrefix = document.getElementById("tAgreePrefix");
-        var termsLink = document.getElementById("termsLink");
-        if (agreePrefix) agreePrefix.textContent = L.termsText;
-        if (termsLink){ termsLink.href = L.termsUrl; termsLink.textContent = L.termsName; }
-
-        if (!p.tour){
-          setStatus("Missing tour code in the link.", true);
-          els.btnPay.disabled = true;
-          return;
-        }
-        if (!isValidISODate(p.date)){
-          setStatus("Missing or invalid tour date in the link.", true);
-          els.btnPay.disabled = true;
-          return;
-        }
-        var today = todayISO();
-        if (p.date < today){
-          setStatus("This link has a past date. Please request a new payment link.", true);
-          els.btnPay.disabled = true;
-          return;
-        }
-
-        var lockedParty = Number(p.party || "0");
-        if (!Number.isInteger(lockedParty) || lockedParty <= 0){
-          setStatus("Missing or invalid party size in the link.", true);
-          els.btnPay.disabled = true;
-          return;
-        }
-
-        els.lockedHint.textContent = "Tour code " + p.tour + " and tour date " + p.date + " are locked from this link.";
-        els.dateLocked.value = p.date;
-
-        var tours;
-        try{
-          tours = await fetchTours(p.lang);
-        }catch(e){
-          setStatus("Could not load tours. Please try again.", true);
-          els.btnPay.disabled = true;
-          return;
-        }
-
-        var tour = tours.find(function(t){ return String(t.tour_code) === p.tour; });
-        if (!tour){
-          setStatus("Tour not found for this language. Please request a new payment link.", true);
-          els.btnPay.disabled = true;
-          return;
-        }
-
-        var minPerson = Number(tour.min_person || 1);
-        var maxPerson = parseMaxPerson(tour.max_person);
-        var maxSelectable = Math.min(maxPerson || 8, 8);
-
-        buildPartyOptions(Math.max(minPerson, lockedParty), maxSelectable);
-        els.partyInput.value = String(Math.max(minPerson, lockedParty));
-        els.partyHelp.textContent =
-          "Minimum is " + Math.max(minPerson, lockedParty) + ". You may increase up to " + maxSelectable + ", but cannot reduce below the minimum.";
-
-        // Summary card
-        els.tourCode.textContent = tour.tour_code;
-        els.tourTitle.textContent = tour.tour_title || "Tour";
-
-        var pickupWindow = String(tour.pickup_window_minutes || 15);
-        var pickupTime = tour.pickup_time_local || "-";
-        els.tourSubtitle.textContent =
-          "Duration: " + (tour.duration_label || "-") + " | Pickup: " + pickupTime + " (+" + pickupWindow + " min)";
-
-        els.tourPrice.textContent = (tour.amount_display || "$0.00") + " per person";
-        els.tourOneLiner.textContent = tour.description_one_liner || "";
-        els.tourLocked.value = tour.tour_code + " - " + (tour.tour_title || "Tour");
-
-        els.pillTimezone.textContent = "Timezone: " + (tour.timezone || "America/Guayaquil");
-        els.pillPickupWindow.textContent = "Pickup window: " + pickupWindow + " minutes";
-
-        var initialFormState = {
-          firstName: p.guest_first_name || "",
-          lastName: p.guest_last_name || "",
-          email: p.guest_email || "",
-          phone: p.guest_phone || "",
-          whatsapp: p.whatsapp_number || "",
-          pickupLabel: p.pickup_location_label || "",
-          pickupAddress: p.pickup_address_or_hotel || "",
-          notes: p.notes || ""
-        };
-
-        els.firstName.value = initialFormState.firstName;
-        els.lastName.value = initialFormState.lastName;
-        els.email.value = initialFormState.email;
-        els.phone.value = initialFormState.phone;
-        els.whatsapp.value = initialFormState.whatsapp;
-        els.pickupLabel.value = initialFormState.pickupLabel;
-        els.pickupAddress.value = initialFormState.pickupAddress;
-        els.notes.value = initialFormState.notes;
-
-        if (tour.hero_image_url){
-          els.tourImage.src = tour.hero_image_url;
-          els.tourImage.onerror = function(){
-            this.removeAttribute("src");
-            this.alt = "Promo image";
-          };
-          els.tourImage.alt = "Promo image for " + (tour.tour_title || tour.tour_code);
-        }else{
-          els.tourImage.removeAttribute("src");
-          els.tourImage.alt = "Promo image";
-        }
-
-        els.btnPay.addEventListener("click", async function(){
-          try{
-            setStatus("");
-            els.btnPay.disabled = true;
-
-            // Apply capitalization on submit too
-            els.firstName.value = capWordsPreserve(els.firstName.value);
-            els.lastName.value = capWordsPreserve(els.lastName.value);
-
-            var first = (els.firstName.value || "").trim();
-            var last = (els.lastName.value || "").trim();
-            var email = (els.email.value || "").trim();
-            var phone = (els.phone.value || "").trim();
-            var whatsapp = (els.whatsapp.value || "").trim();
-            var pickupLabel = (els.pickupLabel.value || "").trim();
-            var pickupAddress = (els.pickupAddress.value || "").trim();
-            var notes = (els.notes.value || "").trim();
-            var agreed = els.agree.checked === true;
-
-            var partyVal = Number(els.partyInput.value || "0");
-
-            if (!first || !last || !email || !phone || !whatsapp || !pickupLabel){
-              throw new Error("Please fill all required fields.");
-            }
-            if (!agreed){
-              throw new Error("Please agree to the Terms and Conditions.");
-            }
-            if (!Number.isInteger(partyVal) || partyVal <= 0){
-              throw new Error("Invalid party size.");
-            }
-
-            var payload = {
-              stripe_environment: (new URLSearchParams(location.search).get("env") || "live"),
-              language: p.lang,
-              tour_code: p.tour,
-              tour_date: p.date,
-              number_of_people: partyVal,
-
-              main_contact_name: first + " " + last,
-              main_contact_email: email,
-              main_contact_phone: phone,
-              whatsapp_number: whatsapp,
-
-              pickup_location_label: pickupLabel,
-              pickup_address_or_hotel: (pickupAddress && pickupAddress.trim()) ? pickupAddress.trim() : "Not provided",
-              notes: notes,
-
-              agreed_to_terms: true
-            };
-
-            var r = await fetch("/stripe/api/create-checkout-session", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(payload)
-            });
-
-            var data = await r.json().catch(function(){ return null; });
-            if (!r.ok || !data || data.ok !== true || !data.url){
-              var msg = (data && data.error) ? data.error : "Could not start checkout.";
-              throw new Error(msg);
-            }
-
-            setStatus("Redirecting to Stripe...");
-            window.location.href = data.url;
-          }catch(err){
-            setStatus(err.message || "Checkout error.", true);
-            els.btnPay.disabled = false;
-          }
+          body: JSON.stringify({
+            event_type: eventType,
+            ...payload
+          })
         });
+      } catch (err) {
+        console.warn("Agent activity logging failed", err);
+      }
+    }
 
-        els.btnReset.addEventListener("click", function(){
-          els.firstName.value = initialFormState.firstName;
-          els.lastName.value = initialFormState.lastName;
-          els.email.value = initialFormState.email;
-          els.phone.value = initialFormState.phone;
-          els.whatsapp.value = initialFormState.whatsapp;
-          els.pickupLabel.value = initialFormState.pickupLabel;
-          els.pickupAddress.value = initialFormState.pickupAddress;
-          els.notes.value = initialFormState.notes;
-          els.agree.checked = false;
-          setStatus("");
-        });
+    function buildAgentActivityBase(item, options = {}) {
+      const tour = item ? getTourByCodeAndLanguage(item.tour_code, item.language) : null;
+      return {
+        agent_id: els.agentId.value.trim(),
+        stripe_environment: els.stripeEnvironment.value,
+        booking_mode: state.items.length > 1 ? "multi_item" : "single_item",
+        tour_code: item ? item.tour_code : "",
+        tour_title: tour ? tour.tour_title : (item ? item.tour_code : ""),
+        tour_date: item ? item.tour_date : "",
+        language: item ? item.language : (els.defaultLanguage.value || "en"),
+        party_size: item ? String(item.quantity || "") : "",
+        guest_first_name: els.mainFirstName.value.trim(),
+        guest_last_name: els.mainLastName.value.trim(),
+        guest_email: els.mainEmail.value.trim(),
+        guest_phone: els.mainPhone.value.trim(),
+        whatsapp_number: els.whatsappNumber.value.trim(),
+        pickup_location_label: els.pickupLocationLabel.value.trim(),
+        pickup_address_or_hotel: els.pickupAddress.value.trim(),
+        notes: els.globalNotes.value.trim(),
+        ...options,
+      };
+    }
+
+    async function onGenerateLink() {
+
+      clearStatus();
+
+      const errors = [...validateSharedFields({ requireGuest: false }), ...validateItems()];
+      if (state.items.length !== 1) {
+        showStatus("Generate Link is only available for a single booking item.", "error");
+        return;
+      }
+      if (errors.length) {
+        showStatus(errors[0], "error");
+        return;
       }
 
-      if (document.readyState === "loading"){
-
-
-        document.addEventListener("DOMContentLoaded", init);
-
-
-      }else{
-
-
-        init();
-
-
+      const item = state.items[0];
+      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+      if (!tour) {
+        showStatus("Selected tour was not found.", "error");
+        return;
       }
-    })();
+
+      const generatedUrl = buildSingleLinkUrl(item);
+      state.generatedUrl = generatedUrl;
+      state.generatedOpenUrl = generatedUrl;
+      els.copyBtn.disabled = false;
+      els.openBtn.disabled = false;
+      els.resultLinkBox.style.display = "block";
+      els.resultLinkBox.textContent = generatedUrl;
+
+      const agentLine = els.agentId.value.trim() ? `<br />Agent ID: ${els.agentId.value.trim()}` : "";
+      els.actionSummary.innerHTML = `
+        Link generated for:
+        <br />
+        <strong>${tour.tour_code} - ${tour.tour_title}</strong>
+        <br />
+        Date: ${item.tour_date}
+        <br />
+        Party size: ${item.quantity}
+        <br />
+        Language: ${item.language === "es" ? "Spanish" : "English"}
+        ${agentLine}
+      `;
+
+      await logAgentActivity("payment_link_generated", buildAgentActivityBase(item, {
+        generated_url: generatedUrl,
+      }));
+
+      showStatus("Link generated.", "ok");
+    }
+
+    async function onSendInvoice() {
+      clearStatus();
+      const errors = [...validateSharedFields({ requireGuest: true }), ...validateItems()];
+      if (errors.length) {
+        showStatus(errors[0], "error");
+        return;
+      }
+
+      const multi = state.items.length > 1;
+      const endpoint = multi ? "/stripe/api/create-invoice-multi" : "/stripe/api/create-invoice";
+      const payload = multi ? buildMultiItemInvoicePayload() : buildSingleItemInvoicePayload(state.items[0]);
+
+      try {
+        showStatus("Creating invoice...", "info");
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const raw = await res.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (_) {
+          throw new Error(raw || "Unexpected server response");
+        }
+
+        if (!res.ok || !data.ok) throw new Error(data.error || "Invoice creation failed.");
+
+        const hostedUrl = data.hosted_invoice_url || "";
+        const invoiceId = data.invoice_id || "";
+        const invoiceNumber = data.invoice_number || "";
+        const invoiceStatus = data.invoice_status || "";
+        const agentId = els.agentId.value.trim();
+
+        state.generatedUrl = hostedUrl;
+        state.generatedOpenUrl = hostedUrl;
+        els.copyBtn.disabled = !hostedUrl;
+        els.openBtn.disabled = !hostedUrl;
+        els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
+        els.resultLinkBox.textContent = hostedUrl || "";
+
+        els.actionSummary.innerHTML = `
+          Invoice created successfully.
+          <br />
+          Invoice ID: <strong>${invoiceId || "-"}</strong>
+          <br />
+          Invoice number: <strong>${invoiceNumber || "-"}</strong>
+          <br />
+          Status: <strong>${invoiceStatus || "-"}</strong>
+          <br />
+          Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
+          ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
+        `;
+
+        await logAgentActivity("invoice_created", {
+          agent_id: agentId,
+          stripe_environment: els.stripeEnvironment.value,
+          booking_mode: multi ? "multi_item" : "single_item",
+          guest_first_name: els.mainFirstName.value.trim(),
+          guest_last_name: els.mainLastName.value.trim(),
+          guest_email: els.mainEmail.value.trim(),
+          guest_phone: els.mainPhone.value.trim(),
+          whatsapp_number: els.whatsappNumber.value.trim(),
+          pickup_location_label: els.pickupLocationLabel.value.trim(),
+          pickup_address_or_hotel: els.pickupAddress.value.trim(),
+          notes: els.globalNotes.value.trim(),
+          invoice_id: invoiceId,
+          invoice_number: invoiceNumber,
+          invoice_status: invoiceStatus,
+          hosted_invoice_url: hostedUrl,
+          total_items: String(state.items.length),
+          items: state.items.map(item => ({
+            tour_code: item.tour_code,
+            tour_date: item.tour_date,
+            quantity: String(item.quantity || ""),
+            language: item.language,
+            item_notes: item.item_notes || "",
+          })),
+        });
+
+        showStatus(data.message || "Invoice created.", "ok");
+      } catch (err) {
+        showStatus(err.message || "Something went wrong while creating the invoice.", "error");
+      }
+    }
+
+    async function onCopy() {
+      if (!state.generatedUrl) return;
+      try {
+        await navigator.clipboard.writeText(state.generatedUrl);
+        showStatus("Copied to clipboard.", "ok");
+      } catch (_) {
+        showStatus("Unable to copy automatically. Please copy the link manually.", "error");
+      }
+    }
+
+    function onOpen() {
+      if (!state.generatedOpenUrl) return;
+      window.open(state.generatedOpenUrl, "_blank", "noopener,noreferrer");
+    }
+
+    async function init() {
+      try {
+        await loadTours();
+        addItem();
+        renderSummary();
+        updateModeUI();
+
+        ["blur", "change"].forEach(evt => {
+          els.mainFirstName.addEventListener(evt, () => normalizeNameInput(els.mainFirstName));
+          els.mainLastName.addEventListener(evt, () => normalizeNameInput(els.mainLastName));
+        });
+      } catch (err) {
+        showStatus(err.message || "Failed to initialize page.", "error");
+      }
+    }
+
+    els.addItemBtn.addEventListener("click", () => {
+      addItem({ language: els.defaultLanguage.value });
+      state.generatedUrl = "";
+      state.generatedOpenUrl = "";
+      els.copyBtn.disabled = true;
+      els.openBtn.disabled = true;
+      els.resultLinkBox.style.display = "none";
+      els.resultLinkBox.textContent = "";
+    });
+
+    els.generateLinkBtn.addEventListener("click", onGenerateLink);
+    els.sendInvoiceBtn.addEventListener("click", onSendInvoice);
+    els.copyBtn.addEventListener("click", onCopy);
+    els.openBtn.addEventListener("click", onOpen);
+
+    els.defaultLanguage.addEventListener("change", () => {
+      renderItems();
+      renderSummary();
+    });
+
+    init();
   </script>
 </body>
 </html>
