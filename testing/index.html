@@ -403,6 +403,25 @@
       line-height: 1.2;
     }
   }
+
+
+  body.payCreatePage [id*="whatsapp" i],
+  body.payCreatePage [class*="whatsapp" i],
+  body.payCreatePage [class*="joinchat" i],
+  body.payCreatePage [class*="floating-wpp" i],
+  body.payCreatePage [id*="joinchat" i],
+  body.payCreatePage [id*="wh-widget" i],
+  body.payCreatePage [id*="WAButton" i],
+  body.payCreatePage [class*="wpp" i],
+  body.payCreatePage a[href*="wa.me"],
+  body.payCreatePage a[href*="whatsapp.com"],
+  body.payCreatePage iframe[src*="whatsapp" i],
+  body.payCreatePage iframe[src*="wa.me" i] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
 </style>
 </head>
 <body>
@@ -1040,6 +1059,88 @@
     return `${window.location.origin}${path}?${params.toString()}`;
   }
 
+
+  function buildGenerateLinkAgentPayload(item, generatedUrl) {
+    const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+    const amountDisplay = tour && tour.amount_display ? String(tour.amount_display) : "";
+    const amountNumber = Number(amountDisplay.replace(/[^0-9.]/g, ""));
+    const amountCents = Number.isFinite(amountNumber) ? Math.round(amountNumber * 100) * Number(item.quantity || 0) : 0;
+
+    return {
+      event_type: "payment_link_generated",
+      booking_mode: "single_item",
+      booking_session_id: `manual-link-${Date.now()}`,
+      stripe_environment: els.stripeEnvironment.value,
+      agent_id: els.agentId.value.trim(),
+      status: "generated",
+      payment_link_url: generatedUrl,
+      hosted_invoice_url: generatedUrl,
+      guest_first_name: els.mainFirstName.value.trim(),
+      guest_last_name: els.mainLastName.value.trim(),
+      guest_email: els.mainEmail.value.trim(),
+      guest_phone: els.mainPhone.value.trim(),
+      pickup_location_label: els.pickupLocationLabel.value.trim(),
+      pickup_address_or_hotel: els.pickupAddress.value.trim(),
+      notes: buildCombinedNotes(item),
+      items: [{
+        tour_code: item.tour_code,
+        tour_title: tour && tour.tour_title ? tour.tour_title : item.tour_code,
+        tour_date: item.tour_date,
+        language: item.language,
+        quantity: Number(item.quantity),
+        amount_cents: amountCents,
+        currency: tour && tour.currency ? tour.currency : "USD"
+      }]
+    };
+  }
+
+  async function logAgentActivity(payload) {
+    const res = await fetch("/stripe/api/agent-activity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const raw = await res.text();
+    let data = null;
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      data = { raw };
+    }
+
+    if (!res.ok || !data || data.ok !== true) {
+      throw new Error(data && data.error ? data.error : `Agent activity logging failed (${res.status})`);
+    }
+
+    return data;
+  }
+
+  function hideWhatsAppWidgets() {
+    const selectors = [
+      '[id*="whatsapp" i]',
+      '[class*="whatsapp" i]',
+      '[class*="joinchat" i]',
+      '[id*="joinchat" i]',
+      '[class*="floating-wpp" i]',
+      '[id*="wh-widget" i]',
+      '[id*="WAButton" i]',
+      '[class*="wpp" i]',
+      'a[href*="wa.me"]',
+      'a[href*="whatsapp.com"]',
+      'iframe[src*="whatsapp" i]',
+      'iframe[src*="wa.me" i]'
+    ];
+
+    selectors.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((node) => {
+        node.style.setProperty("display", "none", "important");
+        node.style.setProperty("visibility", "hidden", "important");
+        node.style.setProperty("pointer-events", "none", "important");
+      });
+    });
+  }
+
   async function onGenerateLink() {
     clearStatus();
 
@@ -1081,6 +1182,12 @@
       Language: ${item.language === "es" ? "Spanish" : "English"}
       ${agentLine}
     `;
+
+    try {
+      await logAgentActivity(buildGenerateLinkAgentPayload(item, generatedUrl));
+    } catch (err) {
+      console.warn("Generate Link agent activity logging failed", err);
+    }
 
     showStatus("Link generated.", "ok");
   }
