@@ -426,7 +426,9 @@
       var sessionId = qs("session_id");
       if (!sessionId) return;
 
-      fetch("/stripe/api/session?session_id=" + encodeURIComponent(sessionId))
+      var sessionEnv = qs("env") || "live";
+
+      fetch("/stripe/api/session?session_id=" + encodeURIComponent(sessionId) + "&env=" + encodeURIComponent(sessionEnv))
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (!data || !data.ok || !data.session) return;
