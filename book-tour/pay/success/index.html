@@ -335,57 +335,123 @@
         el.textContent = value || "-";
       }
 
-      var tour = qs("tour") || qs("tour_code") || "";
-      var date = qs("date") || qs("tour_date") || "";
-      var pickup = qs("pickup") || qs("pickup_window") || "6:00 AM to 6:15 AM";
-
-      var tourTitleMap = { "MBW004": "Jewels of the Morning Forest" };
-      var tourLabel = tourTitleMap[tour] || tour || "Jewels of the Morning Forest";
-
-      safeText(document.getElementById("sumTour"), tourLabel);
-      safeText(document.getElementById("sumDate"), date || "2026-03-04");
-      safeText(document.getElementById("sumPickup"), pickup);
-
-      var daysEl = document.getElementById("sumDays");
-      try {
-        if (date) {
-          var d = new Date(date + "T00:00:00");
-          var now = new Date();
-          var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          var diffMs = d.getTime() - startToday.getTime();
-          var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-          safeText(daysEl, String(Math.max(diffDays, 0)));
-        } else {
-          safeText(daysEl, "1");
-        }
-      } catch (e) {
-        safeText(daysEl, "1");
+      function getTourLabelFromCode(code) {
+        var map = {
+          "MBW000": "Internal Stripe Test Payment",
+          "MBW004": "Jewels of the Morning Forest",
+          "MBW005": "Dance of the Andean Cock-of-the-Rock",
+          "MBW006": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+          "MBW007": "Custom Half Day Tour",
+          "MBW008": "Custom Full Day Tour",
+          "MBW009": "Flora Excursion Tour",
+          "MBW010": "Solo Birdwatching Experience",
+          "MBW011": "Chocolate Tour",
+          "MBW012": "Coffee Tour",
+          "MBW013": "Waterfall Hike",
+          "MBW014": "Ziplining",
+          "MBW015": "Butterfly Garden",
+          "MBW016": "Night Walk"
+        };
+        return map[code] || code || "";
       }
+
+      function buildPickupWindow(startTime, windowMinutes) {
+        var start = String(startTime || "").trim();
+        var minutes = Number(windowMinutes || 15);
+        if (!start) return "-";
+        if (!Number.isFinite(minutes) || minutes < 0) minutes = 15;
+
+        var m = start.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (!m) return start;
+
+        var hour = Number(m[1]);
+        var minute = Number(m[2]);
+        var ampm = m[3].toUpperCase();
+
+        if (ampm === "PM" && hour !== 12) hour += 12;
+        if (ampm === "AM" && hour === 12) hour = 0;
+
+        var startDate = new Date(2000, 0, 1, hour, minute, 0, 0);
+        var endDate = new Date(startDate.getTime() + (minutes * 60 * 1000));
+
+        function fmt(d) {
+          var h = d.getHours();
+          var mm = String(d.getMinutes()).padStart(2, "0");
+          var suffix = h >= 12 ? "PM" : "AM";
+          h = h % 12;
+          if (h === 0) h = 12;
+          return h + ":" + mm + " " + suffix;
+        }
+
+        return fmt(startDate) + " to " + fmt(endDate);
+      }
+
+      function renderSummary(summary) {
+        var tourTitle = summary.tour_title || getTourLabelFromCode(summary.tour_code) || "-";
+        var tourDate = summary.tour_date || "-";
+        var pickupWindow = summary.pickup_window || buildPickupWindow(summary.pickup_time_local, summary.pickup_window_minutes);
+
+        safeText(document.getElementById("sumTour"), tourTitle);
+        safeText(document.getElementById("sumDate"), tourDate);
+        safeText(document.getElementById("sumPickup"), pickupWindow || "-");
+
+        var daysEl = document.getElementById("sumDays");
+        try {
+          if (summary.tour_date) {
+            var d = new Date(summary.tour_date + "T00:00:00");
+            var now = new Date();
+            var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            var diffMs = d.getTime() - startToday.getTime();
+            var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+            safeText(daysEl, String(Math.max(diffDays, 0)));
+          } else {
+            safeText(daysEl, "-");
+          }
+        } catch (e) {
+          safeText(daysEl, "-");
+        }
+      }
+
+      var initialSummary = {
+        tour_code: qs("tour") || qs("tour_code") || "",
+        tour_title: "",
+        tour_date: qs("date") || qs("tour_date") || "",
+        pickup_window: qs("pickup") || qs("pickup_window") || "",
+        pickup_time_local: qs("pickup_time_local") || "",
+        pickup_window_minutes: qs("pickup_window_minutes") || ""
+      };
+
+      renderSummary(initialSummary);
 
       var sessionId = qs("session_id");
+      if (!sessionId) return;
 
-if (sessionId) {
-  fetch("/stripe/api/session?session_id=" + encodeURIComponent(sessionId))
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
+      fetch("/stripe/api/session?session_id=" + encodeURIComponent(sessionId))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || !data.ok || !data.session) return;
 
-      if (!data || !data.ok) return;
+          var session = data.session || {};
+          var md = session.metadata || {};
 
-      var receiptUrl = "";
+          renderSummary({
+            tour_code: md.tour_code || initialSummary.tour_code,
+            tour_title: md.tour_title || "",
+            tour_date: md.tour_date || initialSummary.tour_date,
+            pickup_window: "",
+            pickup_time_local: md.pickup_time_local || "",
+            pickup_window_minutes: md.pickup_window_minutes || ""
+          });
 
-      if (data.session && data.session.stripe_receipt_url) {
-        receiptUrl = data.session.stripe_receipt_url;
-      }
-
-      if (receiptUrl) {
-        var btn = document.getElementById("receiptBtn");
-        btn.href = receiptUrl;
-        btn.style.display = "inline-flex";
-      }
-
-    })
-    .catch(function(){});
-    }  
+          if (session.stripe_receipt_url) {
+            var btn = document.getElementById("receiptBtn");
+            if (btn) {
+              btn.href = session.stripe_receipt_url;
+              btn.style.display = "inline-flex";
+            }
+          }
+        })
+        .catch(function () {});
     })();
   </script>
 </body>
