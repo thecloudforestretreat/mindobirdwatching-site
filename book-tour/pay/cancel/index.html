@@ -262,7 +262,7 @@
             <li>You can try the payment again whenever you are ready.</li>
           </ul>
           <p class="termsLine">
-            <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener" target="_blank" rel="noopener">Terms and Conditions</a> are available here.
+            <a id="termsLink" href="https://mindobirdwatching.com/terms-conditions/" target="_blank" rel="noopener">Terms and Conditions</a> are available here.
           </p>
         </aside>
       </div>
@@ -341,25 +341,26 @@
 
       var ref = document.referrer || "";
       var qp = new URLSearchParams(window.location.search);
-
-      // Try to rebuild a guest pay URL from known params if we do not have localStorage.
-      var tour = qp.get("tour") || qp.get("t") || "";
-      var date = qp.get("date") || qp.get("d") || "";
-      var party = qp.get("party") || qp.get("p") || "";
+      var retry = qp.get("retry") || "";
       var langp = qp.get("lang") || lang || "en";
 
       var rebuilt = "";
-      if (tour || date || party){
-        rebuilt = "/book-tour/pay/?tour=" + encodeURIComponent(tour) +
-                  "&date=" + encodeURIComponent(date) +
-                  "&party=" + encodeURIComponent(party) +
-                  "&lang=" + encodeURIComponent(langp);
+      if (retry){
+        rebuilt = "/stripe/api/retry-redirect?token=" + encodeURIComponent(retry);
+      } else {
+        var tour = qp.get("tour") || qp.get("t") || "";
+        var date = qp.get("date") || qp.get("d") || "";
+        var party = qp.get("party") || qp.get("p") || "";
+        if (tour || date || party){
+          rebuilt = "/book-tour/pay/?tour=" + encodeURIComponent(tour) +
+                    "&date=" + encodeURIComponent(date) +
+                    "&party=" + encodeURIComponent(party) +
+                    "&lang=" + encodeURIComponent(langp);
+        }
       }
 
-      // Fallback to the guest pay page root (works even if params are missing).
       var fallback = (lang === "es") ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
 
-      // Prefer last pay URL, then referrer if it looks like the pay page, then rebuilt, then fallback.
       var href = last ||
                  ((ref.indexOf("/book-tour/pay/") !== -1 || ref.indexOf("/es/reservar-tour/pago/") !== -1) ? ref : "") ||
                  rebuilt ||
