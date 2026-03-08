@@ -424,7 +424,7 @@
 
 </style>
 </head>
-<body>
+<body class="payCreatePage">
 <div class="container">
   <div id="siteHeader"></div>
 
@@ -1269,8 +1269,25 @@
     window.open(state.generatedOpenUrl, "_blank", "noopener,noreferrer");
   }
 
+  function startWhatsAppHideObserver() {
+    hideWhatsAppWidgets();
+
+    if (window.__mbwWhatsAppHideObserverStarted) return;
+    window.__mbwWhatsAppHideObserverStarted = true;
+
+    const observer = new MutationObserver(() => {
+      hideWhatsAppWidgets();
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  }
+
   async function init() {
     try {
+      startWhatsAppHideObserver();
       await loadTours();
       addItem();
       renderSummary();
@@ -1304,6 +1321,10 @@
     renderItems();
     renderSummary();
   });
+
+
+  document.addEventListener("DOMContentLoaded", hideWhatsAppWidgets);
+  window.addEventListener("load", hideWhatsAppWidgets);
 
   init();
 </script>
