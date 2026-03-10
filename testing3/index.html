@@ -47,10 +47,10 @@
     }
 
     .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
     }
 
     .topbarActions{
@@ -63,7 +63,7 @@
 
     .hero{
       display:grid;
-      grid-template-columns: 1.08fr .92fr;
+      grid-template-columns:1.08fr .92fr;
       gap:16px;
       align-items:start;
     }
@@ -181,7 +181,7 @@
 
     .infoGrid{
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns:repeat(3, 1fr);
       gap:12px;
     }
 
@@ -208,22 +208,34 @@
 
     .mediaGrid{
       display:grid;
-      grid-template-columns: 1.05fr .95fr;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
       gap:12px;
-      align-items:start;
+      align-items:stretch;
     }
 
-    .videoCard,
-    .carouselCard{
+    .mediaCard{
+      display:flex;
+      flex-direction:column;
       overflow:hidden;
+      min-width:0;
     }
 
-    .videoFrame{
+    .mediaInner{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      height:100%;
+    }
+
+    .videoFrame,
+    .carouselViewport{
       position:relative;
       width:100%;
-      margin:0 auto;
-      max-width:420px;
-      padding-top:177.78%;
+      aspect-ratio:9 / 16;
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
       background:rgba(255,255,255,.55);
     }
 
@@ -234,14 +246,6 @@
       height:100%;
       border:0;
       display:block;
-    }
-
-    .carouselViewport{
-      position:relative;
-      width:100%;
-      aspect-ratio:9 / 16;
-      background:rgba(255,255,255,.55);
-      overflow:hidden;
     }
 
     .carouselSlide{
@@ -264,36 +268,47 @@
       display:block;
     }
 
-    .carouselCaption{
-      padding:10px 12px;
-      border-top:1px solid var(--line);
+    .mediaFooter{
+      border:1px solid var(--line);
+      border-radius:14px;
       background:rgba(255,255,255,.55);
+      padding:10px 12px;
       color:var(--muted);
       font-size:13px;
       line-height:1.5;
-      min-height:64px;
+      min-height:76px;
+      display:flex;
+      align-items:center;
     }
 
-    .carouselControls{
+    .carouselOverlay{
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:10px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:10px 12px 12px;
-      border-top:1px solid var(--line);
-      background:rgba(255,255,255,.55);
+      pointer-events:none;
+    }
+
+    .carouselOverlay .carouselBtn,
+    .carouselOverlay .carouselDots{
+      pointer-events:auto;
     }
 
     .carouselBtn{
-      min-width:42px;
-      height:42px;
+      width:40px;
+      height:40px;
       border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
+      border:1px solid rgba(255,255,255,.55);
+      background:rgba(255,255,255,.88);
       color:var(--forest);
       font-weight:900;
       cursor:pointer;
       box-shadow:var(--shadow);
+      flex:0 0 auto;
     }
 
     .carouselDots{
@@ -301,7 +316,11 @@
       gap:8px;
       align-items:center;
       justify-content:center;
-      flex:1;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.55);
+      box-shadow:var(--shadow);
     }
 
     .carouselDot{
@@ -321,8 +340,16 @@
 
     .wildlifeGrid{
       display:grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns:repeat(2, 1fr);
       gap:12px;
+    }
+
+    .noteCard{
+      padding:16px;
+    }
+
+    .noteCard p{
+      margin:0;
     }
 
     .footerActions{
@@ -333,32 +360,18 @@
       align-items:center;
     }
 
-    @media (max-width: 980px){
+    @media (max-width:980px){
       .hero,
-      .mediaGrid,
       .infoGrid,
+      .mediaGrid,
       .wildlifeGrid{
         grid-template-columns:1fr;
       }
-
-      .videoFrame{
-        max-width:460px;
-      }
-
-      .carouselViewport{
-        max-width:420px;
-        margin:0 auto;
-      }
     }
 
-    @media (max-width: 680px){
+    @media (max-width:680px){
       .page{
         padding:16px;
-      }
-
-      .videoFrame,
-      .carouselViewport{
-        max-width:100%;
       }
     }
   </style>
@@ -478,37 +491,44 @@
         </div>
 
         <div class="mediaGrid">
-          <article class="videoCard mediaCard">
-            <div class="videoFrame">
-              <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Night walk in Mindo Ecuador video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <article class="mediaCard">
+            <div class="mediaInner">
+              <div class="videoFrame">
+                <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Night walk in Mindo Ecuador video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="mediaFooter">
+                A short vertical video can show the mood, darkness, movement, and atmosphere of a guided night walk in Mindo.
+              </div>
             </div>
           </article>
 
-          <article class="carouselCard mediaCard" aria-label="Night walk image carousel">
-            <div class="carouselViewport">
-              <figure class="carouselSlide active">
-                <img src="/assets/images/pages/activities/night-walks/night_walk_vert_03.jpg" alt="Owl photographed at night during a Mindo Ecuador night walk">
-              </figure>
-              <figure class="carouselSlide">
-                <img src="/assets/images/pages/activities/night-walks/night_walk_vert_02.jpg" alt="Top view of a glowing scorpion during a night walk in Mindo Ecuador">
-              </figure>
-              <figure class="carouselSlide">
-                <img src="/assets/images/pages/activities/night-walks/night_walk_horizontal_01.jpg" alt="Scorpion glowing under UV light in Mindo Ecuador">
-              </figure>
-            </div>
+          <article class="mediaCard" aria-label="Night walk image carousel">
+            <div class="mediaInner">
+              <div class="carouselViewport">
+                <figure class="carouselSlide active">
+                  <img src="/assets/images/pages/activities/night-walks/night_walk_vert_03.jpg" alt="Owl photographed at night during a Mindo Ecuador night walk">
+                </figure>
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/night-walks/night_walk_vert_02.jpg" alt="Top view of a glowing scorpion during a night walk in Mindo Ecuador">
+                </figure>
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/night-walks/night_walk_horizontal_01.jpg" alt="Scorpion glowing under UV light in Mindo Ecuador">
+                </figure>
 
-            <div class="carouselCaption" id="nightWalkCarouselCaption">
-              An owl at night adds mystery and silence to the cloud forest after dark.
-            </div>
-
-            <div class="carouselControls">
-              <button class="carouselBtn" type="button" id="nightWalkPrev" aria-label="Previous image">&#8592;</button>
-              <div class="carouselDots" aria-label="Carousel navigation">
-                <button class="carouselDot active" type="button" data-slide="0" aria-label="Show owl image"></button>
-                <button class="carouselDot" type="button" data-slide="1" aria-label="Show top view scorpion image"></button>
-                <button class="carouselDot" type="button" data-slide="2" aria-label="Show glowing scorpion image"></button>
+                <div class="carouselOverlay">
+                  <button class="carouselBtn" type="button" id="nightWalkPrev" aria-label="Previous image">&#8592;</button>
+                  <div class="carouselDots" aria-label="Carousel navigation">
+                    <button class="carouselDot active" type="button" data-slide="0" aria-label="Show owl image"></button>
+                    <button class="carouselDot" type="button" data-slide="1" aria-label="Show top view scorpion image"></button>
+                    <button class="carouselDot" type="button" data-slide="2" aria-label="Show glowing scorpion image"></button>
+                  </div>
+                  <button class="carouselBtn" type="button" id="nightWalkNext" aria-label="Next image">&#8594;</button>
+                </div>
               </div>
-              <button class="carouselBtn" type="button" id="nightWalkNext" aria-label="Next image">&#8594;</button>
+
+              <div class="mediaFooter" id="nightWalkCarouselCaption">
+                An owl at night adds mystery and silence to the cloud forest after dark.
+              </div>
             </div>
           </article>
         </div>
