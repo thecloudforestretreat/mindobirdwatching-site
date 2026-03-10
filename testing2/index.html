@@ -250,6 +250,12 @@
       background:#000;
     }
 
+    .carouselViewport{
+      touch-action:pan-y;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
     .videoFrame iframe{
       position:absolute;
       inset:0;
@@ -273,11 +279,14 @@
     }
 
     .carouselSlide img{
+      position:absolute;
+      inset:0;
       width:100%;
       height:100%;
-      object-fit:cover;
+      object-fit:contain;
       object-position:center;
       display:block;
+      background:#000;
     }
 
     .carouselOverlay{
@@ -415,7 +424,7 @@
 
         <aside class="heroMedia" aria-label="Chocolate tour hero image">
           <div class="heroMediaFrame">
-            <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_horizontal_01.jpg" alt="Chocolate tour in Mindo, Ecuador">
+            <img src="/assets/images/pages/activities/chocolate-tour/chocolate_horizontal_01.jpg" alt="Chocolate tour in Mindo, Ecuador">
           </div>
           <div class="heroMediaCap">
             Replace this with a wide cacao or chocolate image that introduces the flavor and atmosphere of the experience.
@@ -511,9 +520,9 @@
 
           <article class="mediaCard" aria-label="Chocolate tour image carousel">
             <div class="mediaInner">
-              <div class="carouselViewport">
+              <div class="carouselViewport" id="chocoViewport">
                 <figure class="carouselSlide active">
-                  <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_vert_01.jpg" alt="Fresh cacao pods on a chocolate tour in Mindo, Ecuador">
+                  <img src="/assets/images/pages/activities/chocolate-tour/chocolate_vert_01.jpg" alt="Fresh cacao pods on a chocolate tour in Mindo, Ecuador">
                 </figure>
 
                 <figure class="carouselSlide">
@@ -576,6 +585,7 @@
       const caption = document.getElementById('chocoCaption');
       const prev = document.getElementById('chocoPrev');
       const next = document.getElementById('chocoNext');
+      const viewport = document.getElementById('chocoViewport');
 
       const captions = [
         "Fresh cacao pods are the starting point of Ecuador's famous chocolate.",
@@ -584,20 +594,51 @@
       ];
 
       let index = 0;
+      let touchStartX = 0;
+      let touchEndX = 0;
 
       function render(i){
         index = (i + slides.length) % slides.length;
         slides.forEach((slide, sIdx) => slide.classList.toggle('active', sIdx === index));
         dots.forEach((dot, dIdx) => dot.classList.toggle('active', dIdx === index));
-        caption.textContent = captions[index];
+        if (caption) caption.textContent = captions[index];
       }
 
-      prev.addEventListener('click', function(){ render(index - 1); });
-      next.addEventListener('click', function(){ render(index + 1); });
+      function nextSlide(){
+        render(index + 1);
+      }
+
+      function prevSlide(){
+        render(index - 1);
+      }
+
+      prev.addEventListener('click', prevSlide);
+      next.addEventListener('click', nextSlide);
 
       dots.forEach((dot, dotIndex) => {
-        dot.addEventListener('click', function(){ render(dotIndex); });
+        dot.addEventListener('click', function(){
+          render(dotIndex);
+        });
       });
+
+      viewport.addEventListener('touchstart', function(e){
+        touchStartX = e.changedTouches[0].clientX;
+      }, { passive:true });
+
+      viewport.addEventListener('touchend', function(e){
+        touchEndX = e.changedTouches[0].clientX;
+        const delta = touchEndX - touchStartX;
+        if (Math.abs(delta) < 30) return;
+        if (delta < 0) nextSlide();
+        else prevSlide();
+      }, { passive:true });
+
+      viewport.addEventListener('keydown', function(e){
+        if (e.key === 'ArrowLeft') prevSlide();
+        if (e.key === 'ArrowRight') nextSlide();
+      });
+
+      viewport.setAttribute('tabindex', '0');
     })();
   </script>
 </body>
