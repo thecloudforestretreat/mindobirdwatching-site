@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Night Walk | Mindo Bird Watching</title>
-  <meta name="description" content="Take a short guided night walk in Mindo, Ecuador to look for frogs, spiders, glowing insects, owls, and other cloud forest creatures after dark." />
+  <title>Night Walk in Mindo, Ecuador | Mindo Bird Watching</title>
+  <meta name="description" content="Join a guided night walk in Mindo, Ecuador and discover frogs, owls, spiders, scorpions, glowing insects, and other nocturnal cloud forest wildlife on an easy evening tour." />
 
   <link rel="canonical" href="https://mindobirdwatching.com/activities/night-walk/" />
 
@@ -15,8 +15,8 @@
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Mindo Bird Watching" />
-  <meta property="og:title" content="Night Walk | Mindo Bird Watching" />
-  <meta property="og:description" content="A short guided night walk in Mindo to look for frogs, spiders, glowing insects, owls, and other nocturnal cloud forest wildlife." />
+  <meta property="og:title" content="Night Walk in Mindo, Ecuador | Mindo Bird Watching" />
+  <meta property="og:description" content="Experience a guided night walk in Mindo, Ecuador and look for frogs, owls, spiders, scorpions, glowing insects, and other nocturnal cloud forest wildlife." />
   <meta property="og:url" content="https://mindobirdwatching.com/activities/night-walk/" />
   <meta property="og:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
   <meta property="og:image:secure_url" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
@@ -25,8 +25,8 @@
   <meta property="og:image:alt" content="Night walk in Mindo, Ecuador" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Night Walk | Mindo Bird Watching" />
-  <meta name="twitter:description" content="A short guided night walk in Mindo to discover frogs, spiders, glowing insects, owls, and cloud forest wildlife after dark." />
+  <meta name="twitter:title" content="Night Walk in Mindo, Ecuador | Mindo Bird Watching" />
+  <meta name="twitter:description" content="An easy guided night walk in Mindo, Ecuador to look for frogs, owls, spiders, scorpions, glowing insects, and other nocturnal cloud forest wildlife." />
   <meta name="twitter:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
 
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -47,10 +47,10 @@
     }
 
     .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
     }
 
     .topbarActions{
@@ -63,7 +63,7 @@
 
     .hero{
       display:grid;
-      grid-template-columns: 1.08fr .92fr;
+      grid-template-columns:1.08fr .92fr;
       gap:16px;
       align-items:start;
     }
@@ -129,7 +129,7 @@
 
     .heroMediaFrame{
       width:100%;
-      aspect-ratio: 16 / 9;
+      aspect-ratio:16 / 9;
       background:rgba(255,255,255,.55);
     }
 
@@ -181,7 +181,7 @@
 
     .infoGrid{
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns:repeat(3, 1fr);
       gap:12px;
     }
 
@@ -197,7 +197,6 @@
     }
 
     .infoCard p,
-    .infoCard li,
     .noteCard p{
       color:var(--ink);
       line-height:1.68;
@@ -207,36 +206,36 @@
       margin:0;
     }
 
-    .infoCard ul{
-      margin:0;
-      padding-left:18px;
-    }
-
-    .noteCard{
-      padding:16px;
-    }
-
-    .noteCard p{
-      margin:0;
-    }
-
     .mediaGrid{
       display:grid;
-      grid-template-columns: .9fr 1.1fr;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
       gap:12px;
-      align-items:start;
+      align-items:stretch;
     }
 
-    .videoCard{
+    .mediaCard{
+      display:flex;
+      flex-direction:column;
       overflow:hidden;
+      min-width:0;
     }
 
-    .videoFrame{
+    .mediaInner{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      height:100%;
+    }
+
+    .videoFrame,
+    .carouselViewport{
       position:relative;
       width:100%;
-      margin:0 auto;
-      max-width:360px;
-      padding-top:177.78%;
+      aspect-ratio:9 / 16;
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
       background:rgba(255,255,255,.55);
     }
 
@@ -249,42 +248,108 @@
       display:block;
     }
 
-    .portraitStack{
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap:12px;
+    .carouselSlide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .28s ease;
     }
 
-    .portraitCard{
-      overflow:hidden;
+    .carouselSlide.active{
+      opacity:1;
+      pointer-events:auto;
     }
 
-    .portraitFrame{
-      width:100%;
-      aspect-ratio: 9 / 16;
-      background:rgba(255,255,255,.55);
-    }
-
-    .portraitFrame img{
+    .carouselSlide img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
     }
 
-    .portraitCap{
-      padding:10px 12px;
-      border-top:1px solid var(--line);
+    .mediaFooter{
+      border:1px solid var(--line);
+      border-radius:14px;
       background:rgba(255,255,255,.55);
+      padding:10px 12px;
       color:var(--muted);
       font-size:13px;
       line-height:1.5;
+      min-height:76px;
+      display:flex;
+      align-items:center;
+    }
+
+    .carouselOverlay{
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      pointer-events:none;
+    }
+
+    .carouselOverlay .carouselBtn,
+    .carouselOverlay .carouselDots{
+      pointer-events:auto;
+    }
+
+    .carouselBtn{
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.55);
+      background:rgba(255,255,255,.88);
+      color:var(--forest);
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      flex:0 0 auto;
+    }
+
+    .carouselDots{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.55);
+      box-shadow:var(--shadow);
+    }
+
+    .carouselDot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:0;
+      cursor:pointer;
+    }
+
+    .carouselDot.active{
+      background:var(--forest);
+      border-color:var(--forest);
     }
 
     .wildlifeGrid{
       display:grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns:repeat(2, 1fr);
       gap:12px;
+    }
+
+    .noteCard{
+      padding:16px;
+    }
+
+    .noteCard p{
+      margin:0;
     }
 
     .footerActions{
@@ -295,34 +360,18 @@
       align-items:center;
     }
 
-    @media (max-width: 980px){
+    @media (max-width:980px){
       .hero,
-      .mediaGrid,
       .infoGrid,
+      .mediaGrid,
       .wildlifeGrid{
         grid-template-columns:1fr;
       }
-
-      .videoFrame{
-        max-width:420px;
-      }
-
-      .portraitStack{
-        grid-template-columns:1fr 1fr;
-      }
     }
 
-    @media (max-width: 680px){
+    @media (max-width:680px){
       .page{
         padding:16px;
-      }
-
-      .portraitStack{
-        grid-template-columns:1fr;
-      }
-
-      .videoFrame{
-        max-width:100%;
       }
     }
   </style>
@@ -337,19 +386,19 @@
         <a class="btn secondary" href="/activities/">Back to Activities</a>
       </div>
 
-      <section class="hero" aria-label="Night walk overview">
+      <section class="hero" aria-label="Night walk in Mindo overview">
         <div class="heroCard">
-          <h1>Night Walk</h1>
+          <h1>Night Walk in Mindo, Ecuador</h1>
           <p class="lede">
-            Take a short evening walk to look for frogs, spiders, and glowing insects, an easy guided introduction to Mindo after-dark wildlife. This is a relaxed experience that lasts less than 2 hours, ideal for guests who want to discover what comes alive in the cloud forest after sunset without doing a long or difficult hike.
+            Experience a guided night walk in Mindo, Ecuador and discover the cloud forest after dark. This easy evening tour lasts less than 2 hours and is ideal for guests who want to look for frogs, owls, spiders, scorpions, glowing insects, and other nocturnal wildlife in one of Ecuador's most biodiverse regions.
           </p>
 
           <div class="chips" aria-label="Night walk details">
             <span class="chip">Less than 2 hours</span>
             <span class="chip">Easy pace</span>
-            <span class="chip">Evening wildlife</span>
+            <span class="chip">Night wildlife in Mindo</span>
             <span class="chip">Great for beginners</span>
-            <span class="chip">Frogs and insects</span>
+            <span class="chip">Cloud forest evening tour</span>
           </div>
 
           <div class="ctaRow">
@@ -360,121 +409,140 @@
 
         <aside class="heroMedia mediaCard" aria-label="Night walk hero image">
           <div class="heroMediaFrame">
-            <img src="/assets/images/pages/activities/night-walks/night_walk_horizontal_01.jpg" alt="Glowing scorpion during a night walk in Mindo, Ecuador">
+            <img src="/assets/images/pages/activities/night-walks/night_walk_horizontal_01.jpg" alt="Glowing scorpion during a guided night walk in Mindo, Ecuador">
           </div>
           <div class="heroMediaCap">
-            A glowing scorpion under UV light shows just how different the forest feels once darkness takes over.
+            A glowing scorpion under UV light reveals how dramatic a night walk in the Mindo cloud forest can feel after sunset.
           </div>
         </aside>
       </section>
 
-      <section class="section" aria-label="What to expect">
+      <section class="section" aria-label="What to expect on a night walk in Mindo">
         <div class="sectionHead">
           <h2>What to expect</h2>
-          <p>A short, atmospheric introduction to the forest after sunset.</p>
+          <p>An easy night tour in Mindo with a strong focus on nocturnal cloud forest wildlife.</p>
         </div>
 
         <div class="infoGrid">
           <article class="infoCard">
             <h3>Easy guided route</h3>
             <p>
-              This is a short and approachable walk designed for travelers who want to experience nocturnal wildlife without a difficult trail. Your guide helps scan leaves, branches, mossy trunks, and the forest floor for movement and reflection.
+              This guided night walk in Mindo follows a short and approachable route for travelers who want to experience nocturnal wildlife without a difficult hike. Your guide scans leaves, branches, mossy trunks, and the forest floor for movement, shape, and eyeshine.
             </p>
           </article>
 
           <article class="infoCard">
-            <h3>Night sounds and movement</h3>
+            <h3>Cloud forest after dark</h3>
             <p>
-              Mindo changes dramatically after dark. Day birds quiet down, frog calls begin, insects become active, and the forest feels more intimate, humid, and alive with small details that are easy to miss during the day.
+              The Mindo cloud forest changes quickly after sunset. Frog calls begin, insects become active, and the forest feels more humid, intimate, and alive with sounds and small movements that are easy to miss during the day.
             </p>
           </article>
 
           <article class="infoCard">
-            <h3>Good for families and first-timers</h3>
+            <h3>Great for first-time visitors</h3>
             <p>
-              The walk works well for beginners, couples, photographers, and families who want a relaxed evening activity with a strong wildlife focus and a manageable pace.
+              This is one of the easiest wildlife experiences in Mindo, Ecuador for beginners, couples, photographers, and families who want an evening nature walk with real chances to see frogs, insects, and other nocturnal animals.
             </p>
           </article>
         </div>
       </section>
 
-      <section class="section" aria-label="Night creatures of Mindo">
+      <section class="section" aria-label="Nocturnal wildlife in Mindo Ecuador">
         <div class="sectionHead">
-          <h2>Night creatures of Mindo</h2>
-          <p>Species vary with weather, season, and habitat, but these are some of the animals guests often hope to encounter.</p>
+          <h2>Nocturnal wildlife in Mindo, Ecuador</h2>
+          <p>Species vary with weather, season, and habitat, but these are some of the animals guests often hope to encounter on a Mindo night walk.</p>
         </div>
 
         <div class="wildlifeGrid">
           <article class="infoCard">
             <h3>Frogs and toads</h3>
             <p>
-              Mindo's humid cloud forest supports a rich amphibian community. During wet evenings you may hear or see small tree frogs, glass-frog type shapes near streams, and leaf-perching frogs that become active once temperatures cool and humidity rises.
+              Mindo's humid cloud forest supports a rich amphibian community. On wet evenings you may hear or see small tree frogs, glass-frog style shapes near streams, and leaf-perching frogs that become active when humidity rises and temperatures cool.
             </p>
           </article>
 
           <article class="infoCard">
             <h3>Owls and sleeping birds</h3>
             <p>
-              While this is not a dedicated owl tour, some night walks may reveal an owl perched quietly, a bird sleeping on a branch, or subtle signs of nocturnal bird activity. These moments are never guaranteed, but they make the experience especially memorable.
+              While this is not a dedicated owl tour, some guided night walks in Mindo may reveal an owl perched quietly, a bird sleeping on a branch, or subtle signs of nocturnal bird activity. These moments are never guaranteed, but they can be unforgettable.
             </p>
           </article>
 
           <article class="infoCard">
             <h3>Spiders, scorpions, and insects</h3>
             <p>
-              Orb weavers, hunting spiders, katydids, moths, beetles, and glowing scorpions can be among the easiest creatures to find. They reveal how active the forest becomes once light fades and why nighttime in the cloud forest feels like entering a different world.
+              Orb weavers, hunting spiders, katydids, moths, beetles, and glowing scorpions are often among the easiest animals to find. They show just how active the Mindo cloud forest becomes once the last daylight disappears.
             </p>
           </article>
 
           <article class="infoCard">
             <h3>Reptiles and other surprises</h3>
             <p>
-              Depending on conditions, night walks may also reveal geckos, sleeping lizards, and other hidden forest life. The guide helps interpret sounds, eyeshine, movement, and habitat clues along the route.
+              Depending on conditions, night walks may also reveal geckos, sleeping lizards, and other hidden creatures. Your guide helps interpret sounds, movement, and habitat clues so the forest feels richer and more alive at every stop.
             </p>
           </article>
         </div>
       </section>
 
-      <section class="section" aria-label="Media gallery">
+      <section class="section" aria-label="Night walk photos and vertical video">
         <div class="sectionHead">
           <h2>Photos and video</h2>
-          <p>A wide hero image, two vertical wildlife images, and a short vertical video create a stronger preview of the experience.</p>
+          <p>A vertical video and image carousel give a stronger preview of this guided night walk in Mindo.</p>
         </div>
 
         <div class="mediaGrid">
-          <article class="videoCard mediaCard">
-            <div class="videoFrame">
-              <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Night walk video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <article class="mediaCard">
+            <div class="mediaInner">
+              <div class="videoFrame">
+                <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Night walk in Mindo Ecuador video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="mediaFooter">
+                A short vertical video can show the mood, darkness, movement, and atmosphere of a guided night walk in Mindo.
+              </div>
             </div>
           </article>
 
-          <div class="portraitStack">
-            <article class="portraitCard mediaCard">
-              <div class="portraitFrame">
-                <img src="/assets/images/pages/activities/night-walks/night_walk_vert_03.jpg" alt="Owl photographed at night in Mindo, Ecuador">
-              </div>
-              <div class="portraitCap">An owl at night adds a sense of mystery to the forest after dark.</div>
-            </article>
+          <article class="mediaCard" aria-label="Night walk image carousel">
+            <div class="mediaInner">
+              <div class="carouselViewport">
+                <figure class="carouselSlide active">
+                  <img src="/assets/images/pages/activities/night-walks/night_walk_vert_03.jpg" alt="Owl photographed at night during a Mindo Ecuador night walk">
+                </figure>
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/night-walks/night_walk_vert_02.jpg" alt="Top view of a glowing scorpion during a night walk in Mindo Ecuador">
+                </figure>
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/night-walks/night_walk_horizontal_01.jpg" alt="Scorpion glowing under UV light in Mindo Ecuador">
+                </figure>
 
-            <article class="portraitCard mediaCard">
-              <div class="portraitFrame">
-                <img src="/assets/images/pages/activities/night-walks/night_walk_vert_02.jpg" alt="Top view of a scorpion during a night walk in Mindo, Ecuador">
+                <div class="carouselOverlay">
+                  <button class="carouselBtn" type="button" id="nightWalkPrev" aria-label="Previous image">&#8592;</button>
+                  <div class="carouselDots" aria-label="Carousel navigation">
+                    <button class="carouselDot active" type="button" data-slide="0" aria-label="Show owl image"></button>
+                    <button class="carouselDot" type="button" data-slide="1" aria-label="Show top view scorpion image"></button>
+                    <button class="carouselDot" type="button" data-slide="2" aria-label="Show glowing scorpion image"></button>
+                  </div>
+                  <button class="carouselBtn" type="button" id="nightWalkNext" aria-label="Next image">&#8594;</button>
+                </div>
               </div>
-              <div class="portraitCap">A top-down scorpion view shows the detail and texture guests may notice on a guided walk.</div>
-            </article>
-          </div>
+
+              <div class="mediaFooter" id="nightWalkCarouselCaption">
+                An owl at night adds mystery and silence to the cloud forest after dark.
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
       <section class="section" aria-label="Helpful notes">
         <div class="sectionHead">
           <h2>Helpful notes</h2>
-          <p>Simple preparation makes the walk more comfortable.</p>
+          <p>Simple preparation makes a night walk in Mindo more comfortable.</p>
         </div>
 
         <div class="noteCard">
           <p>
-            Bring closed-toe shoes, a light rain jacket, and clothing suitable for a damp evening in the cloud forest. If you have a headlamp or small flashlight you can bring it, although guided lighting is usually enough. Night wildlife activity depends on weather, especially humidity and recent rain.
+            Bring closed-toe shoes, a light rain jacket, and clothing suitable for a damp evening in the cloud forest. If you have a headlamp or small flashlight you can bring it, although guided lighting is usually enough. Night wildlife activity depends strongly on humidity, recent rain, and changing forest conditions.
           </p>
         </div>
 
@@ -490,5 +558,36 @@
 
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
+  <script>
+    (function(){
+      const slides = Array.from(document.querySelectorAll('.carouselSlide'));
+      const dots = Array.from(document.querySelectorAll('.carouselDot'));
+      const caption = document.getElementById('nightWalkCarouselCaption');
+      const prev = document.getElementById('nightWalkPrev');
+      const next = document.getElementById('nightWalkNext');
+
+      const captions = [
+        'An owl at night adds mystery and silence to the cloud forest after dark.',
+        'A top-down scorpion view shows the texture and detail guests may notice on a guided night walk in Mindo.',
+        'A glowing scorpion under UV light captures the dramatic atmosphere of nocturnal wildlife in the Mindo cloud forest.'
+      ];
+
+      let index = 0;
+
+      function render(i){
+        index = (i + slides.length) % slides.length;
+        slides.forEach((slide, sIdx) => slide.classList.toggle('active', sIdx === index));
+        dots.forEach((dot, dIdx) => dot.classList.toggle('active', dIdx === index));
+        caption.textContent = captions[index];
+      }
+
+      prev.addEventListener('click', function(){ render(index - 1); });
+      next.addEventListener('click', function(){ render(index + 1); });
+
+      dots.forEach((dot, dotIndex) => {
+        dot.addEventListener('click', function(){ render(dotIndex); });
+      });
+    })();
+  </script>
 </body>
 </html>
