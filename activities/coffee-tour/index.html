@@ -63,9 +63,9 @@
 
     .hero{
       display:grid;
-      grid-template-columns:1.08fr .92fr;
+      grid-template-columns:1.02fr .98fr;
       gap:16px;
-      align-items:start;
+      align-items:stretch;
     }
 
     h1{
@@ -93,6 +93,9 @@
 
     .heroCard{
       padding:16px;
+      display:flex;
+      flex-direction:column;
+      height:100%;
     }
 
     .ctaRow{
@@ -126,11 +129,15 @@
 
     .heroMedia{
       overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      height:100%;
     }
 
     .heroMediaFrame{
       width:100%;
-      aspect-ratio:16 / 9;
+      flex:1 1 auto;
+      min-height:100%;
       background:rgba(255,255,255,.55);
     }
 
@@ -148,6 +155,33 @@
       color:var(--muted);
       font-size:13px;
       line-height:1.55;
+    }
+
+    .experienceHighlights{
+      margin-top:16px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.55);
+    }
+
+    .experienceHighlights h2{
+      margin:0 0 10px;
+      font-family:var(--font-head);
+      color:var(--forest);
+      letter-spacing:-0.02em;
+      font-size:18px;
+    }
+
+    .experienceHighlights ul{
+      margin:0;
+      padding-left:18px;
+      color:var(--ink);
+      line-height:1.6;
+    }
+
+    .experienceHighlights li + li{
+      margin-top:8px;
     }
 
     .section{
@@ -372,6 +406,14 @@
       .mediaGrid{
         grid-template-columns:1fr;
       }
+
+      .heroMedia{
+        order:1;
+      }
+
+      .heroCard{
+        order:2;
+      }
     }
 
     @media (max-width:680px){
@@ -387,10 +429,6 @@
     <div id="siteHeader"></div>
 
     <main class="page card">
-      <div class="topbarActions">
-        <a class="btn secondary" href="/activities/">Back to Activities</a>
-      </div>
-
       <section class="hero" aria-label="Coffee tour overview">
         <div class="heroCard">
           <h1>Coffee Tour in Mindo, Ecuador</h1>
@@ -407,7 +445,17 @@
 
           <div class="ctaRow">
             <a class="btn primary" href="/book-a-tour/">Book Tour</a>
-            <a class="btn secondary" href="/contact/">Ask a Question</a>
+            <a class="btn secondary" href="/activities/">Back to Activities</a>
+          </div>
+
+          <div class="experienceHighlights" aria-label="Experience highlights">
+            <h2>Experience highlights</h2>
+            <ul>
+              <li>See how local coffee moves from cherry to cup in Mindo.</li>
+              <li>Learn roasting, brewing, and tasting notes in a relaxed setting.</li>
+              <li>Discover why Mindo's mountain climate supports great coffee.</li>
+              <li>Ideal for couples, families, and slower cloud forest itineraries.</li>
+            </ul>
           </div>
         </div>
 
@@ -419,6 +467,61 @@
             Replace this with a wide coffee or farm image that introduces the flavor, landscape, and atmosphere of the experience.
           </div>
         </aside>
+      </section>
+
+      <section class="section" aria-label="Media gallery">
+        <div class="sectionHead">
+          <h2>Photos and video</h2>
+          <p>A vertical video and image carousel preview the coffee tour experience.</p>
+        </div>
+
+        <div class="mediaGrid">
+          <article class="mediaCard">
+            <div class="mediaInner">
+              <div class="videoFrame">
+                <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Coffee tour video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+
+              <div class="mediaFooter">
+                A short vertical video showing the coffee experience in Mindo, from beans and roasting to tasting.
+              </div>
+            </div>
+          </article>
+
+          <article class="mediaCard" aria-label="Coffee tour image carousel">
+            <div class="mediaInner">
+              <div class="carouselViewport">
+                <figure class="carouselSlide active">
+                  <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_vert_01.jpg" alt="Coffee cherries or coffee plant on a coffee tour in Mindo, Ecuador">
+                </figure>
+
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_vert_02.jpg" alt="Roasting or grinding coffee during a coffee tour in Mindo, Ecuador">
+                </figure>
+
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_vert_03.jpg" alt="Coffee tasting in Mindo, Ecuador">
+                </figure>
+
+                <div class="carouselOverlay">
+                  <button class="carouselBtn" type="button" id="coffeePrev" aria-label="Previous image">&#8592;</button>
+
+                  <div class="carouselDots" aria-label="Carousel navigation">
+                    <button class="carouselDot active" type="button" data-slide="0" aria-label="Show coffee plant image"></button>
+                    <button class="carouselDot" type="button" data-slide="1" aria-label="Show roasting image"></button>
+                    <button class="carouselDot" type="button" data-slide="2" aria-label="Show tasting image"></button>
+                  </div>
+
+                  <button class="carouselBtn" type="button" id="coffeeNext" aria-label="Next image">&#8594;</button>
+                </div>
+              </div>
+
+              <div class="mediaFooter" id="coffeeCaption">
+                Fresh coffee cherries are the starting point of the bean-to-cup story.
+              </div>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section class="section" aria-label="What to expect">
@@ -488,60 +591,7 @@
         </div>
       </section>
 
-      <section class="section" aria-label="Media gallery">
-        <div class="sectionHead">
-          <h2>Photos and video</h2>
-          <p>A vertical video and image carousel preview the coffee tour experience.</p>
-        </div>
-
-        <div class="mediaGrid">
-          <article class="mediaCard">
-            <div class="mediaInner">
-              <div class="videoFrame">
-                <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Coffee tour video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-              </div>
-
-              <div class="mediaFooter">
-                A short vertical video showing the coffee experience in Mindo, from beans and roasting to tasting.
-              </div>
-            </div>
-          </article>
-
-          <article class="mediaCard" aria-label="Coffee tour image carousel">
-            <div class="mediaInner">
-              <div class="carouselViewport">
-                <figure class="carouselSlide active">
-                  <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_vert_01.jpg" alt="Coffee cherries or coffee plant on a coffee tour in Mindo, Ecuador">
-                </figure>
-
-                <figure class="carouselSlide">
-                  <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_vert_02.jpg" alt="Roasting or grinding coffee during a coffee tour in Mindo, Ecuador">
-                </figure>
-
-                <figure class="carouselSlide">
-                  <img src="/assets/images/pages/activities/coffee-tour/coffee_tour_vert_03.jpg" alt="Coffee tasting in Mindo, Ecuador">
-                </figure>
-
-                <div class="carouselOverlay">
-                  <button class="carouselBtn" type="button" id="coffeePrev" aria-label="Previous image">&#8592;</button>
-
-                  <div class="carouselDots" aria-label="Carousel navigation">
-                    <button class="carouselDot active" type="button" data-slide="0" aria-label="Show coffee plant image"></button>
-                    <button class="carouselDot" type="button" data-slide="1" aria-label="Show roasting image"></button>
-                    <button class="carouselDot" type="button" data-slide="2" aria-label="Show tasting image"></button>
-                  </div>
-
-                  <button class="carouselBtn" type="button" id="coffeeNext" aria-label="Next image">&#8594;</button>
-                </div>
-              </div>
-
-              <div class="mediaFooter" id="coffeeCaption">
-                Fresh coffee cherries are the starting point of the bean-to-cup story.
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
+      
 
       <section class="section" aria-label="Helpful notes">
         <div class="sectionHead">
