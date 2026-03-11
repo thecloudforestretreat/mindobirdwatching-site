@@ -63,9 +63,9 @@
 
     .hero{
       display:grid;
-      grid-template-columns:1.08fr .92fr;
+      grid-template-columns:1.02fr .98fr;
       gap:16px;
-      align-items:start;
+      align-items:stretch;
     }
 
     h1{
@@ -93,6 +93,9 @@
 
     .heroCard{
       padding:16px;
+      display:flex;
+      flex-direction:column;
+      height:100%;
     }
 
     .ctaRow{
@@ -126,11 +129,15 @@
 
     .heroMedia{
       overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      height:100%;
     }
 
     .heroMediaFrame{
       width:100%;
-      aspect-ratio:16 / 9;
+      flex:1 1 auto;
+      min-height:100%;
       background:rgba(255,255,255,.55);
     }
 
@@ -148,6 +155,33 @@
       color:var(--muted);
       font-size:13px;
       line-height:1.55;
+    }
+
+    .experienceHighlights{
+      margin-top:16px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.55);
+    }
+
+    .experienceHighlights h2{
+      margin:0 0 10px;
+      font-family:var(--font-head);
+      color:var(--forest);
+      letter-spacing:-0.02em;
+      font-size:18px;
+    }
+
+    .experienceHighlights ul{
+      margin:0;
+      padding-left:18px;
+      color:var(--ink);
+      line-height:1.6;
+    }
+
+    .experienceHighlights li + li{
+      margin-top:8px;
     }
 
     .section{
@@ -376,6 +410,14 @@
       .mediaGrid{
         grid-template-columns:1fr;
       }
+
+      .heroMedia{
+        order:1;
+      }
+
+      .heroCard{
+        order:2;
+      }
     }
 
     @media (max-width:680px){
@@ -391,10 +433,6 @@
     <div id="siteHeader"></div>
 
     <main class="page card">
-      <div class="topbarActions">
-        <a class="btn secondary" href="/activities/">Back to Activities</a>
-      </div>
-
       <section class="hero" aria-label="Chocolate tour overview">
         <div class="heroCard">
           <h1>Chocolate Tour in Mindo, Ecuador</h1>
@@ -412,7 +450,17 @@
 
           <div class="ctaRow">
             <a class="btn primary" href="/book-a-tour/">Book Tour</a>
-            <a class="btn secondary" href="/contact/">Ask a Question</a>
+            <a class="btn secondary" href="/activities/">Back to Activities</a>
+          </div>
+
+          <div class="experienceHighlights" aria-label="Experience highlights">
+            <h2>Experience highlights</h2>
+            <ul>
+              <li>See how cacao becomes chocolate from fruit to finished flavor.</li>
+              <li>Taste fresh cacao and artisan chocolate in a relaxed setting.</li>
+              <li>Learn bean-to-bar steps that make Ecuadorian cacao special.</li>
+              <li>Ideal for families, rainy afternoons, and slower Mindo itineraries.</li>
+            </ul>
           </div>
         </div>
 
@@ -421,9 +469,64 @@
             <img src="/assets/images/pages/activities/chocolate-tour/chocolate_tour_horizontal_01.jpg" alt="Chocolate tour in Mindo, Ecuador">
           </div>
           <div class="heroMediaCap">
-            Replace this with a wide cacao or chocolate image that introduces the flavor and atmosphere of the experience.
+            A wide visual introduction to Mindo's cacao culture, artisan chocolate process, and tasting atmosphere.
           </div>
         </aside>
+      </section>
+
+      <section class="section" aria-label="Media gallery">
+        <div class="sectionHead">
+          <h2>Photos and video</h2>
+          <p>A vertical video and image carousel preview the chocolate tour experience.</p>
+        </div>
+
+        <div class="mediaGrid">
+          <article class="mediaCard">
+            <div class="mediaInner">
+              <div class="videoFrame">
+                <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Chocolate tour video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+
+              <div class="mediaFooter">
+                A short vertical video showing the cacao and chocolate experience in Mindo.
+              </div>
+            </div>
+          </article>
+
+          <article class="mediaCard" aria-label="Chocolate tour image carousel">
+            <div class="mediaInner">
+              <div class="carouselViewport">
+                <figure class="carouselSlide active">
+                  <img src="/assets/images/pages/activities/chocolate-tour/chocolate_tour_vert_01.jpg" alt="Fresh cacao pods on a chocolate tour in Mindo, Ecuador">
+                </figure>
+
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/chocolate-tour/chocolate_tour_vert_02.jpg" alt="Roasting cacao beans during a chocolate tour in Mindo, Ecuador">
+                </figure>
+
+                <figure class="carouselSlide">
+                  <img src="/assets/images/pages/activities/chocolate-tour/chocolate_tour_vert_03.jpg" alt="Chocolate tasting in Mindo, Ecuador">
+                </figure>
+
+                <div class="carouselOverlay">
+                  <button class="carouselBtn" type="button" id="chocoPrev" aria-label="Previous image">&#8592;</button>
+
+                  <div class="carouselDots" aria-label="Carousel navigation">
+                    <button class="carouselDot active" type="button" data-slide="0" aria-label="Show cacao pod image"></button>
+                    <button class="carouselDot" type="button" data-slide="1" aria-label="Show roasted cacao image"></button>
+                    <button class="carouselDot" type="button" data-slide="2" aria-label="Show tasting image"></button>
+                  </div>
+
+                  <button class="carouselBtn" type="button" id="chocoNext" aria-label="Next image">&#8594;</button>
+                </div>
+              </div>
+
+              <div class="mediaFooter" id="chocoCaption">
+                Fresh cacao pods are the starting point of Ecuador's famous chocolate.
+              </div>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section class="section" aria-label="What to expect">
@@ -493,60 +596,7 @@
         </div>
       </section>
 
-      <section class="section" aria-label="Media gallery">
-        <div class="sectionHead">
-          <h2>Photos and video</h2>
-          <p>A vertical video and image carousel preview the chocolate tour experience.</p>
-        </div>
-
-        <div class="mediaGrid">
-          <article class="mediaCard">
-            <div class="mediaInner">
-              <div class="videoFrame">
-                <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Chocolate tour video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-              </div>
-
-              <div class="mediaFooter">
-                A short vertical video showing the cacao and chocolate experience in Mindo.
-              </div>
-            </div>
-          </article>
-
-          <article class="mediaCard" aria-label="Chocolate tour image carousel">
-            <div class="mediaInner">
-              <div class="carouselViewport">
-                <figure class="carouselSlide active">
-                  <img src="/assets/images/pages/activities/chocolate-tour/chocolate_tour_vert_01.jpg" alt="Fresh cacao pods on a chocolate tour in Mindo, Ecuador">
-                </figure>
-
-                <figure class="carouselSlide">
-                  <img src="/assets/images/pages/activities/chocolate-tour/chocolate_tour_vert_02.jpg" alt="Roasting cacao beans during a chocolate tour in Mindo, Ecuador">
-                </figure>
-
-                <figure class="carouselSlide">
-                  <img src="/assets/images/pages/activities/chocolate-tour/chocolate_tour_vert_03.jpg" alt="Chocolate tasting in Mindo, Ecuador">
-                </figure>
-
-                <div class="carouselOverlay">
-                  <button class="carouselBtn" type="button" id="chocoPrev" aria-label="Previous image">&#8592;</button>
-
-                  <div class="carouselDots" aria-label="Carousel navigation">
-                    <button class="carouselDot active" type="button" data-slide="0" aria-label="Show cacao pod image"></button>
-                    <button class="carouselDot" type="button" data-slide="1" aria-label="Show roasted cacao image"></button>
-                    <button class="carouselDot" type="button" data-slide="2" aria-label="Show tasting image"></button>
-                  </div>
-
-                  <button class="carouselBtn" type="button" id="chocoNext" aria-label="Next image">&#8594;</button>
-                </div>
-              </div>
-
-              <div class="mediaFooter" id="chocoCaption">
-                Fresh cacao pods are the starting point of Ecuador's famous chocolate.
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
+      
 
       <section class="section" aria-label="Helpful notes">
         <div class="sectionHead">
