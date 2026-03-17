@@ -31,7 +31,8 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#034EA2" />
+  <meta name="theme-color" content="#2F5E3B" />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
   <!-- Global / shared CSS -->
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
@@ -553,6 +554,91 @@
     }
 
     /* Breakpoints */
+
+
+    .topicGrid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .topicCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      text-decoration:none;
+      color: inherit;
+      display:block;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .topicCard:hover,
+    .topicCard:focus-visible{
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.08);
+      border-color: rgba(13,89,37,.25);
+    }
+
+    .topicCard:focus-visible{
+      outline: 2px solid rgba(13,89,37,.35);
+      outline-offset: 2px;
+    }
+
+    .topicFrame{
+      width:100%;
+      aspect-ratio: 16 / 9;
+      background: rgba(255,255,255,.55);
+      overflow:hidden;
+    }
+
+    .topicFrame img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .topicBody{
+      padding: 14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+
+    .topicBody h3{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.01em;
+      font-size: 20px;
+      line-height: 1.08;
+    }
+
+    .topicBody p{
+      margin:0;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    .topicCta{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      margin-top: 2px;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+      color: var(--forest);
+    }
+
+    .topicCta .arrow{
+      font-size: 15px;
+      line-height: 1;
+    }
+
     @media (max-width: 1180px){
       .wxGrid{ grid-template-columns: repeat(4, 1fr); }
     }
@@ -566,6 +652,7 @@
       .hero{ grid-template-columns: 1fr; }
       .mediaGrid{ grid-template-columns: 1fr; }
       .tiles{ grid-template-columns: 1fr; }
+      .topicGrid{ grid-template-columns: 1fr; }
       .photoRail{ grid-template-columns: 1fr; }
       .photo img{ height: 220px; }
 
@@ -581,6 +668,90 @@
       .wxGrid{ grid-template-columns: repeat(2, 1fr); }
     }
   </style>
+
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://mindobirdwatching.com/es/#website",
+        "url": "https://mindobirdwatching.com/es/",
+        "name": "Mindo Bird Watching",
+        "inLanguage": "es",
+        "publisher": {
+          "@id": "https://mindobirdwatching.com/es/#organization"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://mindobirdwatching.com/es/#organization",
+        "name": "Mindo Bird Watching",
+        "url": "https://mindobirdwatching.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://mindobirdwatching.com/assets/images/logo/logo-mbw.png"
+        },
+        "sameAs": [
+          "https://www.instagram.com/mindobirdwatching/",
+          "https://www.facebook.com/mindobirdwatching/"
+        ]
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": "https://mindobirdwatching.com/es/#webpage",
+        "url": "https://mindobirdwatching.com/es/",
+        "name": "Tours privados de avistamiento de aves en Mindo, Ecuador",
+        "isPartOf": {
+          "@id": "https://mindobirdwatching.com/es/#website"
+        },
+        "about": [
+          "Avistamiento de aves en Mindo",
+          "Tours de birding en Mindo",
+          "Birding en bosque nublado de Ecuador"
+        ],
+        "primaryImageOfPage": {
+          "@type": "ImageObject",
+          "url": "https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg"
+        },
+        "description": "Tours privados de avistamiento de aves en Mindo, Ecuador con guias bilingues expertos, ritmo flexible y planificacion simple para una experiencia inolvidable en el bosque nublado."
+      },
+      {
+        "@type": "ItemList",
+        "@id": "https://mindobirdwatching.com/es/#temas-aves",
+        "name": "Aves del bosque nublado de Mindo",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "url": "https://mindobirdwatching.com/es/birding/colibries-de-mindo/",
+            "name": "Colibries de Mindo"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "url": "https://mindobirdwatching.com/es/birding/tucanes-de-mindo/",
+            "name": "Tucanes de Mindo"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "url": "https://mindobirdwatching.com/es/birding/tangaras-de-mindo/",
+            "name": "Tangaras de Mindo"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "url": "https://mindobirdwatching.com/es/birding/gallo-de-la-pena-andino/",
+            "name": "Gallo de la Pena Andino en Mindo"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
 </head>
 <body>
   <div class="container">
@@ -746,6 +917,62 @@
       </a>
     </div>
   </section>
+
+
+
+  <section class="section" aria-label="Aves del bosque nublado de Mindo">
+    <div class="sectionHead">
+      <h2>Aves del bosque nublado de Mindo</h2>
+      <p class="hint">Explora las especies que hacen de Mindo uno de los destinos de birding mas emocionantes de Ecuador.</p>
+    </div>
+
+    <div class="topicGrid" aria-label="Enlaces a temas de especies de aves">
+      <a class="topicCard" href="/es/birding/colibries-de-mindo/" aria-label="Explorar Colibries de Mindo">
+        <div class="topicFrame">
+          <img src="https://mindobirdwatching.com/assets/images/pages/birding/mbw_birding_hummingbirds_hero_01.jpg" alt="Colibries de Mindo en el bosque nublado" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Colibries de Mindo</h3>
+          <p>Aprende donde ver los colibries mas deslumbrantes de Mindo y que rutas guiadas ofrecen las mejores vistas cercanas.</p>
+          <span class="topicCta">Explorar pagina <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+
+      <a class="topicCard" href="/es/birding/tucanes-de-mindo/" aria-label="Explorar Tucanes de Mindo">
+        <div class="topicFrame">
+          <img src="https://mindobirdwatching.com/assets/images/pages/birding/mbw_birding_toucans_hero_02.jpg" alt="Tucanes de Mindo en el bosque nublado de Ecuador" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Tucanes de Mindo</h3>
+          <p>Descubre los tucanes y arasarís que se observan con mas frecuencia en Mindo y las rutas que mejoran tus probabilidades.</p>
+          <span class="topicCta">Explorar pagina <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+
+      <a class="topicCard" href="/es/birding/tangaras-de-mindo/" aria-label="Explorar Tangaras de Mindo">
+        <div class="topicFrame">
+          <img src="https://mindobirdwatching.com/assets/images/pages/birding/mbw_birding_tanagers_hero_02.jpg" alt="Tangaras de Mindo en el bosque nublado" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Tangaras de Mindo</h3>
+          <p>Observa las bandadas mixtas llenas de color que hacen de Mindo uno de los sitios de birding mas especiales del bosque nublado.</p>
+          <span class="topicCta">Explorar pagina <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+
+      <a class="topicCard" href="/es/birding/gallo-de-la-pena-andino/" aria-label="Explorar Gallo de la Pena Andino en Mindo">
+        <div class="topicFrame">
+          <img src="https://mindobirdwatching.com/assets/images/pages/birding/mbw_birding_acotr_hero_01.jpg" alt="Gallo de la Pena Andino en Mindo, Ecuador" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Gallo de la Pena Andino</h3>
+          <p>Descubre donde y cuando buscar una de las aves mas iconicas del bosque nublado y sus espectaculares leks de exhibicion.</p>
+          <span class="topicCta">Explorar pagina <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    </div>
+  </section>
+
 
   <!-- PHOTO RAIL -->
   <section class="section" aria-label="Momentos destacados">
