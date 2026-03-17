@@ -308,10 +308,59 @@
       background: rgba(255,255,255,0.92);
     }
 
+
+    .seoInfo{
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: none;
+    }
+    .seoInfo.show{ display: block; }
+    .seoInfo h3{
+      margin: 0 0 10px;
+      font-size: 15px;
+      color: var(--forest);
+      letter-spacing: -0.01em;
+    }
+    .seoInfoGrid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .seoMetric{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      padding: 12px;
+    }
+    .seoMetric h4{
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .seoMetric p{
+      margin: 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.55;
+    }
+    .seoMetric .good{
+      display:block;
+      margin-top: 8px;
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 12.5px;
+    }
+
     @media (max-width: 900px){
       .page{ padding: 14px; }
       .frameBox{ height: 72vh; }
       .seg button{ padding: 10px 12px; }
+      .seoInfoGrid{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -361,6 +410,34 @@
         </div>
         <a id="openInLooker" href="#" target="_blank" rel="noreferrer">Open in Looker</a>
       </div>
+
+
+      <section class="seoInfo" id="seoInfo" aria-label="SEO metric guide">
+        <h3>How to read the SEO report</h3>
+        <div class="seoInfoGrid">
+          <article class="seoMetric">
+            <h4>URL Clicks</h4>
+            <p>The number of times someone clicked your page from Google Search results. More clicks usually means your page is earning real search traffic, not just visibility.</p>
+            <span class="good">Good sign: clicks are rising week over week.</span>
+          </article>
+          <article class="seoMetric">
+            <h4>Impressions</h4>
+            <p>The number of times Google showed your page in search results. This is usually the first sign a new page is being discovered and tested.</p>
+            <span class="good">Good sign: impressions rise first, then clicks follow.</span>
+          </article>
+          <article class="seoMetric">
+            <h4>URL CTR</h4>
+            <p>Click-through rate. This is the percentage of impressions that turned into clicks. It helps you understand whether the page title and snippet are attractive in Google.</p>
+            <span class="good">Good sign: higher CTR on queries with meaningful impression volume. Low CTR on 1 or 2 impressions is not important.</span>
+          </article>
+          <article class="seoMetric">
+            <h4>Average Position</h4>
+            <p>Your average ranking position in Google Search. Lower is better, so position 3 is stronger than position 12.</p>
+            <span class="good">Good sign: positions move downward over time, for example from 20 to 11 to 6.</span>
+          </article>
+        </div>
+      </section>
+
 
       <div class="frameWrap" aria-label="Embedded dashboard">
         <div class="frameBox">
@@ -531,6 +608,7 @@
         document.getElementById("filterSite").style.display = (currentView === "site") ? "" : "none";
         document.getElementById("filterSocial").style.display = (currentView === "social") ? "" : "none";
         document.getElementById("filterSeo").style.display = (currentView === "seo") ? "" : "none";
+        document.getElementById("seoInfo").classList.toggle("show", currentView === "seo");
 
         loadEmbed();
       }
