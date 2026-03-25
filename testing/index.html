@@ -3,28 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MBW Admin | Dashboards</title>
-  <meta name="robots" content="noindex, nofollow" />
-  <meta name="theme-color" content="var(--forest)" />
-  <link rel="canonical" href="https://admin.mindobirdwatching.com/" />
-
-  <!-- Favicons (must exist inside /admin output) -->
-  <link rel="icon" href="/favicon.ico" sizes="any" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-
-  <!-- IMPORTANT:
-       Because the admin Pages project publishes ONLY the /admin folder,
-       these assets must be duplicated into /admin/assets/... in your repo.
-  -->
+  <title>Reviews | Mindo Bird Watching</title>
+  <meta name="description" content="Read verified Google reviews from bird watchers who explored Mindo, Ecuador with us. See what guests say about our guides, tours, and wildlife sightings." />
+  <link rel="canonical" href="https://mindobirdwatching.com/reviews/" />
+  <link rel="alternate" hreflang="en" href="/reviews/" />
+  <link rel="alternate" hreflang="x-default" href="/reviews/" />
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#034EA2">
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Reviews | Mindo Bird Watching" />
+  <meta property="og:description" content="Read verified Google reviews from bird watchers who explored Mindo, Ecuador with us. See what guests say about our guides, tours, and wildlife sightings." />
+  <meta property="og:url" content="https://mindobirdwatching.com/reviews/" />
+  <meta property="og:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
+  <meta property="og:image:secure_url" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching - guided birding tours in Mindo, Ecuador" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Reviews | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Read verified Google reviews from bird watchers who explored Mindo, Ecuador with us. See what guests say about our guides, tours, and wildlife sightings." />
+  <meta name="twitter:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1">
   <script src="/assets/js/head.js" defer></script>
-
   <style>
-    /* Page-only styles. site.css remains the source of truth for fonts/colors. */
-    .page { margin-top: 18px; padding: 18px; }
+    :root{
+      --google-star: #fbbc04;
+      --glass: rgba(255,255,255,.70);
+      --glass2: rgba(255,255,255,.62);
+      --soft: rgba(255,255,255,.55);
+    }
+    .page { margin-top: 18px; padding: 26px; }
     .page.card{
       background: var(--card);
       border: 1px solid var(--line);
@@ -32,693 +45,1030 @@
       box-shadow: var(--shadow);
     }
 
-    .adminTop{
+    .hero{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .hero h1{
+      margin:0 0 8px;
+      letter-spacing:-0.02em;
+    }
+
+    .hero p{
+      margin:0;
+      max-width: 85ch;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    .leftStack{
+      display:grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .ctaPills{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      align-items:stretch;
+      max-width: 560px;
+    }
+
+    .pillBtn{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      text-decoration:none;
+      font-weight: 950;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      background: var(--glass);
+      min-height: 58px;
+    }
+    .pillBtn .pillLeft{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .pillIcon{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border: 1px solid rgba(3,78,162,.18);
+      background: rgba(3,78,162,.06);
+      flex: 0 0 auto;
+      font-size: 18px;
+      overflow:hidden;
+    }
+    .pillIcon img{
+      width: 34px;
+      height: 34px;
+      display:block;
+      object-fit: contain;
+    }
+
+    .pillText{
+      display:grid;
+      gap: 2px;
+      min-width: 0;
+    }
+    .pillTitle{
+      margin:0;
+      font-size: 16px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .pillSub{
+      margin:0;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .pillChevron{
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border: 1px solid rgba(0,0,0,.06);
+      background: rgba(255,255,255,.7);
+      flex: 0 0 auto;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .pillPrimary{
+      background: rgba(251,188,4,.22);
+      border-color: rgba(251,188,4,.35);
+    }
+    .pillPrimary .pillIcon{
+      background: rgba(251,188,4,.18);
+      border-color: rgba(251,188,4,.40);
+    }
+
+    .pillSecondary{
+      background: rgba(255,255,255,.70);
+      border-color: rgba(0,0,0,.10);
+    }
+    .pillSecondary .pillIcon{
+      background: rgba(0,0,0,.03);
+      border-color: rgba(0,0,0,.10);
+    }
+
+    .pillBook{
+      background: rgba(13,89,37,.08);
+      border-color: rgba(13,89,37,.18);
+    }
+    .pillBook .pillIcon{
+      background: rgba(13,89,37,.10);
+      border-color: rgba(13,89,37,.20);
+    }
+
+    .pillBtn:hover{ transform: translateY(-1px); }
+    .pillBtn:active{ transform: translateY(0px); }
+
+    .summaryCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: var(--glass2);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      overflow:hidden;
+      position: relative;
+      max-width: 560px;
+    }
+
+    .summaryTop{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .adminTitle{ display:flex; align-items:flex-start; gap: 10px; min-width: 0; }
-    .adminDot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--forest);
-      box-shadow: 0 0 0 4px rgba(3,78,162,0.12);
-      margin-top: 7px;
-      flex: 0 0 auto;
-    }
-    .adminTitle h1{
-      margin: 0;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      font-size: 18px;
-    }
-    .adminTitle p{
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-      max-width: 70ch;
     }
 
-    .adminBadge{
+    .score{
+      display:flex;
+      align-items:flex-start;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .scoreNum{
+      font-weight: 1000;
+      letter-spacing: -0.03em;
+      font-size: 44px;
+      line-height: 1;
+      color: var(--ink);
+      flex: 0 0 auto;
+    }
+
+    .scoreMeta{
+      display:grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .stars{
+      display:flex;
+      align-items:flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .starRow{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      line-height: 1;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      letter-spacing: 0;
+    }
+    .star{
+      border: 0;
+      background: transparent;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width: auto;
+      height: auto;
+      flex: 0 0 auto;
+    }
+    .star::before{
+      content:"★";
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--google-star);
+      line-height: 1;
+      display:block;
+    }
+
+    .scoreLine{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .badgeRow{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge{
       display:inline-flex;
       align-items:center;
       gap: 8px;
-      padding: 8px 10px;
+      padding: 9px 12px;
       border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.72);
       box-shadow: var(--shadow);
-      font-weight: 900;
+      font-weight: 950;
       font-size: 12.5px;
       color: var(--ink);
       line-height: 1;
       white-space: nowrap;
-      margin-top: 10px;
-    }
-    .adminBadge i{
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--forest);
-      display:inline-block;
     }
 
-    .adminControls{ display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
-
-    .seg{
+    .poweredBy{
+      margin-top: 6px;
       display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.35;
+      flex-wrap: wrap;
+    }
+    .poweredGroup{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .poweredBy img{
+      width: 16px;
+      height: 16px;
+      display:block;
+    }
+    .poweredBy a{
+      color: var(--ink);
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      white-space: nowrap;
+    }
+
+    .proof{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .proofItem{
       border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255,255,255,.65);
+      border-radius: 16px;
+      background: var(--soft);
+      padding: 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .proofItem b{
+      display:block;
+      font-weight: 950;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .proofItem span{
+      display:block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 2px;
+    }
+
+    .rightStack{
+      display:grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .vCarousel{
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--glass2);
       box-shadow: var(--shadow);
       overflow:hidden;
+      position: relative;
     }
-    .seg button{
-      appearance:none;
-      border:0;
-      background: transparent;
-      padding: 10px 14px;
-      font-weight: 900;
-      cursor:pointer;
-      color: var(--ink);
-      font-size: 14px;
-      white-space: nowrap;
-    }
-    .seg button[aria-pressed="true"]{ background: rgba(3,78,162,0.12); }
 
-    .pill{
-      display:inline-flex;
+    .vCarouselHeader{
+      padding: 12px 14px;
+      display:flex;
       align-items:center;
+      justify-content:space-between;
       gap: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      color: var(--ink);
-      font-weight: 900;
-    }
-    .pill label{ color: var(--muted); font-size: 12.5px; font-weight: 900; white-space: nowrap; }
-    .pill select{
-      border:0;
-      background: transparent;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 14px;
-      outline: none;
-      cursor: pointer;
+      border-bottom: 1px solid rgba(0,0,0,.05);
     }
 
-    .btnLite{
-      appearance:none;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
+    .vCarouselHeader b{
+      font-weight: 1000;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+
+    .vCarouselHeader span{
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.2;
+    }
+
+    .vStage{
+      position: relative;
+      aspect-ratio: 9 / 16;
+      background: rgba(0,0,0,.03);
+      min-height: 420px;
+    }
+
+    .vStage img{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+      opacity: 0;
+      transform: scale(1.02);
+      transition: opacity .45s ease, transform .65s ease;
+      pointer-events:none;
+    }
+
+    .vStage img.active{
+      opacity: 1;
+      transform: scale(1.00);
+      pointer-events:auto;
+    }
+
+    .vNav{
+      position:absolute;
+      inset: 0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 0 10px;
+      pointer-events:none;
+    }
+
+    .vBtn{
+      pointer-events:auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.76);
       box-shadow: var(--shadow);
-      border-radius: 999px;
-      padding: 10px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 18px;
       font-weight: 900;
       color: var(--ink);
       cursor:pointer;
-      white-space: nowrap;
+      user-select:none;
     }
 
-    .panelHeader{
+    .vBtn:active{ transform: scale(.98); }
+
+    .vDots{
+      display:flex;
+      gap: 6px;
+      padding: 10px 12px 12px;
+      justify-content:center;
+      align-items:center;
+      background: rgba(255,255,255,.35);
+      border-top: 1px solid rgba(0,0,0,.04);
+    }
+
+    .vDot{
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.35);
+      cursor:pointer;
+    }
+
+    .vDot.active{
+      width: 18px;
+      background: rgba(3,78,162,.38);
+      border-color: rgba(3,78,162,.22);
+    }
+
+    .section{
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sectionHead{
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
       gap: 12px;
       flex-wrap: wrap;
-      margin: 10px 0 10px;
+      margin-bottom: 10px;
     }
-    .panelHeader h2{
+
+    .sectionHead h2{
       margin:0;
       font-family: var(--font-head);
       color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
+      letter-spacing:-0.02em;
+      font-size: 20px;
     }
-    .panelHeader .desc{
-      margin:6px 0 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-      max-width: 85ch;
-    }
-    .panelHeader a{
-      font-weight: 900;
-      color: var(--forest);
-      text-decoration:none;
-      white-space: nowrap;
-      font-size: 13px;
-    }
-    .panelHeader a:hover{ text-decoration: underline; }
 
-    .frameWrap{
+    .hint{ margin:0; color: var(--muted); font-size: 13px; }
+
+    .reviewsSplit{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items:start;
+      margin-top: 12px;
+    }
+    .col{
+      display:grid;
+      gap: 12px;
+      align-content:start;
+    }
+
+    .reviewCard{
       border: 1px solid var(--line);
       border-radius: var(--r);
-      background: rgba(255,255,255,.65);
+      background: rgba(255,255,255,.70);
       box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .frameBox{
-      width: 100%;
-      height: min(76vh, 920px);
+      padding: 14px;
       position: relative;
-      background: rgba(255,255,255,.55);
-    }
-    iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      display:block;
-      background: rgba(255,255,255,.55);
+      overflow:hidden;
     }
 
-    .cookieHint{
-      border-top: 1px solid var(--line);
-      padding: 12px 12px;
-      background: rgba(255,255,255,.55);
+    .reviewTop{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
-    .cookieHint p{
+
+    .who{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .avatar{
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid rgba(251,188,4,.35);
+      background: rgba(251,188,4,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 950;
+      color: #8a6a00;
+      flex: 0 0 auto;
+    }
+
+    .whoMeta{
+      display:grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .name{
+      margin:0;
+      font-weight: 950;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      font-size: 15px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 42ch;
+    }
+
+    .sub{
       margin:0;
       color: var(--muted);
       font-size: 12.5px;
-      line-height: 1.5;
-      max-width: 90ch;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 52ch;
     }
-    .cookieHint .actions{
+
+    .reviewBadges{
       display:flex;
+      align-items:center;
       gap: 10px;
       flex-wrap: wrap;
-      align-items:center;
+      justify-content:flex-end;
     }
-    .cookieHint .actions a{
+
+    .starsPill{
       display:inline-flex;
       align-items:center;
-      justify-content:center;
+      gap: 8px;
+      padding: 10px 12px;
       border-radius: 999px;
-      padding: 10px 14px;
-      font-weight: 900;
-      text-decoration:none;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
+      border: 0;
+      background: rgba(251,188,4,.16);
       box-shadow: var(--shadow);
-      color: var(--ink);
+      font-weight: 1000;
+      font-size: 13px;
+      color: #8a6a00;
+      line-height: 1;
       white-space: nowrap;
     }
 
-    /* Drawer */
-    .scrim{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      display:none;
-      z-index: 80;
+    .starsTextInline{
+      font-size: 14px;
+      letter-spacing: .06em;
+      color: var(--google-star);
+      font-weight: 1000;
+      line-height: 1;
+      display:inline-flex;
+      gap: 2px;
     }
-    .drawer{
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: min(420px, 92vw);
-      height: 100%;
-      background: #fff;
-      border-left: 1px solid rgba(11,18,32,0.12);
-      box-shadow: 0 18px 60px rgba(11,18,32,0.16);
-      transform: translateX(100%);
-      transition: transform 180ms ease-out;
-      z-index: 90;
-      display:flex;
-      flex-direction: column;
-    }
-    .scrim.open{ display:block; }
-    .drawer.open{ transform: translateX(0); }
 
-    .drawerTop{
-      padding: 14px;
-      border-bottom: 1px solid rgba(11,18,32,0.10);
-      display:flex;
+    .gMark{
+      display:inline-flex;
       align-items:center;
-      justify-content:space-between;
-      gap: 10px;
+      justify-content:center;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      line-height: 1;
     }
-    .drawerTop strong{ font-weight: 950; letter-spacing: -0.01em; }
-    .drawerBody{ padding: 14px; overflow:auto; }
-    .drawerBody h3{ margin: 0 0 8px; font-size: 13px; font-weight: 950; }
-    .drawerBody p{ margin: 0 0 12px; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
-    .field{
-      border: 1px solid rgba(11,18,32,0.12);
-      border-radius: 16px;
-      padding: 10px;
-      background: rgba(246,248,251,0.75);
-      margin-bottom: 10px;
-    }
-    .field label{
+
+    .gMark img{
+      width: 28px;
+      height: 28px;
       display:block;
-      font-size: 12px;
-      font-weight: 950;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .field select{
-      width: 100%;
-      border: 1px solid rgba(11,18,32,0.12);
-      border-radius: 12px;
-      padding: 9px 10px;
-      font-weight: 900;
-      background: #fff;
-      outline: none;
-    }
-    .drawerBottom{
-      padding: 12px 14px;
-      border-top: 1px solid rgba(11,18,32,0.10);
-      display:flex;
-      justify-content:flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-      background: rgba(255,255,255,0.92);
+      object-fit: contain;
     }
 
+    .quote{
+      margin: 12px 0 0;
+      color: var(--ink);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
 
-    .seoInfo{
-      margin-top: 12px;
+    .emptyState{
       border: 1px solid var(--line);
       border-radius: var(--r);
-      background: rgba(255,255,255,.65);
+      background: rgba(255,255,255,.60);
       box-shadow: var(--shadow);
       padding: 14px;
-      display: none;
-    }
-    .seoInfo.show{ display: block; }
-    .seoInfo h3{
-      margin: 0 0 10px;
-      font-size: 15px;
-      color: var(--forest);
-      letter-spacing: -0.01em;
-    }
-    .seoInfoGrid{
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .seoMetric{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-    }
-    .seoMetric h4{
-      margin: 0 0 6px;
-      font-size: 14px;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-    }
-    .seoMetric p{
-      margin: 0;
       color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.55;
-    }
-    .seoMetric .good{
-      display:block;
-      margin-top: 8px;
-      color: var(--ink);
-      font-weight: 900;
-      font-size: 12.5px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin-top: 12px;
     }
 
-    @media (max-width: 900px){
-      .page{ padding: 14px; }
-      .frameBox{ height: 72vh; }
-      .seg button{ padding: 10px 12px; }
-      .seoInfoGrid{ grid-template-columns: 1fr; }
+    @media (max-width: 860px){
+      .hero{ grid-template-columns: 1fr; }
+      .reviewsSplit{ grid-template-columns: 1fr; }
+      .ctaPills, .summaryCard{ max-width: 100%; }
+      .page{ padding: 18px; }
+      .score{ gap: 10px; }
+      .scoreNum{ font-size: 42px; }
+      .star::before{ font-size: 24px; }
+      .stars{ gap: 8px; }
+      .scoreMeta{ gap: 6px; }
+      .badgeRow{ flex-wrap: nowrap; gap: 8px; }
+      .badge{ padding: 8px 10px; font-size: 12px; }
+      .poweredBy{ flex-direction: column; align-items: flex-start; gap: 6px; }
+      .pillTitle{ font-size: 15px; }
+      .vStage{ min-height: 520px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .vStage img{ transition: none; }
+      .pillBtn:hover{ transform:none; }
+      .vBtn:active{ transform:none; }
     }
   </style>
 </head>
-
 <body>
   <div class="container">
     <div id="siteHeader"></div>
-
-    <main class="page card" aria-label="MBW Admin">
-      <div class="adminTop">
-        <div class="adminTitle">
-          <span class="adminDot" aria-hidden="true"></span>
+    <main class="page card">
+      <section class="hero" aria-label="Reviews introduction">
+        <div class="leftStack">
           <div>
-            <h1>MBW Admin</h1>
-            <p>Private dashboards for KPIs, site, and social media. Data updates per connected sources.</p>
-            <span class="adminBadge"><i aria-hidden="true"></i> Admin only</span>
+            <h1>Reviews</h1>
+            <p>
+              Read real reviews from bird watchers who explored Mindo, Ecuador with us. Discover why travelers love our guided tours,
+              expert birding guides, and unforgettable wildlife experiences.
+            </p>
+
+            <div class="ctaPills" aria-label="Primary actions">
+              <a class="pillBtn pillPrimary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">
+                <div class="pillLeft">
+                  <div class="pillIcon" aria-hidden="true">
+                    <img src="/assets/images/icons/Google-Review-Symbol.png" alt="">
+                  </div>
+                  <div class="pillText">
+                    <p class="pillTitle">Leave A Review On Google</p>
+                    <p class="pillSub">It helps future travelers</p>
+                  </div>
+                </div>
+                <div class="pillChevron" aria-hidden="true">›</div>
+              </a>
+
+              <a class="pillBtn pillSecondary" href="https://www.tripadvisor.com/Attraction_Review-g609138-d34192556-Reviews-Mindo_Bird_Watching-Mindo_Pichincha_Province.html" target="_blank" rel="noopener noreferrer">
+                <div class="pillLeft">
+                  <div class="pillIcon" aria-hidden="true">
+                    <img src="/assets/images/icons/mbw_icons_trip_advisor.png" alt="">
+                  </div>
+                  <div class="pillText">
+                    <p class="pillTitle">Leave A Review On Tripadvisor</p>
+                    <p class="pillSub">Trusted by global travelers</p>
+                  </div>
+                </div>
+                <div class="pillChevron" aria-hidden="true">›</div>
+              </a>
+
+              <a class="pillBtn pillBook" href="/book-tour/">
+                <div class="pillLeft">
+                  <div class="pillIcon" aria-hidden="true">🦜</div>
+                  <div class="pillText">
+                    <p class="pillTitle">Book A Tour</p>
+                    <p class="pillSub">Choose dates and style</p>
+                  </div>
+                </div>
+                <div class="pillChevron" aria-hidden="true">›</div>
+              </a>
+            </div>
           </div>
+
+          <aside class="summaryCard" aria-label="Google rating summary">
+            <div class="summaryTop">
+              <div class="score" aria-label="Overall rating">
+                <div class="scoreNum" id="ratingValue">-</div>
+
+                <div class="scoreMeta">
+                  <div class="stars" aria-label="Star rating">
+                    <div class="starRow" aria-hidden="true">
+                      <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
+                    </div>
+
+                    <p class="scoreLine"><span id="reviewCount">-</span> reviews</p>
+
+                    <div class="badgeRow" aria-label="Badges row">
+                      <span class="badge" id="ratingMeta">Google Reviews</span>
+                      <span class="badge" aria-label="Location badge">📍 Mindo, Ecuador</span>
+                    </div>
+                  </div>
+
+                  <div class="poweredBy">
+                    <a id="mapsLink" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">Open on Maps</a>
+                    <span class="poweredGroup">
+                      <img src="/assets/images/icons/Google__G__logo.png" alt="Google logo">
+                      <span>Powered by Google</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="proof" aria-label="What guests highlight">
+              <div class="proofItem">
+                <div>
+                  <b>Expert Local Guides</b>
+                  <span>Guests mention spotting help, bird calls, and finding hidden species.</span>
+                </div>
+                <span class="badge">Most Mentioned</span>
+              </div>
+
+              <div class="proofItem">
+                <div>
+                  <b>Unforgettable Sightings</b>
+                  <span>From hummingbirds to Cock-of-the-Rock, the cloud forest delivers.</span>
+                </div>
+                <span class="badge">Top Theme</span>
+              </div>
+
+              <div class="proofItem">
+                <div>
+                  <b>Smooth Experience</b>
+                  <span>Clear communication and a relaxed pace.</span>
+                </div>
+                <span class="badge">Highly Rated</span>
+              </div>
+            </div>
+          </aside>
         </div>
 
-        <div class="adminControls" aria-label="Admin controls">
-          <div class="seg" role="group" aria-label="View">
-            <button type="button" data-view="kpis" aria-pressed="true">KPIs</button>
-            <button type="button" data-view="site" aria-pressed="false">Site</button>
-            <button type="button" data-view="social" aria-pressed="false">Social Media</button>
-            <button type="button" data-view="seo" aria-pressed="false">SEO</button>
-          </div>
+        <div class="rightStack" aria-label="Reviews carousel column">
+          <section class="vCarousel" aria-label="Reviews highlights carousel">
+            <div class="vCarouselHeader">
+              <b>Tour Highlights</b>
+              <span></span>
+            </div>
 
-          <div class="pill" aria-label="Date preset">
-            <label for="datePreset">Date</label>
-            <select id="datePreset">
-              <option value="all">All time</option>
-              <option value="30" selected>Last 30 days</option>
-              <option value="7">Last 7 days</option>
-              <option value="mt">This month</option>
-              <option value="ytd">Year to date</option>
-            </select>
-          </div>
+            <div class="vStage" id="vStage">
+              <img class="active" alt="Mindo Bird Watching review highlight 1" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-01.jpg">
+              <img alt="Mindo Bird Watching review highlight 2" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-02.jpg">
+              <img alt="Mindo Bird Watching review highlight 3" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-03.jpg">
+              <img alt="Mindo Bird Watching review highlight 4" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-04.jpg">
+              <img alt="Mindo Bird Watching review highlight 5" src="/assets/images/pages/reviews/MBW-Reviews-Carousel-05.jpg">
 
-          <button class="btnLite" type="button" id="openFilters">Filters</button>
-        </div>
-      </div>
+              <div class="vNav" aria-label="Carousel navigation">
+                <button class="vBtn" type="button" id="vPrev" aria-label="Previous image">‹</button>
+                <button class="vBtn" type="button" id="vNext" aria-label="Next image">›</button>
+              </div>
+            </div>
 
-      <div class="panelHeader">
-        <div>
-          <h2 id="panelTitle">KPIs</h2>
-          <div class="desc" id="panelDesc">Revenue, margins, fees, tips, payouts, and upcoming tours.</div>
-        </div>
-        <a id="openInLooker" href="#" target="_blank" rel="noreferrer">Open in Looker</a>
-      </div>
-
-
-      <section class="seoInfo" id="seoInfo" aria-label="SEO metric guide">
-        <h3>How to read the SEO report</h3>
-        <div class="seoInfoGrid">
-          <article class="seoMetric">
-            <h4>URL Clicks</h4>
-            <p>The number of times someone clicked your page from Google Search results. More clicks usually means your page is earning real search traffic, not just visibility.</p>
-            <span class="good">Good sign: clicks are rising week over week.</span>
-          </article>
-          <article class="seoMetric">
-            <h4>Impressions</h4>
-            <p>The number of times Google showed your page in search results. This is usually the first sign a new page is being discovered and tested.</p>
-            <span class="good">Good sign: impressions rise first, then clicks follow.</span>
-          </article>
-          <article class="seoMetric">
-            <h4>URL CTR</h4>
-            <p>Click-through rate. This is the percentage of impressions that turned into clicks. It helps you understand whether the page title and snippet are attractive in Google.</p>
-            <span class="good">Good sign: higher CTR on queries with meaningful impression volume. Low CTR on 1 or 2 impressions is not important.</span>
-          </article>
-          <article class="seoMetric">
-            <h4>Average Position</h4>
-            <p>Your average ranking position in Google Search. Lower is better, so position 3 is stronger than position 12.</p>
-            <span class="good">Good sign: positions move downward over time, for example from 20 to 11 to 6.</span>
-          </article>
+            <div class="vDots" id="vDots" aria-label="Carousel dots"></div>
+          </section>
         </div>
       </section>
 
-
-      <div class="frameWrap" aria-label="Embedded dashboard">
-        <div class="frameBox">
-          <iframe id="frame" title="MBW dashboard" src="" allowfullscreen loading="lazy"
-            referrerpolicy="no-referrer"
-            sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+      <section class="section" aria-label="Live reviews">
+        <div class="sectionHead">
+          <h2>Latest Google Reviews</h2>
+          <p class="hint" id="reviewsHint">Loading…</p>
         </div>
 
-        <div class="cookieHint" aria-label="Mobile access hint">
-          <p>
-            If you see "Can't access report" on iPhone, Safari is blocking Google third-party cookies.
-            Use "Open in Looker" to view the report directly.
-          </p>
-          <div class="actions">
-            <a id="openInLooker2" href="#" target="_blank" rel="noreferrer">Open in Looker</a>
-          </div>
+        <div class="reviewsSplit" aria-label="Reviews split columns">
+          <div class="col" id="colLeft" aria-label="Left column"></div>
+          <div class="col" id="colRight" aria-label="Right column"></div>
         </div>
-      </div>
+
+        <div class="emptyState" id="reviewsEmpty" style="display:none;">
+          Reviews are not available right now. Please try again soon.
+        </div>
+      </section>
     </main>
-
     <div id="siteFooter"></div>
   </div>
-
-  <div class="scrim" id="scrim" aria-hidden="true"></div>
-  <aside class="drawer" id="drawer" aria-label="Filters panel" aria-hidden="true">
-    <div class="drawerTop">
-      <strong>Filters</strong>
-      <button class="btnLite" type="button" id="closeFilters">Close</button>
-    </div>
-    <div class="drawerBody">
-      <h3>Global</h3>
-      <p>Date preset reloads the embed. Additional filters are included for admin organization and future Looker parameter support.</p>
-
-      <div class="field">
-        <label for="drawerDatePreset">Date preset</label>
-        <select id="drawerDatePreset">
-          <option value="all">All time</option>
-          <option value="30" selected>Last 30 days</option>
-          <option value="7">Last 7 days</option>
-          <option value="mt">This month</option>
-          <option value="ytd">Year to date</option>
-        </select>
-      </div>
-
-      <div id="filterKpis">
-        <h3>KPIs</h3>
-        <div class="field">
-          <label for="kTourStatus">Tour status</label>
-          <select id="kTourStatus">
-            <option value="all" selected>All</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="kGuidePaid">Guide paid</label>
-          <select id="kGuidePaid">
-            <option value="all" selected>All</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="filterSite" style="display:none;">
-        <h3>Site</h3>
-        <div class="field">
-          <label for="sDevice">Device</label>
-          <select id="sDevice">
-            <option value="all" selected>All</option>
-            <option value="desktop">Desktop</option>
-            <option value="mobile">Mobile</option>
-            <option value="tablet">Tablet</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="filterSocial" style="display:none;">
-        <h3>Social</h3>
-        <div class="field">
-          <label for="smPlatform">Platform</label>
-          <select id="smPlatform">
-            <option value="all" selected>All</option>
-            <option value="instagram">Instagram</option>
-            <option value="youtube">YouTube</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="filterSeo" style="display:none;">
-        <h3>SEO</h3>
-        <div class="field">
-          <label for="seoCountry">Country</label>
-          <select id="seoCountry">
-            <option value="all" selected>All</option>
-            <option value="us">United States</option>
-            <option value="ec">Ecuador</option>
-            <option value="uk">United Kingdom</option>
-            <option value="ar">Argentina</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="seoPage">Landing page focus</label>
-          <select id="seoPage">
-            <option value="all" selected>All tracked pages</option>
-            <option value="mindo-guide">Mindo Bird Watching Guide</option>
-            <option value="mindo-tours">Mindo Birdwatching Tours</option>
-            <option value="ecuador-tours">Ecuador Birding Tours</option>
-            <option value="es-mindo-guide">Guia de Avistamiento de Aves en Mindo</option>
-            <option value="es-mindo-tours">Tours de Avistamiento de Aves en Mindo</option>
-            <option value="es-ecuador-tours">Tours de Avistamiento de Aves en Ecuador</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="drawerBottom">
-      <button class="btnLite" type="button" id="resetFilters">Reset</button>
-      <button class="btnLite" type="button" id="applyFilters">Apply</button>
-    </div>
-  </aside>
-
-  <!-- IMPORTANT:
-       Because the admin Pages project publishes ONLY the /admin folder,
-       these JS includes must be duplicated into /admin/assets/js/... in your repo.
-  -->
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=1" defer></script>
-
   <script>
-    (function(){
+    (function () {
       "use strict";
 
-      var REPORTS = {
-        kpis: "https://lookerstudio.google.com/embed/reporting/e9dd5771-63b2-4349-b33d-d56a2115d866/page/0HvmF",
-        site: "https://lookerstudio.google.com/embed/reporting/1a0a112d-05c0-4b42-a55b-c70a9df099d1/page/bdXZF",
-        social: "https://lookerstudio.google.com/embed/reporting/f2ce3a28-4438-4143-9fa1-480a9a3747bc/page/MABlF",
-        seo: "https://lookerstudio.google.com/embed/reporting/02ead236-5860-435e-9621-717934d5b9d6/page/p_otnfqa6v1d"
-      };
-
-      var VIEW_META = {
-        kpis: { title: "KPIs", desc: "Revenue, margins, fees, tips, payouts, and upcoming tours." },
-        site: { title: "Site", desc: "Website sessions, sources, devices, and conversions." },
-        social: { title: "Social Media", desc: "Instagram and YouTube performance snapshots and trends." },
-        seo: { title: "SEO", desc: "Search Console growth dashboard for landing pages, queries, core keywords, and country-level SEO signals." }
-      };
-
-      var currentView = "kpis";
-
-      function setPressed(){
-        var btns = document.querySelectorAll(".seg button[data-view]");
-        for (var i = 0; i < btns.length; i++){
-          var v = btns[i].getAttribute("data-view");
-          btns[i].setAttribute("aria-pressed", (v === currentView) ? "true" : "false");
-        }
+      function byId(id){ return document.getElementById(id); }
+      function setText(id, val){
+        var el = byId(id);
+        if(!el) return;
+        el.textContent = String(val == null ? "" : val);
       }
 
-      function showView(){
-        var meta = VIEW_META[currentView] || VIEW_META.kpis;
-        document.getElementById("panelTitle").textContent = meta.title;
-        document.getElementById("panelDesc").textContent = meta.desc;
-
-        var link = REPORTS[currentView] || "#";
-        document.getElementById("openInLooker").href = link;
-        document.getElementById("openInLooker2").href = link;
-
-        document.getElementById("filterKpis").style.display = (currentView === "kpis") ? "" : "none";
-        document.getElementById("filterSite").style.display = (currentView === "site") ? "" : "none";
-        document.getElementById("filterSocial").style.display = (currentView === "social") ? "" : "none";
-        document.getElementById("filterSeo").style.display = (currentView === "seo") ? "" : "none";
-        document.getElementById("seoInfo").classList.toggle("show", currentView === "seo");
-
-        loadEmbed();
+      function esc(s){
+        return String(s || "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#039;");
       }
 
-      function getState(){
-        return {
-          datePreset: document.getElementById("datePreset").value,
-          kTourStatus: document.getElementById("kTourStatus").value,
-          kGuidePaid: document.getElementById("kGuidePaid").value,
-          sDevice: document.getElementById("sDevice").value,
-          smPlatform: document.getElementById("smPlatform").value,
-          seoCountry: document.getElementById("seoCountry").value,
-          seoPage: document.getElementById("seoPage").value
-        };
+      function makeAvatarLetters(name){
+        var n = String(name || "").trim();
+        if(!n) return "G";
+        var parts = n.split(/\s+/).filter(Boolean);
+        var a = (parts[0] || "G")[0] || "G";
+        var b = (parts[1] || "")[0] || "";
+        return (a + b).toUpperCase();
       }
 
-      function addParams(url, params){
-        if(!url) return "";
-        var hasQ = url.indexOf("?") >= 0;
-        var parts = [];
-        for (var k in params){
-          if(!Object.prototype.hasOwnProperty.call(params, k)) continue;
-          parts.push(encodeURIComponent(k) + "=" + encodeURIComponent(String(params[k])));
-        }
-        return url + (hasQ ? "&" : "?") + parts.join("&");
+      function parseTime(s){
+        if(!s) return 0;
+        var t = Date.parse(s);
+        return Number.isFinite(t) ? t : 0;
       }
 
-      function buildParams(state){
-        var p = { view: currentView, dp: state.datePreset };
-        if(currentView === "kpis"){
-          p.tour = state.kTourStatus;
-          p.gpaid = state.kGuidePaid;
-        }
-        if(currentView === "site"){
-          p.device = state.sDevice;
-        }
-        if(currentView === "social"){
-          p.platform = state.smPlatform;
-        }
-        if(currentView === "seo"){
-          p.country = state.seoCountry;
-          p.pagefocus = state.seoPage;
-        }
-        return p;
+      function starsInline(rating){
+        var r = Number(rating || 0);
+        var full = Math.max(0, Math.min(5, Math.round(r)));
+        return "★".repeat(full) + "☆".repeat(5 - full);
       }
 
-      function loadEmbed(){
-        var frame = document.getElementById("frame");
-        var base = REPORTS[currentView] || "";
-        var url = addParams(base, buildParams(getState()));
-        frame.src = url;
+      function buildReviewCard(r){
+        var name = r.author || "Google User";
+        var sub = r.relative_time || "";
+        var text = r.text || "";
+        var ratingNum = (r.rating != null) ? r.rating : 5;
+        var authorUrl = r.author_url || "";
+
+        var nameHtml = authorUrl
+          ? '<a href="' + esc(authorUrl) + '" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:3px;">' + esc(name) + '</a>'
+          : esc(name);
+
+        return (
+          '<article class="reviewCard" aria-label="Review">' +
+            '<div class="reviewTop">' +
+              '<div class="who">' +
+                '<div class="avatar" aria-hidden="true">' + esc(makeAvatarLetters(name)) + '</div>' +
+                '<div class="whoMeta">' +
+                  '<p class="name">' + nameHtml + '</p>' +
+                  '<p class="sub">' + esc(sub) + '</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="reviewBadges" aria-label="Rating and source">' +
+                '<span class="starsPill"><span class="starsTextInline" aria-label="Stars">' + esc(starsInline(ratingNum)) + '</span></span>' +
+                '<span class="gMark" aria-label="Google Reviews">' +
+                  '<img src="/assets/images/icons/Google-Review-Symbol.png" alt="Google Reviews">' +
+                '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="quote">“' + esc(text) + '”</div>' +
+          '</article>'
+        );
       }
 
-      function openDrawer(){
-        document.getElementById("scrim").classList.add("open");
-        document.getElementById("drawer").classList.add("open");
-        document.getElementById("drawer").setAttribute("aria-hidden", "false");
-        document.getElementById("scrim").setAttribute("aria-hidden", "false");
-        document.getElementById("drawerDatePreset").value = document.getElementById("datePreset").value;
+      function buildReadMoreCard(mapsUrl){
+        var safeUrl = mapsUrl || "https://www.google.com/maps";
+        return (
+          '<article class="reviewCard" aria-label="More reviews">' +
+            '<div style="display:flex; gap:12px; align-items:flex-start;">' +
+              '<div class="avatar" aria-hidden="true" style="border-color: rgba(3,78,162,.20); background: rgba(3,78,162,.10); color: rgba(3,78,162,.95);">G</div>' +
+              '<div style="min-width:0;">' +
+                '<p class="name" style="margin:0 0 4px;">Want to see more reviews?</p>' +
+                '<p class="sub" style="margin:0; white-space:normal; line-height:1.55;">Open Google Maps to see all reviews. Google may limit how many reviews websites can display.</p>' +
+                '<div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">' +
+                  '<a class="btn secondary" href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">Open on Maps</a>' +
+                  '<a class="btn primary" href="https://www.google.com/maps/place//data=!4m3!3m2!1s0x91d57d913d4b34db:0x2f128006832125d3!12e1?source=g.page.m._&laa=merchant-review-solicitation" target="_blank" rel="noopener noreferrer">Leave A Review</a>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</article>'
+        );
       }
 
-      function closeDrawer(){
-        document.getElementById("scrim").classList.remove("open");
-        document.getElementById("drawer").classList.remove("open");
-        document.getElementById("drawer").setAttribute("aria-hidden", "true");
-        document.getElementById("scrim").setAttribute("aria-hidden", "true");
-      }
+      function applyData(data, sourceLabel){
+        if(!data || !data.ok) throw new Error("Bad response shape");
 
-      function resetDrawer(){
-        document.getElementById("drawerDatePreset").value = "30";
-        document.getElementById("kTourStatus").value = "all";
-        document.getElementById("kGuidePaid").value = "all";
-        document.getElementById("sDevice").value = "all";
-        document.getElementById("smPlatform").value = "all";
-        document.getElementById("seoCountry").value = "all";
-        document.getElementById("seoPage").value = "all";
-      }
+        var rating = (data.summary && data.summary.rating != null) ? data.summary.rating : "-";
+        var count = (data.summary && data.summary.review_count != null) ? data.summary.review_count : "-";
+        setText("ratingValue", rating);
+        setText("reviewCount", count);
 
-      function applyDrawer(){
-        document.getElementById("datePreset").value = document.getElementById("drawerDatePreset").value;
-        loadEmbed();
-        closeDrawer();
-      }
-
-      function wire(){
-        var btns = document.querySelectorAll(".seg button[data-view]");
-        for (var i = 0; i < btns.length; i++){
-          (function(btn){
-            btn.addEventListener("click", function(){
-              currentView = btn.getAttribute("data-view");
-              setPressed();
-              showView();
-            });
-          })(btns[i]);
+        var mapsUrl = (data.place && data.place.maps_url) ? data.place.maps_url : "";
+        var mapsLink = byId("mapsLink");
+        if(mapsUrl && mapsLink){
+          mapsLink.href = mapsUrl;
+          mapsLink.style.display = "inline";
         }
 
-        document.getElementById("datePreset").addEventListener("change", loadEmbed);
+        var hint = byId("reviewsHint");
+        var empty = byId("reviewsEmpty");
+        var colLeft = byId("colLeft");
+        var colRight = byId("colRight");
 
-        document.getElementById("openFilters").addEventListener("click", openDrawer);
-        document.getElementById("closeFilters").addEventListener("click", closeDrawer);
-        document.getElementById("scrim").addEventListener("click", closeDrawer);
+        var reviews = Array.isArray(data.reviews) ? data.reviews.slice() : [];
+        reviews = reviews
+          .filter(function(r){ return r && (r.text || r.author); })
+          .sort(function(a,b){ return parseTime(b.publish_time) - parseTime(a.publish_time); });
 
-        document.getElementById("resetFilters").addEventListener("click", resetDrawer);
-        document.getElementById("applyFilters").addEventListener("click", applyDrawer);
+        if(hint){
+          hint.textContent = reviews.length
+            ? ("Loaded " + reviews.length + " review(s) (" + sourceLabel + ")")
+            : ("No reviews returned (" + sourceLabel + ")");
+        }
 
-        setPressed();
-        showView();
+        if(!reviews.length){
+          if(empty) empty.style.display = "block";
+          if(colLeft) colLeft.innerHTML = "";
+          if(colRight) colRight.innerHTML = "";
+          return;
+        }
+
+        var top = reviews.slice(0, Math.min(5, reviews.length));
+        var leftItems = [];
+        var rightItems = [];
+
+        top.forEach(function(r, i){
+          if(i % 2 === 0) leftItems.push(buildReviewCard(r));
+          else rightItems.push(buildReviewCard(r));
+        });
+
+        if(leftItems.length + rightItems.length < 6){
+          if(leftItems.length <= rightItems.length) leftItems.push(buildReadMoreCard(mapsUrl));
+          else rightItems.push(buildReadMoreCard(mapsUrl));
+        }
+
+        if(colLeft) colLeft.innerHTML = leftItems.join("");
+        if(colRight) colRight.innerHTML = rightItems.join("");
+
+        if(empty) empty.style.display = "none";
       }
 
-      document.addEventListener("DOMContentLoaded", wire);
+      function fetchJson(url){
+        return fetch(url, { cache: "no-store" }).then(function(res){
+          if(!res.ok) throw new Error("HTTP " + res.status + " @ " + url);
+          return res.text().then(function(txt){
+            try{
+              return JSON.parse(txt);
+            }catch(e){
+              throw new Error("Non-JSON response @ " + url + " | " + String(txt).slice(0, 140));
+            }
+          });
+        });
+      }
+
+      function loadReviews(){
+        var hint = byId("reviewsHint");
+        var empty = byId("reviewsEmpty");
+        if(hint) hint.textContent = "Loading…";
+
+        var url = "/api/reviews?ts=" + Date.now();
+
+        fetchJson(url).then(function(data){
+          applyData(data, "/api/reviews");
+        }).catch(function(e){
+          if(hint) hint.textContent = "Could not load reviews: " + String(e && e.message ? e.message : e);
+          if(empty) empty.style.display = "block";
+        });
+      }
+
+      function initVerticalCarousel(){
+        var stage = byId("vStage");
+        var dotsWrap = byId("vDots");
+        var prev = byId("vPrev");
+        var next = byId("vNext");
+        if(!stage || !dotsWrap || !prev || !next) return;
+
+        var imgs = Array.prototype.slice.call(stage.querySelectorAll("img"));
+        if(!imgs.length) return;
+
+        var idx = 0;
+        var timer = null;
+
+        function renderDots(){
+          dotsWrap.innerHTML = imgs.map(function(_, i){
+            return '<button class="vDot' + (i === idx ? ' active' : '') + '" type="button" aria-label="Go to image ' + (i+1) + '" data-i="' + i + '"></button>';
+          }).join("");
+        }
+
+        function show(i){
+          idx = (i + imgs.length) % imgs.length;
+          imgs.forEach(function(im, k){ im.classList.toggle("active", k === idx); });
+          renderDots();
+        }
+
+        function start(){
+          var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if(reduce) return;
+          stop();
+          timer = setInterval(function(){ show(idx + 1); }, 2600);
+        }
+
+        function stop(){
+          if(timer){ clearInterval(timer); timer = null; }
+        }
+
+        prev.addEventListener("click", function(){ show(idx - 1); start(); });
+        next.addEventListener("click", function(){ show(idx + 1); start(); });
+
+        dotsWrap.addEventListener("click", function(e){
+          var t = e.target;
+          if(!t || !t.getAttribute) return;
+          var di = t.getAttribute("data-i");
+          if(di == null) return;
+          show(parseInt(di, 10));
+          start();
+        });
+
+        stage.addEventListener("mouseenter", stop);
+        stage.addEventListener("mouseleave", start);
+        stage.addEventListener("touchstart", stop, { passive: true });
+        stage.addEventListener("touchend", start, { passive: true });
+        stage.addEventListener("focusin", stop);
+        stage.addEventListener("focusout", start);
+
+        show(0);
+        start();
+      }
+
+      loadReviews();
+      initVerticalCarousel();
     })();
   </script>
 </body>
