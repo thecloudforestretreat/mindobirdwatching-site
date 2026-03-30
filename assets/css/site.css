@@ -1,102 +1,143 @@
-/* ============================
-   Mindo Bird Watching
-   Global Brand Styles (v1.3)
-   Fonts: Playfair Display (headings) + Open Sans (body/UI)
-   Background: #C7DAAC site-wide
-   ============================ */
-
-/* Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap");
+/* /assets/css/site.css
+   The Cloud Forest Retreat
+   Brand tokens + global typography + base UI components
+*/
 
 :root{
-  /* Brand palette */
-  --bg: #C7DAAC;          /* site background (global) */
-  --forest: #0D5925;      /* primary */
-  --brown: #8B4513;       /* secondary */
-  --sky: #87CEEB;         /* optional accent */
-  --gold: #FFD700;        /* CTA accent */
+  /* Brand colors */
+  --bg: #A1BFAA;            /* site background */
+  --text: #E7E4D1;          /* light text on dark surfaces */
+  --forest: #0D5925;        /* primary green */
+  --orange: #E0643A;        /* CTA accent */
+  --beige: #F5F5DC;         /* soft surface */
+  --gray: #D3D3D3;          /* borders */
+  --gold: #FFD700;          /* luxury accent */
+  --sky: #87CEEB;           /* secondary accent */
 
-  /* Neutrals */
-  --ink: #071923;         /* primary text */
-  --muted: rgba(7,25,35,.72);
-  --card: rgba(255,255,255,.72);
-  --card-strong: rgba(255,255,255,.88);
-  --line: rgba(7,25,35,.14);
+  /* Practical neutrals */
+  --ink: #0b1a10;           /* dark readable text on light surfaces */
+  --muted: rgba(11,26,16,0.70);
+  --mutedOnDark: rgba(231,228,209,0.80);
+
+  /* Typography */
+  --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+  /* Layout */
+  --container: 1120px;
+  --pad: 18px;
 
   /* Radius + shadow */
   --r: 18px;
-  --shadow: 0 18px 55px rgba(7,25,35,.10);
+  --r2: 24px;
+  --line: rgba(11,26,16,0.12);
+  --shadow: 0 18px 55px rgba(13,89,37,0.16);
 
-  /* Typography */
-  --font-body: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
+  /* Buttons */
+  --btn-r: 14px;
+  --btn-pad-y: 12px;
+  --btn-pad-x: 14px;
 
-  /* Footer social icon sizing (NO bubbles) */
-  --social-icon-size: 36px; /* icon size */
-  --social-gap: 14px;       /* gap between icons */
-
-  /* Sticky header spacing */
-  --sticky-top: 16px;
+  /* Focus */
+  --focus: 0 0 0 4px rgba(224,100,58,0.25);
 }
 
-/* Base reset */
 *{ box-sizing:border-box; }
-html, body{ height:100%; }
+
+html, body{
+  height:100%;
+}
 
 body{
   margin:0;
-  font-family: var(--font-body);
   background: var(--bg);
-  color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
 }
 
-/* Links: remove default underline/blue */
+img{
+  max-width:100%;
+  display:block;
+}
+
 a{
   color: inherit;
   text-decoration: none;
 }
-a:visited{ color: inherit; }
-a:hover{ text-decoration: none; }
-a:focus-visible{
-  outline: 3px solid rgba(255,215,0,.35);
-  outline-offset: 3px;
-  border-radius: 10px;
+
+a:hover{
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-img{
-  max-width: 100%;
-  display: block;
-}
-
-/* Layout helper */
+/* Container helpers */
 .container{
-  max-width: 1100px;
+  max-width: var(--container);
   margin: 0 auto;
-  padding: 24px;
+  padding: 0 var(--pad);
 }
 
-/* Text defaults */
-h1,h2,h3,h4,h5,h6{
+/* Page spacing */
+.page{
+  padding: 26px;
+  margin-top: 18px;
+}
+
+.card{
+  background: rgba(245,245,220,0.72); /* beige surface with soft transparency */
+  border: 1px solid var(--line);
+  border-radius: var(--r2);
+  box-shadow: var(--shadow);
+  color: var(--ink); /* readable on beige */
+}
+
+.section{
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(11,26,16,0.12);
+}
+
+/* Typography */
+h1, h2, h3, h4{
   font-family: var(--font-head);
   color: var(--forest);
   letter-spacing: -0.02em;
   margin: 0 0 10px;
+  line-height: 1.08;
+}
+
+h1{
+  font-size: clamp(34px, 4.6vw, 56px);
+}
+
+h2{
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+
+h3{
+  font-size: 18px;
 }
 
 p{
-  margin: 0 0 12px;
-  color: var(--muted);
-  line-height: 1.65;
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.75;
+  max-width: 90ch;
 }
 
-/* Cards */
-.card{
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
+.small{
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* On-dark text helpers */
+.onDark{
+  color: var(--text);
+}
+.onDark .muted{
+  color: var(--mutedOnDark);
 }
 
 /* Buttons */
@@ -104,442 +145,343 @@ p{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:10px;
-  padding:12px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
+  gap: 10px;
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border-radius: var(--btn-r);
   font-weight: 800;
-  background: var(--card-strong);
-  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  border: 1px solid transparent;
   cursor: pointer;
-}
-
-.btn.primary{
-  background: rgba(255,215,0,.22);
-  border-color: rgba(255,215,0,.55);
-}
-
-.btn.secondary{
-  background: rgba(13,89,37,.14);
-  border-color: rgba(13,89,37,.35);
-}
-
-/* Pills */
-.pill{
-  padding:10px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  font-weight: 800;
-  font-size: 13px;
-  background: rgba(255,255,255,.55);
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+  user-select: none;
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
   white-space: nowrap;
 }
 
-.pill.active{
-  background: rgba(13,89,37,.14);
-  border-color: rgba(13,89,37,.35);
-  color: var(--ink);
+.btn:active{
+  transform: scale(0.99);
 }
 
-/* ============================
-   Global Header (APPROVED include)
-   Uses header.html classes:
-   .topbar .brand .right .lang .nav
-   .menuBtn #menuPanel .menuList
-   Plus sticky behavior (inside container)
-   ============================ */
-
-/* Sticky mount (keeps header sticky while scrolling) */
-#siteHeader{
-  position: sticky;
-  top: var(--sticky-top);
-  z-index: 2000;
+.btn:focus{
+  outline: none;
+  box-shadow: var(--focus);
 }
 
-/* If any ancestor sets overflow hidden, sticky can break.
-   We explicitly allow visible overflow on common wrappers. */
-html, body{ overflow-x: visible; }
-.container{ overflow: visible; }
-
-/* Header shell */
-.topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  padding:14px 16px;
-  border:1px solid var(--line);
-  border-radius:var(--r);
-  background:rgba(255,255,255,.65);
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow);
-  position: relative; /* anchors menuPanel */
+.btn.primary{
+  background: var(--orange);
+  color: #ffffff;
+  box-shadow: 0 16px 40px rgba(224,100,58,0.22);
 }
 
-/* Brand */
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-weight:900;
-  color: var(--ink);
-  white-space:nowrap;
-  min-width: 0;
-}
-.brand img{
-  height:26px;
-  width:auto;
-  display:block;
-  flex:0 0 auto;
-  border-radius: 8px;
+.btn.primary:hover{
+  filter: brightness(0.97);
 }
 
-/* Right side (desktop) */
-.right{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
+.btn.secondary{
+  background: rgba(245,245,220,0.70);
+  border-color: rgba(13,89,37,0.22);
+  color: var(--forest);
 }
 
-/* NOTE: header.css is the primary source of truth for header layout.
-   These base styles remain, desktop overrides are added at the bottom. */
-.nav{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  align-items:center;
-  justify-content:flex-end;
+.btn.secondary:hover{
+  filter: brightness(0.98);
 }
 
-/* Language switch */
-.lang{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  background:rgba(255,255,255,.5);
-}
-.lang a{
-  padding:8px 10px;
-  border-radius:999px;
-  font-weight:800;
-  font-size:12.5px;
-  color:var(--muted);
-}
-.lang a.active{
-  background:rgba(13,89,37,.14);
-  border:1px solid rgba(13,89,37,.35);
-  color:var(--ink);
-}
-
-/* Hamburger (mobile) */
-.menuBtn{
-  display:none;
-  align-items:center;
-  justify-content:center;
-  width:44px;
-  height:44px;
-  border-radius:14px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.65);
-  cursor:pointer;
-}
-.menuBtn svg{ width:22px; height:22px; }
-
-/* Mobile panel */
-.menuPanel{
-  display:none;
-  position:absolute;
-  right:12px;
-  top: calc(100% + 10px);
-  width: min(320px, calc(100vw - 24px));
-  background: rgba(255,255,255,.92);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: var(--shadow);
-  padding: 12px;
-  z-index: 2100;
-}
-.menuPanel .lang{
-  width:100%;
-  justify-content:center;
-  margin-bottom: 10px;
-  background: rgba(255,255,255,.75);
-}
-.menuList{
-  display:grid;
-  gap:10px;
-}
-.menuList a.pill{
-  display:flex;
-  justify-content:center;
-  width:100%;
-}
-
-/* Mobile behavior: hide desktop nav and show hamburger */
-@media (max-width:900px){
-  .right .lang,
-  .right .nav{ display:none; }
-  .menuBtn{ display:inline-flex; }
-  .menuPanel{ display:none; }
-  .menuPanel.is-open{ display:block; }
-}
-
-/* Optional: tighten sticky spacing on small screens */
-@media (max-width:520px){
-  :root{ --sticky-top: 12px; }
-  .container{ padding: 18px; }
-}
-
-/* ============================
-   Footer (NO bubbles, locked sizing)
-   ============================ */
-
-.footer{
-  text-align:center;
-  padding: 28px 0 10px;
-}
-
-.footer-social{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap: var(--social-gap);
-  flex-wrap:wrap;
-  margin-bottom: 14px;
-}
-
-/* IMPORTANT: remove container sizing/padding so Safari can’t blow it up */
-.footer-social a{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 0;
-  margin: 0;
-  line-height: 0;
-  border: 0;
+.btn.ghost{
   background: transparent;
+  border-color: rgba(231,228,209,0.40);
+  color: var(--text);
 }
 
-/* IMPORTANT: lock size at IMG level */
-.footer-social img{
-  width: var(--social-icon-size);
-  height: var(--social-icon-size);
-  object-fit: contain;
-  display:block;
+.btn.ghost:hover{
+  background: rgba(231,228,209,0.10);
 }
 
-/* Bottom line: small logo + text centered */
-.footer-bottom{
-  display:flex;
+/* Pills / badges */
+.badge{
+  display:inline-flex;
   align-items:center;
-  justify-content:center;
-  gap:6px;
-  margin-top: 2px;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(13,89,37,0.18);
+  background: rgba(245,245,220,0.60);
+  box-shadow: 0 10px 26px rgba(13,89,37,0.10);
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--forest);
 }
 
-.footer-bottom img{
-  height: 45px;
-  width:auto;
-  display:block;
+/* Inputs (for booking/contact later) */
+.input, .select, .textarea{
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(13,89,37,0.20);
+  background: rgba(245,245,220,0.85);
+  padding: 12px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  outline: none;
+  box-shadow: 0 10px 26px rgba(13,89,37,0.10);
+  font-family: var(--font-body);
 }
 
-.footer small{
-  display:block;
-  font-weight: 900;
-  color: rgba(7,25,35,.78);
+.textarea{
+  min-height: 120px;
+  resize: vertical;
+}
+
+.input:focus, .select:focus, .textarea:focus{
+  box-shadow: var(--focus);
+  border-color: rgba(224,100,58,0.35);
+}
+
+/* Simple layout utilities */
+.grid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 900px){
+  .page{ padding: 18px; }
+  .grid2{ grid-template-columns: 1fr; }
 }
 
 /* =========================================================
-   MBW Header Fix – Desktop ES overlap fix (EN/ES vs Inicio)
-   - Force real spacing so first nav pill cannot sit under lang
-   - Keep dropdowns working
-   ========================================================= */
+   TCFR Footer (used by /assets/includes/footer.html)
+   - Social icon row + copyright line
+   - Matches TCFR palette and looks good on mobile + desktop
+========================================================= */
 
-@media (min-width: 901px){
-  header.topbar[data-mbw-header] .right{
-    flex-wrap: nowrap;
-    min-width: 0;
-    gap: 14px; /* stronger separation than header.css */
-  }
-
-  header.topbar[data-mbw-header] .lang{
-    flex: 0 0 auto;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 3; /* keep lang above if anything collides */
-  }
-
-  header.topbar[data-mbw-header] nav.nav{
-    flex: 1 1 auto;
-    min-width: 0;
-    flex-wrap: nowrap;
-    overflow: visible; /* dropdowns must render outside nav */
-    position: relative;
-    z-index: 2;
-  }
-
-  /* ✅ THE ACTUAL FIX: push Inicio away from EN/ES on ES desktop */
-  header.topbar[data-mbw-header][data-current-lang="es"] nav.nav > a.pill:first-child{
-    margin-left: 12px; /* hard gap so it cannot overlap the lang pills */
-  }
+.tcfr-footer{
+  margin-top: 28px;
+  padding: 18px 0 26px;
 }
 
-/* WhatsApp Smart CTA (MBW) v3
-   Desktop size: change --mbwWaDeskW (e.g. 200px)
-*/
-
-.mbwWaBirdFab{
-  --mbwWaDeskW: 120px;
-  --mbwWaMobW: 88px;
-  position: fixed !important;
-  right: calc(12px + env(safe-area-inset-right)) !important;
-  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-  z-index: 2700 !important;
-  font-family: inherit;
+.tcfr-footerShell{
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+  display: grid;
+  gap: 14px;
+  justify-items: center;
 }
 
-.mbwWaBirdBtn{
-  border: 0;
-  padding: 0;
-  margin: 0;
-  background: transparent !important;
-  cursor: pointer;
-  border-radius: 18px;
-  -webkit-tap-highlight-color: transparent;
+.tcfr-social{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 999px;
+  background: rgba(245,245,220,0.62);
+  border: 1px solid rgba(11,26,16,0.12);
+  box-shadow: 0 14px 34px rgba(13,89,37,0.10);
+}
+
+.tcfr-social a{
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 0;
-}
-
-.mbwWaBirdBtn:focus{
-  outline: none;
-}
-
-.mbwWaBirdBtn:focus-visible{
-  outline: 2px solid rgba(13, 89, 37, 0.35);
-  outline-offset: 4px;
-}
-
-.mbwWaBirdImg{
-  display: block;
-  width: var(--mbwWaDeskW);
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.18));
-}
-
-/* Backdrop below panel */
-.mbwWaBirdBackdrop{
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.28);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 160ms ease;
-  z-index: 1;
-}
-
-.mbwWaBirdFab.is-open .mbwWaBirdBackdrop{
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Desktop menu */
-.mbwWaBirdPanel{
-  position: absolute;
-  right: 0;
-  bottom: calc(var(--mbwWaDeskW) + 18px);
-  width: 320px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
-  overflow: hidden;
-  transform: translateY(10px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 160ms ease, transform 160ms ease;
-  border: 1px solid rgba(15, 23, 42, 0.10);
-  z-index: 2;
-}
-
-.mbwWaBirdFab.is-open .mbwWaBirdPanel{
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.mbwWaBirdHead{
-  padding: 12px 12px 10px;
-  background: #f3f6fb;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.mbwWaBirdTitle{
-  font-weight: 900;
-  font-size: 13px;
-  color: #0D5925;
-}
-
-.mbwWaBirdClose{
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-size: 22px;
-  line-height: 1;
-  color: #334155;
-  padding: 4px 8px;
-  border-radius: 10px;
-}
-
-.mbwWaBirdActions{
-  padding: 10px;
-  display: grid;
-  gap: 8px;
-}
-
-.mbwWaBirdAction{
-  display: block;
-  width: 100%;
-  text-decoration: none;
-  padding: 12px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.10);
-  color: #0D5925;
-  background: #ffffff;
-  font-weight: 900;
+  border: 1px solid rgba(13,89,37,0.14);
+  background: rgba(255,255,255,0.45);
+  transition: transform 140ms ease, filter 140ms ease, background 140ms ease;
+}
+
+.tcfr-social a:hover{
+  text-decoration: none;
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+  background: rgba(255,255,255,0.58);
+}
+
+.tcfr-social a:focus{
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.tcfr-social img{
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+.tcfr-footerCopy{
+  margin: 0;
+  text-align: center;
   font-size: 13px;
-  line-height: 1.25;
-  white-space: normal;
+  line-height: 1.5;
+  color: rgba(11,26,16,0.72);
+  font-weight: 700;
 }
 
-/* Mobile-like: hide menu UI, keep button */
-@media (max-width: 900px), (hover: none) and (pointer: coarse){
-  .mbwWaBirdImg{ width: var(--mbwWaMobW); }
-  .mbwWaBirdPanel{ display: none !important; }
-  .mbwWaBirdBackdrop{ display: none !important; }
+@media (max-width: 420px){
+  .tcfr-social{
+    width: calc(100% - (var(--pad) * 2));
+    border-radius: 22px;
+    padding: 12px;
+  }
+  .tcfr-social a{
+    width: 46px;
+    height: 46px;
+  }
+  .tcfr-social img{
+    width: 23px;
+    height: 23px;
+  }
 }
 
-@media (max-width: 380px){
-  .mbwWaBirdFab{ --mbwWaMobW: 138px; }
+
+/* =========================================================
+   TCFR global card CTA alignment fix
+   - Minimal patch added to the last known good site.css
+   - Keeps page CTA buttons bottom-aligned inside equal-height link cards
+   - Does not change button colors, footer styles, or other global UI
+   ========================================================= */
+
+.linkGrid{
+  align-items: stretch;
+}
+
+.linkGrid .linkCard{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.linkGrid .linkText{
+  flex: 1 1 auto;
+}
+
+.linkGrid .linkCta{
+  margin-top: auto;
+  align-self: flex-start;
 }
 
 
-/* WhatsApp Smart CTA – Forest Green Hover */
-.mbwWaBirdAction:hover{
-  background: rgba(13, 89, 37, 0.06);
-  color: #0D5925;
+/* =========================================================
+   TCFR global hero overlay text fix
+   - Ensures hero overlay copy stays white across generated pages
+   - Prevents global h1 / p rules from turning overlay text green or dark
+   - Scoped only to .heroCard so normal page typography is unchanged
+   ========================================================= */
+
+.heroCard{
+  color: rgba(255,255,255,0.97);
+}
+
+.heroCard h1,
+.heroCard h2,
+.heroCard h3,
+.heroCard h4,
+.heroCard p,
+.heroCard .heroLead,
+.heroCard .eyebrow,
+.heroCard .heroChip,
+.heroCard .miniChip{
+  color: inherit;
+}
+
+
+/* =========================================================
+   TCFR global hero overlay consistency system
+   - Standardizes hero overlay text and CTA styling sitewide
+   - Scoped only to overlay content containers used in hero sections
+   - Does not affect header, footer, breadcrumb bands, or regular page buttons
+   - Uses !important intentionally to override per-page hero overrides
+   ========================================================= */
+
+.heroCard,
+.roomHeroInner{
+  --hero-overlay-title: rgba(255,255,255,0.98);
+  --hero-overlay-copy: rgba(231,228,209,0.92);
+  --hero-overlay-meta: rgba(231,228,209,0.90);
+  --hero-overlay-secondary-bg: rgba(245,245,220,0.82);
+  --hero-overlay-secondary-border: rgba(13,89,37,0.22);
+  --hero-overlay-secondary-text: var(--forest);
+}
+
+.heroCard,
+.roomHeroInner,
+.heroCard h1,
+.heroCard h2,
+.heroCard h3,
+.heroCard h4,
+.roomHeroInner h1,
+.roomHeroInner h2,
+.roomHeroInner h3,
+.roomHeroInner h4,
+.heroCard .heroLead,
+.roomHeroInner .roomLead,
+.heroCard .eyebrow,
+.roomHeroInner .roomKicker,
+.heroCard .heroChip,
+.heroCard .miniChip,
+.roomHeroInner .roomScrollHint{
+  color: inherit;
+}
+
+.heroCard,
+.roomHeroInner{
+  color: var(--hero-overlay-copy) !important;
+}
+
+.heroCard h1,
+.heroCard h2,
+.heroCard h3,
+.heroCard h4,
+.heroCard .heroTitle,
+.roomHeroInner h1,
+.roomHeroInner h2,
+.roomHeroInner h3,
+.roomHeroInner h4,
+.roomHeroInner .roomTitle{
+  color: var(--hero-overlay-title) !important;
+}
+
+.heroCard p,
+.heroCard .heroLead,
+.roomHeroInner p,
+.roomHeroInner .roomLead{
+  color: var(--hero-overlay-copy) !important;
+}
+
+.heroCard .eyebrow,
+.roomHeroInner .roomKicker,
+.heroCard .heroChip,
+.heroCard .miniChip,
+.roomHeroInner .roomScrollHint,
+.roomHeroInner .roomScrollDot{
+  color: var(--hero-overlay-meta) !important;
+}
+
+.roomHeroInner .roomScrollDot{
+  background: var(--hero-overlay-meta) !important;
+}
+
+.heroCard .btn.primary,
+.roomHeroInner .btn.primary{
+  background: var(--orange) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 16px 40px rgba(224,100,58,0.22) !important;
+}
+
+.heroCard .btn.secondary,
+.roomHeroInner .btn.secondary{
+  background: var(--hero-overlay-secondary-bg) !important;
+  border-color: var(--hero-overlay-secondary-border) !important;
+  color: var(--hero-overlay-secondary-text) !important;
+  box-shadow: 0 14px 30px rgba(13,89,37,0.10) !important;
+}
+
+.heroCard .btn.secondary:hover,
+.roomHeroInner .btn.secondary:hover{
+  filter: brightness(0.98);
 }
