@@ -1304,6 +1304,19 @@
       return;
     }
 
+    if (hasSinglePersonItem()) {
+      const confirmed = await showConfirmModal({
+        title: "Confirm link",
+        message: "Are you sure you want to generate a payment link for just 1 person?",
+        confirmText: "Continue",
+        cancelText: "Cancel"
+      });
+      if (!confirmed) {
+        showStatus("Link generation cancelled.", "info");
+        return;
+      }
+    }
+
     const item = state.items[0];
     const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
     if (!tour) {
