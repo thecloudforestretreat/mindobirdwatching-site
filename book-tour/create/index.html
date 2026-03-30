@@ -422,6 +422,70 @@
     pointer-events: none !important;
   }
 
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(7,25,35,0.48);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+  }
+
+  .modal-backdrop.show {
+    display: flex;
+  }
+
+  .modal-card {
+    width: min(100%, 460px);
+    background: #fff;
+    border: 1px solid rgba(7,25,35,0.12);
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.20);
+    padding: 22px;
+  }
+
+  .modal-title {
+    margin: 0 0 8px;
+    font-size: 22px;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+
+  .modal-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  body.modal-open {
+    overflow: hidden;
+  }
+
+  @media (max-width: 760px) {
+    .modal-card {
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .modal-actions .action-btn,
+    .modal-actions .mini-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+
 </style>
 </head>
 <body>
@@ -624,6 +688,18 @@
   </div>
 </template>
 
+
+<div id="confirmModal" class="modal-backdrop" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalText">
+    <h2 id="confirmModalTitle" class="modal-title">Confirm invoice</h2>
+    <p id="confirmModalText" class="modal-text">Are you sure you want to send an invoice for just 1 person?</p>
+    <div class="modal-actions">
+      <button id="confirmModalCancel" class="action-btn secondary" type="button">Cancel</button>
+      <button id="confirmModalContinue" class="action-btn primary" type="button">Continue</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const state = {
     tours: [],
@@ -656,7 +732,12 @@
     defaultLanguage: document.getElementById("defaultLanguage"),
     pickupLocationLabel: document.getElementById("pickupLocationLabel"),
     pickupAddress: document.getElementById("pickupAddress"),
-    globalNotes: document.getElementById("globalNotes")
+    globalNotes: document.getElementById("globalNotes"),
+    confirmModal: document.getElementById("confirmModal"),
+    confirmModalTitle: document.getElementById("confirmModalTitle"),
+    confirmModalText: document.getElementById("confirmModalText"),
+    confirmModalCancel: document.getElementById("confirmModalCancel"),
+    confirmModalContinue: document.getElementById("confirmModalContinue")
   };
 
   function showStatus(message, type = "info") {
@@ -667,6 +748,75 @@
   function clearStatus() {
     els.statusBox.textContent = "";
     els.statusBox.className = "status";
+  }
+
+  function showConfirmModal({
+    title = "Confirm action",
+    message = "Are you sure?",
+    confirmText = "Continue",
+    cancelText = "Cancel"
+  } = {}) {
+    return new Promise((resolve) => {
+      const modal = els.confirmModal;
+      if (!modal) {
+        resolve(window.confirm(message));
+        return;
+      }
+
+      let settled = false;
+      const previousActive = document.activeElement;
+
+      els.confirmModalTitle.textContent = title;
+      els.confirmModalText.textContent = message;
+      els.confirmModalContinue.textContent = confirmText;
+      els.confirmModalCancel.textContent = cancelText;
+
+      function cleanup(result) {
+        if (settled) return;
+        settled = true;
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+        document.removeEventListener("keydown", onKeyDown);
+        modal.removeEventListener("click", onBackdropClick);
+        els.confirmModalCancel.removeEventListener("click", onCancel);
+        els.confirmModalContinue.removeEventListener("click", onConfirm);
+        if (previousActive && typeof previousActive.focus === "function") {
+          previousActive.focus();
+        }
+        resolve(result);
+      }
+
+      function onCancel() {
+        cleanup(false);
+      }
+
+      function onConfirm() {
+        cleanup(true);
+      }
+
+      function onBackdropClick(e) {
+        if (e.target === modal) cleanup(false);
+      }
+
+      function onKeyDown(e) {
+        if (e.key === "Escape") cleanup(false);
+      }
+
+      els.confirmModalCancel.addEventListener("click", onCancel);
+      els.confirmModalContinue.addEventListener("click", onConfirm);
+      modal.addEventListener("click", onBackdropClick);
+      document.addEventListener("keydown", onKeyDown);
+
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      els.confirmModalContinue.focus();
+    });
+  }
+
+  function hasSinglePersonItem() {
+    return state.items.some(item => Number(item.quantity) === 1);
   }
 
   function formatCurrencyDisplay(v) {
@@ -1154,6 +1304,19 @@
       return;
     }
 
+    if (hasSinglePersonItem()) {
+      const confirmed = await showConfirmModal({
+        title: "Confirm link",
+        message: "Are you sure you want to generate a payment link for just 1 person?",
+        confirmText: "Continue",
+        cancelText: "Cancel"
+      });
+      if (!confirmed) {
+        showStatus("Link generation cancelled.", "info");
+        return;
+      }
+    }
+
     const item = state.items[0];
     const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
     if (!tour) {
@@ -1198,6 +1361,19 @@
     if (errors.length) {
       showStatus(errors[0], "error");
       return;
+    }
+
+    if (hasSinglePersonItem()) {
+      const confirmed = await showConfirmModal({
+        title: "Confirm invoice",
+        message: "Are you sure you want to send an invoice for just 1 person?",
+        confirmText: "Continue",
+        cancelText: "Cancel"
+      });
+      if (!confirmed) {
+        showStatus("Invoice cancelled.", "info");
+        return;
+      }
     }
 
     const multi = state.items.length > 1;
