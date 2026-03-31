@@ -642,7 +642,39 @@
 
       .wxGrid{ grid-template-columns: repeat(2, 1fr); }
     }
-  </style>
+  
+    .heroCtasGrid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      align-items:stretch;
+      max-width:720px;
+    }
+
+    .heroCtasGrid .heroBtn{
+      width:100%;
+      min-height:52px;
+      text-align:center;
+      white-space:normal;
+    }
+
+    .heroCtasGrid .heroBtnPrimary{
+      box-shadow:0 16px 36px rgba(7,25,35,.12);
+    }
+
+    @media (max-width:900px){
+      .heroCtasGrid{
+        max-width:none;
+      }
+    }
+
+    @media (max-width:640px){
+      .heroCtasGrid{
+        grid-template-columns:1fr;
+      }
+    }
+
+</style>
 
   <script type="application/ld+json">
   {
@@ -754,11 +786,11 @@
           if you are comparing routes beyond Mindo.
         </p>
 
-        <div class="heroCtas" aria-label="Primary actions">
-          <a class="btn primary" href="/birdwatching-tours-mindo/">Birdwatching Tours in Mindo</a>
-          <a class="btn secondary" href="/mindo-bird-watching-guide/">Read the Mindo Guide</a>
-          <a class="btn ghost" href="/ecuador-birding-tours/">Explore Ecuador Birding</a>
-          <a class="btn ghost" href="/faqs/">Read FAQs</a>
+        <div class="heroCtas heroCtasGrid" aria-label="Primary actions">
+          <a class="btn primary heroBtn heroBtnPrimary" href="/birdwatching-tours-mindo/">Birdwatching Tours in Mindo</a>
+          <a class="btn secondary heroBtn" href="/mindo-bird-watching-guide/">Read the Mindo Guide</a>
+          <a class="btn ghost heroBtn" href="/ecuador-birding-tours/">Explore Ecuador Birding</a>
+          <a class="btn ghost heroBtn" href="/faqs/">Read FAQs</a>
         </div>
 
         <div class="ctaBand" aria-label="Quick reassurance">
