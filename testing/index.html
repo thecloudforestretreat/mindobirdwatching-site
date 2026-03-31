@@ -1,1487 +1,1210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Create a payment link | Mindo Bird Watching</title>
-<link rel="icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="/assets/css/site.css" />
-<link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
-<link rel="stylesheet" href="/assets/css/footer.css" />
-<script defer src="/assets/js/head.js"></script>
-<script defer src="/assets/js/includes.js"></script>
-<script defer src="/assets/js/site.js"></script>
-<style>
-  .payCreatePage {
-    padding: 22px 22px 26px;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Private Birding Tours in Mindo, Ecuador | Mindo Bird Watching</title>
+  <meta name="description" content="Private birding tours in Mindo, Ecuador with expert bilingual guides, flexible pacing, and simple planning for unforgettable cloud forest wildlife." />
+  <!-- Canonical + hreflang (PRODUCTION URLs) -->
+  <link rel="canonical" href="https://mindobirdwatching.com/" />
+  <link rel="alternate" hreflang="en" href="https://mindobirdwatching.com/" />
+  <link rel="alternate" hreflang="es" href="https://mindobirdwatching.com/es/" />
+  <link rel="alternate" hreflang="x-default" href="https://mindobirdwatching.com/" />
+  <!-- Open Graph (PRODUCTION URLs) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Mindo Bird Watching" />
+  <meta property="og:title" content="Private Birding Tours in Mindo, Ecuador | Mindo Bird Watching" />
+  <meta property="og:description" content="Private birding tours in Mindo, Ecuador with expert bilingual guides, flexible pacing, and simple planning for unforgettable cloud forest wildlife." />
+  <meta property="og:url" content="https://mindobirdwatching.com/" />
+  <meta property="og:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
+  <meta property="og:image:secure_url" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mindo Bird Watching featured image" />
+  <!-- Twitter (PRODUCTION URLs) -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Private Birding Tours in Mindo, Ecuador | Mindo Bird Watching" />
+  <meta name="twitter:description" content="Private birding tours in Mindo, Ecuador with expert bilingual guides, flexible pacing, and simple planning for unforgettable cloud forest wildlife." />
+  <meta name="twitter:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" />
+  <!-- Favicons (approved root paths) -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#2F5E3B" />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+  <!-- Global / shared CSS -->
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <!-- Head-only JS -->
+  <script src="/assets/js/head.js" defer></script>
+  <style>
+    /* =========================
+       Page-only styles (main content only)
+       ========================= */
 
-  #siteHeader {
-    margin-bottom: 10px;
-  }
-
-  .payCreateWrap {
-    display: grid;
-    grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
-    gap: 18px;
-    align-items: start;
-  }
-
-  .payPanel {
-    background: rgba(255,255,255,0.38);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    padding: 18px;
-    min-width: 0;
-  }
-
-  .payHero h1 {
-    margin: 0 0 8px;
-    font-size: clamp(32px, 4vw, 32px);
-    line-height: 0.98;
-  }
-
-  .payHero p {
-    margin: 0 0 18px;
-    max-width: 72ch;
-  }
-
-  .mode-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: rgba(13,89,37,0.08);
-    color: var(--ink);
-    font-size: 13px;
-    font-weight: 800;
-    margin-bottom: 18px;
-  }
-
-  .section-title {
-    margin: 18px 0 12px;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .divider {
-    height: 1px;
-    background: rgba(7,25,35,0.10);
-    margin: 18px 0;
-  }
-
-  .grid-2,
-  .grid-3 {
-    display: grid;
-    gap: 14px;
-  }
-
-  .grid-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .grid-3 {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) minmax(0, 0.85fr);
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    margin-bottom: 14px;
-    min-width: 0;
-  }
-
-  .field label {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .req::after {
-    content: " *";
-    color: #be3a3a;
-  }
-
-  .payCreatePage input,
-  .payCreatePage select,
-  .payCreatePage textarea,
-  .payCreatePage button {
-    font: inherit;
-  }
-
-  .payCreatePage input,
-  .payCreatePage select,
-  .payCreatePage textarea {
-    width: 100%;
-    min-width: 0;
-    border: 1px solid rgba(7,25,35,0.16);
-    background: #fff;
-    color: var(--ink);
-    border-radius: 14px;
-    padding: 12px 14px;
-    outline: none;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.02) inset;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  .payCreatePage input:focus,
-  .payCreatePage select:focus,
-  .payCreatePage textarea:focus {
-    border-color: rgba(13,89,37,0.38);
-    box-shadow: 0 0 0 3px rgba(13,89,37,0.12);
-  }
-
-  .payCreatePage textarea {
-    min-height: 92px;
-    resize: vertical;
-  }
-
-  .payCreatePage input[type="date"] {
-    min-height: 48px;
-    padding-right: 42px;
-    overflow: hidden;
-  }
-
-  .hint,
-  .small-note,
-  .pricing-note,
-  .subtext {
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--muted);
-  }
-
-  .items-wrap {
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: rgba(255,255,255,0.28);
-    padding: 14px;
-  }
-
-  .item-card {
-    border: 1px solid rgba(7,25,35,0.10);
-    background: rgba(255,255,255,0.62);
-    border-radius: 18px;
-    padding: 16px;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .item-card + .item-card {
-    margin-top: 14px;
-  }
-
-  .item-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .item-title {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .summary-box {
-    border: 1px dashed rgba(7,25,35,0.18);
-    background: rgba(255,255,255,0.42);
-    border-radius: 18px;
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-
-  .summary-title {
-    margin: 0 0 10px;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .summary-empty {
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--muted);
-  }
-
-  .summary-item {
-    border: 1px solid rgba(7,25,35,0.10);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.55);
-    padding: 12px;
-  }
-
-  .summary-item + .summary-item {
-    margin-top: 10px;
-  }
-
-  .summary-item-name {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-    margin-bottom: 6px;
-  }
-
-  .summary-meta {
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--muted);
-  }
-
-  .money {
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .action-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 18px;
-  }
-
-  .mini-btn,
-  .action-btn {
-    appearance: none;
-    -webkit-appearance: none;
-    border-radius: 14px;
-    border: 1px solid rgba(7,25,35,0.16);
-    background: rgba(255,255,255,0.72);
-    color: var(--ink);
-    padding: 11px 15px;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .mini-btn:hover,
-  .action-btn:hover {
-    transform: translateY(-1px);
-  }
-
-  .mini-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  .mini-btn.danger {
-    border-color: rgba(190,58,58,0.18);
-    background: rgba(255,240,240,0.72);
-    color: #a03d3d;
-  }
-
-  .action-btn.primary {
-    background: rgba(255,215,0,0.28);
-    border-color: rgba(255,215,0,0.44);
-  }
-
-  .action-btn.secondary {
-    background: rgba(13,89,37,0.10);
-    border-color: rgba(13,89,37,0.20);
-  }
-
-  .action-btn:disabled,
-  .mini-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .status {
-    display: none;
-    margin-top: 14px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.45;
-  }
-
-  .status.show { display: block; }
-  .status.ok {
-    background: #e6f3e7;
-    border: 1px solid #b8d3bc;
-    color: #1f6437;
-  }
-  .status.error {
-    background: #fff0f0;
-    border: 1px solid #e3bcbc;
-    color: #a13333;
-  }
-  .status.info {
-    background: #edf4ff;
-    border: 1px solid #c7d8f5;
-    color: #29539a;
-  }
-
-  .link-box {
-    display: none;
-    margin-top: 14px;
-    border: 1px dashed rgba(7,25,35,0.18);
-    background: #fff;
-    border-radius: 14px;
-    padding: 12px;
-    font-size: 13px;
-    line-height: 1.45;
-    color: #314632;
-    word-break: break-word;
-  }
-
-  @media (max-width: 1080px) {
-    .payCreateWrap {
-      grid-template-columns: 1fr;
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
     }
 
-    .paySummary {
-      position: static;
+    /* Mobile-only hero image (under header, hidden on desktop) */
+    .mobileHero{
+      display: none;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
-  }
-
-  @media (max-width: 760px) {
-    .container {
-      padding: 14px 10px 24px;
-    }
-
-    #siteHeader {
-      margin-bottom: 8px;
-    }
-
-    .payCreatePage {
-      padding: 14px;
-    }
-
-    .payPanel {
-      padding: 14px;
-      border-radius: 18px;
-    }
-
-    .payHero h1 {
-      font-size: 32px;
-    }
-
-    .grid-2,
-    .grid-3 {
-      grid-template-columns: 1fr;
-    }
-
-    .item-top {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .action-row {
-      gap: 10px;
-    }
-
-    .action-row .action-btn,
-    .action-row .mini-btn {
-      width: auto;
-      max-width: 100%;
-      flex: 0 1 auto;
-    }
-
-    .payCreatePage input,
-    .payCreatePage select,
-    .payCreatePage textarea {
-      font-size: 16px;
-    }
-
-    .payCreatePage input[type="date"] {
-      font-size: 16px;
-      line-height: 1.2;
-    }
-  }
-
-
-  body.payCreatePage [id*="whatsapp" i],
-  body.payCreatePage [class*="whatsapp" i],
-  body.payCreatePage [class*="joinchat" i],
-  body.payCreatePage [class*="floating-wpp" i],
-  body.payCreatePage [id*="joinchat" i],
-  body.payCreatePage [id*="wh-widget" i],
-  body.payCreatePage [id*="WAButton" i],
-  body.payCreatePage [class*="wpp" i],
-  body.payCreatePage a[href*="wa.me"],
-  body.payCreatePage a[href*="whatsapp.com"],
-  body.payCreatePage iframe[src*="whatsapp" i],
-  body.payCreatePage iframe[src*="wa.me" i] {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(7,25,35,0.48);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    z-index: 9999;
-  }
-
-  .modal-backdrop.show {
-    display: flex;
-  }
-
-  .modal-card {
-    width: min(100%, 460px);
-    background: #fff;
-    border: 1px solid rgba(7,25,35,0.12);
-    border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.20);
-    padding: 22px;
-  }
-
-  .modal-title {
-    margin: 0 0 8px;
-    font-size: 22px;
-    line-height: 1.1;
-    color: var(--ink);
-  }
-
-  .modal-text {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--muted);
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-  }
-
-  body.modal-open {
-    overflow: hidden;
-  }
-
-  @media (max-width: 760px) {
-    .modal-card {
-      border-radius: 18px;
-      padding: 18px;
-    }
-
-    .modal-actions .action-btn,
-    .modal-actions .mini-btn {
+    .mobileHeroFrame{
       width: 100%;
+      aspect-ratio: 16 / 9;
+      background: rgba(255,255,255,.55);
+      display: flex;
+      align-items: center;
       justify-content: center;
     }
+    .mobileHeroFrame img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    @media (max-width: 900px){
+      .mobileHero{ display: block; }
+    }
+
+    /* Above-the-fold ordering: Desktop shows weather first, Mobile shows intro first */
+    .aboveFold{
+      display:flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .aboveFold .wx{ order: 1; }
+    .aboveFold .hero{ order: 2; }
+    @media (max-width: 900px){
+      .aboveFold .hero{ order: 1; }
+      .aboveFold .wx{ order: 2; }
+    }
+
+    /* Weather card (8 cards total: 1 current + 7 days) */
+    .wx{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin: 0;
+    }
+
+    .wxGrid{
+      display:grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .wxDay{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .wxDayTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .wxDow{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wxPlace{
+      display:inline-flex;
+      align-items:center;
+      gap: 2px;
+      min-width: 0;
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (min-width: 901px){
+      .wxPlace{ gap: 0; }
+    }
+
+    .wxPinDot{
+      font-size: 14px;
+      line-height: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      transform: translateY(-0.5px);
+    }
+
+    .wxTempsRow{ display:block; min-width: 0; }
+    .wxTempsLines{ min-width: 0; }
+
+    .wxLine{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    .wxIcon{
+      font-size: 18px;
+      line-height: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 22px;
+      flex: 0 0 auto;
+    }
+
+    .wxRain{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
+      text-align:center;
+    }
+
+    .wxNote{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .wxNote[hidden]{ display:none; }
+
+    .wxSkeleton .wxDay{
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wxSkeleton .wxDay:before{
+      content:"";
+      position:absolute;
+      inset:-40% -60%;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0));
+      transform: translateX(-40%);
+      animation: wxShimmer 1.35s linear infinite;
+      pointer-events:none;
+    }
+
+    @keyframes wxShimmer{
+      0%{ transform: translateX(-40%); }
+      100%{ transform: translateX(40%); }
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .hero h1{
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+
+    .hero p{
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.75;
+      max-width: 85ch;
+    }
+
+    .heroCtas{
+      margin-top: 14px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .heroAside{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .heroAside h2{
+      margin:0 0 10px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+    }
+
+    .heroList{
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    .section{
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sectionHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .sectionHead h2{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
+    }
+
+    .hint{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .ctaBand{
+      margin-top: 14px;
+      border: 1px dashed rgba(13,89,37,.35);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      padding: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .ctaBand p{
+      margin:0;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .secureCard{
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display:flex;
+      gap: 14px;
+      align-items:center;
+      width: 100%;
+    }
+
+    .secureImg{
+      width: 210px;
+      height: 210px;
+      flex: 0 0 auto;
+      border-radius: 22px;
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border: 1px solid var(--line);
+    }
+
+    .secureImg img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display:block;
+    }
+
+    .secureCopy{ min-width: 0; }
+
+    .secureKicker{
+      margin: 0 0 6px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .secureText{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .mediaGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .mediaCol{
+      display:flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: stretch;
+      min-width: 0;
+    }
+
+    .mediaCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .mediaFrame{
+      width:100%;
+      aspect-ratio: 16 / 10;
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+
+    .mediaFrame img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .videoFrame{
+      width:100%;
+      aspect-ratio: 9 / 16;
+      border:0;
+      display:block;
+      background: rgba(255,255,255,.55);
+    }
+
+    .mediaBar{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .mediaTitle{
+      margin:0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 13.5px;
+      letter-spacing: -0.01em;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .tile{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      text-decoration:none;
+      color: inherit;
+      display:block;
+      min-height: 120px;
+    }
+
+    .tile h3{
+      margin:0 0 6px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.01em;
+      font-size: 16.5px;
+    }
+
+    .tile p{
+      margin:0;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    .tile .sub{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+    .photoRail{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .photo{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .photo img{
+      width:100%;
+      height: 170px;
+      object-fit: cover;
+      display:block;
+      background: rgba(255,255,255,.55);
+    }
+
+    .photoCap{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+
+    .topicGrid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .topicCard{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      text-decoration:none;
+      color: inherit;
+      display:block;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .topicCard:hover,
+    .topicCard:focus-visible{
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.08);
+      border-color: rgba(13,89,37,.25);
+    }
+
+    .topicCard:focus-visible{
+      outline: 2px solid rgba(13,89,37,.35);
+      outline-offset: 2px;
+    }
+
+    .topicFrame{
+      width:100%;
+      aspect-ratio: 16 / 9;
+      background: rgba(255,255,255,.55);
+      overflow:hidden;
+    }
+
+    .topicFrame img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .topicBody{
+      padding: 14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+
+    .topicBody h3{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.01em;
+      font-size: 20px;
+      line-height: 1.08;
+    }
+
+    .topicBody p{
+      margin:0;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    .topicCta{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      margin-top: 2px;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+      color: var(--forest);
+    }
+
+    .topicCta .arrow{
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    @media (max-width: 1180px){
+      .wxGrid{ grid-template-columns: repeat(4, 1fr); }
+    }
+
+    @media (max-width: 980px){
+      .photoRail{ grid-template-columns: repeat(2, 1fr); }
+      .photo img{ height: 180px; }
+    }
+
+    @media (max-width: 900px){
+      .hero{ grid-template-columns: 1fr; }
+      .mediaGrid{ grid-template-columns: 1fr; }
+      .tiles{ grid-template-columns: 1fr; }
+      .topicGrid{ grid-template-columns: 1fr; }
+      .photoRail{ grid-template-columns: 1fr; }
+      .photo img{ height: 220px; }
+
+      .secureCard{ align-items: flex-start; }
+      .secureImg{ width: 152px; height: 152px; }
+
+      .wxGrid{ grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://mindobirdwatching.com/#website",
+        "url": "https://mindobirdwatching.com/",
+        "name": "Mindo Bird Watching",
+        "inLanguage": "en",
+        "publisher": {
+          "@id": "https://mindobirdwatching.com/#organization"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://mindobirdwatching.com/#organization",
+        "name": "Mindo Bird Watching",
+        "url": "https://mindobirdwatching.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://mindobirdwatching.com/assets/images/logo/logo-mbw.png"
+        },
+        "sameAs": [
+          "https://www.instagram.com/mindobirdwatching/",
+          "https://www.facebook.com/mindobirdwatching/"
+        ]
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": "https://mindobirdwatching.com/#webpage",
+        "url": "https://mindobirdwatching.com/",
+        "name": "Private Birding Tours in Mindo, Ecuador",
+        "isPartOf": {
+          "@id": "https://mindobirdwatching.com/#website"
+        },
+        "about": [
+          "Birdwatching in Mindo",
+          "Birding tours in Mindo",
+          "Cloud forest birding in Ecuador"
+        ],
+        "primaryImageOfPage": {
+          "@type": "ImageObject",
+          "url": "https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg"
+        },
+        "description": "Private birding tours in Mindo, Ecuador with expert bilingual guides, flexible pacing, and simple planning for unforgettable cloud forest wildlife."
+      },
+      {
+        "@type": "ItemList",
+        "@id": "https://mindobirdwatching.com/#birding-topics",
+        "name": "Birds of the Mindo Cloud Forest",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "url": "https://mindobirdwatching.com/birding/hummingbirds-of-mindo/",
+            "name": "Hummingbirds of Mindo"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "url": "https://mindobirdwatching.com/birding/toucans-of-mindo/",
+            "name": "Toucans of Mindo"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "url": "https://mindobirdwatching.com/birding/tanagers-of-mindo/",
+            "name": "Tanagers of Mindo"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "url": "https://mindobirdwatching.com/birding/andean-cock-of-the-rock/",
+            "name": "Andean Cock-of-the-Rock in Mindo"
+          }
+        ]
+      }
+    ]
   }
+  </script>
 
-
-</style>
 </head>
 <body>
-<div class="container">
-  <div id="siteHeader"></div>
+  <div class="container">
+    <div id="siteHeader"></div>
+<!-- Mobile-only hero image (shows only on mobile, under header) -->
+<section class="mobileHero" aria-label="Mobile hero image">
+  <div class="mobileHeroFrame">
+    <img src="/assets/images/pages/MBW-Assets_Hero_Mobile.jpg" alt="Birdwatching in Mindo cloud forest" loading="eager" decoding="async" />
+  </div>
+</section>
 
-  <main class="page card payCreatePage">
-    <header class="payHero">
-      <h1>Create a payment link</h1>
-      <p>Internal tool for staff. Build a single booking or a multi-item itinerary, then copy the payment link or send a Stripe invoice.</p>
-      <div id="modeChip" class="mode-chip">Single item mode</div>
-    </header>
+<main class="page card" aria-label="Mindo Bird Watching home">
+  <div class="aboveFold">
+    <!-- HERO -->
+    <section class="hero" aria-label="Intro">
+      <div>
+        <h1>Private birdwatching in Mindo, Ecuador</h1>
+        <p>
+          Explore the cloud forest with expert bilingual guides. Simple planning, flexible pacing, and the best chances to
+          see toucans, hummingbirds, tanagers, and the iconic Andean Cock-of-the-Rock. For a complete overview of guided
+          experiences, explore our <a href="/birdwatching-tours-mindo/" style="text-decoration: underline; font-weight: 600;">
+          birdwatching tours in Mindo</a>.
+        </p>
 
-    <section class="payCreateWrap" aria-label="Agent booking builder">
-      <section class="payPanel payBuilder">
-        <div class="section-title">Guest and invoice details</div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="stripeEnvironment">Stripe environment</label>
-            <select id="stripeEnvironment">
-              <option value="live">Live</option>
-              <option value="sandbox">Sandbox</option>
-            </select>
-            <div class="hint">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
-          </div>
-
-          <div class="field">
-            <label class="req" for="invoiceDueDays">Invoice due (days)</label>
-            <input id="invoiceDueDays" type="number" min="1" step="1" value="2" />
-          </div>
+        <div class="heroCtas" aria-label="Primary actions">
+          <a class="btn primary" href="/birdwatching-tours-mindo/">Birdwatching Tours in Mindo</a>
+          <a class="btn secondary" href="/mindo-bird-watching-guide/">Read the Mindo Guide</a>
+          <a class="btn ghost" href="/ecuador-birding-tours/">Explore Ecuador Birding</a>
+          <a class="btn ghost" href="/shop/">View Shop</a>
         </div>
 
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="mainFirstName">Main contact first name</label>
-            <input id="mainFirstName" type="text" placeholder="First name" />
+        <div class="ctaBand" aria-label="Quick reassurance">
+          <p><strong>New to birding?</strong> No problem. We guide beginners and serious birders, and we keep the experience calm and organized.</p>
+          <a class="btn ghost" href="/faqs/">Read FAQs</a>
+        </div>
+      </div>
+
+      <aside class="heroAside" aria-label="Highlights">
+        <h2>Why Guests Love Mindo</h2>
+        <ul class="heroList">
+          <li>Early starts that maximize sightings</li>
+          <li>Local spots chosen by season and weather</li>
+          <li>Binoculars and scope support when needed</li>
+          <li>Great for families, photographers, and groups</li>
+        </ul>
+
+        <div class="secureCard" aria-label="Safe and secure travel">
+          <div class="secureImg" aria-hidden="true">
+            <img src="/assets/images/MBW-Assets-4-SecureBadge.png" alt="Safe and secure travel badge" />
           </div>
-
-          <div class="field">
-            <label class="req" for="mainLastName">Main contact last name</label>
-            <input id="mainLastName" type="text" placeholder="Last name" />
+          <div class="secureCopy">
+            <p class="secureKicker">Safe and secure travel</p>
+            <p class="secureText">
+              Tours are well planned, calm, and organized with clear meeting points, trusted local logistics, and guidance every step of the way.
+            </p>
           </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="mainEmail">Email</label>
-            <input id="mainEmail" type="email" placeholder="guest@email.com" />
-          </div>
-
-          <div class="field">
-            <label class="req" for="mainPhone">Phone</label>
-            <input id="mainPhone" type="text" placeholder="Phone number" />
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="whatsappNumber">WhatsApp number</label>
-            <input id="whatsappNumber" type="text" placeholder="WhatsApp number" />
-            <div class="hint">Include country code if possible.</div>
-          </div>
-
-          <div class="field">
-            <label for="agentId">Agent ID</label>
-            <input id="agentId" type="text" placeholder="003" />
-            <div class="hint">Optional internal attribution code for the agent who created the link or invoice.</div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="defaultLanguage">Default language</label>
-            <select id="defaultLanguage">
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
-            </select>
-            <div class="hint">Used as the default for newly added items.</div>
-          </div>
-
-          <div class="field">
-            <label class="req" for="pickupLocationLabel">Pickup location label</label>
-            <input id="pickupLocationLabel" type="text" placeholder="Hotel, Airbnb, Meeting point" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="req" for="pickupAddress">Pickup address or hotel name</label>
-          <input id="pickupAddress" type="text" placeholder="Pickup address or hotel name" />
-        </div>
-
-        <div class="field">
-          <label for="globalNotes">General notes</label>
-          <textarea id="globalNotes" placeholder="Internal notes for the booking or invoice"></textarea>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="section-title">Booking items</div>
-
-        <div class="items-wrap">
-          <div id="itemsContainer"></div>
-
-          <div class="action-row" style="margin-top:14px;">
-            <button id="addItemBtn" class="action-btn secondary" type="button">+ Add another tour or activity</button>
-          </div>
-        </div>
-
-        <div class="action-row">
-          <button id="generateLinkBtn" class="action-btn primary" type="button">Generate link</button>
-          <button id="sendInvoiceBtn" class="action-btn secondary" type="button">Send invoice</button>
-          <button id="copyBtn" class="action-btn secondary" type="button" disabled>Copy link</button>
-          <button id="openBtn" class="action-btn secondary" type="button" disabled>Open link</button>
-        </div>
-
-        <div class="small-note">
-          Generate Link is available only for a single item. It can include optional prefilled guest details. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
-        </div>
-
-        <div id="statusBox" class="status"></div>
-      </section>
-
-      <aside class="payPanel paySummary">
-        <div class="summary-box">
-          <div class="summary-title">Booking summary</div>
-          <div id="summaryItems"></div>
-        </div>
-
-        <div class="summary-box">
-          <div class="summary-title">Action summary</div>
-          <div id="actionSummary" class="summary-empty">
-            Generate a payment link or create an invoice to display the result here.
-          </div>
-        </div>
-
-        <div id="resultLinkBox" class="link-box"></div>
-
-        <div class="small-note">
-          Single item mode:
-          <br />
-          - Generate Link can keep your current guest flow
-          <br />
-          - Send Invoice uses your existing single-item invoice route
-          <br /><br />
-          Multi-item mode:
-          <br />
-          - Generate Link is disabled
-          <br />
-          - Send Invoice will use the multi-item invoice route
         </div>
       </aside>
     </section>
-  </main>
 
-  <div id="siteFooter"></div>
-</div>
-
-<template id="itemTemplate">
-  <div class="item-card" data-item-card>
-    <div class="item-top">
-      <div class="item-title" data-item-heading>Booking Item</div>
-      <div class="item-actions">
-        <button type="button" class="mini-btn danger" data-remove-item>Remove</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="req">Tour</label>
-      <select data-field="tour_code">
-        <option value="">Select a tour...</option>
-      </select>
-      <div class="pricing-note" data-tour-meta>Select a tour to preview the price and details.</div>
-    </div>
-
-    <div class="grid-3">
-      <div class="field">
-        <label class="req">Tour date</label>
-        <input data-field="tour_date" type="date" />
+    <!-- WEATHER (8 cards: current + 7-day) -->
+    <section class="wx wxSkeleton" aria-label="Weather">
+      <div class="wxGrid" id="wxGrid" aria-label="Current + 7-day forecast">
+        <div class="wxDay">
+          <div class="wxDayTop">
+            <span class="wxDow">--</span>
+            <span class="wxIcon" aria-hidden="true">🌥️</span>
+          </div>
+          <div class="wxTempsRow">
+            <div class="wxTempsLines">
+              <div class="wxLine">-- C / -- F</div>
+              <div class="wxLine">-- C / -- F</div>
+            </div>
+          </div>
+          <div class="wxRain"><span aria-hidden="true">💧</span><span>-- mm</span></div>
+        </div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
+        <div class="wxDay"></div>
       </div>
 
-      <div class="field">
-        <label class="req">Number of people</label>
-        <input data-field="quantity" type="number" min="1" step="1" value="1" />
-      </div>
-
-      <div class="field">
-        <label class="req">Language</label>
-        <select data-field="language">
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Item notes</label>
-      <textarea data-field="item_notes" placeholder="Optional internal note for this line item"></textarea>
-    </div>
+      <p class="wxNote" id="wxNote" hidden> </p>
+    </section>
   </div>
-</template>
 
-
-<div id="confirmModal" class="modal-backdrop" aria-hidden="true">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalText">
-    <h2 id="confirmModalTitle" class="modal-title">Confirm invoice</h2>
-    <p id="confirmModalText" class="modal-text">Are you sure you want to send an invoice for just 1 person?</p>
-    <div class="modal-actions">
-      <button id="confirmModalCancel" class="action-btn secondary" type="button">Cancel</button>
-      <button id="confirmModalContinue" class="action-btn primary" type="button">Continue</button>
+  <!-- FEATURE MEDIA: IMAGES + VIDEO -->
+  <section class="section" aria-label="Featured media">
+    <div class="sectionHead">
+      <h2>See What The Experience Feels Like</h2>
+      <p class="hint"></p>
     </div>
+
+    <div class="mediaGrid">
+      <div class="mediaCol" aria-label="Featured images">
+        <article class="mediaCard" aria-label="Featured image 1">
+          <div class="mediaFrame">
+            <img src="/assets/images/pages/home/MBW-Assets-homepage-top.jpg" alt="Birdwatching in the Mindo cloud forest" />
+          </div>
+          <div class="mediaBar">
+            <p class="mediaTitle">Cloud Forest Birding</p>
+            <span class="badge">Mindo</span>
+          </div>
+        </article>
+
+        <article class="mediaCard" aria-label="Featured image 2">
+          <div class="mediaFrame">
+            <img src="/assets/images/pages/home/MBW-Assets-homepage-top-2.jpg" alt="Birding trail and scenic cloud forest views in Mindo" />
+          </div>
+          <div class="mediaBar">
+            <p class="mediaTitle">Local Trails and Views</p>
+            <span class="badge">Guided</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="mediaCol" aria-label="Video">
+        <article class="mediaCard" aria-label="Featured video">
+          <iframe
+            class="videoFrame"
+            src="https://www.youtube.com/embed/bfVgotdkJPE?rel=0"
+            title="Spotting the Elusive Umbrellabird in Mindo, Ecuador!"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen></iframe>
+          <div class="mediaBar">
+            <p class="mediaTitle">Spotting the Umbrellabird</p>
+            <span class="badge">YouTube Short</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK LINKS -->
+  <section class="section" aria-label="Explore sections">
+    <div class="sectionHead">
+      <h2>Start With The Key Birding Pages</h2>
+      <p class="hint"></p>
+    </div>
+
+    <div class="tiles" aria-label="Quick links grid">
+      <a class="tile" href="/birdwatching-tours-mindo/" aria-label="Birdwatching tours in Mindo">
+        <h3>Birdwatching Tours in Mindo</h3>
+        <p>See the main commercial tour page for private birding experiences in Mindo.</p>
+        <p class="sub">Best page for booking-focused visitors</p>
+      </a>
+
+      <a class="tile" href="/mindo-bird-watching-guide/" aria-label="Mindo bird watching guide">
+        <h3>Mindo Bird Watching Guide</h3>
+        <p>Start here for routes, species expectations, and planning guidance before your trip.</p>
+        <p class="sub">Best page for high-intent informational searches</p>
+      </a>
+
+      <a class="tile" href="/ecuador-birding-tours/" aria-label="Ecuador birding tours">
+        <h3>Ecuador Birding Tours</h3>
+        <p>Explore the broader Ecuador birding page for travelers comparing Mindo with wider routes.</p>
+        <p class="sub">Best page for broader national-intent searches</p>
+      </a>
+    </div>
+  </section>
+
+
+  <section class="section" aria-label="Birdwatching in Mindo and Ecuador">
+    <div class="infoCard">
+      <h2>Birdwatching in Mindo &amp; Ecuador</h2>
+      <p>
+        Start with our complete
+        <a href="/mindo-bird-watching-guide/" style="text-decoration: underline; font-weight: 600;">Mindo bird watching guide</a>,
+        then explore
+        <a href="/birdwatching-tours-mindo/" style="text-decoration: underline; font-weight: 600;">birdwatching tours in Mindo</a>
+        or discover the best
+        <a href="/ecuador-birding-tours/" style="text-decoration: underline; font-weight: 600;">birding tours across Ecuador</a>,
+        including routes, species highlights, and expert local guidance.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- BIRD TOPIC HUB -->
+  <section class="section" aria-label="Birds of the Mindo cloud forest">
+    <div class="sectionHead">
+      <h2>Birds of the Mindo Cloud Forest</h2>
+      <p class="hint">Explore the species pages that help Google and guests understand what makes Mindo special.</p>
+    </div>
+
+    <div class="topicGrid" aria-label="Bird species topic links">
+      <a class="topicCard" href="/birding/hummingbirds-of-mindo/" aria-label="Explore Hummingbirds of Mindo">
+        <div class="topicFrame">
+          <img src="/assets/images/pages/birding/mbw_birding_hummingbirds_hero_01.jpg" alt="Hummingbirds of Mindo in the cloud forest" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Hummingbirds of Mindo</h3>
+          <p>Learn where to see Mindo's most dazzling hummingbirds and which guided routes give the best close views.</p>
+          <span class="topicCta">Explore page <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+
+      <a class="topicCard" href="/birding/toucans-of-mindo/" aria-label="Explore Toucans of Mindo">
+        <div class="topicFrame">
+          <img src="/assets/images/pages/birding/mbw_birding_toucans_hero_02.jpg" alt="Toucans of Mindo in Ecuador's cloud forest" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Toucans of Mindo</h3>
+          <p>Discover the toucans most often seen in Mindo and the birding routes that improve your chances.</p>
+          <span class="topicCta">Explore page <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+
+      <a class="topicCard" href="/birding/tanagers-of-mindo/" aria-label="Explore Tanagers of Mindo">
+        <div class="topicFrame">
+          <img src="/assets/images/pages/birding/mbw_birding_tanagers_hero_02.jpg" alt="Tanagers of Mindo in the cloud forest" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Tanagers of Mindo</h3>
+          <p>See the colorful mixed flocks that make Mindo one of Ecuador's most exciting cloud forest birding spots.</p>
+          <span class="topicCta">Explore page <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+
+      <a class="topicCard" href="/birding/andean-cock-of-the-rock/" aria-label="Explore Andean Cock-of-the-Rock in Mindo">
+        <div class="topicFrame">
+          <img src="/assets/images/pages/birding/mbw_birding_acotr_hero_01.jpg" alt="Andean Cock-of-the-Rock in Mindo, Ecuador" loading="lazy" />
+        </div>
+        <div class="topicBody">
+          <h3>Andean Cock-of-the-Rock in Mindo</h3>
+          <p>Find out where and when to look for one of the cloud forest's most iconic birds and display sites.</p>
+          <span class="topicCta">Explore page <span class="arrow" aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- PHOTO RAIL -->
+  <section class="section" aria-label="Highlights">
+    <div class="sectionHead">
+      <h2>Highlights</h2>
+      <p class="hint"></p>
+    </div>
+
+    <div class="photoRail" aria-label="Photo highlights grid">
+      <figure class="photo" aria-label="Highlight 1">
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-1.jpg" alt="Birding highlights in Mindo" loading="lazy" />
+        <figcaption class="photoCap">Birding moments</figcaption>
+      </figure>
+
+      <figure class="photo" aria-label="Highlight 2">
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-2.jpg" alt="Cloud forest trails in Mindo" loading="lazy" />
+        <figcaption class="photoCap">Cloud forest trails</figcaption>
+      </figure>
+
+      <figure class="photo" aria-label="Highlight 3">
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-3.jpg" alt="Hummingbirds in Mindo" loading="lazy" />
+        <figcaption class="photoCap">Hummingbirds and feeders</figcaption>
+      </figure>
+
+      <figure class="photo" aria-label="Highlight 4">
+        <img src="/assets/images/pages/home/MBW-Assets-homepage-bottom-4.jpg" alt="Waterfalls and nature near Mindo" loading="lazy" />
+        <figcaption class="photoCap">Waterfalls and nature</figcaption>
+      </figure>
+    </div>
+  </section>
+</main>
+
+<div id="siteFooter"></div>
   </div>
-</div>
+  <script src="/assets/js/includes.js?v=1" defer></script>
+  <script src="/assets/js/site.js?v=1" defer></script>
+  <script>
+    (function(){
+      "use strict";
 
-<script>
-  const state = {
-    tours: [],
-    items: [],
-    generatedUrl: "",
-    generatedOpenUrl: ""
-  };
+      var LAT = -0.0516;
+      var LON = -78.7764;
 
-  const els = {
-    itemsContainer: document.getElementById("itemsContainer"),
-    itemTemplate: document.getElementById("itemTemplate"),
-    addItemBtn: document.getElementById("addItemBtn"),
-    generateLinkBtn: document.getElementById("generateLinkBtn"),
-    sendInvoiceBtn: document.getElementById("sendInvoiceBtn"),
-    copyBtn: document.getElementById("copyBtn"),
-    openBtn: document.getElementById("openBtn"),
-    statusBox: document.getElementById("statusBox"),
-    modeChip: document.getElementById("modeChip"),
-    summaryItems: document.getElementById("summaryItems"),
-    actionSummary: document.getElementById("actionSummary"),
-    resultLinkBox: document.getElementById("resultLinkBox"),
-    stripeEnvironment: document.getElementById("stripeEnvironment"),
-    invoiceDueDays: document.getElementById("invoiceDueDays"),
-    mainFirstName: document.getElementById("mainFirstName"),
-    mainLastName: document.getElementById("mainLastName"),
-    mainEmail: document.getElementById("mainEmail"),
-    mainPhone: document.getElementById("mainPhone"),
-    whatsappNumber: document.getElementById("whatsappNumber"),
-    agentId: document.getElementById("agentId"),
-    defaultLanguage: document.getElementById("defaultLanguage"),
-    pickupLocationLabel: document.getElementById("pickupLocationLabel"),
-    pickupAddress: document.getElementById("pickupAddress"),
-    globalNotes: document.getElementById("globalNotes"),
-    confirmModal: document.getElementById("confirmModal"),
-    confirmModalTitle: document.getElementById("confirmModalTitle"),
-    confirmModalText: document.getElementById("confirmModalText"),
-    confirmModalCancel: document.getElementById("confirmModalCancel"),
-    confirmModalContinue: document.getElementById("confirmModalContinue")
-  };
+      var CACHE_KEY = "mbw_wx_mindo_v2";
+      var CACHE_TTL_MS = 60 * 60 * 1000;
 
-  function showStatus(message, type = "info") {
-    els.statusBox.textContent = message;
-    els.statusBox.className = `status show ${type}`;
-  }
+      var elGrid = document.getElementById("wxGrid");
+      var elNote = document.getElementById("wxNote");
 
-  function clearStatus() {
-    els.statusBox.textContent = "";
-    els.statusBox.className = "status";
-  }
+      function cToF(c){ return (c * 9 / 5) + 32; }
+      function round(n){ return Math.round(n); }
+      function safeNum(n){ return (typeof n === "number" && isFinite(n)) ? n : null; }
 
-  function showConfirmModal({
-    title = "Confirm action",
-    message = "Are you sure?",
-    confirmText = "Continue",
-    cancelText = "Cancel"
-  } = {}) {
-    return new Promise((resolve) => {
-      const modal = els.confirmModal;
-      if (!modal) {
-        resolve(window.confirm(message));
-        return;
+      function fmtTempLine(c){
+        var cc = safeNum(c);
+        if (cc === null) return "-- C / -- F";
+        var ff = cToF(cc);
+        return round(cc) + " C / " + round(ff) + " F";
       }
 
-      let settled = false;
-      const previousActive = document.activeElement;
-
-      els.confirmModalTitle.textContent = title;
-      els.confirmModalText.textContent = message;
-      els.confirmModalContinue.textContent = confirmText;
-      els.confirmModalCancel.textContent = cancelText;
-
-      function cleanup(result) {
-        if (settled) return;
-        settled = true;
-        modal.classList.remove("show");
-        modal.setAttribute("aria-hidden", "true");
-        document.body.classList.remove("modal-open");
-        document.removeEventListener("keydown", onKeyDown);
-        modal.removeEventListener("click", onBackdropClick);
-        els.confirmModalCancel.removeEventListener("click", onCancel);
-        els.confirmModalContinue.removeEventListener("click", onConfirm);
-        if (previousActive && typeof previousActive.focus === "function") {
-          previousActive.focus();
-        }
-        resolve(result);
+      function fmtMm(mm){
+        var v = safeNum(mm);
+        if (v === null) return "--";
+        if (v === 0) return "0";
+        if (v < 1) return v.toFixed(1);
+        return round(v).toString();
       }
 
-      function onCancel() {
-        cleanup(false);
+      function dowShort(iso){
+        var d = new Date(iso + "T00:00:00");
+        if (isNaN(d.getTime())) return "--";
+        return d.toLocaleDateString("en-US", { weekday: "short" });
       }
 
-      function onConfirm() {
-        cleanup(true);
+      function iconFromCode(code, mm){
+        var c = safeNum(code);
+        var r = safeNum(mm);
+
+        if (r !== null && r >= 15) return "⛈️";
+        if (r !== null && r >= 6) return "🌧️";
+        if (r !== null && r > 0) return "🌦️";
+
+        if (c === null) return "🌥️";
+        if (c === 0) return "☀️";
+        if (c === 1 || c === 2) return "🌤️";
+        if (c === 3) return "☁️";
+        if (c === 45 || c === 48) return "🌫️";
+        if (c === 51 || c === 53 || c === 55) return "🌦️";
+        if (c === 56 || c === 57) return "🌧️";
+        if (c === 61 || c === 63 || c === 65) return "🌧️";
+        if (c === 66 || c === 67) return "🌧️";
+        if (c === 71 || c === 73 || c === 75) return "❄️";
+        if (c === 77) return "❄️";
+        if (c === 80 || c === 81 || c === 82) return "🌧️";
+        if (c === 85 || c === 86) return "❄️";
+        if (c === 95 || c === 96 || c === 99) return "⛈️";
+        return "🌥️";
       }
 
-      function onBackdropClick(e) {
-        if (e.target === modal) cleanup(false);
+      function setSkeleton(isOn){
+        var wx = document.querySelector(".wx");
+        if (!wx) return;
+        if (isOn) wx.classList.add("wxSkeleton");
+        else wx.classList.remove("wxSkeleton");
       }
 
-      function onKeyDown(e) {
-        if (e.key === "Escape") cleanup(false);
-      }
-
-      els.confirmModalCancel.addEventListener("click", onCancel);
-      els.confirmModalContinue.addEventListener("click", onConfirm);
-      modal.addEventListener("click", onBackdropClick);
-      document.addEventListener("keydown", onKeyDown);
-
-      modal.classList.add("show");
-      modal.setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
-      els.confirmModalContinue.focus();
-    });
-  }
-
-  function hasSinglePersonItem() {
-    return state.items.some(item => Number(item.quantity) === 1);
-  }
-
-  function formatCurrencyDisplay(v) {
-    return v || "-";
-  }
-
-  function titleCaseWords(value) {
-    return String(value || "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim()
-      .split(" ")
-      .filter(Boolean)
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-  }
-
-  function normalizeNameInput(el) {
-    if (!el) return;
-    el.value = titleCaseWords(el.value);
-  }
-
-  function buildFullName() {
-    return `${els.mainFirstName.value.trim()} ${els.mainLastName.value.trim()}`.trim();
-  }
-
-  function getDefaultTomorrowISO() {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
-  function getTourByCodeAndLanguage(code, language) {
-    return state.tours.find(t => t.tour_code === code && t.language === language) || null;
-  }
-
-  async function loadTours() {
-    const langs = ["en", "es"];
-    const all = [];
-
-    for (const lang of langs) {
-      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}`);
-      const data = await res.json();
-      if (!data.ok) {
-        throw new Error(data.error || "Failed to load tours");
-      }
-      all.push(...(data.tours || []));
-    }
-
-    const seen = new Set();
-    state.tours = all.filter(tour => {
-      const key = `${tour.tour_code}__${tour.language}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  function createItem(initial = {}) {
-    return {
-      id: crypto.randomUUID(),
-      tour_code: initial.tour_code || "",
-      tour_date: initial.tour_date || getDefaultTomorrowISO(),
-      quantity: initial.quantity || 1,
-      language: initial.language || els.defaultLanguage.value || "en",
-      item_notes: initial.item_notes || ""
-    };
-  }
-
-  function addItem(initial = {}) {
-    state.items.push(createItem(initial));
-    renderItems();
-    renderSummary();
-    updateModeUI();
-  }
-
-  function removeItem(id) {
-    if (state.items.length === 1) {
-      showStatus("At least one booking item is required.", "error");
-      return;
-    }
-    state.items = state.items.filter(item => item.id !== id);
-    renderItems();
-    renderSummary();
-    updateModeUI();
-    clearStatus();
-  }
-
-  function updateItem(id, key, value) {
-    const item = state.items.find(x => x.id === id);
-    if (!item) return;
-    item[key] = value;
-    renderSummary();
-    updateModeUI();
-  }
-
-  function renderItems() {
-    els.itemsContainer.innerHTML = "";
-
-    state.items.forEach((item, index) => {
-      const node = els.itemTemplate.content.firstElementChild.cloneNode(true);
-      node.dataset.itemId = item.id;
-
-      const heading = node.querySelector("[data-item-heading]");
-      heading.textContent = `Booking Item ${index + 1}`;
-
-      const removeBtn = node.querySelector("[data-remove-item]");
-      removeBtn.disabled = state.items.length === 1;
-      removeBtn.addEventListener("click", () => removeItem(item.id));
-
-      const tourSelect = node.querySelector('[data-field="tour_code"]');
-      const dateInput = node.querySelector('[data-field="tour_date"]');
-      const qtyInput = node.querySelector('[data-field="quantity"]');
-      const langSelect = node.querySelector('[data-field="language"]');
-      const notesInput = node.querySelector('[data-field="item_notes"]');
-      const metaText = node.querySelector("[data-tour-meta]");
-
-      const currentLangTours = state.tours
-        .filter(t => t.language === item.language)
-        .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
-
-      currentLangTours.forEach(tour => {
-        const opt = document.createElement("option");
-        opt.value = tour.tour_code;
-        opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
-        tourSelect.appendChild(opt);
-      });
-
-      langSelect.value = item.language;
-      tourSelect.value = item.tour_code;
-      dateInput.value = item.tour_date;
-      dateInput.min = getDefaultTomorrowISO();
-      qtyInput.value = item.quantity;
-      notesInput.value = item.item_notes;
-
-      function refreshMeta() {
-        const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
-        if (!selectedTour) {
-          metaText.textContent = "Select a tour to preview the price and details.";
+      function setNote(msg){
+        if (!elNote) return;
+        if (!msg){
+          elNote.hidden = true;
+          elNote.textContent = "";
           return;
         }
-        metaText.innerHTML = `
-          <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} per person
-          <br />
-          <strong>Type:</strong> ${selectedTour.duration_label || "-"}
-          <br />
-          <strong>Summary:</strong> ${selectedTour.description_one_liner || "-"}
-        `;
+        elNote.hidden = false;
+        elNote.textContent = msg;
       }
 
-      langSelect.addEventListener("change", e => {
-        updateItem(item.id, "language", e.target.value);
+      function renderDaily(data){
+        try{
+          var daily = data && data.daily ? data.daily : null;
+          if (!daily) throw new Error("No daily data");
 
-        const prevCode = item.tour_code;
-        const refreshedTours = state.tours
-          .filter(t => t.language === e.target.value)
-          .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
+          var tmax = daily.temperature_2m_max || [];
+          var tmin = daily.temperature_2m_min || [];
+          var psum = daily.precipitation_sum || [];
+          var time = daily.time || [];
+          var wcode = daily.weathercode || daily.weather_code || [];
 
-        tourSelect.innerHTML = '<option value="">Select a tour...</option>';
-        refreshedTours.forEach(tour => {
-          const opt = document.createElement("option");
-          opt.value = tour.tour_code;
-          opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
-          tourSelect.appendChild(opt);
-        });
+          if (!time.length || tmax.length < 7 || tmin.length < 7 || psum.length < 7){
+            throw new Error("Insufficient daily arrays");
+          }
 
-        const existsInLang = refreshedTours.some(t => t.tour_code === prevCode);
-        if (existsInLang) {
-          tourSelect.value = prevCode;
-        } else {
-          updateItem(item.id, "tour_code", "");
-          tourSelect.value = "";
+          var todayMax = tmax[0];
+          var todayMin = tmin[0];
+          var todayRain = psum[0];
+          var todayCode = (wcode && wcode.length) ? wcode[0] : null;
+          var todayIcon = iconFromCode(todayCode, todayRain);
+
+          var html = "";
+
+          html += ''
+            + '<div class="wxDay wxNow" aria-label="Current weather">'
+            +   '<div class="wxDayTop">'
+            +     '<span class="wxPlace"><span class="wxPinDot" aria-hidden="true">📍</span>Mindo</span>'
+            +     '<span class="wxIcon" aria-hidden="true">' + todayIcon + '</span>'
+            +   '</div>'
+            +   '<div class="wxTempsRow">'
+            +     '<div class="wxTempsLines">'
+            +       '<div class="wxLine">' + fmtTempLine(todayMax) + '</div>'
+            +       '<div class="wxLine">' + fmtTempLine(todayMin) + '</div>'
+            +     '</div>'
+            +   '</div>'
+            +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(todayRain) + ' mm</span></div>'
+            + '</div>';
+
+          for (var i = 0; i < 7; i++){
+            var d = time[i];
+            var maxC = tmax[i];
+            var minC = tmin[i];
+            var mm = psum[i];
+            var code = (wcode && wcode.length) ? wcode[i] : null;
+            var dayIcon = iconFromCode(code, mm);
+
+            html += ''
+              + '<div class="wxDay" aria-label="Forecast day">'
+              +   '<div class="wxDayTop">'
+              +     '<span class="wxDow">' + dowShort(d) + '</span>'
+              +     '<span class="wxIcon" aria-hidden="true">' + dayIcon + '</span>'
+              +   '</div>'
+              +   '<div class="wxTempsRow">'
+              +     '<div class="wxTempsLines">'
+              +       '<div class="wxLine">' + fmtTempLine(maxC) + '</div>'
+              +       '<div class="wxLine">' + fmtTempLine(minC) + '</div>'
+              +     '</div>'
+              +   '</div>'
+              +   '<div class="wxRain"><span aria-hidden="true">💧</span><span>' + fmtMm(mm) + ' mm</span></div>'
+              + '</div>';
+          }
+
+          if (elGrid) elGrid.innerHTML = html;
+
+          setSkeleton(false);
+          setNote("");
+        }catch(e){
+          setSkeleton(false);
+          setNote("");
         }
-
-        refreshMeta();
-      });
-
-      tourSelect.addEventListener("change", e => {
-        updateItem(item.id, "tour_code", e.target.value);
-        refreshMeta();
-      });
-
-      dateInput.addEventListener("change", e => {
-        updateItem(item.id, "tour_date", e.target.value);
-      });
-
-      qtyInput.addEventListener("input", e => {
-        updateItem(item.id, "quantity", e.target.value);
-      });
-
-      notesInput.addEventListener("input", e => {
-        updateItem(item.id, "item_notes", e.target.value);
-      });
-
-      refreshMeta();
-      els.itemsContainer.appendChild(node);
-    });
-  }
-
-  function renderSummary() {
-    const items = state.items;
-    if (!items.length) {
-      els.summaryItems.innerHTML = '<div class="summary-empty">No booking items yet.</div>';
-      return;
-    }
-
-    els.summaryItems.innerHTML = "";
-    let knownCount = 0;
-
-    items.forEach((item, index) => {
-      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-      const div = document.createElement("div");
-      div.className = "summary-item";
-
-      const name = tour
-        ? `${tour.tour_code} - ${tour.tour_title}`
-        : `Item ${index + 1}`;
-
-      const priceLine = tour
-        ? `${tour.amount_display} x ${item.quantity || 0}`
-        : "Select a tour";
-
-      if (tour) knownCount += 1;
-
-      div.innerHTML = `
-        <div class="summary-item-name">${name}</div>
-        <div class="summary-meta">
-          Date: ${item.tour_date || "-"}
-          <br />
-          People: ${item.quantity || "-"}
-          <br />
-          Language: ${item.language === "es" ? "Spanish" : "English"}
-          <br />
-          Price: <span class="money">${priceLine}</span>
-        </div>
-      `;
-
-      els.summaryItems.appendChild(div);
-    });
-
-    if (knownCount < items.length) {
-      const warn = document.createElement("div");
-      warn.className = "small-note";
-      warn.textContent = "Some items are incomplete. Select a tour for every row before creating a link or invoice.";
-      els.summaryItems.appendChild(warn);
-    }
-  }
-
-  function updateModeUI() {
-    const multi = state.items.length > 1;
-
-    els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi;
-    els.copyBtn.disabled = !state.generatedUrl;
-    els.openBtn.disabled = !state.generatedOpenUrl;
-
-    if (multi) {
-      els.actionSummary.innerHTML = `
-        Multi-item mode is active.
-        <br />
-        Generate Link is disabled.
-        <br />
-        Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
-      `;
-    } else {
-      els.actionSummary.innerHTML = `
-        Single item mode is active.
-        <br />
-        Generate Link can use your current one-tour flow.
-        <br />
-        Send Invoice will call <strong>/stripe/api/create-invoice</strong>.
-      `;
-    }
-  }
-
-  function validateSharedFields(options = {}) {
-    const requireGuest = !!options.requireGuest;
-    const errors = [];
-
-    if (requireGuest) {
-      if (!els.mainFirstName.value.trim()) errors.push("Main contact first name is required.");
-      if (!els.mainLastName.value.trim()) errors.push("Main contact last name is required.");
-      if (!els.mainEmail.value.trim()) errors.push("Email is required.");
-      if (!els.mainPhone.value.trim()) errors.push("Phone is required.");
-      if (!els.whatsappNumber.value.trim()) errors.push("WhatsApp number is required.");
-      if (!els.pickupLocationLabel.value.trim()) errors.push("Pickup location label is required.");
-      if (!els.pickupAddress.value.trim()) errors.push("Pickup address or hotel name is required.");
-    }
-
-    return errors;
-  }
-
-  function validateItems() {
-    const errors = [];
-
-    state.items.forEach((item, idx) => {
-      if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);
-      if (!item.tour_date) errors.push(`Item ${idx + 1}: Tour date is required.`);
-      if (!item.quantity || Number(item.quantity) <= 0) errors.push(`Item ${idx + 1}: Number of people must be greater than 0.`);
-      if (!item.language) errors.push(`Item ${idx + 1}: Language is required.`);
-
-      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-      if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
-    });
-
-    return errors;
-  }
-
-  function buildCombinedNotes(item) {
-    const parts = [];
-    if (els.globalNotes.value.trim()) parts.push(`General notes: ${els.globalNotes.value.trim()}`);
-    if (item && item.item_notes && item.item_notes.trim()) parts.push(`Item notes: ${item.item_notes.trim()}`);
-    return parts.join("\n");
-  }
-
-  function buildSingleItemInvoicePayload(item) {
-    return {
-      language: item.language,
-      stripe_environment: els.stripeEnvironment.value,
-      tour_code: item.tour_code,
-      number_of_people: Number(item.quantity),
-      main_contact_name: buildFullName(),
-      main_contact_email: els.mainEmail.value.trim(),
-      main_contact_phone: els.mainPhone.value.trim(),
-      whatsapp_number: els.whatsappNumber.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
-      pickup_address_or_hotel: els.pickupAddress.value.trim(),
-      notes: buildCombinedNotes(item),
-      tour_date: item.tour_date,
-      invoice_due_days: Number(els.invoiceDueDays.value || 2),
-      agent_id: els.agentId.value.trim()
-    };
-  }
-
-  function buildMultiItemInvoicePayload() {
-    return {
-      stripe_environment: els.stripeEnvironment.value,
-      main_contact_name: buildFullName(),
-      main_contact_email: els.mainEmail.value.trim(),
-      main_contact_phone: els.mainPhone.value.trim(),
-      whatsapp_number: els.whatsappNumber.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
-      pickup_address_or_hotel: els.pickupAddress.value.trim(),
-      notes: els.globalNotes.value.trim(),
-      invoice_due_days: Number(els.invoiceDueDays.value || 2),
-      agent_id: els.agentId.value.trim(),
-      items: state.items.map(item => ({
-        tour_code: item.tour_code,
-        quantity: Number(item.quantity),
-        tour_date: item.tour_date,
-        language: item.language,
-        item_notes: item.item_notes || ""
-      }))
-    };
-  }
-
-  function buildSingleLinkUrl(item) {
-    const params = new URLSearchParams({
-      tour: item.tour_code,
-      date: item.tour_date,
-      party: String(item.quantity),
-      lang: item.language
-    });
-
-    const agentId = els.agentId.value.trim();
-    if (agentId) params.set("agent_id", agentId);
-
-    const firstName = els.mainFirstName.value.trim();
-    const lastName = els.mainLastName.value.trim();
-    const email = els.mainEmail.value.trim();
-    const phone = els.mainPhone.value.trim();
-    const whatsapp = els.whatsappNumber.value.trim();
-    const pickupLabel = els.pickupLocationLabel.value.trim();
-    const pickupAddress = els.pickupAddress.value.trim();
-    const notes = els.globalNotes.value.trim();
-
-    if (firstName) params.set("guest_first_name", firstName);
-    if (lastName) params.set("guest_last_name", lastName);
-    if (email) params.set("guest_email", email);
-    if (phone) params.set("guest_phone", phone);
-    if (whatsapp) params.set("whatsapp_number", whatsapp);
-    if (pickupLabel) params.set("pickup_location_label", pickupLabel);
-    if (pickupAddress) params.set("pickup_address_or_hotel", pickupAddress);
-    if (notes) params.set("notes", notes);
-
-    const path = item.language === "es" ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
-    return `${window.location.origin}${path}?${params.toString()}`;
-  }
-
-
-  function buildGenerateLinkAgentPayload(item, generatedUrl) {
-    const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-    const amountDisplay = tour && tour.amount_display ? String(tour.amount_display) : "";
-    const amountNumber = Number(amountDisplay.replace(/[^0-9.]/g, ""));
-    const amountCents = Number.isFinite(amountNumber) ? Math.round(amountNumber * 100) * Number(item.quantity || 0) : 0;
-
-    return {
-      event_type: "payment_link_generated",
-      booking_mode: "single_item",
-      booking_session_id: `manual-link-${Date.now()}`,
-      stripe_environment: els.stripeEnvironment.value,
-      agent_id: els.agentId.value.trim(),
-      status: "generated",
-      payment_link_url: generatedUrl,
-      hosted_invoice_url: generatedUrl,
-      guest_first_name: els.mainFirstName.value.trim(),
-      guest_last_name: els.mainLastName.value.trim(),
-      guest_email: els.mainEmail.value.trim(),
-      guest_phone: els.mainPhone.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
-      pickup_address_or_hotel: els.pickupAddress.value.trim(),
-      notes: buildCombinedNotes(item),
-      items: [{
-        tour_code: item.tour_code,
-        tour_title: tour && tour.tour_title ? tour.tour_title : item.tour_code,
-        tour_date: item.tour_date,
-        language: item.language,
-        quantity: Number(item.quantity),
-        amount_cents: amountCents,
-        currency: tour && tour.currency ? tour.currency : "USD"
-      }]
-    };
-  }
-
-  async function logAgentActivity(payload) {
-    const res = await fetch("/stripe/api/agent-activity", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const raw = await res.text();
-    let data = null;
-    try {
-      data = raw ? JSON.parse(raw) : null;
-    } catch (_) {
-      data = { raw };
-    }
-
-    if (!res.ok || !data || data.ok !== true) {
-      throw new Error(data && data.error ? data.error : `Agent activity logging failed (${res.status})`);
-    }
-
-    return data;
-  }
-
-  function hideWhatsAppWidgets() {
-    const selectors = [
-      '[id*="whatsapp" i]',
-      '[class*="whatsapp" i]',
-      '[class*="joinchat" i]',
-      '[id*="joinchat" i]',
-      '[class*="floating-wpp" i]',
-      '[id*="wh-widget" i]',
-      '[id*="WAButton" i]',
-      '[class*="wpp" i]',
-      'a[href*="wa.me"]',
-      'a[href*="whatsapp.com"]',
-      'iframe[src*="whatsapp" i]',
-      'iframe[src*="wa.me" i]'
-    ];
-
-    selectors.forEach((selector) => {
-      document.querySelectorAll(selector).forEach((node) => {
-        node.style.setProperty("display", "none", "important");
-        node.style.setProperty("visibility", "hidden", "important");
-        node.style.setProperty("pointer-events", "none", "important");
-      });
-    });
-  }
-
-  async function onGenerateLink() {
-    clearStatus();
-
-    const errors = [...validateSharedFields({ requireGuest: false }), ...validateItems()];
-    if (state.items.length !== 1) {
-      showStatus("Generate Link is only available for a single booking item.", "error");
-      return;
-    }
-    if (errors.length) {
-      showStatus(errors[0], "error");
-      return;
-    }
-
-    if (hasSinglePersonItem()) {
-      const confirmed = await showConfirmModal({
-        title: "Confirm link",
-        message: "Are you sure you want to generate a payment link for just 1 person?",
-        confirmText: "Continue",
-        cancelText: "Cancel"
-      });
-      if (!confirmed) {
-        showStatus("Link generation cancelled.", "info");
-        return;
-      }
-    }
-
-    const item = state.items[0];
-    const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-    if (!tour) {
-      showStatus("Selected tour was not found.", "error");
-      return;
-    }
-
-    const generatedUrl = buildSingleLinkUrl(item);
-    state.generatedUrl = generatedUrl;
-    state.generatedOpenUrl = generatedUrl;
-    els.copyBtn.disabled = false;
-    els.openBtn.disabled = false;
-    els.resultLinkBox.style.display = "block";
-    els.resultLinkBox.textContent = generatedUrl;
-
-    const agentLine = els.agentId.value.trim() ? `<br />Agent ID: ${els.agentId.value.trim()}` : "";
-    els.actionSummary.innerHTML = `
-      Link generated for:
-      <br />
-      <strong>${tour.tour_code} - ${tour.tour_title}</strong>
-      <br />
-      Date: ${item.tour_date}
-      <br />
-      Party size: ${item.quantity}
-      <br />
-      Language: ${item.language === "es" ? "Spanish" : "English"}
-      ${agentLine}
-    `;
-
-    try {
-      await logAgentActivity(buildGenerateLinkAgentPayload(item, generatedUrl));
-    } catch (err) {
-      console.warn("Generate Link agent activity logging failed", err);
-    }
-
-    showStatus("Link generated.", "ok");
-  }
-
-  async function onSendInvoice() {
-    clearStatus();
-    const errors = [...validateSharedFields({ requireGuest: true }), ...validateItems()];
-    if (errors.length) {
-      showStatus(errors[0], "error");
-      return;
-    }
-
-    if (hasSinglePersonItem()) {
-      const confirmed = await showConfirmModal({
-        title: "Confirm invoice",
-        message: "Are you sure you want to send an invoice for just 1 person?",
-        confirmText: "Continue",
-        cancelText: "Cancel"
-      });
-      if (!confirmed) {
-        showStatus("Invoice cancelled.", "info");
-        return;
-      }
-    }
-
-    const multi = state.items.length > 1;
-    const endpoint = multi ? "/stripe/api/create-invoice-multi" : "/stripe/api/create-invoice";
-    const payload = multi ? buildMultiItemInvoicePayload() : buildSingleItemInvoicePayload(state.items[0]);
-
-    try {
-      showStatus("Creating invoice...", "info");
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const raw = await res.text();
-      let data;
-      try {
-        data = JSON.parse(raw);
-      } catch (_) {
-        throw new Error(raw || "Unexpected server response");
       }
 
-      if (!res.ok || !data.ok) throw new Error(data.error || "Invoice creation failed.");
+      function readCache(){
+        try{
+          var raw = localStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          var obj = JSON.parse(raw);
+          if (!obj || !obj.ts || !obj.data) return null;
+          if ((Date.now() - obj.ts) > CACHE_TTL_MS) return null;
+          return obj.data;
+        }catch(e){
+          return null;
+        }
+      }
 
-      const hostedUrl = data.hosted_invoice_url || "";
-      const invoiceId = data.invoice_id || "";
-      const invoiceNumber = data.invoice_number || "";
-      const invoiceStatus = data.invoice_status || (multi ? "open" : "open");
-      const agentId = els.agentId.value.trim();
+      function writeCache(data){
+        try{
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+        }catch(e){
+          return;
+        }
+      }
 
-      state.generatedUrl = hostedUrl;
-      state.generatedOpenUrl = hostedUrl;
-      els.copyBtn.disabled = !hostedUrl;
-      els.openBtn.disabled = !hostedUrl;
-      els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
-      els.resultLinkBox.textContent = hostedUrl || "";
+      function fetchWx(){
+        var url =
+          "https://api.open-meteo.com/v1/forecast"
+          + "?latitude=" + encodeURIComponent(LAT)
+          + "&longitude=" + encodeURIComponent(LON)
+          + "&timezone=auto"
+          + "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode";
 
-      els.actionSummary.innerHTML = `
-        Invoice created successfully.
-        <br />
-        Invoice ID: <strong>${invoiceId || "-"}</strong>
-        <br />
-        Invoice number: <strong>${invoiceNumber || "-"}</strong>
-        <br />
-        Status: <strong>${invoiceStatus || "-"}</strong>
-        <br />
-        Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
-        ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
-      `;
+        return fetch(url, { cache: "no-store" }).then(function(r){
+          if (!r.ok) throw new Error("Bad response");
+          return r.json();
+        });
+      }
 
-      showStatus(data.message || "Invoice created.", "ok");
-    } catch (err) {
-      showStatus(err.message || "Something went wrong while creating the invoice.", "error");
-    }
-  }
+      setSkeleton(true);
 
-  async function onCopy() {
-    if (!state.generatedUrl) return;
-    try {
-      await navigator.clipboard.writeText(state.generatedUrl);
-      showStatus("Copied to clipboard.", "ok");
-    } catch (_) {
-      showStatus("Unable to copy automatically. Please copy the link manually.", "error");
-    }
-  }
-
-  function onOpen() {
-    if (!state.generatedOpenUrl) return;
-    window.open(state.generatedOpenUrl, "_blank", "noopener,noreferrer");
-  }
-
-  async function init() {
-    try {
-      await loadTours();
-      addItem();
-      renderSummary();
-      updateModeUI();
-
-      ["blur", "change"].forEach(evt => {
-        els.mainFirstName.addEventListener(evt, () => normalizeNameInput(els.mainFirstName));
-        els.mainLastName.addEventListener(evt, () => normalizeNameInput(els.mainLastName));
-      });
-    } catch (err) {
-      showStatus(err.message || "Failed to initialize page.", "error");
-    }
-  }
-
-  els.addItemBtn.addEventListener("click", () => {
-    addItem({ language: els.defaultLanguage.value });
-    state.generatedUrl = "";
-    state.generatedOpenUrl = "";
-    els.copyBtn.disabled = true;
-    els.openBtn.disabled = true;
-    els.resultLinkBox.style.display = "none";
-    els.resultLinkBox.textContent = "";
-  });
-
-  els.generateLinkBtn.addEventListener("click", onGenerateLink);
-  els.sendInvoiceBtn.addEventListener("click", onSendInvoice);
-  els.copyBtn.addEventListener("click", onCopy);
-  els.openBtn.addEventListener("click", onOpen);
-
-  els.defaultLanguage.addEventListener("change", () => {
-    renderItems();
-    renderSummary();
-  });
-
-  init();
-</script>
+      var cached = readCache();
+      if (cached){
+        renderDaily(cached);
+        fetchWx().then(function(data){
+          writeCache(data);
+          renderDaily(data);
+        }).catch(function(){ return; });
+      }else{
+        fetchWx().then(function(data){
+          writeCache(data);
+          renderDaily(data);
+        }).catch(function(){
+          setSkeleton(false);
+          setNote("");
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
