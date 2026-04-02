@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mindo Glambird | Recommended Stay, Restaurant and Wellness in Mindo | Mindo Bird Watching</title>
-  <meta name="description" content="Discover Mindo Glambird, a recommended nature stay in Mindo with rooms, bubble glamping, restaurant dining, pool, hydromassage, and relaxing massage experiences after birdwatching and cloud forest adventures." />
+  <title>Mindo Glambird | Stay, Dining and Wellness in Mindo | Mindo Bird Watching</title>
+  <meta name="description" content="Discover Mindo Glambird, a relaxing place to stay in Mindo with rooms, bubble glamping, on-site dining, massages, pool time, and easy access after birdwatching tours and cloud forest adventures." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
   <meta name="author" content="Mindo Bird Watching" />
   <meta name="theme-color" content="#034EA2" />
@@ -19,8 +19,8 @@
   <meta property="og:site_name" content="Mindo Bird Watching" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:locale:alternate" content="es_ES" />
-  <meta property="og:title" content="Mindo Glambird | Recommended Stay, Restaurant and Wellness in Mindo" />
-  <meta property="og:description" content="A creative standalone recommendation page for Mindo Glambird with lodging, glamping, restaurant, massages, wellness, and direct links to contact and menus." />
+  <meta property="og:title" content="Mindo Glambird | Stay, Dining and Wellness in Mindo" />
+  <meta property="og:description" content="A beautiful place to stay near Mindo town with rooms, bubble glamping, a restaurant, massages, pool time, and direct booking links." />
   <meta property="og:url" content="https://mindobirdwatching.com/recommendations/mindoglambird/" />
   <meta property="og:image" content="https://mindobirdwatching.com/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -28,8 +28,8 @@
   <meta property="og:image:alt" content="Mindo Glambird pool and cloud forest setting" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Mindo Glambird | Recommended Stay, Restaurant and Wellness in Mindo" />
-  <meta name="twitter:description" content="Rooms, bubble glamping, dining, massages, pool, hydromassage, and a calm cloud forest atmosphere near Mindo town." />
+  <meta name="twitter:title" content="Mindo Glambird | Stay, Dining and Wellness in Mindo" />
+  <meta name="twitter:description" content="Rooms, bubble glamping, restaurant service, massages, and a calm cloud forest atmosphere near Mindo town." />
   <meta name="twitter:image" content="https://mindobirdwatching.com/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" />
 
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -74,7 +74,6 @@
 
     .heroCard,
     .visualCard,
-    .sectionCard,
     .featureCard,
     .stayCard,
     .experienceCard,
@@ -86,7 +85,12 @@
       box-shadow: var(--shadow);
     }
 
-    .heroCard { padding: 18px; }
+    .heroCard {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
 
     .eyebrow {
       display: inline-flex;
@@ -102,6 +106,7 @@
       text-transform: uppercase;
       letter-spacing: .08em;
       margin-bottom: 12px;
+      width: fit-content;
     }
     .eyebrow::before {
       content: "";
@@ -173,6 +178,12 @@
       align-items: center;
     }
 
+    .heroActions { margin-top: 18px; }
+    .heroActions .btn,
+    .actionGrid .btn,
+    .cardActions .btn,
+    .planActions .btn { min-height: 46px; }
+
     .quickGrid {
       margin-top: 16px;
       display: grid;
@@ -185,7 +196,7 @@
       padding: 12px;
       background: rgba(255,255,255,.8);
       box-shadow: var(--shadow);
-      min-height: 94px;
+      min-height: 104px;
     }
     .quickCard strong {
       display: block;
@@ -214,12 +225,24 @@
       display: grid;
       grid-template-rows: minmax(310px, 1fr) auto;
     }
-    .heroImageWrap {
+    .heroCarousel {
       position: relative;
       min-height: 310px;
       background: #0b1220;
+      overflow: hidden;
     }
-    .heroImageWrap img {
+    .heroSlide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .55s ease;
+      pointer-events: none;
+    }
+    .heroSlide.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .heroSlide img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -233,13 +256,15 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      z-index: 3;
+      pointer-events: none;
     }
     .heroTag {
       display: inline-flex;
       align-items: center;
       padding: 8px 11px;
       border-radius: 999px;
-      background: rgba(0,0,0,.48);
+      background: rgba(0,0,0,.46);
       border: 1px solid rgba(255,255,255,.18);
       color: #fff;
       font-size: 12px;
@@ -249,8 +274,54 @@
       white-space: nowrap;
     }
     .heroTag.featured {
-      background: rgba(13,89,37,.92);
+      background: rgba(13,89,37,.9);
       border-color: rgba(13,89,37,1);
+    }
+    .carouselBtn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.38);
+      background: rgba(255,255,255,.16);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      z-index: 4;
+      cursor: pointer;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .carouselBtn:hover,
+    .carouselBtn:focus-visible {
+      background: rgba(255,255,255,.24);
+      outline: none;
+    }
+    .carouselBtn.prev { left: 14px; }
+    .carouselBtn.next { right: 14px; }
+    .carouselDots {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 4;
+    }
+    .carouselDot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.55);
+      background: rgba(255,255,255,.28);
+      padding: 0;
+      cursor: pointer;
+    }
+    .carouselDot[aria-current="true"] {
+      background: rgba(255,255,255,.96);
     }
 
     .visualFooter {
@@ -286,9 +357,7 @@
       font-size: 13px;
     }
 
-    .section {
-      margin-top: 18px;
-    }
+    .section { margin-top: 18px; }
     .sectionTitle {
       margin: 0 0 10px;
       font-family: var(--font-head);
@@ -311,7 +380,7 @@
     }
     .featureCard {
       padding: 14px;
-      min-height: 146px;
+      min-height: 150px;
     }
     .featureNum {
       width: 34px;
@@ -343,14 +412,19 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
+      align-items: stretch;
     }
     .stayCard {
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
     .stayImage {
       aspect-ratio: 16 / 10;
       background: #0b1220;
       position: relative;
+      flex: 0 0 auto;
     }
     .stayImage img {
       width: 100%;
@@ -358,15 +432,21 @@
       object-fit: cover;
       display: block;
     }
-    .stayBody {
+    .stayBody,
+    .experienceBody,
+    .planBody {
       padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 100%;
     }
     .cardTop {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       flex-wrap: wrap;
     }
     .stayCard h3,
@@ -403,7 +483,9 @@
       display: flex;
       flex-wrap: wrap;
       gap: 7px;
-      margin: 12px 0;
+      margin: 14px 0;
+      align-content: flex-start;
+      min-height: 72px;
     }
     .chip {
       display: inline-flex;
@@ -419,17 +501,22 @@
       line-height: 1;
       white-space: nowrap;
     }
+    .cardActions,
+    .planActions { margin-top: auto; }
 
     .experienceGrid {
       display: grid;
-      grid-template-columns: 1.06fr .94fr;
+      grid-template-columns: 1fr 1fr;
       gap: 14px;
+      align-items: stretch;
     }
     .experienceCard {
-      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
     }
     .bulletList {
-      margin: 12px 0 0;
+      margin: 0;
       padding: 0;
       list-style: none;
       display: grid;
@@ -457,15 +544,14 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
+      align-items: stretch;
     }
     .planCard {
-      padding: 16px;
-      min-height: 210px;
+      min-height: 220px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      justify-content: space-between;
     }
+    .planBody { gap: 14px; }
     .planNote {
       color: var(--muted);
       font-size: 12.5px;
@@ -503,7 +589,7 @@
     @media (max-width: 1080px) {
       .featureGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .stayGrid,
-      .planGrid { grid-template-columns: 1fr; }
+      .planGrid,
       .experienceGrid,
       .ctaStrip,
       .hero { grid-template-columns: 1fr; }
@@ -512,11 +598,23 @@
     @media (max-width: 760px) {
       .page { padding: 18px; }
       .quickGrid,
-      .featureGrid { grid-template-columns: 1fr; }
+      .featureGrid,
+      .stayGrid,
+      .planGrid,
+      .experienceGrid { grid-template-columns: 1fr; }
       .heroTitle { max-width: 14ch; }
       .visualFooter { grid-template-columns: 76px 1fr; }
       .visualFooter img { width: 76px; height: 76px; }
-      .heroImageWrap { min-height: 260px; }
+      .heroCarousel { min-height: 260px; }
+      .carouselBtn { width: 38px; height: 38px; }
+      .chipRow { min-height: 0; }
+      .heroActions .btn,
+      .actionGrid .btn,
+      .cardActions .btn,
+      .planActions .btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 
@@ -528,15 +626,11 @@
         "@type": "WebPage",
         "@id": "https://mindobirdwatching.com/recommendations/mindoglambird/#webpage",
         "url": "https://mindobirdwatching.com/recommendations/mindoglambird/",
-        "name": "Mindo Glambird | Recommended Stay, Restaurant and Wellness in Mindo",
+        "name": "Mindo Glambird | Stay, Dining and Wellness in Mindo",
         "description": "Standalone recommendation page for Mindo Glambird featuring rooms, bubble glamping, restaurant dining, massages, and direct contact links.",
         "inLanguage": "en",
-        "isPartOf": {
-          "@id": "https://mindobirdwatching.com/#website"
-        },
-        "about": {
-          "@id": "https://mindobirdwatching.com/recommendations/mindoglambird/#hotel"
-        },
+        "isPartOf": { "@id": "https://mindobirdwatching.com/#website" },
+        "about": { "@id": "https://mindobirdwatching.com/recommendations/mindoglambird/#hotel" },
         "primaryImageOfPage": {
           "@type": "ImageObject",
           "url": "https://mindobirdwatching.com/recommendations/mindoglambird/mindoglambird_pool_01.jpeg"
@@ -560,7 +654,8 @@
         "telephone": "+593998719842",
         "sameAs": [
           "https://mindoglambird.com/",
-          "https://wa.me/c/593998719842"
+          "https://wa.me/c/593998719842",
+          "https://hotels.cloudbeds.com/es/reservation/pirPZ7?currency=usd"
         ],
         "amenityFeature": [
           {"@type": "LocationFeatureSpecification", "name": "Bubble glamping"},
@@ -569,27 +664,13 @@
           {"@type": "LocationFeatureSpecification", "name": "Massage experiences"},
           {"@type": "LocationFeatureSpecification", "name": "Pool"},
           {"@type": "LocationFeatureSpecification", "name": "Hydromassage"}
-        ],
-        "containsPlace": [
-          {"@type": "Suite", "name": "Bubble Glamping"},
-          {"@type": "Suite", "name": "Suites and rooms"}
         ]
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Recommendations",
-            "item": "https://mindobirdwatching.com/recommendations/"
-          },
-          {
-            "@type": "ListItem",
-            "position": 2,
-            "name": "Mindo Glambird",
-            "item": "https://mindobirdwatching.com/recommendations/mindoglambird/"
-          }
+          {"@type": "ListItem", "position": 1, "name": "Recommendations", "item": "https://mindobirdwatching.com/recommendations/"},
+          {"@type": "ListItem", "position": 2, "name": "Mindo Glambird", "item": "https://mindobirdwatching.com/recommendations/mindoglambird/"}
         ]
       }
     ]
@@ -610,97 +691,117 @@
       <section class="hero" aria-label="Hero">
         <div class="heroCard">
           <span class="eyebrow">Recommended after birding</span>
-          <h1 class="heroTitle">Mindo Glambird is where a birding day can end beautifully.</h1>
+          <h1 class="heroTitle">Mindo Glambird is a beautiful place to rest, eat, and recharge in Mindo.</h1>
           <p class="heroSub">
-            This is a strong recommendation for travelers who want more than a place to sleep. Mindo Glambird blends rooms, bubble glamping, restaurant service, riverfront calm, and restorative wellness into one experience that feels especially rewarding after birdwatching, waterfall hikes, tubing, or a full day exploring the cloud forest.
+            After an early birding start or a full day exploring the cloud forest, this is the kind of place that feels easy to enjoy. You have rooms and bubble glamping, a restaurant on site, massages for a slower finish to the day, and a pool area that makes it easy to settle in and unwind.
           </p>
 
           <div class="pillRow" aria-label="Quick highlights">
-            <span class="pill">5 minutes from town</span>
-            <span class="pill">Cloud forest atmosphere</span>
+            <span class="pill">Close to Mindo town</span>
+            <span class="pill">Rooms and bubble glamping</span>
             <span class="pill">Pool and hydromassage</span>
             <span class="pill">Restaurant on site</span>
-            <span class="pill">Wellness massages</span>
+            <span class="pill">Massages available</span>
           </div>
 
           <div class="quickGrid" aria-label="Fast facts">
             <div class="quickCard">
-              <strong>Best for</strong>
-              <span>Couples, families, slow travelers, and birders who want comfort after long outdoor days.</span>
+              <strong>Great for</strong>
+              <span>Couples, birders, families, and travelers who want comfort without losing the Mindo atmosphere.</span>
             </div>
             <div class="quickCard">
               <strong>Stay style</strong>
-              <span>Rooms, suites, and eye-catching bubble glamping in a lush nature setting.</span>
+              <span>A mix of comfortable rooms and bubble glamping for travelers who want something more memorable.</span>
             </div>
             <div class="quickCard">
-              <strong>Why it works</strong>
-              <span>You can sleep, eat, unwind, and reset in one place without losing the Mindo feeling.</span>
+              <strong>Why people love it</strong>
+              <span>You can stay, dine, relax, and ease into the evening without needing to make extra plans.</span>
             </div>
           </div>
 
-          <div class="heroActions" style="margin-top:16px;" aria-label="Primary actions">
-            <a class="btn primary" href="https://mindoglambird.com/" target="_blank" rel="noopener">Visit website</a>
+          <div class="heroActions" aria-label="Primary actions">
+            <a class="btn primary" href="https://hotels.cloudbeds.com/es/reservation/pirPZ7?currency=usd" target="_blank" rel="noopener">Reserve now</a>
+            <a class="btn secondary" href="https://mindoglambird.com/" target="_blank" rel="noopener">Visit website</a>
             <a class="btn secondary" href="https://wa.me/c/593998719842" target="_blank" rel="noopener">Open WhatsApp</a>
             <a class="btn ghost" href="#restaurant">See dining and wellness</a>
           </div>
 
           <p class="micro">
-            Use this page as a curated overview, then continue directly to Mindo Glambird for reservations, menus, and current availability.
+            You can explore the stay, open the menus, message them directly, or reserve right away.
           </p>
         </div>
 
         <div class="visualCard" aria-label="Mindo Glambird visual block">
-          <div class="heroImageWrap">
-            <img src="/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" alt="Pool and cloud forest atmosphere at Mindo Glambird" loading="eager" decoding="async" />
+          <div class="heroCarousel" data-carousel>
+            <div class="heroSlide is-active">
+              <img src="/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" alt="Pool area at Mindo Glambird" loading="eager" decoding="async" />
+            </div>
+            <div class="heroSlide">
+              <img src="/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" alt="Cloud forest atmosphere at Mindo Glambird" loading="lazy" decoding="async" />
+            </div>
+            <div class="heroSlide">
+              <img src="/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" alt="Relaxing stay setting at Mindo Glambird" loading="lazy" decoding="async" />
+            </div>
+
+            <button class="carouselBtn prev" type="button" aria-label="Previous image">&#10094;</button>
+            <button class="carouselBtn next" type="button" aria-label="Next image">&#10095;</button>
+
             <div class="heroOverlay" aria-hidden="true">
-              <span class="heroTag featured">Standout recommendation</span>
+              <span class="heroTag featured">A lovely place to stay</span>
               <span class="heroTag">Sleep, dine and recharge</span>
-              <span class="heroTag">Ideal after a long birding day</span>
+              <span class="heroTag">Ideal after a long day outdoors</span>
+            </div>
+
+            <div class="carouselDots" aria-label="Carousel navigation">
+              <button class="carouselDot" type="button" aria-label="Show image 1" aria-current="true"></button>
+              <button class="carouselDot" type="button" aria-label="Show image 2" aria-current="false"></button>
+              <button class="carouselDot" type="button" aria-label="Show image 3" aria-current="false"></button>
             </div>
           </div>
+
           <div class="visualFooter">
             <img src="/recommendations/mindoglambird/mindoglambird__logo.png" alt="Mindo Glambird logo" loading="lazy" decoding="async" />
             <div>
               <strong>Mindo Glambird Glamping &amp; Lodge</strong>
-              <span>A nature-conscious stay near Mindo town with cloud forest ambiance, wellness, and a more memorable end to each day.</span>
+              <span>A calm place near Mindo where you can enjoy nature, rest well, eat on site, and slow down after your adventures.</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="section" aria-label="Why recommend this place">
-        <h2 class="sectionTitle">Why this recommendation stands out</h2>
+      <section class="section" aria-label="Why stay here">
+        <h2 class="sectionTitle">Why many travelers enjoy staying here</h2>
         <p class="sectionLead">
-          Some travelers want a practical base. Others want the stay itself to become part of the trip. Mindo Glambird lands in that second category. It gives visitors a place to rest deeply, enjoy a meal without needing to go back into town, and add a massage or quiet pool session when the body needs recovery.
+          Mindo Glambird works well for travelers who want their stay to feel pleasant and easy from morning to night. It offers the comfort of a hotel, a more memorable glamping option, and the added convenience of on-site dining and wellness.
         </p>
         <div class="featureGrid">
           <article class="featureCard">
             <div class="featureNum">1</div>
-            <h3>Nature is still the main character</h3>
-            <p>Even with more comfort and design, the surrounding forest, river energy, and sense of calm remain central to the experience.</p>
+            <h3>Comfort after active days</h3>
+            <p>After birdwatching, hikes, waterfalls, tubing, or ziplining, it feels great to come back somewhere calm and comfortable.</p>
           </article>
           <article class="featureCard">
             <div class="featureNum">2</div>
-            <h3>Useful for different travel styles</h3>
-            <p>It works for honeymoon energy, soft adventure, family stays, recovery nights, or travelers who want a more special lodging choice.</p>
+            <h3>More than a standard room</h3>
+            <p>The bubble glamping option gives the stay a more special feel for couples and anyone looking for something memorable.</p>
           </article>
           <article class="featureCard">
             <div class="featureNum">3</div>
-            <h3>Easy recovery after activities</h3>
-            <p>Birdwatching starts early. Waterfall hikes, tubing, ziplining, and long transfers can add up. This is the kind of place that helps you bounce back.</p>
+            <h3>Easy evenings</h3>
+            <p>Having a restaurant on site makes dinner, drinks, and a slower evening feel simple and convenient.</p>
           </article>
           <article class="featureCard">
             <div class="featureNum">4</div>
-            <h3>More than only a room</h3>
-            <p>Restaurant service, wellness options, pool access, and hydromassage make it feel complete for travelers who value convenience with atmosphere.</p>
+            <h3>Wellness on property</h3>
+            <p>Massages, the pool, and hydromassage add a relaxing finish to the day without needing to go anywhere else.</p>
           </article>
         </div>
       </section>
 
       <section class="section" aria-label="Stay options">
-        <h2 class="sectionTitle">Stay options for different moods</h2>
+        <h2 class="sectionTitle">Stay options for different travel styles</h2>
         <p class="sectionLead">
-          Use the placeholder image for now as requested. When you have newer visuals, each card can easily swap to its own photography without changing the structure.
+          Placeholder image used throughout for now as requested. Later, each card can be updated with its own photography without changing the layout.
         </p>
         <div class="stayGrid">
           <article class="stayCard">
@@ -713,12 +814,12 @@
                 <span class="miniBadge">Most memorable</span>
               </div>
               <p>
-                The most visually distinctive option. Great for couples, celebratory stays, or travelers who want their lodging to feel like part of the story and not only a basecamp.
+                A fun choice for couples, special trips, and travelers who want their stay to feel like part of the experience, not just a place to sleep.
               </p>
               <div class="chipRow" aria-label="Bubble glamping highlights">
-                <span class="chip">Unique experience</span>
+                <span class="chip">Unique atmosphere</span>
                 <span class="chip">Romantic feel</span>
-                <span class="chip">Nature immersion</span>
+                <span class="chip">Nature all around</span>
               </div>
               <div class="cardActions">
                 <a class="btn secondary" href="https://mindoglambird.com/" target="_blank" rel="noopener">View lodging</a>
@@ -733,14 +834,14 @@
             <div class="stayBody">
               <div class="cardTop">
                 <h3>Suites and Rooms</h3>
-                <span class="miniBadge">Comfort-first</span>
+                <span class="miniBadge">Comfort first</span>
               </div>
               <p>
-                A stronger fit for families, practical travelers, and guests who want a comfortable room with easy access to shared amenities, dining, and downtime.
+                A great fit for families, practical travelers, and anyone who wants a comfortable room with easy access to dining and shared amenities.
               </p>
               <div class="chipRow" aria-label="Suites and rooms highlights">
                 <span class="chip">Flexible stay style</span>
-                <span class="chip">Good for families</span>
+                <span class="chip">Family friendly</span>
                 <span class="chip">Easy and restful</span>
               </div>
               <div class="cardActions">
@@ -751,20 +852,20 @@
 
           <article class="stayCard">
             <div class="stayImage">
-              <img src="/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" alt="Placeholder image for wellness amenities at Mindo Glambird" loading="lazy" decoding="async" />
+              <img src="/recommendations/mindoglambird/mindoglambird_pool_01.jpeg" alt="Placeholder image for pool and hydromassage at Mindo Glambird" loading="lazy" decoding="async" />
             </div>
             <div class="stayBody">
               <div class="cardTop">
-                <h3>Pool, Hydromassage and Slow Evenings</h3>
-                <span class="miniBadge">Recovery-friendly</span>
+                <h3>Pool and Hydromassage</h3>
+                <span class="miniBadge">Easy to enjoy</span>
               </div>
               <p>
-                A great angle for your recommendation page: guests can return from trails or birding outings and shift straight into recovery mode instead of planning the next step.
+                Perfect for quiet afternoons, a relaxed evening, or a refreshing break between activities if you want more downtime during your stay.
               </p>
-              <div class="chipRow" aria-label="Wellness amenities highlights">
-                <span class="chip">Post-activity reset</span>
-                <span class="chip">Wellness atmosphere</span>
-                <span class="chip">Stay on property</span>
+              <div class="chipRow" aria-label="Pool highlights">
+                <span class="chip">Relaxing atmosphere</span>
+                <span class="chip">On-property downtime</span>
+                <span class="chip">Great after activities</span>
               </div>
               <div class="cardActions">
                 <a class="btn secondary" href="https://wa.me/c/593998719842" target="_blank" rel="noopener">Ask on WhatsApp</a>
@@ -778,96 +879,120 @@
         <h2 class="sectionTitle">Dining and wellness deserve their own spotlight</h2>
         <div class="experienceGrid">
           <article class="experienceCard" id="restaurant">
-            <div class="cardTop">
-              <h3>Restaurant</h3>
-              <span class="miniBadge">On-site dining</span>
-            </div>
-            <p>
-              This is especially useful on a recommendation page because visitors immediately understand the convenience: they can stay immersed in the property and still enjoy breakfast, drinks, quick bites, main dishes, sweets, and cocktails without extra planning.
-            </p>
-            <div class="chipRow" aria-label="Restaurant highlights">
-              <span class="chip">Breakfasts</span>
-              <span class="chip">Main dishes</span>
-              <span class="chip">Fast food</span>
-              <span class="chip">Drinks and cocktails</span>
-            </div>
-            <ul class="bulletList" aria-label="Restaurant notes">
-              <li>Good for travelers who want a simple dinner after a long day in the field.</li>
-              <li>Works well for couples, families, and guests who prefer not to move around again at night.</li>
-              <li>A practical value-add on a lodging recommendation page because it reduces friction for the visitor.</li>
-            </ul>
-            <div class="cardActions" style="margin-top:14px;">
-              <a class="btn primary" href="https://drive.google.com/file/d/1jTfGjBBW4ijTq5H-YMg1OpGsQZA6gNAv/view?usp=sharing" target="_blank" rel="noopener">Open restaurant menu</a>
-              <a class="btn ghost" href="https://mindoglambird.com/" target="_blank" rel="noopener">Visit website</a>
+            <div class="experienceBody">
+              <div class="cardTop">
+                <h3>Restaurant</h3>
+                <span class="miniBadge">On-site dining</span>
+              </div>
+              <p>
+                Staying somewhere with a restaurant on site makes the trip feel easier. Breakfast, drinks, quick bites, main dishes, and desserts are all close at hand when you would rather relax than head back out.
+              </p>
+              <div class="chipRow" aria-label="Restaurant highlights">
+                <span class="chip">Breakfasts</span>
+                <span class="chip">Main dishes</span>
+                <span class="chip">Fast food</span>
+                <span class="chip">Drinks and cocktails</span>
+              </div>
+              <ul class="bulletList" aria-label="Restaurant notes">
+                <li>Convenient after an early birding day or evening arrival.</li>
+                <li>Easy for couples, families, and travelers who want a relaxed night in.</li>
+                <li>A nice option when you want dinner, a drink, and more time to enjoy the property.</li>
+              </ul>
+              <div class="cardActions">
+                <a class="btn primary" href="https://drive.google.com/file/d/1jTfGjBBW4ijTq5H-YMg1OpGsQZA6gNAv/view?usp=sharing" target="_blank" rel="noopener">Open restaurant menu</a>
+                <a class="btn ghost" href="https://mindoglambird.com/" target="_blank" rel="noopener">Visit website</a>
+              </div>
             </div>
           </article>
 
           <article class="experienceCard" id="massages">
-            <div class="cardTop">
-              <h3>Massages and wellness</h3>
-              <span class="miniBadge">Perfect after birding</span>
-            </div>
-            <p>
-              This is one of the strongest emotional hooks for your page. After an early start, long walks, or active outdoor experiences, visitors can shift from effort to recovery without leaving the property. That makes the recommendation feel thoughtful and complete.
-            </p>
-            <div class="chipRow" aria-label="Massage highlights">
-              <span class="chip">Relaxing massage</span>
-              <span class="chip">Bamboo massage</span>
-              <span class="chip">Clay massage</span>
-              <span class="chip">Candle and fire options</span>
-            </div>
-            <ul class="bulletList" aria-label="Massage notes">
-              <li>Excellent add-on for birders, hikers, and active couples.</li>
-              <li>Helps position the place as a soft-wellness retreat, not only a hotel.</li>
-              <li>Adds a strong reason to stay on property and fully unwind.</li>
-            </ul>
-            <div class="cardActions" style="margin-top:14px;">
-              <a class="btn primary" href="https://drive.google.com/file/d/1uc3nbXNztoheSCqsA2WJ_dqZwkpnF5kr/view?usp=sharing" target="_blank" rel="noopener">Open massage menu</a>
-              <a class="btn ghost" href="https://wa.me/c/593998719842" target="_blank" rel="noopener">Ask on WhatsApp</a>
+            <div class="experienceBody">
+              <div class="cardTop">
+                <h3>Massages and wellness</h3>
+                <span class="miniBadge">Perfect after birding</span>
+              </div>
+              <p>
+                If you like slower evenings and a more restorative stay, the massage options are a lovely extra. They make it easy to shift from a full day outdoors into a quieter, more restful end to the day.
+              </p>
+              <div class="chipRow" aria-label="Massage highlights">
+                <span class="chip">Relaxing massage</span>
+                <span class="chip">Bamboo massage</span>
+                <span class="chip">Clay massage</span>
+                <span class="chip">Candle and fire options</span>
+              </div>
+              <ul class="bulletList" aria-label="Massage notes">
+                <li>A wonderful add-on for birders, hikers, and active travelers.</li>
+                <li>Especially nice for couples or anyone wanting a slower pace.</li>
+                <li>A simple way to enjoy more of your time on property.</li>
+              </ul>
+              <div class="cardActions">
+                <a class="btn primary" href="https://drive.google.com/file/d/1uc3nbXNztoheSCqsA2WJ_dqZwkpnF5kr/view?usp=sharing" target="_blank" rel="noopener">Open massage menu</a>
+                <a class="btn ghost" href="https://wa.me/c/593998719842" target="_blank" rel="noopener">Ask on WhatsApp</a>
+              </div>
             </div>
           </article>
         </div>
       </section>
 
-      <section class="section" aria-label="Trip planning help">
-        <h2 class="sectionTitle">How this page helps your visitors decide faster</h2>
+      <section class="section" aria-label="Helpful choices">
+        <h2 class="sectionTitle">Helpful choices for planning your stay</h2>
         <div class="planGrid">
           <article class="planCard">
-            <div>
-              <h3>For birders</h3>
+            <div class="planBody">
+              <div class="cardTop">
+                <h3>For birders</h3>
+                <span class="miniBadge">Popular fit</span>
+              </div>
               <p>
-                Position Mindo Glambird as a rewarding finish to an early-morning birding schedule. It combines comfort, food, and wellness in a way many birdwatchers appreciate once the day is done.
+                If your day starts early in the forest, it feels great to come back somewhere comfortable where you can eat well, shower, slow down, and enjoy the rest of the evening.
               </p>
-            </div>
-            <div>
+              <div class="chipRow">
+                <span class="chip">Early starts</span>
+                <span class="chip">Relaxed evenings</span>
+                <span class="chip">Easy comfort</span>
+              </div>
               <div class="planActions">
-                <a class="btn secondary" href="https://wa.me/c/593998719842" target="_blank" rel="noopener">Contact directly</a>
+                <a class="btn secondary" href="https://hotels.cloudbeds.com/es/reservation/pirPZ7?currency=usd" target="_blank" rel="noopener">Reserve now</a>
               </div>
             </div>
           </article>
 
           <article class="planCard">
-            <div>
-              <h3>For couples</h3>
+            <div class="planBody">
+              <div class="cardTop">
+                <h3>Add birdwatching tours</h3>
+                <span class="miniBadge">Site priority</span>
+              </div>
               <p>
-                Bubble glamping, quiet surroundings, dinner on site, and massages create a more romantic recommendation than a standard lodging listing.
+                Want to make the most of your time in Mindo? Pair your stay with one of our birdwatching tours and enjoy the cloud forest with a local guide before coming back to rest.
               </p>
-            </div>
-            <div>
-              <span class="planNote">Tip: this card can later become a stronger conversion block once you add couple-focused photography.</span>
+              <div class="chipRow">
+                <span class="chip">Local guides</span>
+                <span class="chip">Birdwatching focus</span>
+                <span class="chip">Great with this stay</span>
+              </div>
+              <div class="planActions">
+                <a class="btn primary" href="https://mindobirdwatching.com/birdwatching-tours-mindo/">See our tours</a>
+              </div>
             </div>
           </article>
 
           <article class="planCard">
-            <div>
-              <h3>For families and slow travelers</h3>
+            <div class="planBody">
+              <div class="cardTop">
+                <h3>For couples and slow travel</h3>
+                <span class="miniBadge">Lovely atmosphere</span>
+              </div>
               <p>
-                Rooms and shared amenities make it easier for visitors who want a comfortable stay with fewer logistics and a more complete on-property experience.
+                Bubble glamping, quiet surroundings, dinner on site, and a massage menu make this a lovely choice for travelers who want a more relaxed and memorable stay.
               </p>
-            </div>
-            <div>
+              <div class="chipRow">
+                <span class="chip">Romantic option</span>
+                <span class="chip">Quiet setting</span>
+                <span class="chip">More time to enjoy</span>
+              </div>
               <div class="planActions">
-                <a class="btn ghost" href="https://mindoglambird.com/" target="_blank" rel="noopener">Check details</a>
+                <a class="btn ghost" href="https://wa.me/c/593998719842" target="_blank" rel="noopener">Contact directly</a>
               </div>
             </div>
           </article>
@@ -876,16 +1001,17 @@
 
       <section class="ctaStrip" aria-label="Final call to action">
         <div>
-          <h2>Want a stay that feels restorative, practical, and memorable?</h2>
+          <h2>Ready for a stay that feels calm, comfortable, and easy to enjoy?</h2>
           <p>
-            Mindo Glambird is one of the more complete recommendations you can feature on mindobirdwatching.com because it serves different visitor types while still feeling deeply connected to Mindo. Guests can stay, eat, relax, and recover in one setting that fits the rhythm of the cloud forest.
+            Mindo Glambird is a lovely option for travelers who want to stay close to nature while still enjoying comfort, good food, and a slower finish to the day. Explore the stay, reserve directly, or pair your visit with one of our birdwatching tours.
           </p>
         </div>
         <div class="actionGrid">
-          <a class="btn primary" href="https://mindoglambird.com/" target="_blank" rel="noopener">Go to Mindo Glambird</a>
+          <a class="btn primary" href="https://hotels.cloudbeds.com/es/reservation/pirPZ7?currency=usd" target="_blank" rel="noopener">Reserve now</a>
           <a class="btn secondary" href="https://wa.me/c/593998719842" target="_blank" rel="noopener">Message on WhatsApp</a>
           <a class="btn ghost" href="https://drive.google.com/file/d/1jTfGjBBW4ijTq5H-YMg1OpGsQZA6gNAv/view?usp=sharing" target="_blank" rel="noopener">Restaurant menu</a>
           <a class="btn ghost" href="https://drive.google.com/file/d/1uc3nbXNztoheSCqsA2WJ_dqZwkpnF5kr/view?usp=sharing" target="_blank" rel="noopener">Massage menu</a>
+          <a class="btn ghost" href="https://mindobirdwatching.com/birdwatching-tours-mindo/">Our birdwatching tours</a>
         </div>
       </section>
     </main>
@@ -893,6 +1019,64 @@
     <div id="siteFooter"></div>
   </div>
 
+  <script>
+    (function () {
+      var carousel = document.querySelector('[data-carousel]');
+      if (!carousel) return;
+
+      var slides = Array.prototype.slice.call(carousel.querySelectorAll('.heroSlide'));
+      var dots = Array.prototype.slice.call(carousel.querySelectorAll('.carouselDot'));
+      var prev = carousel.querySelector('.carouselBtn.prev');
+      var next = carousel.querySelector('.carouselBtn.next');
+      var index = 0;
+      var timer = null;
+      var delay = 2500;
+
+      function render() {
+        slides.forEach(function (slide, i) {
+          slide.classList.toggle('is-active', i === index);
+        });
+        dots.forEach(function (dot, i) {
+          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+      }
+
+      function goTo(newIndex) {
+        index = (newIndex + slides.length) % slides.length;
+        render();
+      }
+
+      function nextSlide() { goTo(index + 1); }
+      function prevSlide() { goTo(index - 1); }
+
+      function start() {
+        stop();
+        timer = window.setInterval(nextSlide, delay);
+      }
+
+      function stop() {
+        if (timer) window.clearInterval(timer);
+      }
+
+      if (prev) prev.addEventListener('click', function () { prevSlide(); start(); });
+      if (next) next.addEventListener('click', function () { nextSlide(); start(); });
+
+      dots.forEach(function (dot, i) {
+        dot.addEventListener('click', function () {
+          goTo(i);
+          start();
+        });
+      });
+
+      carousel.addEventListener('mouseenter', stop);
+      carousel.addEventListener('mouseleave', start);
+      carousel.addEventListener('focusin', stop);
+      carousel.addEventListener('focusout', start);
+
+      render();
+      start();
+    })();
+  </script>
   <script src="/assets/js/site.js"></script>
 </body>
 </html>
