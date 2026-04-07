@@ -371,7 +371,47 @@
       flex-wrap: wrap;
       align-items:center;
     }
+    
+    body.activities-page .planGrid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+    body.activities-page .planCard{
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      text-decoration:none;
+      color:inherit;
+      min-height: 150px;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    body.activities-page .planCard:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0,0,0,.08);
+    }
+    body.activities-page .planCard h3{
+      margin: 0 0 8px;
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1.25;
+    }
+    body.activities-page .planCard p{
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
     @media (max-width: 980px){
+      body.activities-page .planGrid{ grid-template-columns: repeat(2, 1fr); }
       body.activities-page .grid{ grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 900px){
@@ -387,6 +427,7 @@
       body.activities-page .carouselViewport{ height: 220px; }
     }
     @media (max-width: 560px){
+      body.activities-page .planGrid{ grid-template-columns: 1fr; }
       body.activities-page .grid{ grid-template-columns: 1fr; }
       body.activities-page .act{ min-height: 232px; }
       body.activities-page .actTop{ padding: 12px 12px 6px; }
@@ -472,6 +513,36 @@
           <a class="actLink is-ready" href="/activities/nature-walk/" aria-label="Nature Walk"><article class="act"><div class="actTop"><div class="avatarWrap"><div class="avatar"><img src="/assets/images/pages/activities/MBW-Activities-21_nature_walk.jpg.jpg" alt="Nature walk in Mindo, Ecuador" loading="lazy"></div></div><div class="actMeta"><p class="actTitle">Nature Walk</p><p class="actSub">Take a relaxed guided walk through the cloud forest to enjoy birds, plants, butterflies, and the quiet beauty of Mindo at an easy pace.</p></div></div><div class="actBody"><div class="chips" aria-label="Nature Walk tags"><span class="chip">Nature</span><span class="chip">Easy</span><span class="chip view">View</span></div></div></article></a>
         </div>
 
+
+      <section class="section" aria-label="Plan your trip around Mindo activities">
+        <div class="sectionHead">
+          <h2>Plan your trip around Mindo activities</h2>
+          <p>Use these pages to move from a list of activities into a more practical itinerary with better timing, logistics, birdwatching, and evening planning.</p>
+        </div>
+
+        <div class="planGrid" style="margin-top:12px;">
+          <a class="planCard" href="/mindo-travel-guide/">
+            <h3>Mindo Travel Guide</h3>
+            <p>Structure your stay, combine activities intelligently, and build a smoother trip around your pace.</p>
+          </a>
+
+          <a class="planCard" href="/birdwatching-tours-mindo/">
+            <h3>Birdwatching Tours in Mindo</h3>
+            <p>Compare guided birding routes and turn general activity planning into a focused cloud forest experience.</p>
+          </a>
+
+          <a class="planCard" href="/how-to-get-to-mindo/">
+            <h3>How to Get to Mindo</h3>
+            <p>Resolve transport and arrival details first so the rest of your itinerary fits naturally.</p>
+          </a>
+
+          <a class="planCard" href="/mindo-night-walk/">
+            <h3>Mindo Night Walk</h3>
+            <p>Add an after-dark experience and explore the forest through nocturnal wildlife.</p>
+          </a>
+        </div>
+      </section>
+
         <div class="ctaStrip" aria-label="Reserve call to action">
           <p>Not sure which activity to choose? Tell us your dates, pace, and interests, and we will help you build the perfect mix of birdwatching, adventure, food, and cloud forest discovery.</p>
           <div class="actions" aria-label="Reserve buttons">
@@ -480,7 +551,8 @@
           </div>
         </div>
       </section>
-    </main>
+    
+</main>
 
     <div id="siteFooter"></div>
   </div>
