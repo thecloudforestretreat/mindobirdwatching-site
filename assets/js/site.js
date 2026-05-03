@@ -1,7 +1,7 @@
 /* /assets/js/site.js
    Mindo Bird Watching global site controller and analytics engine
    Updated: 2026-05-03
-   Production refinements added: device_type context and normalized label field
+   Production refinements added: device_type context, normalized label field, centralized analytics only
 
    Central responsibilities:
    - Load and initialize GA4 with G-1ZYLW22XWP
