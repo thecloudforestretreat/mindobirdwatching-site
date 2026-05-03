@@ -2,6 +2,7 @@
    Mindo Bird Watching global site controller and analytics engine
    Updated: 2026-05-03
    Option A architecture: full page context on every event, DebugView support, centralized analytics only
+   Page title fix: sends the native GA4 page_view through config so Realtime Pages and screens can populate
 
    Central responsibilities:
    - Load and initialize GA4 with G-1ZYLW22XWP
@@ -125,8 +126,14 @@
     if (!window.__mbwGa4Configured) {
       window.__mbwGa4Configured = true;
       window.gtag("js", new Date());
+
+      /*
+        Keep the native GA4 page_view enabled.
+        Realtime cards such as "Views by Page title and screen name" are populated from
+        the standard page_view event, while page_view_enhanced remains our custom audit event.
+      */
       window.gtag("config", GA_ID, {
-        send_page_view: false,
+        send_page_view: true,
         page_title: document.title || "",
         page_location: window.location.href,
         page_path: window.location.pathname || "/",
