@@ -301,7 +301,8 @@ html, body{ overflow-x: visible; }
 
 
 /* Crawlable language links (raw HTML fallback for EN/ES discovery) */
-.crawl-lang-links{
+.crawl-lang-links,
+.rawLangLinks{
   display:flex;
   gap:10px;
   align-items:center;
@@ -311,7 +312,8 @@ html, body{ overflow-x: visible; }
   font-size:13px;
 }
 
-.crawl-lang-links a{
+.crawl-lang-links a,
+.rawLangLinks a{
   color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -319,7 +321,8 @@ html, body{ overflow-x: visible; }
 }
 
 @media (max-width:900px){
-  .crawl-lang-links{
+  .crawl-lang-links,
+.rawLangLinks{
     justify-content:center;
     margin-top:8px;
   }
@@ -343,7 +346,7 @@ html, body{ overflow-x: visible; }
   margin-bottom: 14px;
 }
 
-/* IMPORTANT: remove container sizing/padding so Safari canâ€™t blow it up */
+/* IMPORTANT: remove container sizing/padding so Safari cannot blow it up */
 .footer-social a{
   display:inline-flex;
   align-items:center;
@@ -385,7 +388,7 @@ html, body{ overflow-x: visible; }
 }
 
 /* =========================================================
-   MBW Header Fix â€“ Desktop ES overlap fix (EN/ES vs Inicio)
+   MBW Header Fix - Desktop ES overlap fix (EN/ES vs Inicio)
    - Force real spacing so first nav pill cannot sit under lang
    - Keep dropdowns working
    ========================================================= */
@@ -413,7 +416,7 @@ html, body{ overflow-x: visible; }
     z-index: 2;
   }
 
-  /* âœ… THE ACTUAL FIX: push Inicio away from EN/ES on ES desktop */
+  /* Actual fix: push Inicio away from EN/ES on ES desktop */
   header.topbar[data-mbw-header][data-current-lang="es"] nav.nav > a.pill:first-child{
     margin-left: 12px; /* hard gap so it cannot overlap the lang pills */
   }
@@ -564,7 +567,7 @@ html, body{ overflow-x: visible; }
 }
 
 
-/* WhatsApp Smart CTA â€“ Forest Green Hover */
+/* WhatsApp Smart CTA - Forest Green Hover */
 .mbwWaBirdAction:hover{
   background: rgba(13, 89, 37, 0.06);
   color: #0D5925;
@@ -622,7 +625,8 @@ html, body{ overflow-x: visible; }
   box-shadow: var(--shadow);
 }
 
-.crawl-lang-links{
+.crawl-lang-links,
+.rawLangLinks{
   display: flex;
   gap: 10px;
   align-items: center;
@@ -632,7 +636,8 @@ html, body{ overflow-x: visible; }
   font-size: 13px;
 }
 
-.crawl-lang-links a{
+.crawl-lang-links a,
+.rawLangLinks a{
   color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1226,5 +1231,40 @@ html, body{ overflow-x: visible; }
 
   body{
     padding-bottom: 136px;
+  }
+}
+
+
+/* Crawlable language links (raw HTML fallback for EN/ES discovery) */
+.crawl-lang-links,
+.rawLangLinks{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-end;
+  margin-top:10px;
+  margin-bottom:0;
+  font-size:13px;
+}
+
+.crawl-lang-links a,
+.rawLangLinks a{
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 700;
+}
+
+.crawl-lang-links a[aria-current="page"],
+.rawLangLinks a[aria-current="page"]{
+  color: var(--forest);
+  font-weight: 900;
+}
+
+@media (max-width:900px){
+  .crawl-lang-links,
+  .rawLangLinks{
+    justify-content:center;
+    margin-top:8px;
   }
 }
