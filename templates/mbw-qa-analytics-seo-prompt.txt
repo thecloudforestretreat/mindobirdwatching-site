@@ -1,4 +1,6 @@
-MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS + SEO TEMPLATE v1
+MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS + SEO TEMPLATE v1.1
+
+Use this prompt when uploading an English page and its Spanish counterpart for MindoBirdWatching.com review, audit, or update.
 
 GOAL
 Audit and fully update the uploaded English and Spanish HTML pages so they are ready to go live. Return complete downloadable .txt files for both pages. Do not return snippets unless explicitly requested.
@@ -7,7 +9,7 @@ SITE STANDARD
 Analytics must be centralized through:
 /assets/js/site.js
 
-Do not add page-level GA4 scripts, page_view scripts, scroll tracking scripts, or click listener scripts.
+Do not add page-level GA4 scripts, page_view scripts, scroll tracking scripts, click listener scripts, or one-off analytics logic inside individual HTML pages.
 
 GA4 ID:
 G-1ZYLW22XWP
@@ -23,39 +25,108 @@ PAGE INFORMATION
 GLOBAL FILE REQUIREMENTS
 Confirm:
 - /assets/js/site.js is loaded exactly once
-- /assets/js/head.js does not duplicate GA4 or analytics logic
+- /assets/js/site.js loads and initializes GA4 using G-1ZYLW22XWP
+- /assets/js/site.js exposes window.gtag and window.mbwAnalyticsTrack
+- /assets/js/site.js sends page_view_enhanced once per page load
+- /assets/js/site.js sends scroll_depth at 25, 50, 75, and 90
+- /assets/js/site.js globally listens for [data-analytics-event] clicks
+- /assets/js/head.js does not load GA4
+- /assets/js/head.js does not create analytics click listeners
+- /assets/js/head.js is limited to head assets, icons, metadata fallbacks, fonts, and safe CSS loading
 - /assets/css/site.css is used for global styling where possible
 - Page-level CSS exists only when absolutely necessary
 - No duplicated analytics logic exists inside page HTML
+- No duplicated analytics logic exists inside /assets/js/head.js
+
+HEAD.JS STANDARD
+/assets/js/head.js may add:
+- header.css cache-busted URL
+- preconnects
+- fonts
+- favicon links
+- manifest
+- theme-color
+- safe default Open Graph fallback values
+
+/assets/js/head.js must not add:
+- Google Analytics or gtag loader
+- page_view_enhanced
+- scroll_depth tracking
+- click tracking
+- WhatsApp tracking
+- outbound tracking
+- form tracking
+- FAQ tracking
 
 LANGUAGE SWITCH STANDARD
-Every bilingual page must include a visible EN/ES switch with:
-- English link
-- Spanish link
-- lang attributes
-- hreflang attributes
-- aria-current on active language only
+Every bilingual page must include a visible EN/ES switch near the top of the page, ideally directly after #siteHeader and before main content.
+
+Use real raw HTML anchor tags. Do not rely only on JavaScript-injected language links.
+
+Required on both links:
+- href pointing to the correct live EN or ES URL
+- lang attribute
+- hreflang attribute
+- aria-current="page" only on the active language
 - data-analytics-event="language_switch_click"
+- data-analytics-label="English" or data-analytics-label="Español"
+- data-analytics-location="language_switch"
+- data-analytics-page-type="PAGE_TYPE"
 - data-analytics-target-language="en" or "es"
+
+Recommended class:
+rawLangLinks
+
+English page pattern:
+<div id="siteHeader" data-current-lang="en"></div>
+<nav class="rawLangLinks" aria-label="Language switch">
+  <a href="FULL_EN_URL" lang="en" hreflang="en" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="en">English</a>
+  <a href="FULL_ES_URL" lang="es" hreflang="es" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="es">Español</a>
+</nav>
+
+Spanish page pattern:
+<div id="siteHeader" data-current-lang="es"></div>
+<nav class="rawLangLinks" aria-label="Selector de idioma">
+  <a href="FULL_EN_URL" lang="en" hreflang="en" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="en">English</a>
+  <a href="FULL_ES_URL" lang="es" hreflang="es" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="es">Español</a>
+</nav>
+
+HEADER AND FOOTER STANDARD
+Every page should include:
+<div id="siteHeader" data-current-lang="en"></div>
+or
+<div id="siteHeader" data-current-lang="es"></div>
+
+And:
+<div id="siteFooter"></div>
+
+The include loader should appear exactly once and should inject /assets/js/site.js only once. If the page already has the approved loader, do not add a second direct site.js script tag.
 
 SEO QA
 Check:
 - Correct doctype and valid HTML structure
 - Correct html lang
 - Unique title
+- Existing title is preserved unless clearly wrong, duplicated, missing, or inconsistent with the page content
 - Meta description exists and is accurate
+- Existing meta description is preserved unless clearly wrong, duplicated, missing, or inconsistent with the page content
 - Canonical matches the live URL
 - hreflang EN points to English URL
 - hreflang ES points to Spanish URL
 - x-default points to English URL
-- og:title, og:description, og:url, og:image exist
-- Schema is valid and matches page content
+- og:title exists and matches or supports the page title
+- og:description exists and matches or supports the meta description
+- og:url matches canonical
+- og:image exists and uses a valid unaccented path
+- Schema is valid JSON-LD and matches page content
+- dateModified exists in updated schema when schema is edited
 - Breadcrumb schema URLs are correct
 - No placeholder values like {{...}}
 - No broken internal paths
-- No accidental English copy on Spanish page
+- No accidental English UI copy on Spanish page, except brand names and proper nouns
 - Spanish visible copy and metadata use correct accents
 - No accented characters in URLs, image paths, IDs, classes, schema URLs, JS identifiers, or data attributes
+- No accidental Spanish UI copy on English page, except language switch label "Español" and proper names
 
 ANALYTICS QA
 Confirm sitewide events are supported through /assets/js/site.js:
@@ -72,6 +143,33 @@ Confirm sitewide events are supported through /assets/js/site.js:
 - form_submit_attempt
 - form_submit_success
 - form_submit_error
+
+Analytics parameters expected where applicable:
+- page_type
+- page_language
+- page_path
+- page_url
+- page_title
+- canonical_url
+- device_type
+- cta_label
+- cta_location
+- link_text
+- link_url
+- link_domain
+- link_path
+- link_type
+- section_name
+- region
+- bird
+- tour
+- guide
+- experience_type
+- partner_name
+- form_name
+- error_message
+- scroll_percent
+- target_language
 
 REQUIRED DATA ATTRIBUTES
 Use where relevant:
@@ -144,6 +242,20 @@ Contact page:
 - email_click
 - phone_click
 
+Paid social / landing page:
+- primary_cta_click
+- secondary_cta_click
+- tour_cta_click
+- tour_booking_click
+- whatsapp_click
+- internal_link_click
+- outbound_link_click
+- faq_expand
+- form_start where a form exists
+- form_submit_attempt where a form exists
+- form_submit_success where a visible success state exists
+- form_submit_error where a visible error state exists
+
 Conversion Priority Scoring
 For this page, identify:
 - Primary CTA:
@@ -151,6 +263,8 @@ For this page, identify:
 - Most important internal links:
 - Most important outbound links:
 - WhatsApp CTA location:
+- Email link location, if any:
+- Phone link location, if any:
 - Form name, if any:
 - FAQ section, if any:
 
@@ -166,9 +280,29 @@ Check:
 - Shared layout classes are used where possible
 - No unnecessary inline styles
 - No unnecessary page-level style blocks
-- Language switch styling should come from global CSS
-- CTA/card/FAQ/reusable blocks should use global CSS where possible
+- Language switch styling comes from global CSS
+- CTA/card/FAQ/reusable blocks use global CSS where possible
+- Existing page-level CSS is preserved only when required for unique layout modules not available globally
 - If page-level CSS remains, explain exactly why
+
+TECHNICAL PATH AND ACCENT RULES
+Spanish pages must use correct Spanish accents in visible copy and metadata.
+
+Do not add accents to:
+- URLs
+- slugs
+- image paths
+- file paths
+- CSS class names
+- IDs
+- data attributes
+- schema URLs
+- JavaScript identifiers
+- analytics event names
+- page_type values
+- region IDs
+- location IDs
+- asset folder names
 
 FINAL QA CHECKLIST
 Confirm:
@@ -182,11 +316,14 @@ Confirm:
 - Schema URLs correct
 - Language switch functional and tracked
 - /assets/js/site.js loaded once
+- /assets/js/head.js does not load GA4
+- /assets/js/head.js does not contain analytics click listeners
 - No duplicate GA4
 - No duplicate analytics scripts
 - Important CTAs tracked
 - WhatsApp tracked
-- Email/phone tracked where present
+- Email tracked where present
+- Phone tracked where present
 - Internal links tracked or auto-trackable
 - Outbound links tracked or auto-trackable
 - FAQ tracked
