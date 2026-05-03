@@ -1,4 +1,443 @@
 /* /assets/js/site.js
+   Mindo Bird Watching global site controller and analytics engine
+   Updated: 2026-05-03
+   Production refinements added: device_type context and normalized label field
+
+   Central responsibilities:
+   - Load and initialize GA4 with G-1ZYLW22XWP
+   - Expose window.gtag and window.mbwAnalyticsTrack
+   - Send page_view_enhanced once per page load
+   - Send scroll_depth at 25, 50, 75, and 90 percent
+   - Listen globally for clicks on [data-analytics-event]
+   - Infer basic link analytics for ordinary links without data attributes
+   - Track language switch, CTAs, internal links, outbound links, WhatsApp, email, phone, FAQ, and forms
+   - Provide central form success/error hooks for custom forms
+   - Preserve MBW mobile drill-down menu and WhatsApp smart CTA behavior
+*/
+
+(function () {
+  "use strict";
+
+  var GA_ID = "G-1ZYLW22XWP";
+  var SCROLL_MILESTONES = [25, 50, 75, 90];
+  var sentScroll = {};
+  var startedForms = {};
+  var submittedForms = {};
+  var visibleFormStates = {};
+
+  function ready(fn) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+
+  function absUrl(value) {
+    try { return new URL(value || window.location.href, window.location.origin).href; }
+    catch (e) { return value || ""; }
+  }
+
+  function cleanText(value) {
+    return (value || "").toString().replace(/\s+/g, " ").trim();
+  }
+
+  function safeDataset(el, key) {
+    if (!el || !el.dataset) return "";
+    return el.dataset[key] || "";
+  }
+
+  function getMeta(name) {
+    var el = document.querySelector('meta[name="' + name + '"]') || document.querySelector('meta[property="' + name + '"]');
+    return el ? (el.getAttribute("content") || "") : "";
+  }
+
+  function getCanonical() {
+    var el = document.querySelector('link[rel="canonical"]');
+    return el ? absUrl(el.getAttribute("href") || "") : window.location.href;
+  }
+
+  function getPageType() {
+    return document.body ? (document.body.getAttribute("data-page-type") || document.body.getAttribute("data-analytics-page-type") || "unknown") : "unknown";
+  }
+
+  function getPageLanguage() {
+    var htmlLang = document.documentElement ? document.documentElement.getAttribute("lang") : "";
+    return document.body ? (document.body.getAttribute("data-page-language") || htmlLang || "unknown") : (htmlLang || "unknown");
+  }
+
+  function getDeviceType() {
+    var width = window.innerWidth || (document.documentElement && document.documentElement.clientWidth) || 0;
+    if (width > 0 && width < 768) return "mobile";
+    if (width >= 768 && width < 1024) return "tablet";
+    return "desktop";
+  }
+
+  function basePayload(extra) {
+    var payload = {
+      page_type: getPageType(),
+      page_language: getPageLanguage(),
+      page_path: window.location.pathname,
+      page_url: window.location.href,
+      page_title: document.title || "",
+      canonical_url: getCanonical(),
+      device_type: getDeviceType()
+    };
+
+    if (extra) {
+      Object.keys(extra).forEach(function (key) {
+        if (extra[key] !== undefined && extra[key] !== null && extra[key] !== "") payload[key] = extra[key];
+      });
+    }
+
+    return payload;
+  }
+
+  function ensureGtag() {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+
+    if (!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=' + GA_ID + '"]')) {
+      var s = document.createElement("script");
+      s.async = true;
+      s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+      (document.head || document.documentElement).appendChild(s);
+    }
+
+    if (!window.__mbwGa4Configured) {
+      window.__mbwGa4Configured = true;
+      window.gtag("js", new Date());
+      window.gtag("config", GA_ID, { send_page_view: false });
+    }
+  }
+
+  function sendEvent(name, payload) {
+    if (!name) return;
+    ensureGtag();
+    window.gtag("event", name, basePayload(payload || {}));
+  }
+
+  window.mbwAnalyticsTrack = sendEvent;
+
+  window.mbwAnalyticsFormSuccess = function (formName, extra) {
+    var payload = extra || {};
+    payload.form_name = formName || payload.form_name || "form";
+    sendEvent("form_submit_success", payload);
+  };
+
+  window.mbwAnalyticsFormError = function (formName, errorMessage, extra) {
+    var payload = extra || {};
+    payload.form_name = formName || payload.form_name || "form";
+    payload.error_message = errorMessage || payload.error_message || "Form submission error";
+    sendEvent("form_submit_error", payload);
+  };
+
+  function isSameHost(url) {
+    try { return new URL(url, window.location.origin).hostname === window.location.hostname; }
+    catch (e) { return false; }
+  }
+
+  function classifyLink(a) {
+    var href = a.getAttribute("href") || "";
+    var lower = href.toLowerCase();
+
+    if (!href || href.charAt(0) === "#") return "anchor";
+    if (lower.indexOf("wa.me/") !== -1 || lower.indexOf("api.whatsapp.com") !== -1 || lower.indexOf("whatsapp://") === 0) return "whatsapp";
+    if (lower.indexOf("mailto:") === 0) return "email";
+    if (lower.indexOf("tel:") === 0) return "phone";
+    if (isSameHost(href)) return "internal";
+    return "outbound";
+  }
+
+  function inferLinkEvent(a) {
+    var linkType = classifyLink(a);
+    if (linkType === "whatsapp") return "whatsapp_click";
+    if (linkType === "email") return "email_click";
+    if (linkType === "phone") return "phone_click";
+    if (linkType === "internal" || linkType === "anchor") return "internal_link_click";
+    if (linkType === "outbound") return "outbound_link_click";
+    return "link_click";
+  }
+
+  function payloadFromElement(el) {
+    var d = el.dataset || {};
+    var label = d.analyticsLabel || cleanText(el.textContent) || el.getAttribute("aria-label") || el.getAttribute("title") || "";
+    var payload = {
+      label: label,
+      event_label: label,
+      cta_label: d.analyticsLabel,
+      cta_location: d.analyticsLocation,
+      link_text: label,
+      section_name: d.analyticsSection,
+      page_type: d.analyticsPageType || getPageType(),
+      region: d.analyticsRegion,
+      bird_name: d.analyticsBird,
+      tour_name: d.analyticsTour,
+      guide_name: d.analyticsGuide,
+      experience_type: d.analyticsExperience,
+      partner_name: d.analyticsPartner,
+      form_name: d.analyticsForm,
+      target_language: d.analyticsTargetLanguage
+    };
+
+    if (el.tagName && el.tagName.toLowerCase() === "a") {
+      payload.link_url = absUrl(el.getAttribute("href") || "");
+      payload.link_type = classifyLink(el);
+    }
+
+    return payload;
+  }
+
+  function trackAttributedClick(e) {
+    var el = e.target && e.target.closest ? e.target.closest("[data-analytics-event]") : null;
+    if (!el) return false;
+    sendEvent(el.getAttribute("data-analytics-event"), payloadFromElement(el));
+    return true;
+  }
+
+  function trackUnattributedLink(e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) return;
+    if (a.closest("[data-analytics-event]")) return;
+
+    var eventName = inferLinkEvent(a);
+    var payload = payloadFromElement(a);
+    payload.event_label = cleanText(a.textContent) || a.getAttribute("aria-label") || a.getAttribute("title") || payload.link_url;
+    payload.label = payload.event_label;
+    payload.link_text = payload.event_label;
+    sendEvent(eventName, payload);
+  }
+
+  function initCustomFaqClickTracking() {
+    if (document.__mbwCustomFaqBound) return;
+    document.__mbwCustomFaqBound = true;
+
+    document.addEventListener("click", function (e) {
+      var el = e.target && e.target.closest ? e.target.closest("[data-faq-question], .faq-question, .faq-toggle, .faq-card, .faq-item button, [aria-controls][aria-expanded]") : null;
+      if (!el) return;
+      if (el.closest("[data-analytics-event]")) return;
+      if (el.tagName && el.tagName.toLowerCase() === "a") return;
+
+      var expanded = el.getAttribute("aria-expanded");
+      if (expanded === "false") return;
+
+      var faqLabel = cleanText(el.textContent) || el.getAttribute("aria-label") || "FAQ expanded";
+      sendEvent("faq_expand", {
+        label: faqLabel,
+        event_label: faqLabel,
+        section_name: "faq"
+      });
+    }, true);
+  }
+
+  function trackPageView() {
+    if (window.__mbwPageViewEnhancedSent) return;
+    window.__mbwPageViewEnhancedSent = true;
+    sendEvent("page_view_enhanced", {
+      meta_description: getMeta("description"),
+      og_url: getMeta("og:url"),
+      referrer: document.referrer || "",
+      viewport_width: window.innerWidth || 0,
+      viewport_height: window.innerHeight || 0
+    });
+  }
+
+  function getScrollPercent() {
+    var doc = document.documentElement;
+    var body = document.body;
+    var scrollTop = window.pageYOffset || doc.scrollTop || (body && body.scrollTop) || 0;
+    var scrollHeight = Math.max(
+      body ? body.scrollHeight : 0,
+      body ? body.offsetHeight : 0,
+      doc.clientHeight,
+      doc.scrollHeight,
+      doc.offsetHeight
+    );
+    var winHeight = window.innerHeight || doc.clientHeight || 0;
+    var trackLength = Math.max(scrollHeight - winHeight, 1);
+    return Math.min(100, Math.round((scrollTop / trackLength) * 100));
+  }
+
+  function checkScrollDepth() {
+    var pct = getScrollPercent();
+    SCROLL_MILESTONES.forEach(function (m) {
+      if (!sentScroll[m] && pct >= m) {
+        sentScroll[m] = true;
+        sendEvent("scroll_depth", { scroll_percent: m });
+      }
+    });
+  }
+
+  function initScrollTracking() {
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function () {
+        ticking = false;
+        checkScrollDepth();
+      });
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    checkScrollDepth();
+  }
+
+  function initNativeDetailsFaqTracking() {
+    document.addEventListener("toggle", function (e) {
+      var details = e.target;
+      if (!details || details.tagName !== "DETAILS" || !details.open) return;
+      if (details.getAttribute("data-analytics-event")) return;
+      var summary = details.querySelector("summary");
+      var faqLabel = summary ? cleanText(summary.textContent) : "FAQ expanded";
+      sendEvent("faq_expand", {
+        label: faqLabel,
+        event_label: faqLabel,
+        section_name: "faq"
+      });
+    }, true);
+  }
+
+  function getFormName(form) {
+    return form.getAttribute("data-analytics-form") || form.getAttribute("name") || form.getAttribute("id") || "form";
+  }
+
+  function formPayload(form, extra) {
+    var payload = extra || {};
+    payload.form_name = getFormName(form);
+    payload.section_name = safeDataset(form, "analyticsSection") || payload.section_name;
+    return payload;
+  }
+
+  function initFormTracking() {
+    document.addEventListener("focusin", function (e) {
+      var field = e.target;
+      if (!field || !field.closest) return;
+      var form = field.closest("form");
+      if (!form) return;
+      var name = getFormName(form);
+      if (startedForms[name]) return;
+      startedForms[name] = true;
+      sendEvent("form_start", formPayload(form));
+    });
+
+    document.addEventListener("submit", function (e) {
+      var form = e.target;
+      if (!form || form.tagName !== "FORM") return;
+      var name = getFormName(form);
+      submittedForms[name] = Date.now();
+
+      var explicit = form.getAttribute("data-analytics-event");
+      if (explicit) {
+        sendEvent(explicit, payloadFromElement(form));
+        return;
+      }
+      sendEvent("form_submit_attempt", formPayload(form));
+    }, true);
+
+    document.addEventListener("mbw:form-success", function (e) {
+      var detail = e.detail || {};
+      window.mbwAnalyticsFormSuccess(detail.form_name || detail.formName || "form", detail);
+    });
+
+    document.addEventListener("mbw:form-error", function (e) {
+      var detail = e.detail || {};
+      window.mbwAnalyticsFormError(detail.form_name || detail.formName || "form", detail.error_message || detail.errorMessage || "Form submission error", detail);
+    });
+  }
+
+  function elementIsVisible(el) {
+    if (!el) return false;
+    var style = window.getComputedStyle ? window.getComputedStyle(el) : null;
+    if (style && (style.display === "none" || style.visibility === "hidden" || style.opacity === "0")) return false;
+    return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+  }
+
+  function detectVisibleFormStates() {
+    var successSelectors = [
+      "[data-form-success]",
+      ".form-success",
+      ".success-message",
+      ".contact-success",
+      "[role='status']"
+    ];
+
+    var errorSelectors = [
+      "[data-form-error]",
+      ".form-error",
+      ".error-message",
+      ".contact-error",
+      "[role='alert']"
+    ];
+
+    successSelectors.forEach(function (sel) {
+      Array.prototype.slice.call(document.querySelectorAll(sel)).forEach(function (el) {
+        if (!elementIsVisible(el)) return;
+        var formName = el.getAttribute("data-analytics-form") || el.getAttribute("data-form-success") || "form";
+        var key = "success:" + formName + ":" + cleanText(el.textContent);
+        if (visibleFormStates[key]) return;
+        visibleFormStates[key] = true;
+        var successLabel = cleanText(el.textContent) || "Form success";
+        sendEvent("form_submit_success", {
+          label: successLabel,
+          form_name: formName,
+          event_label: successLabel
+        });
+      });
+    });
+
+    errorSelectors.forEach(function (sel) {
+      Array.prototype.slice.call(document.querySelectorAll(sel)).forEach(function (el) {
+        if (!elementIsVisible(el)) return;
+        var formName = el.getAttribute("data-analytics-form") || el.getAttribute("data-form-error") || "form";
+        var msg = cleanText(el.textContent) || "Form submission error";
+        var key = "error:" + formName + ":" + msg;
+        if (visibleFormStates[key]) return;
+        visibleFormStates[key] = true;
+        sendEvent("form_submit_error", {
+          label: msg,
+          form_name: formName,
+          error_message: msg,
+          event_label: msg
+        });
+      });
+    });
+  }
+
+  function initVisibleFormStateObserver() {
+    detectVisibleFormStates();
+    if (!window.MutationObserver || window.__mbwFormStateObserver) return;
+    window.__mbwFormStateObserver = new MutationObserver(function () {
+      detectVisibleFormStates();
+    });
+    window.__mbwFormStateObserver.observe(document.documentElement || document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "style", "hidden", "aria-hidden"]
+    });
+  }
+
+  function bootAnalytics() {
+    ensureGtag();
+    trackPageView();
+    initScrollTracking();
+    initNativeDetailsFaqTracking();
+    initCustomFaqClickTracking();
+    initFormTracking();
+    initVisibleFormStateObserver();
+
+    if (!document.__mbwAnalyticsClickBound) {
+      document.__mbwAnalyticsClickBound = true;
+      document.addEventListener("click", function (e) {
+        if (trackAttributedClick(e)) return;
+        trackUnattributedLink(e);
+      }, true);
+    }
+  }
+
+  ready(bootAnalytics);
+})();
+
+
+/* /assets/js/site.js
    MBW mobile menu controller (drill-down) - STABLE
    Works even if:
    - header is <div class="topbar"> (not <header>)
@@ -166,9 +605,14 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
+
+  if (!window.__mbwHeaderObserver && "MutationObserver" in window) {
+    window.__mbwHeaderObserver = new MutationObserver(function () { boot(); });
+    window.__mbwHeaderObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  }
 })();
 
-/* WhatsApp Smart CTA (MBW) v3 */
+/* WhatsApp Smart CTA (MBW) v4 */
 
 (function () {
   function getInlineWaQuestions() {
@@ -190,6 +634,10 @@
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
+  function cleanText(value) {
+    return (value || "").toString().replace(/\s+/g, " ").trim();
+  }
+
   function isMobileLike() {
     var byWidth = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
     var byPointer = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
@@ -197,15 +645,13 @@
     return !!(byWidth || byPointer || byTouch);
   }
 
-  
-
   function getPageLabel() {
     var t = document.title || "";
-    // Remove trailing site name: " | Mindo Bird Watching"
     t = t.replace(/\s*\|\s*Mindo Bird Watching\s*$/i, "");
     return t.trim();
   }
-function setImgForViewport(root) {
+
+  function setImgForViewport(root) {
     var img = qs(".mbwWaBirdImg", root);
     if (!img) return;
 
@@ -225,8 +671,6 @@ function setImgForViewport(root) {
     var backdrop = qs(".mbwWaBirdBackdrop", root);
     var actions = qsa(".mbwWaBirdAction", root);
 
-    
-    // Apply per-page questions from inline JSON in the footer include
     (function applyPerPageQuestions() {
       if (!actions || actions.length < 4) return;
       var data = getInlineWaQuestions();
@@ -250,7 +694,8 @@ function setImgForViewport(root) {
       if (row.t3) actions[2].setAttribute("data-wa-template", row.t3);
       if (row.t4) actions[3].setAttribute("data-wa-template", row.t4);
     })();
-if (!btn) return;
+
+    if (!btn) return;
 
     function buildLink(template) {
       var numRaw = (root.getAttribute("data-wa-number") || "").toString();
@@ -272,9 +717,31 @@ if (!btn) return;
       btn.setAttribute("aria-expanded", "false");
     }
 
-    function goWhatsApp(template) {
+    function trackWhatsApp(label, location, link) {
+      if (window.mbwAnalyticsTrack) {
+        window.mbwAnalyticsTrack("whatsapp_click", {
+          label: label,
+          event_label: label,
+          cta_label: label,
+          cta_location: location,
+          link_url: link,
+          link_type: "whatsapp"
+        });
+      }
+    }
+
+    function getPrimaryTemplate() {
+      var data = getInlineWaQuestions();
+      var p = normalizePath(window.location.pathname || "/");
+      var row = (data && data.pages) ? data.pages[p] : null;
+      if (!row && data) row = isSpanishPath(p) ? data.default_es : data.default_en;
+      return (row && row.t1) ? row.t1 : ("Hi! I am interested in:\n" + (getPageLabel() || "a birding tour") + "\n\nPage: {url}");
+    }
+
+    function goWhatsApp(template, label, location) {
       var link = buildLink(template);
       if (!link) return;
+      trackWhatsApp(label || "WhatsApp smart CTA", location || "floating_whatsapp", link);
       window.location.href = link;
     }
 
@@ -282,12 +749,7 @@ if (!btn) return;
       e.preventDefault();
 
       if (isMobileLike()) {
-        var dataM = getInlineWaQuestions();
-        var pM = normalizePath(window.location.pathname || "/");
-        var rowM = (dataM && dataM.pages) ? dataM.pages[pM] : null;
-        if (!rowM && dataM) rowM = isSpanishPath(pM) ? dataM.default_es : dataM.default_en;
-        var tM = (rowM && rowM.t1) ? rowM.t1 : ("Hi! I am interested in:\n" + (getPageLabel() || "a birding tour") + "\n\nPage: {url}");
-        goWhatsApp(tM);
+        goWhatsApp(getPrimaryTemplate(), "WhatsApp smart CTA", "floating_whatsapp_mobile");
         return;
       }
 
@@ -296,6 +758,7 @@ if (!btn) return;
     }
 
     setImgForViewport(root);
+    window.addEventListener("resize", function () { setImgForViewport(root); }, { passive: true });
 
     btn.addEventListener("click", onBtnClick, { passive: false });
 
@@ -315,12 +778,7 @@ if (!btn) return;
         e.stopPropagation();
 
         if (isMobileLike()) {
-          var dataMA = getInlineWaQuestions();
-          var pMA = normalizePath(window.location.pathname || "/");
-          var rowMA = (dataMA && dataMA.pages) ? dataMA.pages[pMA] : null;
-          if (!rowMA && dataMA) rowMA = isSpanishPath(pMA) ? dataMA.default_es : dataMA.default_en;
-          var tMA = (rowMA && rowMA.t1) ? rowMA.t1 : ("Hi! I am interested in:\n" + (getPageLabel() || "a birding tour") + "\n\nPage: {url}");
-          goWhatsApp(tMA);
+          goWhatsApp(getPrimaryTemplate(), "WhatsApp smart CTA", "floating_whatsapp_mobile");
           return;
         }
 
@@ -328,6 +786,7 @@ if (!btn) return;
         var link = buildLink(template);
         if (!link) return;
 
+        trackWhatsApp(cleanText(a.textContent) || "WhatsApp smart CTA option", "floating_whatsapp_panel", link);
         closePanel();
         window.open(link, "_blank", "noopener,noreferrer");
       }, { passive: false });
@@ -336,8 +795,6 @@ if (!btn) return;
 
   function boot() { qsa(".mbwWaBirdFab").forEach(init); }
 
-  // Footer is injected by includes.js on many pages, so the widget may appear AFTER DOMContentLoaded.
-  // Run boot multiple times and observe DOM changes to initialize as soon as it appears.
   function bootSoon() {
     boot();
     window.setTimeout(boot, 400);
@@ -364,17 +821,25 @@ if (!btn) return;
     document.querySelectorAll(sel).forEach(function (n) { n.remove(); });
   }
 
-  // Remove legacy widgets from earlier attempts
-  removeAll(".mbwWaFab"); // old namespace
+  function cleanup() {
+    removeAll(".mbwWaFab");
 
-  // If multiple bird widgets exist, keep ONLY the last one
-  var birds = Array.prototype.slice.call(document.querySelectorAll(".mbwWaBirdFab"));
-  if (birds.length > 1) {
-    birds.slice(0, birds.length - 1).forEach(function (n) { n.remove(); });
+    var birds = Array.prototype.slice.call(document.querySelectorAll(".mbwWaBirdFab"));
+    if (birds.length > 1) {
+      birds.slice(0, birds.length - 1).forEach(function (n) { n.remove(); });
+    }
+
+    removeAll(".mbwWaFabPanel");
+    removeAll(".mbwWaFabBackdrop");
+    removeAll(".mbwWaFabActions");
   }
 
-  // Remove any leftover legacy UI parts
-  removeAll(".mbwWaFabPanel");
-  removeAll(".mbwWaFabBackdrop");
-  removeAll(".mbwWaFabActions");
+  cleanup();
+  window.setTimeout(cleanup, 500);
+  window.setTimeout(cleanup, 1500);
+
+  if (!window.__mbwWaCleanupObserver && "MutationObserver" in window) {
+    window.__mbwWaCleanupObserver = new MutationObserver(function () { cleanup(); });
+    window.__mbwWaCleanupObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  }
 })();
