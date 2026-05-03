@@ -1,7 +1,7 @@
 /* /assets/js/site.js
    Mindo Bird Watching global site controller and analytics engine
    Updated: 2026-05-03
-   Production refinements added: device_type context, normalized label field, centralized analytics only
+   Option A architecture: full page context on every event, DebugView support, centralized analytics only
 
    Central responsibilities:
    - Load and initialize GA4 with G-1ZYLW22XWP
@@ -11,7 +11,8 @@
    - Listen globally for clicks on [data-analytics-event]
    - Infer basic link analytics for ordinary links without data attributes
    - Track language switch, CTAs, internal links, outbound links, WhatsApp, email, phone, FAQ, and forms
-   - Provide central form success/error hooks for custom forms
+   - Send page_title, page_path, page_url, page_location, page_type, page_language, canonical_url, and device_type with every event
+   - Add debug_mode when localStorage.debug_mode is true, URL has ?debug_mode=true, or URL has ?mbw_debug=true
    - Preserve MBW mobile drill-down menu and WhatsApp smart CTA behavior
 */
 
@@ -22,7 +23,6 @@
   var SCROLL_MILESTONES = [25, 50, 75, 90];
   var sentScroll = {};
   var startedForms = {};
-  var submittedForms = {};
   var visibleFormStates = {};
 
   function ready(fn) {
@@ -55,12 +55,19 @@
   }
 
   function getPageType() {
-    return document.body ? (document.body.getAttribute("data-page-type") || document.body.getAttribute("data-analytics-page-type") || "unknown") : "unknown";
+    if (!document.body) return "unknown";
+    return document.body.getAttribute("data-page-type") ||
+      document.body.getAttribute("data-analytics-page-type") ||
+      "unknown";
   }
 
   function getPageLanguage() {
     var htmlLang = document.documentElement ? document.documentElement.getAttribute("lang") : "";
-    return document.body ? (document.body.getAttribute("data-page-language") || htmlLang || "unknown") : (htmlLang || "unknown");
+    if (!document.body) return htmlLang || "unknown";
+    return document.body.getAttribute("data-page-language") ||
+      document.body.getAttribute("data-analytics-page-language") ||
+      htmlLang ||
+      "unknown";
   }
 
   function getDeviceType() {
@@ -70,16 +77,30 @@
     return "desktop";
   }
 
-  function basePayload(extra) {
-    var payload = {
+  function getDebugMode() {
+    var search = window.location.search || "";
+    if (/[?&](debug_mode|mbw_debug)=true(&|$)/i.test(search)) return true;
+    try { return window.localStorage && window.localStorage.getItem("debug_mode") === "true"; }
+    catch (e) { return false; }
+  }
+
+  function getPageContext() {
+    return {
+      page_title: document.title || "",
+      page_path: window.location.pathname || "/",
+      page_url: window.location.href,
+      page_location: window.location.href,
+      canonical_url: getCanonical(),
       page_type: getPageType(),
       page_language: getPageLanguage(),
-      page_path: window.location.pathname,
-      page_url: window.location.href,
-      page_title: document.title || "",
-      canonical_url: getCanonical(),
       device_type: getDeviceType()
     };
+  }
+
+  function basePayload(extra) {
+    var payload = getPageContext();
+
+    if (getDebugMode()) payload.debug_mode = true;
 
     if (extra) {
       Object.keys(extra).forEach(function (key) {
@@ -104,7 +125,13 @@
     if (!window.__mbwGa4Configured) {
       window.__mbwGa4Configured = true;
       window.gtag("js", new Date());
-      window.gtag("config", GA_ID, { send_page_view: false });
+      window.gtag("config", GA_ID, {
+        send_page_view: false,
+        page_title: document.title || "",
+        page_location: window.location.href,
+        page_path: window.location.pathname || "/",
+        debug_mode: getDebugMode() || undefined
+      });
     }
   }
 
@@ -115,6 +142,15 @@
   }
 
   window.mbwAnalyticsTrack = sendEvent;
+  window.mbwAnalyticsContext = getPageContext;
+
+  window.mbwAnalyticsDebugTest = function () {
+    sendEvent("debug_test_event", {
+      label: "Debug test event",
+      event_label: "Debug test event",
+      test_source: "window.mbwAnalyticsDebugTest"
+    });
+  };
 
   window.mbwAnalyticsFormSuccess = function (formName, extra) {
     var payload = extra || {};
@@ -162,19 +198,20 @@
     var payload = {
       label: label,
       event_label: label,
-      cta_label: d.analyticsLabel,
-      cta_location: d.analyticsLocation,
+      cta_label: d.analyticsLabel || label,
+      cta_location: d.analyticsLocation || "",
       link_text: label,
-      section_name: d.analyticsSection,
+      section_name: d.analyticsSection || "",
       page_type: d.analyticsPageType || getPageType(),
-      region: d.analyticsRegion,
-      bird_name: d.analyticsBird,
-      tour_name: d.analyticsTour,
-      guide_name: d.analyticsGuide,
-      experience_type: d.analyticsExperience,
-      partner_name: d.analyticsPartner,
-      form_name: d.analyticsForm,
-      target_language: d.analyticsTargetLanguage
+      page_language: d.analyticsPageLanguage || getPageLanguage(),
+      region: d.analyticsRegion || "",
+      bird_name: d.analyticsBird || "",
+      tour_name: d.analyticsTour || "",
+      guide_name: d.analyticsGuide || "",
+      experience_type: d.analyticsExperience || "",
+      partner_name: d.analyticsPartner || "",
+      form_name: d.analyticsForm || "",
+      target_language: d.analyticsTargetLanguage || ""
     };
 
     if (el.tagName && el.tagName.toLowerCase() === "a") {
@@ -321,8 +358,6 @@
     document.addEventListener("submit", function (e) {
       var form = e.target;
       if (!form || form.tagName !== "FORM") return;
-      var name = getFormName(form);
-      submittedForms[name] = Date.now();
 
       var explicit = form.getAttribute("data-analytics-event");
       if (explicit) {
@@ -435,7 +470,6 @@
 
   ready(bootAnalytics);
 })();
-
 
 /* /assets/js/site.js
    MBW mobile menu controller (drill-down) - STABLE
