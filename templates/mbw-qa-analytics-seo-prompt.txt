@@ -1,4 +1,4 @@
-MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS TEMPLATE v1
+MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS TEMPLATE v2
 Strict Production Mode
 
 Use this prompt when uploading an English page and its Spanish counterpart for mindobirdwatching.com. The goal is to audit and fully update both HTML files so they are ready to go live. Return complete downloadable .txt files for both pages. Do not return partial snippets unless explicitly requested.
@@ -35,7 +35,11 @@ Head asset helpers must remain in:
 Shared styling should remain in:
 /assets/css/site.css
 /assets/css/header.css
-/assets/css/footer.css
+
+Important CSS note:
+- Do NOT reference /assets/css/footer.css unless that file exists in the live repository.
+- Current approved CSS stack for Mindo Bird Watching is header.css + site.css only.
+- Footer styles should be handled by site.css unless the site architecture intentionally adds a real footer.css file later.
 
 Page files should not duplicate analytics logic for:
 - GA4 loading
@@ -48,7 +52,7 @@ Page files should not duplicate analytics logic for:
 
 head.js responsibilities only:
 - shared head assets
-- cache-busted header.css
+- cache-busted header.css and site.css if used by the global architecture
 - font preconnects and font stylesheet
 - favicon, Apple touch icon, manifest
 - safe default metadata fallbacks only when missing
@@ -75,6 +79,15 @@ Expected: "function"
 
 window.dataLayer
 Expected: Array with GA4 entries
+
+gtag('event', 'test_event')
+Expected: test_event appears in GA4 DebugView or Realtime events within seconds after debug mode is enabled.
+
+Debug mode check:
+localStorage.setItem('debug_mode', 'true')
+gtag('set', 'debug_mode', true)
+gtag('event', 'debug_test_event')
+Expected: debug_test_event appears in GA4 DebugView. If Realtime works but DebugView does not, do not fail page analytics automatically. Instead, mark DebugView as a GA4/debug configuration issue and confirm Realtime event collection.
 
 PAGE FILE REQUIREMENTS
 Each page should provide only:
@@ -140,13 +153,17 @@ GLOBAL CSS STANDARD
 Use global CSS whenever possible:
 
 <link rel="stylesheet" href="/assets/css/header.css">
-<link rel="stylesheet" href="/assets/css/footer.css">
 <link rel="stylesheet" href="/assets/css/site.css">
+
+Do NOT add this unless the file exists live:
+<link rel="stylesheet" href="/assets/css/footer.css">
 
 For special templates, use approved global CSS modules if they exist. Do not add page-level CSS unless the page has a unique module that cannot be handled globally.
 
 CSS QA rules:
 - Prefer shared classes from site.css
+- Preserve header behavior in header.css
+- Do not reference footer.css unless it exists in the repository
 - Remove duplicate page-level styles when global classes already cover them
 - Preserve page-level CSS only when required for unique layout or component behavior
 - Do not modify global CSS unless explicitly requested
@@ -349,8 +366,27 @@ Tracked elements should use relevant attributes:
 - data-analytics-form
 - data-analytics-target-language
 
+GA4 REPORTING FIELD STANDARD
+Primary reporting field for GA4 Explorations:
+- event_label
+
+Supporting fields:
+- label
+- cta_label
+- link_text
+- link_url
+- link_type
+- cta_location
+- section_name
+
+Rules:
+- data-analytics-label should be mapped by site.js into event_label and label.
+- CTA events should also include cta_label when appropriate.
+- Link events should include link_text, link_url, and link_type.
+- Keep data attributes readable and consistent across EN and ES pages.
+
 ANALYTICS PARAMETERS TO READ IN GA4
-The analytics implementation should make it possible to read these dimensions and metrics in GA4, DebugView, and Explorations.
+The analytics implementation should make it possible to read these dimensions and metrics in GA4, DebugView, Realtime, and Explorations.
 
 Core page metrics:
 - page_view_enhanced count
@@ -384,6 +420,7 @@ Navigation metrics:
 - link_type
 - cta_label
 - cta_location
+- event_label
 
 Conversion and contact metrics:
 - primary_cta_click count
@@ -489,12 +526,13 @@ When updating:
 2. Preserve SEO titles and descriptions unless definitely wrong or harmful.
 3. Preserve image URLs unless broken or technically incorrect.
 4. Use global CSS wherever possible.
-5. Add or repair only missing or incorrect standards.
-6. Remove duplicate or conflicting page-level analytics scripts.
-7. Do not add analytics logic to the page.
-8. Do not add GA4 to head.js.
-9. Never add accents to technical strings.
-10. Return complete downloadable .txt files, not snippets.
+5. Do not add /assets/css/footer.css unless the file exists live.
+6. Add or repair only missing or incorrect standards.
+7. Remove duplicate or conflicting page-level analytics scripts.
+8. Do not add analytics logic to the page.
+9. Do not add GA4 to head.js.
+10. Never add accents to technical strings.
+11. Return complete downloadable .txt files, not snippets.
 
 MANDATORY TRACKING PASS
 Before handoff:
@@ -502,6 +540,7 @@ Before handoff:
 - Add exactly one compliant rawLangLinks block.
 - Add full language_switch_click attributes.
 - Ensure site.js is loaded.
+- Ensure head.js does not initialize analytics.
 - Ensure no page-level GA4 or click tracking conflicts exist.
 - Add analytics attributes to important CTAs.
 - Add analytics attributes to ordinary internal links.
@@ -544,6 +583,7 @@ Confirm:
 - [ ] No duplicate page-level analytics script exists
 - [ ] No duplicate simple site.js script exists
 - [ ] Global CSS is used where possible
+- [ ] CSS references do not include missing /assets/css/footer.css
 - [ ] Page-level CSS is removed unless necessary
 - [ ] Important CTAs are tracked
 - [ ] Important internal links are tracked
