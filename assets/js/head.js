@@ -1,16 +1,19 @@
 /* /assets/js/head.js
-   Mindo Bird Watching head helper
+   Mindo Bird Watching global head asset helper
    Updated: 2026-05-03
 
    Responsibilities:
-   - Load shared head assets that are safe to inject globally
-   - Add favicon, manifest, theme color, default Open Graph fallback metadata
-   - Cache-bust header.css from one central place
+   - Load shared head assets only
+   - Apply cache-busted header.css
+   - Add font preconnects and font stylesheet
+   - Add favicon, Apple touch icon, and manifest links
+   - Add safe default metadata fallbacks only when missing
 
    Important:
-   - Do not load GA4 here.
-   - Do not create click listeners here.
-   - All analytics must live in /assets/js/site.js.
+   - Do NOT load Google Analytics here
+   - Do NOT initialize gtag here
+   - Do NOT add analytics click listeners here
+   - All analytics must remain centralized in /assets/js/site.js
 */
 
 (function () {
@@ -19,7 +22,7 @@
   var HEAD = document.head || document.getElementsByTagName("head")[0];
   if (!HEAD) return;
 
-  var VERSION = "20260503-live-ready";
+  var VERSION = "20260503-head-clean";
 
   function addLink(rel, href, extra) {
     if (!href) return null;
@@ -57,41 +60,50 @@
     if (isProperty) meta.setAttribute("property", nameOrProperty);
     else meta.setAttribute("name", nameOrProperty);
     meta.setAttribute("content", content);
+
     HEAD.appendChild(meta);
     return meta;
   }
 
-  function stylesheetHrefContains(path) {
+  function hasStylesheetContaining(path) {
     var links = HEAD.querySelectorAll('link[rel="stylesheet"]');
     for (var i = 0; i < links.length; i += 1) {
-      if ((links[i].href || "").indexOf(path) !== -1) return links[i];
+      var href = links[i].getAttribute("href") || "";
+      if (href.indexOf(path) !== -1) return links[i];
     }
     return null;
   }
 
-  function injectHeaderCSS() {
+  function injectHeaderCss() {
     var url = "/assets/css/header.css?v=" + encodeURIComponent(VERSION);
-    var existing = stylesheetHrefContains("/assets/css/header.css");
+    var existing = hasStylesheetContaining("/assets/css/header.css");
 
-    if (existing) existing.href = url;
-    else addLink("stylesheet", url);
+    if (existing) {
+      existing.setAttribute("href", url);
+      return existing;
+    }
+
+    return addLink("stylesheet", url);
   }
 
-  function injectFontHints() {
+  function injectFontAssets() {
     addLink("preconnect", "https://fonts.googleapis.com");
     addLink("preconnect", "https://fonts.gstatic.com", { crossorigin: "" });
+
     addLink(
       "stylesheet",
       "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap"
     );
   }
 
-  function injectIconsAndDefaults() {
+  function injectIconsAndManifest() {
     addLink("icon", "/favicon.ico");
     addLink("icon", "/favicon.svg", { type: "image/svg+xml" });
     addLink("apple-touch-icon", "/apple-touch-icon.png");
     addLink("manifest", "/site.webmanifest");
+  }
 
+  function injectSafeMetaFallbacks() {
     addMeta("theme-color", "#0d5925");
     addMeta("msapplication-TileColor", "#C7DAAC");
 
@@ -100,7 +112,8 @@
     addMeta("og:image", "/assets/images/og/og-default-1200x630.jpg", true);
   }
 
-  injectHeaderCSS();
-  injectFontHints();
-  injectIconsAndDefaults();
+  injectHeaderCss();
+  injectFontAssets();
+  injectIconsAndManifest();
+  injectSafeMetaFallbacks();
 })();
