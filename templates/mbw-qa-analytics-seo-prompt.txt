@@ -1,7 +1,7 @@
 
 Next, proceed to review, update and provide complete downloadable .txt files
 
-MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS TEMPLATE v3
+MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS TEMPLATE v4
 Strict Production Mode
 Production-Safe Global CSS Enforcement
 
@@ -33,6 +33,7 @@ MOST IMPORTANT PRIORITIES
 8. Spanish accents only in user-facing Spanish copy and metadata.
 9. No accented characters in technical paths, slugs, IDs, classes, data attributes, schema URLs, image paths, CSS paths, JS paths, or analytics event names.
 10. No missing file references, especially /assets/css/footer.css unless that file exists live.
+11. Remove legacy theme-color meta from every MBW page: <meta content="#034EA2" name="theme-color"/>.
 
 GLOBAL FILE ARCHITECTURE
 Analytics execution must be centralized in:
@@ -50,6 +51,13 @@ Important CSS note:
 - Current approved CSS stack for Mindo Bird Watching is header.css + site.css only.
 - Footer styles should be handled by site.css unless the site architecture intentionally adds a real footer.css file later.
 - If a page currently references footer.css and footer.css does not exist live, remove that reference.
+
+Legacy theme-color cleanup:
+- Remove this tag from every MBW page during QA:
+  <meta content="#034EA2" name="theme-color"/>
+- This tag is a carryover from another site and is not part of the Mindo Bird Watching system.
+- Do not replace it with another theme-color tag unless the site owner explicitly requests a new MBW-specific value.
+- Do not leave a commented-out copy of the old tag.
 
 Page files should not duplicate analytics logic for:
 - GA4 loading
@@ -107,12 +115,12 @@ CSS QA rules:
 - Prefer shared classes from site.css when adding new markup.
 - Preserve header behavior in header.css.
 - Do not reference footer.css unless it exists in the repository.
-- Remove duplicate page-level styles only when global classes already cover them.
+- Remove duplicate page-level styles only when the exact required styles already exist in the currently deployed live /assets/css/site.css and removal will not change desktop or mobile layout.
 - Preserve page-level CSS when required for unique layout, carousel behavior, card layout, hero treatment, form layout, gallery layout, or page-specific visual component behavior.
 - Do not modify global CSS unless explicitly requested.
 - If page-level CSS remains, explain why in the QA summary.
-- If page-level CSS duplicates a global class exactly and can be removed without changing layout, remove it.
-- If unsure whether removing page-level CSS could alter the page, keep it and mark it as preserved for safety.
+- If page-level CSS duplicates a global class exactly in the currently deployed live /assets/css/site.css and can be removed without changing layout, remove it.
+- If unsure whether removing page-level CSS could alter the page, keep it and mark it as preserved for safety. Do not remove page-level CSS based on a newly generated or proposed global CSS file.
 - Do not turn a page review into a full CSS migration unless explicitly requested.
 
 GLOBAL CSS MIGRATION PHILOSOPHY
@@ -667,6 +675,7 @@ Before editing, identify:
 16. Missing file references.
 17. Duplicate analytics, duplicate site.js, duplicate rawLangLinks, or duplicate loaders.
 18. Page-level CSS that can safely be removed versus CSS that should be preserved for compatibility.
+19. Legacy theme-color meta tag: confirm it is removed if present.
 
 UPDATE WORKFLOW
 When updating:
@@ -681,8 +690,9 @@ When updating:
 9. Do not add GA4 to head.js.
 10. Never add accents to technical strings.
 11. Preserve page-level CSS when removing it could break layout.
-12. Remove page-level CSS only when global site.css fully covers it.
+12. Remove page-level CSS only when the currently deployed live /assets/css/site.css fully covers it and layout remains unchanged.
 13. Explain preserved page-level CSS in the final QA summary.
+13a. Remove the legacy theme-color meta tag if present: <meta content="#034EA2" name="theme-color"/>.
 14. Return complete downloadable .txt files, not snippets.
 
 MANDATORY TRACKING PASS
@@ -706,6 +716,7 @@ Before handoff:
 - Preserve image URLs unless broken.
 - Add dateModified in schema when schema is updated.
 - Confirm no missing /assets/css/footer.css reference exists.
+- Confirm no legacy theme-color meta tag exists.
 
 FINAL QA CHECKLIST BEFORE SAYING READY TO GO LIVE
 Confirm:
@@ -739,6 +750,7 @@ Confirm:
 - [ ] No duplicate simple site.js script exists
 - [ ] Global CSS is used where possible
 - [ ] CSS references do not include missing /assets/css/footer.css
+- [ ] No legacy theme-color meta tag exists
 - [ ] Page-level CSS is removed only when safe
 - [ ] Required page-level CSS is preserved and explained
 - [ ] Important CTAs are tracked
@@ -794,4 +806,4 @@ Do not return placeholder files.
 Do not truncate files.
 Do not say a file is complete unless the full file content is actually written into the downloadable file.
 
-END TEMPLATE v3
+END TEMPLATE v4
