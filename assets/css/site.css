@@ -1,9 +1,16 @@
 /* ============================
    Mindo Bird Watching
-   Global Brand Styles (v1.3)
+   Global Brand Styles (v1.4 production-safe)
    Fonts: Playfair Display (headings) + Open Sans (body/UI)
    Background: #C7DAAC site-wide
    ============================ */
+
+/* Production-safe cleanup notes:
+   - This file preserves existing class names to avoid breaking live pages.
+   - Duplicate raw language switch rules were consolidated.
+   - Global grid utilities were added for future page migrations.
+   - Page-module classes are retained as a compatibility layer.
+*/
 
 /* Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap");
@@ -70,11 +77,36 @@ img{
   display: block;
 }
 
-/* Layout helper */
+/* ============================
+   Global layout helpers
+   Keep these generic so page files can avoid page-level CSS.
+   ============================ */
 .container{
   max-width: 1100px;
   margin: 0 auto;
   padding: 24px;
+}
+
+/* Global spacing and grid utilities.
+   These are additive and safe: existing page classes continue to work. */
+.stack{ display: grid; gap: 16px; }
+.stack-sm{ display: grid; gap: 10px; }
+.stack-lg{ display: grid; gap: 24px; }
+.grid-2{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid-3{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.grid-4{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+
+@media (max-width: 1000px){
+  .grid-4{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px){
+  .grid-2,
+  .grid-3{ grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px){
+  .grid-4{ grid-template-columns: 1fr; }
 }
 
 /* Text defaults */
@@ -300,7 +332,11 @@ html, body{ overflow-x: visible; }
 }
 
 
-/* Crawlable language links (raw HTML fallback for EN/ES discovery) */
+/* ============================
+   Raw EN/ES language switch
+   Required directly below #siteHeader on bilingual pages.
+   Keep .crawl-lang-links as legacy compatibility, but new pages should use .rawLangLinks.
+   ============================ */
 .crawl-lang-links,
 .rawLangLinks{
   display:flex;
@@ -320,9 +356,15 @@ html, body{ overflow-x: visible; }
   font-weight: 700;
 }
 
+.crawl-lang-links a[aria-current="page"],
+.rawLangLinks a[aria-current="page"]{
+  color: var(--forest);
+  font-weight: 900;
+}
+
 @media (max-width:900px){
   .crawl-lang-links,
-.rawLangLinks{
+  .rawLangLinks{
     justify-content:center;
     margin-top:8px;
   }
@@ -566,13 +608,11 @@ html, body{ overflow-x: visible; }
   .mbwWaBirdFab{ --mbwWaMobW: 138px; }
 }
 
-
 /* WhatsApp Smart CTA - Forest Green Hover */
 .mbwWaBirdAction:hover{
   background: rgba(13, 89, 37, 0.06);
   color: #0D5925;
 }
-
 
 /* =========================================
    Blog card/button consistency
@@ -609,6 +649,10 @@ html, body{ overflow-x: visible; }
 }
 
 /* =========================================
+   Page module compatibility layer
+   These classes are intentionally retained because existing live pages may depend on them.
+   Future pages should prefer generic .section, .card, .grid-* and .ctaRow utilities.
+
    Paid Social Landing Pages
    Shared EN/ES layout with aligned CTAs
    ========================================= */
@@ -1234,37 +1278,3 @@ html, body{ overflow-x: visible; }
   }
 }
 
-
-/* Crawlable language links (raw HTML fallback for EN/ES discovery) */
-.crawl-lang-links,
-.rawLangLinks{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:flex-end;
-  margin-top:10px;
-  margin-bottom:0;
-  font-size:13px;
-}
-
-.crawl-lang-links a,
-.rawLangLinks a{
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  font-weight: 700;
-}
-
-.crawl-lang-links a[aria-current="page"],
-.rawLangLinks a[aria-current="page"]{
-  color: var(--forest);
-  font-weight: 900;
-}
-
-@media (max-width:900px){
-  .crawl-lang-links,
-  .rawLangLinks{
-    justify-content:center;
-    margin-top:8px;
-  }
-}
