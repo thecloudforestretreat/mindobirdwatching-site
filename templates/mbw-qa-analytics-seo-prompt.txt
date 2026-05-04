@@ -93,7 +93,43 @@ site.js responsibilities:
 - include link_text, link_url, link_type when link events are fired
 - include cta_label and cta_location when CTA events are fired
 
-PRODUCTION-SAFE GLOBAL CSS STANDARD v3
+PRODUCTION-SAFE GLOBAL CSS STANDARD v4
+
+GLOBAL PAGE MODULE SYSTEM (NEW)
+
+The site now includes production-safe scoped modules inside /assets/css/site.css:
+
+- body[data-page-type="tour_collection"]
+- body[data-page-type="tour_detail"]
+- body[data-page-type="booking_page"]
+- body[data-page-type="contact_page"]
+- body[data-page-type="reviews_page"]
+- body[data-page-type="guide_page"]
+- body[data-page-type="article_page"]
+
+Rules:
+
+- These modules are LIVE and safe to use.
+- They are NOT experimental.
+- They are additive and backward compatible.
+
+During QA:
+
+- If a page’s layout is fully covered by an existing scoped global module:
+  → page-level CSS MAY be removed.
+
+- If a page uses styles NOT included in global modules:
+  → page-level CSS MUST be preserved.
+
+- Never partially remove page-level CSS unless layout is visually stable.
+
+- Always validate both desktop and mobile before removing CSS.
+
+Goal:
+
+Gradually migrate pages to use global scoped modules safely.
+
+PRODUCTION-SAFE GLOBAL CSS STANDARD v4
 The approved site.css is production-safe and backward compatible.
 
 This means:
@@ -120,7 +156,12 @@ CSS QA rules:
 - Do not modify global CSS unless explicitly requested.
 - If page-level CSS remains, explain why in the QA summary.
 - If page-level CSS duplicates a global class exactly in the currently deployed live /assets/css/site.css and can be removed without changing layout, remove it.
-- If unsure whether removing page-level CSS could alter the page, keep it and mark it as preserved for safety. Do not remove page-level CSS based on a newly generated or proposed global CSS file.
+- If unsure whether removing page-level CSS could alter the page, keep it and mark it as preserved for safety. Do not remove page-level CSS based on hypothetical or proposed CSS.
+
+Page-level CSS may only be removed if:
+- The required layout exists in CURRENT LIVE /assets/css/site.css
+- Layout remains unchanged after removal
+- No desktop or mobile break occurs
 - Do not turn a page review into a full CSS migration unless explicitly requested.
 
 GLOBAL CSS MIGRATION PHILOSOPHY
