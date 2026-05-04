@@ -1,8 +1,9 @@
 
 Next, proceed to review, update and provide complete downloadable .txt files
 
-MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS TEMPLATE v2
+MINDO BIRD WATCHING EN/ES PAGE QA + ANALYTICS TEMPLATE v3
 Strict Production Mode
+Production-Safe Global CSS Enforcement
 
 Use this prompt when uploading an English page and its Spanish counterpart for mindobirdwatching.com. The goal is to audit and fully update both HTML files so they are ready to go live. Return complete downloadable .txt files for both pages. Do not return partial snippets unless explicitly requested.
 
@@ -18,15 +19,20 @@ PAGE INFORMATION
 STRICT MODE STANDARD
 This is a strict production QA workflow. Do not mark a page ready to go live unless the full checklist passes. If any item fails, clearly list the blocker and return corrected files whenever possible.
 
+CORE OPERATING PRINCIPLE
+Audit first. Fix only what is incorrect, missing, duplicated, conflicting, unsafe, or inconsistent with the approved site architecture. Preserve working layout, SEO copy, image paths, and page intent unless a change is required to pass QA.
+
 MOST IMPORTANT PRIORITIES
-1. Functional EN/ES language switch
-2. Centralized analytics through /assets/js/site.js
-3. Strong SEO accuracy without unnecessary title or description rewrites
-4. Correct canonical, hreflang, Open Graph, Twitter, schema, and breadcrumbs
-5. Global CSS usage wherever possible
-6. Header/footer injection working correctly
-7. Spanish accents only in user-facing Spanish copy and metadata
-8. No accented characters in technical paths, slugs, IDs, classes, data attributes, schema URLs, image paths, CSS paths, JS paths, or analytics event names
+1. Functional EN/ES language switch.
+2. Centralized analytics through /assets/js/site.js.
+3. Strong SEO accuracy without unnecessary title or description rewrites.
+4. Correct canonical, hreflang, Open Graph, Twitter, schema, and breadcrumbs.
+5. Global CSS usage wherever possible.
+6. Production-safe CSS handling that does not break existing pages.
+7. Header/footer injection working correctly.
+8. Spanish accents only in user-facing Spanish copy and metadata.
+9. No accented characters in technical paths, slugs, IDs, classes, data attributes, schema URLs, image paths, CSS paths, JS paths, or analytics event names.
+10. No missing file references, especially /assets/css/footer.css unless that file exists live.
 
 GLOBAL FILE ARCHITECTURE
 Analytics execution must be centralized in:
@@ -35,14 +41,15 @@ Analytics execution must be centralized in:
 Head asset helpers must remain in:
 /assets/js/head.js
 
-Shared styling should remain in:
-/assets/css/site.css
+Approved shared styling stack:
 /assets/css/header.css
+/assets/css/site.css
 
 Important CSS note:
 - Do NOT reference /assets/css/footer.css unless that file exists in the live repository.
 - Current approved CSS stack for Mindo Bird Watching is header.css + site.css only.
 - Footer styles should be handled by site.css unless the site architecture intentionally adds a real footer.css file later.
+- If a page currently references footer.css and footer.css does not exist live, remove that reference.
 
 Page files should not duplicate analytics logic for:
 - GA4 loading
@@ -65,6 +72,7 @@ head.js must NOT:
 - initialize gtag
 - add click listeners
 - send analytics events
+- duplicate site.js behavior
 
 site.js responsibilities:
 - load GA4 with measurement ID G-1ZYLW22XWP
@@ -73,6 +81,52 @@ site.js responsibilities:
 - send scroll_depth at 25, 50, 75, and 90 percent
 - listen globally for [data-analytics-event] clicks
 - track language switch, CTAs, internal links, outbound links, WhatsApp links, phone/email links, forms, FAQ expands, cards, galleries, and page-type-specific events
+- map data-analytics-label into event_label and label
+- include link_text, link_url, link_type when link events are fired
+- include cta_label and cta_location when CTA events are fired
+
+PRODUCTION-SAFE GLOBAL CSS STANDARD v3
+The approved site.css is production-safe and backward compatible.
+
+This means:
+- site.css contains reusable global utilities.
+- site.css also retains legacy/page-module classes so existing live pages do not break.
+- Do not aggressively refactor page layouts during normal page QA.
+- Do not remove page-level CSS blindly.
+- Do not replace working page-specific classes unless the global class fully covers the layout.
+- Stability is more important than theoretical CSS purity during page QA.
+
+Approved global CSS files:
+<link rel="stylesheet" href="/assets/css/header.css">
+<link rel="stylesheet" href="/assets/css/site.css">
+
+Do NOT add this unless the file exists live:
+<link rel="stylesheet" href="/assets/css/footer.css">
+
+CSS QA rules:
+- Prefer shared classes from site.css when adding new markup.
+- Preserve header behavior in header.css.
+- Do not reference footer.css unless it exists in the repository.
+- Remove duplicate page-level styles only when global classes already cover them.
+- Preserve page-level CSS when required for unique layout, carousel behavior, card layout, hero treatment, form layout, gallery layout, or page-specific visual component behavior.
+- Do not modify global CSS unless explicitly requested.
+- If page-level CSS remains, explain why in the QA summary.
+- If page-level CSS duplicates a global class exactly and can be removed without changing layout, remove it.
+- If unsure whether removing page-level CSS could alter the page, keep it and mark it as preserved for safety.
+- Do not turn a page review into a full CSS migration unless explicitly requested.
+
+GLOBAL CSS MIGRATION PHILOSOPHY
+During page QA:
+- Fix broken references.
+- Remove obvious duplicate or dead CSS.
+- Keep required module CSS.
+- Use global classes for new components.
+- Do not destabilize existing pages.
+
+During a separate CSS normalization project:
+- Reusable patterns may be migrated gradually into site.css.
+- Legacy page-module CSS may be deprecated only after confirming no live pages depend on it.
+- Page-level CSS should be removed only after testing desktop and mobile.
 
 REQUIRED LIVE CONSOLE CHECK
 On a live page, these should pass:
@@ -90,23 +144,26 @@ Debug mode check:
 localStorage.setItem('debug_mode', 'true')
 gtag('set', 'debug_mode', true)
 gtag('event', 'debug_test_event')
-Expected: debug_test_event appears in GA4 DebugView. If Realtime works but DebugView does not, do not fail page analytics automatically. Instead, mark DebugView as a GA4/debug configuration issue and confirm Realtime event collection.
+Expected: debug_test_event appears in GA4 DebugView.
+
+If Realtime works but DebugView does not, do not fail page analytics automatically. Instead, mark DebugView as a GA4/debug configuration issue and confirm Realtime event collection.
 
 PAGE FILE REQUIREMENTS
 Each page should provide only:
+- correct doctype and valid HTML structure
 - correct html lang
 - correct body data-page-type
 - correct body data-page-language
-- correct body data-page-location or data-page-region where relevant
+- correct body data-page-location, data-page-region, or data-page-content-group where relevant
 - correct #siteHeader and #siteFooter containers
-- correct head.js loading
+- correct head.js loading if used by the global architecture
 - correct site.js loading through the guarded header/footer loader or approved global loader
 - correct canonical and hreflang links
 - correct Open Graph and Twitter metadata
 - correct schema JSON-LD
 - correct raw EN/ES language switch
 - correct data-analytics-* attributes on tracked elements
-- page-level CSS only if absolutely necessary
+- page-level CSS only if absolutely necessary or preserved for compatibility
 
 HEADER AND FOOTER STANDARD
 Every page must include:
@@ -123,6 +180,14 @@ And:
 
 Both English and Spanish pages should use the approved global header and footer includes. Do not hardcode a full header or footer inside individual pages unless the site architecture has intentionally changed.
 
+HEADER/FOOTER LOADING RULES
+- Use the site’s approved loader pattern.
+- Ensure /assets/js/site.js is loaded exactly once.
+- Do not include duplicate simple site.js tags if site.js is already loaded by the approved guarded loader.
+- Do not duplicate includes.js, head.js, or site.js.
+- Loader JavaScript must remain valid.
+- If a page uses the newer direct head.js + site.js architecture and that is the current approved live architecture, preserve it and do not add a second loader.
+
 LANGUAGE SWITCH STANDARD
 Every bilingual page must have a raw EN/ES language switch immediately after #siteHeader and before hero/main content.
 
@@ -130,47 +195,31 @@ English page pattern:
 
 <div id="siteHeader" data-current-lang="en"></div>
 <nav class="rawLangLinks" aria-label="Language switch">
-  <a href="FULL_EN_URL" lang="en" hreflang="en" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="en">English</a>
-  <a href="FULL_ES_URL" lang="es" hreflang="es" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="es">Español</a>
+  <a href="FULL_EN_URL" lang="en" hreflang="en" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-page-language="en" data-analytics-target-language="en">English</a>
+  <a href="FULL_ES_URL" lang="es" hreflang="es" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-page-language="en" data-analytics-target-language="es">Español</a>
 </nav>
 
 Spanish page pattern:
 
 <div id="siteHeader" data-current-lang="es"></div>
 <nav class="rawLangLinks" aria-label="Selector de idioma">
-  <a href="FULL_EN_URL" lang="en" hreflang="en" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="en">English</a>
-  <a href="FULL_ES_URL" lang="es" hreflang="es" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-target-language="es">Español</a>
+  <a href="FULL_EN_URL" lang="en" hreflang="en" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-page-language="es" data-analytics-target-language="en">English</a>
+  <a href="FULL_ES_URL" lang="es" hreflang="es" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="PAGE_TYPE" data-analytics-page-language="es" data-analytics-target-language="es">Español</a>
 </nav>
 
 Language switch rules:
-- Keep class exactly: rawLangLinks
-- Use real HTML anchor tags
-- Do not rely only on JavaScript-injected language links
-- Use hreflang on both links
-- Use aria-current="page" only on the active language
-- Track both links with language_switch_click
-- Keep the switch directly under #siteHeader
-- Do not add page-level language switch CSS unless absolutely necessary
-
-GLOBAL CSS STANDARD
-Use global CSS whenever possible:
-
-<link rel="stylesheet" href="/assets/css/header.css">
-<link rel="stylesheet" href="/assets/css/site.css">
-
-Do NOT add this unless the file exists live:
-<link rel="stylesheet" href="/assets/css/footer.css">
-
-For special templates, use approved global CSS modules if they exist. Do not add page-level CSS unless the page has a unique module that cannot be handled globally.
-
-CSS QA rules:
-- Prefer shared classes from site.css
-- Preserve header behavior in header.css
-- Do not reference footer.css unless it exists in the repository
-- Remove duplicate page-level styles when global classes already cover them
-- Preserve page-level CSS only when required for unique layout or component behavior
-- Do not modify global CSS unless explicitly requested
-- If page-level CSS remains, explain why in the QA summary
+- Keep class exactly: rawLangLinks.
+- Use real HTML anchor tags.
+- Do not rely only on JavaScript-injected language links.
+- Use hreflang on both links.
+- Use lang on both links.
+- Use aria-current="page" only on the active language.
+- Track both links with language_switch_click.
+- Keep the switch directly under #siteHeader.
+- Do not add page-level language switch CSS unless absolutely necessary.
+- Replace crawl-lang-links with rawLangLinks unless crawl-lang-links is intentionally retained only as a hidden crawl fallback. New visible language switches should use rawLangLinks.
+- Remove duplicate rawLangLinks blocks.
+- Add exactly one compliant rawLangLinks block.
 
 SEO AUDIT STANDARD
 Do not rewrite titles and descriptions unless they are clearly wrong, duplicated, missing, misleading, too long/short in a harmful way, or mismatched with the page intent.
@@ -187,6 +236,7 @@ For both pages, audit:
 - og:url
 - og:image
 - og:type
+- og:locale
 - twitter:card
 - twitter:title
 - twitter:description
@@ -201,14 +251,16 @@ For both pages, audit:
 - no unresolved placeholders
 
 Canonical and hreflang rules:
-- Canonical must match the current page's live URL
-- EN alternate must point to the English URL
-- ES alternate must point to the Spanish URL
-- x-default should usually point to the English URL
-- og:url must match canonical
-- Schema URL and breadcrumb URLs must match correct paths
-- No singular/plural path mismatch
-- Spanish page normally reuses the same image paths as the English page unless the image is intentionally different
+- Canonical must match the current page's live URL.
+- EN alternate must point to the English URL.
+- ES alternate must point to the Spanish URL.
+- x-default should usually point to the English URL.
+- og:url must match canonical.
+- Schema URL and breadcrumb URLs must match correct paths.
+- No singular/plural path mismatch.
+- Spanish page normally reuses the same image paths as the English page unless the image is intentionally different.
+- English pages should use appropriate English locale metadata, usually en_US.
+- Spanish pages should use appropriate Spanish locale metadata, usually es_ES or es_EC if that is the site standard. Be consistent.
 
 SCHEMA STANDARD
 Audit schema for:
@@ -222,8 +274,20 @@ Audit schema for:
 - correct breadcrumb URLs
 - correct dateModified when schema is updated
 - no accented technical URLs or paths
+- no invalid trailing commas
+- no unresolved placeholders
+- no mismatched language in breadcrumb names
 
 Do not add <meta name="last-modified">.
+
+Schema language:
+- English page schema should use "inLanguage": "en".
+- Spanish page schema should use "inLanguage": "es".
+
+Schema dateModified:
+- Add or update dateModified when schema is updated.
+- Use ISO date format YYYY-MM-DD.
+- Do not invent a historical last modified date. Use the update date only when making the schema update.
 
 SPANISH COPY AND ACCENTS STANDARD
 Spanish pages must use correct Spanish accents in visible copy and metadata.
@@ -244,6 +308,15 @@ Examples of visible Spanish words that should use accents where appropriate:
 - observación
 - colibríes
 - pájaros
+- avistamiento
+- hábitat
+- biodiversidad
+- experiencia
+- caminata
+- nocturna
+- privado
+- turístico
+- información
 
 Proper names should keep real accents when appropriate in visible copy and metadata, such as:
 - Mindo
@@ -254,6 +327,10 @@ Proper names should keep real accents when appropriate in visible copy and metad
 - Mashpi
 - Milpe
 - San Tadeo
+- San Miguel de los Bancos
+- Pedro Vicente Maldonado
+- Quito
+- Pichincha
 
 Do NOT add accents to:
 - URLs
@@ -276,6 +353,12 @@ Correct technical path:
 
 Incorrect technical path:
 /assets/images/pájaros/colibríes/example.jpg
+
+Spanish copy QA:
+- Remove accidental English paragraphs from Spanish pages.
+- Do not translate brand names unless the brand itself uses a Spanish version.
+- Use natural Latin American / Ecuador-friendly Spanish.
+- Preserve technical strings in English where they are code, class names, URLs, or data values.
 
 ANALYTICS EVENT NAMING STANDARD
 Use only shared, reusable analytics event names. Do not invent one-off event names.
@@ -368,6 +451,10 @@ Tracked elements should use relevant attributes:
 - data-analytics-guide
 - data-analytics-form
 - data-analytics-target-language
+- data-analytics-section
+- data-analytics-content-group
+- data-analytics-media
+- data-analytics-error-message
 
 GA4 REPORTING FIELD STANDARD
 Primary reporting field for GA4 Explorations:
@@ -381,12 +468,31 @@ Supporting fields:
 - link_type
 - cta_location
 - section_name
+- page_type
+- page_language
+- page_path
+- page_title
+- canonical_url
+- target_language
+- form_name
+- error_message
+- tour_name
+- tour_type
+- tour_location
+- bird_name
+- species_name
+- location_name
+- region
+- media_label
+- media_location
 
 Rules:
 - data-analytics-label should be mapped by site.js into event_label and label.
 - CTA events should also include cta_label when appropriate.
 - Link events should include link_text, link_url, and link_type.
 - Keep data attributes readable and consistent across EN and ES pages.
+- Use data-analytics-page-type consistently across language pairs.
+- Use data-analytics-page-language="en" on English pages and "es" on Spanish pages.
 
 ANALYTICS PARAMETERS TO READ IN GA4
 The analytics implementation should make it possible to read these dimensions and metrics in GA4, DebugView, Realtime, and Explorations.
@@ -500,28 +606,67 @@ CTA AND LINK TRACKING RULES
 - WhatsApp links use whatsapp_click or a page-type-specific WhatsApp event.
 - Phone links use phone_click.
 - Email links use email_click.
-- FAQ buttons/details use faq_expand.
+- FAQ buttons/details use faq_expand or page-type-specific FAQ event.
 - Tour booking buttons use tour_booking_click.
 - Bird cards use bird_card_click.
 - Gallery controls use gallery_next, gallery_previous, or gallery_image_click.
+- Video buttons, overlays, or iframe wrappers use video_play_click where practical.
+- If a link is both a CTA and internal, use the more meaningful CTA event.
+- If a link is a tour booking CTA, use tour_booking_click instead of primary_cta_click.
+- If a link is a tour WhatsApp CTA, use tour_whatsapp_click instead of whatsapp_click.
+- Avoid duplicate data-analytics-event attributes on the same element.
+
+FORM TRACKING RULES
+Forms should be centrally tracked by site.js when possible.
+
+Page requirements:
+- Add data-analytics-form="FORM_NAME" to the form.
+- Add data-analytics-page-type.
+- Add data-analytics-page-language.
+- Ensure submit buttons have a relevant data-analytics-event if they are also CTAs.
+- Do not add inline form tracking scripts unless explicitly requested.
+- Do not duplicate form_start, form_submit_success, or form_submit_error logic in page files.
+
+For contact pages:
+- Use contact_form_submit only when the page architecture specifically requires it.
+- Otherwise rely on centralized form_submit_success and form_submit_error.
+- Track WhatsApp, phone, and email contact methods separately.
+
+FAQ TRACKING RULES
+- FAQ details, buttons, or expandable controls should have faq_expand or page-type-specific FAQ events.
+- For tour FAQ items, tour_faq_expand is allowed.
+- Include data-analytics-label with the question text or short label.
+- Include data-analytics-location="faq".
+
+GALLERY / CAROUSEL TRACKING RULES
+Where gallery or carousel controls exist:
+- Previous button: gallery_previous
+- Next button: gallery_next
+- Image click/open: gallery_image_click or gallery_open
+- Tour gallery controls may use tour_gallery_click when more specific.
+- Include media_label or data-analytics-label where practical.
+- Include data-analytics-location such as hero_gallery, tour_gallery, image_carousel, or media_section.
 
 AUDIT-FIRST WORKFLOW
 Before editing, identify:
-1. Page type for both files
-2. English URL and Spanish URL
-3. Canonical and hreflang state
-4. Existing title and description quality
-5. Language switch structure
-6. Header/footer injection
-7. head.js loading
-8. site.js loading
-9. CSS stack and page-level CSS
-10. Analytics data attributes
-11. Forms, CTAs, FAQ, internal links, outbound links, WhatsApp links
-12. Image paths and alt text
-13. Schema and breadcrumbs
-14. Spanish accents in visible copy and metadata
-15. Unresolved placeholders
+1. Page type for both files.
+2. English URL and Spanish URL.
+3. Canonical and hreflang state.
+4. Existing title and description quality.
+5. Language switch structure.
+6. Header/footer injection.
+7. head.js loading.
+8. site.js loading.
+9. CSS stack and page-level CSS.
+10. Analytics data attributes.
+11. Forms, CTAs, FAQ, internal links, outbound links, WhatsApp links.
+12. Image paths and alt text.
+13. Schema and breadcrumbs.
+14. Spanish accents in visible copy and metadata.
+15. Unresolved placeholders.
+16. Missing file references.
+17. Duplicate analytics, duplicate site.js, duplicate rawLangLinks, or duplicate loaders.
+18. Page-level CSS that can safely be removed versus CSS that should be preserved for compatibility.
 
 UPDATE WORKFLOW
 When updating:
@@ -535,7 +680,10 @@ When updating:
 8. Do not add analytics logic to the page.
 9. Do not add GA4 to head.js.
 10. Never add accents to technical strings.
-11. Return complete downloadable .txt files, not snippets.
+11. Preserve page-level CSS when removing it could break layout.
+12. Remove page-level CSS only when global site.css fully covers it.
+13. Explain preserved page-level CSS in the final QA summary.
+14. Return complete downloadable .txt files, not snippets.
 
 MANDATORY TRACKING PASS
 Before handoff:
@@ -551,11 +699,13 @@ Before handoff:
 - Add analytics attributes to WhatsApp, phone, and email links.
 - Add FAQ tracking where FAQ exists.
 - Add gallery/carousel tracking where controls exist.
+- Add form attributes where forms exist.
 - Add page-type-specific analytics where relevant.
 - Preserve global CSS.
-- Keep page-level CSS only if absolutely necessary.
+- Keep page-level CSS only if necessary or compatibility-safe.
 - Preserve image URLs unless broken.
 - Add dateModified in schema when schema is updated.
+- Confirm no missing /assets/css/footer.css reference exists.
 
 FINAL QA CHECKLIST BEFORE SAYING READY TO GO LIVE
 Confirm:
@@ -563,7 +713,9 @@ Confirm:
 - [ ] Correct html lang
 - [ ] Correct body data-page-type
 - [ ] Correct body data-page-language
+- [ ] Correct body data-page-location, data-page-region, or data-page-content-group where relevant
 - [ ] #siteHeader has correct data-current-lang
+- [ ] #siteFooter exists
 - [ ] rawLangLinks is directly under #siteHeader
 - [ ] Active language has aria-current="page"
 - [ ] Both language links have lang and hreflang
@@ -587,13 +739,15 @@ Confirm:
 - [ ] No duplicate simple site.js script exists
 - [ ] Global CSS is used where possible
 - [ ] CSS references do not include missing /assets/css/footer.css
-- [ ] Page-level CSS is removed unless necessary
+- [ ] Page-level CSS is removed only when safe
+- [ ] Required page-level CSS is preserved and explained
 - [ ] Important CTAs are tracked
 - [ ] Important internal links are tracked
 - [ ] Important outbound links are tracked
 - [ ] WhatsApp, phone, and email links are tracked
 - [ ] FAQ items are tracked where applicable
 - [ ] Gallery controls are tracked where applicable
+- [ ] Forms are tracked where applicable
 - [ ] Page-type-specific events are applied where relevant
 - [ ] No unresolved placeholders like {{...}}
 - [ ] No accented technical paths or attributes
@@ -602,6 +756,8 @@ Confirm:
 - [ ] English page does not contain accidental Spanish UI copy, except proper names
 - [ ] EN/ES image paths remain consistent unless intentionally different
 - [ ] SEO title and description were preserved unless definitely requiring correction
+- [ ] No broken internal path patterns were introduced
+- [ ] No one-off event names were introduced
 
 FINAL RESPONSE FORMAT
 When returning files, always state clearly:
@@ -624,5 +780,18 @@ Then give a short QA summary:
 - Technical paths: passed/failed
 - Spanish accents: passed/failed
 
+If page-level CSS remains, add:
+- Page-level CSS: preserved/removed
+- Reason:
+
 If not ready, explain exactly what is still blocking.
 Do not say ready to go live unless the QA checklist passes.
+
+FINAL FILE REQUIREMENT
+When asked to update pages, always return complete downloadable .txt files.
+Do not return snippets.
+Do not return placeholder files.
+Do not truncate files.
+Do not say a file is complete unless the full file content is actually written into the downloadable file.
+
+END TEMPLATE v3
