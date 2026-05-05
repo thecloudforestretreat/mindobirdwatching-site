@@ -4617,3 +4617,47 @@ body[data-page-type="tour_detail"] .btnRow + .btnRow{
     font-size: 13.5px;
   }
 }
+
+/* =========================================================
+   MBW Half-Day Tour Button Normalization v1
+   Purpose:
+   - Match the cleaner full-day CTA hierarchy.
+   - Keep half-day primary CTA yellow.
+   - Make half-day secondary/trust buttons white instead of green.
+   - Scoped only to half-day tour category pages.
+   ========================================================= */
+
+body[data-page-type="tour_category"][data-tour-category="half_day"] .btnRow .btn.secondary,
+body[data-page-type="tour_category"][data-tour-category="half_day"] .btnRow .btn:not(.primary){
+  background: #ffffff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  box-shadow: 0 10px 22px rgba(7,25,35,.06);
+}
+
+body[data-page-type="tour_category"][data-tour-category="half_day"] .btnRow .btn.secondary:hover,
+body[data-page-type="tour_category"][data-tour-category="half_day"] .btnRow .btn:not(.primary):hover{
+  background: rgba(255,255,255,.92);
+  border-color: rgba(7,25,35,.20);
+  transform: translateY(-1px);
+}
+
+/* Keep trust buttons compact and pill-like, matching the full-day visual hierarchy */
+body[data-page-type="tour_category"][data-tour-category="half_day"] .btnRow + .btnRow .btn,
+body[data-page-type="tour_category"][data-tour-category="half_day"] .btnRow .btn:not(.primary):not(.secondary){
+  background: #ffffff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  min-height: 38px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 14px;
+  box-shadow: 0 10px 22px rgba(7,25,35,.06);
+}
+
+/* Preserve the primary reserve action as the visual anchor */
+body[data-page-type="tour_category"][data-tour-category="half_day"] .btnRow .btn.primary{
+  background: rgba(255,215,0,.22);
+  border-color: rgba(255,215,0,.55);
+  color: var(--ink);
+}
