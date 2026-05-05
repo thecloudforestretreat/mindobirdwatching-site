@@ -3,29 +3,30 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Ziplining in Mindo Ecuador | Canopy Adventure Tour</title>
-<meta content="Go ziplining in Mindo, Ecuador, for a canopy adventure with forest views, fresh air, and one of the region's top activities." name="description"/>
-<meta content="index,follow,max-image-preview:large" name="robots"/>
-<meta content="Ziplining Mindo, Mindo Ecuador zipline, canopy tour Mindo, adventure activities in Mindo, things to do in Mindo Ecuador, Mindo ziplining" name="keywords"/>
-<link href="https://mindobirdwatching.com/activities/ziplining/" rel="canonical"/><link href="https://mindobirdwatching.com/activities/ziplining/" hreflang="en" rel="alternate"/><link href="https://mindobirdwatching.com/es/actividades/canopy/" hreflang="es" rel="alternate"/><link href="https://mindobirdwatching.com/activities/ziplining/" hreflang="x-default" rel="alternate"/>
-
-
-
+<title>Mindo Bird Gallery | Birds of the Cloud Forest</title>
+<meta content="Browse the Mindo bird gallery for cloud forest species highlights and inspiration for planning your bird watching trip in Ecuador." name="description"/>
+<!-- Canonical -->
+<link href="https://mindobirdwatching.com/bird-gallery/" rel="canonical"/><link href="https://mindobirdwatching.com/bird-gallery/" hreflang="en" rel="alternate"/><link href="https://mindobirdwatching.com/es/galeria/" hreflang="es" rel="alternate"/><link href="https://mindobirdwatching.com/bird-gallery/" hreflang="x-default" rel="alternate"/>
+<!-- Open Graph -->
 <meta content="website" property="og:type"/>
 <meta content="Mindo Bird Watching" property="og:site_name"/>
-<meta content="Ziplining in Mindo Ecuador | Canopy Adventure Tour" property="og:title"/>
-<meta content="Go ziplining in Mindo, Ecuador, for a canopy adventure with forest views, fresh air, and one of the region's top activities." property="og:description"/>
-<meta content="https://mindobirdwatching.com/activities/ziplining/" property="og:url"/>
+<meta content="Mindo Bird Gallery | Birds of the Cloud Forest" property="og:title"/>
+<meta content="Browse the Mindo bird gallery for cloud forest species highlights and inspiration for planning your bird watching trip in Ecuador." property="og:description"/>
+<meta content="https://mindobirdwatching.com/bird-gallery/" property="og:url"/>
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image"/>
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image:secure_url"/>
 <meta content="1200" property="og:image:width"/>
 <meta content="630" property="og:image:height"/>
-<meta content="Ziplining in Mindo, Ecuador" property="og:image:alt"/>
-<meta content="en_US" property="og:locale"/>
+<meta content="Mindo Bird Watching - Bird gallery from the cloud forest of Mindo, Ecuador" property="og:image:alt"/>
+<!-- Twitter -->
 <meta content="summary_large_image" name="twitter:card"/>
-<meta content="Ziplining in Mindo Ecuador | Canopy Adventure Tour" name="twitter:title"/>
-<meta content="Go ziplining in Mindo, Ecuador, for a canopy adventure with forest views, fresh air, and one of the region's top activities." name="twitter:description"/>
+<meta content="Mindo Bird Gallery | Birds of the Cloud Forest" name="twitter:title"/>
+<meta content="Browse the Mindo bird gallery for cloud forest species highlights and inspiration for planning your bird watching trip in Ecuador." name="twitter:description"/>
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" name="twitter:image"/>
+
+
+
+<!-- Favicons (approved root paths) -->
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
 <link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
@@ -35,648 +36,857 @@
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <style>
-    .page{
-      margin-top:18px;
-      padding:26px;
+    .page { margin-top: 18px; padding: 26px; }
+    .page.card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
     }
 
-    .page.card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
+    /* Make the hero two equal columns so BOD can feel like half the page */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
     }
 
-    .hero{
-      display:grid;
-      grid-template-columns:1.02fr .98fr;
-      gap:16px;
-      align-items:stretch;
+    .hero h1 { margin: 0 0 6px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: var(--ink); line-height: 1.6; max-width: 82ch; }
+
+    .heroLeft, .heroRight { display: grid; gap: 12px; align-content: start; }
+
+    .heroCard {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      padding: 14px;
     }
 
-    h1{
-      margin:0 0 8px;
-      letter-spacing:-0.02em;
+    .heroCard h2 {
+      margin: 0 0 8px;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
     }
 
-    .lede{
-      margin:0;
-      max-width:78ch;
-      color:var(--ink);
-      line-height:1.72;
+    .heroCard ul { margin: 0; padding-left: 18px; line-height: 1.55; color: var(--ink); }
+
+    .heroCtas {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .heroCard,
-    .heroMedia,
-    .infoCard,
-    .mediaCard,
-    .noteCard{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
+    /* Bird of the Day */
+    .bodHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
-    .heroCard{
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      height:100%;
+    .bodTitle { display: grid; gap: 2px; min-width: 0; }
+    .bodTitle h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 18px;
+      line-height: 1.2;
     }
 
-    .ctaRow{
-      margin-top:14px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
+    .bodSub {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
+    .bodPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+      flex: 0 0 auto;
     }
 
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      font-weight:900;
-      color:var(--ink);
-      font-size:12.5px;
-      line-height:1;
-      white-space:nowrap;
+    .bodMedia {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .experienceHighlights{
-      margin-top:16px;
-      padding:14px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:rgba(255,255,255,.55);
+    .bodImgWrap {
+      background: rgba(255,255,255,.65);
+      display: grid;
+      place-items: center;
+      padding: 12px;
     }
 
-    .experienceHighlights h2{
-      margin:0 0 10px;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:18px;
+    .bodImg {
+      width: 100%;
+      height: 320px; /* bigger */
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.06);
     }
 
-    .experienceHighlights ul{
-      margin:0;
-      padding-left:18px;
-      color:var(--ink);
-      line-height:1.6;
+    .bodAudio {
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+    }
+    .bodAudio audio { width: 100%; display: block; }
+
+    .bodLinks {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
     }
 
-    .experienceHighlights li + li{
-      margin-top:8px;
+    .bodLinks a {
+      color: inherit;
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
-    .heroMedia{
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      height:100%;
+    .bodCtas { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .section {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
     }
 
-    .heroMediaFrame{
-      width:100%;
-      flex:1 1 auto;
-      min-height:100%;
-      background:rgba(255,255,255,.55);
+    .sectionHead {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
-    .heroMediaFrame img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
+    .sectionHead h2 {
+      margin: 0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing: -0.02em;
+      font-size: 20px;
     }
 
-    .heroMediaCap{
-      padding:10px 12px;
-      border-top:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
+    .hint { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 10px 0 14px;
     }
 
-    .section{
-      margin-top:18px;
-      padding-top:14px;
-      border-top:1px solid var(--line);
+    .chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .chip[aria-pressed="true"] {
+      background: rgba(13,89,37,.14);
+      border-color: rgba(13,89,37,.35);
     }
 
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
     }
 
-    .sectionHead h2{
-      margin:0;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:20px;
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      overflow: hidden;
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      position: relative;
+      min-height: 160px;
+      padding: 0;
     }
 
-    .sectionHead p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
+    /* “Zoom out” fix: contain + padding */
+    .thumb {
+      width: 100%;
+      height: 220px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: rgba(255,255,255,.72);
+      padding: 10px;
+      box-sizing: border-box;
     }
 
-    .infoGrid{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
+    .meta {
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      background: rgba(255,255,255,.55);
     }
 
-    .canopyGrid{
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:12px;
+    .name {
+      margin: 0;
+      font-weight: 900;
+      font-size: 13.5px;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .infoCard{
-      padding:14px;
+    .tag {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
     }
 
-    .infoCard h3{
-      margin:0 0 8px;
-      font-size:16px;
-      color:var(--forest);
-      letter-spacing:-0.01em;
+    .emptyState {
+      display: none;
+      margin-top: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+    }
+    .emptyState.is-visible { display: block; }
+
+    .videoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .videoCard {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .infoCard p,
-    .noteCard p{
-      color:var(--ink);
-      line-height:1.68;
+    /* UPDATED: vertical 9:16 */
+    .videoFrame {
+      aspect-ratio: 9 / 16;
+      width: 100%;
+      height: auto;
+      border: 0;
+      display: block;
+      background: rgba(255,255,255,.55);
     }
 
-    .infoCard p{
-      margin:0;
+    .videoCap {
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,.55);
     }
 
-    .mediaGrid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:12px;
-      align-items:stretch;
+    .lb {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 18px;
+    }
+    .lb.is-open { display: flex; }
+
+    .lbDialog {
+      width: min(980px, 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 30px 80px rgba(0,0,0,.35);
+      overflow: hidden;
     }
 
-    .mediaCard{
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      min-width:0;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
+    .lbMedia { position: relative; background: rgba(255,255,255,.55); }
+
+    .lbImg {
+      width: 100%;
+      height: min(70vh, 640px);
+      object-fit: contain;
+      display: block;
+      background: rgba(255,255,255,.55);
     }
 
-    .mediaInner{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      height:100%;
+    .lbBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
     }
 
-    .videoFrame,
-    .carouselViewport{
-      position:relative;
-      width:100%;
-      aspect-ratio:9 / 16;
-      border-radius:14px;
-      overflow:hidden;
-      border:1px solid var(--line);
-      background:#000;
+    .lbTitle {
+      margin: 0;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .videoFrame iframe{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      border:0;
-      display:block;
+    .lbSub { margin: 0; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+
+    .lbBtns { display: inline-flex; gap: 8px; align-items: center; flex: 0 0 auto; }
+
+    .iconBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .iconBtn:focus { outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
+    .iconBtn svg { width: 20px; height: 20px; }
+
+    .closeBtn { width: auto; padding: 0 12px; gap: 10px; font-weight: 900; font-size: 13px; }
+
+    @media (max-width: 980px) {
+      .gallery { grid-template-columns: repeat(3, 1fr); }
+      .thumb { height: 200px; }
+      .bodImg { height: 280px; }
     }
 
-    .carouselSlide{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .28s ease;
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+      .thumb { height: 190px; }
+      .videoGrid { grid-template-columns: 1fr; }
+      .bodImg { height: 320px; }
     }
 
-    .carouselSlide.active{
-      opacity:1;
-      pointer-events:auto;
-    }
-
-    .carouselSlide img{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center;
-      display:block;
-      transform:scale(1.24);
-    }
-
-    .carouselOverlay{
-      position:absolute;
-      left:12px;
-      right:12px;
-      bottom:12px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      pointer-events:none;
-    }
-
-    .carouselOverlay .carouselBtn,
-    .carouselOverlay .carouselDots{
-      pointer-events:auto;
-    }
-
-    .carouselBtn{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.55);
-      background:rgba(255,255,255,.9);
-      color:var(--forest);
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-      flex:0 0 auto;
-      transition:transform .18s ease, background .18s ease;
-    }
-
-    .carouselBtn:hover{
-      transform:translateY(-1px);
-      background:#fff;
-    }
-
-    .carouselDots{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.9);
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:var(--shadow);
-    }
-
-    .carouselDot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      padding:0;
-      cursor:pointer;
-    }
-
-    .carouselDot.active{
-      background:var(--forest);
-      border-color:var(--forest);
-    }
-
-    .mediaFooter{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:13px;
-      color:var(--muted);
-      background:rgba(255,255,255,.6);
-      min-height:76px;
-      display:flex;
-      align-items:center;
-      line-height:1.5;
-    }
-
-    .noteCard{
-      padding:16px;
-    }
-
-    .noteCard p{
-      margin:0;
-    }
-
-    .footerActions{
-      margin-top:16px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    @media (max-width:980px){
-      .hero,
-      .infoGrid,
-      .mediaGrid,
-      .canopyGrid{
-        grid-template-columns:1fr;
-      }
-
-      .heroMedia{
-        order:1;
-      }
-
-      .heroCard{
-        order:2;
-      }
-    }
-
-    @media (max-width:680px){
-      .page{
-        padding:16px;
-      }
+    @media (max-width: 520px) {
+      .gallery { grid-template-columns: 1fr; }
+      .thumb { height: 220px; }
+      .lbImg { height: min(65vh, 560px); }
+      .bodImg { height: 260px; }
     }
   </style>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "TouristTrip",
-  "name": "Ziplining in Mindo Ecuador",
-  "description": "Go ziplining in Mindo, Ecuador, for a canopy adventure with forest views, fresh air, and one of the region's top activities.",
-  "url": "https://mindobirdwatching.com/activities/ziplining/",
-  "image": "https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg",
-  "touristType": [
-    "Adventure travelers",
-    "Couples",
-    "Friends",
-    "Active travelers"
-  ],
-  "provider": {
-    "@type": "Organization",
-    "name": "Mindo Bird Watching",
-    "url": "https://mindobirdwatching.com/"
-  },
-  "inLanguage": "en",
-  "dateModified": "2026-05-05"
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": "https://mindobirdwatching.com/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Activities",
-      "item": "https://mindobirdwatching.com/activities/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": "Ziplining",
-      "item": "https://mindobirdwatching.com/activities/ziplining/"
-    }
-  ],
-  "dateModified": "2026-05-05"
-}
-</script>
-</link></head>
-<body data-page-content-group="activities" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="activity_tour">
+</link><meta content="en_US" property="og:locale"/></head>
+<body data-page-content-group="birds" data-page-language="en" data-page-region="mindo" data-page-type="gallery">
 <div class="container">
-<div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-content-group="activities" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/activities/ziplining/" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/activities/ziplining/" hreflang="en" lang="en">English</a>
-<a data-analytics-content-group="activities" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/es/actividades/canopy/" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/actividades/canopy/" hreflang="es" lang="es">Español</a></nav>
+<div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="gallery" data-analytics-target-language="en" href="https://mindobirdwatching.com/bird-gallery/" hreflang="en" lang="en">English</a>
+<a data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="gallery" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/galeria/" hreflang="es" lang="es">Español</a></nav>
 <main class="page card">
-<section aria-label="Ziplining in Mindo overview" class="hero">
-<div class="heroCard">
-<h1>Ziplining in Mindo, Ecuador</h1>
-<p class="lede">
-            Glide on multiple canopy lines above the treetops with certified guides on one of the classic thrill activities in Mindo, Ecuador. Ziplining here combines big cloud forest views, smooth landings, and a fun sense of movement that makes it ideal for travelers who want adventure without needing a full-day outing.
-          </p>
-<div aria-label="Ziplining details" class="chips">
-<span class="chip">Canopy adventure</span>
-<span class="chip">Multiple lines</span>
-<span class="chip">Certified guides</span>
-<span class="chip">Big views</span>
-<span class="chip">Classic thrill</span>
+<section aria-label="Bird gallery introduction" class="hero">
+<!-- LEFT column: intro + meet the birds (balance layout) -->
+<div class="heroLeft">
+<div>
+<h1>Mindo Bird Gallery</h1>
+<p>
+              Explore the Mindo Bird Watching gallery featuring Ecuador’s most colorful birds. See stunning photos of hummingbirds,
+              toucans, tanagers, and the Andean Cock-of-the-Rock from Mindo’s cloud forest.
+            </p>
+<div aria-label="Primary actions" class="heroCtas">
+<a class="btn primary" href="/book-tour/">Book A Tour</a>
+<a class="btn secondary" href="/tours/">View Tours</a>
 </div>
-<div class="ctaRow">
-<a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Book Tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/book-tour/" data-analytics-location="ziplining" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining" href="/book-tour/">Book Tour</a>
-<a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="secondary_cta_click" data-analytics-label="Back to Activities" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/activities/" data-analytics-location="ziplining" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/activities/">Back to Activities</a>
 </div>
-<div aria-label="Experience highlights" class="experienceHighlights">
-<h2>Experience highlights</h2>
+<aside aria-label="How to use this gallery" class="heroCard">
+<h2>Meet the Birds</h2>
 <ul>
-<li>Glide across multiple canopy lines above the cloud forest treetops.</li>
-<li>Ride with certified guides and a setup designed for smooth, confidence-building landings.</li>
-<li>Enjoy panoramic green views and one of Mindo's best-known adventure experiences.</li>
-<li>Perfect for travelers who want a memorable thrill without a long hike.</li>
+<li>Use filters to jump to a group (Hummingbirds, Toucans, etc.)</li>
+<li>Click any photo to open the full-screen viewer</li>
+<li>Use ← / → keys to browse</li>
 </ul>
-</div>
-</div>
-<aside aria-label="Ziplining hero image" class="heroMedia">
-<div class="heroMediaFrame">
-<img alt="Ziplining in Mindo, Ecuador" src="/assets/images/pages/activities/ziplining/act_ziplining_01.jpg"/>
-</div>
-<div class="heroMediaCap">
-            A wide visual introduction to treetop canopy lines, green valley views, and one of Mindo's signature adventure activities.
-          </div>
 </aside>
-</section>
-<section aria-label="Media gallery" class="section">
-<div class="sectionHead">
-<h2>Photos and video</h2>
-<p></p>
 </div>
-<div class="mediaGrid">
-<article class="mediaCard">
-<div class="mediaInner">
-<div class="videoFrame" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Ziplining video" data-analytics-location="ziplining_media" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining">
-<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" loading="lazy" src="https://www.youtube.com/embed/9piuHY7znIw?rel=0" title="Ziplining in Mindo Ecuador video"></iframe>
+<!-- RIGHT column: Bird of the Day (bigger) -->
+<div aria-label="Hero right column" class="heroRight">
+<aside aria-label="Bird of the Day" class="heroCard">
+<div class="bodHead">
+<div class="bodTitle" style="min-width:0;">
+<h2>Bird of the Day</h2>
+<div class="bodSub" id="bodSub">Loading today’s bird...</div>
 </div>
-<div class="mediaFooter">
-                A glimpse into the atmosphere, biodiversity, and natural rhythm of Mindo’s cloud forest.
-              </div>
+<span class="bodPill" id="bodPill">Loading</span>
 </div>
-</article>
-<article aria-label="Ziplining image carousel" class="mediaCard">
-<div class="mediaInner">
-<div class="carouselViewport">
-<figure class="carouselSlide active">
-<img alt="Ziplining across canopy lines in Mindo Ecuador" src="/assets/images/pages/activities/ziplining/act_ziplining_03.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Cloud forest view during a ziplining tour in Mindo Ecuador" src="/assets/images/pages/activities/ziplining/act_ziplining_02.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Zipline landing platform in Mindo Ecuador" src="/assets/images/pages/activities/ziplining/act_ziplining_01.jpg"/>
-</figure>
-<div class="carouselOverlay">
-<button aria-label="Previous image" class="carouselBtn" data-analytics-content-group="activities" data-analytics-event="gallery_previous" data-analytics-label="Previous image" data-analytics-location="ziplining_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining" id="zipPrev" type="button">←</button>
-<div aria-label="Carousel navigation" class="carouselDots">
-<button aria-label="Show zipline image" class="carouselDot active" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Ziplining image 1" data-analytics-location="ziplining_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining" data-slide="0" type="button"></button>
-<button aria-label="Show valley view image" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Ziplining image 2" data-analytics-location="ziplining_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining" data-slide="1" type="button"></button>
-<button aria-label="Show landing platform image" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Ziplining image 3" data-analytics-location="ziplining_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining" data-slide="2" type="button"></button>
+<div class="bodMedia" hidden="" id="bodMedia">
+<div class="bodImgWrap">
+<a aria-label="Open image source" href="#" id="bodImgLink" rel="noopener" style="display:block; width:100%;" target="_blank">
+<img alt="" class="bodImg" id="bodImg" loading="lazy" src=""/>
+</a>
 </div>
-<button aria-label="Next image" class="carouselBtn" data-analytics-content-group="activities" data-analytics-event="gallery_next" data-analytics-label="Next image" data-analytics-location="ziplining_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining" id="zipNext" type="button">→</button>
+<div class="bodAudio" hidden="" id="bodAudioWrap">
+<audio controls="" id="bodAudio" preload="none"></audio>
+<div class="bodLinks">
+<div>
+<span hidden="" id="bodImageCreditWrap">Image credit: <a href="#" id="bodImageCredit" rel="noopener" target="_blank">Source</a></span>
+<span hidden="" id="bodAudioCreditWrap" style="margin-left:10px;">Audio credit: <a href="#" id="bodAudioCredit" rel="noopener" target="_blank">Source</a></span>
+</div>
+<div>
+<span hidden="" id="bodAudioSrcWrap">Audio source: <a href="#" id="bodAudioSrc" rel="noopener" target="_blank">Open</a></span>
 </div>
 </div>
-<div class="mediaFooter" id="zipCaption">
-                Multiple canopy lines give this Mindo ziplining experience its sense of flow and momentum.
-              </div>
 </div>
-</article>
+</div>
+<div class="bodCtas">
+<a class="btn primary" href="/book-tour/">Bird with a Guide</a>
+<a class="btn secondary" href="/our-guide/">Meet Chicho</a>
+<a class="btn secondary" href="/birding-calendar/">Birding Calendar</a>
+<a class="btn secondary" href="/bird-of-the-week/">Bird of the Week</a>
+</div>
+</aside>
 </div>
 </section>
-<section aria-label="What to expect on a ziplining tour in Mindo" class="section">
+<section aria-label="Gallery section" class="section">
 <div class="sectionHead">
-<h2>What to expect</h2>
-<p>A classic Mindo thrill with treetop movement, broad views, and a guided setup designed to keep the experience fun and smooth.</p>
+<h2>Gallery</h2>
+<p class="hint"></p>
 </div>
-<div class="infoGrid">
-<article class="infoCard">
-<h3>Guided and organized</h3>
-<p>
-              Ziplining in Mindo is typically run with trained guides who help manage harnesses, launches, and landings. That makes the experience feel more approachable for first-time riders while still giving adventurous travelers the thrill they came for.
-            </p>
-</article>
-<article class="infoCard">
-<h3>Big views above the forest</h3>
-<p>
-              One of the biggest draws is the perspective. Instead of walking below the canopy, you move above it, with green ridges, treetops, and open valley views creating a very different way to experience Mindo.
-            </p>
-</article>
-<article class="infoCard">
-<h3>Smooth landings and repeated fun</h3>
-<p>
-              Because the course usually includes multiple lines, the experience feels progressive. Each glide builds confidence, and by the end many guests wish they could do the whole circuit again.
-            </p>
-</article>
+<div aria-label="Gallery filters" class="filters" role="toolbar">
+<button aria-pressed="true" class="chip" data-filter="all" type="button">All</button>
+<button aria-pressed="false" class="chip" data-filter="hummingbirds" type="button">Hummingbirds</button>
+<button aria-pressed="false" class="chip" data-filter="toucans" type="button">Toucans</button>
+<button aria-pressed="false" class="chip" data-filter="tanagers" type="button">Tanagers</button>
+<button aria-pressed="false" class="chip" data-filter="cock-of-the-rock" type="button">Cock-of-the-Rock</button>
+<button aria-pressed="false" class="chip" data-filter="other" type="button">Other</button>
+<button aria-pressed="false" class="chip" data-filter="videos" type="button">Videos</button>
 </div>
+<div aria-label="Bird photo grid" class="gallery" id="galleryGrid"></div>
+<div aria-live="polite" class="emptyState" id="emptyState" role="status">
+          No items found for this filter yet.
+        </div>
 </section>
-<section aria-label="Canopy course feel and rider highlights" class="section">
+<section aria-label="Videos section" class="section">
 <div class="sectionHead">
-<h2>Canopy course feel and rider highlights</h2>
-<p>The appeal of ziplining is the mix of speed, scenery, and light challenge without requiring technical skill.</p>
+<h2>Videos</h2>
+<p class="hint"></p>
 </div>
-<div class="canopyGrid">
-<article class="infoCard">
-<h3>A true Mindo classic</h3>
-<p>
-              Ziplining has long been one of Mindo's best-known adventure activities. It is a natural fit for visitors who want a memorable outdoor highlight beyond birding, waterfalls, or slower cultural experiences.
-            </p>
-</article>
-<article class="infoCard">
-<h3>Good for adventurous beginners</h3>
-<p>
-              Many first-time riders find ziplining exciting but manageable because the challenge is short and focused. Once the first line is complete, the rest usually feel easier and even more enjoyable.
-            </p>
-</article>
-<article class="infoCard">
-<h3>Great couple and group activity</h3>
-<p>
-              Ziplining works especially well for couples, friends, and small groups because each launch creates shared excitement, photos, and a sense of cheering one another on.
-            </p>
-</article>
-<article class="infoCard">
-<h3>Adventure without a full trek</h3>
-<p>
-              This is one of the best options for travelers who want adrenaline and panoramic views but do not necessarily want a long muddy trail or a full-day activity.
-            </p>
-</article>
+<div class="videoGrid">
+<div aria-label="Video 1" class="videoCard">
+<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" class="videoFrame" frameborder="0" height="866" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/uQtG5D4Uo4I" title="Hummingbird Heaven: Up Close in Mindo, Ecuador" width="487">
+</iframe>
+<div class="videoCap">Hummingbird Heaven: Up Close in Mindo, Ecuador</div>
 </div>
-</section>
-<section aria-label="Plan your trip around this activity" class="section">
-<div class="sectionHead">
-<h2>Plan your trip around this activity</h2>
-<p>Use this activity as part of a smarter Mindo itinerary with better timing, logistics, and wildlife experiences.</p>
+<div aria-label="Video 2" class="videoCard">
+<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" class="videoFrame" frameborder="0" height="866" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/Z2SZyk_GRj0" title="Peaceful Toucan Resting in the Cloud Forest of Mindo, Ecuador | Nature's Calm" width="487">
+</iframe>
+<div class="videoCap">Peaceful Toucan Resting in the Cloud Forest of Mindo, Ecuador | Nature's Calm</div>
 </div>
-<div class="noteCard">
-<p>
-      Many travelers combine this experience with a broader plan. Start with our 
-      <a data-analytics-content-group="activities" data-analytics-event="internal_link_click" data-analytics-label="Mindo travel guide" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/mindo-travel-guide/" data-analytics-location="activity_tour_body" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/mindo-travel-guide/">Mindo travel guide</a> to structure your itinerary, explore the best 
-      <a data-analytics-content-group="activities" data-analytics-event="internal_link_click" data-analytics-label="birdwatching spots in Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/mindo-birdwatching-spots/" data-analytics-location="activity_tour_body" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/mindo-birdwatching-spots/">birdwatching spots in Mindo</a>, and consider adding a guided experience from our 
-      <a data-analytics-content-group="activities" data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/birdwatching-tours-mindo/" data-analytics-location="activity_tour_body" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/birdwatching-tours-mindo/">birdwatching tours in Mindo</a>. You can also review the 
-      <a data-analytics-content-group="activities" data-analytics-event="internal_link_click" data-analytics-label="birds of Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/mindo-birds-list/" data-analytics-location="activity_tour_body" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/mindo-birds-list/">birds of Mindo</a> to understand what you might see during your visit.
-    </p>
-</div>
-</section>
-<section aria-label="Helpful notes" class="section">
-<div class="sectionHead">
-<h2>Helpful notes</h2>
-<p>Come ready for height, movement, and one of the most iconic adventure experiences in Mindo.</p>
-</div>
-<div class="noteCard">
-<p>
-            Wear secure shoes and comfortable clothes that allow easy movement. It helps to avoid loose items unless they are well secured, and phones or cameras should be attached safely if brought on the course. If you are a little nervous at first, that is normal. Most guests settle in quickly after the first line.
-          </p>
-</div>
-<div class="footerActions">
-<a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="secondary_cta_click" data-analytics-label="Back to Activities" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/activities/" data-analytics-location="ziplining" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/activities/">Back to Activities</a>
-<a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Book Tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/book-tour/" data-analytics-location="ziplining" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="ziplining" href="/book-tour/">Book Tour</a>
 </div>
 </section>
 </main>
 <div id="siteFooter"></div>
 </div>
+<!-- ✅ Shared includes + header behavior -->
 <script defer="" src="/assets/js/includes.js?v=1"></script>
 <script defer="" src="/assets/js/site.js?v=34"></script>
 <script>
-    (function(){
-      const slides = Array.from(document.querySelectorAll('.carouselSlide'));
-      const dots = Array.from(document.querySelectorAll('.carouselDot'));
-      const caption = document.getElementById('zipCaption');
-      const prev = document.getElementById('zipPrev');
-      const next = document.getElementById('zipNext');
+    (function () {
+      "use strict";
 
-      const captions = [
-        "Multiple canopy lines give this Mindo ziplining experience its sense of flow and momentum.",
-        "Valley and treetop views are part of what makes this activity feel so memorable.",
-        "Each landing platform adds another moment of anticipation before the next glide."
-      ];
+      /* =========================
+         Bird of the Day (fetch + Worker proxy audio fix)
+         ========================= */
+      if (document.documentElement.dataset.mbwBodInit !== "1") {
+        document.documentElement.dataset.mbwBodInit = "1";
 
-      let index = 0;
+        const BASE = "https://script.google.com/macros/s/AKfycbzqTgsqS64wDI8vxeFEVtxPmuCj-Ls_09T798SMlqbvR23_X2C4HFg-Iy46qsIEmsCDvA/exec";
+        const AUDIO_PROXY = "https://mbw-audio-proxy.mindobirdwatching.workers.dev/?url=";
 
-      function render(i){
-        index = (i + slides.length) % slides.length;
-        slides.forEach((slide, sIdx) => slide.classList.toggle('active', sIdx === index));
-        dots.forEach((dot, dIdx) => dot.classList.toggle('active', dIdx === index));
-        caption.textContent = captions[index];
+        const bodSub = document.getElementById("bodSub");
+        const bodPill = document.getElementById("bodPill");
+        const bodMedia = document.getElementById("bodMedia");
+
+        const bodImg = document.getElementById("bodImg");
+        const bodImgLink = document.getElementById("bodImgLink");
+
+        const bodAudioWrap = document.getElementById("bodAudioWrap");
+        const bodAudio = document.getElementById("bodAudio");
+
+        const bodImageCreditWrap = document.getElementById("bodImageCreditWrap");
+        const bodImageCredit = document.getElementById("bodImageCredit");
+
+        const bodAudioCreditWrap = document.getElementById("bodAudioCreditWrap");
+        const bodAudioCredit = document.getElementById("bodAudioCredit");
+
+        const bodAudioSrcWrap = document.getElementById("bodAudioSrcWrap");
+        const bodAudioSrc = document.getElementById("bodAudioSrc");
+
+        function safeText(s) { return String(s || "").trim(); }
+        function isHttpUrl(v) { return /^https?:\/\/\S+/i.test(String(v || "").trim()); }
+
+        function setLoading() {
+          if (bodSub) bodSub.textContent = "Loading today’s bird...";
+          if (bodPill) bodPill.textContent = "Loading";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function setError() {
+          if (bodSub) bodSub.textContent = "Bird of the Day is unavailable right now.";
+          if (bodPill) bodPill.textContent = "Offline";
+          if (bodMedia) bodMedia.hidden = true;
+          if (bodAudioWrap) bodAudioWrap.hidden = true;
+        }
+
+        function renderBod(data) {
+          const birdName = safeText(data.birdName) || "Bird of the Day";
+          const spanishName = safeText(data.spanishName);
+
+          const imageUrl = safeText(data.imageUrl);
+          const imageLink = safeText(data.imageLink) || imageUrl;
+
+          // IMPORTANT FIX:
+          // Some sheets/scripts return "🔊 Play Audio" in audioUrl and the real link in audioLink.
+          const rawAudioUrl = isHttpUrl(data.audioUrl) ? safeText(data.audioUrl)
+                            : isHttpUrl(data.audioLink) ? safeText(data.audioLink)
+                            : "";
+
+          const audioLink = safeText(data.audioLink) || rawAudioUrl;
+
+          const imageCredit = safeText(data.imageCredit);
+          const audioCredit = safeText(data.audioCredit);
+
+          if (bodSub) bodSub.textContent = spanishName ? spanishName : "Today’s pick from Mindo";
+          if (bodPill) bodPill.textContent = "Today";
+
+          if (bodImg && imageUrl) {
+            bodImg.src = imageUrl;
+            bodImg.alt = birdName + (spanishName ? (" (" + spanishName + ")") : "");
+            if (bodImgLink) bodImgLink.href = imageLink || imageUrl;
+            if (bodMedia) bodMedia.hidden = false;
+          } else {
+            if (bodMedia) bodMedia.hidden = true;
+          }
+
+          // Audio through Worker proxy
+          if (bodAudio && rawAudioUrl) {
+            const proxied = AUDIO_PROXY + encodeURIComponent(rawAudioUrl);
+
+            bodAudio.innerHTML = "";
+            const src = document.createElement("source");
+            src.src = proxied;
+            // hint only
+            src.type = "audio/mpeg";
+            bodAudio.appendChild(src);
+
+            if (bodAudioWrap) bodAudioWrap.hidden = false;
+
+            // Debug logs (safe)
+            bodAudio.addEventListener("loadstart", () => console.log("[BOD audio] loadstart", proxied), { once: true });
+            bodAudio.addEventListener("error", () => console.log("[BOD audio] error", bodAudio.error), { once: true });
+          } else {
+            if (bodAudioWrap) bodAudioWrap.hidden = true;
+          }
+
+          if (bodImageCreditWrap) bodImageCreditWrap.hidden = !imageCredit;
+          if (bodImageCredit && imageCredit) bodImageCredit.href = imageCredit;
+
+          if (bodAudioCreditWrap) bodAudioCreditWrap.hidden = !audioCredit;
+          if (bodAudioCredit && audioCredit) bodAudioCredit.href = audioCredit;
+
+          // "Audio source" should be the original xeno-canto page/download, not the Worker URL
+          if (bodAudioSrcWrap) bodAudioSrcWrap.hidden = !audioLink;
+          if (bodAudioSrc && audioLink) bodAudioSrc.href = audioLink;
+        }
+
+        async function loadBod() {
+          setLoading();
+          try {
+            const res = await fetch(BASE + "?format=json", { headers: { "accept": "application/json" } });
+            const json = await res.json();
+            if (!json || json.ok !== true) throw new Error("Not ok");
+            renderBod(json);
+          } catch (_) {
+            setError();
+          }
+        }
+
+        loadBod();
       }
 
-      prev.addEventListener('click', function(){ render(index - 1); });
-      next.addEventListener('click', function(){ render(index + 1); });
+      /* =========================
+         Gallery + lightbox
+         ========================= */
+      if (document.documentElement.dataset.mbwGalleryInit === "1") return;
+      document.documentElement.dataset.mbwGalleryInit = "1";
 
-      dots.forEach((dot, dotIndex) => {
-        dot.addEventListener('click', function(){ render(dotIndex); });
-      });
+      const grid = document.getElementById("galleryGrid");
+      const emptyState = document.getElementById("emptyState");
+      const chips = Array.from(document.querySelectorAll(".chip[data-filter]"));
+      if (!grid) return;
+
+      const ITEMS = [
+        { id: "img-01", category: "toucans", title: "Fiery-billed Aracari", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Fiery-billed-aracari.jpg", alt: "Fiery-billed Aracari in Mindo, Ecuador" },
+        { id: "img-02", category: "toucans", title: "Plate-billed Mountain Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-plate-billed-mountain-toucan.jpg", alt: "Plate-billed Mountain Toucan in Mindo, Ecuador" },
+        { id: "img-03", category: "toucans", title: "Crimson-rumped Toucanet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-tcrimson-rumped-toucanet.jpg", alt: "Crimson-rumped Toucanet in Mindo, Ecuador" },
+        { id: "img-04", category: "toucans", title: "Toucan Barbet", src: "/assets/images/bird-gallery/MBW-Bird-gallery-toucan-barbet.jpg", alt: "Toucan Barbet in Mindo, Ecuador" },
+        { id: "img-05", category: "toucans", title: "Choco Toucan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-choco-toucan.jpg", alt: "Choco Toucan in Mindo, Ecuador" },
+
+        { id: "img-06", category: "cock-of-the-rock", title: "Andean Cock-of-the-Rock", src: "/assets/images/bird-gallery/MBW-Bird-gallery-andean-cock-of-the-rock.jpg", alt: "Andean Cock-of-the-Rock in Mindo, Ecuador" },
+
+        { id: "img-07", category: "hummingbirds", title: "Crowned Woodnymph", src: "/assets/images/bird-gallery/MBW-Bird-gallery-crowned-woodnymph.jpg", alt: "Crowned Woodnymph hummingbird in Mindo, Ecuador" },
+
+        { id: "img-08", category: "tanagers", title: "Black-chinned Mountain Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-black-chinned-mountain-tanager.jpg", alt: "Black-chinned Mountain Tanager in Mindo, Ecuador" },
+        { id: "img-09", category: "tanagers", title: "Blue-capped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-capped-tanager.jpg", alt: "Blue-capped Tanager in Mindo, Ecuador" },
+        { id: "img-10", category: "tanagers", title: "Blue-necked Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-blue-necked-tanager.jpg", alt: "Blue-necked Tanager in Mindo, Ecuador" },
+        { id: "img-11", category: "tanagers", title: "Glistening-green Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-glistening-green-tanager.jpg", alt: "Glistening-green Tanager in Mindo, Ecuador" },
+        { id: "img-12", category: "tanagers", title: "Golden-naped Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-naped-tanager.jpg", alt: "Golden-naped Tanager in Mindo, Ecuador" },
+        { id: "img-13", category: "tanagers", title: "Golden Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-tanager.jpg", alt: "Golden Tanager in Mindo, Ecuador" },
+        { id: "img-14", category: "tanagers", title: "Silver-throated Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-silver-throated-tanager.jpg", alt: "Silver-throated Tanager in Mindo, Ecuador" },
+        { id: "img-15", category: "tanagers", title: "Swallow Tanager", src: "/assets/images/bird-gallery/MBW-Bird-gallery-swallow-tanager.jpg", alt: "Swallow Tanager in Mindo, Ecuador" },
+
+        { id: "img-16", category: "other", title: "Ornate Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-Ornate-Flycatcher.jpg", alt: "Ornate Flycatcher in Mindo, Ecuador" },
+        { id: "img-17", category: "other", title: "Rusty-margined Flycatcher", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rusty-marginde-flycatcher.jpg", alt: "Rusty-margined Flycatcher in Mindo, Ecuador" },
+        { id: "img-18", category: "other", title: "Broad-billed Motmot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-broad-billed-motmot.jpg", alt: "Broad-billed Motmot in Mindo, Ecuador" },
+        { id: "img-19", category: "other", title: "Common Potoo", src: "/assets/images/bird-gallery/MBW-Bird-gallery-common-potoo.jpg", alt: "Common Potoo in Mindo, Ecuador" },
+        { id: "img-20", category: "other", title: "Guayaquil Woodpecker", src: "/assets/images/bird-gallery/MBW-Bird-gallery-guayaquil-woodpecker.jpg", alt: "Guayaquil Woodpecker in Mindo, Ecuador" },
+        { id: "img-21", category: "other", title: "Masked Trogon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-trogon.jpg", alt: "Masked Trogon in Mindo, Ecuador" },
+        { id: "img-22", category: "other", title: "Rose-faced Parrot", src: "/assets/images/bird-gallery/MBW-Bird-gallery-rose-faced-parrot.jpg", alt: "Rose-faced Parrot in Mindo, Ecuador" },
+
+        { id: "img-23", category: "other", title: "Long-wattled Umbrellabird", src: "/assets/images/bird-gallery/MBW-Bird-gallery-long-wattled-umbrellabird.jpg", alt: "Long-wattled Umbrellabird in Mindo, Ecuador" },
+        { id: "img-24", category: "other", title: "Masked Tityra", src: "/assets/images/bird-gallery/MBW-Bird-gallery-masked-tityra.jpg", alt: "Masked Tityra in Mindo, Ecuador" },
+        { id: "img-25", category: "other", title: "Chestnut-crowned Antpitta", src: "/assets/images/bird-gallery/MBW-Bird-gallery-chestnut-crowned-antpitta.jpg", alt: "Chestnut-crowned Antpitta in Mindo, Ecuador" },
+        { id: "img-26", category: "other", title: "Golden-headed Quetzal", src: "/assets/images/bird-gallery/MBW-Bird-gallery-golden-headed-quetzal.jpg", alt: "Golden-headed Quetzal in Mindo, Ecuador" },
+        { id: "img-27", category: "other", title: "Laughing Falcon", src: "/assets/images/bird-gallery/MBW-Bird-gallery-laughing-falcon.jpg", alt: "Laughing Falcon in Mindo, Ecuador" },
+        { id: "img-28", category: "other", title: "Cauca Guan", src: "/assets/images/bird-gallery/MBW-Bird-gallery-cauca-guan.JPG", alt: "Cauca Guan in Mindo, Ecuador" }
+      ];
+
+      function prettyCategory(c) {
+        const map = {
+          "hummingbirds": "Hummingbirds",
+          "toucans": "Toucans",
+          "tanagers": "Tanagers",
+          "cock-of-the-rock": "Cock-of-the-Rock",
+          "other": "Other"
+        };
+        return map[c] || "Birds";
+      }
+
+      function setEmptyState(list) {
+        if (!emptyState) return;
+        emptyState.classList.toggle("is-visible", list.length === 0);
+      }
+
+      const lb = document.createElement("div");
+      lb.className = "lb";
+      lb.setAttribute("role", "dialog");
+      lb.setAttribute("aria-modal", "true");
+      lb.setAttribute("aria-label", "Image viewer");
+      lb.innerHTML = `
+        <div class="lbDialog" role="document">
+          <div class="lbMedia">
+            <img class="lbImg" alt="" />
+          </div>
+          <div class="lbBar">
+            <div style="min-width:0;">
+              <p class="lbTitle" style="min-width:0;"></p>
+              <p class="lbSub"></p>
+            </div>
+            <div class="lbBtns">
+              <button class="iconBtn" type="button" data-lb="prev" aria-label="Previous (left arrow)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn" type="button" data-lb="next" aria-label="Next (right arrow)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn closeBtn" type="button" data-lb="close" aria-label="Close (escape)">
+                <span>Close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(lb);
+
+      const lbImg = lb.querySelector(".lbImg");
+      const lbTitle = lb.querySelector(".lbTitle");
+      const lbSub = lb.querySelector(".lbSub");
+      const btnPrev = lb.querySelector('[data-lb="prev"]');
+      const btnNext = lb.querySelector('[data-lb="next"]');
+      const btnClose = lb.querySelector('[data-lb="close"]');
+
+      let activeFilter = "all";
+      let visible = ITEMS.slice();
+      let lbIndex = 0;
+      let lastFocused = null;
+
+      function render() {
+        visible =
+          activeFilter === "all" ? ITEMS :
+          activeFilter === "videos" ? [] :
+          ITEMS.filter(x => x.category === activeFilter);
+
+        grid.innerHTML = "";
+
+        visible.forEach((item, i) => {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "tile";
+          tile.setAttribute("aria-label", "Open " + item.title);
+
+          const img = document.createElement("img");
+          img.className = "thumb";
+          img.src = item.src;
+          img.alt = item.alt || item.title;
+          img.loading = "lazy";
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          const name = document.createElement("p");
+          name.className = "name";
+          name.textContent = item.title;
+
+          const tag = document.createElement("p");
+          tag.className = "tag";
+          tag.textContent = prettyCategory(item.category);
+
+          meta.appendChild(name);
+          meta.appendChild(tag);
+
+          tile.appendChild(img);
+          tile.appendChild(meta);
+
+          tile.addEventListener("click", () => openLightbox(i));
+          grid.appendChild(tile);
+        });
+
+        setEmptyState(visible);
+      }
+
+      function clamp(i) {
+        const n = visible.length || 1;
+        return (i % n + n) % n;
+      }
+
+      function openLightbox(i) {
+        if (!visible.length) return;
+        lastFocused = document.activeElement;
+
+        lbIndex = clamp(i);
+        const item = visible[lbIndex];
+
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Photo";
+        lbSub.textContent = prettyCategory(item.category);
+
+        lb.classList.add("is-open");
+        window.setTimeout(() => { btnClose && btnClose.focus(); }, 0);
+      }
+
+      function closeLightbox() {
+        lb.classList.remove("is-open");
+        if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+      }
+
+      function showNext(dir) {
+        if (!visible.length) return;
+        lbIndex = clamp(lbIndex + dir);
+        const item = visible[lbIndex];
+        lbImg.src = item.src;
+        lbImg.alt = item.alt || item.title;
+        lbTitle.textContent = item.title || "Photo";
+        lbSub.textContent = prettyCategory(item.category);
+      }
+
+      if (!lb.dataset.bound) {
+        lb.dataset.bound = "1";
+        btnPrev && btnPrev.addEventListener("click", () => showNext(-1));
+        btnNext && btnNext.addEventListener("click", () => showNext(1));
+        btnClose && btnClose.addEventListener("click", closeLightbox);
+
+        lb.addEventListener("click", (e) => { if (e.target === lb) closeLightbox(); });
+
+        document.addEventListener("keydown", (e) => {
+          if (!lb.classList.contains("is-open")) return;
+          if (e.key === "Escape") closeLightbox();
+          if (e.key === "ArrowLeft") showNext(-1);
+          if (e.key === "ArrowRight") showNext(1);
+        });
+      }
+
+      if (!document.documentElement.dataset.mbwGalleryFiltersBound) {
+        document.documentElement.dataset.mbwGalleryFiltersBound = "1";
+
+        chips.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            chips.forEach(b => b.setAttribute("aria-pressed", "false"));
+            btn.setAttribute("aria-pressed", "true");
+
+            activeFilter = btn.dataset.filter || "all";
+
+            if (activeFilter === "videos") {
+              render();
+              const videosSection = document.querySelector('section[aria-label="Videos section"]');
+              if (videosSection) videosSection.scrollIntoView({ behavior: "smooth", block: "start" });
+              return;
+            }
+
+            render();
+          });
+        });
+      }
+
+      render();
     })();
   </script>
 </body>
