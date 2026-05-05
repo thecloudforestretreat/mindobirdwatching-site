@@ -4450,3 +4450,170 @@ body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .inf
 grid-template-columns: 1fr;
 }
 }
+
+/* =========================================================
+   MBW CTA/Button Row Spacing System v1
+   Purpose:
+   - Improve button spacing and wrapping across tour/category/detail pages.
+   - Keep primary CTAs visually dominant.
+   - Make secondary trust/action buttons feel intentional instead of uneven.
+   - Safe additive override placed at the end of site.css.
+   ========================================================= */
+
+/* Shared CTA rows used across current MBW pages */
+.btnRow,
+.ctaRow,
+.finalActions,
+.tourActions{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+/* Keep buttons aligned and prevent awkward text squeeze */
+.btnRow .btn,
+.ctaRow .btn,
+.finalActions .btn,
+.tourActions .btn{
+  min-height: 46px;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Main action rows: stronger primary button presence */
+.btnRow .btn.primary,
+.ctaRow .btn.primary,
+.finalActions .btn.primary,
+.tourActions .btn.primary{
+  flex: 0 0 auto;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* Secondary buttons in action rows should feel consistent */
+.btnRow .btn.secondary,
+.ctaRow .btn.secondary,
+.finalActions .btn.secondary,
+.tourActions .btn.secondary{
+  flex: 0 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Consecutive CTA rows are usually trust-signal rows */
+.btnRow + .btnRow,
+.ctaRow + .ctaRow{
+  margin-top: 10px !important;
+  gap: 9px 10px;
+}
+
+/* Trust rows: smaller pill style so they do not overpower the primary CTA */
+.btnRow + .btnRow .btn,
+.ctaRow + .ctaRow .btn{
+  min-height: 38px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 14px;
+  box-shadow: 0 10px 22px rgba(7,25,35,.06);
+}
+
+/* Tour category pages often have longer CTA clusters */
+body[data-page-type="tour_category"] .btnRow{
+  gap: 10px 12px;
+}
+
+body[data-page-type="tour_category"] .btnRow + .btnRow{
+  max-width: 760px;
+}
+
+body[data-page-type="tour_category"] .btnRow + .btnRow .btn{
+  font-size: 14px;
+  min-height: 38px;
+}
+
+/* Tour detail pages: keep CTA clusters clean without flattening page-specific CSS */
+body[data-page-type="tour_detail"] .ctaRow,
+body[data-page-type="tour_detail"] .btnRow{
+  gap: 10px 12px;
+}
+
+body[data-page-type="tour_detail"] .ctaRow + .ctaRow,
+body[data-page-type="tour_detail"] .btnRow + .btnRow{
+  gap: 9px 10px;
+}
+
+/* Featured card buttons should stay tidy and not stretch unexpectedly */
+.featured .fBody .btn,
+.featureGrid .fBody .btn{
+  white-space: normal;
+  align-self: flex-start;
+}
+
+/* Medium screens: allow a balanced two-column CTA feel */
+@media (max-width: 900px){
+  .btnRow,
+  .ctaRow,
+  .finalActions,
+  .tourActions{
+    gap: 10px;
+  }
+
+  .btnRow .btn,
+  .ctaRow .btn,
+  .finalActions .btn,
+  .tourActions .btn{
+    white-space: normal;
+  }
+
+  body[data-page-type="tour_category"] .btnRow .btn,
+  body[data-page-type="tour_detail"] .btnRow .btn,
+  body[data-page-type="tour_detail"] .ctaRow .btn{
+    flex: 1 1 calc(50% - 10px);
+  }
+
+  body[data-page-type="tour_category"] .btnRow .btn.primary,
+  body[data-page-type="tour_detail"] .btnRow .btn.primary,
+  body[data-page-type="tour_detail"] .ctaRow .btn.primary{
+    flex: 1 1 calc(50% - 10px);
+  }
+}
+
+/* Small mobile: stack primary actions cleanly and keep trust pills readable */
+@media (max-width: 560px){
+  .btnRow,
+  .ctaRow,
+  .finalActions,
+  .tourActions{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .btnRow .btn,
+  .ctaRow .btn,
+  .finalActions .btn,
+  .tourActions .btn{
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+  }
+
+  .btnRow + .btnRow,
+  .ctaRow + .ctaRow{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btnRow + .btnRow .btn,
+  .ctaRow + .ctaRow .btn{
+    width: auto;
+    flex: 1 1 auto;
+    min-width: min(100%, 150px);
+    font-size: 13.5px;
+  }
+}
