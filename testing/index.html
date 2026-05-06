@@ -694,6 +694,65 @@
       height:1px;
       overflow:hidden;
     }
+  
+/* ===== Trip builder chip/button layout refinement ===== */
+#tripBuilder .chips{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items:stretch;
+}
+
+#tripBuilder .chip{
+  width:100%;
+  justify-content:flex-start;
+  box-sizing:border-box;
+  min-height:44px;
+}
+
+#tripBuilder .builderActions{
+  display:grid;
+  grid-template-columns: minmax(190px, auto) minmax(90px, auto) minmax(150px, auto);
+  gap: 10px;
+  align-items:center;
+  justify-content:start;
+}
+
+#tripBuilder .builderActions .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+  min-height:46px;
+}
+
+@media (max-width: 900px){
+  #tripBuilder .chips{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #tripBuilder .builderActions{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #tripBuilder .builderActions #btnBookTour{
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px){
+  #tripBuilder .chips{
+    grid-template-columns: 1fr;
+  }
+
+  #tripBuilder .builderActions{
+    grid-template-columns: 1fr;
+  }
+
+  #tripBuilder .builderActions #btnBookTour{
+    grid-column:auto;
+  }
+}
+
   </style>
 <script type="application/ld+json">
 {
