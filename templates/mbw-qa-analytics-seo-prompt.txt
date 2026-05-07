@@ -95,6 +95,29 @@ site.js responsibilities:
 
 PRODUCTION-SAFE GLOBAL CSS STANDARD v4
 
+
+GLOBAL CSS ENFORCEMENT - DO NOT OVERCOMPLICATE PAGES
+Do not duplicate reusable UI systems in page-level CSS. The following must remain centralized in /assets/css/site.css or /assets/css/header.css unless a page has a truly unique visual component that is not covered globally:
+- rawLangLinks
+- language switch pills
+- CTA buttons
+- status boxes
+- form utility layouts
+- Turnstile rows
+- grid utilities
+- card utilities
+- shared hero structures
+- booking/contact utility patterns
+- guide/day-trip page modules
+
+Page-level CSS should only contain:
+- unique page layout behavior
+- unique hero/image treatments
+- page-specific components not covered by global modules
+
+If a scoped global module exists in site.css for the page type or content group, use it and remove duplicate page-level CSS. Do not carry long-term production guards or shared utility styles inside individual HTML pages.
+
+
 GLOBAL PAGE MODULE SYSTEM (NEW)
 
 The site now includes production-safe scoped modules inside /assets/css/site.css:
@@ -196,6 +219,19 @@ gtag('event', 'debug_test_event')
 Expected: debug_test_event appears in GA4 DebugView.
 
 If Realtime works but DebugView does not, do not fail page analytics automatically. Instead, mark DebugView as a GA4/debug configuration issue and confirm Realtime event collection.
+
+
+
+EARLY ARRIVAL UX STANDARD
+Guests and day-trip travelers may arrive in Mindo very early due to overnight international flights, early private transfers, and birding schedules. Arrival around 5:00 AM in Mindo is valid and should be supported naturally.
+
+Do not imply arrivals only happen during standard daytime check-in or daytime tour windows.
+
+When discussing transportation, transfers, booking logistics, day trips, or arrival timing:
+- support flexible arrival coordination
+- avoid rigid daytime assumptions
+- acknowledge early morning arrivals when relevant
+- for Quito-to-Mindo birding day trips, use arrival in Mindo around 5:00 AM when the itinerary calls for it
 
 PAGE FILE REQUIREMENTS
 Each page should provide only:
