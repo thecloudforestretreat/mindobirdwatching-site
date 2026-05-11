@@ -1,0 +1,326 @@
+BOOK TOUR CREATE PAGE - STRIPE INVOICE DUPLICATE FIX
+
+Use this to update:
+
+  book-tour/create/index.html
+
+Purpose:
+The current Send invoice button creates a new Stripe invoice every time it is clicked. This fix prevents duplicate invoices by:
+
+1. Disabling the Send invoice button while Stripe is being called.
+2. Remembering the invoice created for the current exact booking details.
+3. Refusing to create another invoice if the booking details have not changed.
+4. Clearing that lock only when staff edits the booking details.
+
+Important:
+This is a front-end safety fix. The best long-term protection is also adding a Stripe idempotency key on the backend.
+
+
+STEP 1 - UPDATE THE STATE OBJECT
+
+Find this:
+
+  const state = {
+    tours: [],
+    items: [],
+    generatedUrl: "",
+    generatedOpenUrl: ""
+  };
+
+Replace it with this:
+
+  const state = {
+    tours: [],
+    items: [],
+    generatedUrl: "",
+    generatedOpenUrl: "",
+    invoiceRequestInFlight: false,
+    lastInvoiceFingerprint: "",
+    lastInvoiceResult: null
+  };
+
+
+STEP 2 - ADD THESE HELPER FUNCTIONS
+
+Add these functions after clearStatus().
+
+  function clearGeneratedResult() {
+    state.generatedUrl = "";
+    state.generatedOpenUrl = "";
+    state.lastInvoiceFingerprint = "";
+    state.lastInvoiceResult = null;
+    els.copyBtn.disabled = true;
+    els.openBtn.disabled = true;
+    els.resultLinkBox.style.display = "none";
+    els.resultLinkBox.textContent = "";
+  }
+
+  function setInvoiceBusy(isBusy) {
+    state.invoiceRequestInFlight = isBusy;
+    els.sendInvoiceBtn.disabled = isBusy;
+    els.sendInvoiceBtn.textContent = isBusy ? "Creating invoice..." : "Send invoice";
+  }
+
+  function stableStringify(value) {
+    if (value === null || typeof value !== "object") return JSON.stringify(value);
+    if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+    return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(",")}}`;
+  }
+
+  function buildInvoiceFingerprint(endpoint, payload) {
+    return stableStringify({ endpoint, payload });
+  }
+
+
+STEP 3 - CLEAR THE INVOICE LOCK WHEN BOOKING DETAILS CHANGE
+
+In addItem(), add clearGeneratedResult() immediately after pushing the new item:
+
+  function addItem(initial = {}) {
+    state.items.push(createItem(initial));
+    clearGeneratedResult();
+    renderItems();
+    renderSummary();
+    updateModeUI();
+  }
+
+In removeItem(), add clearGeneratedResult() after the item is removed:
+
+  function removeItem(id) {
+    if (state.items.length === 1) {
+      showStatus("At least one booking item is required.", "error");
+      return;
+    }
+    state.items = state.items.filter(item => item.id !== id);
+    clearGeneratedResult();
+    renderItems();
+    renderSummary();
+    updateModeUI();
+    clearStatus();
+  }
+
+In updateItem(), add clearGeneratedResult() after the item changes:
+
+  function updateItem(id, key, value) {
+    const item = state.items.find(x => x.id === id);
+    if (!item) return;
+    item[key] = value;
+    clearGeneratedResult();
+    renderSummary();
+    updateModeUI();
+  }
+
+In updateModeUI(), make sure Send invoice stays disabled while a request is running.
+
+Find this area:
+
+  els.generateLinkBtn.disabled = multi;
+  els.copyBtn.disabled = !state.generatedUrl;
+  els.openBtn.disabled = !state.generatedOpenUrl;
+
+Change it to this:
+
+  els.generateLinkBtn.disabled = multi;
+  els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight;
+  els.copyBtn.disabled = !state.generatedUrl;
+  els.openBtn.disabled = !state.generatedOpenUrl;
+
+Near the bottom of the script, after existing event listeners, add this block so guest/detail edits also clear the invoice lock:
+
+  [
+    els.stripeEnvironment,
+    els.invoiceDueDays,
+    els.mainFirstName,
+    els.mainLastName,
+    els.mainEmail,
+    els.mainPhone,
+    els.whatsappNumber,
+    els.agentId,
+    els.pickupLocationLabel,
+    els.pickupAddress,
+    els.globalNotes
+  ].forEach(el => {
+    if (!el) return;
+    el.addEventListener("input", clearGeneratedResult);
+    el.addEventListener("change", clearGeneratedResult);
+  });
+
+
+STEP 4 - REPLACE onSendInvoice()
+
+Find the full existing function:
+
+  async function onSendInvoice() {
+    ...
+  }
+
+Replace the whole function with this:
+
+  async function onSendInvoice() {
+    clearStatus();
+
+    if (state.invoiceRequestInFlight) {
+      showStatus("Invoice creation is already in progress. Please wait.", "info");
+      return;
+    }
+
+    const errors = [...validateSharedFields({ requireGuest: true }), ...validateItems()];
+    if (errors.length) {
+      showStatus(errors[0], "error");
+      return;
+    }
+
+    const multi = state.items.length > 1;
+    const endpoint = multi ? "/stripe/api/create-invoice-multi" : "/stripe/api/create-invoice";
+    const payload = multi ? buildMultiItemInvoicePayload() : buildSingleItemInvoicePayload(state.items[0]);
+    const invoiceFingerprint = buildInvoiceFingerprint(endpoint, payload);
+
+    if (
+      state.lastInvoiceFingerprint &&
+      state.lastInvoiceFingerprint === invoiceFingerprint &&
+      state.lastInvoiceResult
+    ) {
+      const existing = state.lastInvoiceResult;
+      const hostedUrl = existing.hosted_invoice_url || "";
+
+      state.generatedUrl = hostedUrl;
+      state.generatedOpenUrl = hostedUrl;
+      els.copyBtn.disabled = !hostedUrl;
+      els.openBtn.disabled = !hostedUrl;
+      els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
+      els.resultLinkBox.textContent = hostedUrl || "";
+
+      els.actionSummary.innerHTML = `
+        Invoice already created for these exact booking details.
+        <br />
+        Invoice ID: <strong>${existing.invoice_id || "-"}</strong>
+        <br />
+        Invoice number: <strong>${existing.invoice_number || "-"}</strong>
+        <br />
+        Status: <strong>${existing.invoice_status || "open"}</strong>
+        <br />
+        To avoid duplicate Stripe invoices, this page did not create another invoice.
+      `;
+
+      showStatus("This invoice was already created. Use Copy Link or open it in Stripe to send the invoice email.", "info");
+      return;
+    }
+
+    if (hasSinglePersonItem()) {
+      const confirmed = await showConfirmModal({
+        title: "Confirm invoice",
+        message: "Are you sure you want to send an invoice for just 1 person?",
+        confirmText: "Continue",
+        cancelText: "Cancel"
+      });
+      if (!confirmed) {
+        showStatus("Invoice cancelled.", "info");
+        return;
+      }
+    }
+
+    try {
+      setInvoiceBusy(true);
+      showStatus("Creating invoice...", "info");
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const raw = await res.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (_) {
+        throw new Error(raw || "Unexpected server response");
+      }
+
+      if (!res.ok || !data.ok) throw new Error(data.error || "Invoice creation failed.");
+
+      const hostedUrl = data.hosted_invoice_url || "";
+      const invoiceId = data.invoice_id || "";
+      const invoiceNumber = data.invoice_number || "";
+      const invoiceStatus = data.invoice_status || "open";
+      const agentId = els.agentId.value.trim();
+
+      state.lastInvoiceFingerprint = invoiceFingerprint;
+      state.lastInvoiceResult = {
+        hosted_invoice_url: hostedUrl,
+        invoice_id: invoiceId,
+        invoice_number: invoiceNumber,
+        invoice_status: invoiceStatus
+      };
+
+      state.generatedUrl = hostedUrl;
+      state.generatedOpenUrl = hostedUrl;
+      els.copyBtn.disabled = !hostedUrl;
+      els.openBtn.disabled = !hostedUrl;
+      els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
+      els.resultLinkBox.textContent = hostedUrl || "";
+
+      els.actionSummary.innerHTML = `
+        Invoice created successfully.
+        <br />
+        Invoice ID: <strong>${invoiceId || "-"}</strong>
+        <br />
+        Invoice number: <strong>${invoiceNumber || "-"}</strong>
+        <br />
+        Status: <strong>${invoiceStatus || "-"}</strong>
+        <br />
+        Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
+        ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
+        <br />
+        <strong>Safety:</strong> This page will not create another invoice for these same booking details.
+      `;
+
+      showStatus(data.message || "Invoice created. Duplicate creation is now locked for these booking details.", "ok");
+    } catch (err) {
+      showStatus(err.message || "Something went wrong while creating the invoice.", "error");
+    } finally {
+      setInvoiceBusy(false);
+    }
+  }
+
+
+STEP 5 - OPTIONAL BUT RECOMMENDED BUTTON TEXT CHANGE
+
+Because the page creates the invoice and then shows the hosted invoice link, the button label is more accurate as:
+
+  Create invoice
+
+Instead of:
+
+  Send invoice
+
+If you change the label, also update setInvoiceBusy() so the non-busy text returns to "Create invoice".
+
+
+STRIPE CLEANUP FOR THE DUPLICATE INVOICES
+
+For the extra open invoices already created:
+
+1. In Stripe, keep the one invoice you actually want to send.
+2. Open each duplicate invoice.
+3. Click the ... menu.
+4. Choose Void invoice.
+5. Confirm.
+
+If an invoice is still Draft instead of Open, delete it instead of voiding it.
+
+
+BACKEND FOLLOW-UP
+
+This front-end fix prevents normal duplicate creation from the staff page. For live Stripe safety, the backend should also use an idempotency key when creating invoices.
+
+Recommended idempotency key ingredients:
+
+  stripe_environment
+  main_contact_email
+  tour_date
+  tour_code or item list
+  quantity
+  invoice amount
+
+That way even if someone double-submits from another browser tab, Stripe will not create duplicate invoices for the same exact booking.
