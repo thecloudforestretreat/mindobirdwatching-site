@@ -1,1 +1,529 @@
+MINDO BIRD WATCHING RECOMMENDATION LISTING PAGE GENERATION PROMPT
+Reusable EN/ES Property Recommendation Page Prompt
+Strict Production Mode | Global CSS First | SEO + Analytics Ready
 
+Use this prompt when I upload information and images for a future recommendation listing on mindobirdwatching.com.
+
+GOAL
+Create a polished English and Spanish recommendation listing page for Mindo Bird Watching. The page should recommend a hotel, lodge, glamping stay, restaurant, tour partner, local experience, guide, transportation service, cafe, chocolate/coffee experience, wellness provider, or other trusted local business in Mindo, Ecuador.
+
+Return complete downloadable .txt files for:
+1. English HTML page
+2. Spanish HTML page
+
+Do not return partial snippets unless explicitly requested.
+
+REFERENCE STYLE
+Use the existing Mindo Bird Watching recommendation pages as the model:
+- Recommendation pages use a strong SEO title, meta description, canonical, hreflang pair, Open Graph, Twitter tags, schema, breadcrumbs, hero section, visual media section, feature/benefit blocks, practical planning sections, and conversion CTAs.
+- Existing examples include accommodation-style listings with hero copy, image carousel/visual card, quick facts, feature cards, stay/plan cards, experience sections, and direct booking links.
+- Keep the tone practical, friendly, nature-forward, and useful for birders and cloud forest travelers.
+
+IMPORTANT ARCHITECTURE
+Use the current approved MBW architecture:
+- /assets/css/site.css
+- /assets/css/header.css
+- /assets/js/head.js
+- /assets/js/site.js
+
+Do not reference /assets/css/footer.css unless the user explicitly says that file exists.
+Do not duplicate sitewide analytics logic in the page.
+Do not add page-level analytics JavaScript.
+Do not add GA4 scripts directly in the page.
+Do not add page-level header or footer markup beyond the approved containers.
+
+REQUIRED PAGE SHELL
+Every generated page must include:
+
+<div id="siteHeader" data-current-lang="en"></div>
+<nav class="rawLangLinks" aria-label="Language switch">
+  <a href="FULL_EN_URL" lang="en" hreflang="en" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="recommendation_page" data-analytics-page-language="en" data-analytics-target-language="en">English</a>
+  <a href="FULL_ES_URL" lang="es" hreflang="es" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="recommendation_page" data-analytics-page-language="en" data-analytics-target-language="es">Español</a>
+</nav>
+
+Spanish page:
+
+<div id="siteHeader" data-current-lang="es"></div>
+<nav class="rawLangLinks" aria-label="Selector de idioma">
+  <a href="FULL_EN_URL" lang="en" hreflang="en" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-type="recommendation_page" data-analytics-page-language="es" data-analytics-target-language="en">English</a>
+  <a href="FULL_ES_URL" lang="es" hreflang="es" aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-type="recommendation_page" data-analytics-page-language="es" data-analytics-target-language="es">Español</a>
+</nav>
+
+And:
+
+<div id="siteFooter"></div>
+<script src="/assets/js/site.js"></script>
+
+The body must include:
+- data-page-type="recommendation_page"
+- data-page-language="en" or "es"
+- data-page-location="mindo"
+- data-page-region="mindo_cloud_forest"
+- data-page-content-group="recommendations"
+
+Example:
+<body data-page-type="recommendation_page" data-page-language="en" data-page-location="mindo" data-page-region="mindo_cloud_forest" data-page-content-group="recommendations">
+
+GLOBAL CSS FIRST
+Use global MBW CSS wherever possible.
+Page-level CSS is allowed only for unique recommendation-page layout, custom carousel behavior, unique image treatment, or page-specific components not already covered globally.
+Do not duplicate shared systems in page-level CSS:
+- rawLangLinks
+- language switch pills
+- CTA button base styling
+- cards that are already globally available
+- generic grids
+- header/footer behavior
+- analytics behavior
+
+If page-level CSS is necessary, keep it scoped to:
+body[data-page-type="recommendation_page"]
+or
+body[data-page-content-group="recommendations"]
+
+HTML VALIDITY
+Before output:
+- Use only one <!DOCTYPE html>.
+- Use only one <html> element.
+- Use valid void tags for <link> and <meta>.
+- Do not close <link> tags with </link>.
+- Do not duplicate head.js or site.js.
+- Do not include duplicate #siteHeader or #siteFooter.
+- Do not include duplicate rawLangLinks.
+
+INPUTS I MAY PROVIDE
+I may provide any combination of:
+- business/property name
+- category: hotel, lodge, glamping, restaurant, tour, transport, wellness, cafe, chocolate, coffee, experience, guide, etc.
+- English page URL
+- Spanish page URL
+- booking URL or external CTA URL
+- WhatsApp URL
+- website URL
+- Google Maps URL
+- Airbnb/Booking.com/direct booking URL
+- Instagram/TikTok/Facebook/YouTube links
+- location notes
+- description
+- amenities/features
+- room or package types
+- ideal traveler type
+- birding relevance
+- distance from Mindo town
+- image files or image paths
+- image alt text notes
+- owner/host info
+- languages spoken
+- price range, if available
+- policies, if available
+- nearby activities
+- special notes
+- disclaimers or affiliate note
+
+If any key information is missing, make a safe best-effort page without fabricating facts. Use neutral language such as:
+- "Check directly with the property for current pricing and availability."
+- "Details may vary by season."
+- "Confirm transportation and check-in details before arrival."
+
+Do not invent ratings, review counts, exact prices, exact distances, exact amenities, or claims like "best" unless the user provides support.
+
+PAGE TYPE OPTIONS
+Use recommendation_page for all individual recommendation pages.
+If creating a hub/listing page with multiple businesses, use recommendation_hub.
+
+URL + SLUG RULES
+English URLs should normally use:
+/recommendations/business-slug/
+
+Spanish URLs should normally use:
+/es/recomendaciones/business-slug/
+
+Do not use accented characters in URLs or slugs.
+Use lowercase ASCII slugs with hyphens.
+Avoid underscores unless the user’s existing URL already uses them.
+
+LANGUAGE RULES
+English page:
+- All visible copy should be English.
+- Proper names may retain accents when official.
+- Do not include Spanish UI except the language switch label "Español".
+
+Spanish page:
+- Use natural South American Spanish suitable for Ecuador.
+- Use correct accents in all visible Spanish copy and metadata.
+- Do not use English UI unless it is a brand/platform name like Airbnb, Booking.com, Google Maps, Instagram, TikTok, YouTube.
+- Do not add accents to URLs, slugs, classes, IDs, file paths, analytics event names, or data attributes.
+
+Mandatory accent checks for Spanish:
+- recomendación
+- alojamiento
+- habitación
+- habitaciones
+- estadía
+- teléfono
+- número
+- código
+- país
+- página
+- confirmación
+- opción
+- días
+- huésped / huéspedes
+- panorámica
+- próximo / próximamente
+- también
+- selección
+- búsqueda
+- reseña / reseñas
+- fantástico
+- mágico / mágica
+- increíble / increíbles
+- único / única
+- anfitrión / anfitriona
+- fácil
+- después
+- qué / cómo when used in questions or headings
+- más when meaning "more"
+- sí when meaning "yes"
+- envío only as noun or first-person verb; enviar/enviado/enviada do not take accents
+
+SEO REQUIREMENTS
+Each EN/ES page must include:
+- unique <title>
+- unique meta description
+- canonical URL
+- hreflang en
+- hreflang es
+- hreflang x-default
+- og:type
+- og:site_name
+- og:locale
+- og:locale:alternate
+- og:title
+- og:description
+- og:url
+- og:image
+- og:image:secure_url if useful
+- og:image:width
+- og:image:height
+- og:image:alt
+- twitter:card
+- twitter:title
+- twitter:description
+- twitter:image
+- robots meta
+- author meta
+- telephone=no format detection
+
+Recommended title patterns:
+English:
+"[Business Name] in Mindo, Ecuador | [Category / Main Benefit]"
+"Where to Stay in Mindo, Ecuador | [Business Name]"
+"[Business Name] | Recommended [Hotel/Lodge/Experience] in Mindo"
+
+Spanish:
+"[Business Name] en Mindo, Ecuador | [Categoría / Beneficio principal]"
+"Dónde alojarse en Mindo, Ecuador | [Business Name]"
+"[Business Name] | [Hotel/Lodge/Experiencia] recomendada en Mindo"
+
+Meta description style:
+- 140 to 160 characters when possible.
+- Mention Mindo, Ecuador.
+- Mention the main category and traveler benefit.
+- Avoid exaggerated claims.
+
+SCHEMA REQUIREMENTS
+Use JSON-LD appropriate to the recommendation.
+For accommodations, use a graph with:
+- WebPage
+- BreadcrumbList
+- LodgingBusiness or Hotel, if appropriate
+- TouristAccommodation may be used when useful
+
+For restaurants/cafes:
+- WebPage
+- BreadcrumbList
+- Restaurant or CafeOrCoffeeShop
+
+For tours/experiences:
+- WebPage
+- BreadcrumbList
+- TouristAttraction, LocalBusiness, or Service depending on the data
+
+For transport:
+- WebPage
+- BreadcrumbList
+- LocalBusiness or Service
+
+Do not add fake aggregateRating, review, priceRange, coordinates, or openingHours unless provided.
+
+RECOMMENDED PAGE STRUCTURE
+Use this structure unless the user asks otherwise:
+
+1. Header + rawLangLinks
+2. Main page wrapper
+3. Breadcrumbs
+4. Hero section
+   - eyebrow/category
+   - H1
+   - short intro
+   - quick pills for category, location, ideal traveler, booking style
+   - primary CTA
+   - secondary CTA
+5. Visual hero/media section
+   - carousel or image grid using uploaded image paths
+   - alt text per image
+   - small overlay tags only if factual
+6. Quick facts grid
+   Example fields:
+   - Location
+   - Best for
+   - Booking style
+   - Good to know
+7. Why we recommend it
+   - 3 to 4 feature cards
+8. Stay/experience details
+   - Rooms/packages/menu/activities depending on business type
+9. Birding/nature relevance
+   - Explain how it supports a Mindo nature or birding trip without overclaiming.
+10. Planning notes
+   - transport, arrival, check-in, what to confirm, seasonality, who it suits
+11. Nearby experiences/internal links
+   - link to relevant MBW pages
+12. Final CTA strip
+   - booking/direct website/WhatsApp/Google Maps/related guide
+13. Footer
+
+CTA RULES
+Use clear CTAs and analytics attributes.
+Primary CTA examples:
+- Check availability
+- Book directly
+- View on Airbnb
+- Visit website
+- Open WhatsApp
+- View on Google Maps
+- Contact the property
+
+Spanish CTA examples:
+- Consultar disponibilidad
+- Reservar directamente
+- Ver en Airbnb
+- Visitar sitio web
+- Abrir WhatsApp
+- Ver en Google Maps
+- Contactar el alojamiento
+
+Analytics attributes for CTAs:
+- data-analytics-event="recommendation_cta_click"
+- data-analytics-label="CTA label"
+- data-analytics-location="hero" or "final_cta" or "property_card"
+- data-analytics-page-type="recommendation_page"
+- data-analytics-topic="recommendations"
+- data-analytics-cta-type="primary" or "secondary" or "external_booking" or "maps" or "whatsapp"
+
+Use outbound_link_click for external links if not using recommendation_cta_click.
+Use internal_link_click for internal MBW links.
+Use whatsapp_click for WhatsApp links if the CTA is specifically WhatsApp.
+
+RECOMMENDED ANALYTICS EVENTS
+Add data-analytics-* attributes where relevant:
+- language_switch_click
+- recommendation_cta_click
+- external_booking_click
+- maps_click
+- whatsapp_click
+- internal_link_click
+- related_content_click
+- image_gallery_click
+- content_section_view
+
+Each major section should include:
+data-analytics-section="section_name"
+
+Example section names:
+- recommendation_hero
+- recommendation_visuals
+- quick_facts
+- why_recommended
+- stay_details
+- birding_relevance
+- planning_notes
+- nearby_experiences
+- final_cta
+
+IMAGE RULES
+When the user uploads images:
+- Use the provided images or paths only.
+- Do not invent image paths.
+- Use descriptive alt text.
+- For Spanish pages, alt text must be Spanish with correct accents.
+- If only image filenames are provided, infer simple safe alt text from the business/category, not unsupported details.
+- Choose one strong hero/OG image.
+- Keep OG image absolute URL.
+
+Image path pattern if the user provides only filenames and a slug:
+/recommendations/[business-slug]/filename.jpg
+or user-provided path.
+
+Do not rename files unless asked.
+
+COPY TONE
+Tone should be:
+- warm
+- trustworthy
+- practical
+- helpful to birders and nature travelers
+- not overly salesy
+- not exaggerated
+
+Avoid:
+- "best" unless the page title uses an SEO pattern and the copy remains balanced
+- fake authority claims
+- fake reviews
+- fake exact pricing
+- generic tourist fluff
+
+DISCLOSURE / TRUST NOTE
+If the recommendation involves an external booking platform or partner, include a small transparent note such as:
+English:
+"This recommendation is provided to help travelers compare trusted local options. Always confirm availability, pricing, and policies directly before booking."
+
+Spanish:
+"Esta recomendación ayuda a los viajeros a comparar opciones locales confiables. Confirma disponibilidad, precios y políticas directamente antes de reservar."
+
+INTERNAL LINKING RULES
+Include relevant contextual links, not random link blocks.
+Possible English internal links:
+- /tours/
+- /booking/
+- /birding-in-mindo/
+- /quito-to-mindo-day-trip/
+- /mindo-birding-tours/
+- /where-to-stay-in-mindo/ if it exists
+- /recommendations/
+
+Possible Spanish internal links:
+- /es/tours/
+- /es/reservas/
+- /es/observacion-de-aves-en-mindo/
+- /es/viaje-de-un-dia-quito-mindo/
+- /es/tours-de-aves-en-mindo/
+- /es/donde-alojarse-en-mindo/ if it exists
+- /es/recomendaciones/
+
+Do not link to pages that are not provided or known unless the user says they exist.
+
+EARLY ARRIVAL AND BIRDING SCHEDULE RULE
+For recommendation pages connected to day trips, lodging, transport, or birding logistics:
+- It is valid for travelers to arrive in Mindo around 5:00 AM.
+- Do not imply that Mindo arrival only happens during standard daytime check-in or tourism windows.
+- If early birding is relevant, mention early coordination naturally.
+- For lodging, say guests should confirm early arrival/check-in or luggage drop-off directly.
+
+RECOMMENDATION PAGE VARIANTS
+Choose the variant based on the business type.
+
+A. Accommodation listing
+Sections:
+- Hero
+- Visuals
+- Quick facts
+- Why stay here
+- Rooms/stay options
+- Birding and nature fit
+- Planning notes
+- Nearby experiences
+- Final CTA
+
+B. Restaurant/cafe listing
+Sections:
+- Hero
+- Visuals
+- Quick facts
+- Why go here
+- What to order / what to expect, only if provided
+- Good for birders/travelers
+- Planning notes
+- Nearby experiences
+- Final CTA
+
+C. Tour/experience listing
+Sections:
+- Hero
+- Visuals
+- Quick facts
+- Why we recommend it
+- What the experience includes, only if provided
+- Best fit
+- Planning notes
+- Related tours/pages
+- Final CTA
+
+D. Transport listing
+Sections:
+- Hero
+- Visuals if available
+- Quick facts
+- Why use this service
+- Routes / pickup notes, only if provided
+- Early arrival notes
+- Planning notes
+- Final CTA
+
+HOST / OWNER INFO
+If host info is provided, include it in a small trust card.
+Possible fields:
+- host name
+- languages spoken
+- response style
+- Superhost or verified platform status only if provided
+- local connection
+
+Do not invent Superhost status, certifications, licenses, or awards.
+
+MULTI-PROPERTY RECOMMENDATION PAGE
+If the user provides several properties, create a comparison/listing page instead of an individual profile.
+Use:
+- a hero explaining the collection
+- quick comparison cards
+- each property card with image, short summary, best fit, key features, CTA
+- final planning note
+- schema as WebPage + ItemList + BreadcrumbList
+
+OUTPUT REQUIREMENTS
+Return:
+1. English complete HTML as downloadable .txt
+2. Spanish complete HTML as downloadable .txt
+3. Short summary with:
+   - page type
+   - URLs used
+   - CTAs used
+   - any missing information or assumptions
+   - whether page-level CSS was preserved and why
+
+If the user asks only for a prompt, return the prompt as a downloadable .txt file.
+
+FINAL QA CHECKLIST
+Before returning files, verify:
+- one valid doctype only
+- correct html lang
+- correct body data attributes
+- one #siteHeader with data-current-lang
+- one rawLangLinks directly after #siteHeader
+- one #siteFooter
+- /assets/js/head.js loaded once
+- /assets/js/site.js loaded once
+- no duplicate analytics scripts
+- canonical correct
+- hreflang en/es/x-default correct
+- OG/Twitter localized correctly
+- schema valid and appropriate
+- Spanish accents correct in visible copy and metadata
+- no accents in technical identifiers, URLs, slugs, asset paths, classes, IDs, data attributes, or analytics event names
+- major CTAs have analytics attributes
+- major sections have data-analytics-section
+- image alt text present and localized
+- internal links relevant
+- external links open safely with target="_blank" rel="noopener noreferrer"
+- no unsupported claims, fake ratings, fake prices, fake exact distances, or fake amenities
