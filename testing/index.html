@@ -173,47 +173,111 @@
     body[data-page-content-group="recommendations"] .visualCard{
       overflow:hidden;
       display:grid;
-      grid-template-rows:minmax(320px,1fr) auto;
+      grid-template-rows:minmax(420px,1fr) auto;
     }
-    body[data-page-content-group="recommendations"] .imageStack{
-      display:grid;
-      grid-template-columns:1.4fr .8fr;
-      gap:0;
-      min-height:320px;
-      background:#0b1220;
-    }
-    body[data-page-content-group="recommendations"] .imageMain,
-    body[data-page-content-group="recommendations"] .imageSide{
+
+    body[data-page-content-group="recommendations"] .recCarousel{
       position:relative;
+      min-height:420px;
+      background:#0b1220;
       overflow:hidden;
     }
-    body[data-page-content-group="recommendations"] .imageSide{
-      display:grid;
-      grid-template-rows:1fr 1fr;
-      border-left:1px solid rgba(255,255,255,.16);
+    body[data-page-content-group="recommendations"] .recSlide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      visibility:hidden;
+      transition:opacity .55s ease, visibility .55s ease;
     }
-    body[data-page-content-group="recommendations"] .imageStack img{
+    body[data-page-content-group="recommendations"] .recSlide.is-active{
+      opacity:1;
+      visibility:visible;
+      z-index:1;
+    }
+    body[data-page-content-group="recommendations"] .recSlide img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
-      transform:scale(1.02);
     }
-    body[data-page-content-group="recommendations"] .imageMain:after,
-    body[data-page-content-group="recommendations"] .imageSide figure:after{
+    body[data-page-content-group="recommendations"] .recSlide:after{
       content:"";
       position:absolute;
       inset:0;
-      background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.24));
+      background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.34));
       pointer-events:none;
     }
-    body[data-page-content-group="recommendations"] .imageSide figure{
-      margin:0;
-      position:relative;
-      overflow:hidden;
+    body[data-page-content-group="recommendations"] .recSlideLabel{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:14px;
+      z-index:2;
+      display:inline-flex;
+      width:fit-content;
+      max-width:calc(100% - 28px);
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.54);
+      border:1px solid rgba(255,255,255,.20);
+      color:#fff;
+      font-weight:800;
+      font-size:12.5px;
+      line-height:1.2;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
     }
-    body[data-page-content-group="recommendations"] .imageSide figure + figure{
-      border-top:1px solid rgba(255,255,255,.16);
+    body[data-page-content-group="recommendations"] .recCarouselBtn{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      z-index:4;
+      width:46px;
+      height:46px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.48);
+      background:rgba(0,0,0,.48);
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      font-weight:900;
+      line-height:1;
+      cursor:pointer;
+      box-shadow:0 14px 28px rgba(0,0,0,.24);
+    }
+    body[data-page-content-group="recommendations"] .recCarouselBtn:hover,
+    body[data-page-content-group="recommendations"] .recCarouselBtn:focus-visible{
+      background:rgba(13,89,37,.88);
+      outline:2px solid rgba(255,255,255,.9);
+      outline-offset:2px;
+    }
+    body[data-page-content-group="recommendations"] .recCarouselBtn.prev{left:14px;}
+    body[data-page-content-group="recommendations"] .recCarouselBtn.next{right:14px;}
+    body[data-page-content-group="recommendations"] .recDots{
+      position:absolute;
+      left:50%;
+      bottom:64px;
+      transform:translateX(-50%);
+      z-index:4;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+    }
+    body[data-page-content-group="recommendations"] .recDot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.7);
+      background:rgba(255,255,255,.36);
+      padding:0;
+      cursor:pointer;
+    }
+    body[data-page-content-group="recommendations"] .recDot[aria-current="true"]{
+      width:24px;
+      background:#fff;
     }
     body[data-page-content-group="recommendations"] .visualFooter{
       padding:14px;
@@ -346,18 +410,15 @@
       body[data-page-content-group="recommendations"] .page{
         padding:18px;
       }
-      body[data-page-content-group="recommendations"] .imageStack{
-        grid-template-columns:1fr;
+      body[data-page-content-group="recommendations"] .visualCard{
+        grid-template-rows:minmax(320px,1fr) auto;
       }
-      body[data-page-content-group="recommendations"] .imageSide{
-        grid-template-columns:1fr 1fr;
-        grid-template-rows:auto;
-        border-left:0;
-        border-top:1px solid rgba(255,255,255,.16);
+      body[data-page-content-group="recommendations"] .recCarousel{
+        min-height:320px;
       }
-      body[data-page-content-group="recommendations"] .imageSide figure + figure{
-        border-top:0;
-        border-left:1px solid rgba(255,255,255,.16);
+      body[data-page-content-group="recommendations"] .recCarouselBtn{
+        width:42px;
+        height:42px;
       }
       body[data-page-content-group="recommendations"] .quickGrid,
       body[data-page-content-group="recommendations"] .featureGrid,
@@ -516,19 +577,31 @@
           <p class="trustNote">This recommendation helps travelers compare trusted local options. Always confirm availability, pricing, and policies directly before booking.</p>
         </article>
 
-        <aside class="visualCard" aria-label="Roca Mía images" data-analytics-section="recommendation_visuals">
-          <div class="imageStack">
-            <figure class="imageMain">
+        <aside class="visualCard" aria-label="Roca Mía image carousel" data-analytics-section="recommendation_visuals">
+          <div class="recCarousel" data-rec-carousel data-interval="2500" aria-label="Roca Mía image carousel">
+            <figure class="recSlide is-active">
               <img src="/recommendations/roca-mia/roca-mia_001.jpeg" alt="Roca Mía riverside lodge and cloud forest habitat near Mindo" loading="eager" decoding="async" />
+              <figcaption class="recSlideLabel">Riverside cloud forest setting</figcaption>
             </figure>
-            <div class="imageSide">
-              <figure><img src="/recommendations/roca-mia/roca-mia_002.jpeg" alt="Rustic cabins at Roca Mía in a private cloud forest reserve" loading="lazy" decoding="async" /></figure>
-              <figure><img src="/recommendations/roca-mia/roca-mia_003.jpeg" alt="Birdwatching habitat near Roca Mía connected to Andean Cock-of-the-Rock access" loading="lazy" decoding="async" /></figure>
+            <figure class="recSlide">
+              <img src="/recommendations/roca-mia/roca-mia_002.jpeg" alt="Rustic cabin and room view at Roca Mía in Mindo" loading="lazy" decoding="async" />
+              <figcaption class="recSlideLabel">Rustic cabin stay</figcaption>
+            </figure>
+            <figure class="recSlide">
+              <img src="/recommendations/roca-mia/roca-mia_003.jpeg" alt="Roca Mía cabin exterior surrounded by cloud forest vegetation" loading="lazy" decoding="async" />
+              <figcaption class="recSlideLabel">Nature-focused lodging near Mindo</figcaption>
+            </figure>
+            <button class="recCarouselBtn prev" type="button" aria-label="Previous image" data-rec-prev data-analytics-event="image_gallery_click" data-analytics-label="Previous image" data-analytics-location="recommendation_visuals" data-analytics-page-type="recommendation_page">&#8249;</button>
+            <button class="recCarouselBtn next" type="button" aria-label="Next image" data-rec-next data-analytics-event="image_gallery_click" data-analytics-label="Next image" data-analytics-location="recommendation_visuals" data-analytics-page-type="recommendation_page">&#8250;</button>
+            <div class="recDots" aria-label="Roca Mía image carousel">
+              <button class="recDot" type="button" aria-label="1" aria-current="true"></button>
+              <button class="recDot" type="button" aria-label="2" aria-current="false"></button>
+              <button class="recDot" type="button" aria-label="3" aria-current="false"></button>
             </div>
           </div>
           <div class="visualFooter">
             <strong>Riverside cloud forest stay</strong>
-            <span>Use the images and direct links to compare Roca Mía with other local stays before confirming current access, availability, and arrival details.</span>
+            <span>Use the carousel and direct links to compare Roca Mía with other local stays before confirming current access, availability, and arrival details.</span>
           </div>
         </aside>
       </section>
@@ -611,6 +684,61 @@
     </main>
     <div id="siteFooter"></div>
   </div>
+
+  <script>
+(function(){
+  function initRecommendationCarousels(){
+    var carousels = document.querySelectorAll('[data-rec-carousel]');
+    carousels.forEach(function(carousel){
+      var slides = Array.prototype.slice.call(carousel.querySelectorAll('.recSlide'));
+      var dots = Array.prototype.slice.call(carousel.querySelectorAll('.recDot'));
+      var prev = carousel.querySelector('[data-rec-prev]');
+      var next = carousel.querySelector('[data-rec-next]');
+      var index = 0;
+      var timer = null;
+      var delay = Number(carousel.getAttribute('data-interval') || 2500);
+
+      function show(nextIndex){
+        if(!slides.length) return;
+        index = (nextIndex + slides.length) % slides.length;
+        slides.forEach(function(slide, i){
+          slide.classList.toggle('is-active', i === index);
+          slide.setAttribute('aria-hidden', i === index ? 'false' : 'true');
+        });
+        dots.forEach(function(dot, i){
+          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+      }
+
+      function start(){
+        stop();
+        timer = window.setInterval(function(){ show(index + 1); }, delay);
+      }
+
+      function stop(){
+        if(timer){ window.clearInterval(timer); timer = null; }
+      }
+
+      if(prev){ prev.addEventListener('click', function(){ show(index - 1); start(); }); }
+      if(next){ next.addEventListener('click', function(){ show(index + 1); start(); }); }
+      dots.forEach(function(dot, i){ dot.addEventListener('click', function(){ show(i); start(); }); });
+      carousel.addEventListener('mouseenter', stop);
+      carousel.addEventListener('mouseleave', start);
+      carousel.addEventListener('focusin', stop);
+      carousel.addEventListener('focusout', start);
+
+      show(0);
+      start();
+    });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initRecommendationCarousels, { once:true });
+  }else{
+    initRecommendationCarousels();
+  }
+})();
+  </script>
   <script src="/assets/js/site.js"></script>
 </body>
 </html>
