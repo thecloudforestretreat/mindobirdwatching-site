@@ -321,9 +321,9 @@
 </div>
 </div>
 <div class="productCtaRow">
-<a class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Buy on Printify" data-analytics-location="product_hero" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="#" id="buyButton" rel="noopener sponsored" target="_blank">Buy on Printify</a>
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Shipping Policy" data-analytics-location="product_hero" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/shop/shipping-policy/">Shipping info</a>
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Return Policy" data-analytics-location="product_hero" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/shop/return-policy/">Return policy</a>
+<a class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Buy Product" data-analytics-location="product_hero" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="#" id="buyButton" rel="noopener sponsored" target="_blank">Buy</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Shipping Policy" data-analytics-location="product_hero" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/shop/shipping-policy/" rel="noopener" target="_blank">Shipping info</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Return Policy" data-analytics-location="product_hero" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/shop/return-policy/" rel="noopener" target="_blank">Return policy</a>
 </div>
 <ul class="productTrustList" aria-label="Shop highlights">
 <li>Secure checkout through our print partner</li>
@@ -409,11 +409,14 @@
   function parsePrice(price) {
     var text = cleanText(price);
     var match = text.match(/([0-9]+(?:\.[0-9]+)?)\s*([A-Z]{3})?/);
+    var value = match ? match[1] : "";
+    var currency = match && match[2] ? match[2] : "USD";
+    var display = value ? "$" + value + " " + currency : "Price shown at checkout";
     return {
       raw: text,
-      value: match ? match[1] : "",
-      currency: match && match[2] ? match[2] : "USD",
-      display: text || "Price shown at checkout"
+      value: value,
+      currency: currency,
+      display: display
     };
   }
 
@@ -421,7 +424,7 @@
     var text = cleanText(shipping);
     var parts = text.split(":::");
     if (parts.length === 2) {
-      return parts[0] + " shipping: " + parts[1];
+      return parts[0] + " shipping: " + parsePrice(parts[1]).display;
     }
     return text || "Shipping calculated by product and destination";
   }
@@ -629,8 +632,8 @@
     var buyButton = $("buyButton");
     if (buyButton) {
       buyButton.href = product.printifyProductUrl || SHOP_URL;
-      buyButton.setAttribute("aria-label", "Buy on Printify: " + title);
-      buyButton.setAttribute("data-analytics-label", "Buy on Printify: " + product.id);
+      buyButton.setAttribute("aria-label", "Buy: " + title);
+      buyButton.setAttribute("data-analytics-label", "Buy Product: " + product.id);
     }
 
     injectJsonLd("product-schema", buildProductSchema(product));
