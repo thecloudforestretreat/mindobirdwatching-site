@@ -1,1585 +1,929 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Create a payment link | Mindo Bird Watching</title>
-<link rel="icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="/assets/css/site.css" />
-<link rel="stylesheet" href="/assets/css/header.css?v=20251231-final" />
-<link rel="stylesheet" href="/assets/css/footer.css" />
-<script defer src="/assets/js/head.js"></script>
-<script defer src="/assets/js/includes.js"></script>
-<script defer src="/assets/js/site.js"></script>
-<style>
-  .payCreatePage {
-    padding: 22px 22px 26px;
-  }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Shop | Mindo Bird Watching</title>
+<meta content="A curated collection of bird-inspired prints and simple gifts from Mindo, Ecuador. Made to order with United States shipping through our print partner." name="description"/>
+<!-- Canonical + hreflang -->
+<link href="https://mindobirdwatching.com/shop/" rel="canonical"/><link href="https://mindobirdwatching.com/shop/" hreflang="x-default" rel="alternate"/><link href="https://mindobirdwatching.com/shop/" hreflang="en" rel="alternate"/>
+<!-- Open Graph -->
+<meta content="website" property="og:type"/>
+<meta content="Shop | Mindo Bird Watching" property="og:title"/>
+<meta content="Bird-inspired prints and simple gifts from the cloud forest of Mindo, Ecuador. Made to order with United States shipping." property="og:description"/>
+<meta content="https://mindobirdwatching.com/shop/" property="og:url"/>
+<meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Shop | Mindo Bird Watching" name="twitter:title"/>
+<meta content="Bird-inspired prints and simple gifts from the cloud forest of Mindo, Ecuador. Made to order with United States shipping." name="twitter:description"/>
+<meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" name="twitter:image"/>
+<!-- Favicons -->
+<link href="/assets/img/favicon.ico" rel="icon"/>
+<link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon"/>
+<!-- Site styles (match global layout/colors) -->
+<link href="/assets/css/site.css?v=1" rel="stylesheet"/>
+<link href="/assets/css/header.css?v=1" rel="stylesheet"/>
+<!-- Head behavior (if present on other pages) -->
+<script defer="" src="/assets/js/head.js?v=1"></script>
+<style>main.shopPage.page.card{
+  padding: 0;
+  overflow: hidden;
+}
+.shopWrap{
+  padding: 22px;
+}
+@media (max-width: 900px){
+  .shopWrap{ padding: 16px; }
+}
 
-  #siteHeader {
-    margin-bottom: 10px;
-  }
 
-  .payCreateWrap {
-    display: grid;
-    grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
-    gap: 18px;
-    align-items: start;
-  }
+    /* Page-specific styles only (do NOT restyle header/footer) */
+    .shopPage .kicker {
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-size: 12px;
+      opacity: .75;
+      margin: 0 0 8px;
+    }
+    .shopPage h1 {
+      margin: 0 0 10px;
+      line-height: 1.05;
+    }
+    .shopPage .lead {
+      margin: 0 0 16px;
+      max-width: 62ch;
+      opacity: .92;
+    }
+    .shopPage .metaRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+      margin: 10px 0 0;
+      opacity: .85;
+      font-size: 13px;
+    }
+    /* Avoid clipped card shadows inside the main shell (prevents hard "border" cut lines) */
+    main.shopPage.card{ overflow: hidden; }
 
-  .payPanel {
-    background: rgba(255,255,255,0.38);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    padding: 18px;
-    min-width: 0;
-  }
-
-  .payHero h1 {
-    margin: 0 0 8px;
-    font-size: clamp(32px, 4vw, 32px);
-    line-height: 0.98;
-  }
-
-  .payHero p {
-    margin: 0 0 18px;
-    max-width: 72ch;
-  }
-
-  .mode-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: rgba(13,89,37,0.08);
-    color: var(--ink);
-    font-size: 13px;
-    font-weight: 800;
-    margin-bottom: 18px;
-  }
-
-  .section-title {
-    margin: 18px 0 12px;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .divider {
-    height: 1px;
-    background: rgba(7,25,35,0.10);
-    margin: 18px 0;
-  }
-
-  .grid-2,
-  .grid-3 {
-    display: grid;
-    gap: 14px;
-  }
-
-  .grid-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .grid-3 {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) minmax(0, 0.85fr);
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    margin-bottom: 14px;
-    min-width: 0;
-  }
-
-  .field label {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .req::after {
-    content: " *";
-    color: #be3a3a;
-  }
-
-  .payCreatePage input,
-  .payCreatePage select,
-  .payCreatePage textarea,
-  .payCreatePage button {
-    font: inherit;
-  }
-
-  .payCreatePage input,
-  .payCreatePage select,
-  .payCreatePage textarea {
-    width: 100%;
-    min-width: 0;
-    border: 1px solid rgba(7,25,35,0.16);
-    background: #fff;
-    color: var(--ink);
-    border-radius: 14px;
-    padding: 12px 14px;
-    outline: none;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.02) inset;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  .payCreatePage input:focus,
-  .payCreatePage select:focus,
-  .payCreatePage textarea:focus {
-    border-color: rgba(13,89,37,0.38);
-    box-shadow: 0 0 0 3px rgba(13,89,37,0.12);
-  }
-
-  .payCreatePage textarea {
-    min-height: 92px;
-    resize: vertical;
-  }
-
-  .payCreatePage input[type="date"] {
-    min-height: 48px;
-    padding-right: 42px;
-    overflow: hidden;
-  }
-
-  .hint,
-  .small-note,
-  .pricing-note,
-  .subtext {
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--muted);
-  }
-
-  .items-wrap {
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: rgba(255,255,255,0.28);
-    padding: 14px;
-  }
-
-  .item-card {
-    border: 1px solid rgba(7,25,35,0.10);
-    background: rgba(255,255,255,0.62);
-    border-radius: 18px;
-    padding: 16px;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .item-card + .item-card {
-    margin-top: 14px;
-  }
-
-  .item-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .item-title {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .summary-box {
-    border: 1px dashed rgba(7,25,35,0.18);
-    background: rgba(255,255,255,0.42);
-    border-radius: 18px;
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-
-  .summary-title {
-    margin: 0 0 10px;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .summary-empty {
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--muted);
-  }
-
-  .summary-item {
-    border: 1px solid rgba(7,25,35,0.10);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.55);
-    padding: 12px;
-  }
-
-  .summary-item + .summary-item {
-    margin-top: 10px;
-  }
-
-  .summary-item-name {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-    margin-bottom: 6px;
-  }
-
-  .summary-meta {
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--muted);
-  }
-
-  .money {
-    font-weight: 800;
-    color: var(--ink);
-  }
-
-  .action-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 18px;
-  }
-
-  .mini-btn,
-  .action-btn {
-    appearance: none;
-    -webkit-appearance: none;
-    border-radius: 14px;
-    border: 1px solid rgba(7,25,35,0.16);
-    background: rgba(255,255,255,0.72);
-    color: var(--ink);
-    padding: 11px 15px;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .mini-btn:hover,
-  .action-btn:hover {
-    transform: translateY(-1px);
-  }
-
-  .mini-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  .mini-btn.danger {
-    border-color: rgba(190,58,58,0.18);
-    background: rgba(255,240,240,0.72);
-    color: #a03d3d;
-  }
-
-  .action-btn.primary {
-    background: rgba(255,215,0,0.28);
-    border-color: rgba(255,215,0,0.44);
-  }
-
-  .action-btn.secondary {
-    background: rgba(13,89,37,0.10);
-    border-color: rgba(13,89,37,0.20);
-  }
-
-  .action-btn:disabled,
-  .mini-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .status {
-    display: none;
-    margin-top: 14px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.45;
-  }
-
-  .status.show { display: block; }
-  .status.ok {
-    background: #e6f3e7;
-    border: 1px solid #b8d3bc;
-    color: #1f6437;
-  }
-  .status.error {
-    background: #fff0f0;
-    border: 1px solid #e3bcbc;
-    color: #a13333;
-  }
-  .status.info {
-    background: #edf4ff;
-    border: 1px solid #c7d8f5;
-    color: #29539a;
-  }
-
-  .link-box {
-    display: none;
-    margin-top: 14px;
-    border: 1px dashed rgba(7,25,35,0.18);
-    background: #fff;
-    border-radius: 14px;
-    padding: 12px;
-    font-size: 13px;
-    line-height: 1.45;
-    color: #314632;
-    word-break: break-word;
-  }
-
-  @media (max-width: 1080px) {
-    .payCreateWrap {
-      grid-template-columns: 1fr;
+    .shopPage .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: .45;
+      display: inline-block;
+      transform: translateY(-1px);
     }
 
-    .paySummary {
-      position: static;
+    .shopHero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items: stretch;
     }
-  }
-
-  @media (max-width: 760px) {
-    .container {
-      padding: 14px 10px 24px;
-    }
-
-    #siteHeader {
-      margin-bottom: 8px;
-    }
-
-    .payCreatePage {
-      padding: 14px;
-    }
-
-    .payPanel {
-      padding: 14px;
+    .shopHeroCard {
+      border: 1px solid rgba(0,0,0,.08);
       border-radius: 18px;
+      background: rgba(255,255,255,.45);
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
     }
-
-    .payHero h1 {
-      font-size: 32px;
-    }
-
-    .grid-2,
-    .grid-3 {
-      grid-template-columns: 1fr;
-    }
-
-    .item-top {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .action-row {
+    .heroPreview {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
       gap: 10px;
+      min-height: 340px;
+    }
+    .previewFrame {
+      border: 2px dashed rgba(0,0,0,.12);
+      min-height: 320px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.30);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 14px;
+      overflow: hidden;
+}
+    .previewFrame strong {
+      display: block;
+      font-weight: 900;
+      opacity: .8;
+    }
+    .previewFrame span {
+      display: block;
+      font-size: 13px;
+      opacity: .7;
+      margin-top: 6px;
+    }
+    .ctaRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
     }
 
-    .action-row .action-btn,
-    .action-row .mini-btn {
-      width: auto;
-      max-width: 100%;
-      flex: 0 1 auto;
+    .valueGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .miniCard {
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      padding: 12px 12px;
+    }
+    .miniCard b {
+      display: block;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .miniCard p {
+      margin: 0;
+      font-size: 13px;
+      opacity: .86;
     }
 
-    .payCreatePage input,
-    .payCreatePage select,
-    .payCreatePage textarea {
-      font-size: 16px;
+    .sectionHead {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: baseline;
+      margin: 26px 0 12px;
+    }
+    .sectionHead h2 {
+      margin: 0;
+    }
+    .sectionHead .subline {
+      margin: 0;
+      font-size: 13px;
+      opacity: .8;
+      text-align: right;
     }
 
-    .payCreatePage input[type="date"] {
-      font-size: 16px;
+    .productGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .productCard {
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.05);
+      min-height: 260px;
+    }
+    .productImg {
+      border-radius: 14px;
+      background: rgba(0,0,0,.03);
+      border: 1px dashed rgba(0,0,0,.12);
+      aspect-ratio: 16 / 10;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .productImg span {
+      font-size: 13px;
+      opacity: .75;
+      font-weight: 800;
+    }
+    .productTitle {
+      font-weight: 900;
+      margin: 0;
       line-height: 1.2;
     }
-  }
+    .productDesc {
+      margin: 0;
+      font-size: 13px;
+      opacity: .86;
+    }
+    .productRow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .priceTag {
+      font-weight: 900;
+      opacity: .9;
+    }
 
-
-  body.payCreatePage [id*="whatsapp" i],
-  body.payCreatePage [class*="whatsapp" i],
-  body.payCreatePage [class*="joinchat" i],
-  body.payCreatePage [class*="floating-wpp" i],
-  body.payCreatePage [id*="joinchat" i],
-  body.payCreatePage [id*="wh-widget" i],
-  body.payCreatePage [id*="WAButton" i],
-  body.payCreatePage [class*="wpp" i],
-  body.payCreatePage a[href*="wa.me"],
-  body.payCreatePage a[href*="whatsapp.com"],
-  body.payCreatePage iframe[src*="whatsapp" i],
-  body.payCreatePage iframe[src*="wa.me" i] {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(7,25,35,0.48);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    z-index: 9999;
-  }
-
-  .modal-backdrop.show {
-    display: flex;
-  }
-
-  .modal-card {
-    width: min(100%, 460px);
-    background: #fff;
-    border: 1px solid rgba(7,25,35,0.12);
-    border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.20);
-    padding: 22px;
-  }
-
-  .modal-title {
-    margin: 0 0 8px;
-    font-size: 22px;
-    line-height: 1.1;
-    color: var(--ink);
-  }
-
-  .modal-text {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--muted);
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-  }
-
-  body.modal-open {
-    overflow: hidden;
-  }
-
-  @media (max-width: 760px) {
-    .modal-card {
+    .infoGrid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .infoCard {
+      border: 1px solid rgba(0,0,0,.08);
       border-radius: 18px;
-      padding: 18px;
+      background: rgba(255,255,255,.55);
+      padding: 16px;
+    }
+    .infoCard h3 {
+      margin: 0 0 8px;
+    }
+    .infoCard ol, .infoCard ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .infoCard li {
+      margin: 6px 0;
+      font-size: 14px;
+      opacity: .92;
+    }
+    .helpGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .helpCard {
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+      min-height: 140px;
+    }
+    .helpCard h3 {
+      margin: 0;
+    }
+    .helpCard p {
+      margin: 0;
+      font-size: 13px;
+      opacity: .86;
+    }
+    .helpCard a {
+      font-weight: 900;
     }
 
-    .modal-actions .action-btn,
-    .modal-actions .mini-btn {
-      width: 100%;
-      justify-content: center;
+    /* Responsive */
+    @media (max-width: 980px) {
+      .previewFrame{ min-height: 240px; }
+      .shopHero { grid-template-columns: 1fr; }
+      .heroPreview { min-height: 280px; }
+      .valueGrid { grid-template-columns: 1fr; }
+      .productGrid { grid-template-columns: 1fr; }
+      .infoGrid { grid-template-columns: 1fr; }
+      .helpGrid { grid-template-columns: 1fr; }
+      .sectionHead { grid-template-columns: 1fr; }
+      .sectionHead .subline { text-align: left; }
     }
-  }
+  
+
+/* Shell alignment: ensure the page background and borders match other site pages */
+main.shopPage .shopHero,
+main.shopPage .shopSection{
+  margin-left: 0;
+  margin-right: 0;
+}
+main.shopPage .shopHero{ padding: 20px; }
+main.shopPage .shopSection{ padding-left: 20px; padding-right: 20px; }
+
+/* Image placeholders: consistent ratio and no stretching */
+.heroMock,
+.prodImg,
+.productImg,
+.productImage{
+  background: rgba(0,0,0,0.03);
+}
+.heroMock img,
+.prodImg img,
+.productImg img,
+.productImage img{
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.heroMock{ position: relative; overflow: hidden; }
+.heroMockOverlay{
+  position:absolute; left: 12px; right: 12px; bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(0,0,0,0.08);
+  font-size: 13px;
+  color: #1f2a22;
+}
 
 
+    .previewFrame { overflow: hidden; }
+    .previewImg { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.previewCarousel { position: relative; width: 100%; height: 100%; touch-action: pan-y;   overflow: hidden;
+  overflow: hidden;
+}
+.previewSlides { display: flex; width: 100%; height: 100%; transform: translate3d(0,0,0); transition: transform 420ms ease; }
+.previewSlide { flex: 0 0 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.previewSlide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.previewDots {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.previewDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.70);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.previewDot.isActive {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.previewDot:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
+}
+    .productImg { background: rgba(0,0,0,.02); border: 1px solid rgba(0,0,0,.08); }
+    .productImg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+
+/* Product imagery: keep all thumbnails square (2048x2048 recommended). */
+.heroPreview .heroMedia,
+.productImg{
+  aspect-ratio: 1 / 1;
+}
+.heroPreview .heroMedia img,
+.productImg img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
 </style>
-</head>
-<body>
+<meta content="en_US" property="og:locale"/></head>
+<body data-page-content-group="shop" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="guide_page">
 <div class="container">
-  <div id="siteHeader"></div>
-
-  <main class="page card payCreatePage">
-    <header class="payHero">
-      <h1>Create a payment link</h1>
-      <p>Internal tool for staff. Build a single booking or a multi-item itinerary, then copy the payment link or send a Stripe invoice.</p>
-      <div id="modeChip" class="mode-chip">Single item mode</div>
-    </header>
-
-    <section class="payCreateWrap" aria-label="Agent booking builder">
-      <section class="payPanel payBuilder">
-        <div class="section-title">Guest and invoice details</div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="stripeEnvironment">Stripe environment</label>
-            <select id="stripeEnvironment">
-              <option value="live">Live</option>
-              <option value="sandbox">Sandbox</option>
-            </select>
-            <div class="hint">Use sandbox for testing. Use live when you are ready to charge real cards.</div>
-          </div>
-
-          <div class="field">
-            <label class="req" for="invoiceDueDays">Invoice due (days)</label>
-            <input id="invoiceDueDays" type="number" min="1" step="1" value="2" />
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="mainFirstName">Main contact first name</label>
-            <input id="mainFirstName" type="text" placeholder="First name" />
-          </div>
-
-          <div class="field">
-            <label class="req" for="mainLastName">Main contact last name</label>
-            <input id="mainLastName" type="text" placeholder="Last name" />
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="mainEmail">Email</label>
-            <input id="mainEmail" type="email" placeholder="guest@email.com" />
-          </div>
-
-          <div class="field">
-            <label class="req" for="mainPhone">Phone</label>
-            <input id="mainPhone" type="text" placeholder="Phone number" />
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="whatsappNumber">WhatsApp number</label>
-            <input id="whatsappNumber" type="text" placeholder="WhatsApp number" />
-            <div class="hint">Include country code if possible.</div>
-          </div>
-
-          <div class="field">
-            <label for="agentId">Agent ID</label>
-            <input id="agentId" type="text" placeholder="003" />
-            <div class="hint">Optional internal attribution code for the agent who created the link or invoice.</div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label class="req" for="defaultLanguage">Default language</label>
-            <select id="defaultLanguage">
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
-            </select>
-            <div class="hint">Used as the default for newly added items.</div>
-          </div>
-
-          <div class="field">
-            <label class="req" for="pickupLocationLabel">Pickup location label</label>
-            <input id="pickupLocationLabel" type="text" placeholder="Hotel, Airbnb, Meeting point" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="req" for="pickupAddress">Pickup address or hotel name</label>
-          <input id="pickupAddress" type="text" placeholder="Pickup address or hotel name" />
-        </div>
-
-        <div class="field">
-          <label for="globalNotes">General notes</label>
-          <textarea id="globalNotes" placeholder="Internal notes for the booking or invoice"></textarea>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="section-title">Booking items</div>
-
-        <div class="items-wrap">
-          <div id="itemsContainer"></div>
-
-          <div class="action-row" style="margin-top:14px;">
-            <button id="addItemBtn" class="action-btn secondary" type="button">+ Add another tour or activity</button>
-          </div>
-        </div>
-
-        <div class="action-row">
-          <button id="generateLinkBtn" class="action-btn primary" type="button">Generate link</button>
-          <button id="sendInvoiceBtn" class="action-btn secondary" type="button">Send invoice</button>
-          <button id="copyBtn" class="action-btn secondary" type="button" disabled>Copy link</button>
-          <button id="openBtn" class="action-btn secondary" type="button" disabled>Open link</button>
-        </div>
-
-        <div class="small-note">
-          Generate Link is available only for a single item. It can include optional prefilled guest details. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
-        </div>
-
-        <div id="statusBox" class="status"></div>
-      </section>
-
-      <aside class="payPanel paySummary">
-        <div class="summary-box">
-          <div class="summary-title">Booking summary</div>
-          <div id="summaryItems"></div>
-        </div>
-
-        <div class="summary-box">
-          <div class="summary-title">Action summary</div>
-          <div id="actionSummary" class="summary-empty">
-            Generate a payment link or create an invoice to display the result here.
-          </div>
-        </div>
-
-        <div id="resultLinkBox" class="link-box"></div>
-
-        <div class="small-note">
-          Single item mode:
-          <br />
-          - Generate Link can keep your current guest flow
-          <br />
-          - Send Invoice uses your existing single-item invoice route
-          <br /><br />
-          Multi-item mode:
-          <br />
-          - Generate Link is disabled
-          <br />
-          - Send Invoice will use the multi-item invoice route
-        </div>
-      </aside>
-    </section>
-  </main>
-
-  <div id="siteFooter"></div>
+<div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-event="outbound_link_click" data-analytics-label="English" data-analytics-location="external" data-analytics-page-language="en" data-analytics-page-type="guide_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/shop/" hreflang="en" lang="en">English</a>
+<span>Español coming soon</span></nav>
+<main class="page card shopPage" role="main">
+<div class="shopWrap">
+<section class="shopHero">
+<div class="shopHeroCard">
+<p class="kicker">SHOP</p>
+<h1>Mindo-inspired prints from Mindo Bird Watching</h1>
+<p class="lead">
+            A small, curated collection of printable styles and simple gifts inspired by our tours in 📍Mindo, Ecuador.
+            Made to order through our print partner and shipped to you.
+          </p>
+<div class="ctaRow">
+<a class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Browse Products" data-analytics-location="external" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="#products">Browse Products</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="View Product Details" data-analytics-location="shop_hero" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="#products">View Product Details</a>
 </div>
-
-<template id="itemTemplate">
-  <div class="item-card" data-item-card>
-    <div class="item-top">
-      <div class="item-title" data-item-heading>Booking Item</div>
-      <div class="item-actions">
-        <button type="button" class="mini-btn danger" data-remove-item>Remove</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="req">Tour</label>
-      <select data-field="tour_code">
-        <option value="">Select a tour...</option>
-      </select>
-      <div class="pricing-note" data-tour-meta>Select a tour to preview the price and details.</div>
-    </div>
-
-    <div class="grid-3">
-      <div class="field">
-        <label class="req">Tour date</label>
-        <input data-field="tour_date" type="date" />
-      </div>
-
-      <div class="field">
-        <label class="req">Number of people</label>
-        <input data-field="quantity" type="number" min="1" step="1" value="1" />
-      </div>
-
-      <div class="field">
-        <label class="req">Language</label>
-        <select data-field="language">
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Item notes</label>
-      <textarea data-field="item_notes" placeholder="Optional internal note for this line item"></textarea>
-    </div>
-  </div>
-</template>
-
-
-<div id="confirmModal" class="modal-backdrop" aria-hidden="true">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalText">
-    <h2 id="confirmModalTitle" class="modal-title">Confirm invoice</h2>
-    <p id="confirmModalText" class="modal-text">Are you sure you want to send an invoice for just 1 person?</p>
-    <div class="modal-actions">
-      <button id="confirmModalCancel" class="action-btn secondary" type="button">Cancel</button>
-      <button id="confirmModalContinue" class="action-btn primary" type="button">Continue</button>
-    </div>
-  </div>
+<div aria-label="Shop highlights" class="metaRow">
+<span><span class="dot"></span> Made to order</span>
+<span><span class="dot"></span> United States shipping</span>
+<span><span class="dot"></span> Limited, curated selection</span>
 </div>
-
+<div aria-label="What you get" class="valueGrid">
+<div class="miniCard">
+<b>Gallery-quality</b>
+<p>Clean color, sharp detail, and print-ready layouts.</p>
+</div>
+<div class="miniCard">
+<b>Tour-inspired</b>
+<p>Birds and moments you can actually see around Mindo.</p>
+</div>
+<div class="miniCard">
+<b>Simple checkout</b>
+<p>Each item opens a product page on our site before secure checkout with our print partner.</p>
+</div>
+</div>
+</div>
+<aside aria-label="Hero product preview" class="shopHeroCard heroPreview">
+<div><b>Birding print shop preview</b></div>
+<div aria-label="Product preview carousel" class="previewFrame">
+<div class="previewCarousel" data-carousel="preview">
+<div class="previewSlides" role="list">
+<div class="previewSlide" role="listitem"><img alt="Featured print preview 1" decoding="async" loading="lazy" src="/assets/images/merch/clothing/mbw_merch_image_mbw_la_familia_01_w.jpg"/></div>
+<div class="previewSlide" role="listitem"><img alt="Featured print preview 2" decoding="async" loading="lazy" src="/assets/images/merch/clothing/mbw_merch_image_mbw_three_amigos_01_w.jpg"/></div>
+<div class="previewSlide" role="listitem"><img decoding="async" loading="lazy" src="/assets/images/merch/clothing/mbw_merch_image_mbw_cafe_cacao_w_01.jpg"/></div>
+<div class="previewSlide" role="listitem"><img alt="Featured print preview 4" decoding="async" loading="lazy" src="/assets/images/merch/clothing/mbw_merch_image_hummingbirds_01_w.jpg"/></div>
+<div class="previewSlide" role="listitem"><img alt="Featured print preview 5" decoding="async" loading="lazy" src="/assets/images/merch/clothing/mbw_merch_image_mbw_toucans_02_w.jpg"/></div>
+<div class="previewSlide" role="listitem"><img alt="Featured print preview 6" decoding="async" loading="lazy" src="/assets/images/merch/clothing/mbw_shop_merch_shirt_three_toucans_03.jpg"/></div>
+<div class="previewSlide" role="listitem"><img alt="Featured print preview 7" decoding="async" loading="lazy" src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_02.jpg"/></div>
+<div class="previewSlide" role="listitem"><img alt="Featured print preview 8" decoding="async" loading="lazy" src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_03.jpg"/></div>
+</div>
+<div aria-label="Select preview image" class="previewDots" role="tablist">
+<button aria-label="Slide 1" aria-selected="true" class="previewDot isActive" type="button"></button>
+<button aria-label="Slide 2" aria-selected="false" class="previewDot" type="button"></button>
+<button aria-label="Slide 3" aria-selected="false" class="previewDot" type="button"></button>
+<button aria-label="Slide 4" aria-selected="false" class="previewDot" type="button"></button>
+<button aria-label="Slide 5" aria-selected="false" class="previewDot" type="button"></button>
+<button aria-label="Slide 6" aria-selected="false" class="previewDot" type="button"></button>
+<button aria-label="Slide 7" aria-selected="false" class="previewDot" type="button"></button>
+<button aria-label="Slide 8" aria-selected="false" class="previewDot" type="button"></button>
+</div>
+</div>
+</div>
+<div style="font-size:13px;opacity:.78;">
+            Enjoy the magic of 📍Mindo, year round.
+          </div>
+</aside>
+</section>
+<div class="sectionHead" id="products">
+<h2>All shop products</h2>
+<p class="subline">Explore all current products from the Mindo Bird Watching shop. Each product page includes price, availability, product details, United States shipping notes, and secure checkout through our print partner.</p>
+</div>
+<div class="sectionHead" id="shirts-and-tops">
+<h2>Shirts &amp; Tops</h2>
+<p class="subline">Browse 10 made-to-order shirts &amp; tops from the Mindo Bird Watching shop.</p>
+</div>
+<section aria-label="Shirts &amp; Tops products" class="productGrid">
+<article class="productCard">
+<div class="productImg"><img alt="MBW Family Long Sleeve Tee — Cloud Forest Wildlife Graphic (Black &amp; Chocolate Only)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_familia_longsleeve_dark.jpg"/></div>
+<h3 class="productTitle">MBW Family Long Sleeve Tee — Cloud Forest Wildlife Graphic (Black &amp; Chocolate Only)</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$34.99</span>
+<a aria-label="View product: MBW Family Long Sleeve Tee — Cloud Forest Wildlife Graphic (Black &amp; Chocolate Only)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_longsleeve_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_longsleeve_dark">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Toucan Coffee &amp; Cocoa Tee — Black &amp; Chocolate | Mindo Ecuador Souvenir Shirt" decoding="async" loading="lazy" src="/assets/images/shop/mbw_toucan_mindo_cacao_coffee_dark.jpg"/></div>
+<h3 class="productTitle">MBW Toucan Coffee &amp; Cocoa Tee — Black &amp; Chocolate | Mindo Ecuador Souvenir Shirt</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$29.99</span>
+<a aria-label="View product: MBW Toucan Coffee &amp; Cocoa Tee — Black &amp; Chocolate | Mindo Ecuador Souvenir Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mindo_cacao_coffee_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_coffee_dark">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Toucan Coffee &amp; Cocoa Tee — Mindo Ecuador Wildlife Travel Souvenir" decoding="async" loading="lazy" src="/assets/images/shop/mbw_toucan_mindo_cacao_coffee_colors.jpg"/></div>
+<h3 class="productTitle">MBW Toucan Coffee &amp; Cocoa Tee — Mindo Ecuador Wildlife Travel Souvenir</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$29.99</span>
+<a aria-label="View product: MBW Toucan Coffee &amp; Cocoa Tee — Mindo Ecuador Wildlife Travel Souvenir" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mindo_cacao_coffee_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_coffee_colors">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching T-Shirt — “Tourism Dept.” Ecuador Nature Tee" decoding="async" loading="lazy" src="/assets/images/shop/mbw_tourism_dept.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching T-Shirt — “Tourism Dept.” Ecuador Nature Tee</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$29.99</span>
+<a aria-label="View product: Mindo Bird Watching T-Shirt — “Tourism Dept.” Ecuador Nature Tee" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tourism_dept" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tourism_dept">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Family Tee — Wildlife Edition (Black &amp; Chocolate)" decoding="async" loading="lazy" src="/assets/images/shop/familia_shirt_dark.jpg"/></div>
+<h3 class="productTitle">MBW Family Tee — Wildlife Edition (Black &amp; Chocolate)</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$29.99</span>
+<a aria-label="View product: MBW Family Tee — Wildlife Edition (Black &amp; Chocolate)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: familia_shirt_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=familia_shirt_dark">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Family Tee — Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir" decoding="async" loading="lazy" src="/assets/images/shop/familia_shirt_colors.jpg"/></div>
+<h3 class="productTitle">MBW Family Tee — Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$29.99</span>
+<a aria-label="View product: MBW Family Tee — Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: familia_shirt_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=familia_shirt_colors">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Toucan Graphic T-Shirt — Mindo Ecuador Souvenir Tee" decoding="async" loading="lazy" src="/assets/images/shop/mbw_tri_toucan_flag_shirt.jpg"/></div>
+<h3 class="productTitle">Toucan Graphic T-Shirt — Mindo Ecuador Souvenir Tee</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$24.99</span>
+<a aria-label="View product: Toucan Graphic T-Shirt — Mindo Ecuador Souvenir Tee" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_toucan_flag_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_flag_shirt">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Ecuador “Three Amigos” Bird Tee — Toucan, Tanager &amp; Hummingbird Graphic Shirt" decoding="async" loading="lazy" src="/assets/images/shop/mbw_three_amigos_shirt.jpg"/></div>
+<h3 class="productTitle">Mindo Ecuador “Three Amigos” Bird Tee — Toucan, Tanager &amp; Hummingbird Graphic Shirt</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$29.99</span>
+<a aria-label="View product: Mindo Ecuador “Three Amigos” Bird Tee — Toucan, Tanager &amp; Hummingbird Graphic Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_three_amigos_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_three_amigos_shirt">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Toucan Trio Graphic T-Shirt — Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching" decoding="async" loading="lazy" src="/assets/images/shop/mbw_tri_toucan_flag_two_shirt.jpg"/></div>
+<h3 class="productTitle">Toucan Trio Graphic T-Shirt — Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$29.99</span>
+<a aria-label="View product: Toucan Trio Graphic T-Shirt — Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_toucan_flag_two_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_flag_two_shirt">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Tri Hummingbirds in Ecuadorian Flag T-Shirt" decoding="async" loading="lazy" src="/assets/images/shop/mbw_tri_humming_shirt_white.jpg"/></div>
+<h3 class="productTitle">Tri Hummingbirds in Ecuadorian Flag T-Shirt</h3>
+<p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
+<div class="productRow">
+<span class="priceTag">$25.92</span>
+<a aria-label="View product: Tri Hummingbirds in Ecuadorian Flag T-Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_humming_shirt_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_shirt_white">View Product</a>
+</div>
+</article>
+</section>
+<div class="sectionHead" id="mugs">
+<h2>Mugs</h2>
+<p class="subline">Browse 9 made-to-order mugs from the Mindo Bird Watching shop.</p>
+</div>
+<section aria-label="Mugs products" class="productGrid">
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching Logo Mug — Black Ceramic Coffee Cup (11oz/15oz)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_coffee_mug_black.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching Logo Mug — Black Ceramic Coffee Cup (11oz/15oz)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$14.99</span>
+<a aria-label="View product: Mindo Bird Watching Logo Mug — Black Ceramic Coffee Cup (11oz/15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_coffee_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_coffee_mug_black">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching Mug — Tropical Toucan &amp; Parrot Coffee Cup (11oz)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_coffee_mug_white.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching Mug — Tropical Toucan &amp; Parrot Coffee Cup (11oz)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$12.99</span>
+<a aria-label="View product: Mindo Bird Watching Mug — Tropical Toucan &amp; Parrot Coffee Cup (11oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_coffee_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_coffee_mug_white">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Family Black Coffee Mug — Bird Watching Souvenir Cup (11oz / 15oz)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_familia_mug_black.jpg"/></div>
+<h3 class="productTitle">MBW Family Black Coffee Mug — Bird Watching Souvenir Cup (11oz / 15oz)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$14.99</span>
+<a aria-label="View product: MBW Family Black Coffee Mug — Bird Watching Souvenir Cup (11oz / 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_mug_black">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW “Three Amigos” Birds Mug — Colorful 11oz Travel Souvenir Cup" decoding="async" loading="lazy" src="/assets/images/shop/mbw_three_amigos_mug_white.jpg"/></div>
+<h3 class="productTitle">MBW “Three Amigos” Birds Mug — Colorful 11oz Travel Souvenir Cup</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$14.99</span>
+<a aria-label="View product: MBW “Three Amigos” Birds Mug — Colorful 11oz Travel Souvenir Cup" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_three_amigos_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_three_amigos_mug_white">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Toucan Mug — Mindo Ecuador Bird Watching Coffee Cup (11oz &amp; 15oz)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_toucan_mug_black.jpg"/></div>
+<h3 class="productTitle">MBW Toucan Mug — Mindo Ecuador Bird Watching Coffee Cup (11oz &amp; 15oz)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$14.99</span>
+<a aria-label="View product: MBW Toucan Mug — Mindo Ecuador Bird Watching Coffee Cup (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mug_black">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Family Coffee Mug – Mindo Ecuador Wildlife Souvenir (11oz Ceramic)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_familia_mug_white.jpg"/></div>
+<h3 class="productTitle">MBW Family Coffee Mug – Mindo Ecuador Wildlife Souvenir (11oz Ceramic)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$14.99</span>
+<a aria-label="View product: MBW Family Coffee Mug – Mindo Ecuador Wildlife Souvenir (11oz Ceramic)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_mug_white">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching Black Coffee Mug – Toucan Wildlife Nature Travel Souvenir (11oz &amp; 15oz)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_tri_toucan_mug_black.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching Black Coffee Mug – Toucan Wildlife Nature Travel Souvenir (11oz &amp; 15oz)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$14.99</span>
+<a aria-label="View product: Mindo Bird Watching Black Coffee Mug – Toucan Wildlife Nature Travel Souvenir (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_toucan_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_mug_black">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Hummingbird Trio Black Mug — Colorful Hummingbird Art Coffee Cup (11oz &amp; 15oz)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_tri_humming_mug_black_v2.jpg"/></div>
+<h3 class="productTitle">Hummingbird Trio Black Mug — Colorful Hummingbird Art Coffee Cup (11oz &amp; 15oz)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$14.99</span>
+<a aria-label="View product: Hummingbird Trio Black Mug — Colorful Hummingbird Art Coffee Cup (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_humming_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_mug_black">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching White Mug — Hummingbird Nature Coffee Cup (11oz)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_tri_humming_mug_white.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching White Mug — Hummingbird Nature Coffee Cup (11oz)</h3>
+<p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
+<div class="productRow">
+<span class="priceTag">$12.99</span>
+<a aria-label="View product: Mindo Bird Watching White Mug — Hummingbird Nature Coffee Cup (11oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_humming_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_mug_white">View Product</a>
+</div>
+</article>
+</section>
+<div class="sectionHead" id="hoodies-and-sweatshirts">
+<h2>Hoodies &amp; Sweatshirts</h2>
+<p class="subline">Browse 3 made-to-order hoodies &amp; sweatshirts from the Mindo Bird Watching shop.</p>
+</div>
+<section aria-label="Hoodies &amp; Sweatshirts products" class="productGrid">
+<article class="productCard">
+<div class="productImg"><img alt="MBW Family Hoodie — Black &amp; Chocolate — Bear &amp; Birds Graphic “Mindo • Ecuador” Sweatshirt" decoding="async" loading="lazy" src="/assets/images/shop/mbw_familia_hoodie_dark.jpg"/></div>
+<h3 class="productTitle">MBW Family Hoodie — Black &amp; Chocolate — Bear &amp; Birds Graphic “Mindo • Ecuador” Sweatshirt</h3>
+<p class="productDesc">A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.</p>
+<div class="productRow">
+<span class="priceTag">$39.99</span>
+<a aria-label="View product: MBW Family Hoodie — Black &amp; Chocolate — Bear &amp; Birds Graphic “Mindo • Ecuador” Sweatshirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_hoodie_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_hoodie_dark">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Toucan Coffee &amp; Chocolate Hoodie — Mindo Ecuador Travel Souvenir Pullover" decoding="async" loading="lazy" src="/assets/images/shop/mbw_toucan_mindo_cacao_hoodie.jpg"/></div>
+<h3 class="productTitle">MBW Toucan Coffee &amp; Chocolate Hoodie — Mindo Ecuador Travel Souvenir Pullover</h3>
+<p class="productDesc">A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.</p>
+<div class="productRow">
+<span class="priceTag">$39.99</span>
+<a aria-label="View product: MBW Toucan Coffee &amp; Chocolate Hoodie — Mindo Ecuador Travel Souvenir Pullover" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mindo_cacao_hoodie" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_hoodie">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="MBW Family Hoodie — Bear &amp; Birds Graphic “Mindo • Ecuador” Sweatshirt" decoding="async" loading="lazy" src="/assets/images/shop/mbw_familia_hoodie_colors.jpg"/></div>
+<h3 class="productTitle">MBW Family Hoodie — Bear &amp; Birds Graphic “Mindo • Ecuador” Sweatshirt</h3>
+<p class="productDesc">A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.</p>
+<div class="productRow">
+<span class="priceTag">$46.53</span>
+<a aria-label="View product: MBW Family Hoodie — Bear &amp; Birds Graphic “Mindo • Ecuador” Sweatshirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_hoodie_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_hoodie_colors">View Product</a>
+</div>
+</article>
+</section>
+<div class="sectionHead" id="bags-and-totes">
+<h2>Bags &amp; Totes</h2>
+<p class="subline">Browse 3 made-to-order bags &amp; totes from the Mindo Bird Watching shop.</p>
+</div>
+<section aria-label="Bags &amp; Totes products" class="productGrid">
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching Drawstring Bag — Tropical Toucan Rainforest Emblem" decoding="async" loading="lazy" src="/assets/images/shop/mbw_drawstring_bag.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching Drawstring Bag — Tropical Toucan Rainforest Emblem</h3>
+<p class="productDesc">A practical made-to-order carry option with Mindo birding style for daily errands or travel.</p>
+<div class="productRow">
+<span class="priceTag">$39.99</span>
+<a aria-label="View product: Mindo Bird Watching Drawstring Bag — Tropical Toucan Rainforest Emblem" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_drawstring_bag" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_drawstring_bag">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching Tote Bag — Organic Cotton Eco Tote (Toucan &amp; Cloud Forest Design)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_eco_tote.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching Tote Bag — Organic Cotton Eco Tote (Toucan &amp; Cloud Forest Design)</h3>
+<p class="productDesc">A practical made-to-order carry option with Mindo birding style for daily errands or travel.</p>
+<div class="productRow">
+<span class="priceTag">$34.99</span>
+<a aria-label="View product: Mindo Bird Watching Tote Bag — Organic Cotton Eco Tote (Toucan &amp; Cloud Forest Design)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_eco_tote" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_eco_tote">View Product</a>
+</div>
+</article>
+<article class="productCard">
+<div class="productImg"><img alt="Organic Canvas Tote – Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)" decoding="async" loading="lazy" src="/assets/images/shop/mbw_canvas_tote.jpg"/></div>
+<h3 class="productTitle">Organic Canvas Tote – Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)</h3>
+<p class="productDesc">A practical made-to-order carry option with Mindo birding style for daily errands or travel.</p>
+<div class="productRow">
+<span class="priceTag">$39.99</span>
+<a aria-label="View product: Organic Canvas Tote – Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_canvas_tote" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_canvas_tote">View Product</a>
+</div>
+</article>
+</section>
+<div class="sectionHead" id="bottles">
+<h2>Bottles</h2>
+<p class="subline">Browse 1 made-to-order bottles from the Mindo Bird Watching shop.</p>
+</div>
+<section aria-label="Bottles products" class="productGrid">
+<article class="productCard">
+<div class="productImg"><img alt="Mindo Bird Watching Water Bottle — 20oz Tritan Sport Bottle with Tropical Logo" decoding="async" loading="lazy" src="/assets/images/shop/mbw_sport_bottle.jpg"/></div>
+<h3 class="productTitle">Mindo Bird Watching Water Bottle — 20oz Tritan Sport Bottle with Tropical Logo</h3>
+<p class="productDesc">A reusable made-to-order bottle with tropical Mindo artwork for trails, travel, and everyday use.</p>
+<div class="productRow">
+<span class="priceTag">$24.99</span>
+<a aria-label="View product: Mindo Bird Watching Water Bottle — 20oz Tritan Sport Bottle with Tropical Logo" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_sport_bottle" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_sport_bottle">View Product</a>
+</div>
+</article>
+</section>
+<section aria-label="How it works and policies" class="infoGrid">
+<div class="infoCard">
+<h3>How it works</h3>
+<ol>
+<li><b>Pick a print</b> from the curated set above.</li>
+<li><b>Open the product</b> to see price, availability, product details, and United States shipping notes.</li>
+<li><b>Checkout</b> securely through our print partner and receive delivery updates.</li>
+</ol>
+<div class="ctaRow" style="margin-top:12px;">
+<a class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Browse Products" data-analytics-location="external" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="#products">Browse Products</a>
+<a class="btn" data-analytics-event="internal_link_click" data-analytics-label="Prefer a Tour?" data-analytics-location="internal" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/tours/">Prefer a Tour?</a>
+</div>
+</div>
+<div class="infoCard">
+<h3>Shipping and returns</h3>
+<ul>
+<li>Made to order. Production times vary by item.</li>
+<li>United States standard shipping is currently set to 5-12 business days.</li>
+<li>If anything arrives damaged, contact us and we will help resolve it quickly.</li>
+</ul>
+<p style="margin:10px 0 0;font-size:13px;opacity:.82;">
+            Orders are made to order through our print partner. Current United States standard shipping is listed as 5-12 business days.
+          </p>
+</div>
+</section>
+<div class="sectionHead">
+<h2>Need help choosing?</h2>
+<p class="subline">Tell us your style and we will recommend 1 to 2 prints that fit your space.</p>
+</div>
+<section aria-label="Help options" class="helpGrid">
+<div class="helpCard">
+<h3>Ask a question</h3>
+<p>Sizes, framing, shipping, or gifting - we can help.</p>
+<a class="btn ghost" data-analytics-event="internal_link_click" data-analytics-label="Contact Us" data-analytics-location="internal" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/contact/">Contact Us</a>
+</div>
+<div class="helpCard">
+<h3>WhatsApp support</h3>
+<p>Quick help with product questions, shipping updates, and order issues.</p>
+<a class="btn ghost" data-analytics-event="whatsapp_click" data-analytics-label="Message on WhatsApp" data-analytics-location="whatsapp" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="https://wa.me/13054585402" rel="noopener" target="_blank">Message on WhatsApp</a>
+</div>
+<div class="helpCard">
+<h3>Return policy</h3>
+<p>Learn about our made-to-order products and how damaged or incorrect orders are handled.</p>
+<a class="btn ghost" data-analytics-event="policy_crosslink_click" data-analytics-label="View return policy info" data-analytics-location="shop_policy" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/shop/return-policy/">View return policy info</a>
+</div>
+</section>
+<p style="margin:22px 0 0;font-size:12px;opacity:.75;">
+        Last updated: 2026-05-15
+      </p>
+</div>
+</main>
+<div id="siteFooter"></div>
+</div>
+<script defer="" src="/assets/js/includes.js?v=1"></script>
+<script src="/assets/js/site.js?v=34"></script>
 <script>
-  const state = {
-    tours: [],
-    items: [],
-    generatedUrl: "",
-    generatedOpenUrl: "",
-    invoiceRequestInFlight: false,
-    lastInvoiceFingerprint: "",
-    lastInvoiceResult: null
-  };
+(function () {
+  function initPreviewCarousel(root) {
+    var slidesEl = root.querySelector(".previewSlides");
+    var dots = Array.prototype.slice.call(root.querySelectorAll(".previewDot"));
+    if (!slidesEl || dots.length === 0) return;
 
-  const els = {
-    itemsContainer: document.getElementById("itemsContainer"),
-    itemTemplate: document.getElementById("itemTemplate"),
-    addItemBtn: document.getElementById("addItemBtn"),
-    generateLinkBtn: document.getElementById("generateLinkBtn"),
-    sendInvoiceBtn: document.getElementById("sendInvoiceBtn"),
-    copyBtn: document.getElementById("copyBtn"),
-    openBtn: document.getElementById("openBtn"),
-    statusBox: document.getElementById("statusBox"),
-    modeChip: document.getElementById("modeChip"),
-    summaryItems: document.getElementById("summaryItems"),
-    actionSummary: document.getElementById("actionSummary"),
-    resultLinkBox: document.getElementById("resultLinkBox"),
-    stripeEnvironment: document.getElementById("stripeEnvironment"),
-    invoiceDueDays: document.getElementById("invoiceDueDays"),
-    mainFirstName: document.getElementById("mainFirstName"),
-    mainLastName: document.getElementById("mainLastName"),
-    mainEmail: document.getElementById("mainEmail"),
-    mainPhone: document.getElementById("mainPhone"),
-    whatsappNumber: document.getElementById("whatsappNumber"),
-    agentId: document.getElementById("agentId"),
-    defaultLanguage: document.getElementById("defaultLanguage"),
-    pickupLocationLabel: document.getElementById("pickupLocationLabel"),
-    pickupAddress: document.getElementById("pickupAddress"),
-    globalNotes: document.getElementById("globalNotes"),
-    confirmModal: document.getElementById("confirmModal"),
-    confirmModalTitle: document.getElementById("confirmModalTitle"),
-    confirmModalText: document.getElementById("confirmModalText"),
-    confirmModalCancel: document.getElementById("confirmModalCancel"),
-    confirmModalContinue: document.getElementById("confirmModalContinue")
-  };
+    var slideCount = slidesEl.children.length;
+    var index = 0;
+    var timer = null;
+    var intervalMs = 2500;
 
-  function showStatus(message, type = "info") {
-    els.statusBox.textContent = message;
-    els.statusBox.className = `status show ${type}`;
-  }
-
-  function clearStatus() {
-    els.statusBox.textContent = "";
-    els.statusBox.className = "status";
-  }
-
-  function clearGeneratedResult() {
-    state.generatedUrl = "";
-    state.generatedOpenUrl = "";
-    state.lastInvoiceFingerprint = "";
-    state.lastInvoiceResult = null;
-    els.copyBtn.disabled = true;
-    els.openBtn.disabled = true;
-    els.resultLinkBox.style.display = "none";
-    els.resultLinkBox.textContent = "";
-  }
-
-  function setInvoiceBusy(isBusy) {
-    state.invoiceRequestInFlight = isBusy;
-    els.sendInvoiceBtn.disabled = isBusy;
-    els.sendInvoiceBtn.textContent = isBusy ? "Creating invoice..." : "Send invoice";
-  }
-
-  function stableStringify(value) {
-    if (value === null || typeof value !== "object") return JSON.stringify(value);
-    if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
-    return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(",")}}`;
-  }
-
-  function buildInvoiceFingerprint(endpoint, payload) {
-    return stableStringify({ endpoint, payload });
-  }
-
-  function showConfirmModal({
-    title = "Confirm action",
-    message = "Are you sure?",
-    confirmText = "Continue",
-    cancelText = "Cancel"
-  } = {}) {
-    return new Promise((resolve) => {
-      const modal = els.confirmModal;
-      if (!modal) {
-        resolve(window.confirm(message));
-        return;
-      }
-
-      let settled = false;
-      const previousActive = document.activeElement;
-
-      els.confirmModalTitle.textContent = title;
-      els.confirmModalText.textContent = message;
-      els.confirmModalContinue.textContent = confirmText;
-      els.confirmModalCancel.textContent = cancelText;
-
-      function cleanup(result) {
-        if (settled) return;
-        settled = true;
-        modal.classList.remove("show");
-        modal.setAttribute("aria-hidden", "true");
-        document.body.classList.remove("modal-open");
-        document.removeEventListener("keydown", onKeyDown);
-        modal.removeEventListener("click", onBackdropClick);
-        els.confirmModalCancel.removeEventListener("click", onCancel);
-        els.confirmModalContinue.removeEventListener("click", onConfirm);
-        if (previousActive && typeof previousActive.focus === "function") {
-          previousActive.focus();
-        }
-        resolve(result);
-      }
-
-      function onCancel() {
-        cleanup(false);
-      }
-
-      function onConfirm() {
-        cleanup(true);
-      }
-
-      function onBackdropClick(e) {
-        if (e.target === modal) cleanup(false);
-      }
-
-      function onKeyDown(e) {
-        if (e.key === "Escape") cleanup(false);
-      }
-
-      els.confirmModalCancel.addEventListener("click", onCancel);
-      els.confirmModalContinue.addEventListener("click", onConfirm);
-      modal.addEventListener("click", onBackdropClick);
-      document.addEventListener("keydown", onKeyDown);
-
-      modal.classList.add("show");
-      modal.setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
-      els.confirmModalContinue.focus();
-    });
-  }
-
-  function hasSinglePersonItem() {
-    return state.items.some(item => Number(item.quantity) === 1);
-  }
-
-  function formatCurrencyDisplay(v) {
-    return v || "-";
-  }
-
-  function titleCaseWords(value) {
-    return String(value || "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim()
-      .split(" ")
-      .filter(Boolean)
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-  }
-
-  function normalizeNameInput(el) {
-    if (!el) return;
-    el.value = titleCaseWords(el.value);
-  }
-
-  function buildFullName() {
-    return `${els.mainFirstName.value.trim()} ${els.mainLastName.value.trim()}`.trim();
-  }
-
-  function getDefaultTomorrowISO() {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
-  function getTourByCodeAndLanguage(code, language) {
-    return state.tours.find(t => t.tour_code === code && t.language === language) || null;
-  }
-
-  async function loadTours() {
-    const langs = ["en", "es"];
-    const all = [];
-
-    for (const lang of langs) {
-      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}`);
-      const data = await res.json();
-      if (!data.ok) {
-        throw new Error(data.error || "Failed to load tours");
-      }
-      all.push(...(data.tours || []));
+    function clamp(i) {
+      if (i < 0) return slideCount - 1;
+      if (i >= slideCount) return 0;
+      return i;
     }
 
-    const seen = new Set();
-    state.tours = all.filter(tour => {
-      const key = `${tour.tour_code}__${tour.language}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  function createItem(initial = {}) {
-    return {
-      id: crypto.randomUUID(),
-      tour_code: initial.tour_code || "",
-      tour_date: initial.tour_date || getDefaultTomorrowISO(),
-      quantity: initial.quantity || 1,
-      language: initial.language || els.defaultLanguage.value || "en",
-      item_notes: initial.item_notes || ""
-    };
-  }
-
-  function addItem(initial = {}) {
-    state.items.push(createItem(initial));
-    clearGeneratedResult();
-    renderItems();
-    renderSummary();
-    updateModeUI();
-  }
-
-  function removeItem(id) {
-    if (state.items.length === 1) {
-      showStatus("At least one booking item is required.", "error");
-      return;
-    }
-    state.items = state.items.filter(item => item.id !== id);
-    clearGeneratedResult();
-    renderItems();
-    renderSummary();
-    updateModeUI();
-    clearStatus();
-  }
-
-  function updateItem(id, key, value) {
-    const item = state.items.find(x => x.id === id);
-    if (!item) return;
-    item[key] = value;
-    clearGeneratedResult();
-    renderSummary();
-    updateModeUI();
-  }
-
-  function renderItems() {
-    els.itemsContainer.innerHTML = "";
-
-    state.items.forEach((item, index) => {
-      const node = els.itemTemplate.content.firstElementChild.cloneNode(true);
-      node.dataset.itemId = item.id;
-
-      const heading = node.querySelector("[data-item-heading]");
-      heading.textContent = `Booking Item ${index + 1}`;
-
-      const removeBtn = node.querySelector("[data-remove-item]");
-      removeBtn.disabled = state.items.length === 1;
-      removeBtn.addEventListener("click", () => removeItem(item.id));
-
-      const tourSelect = node.querySelector('[data-field="tour_code"]');
-      const dateInput = node.querySelector('[data-field="tour_date"]');
-      const qtyInput = node.querySelector('[data-field="quantity"]');
-      const langSelect = node.querySelector('[data-field="language"]');
-      const notesInput = node.querySelector('[data-field="item_notes"]');
-      const metaText = node.querySelector("[data-tour-meta]");
-
-      const currentLangTours = state.tours
-        .filter(t => t.language === item.language)
-        .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
-
-      currentLangTours.forEach(tour => {
-        const opt = document.createElement("option");
-        opt.value = tour.tour_code;
-        opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
-        tourSelect.appendChild(opt);
+    function setActiveDot(i) {
+      dots.forEach(function (d, di) {
+        var active = di === i;
+        d.classList.toggle("isActive", active);
+        d.setAttribute("aria-selected", active ? "true" : "false");
       });
+    }
 
-      langSelect.value = item.language;
-      tourSelect.value = item.tour_code;
-      dateInput.value = item.tour_date;
-      dateInput.min = getDefaultTomorrowISO();
-      qtyInput.value = item.quantity;
-      notesInput.value = item.item_notes;
-
-      function refreshMeta() {
-        const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
-        if (!selectedTour) {
-          metaText.textContent = "Select a tour to preview the price and details.";
-          return;
-        }
-        metaText.innerHTML = `
-          <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} per person
-          <br />
-          <strong>Type:</strong> ${selectedTour.duration_label || "-"}
-          <br />
-          <strong>Summary:</strong> ${selectedTour.description_one_liner || "-"}
-        `;
+    function goTo(i, opts) {
+      index = clamp(i);
+      var x = -index * 100;
+      if (opts && opts.noAnim) slidesEl.style.transition = "none";
+      else slidesEl.style.transition = "";
+      slidesEl.style.transform = "translate3d(" + x + "%,0,0)";
+      setActiveDot(index);
+      if (opts && opts.noAnim) {
+        // force reflow then restore
+        slidesEl.offsetHeight;
+        slidesEl.style.transition = "";
       }
-
-      langSelect.addEventListener("change", e => {
-        updateItem(item.id, "language", e.target.value);
-
-        const prevCode = item.tour_code;
-        const refreshedTours = state.tours
-          .filter(t => t.language === e.target.value)
-          .sort((a, b) => a.tour_code.localeCompare(b.tour_code));
-
-        tourSelect.innerHTML = '<option value="">Select a tour...</option>';
-        refreshedTours.forEach(tour => {
-          const opt = document.createElement("option");
-          opt.value = tour.tour_code;
-          opt.textContent = `${tour.tour_code} - ${tour.tour_title}`;
-          tourSelect.appendChild(opt);
-        });
-
-        const existsInLang = refreshedTours.some(t => t.tour_code === prevCode);
-        if (existsInLang) {
-          tourSelect.value = prevCode;
-        } else {
-          updateItem(item.id, "tour_code", "");
-          tourSelect.value = "";
-        }
-
-        refreshMeta();
-      });
-
-      tourSelect.addEventListener("change", e => {
-        updateItem(item.id, "tour_code", e.target.value);
-        refreshMeta();
-      });
-
-      dateInput.addEventListener("change", e => {
-        updateItem(item.id, "tour_date", e.target.value);
-      });
-
-      qtyInput.addEventListener("input", e => {
-        updateItem(item.id, "quantity", e.target.value);
-      });
-
-      notesInput.addEventListener("input", e => {
-        updateItem(item.id, "item_notes", e.target.value);
-      });
-
-      refreshMeta();
-      els.itemsContainer.appendChild(node);
-    });
-  }
-
-  function renderSummary() {
-    const items = state.items;
-    if (!items.length) {
-      els.summaryItems.innerHTML = '<div class="summary-empty">No booking items yet.</div>';
-      return;
     }
 
-    els.summaryItems.innerHTML = "";
-    let knownCount = 0;
-
-    items.forEach((item, index) => {
-      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-      const div = document.createElement("div");
-      div.className = "summary-item";
-
-      const name = tour
-        ? `${tour.tour_code} - ${tour.tour_title}`
-        : `Item ${index + 1}`;
-
-      const priceLine = tour
-        ? `${tour.amount_display} x ${item.quantity || 0}`
-        : "Select a tour";
-
-      if (tour) knownCount += 1;
-
-      div.innerHTML = `
-        <div class="summary-item-name">${name}</div>
-        <div class="summary-meta">
-          Date: ${item.tour_date || "-"}
-          <br />
-          People: ${item.quantity || "-"}
-          <br />
-          Language: ${item.language === "es" ? "Spanish" : "English"}
-          <br />
-          Price: <span class="money">${priceLine}</span>
-        </div>
-      `;
-
-      els.summaryItems.appendChild(div);
-    });
-
-    if (knownCount < items.length) {
-      const warn = document.createElement("div");
-      warn.className = "small-note";
-      warn.textContent = "Some items are incomplete. Select a tour for every row before creating a link or invoice.";
-      els.summaryItems.appendChild(warn);
-    }
-  }
-
-  function updateModeUI() {
-    const multi = state.items.length > 1;
-
-    els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi;
-    els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight;
-    els.copyBtn.disabled = !state.generatedUrl;
-    els.openBtn.disabled = !state.generatedOpenUrl;
-
-    if (multi) {
-      els.actionSummary.innerHTML = `
-        Multi-item mode is active.
-        <br />
-        Generate Link is disabled.
-        <br />
-        Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
-      `;
-    } else {
-      els.actionSummary.innerHTML = `
-        Single item mode is active.
-        <br />
-        Generate Link can use your current one-tour flow.
-        <br />
-        Send Invoice will call <strong>/stripe/api/create-invoice</strong>.
-      `;
-    }
-  }
-
-  function validateSharedFields(options = {}) {
-    const requireGuest = !!options.requireGuest;
-    const errors = [];
-
-    if (requireGuest) {
-      if (!els.mainFirstName.value.trim()) errors.push("Main contact first name is required.");
-      if (!els.mainLastName.value.trim()) errors.push("Main contact last name is required.");
-      if (!els.mainEmail.value.trim()) errors.push("Email is required.");
-      if (!els.mainPhone.value.trim()) errors.push("Phone is required.");
-      if (!els.whatsappNumber.value.trim()) errors.push("WhatsApp number is required.");
-      if (!els.pickupLocationLabel.value.trim()) errors.push("Pickup location label is required.");
-      if (!els.pickupAddress.value.trim()) errors.push("Pickup address or hotel name is required.");
+    function start() {
+      stop();
+      timer = setInterval(function () { goTo(index + 1); }, intervalMs);
     }
 
-    return errors;
-  }
-
-  function validateItems() {
-    const errors = [];
-
-    state.items.forEach((item, idx) => {
-      if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);
-      if (!item.tour_date) errors.push(`Item ${idx + 1}: Tour date is required.`);
-      if (!item.quantity || Number(item.quantity) <= 0) errors.push(`Item ${idx + 1}: Number of people must be greater than 0.`);
-      if (!item.language) errors.push(`Item ${idx + 1}: Language is required.`);
-
-      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-      if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
-    });
-
-    return errors;
-  }
-
-  function buildCombinedNotes(item) {
-    const parts = [];
-    if (els.globalNotes.value.trim()) parts.push(`General notes: ${els.globalNotes.value.trim()}`);
-    if (item && item.item_notes && item.item_notes.trim()) parts.push(`Item notes: ${item.item_notes.trim()}`);
-    return parts.join("\n");
-  }
-
-  function buildSingleItemInvoicePayload(item) {
-    return {
-      language: item.language,
-      stripe_environment: els.stripeEnvironment.value,
-      tour_code: item.tour_code,
-      number_of_people: Number(item.quantity),
-      main_contact_name: buildFullName(),
-      main_contact_email: els.mainEmail.value.trim(),
-      main_contact_phone: els.mainPhone.value.trim(),
-      whatsapp_number: els.whatsappNumber.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
-      pickup_address_or_hotel: els.pickupAddress.value.trim(),
-      notes: buildCombinedNotes(item),
-      tour_date: item.tour_date,
-      invoice_due_days: Number(els.invoiceDueDays.value || 2),
-      agent_id: els.agentId.value.trim()
-    };
-  }
-
-  function buildMultiItemInvoicePayload() {
-    return {
-      stripe_environment: els.stripeEnvironment.value,
-      main_contact_name: buildFullName(),
-      main_contact_email: els.mainEmail.value.trim(),
-      main_contact_phone: els.mainPhone.value.trim(),
-      whatsapp_number: els.whatsappNumber.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
-      pickup_address_or_hotel: els.pickupAddress.value.trim(),
-      notes: els.globalNotes.value.trim(),
-      invoice_due_days: Number(els.invoiceDueDays.value || 2),
-      agent_id: els.agentId.value.trim(),
-      items: state.items.map(item => ({
-        tour_code: item.tour_code,
-        quantity: Number(item.quantity),
-        tour_date: item.tour_date,
-        language: item.language,
-        item_notes: item.item_notes || ""
-      }))
-    };
-  }
-
-  function buildSingleLinkUrl(item) {
-    const params = new URLSearchParams({
-      tour: item.tour_code,
-      date: item.tour_date,
-      party: String(item.quantity),
-      lang: item.language
-    });
-
-    const agentId = els.agentId.value.trim();
-    if (agentId) params.set("agent_id", agentId);
-
-    const firstName = els.mainFirstName.value.trim();
-    const lastName = els.mainLastName.value.trim();
-    const email = els.mainEmail.value.trim();
-    const phone = els.mainPhone.value.trim();
-    const whatsapp = els.whatsappNumber.value.trim();
-    const pickupLabel = els.pickupLocationLabel.value.trim();
-    const pickupAddress = els.pickupAddress.value.trim();
-    const notes = els.globalNotes.value.trim();
-
-    if (firstName) params.set("guest_first_name", firstName);
-    if (lastName) params.set("guest_last_name", lastName);
-    if (email) params.set("guest_email", email);
-    if (phone) params.set("guest_phone", phone);
-    if (whatsapp) params.set("whatsapp_number", whatsapp);
-    if (pickupLabel) params.set("pickup_location_label", pickupLabel);
-    if (pickupAddress) params.set("pickup_address_or_hotel", pickupAddress);
-    if (notes) params.set("notes", notes);
-
-    const path = item.language === "es" ? "/es/reservar-tour/pago/" : "/book-tour/pay/";
-    return `${window.location.origin}${path}?${params.toString()}`;
-  }
-
-
-  function buildGenerateLinkAgentPayload(item, generatedUrl) {
-    const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-    const amountDisplay = tour && tour.amount_display ? String(tour.amount_display) : "";
-    const amountNumber = Number(amountDisplay.replace(/[^0-9.]/g, ""));
-    const amountCents = Number.isFinite(amountNumber) ? Math.round(amountNumber * 100) * Number(item.quantity || 0) : 0;
-
-    return {
-      event_type: "payment_link_generated",
-      booking_mode: "single_item",
-      booking_session_id: `manual-link-${Date.now()}`,
-      stripe_environment: els.stripeEnvironment.value,
-      agent_id: els.agentId.value.trim(),
-      status: "generated",
-      payment_link_url: generatedUrl,
-      hosted_invoice_url: generatedUrl,
-      guest_first_name: els.mainFirstName.value.trim(),
-      guest_last_name: els.mainLastName.value.trim(),
-      guest_email: els.mainEmail.value.trim(),
-      guest_phone: els.mainPhone.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
-      pickup_address_or_hotel: els.pickupAddress.value.trim(),
-      notes: buildCombinedNotes(item),
-      items: [{
-        tour_code: item.tour_code,
-        tour_title: tour && tour.tour_title ? tour.tour_title : item.tour_code,
-        tour_date: item.tour_date,
-        language: item.language,
-        quantity: Number(item.quantity),
-        amount_cents: amountCents,
-        currency: tour && tour.currency ? tour.currency : "USD"
-      }]
-    };
-  }
-
-  async function logAgentActivity(payload) {
-    const res = await fetch("/stripe/api/agent-activity", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const raw = await res.text();
-    let data = null;
-    try {
-      data = raw ? JSON.parse(raw) : null;
-    } catch (_) {
-      data = { raw };
+    function stop() {
+      if (timer) clearInterval(timer);
+      timer = null;
     }
 
-    if (!res.ok || !data || data.ok !== true) {
-      throw new Error(data && data.error ? data.error : `Agent activity logging failed (${res.status})`);
-    }
-
-    return data;
-  }
-
-  function hideWhatsAppWidgets() {
-    const selectors = [
-      '[id*="whatsapp" i]',
-      '[class*="whatsapp" i]',
-      '[class*="joinchat" i]',
-      '[id*="joinchat" i]',
-      '[class*="floating-wpp" i]',
-      '[id*="wh-widget" i]',
-      '[id*="WAButton" i]',
-      '[class*="wpp" i]',
-      'a[href*="wa.me"]',
-      'a[href*="whatsapp.com"]',
-      'iframe[src*="whatsapp" i]',
-      'iframe[src*="wa.me" i]'
-    ];
-
-    selectors.forEach((selector) => {
-      document.querySelectorAll(selector).forEach((node) => {
-        node.style.setProperty("display", "none", "important");
-        node.style.setProperty("visibility", "hidden", "important");
-        node.style.setProperty("pointer-events", "none", "important");
+    // Dots click
+    dots.forEach(function (d, di) {
+      d.addEventListener("click", function () {
+        stop();
+        goTo(di);
+        start();
       });
     });
-  }
 
-  async function onGenerateLink() {
-    clearStatus();
+    // Swipe / drag
+    var isDown = false;
+    var startX = 0;
+    var lastX = 0;
+    var moved = 0;
 
-    const errors = [...validateSharedFields({ requireGuest: false }), ...validateItems()];
-    if (state.items.length !== 1) {
-      showStatus("Generate Link is only available for a single booking item.", "error");
-      return;
+    function onDown(clientX) {
+      isDown = true;
+      startX = clientX;
+      lastX = clientX;
+      moved = 0;
+      stop();
     }
-    if (errors.length) {
-      showStatus(errors[0], "error");
-      return;
+
+    function onMove(clientX) {
+      if (!isDown) return;
+      var dx = clientX - lastX;
+      lastX = clientX;
+      moved += dx;
+
+      var pct = (-index * 100) + (moved / root.clientWidth) * 100;
+      slidesEl.style.transition = "none";
+      slidesEl.style.transform = "translate3d(" + pct + "%,0,0)";
     }
 
-    if (hasSinglePersonItem()) {
-      const confirmed = await showConfirmModal({
-        title: "Confirm link",
-        message: "Are you sure you want to generate a payment link for just 1 person?",
-        confirmText: "Continue",
-        cancelText: "Cancel"
-      });
-      if (!confirmed) {
-        showStatus("Link generation cancelled.", "info");
-        return;
+    function onUp() {
+      if (!isDown) return;
+      isDown = false;
+
+      var threshold = Math.max(40, root.clientWidth * 0.12);
+      if (Math.abs(moved) > threshold) {
+        if (moved < 0) goTo(index + 1);
+        else goTo(index - 1);
+      } else {
+        goTo(index);
       }
+      start();
     }
 
-    const item = state.items[0];
-    const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
-    if (!tour) {
-      showStatus("Selected tour was not found.", "error");
-      return;
-    }
+    root.addEventListener("touchstart", function (e) {
+      if (!e.touches || !e.touches[0]) return;
+      onDown(e.touches[0].clientX);
+    }, { passive: true });
 
-    const generatedUrl = buildSingleLinkUrl(item);
-    state.generatedUrl = generatedUrl;
-    state.generatedOpenUrl = generatedUrl;
-    els.copyBtn.disabled = false;
-    els.openBtn.disabled = false;
-    els.resultLinkBox.style.display = "block";
-    els.resultLinkBox.textContent = generatedUrl;
+    root.addEventListener("touchmove", function (e) {
+      if (!e.touches || !e.touches[0]) return;
+      onMove(e.touches[0].clientX);
+    }, { passive: true });
 
-    const agentLine = els.agentId.value.trim() ? `<br />Agent ID: ${els.agentId.value.trim()}` : "";
-    els.actionSummary.innerHTML = `
-      Link generated for:
-      <br />
-      <strong>${tour.tour_code} - ${tour.tour_title}</strong>
-      <br />
-      Date: ${item.tour_date}
-      <br />
-      Party size: ${item.quantity}
-      <br />
-      Language: ${item.language === "es" ? "Spanish" : "English"}
-      ${agentLine}
-    `;
+    root.addEventListener("touchend", function () { onUp(); });
 
-    try {
-      await logAgentActivity(buildGenerateLinkAgentPayload(item, generatedUrl));
-    } catch (err) {
-      console.warn("Generate Link agent activity logging failed", err);
-    }
+    root.addEventListener("mousedown", function (e) {
+      onDown(e.clientX);
+    });
 
-    showStatus("Link generated.", "ok");
+    window.addEventListener("mousemove", function (e) {
+      onMove(e.clientX);
+    });
+
+    window.addEventListener("mouseup", function () { onUp(); });
+
+    // Pause on hover/focus (desktop)
+    root.addEventListener("mouseenter", stop);
+    root.addEventListener("mouseleave", start);
+    root.addEventListener("focusin", stop);
+    root.addEventListener("focusout", start);
+
+    // Keyboard
+    root.setAttribute("tabindex", "0");
+    root.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft") { stop(); goTo(index - 1); start(); }
+      if (e.key === "ArrowRight") { stop(); goTo(index + 1); start(); }
+    });
+
+    // Init
+    goTo(0, { noAnim: true });
+    start();
   }
 
-  async function onSendInvoice() {
-    clearStatus();
-
-    if (state.invoiceRequestInFlight) {
-      showStatus("Invoice creation is already in progress. Please wait.", "info");
-      return;
-    }
-
-    const errors = [...validateSharedFields({ requireGuest: true }), ...validateItems()];
-    if (errors.length) {
-      showStatus(errors[0], "error");
-      return;
-    }
-
-    const multi = state.items.length > 1;
-    const endpoint = multi ? "/stripe/api/create-invoice-multi" : "/stripe/api/create-invoice";
-    const payload = multi ? buildMultiItemInvoicePayload() : buildSingleItemInvoicePayload(state.items[0]);
-    const invoiceFingerprint = buildInvoiceFingerprint(endpoint, payload);
-
-    if (
-      state.lastInvoiceFingerprint &&
-      state.lastInvoiceFingerprint === invoiceFingerprint &&
-      state.lastInvoiceResult
-    ) {
-      const existing = state.lastInvoiceResult;
-      const hostedUrl = existing.hosted_invoice_url || "";
-
-      state.generatedUrl = hostedUrl;
-      state.generatedOpenUrl = hostedUrl;
-      els.copyBtn.disabled = !hostedUrl;
-      els.openBtn.disabled = !hostedUrl;
-      els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
-      els.resultLinkBox.textContent = hostedUrl || "";
-
-      els.actionSummary.innerHTML = `
-        Invoice already created for these exact booking details.
-        <br />
-        Invoice ID: <strong>${existing.invoice_id || "-"}</strong>
-        <br />
-        Invoice number: <strong>${existing.invoice_number || "-"}</strong>
-        <br />
-        Status: <strong>${existing.invoice_status || "open"}</strong>
-        <br />
-        To avoid duplicate Stripe invoices, this page did not create another invoice.
-      `;
-
-      showStatus("This invoice was already created. Use Copy Link or open it in Stripe to send the invoice email.", "info");
-      return;
-    }
-
-    if (hasSinglePersonItem()) {
-      const confirmed = await showConfirmModal({
-        title: "Confirm invoice",
-        message: "Are you sure you want to send an invoice for just 1 person?",
-        confirmText: "Continue",
-        cancelText: "Cancel"
-      });
-      if (!confirmed) {
-        showStatus("Invoice cancelled.", "info");
-        return;
-      }
-    }
-
-    try {
-      setInvoiceBusy(true);
-      showStatus("Creating invoice...", "info");
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const raw = await res.text();
-      let data;
-      try {
-        data = JSON.parse(raw);
-      } catch (_) {
-        throw new Error(raw || "Unexpected server response");
-      }
-
-      if (!res.ok || !data.ok) throw new Error(data.error || "Invoice creation failed.");
-
-      const hostedUrl = data.hosted_invoice_url || "";
-      const invoiceId = data.invoice_id || "";
-      const invoiceNumber = data.invoice_number || "";
-      const invoiceStatus = data.invoice_status || (multi ? "open" : "open");
-      const agentId = els.agentId.value.trim();
-
-      state.lastInvoiceFingerprint = invoiceFingerprint;
-      state.lastInvoiceResult = {
-        hosted_invoice_url: hostedUrl,
-        invoice_id: invoiceId,
-        invoice_number: invoiceNumber,
-        invoice_status: invoiceStatus
-      };
-
-      state.generatedUrl = hostedUrl;
-      state.generatedOpenUrl = hostedUrl;
-      els.copyBtn.disabled = !hostedUrl;
-      els.openBtn.disabled = !hostedUrl;
-      els.resultLinkBox.style.display = hostedUrl ? "block" : "none";
-      els.resultLinkBox.textContent = hostedUrl || "";
-
-      els.actionSummary.innerHTML = `
-        Invoice created successfully.
-        <br />
-        Invoice ID: <strong>${invoiceId || "-"}</strong>
-        <br />
-        Invoice number: <strong>${invoiceNumber || "-"}</strong>
-        <br />
-        Status: <strong>${invoiceStatus || "-"}</strong>
-        <br />
-        Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
-        ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
-        <br />
-        <strong>Safety:</strong> This page will not create another invoice for these same booking details.
-      `;
-
-      showStatus(data.message || "Invoice created. Duplicate creation is now locked for these booking details.", "ok");
-    } catch (err) {
-      showStatus(err.message || "Something went wrong while creating the invoice.", "error");
-    } finally {
-      setInvoiceBusy(false);
-    }
-  }
-
-  async function onCopy() {
-    if (!state.generatedUrl) return;
-    try {
-      await navigator.clipboard.writeText(state.generatedUrl);
-      showStatus("Copied to clipboard.", "ok");
-    } catch (_) {
-      showStatus("Unable to copy automatically. Please copy the link manually.", "error");
-    }
-  }
-
-  function onOpen() {
-    if (!state.generatedOpenUrl) return;
-    window.open(state.generatedOpenUrl, "_blank", "noopener,noreferrer");
-  }
-
-  async function init() {
-    try {
-      await loadTours();
-      addItem();
-      renderSummary();
-      updateModeUI();
-
-      ["blur", "change"].forEach(evt => {
-        els.mainFirstName.addEventListener(evt, () => normalizeNameInput(els.mainFirstName));
-        els.mainLastName.addEventListener(evt, () => normalizeNameInput(els.mainLastName));
-      });
-    } catch (err) {
-      showStatus(err.message || "Failed to initialize page.", "error");
-    }
-  }
-
-  els.addItemBtn.addEventListener("click", () => {
-    addItem({ language: els.defaultLanguage.value });
+  document.addEventListener("DOMContentLoaded", function () {
+    var root = document.querySelector('[data-carousel="preview"]');
+    if (root) initPreviewCarousel(root);
   });
-
-  els.generateLinkBtn.addEventListener("click", onGenerateLink);
-  els.sendInvoiceBtn.addEventListener("click", onSendInvoice);
-  els.copyBtn.addEventListener("click", onCopy);
-  els.openBtn.addEventListener("click", onOpen);
-
-  els.defaultLanguage.addEventListener("change", () => {
-    clearGeneratedResult();
-    renderItems();
-    renderSummary();
-  });
-
-  [
-    els.stripeEnvironment,
-    els.invoiceDueDays,
-    els.mainFirstName,
-    els.mainLastName,
-    els.mainEmail,
-    els.mainPhone,
-    els.whatsappNumber,
-    els.agentId,
-    els.pickupLocationLabel,
-    els.pickupAddress,
-    els.globalNotes
-  ].forEach(el => {
-    if (!el) return;
-    el.addEventListener("input", clearGeneratedResult);
-    el.addEventListener("change", clearGeneratedResult);
-  });
-
-  init();
+})();
 </script>
-</body>
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "url": "https://mindobirdwatching.com/shop/",
+  "inLanguage": "en",
+  "dateModified": "2026-05-06"
+}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "ItemList", "name": "Mindo Bird Watching Shop Products", "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_familia_hoodie_dark", "name": "MBW Family Hoodie — Black & Chocolate — Bear & Birds Graphic “Mindo • Ecuador” Sweatshirt"}, {"@type": "ListItem", "position": 2, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_familia_longsleeve_dark", "name": "MBW Family Long Sleeve Tee — Cloud Forest Wildlife Graphic (Black & Chocolate Only)"}, {"@type": "ListItem", "position": 3, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_toucan_mindo_cacao_coffee_dark", "name": "MBW Toucan Coffee & Cocoa Tee — Black & Chocolate | Mindo Ecuador Souvenir Shirt"}, {"@type": "ListItem", "position": 4, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_toucan_mindo_cacao_coffee_colors", "name": "MBW Toucan Coffee & Cocoa Tee — Mindo Ecuador Wildlife Travel Souvenir"}, {"@type": "ListItem", "position": 5, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_tourism_dept", "name": "Mindo Bird Watching T-Shirt — “Tourism Dept.” Ecuador Nature Tee"}, {"@type": "ListItem", "position": 6, "url": "https://mindobirdwatching.com/shop/product/?id=familia_shirt_dark", "name": "MBW Family Tee — Wildlife Edition (Black & Chocolate)"}, {"@type": "ListItem", "position": 7, "url": "https://mindobirdwatching.com/shop/product/?id=familia_shirt_colors", "name": "MBW Family Tee — Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir"}, {"@type": "ListItem", "position": 8, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_coffee_mug_black", "name": "Mindo Bird Watching Logo Mug — Black Ceramic Coffee Cup (11oz/15oz)"}, {"@type": "ListItem", "position": 9, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_coffee_mug_white", "name": "Mindo Bird Watching Mug — Tropical Toucan & Parrot Coffee Cup (11oz)"}, {"@type": "ListItem", "position": 10, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_sport_bottle", "name": "Mindo Bird Watching Water Bottle — 20oz Tritan Sport Bottle with Tropical Logo"}, {"@type": "ListItem", "position": 11, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_drawstring_bag", "name": "Mindo Bird Watching Drawstring Bag — Tropical Toucan Rainforest Emblem"}, {"@type": "ListItem", "position": 12, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_eco_tote", "name": "Mindo Bird Watching Tote Bag — Organic Cotton Eco Tote (Toucan & Cloud Forest Design)"}, {"@type": "ListItem", "position": 13, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_canvas_tote", "name": "Organic Canvas Tote – Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)"}, {"@type": "ListItem", "position": 14, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_familia_mug_black", "name": "MBW Family Black Coffee Mug — Bird Watching Souvenir Cup (11oz / 15oz)"}, {"@type": "ListItem", "position": 15, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_three_amigos_mug_white", "name": "MBW “Three Amigos” Birds Mug — Colorful 11oz Travel Souvenir Cup"}, {"@type": "ListItem", "position": 16, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_toucan_mug_black", "name": "MBW Toucan Mug — Mindo Ecuador Bird Watching Coffee Cup (11oz & 15oz)"}, {"@type": "ListItem", "position": 17, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_toucan_mindo_cacao_hoodie", "name": "MBW Toucan Coffee & Chocolate Hoodie — Mindo Ecuador Travel Souvenir Pullover"}, {"@type": "ListItem", "position": 18, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_familia_mug_white", "name": "MBW Family Coffee Mug – Mindo Ecuador Wildlife Souvenir (11oz Ceramic)"}, {"@type": "ListItem", "position": 19, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_tri_toucan_flag_shirt", "name": "Toucan Graphic T-Shirt — Mindo Ecuador Souvenir Tee"}, {"@type": "ListItem", "position": 20, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_three_amigos_shirt", "name": "Mindo Ecuador “Three Amigos” Bird Tee — Toucan, Tanager & Hummingbird Graphic Shirt"}, {"@type": "ListItem", "position": 21, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_tri_toucan_flag_two_shirt", "name": "Toucan Trio Graphic T-Shirt — Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching"}, {"@type": "ListItem", "position": 22, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_tri_toucan_mug_black", "name": "Mindo Bird Watching Black Coffee Mug – Toucan Wildlife Nature Travel Souvenir (11oz & 15oz)"}, {"@type": "ListItem", "position": 23, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_tri_humming_mug_black", "name": "Hummingbird Trio Black Mug — Colorful Hummingbird Art Coffee Cup (11oz & 15oz)"}, {"@type": "ListItem", "position": 24, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_tri_humming_mug_white", "name": "Mindo Bird Watching White Mug — Hummingbird Nature Coffee Cup (11oz)"}, {"@type": "ListItem", "position": 25, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_familia_hoodie_colors", "name": "MBW Family Hoodie — Bear & Birds Graphic “Mindo • Ecuador” Sweatshirt"}, {"@type": "ListItem", "position": 26, "url": "https://mindobirdwatching.com/shop/product/?id=mbw_tri_humming_shirt_white", "name": "Tri Hummingbirds in Ecuadorian Flag T-Shirt"}]}</script></body>
 </html>
