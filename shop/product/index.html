@@ -5,14 +5,14 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>MBW Shop Product | Mindo Bird Watching</title>
 <meta content="View a Mindo Bird Watching shop product with price, availability, shipping notes, and secure checkout through our print partner." name="description"/>
-<meta content="index,follow" name="robots"/>
-<link href="https://mindobirdwatching.com/shop/product/" rel="canonical"/>
-<link href="https://mindobirdwatching.com/shop/product/" hreflang="x-default" rel="alternate"/>
-<link href="https://mindobirdwatching.com/shop/product/" hreflang="en" rel="alternate"/>
+<meta content="noindex,follow" name="robots"/>
+<link href="https://mindobirdwatching.com/shop/" rel="canonical"/>
+<link href="https://mindobirdwatching.com/shop/" hreflang="x-default" rel="alternate"/>
+<link href="https://mindobirdwatching.com/shop/" hreflang="en" rel="alternate"/>
 <meta content="product" property="og:type"/>
 <meta content="MBW Shop Product | Mindo Bird Watching" property="og:title"/>
 <meta content="View a Mindo Bird Watching shop product with price, availability, shipping notes, and secure checkout through our print partner." property="og:description"/>
-<meta content="https://mindobirdwatching.com/shop/product/" property="og:url"/>
+<meta content="https://mindobirdwatching.com/shop/" property="og:url"/>
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image"/>
 <meta content="summary_large_image" name="twitter:card"/>
 <meta content="MBW Shop Product | Mindo Bird Watching" name="twitter:title"/>
@@ -669,7 +669,11 @@
 
   function showError() {
     document.title = "Product Not Found | Mindo Bird Watching";
-    setRobots("index,follow");
+    setRobots("noindex,follow");
+    setMeta('link[rel="canonical"]', "href", SHOP_URL);
+    setMeta('link[hreflang="x-default"]', "href", SHOP_URL);
+    setMeta('link[hreflang="en"]', "href", SHOP_URL);
+    addMeta("og:url", SHOP_URL, true);
     $("loadingState").classList.add("isHidden");
     $("productContent").classList.add("isHidden");
     $("errorState").classList.remove("isHidden");
@@ -677,9 +681,9 @@
 
   function init() {
     var id = cleanText(getParam("id"));
-    setRobots("index,follow");
     if (id) {
       var requestedUrl = PRODUCT_BASE_URL + "?id=" + encodeURIComponent(id);
+      setRobots("index,follow");
       setMeta('link[rel="canonical"]', "href", requestedUrl);
       setMeta('link[hreflang="x-default"]', "href", requestedUrl);
       setMeta('link[hreflang="en"]', "href", requestedUrl);
