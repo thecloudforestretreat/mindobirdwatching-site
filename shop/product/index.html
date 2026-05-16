@@ -5,6 +5,7 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>MBW Shop Product | Mindo Bird Watching</title>
 <meta content="View a Mindo Bird Watching shop product with price, availability, shipping notes, and secure checkout through our print partner." name="description"/>
+<meta content="index,follow" name="robots"/>
 <link href="https://mindobirdwatching.com/shop/product/" rel="canonical"/>
 <link href="https://mindobirdwatching.com/shop/product/" hreflang="x-default" rel="alternate"/>
 <link href="https://mindobirdwatching.com/shop/product/" hreflang="en" rel="alternate"/>
@@ -668,7 +669,7 @@
 
   function showError() {
     document.title = "Product Not Found | Mindo Bird Watching";
-    setRobots("noindex,follow");
+    setRobots("index,follow");
     $("loadingState").classList.add("isHidden");
     $("productContent").classList.add("isHidden");
     $("errorState").classList.remove("isHidden");
@@ -676,6 +677,14 @@
 
   function init() {
     var id = cleanText(getParam("id"));
+    setRobots("index,follow");
+    if (id) {
+      var requestedUrl = PRODUCT_BASE_URL + "?id=" + encodeURIComponent(id);
+      setMeta('link[rel="canonical"]', "href", requestedUrl);
+      setMeta('link[hreflang="x-default"]', "href", requestedUrl);
+      setMeta('link[hreflang="en"]', "href", requestedUrl);
+      addMeta("og:url", requestedUrl, true);
+    }
     if (!id) {
       showError();
       return;
