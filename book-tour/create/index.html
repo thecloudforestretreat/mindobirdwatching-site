@@ -160,6 +160,44 @@
     color: var(--muted);
   }
 
+  .pricing-extra[hidden] {
+    display: none !important;
+  }
+
+  .pricing-override-note {
+    border: 1px dashed rgba(13,89,37,0.22);
+    background: rgba(13,89,37,0.06);
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin: -2px 0 14px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+
+  .pricing-warning {
+    color: #8a5a00;
+    font-weight: 800;
+  }
+
+  .pricing-grid {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .pricing-helper-row {
+    grid-column: 1 / -1;
+    margin: -8px 0 2px;
+  }
+
+  .pricing-notes-field {
+    grid-column: 1 / -1;
+  }
+
+  .pricing-notes-field textarea {
+    min-height: 92px;
+  }
+
   .items-wrap {
     border: 1px solid var(--line);
     border-radius: 18px;
@@ -603,7 +641,7 @@
         </div>
 
         <div class="small-note">
-          Generate Link is available only for a single item. It can include optional prefilled guest details. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
+          Generate Link is available only for a single item at the standard tour price. Price adjustments require Send Invoice. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
         </div>
 
         <div id="statusBox" class="status"></div>
@@ -679,6 +717,36 @@
           <option value="es">Spanish</option>
         </select>
       </div>
+    </div>
+
+    <div class="grid-2 pricing-grid">
+      <div class="field">
+        <label>Price adjustment/person</label>
+        <input data-field="price_override_per_person" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional" />
+      </div>
+
+      <div class="field pricing-extra" data-pricing-extra hidden>
+        <label>Pricing reason</label>
+        <select data-field="pricing_reason">
+          <option value="">Select reason...</option>
+          <option value="price_test">Price test</option>
+          <option value="manual_adjustment">Manual adjustment</option>
+          <option value="custom_quote">Custom quote</option>
+        </select>
+      </div>
+
+      <div class="hint pricing-helper-row">
+        Enter the whole-dollar amount to add per person. Example: standard $75 + adjustment $5 = final invoice price $80/person. Leave blank for standard pricing.
+      </div>
+
+      <div class="field pricing-extra pricing-notes-field" data-pricing-extra hidden>
+        <label>Pricing notes</label>
+        <textarea data-field="pricing_notes" placeholder="Internal pricing note only"></textarea>
+      </div>
+    </div>
+
+    <div class="pricing-override-note" data-pricing-override-note hidden>
+      Internal only. The customer only sees the final invoice price. Adjustment details are stored in the invoice payload for accounting.
     </div>
 
     <div class="field">
@@ -853,6 +921,45 @@
     return v || "-";
   }
 
+  function formatOverrideDisplay(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return "";
+    return `$${Math.round(n)} USD`;
+  }
+
+  function formatAdjustmentDisplay(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return "";
+    return `+$${Math.round(n)} USD`;
+  }
+
+  function getFinalAdjustedPrice(item, tour) {
+    const standardAmount = parseTourAmount(tour);
+    const adjustmentAmount = Number(item && item.price_override_per_person || 0);
+    if (!Number.isFinite(adjustmentAmount) || adjustmentAmount <= 0) return standardAmount;
+    return standardAmount + Math.round(adjustmentAmount);
+  }
+
+  function hasOverridePrice(item) {
+    const n = Number(item && item.price_override_per_person);
+    return Number.isFinite(n) && n > 0;
+  }
+
+  function parseTourAmount(tour) {
+    if (!tour || !tour.amount_display) return 0;
+    const n = Number(String(tour.amount_display).replace(/[^0-9.]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function formatPricingReason(value) {
+    const labels = {
+      price_test: "Price test",
+      manual_adjustment: "Manual adjustment",
+      custom_quote: "Custom quote"
+    };
+    return labels[value] || "";
+  }
+
   function titleCaseWords(value) {
     return String(value || "")
       .toLowerCase()
@@ -908,16 +1015,19 @@
     });
   }
 
-  function createItem(initial = {}) {
-    return {
-      id: crypto.randomUUID(),
-      tour_code: initial.tour_code || "",
-      tour_date: initial.tour_date || getDefaultTomorrowISO(),
-      quantity: initial.quantity || 1,
-      language: initial.language || els.defaultLanguage.value || "en",
-      item_notes: initial.item_notes || ""
-    };
-  }
+function createItem(initial = {}) {
+  return {
+    id: crypto.randomUUID(),
+    tour_code: initial.tour_code || "",
+    tour_date: initial.tour_date || getDefaultTomorrowISO(),
+    quantity: initial.quantity || 1,
+    language: initial.language || els.defaultLanguage.value || "en",
+    item_notes: initial.item_notes || "",
+    price_override_per_person: initial.price_override_per_person || "",
+    pricing_reason: initial.pricing_reason || "",
+    pricing_notes: initial.pricing_notes || ""
+  };
+}
 
   function addItem(initial = {}) {
     state.items.push(createItem(initial));
@@ -968,6 +1078,11 @@
       const qtyInput = node.querySelector('[data-field="quantity"]');
       const langSelect = node.querySelector('[data-field="language"]');
       const notesInput = node.querySelector('[data-field="item_notes"]');
+      const priceOverrideInput = node.querySelector('[data-field="price_override_per_person"]');
+      const pricingReasonInput = node.querySelector('[data-field="pricing_reason"]');
+      const pricingNotesInput = node.querySelector('[data-field="pricing_notes"]');
+      const pricingExtraFields = node.querySelectorAll("[data-pricing-extra]");
+      const pricingOverrideNote = node.querySelector("[data-pricing-override-note]");
       const metaText = node.querySelector("[data-tour-meta]");
 
       const currentLangTours = state.tours
@@ -987,6 +1102,9 @@
       dateInput.min = getDefaultTomorrowISO();
       qtyInput.value = item.quantity;
       notesInput.value = item.item_notes;
+      priceOverrideInput.value = item.price_override_per_person;
+      pricingReasonInput.value = item.pricing_reason;
+      pricingNotesInput.value = item.pricing_notes;
 
       function refreshMeta() {
         const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
@@ -1001,6 +1119,16 @@
           <br />
           <strong>Summary:</strong> ${selectedTour.description_one_liner || "-"}
         `;
+      }
+
+      function refreshPricingControls() {
+        const hasOverride = hasOverridePrice(item);
+        pricingExtraFields.forEach(field => {
+          field.hidden = !hasOverride;
+        });
+        if (pricingOverrideNote) {
+          pricingOverrideNote.hidden = !hasOverride;
+        }
       }
 
       langSelect.addEventListener("change", e => {
@@ -1047,7 +1175,24 @@
         updateItem(item.id, "item_notes", e.target.value);
       });
 
+      priceOverrideInput.addEventListener("input", e => {
+        const raw = e.target.value;
+        const cleaned = raw === "" ? "" : String(Math.max(0, Math.floor(Number(raw) || 0)));
+        e.target.value = cleaned;
+        updateItem(item.id, "price_override_per_person", cleaned);
+        refreshPricingControls();
+      });
+
+      pricingReasonInput.addEventListener("change", e => {
+        updateItem(item.id, "pricing_reason", e.target.value);
+      });
+
+      pricingNotesInput.addEventListener("input", e => {
+        updateItem(item.id, "pricing_notes", e.target.value);
+      });
+
       refreshMeta();
+      refreshPricingControls();
       els.itemsContainer.appendChild(node);
     });
   }
@@ -1071,9 +1216,23 @@
         ? `${tour.tour_code} - ${tour.tour_title}`
         : `Item ${index + 1}`;
 
-      const priceLine = tour
-        ? `${tour.amount_display} x ${item.quantity || 0}`
+      const quantity = Number(item.quantity || 0);
+      const standardAmount = parseTourAmount(tour);
+      const adjustmentAmount = Number(item.price_override_per_person || 0);
+      const standardPriceLine = tour
+        ? `${tour.amount_display} x ${quantity}`
         : "Select a tour";
+
+      const adjustmentDisplay = formatAdjustmentDisplay(item.price_override_per_person);
+      const reasonDisplay = formatPricingReason(item.pricing_reason);
+      const finalPricePerPerson = tour ? getFinalAdjustedPrice(item, tour) : 0;
+      const finalAdjustedTotal = hasOverridePrice(item) ? finalPricePerPerson * quantity : 0;
+      const priceLine = adjustmentDisplay
+        ? `$${finalPricePerPerson.toFixed(2)} USD x ${quantity} = $${finalAdjustedTotal.toFixed(2)} USD (adjusted)`
+        : standardPriceLine;
+      const internalPricingLine = adjustmentDisplay
+        ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} per person, adjustment ${adjustmentDisplay}, final $${finalPricePerPerson.toFixed(2)} per person${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
+        : "";
 
       if (tour) knownCount += 1;
 
@@ -1087,6 +1246,7 @@
           Language: ${item.language === "es" ? "Spanish" : "English"}
           <br />
           Price: <span class="money">${priceLine}</span>
+          ${internalPricingLine}
         </div>
       `;
 
@@ -1157,6 +1317,13 @@
 
       const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
       if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
+
+      if (hasOverridePrice(item)) {
+        const overrideValue = Number(item.price_override_per_person);
+        if (!Number.isInteger(overrideValue)) errors.push(`Item ${idx + 1}: Price adjustment must be a whole dollar amount.`);
+        if (!item.pricing_reason) errors.push(`Item ${idx + 1}: Pricing reason is required when using a price adjustment.`);
+        // backend ready for next implementation step
+      }
     });
 
     return errors;
@@ -1184,7 +1351,24 @@
       notes: buildCombinedNotes(item),
       tour_date: item.tour_date,
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
-      agent_id: els.agentId.value.trim()
+      agent_id: els.agentId.value.trim(),
+
+      price_override_per_person: (() => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        return hasOverridePrice(item) && tour ? getFinalAdjustedPrice(item, tour) : null;
+      })(),
+
+      standard_price_per_person: (() => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        return tour ? parseTourAmount(tour) : null;
+      })(),
+
+      price_adjustment_per_person: hasOverridePrice(item)
+        ? Number(item.price_override_per_person)
+        : null,
+
+      pricing_reason: item.pricing_reason || "",
+      pricing_notes: item.pricing_notes || ""
     };
   }
 
@@ -1200,13 +1384,32 @@
       notes: els.globalNotes.value.trim(),
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
       agent_id: els.agentId.value.trim(),
-      items: state.items.map(item => ({
-        tour_code: item.tour_code,
-        quantity: Number(item.quantity),
-        tour_date: item.tour_date,
-        language: item.language,
-        item_notes: item.item_notes || ""
-      }))
+      items: state.items.map(item => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+
+        return {
+          tour_code: item.tour_code,
+          quantity: Number(item.quantity),
+          tour_date: item.tour_date,
+          language: item.language,
+          item_notes: item.item_notes || "",
+
+          price_override_per_person: hasOverridePrice(item) && tour
+            ? getFinalAdjustedPrice(item, tour)
+            : null,
+
+          standard_price_per_person: tour
+            ? parseTourAmount(tour)
+            : null,
+
+          price_adjustment_per_person: hasOverridePrice(item)
+            ? Number(item.price_override_per_person)
+            : null,
+
+          pricing_reason: item.pricing_reason || "",
+          pricing_notes: item.pricing_notes || ""
+        };
+      })
     };
   }
 
@@ -1331,6 +1534,10 @@
     const errors = [...validateSharedFields({ requireGuest: false }), ...validateItems()];
     if (state.items.length !== 1) {
       showStatus("Generate Link is only available for a single booking item.", "error");
+      return;
+    }
+    if (state.items.some(item => hasOverridePrice(item))) {
+      showStatus("Price adjustments only work with Send Invoice. Generate Link uses the standard tour price.", "error");
       return;
     }
     if (errors.length) {
