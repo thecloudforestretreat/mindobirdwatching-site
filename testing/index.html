@@ -641,7 +641,7 @@
         </div>
 
         <div class="small-note">
-          Generate Link is available only for a single item. It can include optional prefilled guest details. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
+          Generate Link is available only for a single item at the standard tour price. Price adjustments require Send Invoice. Multi-item bookings use invoice mode and will call <strong>/stripe/api/create-invoice-multi</strong>.
         </div>
 
         <div id="statusBox" class="status"></div>
@@ -721,7 +721,7 @@
 
     <div class="grid-2 pricing-grid">
       <div class="field">
-        <label>Price override/person</label>
+        <label>Price adjustment/person</label>
         <input data-field="price_override_per_person" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional" />
       </div>
 
@@ -736,7 +736,7 @@
       </div>
 
       <div class="hint pricing-helper-row">
-        Enter the final whole-dollar price per person. Leave blank to use the standard Stripe product price.
+        Enter the whole-dollar amount to add per person. Example: standard $75 + adjustment $5 = final invoice price $80/person. Leave blank for standard pricing.
       </div>
 
       <div class="field pricing-extra pricing-notes-field" data-pricing-extra hidden>
@@ -746,7 +746,7 @@
     </div>
 
     <div class="pricing-override-note" data-pricing-override-note hidden>
-      Internal only. The customer should only see the final invoice price. Override pricing details are now included in the invoice payload and ready for backend Stripe implementation.
+      Internal only. The customer only sees the final invoice price. Adjustment details are stored in the invoice payload for accounting.
     </div>
 
     <div class="field">
@@ -925,6 +925,19 @@
     const n = Number(value);
     if (!Number.isFinite(n) || n <= 0) return "";
     return `$${Math.round(n)} USD`;
+  }
+
+  function formatAdjustmentDisplay(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return "";
+    return `+$${Math.round(n)} USD`;
+  }
+
+  function getFinalAdjustedPrice(item, tour) {
+    const standardAmount = parseTourAmount(tour);
+    const adjustmentAmount = Number(item && item.price_override_per_person || 0);
+    if (!Number.isFinite(adjustmentAmount) || adjustmentAmount <= 0) return standardAmount;
+    return standardAmount + Math.round(adjustmentAmount);
   }
 
   function hasOverridePrice(item) {
@@ -1205,19 +1218,20 @@ function createItem(initial = {}) {
 
       const quantity = Number(item.quantity || 0);
       const standardAmount = parseTourAmount(tour);
-      const overrideAmount = Number(item.price_override_per_person || 0);
+      const adjustmentAmount = Number(item.price_override_per_person || 0);
       const standardPriceLine = tour
         ? `${tour.amount_display} x ${quantity}`
         : "Select a tour";
 
-      const overrideDisplay = formatOverrideDisplay(item.price_override_per_person);
+      const adjustmentDisplay = formatAdjustmentDisplay(item.price_override_per_person);
       const reasonDisplay = formatPricingReason(item.pricing_reason);
-      const overrideTotal = hasOverridePrice(item) ? overrideAmount * quantity : 0;
-      const priceLine = overrideDisplay
-        ? `${overrideDisplay} x ${quantity} = $${overrideTotal.toFixed(2)} USD (override)`
+      const finalPricePerPerson = tour ? getFinalAdjustedPrice(item, tour) : 0;
+      const finalAdjustedTotal = hasOverridePrice(item) ? finalPricePerPerson * quantity : 0;
+      const priceLine = adjustmentDisplay
+        ? `$${finalPricePerPerson.toFixed(2)} USD x ${quantity} = $${finalAdjustedTotal.toFixed(2)} USD (adjusted)`
         : standardPriceLine;
-      const internalPricingLine = overrideDisplay
-        ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} per person, override ${overrideDisplay}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}<br /><span class="pricing-warning">Backend update required before override pricing changes a live Stripe invoice.</span>`
+      const internalPricingLine = adjustmentDisplay
+        ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} per person, adjustment ${adjustmentDisplay}, final $${finalPricePerPerson.toFixed(2)} per person${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
         : "";
 
       if (tour) knownCount += 1;
@@ -1306,8 +1320,8 @@ function createItem(initial = {}) {
 
       if (hasOverridePrice(item)) {
         const overrideValue = Number(item.price_override_per_person);
-        if (!Number.isInteger(overrideValue)) errors.push(`Item ${idx + 1}: Override price must be a whole dollar amount.`);
-        if (!item.pricing_reason) errors.push(`Item ${idx + 1}: Pricing reason is required when using an override price.`);
+        if (!Number.isInteger(overrideValue)) errors.push(`Item ${idx + 1}: Price adjustment must be a whole dollar amount.`);
+        if (!item.pricing_reason) errors.push(`Item ${idx + 1}: Pricing reason is required when using a price adjustment.`);
         // backend ready for next implementation step
       }
     });
@@ -1339,14 +1353,19 @@ function createItem(initial = {}) {
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
       agent_id: els.agentId.value.trim(),
 
-      price_override_per_person: hasOverridePrice(item)
-        ? Number(item.price_override_per_person)
-        : null,
+      price_override_per_person: (() => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        return hasOverridePrice(item) && tour ? getFinalAdjustedPrice(item, tour) : null;
+      })(),
 
       standard_price_per_person: (() => {
         const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
         return tour ? parseTourAmount(tour) : null;
       })(),
+
+      price_adjustment_per_person: hasOverridePrice(item)
+        ? Number(item.price_override_per_person)
+        : null,
 
       pricing_reason: item.pricing_reason || "",
       pricing_notes: item.pricing_notes || ""
@@ -1375,12 +1394,16 @@ function createItem(initial = {}) {
           language: item.language,
           item_notes: item.item_notes || "",
 
-          price_override_per_person: hasOverridePrice(item)
-            ? Number(item.price_override_per_person)
+          price_override_per_person: hasOverridePrice(item) && tour
+            ? getFinalAdjustedPrice(item, tour)
             : null,
 
           standard_price_per_person: tour
             ? parseTourAmount(tour)
+            : null,
+
+          price_adjustment_per_person: hasOverridePrice(item)
+            ? Number(item.price_override_per_person)
             : null,
 
           pricing_reason: item.pricing_reason || "",
@@ -1511,6 +1534,10 @@ function createItem(initial = {}) {
     const errors = [...validateSharedFields({ requireGuest: false }), ...validateItems()];
     if (state.items.length !== 1) {
       showStatus("Generate Link is only available for a single booking item.", "error");
+      return;
+    }
+    if (state.items.some(item => hasOverridePrice(item))) {
+      showStatus("Price adjustments only work with Send Invoice. Generate Link uses the standard tour price.", "error");
       return;
     }
     if (errors.length) {
