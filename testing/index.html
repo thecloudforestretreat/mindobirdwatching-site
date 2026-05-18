@@ -160,6 +160,26 @@
     color: var(--muted);
   }
 
+  .pricing-extra[hidden] {
+    display: none !important;
+  }
+
+  .pricing-override-note {
+    border: 1px dashed rgba(13,89,37,0.22);
+    background: rgba(13,89,37,0.06);
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin: -2px 0 14px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+
+  .pricing-warning {
+    color: #8a5a00;
+    font-weight: 800;
+  }
+
   .items-wrap {
     border: 1px solid var(--line);
     border-radius: 18px;
@@ -683,25 +703,29 @@
 
     <div class="grid-3">
       <div class="field">
-        <label>Adjusted price per person</label>
-        <input data-field="price_override_per_person" type="number" min="0" step="0.01" placeholder="Optional" />
-        <div class="hint">Leave blank to use the standard Stripe product price.</div>
+        <label>Override price per person</label>
+        <input data-field="price_override_per_person" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional" />
+        <div class="hint">Enter the final whole-dollar price per person. Leave blank to use the standard Stripe product price.</div>
       </div>
 
-      <div class="field">
+      <div class="field pricing-extra" data-pricing-extra hidden>
         <label>Pricing reason</label>
         <select data-field="pricing_reason">
-          <option value="">Standard pricing</option>
+          <option value="">Select reason...</option>
           <option value="price_test">Price test</option>
           <option value="manual_adjustment">Manual adjustment</option>
           <option value="custom_quote">Custom quote</option>
         </select>
       </div>
 
-      <div class="field">
+      <div class="field pricing-extra" data-pricing-extra hidden>
         <label>Pricing notes</label>
         <input data-field="pricing_notes" type="text" placeholder="Internal note only" />
       </div>
+    </div>
+
+    <div class="pricing-override-note" data-pricing-override-note hidden>
+      Internal only. The customer should only see the final invoice price. This page currently collects override details, but the backend invoice route must be updated before override pricing changes a live Stripe invoice.
     </div>
 
     <div class="field">
@@ -879,7 +903,18 @@
   function formatOverrideDisplay(value) {
     const n = Number(value);
     if (!Number.isFinite(n) || n <= 0) return "";
-    return `$${n.toFixed(2)} USD`;
+    return `$${Math.round(n)} USD`;
+  }
+
+  function hasOverridePrice(item) {
+    const n = Number(item && item.price_override_per_person);
+    return Number.isFinite(n) && n > 0;
+  }
+
+  function parseTourAmount(tour) {
+    if (!tour || !tour.amount_display) return 0;
+    const n = Number(String(tour.amount_display).replace(/[^0-9.]/g, ""));
+    return Number.isFinite(n) ? n : 0;
   }
 
   function formatPricingReason(value) {
@@ -1012,6 +1047,8 @@ function createItem(initial = {}) {
       const priceOverrideInput = node.querySelector('[data-field="price_override_per_person"]');
       const pricingReasonInput = node.querySelector('[data-field="pricing_reason"]');
       const pricingNotesInput = node.querySelector('[data-field="pricing_notes"]');
+      const pricingExtraFields = node.querySelectorAll("[data-pricing-extra]");
+      const pricingOverrideNote = node.querySelector("[data-pricing-override-note]");
       const metaText = node.querySelector("[data-tour-meta]");
 
       const currentLangTours = state.tours
@@ -1048,6 +1085,16 @@ function createItem(initial = {}) {
           <br />
           <strong>Summary:</strong> ${selectedTour.description_one_liner || "-"}
         `;
+      }
+
+      function refreshPricingControls() {
+        const hasOverride = hasOverridePrice(item);
+        pricingExtraFields.forEach(field => {
+          field.hidden = !hasOverride;
+        });
+        if (pricingOverrideNote) {
+          pricingOverrideNote.hidden = !hasOverride;
+        }
       }
 
       langSelect.addEventListener("change", e => {
@@ -1095,7 +1142,11 @@ function createItem(initial = {}) {
       });
 
       priceOverrideInput.addEventListener("input", e => {
-        updateItem(item.id, "price_override_per_person", e.target.value);
+        const raw = e.target.value;
+        const cleaned = raw === "" ? "" : String(Math.max(0, Math.floor(Number(raw) || 0)));
+        e.target.value = cleaned;
+        updateItem(item.id, "price_override_per_person", cleaned);
+        refreshPricingControls();
       });
 
       pricingReasonInput.addEventListener("change", e => {
@@ -1107,6 +1158,7 @@ function createItem(initial = {}) {
       });
 
       refreshMeta();
+      refreshPricingControls();
       els.itemsContainer.appendChild(node);
     });
   }
@@ -1130,17 +1182,21 @@ function createItem(initial = {}) {
         ? `${tour.tour_code} - ${tour.tour_title}`
         : `Item ${index + 1}`;
 
+      const quantity = Number(item.quantity || 0);
+      const standardAmount = parseTourAmount(tour);
+      const overrideAmount = Number(item.price_override_per_person || 0);
       const standardPriceLine = tour
-        ? `${tour.amount_display} x ${item.quantity || 0}`
+        ? `${tour.amount_display} x ${quantity}`
         : "Select a tour";
 
       const overrideDisplay = formatOverrideDisplay(item.price_override_per_person);
       const reasonDisplay = formatPricingReason(item.pricing_reason);
+      const overrideTotal = hasOverridePrice(item) ? overrideAmount * quantity : 0;
       const priceLine = overrideDisplay
-        ? `${overrideDisplay} x ${item.quantity || 0} (adjusted)`
+        ? `${overrideDisplay} x ${quantity} = $${overrideTotal.toFixed(2)} USD (override)`
         : standardPriceLine;
       const internalPricingLine = overrideDisplay
-        ? `<br />Internal pricing: standard ${tour ? tour.amount_display : "-"}, adjusted ${overrideDisplay}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
+        ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} per person, override ${overrideDisplay}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}<br /><span class="pricing-warning">Backend update required before override pricing changes a live Stripe invoice.</span>`
         : "";
 
       if (tour) knownCount += 1;
@@ -1226,6 +1282,13 @@ function createItem(initial = {}) {
 
       const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
       if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
+
+      if (hasOverridePrice(item)) {
+        const overrideValue = Number(item.price_override_per_person);
+        if (!Number.isInteger(overrideValue)) errors.push(`Item ${idx + 1}: Override price must be a whole dollar amount.`);
+        if (!item.pricing_reason) errors.push(`Item ${idx + 1}: Pricing reason is required when using an override price.`);
+        errors.push(`Item ${idx + 1}: Override pricing is collected on this page, but the backend invoice route has not been updated yet. Remove the override to send a standard live Stripe invoice.`);
+      }
     });
 
     return errors;
