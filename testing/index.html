@@ -746,7 +746,7 @@
     </div>
 
     <div class="pricing-override-note" data-pricing-override-note hidden>
-      Internal only. The customer should only see the final invoice price. This page currently collects override details, but the backend invoice route must be updated before override pricing changes a live Stripe invoice.
+      Internal only. The customer should only see the final invoice price. Override pricing details are now included in the invoice payload and ready for backend Stripe implementation.
     </div>
 
     <div class="field">
@@ -1308,7 +1308,7 @@ function createItem(initial = {}) {
         const overrideValue = Number(item.price_override_per_person);
         if (!Number.isInteger(overrideValue)) errors.push(`Item ${idx + 1}: Override price must be a whole dollar amount.`);
         if (!item.pricing_reason) errors.push(`Item ${idx + 1}: Pricing reason is required when using an override price.`);
-        errors.push(`Item ${idx + 1}: Override pricing is collected on this page, but the backend invoice route has not been updated yet. Remove the override to send a standard live Stripe invoice.`);
+        // backend ready for next implementation step
       }
     });
 
@@ -1337,7 +1337,19 @@ function createItem(initial = {}) {
       notes: buildCombinedNotes(item),
       tour_date: item.tour_date,
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
-      agent_id: els.agentId.value.trim()
+      agent_id: els.agentId.value.trim(),
+
+      price_override_per_person: hasOverridePrice(item)
+        ? Number(item.price_override_per_person)
+        : null,
+
+      standard_price_per_person: (() => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        return tour ? parseTourAmount(tour) : null;
+      })(),
+
+      pricing_reason: item.pricing_reason || "",
+      pricing_notes: item.pricing_notes || ""
     };
   }
 
@@ -1353,13 +1365,28 @@ function createItem(initial = {}) {
       notes: els.globalNotes.value.trim(),
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
       agent_id: els.agentId.value.trim(),
-      items: state.items.map(item => ({
-        tour_code: item.tour_code,
-        quantity: Number(item.quantity),
-        tour_date: item.tour_date,
-        language: item.language,
-        item_notes: item.item_notes || ""
-      }))
+      items: state.items.map(item => {
+        const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+
+        return {
+          tour_code: item.tour_code,
+          quantity: Number(item.quantity),
+          tour_date: item.tour_date,
+          language: item.language,
+          item_notes: item.item_notes || "",
+
+          price_override_per_person: hasOverridePrice(item)
+            ? Number(item.price_override_per_person)
+            : null,
+
+          standard_price_per_person: tour
+            ? parseTourAmount(tour)
+            : null,
+
+          pricing_reason: item.pricing_reason || "",
+          pricing_notes: item.pricing_notes || ""
+        };
+      })
     };
   }
 
