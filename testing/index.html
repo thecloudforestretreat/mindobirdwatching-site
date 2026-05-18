@@ -180,6 +180,24 @@
     font-weight: 800;
   }
 
+  .pricing-grid {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .pricing-helper-row {
+    grid-column: 1 / -1;
+    margin: -8px 0 2px;
+  }
+
+  .pricing-notes-field {
+    grid-column: 1 / -1;
+  }
+
+  .pricing-notes-field textarea {
+    min-height: 92px;
+  }
+
   .items-wrap {
     border: 1px solid var(--line);
     border-radius: 18px;
@@ -701,11 +719,10 @@
       </div>
     </div>
 
-    <div class="grid-3">
+    <div class="grid-2 pricing-grid">
       <div class="field">
-        <label>Override price per person</label>
+        <label>Price override/person</label>
         <input data-field="price_override_per_person" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional" />
-        <div class="hint">Enter the final whole-dollar price per person. Leave blank to use the standard Stripe product price.</div>
       </div>
 
       <div class="field pricing-extra" data-pricing-extra hidden>
@@ -718,9 +735,13 @@
         </select>
       </div>
 
-      <div class="field pricing-extra" data-pricing-extra hidden>
+      <div class="hint pricing-helper-row">
+        Enter the final whole-dollar price per person. Leave blank to use the standard Stripe product price.
+      </div>
+
+      <div class="field pricing-extra pricing-notes-field" data-pricing-extra hidden>
         <label>Pricing notes</label>
-        <input data-field="pricing_notes" type="text" placeholder="Internal note only" />
+        <textarea data-field="pricing_notes" placeholder="Internal pricing note only"></textarea>
       </div>
     </div>
 
