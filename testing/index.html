@@ -681,6 +681,29 @@
       </div>
     </div>
 
+    <div class="grid-3">
+      <div class="field">
+        <label>Adjusted price per person</label>
+        <input data-field="price_override_per_person" type="number" min="0" step="0.01" placeholder="Optional" />
+        <div class="hint">Leave blank to use the standard Stripe product price.</div>
+      </div>
+
+      <div class="field">
+        <label>Pricing reason</label>
+        <select data-field="pricing_reason">
+          <option value="">Standard pricing</option>
+          <option value="price_test">Price test</option>
+          <option value="manual_adjustment">Manual adjustment</option>
+          <option value="custom_quote">Custom quote</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Pricing notes</label>
+        <input data-field="pricing_notes" type="text" placeholder="Internal note only" />
+      </div>
+    </div>
+
     <div class="field">
       <label>Item notes</label>
       <textarea data-field="item_notes" placeholder="Optional internal note for this line item"></textarea>
@@ -853,6 +876,21 @@
     return v || "-";
   }
 
+  function formatOverrideDisplay(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return "";
+    return `$${n.toFixed(2)} USD`;
+  }
+
+  function formatPricingReason(value) {
+    const labels = {
+      price_test: "Price test",
+      manual_adjustment: "Manual adjustment",
+      custom_quote: "Custom quote"
+    };
+    return labels[value] || "";
+  }
+
   function titleCaseWords(value) {
     return String(value || "")
       .toLowerCase()
@@ -971,6 +1009,9 @@ function createItem(initial = {}) {
       const qtyInput = node.querySelector('[data-field="quantity"]');
       const langSelect = node.querySelector('[data-field="language"]');
       const notesInput = node.querySelector('[data-field="item_notes"]');
+      const priceOverrideInput = node.querySelector('[data-field="price_override_per_person"]');
+      const pricingReasonInput = node.querySelector('[data-field="pricing_reason"]');
+      const pricingNotesInput = node.querySelector('[data-field="pricing_notes"]');
       const metaText = node.querySelector("[data-tour-meta]");
 
       const currentLangTours = state.tours
@@ -990,6 +1031,9 @@ function createItem(initial = {}) {
       dateInput.min = getDefaultTomorrowISO();
       qtyInput.value = item.quantity;
       notesInput.value = item.item_notes;
+      priceOverrideInput.value = item.price_override_per_person;
+      pricingReasonInput.value = item.pricing_reason;
+      pricingNotesInput.value = item.pricing_notes;
 
       function refreshMeta() {
         const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
@@ -1050,6 +1094,18 @@ function createItem(initial = {}) {
         updateItem(item.id, "item_notes", e.target.value);
       });
 
+      priceOverrideInput.addEventListener("input", e => {
+        updateItem(item.id, "price_override_per_person", e.target.value);
+      });
+
+      pricingReasonInput.addEventListener("change", e => {
+        updateItem(item.id, "pricing_reason", e.target.value);
+      });
+
+      pricingNotesInput.addEventListener("input", e => {
+        updateItem(item.id, "pricing_notes", e.target.value);
+      });
+
       refreshMeta();
       els.itemsContainer.appendChild(node);
     });
@@ -1074,9 +1130,18 @@ function createItem(initial = {}) {
         ? `${tour.tour_code} - ${tour.tour_title}`
         : `Item ${index + 1}`;
 
-      const priceLine = tour
+      const standardPriceLine = tour
         ? `${tour.amount_display} x ${item.quantity || 0}`
         : "Select a tour";
+
+      const overrideDisplay = formatOverrideDisplay(item.price_override_per_person);
+      const reasonDisplay = formatPricingReason(item.pricing_reason);
+      const priceLine = overrideDisplay
+        ? `${overrideDisplay} x ${item.quantity || 0} (adjusted)`
+        : standardPriceLine;
+      const internalPricingLine = overrideDisplay
+        ? `<br />Internal pricing: standard ${tour ? tour.amount_display : "-"}, adjusted ${overrideDisplay}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
+        : "";
 
       if (tour) knownCount += 1;
 
@@ -1090,6 +1155,7 @@ function createItem(initial = {}) {
           Language: ${item.language === "es" ? "Spanish" : "English"}
           <br />
           Price: <span class="money">${priceLine}</span>
+          ${internalPricingLine}
         </div>
       `;
 
