@@ -374,6 +374,46 @@ Schema dateModified:
 - Use ISO date format YYYY-MM-DD.
 - Do not invent a historical last modified date. Use the update date only when making the schema update.
 
+MBW HEADER SYSTEM - SINGLE HEADER ONLY
+
+The Mindo Bird Watching site uses one shared header include only:
+
+/assets/includes/header.html
+
+Do not create, reference, restore, or use:
+/assets/includes/header-es.html
+/assets/includes/header-en.html
+
+All pages, English and Spanish, must load the same shared header.html through:
+
+<div id="siteHeader" data-current-lang="en"></div>
+
+or
+
+<div id="siteHeader" data-current-lang="es"></div>
+
+The shared header.html must support both languages using:
+data-href-en
+data-href-es
+data-label-en
+data-label-es
+data-lang
+
+When reviewing or updating any page:
+1. Ensure the page uses only #siteHeader.
+2. Ensure no page hardcodes a full header.
+3. Ensure no page references header-es.html or header-en.html.
+4. Ensure Spanish pages use <html lang="es"> and data-current-lang="es".
+5. Ensure English pages use <html lang="en"> and data-current-lang="en".
+6. Ensure the injected header changes nav labels and nav hrefs based on current language.
+7. Ensure EN/ES language switch links point to the matching translated page, not always to the homepage.
+8. Ensure mobile menu links also switch to the correct language.
+9. Ensure header.css is the only header stylesheet.
+10. Do not add duplicate language switches inside the header beyond the approved desktop/mobile header language switch.
+11. Keep exactly one visible rawLangLinks block directly after #siteHeader for crawlable page-level language switching.
+
+If header language switching does not work from the single shared header.html, update the loader JavaScript, not the page files and not separate header-en/header-es files.
+
 SPANISH COPY AND ACCENTS STANDARD
 Spanish pages must use correct Spanish accents in visible copy and metadata.
 
