@@ -463,26 +463,9 @@
 </main>
 <!-- Shared footer mount -->
 <div id="siteFooter"></div>
-</div><script>
-  (function(){
-    async function inject(id, url){
-      var el = document.getElementById(id);
-      if(!el) return;
-      var res = await fetch(url, { cache: "no-store" });
-      el.innerHTML = await res.text();
-    }
-    Promise.all([
-      inject("siteHeader", "/assets/includes/header.html"),
-      inject("siteFooter", "/assets/includes/footer.html")
-    ]).then(function(){
-      if (!document.querySelector('script[src="/assets/js/site.js"]')) {
-        var s = document.createElement("script");
-        s.src = "/assets/js/site.js";
-        document.body.appendChild(s);
-      }
-    });
-  })();
-</script>
+</div><!-- Shared header/footer injector and centralized site behavior -->
+<script defer src="/assets/js/includes.js"></script>
+<script defer src="/assets/js/site.js"></script>
 <!-- Include injector + site behavior at bottom -->
 <script>
     (function(){
