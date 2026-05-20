@@ -56,7 +56,7 @@ Legacy theme-color cleanup:
 - Remove this tag from every MBW page during QA:
   <meta content="#034EA2" name="theme-color"/>
 - This tag is a carryover from another site and is not part of the Mindo Bird Watching system.
-- Do not replace it with another theme-color tag unless the site owner explicitly requests a new MBW-specific value.
+- Do not replace it with another hardcoded page-level theme-color tag unless explicitly requested. Approved head.js fallback behavior is allowed.
 - Do not leave a commented-out copy of the old tag.
 
 Page files should not duplicate analytics logic for:
@@ -374,45 +374,121 @@ Schema dateModified:
 - Use ISO date format YYYY-MM-DD.
 - Do not invent a historical last modified date. Use the update date only when making the schema update.
 
-MBW HEADER SYSTEM - SINGLE HEADER ONLY
+MBW SINGLE HEADER ARCHITECTURE (MANDATORY)
 
-The Mindo Bird Watching site uses one shared header include only:
+The approved Mindo Bird Watching architecture uses ONE shared header include only:
 
 /assets/includes/header.html
 
-Do not create, reference, restore, or use:
-/assets/includes/header-es.html
-/assets/includes/header-en.html
+Approved shared header assets:
+- /assets/includes/header.html
+- /assets/css/header.css
+- /assets/js/includes.js
+- /assets/js/site.js
+- /assets/js/head.js
 
-All pages, English and Spanish, must load the same shared header.html through:
+The following files are deprecated and must NOT be used:
+- /assets/includes/header-es.html
+- /assets/includes/header-en.html
 
-<div id="siteHeader" data-current-lang="en"></div>
+All EN/ES behavior must be driven dynamically from:
+- <html lang="en"> or <html lang="es">
+- #siteHeader data-current-lang
+- data-href-en
+- data-href-es
+- data-label-en
+- data-label-es
+- data-lang
 
-or
+MANDATORY HEADER RULES
 
-<div id="siteHeader" data-current-lang="es"></div>
+1. Every page must inject the SAME shared header.html.
+2. includes.js must NEVER switch between header.html and header-es.html.
+3. Spanish pages must NOT load a different physical header file.
+4. Navigation labels and URLs must dynamically switch language from the shared header.
+5. EN/ES language switch must point to the matching translated page, not the homepage.
+6. Mobile menu links must also switch language correctly.
+7. Desktop and mobile navigation must stay language-consistent after switching languages.
+8. rawLangLinks remains required directly below #siteHeader for crawlable page-level language switching.
+9. Do not hardcode translated nav menus inside page files.
+10. Do not create duplicate header systems.
+11. Do not create page-specific headers.
+12. Do not restore legacy EN/ES header include architecture.
+13. If the language switch fails, fix the JavaScript routing logic, not the page files.
 
-The shared header.html must support both languages using:
-data-href-en
-data-href-es
-data-label-en
-data-label-es
-data-lang
+REQUIRED includes.js BEHAVIOR
 
-When reviewing or updating any page:
-1. Ensure the page uses only #siteHeader.
-2. Ensure no page hardcodes a full header.
-3. Ensure no page references header-es.html or header-en.html.
-4. Ensure Spanish pages use <html lang="es"> and data-current-lang="es".
-5. Ensure English pages use <html lang="en"> and data-current-lang="en".
-6. Ensure the injected header changes nav labels and nav hrefs based on current language.
-7. Ensure EN/ES language switch links point to the matching translated page, not always to the homepage.
-8. Ensure mobile menu links also switch to the correct language.
-9. Ensure header.css is the only header stylesheet.
-10. Do not add duplicate language switches inside the header beyond the approved desktop/mobile header language switch.
-11. Keep exactly one visible rawLangLinks block directly after #siteHeader for crawlable page-level language switching.
+includes.js must:
+- always inject /assets/includes/header.html
+- never inject header-es.html
+- never inject header-en.html
+- dynamically localize:
+  - nav labels
+  - nav hrefs
+  - aria-labels
+  - active states
+  - mobile menu
+  - language pills
+  using the page language
 
-If header language switching does not work from the single shared header.html, update the loader JavaScript, not the page files and not separate header-en/header-es files.
+REQUIRED PAGE BEHAVIOR
+
+English pages:
+- <html lang="en">
+- <div id="siteHeader" data-current-lang="en"></div>
+
+Spanish pages:
+- <html lang="es">
+- <div id="siteHeader" data-current-lang="es"></div>
+
+REQUIRED QA CHECKS
+
+Before marking a page complete:
+- verify EN page keeps English nav
+- verify ES page keeps Spanish nav
+- verify language switch changes to matching translated page
+- verify mobile menu language matches page language
+- verify active nav state ignores EN/ES pills
+- verify no page references header-es.html or header-en.html
+- verify no duplicate language switch systems exist
+
+JAVASCRIPT ARCHITECTURE STANDARD
+
+Approved JavaScript responsibility split (CURRENT PRODUCTION STANDARD):
+
+- /assets/js/head.js
+  -> shared head assets and safe metadata fallbacks only
+
+- /assets/js/includes.js
+  -> header/footer injection and include orchestration
+
+- /assets/js/site.js
+  -> centralized analytics plus current shared navigation/mobile/language behavior
+
+CURRENT LIVE ARCHITECTURE NOTE
+
+The current production site may still use /assets/js/site.js for:
+- mobile menu behavior
+- language switch behavior
+- active navigation handling
+- shared navigation utilities
+
+This is acceptable during QA if behavior remains stable and centralized.
+
+FUTURE CLEANUP TARGET (OPTIONAL)
+
+Future refactors may separate navigation logic into:
+- /assets/js/navigation.js
+
+However:
+- do NOT fail current pages simply because navigation behavior still exists in site.js
+- do NOT duplicate navigation logic across page files
+- do NOT split JS responsibilities during ordinary page QA unless explicitly requested
+
+Do not merge analytics logic into head.js.
+Do not duplicate navigation logic across multiple files.
+Do not duplicate language routing logic across individual page files.
+
 
 SPANISH COPY AND ACCENTS STANDARD
 Spanish pages must use correct Spanish accents in visible copy and metadata.
