@@ -17,13 +17,16 @@
     :root{
       --page-max: 1180px;
     }
+
     html, body { overflow-x: hidden; }
     body { background: var(--bg, #f6f8fb); }
+
     .wrap{
       max-width: var(--page-max);
       margin: 0 auto;
       padding: 18px 14px 30px;
     }
+
     .page{
       margin-top: 0;
       padding: 18px;
@@ -34,6 +37,7 @@
       border-radius: var(--r);
       box-shadow: var(--shadow);
     }
+
     /* ===== Header / Controls ===== */
     .topbar{
       display:flex;
@@ -43,10 +47,12 @@
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
+
     .topLeft{
       min-width: 260px;
       flex: 1 1 420px;
     }
+
     .topRight{
       display:flex;
       align-items:flex-start;
@@ -55,12 +61,14 @@
       flex: 1 1 520px;
       min-width: 280px;
     }
+
     .topbar h1{
       margin:0;
       letter-spacing:-0.02em;
       line-height:1.1;
       font-size: 24px;
     }
+
     .subnote{
       margin:6px 0 0;
       color: var(--muted);
@@ -68,6 +76,7 @@
       line-height: 1.5;
       max-width: 78ch;
     }
+
     .controlsBar{
       display:flex;
       align-items:center;
@@ -76,6 +85,7 @@
       flex-wrap: wrap;
       width: 100%;
     }
+
     .pillBox{
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -88,3 +98,901 @@
       height: 44px;
       box-sizing: border-box;
       min-width: 0;
+    }
+
+    .pillBox label{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .pillBox select{
+      border:0;
+      outline:0;
+      background:transparent;
+      color: var(--ink);
+      font-weight: 900;
+      min-width: 170px;
+      width: 100%;
+      padding: 0;
+      height: 28px;
+      line-height: 28px;
+      box-sizing: border-box;
+    }
+
+    .quickCopy{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      margin-left: auto; /* keeps button at the end when space allows */
+    }
+    .quickCopy .btn{ white-space: nowrap; }
+
+    .brandMark{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap: 10px;
+      padding-top: 2px;
+      min-width: 90px;
+    }
+    .brandMark img{
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      object-fit: cover;
+      display:block;
+    }
+
+    /* ===== Main layout ===== */
+    .layout{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    .panel{
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-width:0;
+    }
+
+    .panelHead{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panelHead h2{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing:-0.02em;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .panelBody{
+      padding: 12px 14px;
+    }
+
+    .badge{
+      flex:0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,.78);
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .list{
+      display:grid;
+      gap: 8px;
+      padding: 12px 14px;
+      max-height: 64vh;
+      overflow:auto;
+    }
+
+    .itemBtn{
+      width: 100%;
+      text-align:left;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      cursor:pointer;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      min-width:0;
+    }
+    .itemBtn:hover{ transform: translateY(-1px); }
+    .itemBtn:active{ transform: translateY(0); }
+
+    .itemTitle{
+      font-weight: 950;
+      color: var(--ink);
+      line-height: 1.25;
+      min-width:0;
+    }
+
+    .itemMeta{
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    .detail{
+      padding: 12px 14px;
+    }
+
+    .detailTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .detailTitle{
+      margin:0;
+      font-family: var(--font-head);
+      color: var(--forest);
+      letter-spacing:-0.02em;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .copyGrid{
+      display:grid;
+      gap: 10px;
+    }
+
+    .block{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .blockHead{
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .blockHead strong{
+      font-size: 12.5px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .blockBody{
+      padding: 10px 12px;
+      color: var(--ink);
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap:anywhere;
+    }
+
+    .thumbRow{
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .thumb{
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .noteSmall{
+      margin:0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.35;
+      overflow-wrap:anywhere;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(3,78,162,.22);
+      background: rgba(3,78,162,.12);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 12.5px;
+      box-shadow: var(--shadow);
+      display:none;
+      z-index: 9999;
+      max-width: calc(100vw - 24px);
+      text-align:center;
+    }
+
+    /* ===== Social (always visible, aligned) ===== */
+    .social{ margin-top: 14px; }
+
+    .socialGrid{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: repeat(6, minmax(160px, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .socialCard{
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .socialLeft{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+    }
+
+    .socialIco{
+      width: 28px;
+      height: 28px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      flex:0 0 auto;
+    }
+
+    .socialName{
+      font-weight: 950;
+      color: var(--ink);
+      min-width:0;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 980px){
+      .topRight{ justify-content:flex-start; }
+      .quickCopy{ margin-left: 0; }
+      .layout{ grid-template-columns: 1fr; }
+      .list{ max-height: 42vh; }
+      .socialGrid{ grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px){
+      .page{ padding: 16px; }
+      .topbar{ gap: 10px; }
+
+      .topLeft{ flex: 1 1 auto; }
+      .topRight{ flex: 1 1 auto; }
+
+      .controlsBar{
+        display:grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
+      .pillBox{ width: 100%; }
+      .pillBox select{ min-width: 0; }
+
+      .quickCopy{
+        width: 100%;
+        justify-content:flex-start;
+      }
+      .quickCopy .btn{ width: 100%; justify-content:center; }
+
+      .brandMark{
+        width: 100%;
+        justify-content:flex-end;
+      }
+
+      .socialGrid{ grid-template-columns: 1fr; }
+      .socialCard{ padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="page card" aria-label="Staff info">
+      <div class="topbar">
+        <div class="topLeft">
+          <h1 id="pageTitle">Staff Info</h1>
+          <p class="subnote" id="pageNote"></p>
+        </div>
+    <div class="topRight">
+      <div class="controlsBar" aria-label="Controls">
+        <div class="pillBox" aria-label="Language">
+          <label for="langSel" id="langLbl">Language</label>
+          <select id="langSel">
+            <option value="en">English</option>
+            <option value="es">Espanol</option>
+          </select>
+        </div>
+
+        <div class="pillBox" aria-label="Subject">
+          <label for="subjSel" id="subjLbl">Subject</label>
+          <select id="subjSel"></select>
+        </div>
+
+        <div class="pillBox" aria-label="Topic">
+          <label for="topicSel" id="topicLbl">Topic</label>
+          <select id="topicSel"></select>
+        </div>
+
+        <div class="quickCopy" aria-label="Quick links">
+          <button class="btn secondary" type="button" id="copyBookBtn"></button>
+        </div>
+      </div>
+
+      <div class="brandMark" aria-label="Brand mark">
+        <img src="/apple-touch-icon.png" alt="Mindo Bird Watching" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </div>
+
+  <div class="layout" aria-label="Content">
+    <section class="panel" aria-label="Items">
+      <div class="panelHead">
+        <h2 id="listTitle">Items</h2>
+        <span class="badge" id="countBadge">0</span>
+      </div>
+      <div class="list" id="itemList"></div>
+    </section>
+
+    <section class="panel" aria-label="Details">
+      <div class="panelHead">
+        <h2 id="detailHead">Details</h2>
+      </div>
+      <div class="detail" id="detailPane">
+        <p class="subnote" id="emptyState"></p>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel social" aria-label="Social links">
+    <div class="panelHead">
+      <h2 id="socialTitle">Social</h2>
+      <span class="badge" id="socialHint"></span>
+    </div>
+    <div class="panelBody">
+      <div class="socialGrid" id="socialGrid"></div>
+    </div>
+  </section>
+</main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    (function(){
+      "use strict";
+
+      const BASE = "https://mindobirdwatching.com";
+      const DATA_URL = "https://script.google.com/macros/s/AKfycbzPORSX9WyGwLkBs3BIrkSmdHSPpmPTSQg1CtpGw-8Ak2q9vBEbx8qQ9UdRBCSyrDg/exec";
+
+      const I18N = {
+        en: {
+          pageTitle: "Staff Info",
+          pageNote: "Quick reference for calls and messages. Select a subject and copy what you need.",
+          lang: "Language",
+          subject: "Subject",
+          topic: "Topic",
+          items: "Items",
+          details: "Details",
+          empty: "Select an item to see details.",
+          copy: "Copy",
+          copyShort: "Copy short",
+          copyLong: "Copy long",
+          copyCost: "Copy cost",
+          short: "Short message",
+          long: "Long message",
+          cost: "Cost",
+          image: "Image",
+          copyUrl: "Copy URL",
+          bookBtn: "Copy booking link",
+          bookUrl: BASE + "/book-tour/",
+          social: "Social links",
+          copied: "Copied",
+          noData: "Unable to load staff content."
+        },
+        es: {
+          pageTitle: "Info del equipo",
+          pageNote: "Referencia rapida para llamadas y mensajes. Elige un tema y copia lo que necesites.",
+          lang: "Idioma",
+          subject: "Asunto",
+          topic: "Tema",
+          items: "Items",
+          details: "Detalle",
+          empty: "Selecciona un item para ver el detalle.",
+          copy: "Copiar",
+          copyShort: "Copiar corto",
+          copyLong: "Copiar largo",
+          copyCost: "Copiar costo",
+          short: "Mensaje corto",
+          long: "Mensaje largo",
+          cost: "Costo",
+          image: "Imagen",
+          copyUrl: "Copiar URL",
+          bookBtn: "Copiar link para reservar",
+          bookUrl: BASE + "/es/reservar-tour/",
+          social: "Redes",
+          copied: "Copiado",
+          noData: "No se pudo cargar el contenido."
+        }
+      };
+
+      const els = {
+        langSel: document.getElementById("langSel"),
+        subjSel: document.getElementById("subjSel"),
+        topicSel: document.getElementById("topicSel"),
+        itemList: document.getElementById("itemList"),
+        detailPane: document.getElementById("detailPane"),
+        emptyState: document.getElementById("emptyState"),
+        countBadge: document.getElementById("countBadge"),
+        toast: document.getElementById("toast"),
+        copyBookBtn: document.getElementById("copyBookBtn"),
+        pageTitle: document.getElementById("pageTitle"),
+        pageNote: document.getElementById("pageNote"),
+        langLbl: document.getElementById("langLbl"),
+        subjLbl: document.getElementById("subjLbl"),
+        topicLbl: document.getElementById("topicLbl"),
+        listTitle: document.getElementById("listTitle"),
+        detailHead: document.getElementById("detailHead"),
+        socialTitle: document.getElementById("socialTitle"),
+        socialHint: document.getElementById("socialHint"),
+        socialGrid: document.getElementById("socialGrid"),
+      };
+
+      let DATA = null;
+      let state = { lang: "en", subject: "", topic: "", activeId: "" };
+
+      function esc(s){
+        return String(s || "")
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+
+      function showToast(msg){
+        els.toast.textContent = msg;
+        els.toast.style.display = "block";
+        clearTimeout(window.__mbwToastT);
+        window.__mbwToastT = setTimeout(function(){
+          els.toast.style.display = "none";
+        }, 1400);
+      }
+
+      async function copyText(txt){
+        const t = String(txt || "");
+        if(!t) return;
+        try{
+          if(navigator.clipboard && navigator.clipboard.writeText){
+            await navigator.clipboard.writeText(t);
+            showToast(I18N[state.lang].copied);
+            return;
+          }
+        }catch(e){}
+        try{
+          const ta = document.createElement("textarea");
+          ta.value = t;
+          ta.setAttribute("readonly","readonly");
+          ta.style.position = "absolute";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          showToast(I18N[state.lang].copied);
+        }catch(e){}
+      }
+
+      function t(){ return I18N[state.lang] || I18N.en; }
+
+      function normalizeApiData(payload){
+        if(payload && payload.languages) return payload;
+
+        const grouped = {};
+        const rows = Array.isArray(payload && payload.items) ? payload.items : [];
+
+        rows.forEach(row => {
+          if(String(row.is_active || "").toLowerCase() === "no") return;
+
+          const lang = row.language || "en";
+          const subject = row.subject || "General";
+
+          if(!grouped[lang]) grouped[lang] = {};
+          if(!grouped[lang][subject]) grouped[lang][subject] = [];
+
+          grouped[lang][subject].push({
+            id: row.content_id || row.original_id || "",
+            content_id: row.content_id || "",
+            original_id: row.original_id || "",
+            subject: subject,
+            topic: row.topic || "General",
+            subtopic: row.subtopic || "",
+            title: row.title || "",
+            cost: row.cost || "",
+            message_short: row.message_short || "",
+            message_long: row.message_long || "",
+            whatsapp_ready: row.whatsapp_ready || "",
+            bot_response: row.bot_response || "",
+            staff_notes: row.staff_notes || "",
+            image_url: row.image_full_url || row.image_url || "",
+            source_url: row.source_full_url || row.source_url || "",
+            tags: row.tags || "",
+            search_keywords: row.search_keywords || "",
+            priority: row.priority || "",
+            sort_order: Number(row.sort_order || 0),
+            last_updated: row.last_updated || "",
+          });
+        });
+
+        Object.keys(grouped).forEach(lang => {
+          Object.keys(grouped[lang]).forEach(subject => {
+            grouped[lang][subject].sort((a, b) => {
+              const bySort = (a.sort_order || 0) - (b.sort_order || 0);
+              if(bySort) return bySort;
+              return String(a.title || "").localeCompare(String(b.title || ""));
+            });
+          });
+        });
+
+        return { languages: grouped };
+      }
+
+      function setStaticText(){
+        const i = t();
+        els.pageTitle.textContent = i.pageTitle;
+        els.pageNote.textContent = i.pageNote;
+        els.langLbl.textContent = i.lang;
+        els.subjLbl.textContent = i.subject;
+        els.topicLbl.textContent = i.topic;
+        els.listTitle.textContent = i.items;
+        els.detailHead.textContent = i.details;
+        els.emptyState.textContent = i.empty;
+        els.copyBookBtn.textContent = i.bookBtn;
+        els.socialTitle.textContent = i.social;
+        els.socialHint.textContent = "";
+      }
+
+      function subjectsForLang(lang){
+        const langs = (DATA && DATA.languages) ? DATA.languages : {};
+        const L = langs[lang] || {};
+        return Object.keys(L).filter(s => !/social/i.test(s)).sort();
+      }
+
+      function itemsFor(lang, subject){
+        const L = (DATA && DATA.languages && DATA.languages[lang]) ? DATA.languages[lang] : {};
+        return (L && L[subject]) ? L[subject] : [];
+      }
+
+      function topicsFrom(items){
+        const set = new Set(items.map(it => String(it.topic || "General").trim()).filter(Boolean));
+        return Array.from(set).sort();
+      }
+
+      function filterByTopic(items, topic){
+        if(!topic) return items;
+        return items.filter(it => String(it.topic || "") === topic);
+      }
+
+      function setSelectOptions(sel, arr, current){
+        sel.innerHTML = arr.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+        if(current && arr.includes(current)) sel.value = current;
+        else sel.value = arr[0] || "";
+      }
+
+      function blockHtml(label, text, copyLabel){
+        if(!String(text || "").trim()) return "";
+        const i = t();
+        return `
+          <div class="block">
+            <div class="blockHead">
+              <strong>${esc(label)}</strong>
+              <button class="btn secondary" type="button" data-copy="${esc(text)}">${esc(copyLabel || i.copy)}</button>
+            </div>
+            <div class="blockBody">${esc(text)}</div>
+          </div>
+        `;
+      }
+
+      function renderDetail(it, skipScroll){
+        const i = t();
+        if(!it){
+          els.detailPane.innerHTML = `<p class="subnote">${esc(i.empty)}</p>`;
+          return;
+        }
+
+        const title = it.title || it.subtopic || it.topic || "Item";
+        const shortText = (it.message_short && it.message_short.trim()) ? it.message_short.trim() : title;
+        const longText = (it.message_long || "").trim();
+        const cost = (it.cost || "").trim();
+        const imgUrl = (it.image_url || "").trim();
+        const sourceUrl = (it.source_url || "").trim();
+        const whatsappReady = (it.whatsapp_ready || "").trim();
+        const botResponse = (it.bot_response || "").trim();
+        const staffNotes = (it.staff_notes || "").trim();
+        const lastUpdated = (it.last_updated || "").trim();
+
+        const costBlock = cost ? blockHtml(i.cost, cost, i.copyCost) : "";
+        const whatsappBlock = whatsappReady ? blockHtml("WhatsApp ready", whatsappReady, i.copy) : "";
+        const botBlock = botResponse ? blockHtml("Bot response", botResponse, i.copy) : "";
+        const notesBlock = staffNotes ? blockHtml("Staff notes", staffNotes, i.copy) : "";
+        const sourceBlock = sourceUrl ? `
+          <div class="block">
+            <div class="blockHead">
+              <strong>Source</strong>
+              <button class="btn secondary" type="button" data-copy="${esc(sourceUrl)}">${esc(i.copyUrl)}</button>
+            </div>
+            <div class="blockBody">${esc(sourceUrl)}</div>
+          </div>
+        ` : "";
+        const updatedBlock = lastUpdated ? `
+          <div class="block">
+            <div class="blockHead">
+              <strong>Last updated</strong>
+            </div>
+            <div class="blockBody">${esc(lastUpdated)}</div>
+          </div>
+        ` : "";
+        const imgBlock = imgUrl ? `
+          <div class="block">
+            <div class="blockHead">
+              <strong>${esc(i.image)}</strong>
+              <button class="btn secondary" type="button" data-copy="${esc(imgUrl)}">${esc(i.copyUrl)}</button>
+            </div>
+            <div class="thumbRow">
+              <span class="thumb" aria-hidden="true"><img src="${esc(imgUrl)}" alt="" loading="lazy" /></span>
+              <p class="noteSmall">${esc(imgUrl)}</p>
+            </div>
+          </div>
+        ` : "";
+
+        els.detailPane.innerHTML = `
+          <div class="detailTop">
+            <h3 class="detailTitle">${esc(title)}</h3>
+          </div>
+          <div class="copyGrid">
+            ${blockHtml(i.short, shortText, i.copyShort)}
+            ${whatsappBlock}
+            ${botBlock}
+            ${blockHtml(i.long, longText, i.copyLong)}
+            ${costBlock}
+            ${sourceBlock}
+            ${imgBlock}
+            ${notesBlock}
+            ${updatedBlock}
+          </div>
+        `;
+
+        Array.from(els.detailPane.querySelectorAll("[data-copy]")).forEach(b => {
+          b.addEventListener("click", function(){
+            copyText(b.getAttribute("data-copy"));
+          });
+        });
+
+        if(!skipScroll){
+          els.detailPane.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      function renderList(){
+        const items = filterByTopic(itemsFor(state.lang, state.subject), state.topic);
+        els.countBadge.textContent = String(items.length);
+
+        if(!items.length){
+          els.itemList.innerHTML = "";
+          state.activeId = "";
+          renderDetail(null);
+          return;
+        }
+
+        els.itemList.innerHTML = items.map(it => {
+          const title = it.title || it.subtopic || it.topic || "Item";
+          const meta = [it.subtopic, it.topic].filter(Boolean).join(" • ");
+          const cost = (it.cost || "").trim();
+          const right = cost ? `<span class="badge">${esc(cost)}</span>` : `<span class="badge"> </span>`;
+          return `
+            <button class="itemBtn" type="button" data-id="${esc(it.id)}">
+              <div style="min-width:0;">
+                <div class="itemTitle">${esc(title)}</div>
+                <div class="itemMeta">${esc(meta)}</div>
+              </div>
+              ${right}
+            </button>
+          `;
+        }).join("");
+
+        Array.from(els.itemList.querySelectorAll("[data-id]")).forEach(btn => {
+          btn.addEventListener("click", function(){
+            const id = btn.getAttribute("data-id");
+            state.activeId = id;
+            const it = items.find(x => String(x.id) === String(id));
+            renderDetail(it);
+          });
+        });
+
+        if(!state.activeId){
+          const first = items[0];
+          state.activeId = first.id;
+          renderDetail(first, true);
+        } else {
+          const current = items.find(x => String(x.id) === String(state.activeId));
+          renderDetail(current || items[0]);
+        }
+      }
+
+      function renderSocial(){
+        const fallback = [
+          { title: "Instagram", url: "https://instagram.com/mindobirdwatching", icon: "/assets/images/icons/MBW-IG.png" },
+          { title: "TikTok", url: "https://www.tiktok.com/@mindobirdwatching", icon: "/assets/images/icons/MBW-Social-TikTok.png" },
+          { title: "Facebook", url: "https://www.facebook.com/profile.php?id=61577783327957", icon: "/assets/images/icons/MBW-Social-FB-01.png" },
+          { title: "YouTube", url: "https://www.youtube.com/@MindoBirdWatching", icon: "/assets/images/icons/MBW-Social-YouTube.png" },
+          { title: "Google Reviews", url: "https://g.page/r/CdMlIYMGgBIvEAE/review", icon: "/assets/images/icons/Google-Review-Symbol.png" },
+          { title: "Gift Shop", url: "https://shop.mindobirdwatching.com/", icon: "/assets/images/icons/MBW-Social-Shopify.png" }
+        ];
+
+        function socialIconFor(title){
+          const key = String(title || "").toLowerCase();
+          const found = fallback.find(r => key.includes(String(r.title || "").toLowerCase().split(" ")[0]));
+          return found ? found.icon : "";
+        }
+
+        const rows = itemsFor(state.lang, "Social")
+          .map(it => {
+            const url = (it.source_url || it.message_short || it.message_long || "").trim();
+            const title = it.title || it.topic || "Social";
+            return {
+              title: title,
+              url: url,
+              icon: it.image_url || socialIconFor(title)
+            };
+          })
+          .filter(r => r.url);
+
+        const socialRows = rows.length ? rows : fallback;
+
+        els.socialGrid.innerHTML = socialRows.map(r => {
+          return `
+            <div class="socialCard">
+              <div class="socialLeft">
+                <span class="socialIco" style="background-image:url('${esc(r.icon)}')" aria-hidden="true"></span>
+                <span class="socialName">${esc(r.title)}</span>
+              </div>
+              <button class="btn secondary" type="button" data-copy="${esc(r.url)}">${esc(t().copy)}</button>
+            </div>
+          `;
+        }).join("");
+
+        Array.from(els.socialGrid.querySelectorAll("[data-copy]")).forEach(b => {
+          b.addEventListener("click", function(){
+            copyText(b.getAttribute("data-copy"));
+          });
+        });
+      }
+
+      function refreshSelectors(){
+        setStaticText();
+        const subs = subjectsForLang(state.lang);
+
+        if(!subs.length){
+          els.subjSel.innerHTML = "";
+          els.topicSel.innerHTML = "";
+          els.itemList.innerHTML = "";
+          renderDetail(null);
+          els.pageNote.textContent = t().noData;
+          renderSocial();
+          return;
+        }
+
+        if(!state.subject || !subs.includes(state.subject)) state.subject = subs[0];
+        setSelectOptions(els.subjSel, subs, state.subject);
+
+        const items = itemsFor(state.lang, state.subject);
+        const topics = topicsFrom(items);
+        state.topic = (topics && topics.length) ? (topics.includes(state.topic) ? state.topic : topics[0]) : "";
+        setSelectOptions(els.topicSel, topics.length ? topics : [""], state.topic);
+
+        renderList();
+        renderSocial();
+      }
+
+      async function loadData(){
+        try{
+          const res = await fetch(DATA_URL, { cache: "no-store" });
+          const payload = await res.json();
+          DATA = normalizeApiData(payload);
+        }catch(e){
+          DATA = null;
+        }
+        refreshSelectors();
+      }
+
+      els.langSel.addEventListener("change", function(){
+        state.lang = (els.langSel.value === "es") ? "es" : "en";
+        state.activeId = "";
+        state.topic = "";
+        refreshSelectors();
+      });
+
+      els.subjSel.addEventListener("change", function(){
+        state.subject = els.subjSel.value || "";
+        state.topic = "";
+        state.activeId = "";
+        refreshSelectors();
+      });
+
+      els.topicSel.addEventListener("change", function(){
+        state.topic = els.topicSel.value || "";
+        state.activeId = "";
+        renderList();
+      });
+
+      els.copyBookBtn.addEventListener("click", function(){
+        copyText(t().bookUrl);
+      });
+
+      state.lang = "en";
+      els.langSel.value = "en";
+      setStaticText();
+      loadData();
+    })();
+  </script>
+</body>
+</html>
