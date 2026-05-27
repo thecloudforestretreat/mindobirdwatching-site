@@ -40,17 +40,12 @@
 
     html{ min-height:100%; overflow-x:hidden; }
 
-    body{
-      margin:0;
+    body[data-page-type="staff_info"]{
       min-height:100%;
       color:var(--ink);
-      background:
-        radial-gradient(circle at 16% 8%, rgba(255,255,255,.34), transparent 34%),
-        linear-gradient(180deg, rgba(135,206,235,.22) 0, rgba(199,218,172,.95) 145px, var(--bg) 100%);
       font-family:var(--font);
       font-size:15px;
       line-height:1.5;
-      overflow-x:hidden;
     }
 
     button, select{
@@ -61,10 +56,15 @@
       cursor:pointer;
     }
 
+    .staffInfoShell{
+      padding-top:24px;
+      padding-bottom:34px;
+    }
+
     .app{
-      width:min(var(--max), calc(100vw - 32px));
-      margin:0 auto;
-      padding:24px 0 34px;
+      width:100%;
+      margin:18px 0 0;
+      padding:0;
     }
 
     .hero{
@@ -284,13 +284,13 @@
     }
 
     .price{
-      min-width:126px;
+      min-width:138px;
       max-width:none;
       padding:5px 8px;
       border:1px solid var(--line);
       border-radius:999px;
       background:rgba(255,255,255,.48);
-      font-size:11px;
+      font-size:11.5px;
       font-weight:900;
       text-align:center;
       white-space:nowrap;
@@ -488,9 +488,14 @@
     }
 
     @media (max-width:640px){
+      .staffInfoShell{
+        padding-top:18px;
+        padding-bottom:24px;
+      }
+
       .app{
-        width:min(100vw - 20px, var(--max));
-        padding:12px 0 24px;
+        width:100%;
+        padding:0;
       }
 
       .hero,
@@ -538,10 +543,11 @@
     }
   </style>
 </head>
-<body>
-  <div data-current-lang="en" id="siteHeader"></div>
+<body data-page-type="staff_info" data-page-language="en" data-page-content-group="staff">
+  <div class="container staffInfoShell">
+    <div data-current-lang="en" id="siteHeader"></div>
 
-  <main class="app" aria-label="Staff info">
+    <main class="app" aria-label="Staff info">
     <header class="hero">
       <div class="titleBlock">
         <h1 id="pageTitle">Staff Info</h1>
@@ -599,9 +605,10 @@
       </div>
       <div class="socialGrid" id="socialGrid"></div>
     </section>
-  </main>
+    </main>
 
-  <div id="siteFooter"></div>
+    <div id="siteFooter"></div>
+  </div>
 
   <div class="toast" id="toast"></div>
 
