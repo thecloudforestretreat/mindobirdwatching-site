@@ -1287,13 +1287,25 @@ html, body{ overflow-x: visible; }
    ========================================= */
 body[data-page-type="tour_collection"] .page{
 margin-top:18px;
-      padding:26px;
+      padding:24px;
 }
 body[data-page-type="tour_collection"] .page.card{
 background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
+}
+body[data-page-type="tour_collection"] .tourHero{
+background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+      border: 1px solid rgba(7,25,35,.12);
+      border-radius: calc(var(--r) - 4px);
+      box-shadow: 0 14px 36px rgba(7,25,35,.08);
+      padding: 22px;
+}
+body[data-page-type="tour_collection"] .tourHero h1{
+margin: 0 0 12px;
+      max-width: 760px;
+      letter-spacing: 0;
 }
 body[data-page-type="tour_collection"] .lede{
 max-width: 92ch;
@@ -1304,13 +1316,17 @@ margin: 0 0 12px;
 }
 body[data-page-type="tour_collection"] .ledeGrid{
 display:grid;
-      grid-template-columns: 1.35fr 0.65fr;
-      gap: 22px;
+      grid-template-columns: minmax(0, 1.18fr) minmax(300px, .82fr);
+      gap: 18px;
       align-items: start;
       max-width: none;
 }
 body[data-page-type="tour_collection"] .ledeMain{
 min-width: 0;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(7,25,35,.10);
+      border-radius: 14px;
+      padding: 16px;
 }
 body[data-page-type="tour_collection"] .ledeBullets{
 margin: 10px 0 0;
@@ -1320,14 +1336,42 @@ margin: 10px 0 0;
 body[data-page-type="tour_collection"] .ledeBullets li{
 margin: 6px 0;
 }
+body[data-page-type="tour_collection"] .ledeMain p a{
+color: var(--forest);
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1.5px;
+}
+body[data-page-type="tour_collection"] .heroNote,
+body[data-page-type="tour_collection"] .bookingNote{
+margin: 10px 0 0;
+      color: var(--ink);
+      font-weight: 800;
+      line-height: 1.5;
+}
+body[data-page-type="tour_collection"] .heroNote{
+padding: 10px 12px;
+      border-left: 4px solid rgba(255,215,0,.8);
+      background: rgba(255,248,204,.72);
+      border-radius: 10px;
+}
+body[data-page-type="tour_collection"] .bookingNote{
+font-size: 13.5px;
+}
+body[data-page-type="tour_collection"] .heroRail{
+display:grid;
+      gap: 12px;
+      min-width: 0;
+}
 body[data-page-type="tour_collection"] .socialProof{
-background: rgba(255,255,255,.70);
+background: rgba(255,255,255,.82);
       border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
+      border-radius: 14px;
+      box-shadow: 0 12px 28px rgba(7,25,35,.07);
       padding: 14px 14px 12px;
-      max-width: 360px;
-      justify-self: end;
+      width: 100%;
+      max-width: none;
 }
 body[data-page-type="tour_collection"] .spHead{
 font-size: 12px;
@@ -1387,6 +1431,53 @@ margin: 0;
 body[data-page-type="tour_collection"] .spQuote strong{
 color: var(--ink); font-weight: 900;
 }
+body[data-page-type="tour_collection"] .planPanel{
+background: rgba(13,89,37,.08);
+      border: 1px solid rgba(13,89,37,.20);
+      border-radius: 14px;
+      padding: 14px;
+}
+body[data-page-type="tour_collection"] .planPanel h2{
+margin: 0 0 8px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.25;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      color: var(--forest);
+}
+body[data-page-type="tour_collection"] .planPanel ul{
+margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 13.5px;
+}
+body[data-page-type="tour_collection"] .planPanel strong{
+color: var(--ink);
+      font-weight: 900;
+}
+body[data-page-type="tour_collection"] .supportLinks{
+display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top: 12px;
+}
+body[data-page-type="tour_collection"] .supportLinks a{
+display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 34px;
+      padding: 8px 11px;
+      border: 1px solid rgba(13,89,37,.24);
+      border-radius: 999px;
+      background: rgba(255,255,255,.58);
+      color: var(--forest);
+      font-size: 12.5px;
+      font-weight: 900;
+}
 @media (max-width: 900px){
 body[data-page-type="tour_collection"] .ledeGrid{
 grid-template-columns: 1fr;
@@ -1401,9 +1492,19 @@ max-width: none;
 body[data-page-type="tour_collection"] .ctaRow{
 margin-top: 14px;
       display:flex;
-      gap:12px;
+      gap:10px;
       flex-wrap:wrap;
       align-items:center;
+}
+body[data-page-type="tour_collection"] .tourHero .ctaRow .btn{
+min-width: 190px;
+      min-height: 44px;
+}
+body[data-page-type="tour_collection"] .tourHero .ctaRow .btn.primary{
+flex: 1 1 260px;
+}
+body[data-page-type="tour_collection"] .tourHero .ctaRow .btn.secondary{
+flex: 0 1 190px;
 }
 body[data-page-type="tour_collection"] .waBtn{
 display:inline-flex;
