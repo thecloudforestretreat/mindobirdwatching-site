@@ -31,6 +31,113 @@
 <link href="/site.webmanifest" rel="manifest"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/><script defer="" src="/assets/js/head.js"></script>
+
+<style>
+body[data-tour-variant="custom_private_tour"] .hero{
+  align-items:stretch;
+}
+body[data-tour-variant="custom_private_tour"] .heroImageCard{
+  display:grid;
+  grid-template-rows:1fr auto;
+  align-self:stretch;
+  min-height:620px;
+}
+body[data-tour-variant="custom_private_tour"] .heroImageFrame{
+  height:100%;
+  min-height:560px;
+  overflow:hidden;
+}
+body[data-tour-variant="custom_private_tour"] .heroImageFrame img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body[data-tour-variant="custom_private_tour"] .tourMetaGrid,
+body[data-tour-variant="custom_private_tour"] .trustGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px 14px;
+  align-items:center;
+}
+body[data-tour-variant="custom_private_tour"] .tourMetaItem,
+body[data-tour-variant="custom_private_tour"] .trustItem{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--ink);
+  font-weight:800;
+  line-height:1.25;
+}
+body[data-tour-variant="custom_private_tour"] .tourMetaItem{
+  font-size:13px;
+}
+body[data-tour-variant="custom_private_tour"] .trustGrid{
+  margin-top:14px;
+  padding:16px 18px;
+  border:1px solid rgba(7,95,39,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.52);
+}
+body[data-tour-variant="custom_private_tour"] .trustIcon{
+  width:22px;
+  height:22px;
+  flex:0 0 22px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--green);
+  color:#fff;
+  font-size:13px;
+  font-weight:900;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid .block{
+  height:100%;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid .blockBody{
+  display:flex;
+  flex-direction:column;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid .ctaRow{
+  margin-top:auto;
+}
+body[data-tour-variant="custom_private_tour"] .miniLabel{
+  font-weight:900;
+  color:var(--green);
+  margin-top:10px;
+}
+body[data-tour-variant="custom_private_tour"] .planningList{
+  margin:8px 0 0 18px;
+}
+body[data-tour-variant="custom_private_tour"] .planningList li{
+  margin:5px 0;
+}
+@media(max-width:900px){
+  body[data-tour-variant="custom_private_tour"] .heroImageCard{
+    min-height:0;
+  }
+  body[data-tour-variant="custom_private_tour"] .heroImageFrame{
+    min-height:360px;
+    aspect-ratio:4/5;
+  }
+  body[data-tour-variant="custom_private_tour"] .planningGrid{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:520px){
+  body[data-tour-variant="custom_private_tour"] .tourMetaGrid,
+  body[data-tour-variant="custom_private_tour"] .trustGrid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
 <body data-page-content-group="tours" data-page-language="es" data-page-location="mindo" data-page-region="pichincha" data-page-type="tour_detail" data-tour-variant="custom_private_tour">
 <div class="container">
@@ -47,12 +154,7 @@
 <p>Para ver todas las rutas disponibles, salidas por especies y planificar mejor su experiencia, explore nuestros 
         <a data-analytics-event="internal_link_click" data-analytics-label="tours de avistamiento de aves en Mindo" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/tours/" style="text-decoration: underline; font-weight: 600;">tours de avistamiento de aves en Mindo</a>. Si está planificando una salida seria enfocada en especies objetivo, consulte nuestra <a data-analytics-event="internal_link_click" data-analytics-label="guía de avistamiento de aves en Mindo" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/guia-avistamiento-aves-mindo/" style="text-decoration: underline; font-weight: 600;">guía de avistamiento de aves en Mindo</a> para comparar hábitats, horarios y especies antes de solicitar su itinerario personalizado.</p>
 <div aria-label="Destacados del tour" class="metaCard">
-<div class="chips">
-<span class="chip">📍Mindo, Ecuador</span>
-<span class="chip">Guía privada</span>
-<span class="chip">Horarios flexibles</span>
-<span class="chip">Según tus objetivos</span>
-</div>
+<div class="tourMetaGrid"><span class="tourMetaItem">📍 Mindo, Ecuador</span><span class="tourMetaItem">Guía privado</span><span class="tourMetaItem">Horarios flexibles</span><span class="tourMetaItem">Según sus objetivos</span></div>
 <p class="note">
           Para solicitar este tour, usa nuestra página de Contacto y elige <strong>Tour personalizado/privado</strong> en <strong>Tipo de tour preferido</strong>.
         </p>
@@ -64,16 +166,11 @@
 <a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Solicitar un tour personalizado" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_detail" data-analytics-tour="Solicitar un tour personalizado" href="/es/contacto/">Solicitar un tour personalizado</a>
 <a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Ver tours" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/tours/">Ver tours</a>
 </div>
-<div aria-label="Señales de confianza" class="ctaRow" style="margin-top:8px;">
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Reseñas 5 estrellas" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/resenas/">Reseñas 5 estrellas</a>
-<a class="btn secondary" data-analytics-event="tour_whatsapp_click" data-analytics-label="Soporte por WhatsApp" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_detail" data-analytics-tour="Soporte por WhatsApp" href="https://wa.me/13054585402" rel="noopener" target="_blank">Soporte por WhatsApp</a>
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Guía local experto" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/tours-de-avistamiento-de-aves-mindo/">Guía local experto</a>
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Itinerario flexible" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/planifica-tu-viaje/">Itinerario flexible</a>
-</div>
+<div aria-label="Señales de confianza" class="trustGrid"><div class="trustItem"><span class="trustIcon">✓</span><span>Reseñas 5 estrellas</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>Guía local experto</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>Soporte por WhatsApp</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>Itinerario flexible</span></div></div>
 </div>
 <aside aria-label="Imagen del tour personalizado" class="heroImageCard">
 <div class="heroImageFrame">
-<img alt="Tour de observación de aves personalizado y privado en Mindo, Ecuador" src="/assets/images/pages/tours/MBW-Tours-Custom-Tour.jpg"/>
+<img alt="Guía privado de avistamiento de aves en el bosque nublado de Mindo, Ecuador" src="/assets/images/pages/mbw_mindo_guide_01.jpg"/>
 </div>
 <div class="heroImageBar">
 <p class="heroImageTitle">Tour Personalizado / Privado</p>
@@ -147,7 +244,6 @@
 </article>
 </div>
 </section>
-
 <section aria-label="Para qué es ideal este tour" class="section">
 <div class="sectionHead">
 <h2>Para qué es ideal este tour</h2>
@@ -333,68 +429,15 @@
 </article>
 </div>
 </section>
-<section aria-label="Precios y preguntas frecuentes" class="section">
-<div class="sectionHead">
-<h2>Guía de precios y preguntas frecuentes</h2>
-</div>
-<div class="info3">
-<article class="block">
-<div class="blockTop">
-<div class="badge">$</div>
-<div class="blockTitle">
-<h3>Guía de precios</h3>
-</div>
-</div>
-<div class="blockBody">
-<p>
-            El precio depende de la <strong>duración</strong>, el <strong>tamaño del grupo</strong> y si deseas un <strong>guía privado</strong>
-            con vehículo dedicado. Al contactarnos, comparte fechas y objetivos y te enviaremos una cotización clara.
-          </p>
-<p class="note" style="margin-top:10px;">
-            Consejo: Si tienes flexibilidad de horario, podemos alinear el tour con los picos de actividad de las aves.
-          </p>
-<p class="note" style="margin-top:14px;">¿Tienes preguntas antes de elegir un tour privado? <a data-analytics-event="internal_link_click" data-analytics-label="Contáctanos" data-analytics-location="pricing_card" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/contacto/" style="text-decoration: underline; font-weight: 700;">Contáctanos</a> y comparte tus fechas, tamaño del grupo y objetivos de observación.</p><p class="note" style="margin-top:10px;">Si quieres revisar experiencias de otros viajeros, lee nuestras <a data-analytics-event="internal_link_click" data-analytics-label="reseñas" data-analytics-location="pricing_card" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/resenas/" style="text-decoration: underline; font-weight: 700;">reseñas</a> antes de solicitar tu itinerario.</p></div>
-</article>
-<article class="block">
-<div class="blockTop">
-<div class="badge">?</div>
-<div class="blockTitle">
-<h3>Preguntas frecuentes</h3>
-</div>
-</div>
-<div class="blockBody">
-<div class="qa">
-<div class="q">
-<h3>¿A qué hora es mejor comenzar?</h3>
-<p>Por lo general, muy temprano es lo mejor. Te recomendaremos el horario según tus aves objetivo y la temporada.</p>
-</div>
-<div class="q">
-<h3>¿Pueden adaptarlo para fotografía?</h3>
-<p>Sí. Cuéntanos tu equipo y estilo, y planificamos ritmo, luz y tiempo en bebederos.</p>
-</div>
-<div class="q">
-<h3>¿Es buena opción para familias o principiantes?</h3>
-<p>Sí. Muchos viajeros eligen tours privados personalizados por un ritmo más cómodo, logística sencilla y atención personal.</p>
-</div>
-<div class="q"><h3>¿Qué aves puedo ver en Mindo, Ecuador?</h3><p>Mindo puede ofrecer colibríes, tucanes, tángaras, antpittas, trogones, barbets, flycatchers, woodcreepers y el Gallo de la Peña Andino. Las especies exactas dependen de la temporada, clima, hábitat y actividad reciente.</p></div><div class="q"><h3>¿Puedo solicitar especies objetivo específicas?</h3><p>Sí. Envíenos su lista de especies objetivo al solicitar el tour. Revisaremos qué es realista para sus fechas y sugeriremos la mejor ruta para sus objetivos.</p></div><div class="q"><h3>¿Qué lugares de observación podrían incluirse?</h3><p>Según sus metas, podemos considerar el Valle de Mindo, Bellavista, Tandayapa, Paz de las Aves, las estribaciones de Mashpi, Silanche u otros sectores productivos cercanos.</p></div></div>
-</div>
-</article>
-<article class="block">
-<div class="blockTop">
-<div class="badge">🦉</div>
-<div class="blockTitle">
-<h3>Calendario de Aves</h3>
-</div>
-</div>
-<div class="blockBody">
-<p>
-            Explora nuestro calendario de aves para ideas, o escríbenos y te sugeriremos las mejores épocas del año según las especies que quieras ver.
-          </p>
-<div class="ctaRow">
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Calendario de Aves" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/calendario-de-avistamiento/">Calendario de Aves</a>
-</div>
-</div>
-</article>
+<section aria-label="Opciones de planificación del tour personalizado" class="section">
+<div class="sectionHead"><h2>Opciones Para Planificar Su Tour Personalizado</h2><p class="note">No publicamos precios fijos aquí porque cada ruta privada depende del horario, disponibilidad del guía, transporte, especies objetivo, tamaño del grupo y distancia que desea recorrer desde Mindo. Envíenos sus objetivos y recomendaremos el formato adecuado.</p></div>
+<div class="planningGrid">
+<article class="block"><div class="blockTop"><div class="badge">OP</div><div class="blockTitle"><h3>Opciones de Tour</h3></div></div><div class="blockBody"><p class="miniLabel">Tour personalizado de medio día</p><ul class="planningList"><li>3-5 horas</li><li>Ideal si tiene tiempo limitado</li><li>Colibríes, bebederos y bordes de bosque cercanos</li><li>Ritmo flexible por la mañana o tarde</li></ul><p class="miniLabel">Tour personalizado de día completo</p><ul class="planningList"><li>6-10+ horas</li><li>Ideal para observadores serios</li><li>Varios hábitats y especies objetivo</li><li>Más tiempo para aves raras o especialidades</li></ul></div></article>
+<article class="block"><div class="blockTop"><div class="badge">CA</div><div class="blockTitle"><h3>Calendario de Aves</h3></div></div><div class="blockBody"><p>Cada temporada ofrece algo útil. Nuestro calendario de aves ayuda a pensar en colibríes, tangaras, antpittas, actividad del Gallo de la Peña, clima y fecha de viaje antes de solicitar una ruta personalizada.</p><div class="ctaRow"><a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Calendario de Aves" data-analytics-location="planning_grid" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/calendario-de-avistamiento/">Ver Calendario de Aves</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">PL</div><div class="blockTitle"><h3>Planificación del Tour</h3></div></div><div class="blockBody"><p>Cuéntenos qué es más importante y diseñaremos la ruta alrededor de sus objetivos.</p><ul class="planningList"><li>Fechas de viaje</li><li>Tamaño del grupo</li><li>Nivel de experiencia</li><li>Especies objetivo</li><li>Metas de fotografía</li><li>Intereses especiales</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Comenzar a planificar" data-analytics-location="planning_grid" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/contacto/">Comenzar a Planificar</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">MD</div><div class="blockTitle"><h3>Tours de Medio Día</h3></div></div><div class="blockBody"><p><strong>3-5 horas.</strong> Ideal cuando desea una ruta enfocada cerca de Mindo sin comprometerse con un día largo.</p><ul class="planningList"><li>Primeros visitantes</li><li>Familias o ritmo tranquilo</li><li>Rutas de colibríes</li><li>Sesiones de fotografía en sitios productivos</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Solicitar tour de medio día" data-analytics-location="planning_grid" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/contacto/">Solicitar Medio Día</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">DC</div><div class="blockTitle"><h3>Tours de Día Completo</h3></div></div><div class="blockBody"><p><strong>6-10+ horas.</strong> Mejor cuando desea cubrir más hábitats y dar más tiempo a las especies objetivo.</p><ul class="planningList"><li>Observadores serios</li><li>Varios lugares</li><li>Búsqueda de especies raras</li><li>Extensiones al Chocó o bosque nublado</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Solicitar tour de día completo" data-analytics-location="planning_grid" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/contacto/">Solicitar Día Completo</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">PR</div><div class="blockTitle"><h3>¿Por Qué Privado?</h3></div></div><div class="blockBody"><p>Una ruta privada significa que el día se diseña para su grupo, no para un horario público fijo.</p><ul class="planningList"><li>Avanzar a su propio ritmo</li><li>Dedicar más tiempo a aves clave</li><li>Ajustar paradas y horarios</li><li>Recibir atención personal del guía</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Solicitar tour personalizado" data-analytics-location="planning_grid" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/contacto/">Solicitar Tour Personalizado</a></div></div></article>
 </div>
 </section>
 <section aria-label="Llamado final a la acción" class="section">
@@ -462,60 +505,6 @@
           "position": 3,
           "name": "Tour Personalizado Privado",
           "item": "https://mindobirdwatching.com/es/tours/tour-personalizado-privado/"
-        }
-      ]
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://mindobirdwatching.com/es/tours/tour-personalizado-privado/#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "¿A qué hora es mejor comenzar?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Por lo general, muy temprano es lo mejor. Te recomendaremos el horario según tus aves objetivo y la temporada."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Pueden adaptarlo para fotografía?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sí. Cuéntanos tu equipo y estilo, y planificamos ritmo, luz y tiempo en bebederos."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Es buena opción para familias o principiantes?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sí. Muchos viajeros eligen tours privados personalizados por un ritmo más cómodo, logística sencilla y atención personal."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué aves puedo ver en Mindo, Ecuador?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Mindo puede ofrecer colibríes, tucanes, tángaras, antpittas, trogones, barbets, flycatchers, woodcreepers y el Gallo de la Peña Andino. Las especies exactas dependen de la temporada, clima, hábitat y actividad reciente."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Puedo solicitar especies objetivo específicas?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sí. Envíenos su lista de especies objetivo al solicitar el tour. Revisaremos qué es realista para sus fechas y sugeriremos la mejor ruta para sus objetivos."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué lugares de observación podrían incluirse?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Según sus metas, podemos considerar el Valle de Mindo, Bellavista, Tandayapa, Paz de las Aves, las estribaciones de Mashpi, Silanche u otros sectores productivos cercanos."
-          }
         }
       ]
     }
