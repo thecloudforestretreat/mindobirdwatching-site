@@ -35,6 +35,7 @@
 <style>
 body[data-tour-variant="custom_private_tour"] .hero{
   align-items:stretch;
+  gap:22px;
 }
 body[data-tour-variant="custom_private_tour"] .heroImageCard{
   display:grid;
@@ -46,6 +47,7 @@ body[data-tour-variant="custom_private_tour"] .heroImageFrame{
   height:100%;
   min-height:560px;
   overflow:hidden;
+  border-radius:18px 18px 0 0;
 }
 body[data-tour-variant="custom_private_tour"] .heroImageFrame img{
   width:100%;
@@ -54,59 +56,80 @@ body[data-tour-variant="custom_private_tour"] .heroImageFrame img{
   object-position:center;
   display:block;
 }
-body[data-tour-variant="custom_private_tour"] .tourMetaGrid,
-body[data-tour-variant="custom_private_tour"] .trustGrid{
+body[data-tour-variant="custom_private_tour"] .tourMetaGrid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px 14px;
+  gap:10px 18px;
   align-items:center;
 }
-body[data-tour-variant="custom_private_tour"] .tourMetaItem,
-body[data-tour-variant="custom_private_tour"] .trustItem{
+body[data-tour-variant="custom_private_tour"] .tourMetaItem{
   display:flex;
   align-items:center;
   gap:8px;
   color:var(--ink);
+  font-size:13px;
   font-weight:800;
   line-height:1.25;
 }
-body[data-tour-variant="custom_private_tour"] .tourMetaItem{
-  font-size:13px;
-}
 body[data-tour-variant="custom_private_tour"] .trustGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px 24px;
   margin-top:14px;
-  padding:16px 18px;
-  border:1px solid rgba(7,95,39,.18);
+  padding:14px 16px;
+  border:1px solid rgba(7,95,39,.14);
   border-radius:18px;
-  background:rgba(255,255,255,.52);
+  background:rgba(255,255,255,.34);
+}
+body[data-tour-variant="custom_private_tour"] .trustItem{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:32px;
+  color:var(--ink);
+  font-weight:900;
+  line-height:1.25;
+  text-decoration:none;
+}
+body[data-tour-variant="custom_private_tour"] .trustItem:hover span:last-child{
+  text-decoration:underline;
 }
 body[data-tour-variant="custom_private_tour"] .trustIcon{
-  width:22px;
-  height:22px;
-  flex:0 0 22px;
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
   border-radius:999px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  background:var(--green);
+  background:#075f27;
   color:#fff;
-  font-size:13px;
+  font-size:14px;
   font-weight:900;
+  box-shadow:0 1px 0 rgba(0,0,0,.08);
 }
 body[data-tour-variant="custom_private_tour"] .planningGrid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:14px;
+  align-items:stretch;
 }
 body[data-tour-variant="custom_private_tour"] .planningGrid .block{
   height:100%;
+  display:grid;
+  grid-template-rows:auto 1fr;
 }
 body[data-tour-variant="custom_private_tour"] .planningGrid .blockBody{
   display:flex;
   flex-direction:column;
+  height:100%;
 }
 body[data-tour-variant="custom_private_tour"] .planningGrid .ctaRow{
   margin-top:auto;
+  padding-top:14px;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid .btn{
+  align-self:flex-start;
 }
 body[data-tour-variant="custom_private_tour"] .miniLabel{
   font-weight:900;
@@ -118,6 +141,15 @@ body[data-tour-variant="custom_private_tour"] .planningList{
 }
 body[data-tour-variant="custom_private_tour"] .planningList li{
   margin:5px 0;
+}
+body[data-tour-variant="custom_private_tour"] .softNote{
+  margin-top:12px;
+  padding:12px 14px;
+  border-left:4px solid rgba(7,95,39,.35);
+  border-radius:12px;
+  background:rgba(7,95,39,.05);
+  color:var(--ink);
+  line-height:1.6;
 }
 @media(max-width:900px){
   body[data-tour-variant="custom_private_tour"] .heroImageCard{
@@ -166,7 +198,12 @@ body[data-tour-variant="custom_private_tour"] .planningList li{
 <a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Request a Custom Tour" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" data-analytics-tour="Request a Custom Tour" href="/contact/">Request a Custom Tour</a>
 <a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="View tours" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/">View tours</a>
 </div>
-<div aria-label="Trust signals" class="trustGrid"><div class="trustItem"><span class="trustIcon">✓</span><span>5-Star Reviews</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>Expert Local Guide</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>WhatsApp Support</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>Flexible Itinerary</span></div></div>
+<div aria-label="Trust signals" class="trustGrid">
+<a class="trustItem" data-analytics-event="internal_link_click" data-analytics-label="5-star reviews" data-analytics-location="trust_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/reviews/"><span class="trustIcon" aria-hidden="true">✓</span><span>5-Star Reviews</span></a>
+<a class="trustItem" data-analytics-event="internal_link_click" data-analytics-label="Expert local guide" data-analytics-location="trust_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birdwatching-tours-mindo/"><span class="trustIcon" aria-hidden="true">✓</span><span>Expert Local Guide</span></a>
+<a class="trustItem" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp support" data-analytics-location="trust_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="https://wa.me/13054585402" rel="noopener" target="_blank"><span class="trustIcon" aria-hidden="true">✓</span><span>WhatsApp Support</span></a>
+<a class="trustItem" data-analytics-event="internal_link_click" data-analytics-label="Flexible itinerary" data-analytics-location="trust_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/mindo-bird-watching-guide/"><span class="trustIcon" aria-hidden="true">✓</span><span>Flexible Itinerary</span></a>
+</div>
 </div>
 <aside aria-label="Custom tour image" class="heroImageCard">
 <div class="heroImageFrame">
@@ -433,7 +470,7 @@ body[data-tour-variant="custom_private_tour"] .planningList li{
 <div class="sectionHead"><h2>Custom Tour Planning Options</h2><p class="note">No public pricing is listed here because every private route depends on timing, guide availability, transport needs, target species, group size, and how far you want to travel from Mindo. Send your goals and we will recommend the right format.</p></div>
 <div class="planningGrid">
 <article class="block"><div class="blockTop"><div class="badge">TO</div><div class="blockTitle"><h3>Tour Options</h3></div></div><div class="blockBody"><p class="miniLabel">Half-Day Custom Tour</p><ul class="planningList"><li>3-5 hours</li><li>Best for limited time</li><li>Hummingbirds, feeders, nearby forest edges</li><li>Flexible morning or afternoon pace</li></ul><p class="miniLabel">Full-Day Custom Tour</p><ul class="planningList"><li>6-10+ hours</li><li>Best for serious birders</li><li>Multiple habitats and target species</li><li>More time for rare or specialty birds</li></ul></div></article>
-<article class="block"><div class="blockTop"><div class="badge">BC</div><div class="blockTitle"><h3>Birding Calendar</h3></div></div><div class="blockBody"><p>Every season offers something useful. Our birding calendar helps you think about hummingbirds, tanagers, antpittas, Cock-of-the-Rock activity, weather, and trip timing before requesting a custom route.</p><div class="ctaRow"><a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Birding Calendar" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birding-calendar/">View Birding Calendar</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">BC</div><div class="blockTitle"><h3>Birding Calendar</h3></div></div><div class="blockBody"><p>Every season offers something useful in Mindo. The birding calendar helps you compare rain, flowering periods, forest activity, and the timing of hummingbirds, tanagers, antpittas, Cock-of-the-Rock activity, and mixed flocks before requesting a custom route.</p><p class="softNote">Use it as a planning guide, then send us your dates. We will suggest the most realistic route for your time window, target species, and preferred pace.</p><div class="ctaRow"><a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Birding Calendar" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birding-calendar/">View Birding Calendar</a></div></div></article>
 <article class="block"><div class="blockTop"><div class="badge">TP</div><div class="blockTitle"><h3>Tour Planning</h3></div></div><div class="blockBody"><p>Tell us what matters most and we will design the route around your goals.</p><ul class="planningList"><li>Travel dates</li><li>Group size</li><li>Birding experience level</li><li>Target species</li><li>Photography goals</li><li>Special interests</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Start Planning Your Tour" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/">Start Planning Your Tour</a></div></div></article>
 <article class="block"><div class="blockTop"><div class="badge">HD</div><div class="blockTitle"><h3>Half-Day Tours</h3></div></div><div class="blockBody"><p><strong>3-5 hours.</strong> Ideal when you want a focused route near Mindo without committing to a longer day.</p><ul class="planningList"><li>First-time visitors</li><li>Families or relaxed pacing</li><li>Hummingbird routes</li><li>Photo sessions near productive spots</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Request a Half-Day Tour" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/">Request a Half-Day Tour</a></div></div></article>
 <article class="block"><div class="blockTop"><div class="badge">FD</div><div class="blockTitle"><h3>Full-Day Tours</h3></div></div><div class="blockBody"><p><strong>6-10+ hours.</strong> Best when you want to cover more habitat and give target birds more time.</p><ul class="planningList"><li>Serious birders</li><li>Multiple locations</li><li>Rare species searches</li><li>Chocó foothill or cloud forest extensions</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Request a Full-Day Tour" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/">Request a Full-Day Tour</a></div></div></article>
