@@ -31,6 +31,113 @@
 <link href="/site.webmanifest" rel="manifest"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/><script defer="" src="/assets/js/head.js"></script>
+
+<style>
+body[data-tour-variant="custom_private_tour"] .hero{
+  align-items:stretch;
+}
+body[data-tour-variant="custom_private_tour"] .heroImageCard{
+  display:grid;
+  grid-template-rows:1fr auto;
+  align-self:stretch;
+  min-height:620px;
+}
+body[data-tour-variant="custom_private_tour"] .heroImageFrame{
+  height:100%;
+  min-height:560px;
+  overflow:hidden;
+}
+body[data-tour-variant="custom_private_tour"] .heroImageFrame img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body[data-tour-variant="custom_private_tour"] .tourMetaGrid,
+body[data-tour-variant="custom_private_tour"] .trustGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px 14px;
+  align-items:center;
+}
+body[data-tour-variant="custom_private_tour"] .tourMetaItem,
+body[data-tour-variant="custom_private_tour"] .trustItem{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--ink);
+  font-weight:800;
+  line-height:1.25;
+}
+body[data-tour-variant="custom_private_tour"] .tourMetaItem{
+  font-size:13px;
+}
+body[data-tour-variant="custom_private_tour"] .trustGrid{
+  margin-top:14px;
+  padding:16px 18px;
+  border:1px solid rgba(7,95,39,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.52);
+}
+body[data-tour-variant="custom_private_tour"] .trustIcon{
+  width:22px;
+  height:22px;
+  flex:0 0 22px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--green);
+  color:#fff;
+  font-size:13px;
+  font-weight:900;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid .block{
+  height:100%;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid .blockBody{
+  display:flex;
+  flex-direction:column;
+}
+body[data-tour-variant="custom_private_tour"] .planningGrid .ctaRow{
+  margin-top:auto;
+}
+body[data-tour-variant="custom_private_tour"] .miniLabel{
+  font-weight:900;
+  color:var(--green);
+  margin-top:10px;
+}
+body[data-tour-variant="custom_private_tour"] .planningList{
+  margin:8px 0 0 18px;
+}
+body[data-tour-variant="custom_private_tour"] .planningList li{
+  margin:5px 0;
+}
+@media(max-width:900px){
+  body[data-tour-variant="custom_private_tour"] .heroImageCard{
+    min-height:0;
+  }
+  body[data-tour-variant="custom_private_tour"] .heroImageFrame{
+    min-height:360px;
+    aspect-ratio:4/5;
+  }
+  body[data-tour-variant="custom_private_tour"] .planningGrid{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:520px){
+  body[data-tour-variant="custom_private_tour"] .tourMetaGrid,
+  body[data-tour-variant="custom_private_tour"] .trustGrid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
 <body data-page-content-group="tours" data-page-language="en" data-page-location="mindo" data-page-region="pichincha" data-page-type="tour_detail" data-tour-variant="custom_private_tour">
 <div class="container">
@@ -47,12 +154,7 @@
 <p>For a complete overview of routes, species-focused outings, and planning help, explore our 
         <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birdwatching-tours-mindo/" style="text-decoration: underline; font-weight: 600;">birdwatching tours in Mindo</a>. If you are planning a serious target-species day, use our <a data-analytics-event="internal_link_click" data-analytics-label="Mindo bird watching guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/mindo-bird-watching-guide/" style="text-decoration: underline; font-weight: 600;">Mindo bird watching guide</a> to compare habitats, timing, and target species before requesting a custom itinerary.</p>
 <div aria-label="Tour highlights" class="metaCard">
-<div class="chips">
-<span class="chip">📍Mindo, Ecuador</span>
-<span class="chip">Private guide</span>
-<span class="chip">Flexible start times</span>
-<span class="chip">Built around your goals</span>
-</div>
+<div class="tourMetaGrid"><span class="tourMetaItem">📍 Mindo, Ecuador</span><span class="tourMetaItem">Private guide</span><span class="tourMetaItem">Flexible start times</span><span class="tourMetaItem">Built around your goals</span></div>
 <p class="note">
           To request this tour, use our Contact page and choose <strong>Custom/Private Tour</strong> in <strong>Preferred Tour Type</strong>.
         </p>
@@ -64,16 +166,11 @@
 <a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Request a Custom Tour" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" data-analytics-tour="Request a Custom Tour" href="/contact/">Request a Custom Tour</a>
 <a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="View tours" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/">View tours</a>
 </div>
-<div aria-label="Trust signals" class="ctaRow" style="margin-top:8px;">
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="5-star reviews" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/reviews/">5-star reviews</a>
-<a class="btn secondary" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp support" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" data-analytics-tour="WhatsApp support" href="https://wa.me/13054585402" rel="noopener" target="_blank">WhatsApp support</a>
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Expert local guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birdwatching-tours-mindo/">Expert local guide</a>
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Flexible itinerary" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/mindo-bird-watching-guide/">Flexible itinerary</a>
-</div>
+<div aria-label="Trust signals" class="trustGrid"><div class="trustItem"><span class="trustIcon">✓</span><span>5-Star Reviews</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>Expert Local Guide</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>WhatsApp Support</span></div><div class="trustItem"><span class="trustIcon">✓</span><span>Flexible Itinerary</span></div></div>
 </div>
 <aside aria-label="Custom tour image" class="heroImageCard">
 <div class="heroImageFrame">
-<img alt="Custom and private birdwatching tour in Mindo, Ecuador" src="/assets/images/pages/tours/MBW-Tours-Custom-Tour.jpg"/>
+<img alt="Private birdwatching guide in the Mindo cloud forest, Ecuador" src="/assets/images/pages/mbw_mindo_guide_01.jpg"/>
 </div>
 <div class="heroImageBar">
 <p class="heroImageTitle">Custom / Private Tour</p>
@@ -147,7 +244,6 @@
 </article>
 </div>
 </section>
-
 <section aria-label="What this tour is best for" class="section">
 <div class="sectionHead">
 <h2>What This Tour Is Best For</h2>
@@ -333,68 +429,15 @@
 </article>
 </div>
 </section>
-<section aria-label="Pricing and FAQs" class="section">
-<div class="sectionHead">
-<h2>Pricing Guidance and FAQs</h2>
-</div>
-<div class="info3">
-<article class="block">
-<div class="blockTop">
-<div class="badge">$</div>
-<div class="blockTitle">
-<h3>Pricing Guidance</h3>
-</div>
-</div>
-<div class="blockBody">
-<p>
-            Pricing depends on <strong>duration</strong>, <strong>group size</strong>, and whether you want a <strong>private guide</strong>
-            with a dedicated vehicle. When you contact us, tell us your dates and goals and we will send a clear quote.
-          </p>
-<p class="note" style="margin-top:10px;">
-            Tip: If you are flexible on start time, we can often align the tour with peak bird activity.
-          </p>
-<p class="note" style="margin-top:14px;">Have questions before choosing a private tour? <a data-analytics-event="internal_link_click" data-analytics-label="Contact us" data-analytics-location="pricing_card" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/" style="text-decoration: underline; font-weight: 700;">Contact us</a> and share your dates, group size, and birding goals.</p><p class="note" style="margin-top:10px;">Want to see what past guests say first? Read our <a data-analytics-event="internal_link_click" data-analytics-label="reviews" data-analytics-location="pricing_card" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/reviews/" style="text-decoration: underline; font-weight: 700;">reviews</a> for recent guest feedback.</p></div>
-</article>
-<article class="block">
-<div class="blockTop">
-<div class="badge">?</div>
-<div class="blockTitle">
-<h3>FAQ Highlights</h3>
-</div>
-</div>
-<div class="blockBody">
-<div class="qa">
-<div class="q">
-<h3>How early should we start?</h3>
-<p>Early morning is usually best. We will recommend a start time based on your target birds and season.</p>
-</div>
-<div class="q">
-<h3>Can you tailor for photography?</h3>
-<p>Yes. Tell us your gear and style, and we will plan for pacing, light, and feeder time.</p>
-</div>
-<div class="q">
-<h3>Can families or beginners book this?</h3>
-<p>Yes. Many guests choose private custom tours for a calmer pace, easier logistics, and personal guidance.</p>
-</div>
-<div class="q"><h3>What birds can I see in Mindo, Ecuador?</h3><p>Mindo can offer hummingbirds, toucans, tanagers, antpittas, trogons, barbets, flycatchers, woodcreepers, and the Andean Cock-of-the-Rock. The exact species depend on season, weather, habitat, and recent activity.</p></div><div class="q"><h3>Can I request specific target species?</h3><p>Yes. Send us your target list when you request the tour. We will review what is realistic for your dates and suggest the best route for your goals.</p></div><div class="q"><h3>Which birding locations might be included?</h3><p>Depending on your goals, we may consider the Mindo Valley, Bellavista, Tandayapa, Paz de las Aves, Mashpi foothills, Silanche, or other productive nearby areas.</p></div></div>
-</div>
-</article>
-<article class="block">
-<div class="blockTop">
-<div class="badge">🦉</div>
-<div class="blockTitle">
-<h3>Birding Calendar</h3>
-</div>
-</div>
-<div class="blockBody">
-<p>
-            Explore our birding calendar for ideas, or message us and we will suggest the best times of year for the birds you want to see.
-          </p>
-<div class="ctaRow">
-<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Birding Calendar" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birding-calendar/">Birding Calendar</a>
-</div>
-</div>
-</article>
+<section aria-label="Custom tour planning options" class="section">
+<div class="sectionHead"><h2>Custom Tour Planning Options</h2><p class="note">No public pricing is listed here because every private route depends on timing, guide availability, transport needs, target species, group size, and how far you want to travel from Mindo. Send your goals and we will recommend the right format.</p></div>
+<div class="planningGrid">
+<article class="block"><div class="blockTop"><div class="badge">TO</div><div class="blockTitle"><h3>Tour Options</h3></div></div><div class="blockBody"><p class="miniLabel">Half-Day Custom Tour</p><ul class="planningList"><li>3-5 hours</li><li>Best for limited time</li><li>Hummingbirds, feeders, nearby forest edges</li><li>Flexible morning or afternoon pace</li></ul><p class="miniLabel">Full-Day Custom Tour</p><ul class="planningList"><li>6-10+ hours</li><li>Best for serious birders</li><li>Multiple habitats and target species</li><li>More time for rare or specialty birds</li></ul></div></article>
+<article class="block"><div class="blockTop"><div class="badge">BC</div><div class="blockTitle"><h3>Birding Calendar</h3></div></div><div class="blockBody"><p>Every season offers something useful. Our birding calendar helps you think about hummingbirds, tanagers, antpittas, Cock-of-the-Rock activity, weather, and trip timing before requesting a custom route.</p><div class="ctaRow"><a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Birding Calendar" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birding-calendar/">View Birding Calendar</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">TP</div><div class="blockTitle"><h3>Tour Planning</h3></div></div><div class="blockBody"><p>Tell us what matters most and we will design the route around your goals.</p><ul class="planningList"><li>Travel dates</li><li>Group size</li><li>Birding experience level</li><li>Target species</li><li>Photography goals</li><li>Special interests</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Start Planning Your Tour" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/">Start Planning Your Tour</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">HD</div><div class="blockTitle"><h3>Half-Day Tours</h3></div></div><div class="blockBody"><p><strong>3-5 hours.</strong> Ideal when you want a focused route near Mindo without committing to a longer day.</p><ul class="planningList"><li>First-time visitors</li><li>Families or relaxed pacing</li><li>Hummingbird routes</li><li>Photo sessions near productive spots</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Request a Half-Day Tour" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/">Request a Half-Day Tour</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">FD</div><div class="blockTitle"><h3>Full-Day Tours</h3></div></div><div class="blockBody"><p><strong>6-10+ hours.</strong> Best when you want to cover more habitat and give target birds more time.</p><ul class="planningList"><li>Serious birders</li><li>Multiple locations</li><li>Rare species searches</li><li>Chocó foothill or cloud forest extensions</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Request a Full-Day Tour" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/">Request a Full-Day Tour</a></div></div></article>
+<article class="block"><div class="blockTop"><div class="badge">PR</div><div class="blockTitle"><h3>Why Private?</h3></div></div><div class="blockBody"><p>A private route means the day is built around your group, not a fixed public schedule.</p><ul class="planningList"><li>Go at your own pace</li><li>Spend more time on key birds</li><li>Adjust stops and timing</li><li>Get personal attention from your guide</li></ul><div class="ctaRow"><a class="btn secondary" data-analytics-event="tour_booking_click" data-analytics-label="Request a Custom Tour" data-analytics-location="planning_grid" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/contact/">Request a Custom Tour</a></div></div></article>
 </div>
 </section>
 <section aria-label="Bottom call to action" class="section">
@@ -462,60 +505,6 @@
           "position": 3,
           "name": "Custom Private Tour",
           "item": "https://mindobirdwatching.com/tours/custom-private-tour/"
-        }
-      ]
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://mindobirdwatching.com/tours/custom-private-tour/#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How early should we start?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Early morning is usually best. We will recommend a start time based on your target birds and season."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can you tailor for photography?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Tell us your gear and style, and we will plan for pacing, light, and feeder time."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can families or beginners book this?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Many guests choose private custom tours for a calmer pace, easier logistics, and personal guidance."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What birds can I see in Mindo, Ecuador?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Mindo can offer hummingbirds, toucans, tanagers, antpittas, trogons, barbets, flycatchers, woodcreepers, and the Andean Cock-of-the-Rock. The exact species depend on season, weather, habitat, and recent activity."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I request specific target species?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Send us your target list when you request the tour. We will review what is realistic for your dates and suggest the best route for your goals."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Which birding locations might be included?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Depending on your goals, we may consider the Mindo Valley, Bellavista, Tandayapa, Paz de las Aves, Mashpi foothills, Silanche, or other productive nearby areas."
-          }
         }
       ]
     }
