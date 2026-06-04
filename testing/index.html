@@ -451,7 +451,7 @@
 
     .relatedGrid{
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
       align-items: stretch;
     }
@@ -463,9 +463,10 @@
       border-radius: var(--r);
       box-shadow: var(--shadow);
       overflow:hidden;
-      display:flex;
-      flex-direction: column;
-      min-height: 100%;
+      display:grid;
+      grid-template-rows: 170px 1fr;
+      height: 100%;
+      min-height: 330px;
       transition: transform .16s ease, box-shadow .16s ease;
     }
     .relatedCard:hover{
@@ -480,9 +481,9 @@
     }
     .relatedBody{
       padding: 12px 14px 14px;
-      display:flex;
-      flex-direction: column;
-      flex: 1;
+      display:grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 0;
     }
     .relatedTitle{
       margin: 0 0 6px;
@@ -496,10 +497,11 @@
       color: var(--muted);
       line-height: 1.6;
       font-size: 13px;
-      flex: 1;
+      min-height: 64px;
     }
     .relatedCue{
-      margin-top: auto;
+      align-self:end;
+      margin-top: 12px;
       padding-top: 10px;
       color: var(--forest);
       font-size: 13px;
