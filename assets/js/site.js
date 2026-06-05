@@ -1,11 +1,12 @@
 /* /assets/js/site.js
    Mindo Bird Watching global site controller and analytics engine
-   Updated: 2026-05-03
-   Option A architecture: full page context on every event, DebugView support, centralized analytics only
+   Updated: 2026-06-05
+   Migration bridge architecture: live GA4 plus an unpublished GTM event stream
    Page title fix: sends the native GA4 page_view through config so Realtime Pages and screens can populate
 
    Central responsibilities:
    - Load and initialize GA4 with G-1ZYLW22XWP
+   - Push normalized mbw_event messages for GTM migration testing
    - Expose window.gtag and window.mbwAnalyticsTrack
    - Send page_view_enhanced once per page load
    - Send scroll_depth at 25, 50, 75, and 90 percent
@@ -86,6 +87,7 @@
   }
 
   function getPageContext() {
+    var body = document.body;
     return {
       page_title: document.title || "",
       page_path: window.location.pathname || "/",
@@ -94,6 +96,11 @@
       canonical_url: getCanonical(),
       page_type: getPageType(),
       page_language: getPageLanguage(),
+      content_group: body ? (
+        body.getAttribute("data-content-group") ||
+        body.getAttribute("data-analytics-content-group") ||
+        ""
+      ) : "",
       device_type: getDeviceType()
     };
   }
@@ -145,7 +152,24 @@
   function sendEvent(name, payload) {
     if (!name) return;
     ensureGtag();
-    window.gtag("event", name, basePayload(payload || {}));
+    var eventPayload = basePayload(payload || {});
+    var gtmPayload = {
+      event: "mbw_event",
+      mbw_event_name: name
+    };
+
+    Object.keys(eventPayload).forEach(function (key) {
+      gtmPayload[key] = eventPayload[key];
+    });
+
+    /*
+      Migration bridge:
+      - GTM can inspect mbw_event without sending it anywhere while its event tag is unpublished.
+      - The existing direct GA4 event remains active, preventing a measurement outage.
+      - Remove the direct gtag event call only during the coordinated GTM cutover.
+    */
+    window.dataLayer.push(gtmPayload);
+    window.gtag("event", name, eventPayload);
   }
 
   window.mbwAnalyticsTrack = sendEvent;
@@ -212,13 +236,22 @@
       page_type: d.analyticsPageType || getPageType(),
       page_language: d.analyticsPageLanguage || getPageLanguage(),
       region: d.analyticsRegion || "",
+      location_name: d.analyticsLocationName || "",
       bird_name: d.analyticsBird || "",
+      species_name: d.analyticsSpecies || "",
+      habitat: d.analyticsHabitat || "",
       tour_name: d.analyticsTour || "",
+      tour_type: d.analyticsTourType || "",
+      tour_location: d.analyticsTourLocation || "",
       guide_name: d.analyticsGuide || "",
       experience_type: d.analyticsExperience || "",
       partner_name: d.analyticsPartner || "",
       form_name: d.analyticsForm || "",
-      target_language: d.analyticsTargetLanguage || ""
+      target_language: d.analyticsTargetLanguage || "",
+      content_group: d.analyticsContentGroup || getPageContext().content_group || "",
+      media_label: d.analyticsMedia || "",
+      media_location: d.analyticsMediaLocation || d.analyticsLocation || "",
+      error_message: d.analyticsErrorMessage || ""
     };
 
     if (el.tagName && el.tagName.toLowerCase() === "a") {
