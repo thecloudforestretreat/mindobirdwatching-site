@@ -1,13 +1,14 @@
 /* /assets/js/site.js
    Mindo Bird Watching global site controller and analytics engine
    Updated: 2026-06-05
-   Migration bridge architecture: live GA4 plus an unpublished GTM event stream
+   Cutover-safe architecture: GTM ownership with delayed direct-GA4 fallback
    Page title fix: sends the native GA4 page_view through config so Realtime Pages and screens can populate
 
    Central responsibilities:
-   - Load and initialize GA4 with G-1ZYLW22XWP
-   - Push normalized mbw_event messages for GTM migration testing
-   - Expose window.gtag and window.mbwAnalyticsTrack
+   - Push normalized mbw_event messages for GTM-managed GA4
+   - Let GTM own GA4 when window.__mbwGtmOwnsGa4 is true
+   - Preserve direct GA4 as a delayed fallback when GTM is unavailable or unpublished
+   - Expose window.mbwAnalyticsTrack
    - Send page_view_enhanced once per page load
    - Send scroll_depth at 25, 50, 75, and 90 percent
    - Listen globally for clicks on [data-analytics-event]
@@ -22,10 +23,14 @@
   "use strict";
 
   var GA_ID = "G-1ZYLW22XWP";
+  var DIRECT_GA4_FALLBACK_DELAY_MS = 2500;
   var SCROLL_MILESTONES = [25, 50, 75, 90];
   var sentScroll = {};
   var startedForms = {};
   var visibleFormStates = {};
+  var pendingDirectEvents = [];
+  var directFallbackTimer = null;
+  var directFallbackActive = false;
 
   function ready(fn) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
@@ -149,9 +154,55 @@
     }
   }
 
+  function gtmOwnsGa4() {
+    return window.__mbwGtmOwnsGa4 === true;
+  }
+
+  function sendDirectEvent(name, eventPayload) {
+    ensureGtag();
+    window.gtag("event", name, eventPayload);
+  }
+
+  function activateDirectFallback() {
+    directFallbackTimer = null;
+
+    if (gtmOwnsGa4()) {
+      pendingDirectEvents = [];
+      return;
+    }
+
+    directFallbackActive = true;
+    ensureGtag();
+
+    pendingDirectEvents.forEach(function (queuedEvent) {
+      window.gtag("event", queuedEvent.name, queuedEvent.payload);
+    });
+    pendingDirectEvents = [];
+  }
+
+  function scheduleDirectFallback() {
+    if (directFallbackTimer !== null || directFallbackActive || gtmOwnsGa4()) return;
+    directFallbackTimer = window.setTimeout(activateDirectFallback, DIRECT_GA4_FALLBACK_DELAY_MS);
+  }
+
+  function queueDirectFallbackEvent(name, eventPayload) {
+    if (gtmOwnsGa4()) return;
+
+    if (directFallbackActive) {
+      sendDirectEvent(name, eventPayload);
+      return;
+    }
+
+    pendingDirectEvents.push({
+      name: name,
+      payload: eventPayload
+    });
+    scheduleDirectFallback();
+  }
+
   function sendEvent(name, payload) {
     if (!name) return;
-    ensureGtag();
+    window.dataLayer = window.dataLayer || [];
     var eventPayload = basePayload(payload || {});
     var gtmPayload = {
       event: "mbw_event",
@@ -163,13 +214,13 @@
     });
 
     /*
-      Migration bridge:
-      - GTM can inspect mbw_event without sending it anywhere while its event tag is unpublished.
-      - The existing direct GA4 event remains active, preventing a measurement outage.
-      - Remove the direct gtag event call only during the coordinated GTM cutover.
+      Cutover behavior:
+      - Every normalized event is available to GTM immediately.
+      - When the GTM ownership flag is present, GTM is the only GA4 sender.
+      - Without the flag, direct GA4 starts after a short delay and replays queued events.
     */
     window.dataLayer.push(gtmPayload);
-    window.gtag("event", name, eventPayload);
+    queueDirectFallbackEvent(name, eventPayload);
   }
 
   window.mbwAnalyticsTrack = sendEvent;
@@ -491,7 +542,7 @@
   }
 
   function bootAnalytics() {
-    ensureGtag();
+    scheduleDirectFallback();
     trackPageView();
     initScrollTracking();
     initNativeDetailsFaqTracking();
