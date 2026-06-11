@@ -19,8 +19,8 @@
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
   window.MBW_SITE_CONFIG.contact = {
-    whatsappNumberDigits: "13054585402",
-    whatsappDisplayNumber: "+1 305 458 5402",
+    whatsappNumberDigits: "593969076501",
+    whatsappDisplayNumber: "+593969076501",
     email: "mindobirdwatching@gmail.com"
   };
 
