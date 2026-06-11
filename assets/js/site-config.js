@@ -4,7 +4,7 @@
 
    Purpose:
    - Keep changeable contact settings in one place
-   - Let site.js update WhatsApp links dynamically across the site
+   - Update WhatsApp links dynamically across the site
    - Avoid hardcoding the WhatsApp number on every page
 
    How to update:
@@ -34,4 +34,29 @@
     contact_en: "Hi Mindo Bird Watching, I would like to contact your team about birdwatching in Mindo.\n\nPage: {url}",
     contact_es: "Hola Mindo Bird Watching, quiero contactar a su equipo sobre avistamiento de aves en Mindo.\n\nPágina: {url}"
   };
+
+  function buildWhatsAppUrl(messageKey) {
+    var config = window.MBW_SITE_CONFIG;
+    var number = String(config.contact.whatsappNumberDigits || "").replace(/\D/g, "");
+    var template = config.whatsappMessages[messageKey] || config.whatsappMessages.default_en;
+    var message = String(template || "").replace("{url}", window.location.href);
+
+    return "https://wa.me/" + number + "?text=" + encodeURIComponent(message);
+  }
+
+  function updateWhatsAppLinks() {
+    var links = document.querySelectorAll("[data-whatsapp-message-key]");
+
+    Array.prototype.forEach.call(links, function (link) {
+      var url = buildWhatsAppUrl(link.getAttribute("data-whatsapp-message-key"));
+      link.setAttribute("href", url);
+      link.setAttribute("data-analytics-link-url", url);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", updateWhatsAppLinks);
+  } else {
+    updateWhatsAppLinks();
+  }
 })();
