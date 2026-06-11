@@ -178,6 +178,78 @@ Track:
 - structured data opportunities
 - deployment readiness
 
+DYNAMIC WHATSAPP CONFIGURATION REQUIREMENTS
+Treat `/assets/js/site-config.js` as the only source of truth for the WhatsApp
+phone number and reusable WhatsApp message templates.
+
+For every page containing a WhatsApp CTA:
+- load `/assets/js/site-config.js` with `defer`
+- add a language- and intent-specific `data-whatsapp-message-key`
+- use a neutral same-page fallback such as `href="#request-form"` or
+  `href="#contact-form"`
+- use `data-analytics-event="tour_whatsapp_click"` for tour-request CTAs
+- use the appropriate contact WhatsApp event for non-tour contact CTAs
+- use `data-analytics-link-url="dynamic_whatsapp"`
+- preserve page language, page type, CTA location, region, and tour metadata
+- confirm the shared config replaces the CTA `href` at runtime
+- confirm the configured message includes the source page URL
+
+Required HTML pattern:
+
+<a
+  href="#request-form"
+  data-whatsapp-message-key="book_tour_en"
+  data-analytics-event="tour_whatsapp_click"
+  data-analytics-link-url="dynamic_whatsapp"
+  rel="noopener noreferrer"
+  target="_blank"
+>Message on WhatsApp</a>
+
+Spanish tour-request pages must use `book_tour_es`.
+General English pages should use `default_en` or `contact_en` according to intent.
+General Spanish pages should use `default_es` or `contact_es` according to intent.
+
+NEVER:
+- hardcode a WhatsApp phone number in page HTML
+- hardcode a numeric `https://wa.me/` URL in page HTML
+- duplicate the phone number across page templates, header, footer, or inline JS
+- store the full generated WhatsApp URL or prefilled message as an analytics label
+- claim that a WhatsApp click proves the visitor sent the message
+
+WHATSAPP TRACKING RULES
+Track the website-side CTA click and its context:
+- event name
+- source page path
+- page language
+- page type
+- CTA location
+- message key
+- tour or content identifier where applicable
+
+The shared config must expose source context on each dynamic link with:
+- `data-analytics-source-page`
+- `data-analytics-message-key`
+- `data-whatsapp-source-page`
+
+The prefilled WhatsApp message must include `Page: {url}` or `Página: {url}` so
+the receiving agent can see the originating page after the visitor sends it.
+
+GA4 can measure the outbound WhatsApp click. It cannot confirm that the visitor
+pressed Send inside WhatsApp. Treat `tour_whatsapp_click` as a lead-start event,
+not a completed inquiry. Use CRM or representative qualification for confirmed
+WhatsApp leads.
+
+DYNAMIC WHATSAPP QA CHECKS
+For every generated or updated HTML page:
+- fail QA if a phone number appears in a WhatsApp CTA
+- fail QA if page HTML contains `https://wa.me/` followed by digits
+- fail QA if `data-whatsapp-message-key` is missing
+- fail QA if `/assets/js/site-config.js` is not loaded
+- fail QA if the runtime link is not generated from the shared config
+- verify EN/ES message-key parity
+- verify the source page URL appears in the prefilled message
+- verify the outbound click event includes page-level context
+
 SCHEMA RULES
 Validate:
 - JSON-LD syntax
