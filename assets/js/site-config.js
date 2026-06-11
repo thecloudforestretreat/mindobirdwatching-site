@@ -49,11 +49,17 @@
 
   function updateWhatsAppLinks() {
     var links = document.querySelectorAll("[data-whatsapp-message-key]");
+    var sourcePage = window.location.pathname || "/";
 
     Array.prototype.forEach.call(links, function (link) {
-      var url = buildWhatsAppUrl(link.getAttribute("data-whatsapp-message-key"));
+      var messageKey = link.getAttribute("data-whatsapp-message-key");
+      var url = buildWhatsAppUrl(messageKey);
+
       link.setAttribute("href", url);
-      link.setAttribute("data-analytics-link-url", url);
+      link.setAttribute("data-analytics-link-url", "dynamic_whatsapp");
+      link.setAttribute("data-analytics-source-page", sourcePage);
+      link.setAttribute("data-analytics-message-key", messageKey);
+      link.setAttribute("data-whatsapp-source-page", sourcePage);
     });
   }
 
