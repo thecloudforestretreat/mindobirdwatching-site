@@ -10,7 +10,7 @@
    How to update:
    - Change the whatsappNumberDigits variable only
    - Use digits only, no +, spaces, dashes, or parentheses
-   - Example: "13054585402"
+   - Upload this file again and purge its CDN cache after changing the value
 */
 
 (function () {
@@ -18,7 +18,7 @@
 
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
-  // To change agents, edit this one value and upload this file again.
+  // This is the only WhatsApp number stored in the site files.
   var whatsappNumberDigits = "13054585402";
 
   window.MBW_SITE_CONFIG.contact = {
