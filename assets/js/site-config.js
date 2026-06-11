@@ -19,7 +19,7 @@
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
   // To change agents, edit this one value and upload this file again.
-  var whatsappNumberDigits = "593969076501";
+  var whatsappNumberDigits = "13054585402";
 
   window.MBW_SITE_CONFIG.contact = {
     whatsappNumberDigits: whatsappNumberDigits,
