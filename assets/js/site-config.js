@@ -8,7 +8,7 @@
    - Avoid hardcoding the WhatsApp number on every page
 
    How to update:
-   - Change whatsappNumberDigits only
+   - Change the whatsappNumberDigits variable only
    - Use digits only, no +, spaces, dashes, or parentheses
    - Example: "13054585402"
 */
@@ -18,9 +18,12 @@
 
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
+  // To change agents, edit this one value and upload this file again.
+  var whatsappNumberDigits = "593969076501";
+
   window.MBW_SITE_CONFIG.contact = {
-    whatsappNumberDigits: "593969076501",
-    whatsappDisplayNumber: "+593969076501",
+    whatsappNumberDigits: whatsappNumberDigits,
+    whatsappDisplayNumber: "+" + whatsappNumberDigits,
     email: "mindobirdwatching@gmail.com"
   };
 
