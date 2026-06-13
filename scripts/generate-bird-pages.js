@@ -719,7 +719,7 @@ ${langSwitch}
 </div>
 </div>
 <div class="birdCompareHeroPanel">
-<img src="${PLACEHOLDER_IMAGE}" alt="${isEs ? "Gallo de la Pena Andino en Mindo" : "Andean Cock-of-the-Rock in Mindo"}" loading="eager" decoding="async"/>
+<img src="${PLACEHOLDER_IMAGE}" alt="${isEs ? "Tucan Andino Piquiplaca en Mindo" : "Plate-billed Mountain Toucan in Mindo"}" loading="eager" decoding="async"/>
 </div>
 </section>
 
