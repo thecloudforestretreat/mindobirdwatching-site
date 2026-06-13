@@ -29,7 +29,7 @@ const BIRD_CSV_URL =
   process.env.BIRD_CSV_URL ||
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_8ukUe3GFUxAkrv_M0kl8-8uiMWfrWqKJ_DfMmKTEfPHdXfsu85teQ6aDErGq3SkZc6tJTR56yJwd/pub?gid=1098221451&single=true&output=csv";
 
-const PLACEHOLDER_IMAGE = "/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg";
+const PLACEHOLDER_IMAGE = "/assets/images/birds/mbw_plate_billed_mountan_toucan_01.jpg";
 
 const EN_PATH = "/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/";
 const ES_PATH = "/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/";
@@ -445,7 +445,21 @@ function pageCss() {
 .birdStats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}.birdStat{padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.58)}.birdStat strong{display:block;font-size:24px;color:var(--forest);font-family:var(--font-head)}
 .birdCompareGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.birdCompareBox{padding:18px}.birdCompareBox ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.65}
 .birdFilterBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}.birdFilterBtn{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.68);color:var(--ink);border-radius:999px;padding:10px 13px;font-weight:900;cursor:pointer;box-shadow:var(--shadow)}.birdFilterBtn[aria-pressed="true"]{background:rgba(13,89,37,.14);border-color:rgba(13,89,37,.35)}
-.birdTourGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.birdTourCard{overflow:hidden;display:flex;flex-direction:column}.birdTourImageWrap{aspect-ratio:4/3;background:rgba(255,255,255,.65);border-bottom:1px solid var(--line);overflow:hidden}.birdTourImage{width:100%;height:100%;object-fit:cover}
+.birdTourGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px
+}
+
+.birdTourCard{
+  overflow:hidden;
+  display:flex;
+  flex-direction:column
+}
+
+.birdTourCard[hidden]{
+  display:none !important;
+}.birdTourImageWrap{aspect-ratio:4/3;background:rgba(255,255,255,.65);border-bottom:1px solid var(--line);overflow:hidden}.birdTourImage{width:100%;height:100%;object-fit:cover}
 .birdTourBody{padding:14px;display:flex;flex-direction:column;gap:9px;flex:1}.birdTourTop{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}.birdTourBadge,.birdTourPriority{display:inline-flex;padding:7px 9px;border-radius:999px;border:1px solid rgba(13,89,37,.26);background:rgba(13,89,37,.10);color:var(--forest);font-size:12px;font-weight:900}.birdTourPriority{background:rgba(255,215,0,.22);border-color:rgba(255,215,0,.52);color:var(--ink)}
 .birdTourCard h3{margin:0;font-size:21px;line-height:1.12}.birdTourAlt,.birdTourSci,.birdCredit{margin:0;font-size:13px;color:var(--muted)}.birdTourLikelihood{display:grid;gap:5px}.birdTourLikelihood p,.birdTourUpsell{margin:0;font-size:13px;line-height:1.55}.birdTourUpsell{color:var(--ink);font-weight:800}
 .birdAudioBtn{width:100%;border:1px solid rgba(13,89,37,.28);background:rgba(13,89,37,.10);color:var(--forest);border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}.birdTourLinks{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:900}.birdTourLinks a{text-decoration:underline;text-underline-offset:3px}
@@ -518,7 +532,15 @@ function interactionScript() {
 
     cards.forEach(function (card) {
       var tour = card.getAttribute("data-tour") || "both";
-      var show = filter === "all" || tour === filter || (filter !== "both" && tour === "both");
+var show = false;
+
+if (filter === "all") {
+  show = true;
+} else if (filter === "both") {
+  show = tour === "both";
+} else {
+  show = tour === filter || tour === "both";
+}
 
       card.hidden = !show;
 
