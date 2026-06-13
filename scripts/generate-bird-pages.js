@@ -15,11 +15,13 @@
 
   Run:
     node scripts/generate-bird-pages.js
+
+  Cloudflare Pages:
+    Requires Node 18+ because this script uses the built-in fetch API.
 */
 
 const fs = require("fs");
 const path = require("path");
-const https = require("https");
 
 const SITE_URL = "https://mindobirdwatching.com";
 
@@ -118,30 +120,20 @@ function parseCsv(text) {
     });
 }
 
-function fetchCsv(url) {
-  return new Promise((resolve, reject) => {
-    https
-      .get(url, (res) => {
-        if (res.statusCode < 200 || res.statusCode >= 300) {
-          reject(new Error("CSV request failed with status " + res.statusCode));
-          return;
-        }
-
-        let data = "";
-        res.setEncoding("utf8");
-
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
-
-        res.on("end", () => {
-          resolve(data);
-        });
-      })
-      .on("error", reject);
+async function fetchCsv(url) {
+  const response = await fetch(url, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "MBW-Bird-Page-Generator/1.0"
+    }
   });
-}
 
+  if (!response.ok) {
+    throw new Error("CSV request failed with status " + response.status);
+  }
+
+  return await response.text();
+}
 function normalizeVisibility(value, fallback) {
   const v = clean(value).toLowerCase().replace(/\s+/g, "_");
 
