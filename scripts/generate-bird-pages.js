@@ -1,4 +1,4 @@
-#!/usr/bin/env /Users/juangranda/Downloads/generate-bird-pages-full.txtnode
+#!/usr/bin/env node
 
 /*
   Mindo Bird Watching - Bird Tour Page Generator
