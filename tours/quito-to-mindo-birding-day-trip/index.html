@@ -61,6 +61,173 @@ body[data-tour-variant="quito_mindo_day_trip"] .species .cap{font-weight:900;col
 body[data-tour-variant="quito_mindo_day_trip"] .species .sub{font-size:13px;color:var(--muted);line-height:1.45;padding:0 12px 12px}
 body[data-tour-variant="quito_mindo_day_trip"] .noteBox{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.66);box-shadow:var(--shadow);padding:16px}
 @media (max-width:900px){body[data-tour-variant="quito_mindo_day_trip"] .routeGrid,body[data-tour-variant="quito_mindo_day_trip"] .photoGrid,body[data-tour-variant="quito_mindo_day_trip"] .checklistGrid,body[data-tour-variant="quito_mindo_day_trip"] .speciesGrid{grid-template-columns:1fr}}
+
+/* Bird comparison guide feature */
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature{
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+  gap: 0;
+  align-items: stretch;
+  overflow: hidden;
+  background: rgba(255,255,255,.68);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityMedia{
+  min-height: 440px;
+  position: relative;
+  background: rgba(255,255,255,.55);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityBody{
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mini-links__label{
+  margin: 0;
+  color: var(--forest);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature h2{
+  margin: 0;
+  font-family: var(--font-head);
+  color: var(--forest);
+  font-size: clamp(26px, 2.5vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature p{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.62;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .tourActions{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .tourActions .btn{
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwCarousel{
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwCarouselViewport{
+  width: 100%;
+  overflow: hidden;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwCarouselTrack{
+  display: flex;
+  width: 100%;
+  transform: translateX(0);
+  transition: transform 420ms ease;
+  will-change: transform;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwSlide{
+  flex: 0 0 100%;
+  width: 100%;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarousel,
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarouselViewport,
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarouselTrack,
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide{
+  height: 100%;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarousel{
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide{
+  min-height: 440px;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide img{
+  width: 100%;
+  height: 100%;
+  min-height: 440px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide .label{
+  display: none;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavBtn{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.85);
+  box-shadow: var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 2;
+  color: var(--ink);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavBtn svg{width:20px;height:20px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavPrev{left:10px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavNext{right:10px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwDots{
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.78);
+  z-index: 2;
+  pointer-events: none;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwDot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(13,89,37,.22);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwDot.is-active{background:rgba(13,89,37,.65)}
+@media (max-width:980px){
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature{grid-template-columns:1fr}
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityMedia,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide img{min-height:340px}
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityBody{padding:22px}
+}
+@media (max-width:560px){
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityMedia,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide img{min-height:300px}
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityBody{padding:18px}
+}
+@media (prefers-reduced-motion: reduce){
+  body[data-tour-variant="quito_mindo_day_trip"] .mbwCarouselTrack{transition:none}
+}
+
+
+
 </style>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -256,6 +423,37 @@ body[data-tour-variant="quito_mindo_day_trip"] .noteBox{border:1px solid var(--l
 <a class="species" href="/bird-gallery/" data-analytics-event="internal_link_click" data-analytics-label="Bird gallery" data-analytics-location="species_grid"><img src="/assets/images/pages/new/mbw_new_018.jpg" alt="Golden-headed Quetzal bird photography example"/><div class="cap">Birding opportunities</div><div class="sub">Scope-assisted views, perched birds, feeder stops, forest roads, and patient birding when conditions cooperate.</div></a>
 </div></section>
 
+<section class="activityCard birdCompareFeature" aria-label="Bird comparison guide">
+<div class="activityMedia">
+<div aria-label="Bird comparison carousel" class="mbwCarousel" data-autoplay="true" data-interval="2600">
+<button aria-label="Previous bird image" class="mbwNavBtn mbwNavPrev" data-analytics-event="gallery_previous" data-analytics-label="Bird comparison carousel previous" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Bird comparison carousel viewport" class="mbwCarouselViewport" role="region">
+<div class="mbwCarouselTrack">
+<div class="mbwSlide"><img alt="Andean Cock-of-the-Rock in Mindo cloud forest" decoding="async" loading="lazy" src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Yellow-throated Toucan in Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Pale-mandibled Aracari in the Mindo cloud forest" decoding="async" loading="lazy" src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Crimson-rumped Toucanet in Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_crimson_rumped_toucanet_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Glistening-green Tanager in the Mindo cloud forest" decoding="async" loading="lazy" src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg"/><div class="label"></div></div>
+</div>
+</div>
+<button aria-label="Next bird image" class="mbwNavBtn mbwNavNext" data-analytics-event="gallery_next" data-analytics-label="Bird comparison carousel next" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Bird comparison carousel position indicators" class="mbwDots"></div>
+</div>
+</div>
+<div class="activityBody">
+<p class="mini-links__label">New bird planning guide</p>
+<h2>See Which Birds Are More Likely on a Half-Day vs Full-Day Tour</h2>
+<p>Compare 50+ Mindo bird species with photos, bird calls, tour-length labels, and practical guide notes. This guide helps guests choose the right tour and clearly shows why a full day gives more time, more habitat variety, and better chances for target birds.</p>
+<div class="tourActions">
+<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explore Bird Comparison Guide" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/">Explore Bird Comparison Guide</a>
+<a class="btn secondary" data-analytics-event="tour_card_click" data-analytics-label="View Full-Day Tours from Bird Comparison Section" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/full-day/">View Full-Day Tours</a>
+</div>
+</div>
+</section>
 <section class="section"><div class="sectionHead"><h2>Recent species list and day-trip checklist summary</h2></div><div class="twoCol"><article class="softCard"><h3>Recent example species list</h3><p>Toucan Barbet, Plate-billed Mountain Toucan, Andean Cock-of-the-Rock, Golden-headed Quetzal, White-booted Racket-tail, Violet-tailed Sylph, Blue-winged Mountain Tanager, Rufous Motmot, Crested Guan, Scaled Fruiteater, Bronze-winged Parrot, Torrent Duck, and mixed tanager flocks.</p></article><article class="softCard"><h3>Example checklist-style summary</h3><p><strong>Area:</strong> Quito to Mindo and nearby Chocó Andino cloud forest. <strong>Habitat:</strong> feeders, forest road, reserve, river edge, open perches. <strong>Effort:</strong> private full-day birding route from Quito. This is a planning summary, not an official eBird checklist.</p></article></div></section>
 
 <section class="section"><div class="sectionHead"><h2>Guide, route, and Quito pickup notes</h2></div><div class="twoCol"><article class="softCard"><h3>Expert local guide</h3><p>Your day trip is led by an expert local guide with strong knowledge of Mindo birding sites, patient pacing, bilingual communication, spotting scope support, and practical target-bird planning.</p><p><a href="/our-guide/" data-analytics-event="internal_link_click" data-analytics-label="Our guide" data-analytics-location="guide_bio">Read more about our guide</a></p></article><article class="softCard"><h3>Mindo route notes</h3><p>Routes may include feeders, reserves, forest roads, open viewpoints, river edges, or lek areas. Exact stops can change with weather, road timing, access, target birds, and recent activity.</p></article></div><div class="noteBox" style="margin-top:12px"><h3>Actual pickup options</h3><p>Quito hotel, Airbnb, and agreed city pickup points can be arranged. Exact pickup time depends on location, route plan, and road conditions.</p></div></section>
