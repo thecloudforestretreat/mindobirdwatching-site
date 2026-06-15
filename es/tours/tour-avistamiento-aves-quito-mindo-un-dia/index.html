@@ -61,6 +61,173 @@ body[data-tour-variant="quito_mindo_day_trip"] .species .cap{font-weight:900;col
 body[data-tour-variant="quito_mindo_day_trip"] .species .sub{font-size:13px;color:var(--muted);line-height:1.45;padding:0 12px 12px}
 body[data-tour-variant="quito_mindo_day_trip"] .noteBox{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.66);box-shadow:var(--shadow);padding:16px}
 @media (max-width:900px){body[data-tour-variant="quito_mindo_day_trip"] .routeGrid,body[data-tour-variant="quito_mindo_day_trip"] .photoGrid,body[data-tour-variant="quito_mindo_day_trip"] .checklistGrid,body[data-tour-variant="quito_mindo_day_trip"] .speciesGrid{grid-template-columns:1fr}}
+
+/* Bird comparison guide feature */
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature{
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+  gap: 0;
+  align-items: stretch;
+  overflow: hidden;
+  background: rgba(255,255,255,.68);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityMedia{
+  min-height: 440px;
+  position: relative;
+  background: rgba(255,255,255,.55);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityBody{
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mini-links__label{
+  margin: 0;
+  color: var(--forest);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature h2{
+  margin: 0;
+  font-family: var(--font-head);
+  color: var(--forest);
+  font-size: clamp(26px, 2.5vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature p{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.62;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .tourActions{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .tourActions .btn{
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwCarousel{
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwCarouselViewport{
+  width: 100%;
+  overflow: hidden;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwCarouselTrack{
+  display: flex;
+  width: 100%;
+  transform: translateX(0);
+  transition: transform 420ms ease;
+  will-change: transform;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwSlide{
+  flex: 0 0 100%;
+  width: 100%;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarousel,
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarouselViewport,
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarouselTrack,
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide{
+  height: 100%;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwCarousel{
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide{
+  min-height: 440px;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide img{
+  width: 100%;
+  height: 100%;
+  min-height: 440px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide .label{
+  display: none;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavBtn{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.85);
+  box-shadow: var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 2;
+  color: var(--ink);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavBtn svg{width:20px;height:20px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavPrev{left:10px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwNavNext{right:10px}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwDots{
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.78);
+  z-index: 2;
+  pointer-events: none;
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwDot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(13,89,37,.22);
+}
+body[data-tour-variant="quito_mindo_day_trip"] .mbwDot.is-active{background:rgba(13,89,37,.65)}
+@media (max-width:980px){
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature{grid-template-columns:1fr}
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityMedia,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide img{min-height:340px}
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityBody{padding:22px}
+}
+@media (max-width:560px){
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityMedia,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide,
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .mbwSlide img{min-height:300px}
+  body[data-tour-variant="quito_mindo_day_trip"] .birdCompareFeature .activityBody{padding:18px}
+}
+@media (prefers-reduced-motion: reduce){
+  body[data-tour-variant="quito_mindo_day_trip"] .mbwCarouselTrack{transition:none}
+}
+
+
+
 </style>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -236,6 +403,37 @@ body[data-tour-variant="quito_mindo_day_trip"] .noteBox{border:1px solid var(--l
 <section class="section"><div class="sectionHead"><h2>Para quién es este tour Quito a Mindo</h2><p class="sectionHint">Para viajeros alojados en Quito que quieren un día serio de aves en Mindo sin manejar transporte, horarios y acceso por cuenta propia.</p></div><div class="routeGrid"><article class="routeStep"><span class="routeTime">Desde Quito</span><h3>Viajeros alojados en Quito</h3><p>Ideal si tienes un día libre en Quito y quieres visitar el bosque nublado sin organizar todo el transporte y la logística de aves solo.</p></article><article class="routeStep"><span class="routeTime">Especies objetivo</span><h3>Observadores con lista de especies</h3><p>Útil cuando tienes especies objetivo, tiempo limitado y quieres usar el día con eficiencia.</p></article><article class="routeStep"><span class="routeTime">Sin auto alquilado</span><h3>Viajeros sin transporte</h3><p>Buena opción si necesitas recogida en Quito, movimiento local entre sitios y un plan claro de retorno.</p></article></div></section>
 <section class="section"><div class="sectionHead"><h2>Flujo del tour Quito a Mindo</h2><p class="sectionHint">Los sitios exactos se eligen según hora de recogida en Quito, especies objetivo, clima, actividad reciente, carretera y acceso a reservas.</p></div><div class="routeGrid"><article class="routeStep"><span class="routeTime">Temprano</span><h3>Recogida en Quito y plan de ruta</h3><p>Comienza con recogida en Quito y un plan basado en tu ubicación, experiencia, movilidad, especies objetivo y condiciones actuales.</p></article><article class="routeStep"><span class="routeTime">Camino al bosque nublado</span><h3>Primera ventana de aves</h3><p>Aprovecha la primera parte del día para aves activas, bordes de bosque, comederos, reservas o miradores según la ruta.</p></article><article class="routeStep"><span class="routeTime">Zona de Mindo</span><h3>Paradas de aves en Mindo</h3><p>Toma tiempo donde las aves están activas, usando conocimiento local en vez de apresurar demasiadas paradas débiles.</p></article><article class="routeStep"><span class="routeTime">Final de la mañana</span><h3>Avistamiento con telescopio</h3><p>Cuando sea posible, usa el telescopio para vistas más cercanas, ayuda con identificación y fotos o videos con celular.</p></article><article class="routeStep"><span class="routeTime">Almuerzo / segunda ruta</span><h3>Segunda ventana de hábitat</h3><p>Las rutas de día entero pueden continuar hacia otros hábitats o elevaciones cuando las condiciones siguen productivas.</p></article><article class="routeStep"><span class="routeTime">Regreso a Quito</span><h3>Retorno a Quito</h3><p>Regreso a Quito a tu hotel, lodge, Airbnb o punto acordado.</p></article></div></section>
 <section class="section"><div class="sectionHead"><h2>Aves comúnmente vistas o buscadas de Quito a Mindo</h2><p class="sectionHint">Ningún avistamiento está garantizado; estas son posibilidades realistas para un tour de un día según ruta, temporada, clima y actividad reciente.</p></div><div class="speciesGrid"><a class="species" href="/es/birding/tucanes-de-mindo/" data-analytics-event="internal_link_click" data-analytics-label="Tucanes de Mindo" data-analytics-location="species_grid"><img src="/assets/images/pages/new/mbw_new_014.jpg" alt="Hábitat de tucanes y barbets cerca de Mindo"/><div class="cap">Tucanes y barbets</div><div class="sub">Toucan Barbet, Tucán Andino Piquilaminado, Tucán Garganta Amarilla, Tucán del Chocó, Arasarí Piquipálido y Tucanete Lomirrojo.</div></a><a class="species" href="/es/birding/colibries-de-mindo/" data-analytics-event="internal_link_click" data-analytics-label="Colibries de Mindo" data-analytics-location="species_grid"><img src="/assets/images/pages/birding/mbw_birding_hummingbirds_feeder_01.jpg" alt="Parada de colibríes cerca de Mindo"/><div class="cap">Colibríes</div><div class="sub">Colaespátula Zamarrito, Silfo Colivioleta y otros colibríes según comederos y ruta.</div></a><a class="species" href="/es/birding/gallo-de-la-pena-andino/" data-analytics-event="internal_link_click" data-analytics-label="Gallo de la Pena Andino" data-analytics-location="species_grid"><img src="/assets/images/pages/birding/mbw_birding_acotr_hero_01.jpg" alt="Ruta de Gallo de la Peña Andino cerca de Mindo"/><div class="cap">Lek y aves de bosque</div><div class="sub">Gallo de la Peña Andino, Quetzal Cabecidorado, Frutero Escamado, Pava de Monte, Loro Alibronceado y Momoto Rufo.</div></a><a class="species" href="/es/birding/tangaras-de-mindo/" data-analytics-event="internal_link_click" data-analytics-label="Tangaras de Mindo" data-analytics-location="species_grid"><img src="/assets/images/pages/new/mbw_new_020.jpg" alt="Avistamiento de tangaras en bosque nublado de Mindo"/><div class="cap">Tangaras</div><div class="sub">Tangara Montana Aliazul, bandadas mixtas y tangaras coloridas cuando luz y movimiento cooperan.</div></a><a class="species" href="/es/lista-aves-mindo/" data-analytics-event="internal_link_click" data-analytics-label="Lista aves Mindo" data-analytics-location="species_grid"><img src="/assets/images/pages/new/mbw_new_001.jpg" alt="Hábitat de río y valle para aves cerca de Mindo"/><div class="cap">Río y valle</div><div class="sub">Pato de Torrente y aves específicas cuando la ruta incluye hábitat adecuado de río.</div></a><a class="species" href="/es/galeria/" data-analytics-event="internal_link_click" data-analytics-label="Galeria" data-analytics-location="species_grid"><img src="/assets/images/pages/new/mbw_new_018.jpg" alt="Ejemplo de Quetzal Cabecidorado en Mindo"/><div class="cap">Oportunidades de avistamiento</div><div class="sub">Vistas por telescopio, aves perchadas, comederos, caminos de bosque y observación paciente cuando las condiciones ayudan.</div></a></div></section>
+<section class="activityCard birdCompareFeature" aria-label="Guía comparativa de aves">
+<div class="activityMedia">
+<div aria-label="Carrusel de comparación de aves" class="mbwCarousel" data-autoplay="true" data-interval="2600">
+<button aria-label="Imagen anterior de aves" class="mbwNavBtn mbwNavPrev" data-analytics-event="gallery_previous" data-analytics-label="Bird comparison carousel previous" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_detail" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Vista del carrusel de comparación de aves" class="mbwCarouselViewport" role="region">
+<div class="mbwCarouselTrack">
+<div class="mbwSlide"><img alt="Gallo de la Peña Andino en el bosque nublado de Mindo" decoding="async" loading="lazy" src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Tucán Garganta Amarilla en Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Arasarí Piquipálido en el bosque nublado de Mindo" decoding="async" loading="lazy" src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Tucanete Lomirrojo en Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_crimson_rumped_toucanet_01.jpg"/><div class="label"></div></div>
+<div class="mbwSlide"><img alt="Tangara Verde Reluciente en el bosque nublado de Mindo" decoding="async" loading="lazy" src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg"/><div class="label"></div></div>
+</div>
+</div>
+<button aria-label="Siguiente imagen de aves" class="mbwNavBtn mbwNavNext" data-analytics-event="gallery_next" data-analytics-label="Bird comparison carousel next" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_detail" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Indicadores de posición del carrusel de comparación de aves" class="mbwDots"></div>
+</div>
+</div>
+<div class="activityBody">
+<p class="mini-links__label">Nueva guia de aves</p>
+<h2>Compara Que Aves Son Mas Probables en Medio Dia vs Dia Completo</h2>
+<p>Compara mas de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duracion de tour y notas practicas de guia. Esta guia ayuda a elegir el tour correcto y muestra por que un dia completo ofrece mas tiempo, mas variedad de habitat y mejores oportunidades para especies objetivo.</p>
+<div class="tourActions">
+<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guia Comparativa" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/tours/aves-que-puedes-ver-en-mindo-medio-dia-vs-dia-completo/">Explorar Guia Comparativa</a>
+<a class="btn secondary" data-analytics-event="tour_card_click" data-analytics-label="Ver Tours de Dia Completo desde Guia Comparativa" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/tours/dia-entero/">Ver Tours de Dia Completo</a>
+</div>
+</div>
+</section>
 <section class="section"><div class="sectionHead"><h2>Lista reciente y resumen tipo checklist del día</h2></div><div class="twoCol"><article class="softCard"><h3>Ejemplo reciente de especies</h3><p>Toucan Barbet, Tucán Andino Piquilaminado, Gallo de la Peña Andino, Quetzal Cabecidorado, Colaespátula Zamarrito, Silfo Colivioleta, Tangara Montana Aliazul, Momoto Rufo, Pava de Monte, Frutero Escamado, Loro Alibronceado, Pato de Torrente y bandadas mixtas.</p></article><article class="softCard"><h3>Resumen estilo checklist</h3><p><strong>Área:</strong> Quito a Mindo y bosque nublado cercano del Chocó Andino. <strong>Hábitat:</strong> comederos, camino de bosque, reserva, borde de río y perchas abiertas. <strong>Esfuerzo:</strong> ruta privada de día entero desde Quito. Es un resumen de planificación, no un checklist oficial de eBird.</p></article></div></section>
 <section class="section"><div class="sectionHead"><h2>Guía, ruta y recogida en Quito</h2></div><div class="twoCol"><article class="softCard"><h3>Guía local experto</h3><p>Tu tour de un día es guiado por un guía local experto con conocimiento de sitios de aves en Mindo, ritmo paciente, comunicación bilingüe, apoyo con telescopio y planificación práctica para especies objetivo.</p><p><a href="/es/nuestro-guia/" data-analytics-event="internal_link_click" data-analytics-label="Nuestro guia" data-analytics-location="guide_bio">Leer más sobre nuestro guía</a></p></article><article class="softCard"><h3>Notas de ruta en Mindo</h3><p>Las rutas pueden incluir comederos, reservas, caminos de bosque, miradores abiertos, bordes de río o zonas de lek. Las paradas exactas pueden cambiar con clima, tiempo de carretera, acceso, especies objetivo y actividad reciente.</p></article></div><div class="noteBox" style="margin-top:12px"><h3>Opciones reales de recogida</h3><p>Hoteles, Airbnbs y puntos acordados dentro de Quito. La hora exacta depende de la ubicación, plan de ruta y condiciones de carretera.</p></div></section>
 <section class="section"><div class="sectionHead"><h2>Mejores meses, dificultad y qué traer</h2></div><div class="checklistGrid"><ul class="checklist"><li><strong>Mejores meses</strong><span>Todo el año</span></li><li><strong>Hora según ubicación</strong><span>Zona de Mindo</span></li><li><strong>Temporada de lluvia</strong><span>Trae protección</span></li><li><strong>Ritmo de día completo</strong><span>Paradas eficientes</span></li></ul><ul class="checklist"><li><strong>Caminata</strong><span>Fácil a moderada</span></li><li><strong>Senderos</strong><span>Pueden estar húmedos</span></li><li><strong>Cámara o binoculares</strong><span>Trae el tuyo</span></li><li><strong>Transporte incluido</strong><span>Apoyo incluido</span></li></ul><ul class="checklist"><li><strong>Traer</strong><span>Protector de lluvia y capas</span></li><li><strong>Zapatos</strong><span>Buen agarre</span></li><li><strong>Otros</strong><span>Agua, repelente, baterías</span></li><li><strong>Comidas</strong><span>Comidas o dinero para almuerzo</span></li></ul></div></section>
