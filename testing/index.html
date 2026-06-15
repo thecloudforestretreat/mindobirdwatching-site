@@ -431,6 +431,41 @@ body[data-tour-variant="private_birding_guide"] .mbwDot.is-active{background:rgb
 
 <section class="section"><div class="sectionHead"><h2>Why book a private guide with Mindo Bird Watching</h2><p class="sectionHint">A practical local alternative to guessing routes or relying only on generic tour descriptions.</p></div><div class="twoCol"><article class="softCard"><h3>Built around your birding goals</h3><p>The route can stay close to Mindo or branch farther through the Chocó Andino depending on target birds, access, weather, and your pace.</p></article><article class="softCard"><h3>Clear logistics before you go</h3><p>You get a private quote, pickup plan, inclusion details, and route expectations before confirming. Tours are confirmed when paid in full.</p></article></div></section>
 
+
+<section class="section" aria-label="Bird comparison planning guide">
+  <div class="birdCompareFeature" data-mbw-carousel="bird-compare-guide-en">
+    <div class="activityMedia">
+      <div class="mbwCarousel" aria-roledescription="carousel" aria-label="Bird photos for the half-day versus full-day guide">
+        <div class="mbwCarouselViewport">
+          <div class="mbwCarouselTrack">
+            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_014.jpg" alt="Toucan and barbet birding target in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/pages/birding/mbw_birding_hummingbirds_feeder_01.jpg" alt="Hummingbird stop in Mindo cloud forest"/></div>
+            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_018.jpg" alt="Golden-headed Quetzal birding opportunity in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_020.jpg" alt="Colorful tanager birding opportunity in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/pages/tours/MBW-Assets-23-Tours-HD-5.jpg" alt="Bird photographed during a Mindo birding route"/></div>
+          </div>
+        </div>
+        <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Previous bird photo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Next bird photo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
+      </div>
+    </div>
+    <div class="activityBody">
+      <p class="mini-links__label">New bird planning guide</p>
+      <h2>See Which Birds Are More Likely on a Half-Day vs Full-Day Tour</h2>
+      <p>Compare 50+ Mindo bird species with photos, bird calls, tour-length labels, and practical guide notes. This guide helps guests choose the right tour and clearly shows why a full day gives more time, more habitat variety, and better chances for target birds.</p>
+      <div class="tourActions">
+        <a class="btn primary" href="/birding/half-day-vs-full-day-birding-guide/" data-analytics-event="internal_link_click" data-analytics-label="Explore Bird Comparison Guide" data-analytics-location="bird_comparison_feature">Explore Bird Comparison Guide</a>
+        <a class="btn secondary" href="/tours/full-day/" data-analytics-event="internal_link_click" data-analytics-label="View Full-Day Tours" data-analytics-location="bird_comparison_feature">View Full-Day Tours</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="section faqSection" id="faq"><div class="sectionHead"><h2>Private birding guide in Mindo FAQ</h2></div><div class="faqGrid"><article class="faqCard"><h3>Pricing and logistics</h3><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Exact quote" data-analytics-location="faq"><p class="q">Why request an exact quote?</p><p class="a">Pricing is private because route distance, reserve access, group size, and pickup logistics can change. Request availability to receive the exact tour price.</p></div><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Confirmed when paid" data-analytics-location="faq"><p class="q">When is the tour confirmed?</p><p class="a">Tours are confirmed when paid in full.</p></div></article><article class="faqCard"><h3>Private guide experience</h3><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Camera gear" data-analytics-location="faq"><p class="q">Do you provide binoculars or camera gear?</p><p class="a">Bring your own binoculars, camera, or phone. The tour includes guiding, local transport, tickets, and spotting scope support.</p></div><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Sighting guarantees" data-analytics-location="faq"><p class="q">Are bird sightings guaranteed?</p><p class="a">No. The guide plans around realistic birding opportunities, but sightings depend on weather, timing, habitat access, and bird behavior.</p></div></article></div></section>
 </main>
 
@@ -438,5 +473,33 @@ body[data-tour-variant="private_birding_guide"] .mbwDot.is-active{background:rgb
 </div>
 <script src="/assets/js/includes.js?v=1" defer></script>
 <script src="/assets/js/site.js?v=34" defer></script>
+
+<script>
+(function(){
+  function setupCarousel(root){
+    var track = root.querySelector('.mbwCarouselTrack');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
+    var prev = root.querySelector('.mbwNavPrev');
+    var next = root.querySelector('.mbwNavNext');
+    if(!track || slides.length === 0){ return; }
+    var index = 0;
+    function go(to){
+      index = (to + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      dots.forEach(function(dot, i){ dot.classList.toggle('is-active', i === index); });
+    }
+    if(prev){ prev.addEventListener('click', function(){ go(index - 1); }); }
+    if(next){ next.addEventListener('click', function(){ go(index + 1); }); }
+    root.addEventListener('keydown', function(event){
+      if(event.key === 'ArrowLeft'){ go(index - 1); }
+      if(event.key === 'ArrowRight'){ go(index + 1); }
+    });
+    go(0);
+  }
+  document.querySelectorAll('[data-mbw-carousel]').forEach(setupCarousel);
+})();
+</script>
+
 </body>
 </html>
