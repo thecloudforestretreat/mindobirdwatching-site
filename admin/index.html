@@ -375,7 +375,7 @@
           <span class="adminDot" aria-hidden="true"></span>
           <div>
             <h1>MBW Admin</h1>
-            <p>Private dashboards for KPIs, site, and social media. Data updates per connected sources.</p>
+            <p>Private dashboards for KPIs, site, social media, SEO, and operational reports. Data updates per connected sources.</p>
             <span class="adminBadge"><i aria-hidden="true"></i> Admin only</span>
           </div>
         </div>
@@ -386,6 +386,7 @@
             <button type="button" data-view="site" aria-pressed="false">Site</button>
             <button type="button" data-view="social" aria-pressed="false">Social Media</button>
             <button type="button" data-view="seo" aria-pressed="false">SEO</button>
+            <button type="button" data-view="reports" aria-pressed="false">Reports</button>
           </div>
 
           <div class="pill" aria-label="Date preset">
@@ -552,6 +553,11 @@
           </select>
         </div>
       </div>
+
+      <div id="filterReports" style="display:none;">
+        <h3>Reports</h3>
+        <p>Use the controls inside the embedded Looker Studio report. Admin-level filters can be added here later after matching Looker parameters are configured.</p>
+      </div>
     </div>
 
     <div class="drawerBottom">
@@ -572,17 +578,34 @@
       "use strict";
 
       var REPORTS = {
-        kpis: "https://lookerstudio.google.com/embed/reporting/e9dd5771-63b2-4349-b33d-d56a2115d866/page/0HvmF",
-        site: "https://lookerstudio.google.com/embed/reporting/1a0a112d-05c0-4b42-a55b-c70a9df099d1/page/bdXZF",
-        social: "https://lookerstudio.google.com/embed/reporting/f2ce3a28-4438-4143-9fa1-480a9a3747bc/page/MABlF",
-        seo: "https://lookerstudio.google.com/embed/reporting/02ead236-5860-435e-9621-717934d5b9d6/page/p_otnfqa6v1d"
+        kpis: {
+          embed: "https://lookerstudio.google.com/embed/reporting/e9dd5771-63b2-4349-b33d-d56a2115d866/page/0HvmF",
+          open: "https://lookerstudio.google.com/reporting/e9dd5771-63b2-4349-b33d-d56a2115d866/page/0HvmF"
+        },
+        site: {
+          embed: "https://lookerstudio.google.com/embed/reporting/1a0a112d-05c0-4b42-a55b-c70a9df099d1/page/bdXZF",
+          open: "https://lookerstudio.google.com/reporting/1a0a112d-05c0-4b42-a55b-c70a9df099d1/page/bdXZF"
+        },
+        social: {
+          embed: "https://lookerstudio.google.com/embed/reporting/f2ce3a28-4438-4143-9fa1-480a9a3747bc/page/MABlF",
+          open: "https://lookerstudio.google.com/reporting/f2ce3a28-4438-4143-9fa1-480a9a3747bc/page/MABlF"
+        },
+        seo: {
+          embed: "https://lookerstudio.google.com/embed/reporting/02ead236-5860-435e-9621-717934d5b9d6/page/p_otnfqa6v1d",
+          open: "https://lookerstudio.google.com/reporting/02ead236-5860-435e-9621-717934d5b9d6/page/p_otnfqa6v1d"
+        },
+        reports: {
+          embed: "https://lookerstudio.google.com/embed/reporting/23f82490-0232-43f4-8d5d-f67f7eabfa9a/page/p_kv239i4m4d",
+          open: "https://lookerstudio.google.com/reporting/23f82490-0232-43f4-8d5d-f67f7eabfa9a/page/p_kv239i4m4d"
+        }
       };
 
       var VIEW_META = {
         kpis: { title: "KPIs", desc: "Revenue, margins, fees, tips, payouts, and upcoming tours." },
         site: { title: "Site", desc: "Website sessions, sources, devices, and conversions." },
         social: { title: "Social Media", desc: "Instagram and YouTube performance snapshots and trends." },
-        seo: { title: "SEO", desc: "Search Console growth dashboard for landing pages, queries, core keywords, and country-level SEO signals." }
+        seo: { title: "SEO", desc: "Search Console growth dashboard for landing pages, queries, core keywords, and country-level SEO signals." },
+        reports: { title: "Reports", desc: "Additional MBW operational reporting and analysis from Looker Studio." }
       };
 
       var currentView = "kpis";
@@ -600,7 +623,8 @@
         document.getElementById("panelTitle").textContent = meta.title;
         document.getElementById("panelDesc").textContent = meta.desc;
 
-        var link = REPORTS[currentView] || "#";
+        var report = REPORTS[currentView] || {};
+        var link = report.open || "#";
         document.getElementById("openInLooker").href = link;
         document.getElementById("openInLooker2").href = link;
 
@@ -608,6 +632,7 @@
         document.getElementById("filterSite").style.display = (currentView === "site") ? "" : "none";
         document.getElementById("filterSocial").style.display = (currentView === "social") ? "" : "none";
         document.getElementById("filterSeo").style.display = (currentView === "seo") ? "" : "none";
+        document.getElementById("filterReports").style.display = (currentView === "reports") ? "" : "none";
         document.getElementById("seoInfo").classList.toggle("show", currentView === "seo");
 
         loadEmbed();
@@ -657,8 +682,9 @@
 
       function loadEmbed(){
         var frame = document.getElementById("frame");
-        var base = REPORTS[currentView] || "";
-        var url = addParams(base, buildParams(getState()));
+        var report = REPORTS[currentView] || {};
+        var base = report.embed || "";
+        var url = (currentView === "reports") ? base : addParams(base, buildParams(getState()));
         frame.src = url;
       }
 
