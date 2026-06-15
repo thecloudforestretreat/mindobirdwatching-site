@@ -6038,15 +6038,16 @@ body[data-page-type="home_page"] .seoFaqSection .faqCard{
     grid-template-columns: 1fr;
   }
 }
+
 /* =========================================================
-   Tour Request Page Module
-   Global-only styling for /book-tour/ and /es/reservar-tour/
+   Tour Request Page Module - UI/UX FIXED
    Scope: body.tourRequestPage
    Purpose:
-   - Keep request pages free of page-level CSS
-   - Restore polished form UI after migration to global CSS
-   - Reduce dead space in the conversion section
-   - Keep commercial/SEO expansion visually compact
+   - Global CSS only
+   - Wide polished form column
+   - Compact support/sidebar column
+   - Reduced dead space
+   - Better mobile and tablet behavior
    ========================================================= */
 
 body.tourRequestPage .page.card{
@@ -6054,7 +6055,7 @@ body.tourRequestPage .page.card{
 }
 
 body.tourRequestPage .sectionBox{
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 body.tourRequestPage .sectionBox.compactSection{
@@ -6063,18 +6064,25 @@ body.tourRequestPage .sectionBox.compactSection{
 
 body.tourRequestPage .tourRequestConversionGrid{
   display: grid;
-  grid-template-columns: minmax(0, 1.38fr) minmax(280px, .62fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.28fr) minmax(270px, .72fr);
+  gap: 16px;
   align-items: start;
 }
 
 body.tourRequestPage .tourRequestFormPanel{
+  grid-column: 1;
+  grid-row: 1;
   padding: 18px;
+  min-width: 0;
 }
 
 body.tourRequestPage .tourRequestSideStack{
+  grid-column: 2;
+  grid-row: 1;
   display: grid;
   gap: 12px;
+  align-content: start;
+  min-width: 0;
 }
 
 body.tourRequestPage .tourRequestSideCard{
@@ -6082,7 +6090,7 @@ body.tourRequestPage .tourRequestSideCard{
   border-radius: var(--r);
   background: rgba(255,255,255,.72);
   box-shadow: var(--shadow);
-  padding: 16px;
+  padding: 15px;
 }
 
 body.tourRequestPage .tourRequestSideCard h3,
@@ -6096,6 +6104,8 @@ body.tourRequestPage .tourRequestFormPanel h3{
 
 body.tourRequestPage .tourRequestSideCard p{
   margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.55;
 }
 
 body.tourRequestPage .tourRequestSteps{
@@ -6107,22 +6117,23 @@ body.tourRequestPage .tourRequestSteps{
 }
 
 body.tourRequestPage .tourRequestSteps li{
-  padding-left: 3px;
+  padding-left: 2px;
   line-height: 1.45;
   color: var(--ink);
+  font-size: 13.5px;
 }
 
 body.tourRequestPage .tourRequestMiniGrid{
   display: grid;
   gap: 8px;
-  margin-top: 10px;
+  margin: 10px 0 12px;
 }
 
 body.tourRequestPage .tourRequestMini{
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255,255,255,.58);
-  padding: 11px 12px;
+  padding: 10px 11px;
 }
 
 body.tourRequestPage .tourRequestMini strong{
@@ -6144,10 +6155,14 @@ body.tourRequestPage .formCard{
   display: grid;
   gap: 12px;
   margin-top: 8px;
+  min-width: 0;
 }
 
 body.tourRequestPage .formCard .grid-2{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  min-width: 0;
 }
 
 body.tourRequestPage .field{
@@ -6156,7 +6171,8 @@ body.tourRequestPage .field{
   font-weight: 950;
   font-size: 13px;
   color: var(--ink);
-  line-height: 1.1;
+  line-height: 1.15;
+  min-width: 0;
 }
 
 body.tourRequestPage .field input,
@@ -6164,27 +6180,34 @@ body.tourRequestPage .field select,
 body.tourRequestPage .field textarea{
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   border: 1px solid rgba(7,25,35,.18);
   border-radius: 15px;
-  background: rgba(255,255,255,.88);
+  background: rgba(255,255,255,.90);
   box-shadow: 0 10px 26px rgba(7,25,35,.07);
   color: var(--ink);
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 14px;
   outline: none;
+  box-sizing: border-box;
   transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
 body.tourRequestPage .field input,
 body.tourRequestPage .field select{
-  height: 46px;
-  padding: 0 13px;
+  height: 48px;
+  padding: 0 14px;
+}
+
+body.tourRequestPage .field select{
+  appearance: auto;
+  -webkit-appearance: auto;
 }
 
 body.tourRequestPage .field textarea{
-  min-height: 118px;
-  padding: 13px;
+  min-height: 116px;
+  padding: 13px 14px;
   line-height: 1.5;
   resize: vertical;
 }
@@ -6214,20 +6237,24 @@ body.tourRequestPage .tourRequestCompactCards{
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+  margin-top: 14px;
 }
 
 body.tourRequestPage .tourRequestCompactCards .trustBox{
   padding: 14px;
+  min-height: auto;
 }
 
 body.tourRequestPage .tourRequestCompactCards .trustBox p{
   font-size: 13px;
+  line-height: 1.48;
 }
 
 body.tourRequestPage .tourRequestOptionGrid{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  align-items: stretch;
 }
 
 body.tourRequestPage .tourRequestOption{
@@ -6239,6 +6266,7 @@ body.tourRequestPage .tourRequestOption{
 
 body.tourRequestPage .tourRequestOption p{
   margin-bottom: 0;
+  line-height: 1.55;
 }
 
 body.tourRequestPage .tourRequestOption .btn{
@@ -6246,11 +6274,22 @@ body.tourRequestPage .tourRequestOption .btn{
   width: 100%;
 }
 
-body.tourRequestPage .tourRequestTextBlock{
-  max-width: 92ch;
+body.tourRequestPage .tourRequestInfoGrid{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, .55fr);
+  gap: 14px;
+  align-items: stretch;
 }
 
-body.tourRequestPage .tourRequestTextBlock p:last-child{
+body.tourRequestPage .tourRequestInfoCard{
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.68);
+  box-shadow: 0 12px 28px rgba(7,25,35,.07);
+  padding: 15px;
+}
+
+body.tourRequestPage .tourRequestInfoCard p:last-child{
   margin-bottom: 0;
 }
 
@@ -6325,20 +6364,37 @@ body.tourRequestPage .errorMsg{
 
 body.tourRequestPage .cf-turnstile{
   margin-top: 2px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
-@media (max-width: 1000px){
+@media (max-width: 1100px){
   body.tourRequestPage .tourRequestConversionGrid{
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.tourRequestPage .tourRequestFormPanel,
+  body.tourRequestPage .tourRequestSideStack{
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  body.tourRequestPage .tourRequestFormPanel{
+    order: 1;
   }
 
   body.tourRequestPage .tourRequestSideStack{
+    order: 2;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   body.tourRequestPage .tourRequestCompactCards,
   body.tourRequestPage .internalLinks{
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.tourRequestPage .tourRequestInfoGrid{
+    grid-template-columns: 1fr;
   }
 }
 
@@ -6367,5 +6423,10 @@ body.tourRequestPage .cf-turnstile{
 
   body.tourRequestPage .ctaRow--equal{
     grid-template-columns: 1fr;
+  }
+
+  body.tourRequestPage .field input,
+  body.tourRequestPage .field select{
+    height: 48px;
   }
 }
