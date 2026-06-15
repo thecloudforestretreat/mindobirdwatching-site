@@ -6601,3 +6601,188 @@ body[data-page-type="tour_collection"] .birdCompareFeature .mbwDots{
     width: 100%;
   }
 }
+
+/* =========================================================
+   Tour Collection Alignment Fixes
+   Fixes EN/ES tours page card symmetry, equal CTA spacing,
+   and right-edge overflow on guide cards.
+   ========================================================= */
+
+/* Keep card grids inside the page width and prevent the last card from bleeding out. */
+body[data-page-type="tour_collection"] .guidesGrid,
+body[data-page-type="tour_collection"] .experienceSummary,
+body[data-page-type="tour_collection"] .cards{
+  width: 100%;
+  min-width: 0;
+}
+
+/* More reliable 4-column guide grid. The old repeat(4,1fr) could overflow when
+   button text was long in Spanish. */
+body[data-page-type="tour_collection"] .guidesGrid{
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+/* Ensure every guide card is a true equal-height flex card. */
+body[data-page-type="tour_collection"] .guideCard{
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Let copy wrap cleanly instead of forcing card expansion. */
+body[data-page-type="tour_collection"] .guideCard h3,
+body[data-page-type="tour_collection"] .guideCard p,
+body[data-page-type="tour_collection"] .tourCard h2,
+body[data-page-type="tour_collection"] .tourCard p{
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Bottom-align buttons across card rows. */
+body[data-page-type="tour_collection"] .guideCard .tourActions,
+body[data-page-type="tour_collection"] .tourCard .tourActions{
+  margin-top: auto;
+}
+
+/* Buttons in guide cards should use the same left/right spacing and fill the card width.
+   This fixes the inconsistent offsets shown on both EN and ES pages. */
+body[data-page-type="tour_collection"] .guideCard .tourActions{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+body[data-page-type="tour_collection"] .guideCard .tourActions .btn{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.2;
+}
+
+/* Tour option cards: keep Reserve Now and primary tour buttons aligned,
+   with equal side spacing and consistent full-width behavior. */
+body[data-page-type="tour_collection"] .tourCard .tourActions{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+body[data-page-type="tour_collection"] .tourCard .tourActions .btn{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Make the two main tour cards symmetrical even when one description or spotlight wraps. */
+body[data-page-type="tour_collection"] .cards{
+  align-items: stretch;
+}
+
+body[data-page-type="tour_collection"] .tourCard{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-page-type="tour_collection"] .tourCard > .tourBody{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Keep spotlight blocks consistent and prevent them from widening cards. */
+body[data-page-type="tour_collection"] .mini-links{
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body[data-page-type="tour_collection"] .mini-links__link{
+  overflow-wrap: anywhere;
+}
+
+/* Bird comparison feature: maintain the larger carousel while preserving clean alignment. */
+body[data-page-type="tour_collection"] .birdCompareFeature{
+  width: 100%;
+  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+}
+
+body[data-page-type="tour_collection"] .birdCompareFeature .activityBody{
+  min-width: 0;
+}
+
+body[data-page-type="tour_collection"] .birdCompareFeature .tourActions{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+body[data-page-type="tour_collection"] .birdCompareFeature .tourActions .btn{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Tablet: use two columns for guide cards instead of squeezing four cards. */
+@media (max-width: 1100px){
+  body[data-page-type="tour_collection"] .guidesGrid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile: one clean column, no side overflow, all buttons full width. */
+@media (max-width: 900px){
+  body[data-page-type="tour_collection"] .guidesGrid,
+  body[data-page-type="tour_collection"] .cards,
+  body[data-page-type="tour_collection"] .experienceSummary{
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-type="tour_collection"] .birdCompareFeature{
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-type="tour_collection"] .tourActions,
+  body[data-page-type="tour_collection"] .guideCard .tourActions,
+  body[data-page-type="tour_collection"] .tourCard .tourActions,
+  body[data-page-type="tour_collection"] .birdCompareFeature .tourActions{
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  body[data-page-type="tour_collection"] .tourActions .btn,
+  body[data-page-type="tour_collection"] .guideCard .tourActions .btn,
+  body[data-page-type="tour_collection"] .tourCard .tourActions .btn,
+  body[data-page-type="tour_collection"] .birdCompareFeature .tourActions .btn{
+    width: 100%;
+  }
+}
+
+/* Small mobile: reduce internal padding so long Spanish CTA text does not force overflow. */
+@media (max-width: 560px){
+  body[data-page-type="tour_collection"] .guideCard,
+  body[data-page-type="tour_collection"] .tourBody,
+  body[data-page-type="tour_collection"] .activityBody{
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  body[data-page-type="tour_collection"] .btn{
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
