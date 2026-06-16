@@ -246,20 +246,20 @@ function renderBirdCard(bird, lang) {
 
     ${upsell ? `<p class="birdTourUpsell">${esc(upsell)}</p>` : ""}
 
-    ${
-      bird.audio
-        ? `<div class="birdTourAudio">
-            <button
+    <div class="birdTourAudio">
+      ${
+        bird.audio
+          ? `<button
               class="birdAudioBtn"
               type="button"
               data-audio-src="${attr(bird.audio)}"
               data-bird-name="${attr(name)}"
               data-analytics-event="bird_audio_play"
             >${esc(playLabel)}</button>
-            ${bird.audioCredit ? `<p class="birdCredit">${esc(bird.audioCredit)}</p>` : ""}
-          </div>`
-        : ""
-    }
+            ${bird.audioCredit ? `<p class="birdCredit">${esc(bird.audioCredit)}</p>` : ""}`
+          : `<span class="birdAudioPlaceholder" aria-hidden="true"></span>`
+      }
+    </div>
 
     <div class="birdTourLinks">
       ${
@@ -438,39 +438,369 @@ function schemaGraph(lang, birds) {
 function pageCss() {
   return `
 <style>
-.birdCompareHero{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);gap:18px;align-items:stretch}
-.birdCompareHeroCopy,.birdCompareHeroPanel,.birdCompareBox,.birdTourCard,.birdEbirdBox,.birdCtaBox{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.72);box-shadow:var(--shadow)}
-.birdCompareHeroCopy{padding:22px}.birdCompareHeroCopy h1{font-size:42px;line-height:1.04;margin-bottom:12px}.birdCompareHeroCopy p{color:var(--ink)}
-.birdCompareHeroPanel{overflow:hidden;display:grid}.birdCompareHeroPanel img{width:100%;height:100%;min-height:340px;object-fit:cover}
-.birdStats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}.birdStat{padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.58)}.birdStat strong{display:block;font-size:24px;color:var(--forest);font-family:var(--font-head)}
-.birdCompareGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.birdCompareBox{padding:18px}.birdCompareBox ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.65}
-.birdFilterBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}.birdFilterBtn{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.68);color:var(--ink);border-radius:999px;padding:10px 13px;font-weight:900;cursor:pointer;box-shadow:var(--shadow)}.birdFilterBtn[aria-pressed="true"]{background:rgba(13,89,37,.14);border-color:rgba(13,89,37,.35)}
+.birdCompareHero{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);
+  gap:18px;
+  align-items:stretch;
+}
+
+.birdCompareHeroCopy,
+.birdCompareHeroPanel,
+.birdCompareBox,
+.birdTourCard,
+.birdEbirdBox,
+.birdCtaBox{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.72);
+  box-shadow:var(--shadow);
+}
+
+.birdCompareHeroCopy{
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.birdCompareHeroCopy h1{
+  font-size:42px;
+  line-height:1.04;
+  margin-bottom:12px;
+}
+
+.birdCompareHeroCopy p{
+  color:var(--ink);
+}
+
+.birdCompareHeroPanel{
+  overflow:hidden;
+  display:grid;
+}
+
+.birdCompareHeroPanel img{
+  width:100%;
+  height:100%;
+  min-height:340px;
+  object-fit:cover;
+}
+
+/* Keep main hero buttons aligned in English and Spanish */
+.birdCompareHeroCopy .ctaRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  align-items:stretch;
+}
+
+.birdCompareHeroCopy .ctaRow .btn{
+  width:100%;
+  min-height:48px;
+  justify-content:center;
+  text-align:center;
+}
+
+/* Equal stat boxes */
+.birdStats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-top:16px;
+}
+
+.birdStat{
+  min-height:84px;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.58);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.birdStat strong{
+  display:block;
+  font-size:24px;
+  color:var(--forest);
+  font-family:var(--font-head);
+  line-height:1;
+}
+
+.birdStat span{
+  display:block;
+  line-height:1.25;
+}
+
+.birdCompareGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.birdCompareBox{
+  padding:18px;
+}
+
+.birdCompareBox ul{
+  margin:0;
+  padding-left:18px;
+  color:var(--muted);
+  line-height:1.65;
+}
+
+.birdFilterBar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin:14px 0;
+}
+
+.birdFilterBtn{
+  appearance:none;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.68);
+  color:var(--ink);
+  border-radius:999px;
+  padding:10px 13px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+}
+
+.birdFilterBtn[aria-pressed="true"]{
+  background:rgba(13,89,37,.14);
+  border-color:rgba(13,89,37,.35);
+}
+
 .birdTourGrid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:14px
+  gap:14px;
+  align-items:stretch;
 }
 
 .birdTourCard{
   overflow:hidden;
   display:flex;
-  flex-direction:column
+  flex-direction:column;
+  height:100%;
 }
 
 .birdTourCard[hidden]{
   display:none !important;
-}.birdTourImageWrap{aspect-ratio:4/3;background:rgba(255,255,255,.65);border-bottom:1px solid var(--line);overflow:hidden}.birdTourImage{width:100%;height:100%;object-fit:cover}
-.birdTourBody{padding:14px;display:flex;flex-direction:column;gap:9px;flex:1}.birdTourTop{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}.birdTourBadge,.birdTourPriority{display:inline-flex;padding:7px 9px;border-radius:999px;border:1px solid rgba(13,89,37,.26);background:rgba(13,89,37,.10);color:var(--forest);font-size:12px;font-weight:900}.birdTourPriority{background:rgba(255,215,0,.22);border-color:rgba(255,215,0,.52);color:var(--ink)}
-.birdTourCard h3{margin:0;font-size:21px;line-height:1.12}.birdTourAlt,.birdTourSci,.birdCredit{margin:0;font-size:13px;color:var(--muted)}.birdTourLikelihood{display:grid;gap:5px}.birdTourLikelihood p,.birdTourUpsell{margin:0;font-size:13px;line-height:1.55}.birdTourUpsell{color:var(--ink);font-weight:800}
-.birdAudioBtn{width:100%;border:1px solid rgba(13,89,37,.28);background:rgba(13,89,37,.10);color:var(--forest);border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}.birdTourLinks{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:900}.birdTourLinks a{text-decoration:underline;text-underline-offset:3px}
-.birdCtaBox,.birdEbirdBox{padding:18px}.birdCtaBox{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:linear-gradient(135deg,rgba(255,215,0,.24),rgba(255,255,255,.76))}
-.birdStickyCta{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(720px,calc(100vw - 28px));z-index:2400;display:none;grid-template-columns:1fr 1fr;gap:8px;padding:8px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.92);box-shadow:var(--shadow);backdrop-filter:blur(10px)}.birdStickyCta .btn{width:100%;min-height:44px;font-size:13px}
-@media(max-width:1000px){.birdTourGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.birdCompareHero,.birdCompareGrid{grid-template-columns:1fr}}
-@media(max-width:760px){.birdTourGrid,.birdStats,.birdCtaBox{grid-template-columns:1fr}.birdCompareHeroCopy h1{font-size:32px}.birdStickyCta{display:grid}body{padding-bottom:96px}}
-@media(max-width:520px){.birdStickyCta{grid-template-columns:1fr}body{padding-bottom:148px}}
-</style>`;
 }
 
+.birdTourImageWrap{
+  aspect-ratio:4/3;
+  background:rgba(255,255,255,.65);
+  border-bottom:1px solid var(--line);
+  overflow:hidden;
+}
+
+.birdTourImage{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.birdTourBody{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  flex:1;
+  min-height:0;
+}
+
+.birdTourTop{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.birdTourBadge,
+.birdTourPriority{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:7px 9px;
+  border-radius:999px;
+  border:1px solid rgba(13,89,37,.26);
+  background:rgba(13,89,37,.10);
+  color:var(--forest);
+  font-size:12px;
+  font-weight:900;
+}
+
+.birdTourPriority{
+  background:rgba(255,215,0,.22);
+  border-color:rgba(255,215,0,.52);
+  color:var(--ink);
+}
+
+.birdTourCard h3{
+  margin:0;
+  font-size:21px;
+  line-height:1.12;
+  min-height:48px;
+}
+
+.birdTourAlt,
+.birdTourSci,
+.birdCredit{
+  margin:0;
+  font-size:13px;
+  color:var(--muted);
+}
+
+.birdTourLikelihood{
+  display:grid;
+  gap:5px;
+}
+
+.birdTourLikelihood p,
+.birdTourUpsell{
+  margin:0;
+  font-size:13px;
+  line-height:1.55;
+}
+
+.birdTourUpsell{
+  color:var(--ink);
+  font-weight:800;
+  min-height:42px;
+}
+
+/* Push lower card actions to the same bottom zone */
+.birdTourAudio{
+  margin-top:auto;
+}
+
+.birdAudioBtn{
+  width:100%;
+  min-height:34px;
+  border:1px solid rgba(13,89,37,.28);
+  background:rgba(13,89,37,.10);
+  color:var(--forest);
+  border-radius:12px;
+  padding:10px 12px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.birdAudioPlaceholder{
+  display:block;
+  min-height:34px;
+}
+
+.birdTourLinks{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  min-height:24px;
+  font-size:13px;
+  font-weight:900;
+}
+
+.birdTourLinks a{
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+
+.birdCtaBox,
+.birdEbirdBox{
+  padding:18px;
+}
+
+.birdCtaBox{
+  display:grid;
+  grid-template-columns:1fr minmax(220px,auto);
+  gap:16px;
+  align-items:center;
+  background:linear-gradient(135deg,rgba(255,215,0,.24),rgba(255,255,255,.76));
+}
+
+.birdCtaBox .btn{
+  min-height:48px;
+  justify-content:center;
+  text-align:center;
+}
+
+.birdStickyCta{
+  position:fixed;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  width:min(720px,calc(100vw - 28px));
+  z-index:2400;
+  display:none;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.92);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(10px);
+}
+
+.birdStickyCta .btn{
+  width:100%;
+  min-height:44px;
+  font-size:13px;
+  justify-content:center;
+  text-align:center;
+}
+
+@media(max-width:1000px){
+  .birdTourGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .birdCompareHero,
+  .birdCompareGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:760px){
+  .birdTourGrid,
+  .birdStats,
+  .birdCtaBox,
+  .birdCompareHeroCopy .ctaRow{
+    grid-template-columns:1fr;
+  }
+
+  .birdCompareHeroCopy h1{
+    font-size:32px;
+  }
+
+  .birdStickyCta{
+    display:grid;
+  }
+
+  body{
+    padding-bottom:96px;
+  }
+}
+
+@media(max-width:520px){
+  .birdStickyCta{
+    grid-template-columns:1fr;
+  }
+
+  body{
+    padding-bottom:148px;
+  }
+}
+</style>`;
+}
 function includeLoaderScript() {
   return `
 <script>
@@ -714,7 +1044,7 @@ ${langSwitch}
 </div>
 <div class="birdStats">
 <div class="birdStat"><strong>${visibleBirds.length}</strong><span>${isEs ? "aves destacadas" : "featured birds"}</span></div>
-<div class="birdStat"><strong>${visibleBirds.filter((b) => b.tourVisibility === "full_day").length}</strong><span>${isEs ? "objetivos de dia completo" : "full day targets"}</span></div>
+<div class="birdStat"><strong>${visibleBirds.length}</strong><span>${isEs ? "comparaciones de tour" : "tour comparisons"}</span></div>
 <div class="birdStat"><strong>${visibleBirds.filter((b) => b.audio).length}</strong><span>${isEs ? "sonidos de aves" : "bird sounds"}</span></div>
 </div>
 </div>
