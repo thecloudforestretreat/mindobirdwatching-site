@@ -430,27 +430,34 @@
 </div>
 </section>
 
-<section class="section" aria-label="Guía comparativa de aves">
-<div class="birdCompareFeature" data-mbw-carousel="home-es">
-<div class="activityMedia">
-<div class="mbwCarousel">
-<div class="mbwCarouselViewport"><div class="mbwCarouselTrack">
+<section class="section" aria-label="Guía comparativa de aves para planificar">
+  <div class="birdCompareFeature" data-mbw-carousel="bird-comparison-guide-es">
+    <div class="activityMedia">
+      <div class="mbwCarousel" aria-roledescription="carousel" aria-label="Fotos de aves para la guía de medio día versus día entero">
+        <div class="mbwCarouselViewport"><div class="mbwCarouselTrack">
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Tucán garganta amarilla en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Gallo de la Peña Andino en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Oportunidad de Quetzal Cabecidorado en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Oportunidad de Arasarí Piquipálido en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Tangara Verde Reluciente en Mindo"/></div>
+          </div></div>
+        <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Foto de ave anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente foto de ave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
+      </div>
+    </div>
+    <div class="activityBody">
+      <p class="mini-links__label">Nueva guía de aves</p>
+      <h2>Compara Qué Aves Son Más Probables en Medio Día vs Día Entero</h2>
+      <p>Compara más de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duración de tour y notas prácticas de guía. Esta guía ayuda a elegir el tour correcto y muestra por qué un día entero ofrece más tiempo, más variedad de hábitat y mejores oportunidades para especies objetivo.</p>
+      <div class="tourActions">
+        <a class="btn primary" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guía Comparativa" data-analytics-location="bird_comparison_feature">Explorar Guía Comparativa</a>
+        <a class="btn secondary" href="/es/tours/dia-entero/" data-analytics-event="internal_link_click" data-analytics-label="Ver Tours de Día Entero" data-analytics-location="bird_comparison_feature">Ver Tours de Día Entero</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-<div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Tucán garganta amarilla"></div>
-<div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Gallo de la Peña Andino"></div>
-<div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Quetzal Cabecidorado"></div>
-<div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Arasarí Piquipálido"></div>
-<div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Tangara Verde Reluciente"></div>
-
-</div></div>
-<button class="mbwNavBtn mbwNavPrev" type="button">‹</button>
-<button class="mbwNavBtn mbwNavNext" type="button">›</button>
-<div class="mbwDots"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
-</div></div>
-<div class="activityBody">
-<h2>Compara Qué Aves Son Más Probables en Medio Día vs Día Entero</h2>
-<a class="btn primary" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/">Explorar Guía Comparativa</a>
-</div></div></section>
 <section aria-label="Preguntas frecuentes sobre tours de aves en Ecuador" class="section seoFaqSection">
 <div class="sectionHead">
 <h2>Tours de Aves en Ecuador: Preguntas Rápidas</h2>
@@ -850,13 +857,37 @@
 
 <script>
 (function(){
-document.querySelectorAll('[data-mbw-carousel]').forEach(function(root){
-var track=root.querySelector('.mbwCarouselTrack'); if(!track)return;
-var slides=root.querySelectorAll('.mbwSlide'); var i=0;
-function go(n){i=(n+slides.length)%slides.length;track.style.transform='translateX('+(-i*100)+'%)';}
-var p=root.querySelector('.mbwNavPrev'); var nx=root.querySelector('.mbwNavNext');
-if(p)p.onclick=function(){go(i-1)}; if(nx)nx.onclick=function(){go(i+1)}; go(0);
-});
+  function setupMbwCarousel(root){
+    var track = root.querySelector('.mbwCarouselTrack');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
+    var prev = root.querySelector('.mbwNavPrev');
+    var next = root.querySelector('.mbwNavNext');
+
+    if(!track || slides.length === 0){ return; }
+
+    var index = 0;
+
+    function go(to){
+      index = (to + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
+    }
+
+    if(prev){ prev.addEventListener('click', function(){ go(index - 1); }); }
+    if(next){ next.addEventListener('click', function(){ go(index + 1); }); }
+
+    root.addEventListener('keydown', function(event){
+      if(event.key === 'ArrowLeft'){ go(index - 1); }
+      if(event.key === 'ArrowRight'){ go(index + 1); }
+    });
+
+    go(0);
+  }
+
+  document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwCarousel);
 })();
 </script>
 
