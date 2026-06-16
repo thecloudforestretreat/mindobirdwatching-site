@@ -809,28 +809,37 @@
 
 <script>
 (function(){
-  function setupCarousel(root){
-    var track=root.querySelector('.mbwCarouselTrack');
-    var slides=Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
-    var dots=Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
-    var prev=root.querySelector('.mbwNavPrev');
-    var next=root.querySelector('.mbwNavNext');
-    if(!track||!slides.length){return;}
-    var index=0;
+  function setupMbwCarousel(root){
+    var track = root.querySelector('.mbwCarouselTrack');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
+    var prev = root.querySelector('.mbwNavPrev');
+    var next = root.querySelector('.mbwNavNext');
+
+    if(!track || slides.length === 0){ return; }
+
+    var index = 0;
+
     function go(to){
-      index=(to+slides.length)%slides.length;
-      track.style.transform='translateX('+(-index*100)+'%)';
-      dots.forEach(function(dot,i){dot.classList.toggle('is-active',i===index);});
+      index = (to + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
     }
-    if(prev){prev.addEventListener('click',function(){go(index-1);});}
-    if(next){next.addEventListener('click',function(){go(index+1);});}
-    root.addEventListener('keydown',function(event){
-      if(event.key==='ArrowLeft'){go(index-1);}
-      if(event.key==='ArrowRight'){go(index+1);}
+
+    if(prev){ prev.addEventListener('click', function(){ go(index - 1); }); }
+    if(next){ next.addEventListener('click', function(){ go(index + 1); }); }
+
+    root.addEventListener('keydown', function(event){
+      if(event.key === 'ArrowLeft'){ go(index - 1); }
+      if(event.key === 'ArrowRight'){ go(index + 1); }
     });
+
     go(0);
   }
-  document.querySelectorAll('[data-mbw-carousel]').forEach(setupCarousel);
+
+  document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwCarousel);
 })();
 </script>
 
