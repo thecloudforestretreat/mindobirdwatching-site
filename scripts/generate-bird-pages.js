@@ -486,7 +486,6 @@ function pageCss() {
   object-fit:cover;
 }
 
-/* Keep main hero buttons aligned in English and Spanish */
 .birdCompareHeroCopy .ctaRow{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -501,7 +500,6 @@ function pageCss() {
   text-align:center;
 }
 
-/* Equal stat boxes */
 .birdStats{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -598,6 +596,7 @@ function pageCss() {
   background:rgba(255,255,255,.65);
   border-bottom:1px solid var(--line);
   overflow:hidden;
+  flex:0 0 auto;
 }
 
 .birdTourImage{
@@ -608,11 +607,10 @@ function pageCss() {
 
 .birdTourBody{
   padding:14px;
-  display:flex;
-  flex-direction:column;
-  gap:9px;
+  display:grid;
+  grid-template-rows:auto 52px 18px 18px 54px 66px 70px 24px;
+  gap:8px;
   flex:1;
-  min-height:0;
 }
 
 .birdTourTop{
@@ -621,6 +619,7 @@ function pageCss() {
   flex-wrap:wrap;
   align-items:center;
   justify-content:space-between;
+  min-height:30px;
 }
 
 .birdTourBadge,
@@ -635,6 +634,7 @@ function pageCss() {
   color:var(--forest);
   font-size:12px;
   font-weight:900;
+  line-height:1;
 }
 
 .birdTourPriority{
@@ -647,7 +647,10 @@ function pageCss() {
   margin:0;
   font-size:21px;
   line-height:1.12;
-  min-height:48px;
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
 }
 
 .birdTourAlt,
@@ -656,41 +659,60 @@ function pageCss() {
   margin:0;
   font-size:13px;
   color:var(--muted);
+  line-height:1.3;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
 }
 
 .birdTourLikelihood{
   display:grid;
-  gap:5px;
+  gap:4px;
+  align-content:start;
 }
 
-.birdTourLikelihood p,
-.birdTourUpsell{
+.birdTourLikelihood p{
   margin:0;
   font-size:13px;
-  line-height:1.55;
+  line-height:1.35;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
 }
 
 .birdTourUpsell{
+  margin:0;
   color:var(--ink);
+  font-size:13px;
+  line-height:1.35;
   font-weight:800;
-  min-height:42px;
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  align-self:start;
 }
 
-/* Push lower card actions to the same bottom zone */
 .birdTourAudio{
-  margin-top:auto;
+  align-self:end;
+  display:grid;
+  grid-template-rows:34px 28px;
+  gap:6px;
+  min-height:68px;
 }
 
 .birdAudioBtn{
   width:100%;
   min-height:34px;
+  height:34px;
   border:1px solid rgba(13,89,37,.28);
   background:rgba(13,89,37,.10);
   color:var(--forest);
   border-radius:12px;
-  padding:10px 12px;
+  padding:7px 12px;
   font-weight:900;
   cursor:pointer;
+  line-height:1;
 }
 
 .birdAudioPlaceholder{
@@ -698,11 +720,18 @@ function pageCss() {
   min-height:34px;
 }
 
+.birdCredit{
+  white-space:normal;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+
 .birdTourLinks{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
-  align-items:center;
+  align-items:end;
   min-height:24px;
   font-size:13px;
   font-weight:900;
@@ -779,6 +808,26 @@ function pageCss() {
 
   .birdCompareHeroCopy h1{
     font-size:32px;
+  }
+
+  .birdTourBody{
+    grid-template-rows:auto auto auto auto auto auto auto auto;
+  }
+
+  .birdTourCard h3,
+  .birdTourUpsell,
+  .birdCredit{
+    display:block;
+    overflow:visible;
+    -webkit-line-clamp:unset;
+  }
+
+  .birdTourAlt,
+  .birdTourSci,
+  .birdTourLikelihood p{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
   }
 
   .birdStickyCta{
