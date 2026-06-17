@@ -31,6 +31,7 @@
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
 <script src="/assets/js/head.js?v=1" defer></script>
+<script defer src="/assets/js/site-config.js"></script>
 <style>
 body[data-tour-variant="private_birding_guide"] .routeGrid,
 body[data-tour-variant="private_birding_guide"] .photoGrid,
@@ -61,170 +62,6 @@ body[data-tour-variant="private_birding_guide"] .species .cap{font-weight:900;co
 body[data-tour-variant="private_birding_guide"] .species .sub{font-size:13px;color:var(--muted);line-height:1.45;padding:0 12px 12px}
 body[data-tour-variant="private_birding_guide"] .noteBox{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.66);box-shadow:var(--shadow);padding:16px}
 @media (max-width:900px){body[data-tour-variant="private_birding_guide"] .routeGrid,body[data-tour-variant="private_birding_guide"] .photoGrid,body[data-tour-variant="private_birding_guide"] .checklistGrid,body[data-tour-variant="private_birding_guide"] .speciesGrid{grid-template-columns:1fr}}
-
-/* Bird comparison guide feature */
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature{
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
-  gap: 0;
-  align-items: stretch;
-  overflow: hidden;
-  background: rgba(255,255,255,.68);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .activityMedia{
-  min-height: 440px;
-  position: relative;
-  background: rgba(255,255,255,.55);
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .activityBody{
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-  min-width: 0;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mini-links__label{
-  margin: 0;
-  color: var(--forest);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature h2{
-  margin: 0;
-  font-family: var(--font-head);
-  color: var(--forest);
-  font-size: clamp(26px, 2.5vw, 38px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature p{
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.62;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .tourActions{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-top: 10px;
-  width: 100%;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .tourActions .btn{
-  width: 100%;
-  justify-content: center;
-  text-align: center;
-}
-body[data-tour-variant="private_birding_guide"] .mbwCarousel{
-  position: relative;
-  overflow: hidden;
-  background: transparent;
-}
-body[data-tour-variant="private_birding_guide"] .mbwCarouselViewport{
-  width: 100%;
-  overflow: hidden;
-}
-body[data-tour-variant="private_birding_guide"] .mbwCarouselTrack{
-  display: flex;
-  width: 100%;
-  transform: translateX(0);
-  transition: transform 420ms ease;
-  will-change: transform;
-}
-body[data-tour-variant="private_birding_guide"] .mbwSlide{
-  flex: 0 0 100%;
-  width: 100%;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwCarousel,
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwCarouselViewport,
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwCarouselTrack,
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide{
-  height: 100%;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwCarousel{
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide{
-  min-height: 440px;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide img{
-  width: 100%;
-  height: 100%;
-  min-height: 440px;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-}
-body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide .label{
-  display: none;
-}
-body[data-tour-variant="private_birding_guide"] .mbwNavBtn{
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.85);
-  box-shadow: var(--shadow);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  z-index: 2;
-  color: var(--ink);
-}
-body[data-tour-variant="private_birding_guide"] .mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
-body[data-tour-variant="private_birding_guide"] .mbwNavBtn svg{width:20px;height:20px}
-body[data-tour-variant="private_birding_guide"] .mbwNavPrev{left:10px}
-body[data-tour-variant="private_birding_guide"] .mbwNavNext{right:10px}
-body[data-tour-variant="private_birding_guide"] .mbwDots{
-  position: absolute;
-  left: 50%;
-  bottom: 14px;
-  transform: translateX(-50%);
-  display: inline-flex;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.78);
-  z-index: 2;
-  pointer-events: none;
-}
-body[data-tour-variant="private_birding_guide"] .mbwDot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(13,89,37,.22);
-}
-body[data-tour-variant="private_birding_guide"] .mbwDot.is-active{background:rgba(13,89,37,.65)}
-@media (max-width:980px){
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature{grid-template-columns:1fr}
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .activityMedia,
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide,
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide img{min-height:340px}
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .activityBody{padding:22px}
-}
-@media (max-width:560px){
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .activityMedia,
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide,
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .mbwSlide img{min-height:300px}
-  body[data-tour-variant="private_birding_guide"] .birdCompareFeature .activityBody{padding:18px}
-}
-@media (prefers-reduced-motion: reduce){
-  body[data-tour-variant="private_birding_guide"] .mbwCarouselTrack{transition:none}
-}
 
 </style>
 <script type="application/ld+json">{
@@ -379,6 +216,176 @@ body[data-tour-variant="private_birding_guide"] .mbwDot.is-active{background:rgb
     }
   ]
 }</script>
+
+<style id="bird-comparison-feature-safety">
+body .birdCompareFeature{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:minmax(0,58%) minmax(0,42%);
+  gap:0;
+  align-items:stretch;
+  overflow:hidden;
+  background:rgba(255,255,255,.68);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+}
+body .birdCompareFeature .activityMedia,
+body .birdCompareFeature .mbwCarousel,
+body .birdCompareFeature .mbwCarouselViewport,
+body .birdCompareFeature .mbwCarouselTrack,
+body .birdCompareFeature .mbwSlide{
+  height:100%;
+  min-height:440px;
+}
+body .birdCompareFeature .activityMedia{
+  position:relative;
+  overflow:hidden;
+  background:rgba(255,255,255,.55);
+}
+body .birdCompareFeature .activityBody{
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:12px;
+  min-width:0;
+}
+body .birdCompareFeature .mini-links__label{
+  margin:0;
+  color:var(--forest);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+body .birdCompareFeature h2{
+  margin:0;
+  font-family:var(--font-head);
+  color:var(--forest);
+  font-size:clamp(26px,2.5vw,38px);
+  line-height:1.05;
+  letter-spacing:-0.03em;
+}
+body .birdCompareFeature p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.62;
+}
+body .birdCompareFeature .tourActions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:10px;
+  width:100%;
+}
+body .birdCompareFeature .tourActions .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+  min-height:46px;
+}
+body .birdCompareFeature .mbwCarousel{
+  position:relative;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarouselViewport{
+  width:100%;
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarouselTrack{
+  display:flex;
+  width:100%;
+  transform:translateX(0);
+  transition:transform 420ms ease;
+  will-change:transform;
+}
+body .birdCompareFeature .mbwSlide{
+  flex:0 0 100%;
+  width:100%;
+}
+body .birdCompareFeature .mbwSlide img{
+  width:100%;
+  height:100% !important;
+  min-height:440px !important;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body .birdCompareFeature .mbwSlide .label{
+  display:none;
+}
+body .birdCompareFeature .mbwNavBtn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.85);
+  box-shadow:var(--shadow);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  z-index:2;
+  color:var(--ink);
+}
+body .birdCompareFeature .mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
+body .birdCompareFeature .mbwNavBtn svg{width:20px;height:20px}
+body .birdCompareFeature .mbwNavPrev{left:10px}
+body .birdCompareFeature .mbwNavNext{right:10px}
+body .birdCompareFeature .mbwDots{
+  position:absolute;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  display:inline-flex;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.78);
+  z-index:2;
+  pointer-events:none;
+}
+body .birdCompareFeature .mbwDot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:rgba(13,89,37,.22);
+}
+body .birdCompareFeature .mbwDot.is-active{background:rgba(13,89,37,.65)}
+@media(max-width:980px){
+  body .birdCompareFeature{grid-template-columns:1fr}
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:340px !important}
+  body .birdCompareFeature .activityBody{padding:22px}
+}
+@media(max-width:560px){
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:300px !important}
+  body .birdCompareFeature .activityBody{padding:18px}
+}
+@media(prefers-reduced-motion:reduce){
+  body .birdCompareFeature .mbwCarouselTrack{transition:none}
+}
+</style>
+
 </head>
 <body data-page-type="tour_detail" data-tour-variant="private_birding_guide" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-content-group="birding_guide">
 <div class="container">
@@ -406,41 +413,37 @@ body[data-tour-variant="private_birding_guide"] .mbwDot.is-active{background:rgb
 <section class="section"><div class="sectionHead"><h2>Mejores meses, dificultad y qué traer</h2></div><div class="checklistGrid"><ul class="checklist"><li><strong>Mejores meses</strong><span>Todo el año</span></li><li><strong>Mejor momento</strong><span>Mañana</span></li><li><strong>Temporada de lluvia</strong><span>Trae protección</span></li><li><strong>Ritmo del guía</strong><span>Paradas flexibles</span></li></ul><ul class="checklist"><li><strong>Caminata</strong><span>Fácil a moderada</span></li><li><strong>Senderos</strong><span>Pueden estar húmedos</span></li><li><strong>Cámara o binoculares</strong><span>Trae el tuyo</span></li><li><strong>Telescopio</strong><span>Apoyo incluido</span></li></ul><ul class="checklist"><li><strong>Traer</strong><span>Protector de lluvia y capas</span></li><li><strong>Zapatos</strong><span>Buen agarre</span></li><li><strong>Otros</strong><span>Agua, repelente, baterías</span></li><li><strong>Comida</strong><span>Snack o dinero para almuerzo</span></li></ul></div></section>
 <section class="section"><div class="sectionHead"><h2>Reseña reciente y momentos de avistamiento</h2></div><article class="reviewCard" aria-label="Reseña de cinco estrellas"><div class="reviewTop"><div class="reviewPerson"><div class="reviewAvatar" aria-hidden="true">RK</div><div><div class="reviewNameRow"><p class="reviewName">Renee K.</p><div class="reviewStars" aria-label="5 de 5 estrellas">★★★★★</div></div><p class="reviewDate">24 de abril de 2026</p></div></div></div><p class="reviewText">“Nuestro guía fue fantástico. Nos recogió puntualmente fuera de nuestro Airbnb. Apreciamos su pasión por las aves, nos ayudó a ver cada especie identificada y a tomar fotos y videos con nuestros teléfonos a través del telescopio. Los lugares fueron hermosos. ¡Muy recomendado!”</p></article><div class="photoGrid" style="margin-top:12px"><article class="photoCard"><img src="/assets/images/pages/new/mbw_new_012.jpg" alt="Visitantes usando telescopio durante una ruta privada de aves en Mindo"/><p>El apoyo con telescopio permite disfrutar y grabar detalles que a simple vista se pierden.</p></article><article class="photoCard"><img src="/assets/images/pages/new/mbw_new_011.jpg" alt="Ruta privada de aves por la mañana cerca de Mindo"/><p>Las rutas de la mañana pueden incluir caminos de bosque, reservas, comederos, bordes de río y miradores.</p></article><article class="photoCard"><img src="/assets/images/pages/tours/MBW-Assets-23-Tours-HD-5.jpg" alt="Imagen reciente de ave en una ruta de Mindo"/><p>Las imágenes recientes ayudan a imaginar las aves que la ruta puede revelar.</p></article></div></section>
 <section class="section"><div class="sectionHead"><h2>Por qué reservar un guía privado con Mindo Bird Watching</h2><p class="sectionHint">Una alternativa local y práctica a adivinar rutas o depender solo de descripciones genéricas.</p></div><div class="twoCol"><article class="softCard"><h3>Diseñado según tus objetivos de aves</h3><p>La ruta puede quedarse cerca de Mindo o avanzar más por el Chocó Andino según especies objetivo, acceso, clima y tu ritmo.</p></article><article class="softCard"><h3>Logística clara antes de salir</h3><p>Recibes cotización privada, plan de recogida, detalles incluidos y expectativas de ruta antes de confirmar. Los tours quedan confirmados cuando están pagados en su totalidad.</p></article></div></section>
-
-<section class="section" aria-label="Guia comparativa de aves para planificar el tour">
-  <div class="birdCompareFeature" data-mbw-carousel="bird-compare-guide-es">
-    <div class="activityMedia">
-      <div class="mbwCarousel" aria-roledescription="carousel" aria-label="Fotos de aves para la guia de medio dia versus dia completo">
-        <div class="mbwCarouselViewport">
-          <div class="mbwCarouselTrack">
-            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_014.jpg" alt="Tucan y barbet como objetivo de avistamiento en Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/birding/mbw_birding_hummingbirds_feeder_01.jpg" alt="Parada de colibries en el bosque nublado de Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_018.jpg" alt="Oportunidad de observar Quetzal Cabecidorado en Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_020.jpg" alt="Oportunidad de observar tangaras coloridas en Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/tours/MBW-Assets-23-Tours-HD-5.jpg" alt="Ave fotografiada durante una ruta de avistamiento en Mindo"/></div>
-          </div>
-        </div>
-        <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Foto anterior de ave">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente foto de ave">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
-      </div>
-    </div>
-    <div class="activityBody">
-      <p class="mini-links__label">Nueva guia de aves</p>
-      <h2>Compara Que Aves Son Mas Probables en Medio Dia vs Dia Completo</h2>
-      <p>Compara mas de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duracion de tour y notas practicas de guia. Esta guia ayuda a elegir el tour correcto y muestra por que un dia completo ofrece mas tiempo, mas variedad de habitat y mejores oportunidades para especies objetivo.</p>
-      <div class="tourActions">
-        <a class="btn primary" href="/es/birding/guia-medio-dia-vs-dia-completo/" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guia Comparativa" data-analytics-location="bird_comparison_feature">Explorar Guia Comparativa</a>
-        <a class="btn secondary" href="/es/tours/dia-entero/" data-analytics-event="internal_link_click" data-analytics-label="Ver Tours de Dia Completo" data-analytics-location="bird_comparison_feature">Ver Tours de Dia Completo</a>
-      </div>
-    </div>
-  </div>
+<section class="activityCard birdCompareFeature" aria-label="Guía comparativa de aves" data-mbw-carousel="bird-comparison-guide-es">
+<div class="activityMedia">
+<div aria-label="Carrusel de guía comparativa de aves" class="mbwCarousel" aria-roledescription="carousel">
+<button aria-label="Foto de ave anterior" class="mbwNavBtn mbwNavPrev" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Ventana del carrusel de aves" class="mbwCarouselViewport" role="region">
+<div class="mbwCarouselTrack">
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Tucán garganta amarilla en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Gallo de la Peña Andino en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Quetzal Cabecidorado en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Arasarí Piquipálido en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Tangara Verde Reluciente en Mindo"/></div>
+</div>
+</div>
+<button aria-label="Siguiente foto de ave" class="mbwNavBtn mbwNavNext" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Indicadores del carrusel de aves" class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
+</div>
+</div>
+<div class="activityBody">
+<p class="mini-links__label">Nueva guía de aves</p>
+<h2>Compara Qué Aves Son Más Probables en Medio Día vs Día Entero</h2>
+<p>Compara más de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duración de tour y notas prácticas de guía. Esta guía ayuda a elegir el tour correcto y muestra por qué un día entero ofrece más tiempo, más variedad de hábitat y mejores oportunidades para especies objetivo.</p>
+<div class="tourActions">
+<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guía Comparativa" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/">Explorar Guía Comparativa</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Ver Tours de Día Entero" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_detail" href="/es/tours/dia-entero/">Ver Tours de Día Entero</a>
+</div>
+</div>
 </section>
-
 <section class="section faqSection" id="faq"><div class="sectionHead"><h2>Preguntas frecuentes sobre guía privado de aves en Mindo</h2></div><div class="faqGrid"><article class="faqCard"><h3>Precio y logística</h3><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Cotizacion exacta" data-analytics-location="faq"><p class="q">¿Por qué solicitar cotización exacta?</p><p class="a">El precio es privado porque distancia de ruta, acceso a reservas, tamaño del grupo y logística de recogida pueden cambiar. Solicita disponibilidad para recibir el precio exacto.</p></div><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Confirmado con pago" data-analytics-location="faq"><p class="q">¿Cuándo queda confirmado el tour?</p><p class="a">Los tours quedan confirmados cuando están pagados en su totalidad.</p></div></article><article class="faqCard"><h3>Experiencia con guía privado</h3><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Equipo camara" data-analytics-location="faq"><p class="q">¿Proveen binoculares o equipo de cámara?</p><p class="a">Trae tus propios binoculares, cámara o celular. El tour incluye guía, transporte local, entradas y apoyo con telescopio.</p></div><div class="qa" data-analytics-event="faq_expand" data-analytics-label="Garantia avistamientos" data-analytics-location="faq"><p class="q">¿Los avistamientos están garantizados?</p><p class="a">No. El guía planifica alrededor de oportunidades realistas, pero los avistamientos dependen de clima, horario, acceso y comportamiento de las aves.</p></div></article></div></section>
 </main>
 
@@ -451,28 +454,59 @@ body[data-tour-variant="private_birding_guide"] .mbwDot.is-active{background:rgb
 
 <script>
 (function(){
-  function setupCarousel(root){
+  function setupMbwComparisonCarousel(root){
+    if(root.dataset.mbwCarouselReady === 'true'){ return; }
+    root.dataset.mbwCarouselReady = 'true';
+
     var track = root.querySelector('.mbwCarouselTrack');
     var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
     var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
     var prev = root.querySelector('.mbwNavPrev');
     var next = root.querySelector('.mbwNavNext');
-    if(!track || slides.length === 0){ return; }
+
+    if(!track || !slides.length){ return; }
+
     var index = 0;
+
     function go(to){
       index = (to + slides.length) % slides.length;
       track.style.transform = 'translateX(' + (-index * 100) + '%)';
-      dots.forEach(function(dot, i){ dot.classList.toggle('is-active', i === index); });
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
     }
-    if(prev){ prev.addEventListener('click', function(){ go(index - 1); }); }
-    if(next){ next.addEventListener('click', function(){ go(index + 1); }); }
+
+    if(prev){
+      prev.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index - 1);
+      });
+    }
+
+    if(next){
+      next.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index + 1);
+      });
+    }
+
     root.addEventListener('keydown', function(event){
       if(event.key === 'ArrowLeft'){ go(index - 1); }
       if(event.key === 'ArrowRight'){ go(index + 1); }
     });
+
     go(0);
   }
-  document.querySelectorAll('[data-mbw-carousel]').forEach(setupCarousel);
+
+  function initMbwComparisonCarousels(){
+    document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwComparisonCarousel);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initMbwComparisonCarousels);
+  }else{
+    initMbwComparisonCarousels();
+  }
 })();
 </script>
 
