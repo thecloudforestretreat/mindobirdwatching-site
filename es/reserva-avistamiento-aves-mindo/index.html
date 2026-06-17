@@ -29,6 +29,7 @@
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
+<script defer src="/assets/js/site-config.js"></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -205,9 +206,9 @@
     grid-template-columns:1fr;
   }
 }
-
-/* Bird comparison guide feature */
-.birdCompareFeature{
+</style>
+<style id="bird-comparison-feature-safety">
+body .birdCompareFeature{
   margin-top:18px;
   display:grid;
   grid-template-columns:minmax(0,58%) minmax(0,42%);
@@ -219,12 +220,20 @@
   border-radius:var(--r);
   box-shadow:var(--shadow);
 }
-.birdCompareFeature .activityMedia{
+body .birdCompareFeature .activityMedia,
+body .birdCompareFeature .mbwCarousel,
+body .birdCompareFeature .mbwCarouselViewport,
+body .birdCompareFeature .mbwCarouselTrack,
+body .birdCompareFeature .mbwSlide{
+  height:100%;
   min-height:440px;
+}
+body .birdCompareFeature .activityMedia{
   position:relative;
+  overflow:hidden;
   background:rgba(255,255,255,.55);
 }
-.birdCompareFeature .activityBody{
+body .birdCompareFeature .activityBody{
   padding:28px;
   display:flex;
   flex-direction:column;
@@ -232,7 +241,7 @@
   gap:12px;
   min-width:0;
 }
-.birdCompareFeature .mini-links__label{
+body .birdCompareFeature .mini-links__label{
   margin:0;
   color:var(--forest);
   font-size:12px;
@@ -240,7 +249,7 @@
   letter-spacing:.08em;
   text-transform:uppercase;
 }
-.birdCompareFeature h2{
+body .birdCompareFeature h2{
   margin:0;
   font-family:var(--font-head);
   color:var(--forest);
@@ -248,66 +257,59 @@
   line-height:1.05;
   letter-spacing:-0.03em;
 }
-.birdCompareFeature p{
+body .birdCompareFeature p{
   margin:0;
   color:var(--muted);
   line-height:1.62;
 }
-.birdCompareFeature .tourActions{
+body .birdCompareFeature .tourActions{
   display:grid;
   grid-template-columns:1fr;
   gap:10px;
   margin-top:10px;
   width:100%;
 }
-.birdCompareFeature .tourActions .btn{
+body .birdCompareFeature .tourActions .btn{
   width:100%;
   justify-content:center;
   text-align:center;
+  min-height:46px;
 }
-.mbwCarousel{
+body .birdCompareFeature .mbwCarousel{
   position:relative;
-  overflow:hidden;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
   background:transparent;
+  overflow:hidden;
 }
-.mbwCarouselViewport{
+body .birdCompareFeature .mbwCarouselViewport{
   width:100%;
   overflow:hidden;
 }
-.mbwCarouselTrack{
+body .birdCompareFeature .mbwCarouselTrack{
   display:flex;
   width:100%;
   transform:translateX(0);
   transition:transform 420ms ease;
   will-change:transform;
 }
-.mbwSlide{
+body .birdCompareFeature .mbwSlide{
   flex:0 0 100%;
   width:100%;
 }
-.birdCompareFeature .mbwCarousel,
-.birdCompareFeature .mbwCarouselViewport,
-.birdCompareFeature .mbwCarouselTrack,
-.birdCompareFeature .mbwSlide{
-  height:100%;
-}
-.birdCompareFeature .mbwCarousel{
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-}
-.birdCompareFeature .mbwSlide{
-  min-height:440px;
-}
-.birdCompareFeature .mbwSlide img{
+body .birdCompareFeature .mbwSlide img{
   width:100%;
-  height:100%;
-  min-height:440px;
-  display:block;
+  height:100% !important;
+  min-height:440px !important;
   object-fit:cover;
   object-position:center;
+  display:block;
 }
-.mbwNavBtn{
+body .birdCompareFeature .mbwSlide .label{
+  display:none;
+}
+body .birdCompareFeature .mbwNavBtn{
   position:absolute;
   top:50%;
   transform:translateY(-50%);
@@ -325,11 +327,11 @@
   z-index:2;
   color:var(--ink);
 }
-.mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
-.mbwNavBtn svg{width:20px;height:20px}
-.mbwNavPrev{left:10px}
-.mbwNavNext{right:10px}
-.mbwDots{
+body .birdCompareFeature .mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
+body .birdCompareFeature .mbwNavBtn svg{width:20px;height:20px}
+body .birdCompareFeature .mbwNavPrev{left:10px}
+body .birdCompareFeature .mbwNavNext{right:10px}
+body .birdCompareFeature .mbwDots{
   position:absolute;
   left:50%;
   bottom:14px;
@@ -343,31 +345,38 @@
   z-index:2;
   pointer-events:none;
 }
-.mbwDot{
+body .birdCompareFeature .mbwDot{
   width:8px;
   height:8px;
   border-radius:999px;
   background:rgba(13,89,37,.22);
 }
-.mbwDot.is-active{background:rgba(13,89,37,.65)}
-@media (max-width:980px){
-  .birdCompareFeature{grid-template-columns:1fr}
-  .birdCompareFeature .activityMedia,
-  .birdCompareFeature .mbwSlide,
-  .birdCompareFeature .mbwSlide img{min-height:340px}
-  .birdCompareFeature .activityBody{padding:22px}
+body .birdCompareFeature .mbwDot.is-active{background:rgba(13,89,37,.65)}
+@media(max-width:980px){
+  body .birdCompareFeature{grid-template-columns:1fr}
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:340px !important}
+  body .birdCompareFeature .activityBody{padding:22px}
 }
-@media (max-width:560px){
-  .birdCompareFeature .activityMedia,
-  .birdCompareFeature .mbwSlide,
-  .birdCompareFeature .mbwSlide img{min-height:300px}
-  .birdCompareFeature .activityBody{padding:18px}
+@media(max-width:560px){
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:300px !important}
+  body .birdCompareFeature .activityBody{padding:18px}
 }
-@media (prefers-reduced-motion:reduce){
-  .mbwCarouselTrack{transition:none}
+@media(prefers-reduced-motion:reduce){
+  body .birdCompareFeature .mbwCarouselTrack{transition:none}
 }
+</style>
 
-</style></head>
+</head>
 <body data-page-content-group="booking" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="booking_page">
 <div class="container">
 <div data-current-lang="es" id="siteHeader"></div><nav aria-label="Selector de idioma" class="rawLangLinks"><a data-analytics-content-group="booking" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/book-birdwatching-mindo/" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-target-language="en" data-analytics-tour="private_birdwatching_mindo" href="https://mindobirdwatching.com/book-birdwatching-mindo/" hreflang="en" lang="en">English</a>
@@ -386,7 +395,7 @@
 <span class="trustPill">Planificación por WhatsApp</span>
 </div>
 <div class="ctaRow ctaRow--equal">
-<a class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="Consultar por WhatsApp" data-analytics-link-type="external" data-analytics-link-url="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20consultar%20disponibilidad%20para%20un%20tour%20privado%20de%20avistamiento%20de%20aves%20en%20Mindo." data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20consultar%20disponibilidad%20para%20un%20tour%20privado%20de%20avistamiento%20de%20aves%20en%20Mindo." rel="noopener" target="_blank">Consultar por WhatsApp</a>
+<a data-whatsapp-message-key="book_tour_es" class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="Consultar por WhatsApp" data-analytics-link-type="external" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="#request-form" rel="noopener noreferrer" target="_blank">Consultar por WhatsApp</a>
 <a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_booking_click" data-analytics-label="Solicitar Reserva" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="booking_request" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/reservar-tour/">Solicitar Reserva</a>
 </div>
 <p class="ctaNote">Cuentanos tus fechas, número de personas, nivel de experiencia y si buscas aves específicas, fotografía o una salida relajada.</p>
@@ -427,16 +436,16 @@
 <h3>Tour Medio Día</h3>
 <p>Ideal para viajeros con poco tiempo qué quieren una manana guíada en hábitats productivos.</p>
 <ul class="miniList"><li>Bueno para primera visita</li><li>Excelente salida temprano</li><li>Ruta flexible según actividad</li></ul>
-<div class="ctaRow"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Ver Tour Medio Dia" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/tours/half-day/" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/tours/half-day/">Ver Tour Medio Día</a></div>
+<div class="ctaRow"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Ver Tour Medio Dia" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/tours/half-day/" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/tours/medio-dia/">Ver Tour Medio Día</a></div>
 </div>
 </article>
-<article class="tourOption" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Tour Dia Completo" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo">
+<article class="tourOption" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Tour Día Entero" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo">
 <img alt="Tour de dia completo de avistamiento de aves en Mindo" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_hero_05.jpg"/>
 <div class="tourBody">
-<h3>Tour Día Completo</h3>
+<h3>Tour Día Entero</h3>
 <p>La mejor opción para ver más variedad, visitar varios hábitats y dedicar más tiempo al birding.</p>
 <ul class="miniList"><li>Más tiempo en campo</li><li>Bueno para observadores serios</li><li>Ideal para tucanes y bandadas mixtas</li></ul>
-<div class="ctaRow"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Ver Tour Dia Completo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/tours/full-day/" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/tours/full-day/">Ver Tour Día Completo</a></div>
+<div class="ctaRow"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Ver Tour Día Entero" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/tours/full-day/" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/tours/dia-entero/">Ver Tour Día Entero</a></div>
 </div>
 </article>
 <article class="tourOption" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Tour Privado Personalizado" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo">
@@ -445,12 +454,12 @@
 <h3>Tour Privado Personalizado</h3>
 <p>Perfecto para fotografos, familias, aves objetivo o viajeros qué quieren una ruta a su medida.</p>
 <ul class="miniList"><li>Ritmo y enfoqué personal</li><li>Aves objetivo y fotografía</li><li>Mejor para itinerarios flexibles</li></ul>
-<div class="ctaRow"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Ver Tour Personalizado" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/tours/custom-private-tour/" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/tours/custom-private-tour/">Ver Tour Personalizado</a></div>
+<div class="ctaRow"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_card_click" data-analytics-label="Ver Tour Personalizado" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/tours/custom-private-tour/" data-analytics-location="recommended_tours" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/tours/tour-personalizado-privado/">Ver Tour Personalizado</a></div>
 </div>
 </article>
 </div>
 </section>
-<section class="section"><div class="bookingGrid bookingGrid--action"><div class="bookingPanel bookingPanel--action"><h3>Más rápido: consulta por WhatsApp</h3><p class="actionIntro">La mayoría de viajeros empieza aquí porque es la forma más rápida y sencilla de confirmar disponibilidad y recibir ayuda con la ruta.</p><div class="compactChecklist"><div class="item">Fecha preferida o ventana de viaje</div><div class="item">Número de personas y nivel de experiencia</div><div class="item">Tucanes, colibríes o metas de fotografía</div></div><p class="actionNote">Ideal si quieres respuestas rápidas antes de elegir el tour.</p><div class="actionFooter"><a class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="Escribir por WhatsApp" data-analytics-link-type="external" data-analytics-link-url="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20consultar%20disponibilidad%20para%20un%20tour%20privado%20de%20avistamiento%20de%20aves%20en%20Mindo." data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20consultar%20disponibilidad%20para%20un%20tour%20privado%20de%20avistamiento%20de%20aves%20en%20Mindo." rel="noopener" target="_blank">Escribir por WhatsApp</a></div></div><div class="bookingPanel bookingPanel--action"><h3>¿Prefieres enviar una solicitud?</h3><p class="actionIntro">Usa la página de reservas si quieres un proceso más estructurado para fechas confirmadas o grupos privados.</p><div class="compactChecklist"><div class="item">Fecha preferida y número de personas</div><div class="item">Tour medio día, día completo o personalizado</div><div class="item">Preguntas sobre transporte u hospedaje</div></div><p class="actionNote">Qué pasa después</p><div class="processFlow"><div class="step">Revisamos tu solicitud y disponibilidad.</div><div class="step">Recomendamos la mejor ruta o formato de tour.</div><div class="step">Confirmamos disponibilidad y siguientes pasos.</div></div><div class="actionFooter"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_booking_click" data-analytics-label="Abrir formulario de reserva" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="booking_request" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/reservar-tour/">Abrir formulario de reserva</a></div></div></div></section>
+<section class="section"><div class="bookingGrid bookingGrid--action"><div class="bookingPanel bookingPanel--action"><h3>Más rápido: consulta por WhatsApp</h3><p class="actionIntro">La mayoría de viajeros empieza aquí porque es la forma más rápida y sencilla de confirmar disponibilidad y recibir ayuda con la ruta.</p><div class="compactChecklist"><div class="item">Fecha preferida o ventana de viaje</div><div class="item">Número de personas y nivel de experiencia</div><div class="item">Tucanes, colibríes o metas de fotografía</div></div><p class="actionNote">Ideal si quieres respuestas rápidas antes de elegir el tour.</p><div class="actionFooter"><a data-whatsapp-message-key="book_tour_es" class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="Escribir por WhatsApp" data-analytics-link-type="external" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="#request-form" rel="noopener noreferrer" target="_blank">Escribir por WhatsApp</a></div></div><div class="bookingPanel bookingPanel--action"><h3>¿Prefieres enviar una solicitud?</h3><p class="actionIntro">Usa la página de reservas si quieres un proceso más estructurado para fechas confirmadas o grupos privados.</p><div class="compactChecklist"><div class="item">Fecha preferida y número de personas</div><div class="item">Tour medio día, día completo o personalizado</div><div class="item">Preguntas sobre transporte u hospedaje</div></div><p class="actionNote">Qué pasa después</p><div class="processFlow"><div class="step">Revisamos tu solicitud y disponibilidad.</div><div class="step">Recomendamos la mejor ruta o formato de tour.</div><div class="step">Confirmamos disponibilidad y siguientes pasos.</div></div><div class="actionFooter"><a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_booking_click" data-analytics-label="Abrir formulario de reserva" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="booking_request" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/reservar-tour/">Abrir formulario de reserva</a></div></div></div></section>
 <section class="section">
 <div class="sectionHead">
 <h2>Bueno para principiantes, observadores y fotografos</h2>
@@ -485,41 +494,37 @@
 </div>
 </div>
 </section>
-
-<section class="section" aria-label="Guia comparativa de aves para planificar">
-  <div class="birdCompareFeature" data-mbw-carousel="bird-comparison-guide-es">
-    <div class="activityMedia">
-      <div class="mbwCarousel" aria-roledescription="carousel" aria-label="Fotos de aves para la guia de medio dia versus dia completo">
-        <div class="mbwCarouselViewport">
-          <div class="mbwCarouselTrack">
-            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_014.jpg" alt="Objetivo de tucanes y barbets en Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/birding/mbw_birding_hummingbirds_feeder_01.jpg" alt="Parada de colibries en el bosque nublado de Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_018.jpg" alt="Oportunidad de Quetzal Cabecidorado en Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/new/mbw_new_020.jpg" alt="Oportunidad de tangaras coloridas en Mindo"/></div>
-            <div class="mbwSlide"><img src="/assets/images/pages/tours/MBW-Assets-23-Tours-HD-5.jpg" alt="Ave fotografiada durante una ruta de aves en Mindo"/></div>
-          </div>
-        </div>
-        <button class="mbwNavBtn mbwNavPrev" type="button" aria-label="Foto de ave anterior">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <button class="mbwNavBtn mbwNavNext" type="button" aria-label="Siguiente foto de ave">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
-      </div>
-    </div>
-    <div class="activityBody">
-      <p class="mini-links__label">Nueva guia de aves</p>
-      <h2>Compara Que Aves Son Mas Probables en Medio Dia vs Dia Completo</h2>
-      <p>Compara mas de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duracion de tour y notas practicas de guia. Esta guia ayuda a elegir el tour correcto y muestra por que un dia completo ofrece mas tiempo, mas variedad de habitat y mejores oportunidades para especies objetivo.</p>
-      <div class="tourActions">
-        <a class="btn primary" href="/es/birding/guia-medio-dia-vs-dia-completo-aves/" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guia Comparativa" data-analytics-location="bird_comparison_feature">Explorar Guia Comparativa</a>
-        <a class="btn secondary" href="/es/tours/dia-entero/" data-analytics-event="internal_link_click" data-analytics-label="Ver Tours de Dia Completo" data-analytics-location="bird_comparison_feature">Ver Tours de Dia Completo</a>
-      </div>
-    </div>
-  </div>
+<section class="activityCard birdCompareFeature" aria-label="Guía comparativa de aves" data-mbw-carousel="bird-comparison-guide-es">
+<div class="activityMedia">
+<div aria-label="Carrusel de guía comparativa de aves" class="mbwCarousel" aria-roledescription="carousel">
+<button aria-label="Foto de ave anterior" class="mbwNavBtn mbwNavPrev" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Ventana del carrusel de aves" class="mbwCarouselViewport" role="region">
+<div class="mbwCarouselTrack">
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Tucán garganta amarilla en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Gallo de la Peña Andino en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Quetzal Cabecidorado en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Arasarí Piquipálido en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Tangara Verde Reluciente en Mindo"/></div>
+</div>
+</div>
+<button aria-label="Siguiente foto de ave" class="mbwNavBtn mbwNavNext" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Indicadores del carrusel de aves" class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
+</div>
+</div>
+<div class="activityBody">
+<p class="mini-links__label">NUEVA GUÍA DE AVES</p>
+<h2>Compara Qué Aves Son Más Probables en Medio Día vs Día Entero</h2>
+<p>Compara más de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duración de tour y notas prácticas de guía. Esta guía ayuda a elegir el tour correcto y muestra por qué un día entero ofrece más tiempo, más variedad de hábitat y mejores oportunidades para especies objetivo.</p>
+<div class="tourActions">
+<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guía Comparativa" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="booking_page" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/">Explorar Guía Comparativa</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Ver Tours de Día Entero" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="booking_page" href="/es/tours/dia-entero/">Ver Tours de Día Entero</a>
+</div>
+</div>
 </section>
-
 <section class="section" id="faq">
 <div class="sectionHead">
 <h2>Preguntas frecuentes</h2>
@@ -551,7 +556,7 @@
 <h2>Listo para planificar tu tour de aves en Mindo?</h2>
 <p>Envia tu fecha, número de personas y objetivos. Te ayudamos a elegir la mejor opción para tu viaje.</p>
 <div class="ctaRow ctaRow--equal">
-<a class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="Consultar por WhatsApp" data-analytics-link-type="external" data-analytics-link-url="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20planificar%20un%20tour%20de%20avistamiento%20de%20aves%20en%20Mindo." data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20planificar%20un%20tour%20de%20avistamiento%20de%20aves%20en%20Mindo." rel="noopener" target="_blank">Consultar por WhatsApp</a>
+<a data-whatsapp-message-key="book_tour_es" class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="Consultar por WhatsApp" data-analytics-link-type="external" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="#request-form" rel="noopener noreferrer" target="_blank">Consultar por WhatsApp</a>
 <a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_booking_click" data-analytics-label="Solicitar Reserva" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="booking_request" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/reservar-tour/">Solicitar Reserva</a>
 </div>
 </div>
@@ -560,7 +565,7 @@
 <div id="siteFooter"></div>
 </div>
 <div aria-label="Acciones fijas de reserva" class="stickyAdCta">
-<a class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp" data-analytics-link-type="external" data-analytics-link-url="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20consultar%20disponibilidad%20para%20un%20tour%20privado%20de%20avistamiento%20de%20aves%20en%20Mindo." data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="https://wa.me/13054585402?text=Hola%20Mindo%20Bird%20Watching%2C%20quiero%20consultar%20disponibilidad%20para%20un%20tour%20privado%20de%20avistamiento%20de%20aves%20en%20Mindo." rel="noopener" target="_blank">WhatsApp</a>
+<a data-whatsapp-message-key="book_tour_es" class="btn primary" data-analytics-content-group="booking" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp" data-analytics-link-type="external" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="booking_whatsapp" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="#request-form" rel="noopener noreferrer" target="_blank">WhatsApp</a>
 <a class="btn secondary" data-analytics-content-group="booking" data-analytics-event="tour_booking_click" data-analytics-label="Reservar" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="booking_request" data-analytics-page-language="es" data-analytics-page-type="booking_page" data-analytics-region="mindo" data-analytics-tour="private_birdwatching_mindo" href="/es/reservar-tour/">Reservar</a>
 </div>
 <script defer="" src="/assets/js/includes.js?v=1"></script>
@@ -568,28 +573,59 @@
 
 <script>
 (function(){
-  function setupCarousel(root){
+  function setupMbwComparisonCarousel(root){
+    if(root.dataset.mbwCarouselReady === 'true'){ return; }
+    root.dataset.mbwCarouselReady = 'true';
+
     var track = root.querySelector('.mbwCarouselTrack');
     var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
     var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
     var prev = root.querySelector('.mbwNavPrev');
     var next = root.querySelector('.mbwNavNext');
-    if(!track || slides.length === 0){ return; }
+
+    if(!track || !slides.length){ return; }
+
     var index = 0;
+
     function go(to){
       index = (to + slides.length) % slides.length;
       track.style.transform = 'translateX(' + (-index * 100) + '%)';
-      dots.forEach(function(dot, i){ dot.classList.toggle('is-active', i === index); });
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
     }
-    if(prev){ prev.addEventListener('click', function(){ go(index - 1); }); }
-    if(next){ next.addEventListener('click', function(){ go(index + 1); }); }
+
+    if(prev){
+      prev.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index - 1);
+      });
+    }
+
+    if(next){
+      next.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index + 1);
+      });
+    }
+
     root.addEventListener('keydown', function(event){
       if(event.key === 'ArrowLeft'){ go(index - 1); }
       if(event.key === 'ArrowRight'){ go(index + 1); }
     });
+
     go(0);
   }
-  document.querySelectorAll('[data-mbw-carousel]').forEach(setupCarousel);
+
+  function initMbwComparisonCarousels(){
+    document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwComparisonCarousel);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initMbwComparisonCarousels);
+  }else{
+    initMbwComparisonCarousels();
+  }
 })();
 </script>
 
