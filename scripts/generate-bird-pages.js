@@ -284,13 +284,13 @@ function filterButtons(lang) {
           ["all", "Todas"],
           ["half_day", "Medio Día"],
           ["full_day", "Día Entero"],
-          ["both", "Ambos"]
+          ["both", "Medio Día y Día Entero"]
         ]
       : [
           ["all", "All Birds"],
           ["half_day", "Half Day"],
           ["full_day", "Full Day"],
-          ["both", "Both Tours"]
+          ["both", "Both Half & Full Day"]
         ];
 
   return labels
