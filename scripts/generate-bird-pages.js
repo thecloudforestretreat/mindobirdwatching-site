@@ -191,9 +191,9 @@ function tourLabel(visibility, lang) {
       both: "Half Day + Full Day"
     },
     es: {
-      half_day: "Medio Dia",
-      full_day: "Dia Completo",
-      both: "Medio Dia + Dia Completo"
+      half_day: "Medio Día",
+      full_day: "Día Entero",
+      both: "Medio Día + Día Entero"
     }
   };
 
@@ -206,11 +206,11 @@ function renderBirdCard(bird, lang) {
   const otherName = isEs ? bird.englishName : bird.spanishName;
   const upsell = isEs ? bird.upsellEs : bird.upsellEn;
 
-  const halfLabel = isEs ? "Medio Dia" : "Half Day";
-  const fullLabel = isEs ? "Dia Completo" : "Full Day";
+  const halfLabel = isEs ? "Medio Día" : "Half Day";
+  const fullLabel = isEs ? "Día Entero" : "Full Day";
   const playLabel = isEs ? "Reproducir sonido" : "Play Bird Call";
   const ebirdLabel = isEs ? "Ver en eBird" : "View on eBird";
-  const moreInfoLabel = isEs ? "Mas informacion" : "More info";
+  const moreInfoLabel = isEs ? "Más información" : "More info";
 
   const imageAlt = isEs
     ? `${name} (${bird.scientificName}) en el bosque nublado de Mindo`
@@ -240,8 +240,8 @@ function renderBirdCard(bird, lang) {
     <p class="birdTourSci"><em>${esc(bird.scientificName)}</em></p>
 
     <div class="birdTourLikelihood">
-      <p><strong>${halfLabel}:</strong> ${esc(bird.halfDayVisibility || (isEs ? "Posible segun ruta y clima" : "Possible depending on route and weather"))}</p>
-      <p><strong>${fullLabel}:</strong> ${esc(bird.fullDayVisibility || (isEs ? "Mejor oportunidad con mas tiempo" : "Better opportunity with more time"))}</p>
+      <p><strong>${halfLabel}:</strong> ${esc(bird.halfDayVisibility || (isEs ? "Posible según ruta y clima" : "Possible depending on route and weather"))}</p>
+      <p><strong>${fullLabel}:</strong> ${esc(bird.fullDayVisibility || (isEs ? "Mejor oportunidad con más tiempo" : "Better opportunity with more time"))}</p>
     </div>
 
     ${upsell ? `<p class="birdTourUpsell">${esc(upsell)}</p>` : ""}
@@ -282,8 +282,8 @@ function filterButtons(lang) {
     lang === "es"
       ? [
           ["all", "Todas"],
-          ["half_day", "Medio Dia"],
-          ["full_day", "Dia Completo"],
+          ["half_day", "Medio Día"],
+          ["full_day", "Día Entero"],
           ["both", "Ambos"]
         ]
       : [
@@ -304,16 +304,16 @@ function faqItems(lang) {
   if (lang === "es") {
     return [
       [
-        "¿Un tour de medio dia es suficiente para ver aves en Mindo?",
-        "Si. Un tour de medio dia puede ser una excelente introduccion, especialmente para colibries, tangaras y especies cerca de rutas accesibles. Un tour de dia completo ofrece mas tiempo para buscar especies objetivo."
+        "¿Un tour de medio día es suficiente para ver aves en Mindo?",
+        "Sí. Un tour de medio día puede ser una excelente introducción, especialmente para colibríes, tangaras y especies cerca de rutas accesibles. Un tour de día entero ofrece más tiempo para buscar especies objetivo."
       ],
       [
-        "¿Por que un tour de dia completo aumenta las oportunidades?",
-        "Porque permite empezar temprano, cubrir mas habitat, ajustar la ruta segun clima y actividad de aves, y dedicar mas tiempo a especies menos predecibles."
+        "¿Por qué un tour de día entero aumenta las oportunidades?",
+        "Porque permite empezar temprano, cubrir más hábitat, ajustar la ruta según el clima y la actividad de las aves, y dedicar más tiempo a especies menos predecibles."
       ],
       [
-        "¿Se garantizan las especies de esta pagina?",
-        "No. Las aves silvestres no se pueden garantizar. Esta pagina muestra oportunidades relativas segun tiempo, ruta, clima, temporada y estrategia del guia."
+        "¿Se garantizan las especies de esta página?",
+        "No. Las aves silvestres no se pueden garantizar. Esta página muestra oportunidades relativas según tiempo, ruta, clima, temporada y estrategia del guía."
       ],
       [
         "¿Puedo elegir especies objetivo?",
@@ -360,11 +360,11 @@ function schemaGraph(lang, birds) {
   const pageUrl = SITE_URL + pagePath;
 
   const title = isEs
-    ? "Aves que Puedes Ver en Mindo: Tour de Medio Dia vs Dia Completo"
+    ? "Aves que Puedes Ver en Mindo: Tour de Medio Día vs Día Entero"
     : "Birds You Can See in Mindo: Half Day vs Full Day Birdwatching Tours";
 
   const description = isEs
-    ? "Compara aves que puedes ver en tours de medio dia y dia completo en Mindo, con fotos, sonidos, filtros por duracion y enlaces de eBird."
+    ? "Compara aves que puedes ver en tours de medio día y día entero en Mindo, con fotos, sonidos, filtros por duración y enlaces de eBird."
     : "Compare birds you can see on half day and full day birdwatching tours in Mindo, with photos, sounds, tour filters and eBird links.";
 
   return {
@@ -1013,11 +1013,11 @@ function renderPage(lang, birds) {
   const counterpartUrl = SITE_URL + counterpartPath;
 
   const title = isEs
-    ? "Aves que Puedes Ver en Mindo: Tour de Medio Dia vs Dia Completo"
+    ? "Aves que Puedes Ver en Mindo: Tour de Medio Día vs Día Entero"
     : "Birds You Can See in Mindo: Half Day vs Full Day Birdwatching Tours";
 
   const meta = isEs
-    ? "Compara las aves de tours de medio dia y dia completo en Mindo. Explora fotos, sonidos, avistamientos recientes y por que un dia completo aumenta tus oportunidades."
+    ? "Compara las aves de tours de medio día y día entero en Mindo. Explora fotos, sonidos, avistamientos recientes y por que un día entero aumenta tus oportunidades."
     : "Compare birds seen on Mindo half day and full day birdwatching tours. Explore photos, sounds, recent sightings and why a full day gives you more chances to see iconic species.";
 
   const visibleBirds = birds
@@ -1033,7 +1033,7 @@ function renderPage(lang, birds) {
   const cards = visibleBirds.map((bird) => renderBirdCard(bird, lang)).join("\n");
 
   const whatsappKey = isEs ? "book_tour_es" : "book_tour_en";
-  const primaryCta = isEs ? "Reservar Tour de Dia Completo" : "Book a Full Day Birding Tour";
+  const primaryCta = isEs ? "Reservar Tour de Día Entero" : "Book a Full Day Birding Tour";
   const secondaryCta = isEs ? "Ver Tours" : "View Tour Options";
 
   const langSwitch = isEs
@@ -1086,7 +1086,7 @@ ${langSwitch}
 <div class="birdCompareHeroCopy">
 <span class="eyebrow">Mindo Cloud Forest</span>
 <h1>${esc(title)}</h1>
-<p>${isEs ? "Usa esta guia visual para comparar que aves suelen ser mas realistas en un tour de medio dia y cuales se vuelven mucho mas probables cuando eliges un dia completo con mas tiempo, mas habitat y una estrategia de guia mas flexible." : "Use this visual guide to compare which birds are realistic on a half day tour and which species become more likely when you choose a full day with more time, more habitat, and a more flexible guide strategy."}</p>
+<p>${isEs ? "Usa esta guía visual para comparar qué aves suelen ser más realistas en un tour de medio día y cuáles se vuelven mucho más probables cuando eliges un día entero con más tiempo, más hábitat y una estrategia de guía más flexible." : "Use this visual guide to compare which birds are realistic on a half day tour and which species become more likely when you choose a full day with more time, more habitat, and a more flexible guide strategy."}</p>
 <div class="ctaRow">
 <a class="btn primary" href="#request-form" data-whatsapp-message-key="${whatsappKey}" data-analytics-event="tour_whatsapp_click" data-analytics-label="${attr(primaryCta)}" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="hero" rel="noopener noreferrer" target="_blank">${esc(primaryCta)}</a>
 <a class="btn secondary" href="${isEs ? "/es/tours/" : "/tours/"}" data-analytics-event="secondary_cta_click" data-analytics-label="${attr(secondaryCta)}" data-analytics-link-url="${isEs ? "/es/tours/" : "/tours/"}">${esc(secondaryCta)}</a>
@@ -1104,23 +1104,23 @@ ${langSwitch}
 
 <section class="section">
 <div class="sectionHead">
-<h2>${isEs ? "Medio Dia vs Dia Completo" : "Half Day vs Full Day"}</h2>
-<p class="sectionHint">${isEs ? "El dia completo no garantiza especies, pero aumenta tiempo, rutas y oportunidades." : "A full day does not guarantee species, but it increases time, route options, and opportunities."}</p>
+<h2>${isEs ? "Medio Día vs Día Entero" : "Half Day vs Full Day"}</h2>
+<p class="sectionHint">${isEs ? "El día entero no garantiza especies, pero aumenta tiempo, rutas y oportunidades." : "A full day does not guarantee species, but it increases time, route options, and opportunities."}</p>
 </div>
 <div class="birdCompareGrid">
 <article class="birdCompareBox">
-<h3>${isEs ? "Tour de Medio Dia" : "Half Day Tour"}</h3>
+<h3>${isEs ? "Tour de Medio Día" : "Half Day Tour"}</h3>
 <ul>
 <li>${isEs ? "Ideal si tienes poco tiempo." : "Best if you have limited time."}</li>
-<li>${isEs ? "Bueno para colibries, tangaras y aves cerca de rutas accesibles." : "Good for hummingbirds, tanagers, and birds near accessible routes."}</li>
-<li>${isEs ? "Menos margen para especies raras o de habitat especifico." : "Less margin for rare or habitat-specific species."}</li>
+<li>${isEs ? "Bueno para colibríes, tangaras y aves cerca de rutas accesibles." : "Good for hummingbirds, tanagers, and birds near accessible routes."}</li>
+<li>${isEs ? "Menos margen para especies raras o de hábitat específico." : "Less margin for rare or habitat-specific species."}</li>
 </ul>
 </article>
 <article class="birdCompareBox">
-<h3>${isEs ? "Tour de Dia Completo" : "Full Day Tour"}</h3>
+<h3>${isEs ? "Tour de Día Entero" : "Full Day Tour"}</h3>
 <ul>
-<li>${isEs ? "Mas tiempo para buscar especies objetivo." : "More time to search for target species."}</li>
-<li>${isEs ? "Mas habitat, elevacion y flexibilidad segun clima." : "More habitat, elevation, and weather flexibility."}</li>
+<li>${isEs ? "Más tiempo para buscar especies objetivo." : "More time to search for target species."}</li>
+<li>${isEs ? "Más hábitat, elevación y flexibilidad según el clima." : "More habitat, elevation, and weather flexibility."}</li>
 <li>${isEs ? "Mejor opcion para fotografos y observadores serios." : "Best choice for photographers and serious birders."}</li>
 </ul>
 </article>
@@ -1130,7 +1130,7 @@ ${langSwitch}
 <section class="section">
 <div class="birdCtaBox">
 <div>
-<h2>${isEs ? "Especies que hacen que el dia completo valga la pena" : "Species That Make the Full Day Worth It"}</h2>
+<h2>${isEs ? "Especies que hacen que el día entero valga la pena" : "Species That Make the Full Day Worth It"}</h2>
 <p>${esc(featuredNames || (isEs ? "Aves destacadas de Mindo" : "Featured birds of Mindo"))}</p>
 </div>
 <a class="btn primary" href="#request-form" data-whatsapp-message-key="${whatsappKey}" data-analytics-event="full_day_upgrade_cta_click" data-analytics-label="${attr(primaryCta)}" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="mid_page_upgrade" rel="noopener noreferrer" target="_blank">${esc(primaryCta)}</a>
@@ -1139,7 +1139,7 @@ ${langSwitch}
 
 <section class="section">
 <div class="sectionHead">
-<h2>${isEs ? "Filtra las aves por duracion del tour" : "Filter Birds by Tour Length"}</h2>
+<h2>${isEs ? "Filtra las aves por duración del tour" : "Filter Birds by Tour Length"}</h2>
 <p class="sectionHint"><span id="birdResultCount">${visibleBirds.length}</span> ${isEs ? "aves visibles" : "birds visible"}</p>
 </div>
 <div class="birdFilterBar" role="group" aria-label="${isEs ? "Filtros de aves" : "Bird filters"}">
@@ -1167,8 +1167,8 @@ ${renderFaq(lang)}
 <section class="section" id="request-form">
 <div class="birdCtaBox">
 <div>
-<h2>${isEs ? "Quieres aumentar tus oportunidades de ver mas aves?" : "Want Better Chances to See More Birds?"}</h2>
-<p>${isEs ? "Envia un mensaje con tus fechas, intereses y especies objetivo. Te ayudaremos a elegir entre medio dia, dia completo o un tour privado." : "Send a message with your dates, interests, and target species. We will help you choose between half day, full day, or a private custom tour."}</p>
+<h2>${isEs ? "¿Quieres aumentar tus oportunidades de ver más aves?" : "Want Better Chances to See More Birds?"}</h2>
+<p>${isEs ? "Envía un mensaje con tus fechas, intereses y especies objetivo. Te ayudaremos a elegir entre medio día, día entero o un tour privado." : "Send a message with your dates, interests, and target species. We will help you choose between half day, full day, or a private custom tour."}</p>
 </div>
 <a class="btn primary" href="#request-form" data-whatsapp-message-key="${whatsappKey}" data-analytics-event="tour_whatsapp_click" data-analytics-label="${attr(primaryCta)}" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="bottom_request_form" rel="noopener noreferrer" target="_blank">${esc(primaryCta)}</a>
 </div>
@@ -1180,7 +1180,7 @@ ${renderFaq(lang)}
 
 <div class="birdStickyCta">
 <a class="btn primary" href="#request-form" data-whatsapp-message-key="${whatsappKey}" data-analytics-event="tour_whatsapp_click" data-analytics-label="${attr(primaryCta)}" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="sticky_mobile" rel="noopener noreferrer" target="_blank">${esc(primaryCta)}</a>
-<a class="btn secondary" href="#birdResultCount">${isEs ? "Ver Aves" : "See Birds"}</a>
+<a class="btn secondary" href="#birdResultCount">${isEs ? "Ver aves" : "See Birds"}</a>
 </div>
 
 <audio id="birdAudioPlayer" preload="none"></audio>
