@@ -31,6 +31,7 @@
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
 <script src="/assets/js/head.js?v=1" defer></script>
+<script defer src="/assets/js/site-config.js"></script>
 
 <style>
 body[data-tour-variant="half_day_mindo_birding"] .routeGrid,
@@ -485,6 +486,92 @@ body[data-tour-variant="half_day_mindo_birding"] .mbwDot.is-active{background:rg
     }
   ]
 }</script>
+
+<style id="bird-comparison-feature-safety">
+body .birdCompareFeature{
+  display:grid;
+  grid-template-columns:minmax(0,58%) minmax(0,42%);
+  gap:0;
+  align-items:stretch;
+  overflow:hidden;
+}
+body .birdCompareFeature .activityMedia,
+body .birdCompareFeature .mbwCarousel,
+body .birdCompareFeature .mbwCarouselViewport,
+body .birdCompareFeature .mbwCarouselTrack,
+body .birdCompareFeature .mbwSlide{
+  height:100%;
+  min-height:440px;
+}
+body .birdCompareFeature .activityMedia{
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarousel{
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+}
+body .birdCompareFeature .mbwCarouselTrack{
+  display:flex;
+  width:100%;
+  transform:translateX(0);
+  transition:transform 420ms ease;
+  will-change:transform;
+}
+body .birdCompareFeature .mbwSlide{
+  flex:0 0 100%;
+  width:100%;
+}
+body .birdCompareFeature .mbwSlide img{
+  width:100%;
+  height:100% !important;
+  min-height:440px !important;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body .birdCompareFeature .mbwSlide .label{
+  display:none;
+}
+body .birdCompareFeature .tourActions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:10px;
+  width:100%;
+}
+body .birdCompareFeature .tourActions .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+  min-height:46px;
+}
+@media(max-width:980px){
+  body .birdCompareFeature{
+    grid-template-columns:1fr;
+  }
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{
+    min-height:340px !important;
+  }
+}
+@media(max-width:560px){
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{
+    min-height:300px !important;
+  }
+}
+</style>
+
 </head>
 <body data-page-type="tour_detail" data-tour-variant="half_day_mindo_birding" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-content-group="birding_tour">
 <div class="container">
@@ -527,25 +614,25 @@ body[data-tour-variant="half_day_mindo_birding"] .mbwDot.is-active{background:rg
 </div></section>
 
 
-<section class="activityCard birdCompareFeature" aria-label="Bird comparison guide">
+<section class="activityCard birdCompareFeature" aria-label="Bird comparison guide" data-mbw-carousel="bird-comparison-guide-en">
 <div class="activityMedia">
-<div aria-label="Bird comparison carousel" class="mbwCarousel" data-autoplay="true" data-interval="2600">
-<button aria-label="Previous bird image" class="mbwNavBtn mbwNavPrev" data-analytics-event="gallery_previous" data-analytics-label="Bird comparison carousel previous" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" type="button">
-<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<div aria-label="Bird comparison carousel" class="mbwCarousel" aria-roledescription="carousel">
+<button aria-label="Previous bird photo" class="mbwNavBtn mbwNavPrev" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
 <div aria-label="Bird comparison carousel viewport" class="mbwCarouselViewport" role="region">
 <div class="mbwCarouselTrack">
-<div class="mbwSlide"><img alt="Andean Cock-of-the-Rock in Mindo cloud forest" decoding="async" loading="lazy" src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg"/><div class="label"></div></div>
-<div class="mbwSlide"><img alt="Yellow-throated Toucan in Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg"/><div class="label"></div></div>
-<div class="mbwSlide"><img alt="Pale-mandibled Aracari in the Mindo cloud forest" decoding="async" loading="lazy" src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg"/><div class="label"></div></div>
-<div class="mbwSlide"><img alt="Crimson-rumped Toucanet in Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_crimson_rumped_toucanet_01.jpg"/><div class="label"></div></div>
-<div class="mbwSlide"><img alt="Glistening-green Tanager in the Mindo cloud forest" decoding="async" loading="lazy" src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg"/><div class="label"></div></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Yellow-throated Toucan in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Andean Cock-of-the-Rock in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Golden-headed Quetzal birding opportunity in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Pale-mandibled Aracari birding opportunity in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Glistening Green Tanager in Mindo"/></div>
 </div>
 </div>
-<button aria-label="Next bird image" class="mbwNavBtn mbwNavNext" data-analytics-event="gallery_next" data-analytics-label="Bird comparison carousel next" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" type="button">
-<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<button aria-label="Next bird photo" class="mbwNavBtn mbwNavNext" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
-<div aria-label="Bird comparison carousel position indicators" class="mbwDots"></div>
+<div aria-label="Bird comparison carousel position indicators" class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
 </div>
 </div>
 <div class="activityBody">
@@ -554,7 +641,7 @@ body[data-tour-variant="half_day_mindo_birding"] .mbwDot.is-active{background:rg
 <p>Compare 50+ Mindo bird species with photos, bird calls, tour-length labels, and practical guide notes. This guide helps guests choose the right tour and clearly shows why a full day gives more time, more habitat variety, and better chances for target birds.</p>
 <div class="tourActions">
 <a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explore Bird Comparison Guide" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/">Explore Bird Comparison Guide</a>
-<a class="btn secondary" data-analytics-event="tour_card_click" data-analytics-label="View Full-Day Tours from Bird Comparison Section" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/full-day/">View Full-Day Tours</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="View Full-Day Tours" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/full-day-birding/">View Full-Day Tours</a>
 </div>
 </div>
 </section>
@@ -696,6 +783,60 @@ body[data-tour-variant="half_day_mindo_birding"] .mbwDot.is-active{background:rg
       });
     })();
   </script>
+
+
+<script>
+(function(){
+  function setupMbwComparisonCarousel(root){
+    if(root.dataset.mbwCarouselReady === 'true'){ return; }
+    root.dataset.mbwCarouselReady = 'true';
+
+    var track = root.querySelector('.mbwCarouselTrack');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
+    var prev = root.querySelector('.mbwNavPrev');
+    var next = root.querySelector('.mbwNavNext');
+
+    if(!track || !slides.length){ return; }
+
+    var index = 0;
+
+    function go(to){
+      index = (to + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
+    }
+
+    if(prev){
+      prev.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index - 1);
+      });
+    }
+
+    if(next){
+      next.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index + 1);
+      });
+    }
+
+    go(0);
+  }
+
+  function initMbwComparisonCarousels(){
+    document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwComparisonCarousel);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initMbwComparisonCarousels);
+  }else{
+    initMbwComparisonCarousels();
+  }
+})();
+</script>
 
 </body>
 </html>
