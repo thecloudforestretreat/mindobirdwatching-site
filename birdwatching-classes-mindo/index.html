@@ -51,6 +51,177 @@ body[data-page-content-group="birdwatching_classes"] .internalLinks .linkCard{
 </style>
 
 <script defer src="/assets/js/head.js"></script>
+<script defer src="/assets/js/site-config.js"></script>
+
+<style id="bird-comparison-feature-safety">
+body .birdCompareFeature{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:minmax(0,58%) minmax(0,42%);
+  gap:0;
+  align-items:stretch;
+  overflow:hidden;
+  background:rgba(255,255,255,.68);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+}
+body .birdCompareFeature .activityMedia,
+body .birdCompareFeature .mbwCarousel,
+body .birdCompareFeature .mbwCarouselViewport,
+body .birdCompareFeature .mbwCarouselTrack,
+body .birdCompareFeature .mbwSlide{
+  height:100%;
+  min-height:440px;
+}
+body .birdCompareFeature .activityMedia{
+  position:relative;
+  overflow:hidden;
+  background:rgba(255,255,255,.55);
+}
+body .birdCompareFeature .activityBody{
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:12px;
+  min-width:0;
+}
+body .birdCompareFeature .mini-links__label{
+  margin:0;
+  color:var(--forest);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+body .birdCompareFeature h2{
+  margin:0;
+  font-family:var(--font-head);
+  color:var(--forest);
+  font-size:clamp(26px,2.5vw,38px);
+  line-height:1.05;
+  letter-spacing:-0.03em;
+}
+body .birdCompareFeature p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.62;
+}
+body .birdCompareFeature .tourActions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:10px;
+  width:100%;
+}
+body .birdCompareFeature .tourActions .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+  min-height:46px;
+}
+body .birdCompareFeature .mbwCarousel{
+  position:relative;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarouselViewport{
+  width:100%;
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarouselTrack{
+  display:flex;
+  width:100%;
+  transform:translateX(0);
+  transition:transform 420ms ease;
+  will-change:transform;
+}
+body .birdCompareFeature .mbwSlide{
+  flex:0 0 100%;
+  width:100%;
+}
+body .birdCompareFeature .mbwSlide img{
+  width:100%;
+  height:100% !important;
+  min-height:440px !important;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body .birdCompareFeature .mbwSlide .label{
+  display:none;
+}
+body .birdCompareFeature .mbwNavBtn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.85);
+  box-shadow:var(--shadow);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  z-index:2;
+  color:var(--ink);
+}
+body .birdCompareFeature .mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
+body .birdCompareFeature .mbwNavBtn svg{width:20px;height:20px}
+body .birdCompareFeature .mbwNavPrev{left:10px}
+body .birdCompareFeature .mbwNavNext{right:10px}
+body .birdCompareFeature .mbwDots{
+  position:absolute;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  display:inline-flex;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.78);
+  z-index:2;
+  pointer-events:none;
+}
+body .birdCompareFeature .mbwDot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:rgba(13,89,37,.22);
+}
+body .birdCompareFeature .mbwDot.is-active{background:rgba(13,89,37,.65)}
+@media(max-width:980px){
+  body .birdCompareFeature{grid-template-columns:1fr}
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:340px !important}
+  body .birdCompareFeature .activityBody{padding:22px}
+}
+@media(max-width:560px){
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:300px !important}
+  body .birdCompareFeature .activityBody{padding:18px}
+}
+@media(prefers-reduced-motion:reduce){
+  body .birdCompareFeature .mbwCarouselTrack{transition:none}
+}
+</style>
+
 </head>
 <body data-page-language="en" data-page-type="guide_page" data-page-content-group="birdwatching_classes" data-page-region="mindo" data-page-location="mindo">
 <div class="container">
@@ -143,6 +314,37 @@ body[data-page-content-group="birdwatching_classes"] .internalLinks .linkCard{
   </div>
 </section>
 
+<section class="activityCard birdCompareFeature" aria-label="Bird comparison guide" data-mbw-carousel="bird-comparison-guide-en">
+<div class="activityMedia">
+<div aria-label="Bird comparison carousel" class="mbwCarousel" aria-roledescription="carousel">
+<button aria-label="Previous bird photo" class="mbwNavBtn mbwNavPrev" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Bird comparison carousel viewport" class="mbwCarouselViewport" role="region">
+<div class="mbwCarouselTrack">
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Yellow-throated Toucan in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Andean Cock-of-the-Rock in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Golden-headed Quetzal birding opportunity in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Pale-mandibled Aracari birding opportunity in Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Glistening Green Tanager in Mindo"/></div>
+</div>
+</div>
+<button aria-label="Next bird photo" class="mbwNavBtn mbwNavNext" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Bird comparison carousel position indicators" class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
+</div>
+</div>
+<div class="activityBody">
+<p class="mini-links__label">NEW BIRD PLANNING GUIDE</p>
+<h2>See Which Birds Are More Likely on a Half-Day vs Full-Day Tour</h2>
+<p>Compare 50+ Mindo bird species with photos, bird calls, tour-length labels, and practical guide notes. This guide helps guests choose the right tour and clearly shows why a full day gives more time, more habitat variety, and better chances for target birds.</p>
+<div class="tourActions">
+<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explore Bird Comparison Guide" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/">Explore Bird Comparison Guide</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="View Full-Day Tours" data-analytics-location="bird_comparison_section" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/tours/full-day-birding/">View Full-Day Tours</a>
+</div>
+</div>
+</section>
 <section class="section">
   <div class="sectionHead"><h2>Frequently Asked Questions</h2><p class="sectionHint">Simple answers for beginners and families planning a birdwatching class in Mindo.</p></div>
   <div class="faqGrid">
@@ -163,5 +365,64 @@ body[data-page-content-group="birdwatching_classes"] .internalLinks .linkCard{
 <script defer src="/assets/js/includes.js?v=1"></script>
 <script defer src="/assets/js/site.js?v=34"></script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mindobirdwatching.com/birdwatching-classes-mindo/#webpage","url":"https://mindobirdwatching.com/birdwatching-classes-mindo/","name":"Birdwatching Classes in Mindo, Ecuador | Learn with Local Guides","description":"Learn birdwatching in Mindo, Ecuador with beginner-friendly private classes. Practice bird ID, binocular use, field skills, and guided cloud forest observation.","inLanguage":"en","isPartOf":{"@id":"https://mindobirdwatching.com/#website"},"primaryImageOfPage":{"@id":"https://mindobirdwatching.com/birdwatching-classes-mindo/#primaryimage"}},{"@type":"ImageObject","@id":"https://mindobirdwatching.com/birdwatching-classes-mindo/#primaryimage","url":"https://mindobirdwatching.com/assets/images/pages/new/classes_01.jpg","caption":"Birdwatching classes in Mindo Ecuador"},{"@type":"Article","@id":"https://mindobirdwatching.com/birdwatching-classes-mindo/#article","headline":"Birdwatching Classes in Mindo, Ecuador","description":"Beginner-friendly birdwatching classes in Mindo with local guides, bird identification practice, binocular basics, and guided cloud forest observation.","inLanguage":"en","about":[{"@type":"Place","name":"Mindo, Ecuador"},{"@type":"Thing","name":"Birdwatching classes"},{"@type":"Thing","name":"Bird identification"},{"@type":"Thing","name":"Binocular use"},{"@type":"Thing","name":"Cloud forest birding"}],"publisher":{"@type":"Organization","name":"Mindo Bird Watching","url":"https://mindobirdwatching.com/"}},{"@type":"FAQPage","@id":"https://mindobirdwatching.com/birdwatching-classes-mindo/#faq","mainEntity":[{"@type":"Question","name":"Do I need experience to take a birdwatching class in Mindo?","acceptedAnswer":{"@type":"Answer","text":"No. Birdwatching classes in Mindo can be designed for beginners, families, and curious travelers. The guide adjusts the pace, route, and explanations to your experience level."}},{"@type":"Question","name":"Do I need my own binoculars?","acceptedAnswer":{"@type":"Answer","text":"If you have binoculars, bring them. If not, contact Mindo Bird Watching before your class to discuss available equipment options and recommendations."}},{"@type":"Question","name":"What will I learn in a birdwatching class?","acceptedAnswer":{"@type":"Answer","text":"You can learn binocular basics, bird identification skills, field observation habits, common bird groups in Mindo, and how to watch birds responsibly in cloud forest habitats."}},{"@type":"Question","name":"Can families take a birdwatching class?","acceptedAnswer":{"@type":"Answer","text":"Yes. A beginner-friendly birdwatching class can be planned for families when timing, route difficulty, and pace are adapted to the group."}}]},{"@type":"BreadcrumbList","@id":"https://mindobirdwatching.com/birdwatching-classes-mindo/#breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://mindobirdwatching.com/"},{"@type":"ListItem","position":2,"name":"Birdwatching Tours","item":"https://mindobirdwatching.com/birdwatching-tours-mindo/"},{"@type":"ListItem","position":3,"name":"Birdwatching Classes in Mindo","item":"https://mindobirdwatching.com/birdwatching-classes-mindo/"}]}]}</script>
+
+<script>
+(function(){
+  function setupMbwComparisonCarousel(root){
+    if(root.dataset.mbwCarouselReady === 'true'){ return; }
+    root.dataset.mbwCarouselReady = 'true';
+
+    var track = root.querySelector('.mbwCarouselTrack');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
+    var prev = root.querySelector('.mbwNavPrev');
+    var next = root.querySelector('.mbwNavNext');
+
+    if(!track || !slides.length){ return; }
+
+    var index = 0;
+
+    function go(to){
+      index = (to + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
+    }
+
+    if(prev){
+      prev.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index - 1);
+      });
+    }
+
+    if(next){
+      next.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index + 1);
+      });
+    }
+
+    root.addEventListener('keydown', function(event){
+      if(event.key === 'ArrowLeft'){ go(index - 1); }
+      if(event.key === 'ArrowRight'){ go(index + 1); }
+    });
+
+    go(0);
+  }
+
+  function initMbwComparisonCarousels(){
+    document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwComparisonCarousel);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initMbwComparisonCarousels);
+  }else{
+    initMbwComparisonCarousels();
+  }
+})();
+</script>
+
 </body>
 </html>
