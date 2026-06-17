@@ -37,6 +37,7 @@
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
 <!-- Head-only JS -->
 <script defer="" src="/assets/js/head.js"></script>
+<script defer src="/assets/js/site-config.js"></script>
 <style>
     /* Page-only styles (no header/footer/menu styles) */
     .page{ margin-top: 18px; padding: 26px; }
@@ -651,6 +652,92 @@ aside.promo{
   ]
 }
 </script>
+
+<style id="bird-comparison-feature-safety">
+body .birdCompareFeature{
+  display:grid;
+  grid-template-columns:minmax(0,58%) minmax(0,42%);
+  gap:0;
+  align-items:stretch;
+  overflow:hidden;
+}
+body .birdCompareFeature .activityMedia,
+body .birdCompareFeature .mbwCarousel,
+body .birdCompareFeature .mbwCarouselViewport,
+body .birdCompareFeature .mbwCarouselTrack,
+body .birdCompareFeature .mbwSlide{
+  height:100%;
+  min-height:440px;
+}
+body .birdCompareFeature .activityMedia{
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarousel{
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+}
+body .birdCompareFeature .mbwCarouselTrack{
+  display:flex;
+  width:100%;
+  transform:translateX(0);
+  transition:transform 420ms ease;
+  will-change:transform;
+}
+body .birdCompareFeature .mbwSlide{
+  flex:0 0 100%;
+  width:100%;
+}
+body .birdCompareFeature .mbwSlide img{
+  width:100%;
+  height:100% !important;
+  min-height:440px !important;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body .birdCompareFeature .mbwSlide .label{
+  display:none;
+}
+body .birdCompareFeature .tourActions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:10px;
+  width:100%;
+}
+body .birdCompareFeature .tourActions .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+  min-height:46px;
+}
+@media(max-width:980px){
+  body .birdCompareFeature{
+    grid-template-columns:1fr;
+  }
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{
+    min-height:340px !important;
+  }
+}
+@media(max-width:560px){
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{
+    min-height:300px !important;
+  }
+}
+</style>
+
 </head>
 <body data-page-content-group="tours" data-page-language="es" data-page-location="mindo" data-page-region="pichincha" data-page-type="tour_category" data-tour-category="full_day">
 <div class="container">
@@ -678,12 +765,12 @@ Para ver todas las rutas disponibles, salidas por especies y planificar mejor tu
 <div aria-label="Acciones del tour" class="btnRow">
 <a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Reservar ahora" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_category" data-analytics-tour="Reservar ahora" href="/es/reservar-tour/">Reservar ahora</a>
 <a class="btn secondary" data-analytics-event="secondary_cta_click" data-analytics-label="Ver tours" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/tours/">Ver tours</a>
-<a class="btn secondary" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_category" data-analytics-tour="WhatsApp" href="https://wa.me/13054585402" rel="noopener" target="_blank">WhatsApp</a>
+<a data-analytics-link-url="dynamic_whatsapp" data-whatsapp-message-key="book_tour_es" class="btn secondary" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_category" data-analytics-tour="WhatsApp" href="#request-form" rel="noopener" target="_blank">WhatsApp</a>
 </div>
 <div aria-label="Señales de confianza del tour de día entero" class="routeLinks" style="margin-top:0; margin-bottom:12px;">
 <a data-analytics-event="internal_link_click" data-analytics-label="Opción privada" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/tours/tour-personalizado-privado/">Opción privada</a>
 <a data-analytics-event="internal_link_click" data-analytics-label="Reseñas 5 estrellas" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/resenas/">Reseñas 5 estrellas</a>
-<a data-analytics-event="tour_whatsapp_click" data-analytics-label="Soporte por WhatsApp" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_category" data-analytics-tour="Soporte por WhatsApp" href="https://wa.me/13054585402" rel="noopener" target="_blank">Soporte por WhatsApp</a>
+<a data-analytics-link-url="dynamic_whatsapp" data-whatsapp-message-key="book_tour_es" data-analytics-event="tour_whatsapp_click" data-analytics-label="Soporte por WhatsApp" data-analytics-location="cta" data-analytics-page-language="es" data-analytics-page-type="tour_category" data-analytics-tour="Soporte por WhatsApp" href="#request-form" rel="noopener" target="_blank">Soporte por WhatsApp</a>
 <a data-analytics-event="internal_link_click" data-analytics-label="Rutas flexibles" data-analytics-location="body" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/planifica-tu-viaje/">Rutas flexibles</a>
 </div>
 <div aria-label="Tu plan de día entero" class="routeNote">
@@ -769,53 +856,34 @@ Muchos viajeros que buscan un tour de avistamiento de aves de día entero en Min
 </div>
 </section>
 
-<section class="activityCard birdCompareFeature" aria-label="Guia comparativa de aves">
+<section class="activityCard birdCompareFeature" aria-label="Guía comparativa de aves" data-mbw-carousel="bird-comparison-guide-es">
 <div class="activityMedia">
-<div aria-label="Carrusel de guia comparativa de aves" class="mbwCarousel" data-autoplay="true" data-interval="2600">
-<button aria-label="Imagen anterior de aves" class="mbwNavBtn mbwNavPrev" data-analytics-event="gallery_previous" data-analytics-label="Bird comparison carousel previous" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_category" type="button">
-<svg aria-hidden="true" viewBox="0 0 24 24">
-<path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
+<div aria-label="Carrusel de guía comparativa de aves" class="mbwCarousel" aria-roledescription="carousel">
+<button aria-label="Foto de ave anterior" class="mbwNavBtn mbwNavPrev" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
 <div aria-label="Ventana del carrusel de aves" class="mbwCarouselViewport" role="region">
 <div class="mbwCarouselTrack">
-<div class="mbwSlide">
-<img alt="Gallo de la Pena Andino en el bosque nublado de Mindo" decoding="async" loading="lazy" src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg"/>
-<div class="label"></div>
-</div>
-<div class="mbwSlide">
-<img alt="Tucan Gargantiamarillo en Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg"/>
-<div class="label"></div>
-</div>
-<div class="mbwSlide">
-<img alt="Arasari Piquipalido en el bosque nublado de Mindo" decoding="async" loading="lazy" src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg"/>
-<div class="label"></div>
-</div>
-<div class="mbwSlide">
-<img alt="Tucancillo Lomirrojo en Mindo Ecuador" decoding="async" loading="lazy" src="/assets/images/birds/mbw_crimson_rumped_toucanet_01.jpg"/>
-<div class="label"></div>
-</div>
-<div class="mbwSlide">
-<img alt="Tangara Verde Reluciente en el bosque nublado de Mindo" decoding="async" loading="lazy" src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg"/>
-<div class="label"></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Tucán garganta amarilla en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Gallo de la Peña Andino en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Oportunidad de Quetzal Cabecidorado en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Oportunidad de Arasarí Piquipálido en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Tangara Verde Reluciente en Mindo"/></div>
 </div>
 </div>
-</div>
-<button aria-label="Imagen siguiente de aves" class="mbwNavBtn mbwNavNext" data-analytics-event="gallery_next" data-analytics-label="Bird comparison carousel next" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_category" type="button">
-<svg aria-hidden="true" viewBox="0 0 24 24">
-<path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
+<button aria-label="Siguiente foto de ave" class="mbwNavBtn mbwNavNext" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
-<div aria-label="Indicadores de posicion del carrusel de aves" class="mbwDots"></div>
+<div aria-label="Indicadores del carrusel de aves" class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
 </div>
 </div>
 <div class="activityBody">
-<p class="mini-links__label">Nueva guia de aves</p>
-<h2>Compara Que Aves Son Mas Probables en Medio Dia vs Dia Completo</h2>
-<p>Compara mas de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duracion de tour y notas practicas de guia. Esta guia ayuda a elegir el tour correcto y muestra por que un dia completo ofrece mas tiempo, mas variedad de habitat y mejores oportunidades para especies objetivo.</p>
+<p class="mini-links__label">Nueva guía de aves</p>
+<h2>Compara Qué Aves Son Más Probables en Medio Día vs Día Entero</h2>
+<p>Compara más de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duración de tour y notas prácticas de guía. Esta guía ayuda a elegir el tour correcto y muestra por qué un día entero ofrece más tiempo, más variedad de hábitat y mejores oportunidades para especies objetivo.</p>
 <div class="tourActions">
-<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guia Comparativa de Aves" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/">Explorar Guia Comparativa</a>
-<a class="btn secondary" data-analytics-event="tour_card_click" data-analytics-label="Ver Tours de Dia Completo desde Comparacion" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/tours/dia-entero/">Ver Tours de Dia Completo</a>
+<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guía Comparativa" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/">Explorar Guía Comparativa</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Ver Tours de Día Entero" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="tour_category" href="/es/tours/dia-entero/">Ver Tours de Día Entero</a>
 </div>
 </div>
 </section>
@@ -1042,5 +1110,59 @@ Muchos viajeros que buscan un tour de avistamiento de aves de día entero en Min
       });
     })();
   </script>
+
+<script>
+(function(){
+  function setupMbwComparisonCarousel(root){
+    if(root.dataset.mbwCarouselReady === 'true'){ return; }
+    root.dataset.mbwCarouselReady = 'true';
+
+    var track = root.querySelector('.mbwCarouselTrack');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
+    var prev = root.querySelector('.mbwNavPrev');
+    var next = root.querySelector('.mbwNavNext');
+
+    if(!track || !slides.length){ return; }
+
+    var index = 0;
+
+    function go(to){
+      index = (to + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
+    }
+
+    if(prev){
+      prev.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index - 1);
+      });
+    }
+
+    if(next){
+      next.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index + 1);
+      });
+    }
+
+    go(0);
+  }
+
+  function initMbwComparisonCarousels(){
+    document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwComparisonCarousel);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initMbwComparisonCarousels);
+  }else{
+    initMbwComparisonCarousels();
+  }
+})();
+</script>
+
 </body>
 </html>
