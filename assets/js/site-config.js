@@ -1,6 +1,5 @@
 /* /assets/js/site-config.js
    Mindo Bird Watching centralized site configuration
-   Created: 2026-06-10
 
    Purpose:
    - Keep changeable contact settings in one place
@@ -38,34 +37,98 @@
     contact_es: "Hola Mindo Bird Watching, quiero contactar a su equipo sobre avistamiento de aves en Mindo.\n\nPágina: {url}"
   };
 
+  function getPageLanguage() {
+    var bodyLang = document.body ? document.body.getAttribute("data-page-language") : "";
+    var htmlLang = document.documentElement ? document.documentElement.getAttribute("lang") : "";
+    var lang = String(bodyLang || htmlLang || "en").toLowerCase();
+
+    return lang.indexOf("es") === 0 ? "es" : "en";
+  }
+
+  function getFallbackMessageKey(messageKey) {
+    if (messageKey && window.MBW_SITE_CONFIG.whatsappMessages[messageKey]) {
+      return messageKey;
+    }
+
+    return getPageLanguage() === "es" ? "default_es" : "default_en";
+  }
+
   function buildWhatsAppUrl(messageKey) {
     var config = window.MBW_SITE_CONFIG;
     var number = String(config.contact.whatsappNumberDigits || "").replace(/\D/g, "");
-    var template = config.whatsappMessages[messageKey] || config.whatsappMessages.default_en;
-    var message = String(template || "").replace("{url}", window.location.href);
+    var safeMessageKey = getFallbackMessageKey(messageKey);
+    var template = config.whatsappMessages[safeMessageKey] || "";
+    var sourceUrl = window.location.href;
+    var message = String(template).replace("{url}", sourceUrl);
+
+    if (!number) {
+      return "#";
+    }
 
     return "https://wa.me/" + number + "?text=" + encodeURIComponent(message);
   }
 
-  function updateWhatsAppLinks() {
-    var links = document.querySelectorAll("[data-whatsapp-message-key]");
+  function updateWhatsAppLinks(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var links = scope.querySelectorAll("[data-whatsapp-message-key]");
     var sourcePage = window.location.pathname || "/";
 
     Array.prototype.forEach.call(links, function (link) {
-      var messageKey = link.getAttribute("data-whatsapp-message-key");
-      var url = buildWhatsAppUrl(messageKey);
+      var originalMessageKey = link.getAttribute("data-whatsapp-message-key");
+      var safeMessageKey = getFallbackMessageKey(originalMessageKey);
+      var url = buildWhatsAppUrl(safeMessageKey);
 
       link.setAttribute("href", url);
+      link.setAttribute("data-whatsapp-message-key", safeMessageKey);
       link.setAttribute("data-analytics-link-url", "dynamic_whatsapp");
       link.setAttribute("data-analytics-source-page", sourcePage);
-      link.setAttribute("data-analytics-message-key", messageKey);
+      link.setAttribute("data-analytics-message-key", safeMessageKey);
       link.setAttribute("data-whatsapp-source-page", sourcePage);
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener noreferrer");
     });
   }
 
+  function observeDynamicWhatsAppLinks() {
+    if (!("MutationObserver" in window)) {
+      return;
+    }
+
+    var observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        Array.prototype.forEach.call(mutation.addedNodes, function (node) {
+          if (!node || node.nodeType !== 1) {
+            return;
+          }
+
+          if (node.matches && node.matches("[data-whatsapp-message-key]")) {
+            updateWhatsAppLinks(node.parentNode || document);
+            return;
+          }
+
+          if (node.querySelector && node.querySelector("[data-whatsapp-message-key]")) {
+            updateWhatsAppLinks(node);
+          }
+        });
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  window.MBW_SITE_CONFIG.buildWhatsAppUrl = buildWhatsAppUrl;
+  window.MBW_SITE_CONFIG.updateWhatsAppLinks = updateWhatsAppLinks;
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", updateWhatsAppLinks);
+    document.addEventListener("DOMContentLoaded", function () {
+      updateWhatsAppLinks();
+      observeDynamicWhatsAppLinks();
+    });
   } else {
     updateWhatsAppLinks();
+    observeDynamicWhatsAppLinks();
   }
 })();
