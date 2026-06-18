@@ -1,30 +1,15 @@
-// functions/api/book-tour/index.js
-// MBW Book Tour proxy: Turnstile verify -> forward to Google Apps Script web app
-// Required CF Pages env vars (Production):
-// - TURNSTILE_SECRET_KEY
-// - GAS_WEB_APP_URL   (preferred)
-//   OR GAS_BOOK_TOUR_URL (legacy name supported)
-// - CF_SHARED_SECRET
+export async function onRequestPost(context) {
+  const { request, env } = context;
 
-export async function onRequestPost({ request, env }) {
-  const gasUrl = env.GAS_WEB_APP_URL || env.GAS_BOOK_TOUR_URL;
-  const turnstileSecret = env.TURNSTILE_SECRET_KEY;
-  const sharedSecret = env.CF_SHARED_SECRET;
+  function htmlMessage(status, message, extra = {}) {
+    const payload = JSON.stringify({
+      type: "mbw-target-bird",
+      status,
+      message,
+      ...extra
+    });
 
-  function iframeReply(status, message) {
-    const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>
-<script>
-(function(){
-  try{
-    parent.postMessage({ type:"mbw-booktour", status:${JSON.stringify(
-      status
-    )}, message:${JSON.stringify(message || "")} }, "*");
-  }catch(e){}
-})();
-</script>
-</body></html>`;
-    return new Response(html, {
-      status: 200,
+    return new Response(`<!doctype html><meta charset="utf-8"><script>parent.postMessage(${payload},"*");</script>`, {
       headers: {
         "content-type": "text/html; charset=utf-8",
         "cache-control": "no-store"
@@ -33,130 +18,105 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    if (!gasUrl) return iframeReply("error", "Server misconfigured. Missing GAS_WEB_APP_URL (or GAS_BOOK_TOUR_URL).");
-    if (!turnstileSecret) return iframeReply("error", "Server misconfigured. Missing TURNSTILE_SECRET_KEY.");
-    if (!sharedSecret) return iframeReply("error", "Server misconfigured. Missing CF_SHARED_SECRET.");
-
-    const contentType = request.headers.get("content-type") || "";
-    if (!contentType.includes("application/x-www-form-urlencoded")) {
-      return iframeReply("error", "Invalid request.");
-    }
-
     const formData = await request.formData();
+    const turnstileToken = String(formData.get("cf-turnstile-response") || "");
+    const turnstileSecret = env.TURNSTILE_SECRET_KEY || env.CF_TURNSTILE_SECRET || "";
+    const forwardUrl =
+      env.N8N_TARGET_BIRD_WEBHOOK_URL ||
+      env.TARGET_BIRD_WEBHOOK_URL ||
+      env.GAS_TARGET_BIRD_TOUR_BUILDER_URL ||
+      "";
 
-    // Honeypot
-    if ((formData.get("website") || "").toString().trim() !== "") {
-      // Silently accept (bot)
-      return iframeReply("ok", "");
+    if (!forwardUrl) {
+      return htmlMessage("error", "Target bird endpoint is not configured.");
     }
 
-    // Turnstile token from the browser
-    const token = formData.get("cf-turnstile-response");
-    if (!token) {
-      return iframeReply("error", "Security check failed. Try again. (missing token)");
-    }
+    if (turnstileSecret) {
+      const verifyBody = new URLSearchParams();
+      verifyBody.set("secret", turnstileSecret);
+      verifyBody.set("response", turnstileToken);
+      verifyBody.set("remoteip", request.headers.get("CF-Connecting-IP") || "");
 
-    // Verify Turnstile
-    let verify;
-    try {
-      const resp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      const verifyResponse = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
         method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          secret: turnstileSecret,
-          response: token.toString(),
-          remoteip: request.headers.get("CF-Connecting-IP") || ""
-        })
+        body: verifyBody
       });
-      verify = await resp.json();
-    } catch (e) {
-      return iframeReply("error", "Security service unavailable.");
-    }
+      const verifyJson = await verifyResponse.json().catch(() => ({}));
 
-    if (!verify || !verify.success) {
-      const code =
-        (verify && verify["error-codes"] && verify["error-codes"][0]) ? verify["error-codes"][0] : "invalid";
-      return iframeReply("error", `Security check failed. Try again. (${code})`);
-    }
-
-    // Build payload for Apps Script (must include cf_secret)
-    const body = new URLSearchParams();
-    for (const [k, v] of formData.entries()) {
-      if (k === "cf-turnstile-response") continue;
-      if (k === "website") continue;
-      body.append(k, v.toString());
-    }
-
-    // This is what your Apps Script checks:
-    body.append("cf_secret", sharedSecret);
-
-    // Google Apps Script often returns 302 to a googleusercontent URL.
-    // For 302/303 we must follow with GET (no body) to avoid 405.
-    async function fetchAppsScriptWithRedirects(url) {
-      let current = url;
-
-      for (let i = 0; i < 3; i++) {
-        const res = await fetch(current, {
-          method: "POST",
-          redirect: "manual",
-          headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
-          body: body.toString()
-        });
-
-        // If we got a normal OK response, return it
-        if (res.status >= 200 && res.status < 300) return res;
-
-        // Handle redirects
-        if ([301, 302, 303, 307, 308].includes(res.status)) {
-          const loc = res.headers.get("location");
-          if (!loc) return res;
-
-          // For 301/302/303: follow with GET (no body) to avoid 405 at googleusercontent
-          if ([301, 302, 303].includes(res.status)) {
-            const follow = await fetch(loc, { method: "GET", redirect: "follow" });
-            return follow;
-          }
-
-          // For 307/308: safe to repeat POST to new location
-          current = loc;
-          continue;
-        }
-
-        return res;
+      if (!verifyJson.success) {
+        return htmlMessage("error", "Turnstile verification failed. Please try again.");
       }
-
-      return new Response("Too many redirects", { status: 508 });
     }
 
-    let upstream;
-    try {
-      upstream = await fetchAppsScriptWithRedirects(gasUrl);
-    } catch (e) {
-      return iframeReply("error", "Booking service unreachable.");
+    const selectedSpeciesCodes = String(formData.get("selected_species_codes") || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    if (!selectedSpeciesCodes.length) {
+      return htmlMessage("error", "Please select at least one target bird.");
     }
 
-    if (!upstream.ok) {
-      return iframeReply("error", `Booking failed. Upstream status=${upstream.status}.`);
+    const now = new Date().toISOString();
+    const firstName = String(formData.get("first_name") || "").trim();
+    const lastName = String(formData.get("last_name") || "").trim();
+    const visitorName = [firstName, lastName].filter(Boolean).join(" ");
+
+    const payload = {
+      request_id: `web_${Date.now()}`,
+      report_id: `report_web_${Date.now()}`,
+      submitted_at: now,
+      request_status: "website_submitted",
+      visitor_name: visitorName,
+      first_name: firstName,
+      last_name: lastName,
+      visitor_email: String(formData.get("visitor_email") || "").trim(),
+      visitor_whatsapp: String(formData.get("visitor_whatsapp") || "").trim(),
+      preferred_contact_method: String(formData.get("preferred_contact_method") || "email"),
+      preferred_language: String(formData.get("preferred_language") || "en"),
+      requested_dates: String(formData.get("requested_dates") || "").trim(),
+      start_date: String(formData.get("start_date") || "").trim(),
+      birding_days: String(formData.get("birding_days") || "").trim(),
+      group_size: String(formData.get("group_size") || "").trim(),
+      fitness_level: String(formData.get("fitness_level") || "").trim(),
+      photography_priority: String(formData.get("photography_priority") || "").trim(),
+      target_notes: String(formData.get("target_notes") || "").trim(),
+      selected_species_names: String(formData.get("selected_species_names") || "").trim(),
+      source_page: String(formData.get("source_page") || "").trim(),
+      user_agent: String(formData.get("user_agent") || request.headers.get("user-agent") || "").slice(0, 500),
+      speciesCodes: selectedSpeciesCodes,
+      telegram_chat_id: env.TARGET_BIRD_TELEGRAM_CHAT_ID || "-1004400311019",
+      config: {
+        lat: Number(env.TARGET_BIRD_LAT || "-0.051"),
+        lng: Number(env.TARGET_BIRD_LNG || "-78.772"),
+        distKm: Number(env.TARGET_BIRD_DIST_KM || "20"),
+        backDays: Number(env.TARGET_BIRD_BACK_DAYS || "14"),
+        maxResults: Number(env.TARGET_BIRD_MAX_RESULTS || "50")
+      }
+    };
+
+    const forwardResponse = await fetch(forwardUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!forwardResponse.ok) {
+      return htmlMessage("error", `Report workflow returned ${forwardResponse.status}.`);
     }
 
-    let payload;
-    try {
-      payload = await upstream.json();
-    } catch (e) {
-      return iframeReply("error", "Invalid server response.");
-    }
-
-    if (!payload || !payload.ok) {
-      return iframeReply("error", (payload && payload.message) ? payload.message : "Booking failed.");
-    }
-
-    return iframeReply("ok", "");
-  } catch (e) {
-    return iframeReply("error", "Server error. Please try again, or email us at mindobirdwatching@gmail.com.");
+    return htmlMessage("ok", "Target bird request sent.", {
+      request_id: payload.request_id,
+      report_id: payload.report_id
+    });
+  } catch (error) {
+    return htmlMessage("error", "Unexpected error sending target bird request.");
   }
 }
 
-// Keep GET returning 405 (this is fine and expected)
 export async function onRequestGet() {
-  return new Response("Method Not Allowed", { status: 405 });
+  return new Response("Method Not Allowed", {
+    status: 405,
+    headers: { allow: "POST" }
+  });
 }
