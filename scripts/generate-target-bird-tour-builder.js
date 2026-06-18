@@ -39,6 +39,7 @@ const OUT_ES = path.join(OUT_DIR, "es", "tours", "constructor-tour-aves-objetivo
 const HERO_IMAGE = "/assets/images/pages/tours/full-day/MBW-Assets-65-Tours-FD-Carousel.jpg";
 const OG_IMAGE = HERO_IMAGE;
 const PLACEHOLDER_IMAGE = "/assets/images/birds/mbw_plate_billed_mountan_toucan_01.jpg";
+const LOGO_IMAGE = "/assets/images/logo/mbw-logo-mark-1024.png";
 const WEBHOOK_URL = process.env.TARGET_BIRD_WEBHOOK_URL || "";
 
 function sheetCsvUrl(sheetName) {
@@ -545,10 +546,10 @@ body[data-page-type="target_bird_tour_builder"] .btn,body[data-page-type="target
 body[data-page-type="target_bird_tour_builder"] .btn.primary,body[data-page-type="target_bird_tour_builder"] button.btn.primary{background:rgba(13,89,37,.94);border-color:rgba(13,89,37,.45);color:#fff}
 body[data-page-type="target_bird_tour_builder"] .btn.secondary,body[data-page-type="target_bird_tour_builder"] button.btn.secondary{background:rgba(255,255,255,.78);border-color:rgba(13,89,37,.28);color:var(--tbtb-forest)}
 body[data-page-type="target_bird_tour_builder"] .targetBuilderPage{margin-top:18px;padding:0;overflow:hidden;background:var(--tbtb-card);border:1px solid var(--tbtb-line);border-radius:var(--tbtb-radius);box-shadow:var(--tbtb-shadow)}
-body[data-page-type="target_bird_tour_builder"] .targetHero{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(320px,.84fr);gap:16px;align-items:stretch;padding:26px;background:linear-gradient(135deg,rgba(255,255,255,.84),rgba(255,255,255,.56))}
+body[data-page-type="target_bird_tour_builder"] .targetHero{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr);gap:16px;align-items:stretch;padding:18px;background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(255,255,255,.50))}
 body[data-page-type="target_bird_tour_builder"] .targetHeroCopy,body[data-page-type="target_bird_tour_builder"] .targetHeroMedia,body[data-page-type="target_bird_tour_builder"] .targetMiniReport,body[data-page-type="target_bird_tour_builder"] .filterPanel,body[data-page-type="target_bird_tour_builder"] .targetMain,body[data-page-type="target_bird_tour_builder"] .selectedPanel,body[data-page-type="target_bird_tour_builder"] .infoBox{border:1px solid var(--tbtb-line);border-radius:var(--tbtb-radius);background:rgba(255,255,255,.68);box-shadow:var(--tbtb-shadow)}
-body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:22px;display:grid;align-content:center;gap:14px;min-width:0}
-body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{overflow:hidden;display:grid;grid-template-rows:1fr auto;align-content:stretch;min-height:360px;background:#eef4ea}
+body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:26px;display:grid;align-content:center;gap:14px;min-width:0;min-height:0}
+body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{overflow:hidden;display:grid;grid-template-rows:minmax(0,1fr) auto;align-content:stretch;min-height:0;background:#eef4ea}
 body[data-page-type="target_bird_tour_builder"] .targetHeroMedia img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 body[data-page-type="target_bird_tour_builder"] .targetHeroCap{padding:10px 12px;border-top:1px solid var(--tbtb-line);background:rgba(255,255,255,.74);font-size:.82rem;line-height:1.45;color:var(--tbtb-muted);margin:0}
 body[data-page-type="target_bird_tour_builder"] .eyebrow{display:inline-flex;width:fit-content;align-items:center;gap:8px;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.82);color:var(--forest);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
@@ -597,8 +598,9 @@ body[data-page-type="target_bird_tour_builder"] .targetBirdTopline{display:flex;
 body[data-page-type="target_bird_tour_builder"] .targetBirdCard h3{margin:0;color:var(--ink);font-family:var(--font-body);font-size:1rem;line-height:1.22;font-weight:900;letter-spacing:0}
 body[data-page-type="target_bird_tour_builder"] .birdNames{margin:0;color:var(--muted);font-size:.82rem;line-height:1.45}
 body[data-page-type="target_bird_tour_builder"] .birdNames em{display:block}
-body[data-page-type="target_bird_tour_builder"] .chipRow{display:flex;flex-wrap:wrap;gap:6px}
-body[data-page-type="target_bird_tour_builder"] .chipRow span{border:1px solid var(--line);border-radius:999px;padding:4px 7px;font-size:.72rem;background:rgba(255,255,255,.74);color:var(--ink)}
+body[data-page-type="target_bird_tour_builder"] .chipRow{display:grid;gap:4px;margin-top:2px}
+body[data-page-type="target_bird_tour_builder"] .chipRow span{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;border-radius:0;padding:0;background:transparent;color:var(--muted);font-size:.76rem;line-height:1.35}
+body[data-page-type="target_bird_tour_builder"] .chipRow span:before{content:"";display:inline-block;width:6px;height:6px;border-radius:999px;background:rgba(13,89,37,.42);margin-right:6px;vertical-align:1px}
 body[data-page-type="target_bird_tour_builder"] .birdMicrocopy{margin:0;color:var(--muted);font-size:.82rem;line-height:1.45}
 body[data-page-type="target_bird_tour_builder"] .targetBirdSelect{position:absolute;top:10px;right:10px;border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:999px;padding:7px 10px;display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:900;box-shadow:0 8px 20px rgba(0,0,0,.14)}
 body[data-page-type="target_bird_tour_builder"] .targetBirdSelect[aria-pressed=true]{background:var(--forest);color:#fff}
@@ -637,7 +639,7 @@ body[data-page-type="target_bird_tour_builder"] .hidden{display:none!important}
 body[data-page-type="target_bird_tour_builder"] .mobileSticky{position:fixed;left:10px;right:10px;bottom:10px;z-index:30;gap:8px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 12px 36px rgba(0,0,0,.18)}
 body[data-page-type="target_bird_tour_builder"] .targetBuilderFallbackFooter{margin-top:18px}
 @media(max-width:980px){body[data-page-type="target_bird_tour_builder"] .targetHero{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:320px}body[data-page-type="target_bird_tour_builder"] .filterStack{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .routeMap{grid-template-columns:repeat(3,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .targetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .selectedGrid{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .infoGrid{grid-template-columns:1fr}}
-@media(max-width:640px){body[data-page-type="target_bird_tour_builder"] .targetHero{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:260px}body[data-page-type="target_bird_tour_builder"] .targetMiniReport{margin:0 12px 12px}body[data-page-type="target_bird_tour_builder"] .heroMetrics,body[data-page-type="target_bird_tour_builder"] .filterStack,body[data-page-type="target_bird_tour_builder"] .routeMap,body[data-page-type="target_bird_tour_builder"] .targetGrid,body[data-page-type="target_bird_tour_builder"] .leadForm .twoCol{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .builderShell{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetBirdImage{aspect-ratio:5/4}.mobileSticky{display:flex}}
+@media(max-width:640px){body[data-page-type="target_bird_tour_builder"] .targetHero{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:260px}body[data-page-type="target_bird_tour_builder"] .targetMiniReport{margin:0 12px 12px}body[data-page-type="target_bird_tour_builder"] .heroMetrics,body[data-page-type="target_bird_tour_builder"] .filterStack,body[data-page-type="target_bird_tour_builder"] .routeMap,body[data-page-type="target_bird_tour_builder"] .targetGrid,body[data-page-type="target_bird_tour_builder"] .leadForm .twoCol{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .builderShell{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetBirdImage{aspect-ratio:5/4}.mobileSticky{display:flex}}
 @media(min-width:641px){body[data-page-type="target_bird_tour_builder"] .mobileSticky{display:none}}
 </style>`;
 }
@@ -671,7 +673,7 @@ function renderHeaderFallback(lang) {
   return `
 <header class="topbar" data-mbw-header data-current-lang="${isEs ? "es" : "en"}">
   <a class="brand" href="${attr(home)}" aria-label="Mindo Bird Watching">
-    <img src="/assets/images/logo/logo-mbw.png" alt="" width="32" height="32" loading="eager">
+    <img src="${attr(LOGO_IMAGE)}" alt="" width="32" height="32" loading="eager">
     <span>Mindo Bird Watching</span>
   </a>
   <div class="right">
@@ -699,7 +701,7 @@ function renderFooterFallback(lang) {
     <a href="https://www.youtube.com/@MindoBirdWatching" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><img src="/assets/images/social/youtube.png" alt="" loading="lazy"></a>
   </div>
   <div class="footer-bottom">
-    <img src="/assets/images/logo/logo-mbw.png" alt="" loading="lazy">
+    <img src="${attr(LOGO_IMAGE)}" alt="" loading="lazy">
     <small>${isEs ? "Mindo Bird Watching - Tours privados de aves en Ecuador" : "Mindo Bird Watching - Private birding tours in Ecuador"}</small>
   </div>
 </footer>`;
@@ -723,11 +725,11 @@ function renderWhatsAppFab(lang) {
   return `
 <div class="mbwWaBirdFab"
   data-wa-number="13054585402"
-  data-wa-img-desktop="/assets/images/logo/logo-mbw.png"
-  data-wa-img-mobile="/assets/images/logo/logo-mbw.png">
+  data-wa-img-desktop="${attr(LOGO_IMAGE)}"
+  data-wa-img-mobile="${attr(LOGO_IMAGE)}">
   <div class="mbwWaBirdBackdrop" aria-hidden="true"></div>
   <button class="mbwWaBirdBtn" type="button" aria-label="${isEs ? "Abrir WhatsApp" : "Open WhatsApp"}" aria-expanded="false">
-    <img class="mbwWaBirdImg" src="/assets/images/logo/logo-mbw.png" alt="WhatsApp Mindo Bird Watching" loading="lazy">
+    <img class="mbwWaBirdImg" src="${attr(LOGO_IMAGE)}" alt="WhatsApp Mindo Bird Watching" loading="lazy">
   </button>
   <div class="mbwWaBirdPanel" role="dialog" aria-label="WhatsApp">
     <div class="mbwWaBirdHead">
@@ -862,6 +864,27 @@ function clientScript(lang) {
     return map[value] || value || "";
   }
 
+  function titleCaseName(value){
+    return String(value || "")
+      .replace(/\\s+/g, " ")
+      .trim()
+      .split(" ")
+      .map(function(part){
+        return part.split("-").map(function(piece){
+          if(!piece) return "";
+          if(piece.length <= 2 && piece === piece.toUpperCase()) return piece;
+          return piece.charAt(0).toUpperCase() + piece.slice(1).toLowerCase();
+        }).join("-");
+      })
+      .join(" ");
+  }
+
+  function formatNameInput(input){
+    if(!input) return;
+    var formatted = titleCaseName(input.value);
+    if(formatted && formatted !== input.value) input.value = formatted;
+  }
+
   function renderGuestReport(){
     var report = document.querySelector("[data-guest-report]");
     if(!report) return;
@@ -947,6 +970,10 @@ function clientScript(lang) {
 
   function buildPayload(){
     var form = document.querySelector("[data-lead-form]");
+    if(form){
+      formatNameInput(form.querySelector("input[name='first_name']"));
+      formatNameInput(form.querySelector("input[name='last_name']"));
+    }
     var fd = form ? new FormData(form) : new FormData();
     var firstName = String(fd.get("first_name") || "").trim();
     var lastName = String(fd.get("last_name") || "").trim();
@@ -1014,6 +1041,10 @@ function clientScript(lang) {
       applyFilters();
     }
   });
+
+  document.addEventListener("blur", function(event){
+    if(event.target && event.target.matches("input[data-name-field]")) formatNameInput(event.target);
+  }, true);
 
   document.addEventListener("change", function(event){
     var select = event.target.closest("[data-filter-select]");
@@ -1097,6 +1128,8 @@ function clientScript(lang) {
   document.addEventListener("submit", function(event){
     var form = event.target.closest("[data-lead-form]");
     if(!form) return;
+    formatNameInput(form.querySelector("input[name='first_name']"));
+    formatNameInput(form.querySelector("input[name='last_name']"));
     updateFormFields();
     if(!selected.size){
       event.preventDefault();
@@ -1323,8 +1356,8 @@ ${langSwitch}
         <iframe aria-hidden="true" id="targetBirdHiddenFrame" name="targetBirdHiddenFrame" style="position:absolute; left:-9999px; width:1px; height:1px; border:0;" tabindex="-1"></iframe>
         <form action="/api/target-bird-tour-builder" class="leadForm" data-lead-form id="targetBirdForm" method="post" target="targetBirdHiddenFrame">
           <div class="twoCol">
-            <label><span class="labelText">${isEs ? "Nombre" : "First Name"}<span class="req">*</span></span><input name="first_name" autocomplete="given-name" autocapitalize="words" autocorrect="off" spellcheck="false" required placeholder="${isEs ? "Nombre" : "First name"}"></label>
-            <label><span class="labelText">${isEs ? "Apellido" : "Last Name"}<span class="req">*</span></span><input name="last_name" autocomplete="family-name" autocapitalize="words" autocorrect="off" spellcheck="false" required placeholder="${isEs ? "Apellido" : "Last name"}"></label>
+            <label><span class="labelText">${isEs ? "Nombre" : "First Name"}<span class="req">*</span></span><input name="first_name" data-name-field autocomplete="given-name" autocapitalize="words" autocorrect="off" spellcheck="false" required placeholder="${isEs ? "Nombre" : "First name"}"></label>
+            <label><span class="labelText">${isEs ? "Apellido" : "Last Name"}<span class="req">*</span></span><input name="last_name" data-name-field autocomplete="family-name" autocapitalize="words" autocorrect="off" spellcheck="false" required placeholder="${isEs ? "Apellido" : "Last name"}"></label>
           </div>
           <div class="twoCol">
             <label><span class="labelText">Email<span class="req">*</span></span><input name="visitor_email" autocomplete="email" required type="email" placeholder="you@example.com"></label>
