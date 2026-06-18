@@ -572,6 +572,13 @@ body[data-page-type="target_bird_tour_builder"] .filterField{display:grid;gap:6p
 body[data-page-type="target_bird_tour_builder"] .filterField span,body[data-page-type="target_bird_tour_builder"] .labelText{font-size:.78rem;font-weight:900;color:var(--ink)}
 body[data-page-type="target_bird_tour_builder"] .filterField input,body[data-page-type="target_bird_tour_builder"] .filterField select,body[data-page-type="target_bird_tour_builder"] .leadForm input,body[data-page-type="target_bird_tour_builder"] .leadForm select,body[data-page-type="target_bird_tour_builder"] .leadForm textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:rgba(255,255,255,.78);color:var(--ink);font:inherit;box-shadow:0 10px 25px rgba(0,0,0,.05)}
 body[data-page-type="target_bird_tour_builder"] .filterField input,body[data-page-type="target_bird_tour_builder"] .filterField select,body[data-page-type="target_bird_tour_builder"] .leadForm input,body[data-page-type="target_bird_tour_builder"] .leadForm select{height:44px}
+body[data-page-type="target_bird_tour_builder"] .searchField{position:relative}
+body[data-page-type="target_bird_tour_builder"] .searchSuggestions{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:8;display:none;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 18px 44px rgba(7,25,35,.18);overflow:hidden}
+body[data-page-type="target_bird_tour_builder"] .searchSuggestions.is-visible{display:block}
+body[data-page-type="target_bird_tour_builder"] .searchSuggestions button{display:grid;width:100%;gap:2px;border:0;border-bottom:1px solid rgba(7,25,35,.08);background:#fff;text-align:left;padding:10px 12px;cursor:pointer;color:var(--ink)}
+body[data-page-type="target_bird_tour_builder"] .searchSuggestions button:hover,body[data-page-type="target_bird_tour_builder"] .searchSuggestions button:focus{background:rgba(13,89,37,.08);outline:0}
+body[data-page-type="target_bird_tour_builder"] .searchSuggestions strong{font-size:.9rem}
+body[data-page-type="target_bird_tour_builder"] .searchSuggestions small{color:var(--muted);font-size:.76rem}
 body[data-page-type="target_bird_tour_builder"] .quickToggles{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:0}
 body[data-page-type="target_bird_tour_builder"] .quickToggles button,body[data-page-type="target_bird_tour_builder"] .routeNode{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.75);color:var(--ink);padding:10px;cursor:pointer;text-align:left;box-shadow:0 10px 25px rgba(0,0,0,.05)}
 body[data-page-type="target_bird_tour_builder"] .quickToggles button{font-weight:900;padding:8px 10px}
@@ -584,8 +591,8 @@ body[data-page-type="target_bird_tour_builder"] .routeNode small{display:block;c
 body[data-page-type="target_bird_tour_builder"] .targetToolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--ink)}
 body[data-page-type="target_bird_tour_builder"] .targetGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 body[data-page-type="target_bird_tour_builder"] .targetBirdCard{position:relative;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.78);overflow:hidden;display:grid;grid-template-rows:auto 1fr;min-width:0;box-shadow:0 12px 30px rgba(7,25,35,.08)}
-body[data-page-type="target_bird_tour_builder"] .targetBirdImage{width:100%;aspect-ratio:4/3;height:auto;object-fit:cover;object-position:center;background:linear-gradient(135deg,rgba(13,89,37,.08),rgba(135,206,235,.10))}
-body[data-page-type="target_bird_tour_builder"] .targetBirdBody{padding:12px;display:grid;gap:8px;align-content:start}
+body[data-page-type="target_bird_tour_builder"] .targetBirdImage{width:100%;aspect-ratio:4/3;height:auto;object-fit:contain;object-position:center;background:linear-gradient(135deg,rgba(13,89,37,.10),rgba(255,255,255,.72));padding:6px;box-sizing:border-box}
+body[data-page-type="target_bird_tour_builder"] .targetBirdBody{padding:12px;display:grid;grid-template-rows:auto auto auto 1fr;gap:8px;align-content:start;min-height:205px}
 body[data-page-type="target_bird_tour_builder"] .targetBirdTopline{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--forest);font-weight:900}
 body[data-page-type="target_bird_tour_builder"] .targetBirdCard h3{margin:0;color:var(--ink);font-family:var(--font-body);font-size:1rem;line-height:1.22;font-weight:900;letter-spacing:0}
 body[data-page-type="target_bird_tour_builder"] .birdNames{margin:0;color:var(--muted);font-size:.82rem;line-height:1.45}
@@ -614,6 +621,9 @@ body[data-page-type="target_bird_tour_builder"] .guestReport{display:none;border
 body[data-page-type="target_bird_tour_builder"] .guestReport.is-visible{display:block}
 body[data-page-type="target_bird_tour_builder"] .guestReport h3{margin:0 0 8px;color:var(--tbtb-forest);font-size:1rem}
 body[data-page-type="target_bird_tour_builder"] .guestReport ul{margin:0;padding-left:18px}
+body[data-page-type="target_bird_tour_builder"] .previewActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+body[data-page-type="target_bird_tour_builder"] .copyBtn{min-height:38px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.78);color:var(--forest);font-weight:900;cursor:pointer}
+body[data-page-type="target_bird_tour_builder"] .buttonHelp{margin:0;color:var(--muted);font-size:.82rem;line-height:1.45}
 body[data-page-type="target_bird_tour_builder"] .payloadPreview{display:none}
 body[data-page-type="target_bird_tour_builder"] .success,body[data-page-type="target_bird_tour_builder"] .errorMsg{display:none;padding:12px 14px;border-radius:14px;font-weight:900;font-size:.88rem;line-height:1.4}
 body[data-page-type="target_bird_tour_builder"] .success{border:1px solid rgba(13,89,37,.25);background:rgba(13,89,37,.10)}
@@ -625,10 +635,113 @@ body[data-page-type="target_bird_tour_builder"] .infoBox h2,body[data-page-type=
 body[data-page-type="target_bird_tour_builder"] .infoBox p{margin:0;color:var(--muted);line-height:1.55}
 body[data-page-type="target_bird_tour_builder"] .hidden{display:none!important}
 body[data-page-type="target_bird_tour_builder"] .mobileSticky{position:fixed;left:10px;right:10px;bottom:10px;z-index:30;gap:8px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 12px 36px rgba(0,0,0,.18)}
+body[data-page-type="target_bird_tour_builder"] .targetBuilderFallbackFooter{margin-top:18px}
 @media(max-width:980px){body[data-page-type="target_bird_tour_builder"] .targetHero{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:320px}body[data-page-type="target_bird_tour_builder"] .filterStack{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .routeMap{grid-template-columns:repeat(3,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .targetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .selectedGrid{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .infoGrid{grid-template-columns:1fr}}
 @media(max-width:640px){body[data-page-type="target_bird_tour_builder"] .targetHero{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:260px}body[data-page-type="target_bird_tour_builder"] .targetMiniReport{margin:0 12px 12px}body[data-page-type="target_bird_tour_builder"] .heroMetrics,body[data-page-type="target_bird_tour_builder"] .filterStack,body[data-page-type="target_bird_tour_builder"] .routeMap,body[data-page-type="target_bird_tour_builder"] .targetGrid,body[data-page-type="target_bird_tour_builder"] .leadForm .twoCol{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .builderShell{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetBirdImage{aspect-ratio:5/4}.mobileSticky{display:flex}}
 @media(min-width:641px){body[data-page-type="target_bird_tour_builder"] .mobileSticky{display:none}}
 </style>`;
+}
+
+function renderHeaderFallback(lang) {
+  const isEs = lang === "es";
+  const home = isEs ? "/es/" : "/";
+  const opposite = isEs ? EN_PATH : ES_PATH;
+  const links = isEs
+    ? [
+      ["/es/", "Inicio"],
+      ["/es/planifica-tu-viaje/", "Planifica tu viaje"],
+      ["/es/tours/", "Tours"],
+      ["/es/aves/", "Aves"],
+      ["/es/sobre-nosotros/", "Nosotros"],
+      ["/es/contacto/", "Contacto"],
+      ["/es/reservar-tour/", "Reservar"]
+    ]
+    : [
+      ["/", "Home"],
+      ["/plan-your-trip/", "Plan Your Trip"],
+      ["/tours/", "Tours"],
+      ["/birds/", "Birds"],
+      ["/about-us/", "About Us"],
+      ["/contact/", "Contact"],
+      ["/book-tour/", "Book A Tour"]
+    ];
+  const navLinks = links.map(([href, label]) => `<a class="pill" href="${attr(href)}">${esc(label)}</a>`).join("");
+  const langLinks = `<div class="lang" aria-label="${isEs ? "Idioma" : "Language"}"><a${!isEs ? " class=\"active\" aria-current=\"page\"" : ""} href="${attr(EN_PATH)}" hreflang="en" lang="en">EN</a><a${isEs ? " class=\"active\" aria-current=\"page\"" : ""} href="${attr(ES_PATH)}" hreflang="es" lang="es">ES</a></div>`;
+
+  return `
+<header class="topbar" data-mbw-header data-current-lang="${isEs ? "es" : "en"}">
+  <a class="brand" href="${attr(home)}" aria-label="Mindo Bird Watching">
+    <img src="/assets/images/logo/logo-mbw.png" alt="" width="32" height="32" loading="eager">
+    <span>Mindo Bird Watching</span>
+  </a>
+  <div class="right">
+    ${langLinks}
+    <nav class="nav" aria-label="${isEs ? "Navegacion principal" : "Primary navigation"}">${navLinks}</nav>
+  </div>
+  <button class="menuBtn" type="button" aria-label="${isEs ? "Abrir menu" : "Open menu"}" aria-expanded="false" aria-controls="menuPanel">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+  <div class="menuPanel" id="menuPanel">
+    ${langLinks}
+    <nav class="menuList" aria-label="${isEs ? "Menu movil" : "Mobile menu"}">${navLinks}</nav>
+  </div>
+</header>
+<a class="hidden" href="${attr(opposite)}" hreflang="${isEs ? "en" : "es"}">${isEs ? "English" : "Español"}</a>`;
+}
+
+function renderFooterFallback(lang) {
+  const isEs = lang === "es";
+  return `
+<footer class="footer targetBuilderFallbackFooter">
+  <div class="footer-social" aria-label="${isEs ? "Redes sociales" : "Social links"}">
+    <a href="https://www.instagram.com/mindobirdwatching/" rel="noopener noreferrer" target="_blank" aria-label="Instagram"><img src="/assets/images/social/instagram.png" alt="" loading="lazy"></a>
+    <a href="https://www.facebook.com/mindobirdwatching/" rel="noopener noreferrer" target="_blank" aria-label="Facebook"><img src="/assets/images/social/facebook.png" alt="" loading="lazy"></a>
+    <a href="https://www.youtube.com/@MindoBirdWatching" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><img src="/assets/images/social/youtube.png" alt="" loading="lazy"></a>
+  </div>
+  <div class="footer-bottom">
+    <img src="/assets/images/logo/logo-mbw.png" alt="" loading="lazy">
+    <small>${isEs ? "Mindo Bird Watching - Tours privados de aves en Ecuador" : "Mindo Bird Watching - Private birding tours in Ecuador"}</small>
+  </div>
+</footer>`;
+}
+
+function renderWhatsAppFab(lang) {
+  const isEs = lang === "es";
+  const primary = isEs
+    ? "Hola Mindo Bird Watching, quiero revisar una lista de aves objetivo para un tour privado. Pagina: {url}"
+    : "Hi Mindo Bird Watching, I want to review a target bird list for a private tour. Page: {url}";
+  const dates = isEs
+    ? "Hola, quiero consultar disponibilidad para un tour privado de aves objetivo. Pagina: {url}"
+    : "Hi, I want to check availability for a private target bird tour. Page: {url}";
+  const photo = isEs
+    ? "Hola, mi prioridad es fotografia de aves en Mindo. Quiero revisar rutas privadas. Pagina: {url}"
+    : "Hi, bird photography is my priority in Mindo. I want to review private routes. Page: {url}";
+  const family = isEs
+    ? "Hola, viajo con mi grupo/familia y quiero un tour privado de aves en Mindo. Pagina: {url}"
+    : "Hi, I am traveling with my group/family and want a private birding tour in Mindo. Page: {url}";
+
+  return `
+<div class="mbwWaBirdFab"
+  data-wa-number="13054585402"
+  data-wa-img-desktop="/assets/images/logo/logo-mbw.png"
+  data-wa-img-mobile="/assets/images/logo/logo-mbw.png">
+  <div class="mbwWaBirdBackdrop" aria-hidden="true"></div>
+  <button class="mbwWaBirdBtn" type="button" aria-label="${isEs ? "Abrir WhatsApp" : "Open WhatsApp"}" aria-expanded="false">
+    <img class="mbwWaBirdImg" src="/assets/images/logo/logo-mbw.png" alt="WhatsApp Mindo Bird Watching" loading="lazy">
+  </button>
+  <div class="mbwWaBirdPanel" role="dialog" aria-label="WhatsApp">
+    <div class="mbwWaBirdHead">
+      <div class="mbwWaBirdTitle">${isEs ? "Escríbenos por WhatsApp" : "Message us on WhatsApp"}</div>
+      <button class="mbwWaBirdClose" type="button" aria-label="${isEs ? "Cerrar" : "Close"}">×</button>
+    </div>
+    <div class="mbwWaBirdActions">
+      <a class="mbwWaBirdAction" href="#" data-wa-template="${attr(primary)}">${isEs ? "Revisar aves objetivo" : "Review target birds"}</a>
+      <a class="mbwWaBirdAction" href="#" data-wa-template="${attr(dates)}">${isEs ? "Consultar fechas" : "Check dates"}</a>
+      <a class="mbwWaBirdAction" href="#" data-wa-template="${attr(photo)}">${isEs ? "Prioridad fotografia" : "Photography priority"}</a>
+      <a class="mbwWaBirdAction" href="#" data-wa-template="${attr(family)}">${isEs ? "Tour para mi grupo" : "Tour for my group"}</a>
+    </div>
+  </div>
+</div>`;
 }
 
 function clientScript(lang) {
@@ -650,6 +763,11 @@ function clientScript(lang) {
 
   function birdName(bird){ return PAGE_LANG === "es" ? bird.spanishName : bird.englishName; }
   function routeName(bird){ return PAGE_LANG === "es" ? bird.routeLabelEs : bird.routeLabelEn; }
+  function routeSummary(){
+    var routes = {};
+    selected.forEach(function(bird){ routes[routeName(bird)] = (routes[routeName(bird)] || 0) + 1; });
+    return Object.keys(routes).map(function(route){ return route + " (" + routes[route] + ")"; }).join("; ");
+  }
 
   function matches(card){
     var text = [
@@ -699,6 +817,29 @@ function clientScript(lang) {
     updateFormFields();
   }
 
+  function renderSearchSuggestions(query){
+    var box = document.querySelector("[data-search-suggestions]");
+    if(!box) return;
+    var q = String(query || "").trim().toLowerCase();
+    if(q.length < 2){
+      box.classList.remove("is-visible");
+      box.innerHTML = "";
+      return;
+    }
+    var hits = DATA.birds.filter(function(bird){
+      return [bird.englishName, bird.spanishName, bird.scientificName, bird.speciesCode].join(" ").toLowerCase().includes(q);
+    }).slice(0, 7);
+    if(!hits.length){
+      box.classList.remove("is-visible");
+      box.innerHTML = "";
+      return;
+    }
+    box.innerHTML = hits.map(function(bird){
+      return "<button type='button' data-suggest-species='" + bird.speciesCode + "'><strong>" + birdName(bird) + "</strong><small>" + bird.speciesCode + " - " + routeName(bird) + "</small></button>";
+    }).join("");
+    box.classList.add("is-visible");
+  }
+
   function renderPreview(){
     var preview = document.querySelector("[data-preview-text]");
     if(!preview) return;
@@ -708,9 +849,7 @@ function clientScript(lang) {
         : "Select target birds to preview route focus and tour fit.";
       return;
     }
-    var routes = {};
-    selected.forEach(function(bird){ routes[routeName(bird)] = (routes[routeName(bird)] || 0) + 1; });
-    var routeText = Object.keys(routes).map(function(route){ return route + " (" + routes[route] + ")"; }).join("; ");
+    var routeText = routeSummary();
     preview.textContent = PAGE_LANG === "es"
       ? "Tus aves objetivo apuntan a estas zonas de ruta: " + routeText + "."
       : "Your target birds point toward these route areas: " + routeText + ".";
@@ -749,6 +888,38 @@ function clientScript(lang) {
       : "<h3>Target Bird Opportunity Preview</h3><p>Thanks. Based on your list, these are the birds and route areas we will review before recommending a private route.</p><ul>" + birdItems + "</ul><p><strong>Suggested route focus:</strong></p><ul>" + routeItems + "</ul><p>This is not a guarantee; it is an initial planning reference for the best birding opportunity.</p>";
   }
 
+  function guestReportPlainText(){
+    if(!selected.size){
+      return PAGE_LANG === "es"
+        ? "Selecciona aves objetivo para generar una vista previa."
+        : "Select target birds to generate a preview.";
+    }
+    var lines = [];
+    var nameField = document.querySelector("input[name='first_name']");
+    var visitor = nameField && nameField.value ? nameField.value.trim() : "";
+    if(PAGE_LANG === "es"){
+      lines.push("Vista previa de oportunidad de aves objetivo");
+      if(visitor) lines.push("Hola " + visitor + ",");
+      lines.push("");
+      lines.push("Gracias. Con base en tu lista, estas son las aves y zonas que revisaremos antes de recomendar una ruta privada:");
+    } else {
+      lines.push("Target Bird Opportunity Preview");
+      if(visitor) lines.push("Hi " + visitor + ",");
+      lines.push("");
+      lines.push("Thanks. Based on your list, these are the birds and route areas we will review before recommending a private route:");
+    }
+    selected.forEach(function(bird){
+      lines.push("- " + birdName(bird) + ": " + prettyDifficulty(bird.targetDifficulty) + "; " + routeName(bird));
+    });
+    lines.push("");
+    lines.push((PAGE_LANG === "es" ? "Enfoque de ruta sugerido: " : "Suggested route focus: ") + routeSummary() + ".");
+    lines.push("");
+    lines.push(PAGE_LANG === "es"
+      ? "Esto no es una garantia; es una referencia inicial para preparar la mejor oportunidad de observacion."
+      : "This is not a guarantee; it is an initial planning reference for the best birding opportunity.");
+    return lines.join("\\n");
+  }
+
   function toggleBird(code, force){
     var bird = DATA.birds.find(function(item){ return item.speciesCode === code; });
     if(!bird) return;
@@ -779,6 +950,9 @@ function clientScript(lang) {
     var fd = form ? new FormData(form) : new FormData();
     var firstName = String(fd.get("first_name") || "").trim();
     var lastName = String(fd.get("last_name") || "").trim();
+    var startDate = String(fd.get("start_date") || "").trim();
+    var days = String(fd.get("birding_days") || "").trim();
+    var requestedDates = startDate ? (startDate + (days ? " / " + days + " day(s)" : "")) : "";
     return {
       visitor_name: [firstName, lastName].filter(Boolean).join(" "),
       first_name: firstName,
@@ -786,7 +960,9 @@ function clientScript(lang) {
       visitor_email: String(fd.get("visitor_email") || ""),
       visitor_whatsapp: String(fd.get("visitor_whatsapp") || ""),
       preferred_language: PAGE_LANG,
-      requested_dates: String(fd.get("requested_dates") || ""),
+      requested_dates: requestedDates,
+      start_date: startDate,
+      birding_days: days,
       group_size: String(fd.get("group_size") || ""),
       fitness_level: String(fd.get("fitness_level") || ""),
       photography_priority: String(fd.get("photography_priority") || ""),
@@ -805,10 +981,18 @@ function clientScript(lang) {
     var nameField = form.querySelector("input[name='selected_species_names']");
     var sourceField = form.querySelector("input[name='source_page']");
     var uaField = form.querySelector("input[name='user_agent']");
+    var requestedDatesField = form.querySelector("input[name='requested_dates']");
+    var startDateField = form.querySelector("input[name='start_date']");
+    var daysField = form.querySelector("select[name='birding_days']");
     if(codeField) codeField.value = codes.join(",");
     if(nameField) nameField.value = names.join("; ");
     if(sourceField) sourceField.value = window.location.href;
     if(uaField) uaField.value = navigator.userAgent || "";
+    if(requestedDatesField){
+      var startDate = startDateField ? startDateField.value : "";
+      var days = daysField ? daysField.value : "";
+      requestedDatesField.value = startDate ? (startDate + (days ? " / " + days + " day(s)" : "")) : "";
+    }
   }
 
   function showFormMessage(kind, text){
@@ -823,17 +1007,36 @@ function clientScript(lang) {
 
   document.addEventListener("input", function(event){
     var search = event.target.closest("[data-filter-search]");
-    if(search){ filters.search = search.value || ""; track("target_search", { query_length: filters.search.length }); applyFilters(); }
+    if(search){
+      filters.search = search.value || "";
+      renderSearchSuggestions(filters.search);
+      track("target_search", { query_length: filters.search.length });
+      applyFilters();
+    }
   });
 
   document.addEventListener("change", function(event){
     var select = event.target.closest("[data-filter-select]");
     if(select){ filters[select.getAttribute("data-filter-select")] = select.value || ""; applyFilters(); }
+    if(event.target.matches("input[name='start_date'], select[name='birding_days']")) updateFormFields();
   });
 
   document.addEventListener("click", function(event){
     var selectButton = event.target.closest("[data-select-species]");
     if(selectButton){ toggleBird(selectButton.getAttribute("data-select-species")); return; }
+
+    var suggestion = event.target.closest("[data-suggest-species]");
+    if(suggestion){
+      var code = suggestion.getAttribute("data-suggest-species");
+      toggleBird(code, true);
+      var searchInput = document.querySelector("[data-filter-search]");
+      var box = document.querySelector("[data-search-suggestions]");
+      if(searchInput) searchInput.value = "";
+      filters.search = "";
+      if(box){ box.classList.remove("is-visible"); box.innerHTML = ""; }
+      applyFilters();
+      return;
+    }
 
     var routeButton = event.target.closest("[data-route-filter]");
     if(routeButton){
@@ -875,6 +1078,20 @@ function clientScript(lang) {
       renderGuestReport();
       return;
     }
+
+    var copy = event.target.closest("[data-copy-guest-report]");
+    if(copy){
+      renderGuestReport();
+      var text = guestReportPlainText();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          copy.textContent = PAGE_LANG === "es" ? "Copiado" : "Copied";
+          window.setTimeout(function(){ copy.textContent = PAGE_LANG === "es" ? "Copiar vista previa" : "Copy preview"; }, 1600);
+        });
+      }
+      track("target_preview_copy", { selected_count: selected.size });
+      return;
+    }
   });
 
   document.addEventListener("submit", function(event){
@@ -889,6 +1106,15 @@ function clientScript(lang) {
       track("target_form_blocked", { reason: "no_species_selected" });
       return;
     }
+    var submitButton = form.querySelector("[data-submit-request]");
+    if(submitButton){
+      submitButton.disabled = true;
+      submitButton.textContent = PAGE_LANG === "es" ? "Enviando..." : "Sending...";
+      window.setTimeout(function(){
+        submitButton.disabled = false;
+        submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revision del guia" : "Request Guide Review";
+      }, 6000);
+    }
     showFormMessage("success");
     track("target_guide_review_submit", {
       selected_count: selected.size,
@@ -897,7 +1123,31 @@ function clientScript(lang) {
     });
   });
 
+  window.addEventListener("message", function(event){
+    var data = event.data || {};
+    if(!data || data.type !== "mbw-target-bird") return;
+    var form = document.querySelector("[data-lead-form]");
+    var submitButton = form ? form.querySelector("[data-submit-request]") : null;
+    if(submitButton){
+      submitButton.disabled = false;
+      submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revision del guia" : "Request Guide Review";
+    }
+    if(data.status === "ok"){
+      showFormMessage("success", "");
+      track("target_guide_review_success", { selected_count: selected.size });
+    } else {
+      showFormMessage("error", data.message || (PAGE_LANG === "es" ? "No pudimos enviar la solicitud. Intenta de nuevo o usa WhatsApp." : "We could not send the request. Please try again or use WhatsApp."));
+      track("target_guide_review_error", { message: data.message || "unknown" });
+    }
+  });
+
   document.addEventListener("DOMContentLoaded", function(){
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, "0");
+    var dd = String(today.getDate()).padStart(2, "0");
+    var minDate = yyyy + "-" + mm + "-" + dd;
+    document.querySelectorAll("input[type='date'][name='start_date']").forEach(function(input){ input.min = minDate; });
     var count = document.querySelector("[data-result-count]");
     if(count) count.textContent = String(DATA.birds.length);
     renderSelected();
@@ -995,7 +1245,7 @@ ${pageCss()}
 </head>
 <body data-page-content-group="birding_tours" data-page-language="${isEs ? "es" : "en"}" data-page-location="mindo" data-page-region="mindo_cloud_forest" data-page-type="target_bird_tour_builder">
 <div class="container">
-<div id="siteHeader" data-current-lang="${isEs ? "es" : "en"}"></div>
+<div id="siteHeader" data-current-lang="${isEs ? "es" : "en"}">${renderHeaderFallback(lang)}</div>
 ${langSwitch}
 <main class="page targetBuilderPage" aria-label="${attr(h1)}">
 <section class="targetHero">
@@ -1032,7 +1282,7 @@ ${langSwitch}
   <aside class="filterPanel" aria-label="${isEs ? "Filtros" : "Filters"}">
     <h2>${isEs ? "Filtrar aves" : "Filter Birds"}</h2>
     <div class="filterStack">
-      <label class="filterField"><span>${isEs ? "Buscar" : "Search"}</span><input type="search" data-filter-search placeholder="${isEs ? "Nombre, especie, codigo..." : "Name, species, code..."}"></label>
+      <label class="filterField searchField"><span>${isEs ? "Buscar" : "Search"}</span><input type="search" data-filter-search autocomplete="off" placeholder="${isEs ? "Nombre, especie, codigo..." : "Name, species, code..."}"><div class="searchSuggestions" data-search-suggestions></div></label>
       ${renderSelect("group", taxonOptions, lang, "Bird group", "Grupo de ave")}
       ${renderSelect("difficulty", difficultyOptions, lang, "Target difficulty", "Dificultad")}
       ${renderSelect("tourFit", tourOptions, lang, "Tour fit", "Tipo de tour")}
@@ -1066,6 +1316,7 @@ ${langSwitch}
           <p data-preview-text></p>
         </div>
         <div class="guestReport" data-guest-report></div>
+        <div class="previewActions"><button class="copyBtn" type="button" data-copy-guest-report>${isEs ? "Copiar vista previa" : "Copy preview"}</button></div>
         <pre class="payloadPreview" data-payload-preview></pre>
       </div>
       <div>
@@ -1080,8 +1331,12 @@ ${langSwitch}
             <label><span class="labelText">WhatsApp</span><input name="visitor_whatsapp" autocomplete="tel" inputmode="tel" placeholder="+1 123 456 7890"></label>
           </div>
           <div class="twoCol">
-            <label><span class="labelText">${isEs ? "Fechas" : "Dates"}</span><input name="requested_dates" placeholder="${isEs ? "Fechas flexibles o especificas" : "Flexible or specific dates"}"></label>
-            <label><span class="labelText">${isEs ? "Personas" : "Group size"}</span><input name="group_size" inputmode="numeric" placeholder="2"></label>
+            <label><span class="labelText">${isEs ? "Fecha de inicio" : "Start date"}</span><input name="start_date" type="date"></label>
+            <label><span class="labelText">${isEs ? "Dias de observacion" : "Birding days"}</span><select name="birding_days"><option value="">${isEs ? "Seleccionar" : "Select"}</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7+">7+</option></select></label>
+          </div>
+          <div class="twoCol">
+            <label><span class="labelText">${isEs ? "Personas" : "Group size"}</span><select name="group_size"><option value="">${isEs ? "Seleccionar" : "Select"}</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9+">9+</option></select></label>
+            <label><span class="labelText">${isEs ? "Contacto preferido" : "Preferred contact"}</span><select name="preferred_contact_method"><option value="email">Email</option><option value="whatsapp">WhatsApp</option><option value="either">${isEs ? "Cualquiera" : "Either"}</option></select></label>
           </div>
           <div class="twoCol">
             <label><span class="labelText">${isEs ? "Condicion fisica" : "Fitness level"}</span><select name="fitness_level"><option value="moderate">${isEs ? "Moderada" : "Moderate"}</option><option value="easy">${labels.easy}</option><option value="hard">${labels.hard}</option></select></label>
@@ -1089,16 +1344,18 @@ ${langSwitch}
           </div>
           <label><span class="labelText">${isEs ? "Notas" : "Notes"}</span><textarea name="target_notes" placeholder="${isEs ? "Notas, fechas flexibles o aves adicionales" : "Notes, flexible dates, or extra target birds"}"></textarea></label>
           <input name="preferred_language" type="hidden" value="${isEs ? "es" : "en"}">
+          <input name="requested_dates" type="hidden" value="">
           <input name="source_page" type="hidden" value="">
           <input name="user_agent" type="hidden" value="">
           <input name="selected_species_codes" type="hidden" value="">
           <input name="selected_species_names" type="hidden" value="">
           <div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk"></div>
           <div class="heroActions">
-            <button class="btn primary" type="button" data-preview-submit>${isEs ? "Ver vista previa" : "Preview Report"}</button>
-            <button class="btn secondary" type="submit" data-submit-request>${isEs ? "Solicitar revision" : "Request Guide Review"}</button>
+            <button class="btn primary" type="button" data-preview-submit>${isEs ? "Crear vista previa" : "Build Preview"}</button>
+            <button class="btn secondary" type="submit" data-submit-request>${isEs ? "Solicitar revision del guia" : "Request Guide Review"}</button>
             <a class="btn secondary" href="#targetBirdForm" data-whatsapp-message-key="${isEs ? "book_tour_es" : "book_tour_en"}" data-analytics-event="tour_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-label="${isEs ? "Mensaje por WhatsApp" : "Message on WhatsApp"}" data-analytics-location="target_builder_form" data-analytics-page-language="${isEs ? "es" : "en"}" data-analytics-page-type="target_bird_tour_builder" rel="noopener noreferrer" target="_blank">WhatsApp</a>
           </div>
+          <p class="buttonHelp">${isEs ? "Crear vista previa actualiza el resumen en esta pagina. Solicitar revision envia tu lista a MBW y dispara el flujo interno. WhatsApp abre una conversacion directa si prefieres escribirnos." : "Build Preview updates the summary on this page. Request Guide Review sends your list to MBW and starts the internal workflow. WhatsApp opens a direct conversation if you prefer to message us."}</p>
           <p class="trustNote">${isEs ? "Este formulario usa Cloudflare Turnstile para reducir bots. El reporte final sera revisado por MBW." : "This form uses Cloudflare Turnstile to reduce bots. The final report is reviewed by MBW."}</p>
           <div class="success" id="targetFormSuccess">${isEs ? "Solicitud preparada. Revisaremos tus aves objetivo." : "Request prepared. We will review your target birds."}</div>
           <div class="errorMsg" id="targetFormError">${isEs ? "Selecciona al menos una especie objetivo antes de solicitar revision." : "Select at least one target species before requesting review."}</div>
@@ -1116,9 +1373,10 @@ ${langSwitch}
   </div>
 </section>
 </main>
-<div id="siteFooter"></div>
+<div id="siteFooter">${renderFooterFallback(lang)}</div>
 </div>
 <div class="mobileSticky"><a class="btn primary" href="#builder"><span data-selected-count>0</span> ${isEs ? "seleccionadas" : "selected"}</a><button class="btn secondary" type="button" data-preview-submit>${isEs ? "Vista previa" : "Preview"}</button></div>
+${renderWhatsAppFab(lang)}
 <script defer src="/assets/js/site.js"></script>
 <script>window.MBW_TARGET_BUILDER_DATA=${clientJson};</script>
 ${clientScript(lang)}
