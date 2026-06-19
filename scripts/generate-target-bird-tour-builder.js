@@ -334,6 +334,106 @@ function renderRouteMap(routes, birds, lang) {
   }).join("");
 }
 
+function renderStarterLists(data, lang) {
+  const isEs = lang === "es";
+  const lists = buildStarterLists(data.birds);
+  return lists.map((list) => `
+<button class="starterListCard" type="button" data-starter-list="${attr(list.id)}" data-starter-codes="${attr(list.codes.join(","))}">
+  <span>${esc(isEs ? list.labelEs : list.labelEn)}</span>
+  <strong>${list.codes.length}</strong>
+  <small>${esc(isEs ? list.noteEs : list.noteEn)}</small>
+</button>`).join("");
+}
+
+function birdNameMatches(bird, regex) {
+  return regex.test(`${bird.englishName} ${bird.spanishName} ${bird.scientificName}`.toLowerCase());
+}
+
+function pickBirdCodes(birds, predicate, limit = 8) {
+  return birds
+    .filter(predicate)
+    .slice(0, limit)
+    .map((bird) => bird.speciesCode);
+}
+
+function buildStarterLists(birds) {
+  const classic = pickBirdCodes(birds, (bird) => bird.iconic || ["easy", "moderate"].includes(bird.targetDifficulty), 8);
+  const hummingbirds = pickBirdCodes(birds, (bird) => birdNameMatches(bird, /hummingbird|coronet|sylph|brilliant|woodstar|racket|inca|violetear|emerald|puffleg|thorntail|sunangel|hermit/), 8);
+  const tanagers = pickBirdCodes(birds, (bird) => birdNameMatches(bird, /tanager|dacnis|honeycreeper|chlorophonia|euphonia/), 8);
+  const antpittas = pickBirdCodes(birds, (bird) => birdNameMatches(bird, /antpitta/), 8);
+  const choco = pickBirdCodes(birds, (bird) => ["milpe_silanche", "mashpi_road"].includes(bird.routeCluster) || birdNameMatches(bird, /choco|chocó|esmeraldas|umbrellabird|nunbird/), 8);
+  const photo = pickBirdCodes(birds, (bird) => bird.iconic || ["easy", "moderate"].includes(bird.photographyDifficulty), 8);
+  const halfDay = pickBirdCodes(birds, (bird) => bird.tourFit === "half_day" || (bird.tourFit === "both" && bird.targetDifficulty === "easy"), 8);
+  const hard = pickBirdCodes(birds, (bird) => ["hard", "specialist"].includes(bird.targetDifficulty), 8);
+
+  return [
+    {
+      id: "classic_mindo",
+      labelEn: "Classic Mindo Targets",
+      labelEs: "Objetivos clásicos de Mindo",
+      noteEn: "A strong first private-tour list.",
+      noteEs: "Una buena primera lista para tour privado.",
+      codes: classic
+    },
+    {
+      id: "hummingbird_highlights",
+      labelEn: "Hummingbird Highlights",
+      labelEs: "Colibríes destacados",
+      noteEn: "Colorful feeder and forest-edge targets.",
+      noteEs: "Objetivos coloridos de comederos y bosque.",
+      codes: hummingbirds
+    },
+    {
+      id: "tanagers_color",
+      labelEn: "Tanagers and Colorful Birds",
+      labelEs: "Tangaras y aves coloridas",
+      noteEn: "Bright mixed-flock and garden favorites.",
+      noteEs: "Favoritas coloridas de bandadas y jardines.",
+      codes: tanagers
+    },
+    {
+      id: "antpittas_specials",
+      labelEn: "Antpittas and Special Birds",
+      labelEs: "Tororois y aves especiales",
+      noteEn: "Guide-led targets that need planning.",
+      noteEs: "Objetivos que requieren guía y planificación.",
+      codes: antpittas
+    },
+    {
+      id: "choco_endemics",
+      labelEn: "Chocó Endemics",
+      labelEs: "Endémicas del Chocó",
+      noteEn: "Lower-elevation private route focus.",
+      noteEs: "Enfoque de rutas privadas de menor elevación.",
+      codes: choco
+    },
+    {
+      id: "photography_favorites",
+      labelEn: "Photography Favorites",
+      labelEs: "Favoritas para fotografía",
+      noteEn: "Targets with stronger photo potential.",
+      noteEs: "Objetivos con mayor potencial fotográfico.",
+      codes: photo
+    },
+    {
+      id: "half_day_friendly",
+      labelEn: "Half-Day Friendly Birds",
+      labelEs: "Aves para medio día",
+      noteEn: "Better fit for short Mindo visits.",
+      noteEs: "Mejor para visitas cortas en Mindo.",
+      codes: halfDay
+    },
+    {
+      id: "hard_targets",
+      labelEn: "Hard Targets / Private Guide",
+      labelEs: "Objetivos difíciles / guía privado",
+      noteEn: "Specialist birds for custom planning.",
+      noteEs: "Aves especialistas para planificación privada.",
+      codes: hard
+    }
+  ].filter((list) => list.codes.length);
+}
+
 function renderSelect(name, options, lang, labelEn, labelEs) {
   const labels = labelMap(lang);
   const label = lang === "es" ? labelEs : labelEn;
@@ -566,6 +666,20 @@ body[data-page-type="target_bird_tour_builder"] .targetMiniReport h2{margin:0;fo
 body[data-page-type="target_bird_tour_builder"] .targetMiniReport ul{margin:0;padding-left:18px;line-height:1.65;color:var(--tbtb-ink)}
 body[data-page-type="target_bird_tour_builder"] .trustNote{font-size:.82rem;line-height:1.5;color:var(--muted);margin:0}
 body[data-page-type="target_bird_tour_builder"] .builderShell{display:grid;gap:16px;padding:18px;border-top:1px solid var(--line)}
+body[data-page-type="target_bird_tour_builder"] .guidedPanel{border:1px solid var(--tbtb-line);border-radius:var(--tbtb-radius);background:rgba(255,255,255,.68);box-shadow:var(--tbtb-shadow);padding:14px;display:grid;gap:14px}
+body[data-page-type="target_bird_tour_builder"] .guidedHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+body[data-page-type="target_bird_tour_builder"] .guidedHeader h2{margin:0;color:var(--forest);font-size:1.18rem}
+body[data-page-type="target_bird_tour_builder"] .guidedHeader p{margin:4px 0 0;color:var(--muted);font-size:.9rem;line-height:1.45}
+body[data-page-type="target_bird_tour_builder"] .starterGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+body[data-page-type="target_bird_tour_builder"] .starterListCard{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.78);padding:12px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;text-align:left;cursor:pointer;box-shadow:0 10px 25px rgba(0,0,0,.05);min-height:96px}
+body[data-page-type="target_bird_tour_builder"] .starterListCard span{font-weight:900;color:var(--ink);line-height:1.2}
+body[data-page-type="target_bird_tour_builder"] .starterListCard strong{color:var(--forest);font-size:1.25rem;line-height:1}
+body[data-page-type="target_bird_tour_builder"] .starterListCard small{grid-column:1/-1;color:var(--muted);font-size:.78rem;line-height:1.35}
+body[data-page-type="target_bird_tour_builder"] .starterListCard:hover,body[data-page-type="target_bird_tour_builder"] .starterListCard:focus{border-color:rgba(13,89,37,.45);background:rgba(13,89,37,.08);outline:0}
+body[data-page-type="target_bird_tour_builder"] .selectorActions{display:flex;gap:8px;flex-wrap:wrap}
+body[data-page-type="target_bird_tour_builder"] .viewControls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+body[data-page-type="target_bird_tour_builder"] .viewControls button,body[data-page-type="target_bird_tour_builder"] .showMoreBtn{min-height:38px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.78);color:var(--forest);font-weight:900;padding:8px 10px;cursor:pointer}
+body[data-page-type="target_bird_tour_builder"] .viewControls button[aria-pressed=true]{background:rgba(13,89,37,.94);color:#fff;border-color:rgba(13,89,37,.45)}
 body[data-page-type="target_bird_tour_builder"] .filterPanel{padding:14px}
 body[data-page-type="target_bird_tour_builder"] .filterPanel h2,body[data-page-type="target_bird_tour_builder"] .selectedPanel h2{margin:0;color:var(--forest);font-size:1.18rem}
 body[data-page-type="target_bird_tour_builder"] .filterStack{display:grid;grid-template-columns:minmax(190px,1.4fr) repeat(5,minmax(130px,1fr));gap:10px;align-items:end}
@@ -591,6 +705,10 @@ body[data-page-type="target_bird_tour_builder"] .routeNode strong{display:block;
 body[data-page-type="target_bird_tour_builder"] .routeNode small{display:block;color:var(--muted);font-size:.68rem;line-height:1.25;margin-top:4px}
 body[data-page-type="target_bird_tour_builder"] .targetToolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--ink)}
 body[data-page-type="target_bird_tour_builder"] .targetGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view{grid-template-columns:1fr}
+body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view .targetBirdCard{grid-template-columns:120px 1fr;grid-template-rows:auto;align-items:stretch}
+body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view .targetBirdImage{height:100%;min-height:140px;aspect-ratio:auto}
+body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view .targetBirdBody{min-height:0;padding-right:94px}
 body[data-page-type="target_bird_tour_builder"] .targetBirdCard{position:relative;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.78);overflow:hidden;display:grid;grid-template-rows:auto 1fr;min-width:0;box-shadow:0 12px 30px rgba(7,25,35,.08)}
 body[data-page-type="target_bird_tour_builder"] .targetBirdImage{width:100%;aspect-ratio:4/3;height:auto;object-fit:contain;object-position:center;background:linear-gradient(135deg,rgba(13,89,37,.10),rgba(255,255,255,.72));padding:6px;box-sizing:border-box}
 body[data-page-type="target_bird_tour_builder"] .targetBirdBody{padding:12px;display:grid;grid-template-rows:auto auto auto 1fr;gap:8px;align-content:start;min-height:205px}
@@ -605,6 +723,8 @@ body[data-page-type="target_bird_tour_builder"] .birdMicrocopy{margin:0;color:va
 body[data-page-type="target_bird_tour_builder"] .targetBirdSelect{position:absolute;top:10px;right:10px;border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:999px;padding:7px 10px;display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:900;box-shadow:0 8px 20px rgba(0,0,0,.14)}
 body[data-page-type="target_bird_tour_builder"] .targetBirdSelect[aria-pressed=true]{background:var(--forest);color:#fff}
 body[data-page-type="target_bird_tour_builder"] .selectIcon{font-size:1.05rem;line-height:1}
+body[data-page-type="target_bird_tour_builder"] .showMoreWrap{display:flex;justify-content:center}
+body[data-page-type="target_bird_tour_builder"] .showMoreBtn[hidden]{display:none}
 body[data-page-type="target_bird_tour_builder"] .selectedPanel{padding:14px;display:grid;gap:14px}
 body[data-page-type="target_bird_tour_builder"] .selectedGrid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:14px;align-items:start}
 body[data-page-type="target_bird_tour_builder"] .selectedList{display:grid;gap:8px}
@@ -637,9 +757,10 @@ body[data-page-type="target_bird_tour_builder"] .infoBox h2,body[data-page-type=
 body[data-page-type="target_bird_tour_builder"] .infoBox p{margin:0;color:var(--muted);line-height:1.55}
 body[data-page-type="target_bird_tour_builder"] .hidden{display:none!important}
 body[data-page-type="target_bird_tour_builder"] .mobileSticky{position:fixed;left:10px;right:10px;bottom:10px;z-index:30;gap:8px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 12px 36px rgba(0,0,0,.18)}
+body[data-page-type="target_bird_tour_builder"] .mobileSticky .btn{flex:1;min-width:0}
 body[data-page-type="target_bird_tour_builder"] .targetBuilderFallbackFooter{margin-top:18px}
-@media(max-width:980px){body[data-page-type="target_bird_tour_builder"] .targetHero{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:320px}body[data-page-type="target_bird_tour_builder"] .filterStack{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .routeMap{grid-template-columns:repeat(3,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .targetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .selectedGrid{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .infoGrid{grid-template-columns:1fr}}
-@media(max-width:640px){body[data-page-type="target_bird_tour_builder"] .targetHero{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:260px}body[data-page-type="target_bird_tour_builder"] .targetMiniReport{margin:0 12px 12px}body[data-page-type="target_bird_tour_builder"] .heroMetrics,body[data-page-type="target_bird_tour_builder"] .filterStack,body[data-page-type="target_bird_tour_builder"] .routeMap,body[data-page-type="target_bird_tour_builder"] .targetGrid,body[data-page-type="target_bird_tour_builder"] .leadForm .twoCol{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .builderShell{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetBirdImage{aspect-ratio:5/4}.mobileSticky{display:flex}}
+@media(max-width:980px){body[data-page-type="target_bird_tour_builder"] .targetHero{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:320px}body[data-page-type="target_bird_tour_builder"] .starterGrid{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .filterStack{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .routeMap{grid-template-columns:repeat(3,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .targetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .selectedGrid{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .infoGrid{grid-template-columns:1fr}}
+@media(max-width:640px){body[data-page-type="target_bird_tour_builder"] .targetHero{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:260px}body[data-page-type="target_bird_tour_builder"] .targetMiniReport{margin:0 12px 12px}body[data-page-type="target_bird_tour_builder"] .heroMetrics,body[data-page-type="target_bird_tour_builder"] .starterGrid,body[data-page-type="target_bird_tour_builder"] .filterStack,body[data-page-type="target_bird_tour_builder"] .routeMap,body[data-page-type="target_bird_tour_builder"] .targetGrid,body[data-page-type="target_bird_tour_builder"] .leadForm .twoCol{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .builderShell{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetBirdImage{aspect-ratio:5/4}body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view .targetBirdCard{grid-template-columns:96px 1fr}body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view .targetBirdImage{min-height:132px}.mobileSticky{display:flex}}
 @media(min-width:641px){body[data-page-type="target_bird_tour_builder"] .mobileSticky{display:none}}
 </style>`;
 }
@@ -759,6 +880,8 @@ function clientScript(lang) {
   var DATA = window.MBW_TARGET_BUILDER_DATA || { birds: [], webhookUrl: "" };
   var selected = new Map();
   var filters = { search:"", group:"", difficulty:"", tourFit:"", route:"", photography:"", iconic:false };
+  var visibleLimit = 24;
+  var viewMode = window.matchMedia && window.matchMedia("(max-width: 640px)").matches ? "list" : "cards";
 
   function track(eventName, params){
     window.dataLayer = window.dataLayer || [];
@@ -775,6 +898,16 @@ function clientScript(lang) {
     var routes = {};
     selected.forEach(function(bird){ routes[routeName(bird)] = (routes[routeName(bird)] || 0) + 1; });
     return Object.keys(routes).map(function(route){ return route + " (" + routes[route] + ")"; }).join("; ");
+  }
+
+  function setViewMode(mode){
+    viewMode = mode === "list" ? "list" : "cards";
+    var grid = document.querySelector("[data-target-grid]");
+    if(grid) grid.classList.toggle("is-list-view", viewMode === "list");
+    document.querySelectorAll("[data-view-mode]").forEach(function(button){
+      button.setAttribute("aria-pressed", button.getAttribute("data-view-mode") === viewMode ? "true" : "false");
+    });
+    track("target_view_mode_change", { view_mode: viewMode });
   }
 
   function matches(card){
@@ -795,15 +928,79 @@ function clientScript(lang) {
   }
 
   function applyFilters(){
-    var visible = 0;
+    var matched = 0;
+    var shown = 0;
     document.querySelectorAll("[data-bird-card]").forEach(function(card){
-      var show = matches(card);
+      var match = matches(card);
+      if(match) matched++;
+      var show = match && shown < visibleLimit;
       card.hidden = !show;
-      if(show) visible++;
+      if(show) shown++;
     });
     var count = document.querySelector("[data-result-count]");
-    if(count) count.textContent = String(visible);
-    track("target_filter_apply", Object.assign({}, filters, { visible_count: visible, selected_count: selected.size }));
+    var shownCount = document.querySelector("[data-shown-count]");
+    var showMore = document.querySelector("[data-show-more]");
+    if(count) count.textContent = String(matched);
+    if(shownCount) shownCount.textContent = String(shown);
+    if(showMore) showMore.hidden = matched <= visibleLimit;
+    track("target_filter_apply", Object.assign({}, filters, { visible_count: shown, matched_count: matched, selected_count: selected.size }));
+  }
+
+  function clearQuickToggleState(){
+    document.querySelectorAll("[data-quick-toggle]").forEach(function(button){ button.setAttribute("aria-pressed", "false"); });
+  }
+
+  function syncFilterControls(){
+    document.querySelectorAll("[data-filter-select]").forEach(function(select){
+      var key = select.getAttribute("data-filter-select");
+      if(key && Object.prototype.hasOwnProperty.call(filters, key)) select.value = filters[key] || "";
+    });
+    var searchInput = document.querySelector("[data-filter-search]");
+    if(searchInput) searchInput.value = filters.search || "";
+    document.querySelectorAll("[data-route-filter]").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-route-filter") === filters.route ? "true" : "false");
+    });
+  }
+
+  function resetVisibleLimit(){
+    visibleLimit = 24;
+  }
+
+  function addSpeciesList(codes, mode){
+    var added = 0;
+    (codes || []).forEach(function(code){
+      var bird = DATA.birds.find(function(item){ return item.speciesCode === code; });
+      if(bird && !selected.has(code)){
+        selected.set(code, bird);
+        added++;
+      }
+    });
+    refreshSelectButtons();
+    renderSelected();
+    renderGuestReport();
+    track("target_starter_list_apply", { list_mode: mode || "unknown", added_count: added, selected_count: selected.size });
+    return added;
+  }
+
+  function refreshSelectButtons(){
+    document.querySelectorAll("[data-select-species]").forEach(function(button){
+      var code = button.getAttribute("data-select-species");
+      var active = selected.has(code);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+      button.querySelector("span:last-child").textContent = active
+        ? (PAGE_LANG === "es" ? "Seleccionada" : "Selected")
+        : (PAGE_LANG === "es" ? "Seleccionar" : "Select");
+      var icon = button.querySelector(".selectIcon");
+      if(icon) icon.textContent = active ? "✓" : "+";
+    });
+  }
+
+  function visibleBirdCodes(){
+    var codes = [];
+    document.querySelectorAll("[data-bird-card]").forEach(function(card){
+      if(matches(card)) codes.push(card.dataset.speciesCode);
+    });
+    return codes;
   }
 
   function renderSelected(){
@@ -1044,6 +1241,7 @@ function clientScript(lang) {
       filters.search = search.value || "";
       renderSearchSuggestions(filters.search);
       track("target_search", { query_length: filters.search.length });
+      resetVisibleLimit();
       applyFilters();
     }
   });
@@ -1054,7 +1252,7 @@ function clientScript(lang) {
 
   document.addEventListener("change", function(event){
     var select = event.target.closest("[data-filter-select]");
-    if(select){ filters[select.getAttribute("data-filter-select")] = select.value || ""; applyFilters(); }
+    if(select){ filters[select.getAttribute("data-filter-select")] = select.value || ""; resetVisibleLimit(); clearQuickToggleState(); syncFilterControls(); applyFilters(); }
     if(event.target.matches("input[name='start_date'], select[name='birding_days']")) updateFormFields();
   });
 
@@ -1071,6 +1269,7 @@ function clientScript(lang) {
       if(searchInput) searchInput.value = "";
       filters.search = "";
       if(box){ box.classList.remove("is-visible"); box.innerHTML = ""; }
+      resetVisibleLimit();
       applyFilters();
       return;
     }
@@ -1081,6 +1280,8 @@ function clientScript(lang) {
       filters.route = filters.route === route ? "" : route;
       document.querySelectorAll("[data-route-filter]").forEach(function(btn){ btn.setAttribute("aria-pressed", btn.getAttribute("data-route-filter") === filters.route ? "true" : "false"); });
       track("target_map_cluster_click", { route_cluster: route, active: !!filters.route });
+      resetVisibleLimit();
+      syncFilterControls();
       applyFilters();
       return;
     }
@@ -1097,7 +1298,49 @@ function clientScript(lang) {
         filters.difficulty = filters.difficulty === "specialist" ? "" : "specialist";
       }
       toggle.setAttribute("aria-pressed", toggle.getAttribute("aria-pressed") !== "true" ? "true" : "false");
+      resetVisibleLimit();
+      syncFilterControls();
       applyFilters();
+      return;
+    }
+
+    var starter = event.target.closest("[data-starter-list]");
+    if(starter){
+      var codes = String(starter.getAttribute("data-starter-codes") || "").split(",").filter(Boolean);
+      addSpeciesList(codes, starter.getAttribute("data-starter-list"));
+      var formTarget = document.getElementById("targetBirdForm");
+      if(formTarget) formTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    var surprise = event.target.closest("[data-surprise-me]");
+    if(surprise){
+      var codes = visibleBirdCodes().filter(function(code){ return !selected.has(code); });
+      if(!codes.length) codes = DATA.birds.map(function(bird){ return bird.speciesCode; }).filter(function(code){ return !selected.has(code); });
+      if(codes.length){
+        var code = codes[Math.floor(Math.random() * codes.length)];
+        toggleBird(code, true);
+        var card = document.querySelector("[data-bird-card][data-species-code='" + CSS.escape(code) + "']");
+        if(card){
+          card.hidden = false;
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+      track("target_surprise_me_click", { selected_count: selected.size });
+      return;
+    }
+
+    var viewButton = event.target.closest("[data-view-mode]");
+    if(viewButton){
+      setViewMode(viewButton.getAttribute("data-view-mode"));
+      return;
+    }
+
+    var showMore = event.target.closest("[data-show-more]");
+    if(showMore){
+      visibleLimit += 24;
+      applyFilters();
+      track("target_show_more_click", { visible_limit: visibleLimit });
       return;
     }
 
@@ -1189,8 +1432,10 @@ function clientScript(lang) {
     document.querySelectorAll("input[type='date'][name='start_date']").forEach(function(input){ input.min = minDate; });
     var count = document.querySelector("[data-result-count]");
     if(count) count.textContent = String(DATA.birds.length);
+    setViewMode(viewMode);
     renderSelected();
     updateFormFields();
+    applyFilters();
     track("target_builder_view", { bird_count: DATA.birds.length });
   });
 })();
@@ -1224,6 +1469,7 @@ function renderPage(lang, data) {
   const photoOptions = groupOptions(data.birds, "photographyDifficulty");
   const cards = data.birds.map((bird) => renderBirdCard(bird, lang)).join("\n");
   const routeMap = renderRouteMap(data.routes, data.birds, lang);
+  const starterLists = renderStarterLists(data, lang);
 
   const clientJson = JSON.stringify({
     birds: data.birds.map((bird) => ({
@@ -1238,7 +1484,11 @@ function renderPage(lang, data) {
       routeLabelEs: bird.routeLabelEs,
       bestTime: bird.bestTime,
       image: bird.image,
-      iconic: bird.iconic
+      iconic: bird.iconic,
+      taxonGroup: bird.taxonGroup,
+      photographyDifficulty: bird.photographyDifficulty,
+      priority: bird.priority,
+      reliability: bird.reliability
     })),
     webhookUrl: WEBHOOK_URL
   });
@@ -1318,6 +1568,20 @@ ${langSwitch}
 </section>
 
 <section class="builderShell" id="builder">
+  <section class="guidedPanel" aria-label="${isEs ? "Listas recomendadas" : "Recommended starter lists"}">
+    <div class="guidedHeader">
+      <div>
+        <h2>${isEs ? "Empieza con una lista" : "Start with a list"}</h2>
+        <p>${isEs ? "Elige una lista inicial y ajusta las aves antes de enviar tu solicitud." : "Choose a starter list, then adjust individual birds before sending your request."}</p>
+      </div>
+      <div class="selectorActions">
+        <button class="btn primary" type="button" data-surprise-me>${isEs ? "Surprise Me" : "Surprise Me"}</button>
+        <a class="btn secondary" href="#targetBirdForm">${isEs ? "Ir al formulario" : "Skip to request form"}</a>
+      </div>
+    </div>
+    <div class="starterGrid">${starterLists}</div>
+  </section>
+
   <aside class="filterPanel" aria-label="${isEs ? "Filtros" : "Filters"}">
     <h2>${isEs ? "Filtrar aves" : "Filter Birds"}</h2>
     <div class="filterStack">
@@ -1337,11 +1601,16 @@ ${langSwitch}
 
   <section class="targetMain">
     <div class="targetToolbar">
-      <div><strong data-result-count>${data.birds.length}</strong> ${isEs ? "aves visibles" : "birds visible"}</div>
+      <div><strong data-shown-count>24</strong> ${isEs ? "de" : "of"} <strong data-result-count>${data.birds.length}</strong> ${isEs ? "aves visibles" : "birds shown"}</div>
+      <div class="viewControls" aria-label="${isEs ? "Modo de vista" : "View mode"}">
+        <button type="button" data-view-mode="cards" aria-pressed="true">${isEs ? "Tarjetas" : "Cards"}</button>
+        <button type="button" data-view-mode="list" aria-pressed="false">${isEs ? "Lista" : "List"}</button>
+      </div>
       <div><strong data-selected-count>0</strong> ${isEs ? "seleccionadas" : "selected"}</div>
     </div>
     <div class="routeMap" aria-label="${isEs ? "Mapa de zonas de ruta" : "Route area map"}">${routeMap}</div>
-    <div class="targetGrid">${cards}</div>
+    <div class="targetGrid" data-target-grid>${cards}</div>
+    <div class="showMoreWrap"><button class="showMoreBtn" type="button" data-show-more>${isEs ? "Mostrar 24 mas" : "Show 24 more"}</button></div>
   </section>
 
   <aside class="selectedPanel" aria-label="${isEs ? "Aves seleccionadas" : "Selected target birds"}">
@@ -1414,7 +1683,7 @@ ${langSwitch}
 </main>
 <div id="siteFooter">${renderFooterFallback(lang)}</div>
 </div>
-<div class="mobileSticky"><a class="btn primary" href="#builder"><span data-selected-count>0</span> ${isEs ? "seleccionadas" : "selected"}</a><button class="btn secondary" type="button" data-preview-submit>${isEs ? "Vista previa" : "Preview"}</button></div>
+<div class="mobileSticky"><a class="btn primary" href="#targetBirdForm"><span data-selected-count>0</span> ${isEs ? "seleccionadas" : "selected"}</a><button class="btn secondary" type="button" data-surprise-me>Surprise Me</button><button class="btn secondary" type="button" data-preview-submit>${isEs ? "Vista previa" : "Preview"}</button></div>
 ${renderWhatsAppFab(lang)}
 <script defer src="/assets/js/site.js"></script>
 <script>window.MBW_TARGET_BUILDER_DATA=${clientJson};</script>
