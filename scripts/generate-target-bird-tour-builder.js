@@ -756,8 +756,9 @@ body[data-page-type="target_bird_tour_builder"] .infoBox{padding:16px}
 body[data-page-type="target_bird_tour_builder"] .infoBox h2,body[data-page-type="target_bird_tour_builder"] .infoBox h3{margin:0 0 8px}
 body[data-page-type="target_bird_tour_builder"] .infoBox p{margin:0;color:var(--muted);line-height:1.55}
 body[data-page-type="target_bird_tour_builder"] .hidden{display:none!important}
-body[data-page-type="target_bird_tour_builder"] .mobileSticky{position:fixed;left:10px;right:10px;bottom:10px;z-index:30;gap:8px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 12px 36px rgba(0,0,0,.18)}
+body[data-page-type="target_bird_tour_builder"] .mobileSticky{position:fixed;left:10px;right:10px;bottom:86px;z-index:30;gap:8px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 12px 36px rgba(0,0,0,.18)}
 body[data-page-type="target_bird_tour_builder"] .mobileSticky .btn{flex:1;min-width:0}
+body[data-page-type="target_bird_tour_builder"] .mobileStickyStatus{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.78);font-weight:900;color:var(--ink);box-sizing:border-box;min-width:112px}
 body[data-page-type="target_bird_tour_builder"] .targetBuilderFallbackFooter{margin-top:18px}
 @media(max-width:980px){body[data-page-type="target_bird_tour_builder"] .targetHero{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:320px}body[data-page-type="target_bird_tour_builder"] .starterGrid{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .filterStack{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .routeMap{grid-template-columns:repeat(3,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .targetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page-type="target_bird_tour_builder"] .selectedGrid{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .infoGrid{grid-template-columns:1fr}}
 @media(max-width:640px){body[data-page-type="target_bird_tour_builder"] .targetHero{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetHeroCopy{padding:18px}body[data-page-type="target_bird_tour_builder"] .targetHeroMedia{min-height:260px}body[data-page-type="target_bird_tour_builder"] .targetMiniReport{margin:0 12px 12px}body[data-page-type="target_bird_tour_builder"] .heroMetrics,body[data-page-type="target_bird_tour_builder"] .starterGrid,body[data-page-type="target_bird_tour_builder"] .filterStack,body[data-page-type="target_bird_tour_builder"] .routeMap,body[data-page-type="target_bird_tour_builder"] .targetGrid,body[data-page-type="target_bird_tour_builder"] .leadForm .twoCol{grid-template-columns:1fr}body[data-page-type="target_bird_tour_builder"] .builderShell{padding:12px}body[data-page-type="target_bird_tour_builder"] .targetBirdImage{aspect-ratio:5/4}body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view .targetBirdCard{grid-template-columns:96px 1fr}body[data-page-type="target_bird_tour_builder"] .targetGrid.is-list-view .targetBirdImage{min-height:132px}.mobileSticky{display:flex}}
@@ -1344,6 +1345,18 @@ function clientScript(lang) {
       return;
     }
 
+    var mobileSubmit = event.target.closest("[data-mobile-submit-request]");
+    if(mobileSubmit){
+      var form = document.querySelector("[data-lead-form]");
+      if(form){
+        if(form.requestSubmit) form.requestSubmit();
+        else form.submit();
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      track("target_mobile_request_click", { selected_count: selected.size });
+      return;
+    }
+
     var submit = event.target.closest("[data-preview-submit]");
     if(submit){
       var payload = buildPayload();
@@ -1659,11 +1672,10 @@ ${langSwitch}
           <input name="selected_species_names" type="hidden" value="">
           <div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk"></div>
           <div class="heroActions">
-            <button class="btn primary" type="button" data-preview-submit>${isEs ? "Crear vista previa" : "Build Preview"}</button>
             <button class="btn secondary" type="submit" data-submit-request>${isEs ? "Solicitar revision del guia" : "Request Guide Review"}</button>
             <a class="btn secondary" href="#targetBirdForm" data-whatsapp-message-key="${isEs ? "book_tour_es" : "book_tour_en"}" data-analytics-event="tour_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-label="${isEs ? "Mensaje por WhatsApp" : "Message on WhatsApp"}" data-analytics-location="target_builder_form" data-analytics-page-language="${isEs ? "es" : "en"}" data-analytics-page-type="target_bird_tour_builder" rel="noopener noreferrer" target="_blank">WhatsApp</a>
           </div>
-          <p class="buttonHelp">${isEs ? "Crear vista previa actualiza el resumen en esta pagina. Solicitar revision envia tu lista a MBW y dispara el flujo interno. WhatsApp abre una conversacion directa si prefieres escribirnos." : "Build Preview updates the summary on this page. Request Guide Review sends your list to MBW and starts the internal workflow. WhatsApp opens a direct conversation if you prefer to message us."}</p>
+          <p class="buttonHelp">${isEs ? "Solicitar revision envia tu lista a MBW y dispara el flujo interno. WhatsApp abre una conversacion directa si prefieres escribirnos." : "Request Guide Review sends your list to MBW and starts the internal workflow. WhatsApp opens a direct conversation if you prefer to message us."}</p>
           <p class="trustNote">${isEs ? "Este formulario usa Cloudflare Turnstile para reducir bots. El reporte final sera revisado por MBW." : "This form uses Cloudflare Turnstile to reduce bots. The final report is reviewed by MBW."}</p>
           <div class="success" id="targetFormSuccess">${isEs ? "Solicitud preparada. Revisaremos tus aves objetivo." : "Request prepared. We will review your target birds."}</div>
           <div class="errorMsg" id="targetFormError">${isEs ? "Selecciona al menos una especie objetivo antes de solicitar revision." : "Select at least one target species before requesting review."}</div>
@@ -1683,7 +1695,7 @@ ${langSwitch}
 </main>
 <div id="siteFooter">${renderFooterFallback(lang)}</div>
 </div>
-<div class="mobileSticky"><a class="btn primary" href="#targetBirdForm"><span data-selected-count>0</span> ${isEs ? "seleccionadas" : "selected"}</a><button class="btn secondary" type="button" data-surprise-me>Surprise Me</button><button class="btn secondary" type="button" data-preview-submit>${isEs ? "Vista previa" : "Preview"}</button></div>
+<div class="mobileSticky"><a class="mobileStickyStatus" href="#targetBirdForm"><span data-selected-count>0</span>&nbsp;${isEs ? "seleccionadas" : "selected"}</a><button class="btn primary" type="button" data-mobile-submit-request>${isEs ? "Solicitar revision" : "Request Review"}</button></div>
 ${renderWhatsAppFab(lang)}
 <script defer src="/assets/js/site.js"></script>
 <script>window.MBW_TARGET_BUILDER_DATA=${clientJson};</script>
