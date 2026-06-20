@@ -38,7 +38,7 @@ const OUT_ES = path.join(OUT_DIR, "es", "tours", "constructor-tour-aves-objetivo
 
 const HERO_IMAGE = "/assets/images/pages/tours/full-day/MBW-Assets-65-Tours-FD-Carousel.jpg";
 const OG_IMAGE = HERO_IMAGE;
-const PLACEHOLDER_IMAGE = "/assets/images/birds/mbw_plate_billed_mountan_toucan_01.jpg";
+const PLACEHOLDER_IMAGE = "/assets/images/birds/mbw_image_coming_soon_02.jpg";
 const LOGO_IMAGE = "/assets/images/logo/mbw-logo-mark-1024.png";
 const WEBHOOK_URL = process.env.TARGET_BIRD_WEBHOOK_URL || "";
 
