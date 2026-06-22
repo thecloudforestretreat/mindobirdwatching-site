@@ -31,6 +31,65 @@
 <link href="/site.webmanifest" rel="manifest"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
+<style>
+/* Page-specific symmetry fixes for Choco-Andean Endemics planning page.
+   This keeps the global MBW card system intact while forcing the strategy
+   section and final CTA buttons to align consistently. */
+body[data-page-location="choco_andean"] .strategyGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+body[data-page-location="choco_andean"] .strategyGrid .sectionBox{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+body[data-page-location="choco_andean"] .strategyGrid .sectionBox p{
+  flex: 1 1 auto;
+}
+
+body[data-page-location="choco_andean"] .strategyGrid .ctaRow{
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+body[data-page-location="choco_andean"] .strategyGrid .btn{
+  min-width: 166px;
+  justify-content: center;
+  text-align: center;
+}
+
+body[data-page-location="choco_andean"] .finalCtaBox .ctaRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+body[data-page-location="choco_andean"] .finalCtaBox .btn{
+  justify-content: center;
+  text-align: center;
+}
+
+@media (max-width: 900px){
+  body[data-page-location="choco_andean"] .strategyGrid{
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-location="choco_andean"] .strategyGrid .btn,
+  body[data-page-location="choco_andean"] .finalCtaBox .btn{
+    width: 100%;
+    min-width: 0;
+  }
+}
+</style>
 <script defer src="/assets/js/head.js"></script>
 <script defer src="/assets/js/site-config.js"></script>
 </head>
@@ -108,8 +167,9 @@
 </section>
 <section class="section" aria-label="Build a Chocó-Andean Target Birding Strategy">
 <div class="sectionHead"><h2>Build a Chocó-Andean Target Birding Strategy</h2><p class="sectionHint">A practical target list helps your guide design a route that matches your goals.</p></div>
-<div class="split">
-<div class="sectionBox"><h3>Start with the bird list</h3><p>Review likely Mindo species, choose priorities, and separate target birds from general interest birds before booking.</p><div class="ctaRow"><a class="btn secondary" href="/mindo-birds-list/" data-analytics-event="internal_link_click" data-analytics-label="Mindo Birds List" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Mindo Birds List</a><a class="btn secondary" href="/endemic-birds-of-northwest-ecuador/" data-analytics-event="internal_link_click" data-analytics-label="Endemic Birds Guide" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Endemic Birds Guide</a></div></div><div class="sectionBox"><h3>Choose enough time</h3><p>If Chocó-Andean specialties are a priority, a full-day or custom private route usually gives better flexibility than a half-day.</p><div class="ctaRow"><a class="btn secondary" href="/tours/full-day/" data-analytics-event="internal_link_click" data-analytics-label="Full-Day Tour" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Full-Day Tour</a><a class="btn secondary" href="/tours/custom-private-tour/" data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Custom Private Tour</a></div></div>
+<div class="strategyGrid">
+<div class="sectionBox"><h3>Start with the bird list</h3><p>Review likely Mindo species, choose priorities, and separate target birds from general interest birds before booking.</p><div class="ctaRow"><a class="btn secondary" href="/mindo-birds-list/" data-analytics-event="internal_link_click" data-analytics-label="Mindo Birds List" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Mindo Birds List</a><a class="btn secondary" href="/endemic-birds-of-northwest-ecuador/" data-analytics-event="internal_link_click" data-analytics-label="Endemic Birds Guide" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Endemic Birds Guide</a></div></div>
+<div class="sectionBox"><h3>Choose enough time</h3><p>If Chocó-Andean specialties are a priority, a full-day or custom private route usually gives better flexibility than a half-day.</p><div class="ctaRow"><a class="btn secondary" href="/tours/full-day/" data-analytics-event="internal_link_click" data-analytics-label="Full-Day Tour" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Full-Day Tour</a><a class="btn secondary" href="/tours/custom-private-tour/" data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="strategy" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Custom Private Tour</a></div></div>
 </div>
 </section>
 <section class="section" aria-label="Planning and Equipment Resources">
@@ -140,7 +200,7 @@
 </div>
 </section>
 <section class="section" aria-label="Want to Plan a Chocó-Andean Birding Day?" id="contact-form">
-<div class="sectionBox"><h2>Want to Plan a Chocó-Andean Birding Day?</h2><p>Start with a custom private tour if specialty birds are your priority, then use the bird list, equipment guide, and full-day route options to set realistic expectations.</p><div class="ctaRow"><a class="btn primary" href="/tours/custom-private-tour/" data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Custom Private Tour</a><a class="btn secondary" href="/mindo-birds-list/" data-analytics-event="internal_link_click" data-analytics-label="Mindo Birds List" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Mindo Birds List</a><a class="btn secondary" href="/birdwatching-equipment-binoculars-scopes/" data-analytics-event="internal_link_click" data-analytics-label="Equipment Guide" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Equipment Guide</a><a class="btn secondary" href="#contact-form" data-whatsapp-message-key="contact_en" data-analytics-event="contact_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-label="Ask About Chocó-Andean Birding" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide" data-analytics-region="choco_andean" data-analytics-source-page="/choco-andean-endemics/" data-analytics-message-key="contact_en" data-whatsapp-source-page="/choco-andean-endemics/" rel="noopener noreferrer" target="_blank">Ask About Chocó-Andean Birding</a></div></div>
+<div class="sectionBox finalCtaBox"><h2>Want to Plan a Chocó-Andean Birding Day?</h2><p>Start with a custom private tour if specialty birds are your priority, then use the bird list, equipment guide, and full-day route options to set realistic expectations.</p><div class="ctaRow"><a class="btn primary" href="/tours/custom-private-tour/" data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Custom Private Tour</a><a class="btn secondary" href="/mindo-birds-list/" data-analytics-event="internal_link_click" data-analytics-label="Mindo Birds List" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Mindo Birds List</a><a class="btn secondary" href="/birdwatching-equipment-binoculars-scopes/" data-analytics-event="internal_link_click" data-analytics-label="Equipment Guide" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide">Equipment Guide</a><a class="btn secondary" href="#contact-form" data-whatsapp-message-key="contact_en" data-analytics-event="contact_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-label="Ask About Chocó-Andean Birding" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="planning_guide" data-analytics-region="choco_andean" data-analytics-source-page="/choco-andean-endemics/" data-analytics-message-key="contact_en" data-whatsapp-source-page="/choco-andean-endemics/" rel="noopener noreferrer" target="_blank">Ask About Chocó-Andean Birding</a></div></div>
 </section>
 </main>
 <div id="siteFooter"></div>
