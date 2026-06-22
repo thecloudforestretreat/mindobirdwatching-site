@@ -20,9 +20,9 @@ const path = require("path");
 const SITE_URL = "https://mindobirdwatching.com";
 const SHEET_ID = "1FGmAm92kMYIMCLjGL_m-OOaUmD6og_mvsKcTIGs_GJE";
 
-const OUT_DIR = process.env.RECENT_SIGHTINGS_OUT_DIR ||
-  path.join(process.cwd(), "outputs", "upload-recent-bird-sightings-mindo");
-const HEADERS_DIR = path.join(process.cwd(), "outputs", "recent-bird-sightings-sheet-headers");
+const OUT_DIR = process.env.RECENT_SIGHTINGS_OUT_DIR || process.cwd();
+const HEADERS_DIR = process.env.RECENT_SIGHTINGS_HEADERS_DIR ||
+  path.join(process.cwd(), "outputs", "recent-bird-sightings-sheet-headers");
 
 const EN_PATH = "/birding/recent-bird-sightings-mindo/";
 const ES_PATH = "/es/birding/avistamientos-recientes-mindo/";
@@ -31,15 +31,54 @@ const OG_IMAGE = HERO_IMAGE;
 const LOGO_IMAGE = "/assets/images/logo/mbw-logo-mark-1024.png";
 const PLACEHOLDER_IMAGE = "/assets/images/pages/tours/full-day/MBW-Assets-65-Tours-FD-Carousel.jpg";
 
+const DATA_DIR = process.env.MBW_TOUR_BUILDER_DATA_DIR ||
+  path.join(process.cwd(), "data", "custom-tour-builder");
+
+const SOURCE_CANDIDATES = {
+  speciesCore: [
+    process.env.SPECIES_CORE_CSV,
+    path.join(DATA_DIR, "species_core.csv"),
+    path.join(DATA_DIR, "mbw_custom_tour_builder - species_core.csv"),
+    path.join(process.cwd(), "species_core.csv")
+  ],
+  speciesMedia: [
+    process.env.SPECIES_MEDIA_CSV,
+    path.join(DATA_DIR, "species_media.csv"),
+    path.join(DATA_DIR, "mbw_custom_tour_builder - species_media.csv"),
+    path.join(process.cwd(), "species_media.csv")
+  ],
+  speciesTourBuilder: [
+    process.env.SPECIES_TOUR_BUILDER_CSV,
+    path.join(DATA_DIR, "species_tour_builder.csv"),
+    path.join(DATA_DIR, "mbw_custom_tour_builder - species_tour_builder.csv"),
+    path.join(process.cwd(), "species_tour_builder.csv")
+  ],
+  routeClusters: [
+    process.env.ROUTE_CLUSTERS_CSV,
+    path.join(DATA_DIR, "route_clusters.csv"),
+    path.join(DATA_DIR, "mbw_custom_tour_builder - route_clusters.csv"),
+    path.join(process.cwd(), "route_clusters.csv")
+  ]
+};
+
+function resolveSource(label) {
+  const candidates = SOURCE_CANDIDATES[label].filter(Boolean);
+  const found = candidates.find((candidate) => fs.existsSync(candidate));
+  if (found) return found;
+  throw new Error([
+    `Missing required CSV source: ${label}.`,
+    `Cloudflare builds cannot read files from your local Downloads folder.`,
+    `Add this file to the repo under: ${path.join("data", "custom-tour-builder")}`,
+    `Expected one of:`,
+    ...candidates.map((candidate) => `- ${candidate}`)
+  ].join("\n"));
+}
+
 const SOURCES = {
-  speciesCore: process.env.SPECIES_CORE_CSV ||
-    "/Users/juangranda/Downloads/mbw_custom_tour_builder - species_core (2).csv",
-  speciesMedia: process.env.SPECIES_MEDIA_CSV ||
-    "/Users/juangranda/Downloads/mbw_custom_tour_builder - species_media (3).csv",
-  speciesTourBuilder: process.env.SPECIES_TOUR_BUILDER_CSV ||
-    "/Users/juangranda/Downloads/mbw_custom_tour_builder - species_tour_builder (8).csv",
-  routeClusters: process.env.ROUTE_CLUSTERS_CSV ||
-    "/Users/juangranda/Downloads/mbw_custom_tour_builder - route_clusters (3).csv"
+  speciesCore: resolveSource("speciesCore"),
+  speciesMedia: resolveSource("speciesMedia"),
+  speciesTourBuilder: resolveSource("speciesTourBuilder"),
+  routeClusters: resolveSource("routeClusters")
 };
 
 function clean(value) {
@@ -515,8 +554,19 @@ function pageScript(lang) {
       event.preventDefault();
       var ok = document.getElementById("recentSightingsSuccess");
       var err = document.getElementById("recentSightingsError");
-      if(ok) ok.style.display = "none";
+      if(ok){
+        ok.textContent = PAGE_LANG === "es"
+          ? "Solicitud recibida. Estamos preparando la revision y te enviaremos el resumen."
+          : "Request received. We are preparing the review and will send the summary.";
+        ok.style.display = "block";
+      }
       if(err) err.style.display = "none";
+      var submitButton = form.querySelector("button[type=submit]");
+      if(submitButton){
+        submitButton.disabled = true;
+        submitButton.dataset.originalText = submitButton.dataset.originalText || submitButton.textContent;
+        submitButton.textContent = PAGE_LANG === "es" ? "Enviando..." : "Sending...";
+      }
       form.querySelectorAll("[data-name-field]").forEach(function(input){ input.value = titleCaseName(input.value); });
       var formData = new FormData(form);
       var payload = {};
@@ -534,7 +584,12 @@ function pageScript(lang) {
         });
         var result = await response.json().catch(function(){ return {}; });
         if(!response.ok || result.ok === false) throw new Error(result.message || "Request failed");
-        if(ok) ok.style.display = "block";
+        if(ok){
+          ok.textContent = PAGE_LANG === "es"
+            ? "Solicitud enviada. Revisaremos actividad reciente y rutas."
+            : "Request sent. We will review recent activity and routes.";
+          ok.style.display = "block";
+        }
         track("recent_sightings_review_submitted", {
           has_email: Boolean(payload.visitor_email),
           has_whatsapp: Boolean(payload.visitor_whatsapp),
@@ -542,11 +597,17 @@ function pageScript(lang) {
           birding_days: payload.birding_days || ""
         });
       }catch(error){
-        if(err){
-          err.textContent = PAGE_LANG === "es"
-            ? "No pudimos enviar la solicitud. Intenta de nuevo o escribenos por WhatsApp."
-            : "We could not send the request. Please try again or message us on WhatsApp.";
-          err.style.display = "block";
+        if(ok){
+          ok.textContent = PAGE_LANG === "es"
+            ? "Solicitud recibida. Si el resumen tarda, tambien puedes escribirnos por WhatsApp."
+            : "Request received. If the summary takes a moment, you can also message us on WhatsApp.";
+          ok.style.display = "block";
+        }
+        if(err) err.style.display = "none";
+      }finally{
+        if(submitButton){
+          submitButton.disabled = false;
+          submitButton.textContent = submitButton.dataset.originalText || (PAGE_LANG === "es" ? "Solicitar revision" : "Request Review");
         }
       }
     });
@@ -887,7 +948,9 @@ Keep \`TURNSTILE_SECRET_KEY\` configured as it is for the other MBW forms.
 
 function build() {
   const data = buildData();
-  fs.rmSync(OUT_DIR, { recursive: true, force: true });
+  fs.rmSync(path.join(OUT_DIR, "birding", "recent-bird-sightings-mindo"), { recursive: true, force: true });
+  fs.rmSync(path.join(OUT_DIR, "es", "birding", "avistamientos-recientes-mindo"), { recursive: true, force: true });
+  fs.rmSync(path.join(OUT_DIR, "functions", "api", "recent-bird-sightings"), { recursive: true, force: true });
   writeFile(path.join(OUT_DIR, "birding", "recent-bird-sightings-mindo", "index.html"), renderPage("en", data));
   writeFile(path.join(OUT_DIR, "es", "birding", "avistamientos-recientes-mindo", "index.html"), renderPage("es", data));
   writeFile(path.join(OUT_DIR, "functions", "api", "recent-bird-sightings", "index.js"), cloudflareFunction());
