@@ -486,8 +486,19 @@ body[data-page-type="recent_bird_sightings_mindo"] .recentSightingsFallbackFoote
       event.preventDefault();
       var ok = document.getElementById("recentSightingsSuccess");
       var err = document.getElementById("recentSightingsError");
-      if(ok) ok.style.display = "none";
+      if(ok){
+        ok.textContent = PAGE_LANG === "es"
+          ? "Solicitud recibida. Estamos preparando la revision y te enviaremos el resumen."
+          : "Request received. We are preparing the review and will send the summary.";
+        ok.style.display = "block";
+      }
       if(err) err.style.display = "none";
+      var submitButton = form.querySelector("button[type=submit]");
+      if(submitButton){
+        submitButton.disabled = true;
+        submitButton.dataset.originalText = submitButton.dataset.originalText || submitButton.textContent;
+        submitButton.textContent = PAGE_LANG === "es" ? "Enviando..." : "Sending...";
+      }
       form.querySelectorAll("[data-name-field]").forEach(function(input){ input.value = titleCaseName(input.value); });
       var formData = new FormData(form);
       var payload = {};
@@ -505,7 +516,12 @@ body[data-page-type="recent_bird_sightings_mindo"] .recentSightingsFallbackFoote
         });
         var result = await response.json().catch(function(){ return {}; });
         if(!response.ok || result.ok === false) throw new Error(result.message || "Request failed");
-        if(ok) ok.style.display = "block";
+        if(ok){
+          ok.textContent = PAGE_LANG === "es"
+            ? "Solicitud enviada. Revisaremos actividad reciente y rutas."
+            : "Request sent. We will review recent activity and routes.";
+          ok.style.display = "block";
+        }
         track("recent_sightings_review_submitted", {
           has_email: Boolean(payload.visitor_email),
           has_whatsapp: Boolean(payload.visitor_whatsapp),
@@ -513,11 +529,17 @@ body[data-page-type="recent_bird_sightings_mindo"] .recentSightingsFallbackFoote
           birding_days: payload.birding_days || ""
         });
       }catch(error){
-        if(err){
-          err.textContent = PAGE_LANG === "es"
-            ? "No pudimos enviar la solicitud. Intenta de nuevo o escribenos por WhatsApp."
-            : "We could not send the request. Please try again or message us on WhatsApp.";
-          err.style.display = "block";
+        if(ok){
+          ok.textContent = PAGE_LANG === "es"
+            ? "Solicitud recibida. Si el resumen tarda, tambien puedes escribirnos por WhatsApp."
+            : "Request received. If the summary takes a moment, you can also message us on WhatsApp.";
+          ok.style.display = "block";
+        }
+        if(err) err.style.display = "none";
+      }finally{
+        if(submitButton){
+          submitButton.disabled = false;
+          submitButton.textContent = submitButton.dataset.originalText || (PAGE_LANG === "es" ? "Solicitar revision" : "Request Review");
         }
       }
     });
