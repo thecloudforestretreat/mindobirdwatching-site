@@ -33,6 +33,22 @@
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <script defer src="/assets/js/head.js"></script>
 <script defer src="/assets/js/site-config.js"></script>
+
+<style id="bird-comparison-feature-safety">
+.birdCompareFeature{margin-top:18px;display:grid;grid-template-columns:minmax(0,58%) minmax(0,42%);gap:0;align-items:stretch;overflow:hidden;background:rgba(255,255,255,.68);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.birdCompareFeature .activityMedia,.birdCompareFeature .mbwCarousel,.birdCompareFeature .mbwCarouselViewport,.birdCompareFeature .mbwCarouselTrack,.birdCompareFeature .mbwSlide{height:100%;min-height:440px}
+.birdCompareFeature .activityMedia{position:relative;overflow:hidden}
+.birdCompareFeature .activityBody{padding:28px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.mbwCarouselTrack{display:flex;transition:transform .42s ease}
+.mbwSlide{flex:0 0 100%}
+.mbwSlide img{width:100%;height:100%;object-fit:cover;display:block}
+.mbwNavBtn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;border-radius:14px;cursor:pointer;z-index:2}
+.mbwNavPrev{left:10px}.mbwNavNext{right:10px}
+.mbwDots{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:6px}
+.mbwDot{width:8px;height:8px;border-radius:50%;background:#cbd5d1}.mbwDot.is-active{background:#6b8f7a}
+@media(max-width:980px){.birdCompareFeature{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body data-page-content-group="travel_planning" data-page-language="es" data-page-location="mindo" data-page-region="mindo_cloud_forest" data-page-type="travel_guide">
 <div class="container">
@@ -101,6 +117,30 @@
 <div class="sectionBox"><h3>Mejor para visita de un dia</h3><p>Sal temprano de Quito, mantén la ruta enfocada, elige una experiencia principal de aves o naturaleza y evita sumar demasiadas paradas antes de regresar.</p><ul class="miniList"><li>Mejor para poco tiempo.</li><li>Transporte privado recomendado.</li><li>Mantén expectativas realistas.</li></ul></div>
 </div>
 </section>
+
+
+<section class="activityCard birdCompareFeature" data-mbw-carousel="1">
+<div class="activityMedia">
+<div class="mbwCarousel">
+<button class="mbwNavBtn mbwNavPrev" type="button">‹</button>
+<div class="mbwCarouselViewport"><div class="mbwCarouselTrack">
+<div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg"></div>
+<div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg"></div>
+<div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg"></div>
+<div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg"></div>
+<div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg"></div>
+</div></div>
+<button class="mbwNavBtn mbwNavNext" type="button">›</button>
+<div class="mbwDots"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
+</div></div>
+<div class="activityBody">
+<p class="mini-links__label">NUEVA GUÍA DE AVES</p>
+<h2>Compara Qué Aves Son Más Probables en Medio Día vs Día Entero</h2>
+<p>Compara más de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duración de tour y notas prácticas de guía. Esta guía ayuda a elegir el tour correcto y muestra por qué un día entero ofrece más tiempo, más variedad de hábitat y mejores oportunidades para especies objetivo.</p>
+<div class="tourActions">
+<a class="btn primary" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/">Explorar Guía Comparativa</a>
+<a class="btn secondary" href="/es/tours/dia-entero/">Ver Tours de Día Entero</a>
+</div></div></section>
 
 <section class="section" aria-label="Preguntas frecuentes">
 <div class="sectionHead"><h2>Preguntas Frecuentes Sobre Quito a Mindo</h2><p class="sectionHint">Respuestas rapidas para viajeros que organizan logistica antes de reservar un tour.</p></div>
@@ -271,5 +311,10 @@
   ]
 }
 </script>
+
+<script>
+(function(){document.querySelectorAll('[data-mbw-carousel]').forEach(function(root){var t=root.querySelector('.mbwCarouselTrack');var s=root.querySelectorAll('.mbwSlide');var d=root.querySelectorAll('.mbwDot');var i=0;function g(n){i=(n+s.length)%s.length;t.style.transform='translateX('+(-i*100)+'%)';d.forEach((x,k)=>x.classList.toggle('is-active',k===i));}root.querySelector('.mbwNavPrev').onclick=function(){g(i-1)};root.querySelector('.mbwNavNext').onclick=function(){g(i+1)};g(0);});})();
+</script>
+
 </body>
 </html>
