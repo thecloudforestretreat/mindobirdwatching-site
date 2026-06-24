@@ -366,9 +366,9 @@
     .mindoLetters{
       position:absolute;
       z-index:5;
-      right:20px;
-      bottom:-10px;
-      width:760px;
+      right:34px;
+      bottom:58px;
+      width:720px;
       height:auto;
       object-fit:contain;
       pointer-events:none;
@@ -377,11 +377,11 @@
       position:absolute;
       z-index:3;
       left:220px;
-      top:435px;
-      width:610px;
+      top:420px;
+      width:640px;
       display:grid;
       grid-template-columns:185px 1fr;
-      gap:22px 18px;
+      gap:18px 18px;
       align-items:start;
       color:var(--mbw-green);
     }
@@ -396,7 +396,7 @@
     .certValue{
       display:inline-block;
       width:max-content;
-      max-width:430px;
+      max-width:455px;
       color:var(--mbw-green);
       font-size:30px;
       line-height:1.12;
@@ -408,7 +408,7 @@
     }
     .certValue.small{ font-size:27px; }
     .certValue.big{ font-size:36px; text-transform:uppercase; }
-    .certValue.wrap{ white-space:normal; max-width:420px; }
+    .certValue.wrap{ white-space:normal; max-width:455px; }
     .qrBox{
       position:absolute;
       z-index:4;
@@ -428,7 +428,7 @@
       position:absolute;
       z-index:4;
       left:220px;
-      top:930px;
+      top:905px;
       color:var(--mbw-green);
       font-size:25px;
       line-height:1.1;
@@ -581,6 +581,10 @@
                 <input id="guestsInput" type="text" placeholder="Primary guest + other guest names" />
               </div>
               <div class="field">
+                <label for="guestPhoneInput">Guest Phone</label>
+                <input id="guestPhoneInput" type="text" placeholder="+1 555 000 0000" />
+              </div>
+              <div class="field">
                 <label for="tourDateInput">Tour Date</label>
                 <input id="tourDateInput" type="date" />
               </div>
@@ -660,6 +664,9 @@
                     <div class="certLabel">Guest(s):</div>
                     <div class="certValue" id="outGuests">Alisha Riasati & Jesse Best</div>
 
+                    <div class="certLabel">Guest Phone:</div>
+                    <div class="certValue small" id="outGuestPhone">+1 555 000 0000</div>
+
                     <div class="certLabel">Tour Date:</div>
                     <div class="certValue" id="outTourDate">Saturday, June 20th, 2026</div>
 
@@ -722,6 +729,7 @@
             "guests": "2",
             "guest_name": "Alisha Riasati",
             "other_guest_names": "Jesse Best",
+            "guest_phone": "+1 555 000 0000",
             "tour_date": "6/20/2026",
             "tour_guide": "Chicho",
             "guide_phone": "+593 98 600 5054",
@@ -778,9 +786,9 @@
       function cacheEls(){
         const ids = [
           "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput",
-          "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput",
+          "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
-          "outDateIssued", "outGuests", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
+          "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
           "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
           "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
         ];
@@ -808,7 +816,7 @@
           if(idx >= 0) selectRecord(idx);
         });
 
-        ["statusInput", "guideInput", "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
+        ["statusInput", "guideInput", "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
           els[id].addEventListener("input", updatePreviewFromForm);
           els[id].addEventListener("change", updatePreviewFromForm);
         });
@@ -868,6 +876,10 @@
         if(legacy && !/^\d+$/.test(String(legacy).trim())) return legacy;
         if(countOnly && !/^\d+$/.test(String(countOnly).trim())) return countOnly;
         return "";
+      }
+
+      function guestPhoneOf(row){
+        return val(row, ["guest_phone", "Guest Phone", "Guest Phone #", "guest_phone_number"], "");
       }
 
       function dateIssuedOf(row){
@@ -930,7 +942,7 @@
       }
 
       function hasUsefulRecord(r){
-        return ["confirmation_id", "invoice_no", "guest_name", "other_guest_names", "tour_date", "tour_guide", "tour_type_1", "combined_tour_display", "tour_confirmation_status", "Guests", "Tour Date", "Guide", "Tour Type 1", "Combined Tour Display", "Status"].some(k => String(r[k] || "").trim() !== "");
+        return ["confirmation_id", "invoice_no", "guest_name", "other_guest_names", "guest_phone", "tour_date", "tour_guide", "tour_type_1", "combined_tour_display", "tour_confirmation_status", "Guests", "Tour Date", "Guide", "Tour Type 1", "Combined Tour Display", "Status"].some(k => String(r[k] || "").trim() !== "");
       }
 
       function renderGuideOptions(){
@@ -1050,7 +1062,7 @@
         return state.records.map((record, index) => ({record, index})).filter(item => {
           const r = item.record;
           const statusOk = state.activeStatus === "all" || String(statusOf(r)) === state.activeStatus;
-          const hay = [guestDisplayOf(r), tourDateOf(r), guideNameOf(r), statusOf(r), tourDisplay(r), val(r, ["invoice_no"], ""), val(r, ["confirmation_id"], "")].join(" ").toLowerCase();
+          const hay = [guestDisplayOf(r), guestPhoneOf(r), tourDateOf(r), guideNameOf(r), statusOf(r), tourDisplay(r), val(r, ["invoice_no"], ""), val(r, ["confirmation_id"], "")].join(" ").toLowerCase();
           const searchOk = !state.search || hay.includes(state.search);
           return statusOk && searchOk;
         });
@@ -1070,6 +1082,7 @@
         els.guideInput.value = guideNameOf(r);
         els.dateIssuedInput.value = toDateInputValue(dateIssuedOf(r) || todayMDY());
         els.guestsInput.value = guestDisplayOf(r);
+        els.guestPhoneInput.value = guestPhoneOf(r);
         els.tourDateInput.value = toDateInputValue(tourDateOf(r));
         els.contactInput.value = guidePhoneOf(r) || contactForGuide(els.guideInput.value) || "";
         els.lengthInput.value = normalizeLength(tourLengthOf(r));
@@ -1100,6 +1113,7 @@
         const guide = els.guideInput.value || "Chicho";
         els.outDateIssued.textContent = formatDateIssued(els.dateIssuedInput.value || todayMDY());
         els.outGuests.textContent = els.guestsInput.value || "Guest Name";
+        els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
         els.outTourDate.textContent = formatTourDateLong(els.tourDateInput.value || "");
         els.outGuide.textContent = guide;
         els.outContact.textContent = els.contactInput.value || contactForGuide(guide) || "";
@@ -1218,7 +1232,7 @@
           ctx.fillRect(0, 0, 1920, 1080);
 
           drawContain(ctx, logo, 62, 58, 330, 330);
-          drawContain(ctx, mindo, 1140, 770, 760, getContainHeight(mindo, 760));
+          drawContain(ctx, mindo, 1158, 680, 720, getContainHeight(mindo, 720));
           drawContain(ctx, guide, 1180, 140, 700, 1000);
 
           ctx.fillStyle = "#075f28";
@@ -1289,13 +1303,14 @@
         const labelX = 220;
         const valueX = 423;
         const rows = [
-          { label:"Guest(s):", value:els.outGuests.textContent || "", y:435, valueSize:30, maxWidth:500 },
-          { label:"Tour Date:", value:els.outTourDate.textContent || "", y:489, valueSize:30, maxWidth:540 },
-          { label:"Guide:", value:els.outGuide.textContent || "", y:543, valueSize:30, maxWidth:400 },
-          { label:"Contact #:", value:els.outContact.textContent || "", y:597, valueSize:27, maxWidth:430 },
-          { label:"Tour Type:", value:els.outTourType.textContent || "", y:651, valueSize:27, maxWidth:440 },
-          { label:"Length:", value:els.outLength.textContent || "", y:742, valueSize:36, maxWidth:420 },
-          { label:"Transportation:", value:getPlainText(els.outTransportation), y:790, valueSize:27, maxWidth:460 }
+          { label:"Guest(s):", value:els.outGuests.textContent || "", y:420, valueSize:30, maxWidth:520 },
+          { label:"Guest Phone:", value:els.outGuestPhone.textContent || "", y:470, valueSize:27, maxWidth:430 },
+          { label:"Tour Date:", value:els.outTourDate.textContent || "", y:520, valueSize:30, maxWidth:540 },
+          { label:"Guide:", value:els.outGuide.textContent || "", y:570, valueSize:30, maxWidth:400 },
+          { label:"Contact #:", value:els.outContact.textContent || "", y:620, valueSize:27, maxWidth:430 },
+          { label:"Tour Type:", value:els.outTourType.textContent || "", y:670, valueSize:27, maxWidth:455 },
+          { label:"Length:", value:els.outLength.textContent || "", y:760, valueSize:36, maxWidth:420 },
+          { label:"Transportation:", value:getPlainText(els.outTransportation), y:820, valueSize:27, maxWidth:475 }
         ];
 
         ctx.textAlign = "left";
@@ -1310,7 +1325,7 @@
         });
 
         ctx.font = "950 25px Arial, Helvetica, sans-serif";
-        ctx.fillText(els.outNotes.textContent || "", 220, 858);
+        ctx.fillText(els.outNotes.textContent || "", 220, 905);
       }
 
       function getPlainText(el){
