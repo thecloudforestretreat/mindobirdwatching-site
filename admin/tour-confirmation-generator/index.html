@@ -577,15 +577,15 @@
                 <input id="dateIssuedInput" type="date" />
               </div>
               <div class="field span2">
-                <label for="guestsInput">Guests</label>
-                <input id="guestsInput" type="text" placeholder="Guest names" />
+                <label for="guestsInput">Guest Name(s)</label>
+                <input id="guestsInput" type="text" placeholder="Primary guest + other guest names" />
               </div>
               <div class="field">
                 <label for="tourDateInput">Tour Date</label>
                 <input id="tourDateInput" type="date" />
               </div>
               <div class="field">
-                <label for="contactInput">Contact #</label>
+                <label for="contactInput">Guide Phone</label>
                 <input id="contactInput" type="text" placeholder="+593 98 600 5054" />
               </div>
               <div class="field">
@@ -715,27 +715,34 @@
         confirmations: [
           {
             rowNumber: 2,
-            "Status": "Pending",
-            "Date Issued": "06/17/2026",
-            "Guests": "Alisha Riasati & Jesse Best",
-            "Tour Date": "6/20/2026",
-            "Guide": "Chicho",
-            "Contact #": "+593 98 600 5054",
-            "Tour Type 1": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
-            "Tour Type 2": "",
-            "Tour Type 3": "",
-            "Combined Tour Display": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
-            "Length": "Full Day",
-            "Transportation": "Quito -> Mindo -> Quito:\nFriends hotel and Rooftop - QUITO",
-            "Notes": "We will pick you up at your location latest 3:00 am.",
-            "Pickup Time": "3:00 AM",
-            "Pickup Location": "Friends hotel and Rooftop - QUITO",
-            "QR Code URL": "https://www.mindobirdwatching.com/"
+            "confirmation_id": "TC-0001",
+            "invoice_no": "MBW-0031",
+            "tour_confirmation_status": "Pending",
+            "date_issued": "06/17/2026",
+            "guests": "2",
+            "guest_name": "Alisha Riasati",
+            "other_guest_names": "Jesse Best",
+            "tour_date": "6/20/2026",
+            "tour_guide": "Chicho",
+            "guide_phone": "+593 98 600 5054",
+            "tour_type_1": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "tour_type_2": "",
+            "tour_type_3": "",
+            "combined_tour_display": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "tour_length": "Full Day",
+            "transportation": "Quito -> Mindo -> Quito:\nFriends hotel and Rooftop - QUITO",
+            "notes": "We will pick you up at your location latest 3:00 am.",
+            "pickup_time": "3:00 AM",
+            "pickup_location": "Friends hotel and Rooftop - QUITO",
+            "qr_code_url": "https://www.mindobirdwatching.com/",
+            "confirmation_image_url": "",
+            "confirmation_pdf_url": "",
+            "date_generated": ""
           }
         ],
         guides: [
-          { "Guide": "Chicho", "Contact #": "+593 98 600 5054", "Image URL": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
-          { "Guide": "Neicer", "Contact #": "+593 98 095 5817", "Image URL": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" }
+          { "guide": "Chicho", "guide_phone": "+593 98 600 5054", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
+          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" }
         ],
         tours: []
       }
@@ -829,6 +836,72 @@
         els.previewShell.style.minHeight = "0";
       }
 
+      function val(row, keys, fallback){
+        if(!row) return fallback || "";
+        for(const key of keys){
+          if(Object.prototype.hasOwnProperty.call(row, key) && String(row[key] || "").trim() !== ""){
+            return row[key];
+          }
+        }
+        return fallback || "";
+      }
+
+      function statusOf(row){
+        return val(row, ["tour_confirmation_status", "Status"], "Pending");
+      }
+
+      function guideNameOf(row){
+        return val(row, ["tour_guide", "Guide"], "Chicho");
+      }
+
+      function guidePhoneOf(row){
+        return val(row, ["guide_phone", "Contact #"], "");
+      }
+
+      function guestDisplayOf(row){
+        const primary = val(row, ["guest_name", "Guest Name", "Guest Name(s)"], "");
+        const others = val(row, ["other_guest_names", "Other Guest Names"], "");
+        const legacy = val(row, ["Guests"], "");
+        const countOnly = val(row, ["guests"], "");
+        const parts = [primary, others].map(v => String(v || "").trim()).filter(Boolean);
+        if(parts.length) return parts.join(" & ");
+        if(legacy && !/^\d+$/.test(String(legacy).trim())) return legacy;
+        if(countOnly && !/^\d+$/.test(String(countOnly).trim())) return countOnly;
+        return "";
+      }
+
+      function dateIssuedOf(row){
+        return val(row, ["date_issued", "Date Issued"], "");
+      }
+
+      function tourDateOf(row){
+        return val(row, ["tour_date", "Tour Date"], "");
+      }
+
+      function tourLengthOf(row){
+        return val(row, ["tour_length", "Length"], "Full Day");
+      }
+
+      function pickupTimeOf(row){
+        return val(row, ["pickup_time", "Pickup Time"], "3:00 AM");
+      }
+
+      function pickupLocationOf(row){
+        return val(row, ["pickup_location", "Pickup Location"], "");
+      }
+
+      function qrUrlOf(row){
+        return val(row, ["qr_code_url", "QR Code URL"], window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
+      }
+
+      function notesOf(row){
+        return val(row, ["notes", "Notes"], "");
+      }
+
+      function transportOf(row){
+        return val(row, ["transportation", "Transportation"], "");
+      }
+
       function loadData(){
         setHint("Loading sheet data...");
         jsonp(window.MBW_CONFIRMATION_CONFIG.appScriptUrl, { action:"data" })
@@ -846,8 +919,8 @@
       function hydrateData(data){
         state.data = data;
         state.records = (data.confirmations || []).filter(r => hasUsefulRecord(r));
-        state.guides = (data.guides || []).filter(g => (g.Guide || g["Guide"] || "").trim() !== "");
-        state.tours = (data.tours || []).map(t => t["Tour Name"] || t.Tour || t.Name || "").filter(Boolean);
+        state.guides = (data.guides || []).filter(g => String(val(g, ["guide", "Guide"], "") || "").trim() !== "");
+        state.tours = (data.tours || []).map(t => val(t, ["tour_name", "Tour Name", "tour", "Tour", "name", "Name"], "")).filter(Boolean);
         renderGuideOptions();
         renderTourOptions();
         renderBookingOptions();
@@ -857,13 +930,13 @@
       }
 
       function hasUsefulRecord(r){
-        return ["Guests", "Tour Date", "Guide", "Tour Type 1", "Combined Tour Display", "Status"].some(k => String(r[k] || "").trim() !== "");
+        return ["confirmation_id", "invoice_no", "guest_name", "other_guest_names", "tour_date", "tour_guide", "tour_type_1", "combined_tour_display", "tour_confirmation_status", "Guests", "Tour Date", "Guide", "Tour Type 1", "Combined Tour Display", "Status"].some(k => String(r[k] || "").trim() !== "");
       }
 
       function renderGuideOptions(){
         els.guideInput.innerHTML = "";
         state.guides.forEach(g => {
-          const name = g.Guide || "";
+          const name = val(g, ["guide", "Guide"], "");
           const opt = document.createElement("option");
           opt.value = name;
           opt.textContent = name;
@@ -959,10 +1032,10 @@
             btn.type = "button";
             btn.className = "recordBtn" + (item.index === state.activeIndex ? " active" : "");
             btn.innerHTML = "<div class='recordMain'><div><div class='recordName'></div><div class='recordDate'></div></div><span class='statusPill'></span></div>";
-            btn.querySelector(".recordName").textContent = r.Guests || "Unnamed confirmation";
-            btn.querySelector(".recordDate").textContent = formatTourDateShort(r["Tour Date"] || "");
+            btn.querySelector(".recordName").textContent = guestDisplayOf(r) || val(r, ["invoice_no"], "") || "Unnamed confirmation";
+            btn.querySelector(".recordDate").textContent = formatTourDateShort(tourDateOf(r));
             const pill = btn.querySelector(".statusPill");
-            const status = r.Status || "Pending";
+            const status = statusOf(r);
             pill.textContent = status;
             pill.classList.toggle("generated", status === "Generated");
             pill.classList.toggle("sent", status === "Sent");
@@ -976,8 +1049,8 @@
       function filteredRecords(){
         return state.records.map((record, index) => ({record, index})).filter(item => {
           const r = item.record;
-          const statusOk = state.activeStatus === "all" || String(r.Status || "Pending") === state.activeStatus;
-          const hay = [r.Guests, r["Tour Date"], r.Guide, r.Status, r["Combined Tour Display"], r["Tour Type 1"], r["Tour Type 2"], r["Tour Type 3"]].join(" ").toLowerCase();
+          const statusOk = state.activeStatus === "all" || String(statusOf(r)) === state.activeStatus;
+          const hay = [guestDisplayOf(r), tourDateOf(r), guideNameOf(r), statusOf(r), tourDisplay(r), val(r, ["invoice_no"], ""), val(r, ["confirmation_id"], "")].join(" ").toLowerCase();
           const searchOk = !state.search || hay.includes(state.search);
           return statusOk && searchOk;
         });
@@ -993,22 +1066,22 @@
       }
 
       function fillForm(r){
-        els.statusInput.value = r.Status || "Pending";
-        els.guideInput.value = r.Guide || "Chicho";
-        els.dateIssuedInput.value = toDateInputValue(r["Date Issued"] || todayMDY());
-        els.guestsInput.value = r.Guests || "";
-        els.tourDateInput.value = toDateInputValue(r["Tour Date"] || "");
-        els.contactInput.value = r["Contact #"] || contactForGuide(els.guideInput.value) || "";
-        els.lengthInput.value = normalizeLength(r.Length || "Full Day");
-        setSelectValue(els.pickupTimeInput, normalizePickupTime(r["Pickup Time"] || "3:00 AM"));
-        setSelectValue(els.tour1Input, r["Tour Type 1"] || "");
-        setSelectValue(els.tour2Input, r["Tour Type 2"] || "");
-        setSelectValue(els.tour3Input, r["Tour Type 3"] || "");
+        els.statusInput.value = statusOf(r);
+        els.guideInput.value = guideNameOf(r);
+        els.dateIssuedInput.value = toDateInputValue(dateIssuedOf(r) || todayMDY());
+        els.guestsInput.value = guestDisplayOf(r);
+        els.tourDateInput.value = toDateInputValue(tourDateOf(r));
+        els.contactInput.value = guidePhoneOf(r) || contactForGuide(els.guideInput.value) || "";
+        els.lengthInput.value = normalizeLength(tourLengthOf(r));
+        setSelectValue(els.pickupTimeInput, normalizePickupTime(pickupTimeOf(r)));
+        setSelectValue(els.tour1Input, val(r, ["tour_type_1", "Tour Type 1"], ""));
+        setSelectValue(els.tour2Input, val(r, ["tour_type_2", "Tour Type 2"], ""));
+        setSelectValue(els.tour3Input, val(r, ["tour_type_3", "Tour Type 3"], ""));
         els.tourTypeInput.value = tourDisplay(r);
         els.transportationInput.value = buildTransportation(r);
-        els.pickupLocationInput.value = r["Pickup Location"] || "";
-        els.qrInput.value = r["QR Code URL"] || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
-        els.notesInput.value = r.Notes || buildDefaultNote(r);
+        els.pickupLocationInput.value = pickupLocationOf(r);
+        els.qrInput.value = qrUrlOf(r);
+        els.notesInput.value = notesOf(r) || buildDefaultNote(r);
       }
 
       function onGuideChange(){
@@ -1299,7 +1372,7 @@
           return;
         }
         els.statusInput.value = status;
-        r.Status = status;
+        r.tour_confirmation_status = status;
         renderRecords();
         setHint("Status changed in preview. Apps Script update endpoint comes next.");
       }
@@ -1365,35 +1438,36 @@
       }
 
       function labelForRecord(r){
-        const guest = r.Guests || "Unnamed";
-        const date = formatTourDateShort(r["Tour Date"] || "");
+        const guest = guestDisplayOf(r) || val(r, ["invoice_no"], "Unnamed");
+        const date = formatTourDateShort(tourDateOf(r));
         return date ? guest + " - " + date : guest;
       }
 
       function contactForGuide(name){
-        const g = state.guides.find(item => String(item.Guide || "").toLowerCase() === String(name || "").toLowerCase());
-        return g ? (g["Contact #"] || "") : "";
+        const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
+        return g ? val(g, ["guide_phone", "Contact #"], "") : "";
       }
 
       function imageForGuide(name){
-        const g = state.guides.find(item => String(item.Guide || "").toLowerCase() === String(name || "").toLowerCase());
-        return (g && g["Image URL"]) ? g["Image URL"] : window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
+        const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
+        return g ? val(g, ["image_url", "Image URL"], window.MBW_CONFIRMATION_CONFIG.defaultGuideImage) : window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
       }
 
       function tourDisplay(r){
-        if(r["Combined Tour Display"]) return r["Combined Tour Display"];
-        return [r["Tour Type 1"], r["Tour Type 2"], r["Tour Type 3"]].filter(Boolean).join(" + ");
+        const combined = val(r, ["combined_tour_display", "Combined Tour Display"], "");
+        if(combined) return combined;
+        return [val(r, ["tour_type_1", "Tour Type 1"], ""), val(r, ["tour_type_2", "Tour Type 2"], ""), val(r, ["tour_type_3", "Tour Type 3"], "")].filter(Boolean).join(" + ");
       }
 
       function buildTransportation(r){
-        const transport = r.Transportation || "";
-        const pickup = r["Pickup Location"] || "";
+        const transport = transportOf(r);
+        const pickup = pickupLocationOf(r);
         if(transport && pickup && !transport.toLowerCase().includes(pickup.toLowerCase())) return transport + "\n" + pickup;
         return transport || pickup || "";
       }
 
       function buildDefaultNote(r){
-        const time = r["Pickup Time"] || "";
+        const time = pickupTimeOf(r);
         if(time) return "We will pick you up at your location latest " + time.toLowerCase() + ".";
         return "We will pick you up at your location latest 3:00 am.";
       }
