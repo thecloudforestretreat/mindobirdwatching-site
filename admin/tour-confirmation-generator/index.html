@@ -1,21 +1,1131 @@
-<!doctype html>
-<html>
-  <head>
-    <base target="_top">
-  </head>
-  <body>
-    <h1>MBW Tour Confirmation Generator</h1>
-    <pre id="output">Loading...</pre>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Tour Confirmation Generator</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/admin/tour-confirmation-generator/" />
 
-    <script>
-      google.script.run
-        .withSuccessHandler(function(data) {
-          document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-        })
-        .withFailureHandler(function(error) {
-          document.getElementById('output').textContent = error.message;
-        })
-        .getAppData();
-    </script>
-  </body>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <script src="/assets/js/head.js" defer></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+
+  <style>
+    :root{
+      --mbw-green:#075f28;
+      --mbw-green-dark:#06481f;
+      --mbw-red:#df2c1d;
+      --mbw-yellow:#fff3bd;
+      --mbw-soft:#eef7ed;
+      --mbw-panel:#ffffff;
+      --mbw-border:rgba(7,25,35,.14);
+      --mbw-shadow:0 18px 55px rgba(7,25,35,.10);
+    }
+
+    body{ padding-bottom:0; }
+    .container{ max-width: 1680px; }
+    .page{ margin-top:18px; padding:18px; }
+    .page.card{
+      background:linear-gradient(180deg, rgba(246,250,240,.9), rgba(237,244,228,.92));
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+    }
+
+    .adminTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    .adminTitle{ display:flex; align-items:flex-start; gap:12px; min-width:0; }
+    .adminLogo{
+      width:48px;
+      height:48px;
+      border-radius:999px;
+      object-fit:cover;
+      border:1px solid rgba(7,25,35,.12);
+      box-shadow:0 8px 24px rgba(7,25,35,.12);
+      flex:0 0 auto;
+    }
+    .adminTitle h1{
+      margin:0;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-size:24px;
+      line-height:1.1;
+      letter-spacing:-.03em;
+      font-weight:950;
+      text-transform:uppercase;
+    }
+    .adminTitle p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      max-width:88ch;
+    }
+    .adminActions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .btnAdmin{
+      appearance:none;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.78);
+      color:var(--ink);
+      box-shadow:var(--shadow);
+      min-height:44px;
+      padding:11px 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+      font-family:var(--font-body);
+    }
+    .btnAdmin.primary{ background:var(--forest); color:#fff; border-color:rgba(13,89,37,.35); }
+    .btnAdmin.danger{ background:#d83d3d; color:#fff; border-color:rgba(216,61,61,.35); }
+    .btnAdmin:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .appGrid{
+      display:grid;
+      grid-template-columns:360px minmax(0,1fr);
+      gap:16px;
+      align-items:start;
+    }
+    .sidePanel,
+    .controlPanel,
+    .previewPanel{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.74);
+      box-shadow:var(--shadow);
+    }
+    .sidePanel{ padding:14px; position:sticky; top:92px; }
+    .panelTitle{
+      margin:0 0 12px;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-weight:950;
+      font-size:14px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .tabs{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+    .tabBtn{
+      appearance:none;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.7);
+      padding:9px 8px;
+      font-weight:900;
+      color:var(--ink);
+      cursor:pointer;
+      font-size:12px;
+    }
+    .tabBtn.active{ background:rgba(13,89,37,.13); border-color:rgba(13,89,37,.34); color:var(--forest); }
+    .searchBox{ position:relative; margin-bottom:12px; }
+    .searchBox input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.75);
+      padding:12px 12px;
+      font:inherit;
+      font-weight:800;
+      outline:none;
+    }
+    .records{ display:grid; gap:10px; max-height:58vh; overflow:auto; padding-right:2px; }
+    .recordBtn{
+      appearance:none;
+      text-align:left;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:rgba(255,255,255,.78);
+      padding:12px;
+      cursor:pointer;
+      display:grid;
+      gap:7px;
+      box-shadow:0 8px 20px rgba(7,25,35,.05);
+    }
+    .recordBtn.active{ border-color:rgba(13,89,37,.45); background:linear-gradient(135deg, rgba(13,89,37,.10), rgba(255,255,255,.78)); }
+    .recordMain{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .recordName{ font-weight:950; color:var(--ink); line-height:1.25; }
+    .recordDate{ color:var(--muted); font-size:12.5px; font-weight:800; }
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 9px;
+      border-radius:999px;
+      font-size:11.5px;
+      font-weight:950;
+      background:rgba(255,243,189,.9);
+      color:#7a5400;
+      white-space:nowrap;
+    }
+    .statusPill.generated{ background:rgba(220,245,225,.9); color:#14612b; }
+    .statusPill.sent{ background:rgba(220,235,255,.9); color:#174d8c; }
+    .emptyState{ color:var(--muted); font-weight:800; font-size:13px; line-height:1.5; padding:12px; }
+    .sideFooter{ margin-top:12px; color:var(--muted); font-size:12.5px; font-weight:800; }
+
+    .mainStack{ display:grid; gap:16px; min-width:0; }
+    .controlPanel{ padding:14px; }
+    .controlGrid{
+      display:grid;
+      grid-template-columns:1.3fr .7fr .7fr;
+      gap:12px;
+      align-items:end;
+    }
+    .field{ display:grid; gap:6px; min-width:0; }
+    .field label{
+      display:block;
+      color:var(--ink);
+      font-size:12.5px;
+      font-weight:950;
+      line-height:1.2;
+    }
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:rgba(255,255,255,.82);
+      color:var(--ink);
+      min-height:42px;
+      padding:10px 11px;
+      font:inherit;
+      font-size:13.5px;
+      font-weight:800;
+      outline:none;
+      box-shadow:0 8px 18px rgba(7,25,35,.04);
+    }
+    .field textarea{ min-height:70px; resize:vertical; line-height:1.45; }
+    .editGrid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .editGrid .span2{ grid-column:span 2; }
+    .editGrid .span4{ grid-column:1 / -1; }
+    .miniNote{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.45;
+      font-weight:800;
+    }
+
+    .previewPanel{ padding:14px; min-width:0; }
+    .previewTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .previewTop h2{
+      margin:0;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .previewHint{ color:var(--muted); font-size:12.5px; font-weight:800; }
+    .previewShell{
+      width:100%;
+      overflow:auto;
+      border:1px solid rgba(7,25,35,.12);
+      border-radius:18px;
+      background:#f6f8f3;
+      padding:14px;
+    }
+    .previewScale{
+      width:1920px;
+      height:1080px;
+      transform-origin:top left;
+    }
+
+    .certificate{
+      width:1920px;
+      height:1080px;
+      position:relative;
+      overflow:hidden;
+      background:#edf4e6;
+      color:var(--mbw-green);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    .certificate *{ box-sizing:border-box; }
+    .certBg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:0;
+    }
+    .certOverlay{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      background:linear-gradient(90deg, rgba(255,255,255,.25) 0%, rgba(255,255,255,.08) 54%, rgba(255,255,255,.16) 100%);
+    }
+    .certLogo{
+      position:absolute;
+      left:62px;
+      top:58px;
+      width:330px;
+      height:330px;
+      object-fit:contain;
+      z-index:2;
+      filter:drop-shadow(0 8px 10px rgba(0,0,0,.16));
+    }
+    .certTitle{
+      position:absolute;
+      z-index:2;
+      left:580px;
+      top:95px;
+      width:760px;
+      text-align:center;
+      color:var(--mbw-green);
+      font-size:64px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:.02em;
+      white-space:nowrap;
+    }
+    .dateIssuedBox{
+      position:absolute;
+      z-index:2;
+      left:790px;
+      top:182px;
+      min-width:270px;
+      text-align:center;
+      color:var(--mbw-green);
+      font-size:21px;
+      line-height:1;
+      font-weight:950;
+      padding:12px 16px;
+      border:2px solid var(--mbw-red);
+      background:rgba(255,255,255,.20);
+    }
+    .guideImage{
+      position:absolute;
+      z-index:2;
+      right:66px;
+      top:138px;
+      width:470px;
+      height:835px;
+      object-fit:contain;
+      object-position:bottom center;
+      filter:drop-shadow(0 14px 16px rgba(0,0,0,.15));
+    }
+    .mindoLetters{
+      position:absolute;
+      z-index:2;
+      right:62px;
+      bottom:18px;
+      width:640px;
+      height:auto;
+      object-fit:contain;
+    }
+    .infoBlock{
+      position:absolute;
+      z-index:3;
+      left:205px;
+      top:430px;
+      width:610px;
+      display:grid;
+      grid-template-columns:185px 1fr;
+      gap:20px 18px;
+      align-items:start;
+      color:var(--mbw-green);
+    }
+    .certLabel{
+      font-size:25px;
+      line-height:1.12;
+      font-weight:950;
+      text-align:left;
+      white-space:nowrap;
+      padding-top:4px;
+    }
+    .certValue{
+      display:inline-block;
+      width:max-content;
+      max-width:430px;
+      color:var(--mbw-green);
+      font-size:30px;
+      line-height:1.12;
+      font-weight:950;
+      padding:4px 9px 5px;
+      border:2px solid var(--mbw-red);
+      background:rgba(255,255,255,.16);
+      word-break:normal;
+    }
+    .certValue.small{ font-size:27px; }
+    .certValue.big{ font-size:36px; text-transform:uppercase; }
+    .certValue.wrap{ white-space:normal; max-width:420px; }
+    .qrBox{
+      position:absolute;
+      z-index:4;
+      left:840px;
+      top:560px;
+      width:174px;
+      height:174px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 5px 12px rgba(0,0,0,.08);
+    }
+    .qrBox img,
+    .qrBox canvas{ width:160px !important; height:160px !important; }
+    .noteLine{
+      position:absolute;
+      z-index:4;
+      left:245px;
+      top:860px;
+      color:var(--mbw-green);
+      font-size:25px;
+      line-height:1.1;
+      font-weight:950;
+      padding:4px 10px;
+      border:2px solid var(--mbw-red);
+      background:rgba(255,255,255,.14);
+      max-width:640px;
+      white-space:normal;
+    }
+    .footerIg{
+      position:absolute;
+      z-index:4;
+      left:125px;
+      bottom:40px;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      color:var(--mbw-green);
+      font-size:36px;
+      font-weight:950;
+      letter-spacing:-.02em;
+    }
+    .footerIg img{ width:49px; height:49px; object-fit:contain; }
+    .footerWeb{
+      position:absolute;
+      z-index:4;
+      left:625px;
+      bottom:40px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      color:var(--mbw-green);
+      font-size:34px;
+      font-weight:950;
+      letter-spacing:-.02em;
+    }
+    .footerWeb img{ width:49px; height:49px; border-radius:999px; object-fit:cover; }
+
+    .mobileTools{
+      display:none;
+      margin-bottom:12px;
+      gap:10px;
+      grid-template-columns:1fr 1fr;
+    }
+
+    @media (max-width:1200px){
+      .appGrid{ grid-template-columns:320px minmax(0,1fr); }
+      .editGrid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .editGrid .span4{ grid-column:1 / -1; }
+    }
+    @media (max-width:980px){
+      .appGrid{ grid-template-columns:1fr; }
+      .sidePanel{ position:relative; top:auto; }
+      .records{ max-height:300px; }
+      .controlGrid{ grid-template-columns:1fr; }
+      .adminActions{ width:100%; justify-content:stretch; }
+      .adminActions .btnAdmin{ flex:1 1 150px; }
+      .mobileTools{ display:grid; }
+    }
+    @media (max-width:640px){
+      .container{ padding:14px; }
+      .page{ padding:12px; }
+      .adminTitle h1{ font-size:19px; }
+      .adminLogo{ width:42px; height:42px; }
+      .tabs{ grid-template-columns:1fr; }
+      .editGrid{ grid-template-columns:1fr; }
+      .editGrid .span2,
+      .editGrid .span4{ grid-column:auto; }
+      .btnAdmin{ width:100%; }
+      .mobileTools{ grid-template-columns:1fr; }
+      .previewShell{ padding:8px; border-radius:14px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="siteHeader"></div>
+
+    <main class="page card" aria-label="MBW Tour Confirmation Generator">
+      <div class="adminTop">
+        <div class="adminTitle">
+          <img class="adminLogo" src="/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching logo" />
+          <div>
+            <h1>MBW Tour Confirmation Generator</h1>
+            <p>Select a booking from Google Sheets, preview the final 1920x1080 confirmation, export as PNG or PDF, and update the booking status.</p>
+          </div>
+        </div>
+        <div class="adminActions">
+          <button class="btnAdmin primary" type="button" id="exportPngBtn">Export PNG 1920x1080</button>
+          <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
+          <button class="btnAdmin" type="button" id="refreshBtn">Refresh Data</button>
+        </div>
+      </div>
+
+      <div class="mobileTools">
+        <button class="btnAdmin" type="button" id="jumpPreviewBtn">Jump to Preview</button>
+        <button class="btnAdmin" type="button" id="jumpListBtn">Jump to List</button>
+      </div>
+
+      <div class="appGrid">
+        <aside class="sidePanel" id="listPanel" aria-label="Tour confirmation list">
+          <h2 class="panelTitle">Tour Confirmations</h2>
+          <div class="tabs" role="group" aria-label="Status filter">
+            <button class="tabBtn active" type="button" data-status="all">All</button>
+            <button class="tabBtn" type="button" data-status="Pending">Pending</button>
+            <button class="tabBtn" type="button" data-status="Generated">Generated</button>
+          </div>
+          <div class="searchBox">
+            <input id="searchInput" type="search" placeholder="Search by guest, date, guide..." autocomplete="off" />
+          </div>
+          <div class="records" id="records"></div>
+          <div class="sideFooter" id="listCount">Loading confirmations...</div>
+        </aside>
+
+        <section class="mainStack" id="previewPanelAnchor">
+          <section class="controlPanel" aria-label="Confirmation details">
+            <h2 class="panelTitle">Confirmation Details</h2>
+            <div class="controlGrid">
+              <div class="field">
+                <label for="bookingSelect">Select Confirmation</label>
+                <select id="bookingSelect"></select>
+              </div>
+              <div class="field">
+                <label for="statusInput">Status</label>
+                <select id="statusInput">
+                  <option>Pending</option>
+                  <option>Generated</option>
+                  <option>Sent</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="guideInput">Guide</label>
+                <select id="guideInput"></select>
+              </div>
+            </div>
+
+            <div class="editGrid">
+              <div class="field">
+                <label for="dateIssuedInput">Date Issued</label>
+                <input id="dateIssuedInput" type="text" placeholder="06/17/2026" />
+              </div>
+              <div class="field span2">
+                <label for="guestsInput">Guests</label>
+                <input id="guestsInput" type="text" placeholder="Guest names" />
+              </div>
+              <div class="field">
+                <label for="tourDateInput">Tour Date</label>
+                <input id="tourDateInput" type="text" placeholder="6/20/2026" />
+              </div>
+              <div class="field">
+                <label for="contactInput">Contact #</label>
+                <input id="contactInput" type="text" placeholder="+593 98 600 5054" />
+              </div>
+              <div class="field">
+                <label for="lengthInput">Length</label>
+                <select id="lengthInput">
+                  <option>Half Day</option>
+                  <option selected>Full Day</option>
+                  <option>Multi Day</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="pickupTimeInput">Pickup Time</label>
+                <input id="pickupTimeInput" type="text" placeholder="3:00 AM" />
+              </div>
+              <div class="field span2">
+                <label for="tourTypeInput">Tour Type Display</label>
+                <input id="tourTypeInput" type="text" placeholder="Jewels of the Morning Forest + Night Walk" />
+              </div>
+              <div class="field span2">
+                <label for="transportationInput">Transportation</label>
+                <input id="transportationInput" type="text" placeholder="Quito -> Mindo -> Quito" />
+              </div>
+              <div class="field span2">
+                <label for="pickupLocationInput">Pickup Location</label>
+                <input id="pickupLocationInput" type="text" placeholder="Hotel or pickup location" />
+              </div>
+              <div class="field span2">
+                <label for="qrInput">QR Code URL</label>
+                <input id="qrInput" type="text" placeholder="https://mindobirdwatching.com/..." />
+              </div>
+              <div class="field span4">
+                <label for="notesInput">Notes</label>
+                <textarea id="notesInput" placeholder="We will pick you up at your location latest 3:00 am."></textarea>
+              </div>
+            </div>
+            <p class="miniNote">Edits here affect the preview and exports only. The sheet update buttons need the companion Apps Script update endpoint from the next step.</p>
+            <div class="adminActions" style="margin-top:12px; justify-content:flex-start;">
+              <button class="btnAdmin primary" type="button" id="markGeneratedBtn">Save and Mark Generated</button>
+              <button class="btnAdmin danger" type="button" id="markSentBtn">Mark as Sent</button>
+            </div>
+          </section>
+
+          <section class="previewPanel" aria-label="1920 by 1080 confirmation preview">
+            <div class="previewTop">
+              <h2>Preview 1920x1080</h2>
+              <div class="previewHint" id="previewHint">Ready</div>
+            </div>
+            <div class="previewShell" id="previewShell">
+              <div class="previewScale" id="previewScale">
+                <div class="certificate" id="certificate">
+                  <img class="certBg" src="/assets/images/tour-confirmation/mbw_tour_confirmation_background.png" alt="" crossorigin="anonymous" />
+                  <div class="certOverlay" aria-hidden="true"></div>
+                  <img class="certLogo" src="/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching" crossorigin="anonymous" />
+                  <div class="certTitle">TOUR CONFIRMATION</div>
+                  <div class="dateIssuedBox">Date Issued: <span id="outDateIssued">06/17/2026</span></div>
+                  <img class="guideImage" id="outGuideImage" src="/assets/images/tour-confirmation/mbw_image_chicho.png" alt="Guide" crossorigin="anonymous" />
+                  <img class="mindoLetters" src="/assets/images/tour-confirmation/mbw_mindo_letters.png" alt="Mindo" crossorigin="anonymous" />
+
+                  <div class="infoBlock">
+                    <div class="certLabel">Guest(s):</div>
+                    <div class="certValue" id="outGuests">Alisha Riasati & Jesse Best</div>
+
+                    <div class="certLabel">Tour Date:</div>
+                    <div class="certValue" id="outTourDate">Saturday, June 20th, 2026</div>
+
+                    <div class="certLabel">Guide:</div>
+                    <div class="certValue" id="outGuide">Chicho</div>
+
+                    <div class="certLabel">Contact #:</div>
+                    <div class="certValue small" id="outContact">+593 98 600 5054</div>
+
+                    <div class="certLabel">Tour Type:</div>
+                    <div class="certValue small wrap" id="outTourType">Quest for Five Toucans & the Andean Cock-of-the-Rock</div>
+
+                    <div class="certLabel">Length:</div>
+                    <div class="certValue big" id="outLength">FULL DAY</div>
+
+                    <div class="certLabel">Transportation:</div>
+                    <div class="certValue small wrap" id="outTransportation">Quito -> Mindo -> Quito:<br>Friends hotel and rRoftop - QUITO</div>
+                  </div>
+
+                  <div class="qrBox" id="qrBox"></div>
+                  <div class="noteLine" id="outNotes">***We will pick you up at your location latest 3:00 am.***</div>
+
+                  <div class="footerIg">
+                    <img src="/assets/images/tour-confirmation/icon_ig.png" alt="Instagram" crossorigin="anonymous" />
+                    <span>@mindobirdwatching</span>
+                  </div>
+                  <div class="footerWeb">
+                    <img src="/assets/images/tour-confirmation/logo_mbw.png" alt="" crossorigin="anonymous" />
+                    <span>www.mindobirdwatching.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <div id="siteFooter"></div>
+  </div>
+
+  <script>
+    window.MBW_CONFIRMATION_CONFIG = {
+      appScriptUrl: "https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec",
+      defaultQrUrl: "https://www.mindobirdwatching.com/",
+      defaultGuideImage: "/assets/images/tour-confirmation/mbw_image_chicho.png",
+      fallbackData: {
+        confirmations: [
+          {
+            rowNumber: 2,
+            "Status": "Pending",
+            "Date Issued": "06/17/2026",
+            "Guests": "Alisha Riasati & Jesse Best",
+            "Tour Date": "6/20/2026",
+            "Guide": "Chicho",
+            "Contact #": "+593 98 600 5054",
+            "Tour Type 1": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "Tour Type 2": "",
+            "Tour Type 3": "",
+            "Combined Tour Display": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "Length": "Full Day",
+            "Transportation": "Quito -> Mindo -> Quito:\nFriends hotel and rRoftop - QUITO",
+            "Notes": "We will pick you up at your location latest 3:00 am.",
+            "Pickup Time": "3:00 AM",
+            "Pickup Location": "Friends hotel and rRoftop - QUITO",
+            "QR Code URL": "https://www.mindobirdwatching.com/"
+          }
+        ],
+        guides: [
+          { "Guide": "Chicho", "Contact #": "+593 98 600 5054", "Image URL": "/assets/images/tour-confirmation/mbw_image_chicho.png" },
+          { "Guide": "Neicer", "Contact #": "+593 98 095 5817", "Image URL": "/assets/images/tour-confirmation/mbw_image_chicho.png" }
+        ],
+        tours: []
+      }
+    };
+
+    (function(){
+      "use strict";
+
+      const state = {
+        data: null,
+        records: [],
+        guides: [],
+        activeIndex: 0,
+        activeStatus: "all",
+        search: "",
+        qr: null
+      };
+
+      const els = {};
+
+      document.addEventListener("DOMContentLoaded", init);
+      window.addEventListener("resize", setPreviewScale);
+
+      function init(){
+        cacheEls();
+        bindEvents();
+        setPreviewScale();
+        loadData();
+      }
+
+      function cacheEls(){
+        const ids = [
+          "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput",
+          "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput",
+          "pickupTimeInput", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
+          "outDateIssued", "outGuests", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
+          "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "exportPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
+          "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
+        ];
+        ids.forEach(id => els[id] = document.getElementById(id));
+      }
+
+      function bindEvents(){
+        document.querySelectorAll(".tabBtn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".tabBtn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            state.activeStatus = btn.dataset.status || "all";
+            renderRecords();
+          });
+        });
+
+        els.searchInput.addEventListener("input", () => {
+          state.search = els.searchInput.value.trim().toLowerCase();
+          renderRecords();
+        });
+
+        els.bookingSelect.addEventListener("change", () => {
+          const row = Number(els.bookingSelect.value);
+          const idx = state.records.findIndex(r => Number(r.rowNumber) === row);
+          if(idx >= 0) selectRecord(idx);
+        });
+
+        ["statusInput", "guideInput", "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
+          els[id].addEventListener("input", updatePreviewFromForm);
+          els[id].addEventListener("change", updatePreviewFromForm);
+        });
+
+        els.guideInput.addEventListener("change", onGuideChange);
+        els.refreshBtn.addEventListener("click", loadData);
+        els.exportPngBtn.addEventListener("click", exportPng);
+        els.exportPdfBtn.addEventListener("click", exportPdf);
+        els.markGeneratedBtn.addEventListener("click", () => updateStatus("Generated"));
+        els.markSentBtn.addEventListener("click", () => updateStatus("Sent"));
+        els.jumpPreviewBtn.addEventListener("click", () => els.previewPanelAnchor.scrollIntoView({behavior:"smooth", block:"start"}));
+        els.jumpListBtn.addEventListener("click", () => els.listPanel.scrollIntoView({behavior:"smooth", block:"start"}));
+      }
+
+      function setPreviewScale(){
+        if(!els.previewShell || !els.previewScale) return;
+        const available = Math.max(280, els.previewShell.clientWidth - 30);
+        const scale = Math.min(1, available / 1920);
+        els.previewScale.style.transform = "scale(" + scale + ")";
+        els.previewScale.style.width = "1920px";
+        els.previewScale.style.height = "1080px";
+        els.previewShell.style.minHeight = Math.ceil(1080 * scale + 30) + "px";
+      }
+
+      function loadData(){
+        setHint("Loading sheet data...");
+        jsonp(window.MBW_CONFIRMATION_CONFIG.appScriptUrl, { action:"data" })
+          .then(data => {
+            if(!data || !Array.isArray(data.confirmations)) throw new Error("Invalid data response");
+            hydrateData(data);
+            setHint("Loaded from Google Sheet");
+          })
+          .catch(() => {
+            hydrateData(window.MBW_CONFIRMATION_CONFIG.fallbackData);
+            setHint("Preview mode. Add the Apps Script JSON endpoint in the next step.");
+          });
+      }
+
+      function hydrateData(data){
+        state.data = data;
+        state.records = (data.confirmations || []).filter(r => hasUsefulRecord(r));
+        state.guides = (data.guides || []).filter(g => (g.Guide || g["Guide"] || "").trim() !== "");
+        renderGuideOptions();
+        renderBookingOptions();
+        renderRecords();
+        if(state.records.length){ selectRecord(0); }
+        else { fillForm({}); updatePreviewFromForm(); }
+      }
+
+      function hasUsefulRecord(r){
+        return ["Guests", "Tour Date", "Guide", "Tour Type 1", "Combined Tour Display", "Status"].some(k => String(r[k] || "").trim() !== "");
+      }
+
+      function renderGuideOptions(){
+        els.guideInput.innerHTML = "";
+        state.guides.forEach(g => {
+          const name = g.Guide || "";
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          els.guideInput.appendChild(opt);
+        });
+        if(!state.guides.length){
+          ["Chicho", "Neicer"].forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            els.guideInput.appendChild(opt);
+          });
+        }
+      }
+
+      function renderBookingOptions(){
+        els.bookingSelect.innerHTML = "";
+        state.records.forEach((r, idx) => {
+          const opt = document.createElement("option");
+          opt.value = r.rowNumber || idx;
+          opt.textContent = labelForRecord(r);
+          els.bookingSelect.appendChild(opt);
+        });
+      }
+
+      function renderRecords(){
+        const filtered = filteredRecords();
+        els.records.innerHTML = "";
+        if(!filtered.length){
+          const div = document.createElement("div");
+          div.className = "emptyState";
+          div.textContent = "No confirmations match this filter.";
+          els.records.appendChild(div);
+        } else {
+          filtered.forEach(item => {
+            const r = item.record;
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "recordBtn" + (item.index === state.activeIndex ? " active" : "");
+            btn.innerHTML = "<div class='recordMain'><div><div class='recordName'></div><div class='recordDate'></div></div><span class='statusPill'></span></div>";
+            btn.querySelector(".recordName").textContent = r.Guests || "Unnamed confirmation";
+            btn.querySelector(".recordDate").textContent = formatTourDateShort(r["Tour Date"] || "");
+            const pill = btn.querySelector(".statusPill");
+            const status = r.Status || "Pending";
+            pill.textContent = status;
+            pill.classList.toggle("generated", status === "Generated");
+            pill.classList.toggle("sent", status === "Sent");
+            btn.addEventListener("click", () => selectRecord(item.index));
+            els.records.appendChild(btn);
+          });
+        }
+        els.listCount.textContent = "Total: " + state.records.length + " confirmations";
+      }
+
+      function filteredRecords(){
+        return state.records.map((record, index) => ({record, index})).filter(item => {
+          const r = item.record;
+          const statusOk = state.activeStatus === "all" || String(r.Status || "Pending") === state.activeStatus;
+          const hay = [r.Guests, r["Tour Date"], r.Guide, r.Status, r["Combined Tour Display"], r["Tour Type 1"], r["Tour Type 2"], r["Tour Type 3"]].join(" ").toLowerCase();
+          const searchOk = !state.search || hay.includes(state.search);
+          return statusOk && searchOk;
+        });
+      }
+
+      function selectRecord(index){
+        state.activeIndex = index;
+        const r = state.records[index] || {};
+        fillForm(r);
+        els.bookingSelect.value = r.rowNumber || index;
+        renderRecords();
+        updatePreviewFromForm();
+      }
+
+      function fillForm(r){
+        els.statusInput.value = r.Status || "Pending";
+        els.guideInput.value = r.Guide || "Chicho";
+        els.dateIssuedInput.value = r["Date Issued"] || todayMDY();
+        els.guestsInput.value = r.Guests || "";
+        els.tourDateInput.value = r["Tour Date"] || "";
+        els.contactInput.value = r["Contact #"] || contactForGuide(els.guideInput.value) || "";
+        els.lengthInput.value = normalizeLength(r.Length || "Full Day");
+        els.pickupTimeInput.value = r["Pickup Time"] || "3:00 AM";
+        els.tourTypeInput.value = tourDisplay(r);
+        els.transportationInput.value = buildTransportation(r);
+        els.pickupLocationInput.value = r["Pickup Location"] || "";
+        els.qrInput.value = r["QR Code URL"] || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
+        els.notesInput.value = r.Notes || buildDefaultNote(r);
+      }
+
+      function onGuideChange(){
+        const contact = contactForGuide(els.guideInput.value);
+        if(contact) els.contactInput.value = contact;
+        updatePreviewFromForm();
+      }
+
+      function updatePreviewFromForm(){
+        const guide = els.guideInput.value || "Chicho";
+        els.outDateIssued.textContent = els.dateIssuedInput.value || todayMDY();
+        els.outGuests.textContent = els.guestsInput.value || "Guest Name";
+        els.outTourDate.textContent = formatTourDateLong(els.tourDateInput.value || "");
+        els.outGuide.textContent = guide;
+        els.outContact.textContent = els.contactInput.value || contactForGuide(guide) || "";
+        els.outTourType.textContent = els.tourTypeInput.value || "Tour Type";
+        els.outLength.textContent = (els.lengthInput.value || "Full Day").toUpperCase();
+        const transport = els.transportationInput.value || "Transportation details";
+        const pickupLocation = els.pickupLocationInput.value || "";
+        els.outTransportation.innerHTML = escapeHtml(transport).replace(/\n/g, "<br>") + (pickupLocation && !transport.toLowerCase().includes(pickupLocation.toLowerCase()) ? "<br>" + escapeHtml(pickupLocation) : "");
+        els.outNotes.textContent = formatNote(els.notesInput.value || "");
+        els.outGuideImage.src = imageForGuide(guide);
+        renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
+      }
+
+      function renderQr(url){
+        if(!window.QRCode || !els.qrBox) return;
+        els.qrBox.innerHTML = "";
+        state.qr = new QRCode(els.qrBox, {
+          text: url,
+          width: 160,
+          height: 160,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+
+      function exportPng(){
+        setHint("Preparing PNG...");
+        waitForImages().then(() => html2canvas(els.certificate, {
+          backgroundColor: null,
+          scale: 1,
+          width: 1920,
+          height: 1080,
+          useCORS: true,
+          allowTaint: false,
+          logging: false
+        })).then(canvas => {
+          const link = document.createElement("a");
+          link.download = fileBaseName() + ".png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          setHint("PNG exported");
+        }).catch(err => setHint("PNG export failed: " + err.message));
+      }
+
+      function exportPdf(){
+        setHint("Preparing PDF...");
+        waitForImages().then(() => html2canvas(els.certificate, {
+          backgroundColor: null,
+          scale: 1,
+          width: 1920,
+          height: 1080,
+          useCORS: true,
+          allowTaint: false,
+          logging: false
+        })).then(canvas => {
+          const img = canvas.toDataURL("image/jpeg", 0.96);
+          const jsPDF = window.jspdf && window.jspdf.jsPDF;
+          if(!jsPDF) throw new Error("PDF library did not load");
+          const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[1920,1080] });
+          pdf.addImage(img, "JPEG", 0, 0, 1920, 1080);
+          pdf.save(fileBaseName() + ".pdf");
+          setHint("PDF exported");
+        }).catch(err => setHint("PDF export failed: " + err.message));
+      }
+
+      function updateStatus(status){
+        const r = state.records[state.activeIndex];
+        if(!r || !r.rowNumber){
+          setHint("No sheet row selected");
+          return;
+        }
+        els.statusInput.value = status;
+        r.Status = status;
+        renderRecords();
+        setHint("Status changed in preview. Apps Script update endpoint comes next.");
+      }
+
+      function jsonp(baseUrl, params){
+        return new Promise((resolve, reject) => {
+          const cbName = "mbwJsonp_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+          const url = new URL(baseUrl);
+          Object.keys(params || {}).forEach(k => url.searchParams.set(k, params[k]));
+          url.searchParams.set("callback", cbName);
+          const script = document.createElement("script");
+          const timer = setTimeout(() => cleanup(new Error("Request timed out")), 12000);
+          window[cbName] = data => cleanup(null, data);
+          script.onerror = () => cleanup(new Error("Could not load Apps Script data"));
+          script.src = url.toString();
+          document.body.appendChild(script);
+          function cleanup(err, data){
+            clearTimeout(timer);
+            delete window[cbName];
+            if(script.parentNode) script.parentNode.removeChild(script);
+            if(err) reject(err); else resolve(data);
+          }
+        });
+      }
+
+      function waitForImages(){
+        const imgs = Array.from(els.certificate.querySelectorAll("img"));
+        return Promise.all(imgs.map(img => {
+          if(img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }));
+      }
+
+      function labelForRecord(r){
+        const guest = r.Guests || "Unnamed";
+        const date = formatTourDateShort(r["Tour Date"] || "");
+        return date ? guest + " - " + date : guest;
+      }
+
+      function contactForGuide(name){
+        const g = state.guides.find(item => String(item.Guide || "").toLowerCase() === String(name || "").toLowerCase());
+        return g ? (g["Contact #"] || "") : "";
+      }
+
+      function imageForGuide(name){
+        const g = state.guides.find(item => String(item.Guide || "").toLowerCase() === String(name || "").toLowerCase());
+        return (g && g["Image URL"]) ? g["Image URL"] : window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
+      }
+
+      function tourDisplay(r){
+        if(r["Combined Tour Display"]) return r["Combined Tour Display"];
+        return [r["Tour Type 1"], r["Tour Type 2"], r["Tour Type 3"]].filter(Boolean).join(" + ");
+      }
+
+      function buildTransportation(r){
+        const transport = r.Transportation || "";
+        const pickup = r["Pickup Location"] || "";
+        if(transport && pickup && !transport.toLowerCase().includes(pickup.toLowerCase())) return transport + "\n" + pickup;
+        return transport || pickup || "";
+      }
+
+      function buildDefaultNote(r){
+        const time = r["Pickup Time"] || "";
+        if(time) return "We will pick you up at your location latest " + time.toLowerCase() + ".";
+        return "We will pick you up at your location latest 3:00 am.";
+      }
+
+      function formatNote(text){
+        const clean = String(text || "").trim();
+        if(!clean) return "";
+        if(clean.startsWith("***") && clean.endsWith("***")) return clean;
+        return "***" + clean + "***";
+      }
+
+      function normalizeLength(value){
+        const v = String(value || "").toLowerCase();
+        if(v.includes("half")) return "Half Day";
+        if(v.includes("multi")) return "Multi Day";
+        return "Full Day";
+      }
+
+      function formatTourDateShort(value){
+        const d = parseDate(value);
+        if(!d) return value || "";
+        return d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+      }
+
+      function formatTourDateLong(value){
+        const d = parseDate(value);
+        if(!d) return value || "Tour Date";
+        const weekday = d.toLocaleDateString("en-US", { weekday:"long" });
+        const month = d.toLocaleDateString("en-US", { month:"long" });
+        return weekday + ", " + month + " " + ordinal(d.getDate()) + ", " + d.getFullYear();
+      }
+
+      function parseDate(value){
+        if(!value) return null;
+        const s = String(value).trim();
+        const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if(m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if(iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      function ordinal(n){
+        const j = n % 10, k = n % 100;
+        if(j === 1 && k !== 11) return n + "st";
+        if(j === 2 && k !== 12) return n + "nd";
+        if(j === 3 && k !== 13) return n + "rd";
+        return n + "th";
+      }
+
+      function todayMDY(){
+        const d = new Date();
+        return String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getDate()).padStart(2,"0") + "/" + d.getFullYear();
+      }
+
+      function fileBaseName(){
+        const guest = (els.guestsInput.value || "tour-confirmation").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60);
+        const date = (els.tourDateInput.value || todayMDY()).replace(/[^0-9]+/g,"-").replace(/^-|-$/g,"");
+        return "mbw-tour-confirmation-" + guest + "-" + date;
+      }
+
+      function escapeHtml(str){
+        return String(str || "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]));
+      }
+
+      function setHint(text){
+        if(els.previewHint) els.previewHint.textContent = text;
+      }
+    })();
+  </script>
+</body>
 </html>
