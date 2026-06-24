@@ -451,6 +451,19 @@
     }
     .footerWeb img{ width:49px; height:49px; border-radius:999px; object-fit:cover; }
 
+
+    .previewActions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .previewActions .btnAdmin{
+      min-width:190px;
+    }
+
     .mobileTools{
       display:none;
       margin-bottom:12px;
@@ -498,12 +511,10 @@
           <img class="adminLogo" src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching logo" />
           <div>
             <h1>MBW Tour Confirmation Generator</h1>
-            <p>Select a booking from Google Sheets, preview the final 1920x1080 confirmation, export as PNG or PDF, and update the booking status.</p>
+            <p>Select a booking from Google Sheets, preview the final 1920x1080 confirmation, export as JPG or PDF, and update the booking status.</p>
           </div>
         </div>
         <div class="adminActions">
-          <button class="btnAdmin primary" type="button" id="exportPngBtn">Export PNG 1920x1080</button>
-          <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
           <button class="btnAdmin" type="button" id="refreshBtn">Refresh Data</button>
         </div>
       </div>
@@ -672,6 +683,10 @@
                 </div>
               </div>
             </div>
+            <div class="previewActions" aria-label="Export confirmation">
+              <button class="btnAdmin primary" type="button" id="exportPngBtn">Export JPG 1920x1080</button>
+              <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
+            </div>
           </section>
         </section>
       </div>
@@ -794,12 +809,13 @@
 
       function setPreviewScale(){
         if(!els.previewShell || !els.previewScale) return;
-        const available = Math.max(280, els.previewShell.clientWidth - 30);
+        const available = Math.max(280, els.previewShell.clientWidth - 28);
         const scale = Math.min(1, available / 1920);
         els.previewScale.style.transform = "scale(" + scale + ")";
         els.previewScale.style.width = "1920px";
         els.previewScale.style.height = "1080px";
-        els.previewShell.style.minHeight = Math.ceil(1080 * scale + 30) + "px";
+        els.previewShell.style.height = Math.ceil(1080 * scale + 30) + "px";
+        els.previewShell.style.minHeight = "0";
       }
 
       function loadData(){
@@ -1027,35 +1043,19 @@
       }
 
       function exportPng(){
-        setHint("Preparing PNG...");
-        waitForImages().then(() => html2canvas(els.certificate, {
-          backgroundColor: null,
-          scale: 1,
-          width: 1920,
-          height: 1080,
-          useCORS: true,
-          allowTaint: false,
-          logging: false
-        })).then(canvas => {
+        setHint("Preparing JPG...");
+        renderExportCanvas().then(canvas => {
           const link = document.createElement("a");
-          link.download = fileBaseName() + ".png";
-          link.href = canvas.toDataURL("image/png");
+          link.download = fileBaseName() + ".jpg";
+          link.href = canvas.toDataURL("image/jpeg", 0.96);
           link.click();
-          setHint("PNG exported");
-        }).catch(err => setHint("PNG export failed: " + err.message));
+          setHint("JPG exported");
+        }).catch(err => setHint("JPG export failed: " + err.message));
       }
 
       function exportPdf(){
         setHint("Preparing PDF...");
-        waitForImages().then(() => html2canvas(els.certificate, {
-          backgroundColor: null,
-          scale: 1,
-          width: 1920,
-          height: 1080,
-          useCORS: true,
-          allowTaint: false,
-          logging: false
-        })).then(canvas => {
+        renderExportCanvas().then(canvas => {
           const img = canvas.toDataURL("image/jpeg", 0.96);
           const jsPDF = window.jspdf && window.jspdf.jsPDF;
           if(!jsPDF) throw new Error("PDF library did not load");
@@ -1064,6 +1064,53 @@
           pdf.save(fileBaseName() + ".pdf");
           setHint("PDF exported");
         }).catch(err => setHint("PDF export failed: " + err.message));
+      }
+
+      function renderExportCanvas(){
+        return waitForImages().then(() => {
+          const clone = els.certificate.cloneNode(true);
+          clone.id = "certificateExportClone";
+          clone.style.position = "fixed";
+          clone.style.left = "-10000px";
+          clone.style.top = "0";
+          clone.style.width = "1920px";
+          clone.style.height = "1080px";
+          clone.style.transform = "none";
+          clone.style.margin = "0";
+          clone.style.opacity = "1";
+          clone.querySelectorAll("[id]").forEach(node => {
+            node.removeAttribute("id");
+          });
+          document.body.appendChild(clone);
+          return waitForCloneImages(clone).then(() => {
+            return html2canvas(clone, {
+              backgroundColor: "#edf4e6",
+              scale: 1,
+              width: 1920,
+              height: 1080,
+              windowWidth: 1920,
+              windowHeight: 1080,
+              useCORS: true,
+              allowTaint: false,
+              logging: false,
+              scrollX: 0,
+              scrollY: 0
+            });
+          }).finally(() => {
+            if(clone.parentNode) clone.parentNode.removeChild(clone);
+          });
+        });
+      }
+
+      function waitForCloneImages(root){
+        const imgs = Array.from(root.querySelectorAll("img"));
+        return Promise.all(imgs.map(img => {
+          if(img.complete && img.naturalWidth !== 0) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }));
       }
 
       function updateStatus(status){
