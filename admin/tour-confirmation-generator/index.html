@@ -238,11 +238,13 @@
     }
     .editGrid{
       display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
+      grid-template-columns:repeat(6, minmax(0,1fr));
       gap:12px;
       margin-top:14px;
     }
     .editGrid .span2{ grid-column:span 2; }
+    .editGrid .span3{ grid-column:span 3; }
+    .editGrid .span6{ grid-column:1 / -1; }
     .editGrid .span4{ grid-column:1 / -1; }
     .miniNote{
       margin:10px 0 0;
@@ -483,7 +485,9 @@
     @media (max-width:1200px){
       .appGrid{ grid-template-columns:320px minmax(0,1fr); }
       .editGrid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-      .editGrid .span4{ grid-column:1 / -1; }
+      .editGrid .span3,
+      .editGrid .span4,
+      .editGrid .span6{ grid-column:1 / -1; }
     }
     @media (max-width:980px){
       .appGrid{ grid-template-columns:1fr; }
@@ -503,7 +507,9 @@
       .tabs{ grid-template-columns:1fr; }
       .editGrid{ grid-template-columns:1fr; }
       .editGrid .span2,
-      .editGrid .span4{ grid-column:auto; }
+      .editGrid .span3,
+      .editGrid .span4,
+      .editGrid .span6{ grid-column:auto; }
       .btnAdmin{ width:100%; }
       .mobileTools{ grid-template-columns:1fr; }
       .previewShell{ padding:8px; border-radius:14px; }
@@ -572,7 +578,7 @@
             </div>
 
             <div class="editGrid">
-              <div class="field">
+              <div class="field span2">
                 <label for="dateIssuedInput">Date Issued</label>
                 <input id="dateIssuedInput" type="date" />
               </div>
@@ -580,15 +586,15 @@
                 <label for="guestsInput">Guest Name(s)</label>
                 <input id="guestsInput" type="text" placeholder="Primary guest + other guest names" />
               </div>
-              <div class="field">
+              <div class="field span2">
                 <label for="guestPhoneInput">Guest Phone</label>
                 <input id="guestPhoneInput" type="text" placeholder="+1 555 000 0000" />
               </div>
-              <div class="field">
+              <div class="field span2">
                 <label for="tourDateInput">Tour Date</label>
                 <input id="tourDateInput" type="date" />
               </div>
-              <div class="field">
+              <div class="field span2">
                 <label for="contactInput">Guide Phone</label>
                 <input id="contactInput" type="text" placeholder="+593 98 600 5054" />
               </div>
@@ -604,35 +610,35 @@
                 <label for="pickupTimeInput">Pickup Time</label>
                 <select id="pickupTimeInput"></select>
               </div>
-              <div class="field">
+              <div class="field span2">
                 <label for="tour1Input">Tour Type 1</label>
                 <select id="tour1Input"></select>
               </div>
-              <div class="field">
+              <div class="field span2">
                 <label for="tour2Input">Tour Type 2</label>
                 <select id="tour2Input"></select>
               </div>
-              <div class="field">
+              <div class="field span2">
                 <label for="tour3Input">Tour Type 3</label>
                 <select id="tour3Input"></select>
               </div>
-              <div class="field span2">
+              <div class="field span3">
                 <label for="tourTypeInput">Tour Type Display</label>
                 <input id="tourTypeInput" type="text" placeholder="Jewels of the Morning Forest + Night Walk" />
               </div>
-              <div class="field span2">
+              <div class="field span3">
                 <label for="transportationInput">Transportation</label>
                 <input id="transportationInput" type="text" placeholder="Quito -> Mindo -> Quito" />
               </div>
-              <div class="field span2">
+              <div class="field span3">
                 <label for="pickupLocationInput">Pickup Location</label>
                 <input id="pickupLocationInput" type="text" placeholder="Hotel or pickup location" />
               </div>
-              <div class="field span2">
+              <div class="field span3">
                 <label for="qrInput">QR Code URL</label>
                 <input id="qrInput" type="text" placeholder="https://mindobirdwatching.com/..." />
               </div>
-              <div class="field span4">
+              <div class="field span6">
                 <label for="notesInput">Notes</label>
                 <textarea id="notesInput" placeholder="We will pick you up at your location latest 3:00 am."></textarea>
               </div>
