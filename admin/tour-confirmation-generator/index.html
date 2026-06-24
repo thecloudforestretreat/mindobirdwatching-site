@@ -209,6 +209,8 @@
     .field select,
     .field textarea{
       width:100%;
+      max-width:100%;
+      min-width:0;
       border:1px solid var(--line);
       border-radius:13px;
       background:rgba(255,255,255,.82);
@@ -222,6 +224,18 @@
       box-shadow:0 8px 18px rgba(7,25,35,.04);
     }
     .field textarea{ min-height:70px; resize:vertical; line-height:1.45; }
+    .field input[type="date"]{
+      -webkit-appearance:none;
+      appearance:none;
+      display:block;
+      max-width:100%;
+      min-width:0;
+      box-sizing:border-box;
+    }
+    .field input[type="date"]::-webkit-date-and-time-value{
+      text-align:left;
+      min-height:20px;
+    }
     .editGrid{
       display:grid;
       grid-template-columns:repeat(4, minmax(0,1fr));
@@ -481,6 +495,7 @@
       .mobileTools{ display:grid; }
     }
     @media (max-width:640px){
+      html, body{ overflow-x:hidden; }
       .container{ padding:14px; }
       .page{ padding:12px; }
       .adminTitle h1{ font-size:19px; }
@@ -680,6 +695,7 @@
             </div>
             <div class="adminActions previewExportActions">
               <button class="btnAdmin primary" type="button" id="exportPngBtn">Export JPG 1920x1080</button>
+              <button class="btnAdmin primary" type="button" id="openImageBtn">Open Image / Save to Photos</button>
               <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
             </div>
           </section>
@@ -758,7 +774,7 @@
           "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput",
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
           "outDateIssued", "outGuests", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
-          "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "exportPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
+          "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
           "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
         ];
         ids.forEach(id => els[id] = document.getElementById(id));
@@ -795,6 +811,7 @@
         els.tourTypeInput.addEventListener("input", updatePreviewFromForm);
         els.refreshBtn.addEventListener("click", loadData);
         els.exportPngBtn.addEventListener("click", exportPng);
+        if(els.openImageBtn) els.openImageBtn.addEventListener("click", openImageForSaving);
         els.exportPdfBtn.addEventListener("click", exportPdf);
         els.markGeneratedBtn.addEventListener("click", () => updateStatus("Generated"));
         els.markSentBtn.addEventListener("click", () => updateStatus("Sent"));
@@ -1037,47 +1054,242 @@
       }
 
       function exportPng(){
-        setHint("Preparing JPG...");
-        waitForImages().then(() => html2canvas(els.certificate, {
-          backgroundColor: "#edf4e6",
-          scale: 1,
-          width: 1920,
-          height: 1080,
-          windowWidth: 1920,
-          windowHeight: 1080,
-          useCORS: true,
-          allowTaint: false,
-          logging: false
-        })).then(canvas => {
+        setHint("Preparing clean 1920x1080 JPG...");
+        renderExportCanvas()
+          .then(canvas => {
+            const link = document.createElement("a");
+            link.download = fileBaseName() + ".jpg";
+            link.href = canvas.toDataURL("image/jpeg", 0.96);
+            link.click();
+            setHint("JPG exported");
+          })
+          .catch(err => setHint("JPG export failed: " + err.message));
+      }
+
+      function openImageForSaving(){
+        setHint("Preparing image...");
+        renderExportCanvas()
+          .then(canvas => new Promise(resolve => canvas.toBlob(blob => resolve({ canvas, blob }), "image/jpeg", 0.96)))
+          .then(({ canvas, blob }) => {
+            if(!blob){
+              const dataUrl = canvas.toDataURL("image/jpeg", 0.96);
+              const win = window.open();
+              if(win) win.document.write("<img src='" + dataUrl + "' style='width:100%;height:auto;'>");
+              setHint("Image opened");
+              return;
+            }
+
+            const file = new File([blob], fileBaseName() + ".jpg", { type:"image/jpeg" });
+            if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+              navigator.share({ files:[file], title:"MBW Tour Confirmation" })
+                .then(() => setHint("Share sheet opened"))
+                .catch(() => openBlobInNewTab(blob));
+            } else {
+              openBlobInNewTab(blob);
+            }
+          })
+          .catch(err => setHint("Image export failed: " + err.message));
+      }
+
+      function openBlobInNewTab(blob){
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, "_blank");
+        if(!win){
           const link = document.createElement("a");
+          link.href = url;
           link.download = fileBaseName() + ".jpg";
-          link.href = canvas.toDataURL("image/jpeg", 0.96);
           link.click();
-          setHint("JPG exported");
-        }).catch(err => setHint("JPG export failed: " + err.message));
+        }
+        setHint("Image opened. On iPhone, use Share or long-press to save to Photos.");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
       }
 
       function exportPdf(){
-        setHint("Preparing PDF...");
-        waitForImages().then(() => html2canvas(els.certificate, {
-          backgroundColor: "#edf4e6",
-          scale: 1,
-          width: 1920,
-          height: 1080,
-          windowWidth: 1920,
-          windowHeight: 1080,
-          useCORS: true,
-          allowTaint: false,
-          logging: false
-        })).then(canvas => {
-          const img = canvas.toDataURL("image/jpeg", 0.96);
-          const jsPDF = window.jspdf && window.jspdf.jsPDF;
-          if(!jsPDF) throw new Error("PDF library did not load");
-          const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[1920,1080] });
-          pdf.addImage(img, "JPEG", 0, 0, 1920, 1080);
-          pdf.save(fileBaseName() + ".pdf");
-          setHint("PDF exported");
-        }).catch(err => setHint("PDF export failed: " + err.message));
+        setHint("Preparing clean PDF...");
+        renderExportCanvas()
+          .then(canvas => {
+            const img = canvas.toDataURL("image/jpeg", 0.96);
+            const jsPDF = window.jspdf && window.jspdf.jsPDF;
+            if(!jsPDF) throw new Error("PDF library did not load");
+            const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[1920,1080] });
+            pdf.addImage(img, "JPEG", 0, 0, 1920, 1080);
+            pdf.save(fileBaseName() + ".pdf");
+            setHint("PDF exported");
+          })
+          .catch(err => setHint("PDF export failed: " + err.message));
+      }
+
+      function renderExportCanvas(){
+        const imageUrls = getExportImageUrls();
+        return Promise.all([
+          loadExportImage(imageUrls.background),
+          loadExportImage(imageUrls.logo),
+          loadExportImage(imageUrls.guide),
+          loadExportImage(imageUrls.mindo),
+          loadExportImage(imageUrls.instagram)
+        ]).then(([bg, logo, guide, mindo, instagram]) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1920;
+          canvas.height = 1080;
+          const ctx = canvas.getContext("2d");
+
+          ctx.fillStyle = "#edf4e6";
+          ctx.fillRect(0, 0, 1920, 1080);
+          drawCover(ctx, bg, 0, 0, 1920, 1080);
+
+          const grad = ctx.createLinearGradient(0, 0, 1920, 0);
+          grad.addColorStop(0, "rgba(255,255,255,0.25)");
+          grad.addColorStop(0.54, "rgba(255,255,255,0.08)");
+          grad.addColorStop(1, "rgba(255,255,255,0.16)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 1920, 1080);
+
+          drawContain(ctx, logo, 62, 58, 330, 330);
+          drawContain(ctx, mindo, 1920 - 44 - 655, 1080 - 12 - getContainHeight(mindo, 655), 655, getContainHeight(mindo, 655));
+          drawContain(ctx, guide, 1268, 100, 610, 910);
+
+          ctx.fillStyle = "#075f28";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.font = "950 62px Arial, Helvetica, sans-serif";
+          ctx.fillText("TOUR CONFIRMATION", 965, 112);
+          ctx.font = "950 21px Arial, Helvetica, sans-serif";
+          ctx.fillText("Date Issued: " + (els.outDateIssued.textContent || ""), 940, 202);
+
+          drawInfoText(ctx);
+          drawQrToCanvas(ctx);
+          drawFooter(ctx, instagram, logo);
+
+          return canvas;
+        });
+      }
+
+      function getExportImageUrls(){
+        return {
+          background: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_tour_confirmation_background.png",
+          logo: "https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png",
+          guide: getGuideImageUrlFromStyle() || window.MBW_CONFIRMATION_CONFIG.defaultGuideImage,
+          mindo: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_mindo_letters.png",
+          instagram: "https://mindobirdwatching.com/assets/images/tour-confirmation/icon_ig.png"
+        };
+      }
+
+      function loadExportImage(url){
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Could not load image: " + url));
+          img.src = url;
+        });
+      }
+
+      function drawCover(ctx, img, x, y, w, h){
+        const ir = img.width / img.height;
+        const br = w / h;
+        let sw = img.width, sh = img.height, sx = 0, sy = 0;
+        if(ir > br){
+          sw = img.height * br;
+          sx = (img.width - sw) / 2;
+        } else {
+          sh = img.width / br;
+          sy = (img.height - sh) / 2;
+        }
+        ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+      }
+
+      function drawContain(ctx, img, x, y, w, h){
+        const scale = Math.min(w / img.width, h / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        const dx = x + (w - dw) / 2;
+        const dy = y + (h - dh) / 2;
+        ctx.drawImage(img, dx, dy, dw, dh);
+      }
+
+      function getContainHeight(img, targetWidth){
+        if(!img || !img.width) return 360;
+        return targetWidth * (img.height / img.width);
+      }
+
+      function drawInfoText(ctx){
+        const labelX = 220;
+        const valueX = 423;
+        const rows = [
+          { label:"Guest(s):", value:els.outGuests.textContent || "", y:435, valueSize:30, maxWidth:500 },
+          { label:"Tour Date:", value:els.outTourDate.textContent || "", y:489, valueSize:30, maxWidth:540 },
+          { label:"Guide:", value:els.outGuide.textContent || "", y:543, valueSize:30, maxWidth:400 },
+          { label:"Contact #:", value:els.outContact.textContent || "", y:597, valueSize:27, maxWidth:430 },
+          { label:"Tour Type:", value:els.outTourType.textContent || "", y:651, valueSize:27, maxWidth:440 },
+          { label:"Length:", value:els.outLength.textContent || "", y:742, valueSize:36, maxWidth:420 },
+          { label:"Transportation:", value:getPlainText(els.outTransportation), y:806, valueSize:27, maxWidth:460 }
+        ];
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "#075f28";
+
+        rows.forEach(row => {
+          ctx.font = "950 25px Arial, Helvetica, sans-serif";
+          ctx.fillText(row.label, labelX, row.y + 4);
+          ctx.font = "950 " + row.valueSize + "px Arial, Helvetica, sans-serif";
+          wrapCanvasText(ctx, row.value, valueX, row.y, row.maxWidth, Math.round(row.valueSize * 1.08));
+        });
+
+        ctx.font = "950 25px Arial, Helvetica, sans-serif";
+        ctx.fillText(els.outNotes.textContent || "", 220, 858);
+      }
+
+      function getPlainText(el){
+        return String(el ? el.innerText || el.textContent || "" : "").replace(/\s+\n/g, "\n").trim();
+      }
+
+      function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+        const paragraphs = String(text || "").split("\n");
+        let yy = y;
+        paragraphs.forEach((paragraph, pIndex) => {
+          const words = paragraph.split(/\s+/).filter(Boolean);
+          let line = "";
+          words.forEach(word => {
+            const test = line ? line + " " + word : word;
+            if(ctx.measureText(test).width > maxWidth && line){
+              ctx.fillText(line, x, yy);
+              yy += lineHeight;
+              line = word;
+            } else {
+              line = test;
+            }
+          });
+          if(line){
+            ctx.fillText(line, x, yy);
+            yy += lineHeight;
+          }
+          if(pIndex < paragraphs.length - 1) yy += Math.round(lineHeight * 0.12);
+        });
+      }
+
+      function drawQrToCanvas(ctx){
+        const qrCanvas = els.qrBox ? els.qrBox.querySelector("canvas") : null;
+        const qrImg = els.qrBox ? els.qrBox.querySelector("img") : null;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(875, 555, 174, 174);
+        if(qrCanvas){
+          ctx.drawImage(qrCanvas, 882, 562, 160, 160);
+        } else if(qrImg){
+          ctx.drawImage(qrImg, 882, 562, 160, 160);
+        }
+      }
+
+      function drawFooter(ctx, instagram, logo){
+        ctx.fillStyle = "#075f28";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = "950 36px Arial, Helvetica, sans-serif";
+        drawContain(ctx, instagram, 132, 987, 49, 49);
+        ctx.fillText("@mindobirdwatching", 203, 1012);
+        drawContain(ctx, logo, 675, 987, 49, 49);
+        ctx.font = "950 34px Arial, Helvetica, sans-serif";
+        ctx.fillText("www.mindobirdwatching.com", 742, 1012);
       }
 
       function updateStatus(status){
