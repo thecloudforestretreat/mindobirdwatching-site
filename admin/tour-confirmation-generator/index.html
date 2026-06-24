@@ -308,12 +308,12 @@
     .certTitle{
       position:absolute;
       z-index:2;
-      left:580px;
-      top:95px;
+      left:585px;
+      top:112px;
       width:760px;
       text-align:center;
       color:var(--mbw-green);
-      font-size:64px;
+      font-size:62px;
       line-height:1;
       font-weight:950;
       letter-spacing:.02em;
@@ -322,8 +322,8 @@
     .dateIssuedBox{
       position:absolute;
       z-index:2;
-      left:790px;
-      top:182px;
+      left:805px;
+      top:202px;
       min-width:270px;
       text-align:center;
       color:var(--mbw-green);
@@ -336,33 +336,35 @@
     }
     .guideImage{
       position:absolute;
-      z-index:2;
-      right:66px;
-      top:138px;
-      width:470px;
-      height:835px;
+      z-index:6;
+      right:24px;
+      top:86px;
+      width:690px;
+      height:970px;
       object-fit:contain;
       object-position:bottom center;
       filter:drop-shadow(0 14px 16px rgba(0,0,0,.15));
+      pointer-events:none;
     }
     .mindoLetters{
       position:absolute;
-      z-index:2;
-      right:62px;
-      bottom:18px;
-      width:640px;
+      z-index:5;
+      right:44px;
+      bottom:12px;
+      width:655px;
       height:auto;
       object-fit:contain;
+      pointer-events:none;
     }
     .infoBlock{
       position:absolute;
       z-index:3;
-      left:205px;
-      top:430px;
+      left:220px;
+      top:435px;
       width:610px;
       display:grid;
       grid-template-columns:185px 1fr;
-      gap:20px 18px;
+      gap:22px 18px;
       align-items:start;
       color:var(--mbw-green);
     }
@@ -393,8 +395,8 @@
     .qrBox{
       position:absolute;
       z-index:4;
-      left:840px;
-      top:560px;
+      left:875px;
+      top:555px;
       width:174px;
       height:174px;
       background:#fff;
@@ -408,8 +410,8 @@
     .noteLine{
       position:absolute;
       z-index:4;
-      left:245px;
-      top:860px;
+      left:220px;
+      top:858px;
       color:var(--mbw-green);
       font-size:25px;
       line-height:1.1;
@@ -423,8 +425,8 @@
     .footerIg{
       position:absolute;
       z-index:4;
-      left:125px;
-      bottom:40px;
+      left:132px;
+      bottom:44px;
       display:flex;
       align-items:center;
       gap:22px;
@@ -437,8 +439,8 @@
     .footerWeb{
       position:absolute;
       z-index:4;
-      left:625px;
-      bottom:40px;
+      left:675px;
+      bottom:44px;
       display:flex;
       align-items:center;
       gap:18px;
@@ -551,7 +553,7 @@
             <div class="editGrid">
               <div class="field">
                 <label for="dateIssuedInput">Date Issued</label>
-                <input id="dateIssuedInput" type="text" placeholder="06/17/2026" />
+                <input id="dateIssuedInput" type="date" />
               </div>
               <div class="field span2">
                 <label for="guestsInput">Guests</label>
@@ -559,7 +561,7 @@
               </div>
               <div class="field">
                 <label for="tourDateInput">Tour Date</label>
-                <input id="tourDateInput" type="text" placeholder="6/20/2026" />
+                <input id="tourDateInput" type="date" />
               </div>
               <div class="field">
                 <label for="contactInput">Contact #</label>
@@ -575,7 +577,19 @@
               </div>
               <div class="field">
                 <label for="pickupTimeInput">Pickup Time</label>
-                <input id="pickupTimeInput" type="text" placeholder="3:00 AM" />
+                <select id="pickupTimeInput"></select>
+              </div>
+              <div class="field">
+                <label for="tour1Input">Tour Type 1</label>
+                <select id="tour1Input"></select>
+              </div>
+              <div class="field">
+                <label for="tour2Input">Tour Type 2</label>
+                <select id="tour2Input"></select>
+              </div>
+              <div class="field">
+                <label for="tour3Input">Tour Type 3</label>
+                <select id="tour3Input"></select>
               </div>
               <div class="field span2">
                 <label for="tourTypeInput">Tour Type Display</label>
@@ -708,6 +722,7 @@
         data: null,
         records: [],
         guides: [],
+        tours: [],
         activeIndex: 0,
         activeStatus: "all",
         search: "",
@@ -721,6 +736,7 @@
 
       function init(){
         cacheEls();
+        renderPickupTimeOptions();
         bindEvents();
         setPreviewScale();
         loadData();
@@ -730,7 +746,7 @@
         const ids = [
           "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput",
           "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput",
-          "pickupTimeInput", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
+          "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
           "outDateIssued", "outGuests", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
           "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "exportPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
           "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
@@ -759,12 +775,14 @@
           if(idx >= 0) selectRecord(idx);
         });
 
-        ["statusInput", "guideInput", "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
+        ["statusInput", "guideInput", "dateIssuedInput", "guestsInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
           els[id].addEventListener("input", updatePreviewFromForm);
           els[id].addEventListener("change", updatePreviewFromForm);
         });
 
         els.guideInput.addEventListener("change", onGuideChange);
+        ["tour1Input", "tour2Input", "tour3Input"].forEach(id => els[id].addEventListener("change", onTourPartsChange));
+        els.tourTypeInput.addEventListener("input", updatePreviewFromForm);
         els.refreshBtn.addEventListener("click", loadData);
         els.exportPngBtn.addEventListener("click", exportPng);
         els.exportPdfBtn.addEventListener("click", exportPdf);
@@ -794,7 +812,7 @@
           })
           .catch(() => {
             hydrateData(window.MBW_CONFIRMATION_CONFIG.fallbackData);
-            setHint("Preview mode. Add the Apps Script JSON endpoint in the next step.");
+            setHint("Preview mode. Check Apps Script JSONP endpoint if Google Sheet data does not load.");
           });
       }
 
@@ -802,7 +820,9 @@
         state.data = data;
         state.records = (data.confirmations || []).filter(r => hasUsefulRecord(r));
         state.guides = (data.guides || []).filter(g => (g.Guide || g["Guide"] || "").trim() !== "");
+        state.tours = (data.tours || []).map(t => t["Tour Name"] || t.Tour || t.Name || "").filter(Boolean);
         renderGuideOptions();
+        renderTourOptions();
         renderBookingOptions();
         renderRecords();
         if(state.records.length){ selectRecord(0); }
@@ -830,6 +850,61 @@
             els.guideInput.appendChild(opt);
           });
         }
+      }
+
+      function renderTourOptions(){
+        const tourSelects = [els.tour1Input, els.tour2Input, els.tour3Input].filter(Boolean);
+        const fallbackTours = [
+          "Jewels of the Morning Forest",
+          "Dance of the Andean Cock-of-the-Rock",
+          "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+          "Custom Half Day",
+          "Custom Full Day",
+          "Nature Excursion",
+          "Solo Birdwatching Experience",
+          "Chocolate Tour",
+          "Coffee Tour",
+          "Waterfall Hike",
+          "Canopy/Ziplining",
+          "Butterfly Garden",
+          "Night Walk",
+          "Half-Day to Full-Day Extension",
+          "Canyoning"
+        ];
+        const tours = state.tours.length ? state.tours : fallbackTours;
+        tourSelects.forEach((select, idx) => {
+          const current = select.value;
+          select.innerHTML = "";
+          const empty = document.createElement("option");
+          empty.value = "";
+          empty.textContent = idx === 0 ? "Select tour" : "None";
+          select.appendChild(empty);
+          tours.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+          });
+          select.value = current;
+        });
+      }
+
+      function renderPickupTimeOptions(){
+        if(!els.pickupTimeInput) return;
+        const times = [];
+        for(let hour = 3; hour <= 12; hour++){
+          for(let min of [0, 15, 30, 45]){
+            if(hour === 12 && min > 0) continue;
+            const label = hour + ":" + String(min).padStart(2, "0") + " AM";
+            times.push(label);
+          }
+        }
+        times.forEach(time => {
+          const opt = document.createElement("option");
+          opt.value = time;
+          opt.textContent = time;
+          els.pickupTimeInput.appendChild(opt);
+        });
       }
 
       function renderBookingOptions(){
@@ -893,12 +968,15 @@
       function fillForm(r){
         els.statusInput.value = r.Status || "Pending";
         els.guideInput.value = r.Guide || "Chicho";
-        els.dateIssuedInput.value = r["Date Issued"] || todayMDY();
+        els.dateIssuedInput.value = toDateInputValue(r["Date Issued"] || todayMDY());
         els.guestsInput.value = r.Guests || "";
-        els.tourDateInput.value = r["Tour Date"] || "";
+        els.tourDateInput.value = toDateInputValue(r["Tour Date"] || "");
         els.contactInput.value = r["Contact #"] || contactForGuide(els.guideInput.value) || "";
         els.lengthInput.value = normalizeLength(r.Length || "Full Day");
-        els.pickupTimeInput.value = r["Pickup Time"] || "3:00 AM";
+        setSelectValue(els.pickupTimeInput, normalizePickupTime(r["Pickup Time"] || "3:00 AM"));
+        setSelectValue(els.tour1Input, r["Tour Type 1"] || "");
+        setSelectValue(els.tour2Input, r["Tour Type 2"] || "");
+        setSelectValue(els.tour3Input, r["Tour Type 3"] || "");
         els.tourTypeInput.value = tourDisplay(r);
         els.transportationInput.value = buildTransportation(r);
         els.pickupLocationInput.value = r["Pickup Location"] || "";
@@ -912,9 +990,15 @@
         updatePreviewFromForm();
       }
 
+      function onTourPartsChange(){
+        const parts = [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value].filter(Boolean);
+        els.tourTypeInput.value = parts.join(" + ");
+        updatePreviewFromForm();
+      }
+
       function updatePreviewFromForm(){
         const guide = els.guideInput.value || "Chicho";
-        els.outDateIssued.textContent = els.dateIssuedInput.value || todayMDY();
+        els.outDateIssued.textContent = formatDateIssued(els.dateIssuedInput.value || todayMDY());
         els.outGuests.textContent = els.guestsInput.value || "Guest Name";
         els.outTourDate.textContent = formatTourDateLong(els.tourDateInput.value || "");
         els.outGuide.textContent = guide;
@@ -923,7 +1007,7 @@
         els.outLength.textContent = (els.lengthInput.value || "Full Day").toUpperCase();
         const transport = els.transportationInput.value || "Transportation details";
         const pickupLocation = els.pickupLocationInput.value || "";
-        els.outTransportation.innerHTML = escapeHtml(transport).replace(/\n/g, "<br>") + (pickupLocation && !transport.toLowerCase().includes(pickupLocation.toLowerCase()) ? "<br>" + escapeHtml(pickupLocation) : "");
+        els.outTransportation.innerHTML = buildTransportationDisplay(transport, pickupLocation);
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
         els.outGuideImage.src = imageForGuide(guide);
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
@@ -1072,6 +1156,46 @@
         if(v.includes("half")) return "Half Day";
         if(v.includes("multi")) return "Multi Day";
         return "Full Day";
+      }
+
+      function buildTransportationDisplay(transport, pickupLocation){
+        const cleanTransport = String(transport || "").trim();
+        const cleanPickup = String(pickupLocation || "").trim();
+        if(cleanTransport && cleanPickup && !cleanTransport.toLowerCase().includes(cleanPickup.toLowerCase())){
+          return escapeHtml(cleanTransport).replace(/\n/g, "<br>") + "<br>" + escapeHtml(cleanPickup);
+        }
+        return escapeHtml(cleanTransport || cleanPickup || "Transportation details").replace(/\n/g, "<br>");
+      }
+
+      function formatDateIssued(value){
+        const d = parseDate(value);
+        if(!d) return value || todayMDY();
+        return String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getDate()).padStart(2,"0") + "/" + d.getFullYear();
+      }
+
+      function toDateInputValue(value){
+        const d = parseDate(value);
+        if(!d) return "";
+        return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+      }
+
+      function normalizePickupTime(value){
+        const d = String(value || "").trim().toUpperCase().replace(/\s+/g, " ");
+        const m = d.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+        if(!m) return d || "3:00 AM";
+        return Number(m[1]) + ":" + m[2] + " " + m[3];
+      }
+
+      function setSelectValue(select, value){
+        if(!select) return;
+        const clean = String(value || "");
+        if(clean && !Array.from(select.options).some(opt => opt.value === clean)){
+          const opt = document.createElement("option");
+          opt.value = clean;
+          opt.textContent = clean;
+          select.appendChild(opt);
+        }
+        select.value = clean;
       }
 
       function formatTourDateShort(value){
