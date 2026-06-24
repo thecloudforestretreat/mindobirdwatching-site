@@ -266,9 +266,11 @@
       padding:14px;
     }
     .previewScale{
+      position:relative;
       width:1920px;
       height:1080px;
       transform-origin:top left;
+      overflow:visible;
     }
 
     .certificate{
@@ -337,12 +339,13 @@
     .guideImage{
       position:absolute;
       z-index:6;
-      right:24px;
-      top:86px;
-      width:690px;
-      height:970px;
-      object-fit:contain;
-      object-position:bottom center;
+      right:42px;
+      top:100px;
+      width:610px;
+      height:910px;
+      background-repeat:no-repeat;
+      background-position:center bottom;
+      background-size:contain;
       filter:drop-shadow(0 14px 16px rgba(0,0,0,.15));
       pointer-events:none;
     }
@@ -451,17 +454,9 @@
     }
     .footerWeb img{ width:49px; height:49px; border-radius:999px; object-fit:cover; }
 
-
-    .previewActions{
-      display:flex;
-      gap:10px;
-      align-items:center;
+    .previewExportActions{
       justify-content:flex-start;
-      flex-wrap:wrap;
       margin-top:12px;
-    }
-    .previewActions .btnAdmin{
-      min-width:190px;
     }
 
     .mobileTools{
@@ -511,7 +506,7 @@
           <img class="adminLogo" src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching logo" />
           <div>
             <h1>MBW Tour Confirmation Generator</h1>
-            <p>Select a booking from Google Sheets, preview the final 1920x1080 confirmation, export as JPG or PDF, and update the booking status.</p>
+            <p>Select a booking from Google Sheets, preview the final 1920x1080 confirmation, then export the image or PDF from the preview area.</p>
           </div>
         </div>
         <div class="adminActions">
@@ -643,7 +638,7 @@
                   <img class="certLogo" src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching" crossorigin="anonymous" />
                   <div class="certTitle">TOUR CONFIRMATION</div>
                   <div class="dateIssuedBox">Date Issued: <span id="outDateIssued">06/17/2026</span></div>
-                  <img class="guideImage" id="outGuideImage" src="https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" alt="Guide" crossorigin="anonymous" />
+                  <div class="guideImage" id="outGuideImage" role="img" aria-label="Guide"></div>
                   <img class="mindoLetters" src="https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_mindo_letters.png" alt="Mindo" crossorigin="anonymous" />
 
                   <div class="infoBlock">
@@ -683,7 +678,7 @@
                 </div>
               </div>
             </div>
-            <div class="previewActions" aria-label="Export confirmation">
+            <div class="adminActions previewExportActions">
               <button class="btnAdmin primary" type="button" id="exportPngBtn">Export JPG 1920x1080</button>
               <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
             </div>
@@ -809,12 +804,11 @@
 
       function setPreviewScale(){
         if(!els.previewShell || !els.previewScale) return;
-        const available = Math.max(280, els.previewShell.clientWidth - 28);
+        const available = Math.max(280, els.previewShell.clientWidth - 30);
         const scale = Math.min(1, available / 1920);
         els.previewScale.style.transform = "scale(" + scale + ")";
-        els.previewScale.style.width = "1920px";
-        els.previewScale.style.height = "1080px";
-        els.previewShell.style.height = Math.ceil(1080 * scale + 30) + "px";
+        els.previewScale.style.width = Math.ceil(1920 * scale) + "px";
+        els.previewScale.style.height = Math.ceil(1080 * scale) + "px";
         els.previewShell.style.minHeight = "0";
       }
 
@@ -1025,7 +1019,7 @@
         const pickupLocation = els.pickupLocationInput.value || "";
         els.outTransportation.innerHTML = buildTransportationDisplay(transport, pickupLocation);
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
-        els.outGuideImage.src = imageForGuide(guide);
+        setGuideImage(imageForGuide(guide));
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
       }
 
@@ -1044,7 +1038,17 @@
 
       function exportPng(){
         setHint("Preparing JPG...");
-        renderExportCanvas().then(canvas => {
+        waitForImages().then(() => html2canvas(els.certificate, {
+          backgroundColor: "#edf4e6",
+          scale: 1,
+          width: 1920,
+          height: 1080,
+          windowWidth: 1920,
+          windowHeight: 1080,
+          useCORS: true,
+          allowTaint: false,
+          logging: false
+        })).then(canvas => {
           const link = document.createElement("a");
           link.download = fileBaseName() + ".jpg";
           link.href = canvas.toDataURL("image/jpeg", 0.96);
@@ -1055,7 +1059,17 @@
 
       function exportPdf(){
         setHint("Preparing PDF...");
-        renderExportCanvas().then(canvas => {
+        waitForImages().then(() => html2canvas(els.certificate, {
+          backgroundColor: "#edf4e6",
+          scale: 1,
+          width: 1920,
+          height: 1080,
+          windowWidth: 1920,
+          windowHeight: 1080,
+          useCORS: true,
+          allowTaint: false,
+          logging: false
+        })).then(canvas => {
           const img = canvas.toDataURL("image/jpeg", 0.96);
           const jsPDF = window.jspdf && window.jspdf.jsPDF;
           if(!jsPDF) throw new Error("PDF library did not load");
@@ -1064,53 +1078,6 @@
           pdf.save(fileBaseName() + ".pdf");
           setHint("PDF exported");
         }).catch(err => setHint("PDF export failed: " + err.message));
-      }
-
-      function renderExportCanvas(){
-        return waitForImages().then(() => {
-          const clone = els.certificate.cloneNode(true);
-          clone.id = "certificateExportClone";
-          clone.style.position = "fixed";
-          clone.style.left = "-10000px";
-          clone.style.top = "0";
-          clone.style.width = "1920px";
-          clone.style.height = "1080px";
-          clone.style.transform = "none";
-          clone.style.margin = "0";
-          clone.style.opacity = "1";
-          clone.querySelectorAll("[id]").forEach(node => {
-            node.removeAttribute("id");
-          });
-          document.body.appendChild(clone);
-          return waitForCloneImages(clone).then(() => {
-            return html2canvas(clone, {
-              backgroundColor: "#edf4e6",
-              scale: 1,
-              width: 1920,
-              height: 1080,
-              windowWidth: 1920,
-              windowHeight: 1080,
-              useCORS: true,
-              allowTaint: false,
-              logging: false,
-              scrollX: 0,
-              scrollY: 0
-            });
-          }).finally(() => {
-            if(clone.parentNode) clone.parentNode.removeChild(clone);
-          });
-        });
-      }
-
-      function waitForCloneImages(root){
-        const imgs = Array.from(root.querySelectorAll("img"));
-        return Promise.all(imgs.map(img => {
-          if(img.complete && img.naturalWidth !== 0) return Promise.resolve();
-          return new Promise(resolve => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        }));
       }
 
       function updateStatus(status){
@@ -1148,13 +1115,41 @@
 
       function waitForImages(){
         const imgs = Array.from(els.certificate.querySelectorAll("img"));
-        return Promise.all(imgs.map(img => {
-          if(img.complete) return Promise.resolve();
+        const imagePromises = imgs.map(img => {
+          if(img.complete && img.naturalWidth !== 0) return Promise.resolve();
           return new Promise(resolve => {
             img.onload = resolve;
             img.onerror = resolve;
           });
-        }));
+        });
+
+        const guideUrl = getGuideImageUrlFromStyle();
+        if(guideUrl){
+          imagePromises.push(preloadImage(guideUrl));
+        }
+
+        return Promise.all(imagePromises);
+      }
+
+      function preloadImage(url){
+        return new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = url;
+        });
+      }
+
+      function setGuideImage(url){
+        const safeUrl = url || window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
+        if(!els.outGuideImage) return;
+        els.outGuideImage.style.backgroundImage = "url('" + safeUrl.replace(/'/g, "%27") + "')";
+        els.outGuideImage.dataset.src = safeUrl;
+      }
+
+      function getGuideImageUrlFromStyle(){
+        return els.outGuideImage ? (els.outGuideImage.dataset.src || "") : "";
       }
 
       function labelForRecord(r){
