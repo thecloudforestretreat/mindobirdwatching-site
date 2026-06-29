@@ -53,6 +53,175 @@ body[data-page-content-group="birdwatching_classes"] .internalLinks .linkCard{
 <script defer src="/assets/js/head.js"></script>
 <script defer src="/assets/js/site-config.js"></script>
 
+<style id="bird-comparison-feature-safety">
+body .birdCompareFeature{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:minmax(0,58%) minmax(0,42%);
+  gap:0;
+  align-items:stretch;
+  overflow:hidden;
+  background:rgba(255,255,255,.68);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+}
+body .birdCompareFeature .activityMedia,
+body .birdCompareFeature .mbwCarousel,
+body .birdCompareFeature .mbwCarouselViewport,
+body .birdCompareFeature .mbwCarouselTrack,
+body .birdCompareFeature .mbwSlide{
+  height:100%;
+  min-height:440px;
+}
+body .birdCompareFeature .activityMedia{
+  position:relative;
+  overflow:hidden;
+  background:rgba(255,255,255,.55);
+}
+body .birdCompareFeature .activityBody{
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:12px;
+  min-width:0;
+}
+body .birdCompareFeature .mini-links__label{
+  margin:0;
+  color:var(--forest);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+body .birdCompareFeature h2{
+  margin:0;
+  font-family:var(--font-head);
+  color:var(--forest);
+  font-size:clamp(26px,2.5vw,38px);
+  line-height:1.05;
+  letter-spacing:-0.03em;
+}
+body .birdCompareFeature p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.62;
+}
+body .birdCompareFeature .tourActions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:10px;
+  width:100%;
+}
+body .birdCompareFeature .tourActions .btn{
+  width:100%;
+  justify-content:center;
+  text-align:center;
+  min-height:46px;
+}
+body .birdCompareFeature .mbwCarousel{
+  position:relative;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarouselViewport{
+  width:100%;
+  overflow:hidden;
+}
+body .birdCompareFeature .mbwCarouselTrack{
+  display:flex;
+  width:100%;
+  transform:translateX(0);
+  transition:transform 420ms ease;
+  will-change:transform;
+}
+body .birdCompareFeature .mbwSlide{
+  flex:0 0 100%;
+  width:100%;
+}
+body .birdCompareFeature .mbwSlide img{
+  width:100%;
+  height:100% !important;
+  min-height:440px !important;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body .birdCompareFeature .mbwSlide .label{
+  display:none;
+}
+body .birdCompareFeature .mbwNavBtn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.85);
+  box-shadow:var(--shadow);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  z-index:2;
+  color:var(--ink);
+}
+body .birdCompareFeature .mbwNavBtn:focus{outline:2px solid rgba(13,89,37,.35);outline-offset:2px}
+body .birdCompareFeature .mbwNavBtn svg{width:20px;height:20px}
+body .birdCompareFeature .mbwNavPrev{left:10px}
+body .birdCompareFeature .mbwNavNext{right:10px}
+body .birdCompareFeature .mbwDots{
+  position:absolute;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  display:inline-flex;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.78);
+  z-index:2;
+  pointer-events:none;
+}
+body .birdCompareFeature .mbwDot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:rgba(13,89,37,.22);
+}
+body .birdCompareFeature .mbwDot.is-active{background:rgba(13,89,37,.65)}
+@media(max-width:980px){
+  body .birdCompareFeature{grid-template-columns:1fr}
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:340px !important}
+  body .birdCompareFeature .activityBody{padding:22px}
+}
+@media(max-width:560px){
+  body .birdCompareFeature .activityMedia,
+  body .birdCompareFeature .mbwCarousel,
+  body .birdCompareFeature .mbwCarouselViewport,
+  body .birdCompareFeature .mbwCarouselTrack,
+  body .birdCompareFeature .mbwSlide,
+  body .birdCompareFeature .mbwSlide img{min-height:300px !important}
+  body .birdCompareFeature .activityBody{padding:18px}
+}
+@media(prefers-reduced-motion:reduce){
+  body .birdCompareFeature .mbwCarouselTrack{transition:none}
+}
+</style>
+
 </head>
 <body data-page-language="es" data-page-type="guide_page" data-page-content-group="birdwatching_classes" data-page-region="mindo" data-page-location="mindo">
 <div class="container">
@@ -131,6 +300,17 @@ body[data-page-content-group="birdwatching_classes"] .internalLinks .linkCard{
   </div>
 </section>
 
+
+<section class="section">
+  <div class="sectionHead"><h2>Antes de Planificar Su Clase</h2><p class="sectionHint">Algunas decisiones practicas hacen que una clase para principiantes sea mas tranquila, clara y provechosa.</p></div>
+  <div class="quickGrid">
+    <div class="trustBox"><strong>Elija el ritmo adecuado</strong><p>Los principiantes suelen aprender mas con una ruta pausada, tiempo para practicar con binoculares y aves objetivo realistas, sin correr entre lugares.</p><p><a href="/es/planifica-tu-viaje/">Planifique su viaje a Mindo</a></p></div>
+    <div class="trustBox"><strong>Entienda las condiciones de Mindo</strong><p>La luz del bosque nublado, la neblina, la lluvia y la actividad temprana de las aves influyen en la clase. Saberlo ayuda a familias y principiantes a prepararse mejor.</p><p><a href="/es/guia-viaje-mindo/">Leer la guia de viaje de Mindo</a></p></div>
+    <div class="trustBox"><strong>Llegue listo para el campo</strong><p>Planifique transporte, zapatos comodos, proteccion para lluvia, agua y suficiente tiempo antes de la sesion para comenzar sin apuros.</p><p><a href="/es/transporte/">Ver opciones de transporte</a></p></div>
+    <div class="trustBox"><strong>Adapte la clase a su objetivo</strong><p>Cuentele a su guia si le interesa mas identificacion, fotografia, aprendizaje en familia, colibries, tucanes, tangaras o una primera experiencia relajada.</p><p><a href="/es/contacto/">Preguntar por una clase privada</a></p></div>
+  </div>
+</section>
+
 <section class="section">
   <div class="sectionHead"><h2>Páginas Útiles para Aprender Avistamiento</h2><p class="sectionHint">Use estas páginas para prepararse antes de la clase o continuar planificando su viaje.</p></div>
   <div class="internalLinks">
@@ -145,12 +325,44 @@ body[data-page-content-group="birdwatching_classes"] .internalLinks .linkCard{
   </div>
 </section>
 
+<section class="activityCard birdCompareFeature" aria-label="Guía comparativa de aves" data-mbw-carousel="bird-comparison-guide-es">
+<div class="activityMedia">
+<div aria-label="Carrusel de guía comparativa de aves" class="mbwCarousel" aria-roledescription="carousel">
+<button aria-label="Foto de ave anterior" class="mbwNavBtn mbwNavPrev" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.5 19 8.5 12l7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Ventana del carrusel de aves" class="mbwCarouselViewport" role="region">
+<div class="mbwCarouselTrack">
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_yellow_throated_toucan_01.jpg" alt="Tucán garganta amarilla en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_andean_cock_of_the_rock_01.jpg" alt="Gallo de la Peña Andino en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_golden_headed_quetzal_01.jpg" alt="Quetzal Cabecidorado en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_pale_mandibled_aracari_01.jpg" alt="Arasarí Piquipálido en Mindo"/></div>
+            <div class="mbwSlide"><img src="/assets/images/birds/mbw_glistening_green_tanager_01.jpg" alt="Tangara Verde Reluciente en Mindo"/></div>
+</div>
+</div>
+<button aria-label="Siguiente foto de ave" class="mbwNavBtn mbwNavNext" type="button">
+<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Indicadores del carrusel de aves" class="mbwDots" aria-hidden="true"><span class="mbwDot is-active"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span><span class="mbwDot"></span></div>
+</div>
+</div>
+<div class="activityBody">
+<p class="mini-links__label">NUEVA GUÍA DE AVES</p>
+<h2>Compara Qué Aves Son Más Probables en Medio Día vs Día Entero</h2>
+<p>Compara más de 50 especies de aves de Mindo con fotos, sonidos, etiquetas por duración de tour y notas prácticas de guía. Esta guía ayuda a elegir el tour correcto y muestra por qué un día entero ofrece más tiempo, más variedad de hábitat y mejores oportunidades para especies objetivo.</p>
+<div class="tourActions">
+<a class="btn primary" data-analytics-event="internal_link_click" data-analytics-label="Explorar Guía Comparativa" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/">Explorar Guía Comparativa</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Ver Tours de Día Entero" data-analytics-location="bird_comparison_section" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/tours/dia-entero/">Ver Tours de Día Entero</a>
+</div>
+</div>
+</section>
 <section class="section">
-  <div class="sectionHead"><h2>Elija el Formato de Aprendizaje Adecuado</h2><p class="sectionHint">Use estas opciones para ajustar la clase a su ritmo, grupo y objetivos.</p></div>
-  <div class="decisionGrid">
-    <article class="decisionCard"><h3>Primeros observadores de aves</h3><p>Empiece con configuración de binoculares, búsqueda lenta, aves comunes de Mindo y hábitos sencillos de identificación. Es ideal para ganar confianza antes de un tour más largo.</p><a href="/es/contacto/" data-analytics-event="cta_click" data-analytics-label="Preguntar por clase para principiantes" data-analytics-page-type="guide_page">Preguntar por una clase inicial</a></article>
-    <article class="decisionCard"><h3>Familias y viajeros tranquilos</h3><p>Mantenga la ruta fácil, visual y flexible. Enfocamos aves accesibles, paradas cortas y explicaciones prácticas para que niños y adultos disfruten la misma salida.</p><a href="/es/tours-de-avistamiento-de-aves-mindo/" data-analytics-event="cta_click" data-analytics-label="Tours de aves para familias" data-analytics-page-type="guide_page">Ver tours de aves</a></article>
-    <article class="decisionCard"><h3>Aprendizaje con enfoque fotográfico</h3><p>Combine identificación de aves con práctica de campo para cámara: luz, paciencia, movimiento silencioso, respeto en comederos y observación de comportamiento.</p><a href="/es/tours/tour-personalizado-privado/" data-analytics-event="cta_click" data-analytics-label="Tour personalizado de aprendizaje fotografico" data-analytics-page-type="guide_page">Planificar una ruta privada</a></article>
+  <div class="sectionHead"><h2>Preguntas Frecuentes</h2><p class="sectionHint">Respuestas simples para principiantes y familias que planean una clase de aves en Mindo.</p></div>
+  <div class="faqGrid">
+    <div class="faqCard"><h3>¿Necesito experiencia para tomar una clase?</h3><p>No. Las clases están pensadas para principiantes y viajeros curiosos. Ajustamos el ritmo y las explicaciones a su nivel.</p></div>
+    <div class="faqCard"><h3>¿Pueden participar niños o familias?</h3><p>Sí. Una clase para principiantes puede funcionar muy bien para familias cuando la ruta, el horario y el ritmo son realistas.</p></div>
+    <div class="faqCard"><h3>¿Necesito mis propios binoculares?</h3><p>Si tiene binoculares, tráigalos. Si no, contáctenos antes del tour para conversar sobre opciones y recomendaciones de equipo.</p></div>
+    <div class="faqCard"><h3>¿Es una clase en aula o una experiencia de campo?</h3><p>Es principalmente una experiencia de campo. Aprende observando aves reales con un guía en jardines, senderos y hábitats de Mindo.</p></div>
   </div>
 </section>
 
@@ -163,7 +375,65 @@ body[data-page-content-group="birdwatching_classes"] .internalLinks .linkCard{
 </div>
 <script defer src="/assets/js/includes.js?v=1"></script>
 <script defer src="/assets/js/site.js?v=34"></script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#webpage","url":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/","name":"Clases de Avistamiento de Aves en Mindo | Aprende con Guías Locales","description":"Aprende avistamiento de aves en Mindo, Ecuador con clases privadas para principiantes. Practica identificación, uso de binoculares y observación en campo.","inLanguage":"es","isPartOf":{"@id":"https://mindobirdwatching.com/#website"},"primaryImageOfPage":{"@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#primaryimage"}},{"@type":"ImageObject","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#primaryimage","url":"https://mindobirdwatching.com/assets/images/pages/new/classes_01.jpg","caption":"Clases de avistamiento de aves en Mindo Ecuador"},{"@type":"Article","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#article","headline":"Clases de Avistamiento de Aves en Mindo, Ecuador","description":"Clases privadas de avistamiento de aves en Mindo con guías locales, identificación de aves, uso de binoculares y observación en bosque nublado.","inLanguage":"es","about":[{"@type":"Place","name":"Mindo, Ecuador"},{"@type":"Thing","name":"Clases de avistamiento de aves"},{"@type":"Thing","name":"Identificación de aves"},{"@type":"Thing","name":"Uso de binoculares"},{"@type":"Thing","name":"Avistamiento en bosque nublado"}],"publisher":{"@type":"Organization","name":"Mindo Bird Watching","url":"https://mindobirdwatching.com/"}},{"@type":"FAQPage","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#faq","mainEntity":[{"@type":"Question","name":"¿Necesito experiencia para tomar una clase de avistamiento de aves en Mindo?","acceptedAnswer":{"@type":"Answer","text":"No. Las clases pueden diseñarse para principiantes, familias y viajeros curiosos. El guía ajusta el ritmo, la ruta y las explicaciones según el nivel del grupo."}},{"@type":"Question","name":"¿Necesito mis propios binoculares?","acceptedAnswer":{"@type":"Answer","text":"Si tiene binoculares, tráigalos. Si no, contacte a Mindo Bird Watching antes de la clase para conversar sobre opciones y recomendaciones de equipo."}},{"@type":"Question","name":"¿Qué aprenderé en una clase de avistamiento?","acceptedAnswer":{"@type":"Answer","text":"Puede aprender conceptos básicos de binoculares, identificación de aves, hábitos de observación en campo, grupos comunes de aves en Mindo y observación responsable en bosque nublado."}},{"@type":"Question","name":"¿Pueden participar familias?","acceptedAnswer":{"@type":"Answer","text":"Sí. Una clase para principiantes puede planificarse para familias cuando el horario, la dificultad de la ruta y el ritmo se adaptan al grupo."}}]},{"@type":"BreadcrumbList","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://mindobirdwatching.com/es/"},{"@type":"ListItem","position":2,"name":"Tours de Avistamiento","item":"https://mindobirdwatching.com/es/tours-de-avistamiento-de-aves-mindo/"},{"@type":"ListItem","position":3,"name":"Clases de Avistamiento de Aves en Mindo","item":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#webpage","url":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/","name":"Clases de Avistamiento de Aves en Mindo | Aprende con Guías Locales","description":"Aprende avistamiento de aves en Mindo, Ecuador con clases privadas para principiantes. Practica identificación, uso de binoculares y observación en campo.","inLanguage":"es","isPartOf":{"@id":"https://mindobirdwatching.com/#website"},"primaryImageOfPage":{"@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#primaryimage"}},{"@type":"ImageObject","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#primaryimage","url":"https://mindobirdwatching.com/assets/images/pages/new/classes_01.jpg","caption":"Clases de avistamiento de aves en Mindo Ecuador"},{"@type":"Article","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#article","headline":"Clases de Avistamiento de Aves en Mindo, Ecuador","description":"Clases privadas de avistamiento de aves en Mindo con guías locales, identificación de aves, uso de binoculares y observación en bosque nublado.","inLanguage":"es","about":[{"@type":"Place","name":"Mindo, Ecuador"},{"@type":"Thing","name":"Clases de avistamiento de aves"},{"@type":"Thing","name":"Identificación de aves"},{"@type":"Thing","name":"Uso de binoculares"},{"@type":"Thing","name":"Avistamiento en bosque nublado"}],"publisher":{"@id":"https://mindobirdwatching.com/#organization"},"mainEntityOfPage":{"@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#webpage"},"image":{"@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#primaryimage"},"mentions":[{"@type":"Place","name":"Choco Andino"},{"@type":"Thing","name":"Bosque nublado de Mindo"},{"@type":"Thing","name":"Logistica de viaje de Quito a Mindo"},{"@type":"Thing","name":"Ecoturismo responsable"},{"@type":"Thing","name":"Colibries"},{"@type":"Thing","name":"Tucanes"},{"@type":"Thing","name":"Tangaras"}]},{"@type":"FAQPage","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#faq","mainEntity":[{"@type":"Question","name":"¿Necesito experiencia para tomar una clase de avistamiento de aves en Mindo?","acceptedAnswer":{"@type":"Answer","text":"No. Las clases pueden diseñarse para principiantes, familias y viajeros curiosos. El guía ajusta el ritmo, la ruta y las explicaciones según el nivel del grupo."}},{"@type":"Question","name":"¿Necesito mis propios binoculares?","acceptedAnswer":{"@type":"Answer","text":"Si tiene binoculares, tráigalos. Si no, contacte a Mindo Bird Watching antes de la clase para conversar sobre opciones y recomendaciones de equipo."}},{"@type":"Question","name":"¿Qué aprenderé en una clase de avistamiento?","acceptedAnswer":{"@type":"Answer","text":"Puede aprender conceptos básicos de binoculares, identificación de aves, hábitos de observación en campo, grupos comunes de aves en Mindo y observación responsable en bosque nublado."}},{"@type":"Question","name":"¿Pueden participar familias?","acceptedAnswer":{"@type":"Answer","text":"Sí. Una clase para principiantes puede planificarse para familias cuando el horario, la dificultad de la ruta y el ritmo se adaptan al grupo."}}]},{"@type":"BreadcrumbList","@id":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/#breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://mindobirdwatching.com/es/"},{"@type":"ListItem","position":2,"name":"Tours de Avistamiento","item":"https://mindobirdwatching.com/es/tours-de-avistamiento-de-aves-mindo/"},{"@type":"ListItem","position":3,"name":"Clases de Avistamiento de Aves en Mindo","item":"https://mindobirdwatching.com/es/clases-de-avistamiento-de-aves-mindo/"}]},{"@type":"Organization","@id":"https://mindobirdwatching.com/#organization","name":"Mindo Bird Watching","url":"https://mindobirdwatching.com/","areaServed":[{"@type":"Place","name":"Mindo, Ecuador"},{"@type":"Place","name":"Choco Andino, Ecuador"}],"knowsAbout":["Mindo birdwatching","Cloud forest birds","Private birdwatching guides","Bird identification","Bird photography","Ethical ecotourism"]},{"@type":"WebSite","@id":"https://mindobirdwatching.com/#website","url":"https://mindobirdwatching.com/","name":"Mindo Bird Watching","publisher":{"@id":"https://mindobirdwatching.com/#organization"},"inLanguage":["en","es"]}]}</script>
+
+<script>
+(function(){
+  function setupMbwComparisonCarousel(root){
+    if(root.dataset.mbwCarouselReady === 'true'){ return; }
+    root.dataset.mbwCarouselReady = 'true';
+
+    var track = root.querySelector('.mbwCarouselTrack');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.mbwSlide'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('.mbwDot'));
+    var prev = root.querySelector('.mbwNavPrev');
+    var next = root.querySelector('.mbwNavNext');
+
+    if(!track || !slides.length){ return; }
+
+    var index = 0;
+
+    function go(to){
+      index = (to + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      dots.forEach(function(dot, i){
+        dot.classList.toggle('is-active', i === index);
+      });
+    }
+
+    if(prev){
+      prev.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index - 1);
+      });
+    }
+
+    if(next){
+      next.addEventListener('click', function(event){
+        event.preventDefault();
+        go(index + 1);
+      });
+    }
+
+    root.addEventListener('keydown', function(event){
+      if(event.key === 'ArrowLeft'){ go(index - 1); }
+      if(event.key === 'ArrowRight'){ go(index + 1); }
+    });
+
+    go(0);
+  }
+
+  function initMbwComparisonCarousels(){
+    document.querySelectorAll('[data-mbw-carousel]').forEach(setupMbwComparisonCarousel);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initMbwComparisonCarousels);
+  }else{
+    initMbwComparisonCarousels();
+  }
+})();
+</script>
 
 </body>
 </html>
