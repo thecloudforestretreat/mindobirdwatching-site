@@ -7107,3 +7107,85 @@ body:not([data-page-type="tour_detail"]):not([data-page-type="bird_species_profi
   }
 }
 
+
+/* Final CTA dead-space fix for custom private tour pages.
+   The outer section is the card; the inner grid fills the full width. */
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta,
+body[data-tour-variant="custom_private_tour"] .finalCta{
+  width:100%;
+  margin-top:28px;
+  padding:24px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.68);
+  box-shadow:var(--shadow);
+}
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .finalGrid,
+body[data-tour-variant="custom_private_tour"] .finalCta .finalGrid{
+  width:100%;
+  max-width:none;
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);
+  gap:24px;
+  align-items:stretch;
+}
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .finalLeft,
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .nextSteps,
+body[data-tour-variant="custom_private_tour"] .finalCta .finalLeft,
+body[data-tour-variant="custom_private_tour"] .finalCta .nextSteps{
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .finalLeft,
+body[data-tour-variant="custom_private_tour"] .finalCta .finalLeft{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .nextSteps,
+body[data-tour-variant="custom_private_tour"] .finalCta .nextSteps{
+  padding:18px 20px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.64);
+}
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .ctaRow,
+body[data-tour-variant="custom_private_tour"] .finalCta .ctaRow{
+  margin-top:auto;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .btn,
+body[data-tour-variant="custom_private_tour"] .finalCta .btn{
+  max-width:100%;
+  white-space:normal;
+  text-align:center;
+  line-height:1.15;
+}
+body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .btn.primary,
+body[data-tour-variant="custom_private_tour"] .finalCta .btn.primary{
+  flex:1 1 240px;
+}
+@media(max-width:820px){
+  body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .finalGrid,
+  body[data-tour-variant="custom_private_tour"] .finalCta .finalGrid{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:560px){
+  body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta,
+  body[data-tour-variant="custom_private_tour"] .finalCta{
+    padding:18px;
+  }
+  body[data-page-type="tour_detail"][data-tour-variant="custom_private_tour"] .finalCta .btn,
+  body[data-tour-variant="custom_private_tour"] .finalCta .btn{
+    width:100%;
+  }
+}
+
