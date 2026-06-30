@@ -8773,3 +8773,55 @@ font-size: 14px;
 body[data-tour-variant="custom_private_tour"] .noteMt8{
 margin-top: 8px;
 }
+
+/* Pair 083 / birding guide decision cards: approved global support for decisionGrid + decisionCard.
+   Scoped to birding-guide content so older layouts are not affected. */
+body[data-page-type="birding_guide"] .decisionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  margin: 18px 0 24px;
+}
+
+body[data-page-type="birding_guide"] .decisionGrid .decisionCard,
+body[data-page-type="birding_guide"] .decisionCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 132px;
+  padding: 18px;
+  border: 1px solid rgba(34, 92, 47, 0.22);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 28px rgba(31, 70, 36, 0.08);
+}
+
+body[data-page-type="birding_guide"] .decisionCard h3,
+body[data-page-type="birding_guide"] .decisionCard h4 {
+  margin: 0 0 8px;
+  color: var(--green-800, #155d2b);
+  line-height: 1.2;
+}
+
+body[data-page-type="birding_guide"] .decisionCard p {
+  margin: 0;
+}
+
+body[data-page-type="birding_guide"] .decisionCard .btn,
+body[data-page-type="birding_guide"] .decisionCard .ctaRow {
+  margin-top: auto;
+}
+
+@media (max-width: 900px) {
+  body[data-page-type="birding_guide"] .decisionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-page-type="birding_guide"] .decisionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
