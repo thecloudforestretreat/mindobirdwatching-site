@@ -10033,3 +10033,39 @@ body[data-page-content-group="tours"][data-page-type="tour_category"] .sectionHe
     padding: 20px;
   }
 }
+
+/* Half-day hero poster rail: stack the two promo cards and remove stretched empty space. */
+body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="half_day"] .hero .slots {
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-content: start;
+  align-items: start;
+}
+
+body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="half_day"] .hero .slot.card {
+  align-self: start;
+  height: auto;
+}
+
+body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="half_day"] .hero .slotFrame {
+  aspect-ratio: 16 / 10;
+  min-height: 0;
+}
+
+body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="half_day"] .hero .slotFrame img {
+  object-fit: cover;
+  object-position: center top;
+}
+
+@media (max-width: 900px) {
+  body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="half_day"] .hero .slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="half_day"] .hero .slots {
+    grid-template-columns: 1fr;
+  }
+}
+
