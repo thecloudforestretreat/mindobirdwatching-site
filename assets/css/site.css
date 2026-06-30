@@ -8825,3 +8825,51 @@ body[data-page-type="birding_guide"] .decisionCard .ctaRow {
   }
 }
 
+/* Birding guide card polish: make grid2 + block modules visibly framed cards.
+   Scoped to birding guide pages so existing tour and hub layouts are not disturbed. */
+body[data-page-type="birding_guide"] .grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  margin: 18px 0 24px;
+}
+
+body[data-page-type="birding_guide"] .grid2 .block,
+body[data-page-type="birding_guide"] article.block {
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+  padding: 20px;
+  border: 1px solid rgba(34, 92, 47, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 14px 32px rgba(31, 70, 36, 0.08);
+}
+
+body[data-page-type="birding_guide"] .blockTop {
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+}
+
+body[data-page-type="birding_guide"] .blockTitle h3 {
+  margin: 0;
+  color: var(--green-800, #155d2b);
+  line-height: 1.2;
+}
+
+body[data-page-type="birding_guide"] .blockBody {
+  flex: 1;
+}
+
+body[data-page-type="birding_guide"] .blockBody p {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  body[data-page-type="birding_guide"] .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
