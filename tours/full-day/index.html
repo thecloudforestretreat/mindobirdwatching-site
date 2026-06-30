@@ -38,539 +38,6 @@
 <!-- Head-only JS -->
 <script defer="" src="/assets/js/head.js"></script>
 <script defer src="/assets/js/site-config.js"></script>
-<style>
-    /* Page-only styles (no header/footer/menu styles) */
-    .page{ margin-top: 18px; padding: 26px; }
-    .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
-      align-items: stretch;
-    }
-
-    .copy{ max-width: 92ch;   display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-    .copy p{ margin: 0 0 12px; line-height: 1.6; }
-
-    .checks{
-      margin: 12px 0 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 8px;
-    }
-    .checks li{
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      color: var(--ink);
-    }
-    .checks .tick{
-      width: 22px;
-      height: 22px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-      font-weight: 900;
-      color: var(--forest);
-      line-height: 1;
-    }
-
-    .slot.card{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .slotFrame{
-      aspect-ratio: 9 / 16;
-      background: rgba(255,255,255,.55);
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .slotFrame img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .btnRow {
-      margin-top: 14px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    
-  margin-bottom: 14px;
-}
-
-    .section{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
-    .section h2{
-      margin: 0 0 10px;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 20px;
-    }
-    .hint{ margin: 0 0 12px; color: var(--muted); font-size: 13px; }
-
-    /* Standard MBW carousel */
-    .mbwCarousel{
-      position: relative;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .mbwCarouselViewport{ width: 100%; overflow: hidden; }
-    .mbwCarouselTrack{
-      display: flex;
-      width: 100%;
-      transform: translateX(0);
-      transition: transform 420ms ease;
-      will-change: transform;
-    }
-    .mbwSlide{ flex: 0 0 100%; width: 100%; }
-
-    .mbwSlide img{
-      width: 100%;
-      display: block;
-      object-fit: cover;
-    }
-    .mbwSlide .label{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      background: rgba(255,255,255,.55);
-    }
-
-    .mbwNavBtn{
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.85);
-      box-shadow: var(--shadow);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      z-index: 2;
-    }
-    .mbwNavBtn:focus{ outline: 2px solid rgba(13,89,37,.35); outline-offset: 2px; }
-    .mbwNavBtn svg{ width: 20px; height: 20px; }
-    .mbwNavPrev{ left: 10px; }
-    .mbwNavNext{ right: 10px; }
-
-    .mbwDots{
-      position: absolute;
-      left: 50%;
-      bottom: 10px;
-      transform: translateX(-50%);
-      display: inline-flex;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.78);
-      z-index: 2;
-      pointer-events: none;
-    }
-    .mbwDot{
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(13,89,37,.22);
-    }
-    .mbwDot.is-active{ background: rgba(13,89,37,.65); }
-
-    /* 9:16 strict height (keeps carousel + video same height) */
-    .frame916{
-      aspect-ratio: 9 / 16;
-      width: 100%;
-      background: rgba(255,255,255,.55);
-    }
-    .frame916 iframe{
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
-    }
-
-    /* Tall carousel - force FULL height and remove the empty label strip */
-    .mbwCarousel.isTall{
-      height: 100%;
-    }
-    .mbwCarousel.isTall .mbwCarouselViewport{
-      aspect-ratio: 9 / 16;
-      height: 100%;
-      background: rgba(255,255,255,.55);
-    }
-    .mbwCarousel.isTall .mbwCarouselTrack,
-    .mbwCarousel.isTall .mbwSlide{
-      height: 100%;
-    }
-    .mbwCarousel.isTall .mbwSlide img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .mbwCarousel.isTall .mbwSlide .label{
-      display: none;
-    }
-
-    /* Media grid (left gallery + right video) */
-    .videoGrid{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .mediaCard{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .frame916{
-      overflow: hidden;
-      border-radius: var(--r);
-    }
-    .mediaCard .head{
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,.55);
-    }
-    .mediaCard .head h3{
-      margin: 0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
-    .mediaCard .cap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      font-size: 13px;
-      color: var(--muted);
-      background: rgba(255,255,255,.55);
-    }
-
-    @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .videoGrid{ grid-template-columns: 1fr; }
-    }
-
-    @media (prefers-reduced-motion: reduce){
-      .mbwCarouselTrack{ transition: none; }
-    }
-  
-    /* Full-day plan micro-panel (fills left-column whitespace on desktop) */
-    .routeNote{
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-
-      margin-top: 14px;
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-    }
-    .routeNote h3{
-      margin: 0 0 8px;
-      font-size: 14px;
-      letter-spacing: -0.01em;
-      color: var(--ink);
-      font-weight: 900;
-    }
-    .routeNote p{
-      margin: 0 0 10px;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-    .routeNote a{ color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-    .routeLinks{
-      display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .routeLinks a{
-      display:inline-flex;
-      align-items:center;
-      padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255,255,255,.75);
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 800;
-      font-size: 12px;
-      line-height: 1;
-      box-shadow: var(--shadow);
-    }
-    
-    .routeBullets{
-      margin: 10px 0 0;
-      padding-left: 18px;
-      color: #1f2a21;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-    .routeBullets li{ margin: 6px 0; }
-
-    .routeMore{
-      margin-top: 8px;
-      color: #334436;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-.routeLinks a:hover{ transform: translateY(-1px); }
-
-/* Showcase cards (Featured tour + guides) */
-.routeShowcase{margin-top:16px}
-.featuredTourCard{display:grid;grid-template-columns:140px 1fr;gap:14px;align-items:stretch;padding:14px;border:1px solid rgba(15,23,42,.12);border-radius:16px;background:#fff;box-shadow:0 10px 24px rgba(15,23,42,.06)}
-.featuredTourCard .ft-img{width:100%;height:100%;min-height:110px;border-radius:12px;overflow:hidden}
-.featuredTourCard .ft-img img{width:100%;height:100%;object-fit:cover;display:block}
-.featuredTourCard .ft-kicker{font-size:12px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:#0f172a;opacity:.72;margin:0 0 6px}
-.featuredTourCard .ft-title{font-size:18px;line-height:1.2;margin:0 0 6px}
-.featuredTourCard .ft-copy{margin:0 0 10px;color:rgba(15,23,42,.82)}
-.featuredTourCard .ft-actions{display:flex;flex-wrap:wrap;gap:10px}
-.featuredTourCard .ft-actions a{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;font-weight:800;text-decoration:none}
-.featuredTourCard .ft-actions a.primary{background:#0f172a;color:#fff}
-.featuredTourCard .ft-actions a.ghost{border:1px solid rgba(15,23,42,.18);color:#0f172a;background:#fff}
-
-.guideCardGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
-.guideCard{display:flex;flex-direction:column;min-height:100%;border:1px solid rgba(15,23,42,.12);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 10px 22px rgba(15,23,42,.05)}
-.guideCard .gc-img{height:120px;overflow:hidden}
-.guideCard .gc-img img{width:100%;height:100%;object-fit:cover;display:block}
-.guideCard .gc-body{padding:12px 12px 10px}
-.guideCard .gc-title{margin:0 0 6px;font-size:15px;line-height:1.2}
-.guideCard .gc-copy{margin:0;color:rgba(15,23,42,.78);font-size:13px;line-height:1.35}
-.guideCard .gc-footer{padding:0 12px 12px;margin-top:auto}
-.guideCard .gc-footer a{display:inline-flex;align-items:center;justify-content:center;width:100%;padding:10px 12px;border-radius:12px;font-weight:800;text-decoration:none;border:1px solid rgba(15,23,42,.18);color:#0f172a;background:#fff}
-
-@media (max-width: 980px){
-  .featuredTourCard{grid-template-columns:120px 1fr}
-  .guideCardGrid{grid-template-columns:1fr}
-  .guideCard .gc-img{height:140px}
-}
-@media (max-width: 520px){
-  .featuredTourCard{grid-template-columns:1fr}
-  .featuredTourCard .ft-img{min-height:150px}
-}
-
-
-
-/* Featured tour + guides spotlight */
-.spotlight{padding:28px 0 12px;}
-.spotlightHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:14px;}
-.spotlightHeader h2{margin:0;font-size:20px;letter-spacing:.2px;}
-.spotlightHeader .muted{margin:0;max-width:620px;}
-.spotlightGrid{display:grid;grid-template-columns:1.55fr 1fr 1fr 1fr;gap:14px;align-items:stretch;}
-.spotlightCard{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;overflow:hidden;min-height:100%;}
-.spotlightMedia{aspect-ratio:16/10;background:#f1f3f7;overflow:hidden;}
-.spotlightMedia img{width:100%;height:100%;object-fit:cover;display:block;}
-.spotlightBody{padding:12px 14px 10px;display:flex;flex-direction:column;gap:6px;flex:1;}
-.spotlightBody h3{margin:0;font-size:15px;line-height:1.25;}
-.spotlightDesc{margin:0;color:rgba(0,0,0,.68);font-size:13px;line-height:1.4;}
-.guideDesc{margin:0;color:rgba(0,0,0,.68);font-size:13px;line-height:1.4;}
-.spotlightCta{padding:0 14px 14px;}
-.spotlightCta .btn{width:100%;text-align:center;}
-@media (max-width: 980px){
-  .spotlightHeader{flex-direction:column;align-items:flex-start;}
-  .spotlightGrid{grid-template-columns:1fr 1fr;gap:12px;}
-  .spotlightCard.is-featured{grid-column:1/-1;}
-}
-@media (max-width: 640px){
-  .spotlight{padding:22px 0 8px;}
-  .spotlightGrid{grid-template-columns:1fr;gap:12px;}
-}
-
-.routeNoteExtra{margin-top:10px;color:#2e3b2f;}
-/* Align left column to promo image height on desktop */
-@media (min-width: 901px) {
-  .hero { align-items: stretch; }
-  .hero .copy { display: flex; flex-direction: column; min-height: 100%; }
-  .hero .routeNote {
- margin-top: auto; }
-.routeNote .miniBtn { margin-top: auto; }
-}
-
-/* Tighter route card copy so it stays aligned */
-.routeNote p { margin: 0 0 10px; }
-.routeBullets { margin: 0; padding-left: 18px; }
-.routeBullets li { margin: 6px 0; }
-
-/* Promo image card padding (desktop) to align with left column */
-aside.promo{
-  padding:12px;
-  background:rgba(255,255,255,.35);
-  border:1px solid var(--card-border);
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  height:100%;
-  display:flex;
-  flex-direction:column;
-}
-.promoImg{
-  width:100%;
-  height:auto;
-  display:block;
-  border-radius:12px;
-}
-.promoFill{flex:1; min-height:12px;}
-@media (max-width:900px){
-  aside.promo{padding:10px;}
-  .promoFill{display:none;}
-}
-
-
-/* Bird comparison guide feature */
-.birdCompareFeature{
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
-  gap: 0;
-  align-items: stretch;
-  overflow: hidden;
-  background: rgba(255,255,255,.68);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
-.birdCompareFeature .activityMedia{
-  min-height: 440px;
-  position: relative;
-  background: rgba(255,255,255,.55);
-}
-.birdCompareFeature .activityBody{
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-  min-width: 0;
-}
-.birdCompareFeature .mini-links__label{
-  margin: 0;
-  color: var(--forest);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.birdCompareFeature h2{
-  margin: 0;
-  font-family: var(--font-head);
-  color: var(--forest);
-  font-size: clamp(26px, 2.5vw, 38px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-.birdCompareFeature p{
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.62;
-}
-.birdCompareFeature .tourActions{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-top: 10px;
-  width: 100%;
-}
-.birdCompareFeature .tourActions .btn{
-  width: 100%;
-  justify-content: center;
-  text-align: center;
-}
-.birdCompareFeature .mbwCarousel,
-.birdCompareFeature .mbwCarouselViewport,
-.birdCompareFeature .mbwCarouselTrack,
-.birdCompareFeature .mbwSlide{
-  height: 100%;
-}
-.birdCompareFeature .mbwCarousel{
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-}
-.birdCompareFeature .mbwSlide{
-  min-height: 440px;
-}
-.birdCompareFeature .mbwSlide img{
-  width: 100%;
-  height: 100%;
-  min-height: 440px;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-}
-.birdCompareFeature .mbwSlide .label{
-  display: none;
-}
-.birdCompareFeature .mbwDots{
-  bottom: 14px;
-}
-@media (max-width: 980px){
-  .birdCompareFeature{
-    grid-template-columns: 1fr;
-  }
-  .birdCompareFeature .activityMedia,
-  .birdCompareFeature .mbwSlide,
-  .birdCompareFeature .mbwSlide img{
-    min-height: 340px;
-  }
-  .birdCompareFeature .activityBody{
-    padding: 22px;
-  }
-}
-@media (max-width: 560px){
-  .birdCompareFeature .activityMedia,
-  .birdCompareFeature .mbwSlide,
-  .birdCompareFeature .mbwSlide img{
-    min-height: 300px;
-  }
-  .birdCompareFeature .activityBody{
-    padding: 18px;
-  }
-}
-
-</style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -653,90 +120,6 @@ aside.promo{
 }
 </script>
 
-<style id="bird-comparison-feature-safety">
-body .birdCompareFeature{
-  display:grid;
-  grid-template-columns:minmax(0,58%) minmax(0,42%);
-  gap:0;
-  align-items:stretch;
-  overflow:hidden;
-}
-body .birdCompareFeature .activityMedia,
-body .birdCompareFeature .mbwCarousel,
-body .birdCompareFeature .mbwCarouselViewport,
-body .birdCompareFeature .mbwCarouselTrack,
-body .birdCompareFeature .mbwSlide{
-  height:100%;
-  min-height:440px;
-}
-body .birdCompareFeature .activityMedia{
-  overflow:hidden;
-}
-body .birdCompareFeature .mbwCarousel{
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-  background:transparent;
-}
-body .birdCompareFeature .mbwCarouselTrack{
-  display:flex;
-  width:100%;
-  transform:translateX(0);
-  transition:transform 420ms ease;
-  will-change:transform;
-}
-body .birdCompareFeature .mbwSlide{
-  flex:0 0 100%;
-  width:100%;
-}
-body .birdCompareFeature .mbwSlide img{
-  width:100%;
-  height:100% !important;
-  min-height:440px !important;
-  object-fit:cover;
-  object-position:center;
-  display:block;
-}
-body .birdCompareFeature .mbwSlide .label{
-  display:none;
-}
-body .birdCompareFeature .tourActions{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:10px;
-  margin-top:10px;
-  width:100%;
-}
-body .birdCompareFeature .tourActions .btn{
-  width:100%;
-  justify-content:center;
-  text-align:center;
-  min-height:46px;
-}
-@media(max-width:980px){
-  body .birdCompareFeature{
-    grid-template-columns:1fr;
-  }
-  body .birdCompareFeature .activityMedia,
-  body .birdCompareFeature .mbwCarousel,
-  body .birdCompareFeature .mbwCarouselViewport,
-  body .birdCompareFeature .mbwCarouselTrack,
-  body .birdCompareFeature .mbwSlide,
-  body .birdCompareFeature .mbwSlide img{
-    min-height:340px !important;
-  }
-}
-@media(max-width:560px){
-  body .birdCompareFeature .activityMedia,
-  body .birdCompareFeature .mbwCarousel,
-  body .birdCompareFeature .mbwCarouselViewport,
-  body .birdCompareFeature .mbwCarouselTrack,
-  body .birdCompareFeature .mbwSlide,
-  body .birdCompareFeature .mbwSlide img{
-    min-height:300px !important;
-  }
-}
-</style>
 
 </head>
 <body data-page-content-group="tours" data-page-language="en" data-page-location="mindo" data-page-region="pichincha" data-page-type="tour_category" data-tour-category="full_day">
@@ -748,27 +131,27 @@ body .birdCompareFeature .tourActions .btn{
 <main class="page card">
 <section aria-label="Full-day tours" class="hero">
 <div class="copy">
-<h1 style="margin:0 0 6px;">Full Day Mindo Bird Watching Tour</h1>
-<p>Discover the magic of Ecuador's cloud forests with Mindo Bird Watching. Our expert local guides lead a full-day birding loop designed for timing, variety, and great chances to see the Andean Cock-of-the-Rock, <a data-analytics-event="related_content_click" data-analytics-label="toucans" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/blog/best-time-to-see-toucans-in-mindo/" style="text-decoration: underline; font-weight: 600;">toucans</a>, and colorful tanagers.</p>
-<p>Prefer a shorter outing or a different pace? Explore our <a data-analytics-event="internal_link_click" data-analytics-label="half-day options" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/half-day/" style="text-decoration: underline; font-weight: 600;">half-day options</a> or choose a <a data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/custom-private-tour/" style="text-decoration: underline; font-weight: 600;">Custom Private Tour</a> for a personalized itinerary.</p>
+<h1>Full Day Mindo Bird Watching Tour</h1>
+<p>Discover the magic of Ecuador's cloud forests with Mindo Bird Watching. Our expert local guides lead a full-day birding loop designed for timing, variety, and great chances to see the Andean Cock-of-the-Rock, <a data-analytics-event="related_content_click" data-analytics-label="toucans" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/blog/best-time-to-see-toucans-in-mindo/">toucans</a>, and colorful tanagers.</p>
+<p>Prefer a shorter outing or a different pace? Explore our <a data-analytics-event="internal_link_click" data-analytics-label="half-day options" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/half-day/">half-day options</a> or choose a <a data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/custom-private-tour/">Custom Private Tour</a> for a personalized itinerary.</p>
 <p>
           For a complete overview of routes, species-focused outings, and planning help, explore our 
-          <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/" style="text-decoration: underline; font-weight: 600;">birdwatching tours in Mindo</a>. If you are planning your trip in more detail, use our <a data-analytics-event="internal_link_click" data-analytics-label="plan your trip guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/plan-your-trip/" style="text-decoration: underline; font-weight: 600;">plan your trip guide</a> and <a data-analytics-event="internal_link_click" data-analytics-label="bird comparison guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" style="text-decoration: underline; font-weight: 600;">bird comparison guide</a> to compare habitats, timing, tour length, and target species before booking.
+          <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/">birdwatching tours in Mindo</a>. If you are planning your trip in more detail, use our <a data-analytics-event="internal_link_click" data-analytics-label="plan your trip guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/plan-your-trip/">plan your trip guide</a> and <a data-analytics-event="internal_link_click" data-analytics-label="bird comparison guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/">bird comparison guide</a> to compare habitats, timing, tour length, and target species before booking.
         </p>
 <ul aria-label="Full day tour highlights" class="checks">
 <li><span aria-hidden="true" class="tick">✓</span> Guided by experienced local experts</li>
 <li><span aria-hidden="true" class="tick">✓</span> High-quality equipment provided</li>
 <li><span aria-hidden="true" class="tick">✓</span> Comfortable transportation included</li>
 </ul>
-<p style="margin-top:12px;">This is one of several routes we offer. Book today and let us plan a standout birdwatching day in Mindo, Ecuador.</p>
-<p style="margin-top:12px; font-weight:800;">Reserve your tour now and start your adventure.</p>
-<p style="margin-top:6px; color:var(--ink); font-weight:700;">Limited full-day spots each week during peak bird activity.</p>
+<p>This is one of several routes we offer. Book today and let us plan a standout birdwatching day in Mindo, Ecuador.</p>
+<p>Reserve your tour now and start your adventure.</p>
+<p>Limited full-day spots each week during peak bird activity.</p>
 <div aria-label="Tour actions" class="btnRow">
 <a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Reserve Now" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_category" data-analytics-tour="Reserve Now" href="/book-tour/">Reserve Now</a>
 <a class="btn secondary" data-analytics-event="secondary_cta_click" data-analytics-label="View Tours" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/">View Tours</a>
 <a data-analytics-link-url="dynamic_whatsapp" data-whatsapp-message-key="book_tour_en" class="btn secondary" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_category" data-analytics-tour="WhatsApp" href="#request-form" rel="noopener" target="_blank">WhatsApp</a>
 </div>
-<div aria-label="Full-day trust signals" class="routeLinks" style="margin-top:0; margin-bottom:12px;">
+<div aria-label="Full-day trust signals" class="routeLinks">
 <a data-analytics-event="internal_link_click" data-analytics-label="Private guide option" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/custom-private-tour/">Private guide option</a>
 <a data-analytics-event="internal_link_click" data-analytics-label="5-star reviews" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/reviews/">5-star reviews</a>
 <a data-analytics-link-url="dynamic_whatsapp" data-whatsapp-message-key="book_tour_en" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp support" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_category" data-analytics-tour="WhatsApp support" href="#request-form" rel="noopener" target="_blank">WhatsApp support</a>
@@ -778,12 +161,12 @@ body .birdCompareFeature .tourActions .btn{
 <h3>Your full-day plan (set route)</h3>
 <p>
   This tour follows a reliable loop for timing and variety. Guests often choose this route when they want broader habitat coverage, more species chances, and enough time to adapt to weather, activity, and target birds. Want a different pace, extra stops, or a private itinerary? Choose a
-  <a data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/custom-private-tour/">Custom Private Tour</a>. For the broader route overview, explore our <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/" style="text-decoration: underline; font-weight: 600;">birdwatching tours in Mindo</a> and use the <a data-analytics-event="internal_link_click" data-analytics-label="Mindo bird watching guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/plan-your-trip/" style="text-decoration: underline; font-weight: 600;">Mindo bird watching guide</a> for planning help.
+  <a data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/custom-private-tour/">Custom Private Tour</a>. For the broader route overview, explore our <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/">birdwatching tours in Mindo</a> and use the <a data-analytics-event="internal_link_click" data-analytics-label="Mindo bird watching guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/plan-your-trip/">Mindo bird watching guide</a> for planning help.
 </p>
 <p class="routeNoteExtra"><strong>Why guests choose a full day route:</strong> more species opportunities, better early and late activity windows, broader habitat coverage, and a stronger fit for photographers or travelers seeking a private birdwatching guide in Mindo.</p>
 <ul>
 <li><strong>Start early:</strong> best light and peak activity.</li>
-<li><strong>Core route:</strong> Cock-of-the-Rock <a data-analytics-event="related_content_click" data-analytics-label="lek" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/blog/cock-of-the-rock-lek-behavior/" style="text-decoration: underline; font-weight: 600;">lek</a>, then a forest walk for <a data-analytics-event="related_content_click" data-analytics-label="toucans" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/blog/best-time-to-see-toucans-in-mindo/" style="text-decoration: underline; font-weight: 600;">toucans</a> and mixed flocks.</li>
+<li><strong>Core route:</strong> Cock-of-the-Rock <a data-analytics-event="related_content_click" data-analytics-label="lek" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/blog/cock-of-the-rock-lek-behavior/">lek</a>, then a forest walk for <a data-analytics-event="related_content_click" data-analytics-label="toucans" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/blog/best-time-to-see-toucans-in-mindo/">toucans</a> and mixed flocks.</li>
 <li><strong>Lunch stop:</strong> we will pause at a local place and recommend good options. Lunch is optional and paid by guests.</li>
 <li><strong>Included:</strong> guide, optics help, and transportation coordination.</li>
 </ul>
@@ -795,7 +178,7 @@ body .birdCompareFeature .tourActions .btn{
 </section>
 <section aria-label="Why choose a full day birdwatching route" class="section">
 <h2>Why choose a full day birdwatching route in Mindo?</h2>
-<p class="hint" style="font-size:14px; color:var(--ink); line-height:1.65; margin:0;">
+<p class="hint">
 Guests searching for a full day birdwatching tour in Mindo, a private birdwatching guide in Mindo, or a bird photography day tour in Ecuador often choose this format because it gives more time for target species, flexible route decisions, and a better chance to combine toucans, mixed flocks, and cloud forest specialties in one outing.
 </p>
 </section>
@@ -895,26 +278,26 @@ Guests searching for a full day birdwatching tour in Mindo, a private birdwatchi
 <div aria-label="Booking questions grid" class="videoGrid">
 <article class="mediaCard">
 <div class="head"><h3>Is transport included?</h3></div>
-<div class="cap" style="border-top:0; background:rgba(255,255,255,.65); color:var(--ink); line-height:1.6;">
+<div class="cap">
       Yes. Transportation coordination is included, and we help keep the day efficient from the first stop to the last.
     </div>
 </article>
 <article class="mediaCard">
 <div class="head"><h3>Is this good for photographers?</h3></div>
-<div class="cap" style="border-top:0; background:rgba(255,255,255,.65); color:var(--ink); line-height:1.6;">
+<div class="cap">
       Yes. A full day gives better light windows, more habitat changes, and a more flexible pace for bird photography.
     </div>
 </article>
 <article class="mediaCard">
 <div class="head"><h3>Can I request target species?</h3></div>
-<div class="cap" style="border-top:0; background:rgba(255,255,255,.65); color:var(--ink); line-height:1.6;">
+<div class="cap">
       Yes. We can prioritize route decisions around your goals, especially if you want toucans, the Cock-of-the-Rock, tanagers, or a custom private focus.
     </div>
 </article>
 <article class="mediaCard">
 <div class="head"><h3>What if I want a more private pace?</h3></div>
-<div class="cap" style="border-top:0; background:rgba(255,255,255,.65); color:var(--ink); line-height:1.6;">
-      If you want extra stops, a slower rhythm, or a photography-first outing, the <a data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/custom-private-tour/" style="text-decoration: underline; font-weight: 600;">Custom Private Tour</a> is the best fit.
+<div class="cap">
+      If you want extra stops, a slower rhythm, or a photography-first outing, the <a data-analytics-event="internal_link_click" data-analytics-label="Custom Private Tour" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_category" href="/tours/custom-private-tour/">Custom Private Tour</a> is the best fit.
     </div>
 </article>
 </div>
