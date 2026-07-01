@@ -10790,3 +10790,250 @@ body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .finalActio
     width:100%;
   }
 }
+
+
+/* MBW final tour video media system
+   Applies the same polished video treatment to:
+   - Jewels of the Morning Forest
+   - Andean Cock-of-the-Rock Dawn
+   - Quest for Five Toucans
+   Fixes: missing variant coverage, thin portrait video frames, dark video wells,
+   and final CTA button alignment. */
+
+/* Shared hero/media structure */
+body[data-tour-variant="jewels_morning_forest_original_v5"] .hero,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .hero,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .hero{
+  display:grid;
+  grid-template-columns:minmax(300px, .95fr) minmax(0, 1.05fr);
+  gap:18px;
+  align-items:start;
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .heroMedia.jewelsOriginalMedia,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .heroMedia.dawnVideoMedia,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .heroMedia.toucanVideoMedia{
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-rows:auto auto;
+  gap:12px;
+  align-content:start;
+  align-self:start;
+  width:100%;
+  min-height:0;
+  overflow:visible;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+
+/* Hero image cards: preserve vertical/collage media without unintended cropping. */
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroImageCard,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .heroMedia.dawnVideoMedia > img,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .heroMedia.toucanVideoMedia > img{
+  width:100%;
+  min-width:0;
+  margin:0;
+  overflow:hidden;
+  border:1px solid rgba(38,82,48,.22);
+  border-radius:12px;
+  background:linear-gradient(135deg, rgba(255,255,255,.98), rgba(246,250,240,.96));
+  box-shadow:0 12px 28px rgba(31,63,37,.10);
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroImageCard img,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .heroMedia.dawnVideoMedia > img,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .heroMedia.toucanVideoMedia > img{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:3 / 4;
+  object-fit:contain;
+  object-position:center;
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroImageCard figcaption{
+  display:block;
+  padding:8px 10px;
+  font-weight:800;
+  line-height:1.25;
+  color:#10251d;
+  background:rgba(255,255,255,.96);
+}
+
+/* Video cards: white/light card, full-width video frame, no narrow portrait stretching. */
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCard,
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoOnly,
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoFill,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoCard,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoFill,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoCard,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoFill{
+  display:block;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  margin:0;
+  padding:10px;
+  overflow:hidden;
+  border:1px solid rgba(38,82,48,.20);
+  border-radius:12px;
+  background:linear-gradient(135deg, rgba(255,255,255,.98), rgba(246,250,240,.96));
+  box-shadow:0 12px 28px rgba(31,63,37,.10);
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoFrame,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoFrame,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoFrame{
+  display:block;
+  width:100%;
+  max-width:none;
+  height:auto;
+  min-height:0;
+  aspect-ratio:16 / 9;
+  overflow:hidden;
+  border-radius:10px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 10px 24px rgba(31,63,37,.14);
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoFrame iframe,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoFrame iframe,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoFrame iframe{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:0;
+  border:0;
+  border-radius:10px;
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCopy,
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCard .eyebrow,
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCard strong,
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCard span:not(.sr-only){
+  display:none !important;
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .heroBody,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .heroBody,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .heroBody{
+  align-self:start;
+  min-width:0;
+}
+
+/* Final CTA consistency across these updated tour pages. */
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta{
+  padding:18px;
+}
+
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .finalGrid{
+  display:grid;
+  grid-template-columns:minmax(0, 1.45fr) minmax(260px, .75fr);
+  gap:20px;
+  align-items:stretch;
+}
+
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta > div[aria-label],
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta .nextSteps,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .finalLeft,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .nextSteps{
+  min-width:0;
+  height:100%;
+}
+
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta .nextSteps,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .nextSteps{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:18px;
+  border:1px solid rgba(38,82,48,.20);
+  border-radius:12px;
+  background:rgba(255,255,255,.82);
+}
+
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta .finalActions,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .finalActions{
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  margin-top:12px;
+}
+
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta .finalActions .btn,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .finalActions .btn{
+  width:auto;
+  min-width:0;
+  justify-content:center;
+  text-align:center;
+}
+
+/* Inline-style cleanup backup for generated tour pages. */
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] main a:not(.btn),
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] main a:not(.btn){
+  text-decoration:underline;
+  font-weight:700;
+  text-underline-offset:2px;
+}
+
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .heroBody > .ctaRow + p,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .heroBody > .ctaRow + p{
+  margin-top:6px;
+  color:var(--ink);
+  font-weight:700;
+}
+
+@media (max-width:980px){
+  body[data-tour-variant="jewels_morning_forest_original_v5"] .hero,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .hero,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .hero,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .finalGrid{
+    grid-template-columns:1fr;
+    align-items:start;
+  }
+
+  body[data-tour-variant="jewels_morning_forest_original_v5"] .heroMedia.jewelsOriginalMedia,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .heroMedia.dawnVideoMedia,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .heroMedia.toucanVideoMedia{
+    max-width:620px;
+    margin-inline:auto;
+  }
+}
+
+@media (max-width:640px){
+  body[data-tour-variant="jewels_morning_forest_original_v5"] .hero,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .hero,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .hero{
+    gap:14px;
+  }
+
+  body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroImageCard,
+  body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCard,
+  body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoFrame,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .heroMedia.dawnVideoMedia > img,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoCard,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoFrame,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .heroMedia.toucanVideoMedia > img,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoCard,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoFrame{
+    border-radius:10px;
+  }
+
+  body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCard,
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoCard,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoCard{
+    padding:8px;
+  }
+
+  body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .finalCta .finalActions .btn,
+  body[data-tour-variant="quest_five_toucans_video_fill_v1"] .finalCta .finalActions .btn{
+    width:100%;
+  }
+}
