@@ -12052,3 +12052,73 @@ body[data-page-type="reviews_page"] .moreReviewsActions{
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* ============================================================
+   MBW Pair 042 Reviews Carousel Stability Fix - 2026-07-01
+   Keeps the reviews carousel visible even when parent stretch
+   calculations differ across viewport/browser conditions.
+   ============================================================ */
+body[data-page-type="reviews_page"] .rightStack {
+  min-height: 0 !important;
+}
+
+body[data-page-type="reviews_page"] .vCarousel {
+  height: auto !important;
+  min-height: 540px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body[data-page-type="reviews_page"] .vStage {
+  flex: 1 1 auto !important;
+  min-height: 460px !important;
+  aspect-ratio: 9 / 16 !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.64), rgba(13,89,37,.08)) !important;
+}
+
+body[data-page-type="reviews_page"] .vStage img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+body[data-page-type="reviews_page"] .vStage img.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+body[data-page-type="reviews_page"] .vNav {
+  z-index: 2 !important;
+}
+
+body[data-page-type="reviews_page"] .vDots {
+  flex: 0 0 auto !important;
+}
+
+@media (max-width: 860px) {
+  body[data-page-type="reviews_page"] .vCarousel {
+    min-height: auto !important;
+  }
+
+  body[data-page-type="reviews_page"] .vStage {
+    min-height: 520px !important;
+    aspect-ratio: 9 / 16 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-page-type="reviews_page"] .vStage {
+    min-height: 430px !important;
+  }
+}
+
+/* Reviews page action buttons: keep as large tap targets, but make the
+   sales CTA visually primary when the page is used by new visitors. */
+body[data-page-type="reviews_page"] .pillBtn {
+  min-height: 58px !important;
+}
+
+body[data-page-type="reviews_page"] .pillBook {
+  background: rgba(13,89,37,.15) !important;
+  border-color: rgba(13,89,37,.32) !important;
+}
