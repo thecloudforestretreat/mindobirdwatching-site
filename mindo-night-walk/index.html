@@ -37,8 +37,8 @@
     .page.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 
     .hero{display:grid;grid-template-columns:1.08fr .92fr;gap:16px;align-items:stretch;margin-top:10px}
-    .heroMedia{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.55);min-height:340px;position:relative}
-    .heroMedia img{width:100%;height:100%;object-fit:cover;display:block}
+    .heroMedia{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.55);height:100%;min-height:0;position:relative}
+    .heroMedia img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block}
     .heroBody{padding:16px;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);background:rgba(255,255,255,.65);display:flex;flex-direction:column;justify-content:flex-start;gap:10px;min-width:0}
     .kicker{display:inline-flex;gap:8px;align-items:center;font-weight:900;color:var(--forest);letter-spacing:-.01em;font-size:13px;text-transform:uppercase}
     .heroBody h1{margin:0;font-family:var(--font-head);color:var(--forest);letter-spacing:-.02em;line-height:1.05;font-size:34px}
@@ -77,6 +77,14 @@
     .linkCard strong{display:block;color:var(--ink);margin-bottom:6px;font-size:15px;letter-spacing:-.01em}
     .linkCard span{color:var(--muted);line-height:1.55;font-size:13px}
 
+    .videoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+    .videoCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+    .videoFrame{aspect-ratio:9/16;background:#071923;overflow:hidden}
+    .videoFrame iframe{width:100%;height:100%;border:0;display:block}
+    .videoBody{padding:14px 16px}
+    .videoBody h3{margin:0 0 6px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
+    .videoBody p{margin:0;color:var(--muted);line-height:1.6;font-size:13px}
+
     .faqGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
     .faqCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
     .faqCard h3{margin:0 0 10px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
@@ -111,14 +119,14 @@
     @media (max-width:1000px){.wildlifeGrid{grid-template-columns:repeat(2,1fr)}}
     @media (max-width:900px){
       .hero{grid-template-columns:1fr}
-      .heroMedia{min-height:260px}
+      .heroMedia{height:360px}
       .grid2,.faqGrid,.linkGrid,.finalCta{grid-template-columns:1fr}
       .ctaRow,.finalActions{display:grid;grid-template-columns:1fr;gap:10px;align-items:stretch}
       .ctaRow a,.finalActions a{width:100%;justify-content:center;text-align:center}
       .metaGrid{grid-template-columns:1fr 1fr}
       .heroBody h1{font-size:28px}
     }
-    @media (max-width:560px){.wildlifeGrid,.metaGrid{grid-template-columns:1fr}}
+    @media (max-width:560px){.wildlifeGrid,.metaGrid,.videoGrid{grid-template-columns:1fr}.heroMedia{height:320px}}
   </style>
 <script type="application/ld+json">
 {
@@ -208,6 +216,31 @@
   }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "VideoObject",
+      "name": "Mindo Night Walk Experience",
+      "description": "A short video showing the atmosphere and wildlife observation style of a guided night walk in Mindo.",
+      "thumbnailUrl": "https://img.youtube.com/vi/oljFGlhXXm8/hqdefault.jpg",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/oljFGlhXXm8",
+      "contentUrl": "https://www.youtube.com/shorts/oljFGlhXXm8",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "VideoObject",
+      "name": "Nocturnal Wildlife in Mindo",
+      "description": "A short video highlighting nocturnal wildlife and small forest details seen during a Mindo night walk.",
+      "thumbnailUrl": "https://img.youtube.com/vi/3h5xb2C-yYs/hqdefault.jpg",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/3h5xb2C-yYs",
+      "contentUrl": "https://www.youtube.com/shorts/3h5xb2C-yYs",
+      "inLanguage": "en"
+    }
+  ]
+}
+</script>
 </head>
 <body data-page-content-group="night_walk" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="guide_page">
 <div class="container">
@@ -263,6 +296,32 @@
 </div>
 </div>
 </div>
+<section aria-label="Night walk videos" class="section" data-analytics-event="content_section_view" data-analytics-page-language="en" data-analytics-page-type="guide_page" data-analytics-section="Watch the Mindo night walk">
+<div class="sectionHead">
+<h2>Watch the Mindo Night Walk</h2>
+<p class="sectionHint">Short videos help show the pace, atmosphere, and nocturnal wildlife before you decide.</p>
+</div>
+<div class="videoGrid">
+<article class="videoCard">
+<div class="videoFrame">
+<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/oljFGlhXXm8" title="Mindo night walk wildlife video"></iframe>
+</div>
+<div class="videoBody">
+<h3>Night Walk Experience</h3>
+<p>See the slower evening pace and the kind of close observation that makes the forest feel different after dark.</p>
+</div>
+</article>
+<article class="videoCard">
+<div class="videoFrame">
+<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/3h5xb2C-yYs" title="Mindo nocturnal wildlife video"></iframe>
+</div>
+<div class="videoBody">
+<h3>Nocturnal Wildlife in Mindo</h3>
+<p>A quick look at why nighttime is a separate wildlife window, especially for frogs, insects, and small forest details.</p>
+</div>
+</article>
+</div>
+</section>
 <section aria-label="Direct answer" class="section" data-analytics-event="content_section_view" data-analytics-page-language="en" data-analytics-page-type="guide_page" data-analytics-section="What is a night walk in Mindo?">
 <div class="sectionHead">
 <h2>What is a night walk in Mindo?</h2>
