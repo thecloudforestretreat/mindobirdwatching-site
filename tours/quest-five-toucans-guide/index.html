@@ -31,437 +31,6 @@
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
-<style>
-    .page{
-      margin-top:18px;
-      padding:26px;
-    }
-    .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-    }
-
-    .hero{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
-      align-items: stretch;
-      margin-top: 10px;
-    }
-
-    .heroMedia{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      background: rgba(255,255,255,.55);
-      min-height: 320px;
-      position: relative;
-    }
-    .heroMedia img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display:block;
-    }
-
-    .heroBody{
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      background: rgba(255,255,255,.65);
-      display:flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .kicker{
-      display:inline-flex;
-      gap: 8px;
-      align-items:center;
-      font-weight: 900;
-      color: var(--forest);
-      letter-spacing: -0.01em;
-      font-size: 13px;
-      text-transform: uppercase;
-    }
-
-    .heroBody h1{
-      margin: 0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      font-size: 34px;
-    }
-    .heroBody p{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-      max-width: 70ch;
-    }
-
-    .ctaRow{
-      margin-top: 10px;
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .trustPanel{
-      margin-top: 6px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-      display:none;
-    }
-    .trustPanel h2{
-      margin: 0 0 10px;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: -0.01em;
-      color: var(--ink);
-    }
-    .trustGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .trustItem{
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(255,255,255,.65);
-      padding: 10px 12px;
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .trustSub{
-      display:block;
-      margin-top: 4px;
-      font-weight: 700;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .metaWrap{
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.55);
-      box-shadow: var(--shadow);
-    }
-    .metaTitle{
-      margin: 0 0 10px;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: -0.01em;
-      color: var(--ink);
-    }
-    .metaGrid{
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      align-items: stretch;
-    }
-    .metaCard{
-      padding: 14px 14px 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      min-width: 0;
-    }
-    .metaLabel{
-      display:block;
-      font-weight: 900;
-      color: var(--muted);
-      margin-bottom: 6px;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-    .metaValue{
-      margin:0;
-      color: var(--ink);
-      font-weight: 900;
-      line-height: 1.35;
-    }
-    .metaSub{
-      margin:6px 0 0;
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 13px;
-    }
-
-    .section{
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-    }
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .sectionHead h2{
-      margin: 0;
-      font-size: 20px;
-    }
-    .sectionHint{
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .twoCol{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-    .softCard{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 14px 16px;
-    }
-    .softCard h3{
-      margin: 0 0 8px;
-      font-size: 16px;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-    }
-    .softCard ul{
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .speciesGrid{
-      display:grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-    }
-    .species{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      text-decoration:none;
-      color: var(--ink);
-      display:block;
-      min-width: 0;
-    }
-    .species img{
-      width:100%;
-      height: 140px;
-      object-fit: cover;
-      display:block;
-    }
-    .species .cap{
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-      font-weight: 900;
-      font-size: 13px;
-    }
-    .species .sub{
-      padding: 0 12px 12px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .faqGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-    .faqCard{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 14px 16px;
-    }
-    .faqCard h3{
-      margin: 0 0 10px;
-      font-size: 16px;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-    }
-    .qa{
-      padding: 10px 0;
-      border-top: 1px solid var(--line);
-    }
-    .qa:first-child{
-      border-top: 0;
-      padding-top: 0;
-    }
-    .q{
-      margin: 0 0 4px;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 13px;
-    }
-    .a{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 13px;
-    }
-
-    .finalCta{
-      margin-top: 18px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-    }
-    .finalGrid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 14px;
-      align-items: start;
-      width:100%;
-    }
-    .finalCta p{
-      margin: 0;
-      color: var(--muted);
-      max-width: 70ch;
-      line-height: 1.6;
-    }
-    .finalTitle{
-      margin: 0 0 6px;
-      font-weight: 900;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      font-size: 16px;
-    }
-    .finalActions{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-    .nextSteps{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.55);
-      padding: 12px 14px;
-      box-shadow: var(--shadow);
-    }
-    .nextSteps h3{
-      margin: 0 0 10px;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: -0.01em;
-      color: var(--ink);
-    }
-    .steps{
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 13px;
-    }
-
-    @media (min-width: 901px){
-      .trustPanel{ display:block; }
-    }
-
-    @media (max-width: 1000px){
-      .speciesGrid{ grid-template-columns: repeat(3, 1fr); }
-    }
-
-    @media (max-width: 900px){
-      .hero{ grid-template-columns: 1fr; }
-      .heroMedia{ min-height: 240px; }
-      .twoCol{ grid-template-columns: 1fr; }
-      .faqGrid{ grid-template-columns: 1fr; }
-      .finalGrid{ grid-template-columns: 1fr; }
-
-      .ctaRow{
-        display:grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        align-items: stretch;
-      }
-      .ctaRow a{
-        width: 100%;
-        justify-content: center;
-        text-align: center;
-      }
-
-      .metaGrid{
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .metaCard.focus,
-      .metaCard.included{
-        grid-column: 1 / -1;
-      }
-
-      .finalActions{
-        display:grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        align-items: stretch;
-      }
-      .finalActions a{
-        width: 100%;
-        justify-content: center;
-        text-align: center;
-      }
-
-      .heroBody h1{ font-size: 28px; }
-    }
-
-    @media (max-width: 520px){
-      .speciesGrid{ grid-template-columns: repeat(2, 1fr); }
-    }
-  
-    .infoCard{
-      background: rgba(255,255,255,.65);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      padding: 14px 16px;
-    }
-    .infoCard h2{
-      margin: 0 0 8px;
-      font-size: 20px;
-      color: var(--forest);
-      letter-spacing: -0.02em;
-    }
-    .infoCard p{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-      max-width: 80ch;
-    }
-
-  </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -544,7 +113,7 @@
 }
 </script>
 </head>
-<body data-page-content-group="tours" data-page-language="en" data-page-location="mindo" data-page-region="pichincha" data-page-type="tour_detail">
+<body data-page-content-group="tours" data-page-language="en" data-page-location="mindo" data-page-region="pichincha" data-page-type="tour_detail" data-tour-variant="quest_five_toucans_video_fill_v1">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div>
 <nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="tour_detail" data-analytics-target-language="en" href="https://mindobirdwatching.com/tours/quest-five-toucans-guide/" hreflang="en" lang="en">English</a>
@@ -556,23 +125,29 @@
 <span>Species-focused</span>
 </div>
 <div aria-label="Tour hero" class="hero">
-<div aria-label="Hero image" class="heroMedia">
+<div aria-label="Hero image" class="heroMedia toucanVideoMedia">
 <img alt="Toucan in the Mindo cloud forest during a guided birdwatching tour" width="1200" height="800" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_hero_04.jpg"/>
+
+<div aria-label="Toucan route video preview" class="toucanHeroVideoCard toucanHeroVideoFill">
+  <div class="toucanHeroVideoFrame">
+    <iframe title="Quest for Five Toucans tour video" src="https://www.youtube-nocookie.com/embed/MAXizZKXI_8" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+  </div>
+</div>
 </div>
 <div aria-label="Tour overview" class="heroBody">
 <h1>Quest for Five Toucans Tour</h1>
 <p>
-            A focused full-day birding route designed around current activity and the best chances to observe multiple <a data-analytics-event="related_content_click" data-analytics-label="toucan species" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/blog/best-time-to-see-toucans-in-mindo/" style="text-decoration: underline; font-weight: 600;">toucan species</a>,
-            plus an early observation window connected to nearby <a data-analytics-event="related_content_click" data-analytics-label="lek" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/blog/cock-of-the-rock-lek-behavior/" style="text-decoration: underline; font-weight: 600;">lek</a> activity for the Andean Cock-of-the-Rock. Ideal for bird lovers and nature photographers who want more time,
-            more variety, and calm guiding. This tour is part of our broader <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/" style="text-decoration: underline; font-weight: 600;">birdwatching tours in Mindo</a> collection, and our <a data-analytics-event="internal_link_click" data-analytics-label="plan your trip guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/plan-your-trip/" style="text-decoration: underline; font-weight: 600;">plan your trip guide</a> helps you compare habitats, timing, and target species before you reserve.
+            A focused full-day birding route designed around current activity and the best chances to observe multiple <a data-analytics-event="related_content_click" data-analytics-label="toucan species" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/blog/best-time-to-see-toucans-in-mindo/">toucan species</a>,
+            plus an early observation window connected to nearby <a data-analytics-event="related_content_click" data-analytics-label="lek" data-analytics-location="related_guides" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/blog/cock-of-the-rock-lek-behavior/">lek</a> activity for the Andean Cock-of-the-Rock. Ideal for bird lovers and nature photographers who want more time,
+            more variety, and calm guiding. This tour is part of our broader <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/">birdwatching tours in Mindo</a> collection, and our <a data-analytics-event="internal_link_click" data-analytics-label="plan your trip guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/plan-your-trip/">plan your trip guide</a> helps you compare habitats, timing, and target species before you reserve.
           </p>
 <div aria-label="Primary actions" class="ctaRow">
 <a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Reserve Your Toucan Quest" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" data-analytics-tour="Reserve Your Toucan Quest" href="/book-tour/" rel="noopener" target="_blank">Reserve Your Toucan Quest</a>
 <a class="btn secondary" data-analytics-event="secondary_cta_click" data-analytics-label="View tours" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/" rel="noopener">View tours</a>
 <a class="btn secondary" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" data-analytics-tour="WhatsApp" href="/contact/" data-whatsapp-message-key="book_tour_en" data-whatsapp-source-page="/tours/quest-five-toucans-guide/" data-analytics-link-url="dynamic_whatsapp" rel="noopener" target="_blank">WhatsApp</a>
 </div>
-<p style="margin-top:6px; color:var(--ink); font-weight:700;">Peak toucan dates and photography weeks often book first.</p>
-<div aria-label="Quick trust signals" class="ctaRow" style="margin-top:0;">
+<p>Peak toucan dates and photography weeks often book first.</p>
+<div aria-label="Quick trust signals" class="ctaRow">
 <a class="btn secondary" data-analytics-event="secondary_cta_click" data-analytics-label="5-star reviews" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/reviews/">5-star reviews</a>
 <a class="btn secondary" data-analytics-event="secondary_cta_click" data-analytics-label="Local expert guide" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/birdwatching-tours-mindo/">Local expert guide</a>
 <a class="btn secondary" data-analytics-event="tour_whatsapp_click" data-analytics-label="WhatsApp support" data-analytics-location="cta" data-analytics-page-language="en" data-analytics-page-type="tour_detail" data-analytics-tour="WhatsApp support" href="/contact/" data-whatsapp-message-key="book_tour_en" data-whatsapp-source-page="/tours/quest-five-toucans-guide/" data-analytics-link-url="dynamic_whatsapp" rel="noopener" target="_blank">WhatsApp support</a>
@@ -631,7 +206,7 @@
 <h2>Explore Birdwatching Tours in Mindo</h2>
 <p>
             For a complete overview of routes, species-focused outings, and planning help, explore our 
-            <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/" style="text-decoration: underline; font-weight: 600;">birdwatching tours in Mindo</a>. If you are planning your trip in more detail, use our <a data-analytics-event="internal_link_click" data-analytics-label="plan your trip guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/plan-your-trip/" style="text-decoration: underline; font-weight: 600;">plan your trip guide</a> to compare habitats, timing, and target species before booking.
+            <a data-analytics-event="internal_link_click" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/tours/">birdwatching tours in Mindo</a>. If you are planning your trip in more detail, use our <a data-analytics-event="internal_link_click" data-analytics-label="plan your trip guide" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_detail" href="/plan-your-trip/">plan your trip guide</a> to compare habitats, timing, and target species before booking.
           </p>
 </div>
 </section>
