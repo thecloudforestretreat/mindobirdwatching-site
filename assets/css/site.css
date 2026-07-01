@@ -10307,3 +10307,85 @@ body[data-page-type="tour_detail"] .finalCta > .finalGrid > .nextSteps {
   }
 }
 
+/* Tanager / birding guide balanced-grid support.
+   Keeps species and helpful-link modules symmetrical without page-level CSS. */
+body[data-page-type="birding_guide_page"] .decisionGrid,
+body[data-page-type="birding_guide"] .decisionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  margin: 18px 0 24px;
+}
+
+body[data-page-type="birding_guide_page"] .decisionGrid .decisionCard,
+body[data-page-type="birding_guide_page"] .decisionCard,
+body[data-page-type="birding_guide"] .decisionGrid .decisionCard,
+body[data-page-type="birding_guide"] .decisionCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 132px;
+  padding: 18px;
+  border: 1px solid rgba(34, 92, 47, 0.22);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 28px rgba(31, 70, 36, 0.08);
+}
+
+body[data-page-type="birding_guide_page"] .decisionCard h3,
+body[data-page-type="birding_guide_page"] .decisionCard h4,
+body[data-page-type="birding_guide"] .decisionCard h3,
+body[data-page-type="birding_guide"] .decisionCard h4 {
+  margin: 0 0 8px;
+  color: var(--green-800, #155d2b);
+  line-height: 1.2;
+}
+
+body[data-page-type="birding_guide_page"] .decisionCard p,
+body[data-page-type="birding_guide"] .decisionCard p {
+  margin: 0;
+}
+
+body[data-page-type="birding_guide_page"] .tourGrid.balancedSpeciesGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+body[data-page-type="birding_guide_page"] .tourGrid.balancedSpeciesGrid .tourOption {
+  min-height: 100%;
+}
+
+body[data-page-type="birding_guide_page"] .tourGrid.balancedSpeciesGrid .tourOption img {
+  height: 190px;
+}
+
+body[data-page-type="birding_guide_page"] .internalLinks.balancedLinks {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+body[data-page-type="birding_guide_page"] .internalLinks.balancedLinks .linkCard {
+  min-height: 126px;
+}
+
+@media (max-width: 1000px) {
+  body[data-page-type="birding_guide_page"] .internalLinks.balancedLinks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  body[data-page-type="birding_guide_page"] .decisionGrid,
+  body[data-page-type="birding_guide"] .decisionGrid,
+  body[data-page-type="birding_guide_page"] .tourGrid.balancedSpeciesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-page-type="birding_guide_page"] .internalLinks.balancedLinks {
+    grid-template-columns: 1fr;
+  }
+}
+
