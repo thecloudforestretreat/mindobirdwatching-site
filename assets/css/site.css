@@ -10397,102 +10397,123 @@ body[data-page-type="birding_guide_page"] .internalLinks.balancedLinks .linkCard
   }
 }
 
-/* Jewels of the Morning Forest: shorter hero media + vertical video preview. */
+/* Jewels of the Morning Forest: hero visual rail with compact route video. */
 body[data-tour-variant="jewels_morning_forest"] .hero {
+  display: grid;
+  grid-template-columns: minmax(260px, .86fr) minmax(0, 1.14fr);
+  gap: 18px;
   align-items: start;
 }
 
-body[data-tour-variant="jewels_morning_forest"] .heroMedia {
+body[data-tour-variant="jewels_morning_forest"] .heroMedia.heroVisualRail {
+  display: grid;
+  gap: 12px;
   align-self: start;
-  max-height: 560px;
-  overflow: hidden;
-  border-radius: var(--r);
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-body[data-tour-variant="jewels_morning_forest"] .heroMedia img {
+body[data-tour-variant="jewels_morning_forest"] .heroImageCard,
+body[data-tour-variant="jewels_morning_forest"] .heroVideoCard {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.72);
+  box-shadow: var(--shadow);
+}
+
+body[data-tour-variant="jewels_morning_forest"] .heroImageCard img {
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   height: auto;
-  max-height: 560px;
+  max-height: 430px;
   object-fit: cover;
   object-position: center;
   display: block;
 }
 
-body[data-tour-variant="jewels_morning_forest"] .tourVideoSection {
+body[data-tour-variant="jewels_morning_forest"] .heroVideoCard {
   display: grid;
-  grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: minmax(120px, 42%) minmax(0, 1fr);
   align-items: stretch;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
 }
 
-body[data-tour-variant="jewels_morning_forest"] .tourVideoFrame {
+body[data-tour-variant="jewels_morning_forest"] .heroVideoFrame {
   aspect-ratio: 9 / 16;
-  width: 100%;
-  max-width: 360px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255,255,255,.74);
-  box-shadow: var(--shadow);
+  min-height: 220px;
+  max-height: 360px;
+  background: rgba(0,0,0,.08);
 }
 
-body[data-tour-variant="jewels_morning_forest"] .tourVideoFrame iframe {
+body[data-tour-variant="jewels_morning_forest"] .heroVideoFrame iframe {
   width: 100%;
   height: 100%;
   border: 0;
   display: block;
 }
 
-body[data-tour-variant="jewels_morning_forest"] .tourVideoCopy {
+body[data-tour-variant="jewels_morning_forest"] .heroVideoCaption {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 12px;
+  gap: 6px;
+  padding: 14px;
 }
 
-body[data-tour-variant="jewels_morning_forest"] .tourVideoCopy h2,
-body[data-tour-variant="jewels_morning_forest"] .tourVideoCopy p {
-  margin: 0;
+body[data-tour-variant="jewels_morning_forest"] .heroVideoCaption strong {
+  color: var(--forest);
+  font-family: var(--serif);
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.08;
 }
 
-body[data-tour-variant="jewels_morning_forest"] .tourVideoCopy ul {
-  margin: 0;
-  padding-left: 20px;
+body[data-tour-variant="jewels_morning_forest"] .heroVideoCaption span {
   color: var(--muted);
-  line-height: 1.6;
-}
-
-body[data-tour-variant="jewels_morning_forest"] .tourVideoCopy .ctaRow {
-  margin-top: auto;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 @media (max-width: 980px) {
-  body[data-tour-variant="jewels_morning_forest"] .heroMedia,
-  body[data-tour-variant="jewels_morning_forest"] .heroMedia img {
-    max-height: 440px;
+  body[data-tour-variant="jewels_morning_forest"] .hero {
+    grid-template-columns: minmax(240px, .9fr) minmax(0, 1.1fr);
   }
 
-  body[data-tour-variant="jewels_morning_forest"] .tourVideoSection {
-    grid-template-columns: minmax(200px, 320px) minmax(0, 1fr);
+  body[data-tour-variant="jewels_morning_forest"] .heroVideoCard {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-tour-variant="jewels_morning_forest"] .heroVideoFrame {
+    max-height: none;
   }
 }
 
 @media (max-width: 760px) {
-  body[data-tour-variant="jewels_morning_forest"] .heroMedia,
-  body[data-tour-variant="jewels_morning_forest"] .heroMedia img {
-    max-height: none;
-  }
-
-  body[data-tour-variant="jewels_morning_forest"] .tourVideoSection {
+  body[data-tour-variant="jewels_morning_forest"] .hero {
     grid-template-columns: 1fr;
   }
 
-  body[data-tour-variant="jewels_morning_forest"] .tourVideoFrame {
-    max-width: 320px;
+  body[data-tour-variant="jewels_morning_forest"] .heroMedia.heroVisualRail {
+    order: 2;
+  }
+
+  body[data-tour-variant="jewels_morning_forest"] .heroBody {
+    order: 1;
+  }
+
+  body[data-tour-variant="jewels_morning_forest"] .heroImageCard img {
+    aspect-ratio: 4 / 3;
+    max-height: none;
+  }
+
+  body[data-tour-variant="jewels_morning_forest"] .heroVideoCard {
+    max-width: 420px;
     justify-self: center;
+    width: 100%;
   }
 }
 
