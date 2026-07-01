@@ -11271,3 +11271,68 @@ header.topbar a.pill *,
   text-decoration:none !important;
   text-decoration-line:none !important;
 }
+
+/* ============================================================
+   MBW Toucan Species Grid Symmetry Lock - 2026-07-01
+   Forces six Toucan/species image cards into a clean 3x2 desktop grid.
+   ============================================================ */
+body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid,
+body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species,
+body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species {
+  min-width: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species img,
+body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species img {
+  width: 100% !important;
+  aspect-ratio: 4 / 3 !important;
+  height: auto !important;
+  min-height: 108px !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+}
+
+body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species .cap,
+body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species .cap {
+  padding: 8px 8px 2px !important;
+  line-height: 1.15 !important;
+}
+
+body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species .sub,
+body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species .sub {
+  padding: 0 8px 9px !important;
+  line-height: 1.25 !important;
+}
+
+@media (max-width: 820px) {
+  body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid,
+  body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid,
+  body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body[data-page-type="bird_species_profile"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species img,
+  body[data-page-type="bird_species_profile"][data-page-content-group="birds"] .speciesGrid.balancedSpeciesGrid.toucanSpeciesGrid .species img {
+    min-height: 180px !important;
+  }
+}
+
