@@ -34,7 +34,8 @@
 <!-- Global header/footer CSS (required) -->
 <link href="/assets/css/header.css" rel="stylesheet"/>
 
-<link href="/assets/css/site.css" rel="stylesheet">
+<link href="/assets/css/site.css" rel="stylesheet"/>
+<script defer="" src="/assets/js/site-config.js"></script>
 <script defer="" src="/assets/js/head.js"></script>
 <style>
     /* Page-only styles (main content only) */
@@ -350,7 +351,124 @@
       line-height: 1.6;
     }
 
-    @media (max-width: 900px){
+
+    .calendarGuide{
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .calendarGuideHead{
+      display:grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(240px, .9fr);
+      gap: 14px;
+      align-items:start;
+      margin-bottom: 12px;
+    }
+
+    .calendarGuideHead h2,
+    .calendarCta h2{
+      margin: 0;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .calendarGuideHead p,
+    .calendarCta p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .linkGrid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .linkCard{
+      display:block;
+      text-decoration:none;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.68);
+      box-shadow: var(--shadow);
+      padding: 13px 14px;
+      min-height: 88px;
+    }
+
+    .linkCard strong{
+      display:block;
+      font-size: 13.5px;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .linkCard span{
+      display:block;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .calendarCta{
+      margin-top: 16px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.70);
+      box-shadow: var(--shadow);
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+      gap: 24px;
+      align-items:center;
+    }
+
+    .calendarCtaText{
+      max-width: 56ch;
+    }
+
+    .calendarCta p{
+      margin-top: 8px;
+      max-width: 52ch;
+    }
+
+    .ctaButtons{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items:stretch;
+      width: 100%;
+    }
+
+    .ctaButtons .btn{
+      width: 100%;
+      min-height: 48px;
+      text-align: center;
+      white-space: normal;
+    }
+    .linkCard:focus-visible{
+      outline: 2px solid rgba(3,78,162,.35);
+      outline-offset: 2px;
+    }
+
+@media (max-width: 900px){
+
+      .calendarGuideHead,
+      .calendarCta{
+        grid-template-columns: 1fr;
+      }
+
+      .linkGrid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .ctaButtons{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       /* Mobile: status pill full width (same as card width) */
       .pill{
         width: 100%;
@@ -421,6 +539,19 @@
     }
 
     @media (max-width: 560px){
+
+      .linkGrid{
+        grid-template-columns: 1fr;
+      }
+
+      .calendarCta{
+        padding: 16px;
+      }
+
+      .ctaButtons .btn{
+        width: 100%;
+      }
+
       .filters{
         grid-template-columns: 1fr 1fr;
         gap: 10px;
@@ -437,8 +568,20 @@
         font-size: 11.5px;
       }
     }
-  </style>
-</link></head>
+  
+    @media (max-width: 520px){
+      .calendarCta{
+        padding: 18px;
+        gap: 16px;
+      }
+
+      .ctaButtons{
+        grid-template-columns: 1fr;
+      }
+    }
+
+</style>
+</head>
 <body data-page-content-group="birds" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="birding_calendar">
 <div class="container">
 <div data-current-lang="es" id="siteHeader"></div>
@@ -474,6 +617,53 @@
       Consejo: las fotos provienen de fuentes de terceros.
     </p>
 </section>
+
+<section aria-label="Planifica tu ruta de avistamiento en Mindo" class="calendarGuide">
+<div class="calendarGuideHead">
+<div>
+<h2>Planifica tu ruta de avistamiento desde el calendario</h2>
+<p>
+Usa el calendario como guía de planificación y luego conecta tus aves objetivo con la duración, el hábitat y el apoyo de guía adecuados.
+</p>
+</div>
+<p>
+La actividad de aves cambia con el clima, floración, fructificación y movimiento diario. Para especies raras u objetivos específicos, un guía privado ayuda a elegir el mejor plan de la mañana.
+</p>
+</div>
+<div class="linkGrid">
+<a class="linkCard" href="/es/birding/tucanes-de-mindo/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Tucanes de Mindo">
+<strong>Tucanes de Mindo</strong>
+<span>Compara especies objetivo y rutas para ver tucanes en Mindo.</span>
+</a>
+<a class="linkCard" href="/es/birding/colibries-de-mindo/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Colibries de Mindo">
+<strong>Colibries de Mindo</strong>
+<span>Planifica jardines de comederos, paradas de foto y rutas enfocadas en colibries.</span>
+</a>
+<a class="linkCard" href="/es/birding/tangaras-de-mindo/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Tangaras de Mindo">
+<strong>Tangaras de Mindo</strong>
+<span>Entiende bandadas mixtas y especies coloridas del bosque nublado.</span>
+</a>
+<a class="linkCard" href="/es/birding/gallo-de-la-pena-andino/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Gallo de la Pena Andino">
+<strong>Gallo de la Pena Andino</strong>
+<span>Conoce por que el horario de amanecer importa para esta especie iconica.</span>
+</a>
+</div>
+<div class="calendarCta">
+<div class="calendarCtaText">
+<h2>Quieres ayuda para elegir fechas en Mindo?</h2>
+<p>
+Cuentanos tus aves objetivo, metas de fotografia, fechas disponibles y si prefieres una ruta de medio dia, dia entero o privada personalizada.
+</p>
+</div>
+<div class="ctaButtons">
+<a class="btn primary" href="/es/tours/dia-entero/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_cta" data-analytics-label="Tour dia entero">Tour dia entero</a>
+<a class="btn" href="/es/tours/medio-dia/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_cta" data-analytics-label="Tour medio dia">Tour medio dia</a>
+<a class="btn secondary" href="/es/tours/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_cta" data-analytics-label="Comparar tours">Comparar tours</a>
+<a class="btn secondary" href="#" data-analytics-event="contact_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-source-page="birding_calendar" data-analytics-message-key="default_es" data-whatsapp-source-page="birding_calendar">Preguntar por WhatsApp</a>
+</div>
+</div>
+</section>
+
 </main>
 <div id="siteFooter"></div>
 <script>
