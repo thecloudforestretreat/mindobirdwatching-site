@@ -14064,28 +14064,66 @@ body[data-page-type="travel_guide"] .travelFinalCta .nextSteps ol{
 }
 
 
-/* Pair 107: Ecuador birding seasons strategy card button alignment */
-body[data-page-location="ecuador_birding_seasons"] .strategyGrid{
+/* =========================================
+   Beginner Birding Guide Page Pair
+   Pair 109 - global CSS support, no page-level CSS
+   ========================================= */
+body[data-page-location="beginner_birding_guide"] .featureGrid,
+body[data-page-location="beginner_birding_guide"] .strategyGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
   align-items: stretch;
 }
 
-body[data-page-location="ecuador_birding_seasons"] .strategyGrid .sectionBox{
+body[data-page-location="beginner_birding_guide"] .featureGrid .sectionBox,
+body[data-page-location="beginner_birding_guide"] .strategyGrid .sectionBox,
+body[data-page-location="beginner_birding_guide"] .routeGrid .sectionBox,
+body[data-page-location="beginner_birding_guide"] .stepsGrid .sectionBox{
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-body[data-page-location="ecuador_birding_seasons"] .strategyGrid .sectionBox > p{
+body[data-page-location="beginner_birding_guide"] .featureGrid .sectionBox p,
+body[data-page-location="beginner_birding_guide"] .strategyGrid .sectionBox p,
+body[data-page-location="beginner_birding_guide"] .routeGrid .sectionBox p,
+body[data-page-location="beginner_birding_guide"] .stepsGrid .sectionBox p{
   flex: 1 1 auto;
 }
 
-body[data-page-location="ecuador_birding_seasons"] .strategyGrid .ctaRow.alignBottom{
+body[data-page-location="beginner_birding_guide"] .strategyGrid .ctaRow,
+body[data-page-location="beginner_birding_guide"] .routeGrid .ctaRow{
   margin-top: auto;
-  padding-top: 18px;
 }
 
-body[data-page-location="ecuador_birding_seasons"] .strategyGrid .btn{
+body[data-page-location="beginner_birding_guide"] .strategyGrid .btn,
+body[data-page-location="beginner_birding_guide"] .routeGrid .btn{
+  min-width: 166px;
   justify-content: center;
   text-align: center;
 }
 
+body[data-page-location="beginner_birding_guide"] .faqGrid{
+  align-items: stretch;
+}
+
+body[data-page-location="beginner_birding_guide"] .faqCard{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+@media (max-width: 900px){
+  body[data-page-location="beginner_birding_guide"] .featureGrid,
+  body[data-page-location="beginner_birding_guide"] .strategyGrid{
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-location="beginner_birding_guide"] .strategyGrid .btn,
+  body[data-page-location="beginner_birding_guide"] .routeGrid .btn,
+  body[data-page-location="beginner_birding_guide"] .travelFinalCta .btn{
+    width: 100%;
+    min-width: 0;
+  }
+}
