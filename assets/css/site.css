@@ -14127,3 +14127,307 @@ body[data-page-location="beginner_birding_guide"] .faqCard{
     min-width: 0;
   }
 }
+
+/* =========================================
+   MBW Global Carousel Component v1
+   Use this for all controlled image carousels.
+   Supports both new generic classes and existing page aliases.
+
+   Preferred markup classes:
+   .mbw-carousel
+   .mbw-carousel-viewport
+   .mbw-carousel-track
+   .mbw-carousel-slide
+   .mbw-carousel-btn .mbw-carousel-prev/.mbw-carousel-next
+   .mbw-carousel-dots .mbw-carousel-dot
+
+   Compatibility aliases included:
+   .mbwCarousel, .wildlifeHeroCarousel, .carouselViewport,
+   .carouselSlide, .carouselBtn, .carouselDots, .carouselDot
+   ========================================= */
+
+:root{
+  --mbw-carousel-radius: var(--r);
+  --mbw-carousel-bg: rgba(255,255,255,.66);
+  --mbw-carousel-btn-size: 42px;
+  --mbw-carousel-dot-size: 9px;
+  --mbw-carousel-min-h: 330px;
+  --mbw-carousel-mobile-min-h: 260px;
+}
+
+.mbw-carousel,
+.mbwCarousel,
+.wildlifeHeroCarousel{
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--mbw-carousel-radius);
+  background: var(--mbw-carousel-bg);
+  box-shadow: var(--shadow);
+}
+
+.mbw-carousel-viewport,
+.mbwCarouselViewport,
+.wildlifeCarouselViewport,
+.carouselViewport{
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: calc(var(--mbw-carousel-radius) - 4px);
+  background: rgba(255,255,255,.55);
+}
+
+.mbw-carousel-track,
+.mbwCarouselTrack,
+.wildlifeCarouselTrack{
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform .34s ease;
+  will-change: transform;
+}
+
+.mbw-carousel-slide,
+.mbwCarouselSlide,
+.wildlifeSlide{
+  flex: 0 0 100%;
+  width: 100%;
+  min-height: var(--mbw-carousel-min-h);
+  position: relative;
+}
+
+.mbw-carousel-slide img,
+.mbwCarouselSlide img,
+.wildlifeSlide img,
+.carouselSlide img{
+  width: 100%;
+  height: 100%;
+  min-height: var(--mbw-carousel-min-h);
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Absolute-slide support for pages that use .carouselSlide instead of a flex track. */
+.carouselSlide{
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+}
+
+.carouselSlide.active,
+.carouselSlide.is-active{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Caption strip */
+.mbw-carousel-caption,
+.mbwCarouselCaption,
+.wildlifeCarouselCaption,
+.carouselCaption{
+  border-top: 1px solid var(--line);
+  background: rgba(255,255,255,.70);
+  padding: 11px 13px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* Bottom control overlay: left arrow, centered dots, right arrow. */
+.mbw-carousel-controls,
+.mbwCarouselControls,
+.wildlifeCarouselControls,
+.carouselOverlay{
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: var(--mbw-carousel-btn-size) 1fr var(--mbw-carousel-btn-size);
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.mbw-carousel-btn,
+.mbwCarouselBtn,
+.wildlifeCarouselBtn,
+.carouselBtn{
+  width: var(--mbw-carousel-btn-size);
+  height: var(--mbw-carousel-btn-size);
+  min-width: var(--mbw-carousel-btn-size);
+  min-height: var(--mbw-carousel-btn-size);
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.62);
+  background: rgba(255,255,255,.92);
+  color: var(--forest);
+  box-shadow: 0 12px 26px rgba(7,25,35,.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 950;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+  appearance: none;
+}
+
+.mbw-carousel-btn:hover,
+.mbwCarouselBtn:hover,
+.wildlifeCarouselBtn:hover,
+.carouselBtn:hover{
+  transform: translateY(-1px);
+  background: #fff;
+  box-shadow: 0 16px 32px rgba(7,25,35,.18);
+}
+
+.mbw-carousel-btn:focus-visible,
+.mbwCarouselBtn:focus-visible,
+.wildlifeCarouselBtn:focus-visible,
+.carouselBtn:focus-visible{
+  outline: 3px solid rgba(255,215,0,.42);
+  outline-offset: 3px;
+}
+
+.mbw-carousel-prev,
+.mbwCarouselPrev,
+.wildlifeCarouselPrev{
+  justify-self: start;
+}
+
+.mbw-carousel-next,
+.mbwCarouselNext,
+.wildlifeCarouselNext{
+  justify-self: end;
+}
+
+.mbw-carousel-dots,
+.mbwCarouselDots,
+.wildlifeCarouselDots,
+.carouselDots{
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.62);
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 12px 26px rgba(7,25,35,.12);
+  pointer-events: auto;
+}
+
+.mbw-carousel-dot,
+.mbwCarouselDot,
+.wildlifeCarouselDot,
+.carouselDot,
+.wildlifeCarouselDots span{
+  width: var(--mbw-carousel-dot-size);
+  height: var(--mbw-carousel-dot-size);
+  min-width: var(--mbw-carousel-dot-size);
+  min-height: var(--mbw-carousel-dot-size);
+  border-radius: 999px;
+  border: 1px solid rgba(7,25,35,.16);
+  background: rgba(13,89,37,.22);
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+}
+
+.mbw-carousel-dot.is-active,
+.mbw-carousel-dot.active,
+.mbwCarouselDot.is-active,
+.mbwCarouselDot.active,
+.wildlifeCarouselDot.is-active,
+.wildlifeCarouselDot.active,
+.carouselDot.is-active,
+.carouselDot.active{
+  background: var(--forest);
+  border-color: rgba(13,89,37,.55);
+}
+
+/* Support old wildlife CSS-only dots until those pages are moved to JS controls. */
+.wildlifeCarouselDots span:nth-child(1),
+.wildlifeCarouselDots span:nth-child(2),
+.wildlifeCarouselDots span:nth-child(3),
+.wildlifeCarouselDots span:nth-child(4){
+  animation: none;
+}
+
+/* Optional vertical side-arrow placement. Add .mbw-carousel--side-controls to the wrapper. */
+.mbw-carousel--side-controls .mbw-carousel-controls,
+.mbwCarousel--side-controls .mbwCarouselControls{
+  inset: 50% 12px auto 12px;
+  transform: translateY(-50%);
+}
+
+.mbw-carousel--side-controls .mbw-carousel-dots,
+.mbwCarousel--side-controls .mbwCarouselDots{
+  position: absolute;
+  left: 50%;
+  bottom: -52px;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 900px){
+  :root{
+    --mbw-carousel-btn-size: 38px;
+    --mbw-carousel-dot-size: 8px;
+  }
+
+  .mbw-carousel-slide,
+  .mbwCarouselSlide,
+  .wildlifeSlide,
+  .mbw-carousel-slide img,
+  .mbwCarouselSlide img,
+  .wildlifeSlide img,
+  .carouselSlide img{
+    min-height: var(--mbw-carousel-mobile-min-h);
+  }
+
+  .mbw-carousel-controls,
+  .mbwCarouselControls,
+  .wildlifeCarouselControls,
+  .carouselOverlay{
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 520px){
+  :root{
+    --mbw-carousel-btn-size: 36px;
+  }
+
+  .mbw-carousel-dots,
+  .mbwCarouselDots,
+  .wildlifeCarouselDots,
+  .carouselDots{
+    gap: 6px;
+    padding: 6px 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .mbw-carousel-track,
+  .mbwCarouselTrack,
+  .wildlifeCarouselTrack,
+  .carouselSlide,
+  .mbw-carousel-btn,
+  .mbwCarouselBtn,
+  .wildlifeCarouselBtn,
+  .carouselBtn{
+    transition: none !important;
+    animation: none !important;
+  }
+}
