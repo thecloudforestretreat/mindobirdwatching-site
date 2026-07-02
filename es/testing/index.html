@@ -31,6 +31,86 @@
 <link href="/site.webmanifest" rel="manifest"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
+<style>
+body[data-page-location="wildlife_of_mindo"] .wildlifeHeroCarousel{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.62);
+  box-shadow:var(--shadow);
+  min-height:420px;
+  display:flex;
+  flex-direction:column;
+}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselViewport{
+  width:100%;
+  overflow:hidden;
+  flex:1 1 auto;
+}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselTrack{
+  display:flex;
+  width:100%;
+  height:100%;
+  animation:mbwWildlifeSlide 24s infinite;
+}
+body[data-page-location="wildlife_of_mindo"] .wildlifeSlide{
+  flex:0 0 100%;
+  width:100%;
+  min-height:330px;
+}
+body[data-page-location="wildlife_of_mindo"] .wildlifeSlide img{
+  width:100%;
+  height:100%;
+  min-height:330px;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselDots{
+  position:absolute;
+  left:50%;
+  bottom:64px;
+  transform:translateX(-50%);
+  display:inline-flex;
+  gap:7px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.82);
+  z-index:3;
+}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselDots span{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:rgba(13,89,37,.30);
+}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselDots span:nth-child(1){animation:mbwWildlifeDot1 24s infinite}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselDots span:nth-child(2){animation:mbwWildlifeDot2 24s infinite}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselDots span:nth-child(3){animation:mbwWildlifeDot3 24s infinite}
+body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselDots span:nth-child(4){animation:mbwWildlifeDot4 24s infinite}
+@keyframes mbwWildlifeSlide{
+  0%,20%{transform:translateX(0)}
+  25%,45%{transform:translateX(-100%)}
+  50%,70%{transform:translateX(-200%)}
+  75%,95%{transform:translateX(-300%)}
+  100%{transform:translateX(0)}
+}
+@keyframes mbwWildlifeDot1{0%,20%,100%{background:rgba(13,89,37,.82)}25%,95%{background:rgba(13,89,37,.30)}}
+@keyframes mbwWildlifeDot2{0%,20%,50%,100%{background:rgba(13,89,37,.30)}25%,45%{background:rgba(13,89,37,.82)}}
+@keyframes mbwWildlifeDot3{0%,45%,75%,100%{background:rgba(13,89,37,.30)}50%,70%{background:rgba(13,89,37,.82)}}
+@keyframes mbwWildlifeDot4{0%,70%,100%{background:rgba(13,89,37,.30)}75%,95%{background:rgba(13,89,37,.82)}}
+@media(max-width:900px){
+  body[data-page-location="wildlife_of_mindo"] .wildlifeHeroCarousel{min-height:0;}
+  body[data-page-location="wildlife_of_mindo"] .wildlifeSlide,
+  body[data-page-location="wildlife_of_mindo"] .wildlifeSlide img{min-height:260px;}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselTrack,
+  body[data-page-location="wildlife_of_mindo"] .wildlifeCarouselDots span{animation:none;}
+}
+</style>
 <script defer src="/assets/js/head.js"></script>
 <script defer src="/assets/js/site-config.js"></script>
 </head>
@@ -55,8 +135,9 @@
 <a class="btn secondary" href="/es/contacto/" data-whatsapp-message-key="contact_es" data-analytics-event="contact_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-label="Preguntar sobre fauna de Mindo" data-analytics-location="hero" data-analytics-page-language="es" data-analytics-page-type="planning_guide" data-analytics-region="wildlife_of_mindo" data-analytics-source-page="/es/fauna-de-mindo/" data-analytics-message-key="contact_es" data-whatsapp-source-page="/es/fauna-de-mindo/" rel="noopener noreferrer" target="_blank">Preguntar sobre fauna de Mindo</a>
 </div>
 </div>
-<aside class="heroVisual" aria-label="Fauna de Mindo">
-<img src="/assets/images/fauna/mbw_fauna_spectacled_bear_01.jpg" alt="Oso de anteojos representando la fauna del bosque nublado de Mindo Ecuador" loading="eager" decoding="async"/>
+<aside class="wildlifeHeroCarousel" aria-label="Fauna de Mindo">
+<div class="wildlifeCarouselViewport"><div class="wildlifeCarouselTrack"><div class="wildlifeSlide"><img src="/assets/images/fauna/mbw_fauna_spectacled_bear_01.jpg" alt="Oso de anteojos representando fauna del bosque nublado de Mindo Ecuador" loading="eager" decoding="async"/></div><div class="wildlifeSlide"><img src="/assets/images/fauna/mbw_fauna_tayras_01.jpg" alt="Tayras en el hábitat de bosque nublado de Mindo" loading="lazy" decoding="async"/></div><div class="wildlifeSlide"><img src="/assets/images/fauna/mbw_fauna_mantled_howler_monkey_01.jpg" alt="Mono aullador de manto en zona de fauna de Mindo Ecuador" loading="lazy" decoding="async"/></div><div class="wildlifeSlide"><img src="/assets/images/fauna/mbw_fauna_red_tailed_squirrel_02.jpg" alt="Ardilla de cola roja en el bosque nublado de Mindo" loading="lazy" decoding="async"/></div></div></div>
+<div class="wildlifeCarouselDots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
 <div class="visualBar"><strong>Fauna de Mindo</strong><span>Osos de anteojos, tayras, monos aulladores y mamíferos del bosque nublado</span></div>
 </aside>
 </section>
