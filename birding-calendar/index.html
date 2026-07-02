@@ -34,7 +34,8 @@
 <!-- Global header/footer CSS (required) -->
 <link href="/assets/css/header.css" rel="stylesheet"/>
 
-<link href="/assets/css/site.css" rel="stylesheet">
+<link href="/assets/css/site.css" rel="stylesheet"/>
+<script defer="" src="/assets/js/site-config.js"></script>
 <script defer="" src="/assets/js/head.js"></script>
 <style>
     /* Page-only styles (main content only) */
@@ -350,7 +351,124 @@
       line-height: 1.6;
     }
 
-    @media (max-width: 900px){
+
+    .calendarGuide{
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .calendarGuideHead{
+      display:grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(240px, .9fr);
+      gap: 14px;
+      align-items:start;
+      margin-bottom: 12px;
+    }
+
+    .calendarGuideHead h2,
+    .calendarCta h2{
+      margin: 0;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .calendarGuideHead p,
+    .calendarCta p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .linkGrid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .linkCard{
+      display:block;
+      text-decoration:none;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.68);
+      box-shadow: var(--shadow);
+      padding: 13px 14px;
+      min-height: 88px;
+    }
+
+    .linkCard strong{
+      display:block;
+      font-size: 13.5px;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .linkCard span{
+      display:block;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .calendarCta{
+      margin-top: 16px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.70);
+      box-shadow: var(--shadow);
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+      gap: 24px;
+      align-items:center;
+    }
+
+    .calendarCtaText{
+      max-width: 56ch;
+    }
+
+    .calendarCta p{
+      margin-top: 8px;
+      max-width: 52ch;
+    }
+
+    .ctaButtons{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items:stretch;
+      width: 100%;
+    }
+
+    .ctaButtons .btn{
+      width: 100%;
+      min-height: 48px;
+      text-align: center;
+      white-space: normal;
+    }
+    .linkCard:focus-visible{
+      outline: 2px solid rgba(3,78,162,.35);
+      outline-offset: 2px;
+    }
+
+@media (max-width: 900px){
+
+      .calendarGuideHead,
+      .calendarCta{
+        grid-template-columns: 1fr;
+      }
+
+      .linkGrid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .ctaButtons{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       /* Mobile: status pill full width (same as card width) */
       .pill{
         width: 100%;
@@ -421,6 +539,19 @@
     }
 
     @media (max-width: 560px){
+
+      .linkGrid{
+        grid-template-columns: 1fr;
+      }
+
+      .calendarCta{
+        padding: 16px;
+      }
+
+      .ctaButtons .btn{
+        width: 100%;
+      }
+
       .filters{
         grid-template-columns: 1fr 1fr;
         gap: 10px;
@@ -437,8 +568,20 @@
         font-size: 11.5px;
       }
     }
-  </style>
-</link></head>
+  
+    @media (max-width: 520px){
+      .calendarCta{
+        padding: 18px;
+        gap: 16px;
+      }
+
+      .ctaButtons{
+        grid-template-columns: 1fr;
+      }
+    }
+
+</style>
+</head>
 <body data-page-content-group="birds" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="birding_calendar"><div class="container">
 <div data-current-lang="en" id="siteHeader"></div>
 <nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-content-group="birds" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="birding_calendar" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/birding-calendar/" hreflang="en" lang="en">English</a>
@@ -473,6 +616,53 @@
           Tip: photos come from third-party sources.
         </p>
 </section>
+
+<section aria-label="Plan your Mindo birding route" class="calendarGuide">
+<div class="calendarGuideHead">
+<div>
+<h2>Plan your Mindo birding route from the calendar</h2>
+<p>
+Use the calendar as a planning guide, then match your target birds with the right route length, habitat, and guide support.
+</p>
+</div>
+<p>
+Bird activity changes with weather, flowering, fruiting, and daily movement. For rare or target species, a private guide helps you choose the best morning plan instead of relying on the month alone.
+</p>
+</div>
+<div class="linkGrid">
+<a class="linkCard" href="/birding/toucans-of-mindo/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Toucans of Mindo">
+<strong>Toucans of Mindo</strong>
+<span>Compare toucan targets and routes around Mindo.</span>
+</a>
+<a class="linkCard" href="/birding/hummingbirds-of-mindo/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Hummingbirds of Mindo">
+<strong>Hummingbirds of Mindo</strong>
+<span>Plan feeder gardens, photo stops, and hummingbird-focused routes.</span>
+</a>
+<a class="linkCard" href="/birding/tanagers-of-mindo/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Tanagers of Mindo">
+<strong>Tanagers of Mindo</strong>
+<span>Understand mixed flocks and colorful cloud forest species.</span>
+</a>
+<a class="linkCard" href="/birding/andean-cock-of-the-rock/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_bottom_links" data-analytics-label="Andean Cock-of-the-Rock">
+<strong>Andean Cock-of-the-Rock</strong>
+<span>See why dawn timing matters for this iconic lek species.</span>
+</a>
+</div>
+<div class="calendarCta">
+<div class="calendarCtaText">
+<h2>Want help choosing dates for Mindo birding?</h2>
+<p>
+Tell us your target birds, photography goals, available dates, and whether you prefer a half-day, full-day, or custom private route.
+</p>
+</div>
+<div class="ctaButtons">
+<a class="btn primary" href="/tours/full-day/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_cta" data-analytics-label="Full day tour">Full-day tour</a>
+<a class="btn" href="/tours/half-day/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_cta" data-analytics-label="Half day tour">Half-day tour</a>
+<a class="btn secondary" href="/tours/" data-analytics-event="internal_link_click" data-analytics-location="birding_calendar_cta" data-analytics-label="Compare tours">Compare tours</a>
+<a class="btn secondary" href="#" data-analytics-event="contact_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-source-page="birding_calendar" data-analytics-message-key="default_en" data-whatsapp-source-page="birding_calendar">Ask on WhatsApp</a>
+</div>
+</div>
+</section>
+
 </main>
 <div id="siteFooter"></div>
 <script>
