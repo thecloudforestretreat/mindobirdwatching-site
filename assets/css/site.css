@@ -13644,7 +13644,7 @@ body[data-page-type="travel_guide"] .internalLinks.balancedLinks .linkCard span{
 /* =========================================
    Pair 093 Quito to Mindo final polish
    - Three-card transport row when only three options exist
-   - Single clean final CTA surface with three next-step boxes
+   - Single clean final CTA surface with full-width next-step boxes
    ========================================= */
 body[data-page-type="travel_guide"] .decisionGrid.decisionGrid--three{
   grid-template-columns:repeat(3, minmax(0, 1fr));
@@ -13660,7 +13660,7 @@ body[data-page-type="travel_guide"] .travelFinalCta{
 
 body[data-page-type="travel_guide"] .travelFinalCta .travelFinalGrid{
   display:grid;
-  grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+  grid-template-columns:1fr;
   gap:16px;
   align-items:stretch;
   padding:18px;
@@ -13671,9 +13671,10 @@ body[data-page-type="travel_guide"] .travelFinalCta .travelFinalGrid{
 }
 
 body[data-page-type="travel_guide"] .travelFinalCta .finalLeft{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:16px;
+  align-items:center;
   min-width:0;
 }
 
@@ -13682,13 +13683,17 @@ body[data-page-type="travel_guide"] .travelFinalCta .finalLeft h2{
 }
 
 body[data-page-type="travel_guide"] .travelFinalCta .finalLeft p{
-  margin:0 0 14px;
+  margin:0;
   color:var(--muted);
   line-height:1.62;
+  max-width:680px;
 }
 
 body[data-page-type="travel_guide"] .travelFinalCta .finalActions{
-  margin-top:auto;
+  justify-content:flex-end;
+  align-content:center;
+  margin:0;
+  min-width:260px;
 }
 
 body[data-page-type="travel_guide"] .travelNextGrid{
@@ -13699,11 +13704,12 @@ body[data-page-type="travel_guide"] .travelNextGrid{
 }
 
 body[data-page-type="travel_guide"] .travelNextCard{
-  padding:14px;
+  padding:14px 15px;
   border:1px solid var(--line);
   border-radius:16px;
-  background:rgba(255,255,255,.76);
+  background:rgba(255,255,255,.82);
   box-shadow:0 10px 24px rgba(7,25,35,.06);
+  min-height:122px;
 }
 
 body[data-page-type="travel_guide"] .travelNextCard h3{
@@ -13728,7 +13734,12 @@ body[data-page-type="travel_guide"] .travelNextCard p{
     grid-template-columns:1fr;
   }
 
-  body[data-page-type="travel_guide"] .travelFinalCta .travelFinalGrid{
+  body[data-page-type="travel_guide"] .travelFinalCta .finalLeft{
     grid-template-columns:1fr;
+  }
+
+  body[data-page-type="travel_guide"] .travelFinalCta .finalActions{
+    justify-content:flex-start;
+    min-width:0;
   }
 }
