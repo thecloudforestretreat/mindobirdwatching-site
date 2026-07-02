@@ -32,151 +32,7 @@
 <link href="/assets/css/header.css" rel="stylesheet"/>
 
 <script defer="" src="/assets/js/head.js"></script>
-<style>
-    /* Page-scoped layout only. Avoid global selectors that could affect header/footer. */
-    .blogPage { padding: 26px; }
-    .blogWrap { max-width: 1160px; margin: 0 auto; }
-
-    .crumbs { font-size: 12px; opacity: 0.9; margin: 2px 0 14px; }
-    .crumbs a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(0,0,0,0.12); }
-    .crumbs a:hover { border-bottom-color: rgba(0,0,0,0.35); }
-
-    .heroGrid { display: grid; gap: 14px; grid-template-columns: 1fr; }
-
-    .heroMedía { border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.55); }
-    .heroMedía img { display: block; width: 100%; height: auto; }
-
-    .heroMeta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; }
-    .kicker { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.75; }
-
-    .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 10px; font-size: 12px; border: 1px solid rgba(0,0,0,0.10); background: rgba(255,255,255,0.70); }
-
-    .heroCard { border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.58); box-shadow: 0 14px 30px rgba(0,0,0,0.10); overflow: hidden; }
-    .heroCardInner { padding: 14px; }
-
-    .heroTitle { margin: 0 0 8px; }
-    .heroLead { margin: 0 0 12px; }
-
-    .ctaRow { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 12px; }
-
-
-    .quickAnswer { border-radius: 14px; border: 1px solid rgba(0,0,0,0.10); background: rgba(255,255,255,0.70); padding: 12px; }
-    .quickAnswer h2 { margin: 0 0 8px; font-size: 14px; }
-    .quickAnswer ul { margin: 0; padding-left: 18px; }
-
-    .rail { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
-
-    .videoCard { border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.58); box-shadow: 0 14px 30px rgba(0,0,0,0.10); overflow: hidden; }
-    .videoHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); }
-    .videoHead h3 { margin: 0; font-size: 13px; }
-    .videoFrame { aspect-ratio: 9 / 16; width: 100%; overflow: hidden; }
-    .videoFrame iframe { width: 100%; height: 100%; border: 0; display: block; border-radius: 16px; }
-
-    .tocCard { border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.58); box-shadow: 0 14px 30px rgba(0,0,0,0.10); padding: 12px; }
-    .tocHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-    .tocHead h3 { margin: 0; font-size: 13px; }
-    .tocCard ol { margin: 0; padding-left: 18px; }
-    .tocCard a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(0,0,0,0.12); }
-    .tocCard a:hover { border-bottom-color: rgba(0,0,0,0.35); }
-
-    .railCtas { display: grid; gap: 10px; }
-
-    .contentGrid { display: grid; gap: 14px; grid-template-columns: 1fr; margin-top: 8px; }
-
-    .article { border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.58); box-shadow: 0 14px 30px rgba(0,0,0,0.10); padding: 14px; }
-    .article h2 { margin-top: 18px; }
-    .article h2:first-child { margin-top: 0; }
-
-    .inlinePhoto { margin: 12px 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.55); }
-    .inlinePhoto img { display: block; width: 100%; height: auto; }
-    .caption { font-size: 12px; opacity: 0.8; margin: 8px 0 0; }
-
-    .tips { border-radius: 14px; border: 1px solid rgba(0,0,0,0.10); background: rgba(211, 232, 216, 0.55); padding: 12px; }
-
-    .cards3 { display: grid; gap: 12px; grid-template-columns: 1fr; margin-top: 12px; }
-    .miniCard { border-radius: 14px; border: 1px solid rgba(0,0,0,0.10); background: rgba(255,255,255,0.72); padding: 12px; }
-    .miniCard h3 { margin: 0 0 6px; font-size: 14px; }
-
-    .nextRow { display: grid; gap: 12px; grid-template-columns: 1fr; margin-top: 14px; }
-
-    .sticky { position: static; }
-
-    @media (min-width: 900px) {
-      .heroGrid { grid-template-columns: 1.65fr 1fr; align-items: start; }
-      .contentGrid { grid-template-columns: 1.65fr 1fr; align-items: stretch; margin-top: 6px; }
-      .sticky { position: sticky; top: 18px; }
-      .cards3 { grid-template-columns: repeat(3, 1fr); }
-      .nextRow { grid-template-columns: 1fr 1fr 1fr; }
-    }
-
-    @media (min-width: 1200px) {
-      .blogPage { padding: 30px; }
-    }
-
-/* --- Layout tightening: remove dead space and keep hero symmetry --- */
-.page{max-width:1200px}
-.heroMain{display:flex;flex-direction:column;gap:14px}
-.seasonSnap{background:rgba(255,255,255,.68);border:1px solid rgba(12,41,20,.14);border-radius:16px;padding:12px 14px}
-.seasonSnap .snapHead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px}
-.seasonSnap .snapTitle{margin:0;font-size:15px}
-.seasonSnap .snapJump{font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(3,78,162,.22);padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.7)}
-.seasonSnap .snapJump:hover{background:#fff}
-.seasonSnap .snapList{margin:0;padding-left:18px}
-.seasonSnap .snapList li{margin:6px 0}
-@media (max-width: 900px){
-  .page{max-width:760px}
-}
-
-/* --- Right rail filler: Quest cards + merch promo --- */
-.questStack{display:grid;gap:12px}
-.questCard{display:flex;flex-direction:column;text-decoration:none;color:inherit;
-  border:1px solid rgba(0,0,0,0.10);border-radius:16px;background:rgba(255,255,255,0.72);
-  overflow:hidden}
-.questCard:hover{background:#fff}
-.questImg{width:100%;aspect-ratio:4/3;overflow:hidden}
-.questImg img{width:100%;height:100%;object-fit:cover;display:block}
-.questMeta{display:flex;flex-direction:column;gap:4px;padding:12px}
-.questMeta strong{font-size:13px;line-height:1.25}
-.questMeta span{font-size:12px;opacity:.78;line-height:1.25}
-
-.merchCard{display:flex;flex-direction:column;text-decoration:none;color:inherit;
-  border:1px solid rgba(0,0,0,0.10);border-radius:16px;background:rgba(255,255,255,0.72);
-  overflow:hidden}
-.merchCard:hover{background:#fff}
-.merchImg{width:100%;aspect-ratio:4/3;overflow:hidden}
-.merchImg img{width:100%;height:100%;object-fit:cover;display:block}
-.merchMeta{display:flex;flex-direction:column;gap:4px;padding:12px}
-.merchMeta strong{font-size:13px;line-height:1.25}
-.merchMeta span{font-size:12px;opacity:.78;line-height:1.25}
-
-@media (max-width: 900px){
-  .questImg,.merchImg{aspect-ratio:16/10}
-}
-
-/* --- Rail shop fill (keeps right column visually complete) --- */
-.shopFill{flex:1;display:flex;flex-direction:column}
-.shopFillCard{flex:1;display:flex;flex-direction:column;text-decoration:none;color:inherit;
-  border:1px solid rgba(0,0,0,0.10);border-radius:16px;background:rgba(255,255,255,0.72);
-  overflow:hidden}
-.shopFillCard:hover{background:#fff}
-.shopFillImg{flex:1;min-height:220px;overflow:hidden}
-.shopFillImg img{width:100%;height:100%;object-fit:cover;display:block}
-.shopFillMeta{padding:12px;display:flex;flex-direction:column;gap:4px}
-.shopFillMeta strong{font-size:13px;line-height:1.25}
-.shopFillMeta span{font-size:12px;opacity:.78;line-height:1.25}
-
-
-/* --- Desktop alignment tweaks --- */
-@media (min-width: 900px){
-  .contentGrid > .rail{height:100%}
-  .rail{height:100%}
-  .contentGrid .article > h2:first-child{margin-top:0}
-}
-
-
-
-
-</style>
+  <script defer="" src="/assets/js/site-config.js"></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -226,279 +82,115 @@
 <div class="container">
 <div data-current-lang="es" id="siteHeader"></div><nav aria-label="Selector de idioma" class="rawLangLinks"><a data-analytics-content-group="blog" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/blog/best-time-to-see-toucans-in-mindo/" hreflang="en" lang="en">English</a>
 <a aria-current="page" data-analytics-content-group="blog" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/blog/mejor-epoca-para-ver-tucanes-en-mindo/" hreflang="es" lang="es">Español</a></nav>
-<main aria-label="Blog article" class="card blogPage">
-<div class="blogWrap">
-<nav aria-label="Breadcrumb" class="crumbs">
-<a data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Inicio" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/">Inicio</a>
-<span aria-hidden="true">/</span>
-<a data-analytics-content-group="blog" data-analytics-event="outbound_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Blog" data-analytics-link-type="external" data-analytics-link-url="https://blog.mindobirdwatching.com/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="https://blog.mindobirdwatching.com/" rel="noopener" target="_blank">Blog</a>
-<span aria-hidden="true">/</span>
-<span>Mejor época para ver tucanes en Mindo, Ecuador</span>
-</nav>
-<section aria-label="Article hero" class="heroGrid">
-<div class="heroCard">
-<div class="heroMedia">
-<img alt="Avistamiento de aves en el bosque nublado de Mindo" decoding="async" loading="eager" src="/assets/images/pages/birding/mbw_birding_toucans_hero_02.jpg"/>
-</div>
-<div class="heroMeta">
-<span class="kicker">Guía práctica</span>
-<span aria-label="Tiempo de lectura" class="pill">8 min de lectura</span>
-</div>
-<div class="heroCardInner">
-<h1 class="heroTitle">Mejor época para ver tucanes en Mindo, Ecuador</h1>
-<p class="heroLead">
-                Si los tucanes son tu prioridad en Mindo, el horario importa más que la suerte.
-                Aquí tienes una estrategia clara y realista para encontrarlos en las horas correctas,
-                en los hábitats adecuados y con expectativas realistas. Para una visión más amplia de la ruta, empieza con la <a data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="guía de avistamiento en Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/guia-avistamiento-aves-mindo/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/guia-avistamiento-aves-mindo/">guía de avistamiento en Mindo</a>.
-              </p>
-<div aria-label="Primary actions" class="ctaRow">
-<a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
-<a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver opciones de tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/" data-analytics-location="article_tour_link" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/">Ver opciones de tour</a>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Explorar aves" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/galeria/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/galeria/">Explorar aves</a>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="contact_method_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Hacer una consulta" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/contacto/" data-analytics-location="article_contact_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/contacto/">Hacer una consulta</a>
-</div>
-<div aria-label="La respuesta rápida" class="quickAnswer">
-<h2>La respuesta rápida</h2>
-<ul>
-<li><strong>Mejor hora del día:</strong> temprano en la mañana (primeras 2 a 3 horas después del amanecer)</li>
-<li><strong>Hábitats más confiables:</strong> bordes de bosque, claros tranquilos y árboles frutales activos</li>
-<li><strong>Mejor enfoque:</strong> caminar lento, escuchar primero y luego escanear el dosel</li>
-</ul>
-</div>
-<div aria-label="Resumen de estacionalidad" class="seasonSnap">
-<div class="snapHead">
-<h3 class="snapTitle">Resumen de estacionalidad</h3>
-<a class="snapJump" data-analytics-content-group="blog" data-analytics-event="toc_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ir a los detalles" data-analytics-link-type="anchor" data-analytics-link-url="#seasonality" data-analytics-location="article_toc" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#seasonality">Ir a los detalles</a>
-</div>
-<ul class="snapList">
-<li><strong>Todo el año:</strong> puedes ver tucanes durante todo el año en Mindo.</li>
-<li><strong>Mejores mañanas:</strong> las horas tempranas concentran alimentación y movimiento.</li>
-<li><strong>Factor clave:</strong> cuando hay fruta activa, los tucanes pueden aparecer varias veces.</li>
-</ul>
-</div>
-</div>
-</div>
-<aside aria-label="Columna derecha" class="rail">
-<div class="videoCard">
-<div class="videoFrame">
-<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" data-analytics-content-group="blog" data-analytics-event="video_play_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Video en campo" data-analytics-location="article_right_rail_video" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/4B0u1MlcwA8" title="Video en campo"></iframe>
-</div>
-</div>
-<div aria-label="En esta página" class="tocCard sticky">
-<div class="tocHead">
-<h3>En esta página</h3>
-<span class="pill">Salta</span>
-</div>
-<ol>
-<li><a data-analytics-content-group="blog" data-analytics-event="toc_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Estacionalidad en Mindo" data-analytics-link-type="anchor" data-analytics-link-url="#seasonality" data-analytics-location="article_toc" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#seasonality">Estacionalidad en Mindo</a></li>
-<li><a data-analytics-content-group="blog" data-analytics-event="toc_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Dónde buscar" data-analytics-link-type="anchor" data-analytics-link-url="#where" data-analytics-location="article_toc" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#where">Dónde buscar</a></li>
-<li><a data-analytics-content-group="blog" data-analytics-event="toc_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Cómo observar tucanes" data-analytics-link-type="anchor" data-analytics-link-url="#spot" data-analytics-location="article_toc" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#spot">Cómo observar tucanes</a></li>
-<li><a data-analytics-content-group="blog" data-analytics-event="toc_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Desafío: Cinco Tucanes" data-analytics-link-type="anchor" data-analytics-link-url="#quest" data-analytics-location="article_toc" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#quest">Desafío: Cinco Tucanes</a></li>
-<li><a data-analytics-content-group="blog" data-analytics-event="toc_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Preguntas frecuentes" data-analytics-link-type="anchor" data-analytics-link-url="#faq" data-analytics-location="article_toc" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#faq">Preguntas frecuentes</a></li>
-</ol>
-<div class="railCtas" style="margin-top:12px;">
-<a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="contact_method_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Hacer una consulta" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/contacto/" data-analytics-location="article_contact_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/contacto/">Hacer una consulta</a>
-<a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Planifica tu viaje" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/planifica-tu-viaje/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/planifica-tu-viaje/">Planifica tu viaje</a>
-</div>
-</div>
-</aside>
+<main aria-label="Blog article" class="card blogPage blogArticleV2">
+<nav aria-label="Breadcrumb" class="blogBreadcrumb"><a data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Inicio" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/">Inicio</a><span aria-hidden="true">/</span><a data-analytics-content-group="blog" data-analytics-event="outbound_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Blog" data-analytics-link-type="external" data-analytics-link-url="https://blog.mindobirdwatching.com/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="https://blog.mindobirdwatching.com/" rel="noopener" target="_blank">Blog</a><span aria-hidden="true">/</span><span>Mejor época para ver tucanes en Mindo</span></nav>
+<section class="blogHeroV2" aria-label="Article hero">
+  <div class="blogHeroCopy">
+    <p class="blogKicker">Guía de tucanes en Mindo</p>
+    <h1>Mejor época para ver tucanes en Mindo, Ecuador</h1>
+    <p class="blogLead">Si los tucanes son tu prioridad en Mindo, el horario importa más que la suerte. Usa esta guía para elegir la mejor hora del día, el hábitat correcto y el siguiente paso más útil para ver tucanes en el bosque nublado.</p>
+    <div class="blogHeroBadges"><span>8 min de lectura</span><span>Mindo, Ecuador</span><span>Tucanes</span></div>
+    <div class="ctaRow blogHeroActions"><a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
+<a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver opciones de tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/">Ver opciones de tour</a>
+<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Hacer una consulta" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/contacto/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/contacto/">Hacer una consulta</a></div>
+  </div>
+  <figure class="blogHeroMedia">
+    <img alt="Tucanes y aves del bosque nublado de Mindo, Ecuador" decoding="async" loading="eager" src="/assets/images/pages/birding/mbw_birding_toucans_hero_02.jpg"/>
+    <figcaption>Planificación de ruta para tucanes en bosque nublado</figcaption>
+  </figure>
 </section>
-<section aria-label="Article content" class="contentGrid">
-<article aria-label="Main article" class="article">
-<h2 id="seasonality">Estacionalidad en Mindo</h2>
-<p>
-              Mindo está en el bosque nublado del Chocó Andino, donde los ciclos de fructificación, la neblina y los patrones de lluvia
-              influyen en dónde se alimentan las aves. Puedes ver tucanes todo el año, pero los mejores resultados llegan cuando alíneas
-              tus mañanas con zonas activas de alimentación.
-            </p>
-<p>
-              En periodos de lluvia, la actividad puede arrancar un poco más tarde. En mañanas más despejadas, las aves suelen alimentarse
-              temprano y luego ponerse más silenciosas. La clave es mantener tus primeras dos horas enfocadas y eficientes. Si quieres comparar esa lógica de horarios con comportamiento de exhibición, revisa también nuestra
-              <a data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="guía del lek del gallo de la peña" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/blog/comportamiento-del-lek-del-gallo-de-la-pena/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/blog/comportamiento-del-lek-del-gallo-de-la-pena/">guía del lek del gallo de la peña</a>.
-            </p>
-<h3 id="where">Dónde buscar</h3>
-<ul>
-<li><strong>Borde de bosque:</strong> aves del dosel que se mueven entre árboles y aire abierto.</li>
-<li><strong>Claros tranquilos:</strong> buen lugar para escuchar llamadas y luego escanear.</li>
-<li><strong>Árboles frutales:</strong> cuando la fruta está activa, los tucanes pueden aparecer repetidamente.</li>
-</ul>
-<figure aria-label="Foto de tucán" class="inlinePhoto">
-<img alt="Tucán en el bosque nublado" decoding="async" loading="lazy" src="/assets/images/pages/mbw_assets_pages_about_us_06.jpg"/>
-</figure>
-<p class="caption">Imagen de referencia para avistamiento de tucanes en el bosque nublado de Mindo.</p>
-<h2 id="spot">Cómo observar tucanes</h2>
-<p>
-              El error más común es caminar demásiado rápido. En el bosque nublado, los tucanes pueden llamar fuerte por encima del dosel
-              y luego quedarse en silencio. Baja el ritmo, escanea los bordes y deja que el bosque se calme. Para un ritmo de observación distinto, más centrado en actividad cercana, compáralo con nuestra
-              <a data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="guía de colibríes" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/blog/colibries-de-mindo/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/blog/colibries-de-mindo/">guía de colibríes</a>.
-            </p>
-<ol>
-<li>Escucha primero. Muchos avistamientos comienzan con una llamada arriba.</li>
-<li>Escanea las líneas del dosel. Mira el borde superior donde los árboles se encuentran con el cielo.</li>
-<li>Busca movimiento. Los tucanes saltan y planean entre ramás.</li>
-<li>Vuelve a revisar el mismo árbol frutal. A menudo regresan.</li>
-</ol>
-<div aria-label="Consejo de campo" class="tips" style="margin-top:12px;">
-<strong>Consejo de campo:</strong> Si quieres un objetivo divertido para tu viaje, intenta ver los tucanes clásicos de la región.
-              La especie exacta depende de tu ruta y condiciones, pero este desafío mantiene tus mañanas enfocadas y memorables.
-            </div>
-<h2 id="quest">Desafío: Cinco Tucanes</h2>
-<div aria-label="Next steps cards" class="cards3">
-<div class="miniCard">
-<h3>Desafío: Cinco Tucanes</h3>
-<p>Nuestro reto simple para tu viaje. Ideal para familias y fotógrafos.</p>
-<a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
-</div>
-<div class="miniCard">
-<h3>Tours</h3>
-<p>Perfecto si tienes poco tiempo y quieres birding guíado con una ruta enfocada y flexible.</p>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Explorar tours" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/" data-analytics-location="article_tour_link" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/">Explorar tours</a>
-</div>
-<div class="miniCard">
-<h3>Guía de Mindo</h3>
-<p>Usa la guía principal para ordenar tus mañanas, miradores y expectativas de especies.</p>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver guía" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/planifica-tu-viaje/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/planifica-tu-viaje/">Ver guía</a>
-</div>
-</div>
-<h2 id="faq">Preguntas frecuentes</h2>
-<div class="miniCard" style="margin-top:10px;">
-<h3>¿Puedo ver tucanes sin guía?</h3>
-<p>
-                Sí, pero las probabilidades mejoran con conocimiento local de rutas. Si tu viaje es corto, un guía es la forma más rápida
-                de convertir mañanas en avistamientos.
-              </p>
-<h3>¿La temporada de lluvia lo complica?</h3>
-<p>
-                No necesariamente. Algunas mañanas lluviosas son excelentes. La clave es tener horario flexible y elegir rutas con cobertura.
-              </p>
-<h3>¿Necesito binoculares?</h3>
-<p>Muy recomendados. Podemos ayudarte si no tienes los tuyos.</p>
-</div>
-<div aria-label="Planifica tu viaje de avistamiento" class="miniCard" style="margin-top:14px;">
-<h3>Planifica tu viaje de avistamiento</h3>
-<p>Convierte esta guía de tucanes en una ruta práctica con la página correcta de birding, la guía de viaje y las opciones más amplias de Ecuador.</p>
-<div aria-label="Enlaces para planificar el viaje de avistamiento" class="cards3">
-<div class="miniCard">
-<h3>Tours de avistamiento en Mindo</h3>
-<p>Ve la página principal de tours privados de birding con la lógica local correcta, el ritmo adecuado y la mejor ventana de observación.</p>
-<a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver tours" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/" data-analytics-location="article_tour_link" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/">Ver tours</a>
-</div>
-<div class="miniCard">
-<h3>Guía de avistamiento en Mindo</h3>
-<p>Usa la guía principal para comparar rutas, hábitats, logística y expectativas de especies antes de tu viaje.</p>
-<a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver guía de Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/guia-avistamiento-aves-mindo/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/guia-avistamiento-aves-mindo/">Ver guía de Mindo</a>
-</div>
-<div class="miniCard">
-<h3>Tours de aves en Ecuador</h3>
-<p>Compara Mindo con itinerarios más amplios de Ecuador si estás planeando una ruta de birding más larga.</p>
-<a class="btn" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Explorar birding en Ecuador" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/" data-analytics-location="article_tour_link" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/">Explorar birding en Ecuador</a>
-</div>
-</div>
-</div>
-<div aria-label="Next page links" class="nextRow">
-<div class="miniCard">
-<h3>Planifícalo rápido</h3>
-<p>¿Viaje corto? Usa un marco simple para que tus mañanas rindan.</p>
-<div class="ctaRow" style="margin:10px 0 0;">
-<a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="contact_method_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Hacer una consulta" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/contacto/" data-analytics-location="article_contact_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/contacto/">Hacer una consulta</a>
-</div>
-</div>
-<div class="miniCard">
-<h3>Siguiente lectura</h3>
-<ol style="margin:0; padding-left:18px;">
-<li><a data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Comportamiento del lek del gallo de la peña" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/blog/comportamiento-del-lek-del-gallo-de-la-pena/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/blog/comportamiento-del-lek-del-gallo-de-la-pena/">Comportamiento del lek del gallo de la peña</a></li>
-<li><a data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Colibríes de Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/blog/colibries-de-mindo/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/blog/colibries-de-mindo/">Colibríes de Mindo</a></li>
-<li><a data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Tangaras de Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/blog/tangaras-de-mindo/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/blog/tangaras-de-mindo/">Tangaras de Mindo</a></li>
-</ol>
-</div>
-<div class="miniCard">
-<h3>Quieres la ruta más fácil?</h3>
-<p>Cuéntanos tus fechas y objetivos. Te recomendaremos la lógica de ruta y la mejor hora de salida para tu viaje.</p>
-<div class="ctaRow" style="margin:10px 0 0;">
-<a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver opciones de tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/" data-analytics-location="article_tour_link" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/">Ver opciones de tour</a>
-</div>
-</div>
-</div>
+<section class="blogQuickAnswer" aria-label="Respuesta rápida">
+  <div><span class="blogKicker">Respuesta rápida</span><h2>¿Cuál es la mejor hora para ver tucanes en Mindo?</h2></div>
+  <p>La mejor hora para ver tucanes en Mindo es temprano en la mañana, especialmente cerca de árboles con fruta, bordes de bosque y rutas tranquilas de bosque nublado. Se pueden observar durante todo el año, pero las probabilidades mejoran cuando combinas horario local, actividad reciente, observación paciente y una ruta que cambia de elevación.</p>
+</section>
+<section class="blogSection" id="best-time">
+  <div class="blogSectionHead"><h2>Mejor época para ver tucanes en Mindo</h2><p>Combina horario, alimento y clima.</p></div>
+  <div class="blogInfoGrid three"><article class="blogInfoCard"><h3>La mañana es más fuerte</h3><p>Empieza cerca del amanecer, cuando los tucanes y bandadas mixtas suelen estar más activos, vocales y fáciles de detectar.</p></article>
+<article class="blogInfoCard"><h3>Los árboles con fruta importan</h3><p>Los tucanes se mueven con el alimento. Una buena ruta se adapta a árboles con fruta, bordes de bosque y actividad reciente.</p></article>
+<article class="blogInfoCard"><h3>El clima cambia el plan</h3><p>La lluvia ligera es normal en el bosque nublado. La lluvia fuerte puede bajar la actividad, pero un horario flexible ayuda mucho.</p></article></div>
+</section>
+<section class="blogSplitFeature" id="where">
+  <div>
+    <h2>Dónde buscar tucanes</h2>
+    <p>La mejor ruta suele combinar bordes de bosque, miradores, acceso a comederos cuando aplica y senderos de bosque nublado. No pienses en un solo lugar mágico. Piensa en una secuencia tranquila de la mañana.</p>
+    <ul class="blogCheckList">
+      <li>Empieza por bordes de bosque y árboles con fruta.</li>
+      <li>Muévete con calma entre elevaciones y miradores.</li>
+      <li>Deja tiempo para colibríes, tangaras y bandadas mixtas.</li>
+    </ul>
+  </div>
+  <div class="blogVideoCard">
+    <div class="blogVideoFrame"><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/HTOa3LmwjEU" title="Tucanes y aves del bosque nublado en Mindo"></iframe></div>
+  </div>
+</section>
+<section class="blogSection" id="species">
+  <div class="blogSectionHead"><h2>Tucanes y aves del bosque nublado que puedes encontrar</h2><p>Ejemplos. La naturaleza cambia cada día.</p></div>
+  <div class="blogSpeciesGrid"><article class="blogSpeciesCard">
+<img alt="Tucán andino piquiplateado" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_plate_billed_01.jpg"/>
+<div class="blogSpeciesCaption"><strong>Tucán andino piquiplateado</strong><span>Tucán grande de altura con una placa distintiva en el pico. Conviene buscarlo en laderas boscosas y miradores tranquilos.</span></div>
 </article>
-<aside aria-label="Desktop rail continuation" class="rail">
-<div aria-label="Desafío: Cinco tucanes" class="tocCard">
-<div class="tocHead">
-<h3>Desafío: Cinco tucanes</h3>
-<span class="pill">5 cartas</span>
-</div>
-<div class="questStack" role="list">
-<a aria-label="Tucán andino piquiplateado" class="questCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Tucán andino piquiplateado Gran pico, presencia fuerte" data-analytics-link-type="anchor" data-analytics-link-url="#quest" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#quest" role="listitem">
-<div class="questImg">
-<img alt="Tucán andino piquiplateado (imagen de referencia)" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_plate_billed_01.jpg"/>
-</div>
-<div class="questMeta">
-<strong>Tucán andino piquiplateado</strong>
-<span>Gran pico, presencia fuerte</span>
-</div>
-</a>
-<a aria-label="Tucán del Chocó" class="questCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Tucán del Chocó Especialista de piedemonte" data-analytics-link-type="anchor" data-analytics-link-url="#quest" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#quest" role="listitem">
-<div class="questImg">
-<img alt="Tucán del Chocó (imagen de referencia)" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_yellow_throated_01.jpg"/>
-</div>
-<div class="questMeta">
-<strong>Tucán del Chocó</strong>
-<span>Especialista de piedemonte</span>
-</div>
-</a>
-<a aria-label="Tucán de garganta amarilla" class="questCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Tucán de garganta amarilla Explorador del dosel alto" data-analytics-link-type="anchor" data-analytics-link-url="#quest" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#quest" role="listitem">
-<div class="questImg">
-<img alt="Tucán de garganta amarilla (imagen de referencia)" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_choco_toucan_01.jpg"/>
-</div>
-<div class="questMeta">
-<strong>Tucán de garganta amarilla</strong>
-<span>Explorador del dosel alto</span>
-</div>
-</a>
-<a aria-label="Tucáncillo culirrojo" class="questCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Arasarí piquipálido Rápido, furtivo y verde" data-analytics-link-type="anchor" data-analytics-link-url="#quest" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#quest" role="listitem">
-<div class="questImg">
-<img alt="Arasarí piquipálido (imagen de referencia)" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_collared_02.jpg"/>
-</div>
-<div class="questMeta">
-<strong>Arasarí piquipálido</strong>
-<span>Rápido, furtivo y verde</span>
-</div>
-</a>
-<a aria-label="Emerald Toucanet" class="questCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Tucancillo culirrojo Bordes y árboles frutales" data-analytics-link-type="anchor" data-analytics-link-url="#quest" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="#quest" role="listitem">
-<div class="questImg">
-<img alt="Tucancillo culirrojo (imagen de referencia)" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_crimson.jpg"/>
-</div>
-<div class="questMeta">
-<strong>Tucáncillo culirrojo</strong>
-<span>Bordes y árboles frutales</span>
-</div>
-</a>
-</div>
-<div class="railCtas" style="margin-top:12px;">
-<a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="article_booking_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
-<a class="btn ghost" data-analytics-content-group="blog" data-analytics-event="internal_link_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver Tucanes" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/birding/tucanes-de-mindo/" data-analytics-location="article_body" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/birding/tucanes-de-mindo/">Ver Tucanes</a>
-</div>
-</div>
-<div aria-label="Shop" class="tocCard shopFill" style="margin-top:12px;">
-<div class="tocHead">
-<h3>Tienda</h3>
-<span class="pill">Merch</span>
-</div>
-<a aria-label="Tienda de merch de tucanes" class="shopFillCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Apoya el avistamiento de aves local Consigue una camiseta o sticker de tucán" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/shop/" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/shop/">
-<div class="shopFillImg">
-<img alt="Merch de tucanes (imagen de referencia)" decoding="async" loading="lazy" src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_02.jpg"/>
-</div>
-<div class="shopFillMeta">
-<strong>Apoya el avistamiento de aves local</strong>
-<span>Consigue una camiseta o sticker de tucán</span>
-</div>
-</a>
-</div>
-</aside>
+<article class="blogSpeciesCard">
+<img alt="Tucán del Chocó" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_yellow_throated_01.jpg"/>
+<div class="blogSpeciesCaption"><strong>Tucán del Chocó</strong><span>Objetivo de piedemonte y zonas más bajas que suele moverse cerca de árboles con fruta y bordes de bosque.</span></div>
+</article>
+<article class="blogSpeciesCard">
+<img alt="Tucán de garganta amarilla" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_choco_toucan_01.jpg"/>
+<div class="blogSpeciesCaption"><strong>Tucán de garganta amarilla</strong><span>Especie de dosel que puede aparecer en bosque maduro, árboles con fruta y rutas de avistamiento más amplias.</span></div>
+</article>
+<article class="blogSpeciesCard">
+<img alt="Arasarí piquipálido" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_collared_02.jpg"/>
+<div class="blogSpeciesCaption"><strong>Arasarí piquipálido</strong><span>Pariente de los tucanes, rápido y social. Observa grupos mixtos y árboles frutales, especialmente en mañanas activas.</span></div>
+</article>
+<article class="blogSpeciesCard">
+<img alt="Tucancillo culirrojo" decoding="async" loading="lazy" src="/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_crimson.jpg"/>
+<div class="blogSpeciesCaption"><strong>Tucancillo culirrojo</strong><span>Tucancillo verde más pequeño de bordes de bosque nublado y árboles con fruta. La paciencia ayuda mucho.</span></div>
+</article>
+<article class="blogSpeciesCard">
+<img alt="Aves mixtas del bosque nublado" decoding="async" loading="lazy" src="/assets/images/pages/birding/mbw_birding_toucans_hero_02.jpg"/>
+<div class="blogSpeciesCaption"><strong>Aves mixtas del bosque nublado</strong><span>Tangaras, colibríes, barbudos, trogones y bandadas mixtas suelen compartir las rutas más productivas.</span></div>
+</article></div>
 </section>
-</div>
+<section class="blogSection" id="plan">
+  <div class="blogSectionHead"><h2>Cómo aumentar tus probabilidades</h2><p>Checklist práctico de campo.</p></div>
+  <div class="blogInfoGrid four"><article class="blogInfoCard"><h3>Sal temprano</h3><p>Planifica la búsqueda de tucanes antes de que el bosque se vuelva más ruidoso y baje la actividad.</p></article>
+<article class="blogInfoCard"><h3>Usa una ruta flexible</h3><p>Muévete entre bordes, senderos, árboles con fruta y miradores en vez de esperar demasiado en un solo punto.</p></article>
+<article class="blogInfoCard"><h3>Lleva óptica</h3><p>Los binoculares ayudan con aves de dosel. La cámara funciona mejor con tiempo, distancia y una ruta paciente.</p></article>
+<article class="blogInfoCard"><h3>Considera un guía</h3><p>Un guía local mejora identificación, horario, decisiones de ruta y la probabilidad de conectar con aves activas.</p></article></div>
+</section>
+<section class="blogSection" id="tours">
+  <div class="blogSectionHead"><h2>Mejores opciones de tour para tucanes</h2><p>Elige según tiempo, aves objetivo y ritmo.</p></div>
+  <div class="blogTourGrid"><article class="blogTourCard"><h3>Búsqueda de Cinco Tucanes</h3><p>Ruta enfocada para viajeros que quieren varios objetivos de tucanes, actividad al amanecer y un plan fuerte de día completo.</p><a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Ver detalles del tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/" data-analytics-location="article_tour_link" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/">Ver detalles del tour</a></article>
+<article class="blogTourCard"><h3>Tour personalizado privado</h3><p>Mejor si tienes aves objetivo, metas de fotografía, poco tiempo o quieres una ruta privada según actividad reciente.</p><a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Planificar ruta privada" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/tour-personalizado-privado/" data-analytics-location="article_tour_link" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/tour-personalizado-privado/">Planificar ruta privada</a></article></div>
+</section>
+<section class="blogSection" id="faq">
+  <div class="blogSectionHead"><h2>Preguntas frecuentes sobre tucanes</h2><p>Respuestas breves para planificar.</p></div>
+  <div class="blogFaqGrid"><article class="blogFaqCard"><h3>¿Puedo ver tucanes sin guía?</h3><p>Sí, pero un guía mejora horario, elección de hábitat, identificación y la probabilidad de encontrar aves activas en poco tiempo.</p></article>
+<article class="blogFaqCard"><h3>¿Hay un mejor mes?</h3><p>Los tucanes se pueden ver todo el año. Las condiciones, árboles con fruta, clima y ruta suelen importar más que elegir un solo mes.</p></article>
+<article class="blogFaqCard"><h3>¿A qué hora debo empezar?</h3><p>Temprano en la mañana es mejor. Conviene estar en el hábitat cerca del amanecer o poco después, especialmente si los tucanes son prioridad.</p></article>
+<article class="blogFaqCard"><h3>¿Es bueno para fotógrafos?</h3><p>Sí. Una ruta privada y más lenta ayuda con luz, posición, observación tranquila y paradas sin apuro.</p></article></div>
+</section>
+<section class="blogSection" id="related">
+  <div class="blogSectionHead"><h2>Continúa planificando</h2><p>Enlaces internos del mismo idioma para el siguiente paso.</p></div>
+  <div class="blogRelatedGrid"><a class="blogRelatedCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Guía de avistamiento en Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/guia-avistamiento-aves-mindo/" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/guia-avistamiento-aves-mindo/"><strong>Guía de avistamiento en Mindo</strong><span>Abrir página de planificación</span></a>
+<a class="blogRelatedCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Tours de avistamiento en Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours/" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/tours/"><strong>Tours de avistamiento en Mindo</strong><span>Abrir página de planificación</span></a>
+<a class="blogRelatedCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Tucanes de Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/birding/tucanes-de-mindo/" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/birding/tucanes-de-mindo/"><strong>Tucanes de Mindo</strong><span>Abrir página de planificación</span></a>
+<a class="blogRelatedCard" data-analytics-content-group="blog" data-analytics-event="related_content_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Aves de Mindo" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/aves-de-mindo/" data-analytics-location="article_related_cards" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/aves-de-mindo/"><strong>Aves de Mindo</strong><span>Abrir página de planificación</span></a></div>
+</section>
+<section class="finalCta blogFinalCta" aria-label="Llamado final">
+  <div class="finalGrid">
+    <div class="finalLeft">
+      <p class="finalTitle">¿Listo para planificar una mañana de tucanes en Mindo?</p>
+      <p>Compártenos tus fechas, aves objetivo, metas de fotografía y tiempo disponible. Podemos recomendar una ruta realista enfocada en tucanes según condiciones locales y tu ritmo.</p>
+      <div class="finalActions">
+        <a class="btn primary" data-analytics-content-group="blog" data-analytics-event="article_cta_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Reservar un tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="final_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/reservar-tour/">Reservar un tour</a>
+        <a class="btn secondary" data-analytics-content-group="blog" data-analytics-event="contact_method_click" data-analytics-guide="best_time_to_see_toucans" data-analytics-label="Hacer una consulta" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/contacto/" data-analytics-location="final_cta" data-analytics-page-language="es" data-analytics-page-type="article_page" data-analytics-region="mindo" href="/es/contacto/">Hacer una consulta</a>
+      </div>
+    </div>
+    <aside class="nextSteps" aria-label="Qué pasa después"><h3>Qué pasa después</h3><ol><li>Confirmamos tu fecha y plan de recogida.</li>
+<li>Elegimos una ruta según actividad reciente y clima.</li>
+<li>Guiamos la mañana con calma, con tiempo para tucanes y otras aves del bosque nublado.</li></ol></aside>
+  </div>
+</section>
 </main>
 <div id="siteFooter"></div>
 </div>
