@@ -13565,3 +13565,77 @@ a.blogSpeciesCard{display:block;text-decoration:none;color:inherit;}
 a.blogSpeciesCard:hover{background:#fff;}
 .blogSpeciesGrid.sixCards .blogSpeciesCard img{width:100%;height:210px;object-fit:cover;object-position:center center;}
 @media(max-width:560px){.blogSpeciesGrid.sixCards .blogSpeciesCard img{height:220px;}}
+
+/* =========================================
+   Travel Guide Route/Link Card Support
+   Pair 093 Quito to Mindo update
+   Keeps route decision cards styled globally and forces balanced 4x2 link grids on desktop.
+   ========================================= */
+body[data-page-type="travel_guide"] .decisionGrid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-page-type="travel_guide"] .decisionCard{
+  display:flex;
+  flex-direction:column;
+  min-height:100%;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.72);
+  box-shadow:var(--shadow);
+}
+
+body[data-page-type="travel_guide"] .decisionCard h3{
+  margin:0 0 8px;
+  font-size:18px;
+  line-height:1.18;
+}
+
+body[data-page-type="travel_guide"] .decisionCard p{
+  margin:0 0 10px;
+  color:var(--muted);
+  font-size:13.5px;
+  line-height:1.58;
+}
+
+body[data-page-type="travel_guide"] .decisionCard p:last-child{
+  margin-bottom:0;
+}
+
+body[data-page-type="travel_guide"] .decisionCard .ctaRow{
+  margin-top:auto;
+}
+
+body[data-page-type="travel_guide"] .internalLinks.balancedLinks{
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  align-items:stretch;
+}
+
+body[data-page-type="travel_guide"] .internalLinks.balancedLinks .linkCard{
+  display:flex;
+  flex-direction:column;
+  min-height:132px;
+}
+
+body[data-page-type="travel_guide"] .internalLinks.balancedLinks .linkCard span{
+  margin-top:2px;
+}
+
+@media (max-width:1000px){
+  body[data-page-type="travel_guide"] .decisionGrid,
+  body[data-page-type="travel_guide"] .internalLinks.balancedLinks{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width:560px){
+  body[data-page-type="travel_guide"] .decisionGrid,
+  body[data-page-type="travel_guide"] .internalLinks.balancedLinks{
+    grid-template-columns:1fr;
+  }
+}
+
