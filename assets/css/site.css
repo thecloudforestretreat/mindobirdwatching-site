@@ -15403,34 +15403,93 @@ body[data-page-content-group="quito_mindo_adventure_day_trip"] .ctaBand .btn{
 }
 
 /* =========================================================
-   Global three-card decision grid modifier
-   Use with: <div class="decisionGrid decisionGrid--3">
-   Purpose: keep 3 planning cards evenly spaced, while preserving the
-   sitewide rule that card buttons stay aligned at the same bottom edge.
+   MBW global card/button alignment lock
+   Added 2026-07-03
+   Purpose:
+   - Keep action buttons aligned at the same distance from the card bottom.
+   - Support 3-card decision grids without leaving an empty fourth column.
+   - Preserve existing page-level layouts and only affect known MBW card systems.
    ========================================================= */
-.decisionGrid.decisionGrid--3{
+
+.cards3,
+.nextRow,
+.decisionGrid,
+.internalLinks,
+.linkGrid,
+.quickGrid,
+.faqGrid{
+  align-items: stretch;
+}
+
+.cards3 .miniCard,
+.nextRow .miniCard,
+.decisionGrid .decisionCard,
+body[data-page-type="birding_guide"] .decisionCard,
+body[data-page-type="birding_guide_page"] .decisionCard,
+body[data-page-type="seo_landing_page"] .decisionCard,
+body[data-page-type="travel_guide"] .decisionCard{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.cards3 .miniCard .ctaRow,
+.nextRow .miniCard .ctaRow,
+.decisionGrid .decisionCard .ctaRow,
+.decisionGrid .decisionCard .ctaRow.alignBottom,
+body[data-page-type="birding_guide"] .decisionCard .ctaRow,
+body[data-page-type="birding_guide_page"] .decisionCard .ctaRow,
+body[data-page-type="seo_landing_page"] .decisionCard .ctaRow,
+body[data-page-type="travel_guide"] .decisionCard .ctaRow{
+  margin-top: auto !important;
+  padding-top: 12px;
+}
+
+.cards3 .miniCard > a.btn,
+.nextRow .miniCard > a.btn,
+.decisionGrid .decisionCard > a.btn,
+body[data-page-type="birding_guide"] .decisionCard > a.btn,
+body[data-page-type="birding_guide_page"] .decisionCard > a.btn,
+body[data-page-type="seo_landing_page"] .decisionCard > a.btn,
+body[data-page-type="travel_guide"] .decisionCard > a.btn{
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.decisionGrid.decisionGrid--3,
+body[data-page-type="birding_guide"] .decisionGrid.decisionGrid--3,
+body[data-page-type="birding_guide_page"] .decisionGrid.decisionGrid--3,
+body[data-page-type="seo_landing_page"] .decisionGrid.decisionGrid--3,
+body[data-page-type="travel_guide"] .decisionGrid.decisionGrid--3{
   grid-template-columns: repeat(3, minmax(0, 1fr));
   justify-content: stretch;
 }
 
-.decisionGrid.decisionGrid--3 .decisionCard{
+.decisionGrid.decisionGrid--3 .decisionCard,
+body[data-page-type="birding_guide"] .decisionGrid.decisionGrid--3 .decisionCard,
+body[data-page-type="birding_guide_page"] .decisionGrid.decisionGrid--3 .decisionCard,
+body[data-page-type="seo_landing_page"] .decisionGrid.decisionGrid--3 .decisionCard,
+body[data-page-type="travel_guide"] .decisionGrid.decisionGrid--3 .decisionCard{
   min-height: 100%;
 }
 
-.decisionGrid.decisionGrid--3 .decisionCard .ctaRow,
-.decisionGrid.decisionGrid--3 .decisionCard .ctaRow.alignBottom{
-  margin-top: auto;
-  padding-top: 12px;
-}
-
 @media (max-width: 900px){
-  .decisionGrid.decisionGrid--3{
+  .decisionGrid.decisionGrid--3,
+  body[data-page-type="birding_guide"] .decisionGrid.decisionGrid--3,
+  body[data-page-type="birding_guide_page"] .decisionGrid.decisionGrid--3,
+  body[data-page-type="seo_landing_page"] .decisionGrid.decisionGrid--3,
+  body[data-page-type="travel_guide"] .decisionGrid.decisionGrid--3{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px){
-  .decisionGrid.decisionGrid--3{
+  .decisionGrid.decisionGrid--3,
+  body[data-page-type="birding_guide"] .decisionGrid.decisionGrid--3,
+  body[data-page-type="birding_guide_page"] .decisionGrid.decisionGrid--3,
+  body[data-page-type="seo_landing_page"] .decisionGrid.decisionGrid--3,
+  body[data-page-type="travel_guide"] .decisionGrid.decisionGrid--3{
     grid-template-columns: 1fr;
   }
 }
+
