@@ -15401,3 +15401,36 @@ body[data-page-content-group="quito_mindo_adventure_day_trip"] .ctaBand .btn{
     min-height:260px;
   }
 }
+
+/* =========================================================
+   Global three-card decision grid modifier
+   Use with: <div class="decisionGrid decisionGrid--3">
+   Purpose: keep 3 planning cards evenly spaced, while preserving the
+   sitewide rule that card buttons stay aligned at the same bottom edge.
+   ========================================================= */
+.decisionGrid.decisionGrid--3{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-content: stretch;
+}
+
+.decisionGrid.decisionGrid--3 .decisionCard{
+  min-height: 100%;
+}
+
+.decisionGrid.decisionGrid--3 .decisionCard .ctaRow,
+.decisionGrid.decisionGrid--3 .decisionCard .ctaRow.alignBottom{
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+@media (max-width: 900px){
+  .decisionGrid.decisionGrid--3{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px){
+  .decisionGrid.decisionGrid--3{
+    grid-template-columns: 1fr;
+  }
+}
