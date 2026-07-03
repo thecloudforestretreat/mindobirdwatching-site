@@ -7,6 +7,50 @@
     window.dispatchEvent(new CustomEvent("mbw_analytics_event", { detail: { event: eventName, params: params } }));
   }
 
+  function setHeaderLangLink(link, href, current) {
+    if (!link || !href) return;
+    link.setAttribute("href", href);
+    if (current) {
+      link.setAttribute("aria-current", "page");
+      link.classList.add("is-active");
+    } else {
+      link.removeAttribute("aria-current");
+      link.classList.remove("is-active");
+    }
+  }
+
+  function syncHeaderLanguageLinks(headerHost) {
+    if (!headerHost) return;
+    var currentLang = (headerHost.getAttribute("data-current-lang") || document.documentElement.lang || "en").toLowerCase();
+    var enHref = headerHost.getAttribute("data-href-en") || "/";
+    var esHref = headerHost.getAttribute("data-href-es") || "/es/";
+    var header = headerHost.querySelector("[data-mbw-header]") || headerHost.querySelector(".topbar") || headerHost;
+
+    if (header && header.setAttribute) header.setAttribute("data-current-lang", currentLang);
+
+    headerHost.querySelectorAll('a[data-lang="en"]').forEach(function (link) {
+      setHeaderLangLink(link, enHref, currentLang === "en");
+    });
+    headerHost.querySelectorAll('a[data-lang="es"]').forEach(function (link) {
+      setHeaderLangLink(link, esHref, currentLang === "es");
+    });
+
+    var footerCurrent = headerHost.querySelector(".menuLangCurrent strong");
+    if (footerCurrent) footerCurrent.textContent = currentLang.toUpperCase();
+
+    headerHost.querySelectorAll(".menuLangSwitch, a[data-lang-switch]").forEach(function (link) {
+      if (currentLang === "es") {
+        link.setAttribute("href", enHref);
+        link.setAttribute("data-lang", "en");
+        link.textContent = "English";
+      } else {
+        link.setAttribute("href", esHref);
+        link.setAttribute("data-lang", "es");
+        link.textContent = "Español";
+      }
+    });
+  }
+
   function loadInclude(id, url) {
     var el = document.getElementById(id);
     if (!el || el.children.length) return;
@@ -14,6 +58,7 @@
       .then(function (res) { return res.ok ? res.text() : ""; })
       .then(function (html) {
         if (html) el.innerHTML = html;
+        if (id === "siteHeader") syncHeaderLanguageLinks(el);
         document.dispatchEvent(new CustomEvent("mbw_include_loaded", { detail: { id: id } }));
       })
       .catch(function () {});
@@ -41,6 +86,12 @@
     loadInclude("siteHeader", "/assets/includes/header.html");
     loadInclude("siteFooter", "/assets/includes/footer.html");
   }
+
+  document.addEventListener("mbw_include_loaded", function (event) {
+    if (event.detail && event.detail.id === "siteHeader") {
+      syncHeaderLanguageLinks(document.getElementById("siteHeader"));
+    }
+  });
 
   document.addEventListener("click", function (event) {
     var filterButton = event.target.closest("[data-filter]");
