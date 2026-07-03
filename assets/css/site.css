@@ -14569,3 +14569,196 @@ body[data-page-location="beginner_birding_guide"] .faqCard{
   .mbwCarouselTrack,
   .wildlifeHeroCarousel.mbwCarousel .wildlifeCarouselTrack{ transition: none; }
 }
+
+/* =========================================
+   MBW Planning Guide UI Alignment Fix - 2026-07-03
+   Scope: planning guide pages only.
+   Goals:
+   - Keep repeated-card buttons pinned to the same baseline.
+   - Keep card rows visually symmetrical.
+   - Simplify final CTA to one clean surface with no nested-background clutter.
+   ========================================= */
+body[data-page-type="planning_guide"] .grid,
+body[data-page-type="planning_guide"] .split,
+body[data-page-type="planning_guide"] .internalLinks,
+body[data-page-type="planning_guide"] .faqGrid{
+  align-items: stretch;
+}
+
+body[data-page-type="planning_guide"] .sectionBox,
+body[data-page-type="planning_guide"] .linkCard,
+body[data-page-type="planning_guide"] .decisionCard,
+body[data-page-type="planning_guide"] .miniCard,
+body[data-page-type="planning_guide"] .faqCard{
+  height: 100%;
+  min-width: 0;
+}
+
+body[data-page-type="planning_guide"] .sectionBox,
+body[data-page-type="planning_guide"] .decisionCard,
+body[data-page-type="planning_guide"] .miniCard{
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-page-type="planning_guide"] .sectionBox .ctaRow,
+body[data-page-type="planning_guide"] .decisionCard .ctaRow,
+body[data-page-type="planning_guide"] .miniCard .ctaRow,
+body[data-page-type="planning_guide"] .sectionBox .ctaRow.alignBottom,
+body[data-page-type="planning_guide"] .decisionCard .ctaRow.alignBottom,
+body[data-page-type="planning_guide"] .miniCard .ctaRow.alignBottom{
+  margin-top: auto;
+  padding-top: 16px;
+  align-items: flex-end;
+}
+
+body[data-page-type="planning_guide"] .sectionBox .ctaRow .btn,
+body[data-page-type="planning_guide"] .decisionCard .ctaRow .btn,
+body[data-page-type="planning_guide"] .miniCard .ctaRow .btn{
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+body[data-page-type="planning_guide"] .linkCard{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+}
+
+body[data-page-type="planning_guide"] .linkCard span{
+  margin-top: auto;
+}
+
+body[data-page-type="planning_guide"] .finalCta{
+  margin-top: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-page-type="planning_guide"] .finalCta .finalGrid{
+  display: grid;
+  grid-template-columns: minmax(0,1.25fr) minmax(280px,.75fr);
+  gap: 18px;
+  align-items: stretch;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.76);
+  box-shadow: var(--shadow);
+}
+
+body[data-page-type="planning_guide"] .finalCta .finalLeft,
+body[data-page-type="planning_guide"] .finalCta .nextSteps{
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+body[data-page-type="planning_guide"] .finalCta .finalLeft{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body[data-page-type="planning_guide"] .finalCta .finalLeft .eyebrow{
+  margin: 0;
+}
+
+body[data-page-type="planning_guide"] .finalCta .finalLeft h2{
+  margin: 0;
+}
+
+body[data-page-type="planning_guide"] .finalCta .finalLeft p:not(.eyebrow){
+  margin: 0;
+  max-width: 72ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+body[data-page-type="planning_guide"] .finalCta .ctaRow{
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+body[data-page-type="planning_guide"] .finalCta .ctaRow .btn{
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+body[data-page-type="planning_guide"] .finalCta .nextSteps{
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 1px solid var(--line);
+  padding-left: 18px;
+}
+
+body[data-page-type="planning_guide"] .finalCta .nextSteps h3{
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+body[data-page-type="planning_guide"] .finalCta .nextSteps ol{
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+body[data-page-type="planning_guide"] .finalCta .nextSteps li{
+  margin: 4px 0;
+}
+
+@media (max-width: 900px){
+  body[data-page-type="planning_guide"] .finalCta .finalGrid{
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  body[data-page-type="planning_guide"] .finalCta .nextSteps{
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 16px;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 560px){
+  body[data-page-type="planning_guide"] .sectionBox .ctaRow,
+  body[data-page-type="planning_guide"] .decisionCard .ctaRow,
+  body[data-page-type="planning_guide"] .miniCard .ctaRow,
+  body[data-page-type="planning_guide"] .finalCta .ctaRow{
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  body[data-page-type="planning_guide"] .sectionBox .ctaRow .btn,
+  body[data-page-type="planning_guide"] .decisionCard .ctaRow .btn,
+  body[data-page-type="planning_guide"] .miniCard .ctaRow .btn,
+  body[data-page-type="planning_guide"] .finalCta .ctaRow .btn{
+    width: 100%;
+  }
+}
