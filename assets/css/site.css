@@ -14571,50 +14571,207 @@ body[data-page-location="beginner_birding_guide"] .faqCard{
 }
 
 /* =========================================
-   MBW Planning Guide UI Alignment Fix - 2026-07-03
-   Scope: planning guide pages only.
-   Goals:
-   - Keep repeated-card buttons pinned to the same baseline.
-   - Keep card rows visually symmetrical.
-   - Simplify final CTA to one clean surface with no nested-background clutter.
+   MBW Pair 090 - Birds of Mindo birding hub layout fix
+   Added 2026-07-03
+   Scope: /birds-of-mindo/ and /es/aves-de-mindo/
+   Purpose: support birding_hub pages that use .hero, .heroMedia,
+   .decisionGrid, .quickGrid, .internalLinks, and split final CTA.
    ========================================= */
-body[data-page-type="planning_guide"] .grid,
-body[data-page-type="planning_guide"] .split,
-body[data-page-type="planning_guide"] .internalLinks,
-body[data-page-type="planning_guide"] .faqGrid{
+body[data-page-type="birding_hub"] .container{
+  width: min(1120px, calc(100% - 32px));
+  margin-inline: auto;
+}
+
+body[data-page-type="birding_hub"] .page.card{
+  margin-top: 18px;
+  padding: clamp(18px, 3vw, 30px);
+  overflow: hidden;
+}
+
+body[data-page-type="birding_hub"] .rawLangLinks{
+  display: none;
+}
+
+body[data-page-type="birding_hub"] .hero{
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+  gap: 20px;
   align-items: stretch;
+  margin: 0 0 24px;
 }
 
-body[data-page-type="planning_guide"] .sectionBox,
-body[data-page-type="planning_guide"] .linkCard,
-body[data-page-type="planning_guide"] .decisionCard,
-body[data-page-type="planning_guide"] .miniCard,
-body[data-page-type="planning_guide"] .faqCard{
-  height: 100%;
+body[data-page-type="birding_hub"] .heroCopy,
+body[data-page-type="birding_hub"] .heroMedia{
   min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.74);
+  box-shadow: var(--shadow);
 }
 
-body[data-page-type="planning_guide"] .sectionBox,
-body[data-page-type="planning_guide"] .decisionCard,
-body[data-page-type="planning_guide"] .miniCard{
+body[data-page-type="birding_hub"] .heroCopy{
+  padding: clamp(20px, 3vw, 30px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+body[data-page-type="birding_hub"] .heroCopy h1{
+  margin: 0;
+  font-size: clamp(36px, 5.2vw, 64px);
+  line-height: .96;
+  letter-spacing: -.035em;
+}
+
+body[data-page-type="birding_hub"] .heroCopy .lead{
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(16px, 1.55vw, 19px);
+  line-height: 1.62;
+}
+
+body[data-page-type="birding_hub"] .pillRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+body[data-page-type="birding_hub"] .pillRow .pill{
+  box-shadow: none;
+  background: rgba(255,255,255,.72);
+}
+
+body[data-page-type="birding_hub"] .heroMedia{
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-body[data-page-type="planning_guide"] .sectionBox .ctaRow,
-body[data-page-type="planning_guide"] .decisionCard .ctaRow,
-body[data-page-type="planning_guide"] .miniCard .ctaRow,
-body[data-page-type="planning_guide"] .sectionBox .ctaRow.alignBottom,
-body[data-page-type="planning_guide"] .decisionCard .ctaRow.alignBottom,
-body[data-page-type="planning_guide"] .miniCard .ctaRow.alignBottom{
+body[data-page-type="birding_hub"] .heroMedia img{
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  flex: 1 1 auto;
+}
+
+body[data-page-type="birding_hub"] .heroMedia .mediaCaption{
+  margin: 0;
+  padding: 14px 16px;
+  font-weight: 900;
+  color: var(--ink);
+  background: rgba(255,255,255,.84);
+  border-top: 1px solid var(--line);
+  line-height: 1.45;
+}
+
+body[data-page-type="birding_hub"] .section{
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+body[data-page-type="birding_hub"] .sectionHead{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, .42fr);
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+body[data-page-type="birding_hub"] .sectionHead h2{
+  margin: 0;
+  color: var(--forest);
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+}
+
+body[data-page-type="birding_hub"] .sectionHint{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+body[data-page-type="birding_hub"] .grid2,
+body[data-page-type="birding_hub"] .faqGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+body[data-page-type="birding_hub"] .decisionGrid,
+body[data-page-type="birding_hub"] .quickGrid,
+body[data-page-type="birding_hub"] .internalLinks{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+body[data-page-type="birding_hub"] .balancedSpeciesGrid{
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body[data-page-type="birding_hub"] .block,
+body[data-page-type="birding_hub"] .decisionCard,
+body[data-page-type="birding_hub"] .trustBox,
+body[data-page-type="birding_hub"] .faqCard,
+body[data-page-type="birding_hub"] .linkCard{
+  min-width: 0;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.72);
+  box-shadow: var(--shadow);
+}
+
+body[data-page-type="birding_hub"] .block,
+body[data-page-type="birding_hub"] .decisionCard,
+body[data-page-type="birding_hub"] .trustBox,
+body[data-page-type="birding_hub"] .faqCard{
+  padding: 16px;
+}
+
+body[data-page-type="birding_hub"] .decisionCard,
+body[data-page-type="birding_hub"] .trustBox,
+body[data-page-type="birding_hub"] .linkCard{
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-page-type="birding_hub"] .block h3,
+body[data-page-type="birding_hub"] .decisionCard h3,
+body[data-page-type="birding_hub"] .trustBox h3,
+body[data-page-type="birding_hub"] .faqCard h3{
+  margin: 0 0 8px;
+  color: var(--forest);
+  font-size: 18px;
+  line-height: 1.18;
+}
+
+body[data-page-type="birding_hub"] .block p,
+body[data-page-type="birding_hub"] .decisionCard p,
+body[data-page-type="birding_hub"] .trustBox p,
+body[data-page-type="birding_hub"] .faqCard p{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+body[data-page-type="birding_hub"] .decisionCard .ctaRow.alignBottom{
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 14px;
   align-items: flex-end;
 }
 
-body[data-page-type="planning_guide"] .sectionBox .ctaRow .btn,
-body[data-page-type="planning_guide"] .decisionCard .ctaRow .btn,
-body[data-page-type="planning_guide"] .miniCard .ctaRow .btn{
+body[data-page-type="birding_hub"] .decisionCard .btn,
+body[data-page-type="birding_hub"] .finalCta .btn{
+  text-decoration: none;
   min-height: 40px;
   display: inline-flex;
   align-items: center;
@@ -14622,29 +14779,37 @@ body[data-page-type="planning_guide"] .miniCard .ctaRow .btn{
   text-align: center;
 }
 
-body[data-page-type="planning_guide"] .linkCard{
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+body[data-page-type="birding_hub"] .internalLinks .linkCard{
+  padding: 16px;
   text-decoration: none;
   color: inherit;
+  gap: 8px;
 }
 
-body[data-page-type="planning_guide"] .linkCard span{
+body[data-page-type="birding_hub"] .internalLinks .linkCard strong{
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.18;
+}
+
+body[data-page-type="birding_hub"] .internalLinks .linkCard span{
   margin-top: auto;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
-body[data-page-type="planning_guide"] .finalCta{
-  margin-top: 22px;
+body[data-page-type="birding_hub"] .finalCta{
+  margin-top: 28px;
   padding: 0;
   border: 0;
   background: transparent;
   box-shadow: none;
 }
 
-body[data-page-type="planning_guide"] .finalCta .finalGrid{
+body[data-page-type="birding_hub"] .finalCta .finalGrid{
   display: grid;
-  grid-template-columns: minmax(0,1.25fr) minmax(280px,.75fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
   gap: 18px;
   align-items: stretch;
   padding: 22px;
@@ -14654,8 +14819,8 @@ body[data-page-type="planning_guide"] .finalCta .finalGrid{
   box-shadow: var(--shadow);
 }
 
-body[data-page-type="planning_guide"] .finalCta .finalLeft,
-body[data-page-type="planning_guide"] .finalCta .nextSteps{
+body[data-page-type="birding_hub"] .finalCta .finalLeft,
+body[data-page-type="birding_hub"] .finalCta .nextSteps{
   min-width: 0;
   background: transparent;
   border: 0;
@@ -14663,45 +14828,33 @@ body[data-page-type="planning_guide"] .finalCta .nextSteps{
   padding: 0;
 }
 
-body[data-page-type="planning_guide"] .finalCta .finalLeft{
+body[data-page-type="birding_hub"] .finalCta .finalLeft{
   display: flex;
   flex-direction: column;
   gap: 10px;
+  justify-content: center;
 }
 
-body[data-page-type="planning_guide"] .finalCta .finalLeft .eyebrow{
+body[data-page-type="birding_hub"] .finalCta .finalTitle,
+body[data-page-type="birding_hub"] .finalCta h2{
   margin: 0;
+  color: var(--forest);
+  font-size: clamp(28px, 3.5vw, 44px);
+  line-height: 1.02;
 }
 
-body[data-page-type="planning_guide"] .finalCta .finalLeft h2{
+body[data-page-type="birding_hub"] .finalCta p{
   margin: 0;
-}
-
-body[data-page-type="planning_guide"] .finalCta .finalLeft p:not(.eyebrow){
-  margin: 0;
-  max-width: 72ch;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-body[data-page-type="planning_guide"] .finalCta .ctaRow{
+body[data-page-type="birding_hub"] .finalCta .ctaRow{
   margin-top: auto;
   padding-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
 }
 
-body[data-page-type="planning_guide"] .finalCta .ctaRow .btn{
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-body[data-page-type="planning_guide"] .finalCta .nextSteps{
+body[data-page-type="birding_hub"] .finalCta .nextSteps{
   align-self: stretch;
   display: flex;
   flex-direction: column;
@@ -14710,55 +14863,70 @@ body[data-page-type="planning_guide"] .finalCta .nextSteps{
   padding-left: 18px;
 }
 
-body[data-page-type="planning_guide"] .finalCta .nextSteps h3{
-  margin: 0 0 10px;
+body[data-page-type="birding_hub"] .finalCta .nextSteps h3{
+  margin: 0 0 8px;
   color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 950;
-  letter-spacing: -0.01em;
+  font-size: 17px;
 }
 
-body[data-page-type="planning_guide"] .finalCta .nextSteps ol{
+body[data-page-type="birding_hub"] .finalCta .nextSteps ol{
   margin: 0;
-  padding-left: 20px;
+  padding-left: 18px;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-body[data-page-type="planning_guide"] .finalCta .nextSteps li{
-  margin: 4px 0;
-}
-
-@media (max-width: 900px){
-  body[data-page-type="planning_guide"] .finalCta .finalGrid{
+@media (max-width: 980px){
+  body[data-page-type="birding_hub"] .hero,
+  body[data-page-type="birding_hub"] .finalCta .finalGrid{
     grid-template-columns: 1fr;
-    padding: 18px;
   }
 
-  body[data-page-type="planning_guide"] .finalCta .nextSteps{
+  body[data-page-type="birding_hub"] .decisionGrid,
+  body[data-page-type="birding_hub"] .quickGrid,
+  body[data-page-type="birding_hub"] .internalLinks,
+  body[data-page-type="birding_hub"] .balancedSpeciesGrid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-page-type="birding_hub"] .finalCta .nextSteps{
     border-left: 0;
     border-top: 1px solid var(--line);
     padding-left: 0;
     padding-top: 16px;
-    justify-content: flex-start;
   }
 }
 
-@media (max-width: 560px){
-  body[data-page-type="planning_guide"] .sectionBox .ctaRow,
-  body[data-page-type="planning_guide"] .decisionCard .ctaRow,
-  body[data-page-type="planning_guide"] .miniCard .ctaRow,
-  body[data-page-type="planning_guide"] .finalCta .ctaRow{
-    display: grid;
-    grid-template-columns: 1fr;
-    align-items: stretch;
+@media (max-width: 640px){
+  body[data-page-type="birding_hub"] .container{
+    width: min(100% - 18px, 1120px);
   }
 
-  body[data-page-type="planning_guide"] .sectionBox .ctaRow .btn,
-  body[data-page-type="planning_guide"] .decisionCard .ctaRow .btn,
-  body[data-page-type="planning_guide"] .miniCard .ctaRow .btn,
-  body[data-page-type="planning_guide"] .finalCta .ctaRow .btn{
+  body[data-page-type="birding_hub"] .page.card{
+    padding: 14px;
+  }
+
+  body[data-page-type="birding_hub"] .sectionHead,
+  body[data-page-type="birding_hub"] .grid2,
+  body[data-page-type="birding_hub"] .faqGrid,
+  body[data-page-type="birding_hub"] .decisionGrid,
+  body[data-page-type="birding_hub"] .quickGrid,
+  body[data-page-type="birding_hub"] .internalLinks,
+  body[data-page-type="birding_hub"] .balancedSpeciesGrid{
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-type="birding_hub"] .heroCopy h1{
+    font-size: clamp(34px, 12vw, 46px);
+  }
+
+  body[data-page-type="birding_hub"] .heroMedia img{
+    aspect-ratio: 4 / 3;
+  }
+
+  body[data-page-type="birding_hub"] .ctaRow .btn,
+  body[data-page-type="birding_hub"] .finalCta .btn{
     width: 100%;
   }
 }
+
