@@ -15574,3 +15574,78 @@ body[data-page-type="seo_landing_page"] .decisionGrid.decisionGrid--3 .decisionC
     grid-template-columns: 1fr !important;
   }
 }
+
+/* =========================================================
+   Global section card CTA alignment lock
+   Purpose: keeps button rows tied to the same bottom spacing
+   inside split/section cards without adding extra backgrounds.
+   Applies to existing pages that use .sectionBox.alignBottom and
+   .ctaRow.alignBottom, including Rare Birds of Mindo.
+   ========================================================= */
+.sectionBox.alignBottom,
+.split > .sectionBox.alignBottom,
+.grid-2 > .sectionBox.alignBottom,
+.grid-3 > .sectionBox.alignBottom,
+.grid-4 > .sectionBox.alignBottom{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.sectionBox.alignBottom > p:last-of-type,
+.split > .sectionBox.alignBottom > p:last-of-type,
+.grid-2 > .sectionBox.alignBottom > p:last-of-type,
+.grid-3 > .sectionBox.alignBottom > p:last-of-type,
+.grid-4 > .sectionBox.alignBottom > p:last-of-type{
+  margin-bottom: 0 !important;
+}
+
+.sectionBox.alignBottom > .ctaRow.alignBottom,
+.split > .sectionBox.alignBottom > .ctaRow.alignBottom,
+.grid-2 > .sectionBox.alignBottom > .ctaRow.alignBottom,
+.grid-3 > .sectionBox.alignBottom > .ctaRow.alignBottom,
+.grid-4 > .sectionBox.alignBottom > .ctaRow.alignBottom{
+  margin-top: auto !important;
+  padding-top: 18px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  align-items: flex-end !important;
+}
+
+.sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+.split > .sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+.grid-2 > .sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+.grid-3 > .sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+.grid-4 > .sectionBox.alignBottom > .ctaRow.alignBottom .btn{
+  min-height: 44px !important;
+  padding: 10px 14px !important;
+  border-radius: 13px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  white-space: normal !important;
+}
+
+/* On two-column strategy cards, keep button groups clean and balanced. */
+.split > .sectionBox.alignBottom > .ctaRow.alignBottom .btn{
+  flex: 0 1 auto !important;
+}
+
+@media (max-width: 560px){
+  .sectionBox.alignBottom > .ctaRow.alignBottom,
+  .split > .sectionBox.alignBottom > .ctaRow.alignBottom,
+  .grid-2 > .sectionBox.alignBottom > .ctaRow.alignBottom,
+  .grid-3 > .sectionBox.alignBottom > .ctaRow.alignBottom,
+  .grid-4 > .sectionBox.alignBottom > .ctaRow.alignBottom{
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+  .split > .sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+  .grid-2 > .sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+  .grid-3 > .sectionBox.alignBottom > .ctaRow.alignBottom .btn,
+  .grid-4 > .sectionBox.alignBottom > .ctaRow.alignBottom .btn{
+    width: 100% !important;
+  }
+}
