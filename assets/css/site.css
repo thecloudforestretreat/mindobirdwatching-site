@@ -15717,3 +15717,92 @@ body[data-page-location="choco_andean"] .strategyGrid.threeCardStrategy .strateg
     flex-basis:100%;
   }
 }
+
+
+/* =========================================================
+   Global Card CTA Bottom Alignment - MBW design-system rule
+   Keeps button rows the same distance from the bottom of each card
+   across planning, strategy, decision, and grid card modules.
+   Use .ctaRow.alignBottom inside .sectionBox or related card classes.
+   ========================================================= */
+.grid-2,
+.grid-3,
+.grid-4,
+.split,
+.routeGrid,
+.decisionGrid,
+.strategyGrid,
+.internalLinks{
+  align-items: stretch;
+}
+
+.grid-2 > .sectionBox,
+.grid-3 > .sectionBox,
+.grid-4 > .sectionBox,
+.split > .sectionBox,
+.routeGrid > .sectionBox,
+.decisionGrid > .decisionCard,
+.strategyGrid > .strategyCard,
+.internalLinks > .linkCard{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.grid-2 > .sectionBox > p,
+.grid-3 > .sectionBox > p,
+.grid-4 > .sectionBox > p,
+.split > .sectionBox > p,
+.routeGrid > .sectionBox > p,
+.decisionGrid > .decisionCard > p,
+.strategyGrid > .strategyCard > p,
+.internalLinks > .linkCard > span{
+  flex: 1 1 auto;
+}
+
+.sectionBox > .ctaRow.alignBottom,
+.decisionCard > .ctaRow.alignBottom,
+.strategyCard > .ctaRow.alignBottom,
+.tourBody > .ctaRow.alignBottom,
+.linkCard > .ctaRow.alignBottom{
+  margin-top: auto !important;
+  padding-top: 18px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  align-items: flex-end !important;
+}
+
+.sectionBox > .ctaRow.alignBottom .btn,
+.decisionCard > .ctaRow.alignBottom .btn,
+.strategyCard > .ctaRow.alignBottom .btn,
+.tourBody > .ctaRow.alignBottom .btn,
+.linkCard > .ctaRow.alignBottom .btn{
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 13px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  justify-content: center;
+}
+
+@media (max-width: 560px){
+  .sectionBox > .ctaRow.alignBottom,
+  .decisionCard > .ctaRow.alignBottom,
+  .strategyCard > .ctaRow.alignBottom,
+  .tourBody > .ctaRow.alignBottom,
+  .linkCard > .ctaRow.alignBottom{
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .sectionBox > .ctaRow.alignBottom .btn,
+  .decisionCard > .ctaRow.alignBottom .btn,
+  .strategyCard > .ctaRow.alignBottom .btn,
+  .tourBody > .ctaRow.alignBottom .btn,
+  .linkCard > .ctaRow.alignBottom .btn{
+    width: 100%;
+  }
+}
