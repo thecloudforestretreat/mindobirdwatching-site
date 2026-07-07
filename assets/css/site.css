@@ -19234,30 +19234,446 @@ body[data-page-type="bird_quest_page"] .birdQuestGalleryBar small{
 
 
 /* =========================================
-   Local Recommendation Page: Mindo Glambird
-   Production-safe global module support
+   Roca Mia recommendation page module
+   Moved from page-level CSS to global site.css
    ========================================= */
-body[data-page-type="local_recommendation_page"] .finalCta .finalGrid{
+
+body[data-page-content-group="recommendations"] .page{
+      margin-top:18px;
+      padding:26px;
+    }
+    body[data-page-content-group="recommendations"] .page.card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+    }
+    body[data-page-content-group="recommendations"] .crumbs{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+      color:var(--muted);
+      font-weight:700;
+      font-size:12.5px;
+      letter-spacing:-0.01em;
+    }
+    body[data-page-content-group="recommendations"] .crumbs a{color:var(--muted);text-decoration:none;}
+    body[data-page-content-group="recommendations"] .crumbs a:hover{text-decoration:underline;}
+    body[data-page-content-group="recommendations"] .crumbDot{opacity:.7;}
+    body[data-page-content-group="recommendations"] .recHero{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:16px;
+      align-items:stretch;
+    }
+    body[data-page-content-group="recommendations"] .heroCard,
+    body[data-page-content-group="recommendations"] .visualCard,
+    body[data-page-content-group="recommendations"] .quickCard,
+    body[data-page-content-group="recommendations"] .featureCard,
+    body[data-page-content-group="recommendations"] .detailCard,
+    body[data-page-content-group="recommendations"] .faqCard,
+    body[data-page-content-group="recommendations"] .ctaStrip{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.68);
+      box-shadow:var(--shadow);
+    }
+    body[data-page-content-group="recommendations"] .heroCard{
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      min-height:100%;
+    }
+    body[data-page-content-group="recommendations"] .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.82);
+      color:var(--forest);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:12px;
+      width:fit-content;
+    }
+    body[data-page-content-group="recommendations"] .eyebrow:before{
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--forest);
+      display:inline-block;
+      opacity:.9;
+    }
+    body[data-page-content-group="recommendations"] .heroTitle{
+      margin:0;
+      font-family:var(--font-head);
+      font-size:clamp(30px,3.2vw,44px);
+      line-height:1.03;
+      letter-spacing:-.03em;
+      color:var(--forest);
+      font-weight:700;
+    }
+    body[data-page-content-group="recommendations"] .heroSub{
+      margin:12px 0 0;
+      color:var(--ink);
+      max-width:72ch;
+      line-height:1.75;
+      font-size:15.5px;
+    }
+    body[data-page-content-group="recommendations"] .pillRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    body[data-page-content-group="recommendations"] .recPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 11px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.85);
+      color:var(--ink);
+      font-weight:700;
+      font-size:12.5px;
+      box-shadow:var(--shadow);
+      white-space:nowrap;
+      line-height:1;
+    }
+    body[data-page-content-group="recommendations"] .recPill:before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--forest);
+      display:inline-block;
+      opacity:.85;
+    }
+    body[data-page-content-group="recommendations"] .ctaRow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      margin-top:18px;
+    }
+    body[data-page-content-group="recommendations"] .ctaRow .btn{min-height:46px;}
+    body[data-page-content-group="recommendations"] .trustNote{
+      margin:14px 0 0;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:12.5px;
+    }
+    body[data-page-content-group="recommendations"] .visualCard{
+      overflow:hidden;
+      display:grid;
+      grid-template-rows:minmax(420px,1fr) auto;
+    }
+
+    body[data-page-content-group="recommendations"] .recCarousel{
+      position:relative;
+      min-height:420px;
+      background:#0b1220;
+      overflow:hidden;
+    }
+    body[data-page-content-group="recommendations"] .recSlide{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      visibility:hidden;
+      transition:opacity .55s ease, visibility .55s ease;
+    }
+    body[data-page-content-group="recommendations"] .recSlide.is-active{
+      opacity:1;
+      visibility:visible;
+      z-index:1;
+    }
+    body[data-page-content-group="recommendations"] .recSlide img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    body[data-page-content-group="recommendations"] .recSlide:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.34));
+      pointer-events:none;
+    }
+    body[data-page-content-group="recommendations"] .recSlideLabel{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:14px;
+      z-index:2;
+      display:inline-flex;
+      width:fit-content;
+      max-width:calc(100% - 28px);
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.54);
+      border:1px solid rgba(255,255,255,.20);
+      color:#fff;
+      font-weight:800;
+      font-size:12.5px;
+      line-height:1.2;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+    body[data-page-content-group="recommendations"] .recCarouselBtn{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      z-index:4;
+      width:46px;
+      height:46px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.48);
+      background:rgba(0,0,0,.48);
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      font-weight:900;
+      line-height:1;
+      cursor:pointer;
+      box-shadow:0 14px 28px rgba(0,0,0,.24);
+    }
+    body[data-page-content-group="recommendations"] .recCarouselBtn:hover,
+    body[data-page-content-group="recommendations"] .recCarouselBtn:focus-visible{
+      background:rgba(13,89,37,.88);
+      outline:2px solid rgba(255,255,255,.9);
+      outline-offset:2px;
+    }
+    body[data-page-content-group="recommendations"] .recCarouselBtn.prev{left:14px;}
+    body[data-page-content-group="recommendations"] .recCarouselBtn.next{right:14px;}
+    body[data-page-content-group="recommendations"] .recDots{
+      position:absolute;
+      left:50%;
+      bottom:64px;
+      transform:translateX(-50%);
+      z-index:4;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+    }
+    body[data-page-content-group="recommendations"] .recDot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.7);
+      background:rgba(255,255,255,.36);
+      padding:0;
+      cursor:pointer;
+    }
+    body[data-page-content-group="recommendations"] .recDot[aria-current="true"]{
+      width:24px;
+      background:#fff;
+    }
+    body[data-page-content-group="recommendations"] .visualFooter{
+      padding:14px;
+      background:rgba(255,255,255,.72);
+      border-top:1px solid var(--line);
+      display:grid;
+      gap:6px;
+    }
+    body[data-page-content-group="recommendations"] .visualFooter strong{
+      color:var(--forest);
+      font-size:15px;
+    }
+    body[data-page-content-group="recommendations"] .visualFooter span{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:13px;
+    }
+    body[data-page-content-group="recommendations"] .section{
+      margin-top:20px;
+    }
+    body[data-page-content-group="recommendations"] .sectionTitle{
+      margin:0 0 10px;
+      font-family:var(--font-head);
+      color:var(--forest);
+      font-size:22px;
+      line-height:1.15;
+      letter-spacing:-.02em;
+    }
+    body[data-page-content-group="recommendations"] .sectionLead{
+      margin:0 0 14px;
+      color:var(--ink);
+      line-height:1.72;
+      max-width:82ch;
+    }
+    body[data-page-content-group="recommendations"] .quickGrid,
+    body[data-page-content-group="recommendations"] .featureGrid,
+    body[data-page-content-group="recommendations"] .detailsGrid,
+    body[data-page-content-group="recommendations"] .faqGrid{
+      display:grid;
+      gap:12px;
+    }
+    body[data-page-content-group="recommendations"] .quickGrid{
+      grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+    body[data-page-content-group="recommendations"] .featureGrid,
+    body[data-page-content-group="recommendations"] .detailsGrid,
+    body[data-page-content-group="recommendations"] .faqGrid{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+    body[data-page-content-group="recommendations"] .quickCard,
+    body[data-page-content-group="recommendations"] .featureCard,
+    body[data-page-content-group="recommendations"] .detailCard,
+    body[data-page-content-group="recommendations"] .faqCard{
+      padding:14px;
+    }
+    body[data-page-content-group="recommendations"] .quickCard strong,
+    body[data-page-content-group="recommendations"] .featureCard h3,
+    body[data-page-content-group="recommendations"] .detailCard h3,
+    body[data-page-content-group="recommendations"] .faqCard h3{
+      display:block;
+      color:var(--forest);
+      margin:0 0 6px;
+      font-size:15px;
+      letter-spacing:-.01em;
+    }
+    body[data-page-content-group="recommendations"] .quickCard span,
+    body[data-page-content-group="recommendations"] .featureCard p,
+    body[data-page-content-group="recommendations"] .detailCard p,
+    body[data-page-content-group="recommendations"] .faqCard p{
+      display:block;
+      margin:0;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:13.5px;
+    }
+    body[data-page-content-group="recommendations"] .bulletList{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:8px;
+    }
+    body[data-page-content-group="recommendations"] .bulletList li{
+      display:flex;
+      gap:9px;
+      color:var(--ink);
+      line-height:1.55;
+      font-size:14px;
+    }
+    body[data-page-content-group="recommendations"] .bulletList li:before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      margin-top:8px;
+      background:var(--forest);
+      flex:0 0 auto;
+    }
+    body[data-page-content-group="recommendations"] .ctaStrip{
+      margin-top:20px;
+      padding:18px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:16px;
+      align-items:center;
+      background:rgba(255,255,255,.74);
+    }
+    body[data-page-content-group="recommendations"] .ctaStrip h2{
+      margin:0 0 6px;
+      font-size:24px;
+    }
+    body[data-page-content-group="recommendations"] .ctaStrip p{
+      margin:0;
+      color:var(--ink);
+      line-height:1.62;
+    }
+    @media (max-width:960px){
+      body[data-page-content-group="recommendations"] .recHero,
+      body[data-page-content-group="recommendations"] .ctaStrip{
+        grid-template-columns:1fr;
+      }
+      body[data-page-content-group="recommendations"] .quickGrid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      body[data-page-content-group="recommendations"] .ctaStrip .ctaRow{
+        margin-top:0;
+      }
+    }
+    @media (max-width:680px){
+      body[data-page-content-group="recommendations"] .page{
+        padding:18px;
+      }
+      body[data-page-content-group="recommendations"] .visualCard{
+        grid-template-rows:minmax(320px,1fr) auto;
+      }
+      body[data-page-content-group="recommendations"] .recCarousel{
+        min-height:320px;
+      }
+      body[data-page-content-group="recommendations"] .recCarouselBtn{
+        width:42px;
+        height:42px;
+      }
+      body[data-page-content-group="recommendations"] .quickGrid,
+      body[data-page-content-group="recommendations"] .featureGrid,
+      body[data-page-content-group="recommendations"] .detailsGrid,
+      body[data-page-content-group="recommendations"] .faqGrid{
+        grid-template-columns:1fr;
+      }
+      body[data-page-content-group="recommendations"] .ctaRow .btn{
+        width:100%;
+      }
+    }
+
+body[data-page-content-group="recommendations"] .finalCta{
+  margin-top:20px;
+}
+body[data-page-content-group="recommendations"] .finalGrid{
   display:grid;
   grid-template-columns:1.1fr .9fr;
   gap:16px;
   align-items:stretch;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.74);
+  box-shadow:var(--shadow);
+  padding:18px;
 }
-body[data-page-type="local_recommendation_page"] .heroActions .btn,
-body[data-page-type="local_recommendation_page"] .cardActions .btn,
-body[data-page-type="local_recommendation_page"] .ctaPrimary .btn,
-body[data-page-type="local_recommendation_page"] .ctaSecondary .btn{
-  white-space:normal;
+body[data-page-content-group="recommendations"] .finalLeft h2{
+  margin:0 0 8px;
+  font-size:24px;
 }
-body[data-page-type="local_recommendation_page"] .propCard,
-body[data-page-type="local_recommendation_page"] .stayCard,
-body[data-page-type="local_recommendation_page"] .featureCard{
-  display:flex;
-  flex-direction:column;
+body[data-page-content-group="recommendations"] .finalLeft p{
+  margin:0;
+  color:var(--ink);
+  line-height:1.65;
 }
-body[data-page-type="local_recommendation_page"] .cardActions{
-  margin-top:auto;
+body[data-page-content-group="recommendations"] .nextSteps{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.68);
+  padding:16px;
 }
-@media (max-width:900px){
-  body[data-page-type="local_recommendation_page"] .finalCta .finalGrid{grid-template-columns:1fr;}
+body[data-page-content-group="recommendations"] .nextSteps h3{
+  margin:0 0 8px;
+  font-family:var(--font-head);
+  color:var(--forest);
+}
+body[data-page-content-group="recommendations"] .nextSteps ol{
+  margin:0;
+  padding-left:20px;
+  color:var(--ink);
+  line-height:1.65;
+}
+@media (max-width:960px){
+  body[data-page-content-group="recommendations"] .finalGrid{
+    grid-template-columns:1fr;
+  }
 }
