@@ -19084,14 +19084,16 @@ body[data-page-type="bird_quest_page"] .page.card > .sectionBox p{
   line-height:1.55;
 }
 body[data-page-type="bird_quest_page"] .birdQuestThumb{
-  aspect-ratio:1/1;
-  min-height:190px;
+  aspect-ratio:4/3;
+  min-height:220px;
 }
 body[data-page-type="bird_quest_page"] .birdQuestThumb img{
   object-fit:contain;
   padding:0;
 }
 body[data-page-type="bird_quest_page"] .birdQuestGrid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
   align-items:start;
 }
 body[data-page-type="bird_quest_page"] .birdQuestCard{
@@ -19102,6 +19104,9 @@ body[data-page-type="bird_quest_page"] .birdQuestCardActions .btn[aria-pressed="
   color:#fff;
 }
 @media (max-width:1000px){
+  body[data-page-type="bird_quest_page"] .birdQuestGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
   body[data-page-type="bird_quest_page"] .birdQuestThumb{
     min-height:220px;
   }
@@ -19115,6 +19120,39 @@ body[data-page-type="bird_quest_page"] .birdQuestCardActions .btn[aria-pressed="
     font-size:21px;
   }
   body[data-page-type="bird_quest_page"] .birdQuestThumb{
-    min-height:260px;
+    min-height:240px;
+  }
+}
+
+/* Bird Quest 3-column gallery tuning */
+body[data-page-type="bird_quest_page"] .birdQuestModal{
+  width:min(1120px,calc(100vw - 28px));
+}
+body[data-page-type="bird_quest_page"] .birdQuestModalShell{
+  grid-template-columns:minmax(0,1fr) minmax(360px,.92fr);
+  align-items:start;
+}
+body[data-page-type="bird_quest_page"] .birdQuestGallery{
+  grid-template-rows:auto auto auto;
+  min-height:0;
+}
+body[data-page-type="bird_quest_page"] .birdQuestGalleryMain{
+  aspect-ratio:4/3;
+  min-height:0;
+}
+body[data-page-type="bird_quest_page"] .birdQuestGalleryMain img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+body[data-page-type="bird_quest_page"] .birdQuestDetail{
+  max-height:calc(100vh - 28px);
+}
+@media (max-width:1000px){
+  body[data-page-type="bird_quest_page"] .birdQuestModalShell{
+    grid-template-columns:1fr;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestDetail{
+    max-height:none;
   }
 }
