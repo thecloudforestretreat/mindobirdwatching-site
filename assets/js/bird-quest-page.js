@@ -22,9 +22,23 @@
   var storageKey = "mbwBirdQuestSpotted";
   var filter = "all";
   var kidMode = false;
-  var spotted = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
+  var spotted = new Set();
+  var completedTracked = false;
+  try { localStorage.removeItem(storageKey); } catch (error) {}
 
   function local(en, es) { return lang === "es" ? (es || en) : en; }
+  function baseParams(extra) {
+    var params = {
+      page_path: window.location.pathname,
+      page_language: lang,
+      bird_count: birds.length,
+      spotted_count: spotted.size,
+      quest_points: birds.filter(function (b) { return spotted.has(b.code); }).reduce(function (sum, b) { return sum + Number(b.points || 0); }, 0)
+    };
+    extra = extra || {};
+    Object.keys(extra).forEach(function (key) { params[key] = extra[key]; });
+    return params;
+  }
   function isDirectImageUrl(url) {
     url = text(url).trim();
     if (!url) return false;
@@ -66,7 +80,13 @@
     };
     return labels[value] ? local(labels[value][0], labels[value][1]) : text(value).replace(/_/g, " ");
   }
-  function save() { localStorage.setItem(storageKey, JSON.stringify(Array.from(spotted))); updateProgress(); }
+  function save() {
+    updateProgress();
+    if (!completedTracked && birds.length && spotted.size === birds.length) {
+      completedTracked = true;
+      track('bird_quest_completed', baseParams());
+    }
+  }
   function updateProgress() {
     var count = spotted.size;
     var total = birds.length || 1;
@@ -122,35 +142,52 @@
       '<div class="birdQuestInfoBlock"><strong>' + local('Listen to the call', 'Escucha el canto') + '</strong>' + local(bird.audioCaptionEn, bird.audioCaptionEs) + (bird.audio ? '<audio controls preload="none" src="' + bird.audio + '"></audio>' : '') + '<div class="birdQuestCredit">' + bird.audioCredit + '</div></div>' +
       '<div class="birdQuestActions"><button class="btn primary" type="button" data-spot-bird="' + bird.code + '" aria-pressed="' + isSpotted + '">' + (isSpotted ? local('Spotted', 'Visto') : local('Mark as Spotted', 'Marcar como visto')) + '</button>' + (bird.ebird ? '<a class="btn secondary" href="' + bird.ebird + '" target="_blank" rel="noreferrer">eBird</a>' : '') + '</div></section></div>';
     modal.showModal();
-    track('bird_quest_open_species', { bird_name: local(bird.nameEn, bird.nameEs), species_code: bird.code, page_path: window.location.pathname });
+    var audio = modal.querySelector("audio");
+    if (audio) audio.addEventListener("play", function () { track('bird_quest_audio_play', baseParams({ species_code: bird.code, bird_name: local(bird.nameEn, bird.nameEs) })); }, { once: true });
+    track('bird_quest_open_species', baseParams({ bird_name: local(bird.nameEn, bird.nameEs), species_code: bird.code, image_index: imageIndex + 1, image_count: galleryImages.length || 0 }));
   }
   document.addEventListener("click", function (event) {
     var open = event.target.closest("[data-open-bird]");
     if (open) { openBird(open.getAttribute("data-open-bird")); return; }
     var gallery = event.target.closest("[data-gallery-bird]");
-    if (gallery) { openBird(gallery.getAttribute("data-gallery-bird"), Number(gallery.getAttribute("data-gallery-index") || 0)); return; }
+    if (gallery) {
+      var galleryCode = gallery.getAttribute("data-gallery-bird");
+      var galleryIndex = Number(gallery.getAttribute("data-gallery-index") || 0);
+      openBird(galleryCode, galleryIndex);
+      track('bird_quest_gallery_image_select', baseParams({ species_code: galleryCode, image_index: galleryIndex + 1 }));
+      return;
+    }
     var spot = event.target.closest("[data-spot-bird]");
     if (spot) {
       var code = spot.getAttribute("data-spot-bird");
       if (spotted.has(code)) spotted.delete(code); else spotted.add(code);
       save(); render(); if (modal.open) openBird(code);
-      track('bird_quest_spotted_toggle', { species_code: code, spotted: spotted.has(code), page_path: window.location.pathname });
+      track('bird_quest_spotted_toggle', baseParams({ species_code: code, spotted: spotted.has(code) }));
       return;
     }
     var close = event.target.closest("[data-close-bird]");
-    if (close) { modal.close(); return; }
+    if (close) { track('bird_quest_modal_close', baseParams()); modal.close(); return; }
+    var ebirdLink = event.target.closest(".birdQuestActions a[href*='ebird.org']");
+    if (ebirdLink) { track('bird_quest_ebird_click', baseParams({ target_url: ebirdLink.href })); return; }
     var chip = event.target.closest("[data-filter]");
     if (chip) {
       filter = chip.getAttribute("data-filter");
       document.querySelectorAll("[data-filter]").forEach(function (button) { button.setAttribute("aria-pressed", String(button === chip)); });
-      render(); track('bird_quest_filter', { filter: filter, page_path: window.location.pathname }); return;
+      render(); track('bird_quest_filter', baseParams({ filter: filter })); return;
     }
-    if (event.target.closest("[data-reset-quest]")) { spotted = new Set(); save(); render(); track('bird_quest_reset', { page_path: window.location.pathname }); return; }
-    if (event.target.closest("[data-scroll-grid]")) { grid.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    if (event.target.closest("[data-reset-quest]")) { spotted = new Set(); completedTracked = false; save(); render(); track('bird_quest_reset', baseParams()); return; }
+    if (event.target.closest("[data-scroll-grid]")) { track('bird_quest_start_click', baseParams()); grid.scrollIntoView({ behavior: "smooth", block: "start" }); }
   });
-  if (search) search.addEventListener("input", render);
-  if (kidToggle) kidToggle.addEventListener("click", function () { kidMode = !kidMode; kidToggle.setAttribute("aria-pressed", String(kidMode)); kidToggle.textContent = kidMode ? local('Guide Mode', 'Modo guía') : local('Kid Mode', 'Modo niños'); if (modal.open) modal.close(); track('bird_quest_kid_mode', { enabled: kidMode, page_path: window.location.pathname }); });
-  if (modal) modal.addEventListener("click", function (event) { if (event.target === modal) modal.close(); });
+  if (search) {
+    var searchTimer = null;
+    search.addEventListener("input", function () {
+      render();
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(function () { track('bird_quest_search', baseParams({ search_length: search.value.trim().length, has_search: search.value.trim().length > 0 })); }, 700);
+    });
+  }
+  if (kidToggle) kidToggle.addEventListener("click", function () { kidMode = !kidMode; kidToggle.setAttribute("aria-pressed", String(kidMode)); kidToggle.textContent = kidMode ? local('Guide Mode', 'Modo guía') : local('Kid Mode', 'Modo niños'); if (modal.open) modal.close(); track('bird_quest_kid_mode', baseParams({ enabled: kidMode })); });
+  if (modal) modal.addEventListener("click", function (event) { if (event.target === modal) { track('bird_quest_modal_close', baseParams({ close_method: 'backdrop' })); modal.close(); } });
   document.addEventListener("error", function (event) {
     if (!event.target || event.target.tagName !== "IMG") return;
     var holder = event.target.closest(".birdQuestThumb, .birdQuestGallery, .birdQuestGalleryMain");
@@ -160,5 +197,5 @@
     if (!holder.querySelector(".birdQuestImagePlaceholder")) holder.insertAdjacentHTML("afterbegin", '<div class="birdQuestImagePlaceholder" aria-hidden="true">' + local('Image coming soon', 'Imagen próximamente') + '</div>');
   }, true);
 
-  updateProgress(); render(); track('bird_quest_page_view', { bird_count: birds.length, page_path: window.location.pathname });
+  updateProgress(); render(); track('bird_quest_page_view', baseParams());
 })();
