@@ -737,6 +737,153 @@
   }
 })();
 
+/* MBW desktop dropdown controller - click-open with hover grace
+   Keeps parent navigation available through the first submenu item. */
+
+(function () {
+  "use strict";
+
+  function qsa(root, sel) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  }
+
+  function isDesktop() {
+    return (window.matchMedia && window.matchMedia("(min-width: 901px)").matches) ||
+      (window.innerWidth || 0) >= 901;
+  }
+
+  function initHeaderDropdowns(topbar) {
+    if (!topbar || topbar.__mbwDesktopDropdownsBound) return;
+
+    var dropdowns = qsa(topbar, ".dropdown");
+    if (!dropdowns.length) return;
+
+    topbar.__mbwDesktopDropdownsBound = true;
+
+    function closeDropdown(dropdown) {
+      if (!dropdown) return;
+      dropdown.classList.remove("is-open");
+      var trigger = dropdown.querySelector(":scope > .pill");
+      if (trigger) trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function closeAll(except) {
+      dropdowns.forEach(function (dropdown) {
+        if (dropdown !== except) closeDropdown(dropdown);
+      });
+    }
+
+    function openDropdown(dropdown) {
+      if (!dropdown || !isDesktop()) return;
+      closeAll(dropdown);
+      dropdown.classList.add("is-open");
+      var trigger = dropdown.querySelector(":scope > .pill");
+      if (trigger) trigger.setAttribute("aria-expanded", "true");
+    }
+
+    dropdowns.forEach(function (dropdown) {
+      var trigger = dropdown.querySelector(":scope > .pill");
+      var closeTimer = null;
+
+      if (!trigger) return;
+
+      function clearCloseTimer() {
+        if (!closeTimer) return;
+        window.clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+
+      function scheduleClose() {
+        clearCloseTimer();
+        closeTimer = window.setTimeout(function () {
+          closeDropdown(dropdown);
+        }, 450);
+      }
+
+      trigger.addEventListener("click", function (event) {
+        if (!isDesktop()) return;
+
+        event.preventDefault();
+        clearCloseTimer();
+
+        if (dropdown.classList.contains("is-open")) {
+          closeDropdown(dropdown);
+        } else {
+          openDropdown(dropdown);
+        }
+      });
+
+      dropdown.addEventListener("mouseenter", function () {
+        if (!isDesktop()) return;
+        clearCloseTimer();
+        openDropdown(dropdown);
+      });
+
+      dropdown.addEventListener("mouseleave", function () {
+        if (!isDesktop()) return;
+        scheduleClose();
+      });
+
+      dropdown.addEventListener("focusin", function () {
+        if (!isDesktop()) return;
+        clearCloseTimer();
+        openDropdown(dropdown);
+      });
+
+      dropdown.addEventListener("focusout", function () {
+        if (!isDesktop()) return;
+        window.setTimeout(function () {
+          if (!dropdown.contains(document.activeElement)) closeDropdown(dropdown);
+        }, 80);
+      });
+
+      var menu = dropdown.querySelector(".dropdownMenu");
+      if (menu) {
+        menu.addEventListener("click", function () {
+          closeDropdown(dropdown);
+        });
+      }
+    });
+
+    if (!document.__mbwDesktopDropdownDocBound) {
+      document.__mbwDesktopDropdownDocBound = true;
+
+      document.addEventListener("click", function (event) {
+        if (!isDesktop()) return;
+        var openDropdowns = qsa(document, "#siteHeader .dropdown.is-open");
+        openDropdowns.forEach(function (dropdown) {
+          if (!dropdown.contains(event.target)) closeDropdown(dropdown);
+        });
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key !== "Escape") return;
+        qsa(document, "#siteHeader .dropdown.is-open").forEach(closeDropdown);
+      });
+
+      window.addEventListener("resize", function () {
+        if (isDesktop()) return;
+        qsa(document, "#siteHeader .dropdown.is-open").forEach(closeDropdown);
+      });
+    }
+  }
+
+  function bootDesktopDropdowns() {
+    qsa(document, "#siteHeader .topbar, .topbar[data-mbw-header]").forEach(initHeaderDropdowns);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootDesktopDropdowns);
+  else bootDesktopDropdowns();
+
+  if (!window.__mbwDesktopDropdownObserver && "MutationObserver" in window) {
+    window.__mbwDesktopDropdownObserver = new MutationObserver(bootDesktopDropdowns);
+    window.__mbwDesktopDropdownObserver.observe(document.documentElement || document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+})();
+
 /* WhatsApp Smart CTA (MBW) v4 */
 
 (function () {
