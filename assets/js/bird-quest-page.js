@@ -84,11 +84,14 @@
     var isSpotted = spotted.has(bird.code);
     var image = (bird.images && bird.images[0]) || { url: "", altEn: bird.nameEn, altEs: bird.nameEs };
     var imageAlt = local(image.altEn, image.altEs);
+    var previewFact = kidMode ? local(bird.kidFactEn, bird.kidFactEs) : ((local(bird.factsEn, bird.factsEs) || [])[0] || local(bird.idTipEn, bird.idTipEs));
     return '<article class="birdQuestCard' + (isSpotted ? ' is-spotted' : '') + '" data-code="' + bird.code + '">' +
       '<div class="birdQuestThumb' + (isDirectImageUrl(image.url) ? '' : ' is-image-missing') + '">' + imageMarkup(image, imageAlt, false) + '<div class="birdQuestBadges"><span class="birdQuestBadge ' + bird.badge + '">' + label(bird.badge) + '</span><span class="birdQuestPoints">' + bird.points + ' pts</span></div></div>' +
       '<div class="birdQuestCardBody"><div class="birdQuestName"><h2>' + local(bird.nameEn, bird.nameEs) + '</h2><span class="birdQuestAlt">' + local(bird.nameEs, bird.nameEn) + '</span><span class="birdQuestSci">' + bird.scientific + '</span></div>' +
+      '<p class="birdQuestPreviewFact">' + previewFact + '</p>' +
+      '<div class="birdQuestCardSignals"><span>' + (bird.audio ? local('Call ready', 'Canto listo') : local('No call yet', 'Sin canto')) + '</span><span>' + local('Fun facts', 'Datos curiosos') + '</span></div>' +
       '<div class="birdQuestMeta"><span>' + label(bird.tourVisibility) + '</span><span>' + label(bird.difficulty) + '</span></div>' +
-      '<div class="birdQuestCardActions"><button class="btn secondary" type="button" data-open-bird="' + bird.code + '">' + local('Learn', 'Ver') + '</button><button class="btn" type="button" data-spot-bird="' + bird.code + '" aria-pressed="' + isSpotted + '" title="' + local('Mark spotted', 'Marcar visto') + '">' + (isSpotted ? '✓' : '+') + '</button></div></div></article>';
+      '<div class="birdQuestCardActions"><button class="btn secondary" type="button" data-open-bird="' + bird.code + '">' + local('Facts + Call', 'Datos + Canto') + '</button><button class="btn" type="button" data-spot-bird="' + bird.code + '" aria-pressed="' + isSpotted + '" title="' + local('Mark spotted', 'Marcar visto') + '">' + (isSpotted ? '✓' : '+') + '</button></div></div></article>';
   }
   function render() {
     var shown = birds.filter(matches);
@@ -102,9 +105,11 @@
     var imageAlt = local(image.altEn, image.altEs);
     var facts = (kidMode ? [local(bird.kidFactEn, bird.kidFactEs), local(bird.idTipEn, bird.idTipEs), local(bird.unlockEn, bird.unlockEs)] : local(bird.factsEn, bird.factsEs)).filter(Boolean);
     var isSpotted = spotted.has(bird.code);
+    var elevation = bird.elevationMinM && bird.elevationMaxM ? bird.elevationMinM + "-" + bird.elevationMaxM + " m" : local("Guide review", "Revisión del guía");
     modal.innerHTML = '<div class="birdQuestModalShell"><section class="birdQuestGallery' + (isDirectImageUrl(image.url) ? '' : ' is-image-missing') + '">' + imageMarkup(image, imageAlt, true) + '<div class="birdQuestGalleryBar"><small>' + (isDirectImageUrl(image.url) ? (image.credit || local('Image credit pending review', 'Crédito de imagen por revisar')) : local('Photo will be added after image review', 'La foto se agregará después de revisar la imagen')) + '</small><button class="btn" type="button" data-close-bird>' + local('Close', 'Cerrar') + '</button></div></section>' +
       '<section class="birdQuestDetail"><div class="birdQuestDetailTop"><div><h2>' + local(bird.nameEn, bird.nameEs) + '</h2><div class="birdQuestAlt">' + local(bird.nameEs, bird.nameEn) + ' · <span class="birdQuestSci">' + bird.scientific + '</span></div></div><span class="birdQuestBadge ' + bird.badge + '">' + bird.points + ' pts</span></div>' +
-      '<ul class="birdQuestFactList">' + facts.map(function (fact) { return '<li>' + fact + '</li>'; }).join('') + '</ul>' +
+      '<h3 class="birdQuestDetailLabel">' + local('Fun facts', 'Datos curiosos') + '</h3><ul class="birdQuestFactList">' + facts.map(function (fact) { return '<li>' + fact + '</li>'; }).join('') + '</ul>' +
+      '<div class="birdQuestDetailMeta"><span><strong>' + local('Family', 'Familia') + '</strong>' + (bird.family || local('Guide review', 'Revisión del guía')) + '</span><span><strong>' + local('Elevation', 'Elevación') + '</strong>' + elevation + '</span></div>' +
       '<div class="birdQuestInfoBlock"><strong>' + local('Where to look', 'Dónde buscar') + '</strong>' + local(bird.whereEn, bird.whereEs) + '</div>' +
       '<div class="birdQuestInfoBlock"><strong>' + local('Listen to the call', 'Escucha el canto') + '</strong>' + local(bird.audioCaptionEn, bird.audioCaptionEs) + (bird.audio ? '<audio controls preload="none" src="' + bird.audio + '"></audio>' : '') + '<div class="birdQuestCredit">' + bird.audioCredit + '</div></div>' +
       '<div class="birdQuestActions"><button class="btn primary" type="button" data-spot-bird="' + bird.code + '" aria-pressed="' + isSpotted + '">' + (isSpotted ? local('Spotted', 'Visto') : local('Mark as Spotted', 'Marcar como visto')) + '</button>' + (bird.ebird ? '<a class="btn secondary" href="' + bird.ebird + '" target="_blank" rel="noreferrer">eBird</a>' : '') + '</div></section></div>';
