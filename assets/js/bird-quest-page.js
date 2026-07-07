@@ -25,6 +25,18 @@
   var spotted = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
 
   function local(en, es) { return lang === "es" ? (es || en) : en; }
+  function isDirectImageUrl(url) {
+    url = text(url).trim();
+    if (!url) return false;
+    if (/media\.ebird\.org\/catalog/i.test(url)) return false;
+    return /\/wiki\/Special:FilePath\//i.test(url) || /\.(avif|gif|jpe?g|png|webp)(\?|#|$)/i.test(url);
+  }
+  function imageMarkup(image, alt, eager) {
+    if (!image || !isDirectImageUrl(image.url)) {
+      return '<div class="birdQuestImagePlaceholder" aria-hidden="true">' + local('Image coming soon', 'Imagen próximamente') + '</div>';
+    }
+    return '<img src="' + image.url + '" alt="' + alt + '"' + (eager ? '' : ' loading="lazy" decoding="async"') + '>';
+  }
   function label(value) {
     var labels = {
       both: ["Half + Full Day", "Medio + Día Completo"],
@@ -71,8 +83,9 @@
   function card(bird) {
     var isSpotted = spotted.has(bird.code);
     var image = (bird.images && bird.images[0]) || { url: "", altEn: bird.nameEn, altEs: bird.nameEs };
+    var imageAlt = local(image.altEn, image.altEs);
     return '<article class="birdQuestCard' + (isSpotted ? ' is-spotted' : '') + '" data-code="' + bird.code + '">' +
-      '<div class="birdQuestThumb"><img src="' + image.url + '" alt="' + local(image.altEn, image.altEs) + '" loading="lazy" decoding="async"><div class="birdQuestBadges"><span class="birdQuestBadge ' + bird.badge + '">' + label(bird.badge) + '</span><span class="birdQuestPoints">' + bird.points + ' pts</span></div></div>' +
+      '<div class="birdQuestThumb' + (isDirectImageUrl(image.url) ? '' : ' is-image-missing') + '">' + imageMarkup(image, imageAlt, false) + '<div class="birdQuestBadges"><span class="birdQuestBadge ' + bird.badge + '">' + label(bird.badge) + '</span><span class="birdQuestPoints">' + bird.points + ' pts</span></div></div>' +
       '<div class="birdQuestCardBody"><div class="birdQuestName"><h2>' + local(bird.nameEn, bird.nameEs) + '</h2><span class="birdQuestAlt">' + local(bird.nameEs, bird.nameEn) + '</span><span class="birdQuestSci">' + bird.scientific + '</span></div>' +
       '<div class="birdQuestMeta"><span>' + label(bird.tourVisibility) + '</span><span>' + label(bird.difficulty) + '</span></div>' +
       '<div class="birdQuestCardActions"><button class="btn secondary" type="button" data-open-bird="' + bird.code + '">' + local('Learn', 'Ver') + '</button><button class="btn" type="button" data-spot-bird="' + bird.code + '" aria-pressed="' + isSpotted + '" title="' + local('Mark spotted', 'Marcar visto') + '">' + (isSpotted ? '✓' : '+') + '</button></div></div></article>';
@@ -86,9 +99,10 @@
     var bird = birds.find(function (b) { return b.code === code; });
     if (!bird || !modal) return;
     var image = (bird.images && bird.images[0]) || { url: "", altEn: bird.nameEn, altEs: bird.nameEs, credit: "" };
+    var imageAlt = local(image.altEn, image.altEs);
     var facts = (kidMode ? [local(bird.kidFactEn, bird.kidFactEs), local(bird.idTipEn, bird.idTipEs), local(bird.unlockEn, bird.unlockEs)] : local(bird.factsEn, bird.factsEs)).filter(Boolean);
     var isSpotted = spotted.has(bird.code);
-    modal.innerHTML = '<div class="birdQuestModalShell"><section class="birdQuestGallery"><img src="' + image.url + '" alt="' + local(image.altEn, image.altEs) + '"><div class="birdQuestGalleryBar"><small>' + (image.credit || local('Image credit pending review', 'Crédito de imagen por revisar')) + '</small><button class="btn" type="button" data-close-bird>' + local('Close', 'Cerrar') + '</button></div></section>' +
+    modal.innerHTML = '<div class="birdQuestModalShell"><section class="birdQuestGallery' + (isDirectImageUrl(image.url) ? '' : ' is-image-missing') + '">' + imageMarkup(image, imageAlt, true) + '<div class="birdQuestGalleryBar"><small>' + (isDirectImageUrl(image.url) ? (image.credit || local('Image credit pending review', 'Crédito de imagen por revisar')) : local('Photo will be added after image review', 'La foto se agregará después de revisar la imagen')) + '</small><button class="btn" type="button" data-close-bird>' + local('Close', 'Cerrar') + '</button></div></section>' +
       '<section class="birdQuestDetail"><div class="birdQuestDetailTop"><div><h2>' + local(bird.nameEn, bird.nameEs) + '</h2><div class="birdQuestAlt">' + local(bird.nameEs, bird.nameEn) + ' · <span class="birdQuestSci">' + bird.scientific + '</span></div></div><span class="birdQuestBadge ' + bird.badge + '">' + bird.points + ' pts</span></div>' +
       '<ul class="birdQuestFactList">' + facts.map(function (fact) { return '<li>' + fact + '</li>'; }).join('') + '</ul>' +
       '<div class="birdQuestInfoBlock"><strong>' + local('Where to look', 'Dónde buscar') + '</strong>' + local(bird.whereEn, bird.whereEs) + '</div>' +
@@ -122,6 +136,14 @@
   if (search) search.addEventListener("input", render);
   if (kidToggle) kidToggle.addEventListener("click", function () { kidMode = !kidMode; kidToggle.setAttribute("aria-pressed", String(kidMode)); kidToggle.textContent = kidMode ? local('Guide Mode', 'Modo guía') : local('Kid Mode', 'Modo niños'); if (modal.open) modal.close(); track('bird_quest_kid_mode', { enabled: kidMode, page_path: window.location.pathname }); });
   if (modal) modal.addEventListener("click", function (event) { if (event.target === modal) modal.close(); });
+  document.addEventListener("error", function (event) {
+    if (!event.target || event.target.tagName !== "IMG") return;
+    var holder = event.target.closest(".birdQuestThumb, .birdQuestGallery");
+    if (!holder) return;
+    holder.classList.add("is-image-missing");
+    event.target.remove();
+    if (!holder.querySelector(".birdQuestImagePlaceholder")) holder.insertAdjacentHTML("afterbegin", '<div class="birdQuestImagePlaceholder" aria-hidden="true">' + local('Image coming soon', 'Imagen próximamente') + '</div>');
+  }, true);
 
   updateProgress(); render(); track('bird_quest_page_view', { bird_count: birds.length, page_path: window.location.pathname });
 })();
