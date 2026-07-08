@@ -104,6 +104,10 @@
   function metaTag(labelText, valueText, tone) {
     return '<span class="birdQuestTag ' + tone + '"><small>' + labelText + '</small><strong>' + valueText + '</strong></span>';
   }
+  function audioMarkup(bird) {
+    if (!bird.audio) return '';
+    return '<div class="birdQuestAudioWrap"><audio controls preload="none" src="' + bird.audio + '" data-audio-bird="' + bird.code + '"></audio><a class="birdQuestAudioFallback" href="' + bird.audio + '" target="_blank" rel="noreferrer" data-audio-fallback>' + local('Open call', 'Abrir canto') + '</a></div>';
+  }
   function label(value) {
     var labels = {
       both: ["Half + Full Day", "Medio + Día Completo"],
@@ -152,7 +156,7 @@
       '<aside class="birdQuestHud" id="birdQuestHud" aria-live="polite">' +
         '<button class="birdQuestHudMain" type="button" data-scroll-grid>' +
           '<span class="birdQuestHudRing"><strong id="birdQuestHudCaught">0</strong><small id="birdQuestHudTotal">/' + birds.length + '</small></span>' +
-          '<span class="birdQuestHudText"><strong id="birdQuestHudRank">' + questRank(0) + '</strong><small><span id="birdQuestHudPoints">0</span> ' + local("pts", "pts") + '</small></span>' +
+          '<span class="birdQuestHudText"><strong id="birdQuestHudRank">' + questRank(0) + '</strong><small><span id="birdQuestHudPoints">0</span> ' + local("pts", "pts") + ' · <span id="birdQuestHudCaughtText">0/' + birds.length + '</span> ' + local('caught', 'vistas') + '</small><span class="birdQuestHudMeter" aria-hidden="true"><span id="birdQuestHudMeterFill"></span></span></span>' +
         '</button>' +
       '</aside>'
     );
@@ -179,9 +183,12 @@
     if ($("birdQuestAudioCount")) $("birdQuestAudioCount").textContent = birds.filter(function (b) { return b.audio; }).length;
     if ($("birdQuestProgressRing")) $("birdQuestProgressRing").style.setProperty("--progress", ((count / total) * 100) + "%");
     ensureHud();
-    if ($("birdQuestHud")) $("birdQuestHud").style.setProperty("--progress", ((count / total) * 100) + "%");
+    var progressPercent = ((count / total) * 100) + "%";
+    if ($("birdQuestHud")) $("birdQuestHud").style.setProperty("--progress", progressPercent);
     if ($("birdQuestHudCaught")) $("birdQuestHudCaught").textContent = count;
     if ($("birdQuestHudTotal")) $("birdQuestHudTotal").textContent = "/" + birds.length;
+    if ($("birdQuestHudCaughtText")) $("birdQuestHudCaughtText").textContent = count + "/" + birds.length;
+    if ($("birdQuestHudMeterFill")) $("birdQuestHudMeterFill").style.width = progressPercent;
     if ($("birdQuestHudPoints")) $("birdQuestHudPoints").textContent = points;
     if ($("birdQuestHudRank")) $("birdQuestHudRank").textContent = questRank(points);
   }
@@ -227,11 +234,18 @@
       '<h3 class="birdQuestDetailLabel">' + local('Fun facts', 'Datos curiosos') + '</h3><ul class="birdQuestFactList">' + facts.map(function (fact) { return '<li>' + fact + '</li>'; }).join('') + '</ul>' +
       '<div class="birdQuestDetailMeta"><span><strong>' + local('Family', 'Familia') + '</strong>' + (bird.family || local('Guide review', 'Revisión del guía')) + '</span><span><strong>' + local('Elevation', 'Elevación') + '</strong>' + elevation + '</span></div>' +
       '<div class="birdQuestInfoBlock"><strong>' + local('Where to look', 'Dónde buscar') + '</strong>' + local(bird.whereEn, bird.whereEs) + '</div>' +
-      '<div class="birdQuestInfoBlock"><strong>' + local('Listen to the call', 'Escucha el canto') + '</strong>' + local(bird.audioCaptionEn, bird.audioCaptionEs) + (bird.audio ? '<audio controls preload="none" src="' + bird.audio + '"></audio>' : '') + '<div class="birdQuestCredit">' + bird.audioCredit + '</div></div>' +
+      '<div class="birdQuestInfoBlock birdQuestAudioBlock"><strong>' + local('Listen to the call', 'Escucha el canto') + '</strong>' + local(bird.audioCaptionEn, bird.audioCaptionEs) + audioMarkup(bird) + '<div class="birdQuestCredit">' + bird.audioCredit + '</div></div>' +
       '<div class="birdQuestActions"><button class="btn primary" type="button" data-spot-bird="' + bird.code + '" aria-pressed="' + isSpotted + '">' + (isSpotted ? local('Spotted', 'Visto') : local('Mark as Spotted', 'Marcar como visto')) + '</button>' + (bird.ebird ? '<a class="btn secondary" href="' + bird.ebird + '" target="_blank" rel="noreferrer">eBird</a>' : '') + '</div></section></div>';
     if (!modal.open) modal.showModal();
     var audio = modal.querySelector("audio");
-    if (audio) audio.addEventListener("play", function () { track('bird_quest_audio_play', baseParams({ species_code: bird.code, bird_name: local(bird.nameEn, bird.nameEs) })); }, { once: true });
+    if (audio) {
+      audio.addEventListener("play", function () { track('bird_quest_audio_play', baseParams({ species_code: bird.code, bird_name: local(bird.nameEn, bird.nameEs), audio_hosted: !!bird.audioHosted })); }, { once: true });
+      audio.addEventListener("error", function () {
+        var wrap = audio.closest(".birdQuestAudioWrap");
+        if (wrap) wrap.classList.add("has-audio-error");
+        track('bird_quest_audio_error', baseParams({ species_code: bird.code, bird_name: local(bird.nameEn, bird.nameEs), audio_url: bird.audio }));
+      }, { once: true });
+    }
     track('bird_quest_open_species', baseParams({ bird_name: local(bird.nameEn, bird.nameEs), species_code: bird.code, image_index: imageIndex + 1, image_count: galleryImages.length || 0 }));
   }
   document.addEventListener("click", function (event) {
