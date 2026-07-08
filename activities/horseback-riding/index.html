@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -30,394 +31,10 @@
 <link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
 <link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/site.webmanifest" rel="manifest"/>
+<link href="/assets/css/site.css" rel="stylesheet"/>
+<link href="/assets/css/header.css?v=1" rel="stylesheet">
+<script defer="" src="/assets/js/head.js"></script><script defer="True" src="/assets/js/site-config.js"></script>
 
-<link href="/assets/css/site.css" rel="stylesheet">
-<link href="/assets/css/header.css?v=1" rel="stylesheet"/>
-<script defer="" src="/assets/js/head.js"></script>
-<style>
-    .page{
-      margin-top:18px;
-      padding:26px;
-    }
-
-    .page.card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
-    }
-
-    .hero{
-      display:grid;
-      grid-template-columns:1.02fr .98fr;
-      gap:16px;
-      align-items:stretch;
-    }
-
-    h1{
-      margin:0 0 8px;
-      letter-spacing:-0.02em;
-    }
-
-    .lede{
-      margin:0;
-      max-width:78ch;
-      color:var(--ink);
-      line-height:1.72;
-    }
-
-    .heroCard,
-    .heroMedia,
-    .infoCard,
-    .mediaCard,
-    .noteCard{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
-    }
-
-    .heroCard{
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      height:100%;
-    }
-
-    .ctaRow{
-      margin-top:14px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      font-weight:900;
-      color:var(--ink);
-      font-size:12.5px;
-      line-height:1;
-      white-space:nowrap;
-    }
-
-    .experienceHighlights{
-      margin-top:16px;
-      padding:14px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:rgba(255,255,255,.55);
-    }
-
-    .experienceHighlights h2{
-      margin:0 0 10px;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:18px;
-    }
-
-    .experienceHighlights ul{
-      margin:0;
-      padding-left:18px;
-      color:var(--ink);
-      line-height:1.6;
-    }
-
-    .experienceHighlights li + li{
-      margin-top:8px;
-    }
-
-    .heroMedia{
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      height:100%;
-    }
-
-    .heroMediaFrame{
-      width:100%;
-      flex:1 1 auto;
-      min-height:100%;
-      background:rgba(255,255,255,.55);
-    }
-
-    .heroMediaFrame img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .heroMediaCap{
-      padding:10px 12px;
-      border-top:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    .section{
-      margin-top:18px;
-      padding-top:14px;
-      border-top:1px solid var(--line);
-    }
-
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-
-    .sectionHead h2{
-      margin:0;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:20px;
-    }
-
-    .sectionHead p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    .infoGrid{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
-    }
-
-    .ridingGrid{
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:12px;
-    }
-
-    .infoCard{
-      padding:14px;
-    }
-
-    .infoCard h3{
-      margin:0 0 8px;
-      font-size:16px;
-      color:var(--forest);
-      letter-spacing:-0.01em;
-    }
-
-    .infoCard p,
-    .noteCard p{
-      color:var(--ink);
-      line-height:1.68;
-    }
-
-    .infoCard p{
-      margin:0;
-    }
-
-    .mediaGrid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:12px;
-      align-items:stretch;
-    }
-
-    .mediaCard{
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      min-width:0;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
-    }
-
-    .mediaInner{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      height:100%;
-    }
-
-    .videoFrame,
-    .carouselViewport{
-      position:relative;
-      width:100%;
-      aspect-ratio:9 / 16;
-      border-radius:14px;
-      overflow:hidden;
-      border:1px solid var(--line);
-      background:#000;
-    }
-
-    .videoFrame iframe{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      border:0;
-      display:block;
-    }
-
-    .carouselSlide{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .28s ease;
-    }
-
-    .carouselSlide.active{
-      opacity:1;
-      pointer-events:auto;
-    }
-
-    .carouselSlide img{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center;
-      display:block;
-      transform:scale(1.24);
-    }
-
-    .carouselOverlay{
-      position:absolute;
-      left:12px;
-      right:12px;
-      bottom:12px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      pointer-events:none;
-    }
-
-    .carouselOverlay .carouselBtn,
-    .carouselOverlay .carouselDots{
-      pointer-events:auto;
-    }
-
-    .carouselBtn{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.55);
-      background:rgba(255,255,255,.9);
-      color:var(--forest);
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-      flex:0 0 auto;
-      transition:transform .18s ease, background .18s ease;
-    }
-
-    .carouselBtn:hover{
-      transform:translateY(-1px);
-      background:#fff;
-    }
-
-    .carouselDots{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.9);
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:var(--shadow);
-    }
-
-    .carouselDot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      padding:0;
-      cursor:pointer;
-    }
-
-    .carouselDot.active{
-      background:var(--forest);
-      border-color:var(--forest);
-    }
-
-    .mediaFooter{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:13px;
-      color:var(--muted);
-      background:rgba(255,255,255,.6);
-      min-height:76px;
-      display:flex;
-      align-items:center;
-      line-height:1.5;
-    }
-
-    .noteCard{
-      padding:16px;
-    }
-
-    .noteCard p{
-      margin:0;
-    }
-
-    .footerActions{
-      margin-top:16px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    @media (max-width:980px){
-      .hero,
-      .infoGrid,
-      .mediaGrid,
-      .ridingGrid{
-        grid-template-columns:1fr;
-      }
-
-      .heroMedia{
-        order:1;
-      }
-
-      .heroCard{
-        order:2;
-      }
-    }
-
-    @media (max-width:680px){
-      .page{
-        padding:16px;
-      }
-    }
-  </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -468,7 +85,44 @@
   "dateModified": "2026-05-05"
 }
 </script>
-</link></head>
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Can you combine horseback riding with birdwatching in Mindo?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Many travelers pair horseback riding with a morning birding outing or use it as a relaxed afternoon activity after birdwatching, waterfalls, or a cloud forest walk."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does horseback riding usually take?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The exact time depends on the operator and route, but it is usually planned as a short scenic outing rather than a full-day activity. Confirm the schedule before booking."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is horseback riding good for families and relaxed travelers?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. This is one of the calmer outdoor activities in Mindo, especially for visitors who want countryside scenery without a high-adrenaline experience."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should I bring for horseback riding in Mindo?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Wear closed shoes and comfortable clothes, and bring light sun or rain protection. Weather can change quickly around Mindo, so a small daypack is helpful."
+      }
+    }
+  ]
+}</script></head>
 <body data-page-content-group="activities" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="activity_tour">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-content-group="activities" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/activities/horseback-riding/" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/activities/horseback-riding/" hreflang="en" lang="en">English</a>
@@ -586,7 +240,7 @@
 <h2>Why horseback riding is special in Mindo</h2>
 <p>The appeal comes from the pace, the landscape, and the feeling of seeing more without rushing.</p>
 </div>
-<div class="ridingGrid">
+<div class="grid-2">
 <article class="infoCard">
 <h3>A more scenic perspective</h3>
 <p>
@@ -643,7 +297,7 @@
 <a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Book Tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/book-tour/" data-analytics-location="horseback_riding" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="horseback_riding" href="/book-tour/">Book Tour</a>
 </div>
 </section>
-</main>
+<section aria-label="FAQs" class="section"><div class="sectionHead"><h2>FAQs</h2><p>Helpful answers for planning this activity around birding, weather, and timing.</p></div><div class="faqGrid"><article class="faqCard"><h3>Can you combine horseback riding with birdwatching in Mindo?</h3><p>Yes. Many travelers pair horseback riding with a morning birding outing or use it as a relaxed afternoon activity after birdwatching, waterfalls, or a cloud forest walk.</p></article><article class="faqCard"><h3>How long does horseback riding usually take?</h3><p>The exact time depends on the operator and route, but it is usually planned as a short scenic outing rather than a full-day activity. Confirm the schedule before booking.</p></article><article class="faqCard"><h3>Is horseback riding good for families and relaxed travelers?</h3><p>Yes. This is one of the calmer outdoor activities in Mindo, especially for visitors who want countryside scenery without a high-adrenaline experience.</p></article><article class="faqCard"><h3>What should I bring for horseback riding in Mindo?</h3><p>Wear closed shoes and comfortable clothes, and bring light sun or rain protection. Weather can change quickly around Mindo, so a small daypack is helpful.</p></article></div></section><section aria-label="Plan your Mindo day" class="finalCta"><div class="finalGrid"><div class="finalLeft"><span class="eyebrow">Plan your Mindo day</span><h2>Want to combine horseback riding, birding, and cloud forest time?</h2><p>Tell us your date, group size, activity pace, and how much time you have in Mindo. We can help place this ride around birding, waterfalls, or other relaxed nature experiences.</p><div class="ctaRow"><a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Book Tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/book-tour/" data-analytics-location="horseback_riding_final_cta" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/book-tour/">Book Tour</a><a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="contact_whatsapp_click" data-analytics-label="WhatsApp" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/contact/" data-analytics-location="horseback_riding_final_cta" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-whatsapp-message-key="default_en" data-whatsapp-source-page="horseback_riding" href="/contact/">Message on WhatsApp</a><a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="secondary_cta_click" data-analytics-label="Back to Activities" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/activities/" data-analytics-location="horseback_riding_final_cta" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/activities/">Back to Activities</a></div></div><div class="nextSteps"><h3>What happens next</h3><ol><li>We review your date, group size, and preferred pace.</li><li>We suggest the best timing around weather and other plans.</li><li>We confirm the booking path and practical details.</li><li>You enjoy a relaxed scenic ride in Mindo.</li></ol></div></div></section></main>
 <div id="siteFooter"></div>
 </div>
 <script defer="" src="/assets/js/includes.js?v=1"></script>
