@@ -11,7 +11,41 @@
 
   var dataEl = $("birdQuestData");
   if (!dataEl) return;
-  var birds = JSON.parse(dataEl.textContent || "[]");
+
+  function normalizeBirdData(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.birds)) return payload.birds;
+    return [];
+  }
+  function embeddedBirdData() {
+    try {
+      return normalizeBirdData(JSON.parse(dataEl.textContent || "[]"));
+    } catch (error) {
+      return [];
+    }
+  }
+  function loadBirdData() {
+    var src = dataEl.getAttribute("data-src");
+    var fallback = embeddedBirdData();
+    if (!src || !window.fetch) return Promise.resolve({ birds: fallback, source: "embedded" });
+    return fetch(src, { cache: "no-store" })
+      .then(function (response) {
+        if (!response.ok) throw new Error("Bird Quest data request failed: " + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        var remoteBirds = normalizeBirdData(payload);
+        return { birds: remoteBirds.length ? remoteBirds : fallback, source: remoteBirds.length ? "json" : "embedded" };
+      })
+      .catch(function (error) {
+        track("bird_quest_data_load_error", { page_path: window.location.pathname, message: error.message });
+        return { birds: fallback, source: "embedded" };
+      });
+  }
+
+  loadBirdData().then(function (loaded) {
+  var birds = loaded.birds || [];
+  var dataSource = loaded.source || "embedded";
   var body = document.body;
   var lang = (body.getAttribute("data-page-language") || document.documentElement.lang || "en").toLowerCase() === "es" ? "es" : "en";
   var grid = $("birdQuestGrid");
@@ -31,6 +65,7 @@
     var params = {
       page_path: window.location.pathname,
       page_language: lang,
+      data_source: dataSource,
       bird_count: birds.length,
       spotted_count: spotted.size,
       quest_points: birds.filter(function (b) { return spotted.has(b.code); }).reduce(function (sum, b) { return sum + Number(b.points || 0); }, 0)
@@ -198,4 +233,5 @@
   }, true);
 
   updateProgress(); render(); track('bird_quest_page_view', baseParams());
+  });
 })();
