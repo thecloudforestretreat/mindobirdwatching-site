@@ -46,9 +46,6 @@
   loadBirdData().then(function (loaded) {
   var birds = loaded.birds || [];
   var dataSource = loaded.source || "embedded";
-  var validCodes = new Set(birds.map(function (bird) { return bird.code; }));
-  spotted = new Set(Array.from(spotted).filter(function (code) { return validCodes.has(code); }));
-  try { localStorage.setItem(storageKey, JSON.stringify(Array.from(spotted))); } catch (error) {}
   var body = document.body;
   var lang = (body.getAttribute("data-page-language") || document.documentElement.lang || "en").toLowerCase() === "es" ? "es" : "en";
   var grid = $("birdQuestGrid");
@@ -71,6 +68,9 @@
   } catch (error) {
     spotted = new Set();
   }
+  var validCodes = new Set(birds.map(function (bird) { return bird.code; }));
+  spotted = new Set(Array.from(spotted).filter(function (code) { return validCodes.has(code); }));
+  try { localStorage.setItem(storageKey, JSON.stringify(Array.from(spotted))); } catch (error) {}
 
   function local(en, es) { return lang === "es" ? (es || en) : en; }
   function baseParams(extra) {
