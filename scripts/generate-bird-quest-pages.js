@@ -23,11 +23,11 @@ const fs = require("fs");
 const path = require("path");
 
 const DEFAULTS = {
-  csv: "/Users/juangranda/Downloads/mbw_recent_bird_sightings_mindo - bird_quest_mvp (5).csv",
-  templateEn: "/Users/juangranda/Downloads/index - 2026-07-08T083142.191.html",
-  templateEs: "/Users/juangranda/Downloads/index - 2026-07-08T083143.933.html",
+  csv: "/Users/juangranda/Downloads/mbw_recent_bird_sightings_mindo - bird_quest_mvp (6).csv",
+  templateEn: "/Users/juangranda/Downloads/index - 2026-07-08T091424.030.html",
+  templateEs: "/Users/juangranda/Downloads/index - 2026-07-08T091426.300.html",
   tsvTemplate: "/Users/juangranda/Documents/Codex/2026-07-07/i/outputs/bird_quest_page_package/tsv/bird_quest_replacement_rows.tsv",
-  outDir: "/Users/juangranda/Documents/Codex/2026-07-07/i/outputs/bird_quest_fully_updated_2026_07_08"
+  outDir: "/Users/juangranda/Documents/Codex/2026-07-07/i/outputs/bird_quest_32_info_above_cards_2026_07_08"
 };
 
 const CONFIG = {
@@ -44,6 +44,10 @@ function clean(value) {
 
 function bool(value) {
   return /^(true|yes|1)$/i.test(clean(value));
+}
+
+function isFalse(value) {
+  return /^(false|no|0)$/i.test(clean(value));
 }
 
 function parseCsv(text) {
@@ -177,7 +181,7 @@ function rowToBird(row) {
 
 function activeBirds(rows) {
   return rows
-    .filter((row) => bool(row.active) && bool(row.quest_enabled))
+    .filter((row) => bool(row.quest_enabled) && !isFalse(row.active))
     .map(rowToBird)
     .filter((bird) => bird.code && bird.nameEn)
     .sort((a, b) => {
@@ -231,8 +235,19 @@ function updateCounts(html, birds) {
     .replace(/(<strong id="birdQuestSpeciesCount">)\d+(<\/strong>)/, `$1${birds.length}$2`);
 }
 
+function moveHowToSectionAboveCards(html) {
+  const howToMatch = html.match(/<section class="section" aria-label="(?:How to use the quest|Cómo usar el reto)">[\s\S]*?<\/section>/);
+  if (!howToMatch) return html;
+  const withoutHowTo = html.replace(howToMatch[0], "");
+  return withoutHowTo.replace(
+    /<section class="birdQuestBody" aria-label="Bird quest species">/,
+    `${howToMatch[0]}\n<section class="birdQuestBody" aria-label="Bird quest species">`
+  );
+}
+
 function renderTemplate(templatePath, birds, lang) {
   let html = fs.readFileSync(templatePath, "utf8");
+  html = moveHowToSectionAboveCards(html);
   html = updateJsonLd(html, birds, lang);
   html = updateCounts(html, birds);
   html = replaceBirdData(html, birds);
@@ -289,14 +304,14 @@ function updateTsvRows(birds) {
       : "Mindo; Ecuador; Chocó Andino; cloud forest; birds of Mindo; bird calls; private guide; families");
     setCell(parsed.headers, row, "schema_types", "WebPage;ItemList;FAQPage;BreadcrumbList;ImageObject;Organization");
     setCell(parsed.headers, row, "sections_present", isEs
-      ? "hero; respuesta rápida; grilla interactiva de aves; cómo usar; FAQ; CTA final dividido"
-      : "hero; quick answer; interactive bird grid; how to use; FAQ; split final CTA");
+      ? "hero; respuesta rápida; cómo usar; grilla interactiva de aves; FAQ; CTA final dividido"
+      : "hero; quick answer; how to use; interactive bird grid; FAQ; split final CTA");
     setCell(parsed.headers, row, "image_notes", isEs
       ? "Imagen OG/ImageObject conservada del HTML aprobado; especies actualizadas desde CSV; URLs MBW normalizadas a HTTPS."
       : "OG/ImageObject image preserved from approved HTML; species images updated from CSV; MBW URLs normalized to HTTPS.");
     setCell(parsed.headers, row, "qa_notes", isEs
-      ? `QA 2026-07-08: EN/ES en paridad; ${birdCount} especies activas; schema válido; hreflang/canonical conservados; WhatsApp usa site-config; sin simpleTable; pendiente reemplazar URLs eBird catalog por imágenes directas donde existan.`
-      : `QA 2026-07-08: EN/ES parity; ${birdCount} active species; schema valid; hreflang/canonical preserved; WhatsApp uses site-config; no simpleTable; replace eBird catalog URLs with direct images where present.`);
+      ? `QA 2026-07-08: EN/ES en paridad; ${birdCount} especies activas desde quest_enabled=TRUE; schema válido; hreflang/canonical conservados; WhatsApp usa site-config; sin simpleTable; pendiente reemplazar URLs eBird catalog por imágenes directas donde existan.`
+      : `QA 2026-07-08: EN/ES parity; ${birdCount} active species from quest_enabled=TRUE; schema valid; hreflang/canonical preserved; WhatsApp uses site-config; no simpleTable; replace eBird catalog URLs with direct images where present.`);
     setCell(parsed.headers, row, "target_species_examples", isEs ? namesEs : namesEn);
     setCell(parsed.headers, row, "analytics_notes", "bird_quest_page_view; bird_quest_open_species; bird_quest_audio_play; bird_quest_spotted_toggle; bird_quest_filter; bird_quest_search; contact_whatsapp_click");
   });
@@ -337,11 +352,13 @@ Prompt compliance
 - No hard-coded WhatsApp number: Pass.
 - No inappropriate simpleTable usage: Pass.
 - Existing sections/modules: Preserved. Hero, quick answer, bird grid, how-to cards, FAQ, and split final CTA remain.
+- Section order: Updated. How-to cards now appear before the search/filter controls and bird cards.
 - Commercial intent: Preserved/improved for this interactive hub via booking, tours, WhatsApp route-planning CTA, and next-step panel. Deployment status remains pending_update until uploaded.
 - TSV column order: Preserved from the existing Bird Quest TSV template; source template currently has 249 columns.
 
 Data notes
-- Active birds: ${birds.length}
+- Page inclusion column: quest_enabled=TRUE controls whether a species appears. active=FALSE is treated as a master exclusion; blank or TRUE active values can appear when quest_enabled=TRUE.
+- Active birds rendered: ${birds.length}
 - Audio-ready birds: ${birds.filter((bird) => clean(bird.audio)).length}
 - MBW image URLs normalized from http to https where needed.
 - Non-direct image URLs that will render as Image coming soon until replaced:
@@ -359,8 +376,10 @@ function main() {
   const rows = parseCsv(fs.readFileSync(CONFIG.csv, "utf8"));
   const birds = activeBirds(rows);
   if (!birds.length) {
-    throw new Error("No active Bird Quest rows found. Check active=TRUE and quest_enabled=TRUE in the CSV.");
+    throw new Error("No active Bird Quest rows found. Check quest_enabled=TRUE in the CSV and confirm active is not FALSE.");
   }
+  const questEnabledCount = rows.filter((row) => bool(row.quest_enabled)).length;
+  const activeFalseCount = rows.filter((row) => bool(row.quest_enabled) && isFalse(row.active)).length;
 
   const enHtml = renderTemplate(CONFIG.templateEn, birds, "en");
   const esHtml = renderTemplate(CONFIG.templateEs, birds, "es");
@@ -381,6 +400,8 @@ function main() {
   if (tsv) console.log(`Generated ${tsvOut}`);
   console.log(`Generated ${qaOut}`);
   console.log(`Birds enabled: ${birds.length}`);
+  console.log(`Rows with quest_enabled=TRUE: ${questEnabledCount}`);
+  console.log(`Rows hidden because active=FALSE: ${activeFalseCount}`);
   console.log(`Audio ready: ${birds.filter((bird) => clean(bird.audio)).length}`);
   console.log(`Images normalized to HTTPS where needed.`);
 }
