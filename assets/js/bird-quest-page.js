@@ -108,6 +108,18 @@
     if (!bird.audio) return '';
     return '<div class="birdQuestAudioWrap"><audio controls preload="none" src="' + bird.audio + '" data-audio-bird="' + bird.code + '"></audio><a class="birdQuestAudioFallback" href="' + bird.audio + '" target="_blank" rel="noreferrer" data-audio-fallback>' + local('Open call', 'Abrir canto') + '</a></div>';
   }
+  function stopModalAudio() {
+    if (!modal) return;
+    modal.querySelectorAll("audio").forEach(function (audio) {
+      try { audio.pause(); } catch (error) {}
+      try { audio.currentTime = 0; } catch (error) {}
+    });
+  }
+  function closeBirdModal(reason) {
+    stopModalAudio();
+    if (modal && modal.open) modal.close();
+    if (reason) track('bird_quest_modal_close', baseParams({ close_method: reason }));
+  }
   function label(value) {
     var labels = {
       both: ["Half + Full Day", "Medio + Día Completo"],
@@ -266,7 +278,7 @@
       var nowSpotted = !spotted.has(code);
       if (nowSpotted) spotted.add(code); else spotted.delete(code);
       save(); render();
-      if (modal.open) modal.close();
+      closeBirdModal('spotted')
       showToast(
         nowSpotted ? local("Bird caught", "Ave capturada") : local("Removed from quest", "Quitada del reto"),
         bird ? local(bird.nameEn, bird.nameEs) + " · " + pointsTotal() + " " + local("pts", "pts") : ""
@@ -275,7 +287,7 @@
       return;
     }
     var close = event.target.closest("[data-close-bird]");
-    if (close) { track('bird_quest_modal_close', baseParams()); modal.close(); return; }
+    if (close) { closeBirdModal('button'); return; }
     var ebirdLink = event.target.closest(".birdQuestActions a[href*='ebird.org']");
     if (ebirdLink) { track('bird_quest_ebird_click', baseParams({ target_url: ebirdLink.href })); return; }
     var chip = event.target.closest("[data-filter]");
@@ -295,8 +307,12 @@
       searchTimer = setTimeout(function () { track('bird_quest_search', baseParams({ search_length: search.value.trim().length, has_search: search.value.trim().length > 0 })); }, 700);
     });
   }
-  if (kidToggle) kidToggle.addEventListener("click", function () { kidMode = !kidMode; kidToggle.setAttribute("aria-pressed", String(kidMode)); kidToggle.textContent = kidMode ? local('Guide Mode', 'Modo guía') : local('Kid Mode', 'Modo niños'); if (modal.open) modal.close(); track('bird_quest_kid_mode', baseParams({ enabled: kidMode })); });
-  if (modal) modal.addEventListener("click", function (event) { if (event.target === modal) { track('bird_quest_modal_close', baseParams({ close_method: 'backdrop' })); modal.close(); } });
+  if (kidToggle) kidToggle.addEventListener("click", function () { kidMode = !kidMode; kidToggle.setAttribute("aria-pressed", String(kidMode)); kidToggle.textContent = kidMode ? local('Guide Mode', 'Modo guía') : local('Kid Mode', 'Modo niños'); closeBirdModal('kid_mode'); track('bird_quest_kid_mode', baseParams({ enabled: kidMode })); });
+  if (modal) {
+    modal.addEventListener("click", function (event) { if (event.target === modal) closeBirdModal('backdrop'); });
+    modal.addEventListener("cancel", function () { stopModalAudio(); track('bird_quest_modal_close', baseParams({ close_method: 'cancel' })); });
+    modal.addEventListener("close", stopModalAudio);
+  }
   document.addEventListener("error", function (event) {
     if (!event.target || event.target.tagName !== "IMG") return;
     var holder = event.target.closest(".birdQuestThumb, .birdQuestGallery, .birdQuestGalleryMain");
