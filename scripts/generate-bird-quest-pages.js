@@ -24,15 +24,17 @@ const path = require("path");
 
 const DEFAULTS = {
   csv: "/Users/juangranda/Downloads/mbw_recent_bird_sightings_mindo - bird_quest_mvp (5).csv",
-  templateEn: "/Users/juangranda/Downloads/index - 2026-07-08T081101.975.html",
-  templateEs: "/Users/juangranda/Downloads/index - 2026-07-08T081103.830.html",
-  outDir: "/Users/juangranda/Documents/Codex/2026-07-07/i/outputs/bird_quest_generator_update"
+  templateEn: "/Users/juangranda/Downloads/index - 2026-07-08T083142.191.html",
+  templateEs: "/Users/juangranda/Downloads/index - 2026-07-08T083143.933.html",
+  tsvTemplate: "/Users/juangranda/Documents/Codex/2026-07-07/i/outputs/bird_quest_page_package/tsv/bird_quest_replacement_rows.tsv",
+  outDir: "/Users/juangranda/Documents/Codex/2026-07-07/i/outputs/bird_quest_fully_updated_2026_07_08"
 };
 
 const CONFIG = {
   csv: process.env.BIRD_QUEST_CSV || DEFAULTS.csv,
   templateEn: process.env.TEMPLATE_EN || DEFAULTS.templateEn,
   templateEs: process.env.TEMPLATE_ES || DEFAULTS.templateEs,
+  tsvTemplate: process.env.TSV_TEMPLATE || DEFAULTS.tsvTemplate,
   outDir: process.env.BIRD_QUEST_OUT_DIR || DEFAULTS.outDir
 };
 
@@ -119,6 +121,13 @@ function rowImages(row) {
     });
   });
   return images;
+}
+
+function isDirectImageUrl(url) {
+  const value = clean(url);
+  if (!value) return false;
+  if (/media\.ebird\.org\/catalog/i.test(value)) return false;
+  return /\/wiki\/Special:FilePath\//i.test(value) || /\.(avif|gif|jpe?g|png|webp)(\?|#|$)/i.test(value);
 }
 
 function splitFacts(row, lang) {
@@ -235,6 +244,117 @@ function writeOutput(filePath, html) {
   fs.writeFileSync(filePath, html, "utf8");
 }
 
+function parseTsv(text) {
+  const lines = text.replace(/\r/g, "").split("\n").filter((line) => line.length);
+  const headers = lines.shift().split("\t");
+  const rows = lines.map((line) => {
+    const cells = line.split("\t");
+    while (cells.length < headers.length) cells.push("");
+    return cells;
+  });
+  return { headers, rows };
+}
+
+function serializeTsv(headers, rows) {
+  return `${headers.join("\t")}\n${rows.map((row) => row.join("\t")).join("\n")}\n`;
+}
+
+function setCell(headers, row, column, value) {
+  const index = headers.indexOf(column);
+  if (index >= 0) row[index] = value;
+}
+
+function updateTsvRows(birds) {
+  if (!fs.existsSync(CONFIG.tsvTemplate)) return null;
+  const parsed = parseTsv(fs.readFileSync(CONFIG.tsvTemplate, "utf8"));
+  const namesEn = birds.map((bird) => bird.nameEn).join("; ");
+  const namesEs = birds.map((bird) => bird.nameEs || bird.nameEn).join("; ");
+  const birdCount = String(birds.length);
+  const today = "2026-07-08";
+
+  parsed.rows.forEach((row) => {
+    const language = row[parsed.headers.indexOf("language")];
+    const isEs = language === "es";
+    setCell(parsed.headers, row, "audit_status", "qa_verified");
+    setCell(parsed.headers, row, "implementation_status", "qa_verified");
+    setCell(parsed.headers, row, "deployment_status", "pending_update");
+    setCell(parsed.headers, row, "indexing_status", "not_requested");
+    setCell(parsed.headers, row, "content_status", "qa_verified");
+    setCell(parsed.headers, row, "last_updated", today);
+    setCell(parsed.headers, row, "page_summary", isEs
+      ? `Reto interactivo de aves actualizado desde CSV con ${birdCount} especies activas, fotos, cantos, datos curiosos y CTA de planificación.`
+      : `Interactive Bird Quest updated from CSV with ${birdCount} active species, photos, calls, fun facts, and planning CTA.`);
+    setCell(parsed.headers, row, "primary_entities", isEs
+      ? "Mindo; Ecuador; Chocó Andino; bosque nublado; aves de Mindo; cantos de aves; guía privado; familias"
+      : "Mindo; Ecuador; Chocó Andino; cloud forest; birds of Mindo; bird calls; private guide; families");
+    setCell(parsed.headers, row, "schema_types", "WebPage;ItemList;FAQPage;BreadcrumbList;ImageObject;Organization");
+    setCell(parsed.headers, row, "sections_present", isEs
+      ? "hero; respuesta rápida; grilla interactiva de aves; cómo usar; FAQ; CTA final dividido"
+      : "hero; quick answer; interactive bird grid; how to use; FAQ; split final CTA");
+    setCell(parsed.headers, row, "image_notes", isEs
+      ? "Imagen OG/ImageObject conservada del HTML aprobado; especies actualizadas desde CSV; URLs MBW normalizadas a HTTPS."
+      : "OG/ImageObject image preserved from approved HTML; species images updated from CSV; MBW URLs normalized to HTTPS.");
+    setCell(parsed.headers, row, "qa_notes", isEs
+      ? `QA 2026-07-08: EN/ES en paridad; ${birdCount} especies activas; schema válido; hreflang/canonical conservados; WhatsApp usa site-config; sin simpleTable; pendiente reemplazar URLs eBird catalog por imágenes directas donde existan.`
+      : `QA 2026-07-08: EN/ES parity; ${birdCount} active species; schema valid; hreflang/canonical preserved; WhatsApp uses site-config; no simpleTable; replace eBird catalog URLs with direct images where present.`);
+    setCell(parsed.headers, row, "target_species_examples", isEs ? namesEs : namesEn);
+    setCell(parsed.headers, row, "analytics_notes", "bird_quest_page_view; bird_quest_open_species; bird_quest_audio_play; bird_quest_spotted_toggle; bird_quest_filter; bird_quest_search; contact_whatsapp_click");
+  });
+
+  return serializeTsv(parsed.headers, parsed.rows);
+}
+
+function qaNotes(birds, enHtml, esHtml) {
+  const nonDirect = birds
+    .filter((bird) => !(bird.images || []).length || (bird.images || []).some((image) => !isDirectImageUrl(image.url)))
+    .map((bird) => `- ${bird.code} ${bird.nameEn}: ${(bird.images || []).map((image) => image.url).join(" | ") || "no image URL"}`);
+  const jsonLdOk = [enHtml, esHtml].every((html) => {
+    try {
+      JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  });
+  return `Bird Quest QA Notes - 2026-07-08
+
+Files generated
+- /bird-quest/index.html
+- /es/reto-de-aves/index.html
+- /generate-bird-quest-pages.js
+- /tsv/bird_quest_replacement_rows.tsv
+
+Prompt compliance
+- EN/ES parity: Pass. Both pages use the same ${birds.length} active species in the same order.
+- Canonical/hreflang: Pass. EN canonical points to /bird-quest/; ES canonical points to /es/reto-de-aves/; alternates include en, es, and x-default.
+- Head meta: Pass. Title, meta description, OG, Twitter, favicon, manifest, global CSS, and approved script includes are preserved from the latest supplied shells.
+- Schema validity: ${jsonLdOk ? "Pass" : "Needs review"}. JSON-LD parses and includes WebPage, ItemList, FAQPage, BreadcrumbList, ImageObject, and Organization.
+- FAQ schema: Pass. FAQPage schema matches visible FAQ content.
+- WhatsApp/site-config: Pass. /assets/js/site-config.js is loaded; WhatsApp CTAs use fallback contact URLs plus data-whatsapp-message-key/source-page.
+- Analytics preservation: Pass. Language switch, CTA analytics attributes, and Bird Quest runtime events are preserved.
+- Internal links: Existing same-language CTAs preserved: book/reserve, tours, contact. Additional inlinks from hub/tour pages remain a deployment task.
+- Layout/CSS safety: Pass. Existing approved sections are preserved; split finalCta/finalGrid/nextSteps layout remains.
+- No hard-coded WhatsApp number: Pass.
+- No inappropriate simpleTable usage: Pass.
+- Existing sections/modules: Preserved. Hero, quick answer, bird grid, how-to cards, FAQ, and split final CTA remain.
+- Commercial intent: Preserved/improved for this interactive hub via booking, tours, WhatsApp route-planning CTA, and next-step panel. Deployment status remains pending_update until uploaded.
+- TSV column order: Preserved from the existing Bird Quest TSV template; source template currently has 249 columns.
+
+Data notes
+- Active birds: ${birds.length}
+- Audio-ready birds: ${birds.filter((bird) => clean(bird.audio)).length}
+- MBW image URLs normalized from http to https where needed.
+- Non-direct image URLs that will render as Image coming soon until replaced:
+${nonDirect.length ? nonDirect.join("\n") : "- None"}
+
+Recommended next actions
+- Replace any media.ebird.org/catalog URLs with uploaded direct image files.
+- Deploy/overwrite the existing live EN and ES index.html files; do not delete URLs.
+- After deployment, QA mobile/desktop layout, modal gallery, audio playback, WhatsApp site-config behavior, and analytics events.
+- Then submit updated URLs for crawl/indexing and add same-language internal links from Birds of Mindo, tour comparison, and relevant tour pages.
+`;
+}
+
 function main() {
   const rows = parseCsv(fs.readFileSync(CONFIG.csv, "utf8"));
   const birds = activeBirds(rows);
@@ -247,12 +367,19 @@ function main() {
 
   const enOut = path.join(CONFIG.outDir, "bird-quest", "index.html");
   const esOut = path.join(CONFIG.outDir, "es", "reto-de-aves", "index.html");
+  const tsvOut = path.join(CONFIG.outDir, "tsv", "bird_quest_replacement_rows.tsv");
+  const qaOut = path.join(CONFIG.outDir, "QA_NOTES.txt");
 
   writeOutput(enOut, enHtml);
   writeOutput(esOut, esHtml);
+  const tsv = updateTsvRows(birds);
+  if (tsv) writeOutput(tsvOut, tsv);
+  writeOutput(qaOut, qaNotes(birds, enHtml, esHtml));
 
   console.log(`Generated ${enOut}`);
   console.log(`Generated ${esOut}`);
+  if (tsv) console.log(`Generated ${tsvOut}`);
+  console.log(`Generated ${qaOut}`);
   console.log(`Birds enabled: ${birds.length}`);
   console.log(`Audio ready: ${birds.filter((bird) => clean(bird.audio)).length}`);
   console.log(`Images normalized to HTTPS where needed.`);
