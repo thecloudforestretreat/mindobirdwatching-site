@@ -20415,3 +20415,277 @@ body[data-page-type="activity_tour"] .nextSteps ol{
     padding:16px;
   }
 }
+
+/* Bird Quest gamified mobile HUD and modal fixes - 2026-07-08 */
+body[data-page-type="bird_quest_page"]{
+  padding-bottom:88px;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHud{
+  position:fixed;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  width:min(520px,calc(100vw - 28px));
+  z-index:900;
+  pointer-events:none;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudMain{
+  width:100%;
+  min-height:68px;
+  border:1px solid rgba(10,56,31,.28);
+  border-radius:18px;
+  background:rgba(252,255,246,.94);
+  box-shadow:0 16px 42px rgba(7,25,35,.22);
+  backdrop-filter:blur(14px);
+  display:grid;
+  grid-template-columns:54px 1fr;
+  align-items:center;
+  gap:12px;
+  padding:8px 14px 8px 9px;
+  color:#102832;
+  text-align:left;
+  pointer-events:auto;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudRing{
+  width:50px;
+  aspect-ratio:1;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  background:conic-gradient(#ffd400 var(--progress,0%),#e9efe3 0);
+  position:relative;
+  font-weight:900;
+  color:#0d642d;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudRing::before{
+  content:"";
+  position:absolute;
+  inset:5px;
+  border-radius:999px;
+  background:#fffef8;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudRing strong,
+body[data-page-type="bird_quest_page"] .birdQuestHudRing small{
+  position:relative;
+  z-index:1;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudRing strong{
+  font-size:18px;
+  line-height:1;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudRing small{
+  font-size:11px;
+  margin-left:1px;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudText{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudText strong{
+  color:#0d642d;
+  font-size:15px;
+  line-height:1.1;
+}
+body[data-page-type="bird_quest_page"] .birdQuestHudText small{
+  color:#52616a;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+body[data-page-type="bird_quest_page"] .birdQuestToast{
+  position:fixed;
+  left:50%;
+  bottom:96px;
+  transform:translate(-50%,12px);
+  z-index:950;
+  width:min(420px,calc(100vw - 32px));
+  opacity:0;
+  pointer-events:none;
+  border-radius:16px;
+  background:#0d642d;
+  color:#fff;
+  box-shadow:0 18px 48px rgba(7,25,35,.24);
+  padding:13px 16px;
+  transition:opacity .18s ease,transform .18s ease;
+}
+body[data-page-type="bird_quest_page"] .birdQuestToast.is-visible{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+body[data-page-type="bird_quest_page"] .birdQuestToast strong,
+body[data-page-type="bird_quest_page"] .birdQuestToast span{
+  display:block;
+}
+body[data-page-type="bird_quest_page"] .birdQuestToast strong{
+  font-size:16px;
+  line-height:1.1;
+}
+body[data-page-type="bird_quest_page"] .birdQuestToast span{
+  margin-top:3px;
+  color:rgba(255,255,255,.84);
+  font-weight:800;
+  font-size:13px;
+}
+body[data-page-type="bird_quest_page"] .birdQuestModalShell{
+  position:relative;
+}
+body[data-page-type="bird_quest_page"] .birdQuestModalClose{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  border:1px solid rgba(15,38,25,.24);
+  background:rgba(255,255,255,.96);
+  color:#102832;
+  font-size:26px;
+  font-weight:900;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  z-index:4;
+  box-shadow:0 8px 24px rgba(7,25,35,.2);
+}
+body[data-page-type="bird_quest_page"] .birdQuestCard.is-spotted::after{
+  content:"Caught";
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:3;
+  border-radius:999px;
+  background:#0d642d;
+  color:#fff;
+  padding:7px 11px;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+body[data-page-type="bird_quest_page"] .birdQuestGalleryMain img{
+  object-fit:contain;
+  max-height:100%;
+}
+@media (min-width:701px){
+  body[data-page-type="bird_quest_page"] .birdQuestThumb{
+    aspect-ratio:4/3;
+  }
+}
+@media (max-width:700px){
+  body[data-page-type="bird_quest_page"] .birdQuestGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestThumb{
+    aspect-ratio:3/4;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestThumb img{
+    object-fit:cover;
+    object-position:center center;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestCardBody{
+    padding:14px 13px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestPreviewFact{
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestMeta{
+    grid-template-columns:1fr;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestTag strong{
+    font-size:13px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestCardActions{
+    grid-template-columns:1fr 52px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestModal{
+    width:100vw;
+    max-width:100vw;
+    height:100dvh;
+    max-height:100dvh;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestModalShell{
+    min-height:100dvh;
+    max-height:none;
+    border-radius:0;
+    display:block;
+    overflow:auto;
+    background:#fbfcf6;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestGallery{
+    min-height:auto;
+    display:block;
+    background:#0f2619;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestGalleryMain{
+    height:clamp(340px,58vh,560px);
+    display:grid;
+    place-items:center;
+    background:#0f2619;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestGalleryMain img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestGalleryThumbs{
+    padding:12px 16px;
+    overflow-x:auto;
+    display:flex;
+    gap:10px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestGalleryThumbs button{
+    flex:0 0 72px;
+    width:72px;
+    height:54px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestGalleryBar{
+    position:sticky;
+    bottom:0;
+    z-index:2;
+    padding:12px 16px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestGalleryBar .btn{
+    display:none;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestDetail{
+    padding:22px 20px 110px;
+    overflow:visible;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestDetailTop{
+    padding-right:54px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestDetail h2{
+    font-size:clamp(36px,10vw,54px);
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestActions{
+    position:sticky;
+    bottom:82px;
+    z-index:3;
+    background:rgba(251,252,246,.94);
+    border:1px solid rgba(10,56,31,.14);
+    border-radius:16px;
+    padding:10px;
+    box-shadow:0 12px 32px rgba(7,25,35,.16);
+    backdrop-filter:blur(12px);
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestActions .btn{
+    flex:1;
+    min-height:50px;
+  }
+}
+@media (max-width:420px){
+  body[data-page-type="bird_quest_page"] .birdQuestGrid{
+    gap:12px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestCardBody{
+    padding:12px 10px;
+  }
+  body[data-page-type="bird_quest_page"] .birdQuestName h2{
+    font-size:25px;
+  }
+}
