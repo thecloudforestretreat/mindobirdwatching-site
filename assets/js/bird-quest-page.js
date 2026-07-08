@@ -46,6 +46,9 @@
   loadBirdData().then(function (loaded) {
   var birds = loaded.birds || [];
   var dataSource = loaded.source || "embedded";
+  var validCodes = new Set(birds.map(function (bird) { return bird.code; }));
+  spotted = new Set(Array.from(spotted).filter(function (code) { return validCodes.has(code); }));
+  try { localStorage.setItem(storageKey, JSON.stringify(Array.from(spotted))); } catch (error) {}
   var body = document.body;
   var lang = (body.getAttribute("data-page-language") || document.documentElement.lang || "en").toLowerCase() === "es" ? "es" : "en";
   var grid = $("birdQuestGrid");
@@ -54,11 +57,20 @@
   var kidToggle = $("birdQuestKidToggle");
   var emptyState = $("birdQuestEmpty");
   var storageKey = "mbwBirdQuestSpotted";
+  var storageVersionKey = "mbwBirdQuestSpottedVersion";
+  var storageVersion = "2";
   var filter = "all";
   var kidMode = false;
   var spotted = new Set();
   var completedTracked = false;
-  try { localStorage.removeItem(storageKey); } catch (error) {}
+  try {
+    if (localStorage.getItem(storageVersionKey) !== storageVersion) {
+      localStorage.setItem(storageVersionKey, storageVersion);
+    }
+    spotted = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
+  } catch (error) {
+    spotted = new Set();
+  }
 
   function local(en, es) { return lang === "es" ? (es || en) : en; }
   function baseParams(extra) {
@@ -116,21 +128,62 @@
     return labels[value] ? local(labels[value][0], labels[value][1]) : text(value).replace(/_/g, " ");
   }
   function save() {
+    try { localStorage.setItem(storageKey, JSON.stringify(Array.from(spotted))); } catch (error) {}
     updateProgress();
     if (!completedTracked && birds.length && spotted.size === birds.length) {
       completedTracked = true;
       track('bird_quest_completed', baseParams());
     }
   }
+  function pointsTotal() {
+    return birds.filter(function (b) { return spotted.has(b.code); }).reduce(function (sum, b) { return sum + Number(b.points || 0); }, 0);
+  }
+  function questRank(points) {
+    if (points >= 900) return local("Cloud Forest Master", "Maestro del Bosque");
+    if (points >= 500) return local("Rare Bird Tracker", "Rastreador de Aves Raras");
+    if (points >= 250) return local("Field Explorer", "Explorador de Campo");
+    if (points > 0) return local("First Catch", "Primera Captura");
+    return local("Quest Ready", "Reto Listo");
+  }
+  function ensureHud() {
+    var hud = $("birdQuestHud");
+    if (hud) return hud;
+    document.body.insertAdjacentHTML("beforeend",
+      '<aside class="birdQuestHud" id="birdQuestHud" aria-live="polite">' +
+        '<button class="birdQuestHudMain" type="button" data-scroll-grid>' +
+          '<span class="birdQuestHudRing"><strong id="birdQuestHudCaught">0</strong><small id="birdQuestHudTotal">/' + birds.length + '</small></span>' +
+          '<span class="birdQuestHudText"><strong id="birdQuestHudRank">' + questRank(0) + '</strong><small><span id="birdQuestHudPoints">0</span> ' + local("pts", "pts") + '</small></span>' +
+        '</button>' +
+      '</aside>'
+    );
+    return $("birdQuestHud");
+  }
+  function showToast(message, detail) {
+    var toast = $("birdQuestToast");
+    if (!toast) {
+      document.body.insertAdjacentHTML("beforeend", '<div class="birdQuestToast" id="birdQuestToast" role="status" aria-live="polite"></div>');
+      toast = $("birdQuestToast");
+    }
+    toast.innerHTML = '<strong>' + message + '</strong>' + (detail ? '<span>' + detail + '</span>' : '');
+    toast.classList.add("is-visible");
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(function () { toast.classList.remove("is-visible"); }, 2200);
+  }
   function updateProgress() {
     var count = spotted.size;
     var total = birds.length || 1;
-    var points = birds.filter(function (b) { return spotted.has(b.code); }).reduce(function (sum, b) { return sum + Number(b.points || 0); }, 0);
+    var points = pointsTotal();
     if ($("birdQuestProgressCount")) $("birdQuestProgressCount").textContent = count + "/" + birds.length;
     if ($("birdQuestTotalPoints")) $("birdQuestTotalPoints").textContent = points;
     if ($("birdQuestSpeciesCount")) $("birdQuestSpeciesCount").textContent = birds.length;
     if ($("birdQuestAudioCount")) $("birdQuestAudioCount").textContent = birds.filter(function (b) { return b.audio; }).length;
     if ($("birdQuestProgressRing")) $("birdQuestProgressRing").style.setProperty("--progress", ((count / total) * 100) + "%");
+    ensureHud();
+    if ($("birdQuestHud")) $("birdQuestHud").style.setProperty("--progress", ((count / total) * 100) + "%");
+    if ($("birdQuestHudCaught")) $("birdQuestHudCaught").textContent = count;
+    if ($("birdQuestHudTotal")) $("birdQuestHudTotal").textContent = "/" + birds.length;
+    if ($("birdQuestHudPoints")) $("birdQuestHudPoints").textContent = points;
+    if ($("birdQuestHudRank")) $("birdQuestHudRank").textContent = questRank(points);
   }
   function matches(bird) {
     var q = search ? search.value.trim().toLowerCase() : "";
@@ -169,14 +222,14 @@
     var facts = (kidMode ? [local(bird.kidFactEn, bird.kidFactEs), local(bird.idTipEn, bird.idTipEs), local(bird.unlockEn, bird.unlockEs)] : local(bird.factsEn, bird.factsEs)).filter(Boolean);
     var isSpotted = spotted.has(bird.code);
     var elevation = bird.elevationMinM && bird.elevationMaxM ? bird.elevationMinM + "-" + bird.elevationMaxM + " m" : local("Guide review", "Revisión del guía");
-    modal.innerHTML = '<div class="birdQuestModalShell"><section class="birdQuestGallery' + (isDirectImageUrl(image.url) ? '' : ' is-image-missing') + '"><div class="birdQuestGalleryMain">' + imageMarkup(image, imageAlt, true) + '</div>' + (galleryImages.length > 1 ? '<div class="birdQuestGalleryThumbs">' + galleryImages.map(function (thumb, i) { return '<button type="button" data-gallery-bird="' + bird.code + '" data-gallery-index="' + i + '" aria-pressed="' + (i === imageIndex) + '"><img src="' + thumb.url + '" alt=""></button>'; }).join('') + '</div>' : '') + '<div class="birdQuestGalleryBar"><small>' + (isDirectImageUrl(image.url) ? ((image.credit || local('Image credit pending review', 'Crédito de imagen por revisar')) + (galleryImages.length > 1 ? ' · ' + (imageIndex + 1) + '/' + galleryImages.length : '')) : local('Photo will be added after image review', 'La foto se agregará después de revisar la imagen')) + '</small><button class="btn" type="button" data-close-bird>' + local('Close', 'Cerrar') + '</button></div></section>' +
+    modal.innerHTML = '<div class="birdQuestModalShell"><button class="birdQuestModalClose" type="button" data-close-bird aria-label="' + local('Close bird details', 'Cerrar detalles del ave') + '">×</button><section class="birdQuestGallery' + (isDirectImageUrl(image.url) ? '' : ' is-image-missing') + '"><div class="birdQuestGalleryMain">' + imageMarkup(image, imageAlt, true) + '</div>' + (galleryImages.length > 1 ? '<div class="birdQuestGalleryThumbs">' + galleryImages.map(function (thumb, i) { return '<button type="button" data-gallery-bird="' + bird.code + '" data-gallery-index="' + i + '" aria-pressed="' + (i === imageIndex) + '"><img src="' + thumb.url + '" alt=""></button>'; }).join('') + '</div>' : '') + '<div class="birdQuestGalleryBar"><small>' + (isDirectImageUrl(image.url) ? ((image.credit || local('Image credit pending review', 'Crédito de imagen por revisar')) + (galleryImages.length > 1 ? ' · ' + (imageIndex + 1) + '/' + galleryImages.length : '')) : local('Photo will be added after image review', 'La foto se agregará después de revisar la imagen')) + '</small><button class="btn" type="button" data-close-bird>' + local('Close', 'Cerrar') + '</button></div></section>' +
       '<section class="birdQuestDetail"><div class="birdQuestDetailTop"><div><h2>' + local(bird.nameEn, bird.nameEs) + '</h2><div class="birdQuestAlt">' + local(bird.nameEs, bird.nameEn) + ' · <span class="birdQuestSci">' + bird.scientific + '</span></div></div><span class="birdQuestDetailPoints">' + bird.points + '<small>pts</small></span></div>' +
       '<h3 class="birdQuestDetailLabel">' + local('Fun facts', 'Datos curiosos') + '</h3><ul class="birdQuestFactList">' + facts.map(function (fact) { return '<li>' + fact + '</li>'; }).join('') + '</ul>' +
       '<div class="birdQuestDetailMeta"><span><strong>' + local('Family', 'Familia') + '</strong>' + (bird.family || local('Guide review', 'Revisión del guía')) + '</span><span><strong>' + local('Elevation', 'Elevación') + '</strong>' + elevation + '</span></div>' +
       '<div class="birdQuestInfoBlock"><strong>' + local('Where to look', 'Dónde buscar') + '</strong>' + local(bird.whereEn, bird.whereEs) + '</div>' +
       '<div class="birdQuestInfoBlock"><strong>' + local('Listen to the call', 'Escucha el canto') + '</strong>' + local(bird.audioCaptionEn, bird.audioCaptionEs) + (bird.audio ? '<audio controls preload="none" src="' + bird.audio + '"></audio>' : '') + '<div class="birdQuestCredit">' + bird.audioCredit + '</div></div>' +
       '<div class="birdQuestActions"><button class="btn primary" type="button" data-spot-bird="' + bird.code + '" aria-pressed="' + isSpotted + '">' + (isSpotted ? local('Spotted', 'Visto') : local('Mark as Spotted', 'Marcar como visto')) + '</button>' + (bird.ebird ? '<a class="btn secondary" href="' + bird.ebird + '" target="_blank" rel="noreferrer">eBird</a>' : '') + '</div></section></div>';
-    modal.showModal();
+    if (!modal.open) modal.showModal();
     var audio = modal.querySelector("audio");
     if (audio) audio.addEventListener("play", function () { track('bird_quest_audio_play', baseParams({ species_code: bird.code, bird_name: local(bird.nameEn, bird.nameEs) })); }, { once: true });
     track('bird_quest_open_species', baseParams({ bird_name: local(bird.nameEn, bird.nameEs), species_code: bird.code, image_index: imageIndex + 1, image_count: galleryImages.length || 0 }));
@@ -195,8 +248,15 @@
     var spot = event.target.closest("[data-spot-bird]");
     if (spot) {
       var code = spot.getAttribute("data-spot-bird");
-      if (spotted.has(code)) spotted.delete(code); else spotted.add(code);
-      save(); render(); if (modal.open) openBird(code);
+      var bird = birds.find(function (b) { return b.code === code; });
+      var nowSpotted = !spotted.has(code);
+      if (nowSpotted) spotted.add(code); else spotted.delete(code);
+      save(); render();
+      if (modal.open) modal.close();
+      showToast(
+        nowSpotted ? local("Bird caught", "Ave capturada") : local("Removed from quest", "Quitada del reto"),
+        bird ? local(bird.nameEn, bird.nameEs) + " · " + pointsTotal() + " " + local("pts", "pts") : ""
+      );
       track('bird_quest_spotted_toggle', baseParams({ species_code: code, spotted: spotted.has(code) }));
       return;
     }
