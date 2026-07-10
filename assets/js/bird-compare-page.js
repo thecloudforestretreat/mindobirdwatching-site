@@ -93,6 +93,14 @@
     }
   });
 
+  function initPage() {
+    initIncludes();
+    var cards = document.querySelectorAll("[data-bird-card]");
+    var count = document.getElementById("birdResultCount");
+    if (count) count.textContent = String(cards.length);
+    track("bird_page_view", { page_path: window.location.pathname, bird_count: cards.length });
+  }
+
   document.addEventListener("click", function (event) {
     var filterButton = event.target.closest("[data-filter]");
     if (filterButton) {
@@ -127,14 +135,8 @@
   });
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      initIncludes();
-      var cards = document.querySelectorAll("[data-bird-card]");
-      var count = document.getElementById("birdResultCount");
-      if (count) count.textContent = String(cards.length);
-      track("bird_page_view", { page_path: window.location.pathname, bird_count: cards.length });
-    });
+    document.addEventListener("DOMContentLoaded", initPage);
   } else {
-    initIncludes();
+    initPage();
   }
 })();
