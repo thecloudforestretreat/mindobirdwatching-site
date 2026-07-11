@@ -1,6 +1,21 @@
 /* Shared travel-guide refinements.
    Loaded after site.css by EN/ES travel-guide pages only. */
 
+/* The global day-trip highlight rule targets `.pill::before`; header links also
+   use `.pill`. Reset the decorative marker inside the shared header so Home/Inicio
+   stays visible and the EN/ES control cannot overlap the primary navigation. */
+body[data-page-content-group="day_trip"][data-page-type="guide_page"] #siteHeader header.topbar a.pill::before {
+  content: none;
+  display: none;
+}
+
+@media (min-width: 901px) {
+  body[data-page-content-group="day_trip"][data-page-type="guide_page"] #siteHeader header.topbar .right,
+  body[data-page-content-group="day_trip"][data-page-type="guide_page"] #siteHeader header.topbar nav.nav {
+    flex-wrap: nowrap;
+  }
+}
+
 body[data-page-content-group="day_trip"][data-page-type="guide_page"] .internalLinks.balancedLinks {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
