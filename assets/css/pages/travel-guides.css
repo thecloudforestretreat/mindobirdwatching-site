@@ -1,91 +1,75 @@
-/* Shared travel-guide refinements.
-   Loaded after site.css by EN/ES travel-guide pages only. */
+/* Pair 114 AEO answer-page rules for /assets/css/pages/travel-guides.css
+   Reusable for Mindo AEO/travel guide answer pages. */
 
-/* The global day-trip highlight rule targets `.pill::before`; header links also
-   use `.pill`. Reset the decorative marker inside the shared header so Home/Inicio
-   stays visible and the EN/ES control cannot overlap the primary navigation. */
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] #siteHeader header.topbar a.pill::before {
-  content: none;
-  display: none;
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .decisionGrid,
+body[data-page-content-group="mindo_worth_visiting"] .decisionGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
 }
 
-@media (min-width: 901px) {
-  body[data-page-content-group="day_trip"][data-page-type="guide_page"] #siteHeader header.topbar .right,
-  body[data-page-content-group="day_trip"][data-page-type="guide_page"] #siteHeader header.topbar nav.nav {
-    flex-wrap: nowrap;
-  }
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .decisionCard,
+body[data-page-content-group="mindo_worth_visiting"] .decisionCard{
+  background:rgba(255,255,255,.74);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:18px;
+  box-shadow:var(--shadow);
 }
 
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .internalLinks.balancedLinks {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .decisionCard strong,
+body[data-page-content-group="mindo_worth_visiting"] .decisionCard strong{
+  display:block;
+  color:var(--forest);
+  margin-bottom:6px;
 }
 
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .internalLinks.balancedLinks > .linkCard {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
-  min-height: 164px;
-  padding: 18px;
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .simpleTable,
+body[data-page-content-group="mindo_worth_visiting"] .simpleTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.72);
 }
 
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .internalLinks.balancedLinks .linkCardDesc {
-  flex: 1 1 auto;
-  margin: 0 0 16px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .simpleTable th,
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .simpleTable td,
+body[data-page-content-group="mindo_worth_visiting"] .simpleTable th,
+body[data-page-content-group="mindo_worth_visiting"] .simpleTable td{
+  padding:14px;
+  border-bottom:1px solid var(--line);
+  text-align:left;
+  vertical-align:top;
 }
 
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .internalLinks.balancedLinks .linkCardCta {
-  margin-top: auto;
-  white-space: normal;
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .simpleTable tr:last-child td,
+body[data-page-content-group="mindo_worth_visiting"] .simpleTable tr:last-child td{
+  border-bottom:0;
 }
 
-@media (max-width: 1000px) {
-  body[data-page-content-group="day_trip"][data-page-type="guide_page"] .internalLinks.balancedLinks {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .simpleTable th,
+body[data-page-content-group="mindo_worth_visiting"] .simpleTable th{
+  color:var(--forest);
+  font-weight:900;
+  background:rgba(13,89,37,.06);
 }
 
-@media (max-width: 560px) {
-  body[data-page-content-group="day_trip"][data-page-type="guide_page"] .internalLinks.balancedLinks {
-    grid-template-columns: 1fr;
-  }
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .internalLinks,
+body[data-page-content-group="mindo_worth_visiting"] .internalLinks{
+  align-items:stretch;
 }
 
-/* Day-trip hero media: fill the full hero column while preserving the complete portrait collage. */
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .hero {
-  align-items: stretch;
+body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .internalLinks .linkCard,
+body[data-page-content-group="mindo_worth_visiting"] .internalLinks .linkCard{
+  min-height:138px;
 }
 
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .hero > .imageCard {
-  align-self: stretch;
-  height: 100%;
-  grid-template-rows: minmax(0, 1fr) auto;
-}
-
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .hero > .imageCard .imageFrame {
-  min-height: 0;
-  height: 100%;
-  aspect-ratio: auto;
-  display: grid;
-  place-items: center;
-  background: #0b1220;
-}
-
-body[data-page-content-group="day_trip"][data-page-type="guide_page"] .hero > .imageCard .imageFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-}
-
-@media (max-width: 900px) {
-  body[data-page-content-group="day_trip"][data-page-type="guide_page"] .hero > .imageCard .imageFrame {
-    min-height: 420px;
+@media(max-width:900px){
+  body[data-css-cluster="travel_guides"][data-page-content-group="mindo_worth_visiting"] .decisionGrid,
+  body[data-page-content-group="mindo_worth_visiting"] .decisionGrid{
+    grid-template-columns:1fr;
   }
 }
