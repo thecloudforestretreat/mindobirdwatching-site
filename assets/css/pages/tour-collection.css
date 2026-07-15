@@ -506,3 +506,34 @@ body[data-css-cluster="tour_collection"][data-page-content-group="tours"] .birdC
     justify-content:center;
   }
 }
+
+/* Tour collection image-containment lock - 2026-07-15
+   This must live after the standard tourMedia/relatedMedia rules.
+   Use the modifier in HTML only on grids whose source images are collages/posters that must not crop. */
+body[data-css-cluster="tour_collection"] .tourGrid.tourGrid--containImages .tourMedia,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"] .tourGrid.tourGrid--containImages .tourMedia{
+  aspect-ratio:4/3;
+  min-height:0;
+  background:rgba(255,255,255,.78);
+}
+
+body[data-css-cluster="tour_collection"] .tourGrid.tourGrid--containImages .tourMedia img,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"] .tourGrid.tourGrid--containImages .tourMedia img,
+body[data-css-cluster="tour_collection"] .tourMedia.mediaContain img,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"] .tourMedia.mediaContain img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center center;
+  background:rgba(255,255,255,.78);
+}
+
+body[data-css-cluster="tour_collection"] .relatedGrid.relatedGrid--containImages .relatedMedia,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"] .relatedGrid.relatedGrid--containImages .relatedMedia,
+body[data-css-cluster="tour_collection"] .relatedMedia.mediaContain,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"] .relatedMedia.mediaContain{
+  object-fit:contain;
+  object-position:center center;
+  background:rgba(255,255,255,.78);
+}
+
