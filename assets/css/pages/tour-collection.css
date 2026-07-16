@@ -740,3 +740,115 @@ body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCom
     grid-template-columns:1fr;
   }
 }
+
+/* Tour hero CTA and final CTA lock - 2026-07-16
+   Scoped to the tour_collection cluster only. Keeps hero buttons organized
+   and prevents final CTA buttons from stretching into square blocks. */
+body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 14px;
+}
+
+body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow .btn,
+body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow a.btn {
+  width: 100%;
+  min-height: 42px;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.15;
+  padding: 10px 14px;
+  white-space: normal;
+  text-decoration: none;
+}
+
+body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow[aria-label="Primary actions"] .btn.primary:first-child:nth-last-child(3),
+body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow[aria-label="Acciones principales"] .btn.primary:first-child:nth-last-child(3),
+body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow[aria-label="Acciones primarias"] .btn.primary:first-child:nth-last-child(3) {
+  grid-column: 1 / -1;
+}
+
+body[data-css-cluster="tour_collection"] .hero .heroBody > p + .ctaRow {
+  margin-top: 10px;
+}
+
+body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+body[data-css-cluster="tour_collection"] .finalCta .finalLeft {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 14px;
+}
+
+body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow .btn,
+body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow a.btn {
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  height: auto;
+  aspect-ratio: auto;
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  text-align: center;
+  white-space: normal;
+  text-decoration: none;
+}
+
+body[data-css-cluster="tour_collection"] .finalCta .nextSteps {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow .btn,
+  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow a.btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow[aria-label="Primary actions"] .btn.primary:first-child:nth-last-child(3),
+  body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow[aria-label="Acciones principales"] .btn.primary:first-child:nth-last-child(3),
+  body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow[aria-label="Acciones primarias"] .btn.primary:first-child:nth-last-child(3) {
+    grid-column: auto;
+  }
+}
+
