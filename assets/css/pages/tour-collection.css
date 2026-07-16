@@ -605,3 +605,133 @@ body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGri
   }
 }
 
+/* Booking page layout guard - 2026-07-16
+   Keep this at the end of the tour_collection module. It is intentionally
+   scoped to booking pages so image containment and proof-card alignment do
+   not alter existing tour hub, tour detail, or Ecuador tour collection pages. */
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid.tourGrid--bookingOptions{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-auto-rows:1fr;
+  align-items:stretch;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourOption{
+  height:100%;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourOption > img{
+  width:100%;
+  aspect-ratio:16/9;
+  height:auto;
+  min-height:clamp(210px,22vw,270px);
+  max-height:none;
+  object-fit:contain;
+  object-position:center center;
+  background:rgba(255,255,255,.82);
+  border-bottom:1px solid var(--line);
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourBody{
+  flex:1 1 auto;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .miniList{
+  flex:1 1 auto;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .ctaRow{
+  margin-top:auto;
+  padding-top:12px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .proofGrid{
+  display:grid;
+  grid-template-columns:minmax(0,1.08fr) minmax(280px,.92fr);
+  gap:18px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .proofGrid .quote,
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .proofGrid .reviewStats{
+  height:100%;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .proofGrid .quote{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .reviewStats{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .reviewStat{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  min-width:0;
+  min-height:0;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature{
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);
+  gap:18px;
+  align-items:stretch;
+  margin:0 0 26px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.72);
+  box-shadow:var(--shadow-soft);
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .activityMedia,
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .activityBody{
+  min-width:0;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .activityBody{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .mbwCarousel{
+  height:100%;
+  min-height:280px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .mbwCarouselViewport,
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .mbwCarouselTrack,
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .mbwSlide{
+  height:100%;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature .mbwSlide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+}
+
+@media (max-width:860px){
+  body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid.tourGrid--bookingOptions,
+  body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .proofGrid,
+  body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCompareFeature{
+    grid-template-columns:1fr;
+  }
+
+  body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourOption > img{
+    min-height:0;
+  }
+}
+
+@media (max-width:620px){
+  body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .reviewStats{
+    grid-template-columns:1fr;
+  }
+}
