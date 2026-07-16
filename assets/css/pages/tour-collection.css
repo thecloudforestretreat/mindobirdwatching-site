@@ -102,7 +102,6 @@ body[data-css-cluster="tour_collection"] .kicker{
   font-size:13px;
   text-transform:uppercase;
 }
-body[data-css-cluster="tour_collection"] .ctaRow,
 body[data-css-cluster="tour_collection"] .tourActions{
   margin-top:10px;
   display:flex;
@@ -211,37 +210,11 @@ body[data-css-cluster="tour_collection"] .relatedMedia{
   background:rgba(255,255,255,.55);
 }
 body[data-css-cluster="tour_collection"] .relatedBody{padding:12px 14px 14px;}
-body[data-css-cluster="tour_collection"] .finalCta{
-  margin-top:18px;
-  padding:16px;
-  border:1px solid var(--line);
-  border-radius:var(--r);
-  background:rgba(255,255,255,.65);
-  box-shadow:var(--shadow);
-}
-body[data-css-cluster="tour_collection"] .finalGrid{
-  display:grid;
-  grid-template-columns:1.25fr .75fr;
-  gap:16px;
-  align-items:start;
-}
-body[data-css-cluster="tour_collection"] .nextSteps{
-  background:rgba(255,255,255,.55);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px 14px;
-  box-shadow:var(--shadow);
-}
 @media(max-width:1000px){
   body[data-css-cluster="tour_collection"] .relatedGrid{grid-template-columns:repeat(2,minmax(0,1fr));}
   body[data-css-cluster="tour_collection"] .linkGrid{grid-template-columns:1fr;}
 }
 @media(max-width:900px){
-  body[data-css-cluster="tour_collection"] .hero,
-  body[data-css-cluster="tour_collection"] .cards,
-  body[data-css-cluster="tour_collection"] .tourGrid,
-  body[data-css-cluster="tour_collection"] .faqList,
-  body[data-css-cluster="tour_collection"] .finalGrid{grid-template-columns:1fr;}
   body[data-css-cluster="tour_collection"] .tourCard{grid-template-columns:1fr;}
   body[data-css-cluster="tour_collection"] .heroBody h1{font-size:28px;}
   body[data-css-cluster="tour_collection"] .heroMedia{min-height:240px;}
@@ -741,9 +714,8 @@ body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .birdCom
   }
 }
 
-/* Tour hero CTA and final CTA lock - 2026-07-16
-   Scoped to the tour_collection cluster only. Keeps hero buttons organized
-   and prevents final CTA buttons from stretching into square blocks. */
+/* Tour hero CTA lock - 2026-07-16
+   Scoped to hero actions only. Final CTA layout is owned by global site.css. */
 body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -777,69 +749,6 @@ body[data-css-cluster="tour_collection"] .hero .heroBody > p + .ctaRow {
   margin-top: 10px;
 }
 
-body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr);
-  gap: 18px;
-  align-items: stretch;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  justify-content: flex-start;
-  margin-top: 14px;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow .btn,
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow a.btn {
-  width: auto;
-  min-width: 0;
-  min-height: 42px;
-  height: auto;
-  aspect-ratio: auto;
-  flex: 0 1 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 18px;
-  text-align: center;
-  white-space: normal;
-  text-decoration: none;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .nextSteps {
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-@media (max-width: 760px) {
-  body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow .btn,
-  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow a.btn {
-    width: 100%;
-  }
-}
-
 @media (max-width: 560px) {
   body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow {
     grid-template-columns: 1fr;
@@ -850,69 +759,6 @@ body[data-css-cluster="tour_collection"] .finalCta .nextSteps {
   body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow[aria-label="Acciones primarias"] .btn.primary:first-child:nth-last-child(3) {
     grid-column: auto;
   }
-}
-
-/* Tour collection CTA row no-wrap desktop parity lock - 2026-07-16 v2
-   Keep tour final CTA buttons aligned like the global CTA pattern: one clean
-   row on desktop/tablet, stacked only on mobile. Scoped to tour_collection. */
-body[data-css-cluster="tour_collection"] .finalCta {
-  overflow: visible !important;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1.45fr) minmax(220px, .55fr) !important;
-  gap: 18px !important;
-  align-items: stretch !important;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft {
-  min-width: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: flex-start !important;
-  text-align: left !important;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow,
-body[data-css-cluster="tour_collection"] .finalCta .ctaRow,
-body[data-css-cluster="tour_collection"] .finalCta .buttonRow {
-  display: flex !important;
-  flex-flow: row nowrap !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 10px !important;
-  width: 100% !important;
-  margin-top: 14px !important;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow .btn,
-body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow a.btn,
-body[data-css-cluster="tour_collection"] .finalCta .ctaRow .btn,
-body[data-css-cluster="tour_collection"] .finalCta .ctaRow a.btn,
-body[data-css-cluster="tour_collection"] .finalCta .buttonRow .btn,
-body[data-css-cluster="tour_collection"] .finalCta .buttonRow a.btn {
-  flex: 0 1 auto !important;
-  width: auto !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  min-height: 42px !important;
-  height: auto !important;
-  aspect-ratio: auto !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 10px 16px !important;
-  line-height: 1.15 !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-  text-decoration: none !important;
-}
-
-body[data-css-cluster="tour_collection"] .finalCta .nextSteps,
-body[data-css-cluster="tour_collection"] .finalCta .nextCard {
-  align-self: stretch !important;
 }
 
 body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow,
@@ -944,33 +790,4 @@ body[data-css-cluster="tour_collection"] .tourHeroActions a.btn {
   white-space: nowrap !important;
 }
 
-@media (max-width: 760px) {
-  body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 560px) {
-  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow,
-  body[data-css-cluster="tour_collection"] .finalCta .ctaRow,
-  body[data-css-cluster="tour_collection"] .finalCta .buttonRow {
-    flex-flow: column nowrap !important;
-    align-items: stretch !important;
-  }
-
-  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow .btn,
-  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow a.btn,
-  body[data-css-cluster="tour_collection"] .finalCta .ctaRow .btn,
-  body[data-css-cluster="tour_collection"] .finalCta .ctaRow a.btn,
-  body[data-css-cluster="tour_collection"] .finalCta .buttonRow .btn,
-  body[data-css-cluster="tour_collection"] .finalCta .buttonRow a.btn,
-  body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow .btn,
-  body[data-css-cluster="tour_collection"] .hero .heroBody > .ctaRow a.btn,
-  body[data-css-cluster="tour_collection"] .tourHeroActions .btn,
-  body[data-css-cluster="tour_collection"] .tourHeroActions a.btn {
-    width: 100% !important;
-    flex: 1 1 100% !important;
-    white-space: normal !important;
-  }
-}
-
+/* Final CTA layout is intentionally owned by global site.css. */
