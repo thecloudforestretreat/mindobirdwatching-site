@@ -852,13 +852,16 @@ body[data-css-cluster="tour_collection"] .finalCta .nextSteps {
   }
 }
 
-/* Tour collection final CTA/button alignment parity lock - 2026-07-16
-   Mirrors the global CTA button behavior for tour pages only. This is scoped to
-   tour_collection so travel guides, blog articles, bird species pages, and
-   global site buttons are not changed. */
+/* Tour collection CTA row no-wrap desktop parity lock - 2026-07-16 v2
+   Keep tour final CTA buttons aligned like the global CTA pattern: one clean
+   row on desktop/tablet, stacked only on mobile. Scoped to tour_collection. */
+body[data-css-cluster="tour_collection"] .finalCta {
+  overflow: visible !important;
+}
+
 body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, .48fr) !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(220px, .55fr) !important;
   gap: 18px !important;
   align-items: stretch !important;
 }
@@ -876,8 +879,7 @@ body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow,
 body[data-css-cluster="tour_collection"] .finalCta .ctaRow,
 body[data-css-cluster="tour_collection"] .finalCta .buttonRow {
   display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap !important;
+  flex-flow: row nowrap !important;
   align-items: center !important;
   justify-content: flex-start !important;
   gap: 10px !important;
@@ -891,7 +893,7 @@ body[data-css-cluster="tour_collection"] .finalCta .ctaRow .btn,
 body[data-css-cluster="tour_collection"] .finalCta .ctaRow a.btn,
 body[data-css-cluster="tour_collection"] .finalCta .buttonRow .btn,
 body[data-css-cluster="tour_collection"] .finalCta .buttonRow a.btn {
-  flex: 0 0 auto !important;
+  flex: 0 1 auto !important;
   width: auto !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -901,10 +903,10 @@ body[data-css-cluster="tour_collection"] .finalCta .buttonRow a.btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 10px 18px !important;
+  padding: 10px 16px !important;
   line-height: 1.15 !important;
   text-align: center !important;
-  white-space: normal !important;
+  white-space: nowrap !important;
   text-decoration: none !important;
 }
 
@@ -936,15 +938,24 @@ body[data-css-cluster="tour_collection"] .tourHeroActions a.btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 10px 18px !important;
+  padding: 10px 16px !important;
   text-align: center !important;
   text-decoration: none !important;
-  white-space: normal !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 760px) {
+  body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 560px) {
-  body[data-css-cluster="tour_collection"] .finalCta .finalGrid {
-    grid-template-columns: 1fr !important;
+  body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow,
+  body[data-css-cluster="tour_collection"] .finalCta .ctaRow,
+  body[data-css-cluster="tour_collection"] .finalCta .buttonRow {
+    flex-flow: column nowrap !important;
+    align-items: stretch !important;
   }
 
   body[data-css-cluster="tour_collection"] .finalCta .finalLeft .ctaRow .btn,
@@ -959,6 +970,7 @@ body[data-css-cluster="tour_collection"] .tourHeroActions a.btn {
   body[data-css-cluster="tour_collection"] .tourHeroActions a.btn {
     width: 100% !important;
     flex: 1 1 100% !important;
+    white-space: normal !important;
   }
 }
 
