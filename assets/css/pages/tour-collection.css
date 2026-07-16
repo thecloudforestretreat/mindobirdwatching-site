@@ -537,3 +537,71 @@ body[data-css-cluster="tour_collection"][data-page-content-group="tours"] .relat
   background:rgba(255,255,255,.78);
 }
 
+/* Booking-page tour option grid lock - 2026-07-15
+   Scoped to booking pages and only activated by .tourGrid--bookingOptions.
+   Prevents 3-card dead space and keeps CTAs pinned without changing other tour collection pages. */
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid.tourGrid--bookingOptions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourOption{
+  display:flex;
+  flex-direction:column;
+  min-height:100%;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.82);
+  box-shadow:var(--shadow-soft);
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourOption > img{
+  display:block;
+  width:100%;
+  aspect-ratio:16/9;
+  height:auto;
+  min-height:185px;
+  max-height:230px;
+  object-fit:cover;
+  object-position:center center;
+  background:rgba(255,255,255,.72);
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourBody{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  gap:10px;
+  padding:14px 16px 16px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourBody h3,
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .tourBody p,
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .miniList{
+  margin:0;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .miniList{
+  padding-left:18px;
+  color:var(--muted);
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .ctaRow{
+  margin-top:auto;
+  padding-top:4px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid--bookingOptions .ctaRow .btn{
+  width:100%;
+  justify-content:center;
+}
+
+@media (max-width:760px){
+  body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGrid.tourGrid--bookingOptions{
+    grid-template-columns:1fr;
+  }
+}
+
