@@ -544,6 +544,122 @@ body[data-css-cluster="blog_article"][data-page-type="article_page"] .blogSpecie
   }
 }
 
+/* Blog article bottom CTA lock - 2026-07-17
+   Keep this cluster-scoped. The finalGrid element owns the columns; the outer
+   section remains a single full-width wrapper. */
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta{
+  display:block !important;
+  width:100% !important;
+  margin:clamp(22px,3vw,34px) 0 0 !important;
+  padding:clamp(12px,1.8vw,16px) !important;
+  border:1px solid var(--line,#cfd9ca) !important;
+  border-radius:20px !important;
+  background:rgba(255,255,255,.44) !important;
+  box-shadow:0 18px 38px rgba(28,55,36,.10) !important;
+  overflow:hidden !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalGrid{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(240px,.42fr) !important;
+  align-items:center !important;
+  gap:clamp(16px,2.4vw,28px) !important;
+  width:100% !important;
+  min-height:0 !important;
+  padding:clamp(16px,2.2vw,24px) !important;
+  border:1px solid var(--line,#cfd9ca) !important;
+  border-radius:16px !important;
+  background:rgba(255,255,255,.82) !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalLeft{
+  min-width:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalTitle{
+  margin:0 0 8px !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .nextSteps{
+  align-self:center !important;
+  height:auto !important;
+  min-height:0 !important;
+  padding:clamp(14px,2vw,20px) !important;
+  border:1px solid var(--line,#cfd9ca) !important;
+  border-radius:16px !important;
+  background:rgba(255,255,255,.88) !important;
+  box-shadow:none !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .nextSteps ol{
+  margin:.55rem 0 0 1.1rem !important;
+  padding:0 !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalActions{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px 12px !important;
+  margin-top:clamp(14px,2vw,22px) !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalActions .btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:42px !important;
+  padding:10px 18px !important;
+  border-radius:12px !important;
+  line-height:1.15 !important;
+  text-align:center !important;
+  text-decoration:none !important;
+  white-space:normal !important;
+  box-shadow:none !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalActions .btn.primary{
+  background:#fff0ad !important;
+  border-color:#e6b81e !important;
+  color:#0b1d21 !important;
+}
+
+body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalActions .btn.secondary{
+  background:#dfeade !important;
+  border-color:#7fab8e !important;
+  color:#0b1d21 !important;
+}
+
+@media(max-width:760px){
+  body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalGrid{
+    grid-template-columns:1fr !important;
+    align-items:start !important;
+  }
+}
+
+@media(max-width:480px){
+  body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalActions{
+    align-items:stretch !important;
+  }
+
+  body[data-css-cluster="blog_article"][data-page-content-group="blog"] .blogFinalCta .finalActions .btn{
+    width:100% !important;
+  }
+}
+
+/* Legacy unscoped locks disabled: they overrode this cluster and made the outer
+   CTA, rather than .finalGrid, own the columns. */
+@media not all {
 /* MBW FINAL CTA + BUTTON CONSISTENCY LOCK v2026-07-16 */
 :where(.finalCta,.final-cta,.bottomCta,.bottom-cta,.closingCta,.closing-cta,.ctaBand,.cta-band,.finalCtaBand,.final-cta-band,.planCta,.plan-cta,.bookingCta,.booking-cta,.tourFinalCta,.tour-final-cta,.shopFinalCta,.recommendationsFinalCta){
   margin:clamp(22px,3vw,34px) auto 0!important;
@@ -693,3 +809,4 @@ body[data-css-cluster="blog_article"][data-page-type="article_page"] .blogSpecie
   }
 }
 /* === END MBW HERO + FINAL CTA CONSISTENCY LOCK 2026-07-16 === */
+}
