@@ -31,85 +31,8 @@
 
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
+<link href="/assets/css/pages/travel-guides.css" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
-<style>
-    .page{margin-top:18px;padding:26px}
-    .page.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
-    .hero{display:grid;grid-template-columns:1.08fr .92fr;gap:16px;align-items:stretch;margin-top:10px}
-    .heroMedia{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.55);height:100%;min-height:0;position:relative}
-    .heroMedia img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block}
-    .heroBody{padding:16px;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);background:rgba(255,255,255,.65);display:flex;flex-direction:column;justify-content:flex-start;gap:10px;min-width:0}
-    .kicker{display:inline-flex;gap:8px;align-items:center;font-weight:900;color:var(--forest);letter-spacing:-.01em;font-size:13px;text-transform:uppercase}
-    .heroBody h1{margin:0;font-family:var(--font-head);color:var(--forest);letter-spacing:-.02em;line-height:1.05;font-size:34px}
-    .heroBody p{margin:0;color:var(--muted);line-height:1.68;max-width:72ch}
-    .ctaRow{margin-top:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    .metaWrap{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.55);box-shadow:var(--shadow)}
-    .metaTitle{margin:0 0 10px;font-size:13px;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .metaGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-items:stretch}
-    .metaCard{padding:14px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.65);box-shadow:var(--shadow)}
-    .metaLabel{display:block;font-weight:900;color:var(--muted);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:.02em}
-    .metaValue{margin:0;color:var(--ink);font-weight:900;line-height:1.35}
-    .metaSub{margin:6px 0 0;color:var(--muted);line-height:1.55;font-size:13px}
-    .section{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
-    .sectionHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-    .sectionHead h2{margin:0;font-size:20px}
-    .sectionHint{margin:0;color:var(--muted);font-size:13px}
-    .infoCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
-    .infoCard p{margin:0;color:var(--muted);line-height:1.7}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-    .softCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
-    .softCard h3{margin:0 0 8px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
-    .softCard p{margin:0;color:var(--muted);line-height:1.65}
-    .softCard ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.7}
-    .wildlifeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:stretch}
-    .wildlifeCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px}
-    .wildlifeCard h3{margin:0 0 8px;font-size:15px;color:var(--ink);letter-spacing:-.01em}
-    .wildlifeCard p{margin:0;color:var(--muted);line-height:1.6;font-size:14px}
-    .linkGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-items:stretch}
-    .linkCard{display:block;text-decoration:none;color:inherit;background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px}
-    .linkCard strong{display:block;color:var(--ink);margin-bottom:6px;font-size:15px;letter-spacing:-.01em}
-    .linkCard span{color:var(--muted);line-height:1.55;font-size:13px}
-
-    .videoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
-    .videoCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
-    .videoFrame{aspect-ratio:9/16;background:#071923;overflow:hidden}
-    .videoFrame iframe{width:100%;height:100%;border:0;display:block}
-    .videoBody{padding:14px 16px}
-    .videoBody h3{margin:0 0 6px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
-    .videoBody p{margin:0;color:var(--muted);line-height:1.6;font-size:13px}
-    .faqGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-    .faqCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
-    .faqCard h3{margin:0 0 10px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
-    .qa{padding:10px 0;border-top:1px solid var(--line)}
-    .qa:first-child{border-top:0;padding-top:0}
-    .q{margin:0 0 4px;font-weight:900;color:var(--ink);font-size:13px}
-    .a{margin:0;color:var(--muted);line-height:1.6;font-size:13px}
-    .finalCta{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.65);box-shadow:var(--shadow);display:grid;grid-template-columns:1.15fr .85fr;gap:14px;align-items:start}
-    .finalCta p{margin:0;color:var(--muted);max-width:70ch;line-height:1.6}
-    .finalTitle{margin:0 0 6px;font-weight:900;color:var(--ink);letter-spacing:-.01em;font-size:16px}
-    .finalActions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .nextSteps{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.55);padding:12px 14px;box-shadow:var(--shadow)}
-    .nextSteps h3{margin:0 0 10px;font-size:13px;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .steps{margin:0;padding-left:18px;color:var(--muted);line-height:1.7;font-size:13px}
-
-    .upsellCard{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:stretch}
-    .upsellCard p{margin:0 0 10px;color:var(--muted);line-height:1.7}
-    .upsellCard p:last-child{margin-bottom:0}
-    .upsellList{margin:0;padding-left:18px;color:var(--muted);line-height:1.75}
-    .upsellSide{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.55);padding:14px;display:flex;flex-direction:column}
-    .upsellSide h3{margin:0 0 10px;font-size:15px;color:var(--ink);letter-spacing:-.01em}
-    .upsellSide .finalActions{margin-top:auto;padding-top:12px}
-    .conversionRibbon{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
-    .conversionPill{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.62);padding:12px;box-shadow:var(--shadow)}
-    .conversionPill strong{display:block;color:var(--forest);font-size:13px;margin-bottom:4px}
-    .conversionPill span{display:block;color:var(--muted);font-size:12px;line-height:1.45}
-    @media (max-width:900px){.upsellCard{grid-template-columns:1fr}.conversionRibbon{grid-template-columns:1fr 1fr}}
-    @media (max-width:560px){.conversionRibbon{grid-template-columns:1fr}}
-
-    @media (max-width:1000px){.wildlifeGrid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:900px){.hero{grid-template-columns:1fr}.heroMedia{height:360px}.grid2,.faqGrid,.linkGrid,.finalCta{grid-template-columns:1fr}.ctaRow,.finalActions{display:grid;grid-template-columns:1fr;gap:10px;align-items:stretch}.ctaRow a,.finalActions a{width:100%;justify-content:center;text-align:center}.metaGrid{grid-template-columns:1fr 1fr}.heroBody h1{font-size:28px}}
-    @media (max-width:560px){.wildlifeGrid,.metaGrid,.videoGrid{grid-template-columns:1fr}.heroMedia{height:320px}}
-  </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -224,7 +147,7 @@
 }
 </script>
 </head>
-<body data-page-content-group="night_walk" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="guide_page">
+<body data-page-content-group="night_walk" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="guide_page" data-css-cluster="travel_guides">
 <div class="container">
 <div data-current-lang="es" id="siteHeader"></div><nav aria-label="Selector de idioma" class="rawLangLinks"><a data-analytics-content-group="night_walk" data-analytics-event="outbound_link_click" data-analytics-guide="mindo_night_walk" data-analytics-label="English" data-analytics-location="external_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/mindo-night-walk/" hreflang="en" lang="en">English</a>
 <a aria-current="page" data-analytics-content-group="night_walk" data-analytics-event="outbound_link_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Español" data-analytics-location="external_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/caminata-nocturna-mindo/" hreflang="es" lang="es">Español</a>
@@ -245,7 +168,7 @@
             Una caminata nocturna en Mindo es una de las mejores formas de vivir el bosque nublado después del atardecer. En lugar de enfocarse en la actividad de aves del día, este tipo de salida ayuda a descubrir una cara completamente distinta del bosque, con ranas, insectos, arañas, búhos y otra fauna nocturna que empieza a activarse cuando baja la luz y cambia el ritmo del entorno.
           </p>
 <p>
-            Esta página está diseñada para captar búsquedas como caminata nocturna Mindo y tour nocturno Mindo, y ayudarte a decidir cuándo una experiencia de vida silvestre nocturna tiene sentido dentro de tu itinerario. Si ya sabés que querés la versión directa, podés ir a la actual <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="página de actividad de caminata nocturna" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/actividades/caminata-nocturna/" style="text-decoration: underline; font-weight: 600;">página de actividad de caminata nocturna</a>. Si además el birdwatching es una prioridad, comparala con nuestros <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="tours de avistamiento de aves en Mindo" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/tours-de-avistamiento-de-aves-mindo/" style="text-decoration: underline; font-weight: 600;">tours de avistamiento de aves en Mindo</a>.
+            Esta página está diseñada para captar búsquedas como caminata nocturna Mindo y tour nocturno Mindo, y ayudarte a decidir cuándo una experiencia de vida silvestre nocturna tiene sentido dentro de tu itinerario. Si ya sabés que querés la versión directa, podés ir a la actual <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="página de actividad de caminata nocturna" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/actividades/caminata-nocturna/">página de actividad de caminata nocturna</a>. Si además el birdwatching es una prioridad, comparala con nuestros <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="tours de avistamiento de aves en Mindo" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/tours-de-avistamiento-de-aves-mindo/">tours de avistamiento de aves en Mindo</a>.
           </p>
 <div aria-label="Acciones principales" class="ctaRow">
 <a class="btn primary" data-analytics-content-group="night_walk" data-analytics-event="hero_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Planificar birdwatching en Mindo" data-analytics-location="hero_primary" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/tours-de-avistamiento-de-aves-mindo/" rel="noopener">Reservar Aves por la Mañana</a>
@@ -379,7 +302,7 @@
 </div>
 <div class="softCard">
 <h3>Usala dentro de la planificación general</h3>
-<p>Si todavía estás armando el viaje completo, usá la <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="guía de viaje de Mindo" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/guia-viaje-mindo/" style="text-decoration: underline; font-weight: 600;">guía de viaje de Mindo</a> para decidir si la caminata nocturna conviene en la primera noche, la segunda o directamente no encaja.</p>
+<p>Si todavía estás armando el viaje completo, usá la <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="guía de viaje de Mindo" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/guia-viaje-mindo/">guía de viaje de Mindo</a> para decidir si la caminata nocturna conviene en la primera noche, la segunda o directamente no encaja.</p>
 </div>
 <div class="softCard">
 <h3>Mantené expectativas prácticas</h3>
@@ -394,7 +317,7 @@
 </div>
 <div class="infoCard">
 <p>
-            Esta página está pensada para ayudar a quienes buscan caminata nocturna Mindo a entender si la experiencia encaja dentro de su viaje. Una vez que esa decisión está clara, el siguiente paso más directo es la actual <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="página de actividad de caminata nocturna" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/actividades/caminata-nocturna/" style="text-decoration: underline; font-weight: 600;">página de actividad de caminata nocturna</a>, que ya presenta una versión más enfocada en la actividad misma. Las dos páginas deberían trabajar juntas: esta landing para capturar intención amplia y la página de actividad para ayudar a convertir visitantes listos.
+            Esta página está pensada para ayudar a quienes buscan caminata nocturna Mindo a entender si la experiencia encaja dentro de su viaje. Una vez que esa decisión está clara, el siguiente paso más directo es la actual <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="página de actividad de caminata nocturna" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/actividades/caminata-nocturna/">página de actividad de caminata nocturna</a>, que ya presenta una versión más enfocada en la actividad misma. Las dos páginas deberían trabajar juntas: esta landing para capturar intención amplia y la página de actividad para ayudar a convertir visitantes listos.
           </p>
 </div>
 </section>
@@ -483,31 +406,12 @@ Para quienes ya están invirtiendo en una experiencia privada de avistamiento de
 </div>
 <div class="qa">
 <p class="q">¿A dónde voy si quiero la página directa de actividad?</p>
-<p class="a">Usá la actual <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="página de actividad de caminata nocturna" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/actividades/caminata-nocturna/" style="text-decoration: underline; font-weight: 600;">página de actividad de caminata nocturna</a> cuando ya quieras la versión más directa y orientada a conversión.</p>
+<p class="a">Usá la actual <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="página de actividad de caminata nocturna" data-analytics-location="content_link" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/actividades/caminata-nocturna/">página de actividad de caminata nocturna</a> cuando ya quieras la versión más directa y orientada a conversión.</p>
 </div>
 </div>
 </div>
 </section>
-<section aria-label="CTA final" class="finalCta">
-<div aria-label="Mensaje final">
-<p class="finalTitle">¿Listo para Completar Tu Día de Aves en Mindo?</p>
-<p>
-            Una caminata nocturna en Mindo funciona mejor como complemento de alto valor para un tour de aves por la mañana. Observa aves durante el día, descansa o explora por la tarde y vuelve después del atardecer para buscar fauna nocturna del bosque nublado.
-          </p>
-<div aria-label="Acciones finales" class="finalActions">
-<a class="btn primary" data-analytics-content-group="night_walk" data-analytics-event="hero_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Planificar birdwatching en Mindo" data-analytics-location="hero_primary" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/tours-de-avistamiento-de-aves-mindo/" rel="noopener">Planificar birdwatching en Mindo</a>
-<a class="btn secondary" data-analytics-content-group="night_walk" data-analytics-event="article_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Ver la guía de viaje de Mindo" data-analytics-location="hero_secondary" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/guia-viaje-mindo/" rel="noopener">Ver la guía de viaje de Mindo</a>
-</div>
-</div>
-<aside aria-label="Próximos pasos" class="nextSteps">
-<h3>Próximos pasos</h3>
-<ol class="steps">
-<li>Definí si querés la caminata nocturna como complemento de fauna o como actividad principal de la noche</li>
-<li>Comparala con el birdwatching diurno y con el resto del itinerario en Mindo</li>
-<li>Usá la página de actividad cuando ya quieras agregar la Caminata Nocturna</li>
-</ol>
-</aside>
-</section>
+<section class="finalCta finalCta--split" aria-label="Planifique su experiencia de aves en Mindo"><div class="finalGrid"><div class="finalLeft"><span class="eyebrow">¿Listo para completar su día de aves?</span><h2>Complete Su Día de Aves en Mindo</h2><p>Una caminata nocturna en Mindo funciona mejor como complemento de un tour de aves por la mañana. Observe aves durante el día y vuelva después del atardecer para buscar fauna nocturna del bosque nublado.</p><div class="ctaRow ctaRow--inline"><a class="btn primary" data-analytics-content-group="night_walk" data-analytics-event="hero_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Planificar birdwatching en Mindo" data-analytics-location="final_cta" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/tours-de-avistamiento-de-aves-mindo/">Planificar Birdwatching en Mindo</a><a class="btn secondary" data-analytics-content-group="night_walk" data-analytics-event="article_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Ver la guía de viaje de Mindo" data-analytics-location="final_cta" data-analytics-page-language="es" data-analytics-page-type="guide_page" href="/es/guia-viaje-mindo/">Ver la Guía de Viaje de Mindo</a></div></div><aside class="nextSteps"><h3>Qué sucede después</h3><ol><li>Defina si la caminata nocturna será un complemento o la actividad principal de la noche.</li><li>Compárela con el birdwatching diurno y el resto de su itinerario.</li><li>Use la página de actividad cuando quiera agregar la caminata nocturna.</li></ol></aside></div></section>
 </main>
 <div id="siteFooter"></div>
 </div>
