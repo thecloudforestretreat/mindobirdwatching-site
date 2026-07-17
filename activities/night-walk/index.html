@@ -32,444 +32,9 @@
 
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
+<link href="/assets/css/pages/travel-guides.css" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script defer src="/assets/js/site-config.js"></script>
-<style>
-    .page{
-      margin-top:18px;
-      padding:26px;
-    }
-
-    .page.card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
-    }
-
-    .topbarActions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-bottom:14px;
-    }
-
-    .hero{
-      display:grid;
-      grid-template-columns:1.02fr .98fr;
-      gap:16px;
-      align-items:stretch;
-    }
-
-    h1{
-      margin:0 0 8px;
-      letter-spacing:-0.02em;
-    }
-
-    .lede{
-      margin:0;
-      max-width:76ch;
-      color:var(--ink);
-      line-height:1.68;
-    }
-
-    .heroCard,
-    .heroMedia,
-    .infoCard,
-    .mediaCard,
-    .noteCard{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
-    }
-
-    .heroCard{
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      height:100%;
-    }
-
-    .ctaRow{
-      margin-top:14px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      font-weight:900;
-      color:var(--ink);
-      font-size:12.5px;
-      line-height:1;
-      white-space:nowrap;
-    }
-
-    .heroMedia{
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      height:100%;
-    }
-
-    .heroMediaFrame{
-      width:100%;
-      flex:1 1 auto;
-      min-height:100%;
-      background:rgba(255,255,255,.55);
-    }
-
-    .heroMediaFrame img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .heroMediaCap{
-      padding:10px 12px;
-      border-top:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    .experienceHighlights{
-      margin-top:16px;
-      padding:14px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:rgba(255,255,255,.55);
-    }
-
-    .experienceHighlights h2{
-      margin:0 0 10px;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:18px;
-    }
-
-    .experienceHighlights ul{
-      margin:0;
-      padding-left:18px;
-      color:var(--ink);
-      line-height:1.6;
-    }
-
-    .experienceHighlights li + li{
-      margin-top:8px;
-    }
-
-    .section{
-      margin-top:18px;
-      padding-top:14px;
-      border-top:1px solid var(--line);
-    }
-
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-
-    .sectionHead h2{
-      margin:0;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:20px;
-    }
-
-    .sectionHead p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    .infoGrid,
-    .wildlifeGrid{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
-    }
-
-    .wildlifeGrid{
-      grid-template-columns:repeat(2, 1fr);
-    }
-
-    .infoCard{
-      padding:14px;
-    }
-
-    .infoCard h3{
-      margin:0 0 8px;
-      font-size:16px;
-      color:var(--forest);
-      letter-spacing:-0.01em;
-    }
-
-    .infoCard p,
-    .noteCard p{
-      color:var(--ink);
-      line-height:1.68;
-    }
-
-    .infoCard p{
-      margin:0;
-    }
-
-    .mediaGrid{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:12px;
-      align-items:stretch;
-    }
-
-    .mediaCard{
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      min-width:0;
-    }
-
-    .mediaInner{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      height:100%;
-    }
-
-    .videoFrame,
-    .carouselViewport{
-      position:relative;
-      width:100%;
-      aspect-ratio:9 / 16;
-      border-radius:14px;
-      overflow:hidden;
-      background:#eee;
-      border:1px solid var(--line);
-    }
-
-    .videoFrame iframe{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      border:0;
-      display:block;
-    }
-
-    .carouselSlide{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .28s ease;
-    }
-
-    .carouselSlide.active{
-      opacity:1;
-      pointer-events:auto;
-    }
-
-    .carouselSlide img{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center;
-      display:block;
-      transform:scale(1.24);
-    }
-
-    .carouselOverlay{
-      position:absolute;
-      left:10px;
-      right:10px;
-      bottom:10px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      pointer-events:none;
-    }
-
-    .carouselOverlay .carouselBtn,
-    .carouselOverlay .carouselDots{
-      pointer-events:auto;
-    }
-
-    .carouselBtn{
-      width:40px;
-      height:40px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.55);
-      background:rgba(255,255,255,.88);
-      color:var(--forest);
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-      flex:0 0 auto;
-    }
-
-    .carouselDots{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.88);
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:var(--shadow);
-    }
-
-    .carouselDot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      padding:0;
-      cursor:pointer;
-    }
-
-    .carouselDot.active{
-      background:var(--forest);
-      border-color:var(--forest);
-    }
-
-    .mediaFooter{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:13px;
-      color:var(--muted);
-      background:rgba(255,255,255,.6);
-      min-height:76px;
-      display:flex;
-      align-items:center;
-      line-height:1.5;
-    }
-
-    .noteCard{
-      padding:16px;
-    }
-
-    .noteCard p{
-      margin:0;
-    }
-
-    .footerActions{
-      margin-top:16px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-
-    .faqGrid,
-    .relatedGrid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:12px;
-      align-items:stretch;
-    }
-
-    .faqCard,
-    .relatedCard{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      min-height:128px;
-    }
-
-    .faqCard h3,
-    .relatedCard h3{
-      margin:0 0 8px;
-      font-size:16px;
-      color:var(--forest);
-      letter-spacing:-0.01em;
-    }
-
-    .faqCard p,
-    .relatedCard p{
-      margin:0;
-      color:var(--ink);
-      line-height:1.68;
-    }
-
-    .relatedCard a{
-      margin-top:auto;
-      padding-top:12px;
-      font-weight:900;
-      color:var(--forest);
-      text-decoration:none;
-    }
-
-    .relatedCard a:hover{
-      text-decoration:underline;
-    }
-
-    @media (max-width:980px){
-      .faqGrid,
-      .relatedGrid{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width:980px){
-      .hero,
-      .infoGrid,
-      .wildlifeGrid,
-      .mediaGrid{
-        grid-template-columns:1fr;
-      }
-
-      .heroMedia{
-        order:1;
-      }
-
-      .heroCard{
-        order:2;
-      }
-    }
-
-    @media (max-width:680px){
-      .page{
-        padding:16px;
-      }
-    }
-  </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -593,12 +158,21 @@
       "embedUrl": "https://www.youtube-nocookie.com/embed/3h5xb2C-yYs",
       "contentUrl": "https://www.youtube.com/shorts/3h5xb2C-yYs",
       "inLanguage": "en"
+    },
+    {
+      "@type": "VideoObject",
+      "name": "Mindo Cloud Forest After Dark",
+      "description": "Short video showing the atmosphere and nocturnal wildlife during a guided night walk in Mindo, Ecuador.",
+      "thumbnailUrl": "https://img.youtube.com/vi/em2S9vLwrDk/hqdefault.jpg",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/em2S9vLwrDk",
+      "contentUrl": "https://www.youtube.com/shorts/em2S9vLwrDk",
+      "inLanguage": "en"
     }
   ]
 }
 </script>
 </head>
-<body data-page-content-group="activities" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="activity_tour">
+<body data-page-content-group="activities" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="activity_tour" data-css-cluster="travel_guides" data-activity-variant="night_walk">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-content-group="activities" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/activities/night-walk/" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/activities/night-walk/" hreflang="en" lang="en">English</a>
 <a data-analytics-content-group="activities" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/es/actividades/caminata-nocturna/" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/actividades/caminata-nocturna/" hreflang="es" lang="es">Español</a></nav>
@@ -643,68 +217,23 @@
 </aside>
 </section>
 <section aria-label="Media gallery" class="section">
-<div class="sectionHead">
-<h2>Photos and videos</h2>
-<p>Watch two short clips and browse recent night-walk wildlife images before booking.</p>
-</div>
+<div class="sectionHead"><h2>Photos and videos</h2><p>Watch three short clips and browse recent night-walk wildlife images before booking.</p></div>
 <div class="mediaGrid">
-<article class="mediaCard">
-<div class="mediaInner">
-<div class="videoFrame" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Night Walk video" data-analytics-location="night_walk_media" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">
-<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Night Walk video 1" data-analytics-location="night_walk_media" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/oljFGlhXXm8" title="Night walk in Mindo Ecuador video"></iframe>
-</div>
-<div class="mediaFooter">
-                A glimpse into the atmosphere, biodiversity, and natural rhythm of Mindo's cloud forest.
-              </div>
-</div>
-</article>
-<article class="mediaCard">
-<div class="mediaInner">
-<div class="videoFrame" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Night Walk video 2" data-analytics-location="night_walk_media" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">
-<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Night Walk video 2" data-analytics-location="night_walk_media" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/3h5xb2C-yYs" title="Nocturnal wildlife in Mindo Ecuador video"></iframe>
-</div>
-<div class="mediaFooter">
-                Another short look at nocturnal wildlife, small forest details, and what makes the evening tour feel different from daytime activities.
-              </div>
-</div>
-</article>
-<article aria-label="Night walk image carousel" class="mediaCard">
-<div class="mediaInner">
-<div class="carouselViewport">
-<figure class="carouselSlide active">
-<img alt="Nocturnal wildlife habitat during a guided night walk in Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_05.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Close night walk wildlife detail from the Mindo cloud forest" src="/assets/images/pages/activities/night-walk/night_walk_vert_04.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Top view of a glowing scorpion during a night walk in Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_02.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Owl photographed at night during a Mindo Ecuador night walk" src="/assets/images/pages/activities/night-walk/night_walk_vert_03.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Glowing scorpion during a guided night walk in Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_01.jpg"/>
-</figure>
-<div class="carouselOverlay">
-<button aria-label="Previous image" class="carouselBtn" data-analytics-content-group="activities" data-analytics-event="gallery_previous" data-analytics-label="Previous image" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" id="nightWalkPrev" type="button">←</button>
-<div aria-label="Carousel navigation" class="carouselDots">
-<button aria-label="Show first night walk image" class="carouselDot active" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 1" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="0" type="button"></button>
-<button aria-label="Show second night walk image" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 2" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="1" type="button"></button>
-<button aria-label="Show scorpion detail image" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 3" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="2" type="button"></button>
-<button aria-label="Show owl image" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 4" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="3" type="button"></button>
-<button aria-label="Show glowing scorpion image" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 5" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="4" type="button"></button>
-</div>
-<button aria-label="Next image" class="carouselBtn" data-analytics-content-group="activities" data-analytics-event="gallery_next" data-analytics-label="Next image" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" id="nightWalkNext" type="button">→</button>
-</div>
-</div>
-<div class="mediaFooter" id="nightWalkCaption">
-                Night wildlife activity begins as darkness settles across the Mindo cloud forest.
-              </div>
-</div>
-</article>
-</div>
-</section>
+<article aria-label="Night walk video carousel" class="mediaCard videoCarouselCard"><div class="mediaInner"><div class="videoCarouselViewport"><div class="videoCarouselSlide active"><div class="videoFrame"><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/oljFGlhXXm8" title="Night walk in Mindo, Ecuador" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Night Walk video 1" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></iframe></div></div>
+<div class="videoCarouselSlide"><div class="videoFrame"><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/3h5xb2C-yYs" title="Nocturnal wildlife in Mindo, Ecuador" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Night Walk video 2" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></iframe></div></div>
+<div class="videoCarouselSlide"><div class="videoFrame"><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/em2S9vLwrDk" title="Mindo cloud forest after dark" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Night Walk video 3" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></iframe></div></div><div class="videoCarouselOverlay"><button aria-label="Previous video" class="videoCarouselBtn" id="nightVideoPrev" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_previous" data-analytics-label="Previous video" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">←</button><div aria-label="Video carousel navigation" class="videoCarouselDots"><button aria-label="Show video 1" class="videoCarouselDot active" data-slide="0" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_video_click" data-analytics-label="Night Walk video 1" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Show video 2" class="videoCarouselDot" data-slide="1" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_video_click" data-analytics-label="Night Walk video 2" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Show video 3" class="videoCarouselDot" data-slide="2" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_video_click" data-analytics-label="Night Walk video 3" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button></div><button aria-label="Next video" class="videoCarouselBtn" id="nightVideoNext" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_next" data-analytics-label="Next video" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">→</button></div></div><div class="mediaFooter" id="nightVideoCaption">A glimpse into the atmosphere, biodiversity, and natural rhythm of Mindo's cloud forest.</div></div></article>
+<article aria-label="Night walk image carousel" class="mediaCard nightImageCarousel"><div class="mediaInner"><div class="carouselViewport"><figure class="carouselSlide active"><img alt="Nocturnal wildlife habitat during a guided night walk in Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_05.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Close night walk wildlife detail from the Mindo cloud forest" src="/assets/images/pages/activities/night-walk/night_walk_vert_04.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Top view of a glowing scorpion during a night walk in Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_02.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Owl photographed at night during a Mindo Ecuador night walk" src="/assets/images/pages/activities/night-walk/night_walk_vert_03.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Glowing scorpion during a guided night walk in Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_01.jpg"/></figure><div class="carouselOverlay"><button aria-label="Previous image" class="carouselBtn" id="nightWalkPrev" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_previous" data-analytics-label="Previous image" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">←</button><div aria-label="Image carousel navigation" class="carouselDots"><button aria-label="Show image 1" class="carouselDot active" data-slide="0" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 1" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Show image 2" class="carouselDot" data-slide="1" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 2" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Show image 3" class="carouselDot" data-slide="2" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 3" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Show image 4" class="carouselDot" data-slide="3" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 4" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Show image 5" class="carouselDot" data-slide="4" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 5" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button></div><button aria-label="Next image" class="carouselBtn" id="nightWalkNext" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_next" data-analytics-label="Next image" data-analytics-location="night_walk_carousel" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">→</button></div></div><div class="mediaFooter" id="nightWalkCaption">Night wildlife activity begins as darkness settles across the Mindo cloud forest.</div></div></article>
+</div></section>
 <section aria-label="What to expect on a night walk in Mindo" class="section">
 <div class="sectionHead">
 <h2>What to expect</h2>
@@ -824,78 +353,13 @@ Many guests join a morning birdwatching tour and return after dark for a Night W
 <p>
 If you are already planning a private birding route, adding the Night Walk is one of the easiest ways to turn your visit into a fuller nature experience. Spend the morning looking for hummingbirds, toucans, tanagers, or target birds, then come back after sunset to search for frogs, insects, spiders, owls, glowing scorpions, and other forest life that only becomes active at night.
 </p>
-<div class="footerActions">
-<a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_addon_click" data-analytics-label="View Birdwatching Tours" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/birdwatching-tours-mindo/" data-analytics-location="night_walk_upsell" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" href="/birdwatching-tours-mindo/">View Birdwatching Tours</a>
-<a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Book Your Night Walk" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/book-tour/" data-analytics-location="night_walk_upsell" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" href="/book-tour/">Book Your Night Walk</a>
-</div>
-</div>
 </section>
-
-<section aria-label="Night walk frequently asked questions" class="section">
-<div class="sectionHead">
-<h2>Night Walk FAQs</h2>
-<p>Helpful answers before booking a guided night walk in Mindo.</p>
-</div>
-<div class="faqGrid">
-<article class="faqCard"><h3>How long is the night walk?</h3><p>The guided night walk usually lasts less than 2 hours, making it an easy evening activity for travelers staying in or near Mindo.</p></article>
-<article class="faqCard"><h3>Is the night walk difficult?</h3><p>No. The route is designed to be easy and approachable, with a slow pace focused on observing small wildlife rather than hiking fast.</p></article>
-<article class="faqCard"><h3>What wildlife can I see?</h3><p>Possible sightings include frogs, insects, spiders, glowing scorpions, sleeping birds, owls, reptiles, and other nocturnal forest life. Sightings depend on weather and conditions.</p></article>
-<article class="faqCard"><h3>What should I bring?</h3><p>Bring closed-toe shoes, a light rain jacket, comfortable clothing for a damp evening, and a small flashlight or headlamp if you have one.</p></article>
-</div>
-</section>
-
-<section aria-label="Helpful notes" class="section">
-<div class="sectionHead">
-<h2>Helpful notes</h2>
-<p>Simple preparation makes a night walk in Mindo more comfortable.</p>
-</div>
-<div class="noteCard">
-<p>
-            Bring closed-toe shoes, a light rain jacket, and clothing suitable for a damp evening in the cloud forest. If you have a headlamp or small flashlight you can bring it, although guided lighting is usually enough. Night wildlife activity depends strongly on humidity, recent rain, and changing forest conditions.
-          </p>
-</div>
-<div class="footerActions">
-<a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="secondary_cta_click" data-analytics-label="Back to Activities" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/activities/" data-analytics-location="activity_tour_cta" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/activities/">Back to Activities</a>
-<a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Book Tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/book-tour/" data-analytics-location="activity_tour_cta" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" href="/book-tour/">Book Tour</a>
-</div>
-</section>
+<section class="finalCta finalCta--split" aria-label="Plan your Mindo night walk"><div class="finalGrid"><div class="finalLeft"><span class="eyebrow">Ready to explore after dark?</span><h2>Plan Your Mindo Night Walk</h2><p>Share your dates, group size, and interests. We will help you arrange a calm, guided evening experience in the cloud forest.</p><div class="ctaRow ctaRow--inline"><a class="btn primary" href="/book-tour/" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Book Night Walk" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">Book Night Walk</a><a class="btn secondary" href="/activities/" data-analytics-content-group="activities" data-analytics-event="secondary_cta_click" data-analytics-label="View Activities" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">View Activities</a></div></div><aside class="nextSteps"><h3>What happens next</h3><ol><li>You send your dates and group size.</li><li>We confirm availability and timing.</li><li>Your guide adjusts the experience to evening conditions.</li></ol></aside></div></section>
 </main>
 <div id="siteFooter"></div>
 </div>
 <script defer="" src="/assets/js/includes.js?v=1"></script>
 <script defer="" src="/assets/js/site.js?v=34"></script>
-<script>
-    (function(){
-      const slides = Array.from(document.querySelectorAll('.carouselSlide'));
-      const dots = Array.from(document.querySelectorAll('.carouselDot'));
-      const caption = document.getElementById('nightWalkCaption');
-      const prev = document.getElementById('nightWalkPrev');
-      const next = document.getElementById('nightWalkNext');
-
-      const captions = [
-        "Night wildlife activity begins as darkness settles across the Mindo cloud forest.",
-        "Guided night walks often reveal fascinating insects, amphibians, and hidden forest life.",
-        "A top-down scorpion view shows the texture and detail guests may notice on a guided night walk in Mindo.",
-        "An owl at night adds mystery and silence to the cloud forest after dark.",
-        "A glowing scorpion under UV light captures the dramatic atmosphere of nocturnal wildlife in the Mindo cloud forest."
-      ];
-
-      let index = 0;
-
-      function render(i){
-        index = (i + slides.length) % slides.length;
-        slides.forEach((slide, sIdx) => slide.classList.toggle('active', sIdx === index));
-        dots.forEach((dot, dIdx) => dot.classList.toggle('active', dIdx === index));
-        caption.textContent = captions[index];
-      }
-
-      prev.addEventListener('click', function(){ render(index - 1); });
-      next.addEventListener('click', function(){ render(index + 1); });
-
-      dots.forEach((dot, dotIndex) => {
-        dot.addEventListener('click', function(){ render(dotIndex); });
-      });
-    })();
-  </script>
+<script>(function(){function carousel(root,slideSelector,dotSelector,prevId,nextId,captionId,captions,stopVideos){const slides=Array.from(root.querySelectorAll(slideSelector));const dots=Array.from(root.querySelectorAll(dotSelector));const caption=document.getElementById(captionId);let index=0;function render(i){const next=(i+slides.length)%slides.length;slides.forEach((slide,n)=>{if(stopVideos&&n!==next&&slide.classList.contains('active')){const frame=slide.querySelector('iframe');if(frame) frame.src=frame.src;}slide.classList.toggle('active',n===next);});dots.forEach((dot,n)=>dot.classList.toggle('active',n===next));index=next;caption.textContent=captions[index];}document.getElementById(prevId).addEventListener('click',()=>render(index-1));document.getElementById(nextId).addEventListener('click',()=>render(index+1));dots.forEach((dot,n)=>dot.addEventListener('click',()=>render(n)));}const videoRoot=document.querySelector('.videoCarouselCard');const imageRoot=document.querySelector('.nightImageCarousel');if(videoRoot)carousel(videoRoot,'.videoCarouselSlide','.videoCarouselDot','nightVideoPrev','nightVideoNext','nightVideoCaption',["A glimpse into the atmosphere, biodiversity, and natural rhythm of Mindo's cloud forest.","Another look at nocturnal wildlife, small forest details, and what makes this experience different from daytime activities.","A third short view of the after-dark atmosphere and nocturnal wildlife in Mindo's cloud forest."],true);if(imageRoot)carousel(imageRoot,'.carouselSlide','.carouselDot','nightWalkPrev','nightWalkNext','nightWalkCaption',["Night wildlife activity begins as darkness settles across the Mindo cloud forest.","Guided night walks often reveal fascinating insects, amphibians, and hidden forest life.","A top-down scorpion view shows the texture and detail guests may notice on a guided night walk in Mindo.","An owl at night adds mystery and silence to the cloud forest after dark.","A glowing scorpion under UV light captures the dramatic atmosphere of nocturnal wildlife in the Mindo cloud forest."],false);})();</script>
 </body>
 </html>
