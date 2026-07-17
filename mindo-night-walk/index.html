@@ -31,103 +31,8 @@
 
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
+<link href="/assets/css/pages/travel-guides.css" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
-<style>
-    .page{margin-top:18px;padding:26px}
-    .page.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
-
-    .hero{display:grid;grid-template-columns:1.08fr .92fr;gap:16px;align-items:stretch;margin-top:10px}
-    .heroMedia{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.55);height:100%;min-height:0;position:relative}
-    .heroMedia img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block}
-    .heroBody{padding:16px;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);background:rgba(255,255,255,.65);display:flex;flex-direction:column;justify-content:flex-start;gap:10px;min-width:0}
-    .kicker{display:inline-flex;gap:8px;align-items:center;font-weight:900;color:var(--forest);letter-spacing:-.01em;font-size:13px;text-transform:uppercase}
-    .heroBody h1{margin:0;font-family:var(--font-head);color:var(--forest);letter-spacing:-.02em;line-height:1.05;font-size:34px}
-    .heroBody p{margin:0;color:var(--muted);line-height:1.68;max-width:72ch}
-    .ctaRow{margin-top:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-
-    .metaWrap{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.55);box-shadow:var(--shadow)}
-    .metaTitle{margin:0 0 10px;font-size:13px;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .metaGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-items:stretch}
-    .metaCard{padding:14px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.65);box-shadow:var(--shadow)}
-    .metaLabel{display:block;font-weight:900;color:var(--muted);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:.02em}
-    .metaValue{margin:0;color:var(--ink);font-weight:900;line-height:1.35}
-    .metaSub{margin:6px 0 0;color:var(--muted);line-height:1.55;font-size:13px}
-
-    .section{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
-    .sectionHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-    .sectionHead h2{margin:0;font-size:20px}
-    .sectionHint{margin:0;color:var(--muted);font-size:13px}
-
-    .infoCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
-    .infoCard p{margin:0;color:var(--muted);line-height:1.7}
-
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-    .softCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
-    .softCard h3{margin:0 0 8px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
-    .softCard p{margin:0;color:var(--muted);line-height:1.65}
-    .softCard ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.7}
-
-    .wildlifeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:stretch}
-    .wildlifeCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px}
-    .wildlifeCard h3{margin:0 0 8px;font-size:15px;color:var(--ink);letter-spacing:-.01em}
-    .wildlifeCard p{margin:0;color:var(--muted);line-height:1.6;font-size:14px}
-
-    .linkGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-items:stretch}
-    .linkCard{display:block;text-decoration:none;color:inherit;background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px}
-    .linkCard strong{display:block;color:var(--ink);margin-bottom:6px;font-size:15px;letter-spacing:-.01em}
-    .linkCard span{color:var(--muted);line-height:1.55;font-size:13px}
-
-    .videoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
-    .videoCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
-    .videoFrame{aspect-ratio:9/16;background:#071923;overflow:hidden}
-    .videoFrame iframe{width:100%;height:100%;border:0;display:block}
-    .videoBody{padding:14px 16px}
-    .videoBody h3{margin:0 0 6px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
-    .videoBody p{margin:0;color:var(--muted);line-height:1.6;font-size:13px}
-
-    .faqGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-    .faqCard{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
-    .faqCard h3{margin:0 0 10px;font-size:16px;color:var(--ink);letter-spacing:-.01em}
-    .qa{padding:10px 0;border-top:1px solid var(--line)}
-    .qa:first-child{border-top:0;padding-top:0}
-    .q{margin:0 0 4px;font-weight:900;color:var(--ink);font-size:13px}
-    .a{margin:0;color:var(--muted);line-height:1.6;font-size:13px}
-
-    .finalCta{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.65);box-shadow:var(--shadow);display:grid;grid-template-columns:1.15fr .85fr;gap:14px;align-items:start}
-    .finalCta p{margin:0;color:var(--muted);max-width:70ch;line-height:1.6}
-    .finalTitle{margin:0 0 6px;font-weight:900;color:var(--ink);letter-spacing:-.01em;font-size:16px}
-    .finalActions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .nextSteps{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.55);padding:12px 14px;box-shadow:var(--shadow)}
-    .nextSteps h3{margin:0 0 10px;font-size:13px;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .steps{margin:0;padding-left:18px;color:var(--muted);line-height:1.7;font-size:13px}
-
-
-    .upsellCard{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:stretch}
-    .upsellCard p{margin:0 0 10px;color:var(--muted);line-height:1.7}
-    .upsellCard p:last-child{margin-bottom:0}
-    .upsellList{margin:0;padding-left:18px;color:var(--muted);line-height:1.75}
-    .upsellSide{border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.55);padding:14px;display:flex;flex-direction:column}
-    .upsellSide h3{margin:0 0 10px;font-size:15px;color:var(--ink);letter-spacing:-.01em}
-    .upsellSide .finalActions{margin-top:auto;padding-top:12px}
-    .conversionRibbon{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
-    .conversionPill{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.62);padding:12px;box-shadow:var(--shadow)}
-    .conversionPill strong{display:block;color:var(--forest);font-size:13px;margin-bottom:4px}
-    .conversionPill span{display:block;color:var(--muted);font-size:12px;line-height:1.45}
-    @media (max-width:900px){.upsellCard{grid-template-columns:1fr}.conversionRibbon{grid-template-columns:1fr 1fr}}
-    @media (max-width:560px){.conversionRibbon{grid-template-columns:1fr}}
-
-    @media (max-width:1000px){.wildlifeGrid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:900px){
-      .hero{grid-template-columns:1fr}
-      .heroMedia{height:360px}
-      .grid2,.faqGrid,.linkGrid,.finalCta{grid-template-columns:1fr}
-      .ctaRow,.finalActions{display:grid;grid-template-columns:1fr;gap:10px;align-items:stretch}
-      .ctaRow a,.finalActions a{width:100%;justify-content:center;text-align:center}
-      .metaGrid{grid-template-columns:1fr 1fr}
-      .heroBody h1{font-size:28px}
-    }
-    @media (max-width:560px){.wildlifeGrid,.metaGrid,.videoGrid{grid-template-columns:1fr}.heroMedia{height:320px}}
-  </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -242,7 +147,7 @@
 }
 </script>
 </head>
-<body data-page-content-group="night_walk" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="guide_page">
+<body data-page-content-group="night_walk" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="guide_page" data-css-cluster="travel_guides">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-content-group="night_walk" data-analytics-event="outbound_link_click" data-analytics-guide="mindo_night_walk" data-analytics-label="English" data-analytics-location="external_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/mindo-night-walk/" hreflang="en" lang="en">English</a>
 <a data-analytics-content-group="night_walk" data-analytics-event="outbound_link_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Español" data-analytics-location="external_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/caminata-nocturna-mindo/" hreflang="es" lang="es">Español</a>
@@ -263,7 +168,7 @@
             A Mindo night walk is one of the best ways to experience the cloud forest after dark. Instead of focusing on daytime bird activity, this type of outing helps you notice a completely different side of the forest, with frogs, insects, spiders, owls, and other nocturnal wildlife becoming active once the light drops and the forest changes mood.
           </p>
 <p>
-            This page is designed to rank for Mindo night walk and night tour Mindo searches, while helping you decide when a nighttime wildlife experience makes sense inside your itinerary. If you already know you want the established activity version, go directly to the existing <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="night walk activity page" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/activities/night-walk/" style="text-decoration: underline; font-weight: 600;">night walk activity page</a>. If birding is also a priority, compare it with our <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/birdwatching-tours-mindo/" style="text-decoration: underline; font-weight: 600;">birdwatching tours in Mindo</a>.
+            This page is designed to rank for Mindo night walk and night tour Mindo searches, while helping you decide when a nighttime wildlife experience makes sense inside your itinerary. If you already know you want the established activity version, go directly to the existing <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="night walk activity page" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/activities/night-walk/">night walk activity page</a>. If birding is also a priority, compare it with our <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="birdwatching tours in Mindo" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/birdwatching-tours-mindo/">birdwatching tours in Mindo</a>.
           </p>
 <div aria-label="Primary actions" class="ctaRow">
 <a class="btn primary" data-analytics-content-group="night_walk" data-analytics-event="hero_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Plan Birdwatching in Mindo" data-analytics-location="hero_primary" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/birdwatching-tours-mindo/" rel="noopener">Book Morning Birding</a>
@@ -397,7 +302,7 @@
 </div>
 <div class="softCard">
 <h3>Use it in broader travel planning</h3>
-<p>If you are still building the full trip, use the <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Mindo travel guide" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/mindo-travel-guide/" style="text-decoration: underline; font-weight: 600;">Mindo travel guide</a> to decide whether a night walk belongs on your first evening, second evening, or not at all.</p>
+<p>If you are still building the full trip, use the <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Mindo travel guide" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/mindo-travel-guide/">Mindo travel guide</a> to decide whether a night walk belongs on your first evening, second evening, or not at all.</p>
 </div>
 <div class="softCard">
 <h3>Keep expectations practical</h3>
@@ -412,7 +317,7 @@
 </div>
 <div class="infoCard">
 <p>
-            This page is meant to help people searching for Mindo night walk understand whether the experience fits their trip. Once that decision is clear, the most direct next step is the existing <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Night Walk activity page" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/activities/night-walk/" style="text-decoration: underline; font-weight: 600;">Night Walk activity page</a>, which already gives you a more activity-focused version of the offer. The two pages should work together, with this SEO page capturing broader search intent and the activity page helping convert ready visitors.
+            This page is meant to help people searching for Mindo night walk understand whether the experience fits their trip. Once that decision is clear, the most direct next step is the existing <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Night Walk activity page" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/activities/night-walk/">Night Walk activity page</a>, which already gives you a more activity-focused version of the offer. The two pages should work together, with this SEO page capturing broader search intent and the activity page helping convert ready visitors.
           </p>
 </div>
 </section>
@@ -501,31 +406,12 @@ For visitors who are already investing in a private birdwatching experience, the
 </div>
 <div class="qa">
 <p class="q">Where do I go if I want the direct activity page?</p>
-<p class="a">Use the existing <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Night Walk activity page" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/activities/night-walk/" style="text-decoration: underline; font-weight: 600;">Night Walk activity page</a> when you are ready for the more direct activity version.</p>
+<p class="a">Use the existing <a data-analytics-content-group="night_walk" data-analytics-event="inline_recommendation_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Night Walk activity page" data-analytics-location="content_link" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/activities/night-walk/">Night Walk activity page</a> when you are ready for the more direct activity version.</p>
 </div>
 </div>
 </div>
 </section>
-<section aria-label="Final call to action" class="finalCta">
-<div aria-label="Final message">
-<p class="finalTitle">Ready to Complete Your Mindo Birding Day?</p>
-<p>
-            A Mindo night walk works best as a high-value add-on to a morning birdwatching tour. Plan birds during the day, rest or explore in the afternoon, then return after dark for a guided search for nocturnal cloud forest wildlife.
-          </p>
-<div aria-label="Final actions" class="finalActions">
-<a class="btn primary" data-analytics-content-group="night_walk" data-analytics-event="hero_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Plan Birdwatching in Mindo" data-analytics-location="hero_primary" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/birdwatching-tours-mindo/" rel="noopener">Plan Birdwatching in Mindo</a>
-<a class="btn secondary" data-analytics-content-group="night_walk" data-analytics-event="article_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="See the Mindo Travel Guide" data-analytics-location="hero_secondary" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/mindo-travel-guide/" rel="noopener">See the Mindo Travel Guide</a>
-</div>
-</div>
-<aside aria-label="Next steps" class="nextSteps">
-<h3>Next steps</h3>
-<ol class="steps">
-<li>Decide whether you want a night walk as a wildlife add-on or a main evening activity</li>
-<li>Compare it with daytime birdwatching and the rest of your Mindo itinerary</li>
-<li>Use the activity page when you are ready to add the Night Walk</li>
-</ol>
-</aside>
-</section>
+<section class="finalCta finalCta--split" aria-label="Plan your Mindo birding experience"><div class="finalGrid"><div class="finalLeft"><span class="eyebrow">Ready to complete your birding day?</span><h2>Complete Your Mindo Birding Day</h2><p>A Mindo night walk works best as a complement to a morning birdwatching tour. Watch birds during the day, then return after dark for a guided search for nocturnal cloud forest wildlife.</p><div class="ctaRow ctaRow--inline"><a class="btn primary" data-analytics-content-group="night_walk" data-analytics-event="hero_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="Plan Birdwatching in Mindo" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/birdwatching-tours-mindo/">Plan Birdwatching in Mindo</a><a class="btn secondary" data-analytics-content-group="night_walk" data-analytics-event="article_cta_click" data-analytics-guide="mindo_night_walk" data-analytics-label="See the Mindo Travel Guide" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="guide_page" href="/mindo-travel-guide/">See the Mindo Travel Guide</a></div></div><aside class="nextSteps"><h3>What happens next</h3><ol><li>Decide whether the night walk is an add-on or your main evening activity.</li><li>Compare it with daytime birdwatching and the rest of your itinerary.</li><li>Use the activity page when you are ready to add the night walk.</li></ol></aside></div></section>
 </main>
 <div id="siteFooter"></div>
 </div>
