@@ -32,447 +32,9 @@
 
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
+<link href="/assets/css/pages/travel-guides.css" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script defer src="/assets/js/site-config.js"></script>
-<style>
-    .page{
-      margin-top:18px;
-      padding:26px;
-    }
-
-    .page.card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
-    }
-
-    .topbarActions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-bottom:14px;
-    }
-
-    .hero{
-      display:grid;
-      grid-template-columns:1.02fr .98fr;
-      gap:16px;
-      align-items:stretch;
-    }
-
-    h1{
-      margin:0 0 8px;
-      letter-spacing:-0.02em;
-    }
-
-    .lede{
-      margin:0;
-      max-width:76ch;
-      color:var(--ink);
-      line-height:1.68;
-    }
-
-    .heroCard,
-    .heroMedia,
-    .infoCard,
-    .mediaCard,
-    .noteCard{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
-    }
-
-    .heroCard{
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      height:100%;
-    }
-
-    .ctaRow{
-      margin-top:14px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      font-weight:900;
-      color:var(--ink);
-      font-size:12.5px;
-      line-height:1;
-      white-space:nowrap;
-    }
-
-    .heroMedia{
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      align-self:start;
-      height:auto;
-    }
-
-    .heroMediaFrame{
-      width:100%;
-      aspect-ratio:9 / 16;
-      flex:none;
-      min-height:0;
-      background:#00120c;
-    }
-
-    .heroMediaFrame img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center center;
-      display:block;
-    }
-
-    .heroMediaCap{
-      padding:10px 12px;
-      border-top:1px solid var(--line);
-      background:rgba(255,255,255,.55);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    .experienceHighlights{
-      margin-top:16px;
-      padding:14px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:rgba(255,255,255,.55);
-    }
-
-    .experienceHighlights h2{
-      margin:0 0 10px;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:18px;
-    }
-
-    .experienceHighlights ul{
-      margin:0;
-      padding-left:18px;
-      color:var(--ink);
-      line-height:1.6;
-    }
-
-    .experienceHighlights li + li{
-      margin-top:8px;
-    }
-
-    .section{
-      margin-top:18px;
-      padding-top:14px;
-      border-top:1px solid var(--line);
-    }
-
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-
-    .sectionHead h2{
-      margin:0;
-      font-family:var(--font-head);
-      color:var(--forest);
-      letter-spacing:-0.02em;
-      font-size:20px;
-    }
-
-    .sectionHead p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    .infoGrid,
-    .wildlifeGrid{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
-    }
-
-    .wildlifeGrid{
-      grid-template-columns:repeat(2, 1fr);
-    }
-
-    .infoCard{
-      padding:14px;
-    }
-
-    .infoCard h3{
-      margin:0 0 8px;
-      font-size:16px;
-      color:var(--forest);
-      letter-spacing:-0.01em;
-    }
-
-    .infoCard p,
-    .noteCard p{
-      color:var(--ink);
-      line-height:1.68;
-    }
-
-    .infoCard p{
-      margin:0;
-    }
-
-    .mediaGrid{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:12px;
-      align-items:stretch;
-    }
-
-    .mediaCard{
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      min-width:0;
-    }
-
-    .mediaInner{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      height:100%;
-    }
-
-    .videoFrame,
-    .carouselViewport{
-      position:relative;
-      width:100%;
-      aspect-ratio:9 / 16;
-      border-radius:14px;
-      overflow:hidden;
-      background:#eee;
-      border:1px solid var(--line);
-    }
-
-    .videoFrame iframe{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      border:0;
-      display:block;
-    }
-
-    .carouselSlide{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .28s ease;
-    }
-
-    .carouselSlide.active{
-      opacity:1;
-      pointer-events:auto;
-    }
-
-    .carouselSlide img{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center;
-      display:block;
-      transform:scale(1.24);
-    }
-
-    .carouselOverlay{
-      position:absolute;
-      left:10px;
-      right:10px;
-      bottom:10px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      pointer-events:none;
-    }
-
-    .carouselOverlay .carouselBtn,
-    .carouselOverlay .carouselDots{
-      pointer-events:auto;
-    }
-
-    .carouselBtn{
-      width:40px;
-      height:40px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.55);
-      background:rgba(255,255,255,.88);
-      color:var(--forest);
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-      flex:0 0 auto;
-    }
-
-    .carouselDots{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.88);
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:var(--shadow);
-    }
-
-    .carouselDot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      padding:0;
-      cursor:pointer;
-    }
-
-    .carouselDot.active{
-      background:var(--forest);
-      border-color:var(--forest);
-    }
-
-    .mediaFooter{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:13px;
-      color:var(--muted);
-      background:rgba(255,255,255,.6);
-      min-height:76px;
-      display:flex;
-      align-items:center;
-      line-height:1.5;
-    }
-
-    .noteCard{
-      padding:16px;
-    }
-
-    .noteCard p{
-      margin:0;
-    }
-
-    .footerActions{
-      margin-top:16px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-
-    .faqGrid,
-    .relatedGrid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:12px;
-      align-items:stretch;
-    }
-
-    .faqCard,
-    .relatedCard{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(255,255,255,.65);
-      box-shadow:var(--shadow);
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      min-height:128px;
-    }
-
-    .faqCard h3,
-    .relatedCard h3{
-      margin:0 0 8px;
-      font-size:16px;
-      color:var(--forest);
-      letter-spacing:-0.01em;
-    }
-
-    .faqCard p,
-    .relatedCard p{
-      margin:0;
-      color:var(--ink);
-      line-height:1.68;
-    }
-
-    .relatedCard a{
-      margin-top:auto;
-      padding-top:12px;
-      font-weight:900;
-      color:var(--forest);
-      text-decoration:none;
-    }
-
-    .relatedCard a:hover{
-      text-decoration:underline;
-    }
-
-    @media (max-width:980px){
-      .faqGrid,
-      .relatedGrid{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width:980px){
-      .hero,
-      .infoGrid,
-      .wildlifeGrid,
-      .mediaGrid{
-        grid-template-columns:1fr;
-      }
-
-      .heroMedia{
-        order:1;
-      }
-
-      .heroCard{
-        order:2;
-      }
-    }
-
-    @media (max-width:680px){
-      .page{
-        padding:16px;
-      }
-    }
-  </style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -596,12 +158,21 @@
       "embedUrl": "https://www.youtube-nocookie.com/embed/3h5xb2C-yYs",
       "contentUrl": "https://www.youtube.com/shorts/3h5xb2C-yYs",
       "inLanguage": "es"
+    },
+    {
+      "@type": "VideoObject",
+      "name": "Bosque nublado de Mindo después del anochecer",
+      "description": "Video corto del ambiente y la vida silvestre nocturna durante una caminata guiada en Mindo, Ecuador.",
+      "thumbnailUrl": "https://img.youtube.com/vi/em2S9vLwrDk/hqdefault.jpg",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/em2S9vLwrDk",
+      "contentUrl": "https://www.youtube.com/shorts/em2S9vLwrDk",
+      "inLanguage": "es"
     }
   ]
 }
 </script>
 </head>
-<body data-page-content-group="activities" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="activity_tour">
+<body data-page-content-group="activities" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="activity_tour" data-css-cluster="travel_guides" data-activity-variant="night_walk">
 <div class="container">
 <div data-current-lang="es" id="siteHeader"></div><nav aria-label="Selector de idioma" class="rawLangLinks"><a data-analytics-content-group="activities" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/activities/night-walk/" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/activities/night-walk/" hreflang="en" lang="en">English</a>
 <a aria-current="page" data-analytics-content-group="activities" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/es/actividades/caminata-nocturna/" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/actividades/caminata-nocturna/" hreflang="es" lang="es">Español</a></nav>
@@ -646,68 +217,23 @@
 </aside>
 </section>
 <section aria-label="Galería multimedia" class="section">
-<div class="sectionHead">
-<h2>Fotos y videos</h2>
-<p>Mira dos videos cortos y revisa imagenes recientes de fauna nocturna antes de reservar.</p>
-</div>
+<div class="sectionHead"><h2>Fotos y videos</h2><p>Mira tres videos cortos y explora imágenes recientes de la caminata nocturna antes de reservar.</p></div>
 <div class="mediaGrid">
-<article class="mediaCard">
-<div class="mediaInner">
-<div class="videoFrame" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Video de caminata nocturna" data-analytics-location="night_walk_media" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">
-<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Video de caminata nocturna 1" data-analytics-location="night_walk_media" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/oljFGlhXXm8" title="Video de caminata nocturna en Mindo, Ecuador"></iframe>
-</div>
-<div class="mediaFooter">
-                Una mirada a la atmósfera, biodiversidad y el ritmo natural del bosque nublado de Mindo.
-              </div>
-</div>
-</article>
-<article class="mediaCard">
-<div class="mediaInner">
-<div class="videoFrame" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Video de caminata nocturna 2" data-analytics-location="night_walk_media" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">
-<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Video de caminata nocturna 2" data-analytics-location="night_walk_media" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/3h5xb2C-yYs" title="Video de fauna nocturna en Mindo, Ecuador"></iframe>
-</div>
-<div class="mediaFooter">
-                Otro vistazo corto a la fauna nocturna, los detalles pequenos del bosque y lo que diferencia este tour de las actividades diurnas.
-              </div>
-</div>
-</article>
-<article aria-label="Carrusel de imágenes de caminata nocturna" class="mediaCard">
-<div class="mediaInner">
-<div class="carouselViewport">
-<figure class="carouselSlide active">
-<img alt="Hábitat de fauna nocturna durante una caminata nocturna guiada en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_05.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Detalle de fauna nocturna del bosque nublado de Mindo" src="/assets/images/pages/activities/night-walk/night_walk_vert_04.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Vista superior de un escorpión brillante durante una caminata nocturna en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_02.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Búho fotografiado durante una caminata nocturna en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_03.jpg"/>
-</figure>
-<figure class="carouselSlide">
-<img alt="Escorpión brillante durante una caminata nocturna guiada en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_01.jpg"/>
-</figure>
-<div class="carouselOverlay">
-<button aria-label="Imagen anterior" class="carouselBtn" data-analytics-content-group="activities" data-analytics-event="gallery_previous" data-analytics-label="Previous image" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" id="nightWalkPrev" type="button">←</button>
-<div aria-label="Navegación del carrusel" class="carouselDots">
-<button aria-label="Mostrar primera imagen de caminata nocturna" class="carouselDot active" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 1" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="0" type="button"></button>
-<button aria-label="Mostrar segunda imagen de caminata nocturna" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 2" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="1" type="button"></button>
-<button aria-label="Mostrar detalle de escorpión" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 3" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="2" type="button"></button>
-<button aria-label="Mostrar imagen de búho" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 4" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="3" type="button"></button>
-<button aria-label="Mostrar escorpión brillante" class="carouselDot" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Night Walk image 5" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" data-slide="4" type="button"></button>
-</div>
-<button aria-label="Imagen siguiente" class="carouselBtn" data-analytics-content-group="activities" data-analytics-event="gallery_next" data-analytics-label="Next image" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" id="nightWalkNext" type="button">→</button>
-</div>
-</div>
-<div class="mediaFooter" id="nightWalkCaption">
-                La actividad nocturna comienza cuando la oscuridad cubre el bosque nublado de Mindo.
-              </div>
-</div>
-</article>
-</div>
-</section>
+<article aria-label="Carrusel de videos de caminata nocturna" class="mediaCard videoCarouselCard"><div class="mediaInner"><div class="videoCarouselViewport"><div class="videoCarouselSlide active"><div class="videoFrame"><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/oljFGlhXXm8" title="Caminata nocturna en Mindo, Ecuador" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Video de caminata nocturna 1" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></iframe></div></div>
+<div class="videoCarouselSlide"><div class="videoFrame"><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/3h5xb2C-yYs" title="Vida silvestre nocturna en Mindo, Ecuador" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Video de caminata nocturna 2" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></iframe></div></div>
+<div class="videoCarouselSlide"><div class="videoFrame"><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/em2S9vLwrDk" title="Bosque nublado de Mindo después del anochecer" data-analytics-content-group="activities" data-analytics-event="video_play_click" data-analytics-label="Video de caminata nocturna 3" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></iframe></div></div><div class="videoCarouselOverlay"><button aria-label="Video anterior" class="videoCarouselBtn" id="nightVideoPrev" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_previous" data-analytics-label="Video anterior" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">←</button><div aria-label="Navegación del carrusel de videos" class="videoCarouselDots"><button aria-label="Mostrar video 1" class="videoCarouselDot active" data-slide="0" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_video_click" data-analytics-label="Video de caminata nocturna 1" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Mostrar video 2" class="videoCarouselDot" data-slide="1" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_video_click" data-analytics-label="Video de caminata nocturna 2" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Mostrar video 3" class="videoCarouselDot" data-slide="2" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_video_click" data-analytics-label="Video de caminata nocturna 3" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button></div><button aria-label="Video siguiente" class="videoCarouselBtn" id="nightVideoNext" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_next" data-analytics-label="Video siguiente" data-analytics-location="night_walk_video_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">→</button></div></div><div class="mediaFooter" id="nightVideoCaption">Un vistazo al ambiente, la biodiversidad y el ritmo natural del bosque nublado de Mindo.</div></div></article>
+<article aria-label="Carrusel de imágenes de caminata nocturna" class="mediaCard nightImageCarousel"><div class="mediaInner"><div class="carouselViewport"><figure class="carouselSlide active"><img alt="Hábitat de vida silvestre nocturna durante una caminata guiada en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_05.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Detalle de vida silvestre nocturna en el bosque nublado de Mindo" src="/assets/images/pages/activities/night-walk/night_walk_vert_04.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Vista superior de un escorpión fluorescente durante una caminata nocturna en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_02.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Búho fotografiado durante una caminata nocturna en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_03.jpg"/></figure>
+<figure class="carouselSlide"><img alt="Escorpión fluorescente durante una caminata nocturna guiada en Mindo Ecuador" src="/assets/images/pages/activities/night-walk/night_walk_vert_01.jpg"/></figure><div class="carouselOverlay"><button aria-label="Imagen anterior" class="carouselBtn" id="nightWalkPrev" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_previous" data-analytics-label="Imagen anterior" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">←</button><div aria-label="Navegación del carrusel de imágenes" class="carouselDots"><button aria-label="Mostrar imagen 1" class="carouselDot active" data-slide="0" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Imagen de caminata nocturna 1" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Mostrar imagen 2" class="carouselDot" data-slide="1" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Imagen de caminata nocturna 2" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Mostrar imagen 3" class="carouselDot" data-slide="2" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Imagen de caminata nocturna 3" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Mostrar imagen 4" class="carouselDot" data-slide="3" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Imagen de caminata nocturna 4" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button>
+<button aria-label="Mostrar imagen 5" class="carouselDot" data-slide="4" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_image_click" data-analytics-label="Imagen de caminata nocturna 5" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk"></button></div><button aria-label="Imagen siguiente" class="carouselBtn" id="nightWalkNext" type="button" data-analytics-content-group="activities" data-analytics-event="gallery_next" data-analytics-label="Imagen siguiente" data-analytics-location="night_walk_carousel" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">→</button></div></div><div class="mediaFooter" id="nightWalkCaption">La actividad de la fauna nocturna comienza cuando cae la oscuridad sobre el bosque nublado de Mindo.</div></div></article>
+</div></section>
 <section aria-label="Qué esperar en una caminata nocturna en Mindo" class="section">
 <div class="sectionHead">
 <h2>Qué esperar</h2>
@@ -813,76 +339,13 @@ Muchos visitantes realizan un tour de observación de aves por la mañana y regr
 <p>
 Si ya estás planificando una ruta privada de aves, agregar la Caminata Nocturna es una de las formas más fáciles de convertir tu visita en una experiencia de naturaleza más completa. Por la mañana puedes buscar colibríes, tucanes, tangaras o especies objetivo, y por la noche volver para buscar ranas, insectos, arañas, búhos, escorpiones brillantes y otra vida del bosque que se activa después del atardecer.
 </p>
-<div class="footerActions">
-<a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_addon_click" data-analytics-label="Ver Tours de Aves" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/tours-de-avistamiento-de-aves-mindo/" data-analytics-location="night_walk_upsell" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" href="/es/tours-de-avistamiento-de-aves-mindo/">Ver Tours de Aves</a>
-<a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Reservar Caminata Nocturna" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="night_walk_upsell" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" href="/es/reservar-tour/">Reservar Caminata Nocturna</a>
-</div>
-</div>
 </section>
-
-<section aria-label="Preguntas frecuentes sobre caminata nocturna" class="section">
-<div class="sectionHead">
-<h2>Preguntas frecuentes sobre la caminata nocturna</h2>
-<p>Respuestas útiles antes de reservar una caminata nocturna guiada en Mindo.</p>
-</div>
-<div class="faqGrid">
-<article class="faqCard"><h3>¿Cuánto dura la caminata nocturna?</h3><p>La caminata nocturna guiada normalmente dura menos de 2 horas, por lo que es una actividad vespertina fácil para viajeros en Mindo o cerca del pueblo.</p></article>
-<article class="faqCard"><h3>¿La caminata nocturna es difícil?</h3><p>No. La ruta está diseñada para ser fácil y accesible, con un ritmo lento enfocado en observar fauna pequeña en vez de caminar rápido.</p></article>
-<article class="faqCard"><h3>¿Qué fauna se puede ver?</h3><p>Posibles avistamientos incluyen ranas, insectos, arañas, escorpiones brillantes, aves dormidas, búhos, reptiles y otra vida nocturna del bosque. Depende del clima y las condiciones.</p></article>
-<article class="faqCard"><h3>¿Qué debo llevar?</h3><p>Lleva zapatos cerrados, chaqueta ligera para lluvia, ropa cómoda para una noche húmeda y una linterna pequeña o frontal si tienes una.</p></article>
-</div>
-</section>
-
-<section aria-label="Notas útiles" class="section">
-<div class="sectionHead">
-<h2>Notas útiles</h2>
-<p>Una preparación simple hace que una caminata nocturna en Mindo sea más cómoda.</p>
-</div>
-<div class="noteCard">
-<p>Lleva zapatos cerrados, una chaqueta ligera para la lluvia y ropa adecuada para una noche húmeda en el bosque nublado. Si tienes una linterna frontal o una linterna pequeña, puedes traerla, aunque la iluminación guiada suele ser suficiente. La actividad de la fauna nocturna depende mucho de la humedad, la lluvia reciente y las condiciones cambiantes del bosque.</p>
-</div>
-<div class="footerActions">
-<a class="btn secondary" data-analytics-content-group="activities" data-analytics-event="secondary_cta_click" data-analytics-label="Volver a actividades" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/actividades/" data-analytics-location="activity_tour_cta" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" href="/es/actividades/">Volver a actividades</a>
-<a class="btn primary" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Reservar tour" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/es/reservar-tour/" data-analytics-location="activity_tour_cta" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk" href="/es/reservar-tour/">Reservar tour</a>
-</div>
-</section>
+<section class="finalCta finalCta--split" aria-label="Planifica tu caminata nocturna en Mindo"><div class="finalGrid"><div class="finalLeft"><span class="eyebrow">¿Listo para explorar después del anochecer?</span><h2>Planifica tu caminata nocturna en Mindo</h2><p>Comparte tus fechas, el tamaño del grupo y tus intereses. Te ayudaremos a organizar una experiencia nocturna tranquila y guiada en el bosque nublado.</p><div class="ctaRow ctaRow--inline"><a class="btn primary" href="/es/reservar-tour/" data-analytics-content-group="activities" data-analytics-event="tour_booking_click" data-analytics-label="Reservar caminata nocturna" data-analytics-location="final_cta" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">Reservar caminata nocturna</a><a class="btn secondary" href="/es/actividades/" data-analytics-content-group="activities" data-analytics-event="secondary_cta_click" data-analytics-label="Ver actividades" data-analytics-location="final_cta" data-analytics-page-language="es" data-analytics-page-type="activity_tour" data-analytics-region="mindo" data-analytics-tour="night_walk">Ver actividades</a></div></div><aside class="nextSteps"><h3>Qué sucede después</h3><ol><li>Envías tus fechas y el tamaño del grupo.</li><li>Confirmamos disponibilidad y horario.</li><li>Tu guía adapta la experiencia a las condiciones nocturnas.</li></ol></aside></div></section>
 </main>
 <div id="siteFooter"></div>
 </div>
 <script defer="" src="/assets/js/includes.js?v=1"></script>
 <script defer="" src="/assets/js/site.js?v=34"></script>
-<script>
-    (function(){
-      const slides = Array.from(document.querySelectorAll('.carouselSlide'));
-      const dots = Array.from(document.querySelectorAll('.carouselDot'));
-      const caption = document.getElementById('nightWalkCaption');
-      const prev = document.getElementById('nightWalkPrev');
-      const next = document.getElementById('nightWalkNext');
-
-      const captions = [
-        "La actividad nocturna comienza cuando la oscuridad cubre el bosque nublado de Mindo.",
-        "Las caminatas guiadas revelan insectos, anfibios y vida silvestre difícil de observar durante el día.",
-        "Una vista superior de un escorpión muestra los detalles que los visitantes pueden observar durante una caminata nocturna.",
-        "Un búho por la noche añade misterio y silencio al bosque nublado después del anochecer.",
-        "Un escorpión brillante bajo luz UV captura la atmósfera dramática de la fauna nocturna de Mindo."
-      ];
-
-      let index = 0;
-
-      function render(i){
-        index = (i + slides.length) % slides.length;
-        slides.forEach((slide, sIdx) => slide.classList.toggle('active', sIdx === index));
-        dots.forEach((dot, dIdx) => dot.classList.toggle('active', dIdx === index));
-        caption.textContent = captions[index];
-      }
-
-      prev.addEventListener('click', function(){ render(index - 1); });
-      next.addEventListener('click', function(){ render(index + 1); });
-
-      dots.forEach((dot, dotIndex) => {
-        dot.addEventListener('click', function(){ render(dotIndex); });
-      });
-    })();
-  </script>
+<script>(function(){function carousel(root,slideSelector,dotSelector,prevId,nextId,captionId,captions,stopVideos){const slides=Array.from(root.querySelectorAll(slideSelector));const dots=Array.from(root.querySelectorAll(dotSelector));const caption=document.getElementById(captionId);let index=0;function render(i){const next=(i+slides.length)%slides.length;slides.forEach((slide,n)=>{if(stopVideos&&n!==next&&slide.classList.contains('active')){const frame=slide.querySelector('iframe');if(frame) frame.src=frame.src;}slide.classList.toggle('active',n===next);});dots.forEach((dot,n)=>dot.classList.toggle('active',n===next));index=next;caption.textContent=captions[index];}document.getElementById(prevId).addEventListener('click',()=>render(index-1));document.getElementById(nextId).addEventListener('click',()=>render(index+1));dots.forEach((dot,n)=>dot.addEventListener('click',()=>render(n)));}const videoRoot=document.querySelector('.videoCarouselCard');const imageRoot=document.querySelector('.nightImageCarousel');if(videoRoot)carousel(videoRoot,'.videoCarouselSlide','.videoCarouselDot','nightVideoPrev','nightVideoNext','nightVideoCaption',["Un vistazo al ambiente, la biodiversidad y el ritmo natural del bosque nublado de Mindo.","Otro vistazo a la fauna nocturna, los pequeños detalles del bosque y lo que distingue esta experiencia de las actividades diurnas.","Un tercer video corto del ambiente después del anochecer y la vida silvestre nocturna del bosque nublado de Mindo."],true);if(imageRoot)carousel(imageRoot,'.carouselSlide','.carouselDot','nightWalkPrev','nightWalkNext','nightWalkCaption',["La actividad de la fauna nocturna comienza cuando cae la oscuridad sobre el bosque nublado de Mindo.","Las caminatas guiadas suelen revelar insectos, anfibios y vida oculta del bosque.","Una vista superior muestra la textura y los detalles de un escorpión durante la caminata.","Un búho añade misterio y silencio al bosque nublado después del anochecer.","Un escorpión fluorescente bajo luz UV captura el ambiente dramático de la noche."],false);})();</script>
 </body>
 </html>
