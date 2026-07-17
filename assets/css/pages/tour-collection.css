@@ -927,6 +927,91 @@ body[data-css-cluster="tour-collection"] .finalCta.finalCta--split .nextSteps li
   }
 }
 
+/* Tour collection bottom booking CTA lock - 2026-07-17
+   The supplied EN/ES booking pages use a plain .bookingPanel for this final
+   action, so keep the lock on that real structure rather than a generic CTA. */
+body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action){
+  display:block !important;
+  width:100% !important;
+  margin:0 !important;
+  padding:clamp(18px,2.4vw,24px) !important;
+  border:1px solid var(--line,#cfd9ca) !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.86) !important;
+  box-shadow:0 14px 32px rgba(28,55,36,.08) !important;
+  overflow:hidden !important;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) h2{
+  margin:0 0 10px !important;
+  max-width:none !important;
+  line-height:1.08 !important;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) > p{
+  margin:0 !important;
+  max-width:72ch !important;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) .ctaRow{
+  display:flex !important;
+  flex-flow:row wrap !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+  width:100% !important;
+  margin:18px 0 0 !important;
+  padding:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) .ctaRow .btn{
+  display:inline-flex !important;
+  flex:0 0 auto !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:44px !important;
+  height:auto !important;
+  aspect-ratio:auto !important;
+  padding:10px 18px !important;
+  border-radius:12px !important;
+  line-height:1.15 !important;
+  text-align:center !important;
+  text-decoration:none !important;
+  white-space:normal !important;
+  box-shadow:none !important;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) .ctaRow .btn.primary{
+  background:#fff0ad !important;
+  border-color:#e6b81e !important;
+  color:#0b1d21 !important;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) .ctaRow .btn.secondary{
+  background:#dfeade !important;
+  border-color:#7fab8e !important;
+  color:#0b1d21 !important;
+}
+
+@media(max-width:560px){
+  body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) .ctaRow{
+    align-items:stretch !important;
+  }
+
+  body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .section > .bookingPanel:not(.bookingPanel--action) .ctaRow .btn{
+    width:100% !important;
+  }
+}
+
+/* Legacy unscoped CTA locks disabled. They do not describe the bookingPanel
+   markup used by this cluster and must not leak into other page components. */
+@media not all {
 /* MBW FINAL CTA + BUTTON CONSISTENCY LOCK v2026-07-16 */
 :where(.finalCta,.final-cta,.bottomCta,.bottom-cta,.closingCta,.closing-cta,.ctaBand,.cta-band,.finalCtaBand,.final-cta-band,.planCta,.plan-cta,.bookingCta,.booking-cta,.tourFinalCta,.tour-final-cta,.shopFinalCta,.recommendationsFinalCta){
   margin:clamp(22px,3vw,34px) auto 0!important;
@@ -1076,3 +1161,4 @@ body[data-css-cluster="tour-collection"] .finalCta.finalCta--split .nextSteps li
   }
 }
 /* === END MBW HERO + FINAL CTA CONSISTENCY LOCK 2026-07-16 === */
+}
