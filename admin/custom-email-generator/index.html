@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
+  <script src="/assets/js/site-config.js?v=20260719" defer></script>
   <script src="/assets/js/email-blocks.js?v=20260719" defer></script>
   <style>
     :root{
@@ -360,14 +361,16 @@
 
       function init(){
         cacheEls();
-        loadBlockCatalogIfNeeded(() => {
-          const catalog = getCatalog();
-          catalog.blocks.forEach(block => {
-            if(block.defaultSelected) state.selected.add(block.id);
+        loadSiteConfigIfNeeded(() => {
+          loadBlockCatalogIfNeeded(() => {
+            const catalog = getCatalog();
+            catalog.blocks.forEach(block => {
+              if(block.defaultSelected) state.selected.add(block.id);
+            });
+            renderBlockControls();
+            bindEvents();
+            updateEmail();
           });
-          renderBlockControls();
-          bindEvents();
-          updateEmail();
         });
       }
 
@@ -391,7 +394,10 @@
       }
 
       function getCatalog(){
-        if(window.MBW_EMAIL_BLOCKS) return window.MBW_EMAIL_BLOCKS;
+        return window.MBW_EMAIL_BLOCKS || buildDefaultCatalog();
+      }
+
+      function buildDefaultCatalog(){
         return {
           brand:{
             name:"Mindo Bird Watching",
@@ -400,11 +406,178 @@
             whatsapp:"https://wa.me/13054585402",
             logo:"https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png",
             hero:"https://mindobirdwatching.com/assets/images/pages/home/MBW-Assets-homepage-top.jpg",
-            icons:[]
+            icons:[
+              { href:"https://www.mindobirdwatching.com", img:"https://i.imgur.com/fSPayjc.png", alt:"Website", w:28, h:28 },
+              { href:"https://www.instagram.com/mindobirdwatching/", img:"https://cdn-icons-png.flaticon.com/512/2111/2111463.png", alt:"Instagram", w:28, h:28 },
+              { href:"https://www.tiktok.com/@mindobirdwatching", img:"https://cdn-icons-png.flaticon.com/512/3046/3046121.png", alt:"TikTok", w:28, h:28 },
+              { href:"https://t.me/+ANc1KHoV2Y82NmI5", img:"https://cdn-icons-png.flaticon.com/512/2111/2111646.png", alt:"Telegram", w:28, h:28 },
+              { href:"https://www.facebook.com/profile.php?id=61577783327957", img:"https://cdn-icons-png.flaticon.com/512/733/733547.png", alt:"Facebook", w:28, h:28 },
+              { href:"https://x.com/mindobirds", img:"https://cdn-icons-png.flaticon.com/512/5968/5968958.png", alt:"X", w:28, h:28 },
+              { href:"https://www.youtube.com/@MindoBirdWatching", img:"https://cdn-icons-png.flaticon.com/512/1384/1384060.png", alt:"YouTube", w:28, h:28 },
+              { href:"https://pin.it/6O8GN1PRz", img:"https://i.imgur.com/kSrXjXZ.png", alt:"Pinterest", w:28, h:28 },
+              { href:"https://g.page/r/CdMlIYMGgBIvEAE/review", img:"https://i.imgur.com/fBPIjvV.png", alt:"Google Review", w:31, h:31 },
+              { href:"https://wa.me/13054585402", img:"https://i.imgur.com/0sfOKs8.png", alt:"WhatsApp", w:28, h:28 },
+              { href:"https://mindobirdwatching.com/shop", img:"https://i.imgur.com/g53OeDX.png", alt:"Shop", w:28, h:28 }
+            ]
           },
-          groups:[],
-          blocks:[]
+          groups:[
+            { id:"tours", label:"Tours" },
+            { id:"activities", label:"Activities" },
+            { id:"planning", label:"Planning" },
+            { id:"social", label:"Social / Reviews" }
+          ],
+          blocks:[
+            {
+              id:"tour-andean",
+              group:"tours",
+              type:"tour",
+              defaultSelected:true,
+              eyebrow:"Recommended half-day tour",
+              title:"Andean Cock-of-the-Rock Dawn Tour",
+              description:"A beautiful early morning option with the possibility of Andean Cock-of-the-Rock, forest birding, toucans, tanagers, hummingbirds, and cloud forest scenery.",
+              price:"$85 per person",
+              privatePrice:"$105 per person if private/exclusive",
+              duration:"5:00 AM - 10:00 AM",
+              minimum:"Minimum 2 participants",
+              image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw005_en.jpg",
+              url:"https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/",
+              video:"https://youtu.be/_a72Vla28Fw",
+              primaryCta:"View Tour",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"tour-jewels",
+              group:"tours",
+              type:"tour",
+              eyebrow:"Colorful morning option",
+              title:"Jewels of the Morning Forest",
+              description:"A shorter morning birding tour focused on colorful forest birds, toucans when active, tanagers, hummingbirds, and vibrant cloud forest activity.",
+              price:"$55 per person",
+              privatePrice:"",
+              duration:"6:00 AM - 9:30 AM",
+              minimum:"Minimum 2 participants",
+              image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw004_en.jpg",
+              url:"https://mindobirdwatching.com/tours/jewels-morning-forest-birding/",
+              video:"https://youtube.com/shorts/EZLHyzDKIac",
+              primaryCta:"View Tour",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"tour-full-day",
+              group:"tours",
+              type:"tour",
+              defaultSelected:true,
+              eyebrow:"Best full-day option",
+              title:"Quest for Five Toucans & the Andean Cock-of-the-Rock",
+              description:"Our most complete birding day: dawn Cock-of-the-Rock observation plus extended forest birding for five toucan species, tanagers, hummingbirds, and other cloud forest wildlife.",
+              price:"$115 per person",
+              privatePrice:"$135 per person if private/exclusive",
+              duration:"5:00 AM - 3:00 PM",
+              minimum:"Minimum 2 participants",
+              image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_FDT_mbw006_en.jpg",
+              url:"https://mindobirdwatching.com/tours/quest-five-toucans-guide/",
+              video:"https://youtube.com/shorts/MAXizZKXI_8",
+              primaryCta:"View Tour",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"night-walk",
+              group:"activities",
+              type:"tour",
+              defaultSelected:true,
+              eyebrow:"Recommended add-on",
+              title:"Night Walk",
+              description:"A wonderful evening experience with frogs, insects, sleeping birds, nocturnal animals, and a completely different side of the cloud forest.",
+              price:"$30 per person",
+              duration:"Evening activity",
+              minimum:"Minimum 2 participants",
+              image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_night_walk_wide_en.jpg",
+              url:"https://mindobirdwatching.com/activities/night-walk/",
+              video:"https://youtube.com/shorts/3h5xb2C-yYs",
+              primaryCta:"View Night Walk",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"activity-waterfall",
+              group:"activities",
+              type:"tour",
+              eyebrow:"Nature hike",
+              title:"Waterfall Tour",
+              description:"A relaxed hike through beautiful cloud forest scenery and waterfalls. This pairs well before or after birding when guests want more nature time.",
+              price:"$15 adult / $10 kid",
+              duration:"Flexible activity",
+              image:"https://mindobirdwatching.com/assets/images/pages/activities/waterfall-fall-tour/mbw_waterfall_003.jpg",
+              url:"https://mindobirdwatching.com/activities/waterfall-tour/",
+              video:"https://youtu.be/aN1U1Jhf3VU",
+              primaryCta:"View Tour",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"activity-chocolate",
+              group:"activities",
+              type:"tour",
+              eyebrow:"Family-friendly",
+              title:"Chocolate Tour",
+              description:"A fun and tasty experience to learn about cacao while enjoying another side of Mindo.",
+              price:"$15 adult / $10 kid",
+              duration:"Flexible activity",
+              image:"https://mindobirdwatching.com/assets/images/pages/activities/chocolate-tour/chocolate_tour_horizontal_01.jpg",
+              url:"https://mindobirdwatching.com/activities/chocolate-tour/",
+              video:"https://youtu.be/SkXWzSlgeuk",
+              primaryCta:"View Tour",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"activities-more",
+              group:"activities",
+              type:"feature",
+              eyebrow:"More in Mindo",
+              title:"Other Activity Options",
+              description:"If you have extra time, Mindo pairs beautifully with waterfalls, nature walks, wildlife experiences, Tarabita, butterfly garden visits, and other relaxed activities.",
+              image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_activities_wide_en.jpg",
+              url:"https://mindobirdwatching.com/activities/",
+              primaryCta:"View Activities"
+            },
+            {
+              id:"included",
+              group:"planning",
+              type:"included",
+              title:"Included",
+              items:[["Included","Expert local guide"],["Reserve fees","Entrance included"],["Pickup","From Mindo"],["Optics","Binoculars and spotting scope"]]
+            },
+            {
+              id:"next-steps",
+              group:"planning",
+              type:"nextSteps",
+              defaultSelected:true,
+              title:"Next Steps",
+              description:"After selecting a tour, we will just need the full names of all participants and your pickup location in Mindo. If you have any additional questions, send them over and we will be happy to help."
+            },
+            {
+              id:"social-links",
+              group:"social",
+              type:"social",
+              defaultSelected:true,
+              title:"Reviews, Photos, and Videos",
+              description:"Before choosing, you can review guest feedback, recent Instagram sightings, and videos from our Mindo birding experiences.",
+              links:[["Reviews","https://g.page/r/CdMlIYMGgBIvEAE/review"],["Instagram","https://instagram.com/mindobirdwatching"],["YouTube","https://www.youtube.com/@MindoBirdWatching"]]
+            }
+          ]
         };
+      }
+
+      function loadSiteConfigIfNeeded(done){
+        if(window.MBW_SITE_CONFIG){
+          done();
+          return;
+        }
+        loadFirstAvailableScript([
+          "/assets/js/site-config.js?v=20260719",
+          "/custom-email-generator/assets/js/site-config.js?v=20260719",
+          "assets/js/site-config.js?v=20260719",
+          "../assets/js/site-config.js?v=20260719",
+          "../../assets/js/site-config.js?v=20260719"
+        ], () => done());
       }
 
       function loadBlockCatalogIfNeeded(done){
@@ -413,21 +586,30 @@
           return;
         }
 
-        const paths = [
+        loadFirstAvailableScript([
           "/assets/js/email-blocks.js?v=20260719",
+          "/custom-email-generator/assets/js/email-blocks.js?v=20260719",
+          "email-blocks.js?v=20260719",
+          "assets/js/email-blocks.js?v=20260719",
+          "../assets/js/email-blocks.js?v=20260719",
           "../../assets/js/email-blocks.js?v=20260719",
-          "assets/js/email-blocks.js?v=20260719"
-        ];
+        ], () => done(), () => !!window.MBW_EMAIL_BLOCKS);
+      }
+
+      function loadFirstAvailableScript(paths, done, isLoaded){
         let index = 0;
 
         function tryNext(){
-          if(window.MBW_EMAIL_BLOCKS || index >= paths.length){
+          if((isLoaded && isLoaded()) || index >= paths.length){
             done();
             return;
           }
           const script = document.createElement("script");
           script.src = paths[index++];
-          script.onload = () => done();
+          script.onload = () => {
+            if(!isLoaded || isLoaded()) done();
+            else tryNext();
+          };
           script.onerror = tryNext;
           document.head.appendChild(script);
         }
@@ -529,7 +711,7 @@
 
       function buildEmailHtml(){
         const catalog = getCatalog();
-        const brand = catalog.brand;
+        const brand = applySiteContact(catalog.brand);
         const selectedBlocks = catalog.blocks.filter(block => state.selected.has(block.id));
         const guestName = clean(els.guestNameInput.value) || "Guest Name";
         const dates = clean(els.datesInput.value);
@@ -569,6 +751,22 @@
           privatePrice: clean(override.privatePrice) || block.privatePrice || "",
           duration: clean(override.duration) || block.duration || ""
         });
+      }
+
+      function applySiteContact(brand){
+        const nextBrand = Object.assign({}, brand || {});
+        const config = window.MBW_SITE_CONFIG || {};
+        const contact = config.contact || {};
+        const number = String(contact.whatsappNumberDigits || "").replace(/\D/g, "");
+        if(contact.email) nextBrand.email = contact.email;
+        if(number) nextBrand.whatsapp = "https://wa.me/" + number;
+        if(Array.isArray(nextBrand.icons)){
+          nextBrand.icons = nextBrand.icons.map(icon => {
+            if(String(icon.alt || "").toLowerCase() !== "whatsapp") return icon;
+            return Object.assign({}, icon, { href: nextBrand.whatsapp || icon.href });
+          });
+        }
+        return nextBrand;
       }
 
       function renderHeader(brand){
@@ -654,7 +852,8 @@
       }
 
       function renderReadyCta(brand, nextSteps){
-        const wa = brand.whatsapp + "?text=" + encodeURIComponent("Hi Mindo Bird Watching, I am replying to your email. Guest: " + (els.guestNameInput.value || "") + ". Dates: " + (els.datesInput.value || "") + ". Guests: " + (els.guestCountInput.value || "") + ".");
+        const message = "Hi Mindo Bird Watching, I am replying to your email. Guest: " + (els.guestNameInput.value || "") + ". Dates: " + (els.datesInput.value || "") + ". Guests: " + (els.guestCountInput.value || "") + ".";
+        const wa = buildWhatsAppUrl(message);
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#0D5925; border-radius:18px;'><tr><td align='center' style='padding:22px 20px;'>" +
@@ -675,6 +874,16 @@
           "</tr></table>" +
           "<p style='margin:5px 0 0; font-size:12px; line-height:18px; color:rgba(7,25,35,.72); font-weight:800;'>Mindo, Ecuador<br><a href='" + attr(brand.site) + "' style='color:#0D5925; text-decoration:underline;'>mindobirdwatching.com</a> | <a href='mailto:" + attr(brand.email) + "' style='color:#0D5925; text-decoration:underline;'>" + esc(brand.email) + "</a></p>" +
           "</td></tr></table></td></tr>";
+      }
+
+      function buildWhatsAppUrl(message){
+        const config = window.MBW_SITE_CONFIG || {};
+        const contact = config.contact || {};
+        const number = String(contact.whatsappNumberDigits || "").replace(/\D/g, "");
+        if(number) return "https://wa.me/" + number + "?text=" + encodeURIComponent(message);
+        const brand = applySiteContact(getCatalog().brand);
+        const base = String(brand.whatsapp || "https://wa.me/13054585402").split("?")[0];
+        return base + "?text=" + encodeURIComponent(message);
       }
 
       function copyHtml(){
