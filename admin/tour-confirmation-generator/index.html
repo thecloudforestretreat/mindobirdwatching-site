@@ -313,6 +313,18 @@
       z-index:1;
       background:linear-gradient(90deg, rgba(255,255,255,.25) 0%, rgba(255,255,255,.08) 54%, rgba(255,255,255,.16) 100%);
     }
+    .certificate.nightWalkMode .certOverlay{
+      background:linear-gradient(90deg, rgba(3,18,16,.72) 0%, rgba(4,25,21,.66) 54%, rgba(2,13,12,.74) 100%);
+    }
+    .certificate.nightWalkMode .certTitle,
+    .certificate.nightWalkMode .dateIssuedBox,
+    .certificate.nightWalkMode .infoBlock,
+    .certificate.nightWalkMode .noteLine,
+    .certificate.nightWalkMode .footerIg,
+    .certificate.nightWalkMode .footerWeb{
+      color:#fff;
+      text-shadow:0 2px 4px rgba(0,0,0,.55);
+    }
     .certLogo{
       position:absolute;
       left:62px;
@@ -364,6 +376,16 @@
       background-size:contain;
       filter:drop-shadow(0 14px 16px rgba(0,0,0,.15));
       pointer-events:none;
+    }
+    .certificate.nightWalkMode .guideImage{
+      left:1250px;
+      top:110px;
+      width:630px;
+      height:630px;
+      border-radius:50%;
+      background-size:cover;
+      box-shadow:0 0 18px rgba(255,255,255,.72);
+      filter:none;
     }
     .mindoLetters{
       position:absolute;
@@ -601,6 +623,7 @@
               <div class="field">
                 <label for="lengthInput">Length</label>
                 <select id="lengthInput">
+                  <option>2 hrs</option>
                   <option>Half Day</option>
                   <option selected>Full Day</option>
                   <option>Multi Day</option>
@@ -724,6 +747,9 @@
       appScriptUrl: "https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec",
       defaultQrUrl: "https://www.mindobirdwatching.com/",
       defaultGuideImage: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png",
+      nightWalkImage: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg",
+      nightWalkGuide: "Neicer",
+      nightWalkGuidePhone: "+593 98 095 5817",
       fallbackData: {
         confirmations: [
           {
@@ -756,7 +782,7 @@
         ],
         guides: [
           { "guide": "Chicho", "guide_phone": "+593 98 600 5054", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
-          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" }
+          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg" }
         ],
         tours: []
       }
@@ -989,7 +1015,8 @@
           "Half-Day to Full-Day Extension",
           "Canyoning"
         ];
-        const tours = state.tours.length ? state.tours : fallbackTours;
+        const tours = state.tours.length ? state.tours.slice() : fallbackTours.slice();
+        if(!tours.some(name => /night\s*walk/i.test(String(name || "")))) tours.push("Night Walk");
         tourSelects.forEach((select, idx) => {
           const current = select.value;
           select.innerHTML = "";
@@ -1017,6 +1044,12 @@
             times.push(label);
           }
         }
+        for(let hour = 1; hour <= 11; hour++){
+          for(let min of [0, 15, 30, 45]){
+            times.push(hour + ":" + String(min).padStart(2, "0") + " PM");
+          }
+        }
+        times.push("12:00 PM");
         times.forEach(time => {
           const opt = document.createElement("option");
           opt.value = time;
@@ -1101,6 +1134,7 @@
         els.pickupLocationInput.value = pickupLocationOf(r);
         els.qrInput.value = qrUrlOf(r);
         els.notesInput.value = notesOf(r) || buildDefaultNote(r);
+        applyNightWalkDefaults(false);
       }
 
       function onGuideChange(){
@@ -1112,11 +1146,32 @@
       function onTourPartsChange(){
         const parts = [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value].filter(Boolean);
         els.tourTypeInput.value = parts.join(" + ");
+        applyNightWalkDefaults(true);
         updatePreviewFromForm();
+      }
+
+      function isNightWalkSelected(){
+        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value, els.tourTypeInput.value]
+          .some(value => /night\s*walk/i.test(String(value || "")));
+      }
+
+      function applyNightWalkDefaults(force){
+        if(!isNightWalkSelected()) return;
+        const config = window.MBW_CONFIRMATION_CONFIG;
+        setSelectValue(els.guideInput, config.nightWalkGuide);
+        els.contactInput.value = config.nightWalkGuidePhone;
+        setSelectValue(els.lengthInput, "2 hrs");
+        if(force || !els.pickupTimeInput.value) setSelectValue(els.pickupTimeInput, "7:30 PM");
+        if(force || !els.transportationInput.value) els.transportationInput.value = "Mindo Garden";
+        if(force || !els.pickupLocationInput.value) els.pickupLocationInput.value = "Mindo Garden";
+        if(force || !els.notesInput.value) els.notesInput.value = "Pick up will be at 7:30 pm";
       }
 
       function updatePreviewFromForm(){
         const guide = els.guideInput.value || "Chicho";
+        const nightWalk = isNightWalkSelected();
+        const certificate = document.getElementById("certificate");
+        if(certificate) certificate.classList.toggle("nightWalkMode", nightWalk);
         els.outDateIssued.textContent = formatDateIssued(els.dateIssuedInput.value || todayMDY());
         els.outGuests.textContent = els.guestsInput.value || "Guest Name";
         els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
@@ -1129,7 +1184,7 @@
         const pickupLocation = els.pickupLocationInput.value || "";
         els.outTransportation.innerHTML = buildTransportationDisplay(transport, pickupLocation);
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
-        setGuideImage(imageForGuide(guide));
+        setGuideImage(nightWalk ? window.MBW_CONFIRMATION_CONFIG.nightWalkImage : imageForGuide(guide));
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
       }
 
@@ -1214,6 +1269,7 @@
 
       function renderExportCanvas(){
         const imageUrls = getExportImageUrls();
+        const nightWalk = isNightWalkSelected();
         return Promise.all([
           loadExportImage(imageUrls.background),
           loadExportImage(imageUrls.logo),
@@ -1231,17 +1287,21 @@
           drawCover(ctx, bg, 0, 0, 1920, 1080);
 
           const grad = ctx.createLinearGradient(0, 0, 1920, 0);
-          grad.addColorStop(0, "rgba(255,255,255,0.25)");
-          grad.addColorStop(0.54, "rgba(255,255,255,0.08)");
-          grad.addColorStop(1, "rgba(255,255,255,0.16)");
+          grad.addColorStop(0, nightWalk ? "rgba(3,18,16,0.72)" : "rgba(255,255,255,0.25)");
+          grad.addColorStop(0.54, nightWalk ? "rgba(4,25,21,0.66)" : "rgba(255,255,255,0.08)");
+          grad.addColorStop(1, nightWalk ? "rgba(2,13,12,0.74)" : "rgba(255,255,255,0.16)");
           ctx.fillStyle = grad;
           ctx.fillRect(0, 0, 1920, 1080);
 
           drawContain(ctx, logo, 62, 58, 330, 330);
           drawContain(ctx, mindo, 1158, 530, 720, getContainHeight(mindo, 720));
-          drawContain(ctx, guide, 1180, 140, 700, 1000);
+          if(nightWalk){
+            drawCoverCircle(ctx, guide, 1250, 110, 630);
+          } else {
+            drawContain(ctx, guide, 1180, 140, 700, 1000);
+          }
 
-          ctx.fillStyle = "#075f28";
+          ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
           ctx.textAlign = "center";
           ctx.textBaseline = "top";
           ctx.font = "950 90px Arial, Helvetica, sans-serif";
@@ -1249,9 +1309,9 @@
           ctx.font = "950 34px Arial, Helvetica, sans-serif";
           ctx.fillText("Date Issued: " + (els.outDateIssued.textContent || ""), 940, 245);
 
-          drawInfoText(ctx);
+          drawInfoText(ctx, nightWalk);
           drawQrToCanvas(ctx);
-          drawFooter(ctx, instagram, logo);
+          drawFooter(ctx, instagram, logo, nightWalk);
 
           return canvas;
         });
@@ -1300,12 +1360,28 @@
         ctx.drawImage(img, dx, dy, dw, dh);
       }
 
+      function drawCoverCircle(ctx, img, x, y, size){
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.clip();
+        drawCover(ctx, img, x, y, size, size);
+        ctx.restore();
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.78)";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2 - 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       function getContainHeight(img, targetWidth){
         if(!img || !img.width) return 360;
         return targetWidth * (img.height / img.width);
       }
 
-      function drawInfoText(ctx){
+      function drawInfoText(ctx, nightWalk){
         const labelX = 220;
         const valueX = 423;
         const rows = [
@@ -1321,7 +1397,7 @@
 
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillStyle = "#075f28";
+        ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
 
         rows.forEach(row => {
           ctx.font = "950 25px Arial, Helvetica, sans-serif";
@@ -1374,8 +1450,8 @@
         }
       }
 
-      function drawFooter(ctx, instagram, logo){
-        ctx.fillStyle = "#075f28";
+      function drawFooter(ctx, instagram, logo, nightWalk){
+        ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         ctx.font = "950 36px Arial, Helvetica, sans-serif";
@@ -1502,6 +1578,7 @@
 
       function normalizeLength(value){
         const v = String(value || "").toLowerCase();
+        if(v.includes("2 hr") || v.includes("2 hour")) return "2 hrs";
         if(v.includes("half")) return "Half Day";
         if(v.includes("multi")) return "Multi Day";
         return "Full Day";
