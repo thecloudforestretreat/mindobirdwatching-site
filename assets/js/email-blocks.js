@@ -3,7 +3,7 @@ window.MBW_EMAIL_BLOCKS = {
     name: "Mindo Bird Watching",
     site: "https://mindobirdwatching.com",
     email: "mindobirdwatching@gmail.com",
-    whatsapp: "https://wa.me/13054585402",
+    whatsapp: "",
     logo: "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png",
     hero: "https://mindobirdwatching.com/assets/images/pages/home/MBW-Assets-homepage-top.jpg",
     colors: {
@@ -22,7 +22,7 @@ window.MBW_EMAIL_BLOCKS = {
       { href: "https://www.youtube.com/@MindoBirdWatching", img: "https://cdn-icons-png.flaticon.com/512/1384/1384060.png", alt: "YouTube", w: 28, h: 28 },
       { href: "https://pin.it/6O8GN1PRz", img: "https://i.imgur.com/kSrXjXZ.png", alt: "Pinterest", w: 28, h: 28 },
       { href: "https://g.page/r/CdMlIYMGgBIvEAE/review", img: "https://i.imgur.com/fBPIjvV.png", alt: "Google Review", w: 31, h: 31 },
-      { href: "https://wa.me/13054585402", img: "https://i.imgur.com/0sfOKs8.png", alt: "WhatsApp", w: 28, h: 28 },
+      { href: "#", img: "https://i.imgur.com/0sfOKs8.png", alt: "WhatsApp", w: 28, h: 28 },
       { href: "https://mindobirdwatching.com/shop", img: "https://i.imgur.com/g53OeDX.png", alt: "Shop", w: 28, h: 28 }
     ]
   },
@@ -217,6 +217,7 @@ window.MBW_EMAIL_BLOCKS = {
       id: "included",
       group: "planning",
       type: "included",
+      defaultSelected: true,
       eyebrow: "",
       title: "Included",
       items: [
