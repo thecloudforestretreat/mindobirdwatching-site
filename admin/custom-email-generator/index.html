@@ -6,7 +6,7 @@
   <title>MBW Admin | Custom Email Generator</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0D5925" />
-  <link rel="canonical" href="https://admin.mindobirdwatching.com/admin/custom-email-generator/" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/custom-email-generator/" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
-  <script src="../../assets/js/email-blocks.js" defer></script>
+  <script src="/assets/js/email-blocks.js?v=20260719" defer></script>
   <style>
     :root{
       --mbw-green:#0D5925;
@@ -26,8 +26,8 @@
       --mbw-radius:18px;
     }
     body{ background:var(--mbw-bg); color:var(--mbw-ink); }
-    .container{ max-width:1680px; }
-    .page{ margin-top:18px; padding:18px; }
+    .container{ max-width:1760px; }
+    .page{ margin-top:18px; padding:20px; }
     .page.card{
       background:linear-gradient(180deg, rgba(246,250,240,.92), rgba(237,244,228,.94));
       border:1px solid var(--mbw-line);
@@ -39,7 +39,7 @@
       justify-content:space-between;
       align-items:flex-start;
       gap:16px;
-      margin-bottom:16px;
+      margin-bottom:18px;
       flex-wrap:wrap;
     }
     .adminTitle{ display:flex; gap:12px; align-items:flex-start; min-width:0; }
@@ -56,7 +56,7 @@
     .adminTitle h1{
       margin:0;
       color:var(--mbw-green);
-      font-size:24px;
+      font-size:23px;
       line-height:1.1;
       font-weight:950;
       text-transform:uppercase;
@@ -93,8 +93,8 @@
     .btnAdmin:disabled{ opacity:.55; cursor:not-allowed; }
     .appGrid{
       display:grid;
-      grid-template-columns:380px minmax(0,1fr) 680px;
-      gap:16px;
+      grid-template-columns:360px 500px minmax(640px,1fr);
+      gap:18px;
       align-items:start;
     }
     .panel{
@@ -102,7 +102,7 @@
       border:1px solid var(--mbw-line);
       border-radius:var(--mbw-radius);
       box-shadow:var(--mbw-shadow);
-      padding:14px;
+      padding:16px;
       min-width:0;
     }
     .sticky{ position:sticky; top:92px; }
@@ -187,7 +187,7 @@
       border:1px solid var(--mbw-line);
       border-radius:16px;
       background:#dbe8c8;
-      padding:12px;
+      padding:14px;
       overflow:auto;
       max-height:78vh;
     }
@@ -197,6 +197,16 @@
       background:#C7DAAC;
       box-shadow:0 18px 55px rgba(7,25,35,.16);
       transform-origin:top center;
+    }
+    .emptyBlocks{
+      border:1px dashed rgba(13,89,37,.35);
+      border-radius:16px;
+      padding:18px;
+      background:rgba(246,250,240,.72);
+      color:rgba(7,25,35,.72);
+      font-size:13px;
+      line-height:1.5;
+      font-weight:800;
     }
     .codeOutput{
       width:100%;
@@ -350,13 +360,15 @@
 
       function init(){
         cacheEls();
-        const catalog = getCatalog();
-        catalog.blocks.forEach(block => {
-          if(block.defaultSelected) state.selected.add(block.id);
+        loadBlockCatalogIfNeeded(() => {
+          const catalog = getCatalog();
+          catalog.blocks.forEach(block => {
+            if(block.defaultSelected) state.selected.add(block.id);
+          });
+          renderBlockControls();
+          bindEvents();
+          updateEmail();
         });
-        renderBlockControls();
-        bindEvents();
-        updateEmail();
       }
 
       function cacheEls(){
@@ -380,12 +392,59 @@
 
       function getCatalog(){
         if(window.MBW_EMAIL_BLOCKS) return window.MBW_EMAIL_BLOCKS;
-        return { brand:{ name:"Mindo Bird Watching", site:"https://mindobirdwatching.com", email:"mindobirdwatching@gmail.com", logo:"", hero:"", icons:[] }, groups:[], blocks:[] };
+        return {
+          brand:{
+            name:"Mindo Bird Watching",
+            site:"https://mindobirdwatching.com",
+            email:"mindobirdwatching@gmail.com",
+            whatsapp:"https://wa.me/13054585402",
+            logo:"https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png",
+            hero:"https://mindobirdwatching.com/assets/images/pages/home/MBW-Assets-homepage-top.jpg",
+            icons:[]
+          },
+          groups:[],
+          blocks:[]
+        };
+      }
+
+      function loadBlockCatalogIfNeeded(done){
+        if(window.MBW_EMAIL_BLOCKS){
+          done();
+          return;
+        }
+
+        const paths = [
+          "/assets/js/email-blocks.js?v=20260719",
+          "../../assets/js/email-blocks.js?v=20260719",
+          "assets/js/email-blocks.js?v=20260719"
+        ];
+        let index = 0;
+
+        function tryNext(){
+          if(window.MBW_EMAIL_BLOCKS || index >= paths.length){
+            done();
+            return;
+          }
+          const script = document.createElement("script");
+          script.src = paths[index++];
+          script.onload = () => done();
+          script.onerror = tryNext;
+          document.head.appendChild(script);
+        }
+
+        tryNext();
       }
 
       function renderBlockControls(){
         const catalog = getCatalog();
         els.blockGroups.innerHTML = "";
+        if(!catalog.groups.length || !catalog.blocks.length){
+          const empty = document.createElement("div");
+          empty.className = "emptyBlocks";
+          empty.innerHTML = "Email block catalog did not load. Confirm that <strong>/assets/js/email-blocks.js</strong> is uploaded on the admin domain, then refresh this page.";
+          els.blockGroups.appendChild(empty);
+          return;
+        }
         catalog.groups.forEach(group => {
           const wrap = document.createElement("section");
           wrap.className = "blockGroup";
