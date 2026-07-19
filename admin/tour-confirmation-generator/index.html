@@ -319,6 +319,8 @@
     .certificate.nightWalkMode .certTitle,
     .certificate.nightWalkMode .dateIssuedBox,
     .certificate.nightWalkMode .infoBlock,
+    .certificate.nightWalkMode .certLabel,
+    .certificate.nightWalkMode .certValue,
     .certificate.nightWalkMode .noteLine,
     .certificate.nightWalkMode .footerIg,
     .certificate.nightWalkMode .footerWeb{
@@ -378,10 +380,10 @@
       pointer-events:none;
     }
     .certificate.nightWalkMode .guideImage{
-      left:1250px;
-      top:110px;
-      width:630px;
-      height:630px;
+      left:1329px;
+      top:189px;
+      width:472px;
+      height:472px;
       border-radius:50%;
       background-size:cover;
       box-shadow:0 0 18px rgba(255,255,255,.72);
@@ -553,6 +555,7 @@
           </div>
         </div>
         <div class="adminActions">
+          <button class="btnAdmin primary" type="button" id="manualEntryBtn">New Manual Confirmation</button>
           <button class="btnAdmin" type="button" id="refreshBtn">Refresh Data</button>
         </div>
       </div>
@@ -817,7 +820,7 @@
 
       function cacheEls(){
         const ids = [
-          "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput",
+          "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "manualEntryBtn",
           "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
           "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
@@ -843,6 +846,10 @@
         });
 
         els.bookingSelect.addEventListener("change", () => {
+          if(els.bookingSelect.value === "manual"){
+            startManualConfirmation();
+            return;
+          }
           const row = Number(els.bookingSelect.value);
           const idx = state.records.findIndex(r => Number(r.rowNumber) === row);
           if(idx >= 0) selectRecord(idx);
@@ -857,6 +864,7 @@
         ["tour1Input", "tour2Input", "tour3Input"].forEach(id => els[id].addEventListener("change", onTourPartsChange));
         els.tourTypeInput.addEventListener("input", updatePreviewFromForm);
         els.refreshBtn.addEventListener("click", loadData);
+        els.manualEntryBtn.addEventListener("click", startManualConfirmation);
         els.exportPngBtn.addEventListener("click", exportPng);
         if(els.openImageBtn) els.openImageBtn.addEventListener("click", openImageForSaving);
         els.exportPdfBtn.addEventListener("click", exportPdf);
@@ -1060,6 +1068,10 @@
 
       function renderBookingOptions(){
         els.bookingSelect.innerHTML = "";
+        const manualOption = document.createElement("option");
+        manualOption.value = "manual";
+        manualOption.textContent = "Manual / New Confirmation";
+        els.bookingSelect.appendChild(manualOption);
         state.records.forEach((r, idx) => {
           const opt = document.createElement("option");
           opt.value = r.rowNumber || idx;
@@ -1114,6 +1126,31 @@
         els.bookingSelect.value = r.rowNumber || index;
         renderRecords();
         updatePreviewFromForm();
+      }
+
+      function startManualConfirmation(){
+        state.activeIndex = -1;
+        els.bookingSelect.value = "manual";
+        els.statusInput.value = "Pending";
+        els.dateIssuedInput.value = toDateInputValue(todayMDY());
+        els.guestsInput.value = "";
+        els.guestPhoneInput.value = "";
+        els.tourDateInput.value = "";
+        setSelectValue(els.guideInput, "Chicho");
+        els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
+        setSelectValue(els.lengthInput, "Full Day");
+        setSelectValue(els.pickupTimeInput, "3:00 AM");
+        setSelectValue(els.tour1Input, "");
+        setSelectValue(els.tour2Input, "");
+        setSelectValue(els.tour3Input, "");
+        els.tourTypeInput.value = "";
+        els.transportationInput.value = "";
+        els.pickupLocationInput.value = "";
+        els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
+        els.notesInput.value = "";
+        renderRecords();
+        updatePreviewFromForm();
+        setHint("Manual confirmation ready — enter guest and tour details");
       }
 
       function fillForm(r){
@@ -1296,7 +1333,7 @@
           drawContain(ctx, logo, 62, 58, 330, 330);
           drawContain(ctx, mindo, 1158, 530, 720, getContainHeight(mindo, 720));
           if(nightWalk){
-            drawCoverCircle(ctx, guide, 1250, 110, 630);
+            drawCoverCircle(ctx, guide, 1329, 189, 472);
           } else {
             drawContain(ctx, guide, 1180, 140, 700, 1000);
           }
