@@ -2774,27 +2774,49 @@ body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero
   gap: 0;
 }
 
-body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard .imageFrame {
-  aspect-ratio: auto;
+/* Equal-height hero: the copy determines the desktop row height while the
+   complete portrait scales inside the available media frame without cropping. */
+body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero {
+  align-items: stretch;
+}
+
+body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .heroCard,
+body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard {
   min-height: 0;
+  height: 100%;
+}
+
+body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard {
+  align-self: stretch;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard .imageFrame {
+  position: relative;
+  min-height: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
   background: rgba(255, 255, 255, .82);
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard .imageFrame img {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   max-height: none;
   object-fit: contain;
-  object-position: center top;
-}
-
-/* Keep the uncropped portrait card visually balanced beside the taller hero copy. */
-body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard {
-  align-self: center;
+  object-position: center;
 }
 
 @media (max-width: 900px) {
+  body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .heroCard,
   body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard {
-    align-self: stretch;
+    height: auto;
+  }
+
+  body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero > .imageCard .imageFrame {
+    aspect-ratio: 4 / 5;
   }
 }
