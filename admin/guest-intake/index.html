@@ -1,1 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Guest Intake</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/guest-intake/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <style>
+    :root{
+      --mbw-green:#0D5925;
+      --mbw-bg:#C7DAAC;
+      --mbw-soft:#F6FAF0;
+      --mbw-ink:#071923;
+      --mbw-muted:rgba(7,25,35,.68);
+      --mbw-line:rgba(7,25,35,.14);
+      --mbw-shadow:0 18px 55px rgba(7,25,35,.10);
+      --mbw-radius:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background:var(--mbw-bg);
+      color:var(--mbw-ink);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    .adminShell{
+      max-width:1760px;
+      margin:0 auto;
+      padding:22px;
+    }
+    .pageCard{
+      background:linear-gradient(180deg, rgba(246,250,240,.94), rgba(237,244,228,.96));
+      border:1px solid var(--mbw-line);
+      border-radius:var(--mbw-radius);
+      box-shadow:var(--mbw-shadow);
+      padding:20px;
+    }
+    .topBar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+    .titleLockup{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      min-width:0;
+    }
+    .brandMark{
+      width:54px;
+      height:54px;
+      object-fit:contain;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--mbw-line);
+      box-shadow:0 8px 24px rgba(7,25,35,.12);
+      flex:0 0 auto;
+    }
+    h1{
+      margin:0;
+      color:var(--mbw-green);
+      font-family:Georgia, "Times New Roman", serif;
+      font-size:28px;
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+    .titleLockup p{
+      margin:6px 0 0;
+      max-width:92ch;
+      color:var(--mbw-muted);
+      font-size:13px;
+      line-height:1.45;
+      font-weight:700;
+    }
+    .actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    button,
+    .buttonLink{
+      appearance:none;
+      border:1px solid var(--mbw-line);
+      border-radius:14px;
+      background:rgba(255,255,255,.86);
+      color:var(--mbw-ink);
+      min-height:44px;
+      padding:11px 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font:inherit;
+      font-weight:900;
+      text-decoration:none;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow:0 8px 20px rgba(7,25,35,.06);
+    }
+    button.primary{ background:var(--mbw-green); color:#fff; border-color:rgba(13,89,37,.35); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+    .appGrid{
+      display:grid;
+      grid-template-columns:minmax(360px, 510px) minmax(600px, 1fr);
+      gap:18px;
+      align-items:start;
+    }
+    .panel{
+      background:rgba(255,255,255,.8);
+      border:1px solid var(--mbw-line);
+      border-radius:var(--mbw-radius);
+      box-shadow:var(--mbw-shadow);
+      padding:16px;
+      min-width:0;
+    }
+    .sticky{
+      position:sticky;
+      top:18px;
+      max-height:calc(100vh - 36px);
+      overflow:auto;
+    }
+    .panelTitle{
+      margin:0 0 12px;
+      color:var(--mbw-green);
+      font-size:14px;
+      line-height:1.2;
+      font-weight:950;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+    }
+    .sectionDivider{
+      margin:15px 0 12px;
+      padding-top:13px;
+      border-top:1px solid var(--mbw-line);
+    }
+    .field{
+      display:grid;
+      gap:6px;
+      margin-bottom:11px;
+    }
+    label{
+      color:var(--mbw-muted);
+      font-size:12px;
+      line-height:1.25;
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    input,
+    select,
+    textarea{
+      width:100%;
+      border:1px solid var(--mbw-line);
+      border-radius:13px;
+      background:rgba(255,255,255,.9);
+      color:var(--mbw-ink);
+      padding:11px 12px;
+      font:inherit;
+      font-weight:750;
+      outline:none;
+    }
+    textarea{
+      min-height:94px;
+      resize:vertical;
+      line-height:1.45;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus{
+      border-color:rgba(13,89,37,.55);
+      box-shadow:0 0 0 3px rgba(13,89,37,.12);
+    }
+    .inlineGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .threeGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+    .hint{
+      margin:7px 0 0;
+      color:rgba(7,25,35,.62);
+      font-size:12px;
+      line-height:1.4;
+      font-weight:700;
+    }
+    .statusStrip{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .statBox{
+      background:#F6FAF0;
+      border:1px solid var(--mbw-line);
+      border-radius:14px;
+      padding:12px;
+      min-width:0;
+    }
+    .statBox span{
+      display:block;
+      color:var(--mbw-muted);
+      font-size:11px;
+      line-height:1.2;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      font-weight:950;
+    }
+    .statBox strong{
+      display:block;
+      margin-top:5px;
+      color:var(--mbw-green);
+      font-size:16px;
+      line-height:1.2;
+      word-break:break-word;
+    }
+    .validation{
+      border:1px solid rgba(13,89,37,.24);
+      background:rgba(13,89,37,.08);
+      color:#0D5925;
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:14px;
+      font-size:13px;
+      line-height:1.45;
+      font-weight:800;
+    }
+    .validation.error{
+      color:#8a1f11;
+      background:rgba(220,60,30,.08);
+      border-color:rgba(220,60,30,.25);
+    }
+    .previewGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .codeBox{
+      background:#071923;
+      color:#f6faf0;
+      border-radius:16px;
+      padding:14px;
+      min-height:220px;
+      overflow:auto;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      line-height:1.45;
+      white-space:pre;
+    }
+    .tablePreview{
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+      border:1px solid var(--mbw-line);
+      border-radius:16px;
+      overflow:hidden;
+      display:block;
+      max-height:460px;
+      overflow:auto;
+    }
+    .tablePreview tbody{ display:table; width:100%; border-collapse:collapse; }
+    .tablePreview th,
+    .tablePreview td{
+      border-bottom:1px solid rgba(7,25,35,.08);
+      padding:8px 10px;
+      text-align:left;
+      vertical-align:top;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .tablePreview th{
+      width:190px;
+      color:var(--mbw-green);
+      font-weight:950;
+      background:#F6FAF0;
+      white-space:nowrap;
+    }
+    .tablePreview td{
+      color:rgba(7,25,35,.78);
+      word-break:break-word;
+    }
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      background:#071923;
+      color:#fff;
+      border-radius:14px;
+      padding:12px 14px;
+      box-shadow:0 14px 40px rgba(7,25,35,.22);
+      font-weight:900;
+      opacity:0;
+      transform:translateY(10px);
+      pointer-events:none;
+      transition:.18s ease;
+      z-index:20;
+    }
+    .toast.show{ opacity:1; transform:translateY(0); }
+    @media (max-width:1180px){
+      .appGrid,
+      .previewGrid{ grid-template-columns:1fr; }
+      .sticky{ position:static; max-height:none; }
+    }
+    @media (max-width:760px){
+      .adminShell{ padding:10px; }
+      .pageCard{ padding:14px; }
+      .inlineGrid,
+      .threeGrid,
+      .statusStrip{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="adminShell">
+    <section class="pageCard">
+      <header class="topBar">
+        <div class="titleLockup">
+          <img class="brandMark" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
+          <div>
+            <h1>Guest Intake</h1>
+            <p>Manual CRM entry page matching the current n8n Telegram intake flow. Build CRM-ready guest and inquiry rows, copy them to Sheets, or post the same payload to an n8n webhook when you connect one.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="copyJsonBtn" type="button">Copy JSON</button>
+          <button id="copyInquiryBtn" type="button">Copy Inquiry Row</button>
+          <button id="copyGuestBtn" type="button">Copy Guest Row</button>
+          <button id="sendWebhookBtn" type="button">Send to Webhook</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+      </header>
 
+      <div class="appGrid">
+        <section class="panel sticky" aria-label="Guest intake form">
+          <h2 class="panelTitle">Intake Form</h2>
+          <div class="inlineGrid">
+            <div class="field">
+              <label for="intakeMode">Guest Type</label>
+              <select id="intakeMode">
+                <option value="new" selected>New Guest</option>
+                <option value="returning">Returning Guest</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="createdBy">Created By</label>
+              <input id="createdBy" type="text" value="admin_manual" />
+            </div>
+          </div>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">Guest</h2>
+            <div class="field returningOnly" hidden>
+              <label for="existingGuestId">Existing Guest ID</label>
+              <input id="existingGuestId" type="text" placeholder="G-..." />
+            </div>
+            <div class="inlineGrid">
+              <div class="field">
+                <label for="firstName">First Name</label>
+                <input id="firstName" type="text" placeholder="First name" />
+              </div>
+              <div class="field">
+                <label for="lastName">Last Name</label>
+                <input id="lastName" type="text" placeholder="Last name" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="fullName">Full Name</label>
+              <input id="fullName" type="text" placeholder="Auto-filled from first and last name" />
+            </div>
+            <div class="inlineGrid">
+              <div class="field">
+                <label for="phoneNumber">Phone Number</label>
+                <input id="phoneNumber" type="tel" placeholder="+1 305 555 1111" />
+              </div>
+              <div class="field">
+                <label for="guestEmail">Email</label>
+                <input id="guestEmail" type="email" placeholder="guest@email.com" />
+              </div>
+            </div>
+            <div class="inlineGrid">
+              <div class="field">
+                <label for="phoneNormalized">Normalized Phone</label>
+                <input id="phoneNormalized" type="text" placeholder="Auto-filled" />
+              </div>
+              <div class="field">
+                <label for="homeCountry">Home Country</label>
+                <input id="homeCountry" type="text" placeholder="Auto-inferred or manual" />
+              </div>
+            </div>
+          </div>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">Inquiry</h2>
+            <div class="field">
+              <label for="tourInterest">Tour Interest</label>
+              <select id="tourInterest">
+                <option value="">Choose one</option>
+                <option>Half-Day Birdwatching Tour</option>
+                <option>Full-Day Birdwatching Tour</option>
+                <option>Andean Cock-of-the-Rock Dawn Tour</option>
+                <option>Jewels of the Morning Forest</option>
+                <option>Quest for Five Toucans & Andean Cock-of-the-Rock</option>
+                <option>Custom Private Birding Tour</option>
+                <option>Night Walk</option>
+                <option>Activities / Waterfalls / Chocolate</option>
+                <option>Quito to Mindo Day Trip</option>
+                <option>Other / Not Sure Yet</option>
+              </select>
+            </div>
+            <div class="threeGrid">
+              <div class="field">
+                <label for="guestCount">Guest Count</label>
+                <select id="guestCount">
+                  <option value="">Choose</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6+</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="requestedDate">Requested Date</label>
+                <input id="requestedDate" type="date" />
+              </div>
+              <div class="field">
+                <label for="followupDate">Follow-Up Date</label>
+                <input id="followupDate" type="date" />
+              </div>
+            </div>
+            <div class="inlineGrid">
+              <div class="field">
+                <label for="durationPreference">Duration Preference</label>
+                <select id="durationPreference">
+                  <option value="">Not specified</option>
+                  <option>Half day</option>
+                  <option>Full day</option>
+                  <option>Two full days</option>
+                  <option>Flexible</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="flexibilityDays">Flexibility Days</label>
+                <input id="flexibilityDays" type="text" placeholder="Example: Nov 19-22" />
+              </div>
+            </div>
+            <div class="inlineGrid">
+              <div class="field">
+                <label for="transportationNeeded">Transportation Needed</label>
+                <select id="transportationNeeded">
+                  <option value="">Not specified</option>
+                  <option>No</option>
+                  <option>From Mindo</option>
+                  <option>Quito to Mindo</option>
+                  <option>Quito roundtrip</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="accommodationNeeded">Accommodation Needed</label>
+                <select id="accommodationNeeded">
+                  <option value="">Not specified</option>
+                  <option>No</option>
+                  <option>Yes</option>
+                  <option>Recommendation only</option>
+                  <option>Already booked</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="notes">Guest Notes / Message</label>
+              <textarea id="notes" placeholder="Guest questions, special interests, target birds, pickup details, etc."></textarea>
+            </div>
+            <div class="field">
+              <label for="internalNotes">Internal Notes</label>
+              <textarea id="internalNotes" placeholder="Private team notes, country inference, route idea, quote reminder"></textarea>
+            </div>
+          </div>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">CRM Status</h2>
+            <div class="threeGrid">
+              <div class="field">
+                <label for="status">Status</label>
+                <select id="status">
+                  <option value="new" selected>new</option>
+                  <option>active</option>
+                  <option>quoted</option>
+                  <option>confirmed</option>
+                  <option>closed</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="availabilityStatus">Availability</label>
+                <select id="availabilityStatus">
+                  <option value="pending" selected>pending</option>
+                  <option>available</option>
+                  <option>limited</option>
+                  <option>unavailable</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="quoteStatus">Quote Status</label>
+                <select id="quoteStatus">
+                  <option value="not_sent" selected>not_sent</option>
+                  <option>sent</option>
+                  <option>accepted</option>
+                  <option>declined</option>
+                </select>
+              </div>
+            </div>
+            <div class="threeGrid">
+              <div class="field">
+                <label for="paymentStatus">Payment Status</label>
+                <select id="paymentStatus">
+                  <option value="unpaid" selected>unpaid</option>
+                  <option>deposit_sent</option>
+                  <option>deposit_paid</option>
+                  <option>paid</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="assignedTo">Assigned To</label>
+                <input id="assignedTo" type="text" placeholder="Optional" />
+              </div>
+              <div class="field">
+                <label for="sourcePlatform">Source Platform</label>
+                <select id="sourcePlatform">
+                  <option>WhatsApp</option>
+                  <option>Website</option>
+                  <option>Email</option>
+                  <option>Instagram</option>
+                  <option>Google</option>
+                  <option>Manual</option>
+                </select>
+              </div>
+            </div>
+            <div class="inlineGrid">
+              <div class="field">
+                <label for="sourceChannel">Source Channel</label>
+                <input id="sourceChannel" type="text" value="Manual Admin Intake" />
+              </div>
+              <div class="field">
+                <label for="webhookUrl">n8n Webhook URL</label>
+                <input id="webhookUrl" type="url" placeholder="Paste webhook URL when ready" />
+                <p class="hint">Stored only in this browser. Leave blank if copying rows manually.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="CRM output">
+          <h2 class="panelTitle">CRM Output</h2>
+          <div class="statusStrip">
+            <div class="statBox"><span>Guest ID</span><strong id="guestIdOut">-</strong></div>
+            <div class="statBox"><span>Inquiry ID</span><strong id="inquiryIdOut">-</strong></div>
+            <div class="statBox"><span>Phone</span><strong id="phoneOut">-</strong></div>
+            <div class="statBox"><span>Sheet Action</span><strong id="sheetActionOut">-</strong></div>
+          </div>
+          <div class="validation" id="validationBox">Ready.</div>
+
+          <div class="previewGrid">
+            <div>
+              <h2 class="panelTitle">Inquiry Row</h2>
+              <table class="tablePreview"><tbody id="inquiryTable"></tbody></table>
+            </div>
+            <div>
+              <h2 class="panelTitle">Guest Row</h2>
+              <table class="tablePreview"><tbody id="guestTable"></tbody></table>
+              <p class="hint">Guest row is only needed for New Guest. Returning guests only create an inquiry row and update guest stats in the current n8n workflow.</p>
+            </div>
+          </div>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">Payload JSON</h2>
+            <pre class="codeBox" id="jsonOutput"></pre>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      const els = {};
+      const guestColumns = [
+        "guest_id", "phone_number", "phone_normalized", "first_name", "last_name", "full_name",
+        "country", "preferred_language", "guest_type", "vip_status", "instagram_handle", "email",
+        "notes", "first_contact_date", "last_contact_date", "total_inquiries", "total_confirmed_bookings",
+        "status", "created_by", "created_at", "updated_at"
+      ];
+      const inquiryColumns = [
+        "inquiry_id", "guest_id", "phone_number", "full_name", "inquiry_type", "tour_type",
+        "birding_type", "interest_category", "requested_date", "flexibility_days", "guest_count",
+        "duration_preference", "transportation_needed", "accommodation_needed", "source_platform",
+        "source_channel", "status", "assigned_to", "created_by", "notes", "internal_notes",
+        "last_contacted_at", "followup_date", "availability_status", "quote_status", "payment_status",
+        "confirmed_date", "completed_date", "created_at", "updated_at"
+      ];
+
+      document.addEventListener("DOMContentLoaded", init);
+
+      function init(){
+        cacheEls();
+        loadStoredSettings();
+        bindEvents();
+        updateVisibility();
+        updateOutput();
+      }
+
+      function cacheEls(){
+        [
+          "intakeMode", "createdBy", "existingGuestId", "firstName", "lastName", "fullName", "phoneNumber",
+          "guestEmail", "phoneNormalized", "homeCountry", "tourInterest", "guestCount", "requestedDate",
+          "followupDate", "durationPreference", "flexibilityDays", "transportationNeeded", "accommodationNeeded",
+          "notes", "internalNotes", "status", "availabilityStatus", "quoteStatus", "paymentStatus", "assignedTo",
+          "sourcePlatform", "sourceChannel", "webhookUrl", "guestIdOut", "inquiryIdOut", "phoneOut",
+          "sheetActionOut", "validationBox", "inquiryTable", "guestTable", "jsonOutput", "copyJsonBtn",
+          "copyInquiryBtn", "copyGuestBtn", "sendWebhookBtn", "resetBtn", "toast"
+        ].forEach(id => els[id] = document.getElementById(id));
+      }
+
+      function bindEvents(){
+        Object.keys(els).forEach(key => {
+          const el = els[key];
+          if(!el || !["INPUT", "SELECT", "TEXTAREA"].includes(el.tagName)) return;
+          el.addEventListener("input", handleInput);
+          el.addEventListener("change", handleInput);
+        });
+        els.intakeMode.addEventListener("change", updateVisibility);
+        els.firstName.addEventListener("input", syncFullName);
+        els.lastName.addEventListener("input", syncFullName);
+        els.phoneNumber.addEventListener("input", syncPhone);
+        els.webhookUrl.addEventListener("change", () => localStorage.setItem("mbwGuestIntakeWebhook", els.webhookUrl.value));
+        els.copyJsonBtn.addEventListener("click", () => copyText(JSON.stringify(buildPayload(), null, 2)).then(() => showToast("JSON copied")));
+        els.copyInquiryBtn.addEventListener("click", () => copyText(rowToTsv(buildPayload().inquiry_row, inquiryColumns)).then(() => showToast("Inquiry row copied")));
+        els.copyGuestBtn.addEventListener("click", () => copyText(rowToTsv(buildPayload().guest_row || {}, guestColumns)).then(() => showToast("Guest row copied")));
+        els.sendWebhookBtn.addEventListener("click", sendToWebhook);
+        els.resetBtn.addEventListener("click", resetForm);
+      }
+
+      function handleInput(){
+        updateOutput();
+      }
+
+      function syncFullName(){
+        const first = clean(els.firstName.value);
+        const last = clean(els.lastName.value);
+        els.fullName.value = [first, last].filter(Boolean).join(" ");
+        updateOutput();
+      }
+
+      function syncPhone(){
+        const normalized = normalizePhone(els.phoneNumber.value);
+        els.phoneNormalized.value = normalized;
+        if(!clean(els.homeCountry.value)){
+          els.homeCountry.value = inferCountry(normalized);
+        }
+        updateOutput();
+      }
+
+      function updateVisibility(){
+        const isReturning = els.intakeMode.value === "returning";
+        document.querySelectorAll(".returningOnly").forEach(el => el.hidden = !isReturning);
+        els.copyGuestBtn.disabled = isReturning;
+        updateOutput();
+      }
+
+      function loadStoredSettings(){
+        els.webhookUrl.value = localStorage.getItem("mbwGuestIntakeWebhook") || "";
+      }
+
+      function resetForm(){
+        [
+          "existingGuestId", "firstName", "lastName", "fullName", "phoneNumber", "guestEmail",
+          "phoneNormalized", "homeCountry", "tourInterest", "guestCount", "requestedDate", "followupDate",
+          "durationPreference", "flexibilityDays", "transportationNeeded", "accommodationNeeded",
+          "notes", "internalNotes", "assignedTo"
+        ].forEach(id => els[id].value = "");
+        els.intakeMode.value = "new";
+        els.createdBy.value = "admin_manual";
+        els.status.value = "new";
+        els.availabilityStatus.value = "pending";
+        els.quoteStatus.value = "not_sent";
+        els.paymentStatus.value = "unpaid";
+        els.sourcePlatform.value = "WhatsApp";
+        els.sourceChannel.value = "Manual Admin Intake";
+        updateVisibility();
+        showToast("Form reset");
+      }
+
+      function buildPayload(){
+        const now = new Date();
+        const nowIso = now.toISOString();
+        const stamp = nowIso.replace(/[-:.TZ]/g, "").slice(0, 14);
+        const mode = els.intakeMode.value;
+        const phone = clean(els.phoneNumber.value);
+        const phoneNormalized = clean(els.phoneNormalized.value) || normalizePhone(phone);
+        const fullName = clean(els.fullName.value) || [clean(els.firstName.value), clean(els.lastName.value)].filter(Boolean).join(" ");
+        const guestId = mode === "returning" && clean(els.existingGuestId.value)
+          ? clean(els.existingGuestId.value)
+          : "G-" + stamp + "-" + lastFour(phoneNormalized || phone || "0000");
+        const inquiryId = "INQ-" + stamp + "-" + lastFour(phoneNormalized || phone || "0000");
+        const createdBy = clean(els.createdBy.value) || "admin_manual";
+        const country = clean(els.homeCountry.value) || inferCountry(phoneNormalized);
+        const tourInterest = clean(els.tourInterest.value);
+        const notes = clean(els.notes.value);
+        const internalNotes = clean(els.internalNotes.value) || ((mode === "returning" ? "Returning guest inquiry" : "Captured via manual admin intake") + ". Country inferred: " + (country || "Unknown"));
+
+        const guestRow = mode === "new" ? {
+          guest_id: guestId,
+          phone_number: apostrophePhone(phone),
+          phone_normalized: phoneNormalized,
+          first_name: clean(els.firstName.value),
+          last_name: clean(els.lastName.value),
+          full_name: fullName,
+          country: country,
+          preferred_language: "",
+          guest_type: "WhatsApp Inquiry",
+          vip_status: "No",
+          instagram_handle: "",
+          email: clean(els.guestEmail.value),
+          notes: notes,
+          first_contact_date: nowIso,
+          last_contact_date: nowIso,
+          total_inquiries: "1",
+          total_confirmed_bookings: "0",
+          status: "active",
+          created_by: createdBy,
+          created_at: nowIso,
+          updated_at: nowIso
+        } : null;
+
+        const inquiryRow = {
+          inquiry_id: inquiryId,
+          guest_id: guestId,
+          phone_number: apostrophePhone(phone),
+          full_name: fullName,
+          inquiry_type: mode === "returning" ? "Returning WhatsApp Inquiry" : "New WhatsApp Inquiry",
+          tour_type: tourInterest,
+          birding_type: tourInterest.toLowerCase().includes("bird") || tourInterest.toLowerCase().includes("cock") || tourInterest.toLowerCase().includes("toucan") ? "Birdwatching" : "",
+          interest_category: tourInterest,
+          requested_date: clean(els.requestedDate.value),
+          flexibility_days: clean(els.flexibilityDays.value),
+          guest_count: clean(els.guestCount.value),
+          duration_preference: clean(els.durationPreference.value),
+          transportation_needed: clean(els.transportationNeeded.value),
+          accommodation_needed: clean(els.accommodationNeeded.value),
+          source_platform: clean(els.sourcePlatform.value),
+          source_channel: clean(els.sourceChannel.value),
+          status: clean(els.status.value) || "new",
+          assigned_to: clean(els.assignedTo.value),
+          created_by: createdBy,
+          notes: notes,
+          internal_notes: internalNotes,
+          last_contacted_at: nowIso,
+          followup_date: clean(els.followupDate.value),
+          availability_status: clean(els.availabilityStatus.value) || "pending",
+          quote_status: clean(els.quoteStatus.value) || "not_sent",
+          payment_status: clean(els.paymentStatus.value) || "unpaid",
+          confirmed_date: "",
+          completed_date: "",
+          created_at: nowIso,
+          updated_at: nowIso
+        };
+
+        return {
+          source: "mbw_admin_guest_intake",
+          mode: mode,
+          action: mode === "new" ? "append_guest_and_inquiry" : "append_returning_inquiry",
+          sheets: {
+            guest_sheet: "whatsapp_guests",
+            inquiry_sheet: "whatsapp_inquiries"
+          },
+          guest_row: guestRow,
+          inquiry_row: inquiryRow,
+          temp_data: {
+            guest_id: guestId,
+            guest_first_name: clean(els.firstName.value),
+            guest_last_name: clean(els.lastName.value),
+            full_name: fullName,
+            phone_number: phone,
+            phone_normalized: phoneNormalized,
+            home_country: country,
+            guest_email: clean(els.guestEmail.value),
+            tour_interest: tourInterest,
+            guest_count: clean(els.guestCount.value),
+            preferred_date: clean(els.requestedDate.value),
+            notes: notes
+          }
+        };
+      }
+
+      function updateOutput(){
+        const payload = buildPayload();
+        const validation = validatePayload(payload);
+        els.guestIdOut.textContent = payload.inquiry_row.guest_id || "-";
+        els.inquiryIdOut.textContent = payload.inquiry_row.inquiry_id || "-";
+        els.phoneOut.textContent = payload.inquiry_row.phone_normalized || "-";
+        els.sheetActionOut.textContent = payload.action;
+        els.validationBox.textContent = validation.ok ? "Ready to save. Required fields are present." : validation.errors.join(" ");
+        els.validationBox.classList.toggle("error", !validation.ok);
+        renderTable(els.inquiryTable, payload.inquiry_row, inquiryColumns);
+        renderTable(els.guestTable, payload.guest_row || {}, guestColumns);
+        els.jsonOutput.textContent = JSON.stringify(payload, null, 2);
+      }
+
+      function validatePayload(payload){
+        const row = payload.inquiry_row;
+        const errors = [];
+        if(payload.mode === "returning" && !clean(row.guest_id)) errors.push("Existing guest ID is required for returning guest.");
+        if(!clean(row.phone_number).replace(/^'/, "")) errors.push("Phone number is required.");
+        if(!clean(row.full_name)) errors.push("Guest name is required.");
+        if(!clean(row.tour_type)) errors.push("Tour interest is required.");
+        if(!clean(row.guest_count)) errors.push("Guest count is required.");
+        if(!clean(row.requested_date)) errors.push("Requested date is required.");
+        if(clean(row.guest_count) && !/^([1-9]\d*|6\+)$/.test(clean(row.guest_count))) errors.push("Guest count must be a number or 6+.");
+        return { ok: errors.length === 0, errors };
+      }
+
+      function renderTable(target, row, columns){
+        target.innerHTML = columns.map(column => "<tr><th>" + esc(column) + "</th><td>" + esc(row[column] || "") + "</td></tr>").join("");
+      }
+
+      function rowToTsv(row, columns){
+        return columns.map(column => String(row[column] || "").replace(/\t/g, " ").replace(/\n/g, " ")).join("\t");
+      }
+
+      async function sendToWebhook(){
+        const webhookUrl = clean(els.webhookUrl.value);
+        if(!webhookUrl){
+          showToast("Add webhook URL first");
+          return;
+        }
+        const payload = buildPayload();
+        const validation = validatePayload(payload);
+        if(!validation.ok){
+          showToast("Fix required fields first");
+          return;
+        }
+        try{
+          els.sendWebhookBtn.disabled = true;
+          const response = await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if(!response.ok) throw new Error("Webhook returned " + response.status);
+          showToast("Sent to webhook");
+        }catch(error){
+          showToast("Webhook failed: " + error.message);
+        }finally{
+          els.sendWebhookBtn.disabled = false;
+        }
+      }
+
+      function normalizePhone(phone){
+        const digits = String(phone || "").replace(/\D/g, "");
+        if(/^\d{10}$/.test(digits)) return "1" + digits;
+        if(/^1\d{10}$/.test(digits)) return digits;
+        if(/^09\d{8}$/.test(digits)) return "593" + digits.slice(1);
+        return digits;
+      }
+
+      function inferCountry(phoneNormalized){
+        const phone = String(phoneNormalized || "");
+        if(phone.startsWith("593")) return "Ecuador";
+        if(/^1\d{10}$/.test(phone)) return "United States / Canada";
+        const countryCodes = [
+          ["44", "United Kingdom"], ["49", "Germany"], ["33", "France"], ["34", "Spain"],
+          ["39", "Italy"], ["31", "Netherlands"], ["41", "Switzerland"], ["61", "Australia"],
+          ["64", "New Zealand"], ["52", "Mexico"], ["55", "Brazil"], ["57", "Colombia"],
+          ["51", "Peru"], ["56", "Chile"], ["54", "Argentina"]
+        ];
+        const match = countryCodes.find(([code]) => phone.startsWith(code));
+        return match ? match[1] : "";
+      }
+
+      function apostrophePhone(phone){
+        const value = clean(phone);
+        return value ? "'" + value : "";
+      }
+
+      function lastFour(value){
+        const digits = String(value || "").replace(/\D/g, "");
+        return (digits || "0000").slice(-4).padStart(4, "0");
+      }
+
+      function copyText(text){
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          return navigator.clipboard.writeText(text);
+        }
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        return Promise.resolve();
+      }
+
+      function showToast(message){
+        els.toast.textContent = message;
+        els.toast.classList.add("show");
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 2200);
+      }
+
+      function clean(value){
+        return String(value || "").trim();
+      }
+
+      function esc(value){
+        return String(value || "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
+      }
+    })();
+  </script>
+</body>
+</html>
