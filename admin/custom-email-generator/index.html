@@ -140,6 +140,71 @@
     }
     .field textarea{ min-height:88px; resize:vertical; line-height:1.45; }
     .inlineGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .presetGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-bottom:14px;
+    }
+    .presetBtn{
+      appearance:none;
+      border:1px solid var(--mbw-line);
+      border-radius:13px;
+      background:rgba(255,255,255,.82);
+      color:var(--mbw-ink);
+      padding:10px 9px;
+      font:inherit;
+      font-size:12.5px;
+      line-height:1.2;
+      font-weight:950;
+      cursor:pointer;
+      text-align:center;
+    }
+    .presetBtn:hover{ border-color:rgba(13,89,37,.36); background:rgba(13,89,37,.08); }
+    .optionRow{
+      display:flex;
+      align-items:flex-start;
+      gap:9px;
+      padding:10px 11px;
+      border:1px solid var(--mbw-line);
+      border-radius:13px;
+      background:rgba(255,255,255,.68);
+      margin-bottom:8px;
+    }
+    .optionRow input{ width:18px; height:18px; margin-top:1px; accent-color:var(--mbw-green); flex:0 0 auto; }
+    .optionRow strong{ display:block; color:var(--mbw-ink); font-size:13px; line-height:1.2; }
+    .optionRow span{ display:block; margin-top:2px; color:rgba(7,25,35,.62); font-size:12px; line-height:1.35; font-weight:750; }
+    .selectedSummary{
+      display:grid;
+      gap:7px;
+      margin-bottom:14px;
+      padding:12px;
+      border-radius:15px;
+      border:1px solid rgba(13,89,37,.22);
+      background:rgba(246,250,240,.78);
+    }
+    .summaryItem{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:rgba(7,25,35,.76);
+      font-size:12.5px;
+      line-height:1.25;
+      font-weight:850;
+    }
+    .summaryIndex{
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      background:rgba(13,89,37,.12);
+      color:var(--mbw-green);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:950;
+      flex:0 0 auto;
+    }
     .blockGroups{ display:grid; gap:14px; }
     .blockGroup{
       border:1px solid var(--mbw-line);
@@ -171,8 +236,23 @@
     .toggleText{ min-width:0; }
     .toggleTitle{ color:var(--mbw-ink); font-weight:950; line-height:1.25; }
     .toggleMeta{ margin-top:3px; color:rgba(7,25,35,.68); font-size:12.5px; line-height:1.35; font-weight:750; }
-    .overrideGrid{ display:none; grid-template-columns:1fr; gap:8px; padding-left:28px; }
-    .blockToggle.active .overrideGrid{ display:grid; }
+    .overrideTools{ display:none; padding-left:28px; }
+    .blockToggle.active .overrideTools{ display:block; }
+    .overrideToggle{
+      appearance:none;
+      border:1px solid rgba(13,89,37,.25);
+      border-radius:999px;
+      background:rgba(13,89,37,.08);
+      color:var(--mbw-green);
+      padding:7px 10px;
+      font:inherit;
+      font-size:11.5px;
+      line-height:1;
+      font-weight:950;
+      cursor:pointer;
+    }
+    .overrideGrid{ display:none; grid-template-columns:1fr; gap:8px; margin-top:9px; }
+    .blockToggle.showOverrides .overrideGrid{ display:grid; }
     .miniField{ display:grid; gap:5px; }
     .miniField label{ font-size:11px; line-height:1.2; color:rgba(7,25,35,.62); font-weight:950; text-transform:uppercase; letter-spacing:.04em; }
     .miniField input{
@@ -221,6 +301,7 @@
       background:#071923;
       color:#f6faf0;
     }
+    .codeOutput[hidden]{ display:none; }
     .hint{ margin:10px 0 0; color:rgba(7,25,35,.64); font-size:12.5px; line-height:1.45; font-weight:800; }
     .toast{
       position:fixed;
@@ -280,6 +361,14 @@
       <div class="appGrid">
         <section class="panel sticky" aria-label="Guest details">
           <h2 class="panelTitle">Guest Details</h2>
+          <div class="presetGrid" aria-label="Quick presets">
+            <button class="presetBtn" type="button" data-preset="half-day">Half Day Reply</button>
+            <button class="presetBtn" type="button" data-preset="full-day">Full Day Reply</button>
+            <button class="presetBtn" type="button" data-preset="family">Family Trip</button>
+            <button class="presetBtn" type="button" data-preset="quito">Quito Transport</button>
+            <button class="presetBtn" type="button" data-preset="custom">Custom Birding</button>
+            <button class="presetBtn" type="button" data-preset="activities">Activities Only</button>
+          </div>
           <div class="field">
             <label for="emailTitleInput">Email Title</label>
             <input id="emailTitleInput" type="text" value="Mindo Cloud Forest Tour Options" />
@@ -319,10 +408,21 @@
             <label for="nextStepsInput">Custom Next Steps</label>
             <textarea id="nextStepsInput">If everything looks good, please reply with your preferred date, number of guests, selected tour or activities, and pickup location. If you have any questions, send them over and we will be happy to help.</textarea>
           </div>
-          <p class="hint">Pricing overrides appear under each selected block. Leave an override blank to use the standard price from the block catalog.</p>
+          <h2 class="panelTitle" style="margin-top:14px;">Output Options</h2>
+          <label class="optionRow" for="showHeroInput">
+            <input id="showHeroInput" type="checkbox" checked />
+            <span><strong>Show hero image</strong><span>Use for fuller, more visual replies.</span></span>
+          </label>
+          <label class="optionRow" for="compactCardsInput">
+            <input id="compactCardsInput" type="checkbox" />
+            <span><strong>Compact cards</strong><span>Shorter email with smaller sections.</span></span>
+          </label>
+          <p class="hint">Use presets first, then adjust blocks and pricing overrides only where needed.</p>
         </section>
 
         <section class="panel" aria-label="Email blocks">
+          <h2 class="panelTitle">Selected Order</h2>
+          <div class="selectedSummary" id="selectedSummary"></div>
           <h2 class="panelTitle">Email Blocks</h2>
           <div class="blockGroups" id="blockGroups"></div>
         </section>
@@ -332,12 +432,13 @@
             <h2 class="panelTitle" style="margin:0;">Live Preview</h2>
             <div class="adminActions">
               <button class="btnAdmin primary" type="button" id="copyRenderedBtn">Copy Rendered</button>
+              <button class="btnAdmin" type="button" id="toggleHtmlBtn">Show HTML</button>
             </div>
           </div>
           <div class="previewWrap">
             <div class="emailPreview" id="emailPreview"></div>
           </div>
-          <textarea class="codeOutput" id="htmlOutput" spellcheck="false"></textarea>
+          <textarea class="codeOutput" id="htmlOutput" spellcheck="false" hidden></textarea>
         </section>
       </div>
     </main>
@@ -353,7 +454,8 @@
 
       const state = {
         selected: new Set(),
-        overrides: {}
+        overrides: {},
+        showHtml: false
       };
       const els = {};
 
@@ -377,19 +479,23 @@
       function cacheEls(){
         [
           "emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "languageInput", "heroEyebrowInput",
-          "introInput", "nextStepsInput", "blockGroups", "emailPreview", "htmlOutput", "copyHtmlBtn", "downloadHtmlBtn",
-          "copyRenderedBtn", "resetBtn", "toast"
+          "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "selectedSummary", "blockGroups", "emailPreview", "htmlOutput", "copyHtmlBtn", "downloadHtmlBtn",
+          "copyRenderedBtn", "toggleHtmlBtn", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
 
       function bindEvents(){
-        ["emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "languageInput", "heroEyebrowInput", "introInput", "nextStepsInput"].forEach(id => {
+        ["emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "languageInput", "heroEyebrowInput", "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput"].forEach(id => {
           els[id].addEventListener("input", updateEmail);
           els[id].addEventListener("change", updateEmail);
+        });
+        document.querySelectorAll("[data-preset]").forEach(button => {
+          button.addEventListener("click", () => applyPreset(button.dataset.preset || ""));
         });
         els.copyHtmlBtn.addEventListener("click", copyHtml);
         els.downloadHtmlBtn.addEventListener("click", downloadHtml);
         els.copyRenderedBtn.addEventListener("click", copyRendered);
+        els.toggleHtmlBtn.addEventListener("click", toggleHtmlOutput);
         els.resetBtn.addEventListener("click", resetGenerator);
       }
 
@@ -637,6 +743,24 @@
           catalog.blocks.filter(block => block.group === group.id).forEach(block => list.appendChild(renderBlockToggle(block)));
           els.blockGroups.appendChild(wrap);
         });
+        renderSelectedSummary();
+      }
+
+      function renderSelectedSummary(){
+        const catalog = getCatalog();
+        const ordered = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id)));
+        if(!ordered.length){
+          els.selectedSummary.innerHTML = "<div class='summaryItem'>No blocks selected.</div>";
+          return;
+        }
+        els.selectedSummary.innerHTML = "";
+        ordered.forEach((block, index) => {
+          const item = document.createElement("div");
+          item.className = "summaryItem";
+          item.innerHTML = "<span class='summaryIndex'>" + (index + 1) + "</span><span></span>";
+          item.querySelector("span:last-child").textContent = block.title;
+          els.selectedSummary.appendChild(item);
+        });
       }
 
       function renderBlockToggle(block){
@@ -659,10 +783,13 @@
             "</div>" +
           "</div>" +
           (showOverrides ?
-            "<div class='overrideGrid'>" +
-              "<div class='miniField'><label>Price override</label><input data-override='price' value='" + priceValue + "' placeholder='" + attr(block.price || "No price") + "'></div>" +
-              "<div class='miniField'><label>Private / note override</label><input data-override='privatePrice' value='" + privateValue + "' placeholder='" + attr(block.privatePrice || "Optional note") + "'></div>" +
-              "<div class='miniField'><label>Duration override</label><input data-override='duration' value='" + durationValue + "' placeholder='" + attr(block.duration || "Optional duration") + "'></div>" +
+            "<div class='overrideTools'>" +
+              "<button class='overrideToggle' type='button'>Pricing / text overrides</button>" +
+              "<div class='overrideGrid'>" +
+                "<div class='miniField'><label>Price override</label><input data-override='price' value='" + priceValue + "' placeholder='" + attr(block.price || "No price") + "'></div>" +
+                "<div class='miniField'><label>Private / note override</label><input data-override='privatePrice' value='" + privateValue + "' placeholder='" + attr(block.privatePrice || "Optional note") + "'></div>" +
+                "<div class='miniField'><label>Duration override</label><input data-override='duration' value='" + durationValue + "' placeholder='" + attr(block.duration || "Optional duration") + "'></div>" +
+              "</div>" +
             "</div>" : "");
 
         card.querySelector(".toggleTitle").textContent = block.title;
@@ -672,8 +799,16 @@
           if(event.target.checked) state.selected.add(block.id);
           else state.selected.delete(block.id);
           card.classList.toggle("active", event.target.checked);
+          renderSelectedSummary();
           updateEmail();
         });
+
+        const overrideButton = card.querySelector(".overrideToggle");
+        if(overrideButton){
+          overrideButton.addEventListener("click", () => {
+            card.classList.toggle("showOverrides");
+          });
+        }
 
         card.querySelectorAll("[data-override]").forEach(input => {
           input.addEventListener("input", () => {
@@ -698,16 +833,77 @@
         els.guestCountInput.value = "";
         els.datesInput.value = "";
         els.heroEyebrowInput.value = "Private cloud forest tours";
+        els.showHeroInput.checked = true;
+        els.compactCardsInput.checked = false;
         els.introInput.value = "Thank you for reaching out. Below are our recommended private tour options and add-ons so you can choose the best plan for your time in Mindo.";
         els.nextStepsInput.value = "If everything looks good, please reply with your preferred date, number of guests, selected tour or activities, and pickup location. If you have any questions, send them over and we will be happy to help.";
         renderBlockControls();
         updateEmail();
       }
 
+      function applyPreset(preset){
+        const presets = {
+          "half-day": {
+            title: "Andean Cock-of-the-Rock Dawn Tour Option",
+            blocks: ["tour-andean", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            intro: "Thank you for reaching out. For a private morning tour, we recommend the Andean Cock-of-the-Rock Dawn Tour, with the option to add evening or relaxed Mindo activities.",
+            compact: false,
+            hero: true
+          },
+          "full-day": {
+            title: "Full Day Birdwatching Tour Option",
+            blocks: ["tour-full-day", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            intro: "Thank you for reaching out. For the richest birding day in Mindo, we recommend our full-day Quest for Five Toucans and Andean Cock-of-the-Rock experience.",
+            compact: false,
+            hero: true
+          },
+          "family": {
+            title: "Private Family Tour Options in Mindo",
+            blocks: ["tour-andean", "tour-jewels", "included", "night-walk", "activity-waterfall", "activity-chocolate", "bird-quest", "next-steps", "social-links"],
+            intro: "Thank you for reaching out. Below are private family-friendly options with colorful birds, cloud forest scenery, and add-ons that pair well with a few days in Mindo.",
+            compact: false,
+            hero: true
+          },
+          "quito": {
+            title: "Quito to Mindo Private Tour Option",
+            blocks: ["transport-quito", "tour-full-day", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            intro: "Thank you for reaching out. We can coordinate transportation from Quito and pair it with a private Mindo birdwatching experience.",
+            compact: false,
+            hero: true
+          },
+          "custom": {
+            title: "Custom Private Birding Plan",
+            blocks: ["tour-custom", "tour-full-day", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            intro: "Thank you for reaching out. If you have specific target birds, photography goals, or habitats in mind, we can shape a custom private route around your priorities.",
+            compact: false,
+            hero: true
+          },
+          "activities": {
+            title: "Mindo Activities and Night Walk Options",
+            blocks: ["night-walk", "activity-waterfall", "activity-chocolate", "activities-more", "next-steps", "social-links"],
+            intro: "Thank you for reaching out. Here are relaxed Mindo activity options that pair well with your time in the cloud forest.",
+            compact: true,
+            hero: false
+          }
+        };
+        const config = presets[preset];
+        if(!config) return;
+        state.selected = new Set(config.blocks);
+        state.overrides = {};
+        els.emailTitleInput.value = config.title;
+        els.introInput.value = config.intro;
+        els.showHeroInput.checked = !!config.hero;
+        els.compactCardsInput.checked = !!config.compact;
+        renderBlockControls();
+        updateEmail();
+        showToast("Preset applied");
+      }
+
       function updateEmail(){
         const html = buildEmailHtml();
         els.emailPreview.innerHTML = html;
         els.htmlOutput.value = html;
+        renderSelectedSummary();
       }
 
       function buildEmailHtml(){
@@ -734,8 +930,9 @@
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#C7DAAC;'><tr><td align='center' style='padding:22px 10px;'>",
           "<table role='presentation' width='640' cellspacing='0' cellpadding='0' border='0' style='width:640px; max-width:640px;'>",
           renderHeader(brand),
-          renderHero(brand, title, guestName, meta, intro),
+          els.showHeroInput.checked ? renderHero(brand, title, guestName, meta, intro) : renderIntroOnly(title, guestName, meta, intro),
           selectedBlocks.map(block => renderBlock(resolveBlock(block))).join(""),
+          hasSelectedType(selectedBlocks, "nextSteps") ? "" : renderNextSteps({ title: "Next Steps", description: nextSteps }),
           renderReadyCta(brand, nextSteps),
           renderSignature(brand),
           "<tr><td align='center' style='padding:14px 24px 6px; color:rgba(7,25,35,.68); font-size:12px; line-height:18px; font-weight:800;'>Mindo Bird Watching</td></tr>",
@@ -761,17 +958,21 @@
         return tours.concat(included, rest);
       }
 
+      function hasSelectedType(blocks, type){
+        return blocks.some(block => block.type === type);
+      }
+
       function applySiteContact(brand){
         const nextBrand = Object.assign({}, brand || {});
         const config = window.MBW_SITE_CONFIG || {};
         const contact = config.contact || {};
         const number = String(contact.whatsappNumberDigits || "").replace(/\D/g, "");
         if(contact.email) nextBrand.email = contact.email;
-        if(number) nextBrand.whatsapp = "https://wa.me/" + number;
+        nextBrand.whatsapp = "https://wa.me/" + (number || "13054585402");
         if(Array.isArray(nextBrand.icons)){
           nextBrand.icons = nextBrand.icons.map(icon => {
             if(String(icon.alt || "").toLowerCase() !== "whatsapp") return icon;
-            return Object.assign({}, icon, { href: nextBrand.whatsapp || icon.href });
+            return Object.assign({}, icon, { href: nextBrand.whatsapp });
           });
         }
         return nextBrand;
@@ -800,11 +1001,42 @@
           "</td></tr></table></td></tr>";
       }
 
+      function renderIntroOnly(title, guestName, meta, intro){
+        return "" +
+          "<tr><td style='padding:0 20px 10px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#0D5925; border-radius:18px; box-shadow:0 18px 55px rgba(7,25,35,.10);'>" +
+          "<tr><td style='padding:24px 26px;'>" +
+          "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#DCEBC8; font-weight:900;'>" + esc(clean(els.heroEyebrowInput.value) || "Private cloud forest tours") + "</div>" +
+          (meta ? "<div style='margin-top:6px; font-size:13px; line-height:18px; color:#DCEBC8; font-weight:900;'>" + esc(meta) + "</div>" : "") +
+          "<h1 style=\"margin:6px 0 9px; font-family:Georgia, 'Times New Roman', serif; font-size:34px; line-height:38px; color:#ffffff; font-weight:700; letter-spacing:-.02em;\">" + esc(title) + "</h1>" +
+          "<p style='margin:0; font-size:15px; line-height:23px; color:#F4FAEF;'>Hi " + esc(guestName) + ", " + esc(intro) + "</p>" +
+          "</td></tr></table></td></tr>";
+      }
+
       function renderBlock(block){
         if(block.type === "included") return renderIncluded(block);
         if(block.type === "nextSteps") return renderNextSteps(block);
         if(block.type === "social") return renderSocial(block);
+        if(els.compactCardsInput.checked) return renderCompactCard(block);
         return renderImageCard(block);
+      }
+
+      function renderCompactCard(block){
+        const priceLines = [block.price, block.privatePrice, block.duration, block.minimum].filter(Boolean);
+        return "" +
+          "<tr><td style='padding:0 20px 10px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
+          "<td width='68%' valign='top' style='padding-right:16px;'>" +
+          (block.eyebrow ? "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#0D5925; font-weight:900;'>" + esc(block.eyebrow) + "</div>" : "") +
+          "<h2 style=\"margin:5px 0 7px; font-family:Georgia, 'Times New Roman', serif; font-size:23px; line-height:27px; color:#0D5925;\">" + esc(block.title) + "</h2>" +
+          "<p style='margin:0; font-size:13px; line-height:20px; color:rgba(7,25,35,.76);'>" + esc(block.description || "") + "</p>" +
+          "</td>" +
+          "<td width='32%' valign='top' align='center' style='text-align:center;'>" +
+          priceLines.map(line => "<p style='margin:0 0 5px; font-size:12.5px; line-height:17px; color:#071923;'>" + esc(line) + "</p>").join("") +
+          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:130px; margin:6px 0 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || "View") + "</a>" : "") +
+          (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:130px; margin:0 0 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:9px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || "Watch Video") + "</a>" : "") +
+          "</td></tr></table></td></tr></table></td></tr>";
       }
 
       function renderImageCard(block){
@@ -911,6 +1143,12 @@
           showToast("Select preview and copy manually");
         }
         selection.removeAllRanges();
+      }
+
+      function toggleHtmlOutput(){
+        state.showHtml = !state.showHtml;
+        els.htmlOutput.hidden = !state.showHtml;
+        els.toggleHtmlBtn.textContent = state.showHtml ? "Hide HTML" : "Show HTML";
       }
 
       function downloadHtml(){
