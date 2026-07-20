@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Staff Info | Mindo Bird Watching</title>
+<title>MBW Admin | Staff Info Library</title>
 <meta content="noindex,nofollow,noarchive" name="robots"/>
 <link href="/favicon.ico" rel="icon" sizes="any"/>
 <link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
@@ -129,7 +129,8 @@
       white-space:nowrap;
     }
 
-    .field select{
+    .field select,
+    .field input{
       width:100%;
       min-width:0;
       border:0;
@@ -141,7 +142,7 @@
 
     .heroActions{
       display:grid;
-      grid-template-rows:auto 1fr;
+      grid-template-rows:auto auto 1fr;
       gap:14px;
       align-items:center;
       justify-items:end;
@@ -543,7 +544,7 @@
       }
     }
   </style>
-<meta content="Internal staff reference for Mindo Bird Watching team members, with quick call notes, WhatsApp-ready replies, booking links, pricing references, and social links." name="description"/><link href="https://mindobirdwatching.com/info/" rel="canonical"/><meta content="website" property="og:type"/><meta content="Mindo Bird Watching" property="og:site_name"/><meta content="en_US" property="og:locale"/><meta content="Staff Info | Mindo Bird Watching" property="og:title"/><meta content="Internal staff reference for Mindo Bird Watching team members with quick answers, booking links, and social links." property="og:description"/><meta content="https://mindobirdwatching.com/info/" property="og:url"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" property="og:image"/><meta content="Mindo Bird Watching" property="og:image:alt"/><meta content="summary" name="twitter:card"/><meta content="Staff Info | Mindo Bird Watching" name="twitter:title"/><meta content="Internal staff reference for Mindo Bird Watching team members." name="twitter:description"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" name="twitter:image"/><link href="/site.webmanifest" rel="manifest"/><link href="/assets/css/site.css" rel="stylesheet"/><link href="/assets/css/header.css?v=1" rel="stylesheet"/><script defer="" src="/assets/js/site-config.js"></script><script type="application/ld+json">[
+<meta content="Internal staff reference for Mindo Bird Watching team members, with quick call notes, WhatsApp-ready replies, booking links, pricing references, and social links." name="description"/><link href="https://admin.mindobirdwatching.com/staff-info/" rel="canonical"/><meta content="website" property="og:type"/><meta content="Mindo Bird Watching" property="og:site_name"/><meta content="en_US" property="og:locale"/><meta content="MBW Staff Info Library" property="og:title"/><meta content="Internal staff reference for Mindo Bird Watching team members with quick answers, booking links, and social links." property="og:description"/><meta content="https://admin.mindobirdwatching.com/staff-info/" property="og:url"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" property="og:image"/><meta content="Mindo Bird Watching" property="og:image:alt"/><meta content="summary" name="twitter:card"/><meta content="MBW Staff Info Library" name="twitter:title"/><meta content="Internal staff reference for Mindo Bird Watching team members." name="twitter:description"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" name="twitter:image"/><link href="/site.webmanifest" rel="manifest"/><link href="/assets/css/site.css" rel="stylesheet"/><link href="/assets/css/header.css?v=1" rel="stylesheet"/><script defer="" src="/assets/js/site-config.js"></script><script type="application/ld+json">[
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -609,7 +610,7 @@
 <main aria-label="Staff info" class="app">
 <header class="hero">
 <div class="titleBlock">
-<h1 id="pageTitle">Staff Info</h1>
+<h1 id="pageTitle">Staff Info Library</h1>
 <p class="subtitle" id="pageNote">Internal staff reference for calls, WhatsApp replies, pricing, links, and quick answers. This page is intentionally noindexed.</p>
 </div>
 <section aria-label="Filters" class="controlGrid">
@@ -628,9 +629,14 @@
 <label for="topicSel" id="topicLbl">Topic</label>
 <select id="topicSel"></select>
 </div>
+<div class="field">
+<label for="searchInput" id="searchLbl">Search</label>
+<input id="searchInput" type="search" placeholder="Tour, price, pickup, review..." />
+</div>
 </section>
 <aside aria-label="Quick actions" class="heroActions">
 <img alt="Mindo Bird Watching" class="staffBrand" decoding="async" loading="lazy" src="/apple-touch-icon.png"/>
+<a class="btn secondary" href="/">Admin</a>
 <button class="btn" id="copyBookBtn" type="button">Copy booking link</button>
 </aside>
 </header>
@@ -667,14 +673,17 @@
 
       const BASE = "https://mindobirdwatching.com";
       const DATA_URL = "https://script.google.com/macros/s/AKfycbzPORSX9WyGwLkBs3BIrkSmdHSPpmPTSQg1CtpGw-8Ak2q9vBEbx8qQ9UdRBCSyrDg/exec";
+      const FALLBACK_DATA_URL = "/assets/data/staff-content.json";
 
       const I18N = {
         en: {
-          pageTitle: "Staff Info",
+          pageTitle: "Staff Info Library",
           pageNote: "A live staff reference for calls, WhatsApp replies, pricing, links, and quick answers.",
           lang: "Language",
           subject: "Subject",
           topic: "Topic",
+          search: "Search",
+          searchPlaceholder: "Tour, price, pickup, review...",
           items: "Items",
           details: "Details",
           empty: "Select an item to see details.",
@@ -699,11 +708,13 @@
           noData: "Unable to load staff content."
         },
         es: {
-          pageTitle: "Info del equipo",
+          pageTitle: "Biblioteca del equipo",
           pageNote: "Referencia interna en vivo para llamadas, WhatsApp, precios, enlaces y respuestas rapidas.",
           lang: "Idioma",
           subject: "Asunto",
           topic: "Tema",
+          search: "Buscar",
+          searchPlaceholder: "Tour, precio, recogida, reseña...",
           items: "Items",
           details: "Detalle",
           empty: "Selecciona un item para ver el detalle.",
@@ -742,6 +753,7 @@
         langSel: document.getElementById("langSel"),
         subjSel: document.getElementById("subjSel"),
         topicSel: document.getElementById("topicSel"),
+        searchInput: document.getElementById("searchInput"),
         itemList: document.getElementById("itemList"),
         detailPane: document.getElementById("detailPane"),
         countBadge: document.getElementById("countBadge"),
@@ -752,6 +764,7 @@
         langLbl: document.getElementById("langLbl"),
         subjLbl: document.getElementById("subjLbl"),
         topicLbl: document.getElementById("topicLbl"),
+        searchLbl: document.getElementById("searchLbl"),
         listTitle: document.getElementById("listTitle"),
         detailHead: document.getElementById("detailHead"),
         socialTitle: document.getElementById("socialTitle"),
@@ -763,6 +776,7 @@
         lang: "en",
         subject: "Tours",
         topic: "Birdwatching",
+        query: "",
         activeId: ""
       };
 
@@ -810,6 +824,11 @@
             staff_notes: row.staff_notes || "",
             image_url: row.image_full_url || row.image_url || "",
             source_url: row.source_full_url || row.source_url || "",
+            tags: row.tags || "",
+            search_keywords: row.search_keywords || "",
+            youtube_url: row.youtube_url || "",
+            instagram_url: row.instagram_url || "",
+            social_url: row.social_url || "",
             sort_order: Number(row.sort_order || 0),
             priority: Number(row.priority || 0),
             last_updated: row.last_updated || ""
@@ -854,8 +873,23 @@
       }
 
       function filterByTopic(items, topic){
-        if(!topic) return items;
-        return items.filter(item => String(item.topic || "") === topic);
+        let filtered = topic ? items.filter(item => String(item.topic || "") === topic) : items;
+        const query = String(state.query || "").trim().toLowerCase();
+        if(!query) return filtered;
+        return filtered.filter(item => [
+          item.title,
+          item.cost,
+          item.message_short,
+          item.message_long,
+          item.whatsapp_ready,
+          item.bot_response,
+          item.staff_notes,
+          item.source_url,
+          item.tags,
+          item.search_keywords,
+          item.subtopic,
+          item.topic
+        ].join(" ").toLowerCase().includes(query));
       }
 
       function setOptions(select, values, selected){
@@ -905,6 +939,8 @@
         els.langLbl.textContent = text.lang;
         els.subjLbl.textContent = text.subject;
         els.topicLbl.textContent = text.topic;
+        els.searchLbl.textContent = text.search;
+        els.searchInput.placeholder = text.searchPlaceholder;
         els.listTitle.textContent = text.items;
         els.detailHead.textContent = text.details;
         els.socialTitle.textContent = text.social;
@@ -1084,13 +1120,22 @@
         renderSocial();
       }
 
+      async function fetchJson(url){
+        const response = await fetch(url, { cache:"no-store" });
+        if(!response.ok) throw new Error("Unable to load " + url);
+        return response.json();
+      }
+
       async function loadData(){
         try{
-          const response = await fetch(DATA_URL, { cache:"no-store" });
-          const payload = await response.json();
+          const payload = await fetchJson(DATA_URL);
           DATA = normalizeApiData(payload);
         }catch(error){
-          DATA = { languages:{} };
+          try{
+            DATA = normalizeApiData(await fetchJson(FALLBACK_DATA_URL));
+          }catch(fallbackError){
+            DATA = { languages:{} };
+          }
         }
 
         refreshSelectors();
@@ -1100,6 +1145,8 @@
         state.lang = els.langSel.value === "es" ? "es" : "en";
         state.subject = state.lang === "en" ? "Tours" : "Tours";
         state.topic = "Birdwatching";
+        state.query = "";
+        els.searchInput.value = "";
         state.activeId = "";
         refreshSelectors();
       });
@@ -1113,6 +1160,12 @@
 
       els.topicSel.addEventListener("change", () => {
         state.topic = els.topicSel.value || "";
+        state.activeId = "";
+        renderList();
+      });
+
+      els.searchInput.addEventListener("input", () => {
+        state.query = els.searchInput.value || "";
         state.activeId = "";
         renderList();
       });
