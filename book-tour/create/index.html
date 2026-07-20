@@ -1037,6 +1037,146 @@ function createItem(initial = {}) {
     updateModeUI();
   }
 
+  function getInboundValue(data, ...keys) {
+    for (const key of keys) {
+      if (data[key] !== undefined && data[key] !== null && String(data[key]).trim() !== "") {
+        return String(data[key]).trim();
+      }
+    }
+    return "";
+  }
+
+  function getInboundData() {
+    const params = new URLSearchParams(window.location.search);
+    const data = {};
+    params.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    ["mbwSelectedCrmRecord", "mbwGuestCrmSelectedRecord"].forEach(key => {
+      try {
+        const stored = JSON.parse(localStorage.getItem(key) || "{}");
+        Object.keys(stored).forEach(storedKey => {
+          if (data[storedKey] === undefined || data[storedKey] === "") {
+            data[storedKey] = stored[storedKey];
+          }
+        });
+      } catch (_) {}
+    });
+
+    return data;
+  }
+
+  function splitInboundName(fullName) {
+    const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
+    return {
+      first: parts[0] || "",
+      last: parts.slice(1).join(" ")
+    };
+  }
+
+  function setFieldValue(field, value) {
+    if (!field || value === undefined || value === null || String(value).trim() === "") return;
+    field.value = String(value).trim();
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function normalizeInboundTourText(value) {
+    return String(value || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  function findInboundTourCode(tourText, language) {
+    const normalized = normalizeInboundTourText(tourText);
+    if (!normalized) return "";
+
+    const direct = state.tours.find(tour =>
+      tour.language === language &&
+      normalizeInboundTourText(tour.tour_code) === normalized
+    );
+    if (direct) return direct.tour_code;
+
+    const aliases = [
+      { tests: ["andean", "cock", "rock"], codeTests: ["mbw005", "andean", "cock"] },
+      { tests: ["jewels", "morning", "forest"], codeTests: ["mbw004", "jewels", "morning"] },
+      { tests: ["five", "toucans"], codeTests: ["mbw006", "five", "toucan", "quest"] },
+      { tests: ["full", "day"], codeTests: ["mbw006", "full", "quest"] },
+      { tests: ["night", "walk"], codeTests: ["night", "walk"] },
+      { tests: ["waterfall"], codeTests: ["waterfall"] },
+      { tests: ["chocolate"], codeTests: ["chocolate"] }
+    ];
+
+    const matchedAlias = aliases.find(alias => alias.tests.every(test => normalized.includes(test)));
+    const toursForLang = state.tours.filter(tour => tour.language === language);
+
+    if (matchedAlias) {
+      const match = toursForLang.find(tour => {
+        const searchable = normalizeInboundTourText(`${tour.tour_code} ${tour.tour_title} ${tour.duration_label} ${tour.description_one_liner}`);
+        return matchedAlias.codeTests.some(test => searchable.includes(test));
+      });
+      if (match) return match.tour_code;
+    }
+
+    const loose = toursForLang.find(tour => {
+      const searchable = normalizeInboundTourText(`${tour.tour_code} ${tour.tour_title} ${tour.duration_label} ${tour.description_one_liner}`);
+      return normalized.split(" ").filter(Boolean).some(word => word.length > 4 && searchable.includes(word));
+    });
+
+    return loose ? loose.tour_code : "";
+  }
+
+  function applyInboundPrefill() {
+    const data = getInboundData();
+    const fullName = getInboundValue(data, "full_name", "name", "guest", "guest_name", "guestName");
+    const split = splitInboundName(fullName);
+    const firstName = getInboundValue(data, "guest_first_name", "first_name", "firstName") || split.first;
+    const lastName = getInboundValue(data, "guest_last_name", "last_name", "lastName") || split.last;
+    const email = getInboundValue(data, "guest_email", "email", "guestEmail");
+    const phone = getInboundValue(data, "guest_phone", "phone", "phone_number", "guestPhone");
+    const whatsapp = getInboundValue(data, "whatsapp_number", "whatsapp", "guest_phone", "phone", "phone_number");
+    const pickup = getInboundValue(data, "pickup_address_or_hotel", "pickup_location", "pickup", "pickupLocation");
+    const pickupLabel = getInboundValue(data, "pickup_location_label") || (pickup ? "Pickup location" : "");
+    const notes = getInboundValue(data, "notes", "message_questions", "guest_notes");
+    const language = getInboundValue(data, "lang", "language") === "es" ? "es" : "en";
+    const tourDate = getInboundValue(data, "tour_date", "date", "requested_date");
+    const quantity = getInboundValue(data, "party", "guests", "guest_count", "number_of_people");
+    const tourText = getInboundValue(data, "tour", "tour_type", "tour_interest");
+    const tourCode = findInboundTourCode(tourText, language);
+
+    setFieldValue(els.mainFirstName, firstName);
+    setFieldValue(els.mainLastName, lastName);
+    setFieldValue(els.mainEmail, email);
+    setFieldValue(els.mainPhone, phone);
+    setFieldValue(els.whatsappNumber, whatsapp);
+    setFieldValue(els.pickupLocationLabel, pickupLabel);
+    setFieldValue(els.pickupAddress, pickup);
+    setFieldValue(els.defaultLanguage, language);
+
+    if (notes || tourText) {
+      const noteLines = [];
+      if (tourText) noteLines.push(`CRM tour interest: ${tourText}`);
+      if (notes) noteLines.push(notes);
+      setFieldValue(els.globalNotes, noteLines.join("\n\n"));
+    }
+
+    if (state.items.length) {
+      Object.assign(state.items[0], {
+        language,
+        tour_code: tourCode || state.items[0].tour_code,
+        tour_date: tourDate || state.items[0].tour_date,
+        quantity: quantity || state.items[0].quantity,
+        item_notes: tourText && !tourCode ? `CRM tour interest: ${tourText}` : state.items[0].item_notes
+      });
+      renderItems();
+      renderSummary();
+      updateModeUI();
+    }
+
+    if (firstName || lastName || email || phone || pickup || tourDate || quantity || tourText) {
+      showStatus(tourCode || !tourText ? "Guest details imported from CRM." : "Guest details imported from CRM. Please select the exact tour before creating the invoice.", "info");
+    }
+  }
+
   function removeItem(id) {
     if (state.items.length === 1) {
       showStatus("At least one booking item is required.", "error");
@@ -1741,6 +1881,7 @@ function createItem(initial = {}) {
     try {
       await loadTours();
       addItem();
+      applyInboundPrefill();
       renderSummary();
       updateModeUI();
 
