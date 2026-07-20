@@ -454,6 +454,7 @@
 
       const state = {
         selected: new Set(),
+        order: [],
         overrides: {},
         showHtml: false
       };
@@ -467,8 +468,12 @@
           loadBlockCatalogIfNeeded(() => {
             const catalog = getCatalog();
             catalog.blocks.forEach(block => {
-              if(block.defaultSelected) state.selected.add(block.id);
+              if(block.defaultSelected){
+                state.selected.add(block.id);
+                state.order.push(block.id);
+              }
             });
+            state.order = smartOrder(catalog.blocks.filter(block => state.selected.has(block.id))).map(block => block.id);
             renderBlockControls();
             bindEvents();
             updateEmail();
@@ -587,6 +592,20 @@
               secondaryCta:"Watch Video"
             },
             {
+              id:"tour-custom",
+              group:"tours",
+              type:"feature",
+              eyebrow:"Custom private birding",
+              title:"Custom Tour Around Your Target Birds",
+              description:"If you have a target list, photography goals, or specific habitats in mind, we can quote a custom route after reviewing species, distance, reserve entrances, and timing.",
+              price:"Quoted after route planning",
+              duration:"Flexible",
+              image:"https://mindobirdwatching.com/assets/images/pages/mbw_custom_tour_01.jpg",
+              url:"https://mindobirdwatching.com/tours/target-bird-tour-builder/",
+              video:"",
+              primaryCta:"Open Target Bird Builder"
+            },
+            {
               id:"night-walk",
               group:"activities",
               type:"tour",
@@ -643,6 +662,48 @@
               image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_activities_wide_en.jpg",
               url:"https://mindobirdwatching.com/activities/",
               primaryCta:"View Activities"
+            },
+            {
+              id:"transport-quito",
+              group:"planning",
+              type:"info",
+              eyebrow:"Door-to-door transportation",
+              title:"Quito to Mindo Transportation",
+              description:"We can coordinate private transportation from Quito or Quito Airport to Mindo and back. Please share pickup/drop-off details and luggage quantity so we can choose the right vehicle.",
+              price:"$99 each way",
+              duration:"About 1.5 hours",
+              image:"https://mindobirdwatching.com/assets/images/pages/home/MBW-Assets-homepage-top.jpg",
+              url:"https://mindobirdwatching.com/quito-to-mindo-cloud-forest-day-trip/",
+              video:"",
+              primaryCta:"View Quito Option"
+            },
+            {
+              id:"lodging-mindo-glambird",
+              group:"planning",
+              type:"feature",
+              eyebrow:"Recommended lodging",
+              title:"Mindo Glambird",
+              description:"For early birding and Night Walk plans, staying in Mindo or very close to the pickup point is best. Mindo Glambird is an option we recommend for location and comfort.",
+              price:"",
+              duration:"",
+              image:"https://mindobirdwatching.com/recommendations/mindoglambird/mindoglambird_pool_01.jpeg",
+              url:"https://mindobirdwatching.com/recommendations/mindoglambird/",
+              video:"",
+              primaryCta:"View Lodging"
+            },
+            {
+              id:"bird-quest",
+              group:"planning",
+              type:"feature",
+              eyebrow:"Before your tour",
+              title:"Bird Quest",
+              description:"A fun way to get excited before the tour, especially for kids. Guests can see and hear some of the birds they may encounter before arriving in Mindo.",
+              price:"",
+              duration:"",
+              image:"https://mindobirdwatching.com/assets/images/quest/mbw_bird_quest_003.jpg",
+              url:"https://mindobirdwatching.com/bird-quest/",
+              video:"",
+              primaryCta:"Explore Bird Quest"
             },
             {
               id:"included",
@@ -796,8 +857,13 @@
         card.querySelector(".toggleMeta").textContent = [block.eyebrow, block.price, block.duration].filter(Boolean).join(" | ");
 
         card.querySelector("input[type='checkbox']").addEventListener("change", event => {
-          if(event.target.checked) state.selected.add(block.id);
-          else state.selected.delete(block.id);
+          if(event.target.checked){
+            state.selected.add(block.id);
+            if(!state.order.includes(block.id)) state.order.push(block.id);
+          } else {
+            state.selected.delete(block.id);
+            state.order = state.order.filter(id => id !== block.id);
+          }
           card.classList.toggle("active", event.target.checked);
           renderSelectedSummary();
           updateEmail();
@@ -824,10 +890,15 @@
 
       function resetGenerator(){
         state.selected.clear();
+        state.order = [];
         state.overrides = {};
         getCatalog().blocks.forEach(block => {
-          if(block.defaultSelected) state.selected.add(block.id);
+          if(block.defaultSelected){
+            state.selected.add(block.id);
+            state.order.push(block.id);
+          }
         });
+        state.order = smartOrder(getCatalog().blocks.filter(block => state.selected.has(block.id))).map(block => block.id);
         els.emailTitleInput.value = "Mindo Cloud Forest Tour Options";
         els.guestNameInput.value = "";
         els.guestCountInput.value = "";
@@ -882,13 +953,14 @@
             title: "Mindo Activities and Night Walk Options",
             blocks: ["night-walk", "activity-waterfall", "activity-chocolate", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. Here are relaxed Mindo activity options that pair well with your time in the cloud forest.",
-            compact: true,
-            hero: false
+            compact: false,
+            hero: true
           }
         };
         const config = presets[preset];
         if(!config) return;
         state.selected = new Set(config.blocks);
+        state.order = config.blocks.slice();
         state.overrides = {};
         els.emailTitleInput.value = config.title;
         els.introInput.value = config.intro;
@@ -952,10 +1024,26 @@
       }
 
       function orderSelectedBlocks(blocks){
-        const tours = blocks.filter(block => block.group === "tours");
-        const included = blocks.filter(block => block.type === "included");
-        const rest = blocks.filter(block => block.group !== "tours" && block.type !== "included");
-        return tours.concat(included, rest);
+        const byId = new Map(blocks.map(block => [block.id, block]));
+        const ordered = state.order.map(id => byId.get(id)).filter(Boolean);
+        blocks.forEach(block => {
+          if(!ordered.includes(block)) ordered.push(block);
+        });
+        return ordered;
+      }
+
+      function smartOrder(blocks){
+        const priority = block => {
+          if(block.id === "transport-quito") return 0;
+          if(block.group === "tours") return 10;
+          if(block.type === "included") return 20;
+          if(block.group === "activities") return 30;
+          if(block.group === "planning" && block.type !== "nextSteps") return 40;
+          if(block.type === "nextSteps") return 50;
+          if(block.group === "social") return 60;
+          return 70;
+        };
+        return blocks.slice().sort((a, b) => priority(a) - priority(b));
       }
 
       function hasSelectedType(blocks, type){
