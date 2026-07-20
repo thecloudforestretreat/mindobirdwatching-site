@@ -392,7 +392,7 @@
               <label for="languageInput">Language</label>
               <select id="languageInput">
                 <option value="en" selected>English</option>
-                <option value="es">Spanish labels only</option>
+                <option value="es">South American Spanish</option>
               </select>
             </div>
           </div>
@@ -490,9 +490,14 @@
       }
 
       function bindEvents(){
-        ["emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "languageInput", "heroEyebrowInput", "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput"].forEach(id => {
+        ["emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "heroEyebrowInput", "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput"].forEach(id => {
           els[id].addEventListener("input", updateEmail);
           els[id].addEventListener("change", updateEmail);
+        });
+        els.languageInput.addEventListener("change", () => {
+          applyLanguageDefaults();
+          renderBlockControls();
+          updateEmail();
         });
         document.querySelectorAll("[data-preset]").forEach(button => {
           button.addEventListener("click", () => applyPreset(button.dataset.preset || ""));
@@ -504,8 +509,247 @@
         els.resetBtn.addEventListener("click", resetGenerator);
       }
 
+      const EMAIL_I18N = {
+        en: {
+          ui: {
+            greeting: "Hi",
+            readyTitle: "Ready to Choose Your Plan?",
+            replyEmail: "Reply to This Email",
+            whatsapp: "Message on WhatsApp",
+            warmRegards: "Warm regards,",
+            defaultCta: "View",
+            defaultVideoCta: "Watch Video",
+            whatsappMessage: "Hi Mindo Bird Watching, I am replying to your email.",
+            whatsappGuest: "Guest",
+            whatsappDates: "Dates",
+            whatsappGuests: "Guests",
+            footerName: "Mindo Bird Watching"
+          },
+          defaults: {
+            title: "Mindo Cloud Forest Tour Options",
+            headerLabel: "Private cloud forest tours",
+            intro: "Thank you for reaching out. Below are our recommended private tour options and add-ons so you can choose the best plan for your time in Mindo.",
+            nextSteps: "If everything looks good, please reply with your preferred date, number of guests, selected tour or activities, and pickup location. If you have any questions, send them over and we will be happy to help."
+          },
+          groups: {},
+          blocks: {},
+          presets: {}
+        },
+        es: {
+          ui: {
+            greeting: "Hola",
+            readyTitle: "¿Listos para elegir su plan?",
+            replyEmail: "Responder a este correo",
+            whatsapp: "Mensaje por WhatsApp",
+            warmRegards: "Saludos cordiales,",
+            defaultCta: "Ver opción",
+            defaultVideoCta: "Ver video",
+            whatsappMessage: "Hola Mindo Bird Watching, estoy respondiendo a su correo.",
+            whatsappGuest: "Huésped",
+            whatsappDates: "Fechas",
+            whatsappGuests: "Participantes",
+            footerName: "Mindo Bird Watching"
+          },
+          defaults: {
+            title: "Opciones de Tours en el Bosque Nublado de Mindo",
+            headerLabel: "Tours privados en el bosque nublado",
+            intro: "Gracias por escribirnos. A continuación compartimos nuestras opciones recomendadas de tours privados y actividades adicionales para que puedan elegir el mejor plan para su visita a Mindo.",
+            nextSteps: "Si todo se ve bien, por favor respondan con la fecha preferida, número de participantes, tour o actividades seleccionadas y lugar de recogida en Mindo. Si tienen alguna pregunta adicional, con gusto les ayudamos."
+          },
+          groups: {
+            tours: { label: "Tours" },
+            activities: { label: "Actividades" },
+            planning: { label: "Planificación" },
+            social: { label: "Reseñas / Redes" }
+          },
+          blocks: {
+            "tour-andean": {
+              eyebrow: "Tour de medio día recomendado",
+              title: "Danza del Gallito de las Rocas Andino",
+              description: "Una hermosa opción de madrugada con oportunidad de observar el Gallito de las Rocas Andino, además de aves del bosque, tucanes, tángaras, colibríes y paisajes del bosque nublado.",
+              price: "$85 por persona",
+              privatePrice: "$105 por persona si es privado/exclusivo",
+              duration: "5:00 AM - 10:00 AM",
+              minimum: "Mínimo 2 participantes",
+              image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw005_es.jpg",
+              primaryCta: "Ver tour",
+              secondaryCta: "Ver video"
+            },
+            "tour-jewels": {
+              eyebrow: "Opción colorida de la mañana",
+              title: "Joyas del Bosque Matutino",
+              description: "Un tour de observación de aves más corto, enfocado en aves coloridas del bosque, tucanes cuando están activos, tángaras, colibríes y la actividad vibrante del bosque nublado.",
+              price: "$55 por persona",
+              duration: "6:00 AM - 9:30 AM",
+              minimum: "Mínimo 2 participantes",
+              image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw004_es.jpg",
+              primaryCta: "Ver tour",
+              secondaryCta: "Ver video"
+            },
+            "tour-full-day": {
+              eyebrow: "Mejor opción de día completo",
+              title: "Búsqueda de Cinco Tucanes y el Gallito de las Rocas Andino",
+              description: "Nuestro día de pajareo más completo: observación del Gallito de las Rocas al amanecer, más una ruta extendida en busca de cinco especies de tucanes, tángaras, colibríes y otra fauna del bosque nublado.",
+              price: "$115 por persona",
+              privatePrice: "$135 por persona si es privado/exclusivo",
+              duration: "5:00 AM - 3:00 PM",
+              minimum: "Mínimo 2 participantes",
+              image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_FDT_mbw006_es.jpg",
+              primaryCta: "Ver tour",
+              secondaryCta: "Ver video"
+            },
+            "tour-custom": {
+              eyebrow: "Tour privado personalizado",
+              title: "Tour diseñado alrededor de sus aves objetivo",
+              description: "Si tienen una lista de especies, metas de fotografía o hábitats específicos, podemos cotizar una ruta personalizada después de revisar especies, distancia, entradas a reservas y horarios.",
+              price: "Cotización según la ruta",
+              duration: "Flexible",
+              primaryCta: "Abrir constructor de aves objetivo"
+            },
+            "night-walk": {
+              eyebrow: "Actividad adicional recomendada",
+              title: "Caminata Nocturna",
+              description: "Una experiencia maravillosa al anochecer con ranas, insectos, aves dormidas, animales nocturnos y un lado completamente diferente del bosque nublado.",
+              price: "$30 por persona",
+              duration: "Actividad nocturna",
+              minimum: "Mínimo 2 participantes",
+              image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_night_walk_wide_es.jpg",
+              primaryCta: "Ver caminata nocturna",
+              secondaryCta: "Ver video"
+            },
+            "activity-waterfall": {
+              eyebrow: "Caminata de naturaleza",
+              title: "Tour de Cascadas",
+              description: "Una caminata relajada por hermosos paisajes del bosque nublado y cascadas. Combina muy bien antes o después del pajareo cuando los huéspedes desean más tiempo en la naturaleza.",
+              price: "$15 adulto / $10 niño",
+              duration: "Actividad flexible",
+              primaryCta: "Ver tour",
+              secondaryCta: "Ver video"
+            },
+            "activity-chocolate": {
+              eyebrow: "Ideal para familias",
+              title: "Tour de Chocolate",
+              description: "Una experiencia divertida y deliciosa para aprender sobre el cacao mientras disfrutan otro lado de Mindo.",
+              price: "$15 adulto / $10 niño",
+              duration: "Actividad flexible",
+              primaryCta: "Ver tour",
+              secondaryCta: "Ver video"
+            },
+            "activities-more": {
+              eyebrow: "Más en Mindo",
+              title: "Otras opciones de actividades",
+              description: "Si tienen tiempo extra, Mindo combina muy bien con cascadas, caminatas de naturaleza, experiencias de vida silvestre, Tarabita, mariposario y otras actividades relajadas.",
+              image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_activities_wide_es.jpg",
+              primaryCta: "Ver actividades"
+            },
+            "transport-quito": {
+              eyebrow: "Transporte puerta a puerta",
+              title: "Transporte de Quito a Mindo",
+              description: "Podemos coordinar transporte privado desde Quito o el Aeropuerto de Quito hacia Mindo y de regreso. Por favor compartan los detalles de recogida/dejada y la cantidad de equipaje para coordinar el vehículo adecuado.",
+              price: "$99 por trayecto",
+              duration: "Aproximadamente 1.5 horas",
+              primaryCta: "Ver opción Quito"
+            },
+            "lodging-mindo-glambird": {
+              eyebrow: "Alojamiento recomendado",
+              title: "Mindo Glambird",
+              description: "Para pajareo temprano y caminata nocturna, lo mejor es alojarse en Mindo o muy cerca del punto de recogida. Mindo Glambird es una opción que recomendamos por ubicación y comodidad.",
+              primaryCta: "Ver alojamiento"
+            },
+            "bird-quest": {
+              eyebrow: "Antes del tour",
+              title: "Bird Quest",
+              description: "Una forma divertida de emocionarse antes del tour, especialmente para niños. Los huéspedes pueden ver y escuchar algunas de las aves que podrían encontrar antes de llegar a Mindo.",
+              primaryCta: "Explorar Bird Quest"
+            },
+            included: {
+              title: "Incluido",
+              items: [["Incluido", "Guía local experto"], ["Entradas a reservas", "Incluidas"], ["Recogida", "Desde Mindo"], ["Óptica", "Binoculares y telescopio"]]
+            },
+            "next-steps": {
+              title: "Próximos pasos",
+              description: "Después de elegir un tour, solo necesitaremos los nombres completos de todos los participantes y el lugar de recogida en Mindo. Si tienen alguna pregunta adicional, con gusto les ayudamos."
+            },
+            "social-links": {
+              title: "Reseñas, fotos y videos",
+              description: "Antes de elegir, pueden revisar reseñas de huéspedes, avistamientos recientes en Instagram y videos de nuestras experiencias de pajareo en Mindo.",
+              links: [["Reseñas", "https://g.page/r/CdMlIYMGgBIvEAE/review"], ["Instagram", "https://instagram.com/mindobirdwatching"], ["YouTube", "https://www.youtube.com/@MindoBirdWatching"]]
+            }
+          },
+          presets: {
+            "half-day": {
+              title: "Opción de Tour de Medio Día: Gallito de las Rocas",
+              intro: "Gracias por escribirnos. Para una mañana privada de pajareo, recomendamos primero el tour del Gallito de las Rocas Andino. Joyas del Bosque Matutino es otra opción más ligera de medio día, y también pueden agregar actividades relajadas en Mindo."
+            },
+            "full-day": {
+              title: "Opción de Tour de Día Completo",
+              intro: "Gracias por escribirnos. Para el día de pajareo más completo en Mindo, recomendamos nuestra experiencia de Búsqueda de Cinco Tucanes y el Gallito de las Rocas Andino."
+            },
+            family: {
+              title: "Opciones privadas para familia en Mindo",
+              intro: "Gracias por escribirnos. A continuación compartimos opciones privadas ideales para familias, con aves coloridas, paisajes del bosque nublado y actividades adicionales para disfrutar su visita a Mindo."
+            },
+            quito: {
+              title: "Opción privada Quito a Mindo",
+              intro: "Gracias por escribirnos. Podemos coordinar transporte desde Quito y combinarlo con una experiencia privada de observación de aves en Mindo."
+            },
+            custom: {
+              title: "Plan privado de pajareo personalizado",
+              intro: "Gracias por escribirnos. Si tienen aves objetivo, metas de fotografía o hábitats específicos en mente, podemos diseñar una ruta privada personalizada alrededor de sus prioridades."
+            },
+            activities: {
+              title: "Opciones de actividades y caminata nocturna en Mindo",
+              intro: "Gracias por escribirnos. Estas son opciones relajadas de actividades en Mindo que combinan muy bien con su tiempo en el bosque nublado."
+            }
+          }
+        }
+      };
+
       function getCatalog(){
         return window.MBW_EMAIL_BLOCKS || buildDefaultCatalog();
+      }
+
+      function getLocalizedCatalog(){
+        const catalog = getCatalog();
+        const lang = getLanguage();
+        if(lang === "en") return catalog;
+        return Object.assign({}, catalog, {
+          groups: (catalog.groups || []).map(group => Object.assign({}, group, {
+            label: getTranslation("groups", group.id, "label") || group.label
+          })),
+          blocks: (catalog.blocks || []).map(localizeBlock)
+        });
+      }
+
+      function getLanguage(){
+        return els.languageInput && els.languageInput.value === "es" ? "es" : "en";
+      }
+
+      function localizeBlock(block){
+        const translated = getTranslation("blocks", block.id) || {};
+        return Object.assign({}, block, translated);
+      }
+
+      function getTranslation(section, id, key){
+        const lang = getLanguage();
+        const dict = EMAIL_I18N[lang] || {};
+        const entry = dict[section] && dict[section][id];
+        if(!entry) return key ? "" : null;
+        return key ? entry[key] : entry;
+      }
+
+      function t(key){
+        const lang = getLanguage();
+        return (EMAIL_I18N[lang] && EMAIL_I18N[lang].ui && EMAIL_I18N[lang].ui[key]) || EMAIL_I18N.en.ui[key] || key;
+      }
+
+      function applyLanguageDefaults(){
+        const lang = getLanguage();
+        const defaults = EMAIL_I18N[lang].defaults;
+        els.emailTitleInput.value = defaults.title;
+        els.heroEyebrowInput.value = defaults.headerLabel;
+        els.introInput.value = defaults.intro;
+        els.nextStepsInput.value = defaults.nextSteps;
       }
 
       function buildDefaultCatalog(){
@@ -787,7 +1031,7 @@
       }
 
       function renderBlockControls(){
-        const catalog = getCatalog();
+        const catalog = getLocalizedCatalog();
         els.blockGroups.innerHTML = "";
         if(!catalog.groups.length || !catalog.blocks.length){
           const empty = document.createElement("div");
@@ -904,6 +1148,7 @@
         els.guestNameInput.value = "";
         els.guestCountInput.value = "";
         els.datesInput.value = "";
+        els.languageInput.value = "en";
         els.heroEyebrowInput.value = "Private cloud forest tours";
         els.showHeroInput.checked = true;
         els.compactCardsInput.checked = false;
@@ -966,11 +1211,12 @@
         };
         const config = presets[preset];
         if(!config) return;
+        const presetText = (EMAIL_I18N[getLanguage()].presets || {})[preset] || {};
         state.selected = new Set(config.blocks);
         state.order = config.blocks.slice();
         state.overrides = Object.assign({}, config.overrides || {});
-        els.emailTitleInput.value = config.title;
-        els.introInput.value = config.intro;
+        els.emailTitleInput.value = presetText.title || config.title;
+        els.introInput.value = presetText.intro || config.intro;
         els.showHeroInput.checked = !!config.hero;
         els.compactCardsInput.checked = !!config.compact;
         renderBlockControls();
@@ -986,7 +1232,7 @@
       }
 
       function buildEmailHtml(){
-        const catalog = getCatalog();
+        const catalog = getLocalizedCatalog();
         const brand = applySiteContact(catalog.brand);
         const selectedBlocks = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id)));
         const guestName = clean(els.guestNameInput.value) || "Guest Name";
@@ -999,7 +1245,7 @@
 
         return [
           "<!doctype html>",
-          "<html lang='en'>",
+          "<html lang='" + getLanguage() + "'>",
           "<head>",
           "<meta charset='utf-8'>",
           "<meta name='viewport' content='width=device-width, initial-scale=1'>",
@@ -1014,7 +1260,7 @@
           hasSelectedType(selectedBlocks, "nextSteps") ? "" : renderNextSteps({ title: "Next Steps", description: nextSteps }),
           renderReadyCta(brand, nextSteps),
           renderSignature(brand),
-          "<tr><td align='center' style='padding:14px 24px 6px; color:rgba(7,25,35,.68); font-size:12px; line-height:18px; font-weight:800;'>Mindo Bird Watching</td></tr>",
+          "<tr><td align='center' style='padding:14px 24px 6px; color:rgba(7,25,35,.68); font-size:12px; line-height:18px; font-weight:800;'>" + esc(t("footerName")) + "</td></tr>",
           "</table>",
           "</td></tr></table>",
           "</body></html>"
@@ -1098,7 +1344,7 @@
           "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#DCEBC8; font-weight:900;'>" + esc(clean(els.heroEyebrowInput.value) || "Private cloud forest tours") + "</div>" +
           (meta ? "<div style='margin-top:6px; font-size:13px; line-height:18px; color:#DCEBC8; font-weight:900;'>" + esc(meta) + "</div>" : "") +
           "<h1 style=\"margin:6px 0 9px; font-family:Georgia, 'Times New Roman', serif; font-size:38px; line-height:42px; color:#ffffff; font-weight:700; letter-spacing:-.02em;\">" + esc(title) + "</h1>" +
-          "<p style='margin:0; font-size:15px; line-height:23px; color:#F4FAEF;'>Hi " + esc(guestName) + ", " + esc(intro) + "</p>" +
+          "<p style='margin:0; font-size:15px; line-height:23px; color:#F4FAEF;'>" + esc(t("greeting")) + " " + esc(guestName) + ", " + esc(intro) + "</p>" +
           "</td></tr></table></td></tr>";
       }
 
@@ -1110,7 +1356,7 @@
           "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#DCEBC8; font-weight:900;'>" + esc(clean(els.heroEyebrowInput.value) || "Private cloud forest tours") + "</div>" +
           (meta ? "<div style='margin-top:6px; font-size:13px; line-height:18px; color:#DCEBC8; font-weight:900;'>" + esc(meta) + "</div>" : "") +
           "<h1 style=\"margin:6px 0 9px; font-family:Georgia, 'Times New Roman', serif; font-size:34px; line-height:38px; color:#ffffff; font-weight:700; letter-spacing:-.02em;\">" + esc(title) + "</h1>" +
-          "<p style='margin:0; font-size:15px; line-height:23px; color:#F4FAEF;'>Hi " + esc(guestName) + ", " + esc(intro) + "</p>" +
+          "<p style='margin:0; font-size:15px; line-height:23px; color:#F4FAEF;'>" + esc(t("greeting")) + " " + esc(guestName) + ", " + esc(intro) + "</p>" +
           "</td></tr></table></td></tr>";
       }
 
@@ -1136,8 +1382,8 @@
           "</td>" +
           "<td width='32%' valign='top' align='center' style='text-align:center;'>" +
           priceLines.map(line => "<p style='margin:0 0 5px; font-size:12.5px; line-height:17px; color:#071923;'>" + esc(line) + "</p>").join("") +
-          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:130px; margin:6px 0 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || "View") + "</a>" : "") +
-          (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:130px; margin:0 0 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:9px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || "Watch Video") + "</a>" : "") +
+          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:130px; margin:6px 0 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
+          (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:130px; margin:0 0 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:9px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || t("defaultVideoCta")) + "</a>" : "") +
           "</td></tr></table></td></tr></table></td></tr>";
       }
 
@@ -1157,8 +1403,8 @@
           "<td width='38%' valign='top'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.28); border-radius:14px;'><tr><td align='center' style='padding:13px; text-align:center;'>" +
           priceLines.map(line => "<p style='margin:0 0 6px; font-size:13px; line-height:18px; color:#071923;'>" + esc(line) + "</p>").join("") +
-          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:132px; margin:6px 4px 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || "View") + "</a>" : "") +
-          (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:132px; margin:0 4px 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || "Watch Video") + "</a>" : "") +
+          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:132px; margin:6px 4px 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
+          (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:132px; margin:0 4px 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || t("defaultVideoCta")) + "</a>" : "") +
           "</td></tr></table>" +
           "</td></tr></table>" +
           "</td></tr></table></td></tr>";
@@ -1177,7 +1423,7 @@
           "<td width='46%' valign='middle' align='center' style='text-align:center;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.25); border-radius:16px;'><tr><td align='center' style='padding:12px;'>" +
           (block.image ? "<a href='" + attr(block.url || "#") + "' style='display:inline-block; text-decoration:none;'><img src='" + attr(block.image) + "' width='146' alt='" + attr(block.title) + "' style='display:block; width:146px; max-width:146px; height:auto; border:0; border-radius:14px;'></a>" : "") +
-          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:148px; margin:12px 0 0; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || "View") + "</a>" : "") +
+          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:148px; margin:12px 0 0; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
           "</td></tr></table>" +
           "</td></tr></table>" +
           "</td></tr></table></td></tr>";
@@ -1213,15 +1459,15 @@
       }
 
       function renderReadyCta(brand, nextSteps){
-        const message = "Hi Mindo Bird Watching, I am replying to your email. Guest: " + (els.guestNameInput.value || "") + ". Dates: " + (els.datesInput.value || "") + ". Guests: " + (els.guestCountInput.value || "") + ".";
+        const message = t("whatsappMessage") + " " + t("whatsappGuest") + ": " + (els.guestNameInput.value || "") + ". " + t("whatsappDates") + ": " + (els.datesInput.value || "") + ". " + t("whatsappGuests") + ": " + (els.guestCountInput.value || "") + ".";
         const wa = buildWhatsAppUrl(message);
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#0D5925; border-radius:18px;'><tr><td align='center' style='padding:22px 20px;'>" +
-          "<h2 style=\"margin:0 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:25px; line-height:29px; color:#ffffff;\">Ready to Choose Your Plan?</h2>" +
-          "<p style='margin:0 0 14px; font-size:14px; line-height:21px; color:#F4FAEF;'>" + esc(nextSteps || "Reply with your preferred date, number of guests, selected tour, and pickup location.") + "</p>" +
-          "<a href='mailto:" + attr(brand.email) + "' style='display:inline-block; width:190px; margin:0 4px 8px; background:#ffffff; color:#0D5925; text-decoration:none; font-weight:900; font-size:14px; line-height:18px; padding:13px 0; border-radius:14px; text-align:center;'>Reply to This Email</a>" +
-          "<a href='" + attr(wa) + "' style='display:inline-block; width:190px; margin:0 4px 8px; background:rgba(255,255,255,.12); color:#ffffff; text-decoration:none; font-weight:900; font-size:14px; line-height:18px; padding:13px 0; border-radius:14px; border:1px solid rgba(255,255,255,.55); text-align:center;'>Message on WhatsApp</a>" +
+          "<h2 style=\"margin:0 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:25px; line-height:29px; color:#ffffff;\">" + esc(t("readyTitle")) + "</h2>" +
+          "<p style='margin:0 0 14px; font-size:14px; line-height:21px; color:#F4FAEF;'>" + esc(nextSteps || EMAIL_I18N[getLanguage()].defaults.nextSteps) + "</p>" +
+          "<a href='mailto:" + attr(brand.email) + "' style='display:inline-block; width:190px; margin:0 4px 8px; background:#ffffff; color:#0D5925; text-decoration:none; font-weight:900; font-size:14px; line-height:18px; padding:13px 0; border-radius:14px; text-align:center;'>" + esc(t("replyEmail")) + "</a>" +
+          "<a href='" + attr(wa) + "' style='display:inline-block; width:190px; margin:0 4px 8px; background:rgba(255,255,255,.12); color:#ffffff; text-decoration:none; font-weight:900; font-size:14px; line-height:18px; padding:13px 0; border-radius:14px; border:1px solid rgba(255,255,255,.55); text-align:center;'>" + esc(t("whatsapp")) + "</a>" +
           "</td></tr></table></td></tr>";
       }
 
@@ -1229,7 +1475,7 @@
         return "" +
           "<tr><td style='padding:0 20px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:rgba(255,255,255,.86); border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px;'>" +
-          "<p style='margin:0 0 10px; font-size:14px; line-height:20px; color:#071923;'>Warm regards,<br><strong>Mindo Bird Watching</strong></p>" +
+          "<p style='margin:0 0 10px; font-size:14px; line-height:20px; color:#071923;'>" + esc(t("warmRegards")) + "<br><strong>Mindo Bird Watching</strong></p>" +
           "<table role='presentation' cellspacing='0' cellpadding='0' border='0'><tr>" +
           (brand.icons || []).map(icon => "<td style='padding:0 7px 7px 0;'><a href='" + attr(icon.href) + "'><img src='" + attr(icon.img) + "' width='" + attr(icon.w) + "' height='" + attr(icon.h) + "' alt='" + attr(icon.alt) + "' style='display:block; width:" + attr(icon.w) + "px; height:" + attr(icon.h) + "px; border:0;'></a></td>").join("") +
           "</tr></table>" +
