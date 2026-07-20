@@ -1,1 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Zelle Invoice Generator</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/site-config.js?v=20260719" defer></script>
+  <style>
+    :root{
+      --mbw-green:#0D5925;
+      --mbw-bg:#C7DAAC;
+      --mbw-soft:#F6FAF0;
+      --mbw-ink:#071923;
+      --mbw-muted:rgba(7,25,35,.68);
+      --mbw-line:rgba(7,25,35,.14);
+      --mbw-shadow:0 18px 55px rgba(7,25,35,.10);
+      --mbw-radius:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background:var(--mbw-bg);
+      color:var(--mbw-ink);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    .adminShell{
+      max-width:1720px;
+      margin:0 auto;
+      padding:22px;
+    }
+    .pageCard{
+      background:linear-gradient(180deg, rgba(246,250,240,.94), rgba(237,244,228,.96));
+      border:1px solid var(--mbw-line);
+      border-radius:var(--mbw-radius);
+      box-shadow:var(--mbw-shadow);
+      padding:20px;
+    }
+    .topBar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+    .titleLockup{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      min-width:0;
+    }
+    .brandMark{
+      width:54px;
+      height:54px;
+      object-fit:contain;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--mbw-line);
+      box-shadow:0 8px 24px rgba(7,25,35,.12);
+      flex:0 0 auto;
+    }
+    h1{
+      margin:0;
+      color:var(--mbw-green);
+      font-family:Georgia, "Times New Roman", serif;
+      font-size:28px;
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+    .titleLockup p{
+      margin:6px 0 0;
+      max-width:88ch;
+      color:var(--mbw-muted);
+      font-size:13px;
+      line-height:1.45;
+      font-weight:700;
+    }
+    .actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    button,
+    .buttonLink{
+      appearance:none;
+      border:1px solid var(--mbw-line);
+      border-radius:14px;
+      background:rgba(255,255,255,.86);
+      color:var(--mbw-ink);
+      min-height:44px;
+      padding:11px 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font:inherit;
+      font-weight:900;
+      text-decoration:none;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow:0 8px 20px rgba(7,25,35,.06);
+    }
+    button.primary,
+    .buttonLink.primary{
+      background:var(--mbw-green);
+      color:#fff;
+      border-color:rgba(13,89,37,.35);
+    }
+    .appGrid{
+      display:grid;
+      grid-template-columns:minmax(330px, 430px) minmax(680px, 1fr);
+      gap:18px;
+      align-items:start;
+    }
+    .panel{
+      background:rgba(255,255,255,.8);
+      border:1px solid var(--mbw-line);
+      border-radius:var(--mbw-radius);
+      box-shadow:var(--mbw-shadow);
+      padding:16px;
+      min-width:0;
+    }
+    .sticky{
+      position:sticky;
+      top:18px;
+      max-height:calc(100vh - 36px);
+      overflow:auto;
+    }
+    .panelTitle{
+      margin:0 0 12px;
+      color:var(--mbw-green);
+      font-size:14px;
+      line-height:1.2;
+      font-weight:950;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+    }
+    .sectionDivider{
+      margin:15px 0 12px;
+      padding-top:13px;
+      border-top:1px solid var(--mbw-line);
+    }
+    .field{
+      display:grid;
+      gap:6px;
+      margin-bottom:11px;
+    }
+    label{
+      color:var(--mbw-muted);
+      font-size:12px;
+      line-height:1.25;
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    input,
+    select,
+    textarea{
+      width:100%;
+      border:1px solid var(--mbw-line);
+      border-radius:13px;
+      background:rgba(255,255,255,.9);
+      color:var(--mbw-ink);
+      padding:11px 12px;
+      font:inherit;
+      font-weight:750;
+      outline:none;
+    }
+    textarea{
+      min-height:78px;
+      resize:vertical;
+      line-height:1.45;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus{
+      border-color:rgba(13,89,37,.55);
+      box-shadow:0 0 0 3px rgba(13,89,37,.12);
+    }
+    .inlineGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .threeGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+    .hint{
+      margin:7px 0 0;
+      color:rgba(7,25,35,.62);
+      font-size:12px;
+      line-height:1.4;
+      font-weight:700;
+    }
+    .itemEditor{
+      border:1px solid var(--mbw-line);
+      background:rgba(246,250,240,.72);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .itemTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .itemTop strong{
+      color:var(--mbw-green);
+      font-size:13px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .removeBtn{
+      min-height:34px;
+      padding:8px 10px;
+      border-radius:11px;
+      font-size:12px;
+      box-shadow:none;
+    }
+    .totalsEditor{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .previewWrap{
+      background:#C7DAAC;
+      border:1px solid rgba(7,25,35,.16);
+      border-radius:18px;
+      padding:18px;
+      overflow:auto;
+    }
+    .invoicePage{
+      width:816px;
+      min-height:1056px;
+      margin:0 auto;
+      background:#fff;
+      color:#333;
+      padding:54px 54px 44px;
+      box-shadow:0 18px 50px rgba(7,25,35,.16);
+      font-family:Arial, Helvetica, sans-serif;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .invoiceHeader{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:28px;
+      align-items:start;
+      border-top:4px solid var(--mbw-green);
+      padding-top:12px;
+    }
+    .invoiceLogo{
+      width:126px;
+      height:126px;
+      object-fit:contain;
+      display:block;
+    }
+    .invoiceMeta{
+      text-align:right;
+      color:var(--mbw-green);
+    }
+    .invoiceMeta h2{
+      margin:0 0 4px;
+      font-size:18px;
+      line-height:1.1;
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+    .invoiceMeta p{
+      margin:2px 0;
+      color:#16371f;
+      font-size:12px;
+      line-height:1.35;
+      font-weight:700;
+    }
+    .invoiceMeta a{ color:#0057b8; text-decoration:underline; }
+    .topInfo{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:26px;
+      margin-top:22px;
+      align-items:start;
+    }
+    .infoTable{
+      width:100%;
+      border-collapse:collapse;
+      color:#222;
+    }
+    .infoTable th,
+    .infoTable td{
+      padding:3px 0;
+      text-align:left;
+      vertical-align:top;
+      font-size:13px;
+      line-height:1.3;
+    }
+    .infoTable th{
+      width:116px;
+      color:var(--mbw-green);
+      font-weight:900;
+    }
+    .amountDue{
+      text-align:center;
+      color:var(--mbw-green);
+      padding-top:10px;
+    }
+    .amountDue strong{
+      display:block;
+      font-size:13px;
+      line-height:1.2;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .amountDue span{
+      display:block;
+      margin-top:5px;
+      font-size:20px;
+      line-height:1.1;
+      font-weight:400;
+    }
+    .billBox{
+      margin-top:12px;
+      border-top:2px solid var(--mbw-green);
+      padding-top:7px;
+      width:310px;
+    }
+    .billBox h3{
+      margin:0 0 5px;
+      color:var(--mbw-green);
+      font-size:14px;
+      line-height:1.1;
+      text-transform:uppercase;
+    }
+    .billBox p{
+      margin:2px 0;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .itemsTable{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:18px;
+      border-top:2px solid var(--mbw-green);
+    }
+    .itemsTable th{
+      color:var(--mbw-green);
+      font-size:11px;
+      line-height:1.15;
+      text-transform:uppercase;
+      text-align:left;
+      padding:7px 6px 5px;
+      border-bottom:1px solid #bfc8bd;
+    }
+    .itemsTable th:nth-child(1){ width:34px; text-align:center; }
+    .itemsTable th:nth-child(3),
+    .itemsTable th:nth-child(4),
+    .itemsTable th:nth-child(5){ text-align:right; width:92px; }
+    .itemsTable td{
+      padding:7px 6px;
+      font-size:12px;
+      line-height:1.35;
+      border-bottom:1px solid #e7ece4;
+      vertical-align:top;
+    }
+    .itemsTable tbody tr:nth-child(even) td{ background:#f4f5f3; }
+    .itemsTable td:nth-child(1){ text-align:center; color:#666; }
+    .itemsTable td:nth-child(3),
+    .itemsTable td:nth-child(4),
+    .itemsTable td:nth-child(5){ text-align:right; white-space:nowrap; }
+    .lineNote{
+      display:block;
+      margin-top:3px;
+      color:#666;
+      font-size:11px;
+      line-height:1.3;
+    }
+    .invoiceBottom{
+      display:grid;
+      grid-template-columns:1fr 220px;
+      gap:22px;
+      margin-top:8px;
+      align-items:start;
+    }
+    .zelleBox h3{
+      margin:0 0 5px;
+      color:var(--mbw-green);
+      font-size:13px;
+      line-height:1.2;
+    }
+    .zelleBox p{
+      margin:2px 0;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .totalsTable{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+    }
+    .totalsTable td{
+      padding:4px 0;
+      text-align:right;
+    }
+    .totalsTable td:first-child{
+      color:#222;
+      text-align:left;
+    }
+    .totalsTable .grand td{
+      padding-top:8px;
+      color:var(--mbw-green);
+      font-size:20px;
+      line-height:1.1;
+      font-weight:900;
+    }
+    .customerNotes{
+      margin-top:18px;
+      color:#777;
+      font-size:10.5px;
+      line-height:1.45;
+      max-width:540px;
+    }
+    .customerNotes h3{
+      margin:0 0 4px;
+      color:#777;
+      font-size:11px;
+      line-height:1.2;
+      text-transform:uppercase;
+    }
+    .customerNotes p{
+      margin:0 0 4px;
+    }
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      background:#071923;
+      color:#fff;
+      border-radius:14px;
+      padding:12px 14px;
+      box-shadow:0 14px 40px rgba(7,25,35,.22);
+      font-weight:900;
+      opacity:0;
+      transform:translateY(10px);
+      pointer-events:none;
+      transition:.18s ease;
+      z-index:20;
+    }
+    .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+    @media (max-width:1180px){
+      .appGrid{ grid-template-columns:1fr; }
+      .sticky{ position:static; max-height:none; }
+    }
+    @media (max-width:760px){
+      .adminShell{ padding:10px; }
+      .pageCard{ padding:14px; }
+      .inlineGrid,
+      .threeGrid,
+      .totalsEditor{ grid-template-columns:1fr; }
+      .previewWrap{ padding:10px; }
+      .invoicePage{
+        transform-origin:top left;
+        width:816px;
+      }
+    }
+    @page{
+      size:letter;
+      margin:0;
+    }
+    @media print{
+      body{ background:#fff; }
+      .adminShell,
+      .pageCard,
+      .previewWrap{
+        margin:0;
+        padding:0;
+        max-width:none;
+        background:#fff;
+        border:0;
+        box-shadow:none;
+      }
+      .topBar,
+      .sticky,
+      .panelTitle,
+      .toast{
+        display:none !important;
+      }
+      .appGrid{
+        display:block;
+      }
+      .panel{
+        display:block;
+        border:0;
+        padding:0;
+        box-shadow:none;
+        background:#fff;
+      }
+      .panel:first-child{ display:none; }
+      .invoicePage{
+        width:8.5in;
+        height:11in;
+        min-height:11in;
+        margin:0;
+        padding:.48in .52in .38in;
+        box-shadow:none;
+        page-break-after:avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="adminShell">
+    <section class="pageCard">
+      <header class="topBar">
+        <div class="titleLockup">
+          <img class="brandMark" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
+          <div>
+            <h1>Zelle Invoice Generator</h1>
+            <p>Create a clean one-page invoice for Zelle payments, print/save it as PDF, and open a prepared Gmail message for the guest.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="printBtn" type="button">Print / Save PDF</button>
+          <button id="emailBtn" type="button">Open Gmail Draft</button>
+          <button id="copyEmailBtn" type="button">Copy Email Text</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+      </header>
 
+      <div class="appGrid">
+        <section class="panel sticky" aria-label="Invoice controls">
+          <h2 class="panelTitle">Invoice Details</h2>
+          <div class="inlineGrid">
+            <div class="field">
+              <label for="invoiceNumber">Invoice #</label>
+              <input id="invoiceNumber" type="text" value="1053" />
+            </div>
+            <div class="field">
+              <label for="invoiceDate">Invoice Date</label>
+              <input id="invoiceDate" type="date" />
+            </div>
+          </div>
+          <div class="inlineGrid">
+            <div class="field">
+              <label for="dueDate">Due Date</label>
+              <input id="dueDate" type="date" />
+            </div>
+            <div class="field">
+              <label for="tourDate">Tour Date</label>
+              <input id="tourDate" type="date" />
+            </div>
+          </div>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">Bill To</h2>
+            <div class="field">
+              <label for="guestName">Name(s)</label>
+              <input id="guestName" type="text" placeholder="Guest Name" />
+            </div>
+            <div class="field">
+              <label for="guestEmail">Email</label>
+              <input id="guestEmail" type="email" placeholder="guest@email.com" />
+            </div>
+            <div class="field">
+              <label for="guestPhone">Phone Number</label>
+              <input id="guestPhone" type="tel" placeholder="+1 555 000 0000" />
+            </div>
+          </div>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">Trip Details</h2>
+            <div class="field">
+              <label for="pickupLocation">Pickup Location</label>
+              <input id="pickupLocation" type="text" placeholder="Hotel / lodge / meeting point" />
+            </div>
+            <div class="field">
+              <label for="invoiceNotes">Notes</label>
+              <textarea id="invoiceNotes" placeholder="Other guests, special details, discount notes, or itinerary reminders"></textarea>
+            </div>
+          </div>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">Totals</h2>
+            <div class="totalsEditor">
+              <div class="field">
+                <label for="adjustmentLabel">Adjustment Label</label>
+                <input id="adjustmentLabel" type="text" value="Adjustments" />
+              </div>
+              <div class="field">
+                <label for="adjustmentAmount">Adjustment Amount</label>
+                <input id="adjustmentAmount" type="number" step="0.01" value="0" />
+              </div>
+            </div>
+            <p class="hint">Use a negative amount for discounts, for example <strong>-20</strong>.</p>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Line items and preview">
+          <h2 class="panelTitle">Items</h2>
+          <div id="itemsEditor"></div>
+          <button class="primary" id="addItemBtn" type="button">Add Item</button>
+
+          <div class="sectionDivider">
+            <h2 class="panelTitle">Live Preview</h2>
+            <div class="previewWrap">
+              <article class="invoicePage" id="invoicePreview" aria-label="Invoice preview"></article>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      const logoUrl = "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png";
+      const itemOptions = [
+        "Dance of the Andean Cock-of-the-Rock Dawn Tour",
+        "Jewels of the Morning Forest Birding Tour",
+        "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+        "Custom Private Birding Tour",
+        "Night Walk",
+        "Waterfall Tour / Hike",
+        "Chocolate Tour",
+        "Quito to Mindo Transportation",
+        "Mindo to Quito Transportation",
+        "Private Roundtrip Transportation",
+        "Deposit",
+        "Other"
+      ];
+
+      const els = {};
+      const state = {
+        items: []
+      };
+
+      document.addEventListener("DOMContentLoaded", init);
+
+      function init(){
+        cacheEls();
+        setDefaultDates();
+        state.items = [
+          { description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"Pickup location: Mindo" }
+        ];
+        bindEvents();
+        renderItems();
+        updateInvoice();
+      }
+
+      function cacheEls(){
+        [
+          "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
+          "pickupLocation", "invoiceNotes", "adjustmentLabel", "adjustmentAmount", "itemsEditor",
+          "addItemBtn", "invoicePreview", "printBtn", "emailBtn", "copyEmailBtn", "resetBtn", "toast"
+        ].forEach(id => els[id] = document.getElementById(id));
+      }
+
+      function bindEvents(){
+        [
+          "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
+          "pickupLocation", "invoiceNotes", "adjustmentLabel", "adjustmentAmount"
+        ].forEach(id => {
+          els[id].addEventListener("input", handleGlobalInput);
+          els[id].addEventListener("change", handleGlobalInput);
+        });
+        els.invoiceDate.addEventListener("change", () => {
+          if(!els.dueDate.dataset.manuallyChanged){
+            els.dueDate.value = addDays(els.invoiceDate.value, 2);
+          }
+          updateInvoice();
+        });
+        els.dueDate.addEventListener("change", () => {
+          els.dueDate.dataset.manuallyChanged = "true";
+          updateInvoice();
+        });
+        els.addItemBtn.addEventListener("click", addItem);
+        els.printBtn.addEventListener("click", () => window.print());
+        els.emailBtn.addEventListener("click", openEmailDraft);
+        els.copyEmailBtn.addEventListener("click", copyEmailText);
+        els.resetBtn.addEventListener("click", resetForm);
+      }
+
+      function handleGlobalInput(){
+        updateInvoice();
+      }
+
+      function setDefaultDates(){
+        const today = new Date();
+        const todayValue = toDateInput(today);
+        els.invoiceDate.value = todayValue;
+        els.dueDate.value = addDays(todayValue, 2);
+      }
+
+      function renderItems(){
+        els.itemsEditor.innerHTML = "";
+        state.items.forEach((item, index) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "itemEditor";
+          wrapper.innerHTML = "" +
+            "<div class='itemTop'><strong>Item " + (index + 1) + "</strong><button class='removeBtn' type='button' data-remove='" + index + "'>Remove</button></div>" +
+            "<div class='field'><label>Item / Description</label><select data-field='description'>" + itemOptions.map(option => "<option value='" + attr(option) + "'" + (option === item.description ? " selected" : "") + ">" + esc(option) + "</option>").join("") + "</select></div>" +
+            "<div class='threeGrid'>" +
+              "<div class='field'><label>Qty</label><select data-field='qty'>" + buildQtyOptions(item.qty) + "</select></div>" +
+              "<div class='field'><label>Price</label><input data-field='price' type='number' step='0.01' value='" + attr(item.price) + "' /></div>" +
+              "<div class='field'><label>Amount</label><input type='text' value='" + attr(formatMoney(lineTotal(item))) + "' disabled /></div>" +
+            "</div>" +
+            "<div class='field'><label>Line Note</label><input data-field='note' type='text' value='" + attr(item.note || "") + "' placeholder='Pickup, guest names, private note, or discount note' /></div>";
+          wrapper.querySelectorAll("[data-field]").forEach(input => {
+            input.addEventListener("input", event => updateItem(index, event.target.dataset.field, event.target.value, false));
+            input.addEventListener("change", event => updateItem(index, event.target.dataset.field, event.target.value, true));
+          });
+          wrapper.querySelector("[data-remove]").addEventListener("click", () => removeItem(index));
+          els.itemsEditor.appendChild(wrapper);
+        });
+      }
+
+      function buildQtyOptions(selected){
+        let html = "";
+        for(let qty = 1; qty <= 9; qty += 1){
+          html += "<option value='" + qty + "'" + (Number(selected) === qty ? " selected" : "") + ">" + qty + "</option>";
+        }
+        return html;
+      }
+
+      function updateItem(index, field, value, shouldRender){
+        const item = state.items[index];
+        if(!item) return;
+        if(field === "qty") item.qty = Number(value) || 1;
+        else if(field === "price") item.price = Number(value) || 0;
+        else item[field] = value;
+        if(shouldRender) renderItems();
+        updateInvoice();
+      }
+
+      function addItem(){
+        state.items.push({ description:"Other", qty:1, price:0, note:"" });
+        renderItems();
+        updateInvoice();
+      }
+
+      function removeItem(index){
+        state.items.splice(index, 1);
+        if(!state.items.length) addItem();
+        renderItems();
+        updateInvoice();
+      }
+
+      function resetForm(){
+        els.invoiceNumber.value = "";
+        els.guestName.value = "";
+        els.guestEmail.value = "";
+        els.guestPhone.value = "";
+        els.tourDate.value = "";
+        els.pickupLocation.value = "";
+        els.invoiceNotes.value = "";
+        els.adjustmentLabel.value = "Adjustments";
+        els.adjustmentAmount.value = "0";
+        delete els.dueDate.dataset.manuallyChanged;
+        setDefaultDates();
+        state.items = [{ description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"Pickup location: Mindo" }];
+        renderItems();
+        updateInvoice();
+        showToast("Invoice reset");
+      }
+
+      function updateInvoice(){
+        const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
+        const adjustment = Number(els.adjustmentAmount.value) || 0;
+        const total = subtotal + adjustment;
+        els.invoicePreview.innerHTML = buildInvoiceHtml(subtotal, adjustment, total);
+      }
+
+      function buildInvoiceHtml(subtotal, adjustment, total){
+        const contact = getContact();
+        const invoiceNumber = clean(els.invoiceNumber.value) || "Draft";
+        const invoiceDate = formatDate(els.invoiceDate.value);
+        const dueDate = formatDate(els.dueDate.value);
+        const tourDate = formatDate(els.tourDate.value);
+        const guestName = clean(els.guestName.value) || "Guest Name";
+        const guestEmail = clean(els.guestEmail.value);
+        const guestPhone = clean(els.guestPhone.value);
+        const pickup = clean(els.pickupLocation.value);
+        const notes = clean(els.invoiceNotes.value);
+        const adjustmentLabel = clean(els.adjustmentLabel.value) || "Adjustments";
+
+        return "" +
+          "<div class='invoiceHeader'>" +
+            "<div><img class='invoiceLogo' src='" + attr(logoUrl) + "' alt='Mindo Bird Watching' /></div>" +
+            "<div class='invoiceMeta'><h2>INVOICE</h2><p>Mindo Bird Watching</p><p>Ph: " + esc(contact.phoneDisplay) + "</p><p><a href='https://www.mindobirdwatching.com'>www.mindobirdwatching.com</a></p></div>" +
+          "</div>" +
+          "<div class='topInfo'>" +
+            "<div>" +
+              "<table class='infoTable'><tbody>" +
+                infoRow("Invoice No #:", invoiceNumber) +
+                infoRow("Invoice Date:", invoiceDate) +
+                infoRow("Due Date:", dueDate) +
+                infoRow("Tour Date:", tourDate) +
+              "</tbody></table>" +
+              "<div class='billBox'><h3>Bill To:</h3><p>" + esc(guestName) + "</p>" +
+                (guestEmail ? "<p>" + esc(guestEmail) + "</p>" : "") +
+                (guestPhone ? "<p>Phone: " + esc(guestPhone) + "</p>" : "") +
+              "</div>" +
+            "</div>" +
+            "<div class='amountDue'><strong>Amount Due</strong><span>" + esc(formatMoney(total)) + "</span></div>" +
+          "</div>" +
+          "<table class='itemsTable'><thead><tr><th>#</th><th>Items & Description</th><th>Qty/Hrs</th><th>Price</th><th>Amount</th></tr></thead><tbody>" +
+            state.items.map((item, index) => itemRow(item, index)).join("") +
+            (pickup ? noteRow("Pick Up: " + pickup) : "") +
+            (notes ? noteRow(notes) : "") +
+          "</tbody></table>" +
+          "<div class='invoiceBottom'>" +
+            "<div class='zelleBox'><h3>Zelle Instructions:</h3><p>Name: Mindo Bird Watching</p><p>Email: " + esc(contact.email) + "</p></div>" +
+            "<table class='totalsTable'><tbody>" +
+              "<tr><td>Subtotal</td><td><strong>" + esc(formatMoney(subtotal)) + "</strong></td></tr>" +
+              "<tr><td>" + esc(adjustmentLabel) + "</td><td>" + esc(formatMoney(adjustment)) + "</td></tr>" +
+              "<tr class='grand'><td></td><td>" + esc(formatMoney(total)) + "</td></tr>" +
+            "</tbody></table>" +
+          "</div>" +
+          "<div class='customerNotes'>" +
+            "<h3>Notes to Customer</h3>" +
+            "<p>Thank you for booking with Mindo Bird Watching!</p>" +
+            "<p>Your tour will be confirmed once payment is received.</p>" +
+            "<p>Please reply to this message or WhatsApp us if you have questions.</p>" +
+            "<p>Visit mindobirdwatching.com for tour details.</p>" +
+            "<h3>Terms and Conditions</h3>" +
+            "<p>* Full payment required to confirm your tour.</p>" +
+            "<p>* Cancellations made 48 hours in advance are refundable.</p>" +
+            "<p>* Tours run rain or shine unless otherwise notified.</p>" +
+            "<p>* FAQs: www.mindobirdwatching.com/faqs</p>" +
+            "<p>* Payment confirms acceptance of our Tour Terms & Conditions: www.mindobirdwatching.com/terms-conditions</p>" +
+          "</div>";
+      }
+
+      function infoRow(label, value){
+        return "<tr><th>" + esc(label) + "</th><td>" + esc(value || "-") + "</td></tr>";
+      }
+
+      function itemRow(item, index){
+        return "<tr>" +
+          "<td>" + (index + 1) + "</td>" +
+          "<td><strong>" + esc(item.description || "Item") + "</strong>" + (item.note ? "<span class='lineNote'>" + esc(item.note) + "</span>" : "") + "</td>" +
+          "<td>" + esc(item.qty || 1) + "</td>" +
+          "<td>" + esc(formatMoney(Number(item.price) || 0)) + "</td>" +
+          "<td>" + esc(formatMoney(lineTotal(item))) + "</td>" +
+        "</tr>";
+      }
+
+      function noteRow(text){
+        return "<tr><td></td><td colspan='4'>" + esc(text).replace(/\n/g, "<br>") + "</td></tr>";
+      }
+
+      function lineTotal(item){
+        return (Number(item.qty) || 0) * (Number(item.price) || 0);
+      }
+
+      function openEmailDraft(){
+        const email = clean(els.guestEmail.value);
+        const subject = "Tour Invoice";
+        const body = buildEmailBody();
+        const href = "https://mail.google.com/mail/?view=cm&fs=1" +
+          (email ? "&to=" + encodeURIComponent(email) : "") +
+          "&su=" + encodeURIComponent(subject) +
+          "&body=" + encodeURIComponent(body);
+        window.open(href, "_blank", "noopener,noreferrer");
+      }
+
+      function copyEmailText(){
+        copyText(buildEmailBody()).then(() => showToast("Email text copied"));
+      }
+
+      function buildEmailBody(){
+        const guest = clean(els.guestName.value) || "there";
+        return "Hi " + guest + ",\n\n" +
+          "Attached is your tour invoice. Upon completion of payment, we will send your tour confirmation.\n\n" +
+          "Please let us know if you have any questions.\n\n" +
+          "Warm regards,\n" +
+          "Mindo Bird Watching\n" +
+          "Mindo, Ecuador\n" +
+          "mindobirdwatching.com | " + getContact().email;
+      }
+
+      function getContact(){
+        const config = window.MBW_SITE_CONFIG || {};
+        const contact = config.contact || {};
+        const digits = String(contact.whatsappNumberDigits || "13054585402").replace(/\D/g, "");
+        return {
+          email: contact.email || "mindobirdwatching@gmail.com",
+          phoneDisplay: contact.whatsappDisplayNumber || ("+" + digits)
+        };
+      }
+
+      function addDays(dateValue, days){
+        const date = dateValue ? new Date(dateValue + "T00:00:00") : new Date();
+        date.setDate(date.getDate() + days);
+        return toDateInput(date);
+      }
+
+      function toDateInput(date){
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return year + "-" + month + "-" + day;
+      }
+
+      function formatDate(value){
+        if(!value) return "-";
+        const date = new Date(value + "T00:00:00");
+        return date.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+      }
+
+      function formatMoney(value){
+        const amount = Number(value) || 0;
+        return amount.toLocaleString("en-US", { style:"currency", currency:"USD" });
+      }
+
+      function clean(value){
+        return String(value || "").trim();
+      }
+
+      function copyText(text){
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          return navigator.clipboard.writeText(text);
+        }
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        return Promise.resolve();
+      }
+
+      function showToast(message){
+        els.toast.textContent = message;
+        els.toast.classList.add("show");
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1800);
+      }
+
+      function esc(value){
+        return String(value || "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
+      }
+
+      function attr(value){
+        return esc(value);
+      }
+    })();
+  </script>
+</body>
+</html>
