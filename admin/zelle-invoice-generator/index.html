@@ -693,7 +693,7 @@
           updateInvoice();
         });
         els.addItemBtn.addEventListener("click", addItem);
-        els.printBtn.addEventListener("click", () => window.print());
+        els.printBtn.addEventListener("click", printInvoice);
         els.emailBtn.addEventListener("click", openEmailDraft);
         els.copyEmailBtn.addEventListener("click", copyEmailText);
         els.resetBtn.addEventListener("click", resetForm);
@@ -845,9 +845,80 @@
             "<p>* Full payment required to confirm your tour.</p>" +
             "<p>* Cancellations made 48 hours in advance are refundable.</p>" +
             "<p>* Tours run rain or shine unless otherwise notified.</p>" +
-            "<p>* FAQs: www.mindobirdwatching.com/faqs</p>" +
-            "<p>* Payment confirms acceptance of our Tour Terms & Conditions: www.mindobirdwatching.com/terms-conditions</p>" +
+            "<p>* FAQs: <a href='https://www.mindobirdwatching.com/faqs'>www.mindobirdwatching.com/faqs</a></p>" +
+            "<p>* Payment confirms acceptance of our Tour Terms & Conditions: <a href='https://www.mindobirdwatching.com/terms-conditions'>www.mindobirdwatching.com/terms-conditions</a></p>" +
           "</div>";
+      }
+
+      function printInvoice(){
+        updateInvoice();
+        const printWindow = window.open("", "_blank");
+        if(!printWindow){
+          showToast("Allow popups to print the invoice");
+          return;
+        }
+        printWindow.document.open();
+        printWindow.document.write(
+          "<!doctype html><html lang='en'><head><meta charset='utf-8'>" +
+          "<meta name='viewport' content='width=device-width, initial-scale=1'>" +
+          "<title>" + esc(buildPdfTitle()) + "</title>" +
+          "<style>" + getPrintStyles() + "</style>" +
+          "</head><body><article class='invoicePage'>" + els.invoicePreview.innerHTML + "</article>" +
+          "<script>window.addEventListener('load',function(){setTimeout(function(){window.print();},250);});<\\/script>" +
+          "</body></html>"
+        );
+        printWindow.document.close();
+      }
+
+      function buildPdfTitle(){
+        const invoice = clean(els.invoiceNumber.value) || "draft";
+        const guest = (clean(els.guestName.value) || "guest").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
+        const date = clean(els.invoiceDate.value) || toDateInput(new Date());
+        return "MBW_ZELLE_" + invoice + "_" + guest + "_" + date;
+      }
+
+      function getPrintStyles(){
+        return "" +
+          "@page{size:letter;margin:0;}" +
+          "*{box-sizing:border-box;}" +
+          "html,body{margin:0;padding:0;background:#fff;color:#333;font-family:Arial,Helvetica,sans-serif;}" +
+          "a{color:#0057b8;text-decoration:underline;}" +
+          ".invoicePage{width:8.5in;height:11in;min-height:11in;margin:0;background:#fff;color:#333;padding:.48in .52in .38in;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.35;overflow:hidden;}" +
+          ".invoiceHeader{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;border-top:4px solid #0D5925;padding-top:12px;}" +
+          ".invoiceLogo{width:126px;height:126px;object-fit:contain;display:block;}" +
+          ".invoiceMeta{text-align:right;color:#0D5925;}" +
+          ".invoiceMeta h2{margin:0 0 4px;font-size:18px;line-height:1.1;font-weight:900;letter-spacing:.02em;}" +
+          ".invoiceMeta p{margin:2px 0;color:#16371f;font-size:12px;line-height:1.35;font-weight:700;}" +
+          ".topInfo{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:22px;align-items:start;}" +
+          ".infoTable{width:100%;border-collapse:collapse;color:#222;}" +
+          ".infoTable th,.infoTable td{padding:3px 0;text-align:left;vertical-align:top;font-size:13px;line-height:1.3;}" +
+          ".infoTable th{width:116px;color:#0D5925;font-weight:900;}" +
+          ".amountDue{text-align:center;color:#0D5925;padding-top:10px;}" +
+          ".amountDue strong{display:block;font-size:13px;line-height:1.2;text-transform:uppercase;letter-spacing:.04em;}" +
+          ".amountDue span{display:block;margin-top:5px;font-size:20px;line-height:1.1;font-weight:400;}" +
+          ".billBox{margin-top:12px;border-top:2px solid #0D5925;padding-top:7px;width:310px;}" +
+          ".billBox h3{margin:0 0 5px;color:#0D5925;font-size:14px;line-height:1.1;text-transform:uppercase;}" +
+          ".billBox p{margin:2px 0;font-size:12px;line-height:1.35;}" +
+          ".itemsTable{width:100%;border-collapse:collapse;margin-top:18px;border-top:2px solid #0D5925;}" +
+          ".itemsTable th{color:#0D5925;font-size:11px;line-height:1.15;text-transform:uppercase;text-align:left;padding:7px 6px 5px;border-bottom:1px solid #bfc8bd;}" +
+          ".itemsTable th:nth-child(1){width:34px;text-align:center;}" +
+          ".itemsTable th:nth-child(3),.itemsTable th:nth-child(4),.itemsTable th:nth-child(5){text-align:right;width:92px;}" +
+          ".itemsTable td{padding:7px 6px;font-size:12px;line-height:1.35;border-bottom:1px solid #e7ece4;vertical-align:top;}" +
+          ".itemsTable tbody tr:nth-child(even) td{background:#f4f5f3;}" +
+          ".itemsTable td:nth-child(1){text-align:center;color:#666;}" +
+          ".itemsTable td:nth-child(3),.itemsTable td:nth-child(4),.itemsTable td:nth-child(5){text-align:right;white-space:nowrap;}" +
+          ".lineNote{display:block;margin-top:3px;color:#666;font-size:11px;line-height:1.3;}" +
+          ".invoiceBottom{display:grid;grid-template-columns:1fr 220px;gap:22px;margin-top:8px;align-items:start;}" +
+          ".zelleBox h3{margin:0 0 5px;color:#0D5925;font-size:13px;line-height:1.2;}" +
+          ".zelleBox p{margin:2px 0;font-size:12px;line-height:1.35;}" +
+          ".totalsTable{width:100%;border-collapse:collapse;font-size:12px;}" +
+          ".totalsTable td{padding:4px 0;text-align:right;}" +
+          ".totalsTable td:first-child{color:#222;text-align:left;}" +
+          ".totalsTable .grand td{padding-top:8px;color:#0D5925;font-size:20px;line-height:1.1;font-weight:900;}" +
+          ".customerNotes{margin-top:18px;color:#777;font-size:10.5px;line-height:1.45;max-width:540px;}" +
+          ".customerNotes h3{margin:0 0 4px;color:#777;font-size:11px;line-height:1.2;text-transform:uppercase;}" +
+          ".customerNotes p{margin:0 0 4px;}" +
+          "@media print{html,body{width:8.5in;height:11in;}.invoicePage{box-shadow:none;page-break-after:avoid;break-after:avoid;}}";
       }
 
       function infoRow(label, value){
