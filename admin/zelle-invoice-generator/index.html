@@ -890,8 +890,8 @@
 
       function buildPdfTitle(){
         const invoice = clean(els.invoiceNumber.value) || "draft";
-        const guest = (clean(els.guestName.value) || "guest").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
-        const date = clean(els.invoiceDate.value) || toDateInput(new Date());
+        const guest = (clean(els.guestName.value) || "guest").replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "");
+        const date = clean(els.tourDate.value) || clean(els.invoiceDate.value) || toDateInput(new Date());
         return "MBW_ZELLE_" + invoice + "_" + guest + "_" + date;
       }
 
