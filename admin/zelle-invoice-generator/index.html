@@ -662,6 +662,7 @@
           { description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"Pickup location: Mindo" }
         ];
         bindEvents();
+        applyCrmHandoff();
         renderItems();
         updateInvoice();
       }
@@ -701,6 +702,31 @@
 
       function handleGlobalInput(){
         updateInvoice();
+      }
+
+      function applyCrmHandoff(){
+        const record = getCrmHandoff();
+        if(!record) return;
+        const guestName = record.full_name || record.guest_name || record.guestName || "";
+        const guestEmail = record.email || record.guest_email || record.guestEmail || "";
+        const guestPhone = record.phone_number || record.phone_raw || record.guest_phone || record.guestPhone || "";
+        const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
+        const pickup = record.pickup_location || record.pickupLocation || "";
+        const guests = Number(record.guest_count || record.guestCount || 2) || 2;
+        if(guestName) els.guestName.value = guestName;
+        if(guestEmail) els.guestEmail.value = guestEmail;
+        if(guestPhone) els.guestPhone.value = guestPhone;
+        if(date) els.tourDate.value = date;
+        if(pickup) els.pickupLocation.value = pickup;
+        state.items[0].qty = Math.max(1, Math.min(9, guests));
+        state.items[0].note = pickup ? "Pickup location: " + pickup : state.items[0].note;
+      }
+
+      function getCrmHandoff(){
+        const params = new URLSearchParams(window.location.search);
+        const fromParams = { full_name: params.get("guest") || params.get("name") || "", email: params.get("email") || "", phone_number: params.get("phone") || "", guest_count: params.get("guests") || "", requested_date: params.get("date") || "", tour_type: params.get("tour") || "", pickup_location: params.get("pickup") || "" };
+        if(Object.values(fromParams).some(Boolean)) return fromParams;
+        try { return JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { return null; }
       }
 
       function setDefaultDates(){
