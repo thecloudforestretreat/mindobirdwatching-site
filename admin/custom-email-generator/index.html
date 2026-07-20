@@ -701,6 +701,7 @@
               price:"",
               duration:"",
               image:"https://mindobirdwatching.com/assets/images/quest/mbw_bird_quest_003.jpg",
+              imageStyle:"small",
               url:"https://mindobirdwatching.com/bird-quest/",
               video:"",
               primaryCta:"Explore Bird Quest"
@@ -916,8 +917,8 @@
         const presets = {
           "half-day": {
             title: "Andean Cock-of-the-Rock Dawn Tour Option",
-            blocks: ["tour-andean", "included", "night-walk", "activities-more", "next-steps", "social-links"],
-            intro: "Thank you for reaching out. For a private morning tour, we recommend the Andean Cock-of-the-Rock Dawn Tour, with the option to add evening or relaxed Mindo activities.",
+            blocks: ["tour-andean", "tour-jewels", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            intro: "Thank you for reaching out. For a private morning tour, we recommend the Andean Cock-of-the-Rock Dawn Tour first, and Jewels of the Morning Forest is another lighter half-day option. You can also add evening or relaxed Mindo activities.",
             compact: false,
             hero: true
           },
@@ -939,6 +940,12 @@
             title: "Quito to Mindo Private Tour Option",
             blocks: ["transport-quito", "tour-full-day", "included", "night-walk", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. We can coordinate transportation from Quito and pair it with a private Mindo birdwatching experience.",
+            overrides: {
+              "transport-quito": {
+                price: "$90 each way",
+                privatePrice: "Round trip: $180"
+              }
+            },
             compact: false,
             hero: true
           },
@@ -961,7 +968,7 @@
         if(!config) return;
         state.selected = new Set(config.blocks);
         state.order = config.blocks.slice();
-        state.overrides = {};
+        state.overrides = Object.assign({}, config.overrides || {});
         els.emailTitleInput.value = config.title;
         els.introInput.value = config.intro;
         els.showHeroInput.checked = !!config.hero;
@@ -1029,21 +1036,27 @@
         blocks.forEach(block => {
           if(!ordered.includes(block)) ordered.push(block);
         });
-        return ordered;
+        return ordered.slice().sort((a, b) => {
+          const priorityDiff = blockPriority(a) - blockPriority(b);
+          if(priorityDiff) return priorityDiff;
+          return ordered.indexOf(a) - ordered.indexOf(b);
+        });
+      }
+
+      function blockPriority(block){
+        if(block.id === "transport-quito") return 0;
+        if(block.group === "tours") return 10;
+        if(block.type === "included") return 20;
+        if(block.id === "night-walk") return 30;
+        if(block.group === "activities") return 40;
+        if(block.group === "planning" && block.type !== "nextSteps") return 50;
+        if(block.type === "nextSteps") return 60;
+        if(block.group === "social") return 70;
+        return 80;
       }
 
       function smartOrder(blocks){
-        const priority = block => {
-          if(block.id === "transport-quito") return 0;
-          if(block.group === "tours") return 10;
-          if(block.type === "included") return 20;
-          if(block.group === "activities") return 30;
-          if(block.group === "planning" && block.type !== "nextSteps") return 40;
-          if(block.type === "nextSteps") return 50;
-          if(block.group === "social") return 60;
-          return 70;
-        };
-        return blocks.slice().sort((a, b) => priority(a) - priority(b));
+        return blocks.slice().sort((a, b) => blockPriority(a) - blockPriority(b));
       }
 
       function hasSelectedType(blocks, type){
@@ -1105,6 +1118,7 @@
         if(block.type === "included") return renderIncluded(block);
         if(block.type === "nextSteps") return renderNextSteps(block);
         if(block.type === "social") return renderSocial(block);
+        if(block.imageStyle === "small") return renderSmallFeatureCard(block);
         if(els.compactCardsInput.checked) return renderCompactCard(block);
         return renderImageCard(block);
       }
@@ -1145,6 +1159,25 @@
           priceLines.map(line => "<p style='margin:0 0 6px; font-size:13px; line-height:18px; color:#071923;'>" + esc(line) + "</p>").join("") +
           (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:132px; margin:6px 4px 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || "View") + "</a>" : "") +
           (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:132px; margin:0 4px 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || "Watch Video") + "</a>" : "") +
+          "</td></tr></table>" +
+          "</td></tr></table>" +
+          "</td></tr></table></td></tr>";
+      }
+
+      function renderSmallFeatureCard(block){
+        return "" +
+          "<tr><td style='padding:0 20px 10px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
+          "<td width='54%' valign='middle' style='padding-right:18px;'>" +
+          (block.eyebrow ? "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#0D5925; font-weight:900;'>" + esc(block.eyebrow) + "</div>" : "") +
+          "<h2 style=\"margin:5px 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:25px; line-height:29px; color:#0D5925;\">" + esc(block.title) + "</h2>" +
+          "<p style='margin:0; font-size:13px; line-height:20px; color:rgba(7,25,35,.76);'>" + esc(block.description || "") + "</p>" +
+          "</td>" +
+          "<td width='46%' valign='middle' align='center' style='text-align:center;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.25); border-radius:16px;'><tr><td align='center' style='padding:12px;'>" +
+          (block.image ? "<a href='" + attr(block.url || "#") + "' style='display:inline-block; text-decoration:none;'><img src='" + attr(block.image) + "' width='146' alt='" + attr(block.title) + "' style='display:block; width:146px; max-width:146px; height:auto; border:0; border-radius:14px;'></a>" : "") +
+          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:148px; margin:12px 0 0; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || "View") + "</a>" : "") +
           "</td></tr></table>" +
           "</td></tr></table>" +
           "</td></tr></table></td></tr>";
