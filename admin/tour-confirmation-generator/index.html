@@ -979,7 +979,11 @@
         renderTourOptions();
         renderBookingOptions();
         renderRecords();
-        if(state.records.length){ selectRecord(0); }
+        if(hasInboundCrmRecord()){
+          startManualConfirmation();
+          applyInboundCrmRecord();
+        }
+        else if(state.records.length){ selectRecord(0); }
         else { fillForm({}); updatePreviewFromForm(); }
       }
 
@@ -1153,6 +1157,104 @@
         renderRecords();
         updatePreviewFromForm();
         setHint("Manual confirmation ready — enter guest and tour details");
+      }
+
+      function getInboundValue(data, keys, fallback){
+        for(const key of keys){
+          if(data[key] !== undefined && data[key] !== null && String(data[key]).trim() !== "") return String(data[key]).trim();
+        }
+        return fallback || "";
+      }
+
+      function getInboundData(){
+        const params = new URLSearchParams(window.location.search);
+        const data = {};
+        params.forEach((value, key) => { data[key] = value; });
+        ["mbwSelectedCrmRecord", "mbwGuestCrmSelectedRecord"].forEach(key => {
+          try {
+            const stored = JSON.parse(localStorage.getItem(key) || "{}");
+            Object.keys(stored).forEach(storedKey => {
+              if(data[storedKey] === undefined || data[storedKey] === "") data[storedKey] = stored[storedKey];
+            });
+          } catch(_) {}
+        });
+        return data;
+      }
+
+      function hasInboundCrmRecord(){
+        const data = getInboundData();
+        return Boolean(getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName", "email", "phone", "phone_number", "requested_date", "tour_date", "date"], ""));
+      }
+
+      function normalizeInboundTourText(value){
+        return String(value || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
+      }
+
+      function displayTourFromCrm(tourText){
+        const normalized = normalizeInboundTourText(tourText);
+        if(!normalized) return "";
+        if(normalized.includes("night walk")) return "Night Walk";
+        if(normalized.includes("jewels") || normalized.includes("morning forest")) return "Jewels of the Morning Forest";
+        if(normalized.includes("andean") || normalized.includes("cock")) return "Dance of the Andean Cock-of-the-Rock";
+        if(normalized.includes("five") || normalized.includes("toucan") || normalized.includes("quest") || normalized.includes("full day")) return "Quest for Five Toucans & the Andean Cock-of-the-Rock";
+        if(normalized.includes("half day")) return "Half Day Birdwatching Tour";
+        if(normalized.includes("tour activities")) return "Tour + Activities";
+        return tourText;
+      }
+
+      function lengthFromCrm(tourText, durationText){
+        const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
+        if(text.includes("night walk")) return "Night Walk";
+        if(text.includes("half")) return "Half Day";
+        if(text.includes("full")) return "Full Day";
+        return "";
+      }
+
+      function pickupTimeFromCrm(tourText, durationText){
+        const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
+        if(text.includes("night walk")) return "7:30 PM";
+        if(text.includes("full") || text.includes("quest") || text.includes("toucan")) return "5:00 AM";
+        if(text.includes("andean") || text.includes("cock")) return "5:00 AM";
+        if(text.includes("jewels")) return "6:00 AM";
+        return "5:00 AM";
+      }
+
+      function applyInboundCrmRecord(){
+        const data = getInboundData();
+        const fullName = getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName"], "");
+        const phone = getInboundValue(data, ["guest_phone", "phone", "phone_number", "guestPhone", "phone_normalized"], "");
+        const tourDate = getInboundValue(data, ["tour_date", "requested_date", "requested_date_start", "date"], "");
+        const tourText = getInboundValue(data, ["tour", "tour_type", "tour_interest"], "");
+        const duration = getInboundValue(data, ["duration_preference", "duration"], "");
+        const pickup = getInboundValue(data, ["pickup_location", "pickup", "pickupLocation", "pickup_address_or_hotel"], "");
+        const transportation = getInboundValue(data, ["transportation", "transportation_needed"], "");
+        const notes = getInboundValue(data, ["notes", "message_questions", "guest_notes"], "");
+        const displayTour = displayTourFromCrm(tourText);
+        const displayLength = lengthFromCrm(tourText, duration) || "Full Day";
+
+        state.activeIndex = -1;
+        els.bookingSelect.value = "manual";
+        els.statusInput.value = "Pending";
+        els.dateIssuedInput.value = toDateInputValue(todayMDY());
+        els.guestsInput.value = fullName;
+        els.guestPhoneInput.value = phone;
+        els.tourDateInput.value = toDateInputValue(tourDate);
+        setSelectValue(els.guideInput, "Chicho");
+        els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
+        setSelectValue(els.lengthInput, displayLength);
+        setSelectValue(els.pickupTimeInput, pickupTimeFromCrm(tourText, duration));
+        setSelectValue(els.tour1Input, displayTour);
+        setSelectValue(els.tour2Input, "");
+        setSelectValue(els.tour3Input, "");
+        els.tourTypeInput.value = displayTour || tourText || "";
+        els.transportationInput.value = transportation && transportation !== "No" ? (pickup ? transportation + "\n" + pickup : transportation) : (pickup ? "Mindo pickup\n" + pickup : "Mindo pickup");
+        els.pickupLocationInput.value = pickup;
+        els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
+        els.notesInput.value = notes || "Thank you for booking with Mindo Bird Watching.";
+        applyNightWalkDefaults(false);
+        renderRecords();
+        updatePreviewFromForm();
+        setHint("Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting.");
       }
 
       function fillForm(r){
