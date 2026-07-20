@@ -392,7 +392,7 @@
               <label for="languageInput">Language</label>
               <select id="languageInput">
                 <option value="en" selected>English</option>
-                <option value="es">Spanish</option>
+                <option value="es">South American Spanish</option>
               </select>
             </div>
           </div>
@@ -476,6 +476,7 @@
             state.order = smartOrder(catalog.blocks.filter(block => state.selected.has(block.id))).map(block => block.id);
             renderBlockControls();
             bindEvents();
+            applyCrmHandoff();
             updateEmail();
           });
         });
@@ -507,6 +508,26 @@
         els.copyRenderedBtn.addEventListener("click", copyRendered);
         els.toggleHtmlBtn.addEventListener("click", toggleHtmlOutput);
         els.resetBtn.addEventListener("click", resetGenerator);
+      }
+
+      function applyCrmHandoff(){
+        const record = getCrmHandoff();
+        if(!record) return;
+        const guestName = record.full_name || record.guest_name || record.guestName || "";
+        const guests = record.guest_count || record.guestCount || "";
+        const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
+        const tour = record.tour_type || record.tour_category || record.tour_interest || "";
+        if(guestName) els.guestNameInput.value = guestName;
+        if(guests) els.guestCountInput.value = String(guests).includes("guest") ? guests : guests + " guests";
+        if(date) els.datesInput.value = date;
+        if(tour) els.emailTitleInput.value = tour + " Options";
+      }
+
+      function getCrmHandoff(){
+        const params = new URLSearchParams(window.location.search);
+        const fromParams = { full_name: params.get("guest") || params.get("name") || "", email: params.get("email") || "", phone_number: params.get("phone") || "", guest_count: params.get("guests") || "", requested_date: params.get("date") || "", tour_type: params.get("tour") || "", pickup_location: params.get("pickup") || "" };
+        if(Object.values(fromParams).some(Boolean)) return fromParams;
+        try { return JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { return null; }
       }
 
       const EMAIL_I18N = {
