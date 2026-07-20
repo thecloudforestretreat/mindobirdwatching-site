@@ -852,12 +852,15 @@
 
       function printInvoice(){
         updateInvoice();
+        const originalTitle = document.title;
+        const pdfTitle = buildPdfTitle();
+        document.title = pdfTitle;
         const existingFrame = document.getElementById("invoicePrintFrame");
         if(existingFrame) existingFrame.remove();
 
         const frame = document.createElement("iframe");
         frame.id = "invoicePrintFrame";
-        frame.title = buildPdfTitle();
+        frame.title = pdfTitle;
         frame.style.position = "fixed";
         frame.style.right = "0";
         frame.style.bottom = "0";
@@ -873,7 +876,7 @@
         doc.write(
           "<!doctype html><html lang='en'><head><meta charset='utf-8'>" +
           "<meta name='viewport' content='width=device-width, initial-scale=1'>" +
-          "<title>" + esc(buildPdfTitle()) + "</title>" +
+          "<title>" + esc(pdfTitle) + "</title>" +
           "<style>" + getPrintStyles() + "</style>" +
           "</head><body><article class='invoicePage'>" + els.invoicePreview.innerHTML + "</article></body></html>"
         );
@@ -884,6 +887,9 @@
             frame.contentWindow.focus();
             frame.contentWindow.print();
             showToast("Choose Save as PDF in the print dialog");
+            setTimeout(() => {
+              document.title = originalTitle;
+            }, 1000);
           }, 250);
         };
       }
