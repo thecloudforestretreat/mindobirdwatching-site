@@ -208,6 +208,7 @@ window.MBW_EMAIL_BLOCKS = {
       price: "",
       duration: "",
       image: "https://mindobirdwatching.com/assets/images/quest/mbw_bird_quest_003.jpg",
+      imageStyle: "small",
       url: "https://mindobirdwatching.com/bird-quest/",
       video: "",
       primaryCta: "Explore Bird Quest",
