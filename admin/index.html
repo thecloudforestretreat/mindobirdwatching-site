@@ -3,749 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MBW Admin | Dashboards</title>
+  <title>MBW Admin | Operations Hub</title>
   <meta name="robots" content="noindex, nofollow" />
-  <meta name="theme-color" content="var(--forest)" />
+  <meta name="theme-color" content="#0D5925" />
   <link rel="canonical" href="https://admin.mindobirdwatching.com/" />
-
-  <!-- Favicons (must exist inside /admin output) -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-
-  <!-- IMPORTANT:
-       Because the admin Pages project publishes ONLY the /admin folder,
-       these assets must be duplicated into /admin/assets/... in your repo.
-  -->
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <script src="/assets/js/head.js" defer></script>
-
   <style>
-    /* Page-only styles. site.css remains the source of truth for fonts/colors. */
-    .page { margin-top: 18px; padding: 18px; }
-    .page.card{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-    }
-
-    .adminTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .adminTitle{ display:flex; align-items:flex-start; gap: 10px; min-width: 0; }
-    .adminDot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--forest);
-      box-shadow: 0 0 0 4px rgba(3,78,162,0.12);
-      margin-top: 7px;
-      flex: 0 0 auto;
-    }
-    .adminTitle h1{
-      margin: 0;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      font-size: 18px;
-    }
-    .adminTitle p{
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-      max-width: 70ch;
-    }
-
-    .adminBadge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      font-weight: 900;
-      font-size: 12.5px;
-      color: var(--ink);
-      line-height: 1;
-      white-space: nowrap;
-      margin-top: 10px;
-    }
-    .adminBadge i{
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--forest);
-      display:inline-block;
-    }
-
-    .adminControls{ display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
-
-    .seg{
-      display:flex;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .seg button{
-      appearance:none;
-      border:0;
-      background: transparent;
-      padding: 10px 14px;
-      font-weight: 900;
-      cursor:pointer;
-      color: var(--ink);
-      font-size: 14px;
-      white-space: nowrap;
-    }
-    .seg button[aria-pressed="true"]{ background: rgba(3,78,162,0.12); }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      color: var(--ink);
-      font-weight: 900;
-    }
-    .pill label{ color: var(--muted); font-size: 12.5px; font-weight: 900; white-space: nowrap; }
-    .pill select{
-      border:0;
-      background: transparent;
-      font-weight: 900;
-      color: var(--ink);
-      font-size: 14px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .btnLite{
-      appearance:none;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-weight: 900;
-      color: var(--ink);
-      cursor:pointer;
-      white-space: nowrap;
-    }
-
-    .panelHeader{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 10px 0 10px;
-    }
-    .panelHeader h2{
-      margin:0;
-      font-family: var(--font-head);
-      color: var(--forest);
-      letter-spacing: -0.02em;
-      font-size: 18px;
-    }
-    .panelHeader .desc{
-      margin:6px 0 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-      max-width: 85ch;
-    }
-    .panelHeader a{
-      font-weight: 900;
-      color: var(--forest);
-      text-decoration:none;
-      white-space: nowrap;
-      font-size: 13px;
-    }
-    .panelHeader a:hover{ text-decoration: underline; }
-
-    .frameWrap{
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .frameBox{
-      width: 100%;
-      height: min(76vh, 920px);
-      position: relative;
-      background: rgba(255,255,255,.55);
-    }
-    iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      display:block;
-      background: rgba(255,255,255,.55);
-    }
-
-    .cookieHint{
-      border-top: 1px solid var(--line);
-      padding: 12px 12px;
-      background: rgba(255,255,255,.55);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .cookieHint p{
-      margin:0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.5;
-      max-width: 90ch;
-    }
-    .cookieHint .actions{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-    .cookieHint .actions a{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-weight: 900;
-      text-decoration:none;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      color: var(--ink);
-      white-space: nowrap;
-    }
-
-    /* Drawer */
-    .scrim{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      display:none;
-      z-index: 80;
-    }
-    .drawer{
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: min(420px, 92vw);
-      height: 100%;
-      background: #fff;
-      border-left: 1px solid rgba(11,18,32,0.12);
-      box-shadow: 0 18px 60px rgba(11,18,32,0.16);
-      transform: translateX(100%);
-      transition: transform 180ms ease-out;
-      z-index: 90;
-      display:flex;
-      flex-direction: column;
-    }
-    .scrim.open{ display:block; }
-    .drawer.open{ transform: translateX(0); }
-
-    .drawerTop{
-      padding: 14px;
-      border-bottom: 1px solid rgba(11,18,32,0.10);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-    }
-    .drawerTop strong{ font-weight: 950; letter-spacing: -0.01em; }
-    .drawerBody{ padding: 14px; overflow:auto; }
-    .drawerBody h3{ margin: 0 0 8px; font-size: 13px; font-weight: 950; }
-    .drawerBody p{ margin: 0 0 12px; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
-    .field{
-      border: 1px solid rgba(11,18,32,0.12);
-      border-radius: 16px;
-      padding: 10px;
-      background: rgba(246,248,251,0.75);
-      margin-bottom: 10px;
-    }
-    .field label{
-      display:block;
-      font-size: 12px;
-      font-weight: 950;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .field select{
-      width: 100%;
-      border: 1px solid rgba(11,18,32,0.12);
-      border-radius: 12px;
-      padding: 9px 10px;
-      font-weight: 900;
-      background: #fff;
-      outline: none;
-    }
-    .drawerBottom{
-      padding: 12px 14px;
-      border-top: 1px solid rgba(11,18,32,0.10);
-      display:flex;
-      justify-content:flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-      background: rgba(255,255,255,0.92);
-    }
-
-
-    .seoInfo{
-      margin-top: 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      display: none;
-    }
-    .seoInfo.show{ display: block; }
-    .seoInfo h3{
-      margin: 0 0 10px;
-      font-size: 15px;
-      color: var(--forest);
-      letter-spacing: -0.01em;
-    }
-    .seoInfoGrid{
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .seoMetric{
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.55);
-      padding: 12px;
-    }
-    .seoMetric h4{
-      margin: 0 0 6px;
-      font-size: 14px;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-    }
-    .seoMetric p{
-      margin: 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.55;
-    }
-    .seoMetric .good{
-      display:block;
-      margin-top: 8px;
-      color: var(--ink);
-      font-weight: 900;
-      font-size: 12.5px;
-    }
-
-    @media (max-width: 900px){
-      .page{ padding: 14px; }
-      .frameBox{ height: 72vh; }
-      .seg button{ padding: 10px 12px; }
-      .seoInfoGrid{ grid-template-columns: 1fr; }
-    }
+    :root{--green:#0D5925;--bg:#C7DAAC;--soft:#F6FAF0;--ink:#071923;--muted:rgba(7,25,35,.68);--line:rgba(7,25,35,.14);--shadow:0 18px 55px rgba(7,25,35,.10);--radius:18px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+    .shell{max-width:1320px;margin:0 auto;padding:28px}
+    .hero{background:linear-gradient(180deg,rgba(246,250,240,.96),rgba(237,244,228,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:14px;min-width:0}
+    .brand img{width:62px;height:62px;object-fit:contain;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(7,25,35,.12)}
+    h1{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:36px;line-height:1.05;letter-spacing:-.03em}
+    .brand p{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.45;font-weight:800;max-width:72ch}
+    .status{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:8px 12px;border:1px solid rgba(13,89,37,.18);border-radius:999px;background:#fff;color:var(--green);font-weight:950;white-space:nowrap}
+    .status::before{content:"";width:9px;height:9px;border-radius:999px;background:var(--green)}
+    .quick{display:grid;grid-template-columns:1.35fr .65fr;gap:18px;margin-bottom:18px}
+    .panel{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+    .panel h2{margin:0 0 8px;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:1.1}
+    .panel p{margin:0;color:var(--muted);font-size:14px;line-height:1.55;font-weight:750}
+    .actions{display:grid;gap:10px}
+    .btn{appearance:none;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.88);color:var(--ink);min-height:44px;padding:11px 14px;display:inline-flex;align-items:center;justify-content:center;font:inherit;font-weight:950;text-decoration:none;white-space:nowrap;box-shadow:0 8px 20px rgba(7,25,35,.06)}
+    .btn.primary{background:var(--green);color:#fff;border-color:rgba(13,89,37,.35)}
+    .tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .tool{display:grid;grid-template-rows:auto 1fr auto;gap:14px;min-height:230px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;text-decoration:none;color:var(--ink);box-shadow:0 12px 30px rgba(7,25,35,.06);transition:.16s ease}
+    .tool:hover{transform:translateY(-2px);border-color:rgba(13,89,37,.35);box-shadow:0 18px 40px rgba(7,25,35,.10)}
+    .toolTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .label{display:inline-flex;align-items:center;min-height:28px;padding:6px 9px;border-radius:999px;background:#EAF6DF;color:var(--green);border:1px solid #B6D990;font-size:11px;line-height:1;font-weight:950;text-transform:uppercase;letter-spacing:.05em}
+    .arrow{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:#F6FAF0;border:1px solid var(--line);font-weight:950;color:var(--green)}
+    .tool h3{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:1.05}
+    .tool p{margin:8px 0 0;color:rgba(7,25,35,.72);font-size:14px;line-height:1.45;font-weight:750}
+    .meta{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid rgba(7,25,35,.1);color:rgba(7,25,35,.58);font-size:12px;font-weight:900}
+    .external .label{background:#FFF7D6;color:#7A4B00;border-color:#F3D675}
+    .reports .label{background:#EFE8FF;color:#5B21B6;border-color:#DDD6FE}
+    .disabled{opacity:.74}
+    .disabled .label{background:#F1F5F9;color:#475569;border-color:#CBD5E1}
+    @media(max-width:980px){.quick,.tools{grid-template-columns:1fr 1fr}.tool{min-height:210px}}
+    @media(max-width:680px){.shell{padding:12px}.hero{padding:14px;border-radius:14px}.top{align-items:stretch}.brand{align-items:center}.brand img{width:48px;height:48px}h1{font-size:29px}.status{width:100%;justify-content:center}.quick,.tools{grid-template-columns:1fr}.actions{grid-template-columns:1fr 1fr}.tool{min-height:0}.panel{padding:14px}.brand p{font-size:12px}}
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <div id="siteHeader"></div>
-
-    <main class="page card" aria-label="MBW Admin">
-      <div class="adminTop">
-        <div class="adminTitle">
-          <span class="adminDot" aria-hidden="true"></span>
+  <main class="shell">
+    <section class="hero" aria-label="Mindo Bird Watching admin hub">
+      <header class="top">
+        <div class="brand">
+          <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
           <div>
-            <h1>MBW Admin</h1>
-            <p>Private dashboards for KPIs, site, social media, SEO, and operational reports. Data updates per connected sources.</p>
-            <span class="adminBadge"><i aria-hidden="true"></i> Admin only</span>
+            <h1>MBW Admin Hub</h1>
+            <p>Guest operations, emails, invoices, confirmations, and reports from one clean starting point.</p>
           </div>
         </div>
+        <span class="status">Admin only</span>
+      </header>
 
-        <div class="adminControls" aria-label="Admin controls">
-          <div class="seg" role="group" aria-label="View">
-            <button type="button" data-view="kpis" aria-pressed="true">KPIs</button>
-            <button type="button" data-view="site" aria-pressed="false">Site</button>
-            <button type="button" data-view="social" aria-pressed="false">Social Media</button>
-            <button type="button" data-view="seo" aria-pressed="false">SEO</button>
-            <button type="button" data-view="reports" aria-pressed="false">Reports</button>
-          </div>
-
-          <div class="pill" aria-label="Date preset">
-            <label for="datePreset">Date</label>
-            <select id="datePreset">
-              <option value="all">All time</option>
-              <option value="30" selected>Last 30 days</option>
-              <option value="7">Last 7 days</option>
-              <option value="mt">This month</option>
-              <option value="ytd">Year to date</option>
-            </select>
-          </div>
-
-          <button class="btnLite" type="button" id="openFilters">Filters</button>
-        </div>
+      <div class="quick">
+        <section class="panel">
+          <h2>Today’s Command Center</h2>
+          <p>Start with the CRM for live guest management, then jump into the email and invoice tools when a guest is ready for a reply, quote, or confirmation.</p>
+        </section>
+        <nav class="actions" aria-label="Primary admin shortcuts">
+          <a class="btn primary" href="/guest-crm/">Open Guest CRM</a>
+          <a class="btn" href="/reports/">View Reports</a>
+        </nav>
       </div>
 
-      <div class="panelHeader">
-        <div>
-          <h2 id="panelTitle">KPIs</h2>
-          <div class="desc" id="panelDesc">Revenue, margins, fees, tips, payouts, and upcoming tours.</div>
-        </div>
-        <a id="openInLooker" href="#" target="_blank" rel="noreferrer">Open in Looker</a>
-      </div>
+      <section class="tools" aria-label="Admin tools">
+        <a class="tool" href="/guest-crm/">
+          <span class="toolTop"><span class="label">Guests</span><span class="arrow">→</span></span>
+          <span><h3>Guest CRM</h3><p>Manage inquiries, statuses, follow-ups, guest details, and handoffs into email or invoice tools.</p></span>
+          <span class="meta"><span>Live Google Sheet via n8n</span><span>Core</span></span>
+        </a>
 
+        <a class="tool" href="/custom-email-generator/">
+          <span class="toolTop"><span class="label">Email</span><span class="arrow">→</span></span>
+          <span><h3>Custom Email Generator</h3><p>Build polished HTML replies with tour cards, activities, pricing overrides, and your signature.</p></span>
+          <span class="meta"><span>Gmail-ready HTML</span><span>Active</span></span>
+        </a>
 
-      <section class="seoInfo" id="seoInfo" aria-label="SEO metric guide">
-        <h3>How to read the SEO report</h3>
-        <div class="seoInfoGrid">
-          <article class="seoMetric">
-            <h4>URL Clicks</h4>
-            <p>The number of times someone clicked your page from Google Search results. More clicks usually means your page is earning real search traffic, not just visibility.</p>
-            <span class="good">Good sign: clicks are rising week over week.</span>
-          </article>
-          <article class="seoMetric">
-            <h4>Impressions</h4>
-            <p>The number of times Google showed your page in search results. This is usually the first sign a new page is being discovered and tested.</p>
-            <span class="good">Good sign: impressions rise first, then clicks follow.</span>
-          </article>
-          <article class="seoMetric">
-            <h4>URL CTR</h4>
-            <p>Click-through rate. This is the percentage of impressions that turned into clicks. It helps you understand whether the page title and snippet are attractive in Google.</p>
-            <span class="good">Good sign: higher CTR on queries with meaningful impression volume. Low CTR on 1 or 2 impressions is not important.</span>
-          </article>
-          <article class="seoMetric">
-            <h4>Average Position</h4>
-            <p>Your average ranking position in Google Search. Lower is better, so position 3 is stronger than position 12.</p>
-            <span class="good">Good sign: positions move downward over time, for example from 20 to 11 to 6.</span>
-          </article>
-        </div>
+        <a class="tool" href="/zelle-invoice-generator/">
+          <span class="toolTop"><span class="label">Invoice</span><span class="arrow">→</span></span>
+          <span><h3>Zelle Invoice Generator</h3><p>Create one-page payment invoices with guest details, line items, Zelle instructions, and PDF output.</p></span>
+          <span class="meta"><span>PDF workflow</span><span>Active</span></span>
+        </a>
+
+        <a class="tool external" href="https://mindobirdwatching.com/book-tour/create/">
+          <span class="toolTop"><span class="label">Stripe</span><span class="arrow">↗</span></span>
+          <span><h3>Create Invoice</h3><p>Open the existing book-tour create page for payment links and Stripe-style invoice workflows.</p></span>
+          <span class="meta"><span>Main website</span><span>External</span></span>
+        </a>
+
+        <a class="tool" href="/tour-confirmation-generator/">
+          <span class="toolTop"><span class="label">Confirm</span><span class="arrow">→</span></span>
+          <span><h3>Tour Confirmation Generator</h3><p>Prepare clean confirmation details after payment, including pickup, itinerary, and guest notes.</p></span>
+          <span class="meta"><span>Confirmation email</span><span>Tool</span></span>
+        </a>
+
+        <a class="tool reports" href="/reports/">
+          <span class="toolTop"><span class="label">Reports</span><span class="arrow">→</span></span>
+          <span><h3>Reports</h3><p>View Looker dashboards for KPIs, site performance, social media, SEO, and operations.</p></span>
+          <span class="meta"><span>Looker Studio</span><span>Moved</span></span>
+        </a>
       </section>
-
-
-      <div class="frameWrap" aria-label="Embedded dashboard">
-        <div class="frameBox">
-          <iframe id="frame" title="MBW dashboard" src="" allowfullscreen loading="lazy"
-            referrerpolicy="no-referrer"
-            sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
-        </div>
-
-        <div class="cookieHint" aria-label="Mobile access hint">
-          <p>
-            If you see "Can't access report" on iPhone, Safari is blocking Google third-party cookies.
-            Use "Open in Looker" to view the report directly.
-          </p>
-          <div class="actions">
-            <a id="openInLooker2" href="#" target="_blank" rel="noreferrer">Open in Looker</a>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <div id="siteFooter"></div>
-  </div>
-
-  <div class="scrim" id="scrim" aria-hidden="true"></div>
-  <aside class="drawer" id="drawer" aria-label="Filters panel" aria-hidden="true">
-    <div class="drawerTop">
-      <strong>Filters</strong>
-      <button class="btnLite" type="button" id="closeFilters">Close</button>
-    </div>
-    <div class="drawerBody">
-      <h3>Global</h3>
-      <p>Date preset reloads the embed. Additional filters are included for admin organization and future Looker parameter support.</p>
-
-      <div class="field">
-        <label for="drawerDatePreset">Date preset</label>
-        <select id="drawerDatePreset">
-          <option value="all">All time</option>
-          <option value="30" selected>Last 30 days</option>
-          <option value="7">Last 7 days</option>
-          <option value="mt">This month</option>
-          <option value="ytd">Year to date</option>
-        </select>
-      </div>
-
-      <div id="filterKpis">
-        <h3>KPIs</h3>
-        <div class="field">
-          <label for="kTourStatus">Tour status</label>
-          <select id="kTourStatus">
-            <option value="all" selected>All</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="kGuidePaid">Guide paid</label>
-          <select id="kGuidePaid">
-            <option value="all" selected>All</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="filterSite" style="display:none;">
-        <h3>Site</h3>
-        <div class="field">
-          <label for="sDevice">Device</label>
-          <select id="sDevice">
-            <option value="all" selected>All</option>
-            <option value="desktop">Desktop</option>
-            <option value="mobile">Mobile</option>
-            <option value="tablet">Tablet</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="filterSocial" style="display:none;">
-        <h3>Social</h3>
-        <div class="field">
-          <label for="smPlatform">Platform</label>
-          <select id="smPlatform">
-            <option value="all" selected>All</option>
-            <option value="instagram">Instagram</option>
-            <option value="youtube">YouTube</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="filterSeo" style="display:none;">
-        <h3>SEO</h3>
-        <div class="field">
-          <label for="seoCountry">Country</label>
-          <select id="seoCountry">
-            <option value="all" selected>All</option>
-            <option value="us">United States</option>
-            <option value="ec">Ecuador</option>
-            <option value="uk">United Kingdom</option>
-            <option value="ar">Argentina</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="seoPage">Landing page focus</label>
-          <select id="seoPage">
-            <option value="all" selected>All tracked pages</option>
-            <option value="mindo-guide">Mindo Bird Watching Guide</option>
-            <option value="mindo-tours">Mindo Birdwatching Tours</option>
-            <option value="ecuador-tours">Ecuador Birding Tours</option>
-            <option value="es-mindo-guide">Guia de Avistamiento de Aves en Mindo</option>
-            <option value="es-mindo-tours">Tours de Avistamiento de Aves en Mindo</option>
-            <option value="es-ecuador-tours">Tours de Avistamiento de Aves en Ecuador</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="filterReports" style="display:none;">
-        <h3>Reports</h3>
-        <p>Use the controls inside the embedded Looker Studio report. Admin-level filters can be added here later after matching Looker parameters are configured.</p>
-      </div>
-    </div>
-
-    <div class="drawerBottom">
-      <button class="btnLite" type="button" id="resetFilters">Reset</button>
-      <button class="btnLite" type="button" id="applyFilters">Apply</button>
-    </div>
-  </aside>
-
-  <!-- IMPORTANT:
-       Because the admin Pages project publishes ONLY the /admin folder,
-       these JS includes must be duplicated into /admin/assets/js/... in your repo.
-  -->
-  <script src="/assets/js/includes.js?v=1" defer></script>
-  <script src="/assets/js/site.js?v=1" defer></script>
-
-  <script>
-    (function(){
-      "use strict";
-
-      var REPORTS = {
-        kpis: {
-          embed: "https://lookerstudio.google.com/embed/reporting/e9dd5771-63b2-4349-b33d-d56a2115d866/page/0HvmF",
-          open: "https://lookerstudio.google.com/reporting/e9dd5771-63b2-4349-b33d-d56a2115d866/page/0HvmF"
-        },
-        site: {
-          embed: "https://lookerstudio.google.com/embed/reporting/1a0a112d-05c0-4b42-a55b-c70a9df099d1/page/bdXZF",
-          open: "https://lookerstudio.google.com/reporting/1a0a112d-05c0-4b42-a55b-c70a9df099d1/page/bdXZF"
-        },
-        social: {
-          embed: "https://lookerstudio.google.com/embed/reporting/f2ce3a28-4438-4143-9fa1-480a9a3747bc/page/MABlF",
-          open: "https://lookerstudio.google.com/reporting/f2ce3a28-4438-4143-9fa1-480a9a3747bc/page/MABlF"
-        },
-        seo: {
-          embed: "https://lookerstudio.google.com/embed/reporting/02ead236-5860-435e-9621-717934d5b9d6/page/p_otnfqa6v1d",
-          open: "https://lookerstudio.google.com/reporting/02ead236-5860-435e-9621-717934d5b9d6/page/p_otnfqa6v1d"
-        },
-        reports: {
-          embed: "https://lookerstudio.google.com/embed/reporting/23f82490-0232-43f4-8d5d-f67f7eabfa9a/page/p_kv239i4m4d",
-          open: "https://lookerstudio.google.com/reporting/23f82490-0232-43f4-8d5d-f67f7eabfa9a/page/p_kv239i4m4d"
-        }
-      };
-
-      var VIEW_META = {
-        kpis: { title: "KPIs", desc: "Revenue, margins, fees, tips, payouts, and upcoming tours." },
-        site: { title: "Site", desc: "Website sessions, sources, devices, and conversions." },
-        social: { title: "Social Media", desc: "Instagram and YouTube performance snapshots and trends." },
-        seo: { title: "SEO", desc: "Search Console growth dashboard for landing pages, queries, core keywords, and country-level SEO signals." },
-        reports: { title: "Reports", desc: "Additional MBW operational reporting and analysis from Looker Studio." }
-      };
-
-      var currentView = "kpis";
-
-      function setPressed(){
-        var btns = document.querySelectorAll(".seg button[data-view]");
-        for (var i = 0; i < btns.length; i++){
-          var v = btns[i].getAttribute("data-view");
-          btns[i].setAttribute("aria-pressed", (v === currentView) ? "true" : "false");
-        }
-      }
-
-      function showView(){
-        var meta = VIEW_META[currentView] || VIEW_META.kpis;
-        document.getElementById("panelTitle").textContent = meta.title;
-        document.getElementById("panelDesc").textContent = meta.desc;
-
-        var report = REPORTS[currentView] || {};
-        var link = report.open || "#";
-        document.getElementById("openInLooker").href = link;
-        document.getElementById("openInLooker2").href = link;
-
-        document.getElementById("filterKpis").style.display = (currentView === "kpis") ? "" : "none";
-        document.getElementById("filterSite").style.display = (currentView === "site") ? "" : "none";
-        document.getElementById("filterSocial").style.display = (currentView === "social") ? "" : "none";
-        document.getElementById("filterSeo").style.display = (currentView === "seo") ? "" : "none";
-        document.getElementById("filterReports").style.display = (currentView === "reports") ? "" : "none";
-        document.getElementById("seoInfo").classList.toggle("show", currentView === "seo");
-
-        loadEmbed();
-      }
-
-      function getState(){
-        return {
-          datePreset: document.getElementById("datePreset").value,
-          kTourStatus: document.getElementById("kTourStatus").value,
-          kGuidePaid: document.getElementById("kGuidePaid").value,
-          sDevice: document.getElementById("sDevice").value,
-          smPlatform: document.getElementById("smPlatform").value,
-          seoCountry: document.getElementById("seoCountry").value,
-          seoPage: document.getElementById("seoPage").value
-        };
-      }
-
-      function addParams(url, params){
-        if(!url) return "";
-        var hasQ = url.indexOf("?") >= 0;
-        var parts = [];
-        for (var k in params){
-          if(!Object.prototype.hasOwnProperty.call(params, k)) continue;
-          parts.push(encodeURIComponent(k) + "=" + encodeURIComponent(String(params[k])));
-        }
-        return url + (hasQ ? "&" : "?") + parts.join("&");
-      }
-
-      function buildParams(state){
-        var p = { view: currentView, dp: state.datePreset };
-        if(currentView === "kpis"){
-          p.tour = state.kTourStatus;
-          p.gpaid = state.kGuidePaid;
-        }
-        if(currentView === "site"){
-          p.device = state.sDevice;
-        }
-        if(currentView === "social"){
-          p.platform = state.smPlatform;
-        }
-        if(currentView === "seo"){
-          p.country = state.seoCountry;
-          p.pagefocus = state.seoPage;
-        }
-        return p;
-      }
-
-      function loadEmbed(){
-        var frame = document.getElementById("frame");
-        var report = REPORTS[currentView] || {};
-        var base = report.embed || "";
-        var url = (currentView === "reports") ? base : addParams(base, buildParams(getState()));
-        frame.src = url;
-      }
-
-      function openDrawer(){
-        document.getElementById("scrim").classList.add("open");
-        document.getElementById("drawer").classList.add("open");
-        document.getElementById("drawer").setAttribute("aria-hidden", "false");
-        document.getElementById("scrim").setAttribute("aria-hidden", "false");
-        document.getElementById("drawerDatePreset").value = document.getElementById("datePreset").value;
-      }
-
-      function closeDrawer(){
-        document.getElementById("scrim").classList.remove("open");
-        document.getElementById("drawer").classList.remove("open");
-        document.getElementById("drawer").setAttribute("aria-hidden", "true");
-        document.getElementById("scrim").setAttribute("aria-hidden", "true");
-      }
-
-      function resetDrawer(){
-        document.getElementById("drawerDatePreset").value = "30";
-        document.getElementById("kTourStatus").value = "all";
-        document.getElementById("kGuidePaid").value = "all";
-        document.getElementById("sDevice").value = "all";
-        document.getElementById("smPlatform").value = "all";
-        document.getElementById("seoCountry").value = "all";
-        document.getElementById("seoPage").value = "all";
-      }
-
-      function applyDrawer(){
-        document.getElementById("datePreset").value = document.getElementById("drawerDatePreset").value;
-        loadEmbed();
-        closeDrawer();
-      }
-
-      function wire(){
-        var btns = document.querySelectorAll(".seg button[data-view]");
-        for (var i = 0; i < btns.length; i++){
-          (function(btn){
-            btn.addEventListener("click", function(){
-              currentView = btn.getAttribute("data-view");
-              setPressed();
-              showView();
-            });
-          })(btns[i]);
-        }
-
-        document.getElementById("datePreset").addEventListener("change", loadEmbed);
-
-        document.getElementById("openFilters").addEventListener("click", openDrawer);
-        document.getElementById("closeFilters").addEventListener("click", closeDrawer);
-        document.getElementById("scrim").addEventListener("click", closeDrawer);
-
-        document.getElementById("resetFilters").addEventListener("click", resetDrawer);
-        document.getElementById("applyFilters").addEventListener("click", applyDrawer);
-
-        setPressed();
-        showView();
-      }
-
-      document.addEventListener("DOMContentLoaded", wire);
-    })();
-  </script>
+    </section>
+  </main>
 </body>
 </html>
