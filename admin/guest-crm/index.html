@@ -1,1 +1,227 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Guest CRM Manager</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/guest-crm/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <style>
+    :root{--green:#0D5925;--bg:#C7DAAC;--soft:#F6FAF0;--ink:#071923;--muted:rgba(7,25,35,.68);--line:rgba(7,25,35,.14);--shadow:0 18px 55px rgba(7,25,35,.10);--radius:18px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+    .shell{max-width:1780px;margin:0 auto;padding:22px}
+    .card{background:linear-gradient(180deg,rgba(246,250,240,.94),rgba(237,244,228,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+    .brand{display:flex;gap:12px;align-items:flex-start}.brand img{width:54px;height:54px;object-fit:contain;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(7,25,35,.12)}
+    h1{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:29px;line-height:1.05;letter-spacing:-.03em}.brand p{margin:6px 0 0;max-width:95ch;color:var(--muted);font-size:13px;line-height:1.45;font-weight:700}
+    .actions,.tabs,.recordActions{display:flex;gap:10px;flex-wrap:wrap}
+    button,a.btn{appearance:none;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.88);color:var(--ink);min-height:42px;padding:10px 13px;display:inline-flex;align-items:center;justify-content:center;font:inherit;font-weight:900;text-decoration:none;cursor:pointer;white-space:nowrap;box-shadow:0 8px 20px rgba(7,25,35,.06)}
+    button.primary,.tab.active{background:var(--green);color:#fff;border-color:rgba(13,89,37,.35)}button:disabled{opacity:.55;cursor:not-allowed}
+    .tabs{margin-bottom:16px}.tab{box-shadow:none}
+    .grid{display:grid;grid-template-columns:390px minmax(720px,1fr);gap:18px;align-items:start}.panel{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}.sticky{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto}
+    .panelTitle{margin:0 0 12px;color:var(--green);font-size:14px;line-height:1.2;font-weight:950;letter-spacing:.05em;text-transform:uppercase}.divider{margin:15px 0 12px;padding-top:13px;border-top:1px solid var(--line)}
+    .field{display:grid;gap:6px;margin-bottom:11px}label{color:var(--muted);font-size:12px;line-height:1.25;font-weight:950;text-transform:uppercase;letter-spacing:.04em}
+    input,select,textarea{width:100%;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.92);color:var(--ink);padding:11px 12px;font:inherit;font-weight:750;outline:none}textarea{min-height:88px;resize:vertical;line-height:1.45}input:focus,select:focus,textarea:focus{border-color:rgba(13,89,37,.55);box-shadow:0 0 0 3px rgba(13,89,37,.12)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.hint{margin:7px 0 0;color:rgba(7,25,35,.62);font-size:12px;line-height:1.4;font-weight:700}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}.stat{background:#F6FAF0;border:1px solid var(--line);border-radius:14px;padding:12px}.stat span{display:block;color:var(--muted);font-size:11px;line-height:1.2;text-transform:uppercase;letter-spacing:.05em;font-weight:950}.stat strong{display:block;margin-top:5px;color:var(--green);font-size:20px;line-height:1.1}
+    .toolbar{display:grid;grid-template-columns:1.4fr .9fr .9fr .9fr auto;gap:10px;margin-bottom:12px}
+    .records{display:grid;gap:10px}.record{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px;cursor:pointer}.record.active{border-color:rgba(13,89,37,.55);box-shadow:0 0 0 3px rgba(13,89,37,.1)}.record h3{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:20px;line-height:1.1}.record p{margin:4px 0 0;color:rgba(7,25,35,.72);font-size:13px;line-height:1.35;font-weight:700}.pill{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:rgba(13,89,37,.1);color:var(--green);border:1px solid rgba(13,89,37,.2);padding:6px 9px;font-size:12px;font-weight:950;text-transform:capitalize}
+    .detailGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:block;max-height:460px;overflow:auto}.table tbody{display:table;width:100%;border-collapse:collapse}.table th,.table td{border-bottom:1px solid rgba(7,25,35,.08);padding:8px 10px;text-align:left;vertical-align:top;font-size:12px;line-height:1.35}.table th{width:180px;color:var(--green);font-weight:950;background:#F6FAF0;white-space:nowrap}.table td{color:rgba(7,25,35,.78);word-break:break-word}
+    .advanced{display:none}.advanced.open{display:block}.code{background:#071923;color:#f6faf0;border-radius:16px;padding:14px;min-height:220px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.45;white-space:pre}
+    .view{display:none}.view.active{display:block}.toast{position:fixed;right:18px;bottom:18px;background:#071923;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 14px 40px rgba(7,25,35,.22);font-weight:900;opacity:0;transform:translateY(10px);pointer-events:none;transition:.18s ease;z-index:20}.toast.show{opacity:1;transform:translateY(0)}
+    @media(max-width:1180px){.grid,.detailGrid{grid-template-columns:1fr}.sticky{position:static;max-height:none}.toolbar,.stats{grid-template-columns:1fr 1fr}}@media(max-width:760px){.shell{padding:10px}.card{padding:14px}.two,.three,.toolbar,.stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <header class="top">
+        <div class="brand">
+          <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
+          <div><h1>Guest CRM Manager</h1><p>Manage guest inquiries, create or update CRM rows through n8n, filter upcoming work, and send selected records into email, Zelle invoice, or Stripe invoice tools.</p></div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="refreshBtn" type="button">Refresh CRM</button>
+          <button id="saveBtn" type="button">Save Record</button>
+          <button id="advancedBtn" type="button">Advanced</button>
+        </div>
+      </header>
+      <nav class="tabs" aria-label="CRM views">
+        <button class="tab active" data-view="dashboard" type="button">Dashboard</button>
+        <button class="tab" data-view="records" type="button">Records</button>
+        <button class="tab" data-view="intake" type="button">Create / Edit</button>
+        <button class="tab" data-view="settings" type="button">Settings</button>
+      </nav>
+      <div class="grid">
+        <aside class="panel sticky">
+          <h2 class="panelTitle">Quick Filters</h2>
+          <div class="field"><label for="searchInput">Search</label><input id="searchInput" type="search" placeholder="Name, phone, email, tour, inquiry ID" /></div>
+          <div class="two">
+            <div class="field"><label for="viewFilter">View</label><select id="viewFilter"><option value="all">View all</option><option value="upcoming7">Upcoming 7 days</option><option value="followups">Follow-ups due</option><option value="new">New</option><option value="quoted">Quoted</option><option value="awaitingPayment">Awaiting payment</option><option value="confirmed">Confirmed</option></select></div>
+            <div class="field"><label for="statusFilter">Status</label><select id="statusFilter"><option value="">Any status</option><option>new</option><option>active</option><option>quoted</option><option>confirmed</option><option>closed</option></select></div>
+          </div>
+          <div class="two">
+            <div class="field"><label for="quoteFilter">Quote</label><select id="quoteFilter"><option value="">Any quote</option><option>not_sent</option><option>sent</option><option>accepted</option><option>declined</option></select></div>
+            <div class="field"><label for="paymentFilter">Payment</label><select id="paymentFilter"><option value="">Any payment</option><option>unpaid</option><option>deposit_sent</option><option>deposit_paid</option><option>paid</option></select></div>
+          </div>
+          <div class="divider">
+            <h2 class="panelTitle">Selected Record</h2>
+            <div class="recordActions">
+              <button id="emailToolBtn" type="button">Generate Email</button>
+              <button id="zelleToolBtn" type="button">Create Zelle Invoice</button>
+              <button id="stripeToolBtn" type="button">Create Stripe Invoice</button>
+              <button id="whatsAppBtn" type="button">Open WhatsApp</button>
+            </div>
+            <p class="hint">These buttons save the selected record to localStorage as <strong>mbwSelectedCrmRecord</strong>, then open the related tool.</p>
+          </div>
+        </aside>
+        <section class="panel">
+          <div class="view active" id="dashboardView">
+            <h2 class="panelTitle">Dashboard</h2>
+            <div class="stats">
+              <div class="stat"><span>Total</span><strong id="statTotal">0</strong></div>
+              <div class="stat"><span>Upcoming 7</span><strong id="statUpcoming">0</strong></div>
+              <div class="stat"><span>New</span><strong id="statNew">0</strong></div>
+              <div class="stat"><span>Quoted</span><strong id="statQuoted">0</strong></div>
+              <div class="stat"><span>Unpaid</span><strong id="statUnpaid">0</strong></div>
+            </div>
+            <h2 class="panelTitle">Priority Records</h2>
+            <div class="records" id="priorityRecords"></div>
+          </div>
+          <div class="view" id="recordsView">
+            <h2 class="panelTitle">Records</h2>
+            <div class="toolbar">
+              <input id="inlineSearchInput" type="search" placeholder="Search records" />
+              <select id="inlineStatusFilter"><option value="">Any status</option><option>new</option><option>quoted</option><option>confirmed</option><option>closed</option></select>
+              <select id="sortInput"><option value="requested_date">Sort by tour date</option><option value="created_at">Sort by created</option><option value="full_name">Sort by name</option><option value="status">Sort by status</option></select>
+              <select id="sortDirectionInput"><option value="asc">Ascending</option><option value="desc">Descending</option></select>
+              <button id="clearFiltersBtn" type="button">Clear</button>
+            </div>
+            <div class="records" id="recordList"></div>
+          </div>
+          <div class="view" id="intakeView">
+            <h2 class="panelTitle">Create / Edit Record</h2>
+            <div class="two">
+              <div class="field"><label for="modeInput">Mode</label><select id="modeInput"><option value="create">Create New Guest + Inquiry</option><option value="returning">Create Returning Inquiry</option><option value="update">Update Selected Inquiry</option></select></div>
+              <div class="field"><label for="guestIdInput">Guest ID</label><input id="guestIdInput" placeholder="Auto or existing G-..." /></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="firstNameInput">First Name</label><input id="firstNameInput" /></div>
+              <div class="field"><label for="lastNameInput">Last Name</label><input id="lastNameInput" /></div>
+              <div class="field"><label for="fullNameInput">Full Name</label><input id="fullNameInput" /></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="phoneInput">Phone</label><input id="phoneInput" /></div>
+              <div class="field"><label for="emailInput">Email</label><input id="emailInput" type="email" /></div>
+              <div class="field"><label for="countryInput">Country</label><input id="countryInput" /></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="tourInput">Tour Interest</label><input id="tourInput" list="tourOptions" /></div>
+              <div class="field"><label for="guestCountInput">Guests</label><select id="guestCountInput"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option></select></div>
+              <div class="field"><label for="dateInput">Tour Date</label><input id="dateInput" type="date" /></div>
+            </div>
+            <datalist id="tourOptions"><option>Half-Day Birdwatching Tour</option><option>Full-Day Birdwatching Tour</option><option>Andean Cock-of-the-Rock Dawn Tour</option><option>Jewels of the Morning Forest</option><option>Quest for Five Toucans & Andean Cock-of-the-Rock</option><option>Custom Private Birding Tour</option><option>Night Walk</option><option>Quito to Mindo Day Trip</option></datalist>
+            <div class="three">
+              <div class="field"><label for="recordStatusInput">Status</label><select id="recordStatusInput"><option>new</option><option>quoted</option><option>confirmed</option><option>closed</option></select></div>
+              <div class="field"><label for="quoteStatusInput">Quote</label><select id="quoteStatusInput"><option>not_sent</option><option>sent</option><option>accepted</option><option>declined</option></select></div>
+              <div class="field"><label for="paymentStatusInput">Payment</label><select id="paymentStatusInput"><option>unpaid</option><option>deposit_sent</option><option>deposit_paid</option><option>paid</option></select></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="durationInput">Duration</label><input id="durationInput" placeholder="Half day, full day, flexible" /></div>
+              <div class="field"><label for="transportInput">Transportation</label><input id="transportInput" /></div>
+              <div class="field"><label for="followupInput">Follow-up</label><input id="followupInput" type="date" /></div>
+            </div>
+            <div class="field"><label for="notesInput">Guest Notes</label><textarea id="notesInput"></textarea></div>
+            <div class="field"><label for="internalInput">Internal Notes</label><textarea id="internalInput"></textarea></div>
+          </div>
+          <div class="view" id="settingsView">
+            <h2 class="panelTitle">n8n CRM API Settings</h2>
+            <div class="field"><label for="apiUrlInput">CRM API Webhook URL</label><input id="apiUrlInput" type="url" placeholder="https://.../webhook/mbw-crm-admin-api" /></div>
+            <p class="hint">Use the Production URL from the n8n workflow included with this page. The page sends actions such as <strong>list_inquiries</strong>, <strong>create_guest_and_inquiry</strong>, <strong>create_returning_inquiry</strong>, and <strong>update_inquiry</strong>.</p>
+            <div class="recordActions"><button id="saveSettingsBtn" class="primary" type="button">Save Settings</button><button id="loadDemoBtn" type="button">Load Demo Records</button><button id="clearLocalBtn" type="button">Clear Local Records</button></div>
+            <div class="divider"><h2 class="panelTitle">Record Detail</h2><div class="detailGrid"><table class="table"><tbody id="detailTable"></tbody></table><table class="table"><tbody id="actionTable"></tbody></table></div></div>
+          </div>
+          <div class="advanced" id="advancedPanel">
+            <div class="divider"><h2 class="panelTitle">Advanced Payload</h2><pre class="code" id="payloadOutput"></pre></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (function(){
+      "use strict";
+      const els = {};
+      const state = { records: [], selectedId: "", view: "dashboard" };
+      const fields = ["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","durationInput","transportInput","followupInput","notesInput","internalInput"];
+      document.addEventListener("DOMContentLoaded", init);
+      function init(){ cache(); bind(); loadSettings(); loadLocalRecords(); if(!state.records.length) loadDemoRecords(false); render(); }
+      function cache(){ ["refreshBtn","saveBtn","advancedBtn","priorityRecords","recordList","statTotal","statUpcoming","statNew","statQuoted","statUnpaid","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","whatsAppBtn","saveSettingsBtn","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
+      function bind(){
+        document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>setView(btn.dataset.view)));
+        ["searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].forEach(id=>els[id].addEventListener("input",render));
+        ["firstNameInput","lastNameInput"].forEach(id=>els[id].addEventListener("input",syncFullName));
+        els.phoneInput.addEventListener("input",syncCountry);
+        els.refreshBtn.addEventListener("click", refreshCrm);
+        els.saveBtn.addEventListener("click", saveRecord);
+        els.advancedBtn.addEventListener("click",()=>{els.advancedPanel.classList.toggle("open"); renderPayload();});
+        els.clearFiltersBtn.addEventListener("click", clearFilters);
+        els.saveSettingsBtn.addEventListener("click", saveSettings);
+        els.loadDemoBtn.addEventListener("click",()=>loadDemoRecords(true));
+        els.clearLocalBtn.addEventListener("click",()=>{state.records=[]; saveLocalRecords(); render(); showToast("Local records cleared");});
+        els.emailToolBtn.addEventListener("click",()=>openTool("https://admin.mindobirdwatching.com/custom-email-generator/"));
+        els.zelleToolBtn.addEventListener("click",()=>openTool("https://admin.mindobirdwatching.com/zelle-invoice-generator/"));
+        els.stripeToolBtn.addEventListener("click",()=>openTool("https://mindobirdwatching.com/book-tour/create/"));
+        els.whatsAppBtn.addEventListener("click",openWhatsApp);
+        fields.forEach(id=>{ if(els[id]) els[id].addEventListener("input", renderPayload); });
+      }
+      function setView(view){ state.view=view; document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===view)); document.querySelectorAll(".view").forEach(v=>v.classList.remove("active")); document.getElementById(view+"View").classList.add("active"); render(); }
+      function loadSettings(){ els.apiUrlInput.value=localStorage.getItem("mbwCrmApiUrl")||""; }
+      function saveSettings(){ localStorage.setItem("mbwCrmApiUrl",clean(els.apiUrlInput.value)); showToast("Settings saved"); }
+      function loadLocalRecords(){ try{ state.records=JSON.parse(localStorage.getItem("mbwCrmRecords")||"[]"); }catch(e){ state.records=[]; } }
+      function saveLocalRecords(){ localStorage.setItem("mbwCrmRecords",JSON.stringify(state.records)); }
+      function loadDemoRecords(show){ state.records=[demo("INQ-DEMO-001","Jeanne Friedman","Full-Day Birdwatching Tour","2026-12-08","new","not_sent","unpaid","Cock-of-the-rock, tanagers, umbrella bird"),demo("INQ-DEMO-002","Jared","Two full days guided birding","2026-11-19","quoted","sent","unpaid","Rental vehicle. Interested in target bird builder."),demo("INQ-DEMO-003","Lauren","Quito to Mindo Day Trip","2026-11-13","confirmed","accepted","deposit_paid","2 guests, door-to-door Quito pickup")]; state.selectedId=state.records[0].inquiry_id; saveLocalRecords(); fillForm(getSelected()); render(); if(show) showToast("Demo records loaded"); }
+      function demo(id,name,tour,date,status,quote,payment,notes){ return {inquiry_id:id,guest_id:"G-"+id.slice(-3),full_name:name,first_name:name.split(" ")[0]||"",last_name:name.split(" ").slice(1).join(" "),phone_number:"",phone_normalized:"",email:"",country:"",tour_type:tour,interest_category:tour,guest_count:"2",requested_date:date,duration_preference:"",transportation_needed:"",status,quote_status:quote,payment_status:payment,availability_status:"pending",followup_date:"",notes,internal_notes:"",created_at:new Date().toISOString(),updated_at:new Date().toISOString()}; }
+      async function api(action,data){ const url=clean(els.apiUrlInput.value)||localStorage.getItem("mbwCrmApiUrl")||""; if(!url) throw new Error("Add CRM API webhook URL in Settings"); const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...data})}); if(!res.ok) throw new Error("API returned "+res.status); return res.json(); }
+      async function refreshCrm(){ try{ saveSettings(); const result=await api("list_inquiries",{filters:{}}); state.records=Array.isArray(result.records)?result.records:[]; saveLocalRecords(); render(); showToast("CRM refreshed"); }catch(e){ showToast(e.message); } }
+      async function saveRecord(){ const payload=buildSavePayload(); try{ if(clean(els.apiUrlInput.value)){ const result=await api(payload.action,payload); const record=result.record||payload.record; upsert(record); showToast("Saved via n8n"); } else { upsert(payload.record); showToast("Saved locally"); } saveLocalRecords(); render(); }catch(e){ showToast(e.message); } }
+      function buildSavePayload(){ const mode=els.modeInput.value; const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; return {action,record,guest_row:buildGuestRow(record),inquiry_row:record}; }
+      function formRecord(){ const now=new Date().toISOString(); const full=clean(els.fullNameInput.value)||[clean(els.firstNameInput.value),clean(els.lastNameInput.value)].filter(Boolean).join(" "); const phone=clean(els.phoneInput.value); const norm=normalizePhone(phone); const inquiry=state.selectedId&&els.modeInput.value==="update"?state.selectedId:"INQ-"+stamp()+"-"+lastFour(norm||phone); return {inquiry_id:inquiry,guest_id:clean(els.guestIdInput.value)||"G-"+stamp()+"-"+lastFour(norm||phone),first_name:clean(els.firstNameInput.value),last_name:clean(els.lastNameInput.value),full_name:full,phone_number:phone,phone_normalized:norm,email:clean(els.emailInput.value),country:clean(els.countryInput.value)||inferCountry(norm),tour_type:clean(els.tourInput.value),interest_category:clean(els.tourInput.value),guest_count:clean(els.guestCountInput.value),requested_date:clean(els.dateInput.value),duration_preference:clean(els.durationInput.value),transportation_needed:clean(els.transportInput.value),status:clean(els.recordStatusInput.value),quote_status:clean(els.quoteStatusInput.value),payment_status:clean(els.paymentStatusInput.value),availability_status:"pending",followup_date:clean(els.followupInput.value),notes:clean(els.notesInput.value),internal_notes:clean(els.internalInput.value),updated_at:now,created_at:(getSelected()||{}).created_at||now}; }
+      function buildGuestRow(r){ return {guest_id:r.guest_id,phone_number:r.phone_number,phone_normalized:r.phone_normalized,first_name:r.first_name,last_name:r.last_name,full_name:r.full_name,country:r.country,email:r.email,notes:r.notes,status:"active",guest_type:"WhatsApp Inquiry",total_inquiries:"1",total_confirmed_bookings:"0",created_at:r.created_at,updated_at:r.updated_at}; }
+      function upsert(record){ const idx=state.records.findIndex(r=>r.inquiry_id===record.inquiry_id); if(idx>=0) state.records[idx]=record; else state.records.unshift(record); state.selectedId=record.inquiry_id; fillForm(record); }
+      function render(){ const filtered=getFiltered(); renderStats(); renderRecords(els.priorityRecords, filtered.slice(0,6)); renderRecords(els.recordList, filtered); renderDetail(); renderPayload(); }
+      function getFiltered(){ const q=(clean(els.searchInput.value)||clean(els.inlineSearchInput.value)).toLowerCase(); const vf=els.viewFilter.value; let arr=state.records.slice(); if(q) arr=arr.filter(r=>JSON.stringify(r).toLowerCase().includes(q)); const status=clean(els.statusFilter.value)||clean(els.inlineStatusFilter.value); if(status) arr=arr.filter(r=>r.status===status); if(els.quoteFilter.value) arr=arr.filter(r=>r.quote_status===els.quoteFilter.value); if(els.paymentFilter.value) arr=arr.filter(r=>r.payment_status===els.paymentFilter.value); if(vf==="upcoming7") arr=arr.filter(isUpcoming7); if(vf==="followups") arr=arr.filter(isFollowupDue); if(vf==="new") arr=arr.filter(r=>r.status==="new"); if(vf==="quoted") arr=arr.filter(r=>r.quote_status==="sent"||r.status==="quoted"); if(vf==="awaitingPayment") arr=arr.filter(r=>["unpaid","deposit_sent"].includes(r.payment_status)); if(vf==="confirmed") arr=arr.filter(r=>r.status==="confirmed"); const sort=els.sortInput.value||"requested_date"; const dir=els.sortDirectionInput.value==="desc"?-1:1; arr.sort((a,b)=>String(a[sort]||"").localeCompare(String(b[sort]||""))*dir); return arr; }
+      function renderStats(){ els.statTotal.textContent=state.records.length; els.statUpcoming.textContent=state.records.filter(isUpcoming7).length; els.statNew.textContent=state.records.filter(r=>r.status==="new").length; els.statQuoted.textContent=state.records.filter(r=>r.quote_status==="sent"||r.status==="quoted").length; els.statUnpaid.textContent=state.records.filter(r=>["unpaid","deposit_sent"].includes(r.payment_status)).length; }
+      function renderRecords(target, records){ target.innerHTML=records.length?records.map(r=>`<article class="record ${r.inquiry_id===state.selectedId?"active":""}" data-id="${esc(r.inquiry_id)}"><div><h3>${esc(r.full_name||"Guest")}</h3><p>${esc(r.requested_date||"No date")} | ${esc(r.tour_type||"No tour")} | ${esc(r.guest_count||"?")} guests</p></div><span class="pill">${esc(r.status||"new")}</span></article>`).join(""):"<p class='hint'>No matching records.</p>"; target.querySelectorAll(".record").forEach(el=>el.addEventListener("click",()=>selectRecord(el.dataset.id))); }
+      function selectRecord(id){ state.selectedId=id; fillForm(getSelected()); render(); }
+      function getSelected(){ return state.records.find(r=>r.inquiry_id===state.selectedId)||null; }
+      function fillForm(r){ if(!r) return; els.modeInput.value="update"; els.guestIdInput.value=r.guest_id||""; els.firstNameInput.value=r.first_name||""; els.lastNameInput.value=r.last_name||""; els.fullNameInput.value=r.full_name||""; els.phoneInput.value=r.phone_number||""; els.emailInput.value=r.email||""; els.countryInput.value=r.country||""; els.tourInput.value=r.tour_type||""; els.guestCountInput.value=r.guest_count||""; els.dateInput.value=r.requested_date||""; els.recordStatusInput.value=r.status||"new"; els.quoteStatusInput.value=r.quote_status||"not_sent"; els.paymentStatusInput.value=r.payment_status||"unpaid"; els.durationInput.value=r.duration_preference||""; els.transportInput.value=r.transportation_needed||""; els.followupInput.value=r.followup_date||""; els.notesInput.value=r.notes||""; els.internalInput.value=r.internal_notes||""; }
+      function renderDetail(){ const r=getSelected()||{}; renderTable(els.detailTable,r,["inquiry_id","guest_id","full_name","phone_number","email","tour_type","guest_count","requested_date","status","quote_status","payment_status","notes"]); renderTable(els.actionTable,r,["followup_date","duration_preference","transportation_needed","availability_status","internal_notes","created_at","updated_at"]); }
+      function renderTable(target,row,cols){ target.innerHTML=cols.map(c=>`<tr><th>${esc(c)}</th><td>${esc(row[c]||"")}</td></tr>`).join(""); }
+      function renderPayload(){ els.payloadOutput.textContent=JSON.stringify({selected:getSelected(),save_payload:buildSavePayload(),api_url_set:Boolean(clean(els.apiUrlInput.value))},null,2); }
+      function openTool(url){ const r=getSelected()||formRecord(); localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(r)); window.open(url,"_blank","noopener,noreferrer"); }
+      function openWhatsApp(){ const r=getSelected(); if(!r){showToast("Select a record first");return;} const phone=normalizePhone(r.phone_number||r.phone_normalized); if(!phone){showToast("No phone on selected record");return;} window.open("https://wa.me/"+phone,"_blank","noopener,noreferrer"); }
+      function clearFilters(){ ["searchInput","inlineSearchInput","statusFilter","inlineStatusFilter","quoteFilter","paymentFilter"].forEach(id=>els[id].value=""); els.viewFilter.value="all"; render(); }
+      function syncFullName(){ els.fullNameInput.value=[clean(els.firstNameInput.value),clean(els.lastNameInput.value)].filter(Boolean).join(" "); renderPayload(); }
+      function syncCountry(){ const n=normalizePhone(els.phoneInput.value); if(!clean(els.countryInput.value)) els.countryInput.value=inferCountry(n); renderPayload(); }
+      function isUpcoming7(r){ if(!r.requested_date) return false; const d=new Date(r.requested_date+"T00:00:00"); const today=new Date(); today.setHours(0,0,0,0); const diff=(d-today)/86400000; return diff>=0&&diff<=7; }
+      function isFollowupDue(r){ if(!r.followup_date) return false; const d=new Date(r.followup_date+"T00:00:00"); const today=new Date(); today.setHours(0,0,0,0); return d<=today; }
+      function normalizePhone(phone){ const digits=String(phone||"").replace(/\D/g,""); if(/^\d{10}$/.test(digits)) return "1"+digits; if(/^1\d{10}$/.test(digits)) return digits; if(/^09\d{8}$/.test(digits)) return "593"+digits.slice(1); return digits; }
+      function inferCountry(phone){ if(/^1\d{10}$/.test(phone)) return "United States / Canada"; if(String(phone).startsWith("593")) return "Ecuador"; const map=[["44","United Kingdom"],["49","Germany"],["33","France"],["34","Spain"],["39","Italy"],["31","Netherlands"],["41","Switzerland"],["61","Australia"],["64","New Zealand"],["52","Mexico"],["55","Brazil"],["57","Colombia"],["51","Peru"],["56","Chile"],["54","Argentina"]]; const m=map.find(([c])=>String(phone).startsWith(c)); return m?m[1]:""; }
+      function stamp(){ return new Date().toISOString().replace(/[-:.TZ]/g,"").slice(0,14); }
+      function lastFour(v){ return (String(v||"").replace(/\D/g,"")||"0000").slice(-4).padStart(4,"0"); }
+      function clean(v){ return String(v||"").trim(); }
+      function esc(v){ return String(v||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch])); }
+      function showToast(msg){ els.toast.textContent=msg; els.toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>els.toast.classList.remove("show"),2200); }
+    })();
+  </script>
+</body>
+</html>
