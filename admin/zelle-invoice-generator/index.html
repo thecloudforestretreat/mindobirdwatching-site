@@ -535,7 +535,7 @@
           </div>
         </div>
         <div class="actions">
-          <button class="primary" id="printBtn" type="button">Print / Save PDF</button>
+          <button class="primary" id="printBtn" type="button">Save as PDF</button>
           <button id="emailBtn" type="button">Open Gmail Draft</button>
           <button id="copyEmailBtn" type="button">Copy Email Text</button>
           <button id="resetBtn" type="button">Reset</button>
@@ -852,22 +852,40 @@
 
       function printInvoice(){
         updateInvoice();
-        const printWindow = window.open("", "_blank");
-        if(!printWindow){
-          showToast("Allow popups to print the invoice");
-          return;
-        }
-        printWindow.document.open();
-        printWindow.document.write(
+        const existingFrame = document.getElementById("invoicePrintFrame");
+        if(existingFrame) existingFrame.remove();
+
+        const frame = document.createElement("iframe");
+        frame.id = "invoicePrintFrame";
+        frame.title = buildPdfTitle();
+        frame.style.position = "fixed";
+        frame.style.right = "0";
+        frame.style.bottom = "0";
+        frame.style.width = "0";
+        frame.style.height = "0";
+        frame.style.border = "0";
+        frame.style.opacity = "0";
+        frame.setAttribute("aria-hidden", "true");
+        document.body.appendChild(frame);
+
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        doc.open();
+        doc.write(
           "<!doctype html><html lang='en'><head><meta charset='utf-8'>" +
           "<meta name='viewport' content='width=device-width, initial-scale=1'>" +
           "<title>" + esc(buildPdfTitle()) + "</title>" +
           "<style>" + getPrintStyles() + "</style>" +
-          "</head><body><article class='invoicePage'>" + els.invoicePreview.innerHTML + "</article>" +
-          "<script>window.addEventListener('load',function(){setTimeout(function(){window.print();},250);});<\\/script>" +
-          "</body></html>"
+          "</head><body><article class='invoicePage'>" + els.invoicePreview.innerHTML + "</article></body></html>"
         );
-        printWindow.document.close();
+        doc.close();
+
+        frame.onload = () => {
+          setTimeout(() => {
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+            showToast("Choose Save as PDF in the print dialog");
+          }, 250);
+        };
       }
 
       function buildPdfTitle(){
