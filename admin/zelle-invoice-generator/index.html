@@ -13,6 +13,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <script src="/assets/js/site-config.js?v=20260719" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <style>
     :root{
       --mbw-green:#0D5925;
@@ -582,6 +583,7 @@
         <div class="actions">
           <a class="buttonLink" href="/">Admin</a>
           <button class="primary" id="printBtn" type="button">Save as PDF</button>
+          <button id="imageBtn" type="button">Download Image</button>
           <button id="emailBtn" type="button">Open Gmail Draft</button>
           <button id="copyEmailBtn" type="button">Copy Email Text</button>
           <button id="resetBtn" type="button">Reset</button>
@@ -667,8 +669,9 @@
               <article class="invoicePage" id="invoicePreview" aria-label="Invoice preview"></article>
             </div>
             <div class="previewActions">
-              <p class="mobilePrintHint">On mobile, use the print/share sheet to save the invoice as a PDF.</p>
-              <button class="primary" id="bottomPrintBtn" type="button">Download / Save PDF</button>
+              <p class="mobilePrintHint">On mobile, image export opens the share sheet when available. This is the easiest option for WhatsApp.</p>
+              <button class="primary" id="bottomImageBtn" type="button">Download Invoice Image</button>
+              <button id="bottomPrintBtn" type="button">Save as PDF</button>
             </div>
           </div>
         </section>
@@ -682,7 +685,7 @@
     (function(){
       "use strict";
 
-      const logoUrl = "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png";
+      const logoUrl = "/assets/images/logo/mbw-logo-mark-1024.png";
       const itemOptions = [
         "Dance of the Andean Cock-of-the-Rock Dawn Tour",
         "Jewels of the Morning Forest Birding Tour",
@@ -721,7 +724,7 @@
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
           "pickupLocation", "invoiceNotes", "adjustmentLabel", "adjustmentAmount", "itemsEditor",
-          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "emailBtn", "copyEmailBtn", "resetBtn", "toast"
+          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "emailBtn", "copyEmailBtn", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
 
@@ -746,6 +749,8 @@
         els.addItemBtn.addEventListener("click", addItem);
         els.printBtn.addEventListener("click", printInvoice);
         if(els.bottomPrintBtn) els.bottomPrintBtn.addEventListener("click", printInvoice);
+        if(els.imageBtn) els.imageBtn.addEventListener("click", exportInvoiceImage);
+        if(els.bottomImageBtn) els.bottomImageBtn.addEventListener("click", exportInvoiceImage);
         els.emailBtn.addEventListener("click", openEmailDraft);
         els.copyEmailBtn.addEventListener("click", copyEmailText);
         els.resetBtn.addEventListener("click", resetForm);
@@ -969,6 +974,83 @@
             }, 1000);
           }, 250);
         };
+      }
+
+      async function exportInvoiceImage(){
+        updateInvoice();
+        if(!window.html2canvas){
+          showToast("Image export is still loading. Try again in a moment.");
+          return;
+        }
+
+        const activeButton = document.activeElement;
+        const originalText = activeButton && activeButton.tagName === "BUTTON" ? activeButton.textContent : "";
+        if(activeButton && activeButton.tagName === "BUTTON"){
+          activeButton.disabled = true;
+          activeButton.textContent = "Preparing image...";
+        }
+
+        try{
+          if(document.fonts && document.fonts.ready) await document.fonts.ready;
+          const canvas = await window.html2canvas(els.invoicePreview, {
+            backgroundColor:"#ffffff",
+            scale:Math.min(2, window.devicePixelRatio || 2),
+            useCORS:true,
+            allowTaint:false,
+            logging:false,
+            width:els.invoicePreview.scrollWidth,
+            height:els.invoicePreview.scrollHeight,
+            windowWidth:els.invoicePreview.scrollWidth,
+            windowHeight:els.invoicePreview.scrollHeight
+          });
+          const fileName = buildPdfTitle() + ".png";
+          canvas.toBlob(async blob => {
+            if(!blob){
+              showToast("Could not create image. Try PDF on desktop.");
+              return;
+            }
+            const file = new File([blob], fileName, { type:"image/png" });
+            if(navigator.canShare && navigator.canShare({ files:[file] })){
+              try{
+                await navigator.share({
+                  files:[file],
+                  title:"Mindo Bird Watching invoice",
+                  text:"Invoice from Mindo Bird Watching"
+                });
+                showToast("Invoice image ready to share");
+                return;
+              }catch(err){
+                if(err && err.name === "AbortError") return;
+              }
+            }
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            if(isIOS()){
+              const opened = window.open(url, "_blank", "noopener");
+              showToast(opened ? "Image opened. Use Share or Save Image." : "Image created. Check downloads.");
+            }else{
+              showToast("Invoice image downloaded");
+            }
+            window.setTimeout(() => URL.revokeObjectURL(url), 45000);
+          }, "image/png", 0.96);
+        }catch(error){
+          console.error(error);
+          showToast("Image export failed. Try again or use desktop PDF.");
+        }finally{
+          if(activeButton && activeButton.tagName === "BUTTON"){
+            activeButton.disabled = false;
+            activeButton.textContent = originalText;
+          }
+        }
+      }
+
+      function isIOS(){
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
       }
 
       function buildPdfTitle(){
