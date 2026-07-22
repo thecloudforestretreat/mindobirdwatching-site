@@ -443,7 +443,7 @@
   }
 
 
-  body.payCreatePage [id*="whatsapp" i],
+  body.payCreatePage [id*="whatsapp" i]:not(#whatsappNumber),
   body.payCreatePage [class*="whatsapp" i],
   body.payCreatePage [class*="joinchat" i],
   body.payCreatePage [class*="floating-wpp" i],
@@ -526,7 +526,7 @@
 
 </style>
 </head>
-<body>
+<body class="payCreatePage">
 <div class="container">
   <div id="siteHeader"></div>
 
@@ -721,7 +721,7 @@
 
     <div class="grid-2 pricing-grid">
       <div class="field">
-        <label>Price adjustment/person</label>
+        <label data-price-adjustment-label>Price adjustment/person</label>
         <input data-field="price_override_per_person" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional" />
       </div>
 
@@ -735,7 +735,7 @@
         </select>
       </div>
 
-      <div class="hint pricing-helper-row">
+      <div class="hint pricing-helper-row" data-pricing-helper>
         Enter the whole-dollar amount to add per person. Example: standard $75 + adjustment $5 = final invoice price $80/person. Leave blank for standard pricing.
       </div>
 
@@ -949,6 +949,14 @@
     if (!tour || !tour.amount_display) return 0;
     const n = Number(String(tour.amount_display).replace(/[^0-9.]/g, ""));
     return Number.isFinite(n) ? n : 0;
+  }
+
+  function isFlatPriced(tour) {
+    return String(tour && tour.pricing_model || "per_person").toLowerCase() === "flat";
+  }
+
+  function billingQuantity(tour, people) {
+    return isFlatPriced(tour) ? 1 : Number(people || 0);
   }
 
   function formatPricingReason(value) {
@@ -1223,6 +1231,8 @@ function createItem(initial = {}) {
       const pricingNotesInput = node.querySelector('[data-field="pricing_notes"]');
       const pricingExtraFields = node.querySelectorAll("[data-pricing-extra]");
       const pricingOverrideNote = node.querySelector("[data-pricing-override-note]");
+      const priceAdjustmentLabel = node.querySelector("[data-price-adjustment-label]");
+      const pricingHelper = node.querySelector("[data-pricing-helper]");
       const metaText = node.querySelector("[data-tour-meta]");
 
       const currentLangTours = state.tours
@@ -1252,8 +1262,9 @@ function createItem(initial = {}) {
           metaText.textContent = "Select a tour to preview the price and details.";
           return;
         }
+        const priceScope = isFlatPriced(selectedTour) ? "per booking" : "per person";
         metaText.innerHTML = `
-          <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} per person
+          <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} ${priceScope}
           <br />
           <strong>Type:</strong> ${selectedTour.duration_label || "-"}
           <br />
@@ -1262,6 +1273,16 @@ function createItem(initial = {}) {
       }
 
       function refreshPricingControls() {
+        const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
+        const flatPriced = isFlatPriced(selectedTour);
+        if (priceAdjustmentLabel) {
+          priceAdjustmentLabel.textContent = flatPriced ? "Price adjustment/booking" : "Price adjustment/person";
+        }
+        if (pricingHelper) {
+          pricingHelper.textContent = flatPriced
+            ? "Enter the whole-dollar amount to add to this booking. Example: standard $180 + adjustment $10 = final invoice price $190. Leave blank for standard pricing."
+            : "Enter the whole-dollar amount to add per person. Example: standard $75 + adjustment $5 = final invoice price $80/person. Leave blank for standard pricing.";
+        }
         const hasOverride = hasOverridePrice(item);
         pricingExtraFields.forEach(field => {
           field.hidden = !hasOverride;
@@ -1296,11 +1317,13 @@ function createItem(initial = {}) {
         }
 
         refreshMeta();
+        refreshPricingControls();
       });
 
       tourSelect.addEventListener("change", e => {
         updateItem(item.id, "tour_code", e.target.value);
         refreshMeta();
+        refreshPricingControls();
       });
 
       dateInput.addEventListener("change", e => {
@@ -1358,20 +1381,24 @@ function createItem(initial = {}) {
 
       const quantity = Number(item.quantity || 0);
       const standardAmount = parseTourAmount(tour);
+      const flatPriced = isFlatPriced(tour);
+      const chargedQuantity = billingQuantity(tour, quantity);
       const adjustmentAmount = Number(item.price_override_per_person || 0);
       const standardPriceLine = tour
-        ? `${tour.amount_display} x ${quantity}`
+        ? flatPriced ? `${tour.amount_display} per booking` : `${tour.amount_display} x ${quantity}`
         : "Select a tour";
 
       const adjustmentDisplay = formatAdjustmentDisplay(item.price_override_per_person);
       const reasonDisplay = formatPricingReason(item.pricing_reason);
       const finalPricePerPerson = tour ? getFinalAdjustedPrice(item, tour) : 0;
-      const finalAdjustedTotal = hasOverridePrice(item) ? finalPricePerPerson * quantity : 0;
+      const finalAdjustedTotal = hasOverridePrice(item) ? finalPricePerPerson * chargedQuantity : 0;
       const priceLine = adjustmentDisplay
-        ? `$${finalPricePerPerson.toFixed(2)} USD x ${quantity} = $${finalAdjustedTotal.toFixed(2)} USD (adjusted)`
+        ? flatPriced
+          ? `$${finalAdjustedTotal.toFixed(2)} USD per booking (adjusted)`
+          : `$${finalPricePerPerson.toFixed(2)} USD x ${quantity} = $${finalAdjustedTotal.toFixed(2)} USD (adjusted)`
         : standardPriceLine;
       const internalPricingLine = adjustmentDisplay
-        ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} per person, adjustment ${adjustmentDisplay}, final $${finalPricePerPerson.toFixed(2)} per person${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
+        ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} ${flatPriced ? "per booking" : "per person"}, adjustment ${adjustmentDisplay}, final $${finalPricePerPerson.toFixed(2)} ${flatPriced ? "per booking" : "per person"}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
         : "";
 
       if (tour) knownCount += 1;
@@ -1591,7 +1618,9 @@ function createItem(initial = {}) {
     const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
     const amountDisplay = tour && tour.amount_display ? String(tour.amount_display) : "";
     const amountNumber = Number(amountDisplay.replace(/[^0-9.]/g, ""));
-    const amountCents = Number.isFinite(amountNumber) ? Math.round(amountNumber * 100) * Number(item.quantity || 0) : 0;
+    const amountCents = Number.isFinite(amountNumber)
+      ? Math.round(amountNumber * 100) * billingQuantity(tour, item.quantity)
+      : 0;
 
     return {
       event_type: "payment_link_generated",
@@ -1645,7 +1674,7 @@ function createItem(initial = {}) {
 
   function hideWhatsAppWidgets() {
     const selectors = [
-      '[id*="whatsapp" i]',
+      '[id*="whatsapp" i]:not(#whatsappNumber)',
       '[class*="whatsapp" i]',
       '[class*="joinchat" i]',
       '[id*="joinchat" i]',
@@ -1879,6 +1908,9 @@ function createItem(initial = {}) {
 
   async function init() {
     try {
+      hideWhatsAppWidgets();
+      const widgetObserver = new MutationObserver(hideWhatsAppWidgets);
+      widgetObserver.observe(document.documentElement, { childList: true, subtree: true });
       await loadTours();
       addItem();
       applyInboundPrefill();
