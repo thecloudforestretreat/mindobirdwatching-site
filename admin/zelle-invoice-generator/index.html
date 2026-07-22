@@ -1401,6 +1401,8 @@
 
       function buildEmailBody(){
         const guest = clean(els.guestName.value) || "there";
+        const extraGuests = clean(els.notes.value);
+        const pickup = clean(els.pickupLocation.value);
         const totals = getInvoiceTotals();
         const plan = getPaymentPlan(totals.total);
         const tourLines = state.items.map(item => {
@@ -1411,6 +1413,9 @@
         return "Hi " + guest + ",\n\n" +
           "We are excited to help confirm your Mindo Bird Watching plans. Attached is your tour invoice for:\n" +
           tourLines + "\n\n" +
+          (pickup ? "Pickup: " + pickup + "\n" : "") +
+          (extraGuests ? "Additional guest(s): " + extraGuests + "\n" : "") +
+          (pickup || extraGuests ? "\n" : "") +
           "Booking total: " + formatMoney(totals.total) + "\n" +
           (plan.mode === "deposit" ? "Deposit requested now: " + formatMoney(plan.requested) + "\nRemaining balance after deposit: " + formatMoney(plan.remaining) + "\n\n" : "Amount requested now: " + formatMoney(plan.requested) + "\n\n") +
           "Once the requested payment is received, we will send your official tour confirmation.\n\n" +
@@ -1432,6 +1437,7 @@
         const guestName = clean(els.guestName.value) || "Guest";
         const guestFirst = guestName.split(/\s+/)[0] || "there";
         const pickup = clean(els.pickupLocation.value);
+        const extraGuests = clean(els.notes.value);
         const paymentHeading = plan.mode === "deposit" ? "Tour Deposit Request" : "Tour Payment Request";
         const paymentIntro = plan.mode === "deposit"
           ? "Attached is your Zelle invoice requesting the tour deposit so we can hold your Mindo plans."
@@ -1461,11 +1467,12 @@
           "<div style='font-family:Georgia,\"Times New Roman\",serif;color:#0D5925;font-size:24px;line-height:1.1;font-weight:900;margin-bottom:12px;'>Your Selected Plans</div>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='border-collapse:separate;border-spacing:0 10px;'>" + itemRows + "</table>" +
           (pickup ? "<p style='font-size:14px;line-height:1.45;margin:8px 0 0;color:#425047;'><strong>Pickup:</strong> " + esc(pickup) + "</p>" : "") +
+          (extraGuests ? "<p style='font-size:14px;line-height:1.45;margin:8px 0 0;color:#425047;'><strong>Additional guest(s):</strong> " + esc(extraGuests).replace(/\n/g, "<br>") + "</p>" : "") +
           "</td></tr>" +
           "<tr><td style='padding:22px 26px;background:#F6FAF0;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
           "<td valign='top' style='padding-right:12px;'><div style='font-family:Georgia,\"Times New Roman\",serif;color:#0D5925;font-size:24px;line-height:1.1;font-weight:900;'>Payment Summary</div><p style='margin:8px 0 0;font-size:14px;line-height:1.5;color:#425047;'>Please use the attached invoice for Zelle payment. Reply any time if you have questions or need us to adjust a detail.</p></td>" +
-          "<td valign='top' width='230' style='background:#ffffff;border:1px solid #bfd3b2;border-radius:14px;padding:14px;'>" +
+          "<td valign='top' width='230' align='center' style='background:#ffffff;border:1px solid #bfd3b2;border-radius:14px;padding:14px;text-align:center;'>" +
           paymentSummaryHtml(totals, plan) +
           "</td></tr></table>" +
           "</td></tr>" +
@@ -1505,7 +1512,7 @@
         if(plan.remaining > 0) rows.push(["Remaining balance", formatMoney(plan.remaining)]);
         return rows.map((row, index) => {
           const isPrimary = index === 1;
-          return "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='margin:0 0 8px;'><tr><td style='font-size:12px;color:#5a665f;font-weight:900;text-transform:uppercase;letter-spacing:.04em;'>" + esc(row[0]) + "</td></tr><tr><td style='font-size:" + (isPrimary ? "24px" : "17px") + ";line-height:1.15;color:#0D5925;font-weight:" + (isPrimary ? "900" : "700") + ";padding-top:3px;'>" + esc(row[1]) + "</td></tr></table>";
+          return "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' align='center' style='margin:0 0 8px;text-align:center;'><tr><td align='center' style='font-size:12px;color:#5a665f;font-weight:900;text-transform:uppercase;letter-spacing:.04em;text-align:center;'>" + esc(row[0]) + "</td></tr><tr><td align='center' style='font-size:" + (isPrimary ? "24px" : "17px") + ";line-height:1.15;color:#0D5925;font-weight:" + (isPrimary ? "900" : "700") + ";padding-top:3px;text-align:center;'>" + esc(row[1]) + "</td></tr></table>";
         }).join("");
       }
 
