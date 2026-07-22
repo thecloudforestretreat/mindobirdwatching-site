@@ -738,6 +738,8 @@
             <div class="previewActions">
               <p class="mobilePrintHint">On mobile, image export opens the share sheet when available. This is the easiest option for WhatsApp.</p>
               <button class="primary" id="bottomImageBtn" type="button">Download Invoice Image</button>
+              <button id="bottomEmailHtmlBtn" type="button">Download Email HTML</button>
+              <button id="bottomCopyEmailHtmlBtn" type="button">Copy Email HTML</button>
               <button id="bottomPrintBtn" type="button">Save as PDF</button>
             </div>
           </div>
@@ -791,7 +793,7 @@
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
           "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "adjustmentLabel", "adjustmentAmount", "paymentSummary", "itemsEditor",
-          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "resetBtn", "toast"
+          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "bottomEmailHtmlBtn", "bottomCopyEmailHtmlBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
 
@@ -818,6 +820,8 @@
         if(els.bottomPrintBtn) els.bottomPrintBtn.addEventListener("click", printInvoice);
         if(els.imageBtn) els.imageBtn.addEventListener("click", exportInvoiceImage);
         if(els.bottomImageBtn) els.bottomImageBtn.addEventListener("click", exportInvoiceImage);
+        if(els.bottomEmailHtmlBtn) els.bottomEmailHtmlBtn.addEventListener("click", downloadEmailHtml);
+        if(els.bottomCopyEmailHtmlBtn) els.bottomCopyEmailHtmlBtn.addEventListener("click", copyEmailHtml);
         if(els.emailHtmlBtn) els.emailHtmlBtn.addEventListener("click", downloadEmailHtml);
         els.emailBtn.addEventListener("click", openEmailDraft);
         if(els.copyEmailHtmlBtn) els.copyEmailHtmlBtn.addEventListener("click", copyEmailHtml);
