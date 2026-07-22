@@ -512,19 +512,19 @@
     .customerNotes{
       margin-top:18px;
       color:#777;
-      font-size:8.75px;
-      line-height:1.32;
+      font-size:7.8px;
+      line-height:1.24;
       max-width:540px;
     }
     .customerNotes h3{
       margin:0 0 3px;
       color:#777;
-      font-size:9.5px;
+      font-size:8.6px;
       line-height:1.2;
       text-transform:uppercase;
     }
     .customerNotes p{
-      margin:0 0 2.5px;
+      margin:0 0 2px;
     }
     .toast{
       position:fixed;
@@ -635,7 +635,9 @@
           <a class="buttonLink" href="/">Admin</a>
           <button class="primary" id="printBtn" type="button">Save as PDF</button>
           <button id="imageBtn" type="button">Download Image</button>
+          <button id="emailHtmlBtn" type="button">Download Email HTML</button>
           <button id="emailBtn" type="button">Open Gmail Draft</button>
+          <button id="copyEmailHtmlBtn" type="button">Copy Email HTML</button>
           <button id="copyEmailBtn" type="button">Copy Email Text</button>
           <button id="resetBtn" type="button">Reset</button>
         </div>
@@ -789,7 +791,7 @@
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
           "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "adjustmentLabel", "adjustmentAmount", "paymentSummary", "itemsEditor",
-          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "emailBtn", "copyEmailBtn", "resetBtn", "toast"
+          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
 
@@ -816,7 +818,9 @@
         if(els.bottomPrintBtn) els.bottomPrintBtn.addEventListener("click", printInvoice);
         if(els.imageBtn) els.imageBtn.addEventListener("click", exportInvoiceImage);
         if(els.bottomImageBtn) els.bottomImageBtn.addEventListener("click", exportInvoiceImage);
+        if(els.emailHtmlBtn) els.emailHtmlBtn.addEventListener("click", downloadEmailHtml);
         els.emailBtn.addEventListener("click", openEmailDraft);
+        if(els.copyEmailHtmlBtn) els.copyEmailHtmlBtn.addEventListener("click", copyEmailHtml);
         els.copyEmailBtn.addEventListener("click", copyEmailText);
         els.resetBtn.addEventListener("click", resetForm);
       }
@@ -894,7 +898,7 @@
             if(date) noteParts.push("Tour date: " + formatDate(date));
             if(pickup) noteParts.push("Pickup location: " + pickup);
             if(item.note) noteParts.push(item.note);
-            return { description, qty, price, note:noteParts.join(" | ") };
+            return { description, qty, price, note:cleanItemNote(noteParts.join(" | ")) };
           });
         }
         const description = normalizeDescription(record.product_selected || record.tour_type || record.service_type);
@@ -1033,9 +1037,10 @@
       }
 
       function updateInvoice(){
-        const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
-        const adjustment = Number(els.adjustmentAmount.value) || 0;
-        const total = subtotal + adjustment;
+        const totals = getInvoiceTotals();
+        const subtotal = totals.subtotal;
+        const adjustment = totals.adjustment;
+        const total = totals.total;
         const plan = getPaymentPlan(total);
         els.paymentSummary.innerHTML = "<strong>" + esc(plan.modeLabel) + ":</strong> requesting " + esc(formatMoney(plan.requested)) + " now" + (plan.remaining > 0 ? ", with " + esc(formatMoney(plan.remaining)) + " remaining." : ".");
         els.invoicePreview.innerHTML = buildInvoiceHtml(subtotal, adjustment, total, plan);
@@ -1051,6 +1056,16 @@
           dueLabel: mode === "deposit" ? "Deposit Due" : "Amount Due",
           requested,
           remaining: Math.max(0, total - requested)
+        };
+      }
+
+      function getInvoiceTotals(){
+        const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
+        const adjustment = Number(els.adjustmentAmount.value) || 0;
+        return {
+          subtotal,
+          adjustment,
+          total:subtotal + adjustment
         };
       }
 
@@ -1300,9 +1315,9 @@
           ".totalsTable td{padding:4px 0;text-align:right;}" +
           ".totalsTable td:first-child{color:#222;text-align:left;}" +
           ".totalsTable .grand td{padding-top:8px;color:#0D5925;font-size:20px;line-height:1.1;font-weight:900;}" +
-          ".customerNotes{margin-top:18px;color:#777;font-size:8.75px;line-height:1.32;max-width:540px;}" +
-          ".customerNotes h3{margin:0 0 3px;color:#777;font-size:9.5px;line-height:1.2;text-transform:uppercase;}" +
-          ".customerNotes p{margin:0 0 2.5px;}" +
+          ".customerNotes{margin-top:18px;color:#777;font-size:7.8px;line-height:1.24;max-width:540px;}" +
+          ".customerNotes h3{margin:0 0 3px;color:#777;font-size:8.6px;line-height:1.2;text-transform:uppercase;}" +
+          ".customerNotes p{margin:0 0 2px;}" +
           "@media print{html,body{width:8.5in;height:11in;}.invoicePage{box-shadow:none;page-break-after:avoid;break-after:avoid;}}";
       }
 
@@ -1311,9 +1326,10 @@
       }
 
       function itemRow(item, index){
+        const note = cleanItemNote(item.note || "");
         return "<tr>" +
           "<td>" + (index + 1) + "</td>" +
-          "<td><strong>" + esc(item.description || "Item") + "</strong>" + (item.note ? "<span class='lineNote'>" + esc(item.note) + "</span>" : "") + "</td>" +
+          "<td><strong>" + esc(item.description || "Item") + "</strong>" + (note ? "<span class='lineNote'>" + esc(note) + "</span>" : "") + "</td>" +
           "<td>" + esc(item.qty || 1) + "</td>" +
           "<td>" + esc(formatMoney(Number(item.price) || 0)) + "</td>" +
           "<td>" + esc(formatMoney(lineTotal(item))) + "</td>" +
@@ -1343,22 +1359,40 @@
         copyText(buildEmailBody()).then(() => showToast("Email text copied"));
       }
 
+      function downloadEmailHtml(){
+        updateInvoice();
+        const html = buildEmailHtml();
+        const blob = new Blob([html], { type:"text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = buildEmailHtmlTitle() + ".html";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+        showToast("Branded email HTML downloaded");
+      }
+
+      function copyEmailHtml(){
+        copyText(buildEmailHtml()).then(() => showToast("Email HTML copied"));
+      }
+
       function buildEmailBody(){
         const guest = clean(els.guestName.value) || "there";
-        const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
-        const adjustment = Number(els.adjustmentAmount.value) || 0;
-        const total = subtotal + adjustment;
-        const plan = getPaymentPlan(total);
+        const totals = getInvoiceTotals();
+        const plan = getPaymentPlan(totals.total);
         const tourLines = state.items.map(item => {
-          const note = item.note ? " (" + item.note + ")" : "";
+          const noteText = cleanItemNote(item.note || "");
+          const note = noteText ? " (" + noteText + ")" : "";
           return "- " + (item.description || "Tour") + note;
         }).join("\n");
         return "Hi " + guest + ",\n\n" +
-          "Attached is your tour invoice for the following Mindo Bird Watching plans:\n" +
+          "We are excited to help confirm your Mindo Bird Watching plans. Attached is your tour invoice for:\n" +
           tourLines + "\n\n" +
-          "Booking total: " + formatMoney(total) + "\n" +
+          "Booking total: " + formatMoney(totals.total) + "\n" +
           (plan.mode === "deposit" ? "Deposit requested now: " + formatMoney(plan.requested) + "\nRemaining balance after deposit: " + formatMoney(plan.remaining) + "\n\n" : "Amount requested now: " + formatMoney(plan.requested) + "\n\n") +
-          "Once payment is received, we will send your tour confirmation.\n\n" +
+          "Once the requested payment is received, we will send your official tour confirmation.\n\n" +
           "In the meantime, you are welcome to follow our recent sightings, videos, and tour ideas here:\n" +
           "Instagram: https://instagram.com/mindobirdwatching\n" +
           "YouTube: https://www.youtube.com/@MindoBirdWatching\n" +
@@ -1368,6 +1402,113 @@
           "Mindo Bird Watching\n" +
           "Mindo, Ecuador\n" +
           "mindobirdwatching.com | " + getContact().email;
+      }
+
+      function buildEmailHtml(){
+        const contact = getContact();
+        const totals = getInvoiceTotals();
+        const plan = getPaymentPlan(totals.total);
+        const guestName = clean(els.guestName.value) || "Guest";
+        const guestFirst = guestName.split(/\s+/)[0] || "there";
+        const pickup = clean(els.pickupLocation.value);
+        const paymentHeading = plan.mode === "deposit" ? "Tour Deposit Request" : "Tour Payment Request";
+        const paymentIntro = plan.mode === "deposit"
+          ? "Attached is your Zelle invoice requesting the tour deposit so we can hold your Mindo plans."
+          : "Attached is your Zelle invoice for the tour payment so we can confirm your Mindo plans.";
+        const itemRows = state.items.map((item, index) => emailItemRow(item, index)).join("");
+        const icons = signatureIcons();
+        return "<!doctype html>" +
+          "<html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>" +
+          "<title>" + esc(paymentHeading) + "</title></head>" +
+          "<body style='margin:0;padding:0;background:#C7DAAC;font-family:Arial,Helvetica,sans-serif;color:#071923;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#C7DAAC;margin:0;padding:0;'><tr><td align='center' style='padding:24px 12px;'>" +
+          "<table role='presentation' width='640' cellspacing='0' cellpadding='0' border='0' style='width:640px;max-width:100%;background:#F6FAF0;border-radius:18px;border:1px solid #A8C98E;overflow:hidden;'>" +
+          "<tr><td style='padding:22px 26px;background:#ffffff;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
+          "<td width='78' valign='middle'><img src='" + attr(logoUrl) + "' width='64' height='64' alt='Mindo Bird Watching' style='display:block;border-radius:50%;background:#fff;border:1px solid #d8e5d0;'></td>" +
+          "<td valign='middle' style='padding-left:12px;'><div style='font-family:Georgia,\"Times New Roman\",serif;color:#0D5925;font-size:28px;line-height:1.05;font-weight:900;'>Mindo Bird Watching</div><div style='font-size:12px;line-height:1.2;color:#5a665f;font-weight:900;text-transform:uppercase;letter-spacing:.08em;'>Private cloud forest tours</div></td>" +
+          "</tr></table>" +
+          "</td></tr>" +
+          "<tr><td style='padding:26px;background:#0D5925;color:#ffffff;'>" +
+          "<div style='font-size:12px;line-height:1.2;text-transform:uppercase;letter-spacing:.08em;font-weight:900;'>Invoice attached</div>" +
+          "<div style='font-family:Georgia,\"Times New Roman\",serif;font-size:34px;line-height:1.04;font-weight:900;margin-top:8px;'>" + esc(paymentHeading) + "</div>" +
+          "<p style='font-size:16px;line-height:1.55;margin:14px 0 0;'>Hi " + esc(guestFirst) + ", we are excited to help confirm your Mindo Bird Watching plans. " + esc(paymentIntro) + " Once payment is received, we will send your official tour confirmation.</p>" +
+          "</td></tr>" +
+          "<tr><td style='padding:22px 26px;background:#ffffff;'>" +
+          "<div style='font-family:Georgia,\"Times New Roman\",serif;color:#0D5925;font-size:24px;line-height:1.1;font-weight:900;margin-bottom:12px;'>Your Selected Plans</div>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='border-collapse:separate;border-spacing:0 10px;'>" + itemRows + "</table>" +
+          (pickup ? "<p style='font-size:14px;line-height:1.45;margin:8px 0 0;color:#425047;'><strong>Pickup:</strong> " + esc(pickup) + "</p>" : "") +
+          "</td></tr>" +
+          "<tr><td style='padding:22px 26px;background:#F6FAF0;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
+          "<td valign='top' style='padding-right:12px;'><div style='font-family:Georgia,\"Times New Roman\",serif;color:#0D5925;font-size:24px;line-height:1.1;font-weight:900;'>Payment Summary</div><p style='margin:8px 0 0;font-size:14px;line-height:1.5;color:#425047;'>Please use the attached invoice for Zelle payment. Reply any time if you have questions or need us to adjust a detail.</p></td>" +
+          "<td valign='top' width='230' style='background:#ffffff;border:1px solid #bfd3b2;border-radius:14px;padding:14px;'>" +
+          paymentSummaryHtml(totals, plan) +
+          "</td></tr></table>" +
+          "</td></tr>" +
+          "<tr><td style='padding:24px 26px;background:#0D5925;color:#ffffff;text-align:center;'>" +
+          "<div style='font-family:Georgia,\"Times New Roman\",serif;font-size:25px;line-height:1.15;font-weight:900;'>Follow Along Before Your Visit</div>" +
+          "<p style='font-size:14px;line-height:1.5;margin:8px auto 16px;max-width:500px;'>See recent sightings, tour ideas, and guest experiences while you get ready for Mindo.</p>" +
+          emailButton("Instagram", "https://instagram.com/mindobirdwatching", "#ffffff", "#0D5925") +
+          emailButton("YouTube", "https://www.youtube.com/@MindoBirdWatching", "#ffffff", "#0D5925") +
+          emailButton("Reviews", "https://g.page/r/CdMlIYMGgBIvEAE", "#ffffff", "#0D5925") +
+          "</td></tr>" +
+          "<tr><td style='padding:22px 26px;background:#ffffff;'>" +
+          "<p style='margin:0 0 8px;font-size:14px;line-height:1.4;color:#071923;'>Warm regards,<br><strong>Mindo Bird Watching</strong></p>" +
+          "<div style='margin:12px 0 10px;'>" + icons + "</div>" +
+          "<p style='margin:0;color:#425047;font-size:12px;line-height:1.45;'><strong>Mindo, Ecuador</strong><br><a href='https://mindobirdwatching.com' style='color:#0D5925;font-weight:900;'>mindobirdwatching.com</a> | <a href='mailto:" + attr(contact.email) + "' style='color:#0D5925;font-weight:900;'>" + esc(contact.email) + "</a></p>" +
+          "</td></tr>" +
+          "</table>" +
+          "</td></tr></table>" +
+          "</body></html>";
+      }
+
+      function emailItemRow(item, index){
+        const note = cleanItemNote(item.note || "");
+        return "<tr><td style='background:#F6FAF0;border:1px solid #bfd3b2;border-radius:14px;padding:14px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
+          "<td valign='top' style='padding-right:10px;'><div style='font-size:11px;line-height:1.1;color:#0D5925;text-transform:uppercase;letter-spacing:.08em;font-weight:900;'>Plan " + (index + 1) + "</div><div style='font-family:Georgia,\"Times New Roman\",serif;color:#0D5925;font-size:20px;line-height:1.12;font-weight:900;margin-top:4px;'>" + esc(item.description || "Tour") + "</div>" +
+          (note ? "<div style='font-size:13px;line-height:1.4;color:#425047;margin-top:7px;'>" + esc(note) + "</div>" : "") + "</td>" +
+          "<td valign='top' align='right' width='96' style='font-size:13px;line-height:1.45;color:#071923;white-space:nowrap;'><strong>" + esc(item.qty || 1) + "</strong> guest(s)<br><strong>" + esc(formatMoney(lineTotal(item))) + "</strong></td>" +
+          "</tr></table>" +
+        "</td></tr>";
+      }
+
+      function paymentSummaryHtml(totals, plan){
+        const rows = [
+          ["Booking total", formatMoney(totals.total)],
+          [plan.mode === "deposit" ? "Deposit requested" : "Amount requested", formatMoney(plan.requested)]
+        ];
+        if(plan.remaining > 0) rows.push(["Remaining balance", formatMoney(plan.remaining)]);
+        return rows.map((row, index) => {
+          const isPrimary = index === 1;
+          return "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='margin:0 0 8px;'><tr><td style='font-size:12px;color:#5a665f;font-weight:900;text-transform:uppercase;letter-spacing:.04em;'>" + esc(row[0]) + "</td></tr><tr><td style='font-size:" + (isPrimary ? "24px" : "17px") + ";line-height:1.15;color:#0D5925;font-weight:" + (isPrimary ? "900" : "700") + ";padding-top:3px;'>" + esc(row[1]) + "</td></tr></table>";
+        }).join("");
+      }
+
+      function emailButton(label, href, bg, color){
+        return "<a href='" + attr(href) + "' style='display:inline-block;margin:4px 5px;padding:11px 16px;border-radius:13px;background:" + attr(bg) + ";color:" + attr(color) + ";font-size:13px;line-height:1;text-decoration:none;font-weight:900;'>" + esc(label) + "</a>";
+      }
+
+      function signatureIcons(){
+        const icons = [
+          { href:"https://www.mindobirdwatching.com", img:"https://i.imgur.com/fSPayjc.png", alt:"Website", size:24 },
+          { href:"https://www.instagram.com/mindobirdwatching/", img:"https://cdn-icons-png.flaticon.com/512/2111/2111463.png", alt:"Instagram", size:24 },
+          { href:"https://www.tiktok.com/@mindobirdwatching", img:"https://cdn-icons-png.flaticon.com/512/3046/3046121.png", alt:"TikTok", size:24 },
+          { href:"https://t.me/+ANc1KHoV2Y82NmI5", img:"https://cdn-icons-png.flaticon.com/512/2111/2111646.png", alt:"Telegram", size:24 },
+          { href:"https://www.facebook.com/profile.php?id=61577783327957", img:"https://cdn-icons-png.flaticon.com/512/733/733547.png", alt:"Facebook", size:24 },
+          { href:"https://x.com/mindobirds", img:"https://cdn-icons-png.flaticon.com/512/5968/5968958.png", alt:"X", size:24 },
+          { href:"https://www.youtube.com/@MindoBirdWatching", img:"https://cdn-icons-png.flaticon.com/512/1384/1384060.png", alt:"YouTube", size:24 },
+          { href:"https://pin.it/6O8GN1PRz", img:"https://i.imgur.com/kSrXjXZ.png", alt:"Pinterest", size:24 },
+          { href:"https://g.page/r/CdMlIYMGgBIvEAE/review", img:"https://i.imgur.com/fBPIjvV.png", alt:"Google Review", size:26 },
+          { href:"https://wa.me/13054585402", img:"https://i.imgur.com/0sfOKs8.png", alt:"WhatsApp", size:24 },
+          { href:"https://mindobirdwatching.com/shop", img:"https://i.imgur.com/g53OeDX.png", alt:"Shop", size:24 }
+        ];
+        return icons.map(icon => "<a href='" + attr(icon.href) + "' style='display:inline-block;margin:0 5px 6px 0;text-decoration:none;'><img src='" + attr(icon.img) + "' width='" + icon.size + "' height='" + icon.size + "' alt='" + attr(icon.alt) + "' style='display:block;border:0;'></a>").join("");
+      }
+
+      function buildEmailHtmlTitle(){
+        return buildPdfTitle().replace(/^MBW_ZELLE_/, "MBW_ZELLE_EMAIL_");
       }
 
       function getContact(){
@@ -1406,6 +1547,15 @@
 
       function clean(value){
         return String(value || "").trim();
+      }
+
+      function cleanItemNote(value){
+        return clean(value)
+          .replace(/\s*\|\s*/g, " | ")
+          .replace(/(?:\s*\|\s*)+$/g, "")
+          .replace(/^\s*\|\s*/g, "")
+          .replace(/\s{2,}/g, " ")
+          .trim();
       }
 
       function copyText(text){
