@@ -432,7 +432,8 @@
         const primary=tourItems[0]||primaryTourItemFromForm();
         const full=clean(els.fullNameInput.value)||[clean(els.firstNameInput.value),clean(els.lastNameInput.value)].filter(Boolean).join(" ");
         const phone=cleanPhoneText(els.phoneInput.value);
-        const norm=normalizePhone(phone);
+        const selectedCountry=clean(els.countryInput.value)||clean(selected.country||selected.home_country);
+        const norm=normalizePhone(phone,selectedCountry);
         const sheetPhone=norm||phone;
         const inquiry=state.selectedId&&els.modeInput.value==="update"?state.selectedId:"INQ-"+stamp()+"-"+lastFour(norm||phone);
         const date=toDateValue(els.dateInput.value)||primary.tour_date||"";
@@ -445,7 +446,7 @@
         const lastContacted=state.forceContactedAt||shouldAutoContact(selected,status)?now:(selected.last_contacted_at||"");
         const serviceType=clean(els.serviceTypeInput.value)||deriveServiceType(tour);
         const product=clean(els.productSelectedInput.value)||primary.product_selected||deriveProductCode(tour);
-        const country=clean(els.countryInput.value)||clean(selected.country||selected.home_country)||inferCountry(norm);
+        const country=selectedCountry||inferCountry(norm);
         const notes=clean(els.notesInput.value);
         const tourCompleted=selected.tour_completed||(status==="completed"?"Yes":"No");
         return {inquiry_id:inquiry,guest_id:clean(els.guestIdInput.value)||selected.guest_id||"G-"+stamp()+"-"+lastFour(norm||phone),first_name:clean(els.firstNameInput.value),last_name:clean(els.lastNameInput.value),full_name:full,phone_number:sheetPhone,phone_raw:sheetPhone,phone_normalized:norm,email:clean(els.emailInput.value),email_normalized:clean(els.emailInput.value).toLowerCase(),country:country,home_country:country,source_type:source,source_tab:source,source_page:selected.source_page||"",source_row:selected.source_row||"",assigned_to:selected.assigned_to||"",stage_changed_at:statusChanged?now:(selected.stage_changed_at||""),last_contacted_at:lastContacted,next_action:selected.next_action||"",tour_type:tour,tour_category:tour,interest_category:tour,guest_count:clean(els.guestCountInput.value),guest_count_text:clean(els.guestCountInput.value),requested_date:date,requested_date_start:date,requested_date_end:date,requested_date_text:date,duration_preference:clean(els.durationInput.value),transportation_needed:clean(els.transportInput.value),pickup_location:clean(els.pickupLocationInput.value),priority:priority,status:status,quote_status:clean(els.quoteStatusInput.value),payment_status:clean(els.paymentStatusInput.value),invoice_no:clean(els.invoiceNoInput.value),date_paid:toDateValue(els.datePaidInput.value),payment_method:clean(els.paymentMethodInput.value),service_type:serviceType,product_selected:product,tour_completed:tourCompleted,availability_status:clean(els.availabilityInput.value)||"pending",grouping_preference:clean(els.groupingPreferenceInput.value)||"unknown",grouping_status:clean(els.groupingStatusInput.value)||"unmatched",quoted_amount:clean(els.quotedAmountInput.value),quoted_currency:clean(els.quotedAmountInput.value)?"USD":"",followup_date:toDateValue(els.followupInput.value),notes:notes,message_questions:notes,internal_notes:clean(els.internalInput.value),tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):"",tour_content:tourItems.length?String(tourItems.length):"",updated_at:now,created_at:selected.created_at||now};
@@ -460,8 +461,9 @@
         const full=pick(row,"full_name","guest_name","name","Name")||[first,last].filter(Boolean).join(" ");
         const rawPhone=cleanPhoneText(pick(row,"phone_number","phone_raw","phone","Phone","guest_phone"));
         const rawNorm=cleanPhoneText(pick(row,"phone_normalized"));
-        const norm=rawNorm||normalizePhone(rawPhone);
-        const phone=rawPhone||norm;
+        const country=pick(row,"country","home_country","home country","Home Country","Country","country_of_residence","home_country_text");
+        const norm=normalizePhone(rawNorm||rawPhone,country);
+        const phone=norm||rawPhone;
         const tour=normalizeTourCategory(pick(row,"tour_type","tour_category","preferred_tour_type","interest_category","tour_interest"));
         const requestedText=pick(row,"requested_date_text","dates_of_visit","requested_date","requested_date_start","preferred_date","tour_date");
         const range=parseDateRange(requestedText);
@@ -472,7 +474,6 @@
         const priority=isClosedStatus(status)?"":normalizePriority(pick(row,"priority")||autoPriority(requested));
         const source=pick(row,"source_type","source_tab")||"manual_email";
         const existingCompleted=pick(row,"tour_completed");
-        const country=pick(row,"country","home_country","home country","Home Country","Country","country_of_residence","home_country_text");
         const tourItems=normalizeTourItems(row);
         return Object.assign({},row,{inquiry_id:pick(row,"inquiry_id","id","source_record_id")||("INQ-"+stamp()+"-"+lastFour(norm||phone)),guest_id:pick(row,"guest_id")||("G-"+stamp()+"-"+lastFour(norm||phone)),first_name:first,last_name:last,full_name:full||"Guest",phone_number:phone,phone_raw:phone,phone_normalized:norm,email:pick(row,"email","guest_email","Email"),email_normalized:pick(row,"email_normalized")||pick(row,"email","guest_email","Email").toLowerCase(),country:country,home_country:country,source_type:source,source_tab:pick(row,"source_tab")||source,source_page:pick(row,"source_page"),source_row:pick(row,"source_row"),assigned_to:pick(row,"assigned_to"),tour_type:tour,tour_category:tour,interest_category:pick(row,"interest_category","tour_category")||tour,guest_count:pick(row,"guest_count","guest_count_text","number_of_guests"),guest_count_text:pick(row,"guest_count_text","guest_count","number_of_guests"),requested_date:requested,requested_date_start:requested,requested_date_end:requestedEnd,requested_date_text:requestedText||requested,duration_preference:normalizeDuration(pick(row,"duration_preference")),transportation_needed:normalizeTransportation(pick(row,"transportation_needed")),accommodation_needed:pick(row,"accommodation_needed","accommodation_needs"),pickup_location:pick(row,"pickup_location"),priority:priority,status:status,quote_status:pick(row,"quote_status")||"not_sent",payment_status:normalizePayment(pick(row,"payment_status")||"unpaid"),invoice_no:pick(row,"invoice_no","invoice_number"),date_paid:toDateValue(pick(row,"date_paid","payment_received_at")),payment_method:pick(row,"payment_method"),service_type:pick(row,"service_type")||deriveServiceType(tour),product_selected:pick(row,"product_selected")||deriveProductCode(tour),tour_completed:existingCompleted||(status==="completed"?"Yes":"No"),availability_status:pick(row,"availability_status")||"pending",grouping_preference:pick(row,"grouping_preference")||"unknown",grouping_status:pick(row,"grouping_status")||"unmatched",quoted_amount:pick(row,"quoted_amount"),quoted_currency:pick(row,"quoted_currency"),followup_date:toDateValue(pick(row,"followup_date")),notes:notes,internal_notes:pick(row,"internal_notes"),tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):pick(row,"tour_count","tour_content"),tour_content:tourItems.length?String(tourItems.length):pick(row,"tour_content","tour_count"),stage_changed_at:pick(row,"stage_changed_at"),last_contacted_at:pick(row,"last_contacted_at"),next_action:pick(row,"next_action"),created_at:pick(row,"created_at"),updated_at:pick(row,"updated_at")});
       }
@@ -541,18 +542,43 @@
       function guestNumber(value){ const match=String(value||"").match(/\d+/); return match?Number(match[0]):0; }
       function toIsoDate(date){ return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0"); }
       function setSelectValue(select,value){ if(!select) return; const found=[...select.options].some(option=>option.value===value); select.value=found?value:""; }
-      function openWhatsApp(){ const r=getSelected(); if(!r){showToast("Select a record first");return;} const phone=normalizePhone(r.phone_number||r.phone_normalized); if(!phone){showToast("No phone on selected record");return;} window.open("https://wa.me/"+phone,"_blank","noopener,noreferrer"); }
+      function openWhatsApp(){ const r=getSelected(); if(!r){showToast("Select a record first");return;} const phone=normalizePhone(r.phone_number||r.phone_normalized,r.country||r.home_country); if(!phone){showToast("No phone on selected record");return;} window.open("https://wa.me/"+phone,"_blank","noopener,noreferrer"); }
       function clearFilters(){ ["searchInput","inlineSearchInput","statusFilter","inlineStatusFilter","quoteFilter","paymentFilter"].forEach(id=>els[id].value=""); els.viewFilter.value="all"; state.activeQueue="all"; render(); }
       function syncFullName(){ els.fullNameInput.value=[clean(els.firstNameInput.value),clean(els.lastNameInput.value)].filter(Boolean).join(" "); renderPayload(); }
-      function syncCountry(){ const n=normalizePhone(els.phoneInput.value); if(!clean(els.countryInput.value)) els.countryInput.value=inferCountry(n); renderPayload(); }
+      function syncCountry(){ const currentCountry=clean(els.countryInput.value); const n=normalizePhone(els.phoneInput.value,currentCountry); if(!currentCountry) els.countryInput.value=inferCountry(n); renderPayload(); }
       function isUpcoming7(r){ const d=parseDateOnly(r.requested_date); if(!d) return false; const today=parseDateOnly(datePlusDays(0)); const diff=(d-today)/86400000; return diff>=0&&diff<=7; }
       function isFollowupDue(r){ const d=parseDateOnly(r.followup_date); if(!d) return false; const today=parseDateOnly(datePlusDays(0)); return d<=today; }
       function updateStatusField(){ if(!els.statusField) return; els.statusField.className="field statusField "+statusClass(els.recordStatusInput.value||"new"); }
       function parseDateOnly(value){ const date=toDateValue(value); if(!date) return null; const parts=date.split("-").map(Number); return new Date(parts[0],parts[1]-1,parts[2]); }
       function datePlusDays(days){ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+days); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
       function cleanPhoneText(value){ value=clean(value).replace(/^'/,""); if(/^#(ERROR|VALUE|REF|N\/A|NAME|DIV\/0)!?/i.test(value)) return ""; return value; }
-      function normalizePhone(phone){ const digits=String(phone||"").replace(/\D/g,""); if(/^\d{10}$/.test(digits)) return "1"+digits; if(/^1\d{10}$/.test(digits)) return digits; if(/^09\d{8}$/.test(digits)) return "593"+digits.slice(1); return digits; }
-      function inferCountry(phone){ if(/^1\d{10}$/.test(phone)) return "United States / Canada"; if(String(phone).startsWith("593")) return "Ecuador"; const map=[["44","United Kingdom"],["49","Germany"],["33","France"],["34","Spain"],["39","Italy"],["31","Netherlands"],["41","Switzerland"],["61","Australia"],["64","New Zealand"],["52","Mexico"],["55","Brazil"],["57","Colombia"],["51","Peru"],["56","Chile"],["54","Argentina"]]; const m=map.find(([c])=>String(phone).startsWith(c)); return m?m[1]:""; }
+      function normalizePhone(phone,country){
+        const raw=String(phone||"").trim();
+        let digits=raw.replace(/\D/g,"");
+        const countryKey=clean(country).toLowerCase();
+        const isDenmark=countryKey.includes("denmark")||countryKey.includes("dinamarca");
+        const isNanp=countryKey.includes("united states")||countryKey==="usa"||countryKey.includes("canada");
+        const isEcuador=countryKey.includes("ecuador");
+
+        // Repair the old CRM bug that stored Danish +45 numbers as 1-45-XXXXXXXX.
+        if(isDenmark&&/^145\d{8}$/.test(digits)) digits=digits.slice(1);
+        if(isDenmark&&/^\d{8}$/.test(digits)) return "45"+digits;
+        if(isDenmark&&/^45\d{8}$/.test(digits)) return digits;
+
+        // An explicit international prefix is authoritative.
+        if(raw.startsWith("+")) return digits;
+        if(raw.startsWith("00")&&digits.startsWith("00")) return digits.slice(2);
+
+        if(isNanp&&/^\d{10}$/.test(digits)) return "1"+digits;
+        if(/^1\d{10}$/.test(digits)) return digits;
+        if(isEcuador&&/^09\d{8}$/.test(digits)) return "593"+digits.slice(1);
+
+        // Preserve recognizable international numbers instead of assuming that
+        // every 10-digit number belongs to the US/Canada numbering plan.
+        if(inferCountry(digits)&&!/^1\d{10}$/.test(digits)) return digits;
+        return digits;
+      }
+      function inferCountry(phone){ if(/^1\d{10}$/.test(phone)) return "United States / Canada"; if(String(phone).startsWith("593")) return "Ecuador"; const map=[["45","Denmark"],["44","United Kingdom"],["49","Germany"],["33","France"],["34","Spain"],["39","Italy"],["31","Netherlands"],["41","Switzerland"],["61","Australia"],["64","New Zealand"],["52","Mexico"],["55","Brazil"],["57","Colombia"],["51","Peru"],["56","Chile"],["54","Argentina"]]; const m=map.find(([c])=>String(phone).startsWith(c)); return m?m[1]:""; }
       function stamp(){ return new Date().toISOString().replace(/[-:.TZ]/g,"").slice(0,14); }
       function lastFour(v){ return (String(v||"").replace(/\D/g,"")||"0000").slice(-4).padStart(4,"0"); }
       function clean(v){ return String(v||"").trim(); }
