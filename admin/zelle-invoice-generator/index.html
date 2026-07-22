@@ -781,7 +781,7 @@
         cacheEls();
         setDefaultDates();
         state.items = [
-          { description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"Pickup location: Mindo" }
+          { description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"" }
         ];
         bindEvents();
         applyCrmHandoff();
@@ -852,7 +852,7 @@
           state.items = handoffItems;
         }else{
           state.items[0].qty = Math.max(1, Math.min(9, guests));
-          state.items[0].note = pickup ? "Pickup location: " + pickup : state.items[0].note;
+          state.items[0].note = state.items[0].note || "";
         }
         const paymentRequest = String(record.payment_request || record.paymentMode || record.payment_mode || "").toLowerCase();
         const paymentStatus = String(record.payment_status || "").toLowerCase();
@@ -893,23 +893,40 @@
         const items = normalizeTourItems(record);
         if(items.length){
           return items.map(item => {
-            const description = normalizeDescription(item.tour || item.description || item.product || record.tour_type || record.product_selected);
+            const description = normalizeDescription(item.tour || item.description || item.product_selected || item.product || record.tour_type || record.product_selected);
             const qty = Math.max(1, Math.min(9, Number(item.guests || record.guest_count || guestFallback || 1) || 1));
-            const price = Number(item.price || priceFor(description, item.product || record.product_selected, record.quoted_amount)) || 0;
-            const pickup = clean(item.pickup_location || item.pickup || pickupFallback || record.pickup_location);
+            const price = itemPrice(item, description, item.product_selected || item.product || record.product_selected, record.quoted_amount);
             const date = clean(item.date || item.tour_date || record.requested_date);
             const noteParts = [];
             if(date) noteParts.push("Tour date: " + formatDate(date));
-            if(pickup) noteParts.push("Pickup location: " + pickup);
-            if(item.note) noteParts.push(item.note);
+            const itemNote = stripPickupFromItemNote(item.note || item.notes || "");
+            if(itemNote) noteParts.push(itemNote);
             return { description, qty, price, note:cleanItemNote(noteParts.join(" | ")) };
           });
         }
         const description = normalizeDescription(record.product_selected || record.tour_type || record.service_type);
         const qty = Math.max(1, Math.min(9, Number(record.guest_count || guestFallback || 1) || 1));
         const price = Number(priceFor(description, record.product_selected, record.quoted_amount)) || 0;
-        const pickup = clean(record.pickup_location || pickupFallback);
-        return [{ description, qty, price, note:pickup ? "Pickup location: " + pickup : "" }];
+        return [{ description, qty, price, note:"" }];
+      }
+
+      function itemPrice(item, description, product, quotedAmount){
+        const direct = numberFromMoney(item.price || item.quoted_amount || item.unit_price || item.price_per_person || item.per_person || item.rate || item.amount);
+        if(direct > 0) return direct;
+        return Number(priceFor(description, product, quotedAmount)) || 0;
+      }
+
+      function numberFromMoney(value){
+        const n = Number(String(value || "").replace(/[^0-9.-]/g, ""));
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      function stripPickupFromItemNote(value){
+        return clean(value)
+          .split(/\s*\|\s*/)
+          .map(clean)
+          .filter(part => part && !/^(pickup|pick up|pickup location)\s*:/i.test(part))
+          .join(" | ");
       }
 
       function normalizeTourItems(record){
@@ -923,7 +940,7 @@
         }catch(e){
           return source.split(/\s*\|\s*/).map(chunk => {
             const parts = chunk.split("::");
-            return { date:parts[0] || "", tour:parts[1] || "", guests:parts[2] || "", product:parts[3] || "", status:parts[4] || "", pickup_location:parts[5] || "" };
+            return { date:parts[0] || "", tour:parts[1] || "", guests:parts[2] || "", product:parts[3] || "", status:parts[4] || "", pickup_location:parts[5] || "", price:parts[6] || "", notes:parts[7] || "" };
           }).filter(item => clean(item.tour || item.product || item.date));
         }
       }
@@ -1034,7 +1051,7 @@
         els.adjustmentAmount.value = "0";
         delete els.dueDate.dataset.manuallyChanged;
         setDefaultDates();
-        state.items = [{ description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"Pickup location: Mindo" }];
+        state.items = [{ description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"" }];
         renderItems();
         updateInvoice();
         showToast("Invoice reset");
@@ -1419,6 +1436,7 @@
         const paymentIntro = plan.mode === "deposit"
           ? "Attached is your Zelle invoice requesting the tour deposit so we can hold your Mindo plans."
           : "Attached is your Zelle invoice for the tour payment so we can confirm your Mindo plans.";
+        const heroImage = "https://mindobirdwatching.com/assets/images/quest/mbw_birds_choco_toucan_001.jpg";
         const itemRows = state.items.map((item, index) => emailItemRow(item, index)).join("");
         const icons = signatureIcons();
         return "<!doctype html>" +
@@ -1433,6 +1451,7 @@
           "<td valign='middle' style='padding-left:12px;'><div style='font-family:Georgia,\"Times New Roman\",serif;color:#0D5925;font-size:28px;line-height:1.05;font-weight:900;'>Mindo Bird Watching</div><div style='font-size:12px;line-height:1.2;color:#5a665f;font-weight:900;text-transform:uppercase;letter-spacing:.08em;'>Private cloud forest tours</div></td>" +
           "</tr></table>" +
           "</td></tr>" +
+          "<tr><td style='padding:0;background:#0D5925;'><img src='" + attr(heroImage) + "' width='640' alt='Choco Toucan in the Mindo cloud forest' style='display:block;width:100%;max-width:640px;height:auto;border:0;'></td></tr>" +
           "<tr><td style='padding:26px;background:#0D5925;color:#ffffff;'>" +
           "<div style='font-size:12px;line-height:1.2;text-transform:uppercase;letter-spacing:.08em;font-weight:900;'>Invoice attached</div>" +
           "<div style='font-family:Georgia,\"Times New Roman\",serif;font-size:34px;line-height:1.04;font-weight:900;margin-top:8px;'>" + esc(paymentHeading) + "</div>" +
