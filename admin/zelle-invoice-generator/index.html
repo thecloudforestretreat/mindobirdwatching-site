@@ -250,6 +250,18 @@
       grid-template-columns:1fr 1fr;
       gap:10px;
     }
+    .paymentSummary{
+      border:1px solid rgba(13,89,37,.18);
+      background:rgba(199,218,172,.22);
+      border-radius:14px;
+      padding:10px 12px;
+      margin-top:4px;
+      color:var(--mbw-ink);
+      font-size:12px;
+      line-height:1.35;
+      font-weight:800;
+    }
+    .paymentSummary strong{ color:var(--mbw-green); }
     .previewWrap{
       background:#C7DAAC;
       border:1px solid rgba(7,25,35,.16);
@@ -393,6 +405,15 @@
       font-size:20px;
       line-height:1.1;
       font-weight:400;
+    }
+    .amountDue em{
+      display:block;
+      margin-top:6px;
+      color:#51605a;
+      font-size:11px;
+      line-height:1.25;
+      font-style:normal;
+      font-weight:800;
     }
     .billBox{
       margin-top:12px;
@@ -674,6 +695,19 @@
 
           <div class="sectionDivider">
             <h2 class="panelTitle">Totals</h2>
+            <div class="inlineGrid">
+              <div class="field">
+                <label for="paymentMode">Payment Request</label>
+                <select id="paymentMode">
+                  <option value="full">Full payment</option>
+                  <option value="deposit" selected>$100 deposit</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="depositAmount">Deposit Amount</label>
+                <input id="depositAmount" type="number" step="1" min="0" value="100" />
+              </div>
+            </div>
             <div class="totalsEditor">
               <div class="field">
                 <label for="adjustmentLabel">Adjustment Label</label>
@@ -684,6 +718,7 @@
                 <input id="adjustmentAmount" type="number" step="0.01" value="0" />
               </div>
             </div>
+            <div class="paymentSummary" id="paymentSummary">Payment request will update after items are added.</div>
             <p class="hint">Use a negative amount for discounts, for example <strong>-20</strong>.</p>
           </div>
         </section>
@@ -753,7 +788,7 @@
       function cacheEls(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "adjustmentLabel", "adjustmentAmount", "itemsEditor",
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "adjustmentLabel", "adjustmentAmount", "paymentSummary", "itemsEditor",
           "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "emailBtn", "copyEmailBtn", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
@@ -761,7 +796,7 @@
       function bindEvents(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "adjustmentLabel", "adjustmentAmount"
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "adjustmentLabel", "adjustmentAmount"
         ].forEach(id => {
           els[id].addEventListener("input", handleGlobalInput);
           els[id].addEventListener("change", handleGlobalInput);
@@ -804,15 +839,116 @@
         if(guestPhone) els.guestPhone.value = guestPhone;
         if(date) els.tourDate.value = date;
         if(pickup) els.pickupLocation.value = pickup;
-        state.items[0].qty = Math.max(1, Math.min(9, guests));
-        state.items[0].note = pickup ? "Pickup location: " + pickup : state.items[0].note;
+        const handoffItems = buildItemsFromRecord(record, guests, pickup);
+        if(handoffItems.length){
+          state.items = handoffItems;
+        }else{
+          state.items[0].qty = Math.max(1, Math.min(9, guests));
+          state.items[0].note = pickup ? "Pickup location: " + pickup : state.items[0].note;
+        }
+        const paymentRequest = String(record.payment_request || record.paymentMode || record.payment_mode || "").toLowerCase();
+        const paymentStatus = String(record.payment_status || "").toLowerCase();
+        if(paymentRequest.includes("full") || paymentStatus === "paid"){
+          els.paymentMode.value = "full";
+        }else if(paymentRequest.includes("deposit") || paymentStatus !== "paid"){
+          els.paymentMode.value = "deposit";
+        }
+        const requestedDeposit = Number(record.deposit_amount || record.depositAmount || "");
+        if(requestedDeposit > 0) els.depositAmount.value = requestedDeposit;
       }
 
       function getCrmHandoff(){
         const params = new URLSearchParams(window.location.search);
-        const fromParams = { full_name: params.get("guest") || params.get("name") || "", email: params.get("email") || "", phone_number: params.get("phone") || "", guest_count: params.get("guests") || "", requested_date: params.get("date") || "", tour_type: params.get("tour") || "", pickup_location: params.get("pickup") || "" };
-        if(Object.values(fromParams).some(Boolean)) return fromParams;
-        try { return JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { return null; }
+        let stored = null;
+        try { stored = JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { stored = null; }
+        const fromParams = {
+          full_name: params.get("guest") || params.get("name") || params.get("full_name") || "",
+          email: params.get("email") || "",
+          phone_number: params.get("phone") || "",
+          guest_count: params.get("guests") || params.get("guest_count") || "",
+          requested_date: params.get("date") || params.get("tour_date") || "",
+          tour_type: params.get("tour") || params.get("tour_type") || "",
+          pickup_location: params.get("pickup") || params.get("pickup_location") || "",
+          quoted_amount: params.get("quoted_amount") || "",
+          product_selected: params.get("product_selected") || "",
+          service_type: params.get("service_type") || "",
+          payment_status: params.get("payment_status") || "",
+          payment_request: params.get("payment_request") || params.get("paymentMode") || params.get("payment_mode") || "",
+          deposit_amount: params.get("deposit_amount") || params.get("deposit") || ""
+        };
+        const hasParams = Object.values(fromParams).some(Boolean);
+        if(hasParams) return Object.assign({}, stored || {}, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
+        return stored;
+      }
+
+      function buildItemsFromRecord(record, guestFallback, pickupFallback){
+        const items = normalizeTourItems(record);
+        if(items.length){
+          return items.map(item => {
+            const description = normalizeDescription(item.tour || item.description || item.product || record.tour_type || record.product_selected);
+            const qty = Math.max(1, Math.min(9, Number(item.guests || record.guest_count || guestFallback || 1) || 1));
+            const price = Number(item.price || priceFor(description, item.product || record.product_selected, record.quoted_amount)) || 0;
+            const pickup = clean(item.pickup_location || item.pickup || pickupFallback || record.pickup_location);
+            const date = clean(item.date || item.tour_date || record.requested_date);
+            const noteParts = [];
+            if(date) noteParts.push("Tour date: " + formatDate(date));
+            if(pickup) noteParts.push("Pickup location: " + pickup);
+            if(item.note) noteParts.push(item.note);
+            return { description, qty, price, note:noteParts.join(" | ") };
+          });
+        }
+        const description = normalizeDescription(record.product_selected || record.tour_type || record.service_type);
+        const qty = Math.max(1, Math.min(9, Number(record.guest_count || guestFallback || 1) || 1));
+        const price = Number(priceFor(description, record.product_selected, record.quoted_amount)) || 0;
+        const pickup = clean(record.pickup_location || pickupFallback);
+        return [{ description, qty, price, note:pickup ? "Pickup location: " + pickup : "" }];
+      }
+
+      function normalizeTourItems(record){
+        let source = record && (record.tour_items_json || record.tour_items);
+        if(!source) return [];
+        if(Array.isArray(source)) return source.filter(Boolean);
+        if(typeof source !== "string") return [];
+        try{
+          const parsed = JSON.parse(source);
+          return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+        }catch(e){
+          return source.split(/\s*\|\s*/).map(chunk => {
+            const parts = chunk.split("::");
+            return { date:parts[0] || "", tour:parts[1] || "", guests:parts[2] || "", product:parts[3] || "", status:parts[4] || "", pickup_location:parts[5] || "" };
+          }).filter(item => clean(item.tour || item.product || item.date));
+        }
+      }
+
+      function normalizeDescription(value){
+        const text = clean(value);
+        const low = text.toLowerCase();
+        if(low.includes("mbw004") || low.includes("jewel")) return "Jewels of the Morning Forest Birding Tour";
+        if(low.includes("mbw005") || low.includes("cock") || low.includes("andean")) return "Dance of the Andean Cock-of-the-Rock Dawn Tour";
+        if(low.includes("mbw006") || low.includes("quest") || low.includes("five toucan")) return "Quest for Five Toucans & the Andean Cock-of-the-Rock";
+        if(low.includes("night")) return "Night Walk";
+        if(low.includes("waterfall")) return "Waterfall Tour / Hike";
+        if(low.includes("chocolate")) return "Chocolate Tour";
+        if(low.includes("transport") && low.includes("round")) return "Private Roundtrip Transportation";
+        if(low.includes("quito") && low.includes("mindo")) return "Quito to Mindo Transportation";
+        if(low.includes("mindo") && low.includes("quito")) return "Mindo to Quito Transportation";
+        if(low.includes("custom")) return "Custom Private Birding Tour";
+        return itemOptions.includes(text) ? text : (text || "Custom Private Birding Tour");
+      }
+
+      function priceFor(description, product, quotedAmount){
+        const quoted = Number(quotedAmount || "");
+        const text = (description + " " + (product || "")).toLowerCase();
+        if(quoted > 0 && (text.includes("custom") || !text.trim())) return quoted;
+        if(text.includes("mbw004") || text.includes("jewel")) return 55;
+        if(text.includes("mbw005") || text.includes("cock") || text.includes("andean")) return 85;
+        if(text.includes("mbw006") || text.includes("quest") || text.includes("five toucan")) return 110;
+        if(text.includes("night")) return 30;
+        if(text.includes("waterfall")) return 15;
+        if(text.includes("chocolate")) return 15;
+        if(text.includes("roundtrip")) return 180;
+        if(text.includes("transport")) return 99;
+        return quoted > 0 ? quoted : 0;
       }
 
       function setDefaultDates(){
@@ -884,6 +1020,8 @@
         els.tourDate.value = "";
         els.pickupLocation.value = "";
         els.invoiceNotes.value = "";
+        els.paymentMode.value = "deposit";
+        els.depositAmount.value = "100";
         els.adjustmentLabel.value = "Adjustments";
         els.adjustmentAmount.value = "0";
         delete els.dueDate.dataset.manuallyChanged;
@@ -898,10 +1036,25 @@
         const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
         const adjustment = Number(els.adjustmentAmount.value) || 0;
         const total = subtotal + adjustment;
-        els.invoicePreview.innerHTML = buildInvoiceHtml(subtotal, adjustment, total);
+        const plan = getPaymentPlan(total);
+        els.paymentSummary.innerHTML = "<strong>" + esc(plan.modeLabel) + ":</strong> requesting " + esc(formatMoney(plan.requested)) + " now" + (plan.remaining > 0 ? ", with " + esc(formatMoney(plan.remaining)) + " remaining." : ".");
+        els.invoicePreview.innerHTML = buildInvoiceHtml(subtotal, adjustment, total, plan);
       }
 
-      function buildInvoiceHtml(subtotal, adjustment, total){
+      function getPaymentPlan(total){
+        const mode = els.paymentMode.value === "deposit" ? "deposit" : "full";
+        const deposit = Math.max(0, Number(els.depositAmount.value) || 100);
+        const requested = mode === "deposit" ? (total > 0 ? Math.min(deposit, Math.max(total, 0)) : deposit) : Math.max(total, 0);
+        return {
+          mode,
+          modeLabel: mode === "deposit" ? "Tour deposit" : "Full payment",
+          dueLabel: mode === "deposit" ? "Deposit Due" : "Amount Due",
+          requested,
+          remaining: Math.max(0, total - requested)
+        };
+      }
+
+      function buildInvoiceHtml(subtotal, adjustment, total, plan){
         const contact = getContact();
         const invoiceNumber = clean(els.invoiceNumber.value) || "Draft";
         const invoiceDate = formatDate(els.invoiceDate.value);
@@ -932,7 +1085,7 @@
                 (guestPhone ? "<p>Phone: " + esc(guestPhone) + "</p>" : "") +
               "</div>" +
             "</div>" +
-            "<div class='amountDue'><strong>Amount Due</strong><span>" + esc(formatMoney(total)) + "</span></div>" +
+            "<div class='amountDue'><strong>" + esc(plan.dueLabel) + "</strong><span>" + esc(formatMoney(plan.requested)) + "</span>" + (plan.remaining > 0 ? "<em>Balance after deposit: " + esc(formatMoney(plan.remaining)) + "</em>" : "") + "</div>" +
           "</div>" +
           "<table class='itemsTable'><thead><tr><th>#</th><th>Items & Description</th><th>Qty/Hrs</th><th>Price</th><th>Amount</th></tr></thead><tbody>" +
             state.items.map((item, index) => itemRow(item, index)).join("") +
@@ -944,13 +1097,16 @@
             "<table class='totalsTable'><tbody>" +
               "<tr><td>Subtotal</td><td><strong>" + esc(formatMoney(subtotal)) + "</strong></td></tr>" +
               "<tr><td>" + esc(adjustmentLabel) + "</td><td>" + esc(formatMoney(adjustment)) + "</td></tr>" +
-              "<tr class='grand'><td></td><td>" + esc(formatMoney(total)) + "</td></tr>" +
+              "<tr><td>Booking Total</td><td><strong>" + esc(formatMoney(total)) + "</strong></td></tr>" +
+              "<tr><td>" + esc(plan.modeLabel) + "</td><td><strong>" + esc(formatMoney(plan.requested)) + "</strong></td></tr>" +
+              (plan.remaining > 0 ? "<tr><td>Remaining Balance</td><td>" + esc(formatMoney(plan.remaining)) + "</td></tr>" : "") +
+              "<tr class='grand'><td></td><td>" + esc(formatMoney(plan.requested)) + "</td></tr>" +
             "</tbody></table>" +
           "</div>" +
           "<div class='customerNotes'>" +
             "<h3>Notes to Customer</h3>" +
             "<p>Thank you for booking with Mindo Bird Watching!</p>" +
-            "<p>Your tour will be confirmed once payment is received.</p>" +
+            "<p>Your tour will be confirmed once the requested payment is received.</p>" +
             "<p>Please reply to this message or WhatsApp us if you have questions.</p>" +
             "<p>Visit mindobirdwatching.com for tour details.</p>" +
             "<h3>Terms and Conditions</h3>" +
@@ -1124,6 +1280,7 @@
           ".amountDue{text-align:center;color:#0D5925;padding-top:10px;}" +
           ".amountDue strong{display:block;font-size:13px;line-height:1.2;text-transform:uppercase;letter-spacing:.04em;}" +
           ".amountDue span{display:block;margin-top:5px;font-size:20px;line-height:1.1;font-weight:400;}" +
+          ".amountDue em{display:block;margin-top:6px;color:#51605a;font-size:11px;line-height:1.25;font-style:normal;font-weight:800;}" +
           ".billBox{margin-top:12px;border-top:2px solid #0D5925;padding-top:7px;width:310px;}" +
           ".billBox h3{margin:0 0 5px;color:#0D5925;font-size:14px;line-height:1.1;text-transform:uppercase;}" +
           ".billBox p{margin:2px 0;font-size:12px;line-height:1.35;}" +
@@ -1188,8 +1345,24 @@
 
       function buildEmailBody(){
         const guest = clean(els.guestName.value) || "there";
+        const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
+        const adjustment = Number(els.adjustmentAmount.value) || 0;
+        const total = subtotal + adjustment;
+        const plan = getPaymentPlan(total);
+        const tourLines = state.items.map(item => {
+          const note = item.note ? " (" + item.note + ")" : "";
+          return "- " + (item.description || "Tour") + note;
+        }).join("\n");
         return "Hi " + guest + ",\n\n" +
-          "Attached is your tour invoice. Upon completion of payment, we will send your tour confirmation.\n\n" +
+          "Attached is your tour invoice for the following Mindo Bird Watching plans:\n" +
+          tourLines + "\n\n" +
+          "Booking total: " + formatMoney(total) + "\n" +
+          (plan.mode === "deposit" ? "Deposit requested now: " + formatMoney(plan.requested) + "\nRemaining balance after deposit: " + formatMoney(plan.remaining) + "\n\n" : "Amount requested now: " + formatMoney(plan.requested) + "\n\n") +
+          "Once payment is received, we will send your tour confirmation.\n\n" +
+          "In the meantime, you are welcome to follow our recent sightings, videos, and tour ideas here:\n" +
+          "Instagram: https://instagram.com/mindobirdwatching\n" +
+          "YouTube: https://www.youtube.com/@MindoBirdWatching\n" +
+          "Reviews: https://g.page/r/CdMlIYMGgBIvEAE\n\n" +
           "Please let us know if you have any questions.\n\n" +
           "Warm regards,\n" +
           "Mindo Bird Watching\n" +
