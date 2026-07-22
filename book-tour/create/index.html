@@ -1006,7 +1006,9 @@
     const all = [];
 
     for (const lang of langs) {
-      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}`);
+      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}&v=27`, {
+        cache: "no-store"
+      });
       const data = await res.json();
       if (!data.ok) {
         throw new Error(data.error || "Failed to load tours");
