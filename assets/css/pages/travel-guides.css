@@ -2806,3 +2806,67 @@ body[data-css-cluster="travel_guides"][data-page-content-group="day_trip"] .hero
   object-fit: initial;
   object-position: initial;
 }
+
+/* Contact page: give the two date controls the useful space and keep the
+   compact guest selector proportional. The global stylesheet continues to
+   own the shared form, button, final CTA, and footer design. */
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .rowDatesGuests {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 124px;
+  align-items: start;
+  gap: 12px;
+}
+
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .dateRange {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(190px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .dateRange > input[type="date"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+  color-scheme: light;
+  padding-inline: 12px 38px;
+  line-height: 1.2;
+}
+
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] input[type="date"]::-webkit-datetime-edit,
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+  opacity: 1;
+  padding: 0;
+}
+
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .guestsLabel {
+  width: 124px;
+  max-width: 124px;
+}
+
+body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .contactLayout + .finalCta {
+  margin-top: 24px;
+}
+
+@media (max-width: 760px) {
+  body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .rowDatesGuests {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .dateRange {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .guestsLabel {
+    width: min(220px, 100%);
+    max-width: 100%;
+  }
+}
