@@ -31,7 +31,7 @@
 <link href="/site.webmanifest" rel="manifest">
 <link href="/assets/css/site.css" rel="stylesheet">
 <link href="/assets/css/header.css" rel="stylesheet">
-<link href="/assets/css/pages/tour-collection.css" rel="stylesheet">
+<link href="/assets/css/pages/tour-collection.css?v=20260723-3" rel="stylesheet">
 <script defer src="/assets/js/head.js"></script>
 <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 <script type="application/ld+json">
@@ -93,7 +93,7 @@
           "name": "Is this an instant online booking?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. This page sends a private tour request. A representative confirms availability, pricing, timing, logistics, and next steps manually before the tour is finalized."
+            "text": "No. This page sends a tour request. We confirm availability, pricing, timing, logistics, and next steps personally before the tour is finalized."
           }
         },
         {
@@ -101,23 +101,31 @@
           "name": "Do I need to pay when I submit the request?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No payment is required when you submit the request form. The form starts the planning conversation."
+            "text": "No payment is required when you submit the form. Your request starts the planning conversation."
           }
         },
         {
           "@type": "Question",
-          "name": "How fast will Mindo Bird Watching reply?",
+          "name": "How quickly will you reply?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The team usually replies as quickly as possible by email or WhatsApp, especially when dates, group size, and tour goals are included."
+            "text": "We usually reply within one business day by email or WhatsApp, especially when you include dates, group size, and tour goals."
           }
         },
         {
           "@type": "Question",
-          "name": "Can I request a half-day, full-day, or custom private tour?",
+          "name": "Which primary experiences can I request?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. You can request a half-day tour, full-day tour, photography-focused tour, or custom private birding plan."
+            "text": "You can request half-day or full-day birdwatching, a photography tour, Night Walk, Quito to Mindo Day Trip, or a custom private tour."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I request multiple experiences?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Choose one primary experience, then select optional additions such as a Night Walk, another birding day, transportation, accommodation help, or another activity."
           }
         },
         {
@@ -125,31 +133,23 @@
           "name": "What details should I include?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Useful details include dates, group size, target birds, photography priorities, preferred pace, lodging or pickup notes, and whether you want a private custom route."
+            "text": "Dates, group size, target birds, photography priorities, preferred pace, lodging, pickup notes, and other activity interests are most useful."
           }
         },
         {
           "@type": "Question",
-          "name": "Can beginners request a private birdwatching tour?",
+          "name": "Can beginners request a private tour?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Private tours can be paced for beginners, photographers, families, or experienced birders looking for specific species."
+            "text": "Yes. Private tours can be adapted for beginners, photographers, families, and experienced birders seeking particular species."
           }
         },
         {
           "@type": "Question",
-          "name": "Can I message on WhatsApp instead of using the form?",
+          "name": "Can I use WhatsApp instead?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. You can send the form, email the team, or message Mindo Bird Watching on WhatsApp using the page button."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Where do the tours take place?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Tours focus on Mindo and nearby cloud forest habitats in Ecuador, with route planning based on dates, weather, activity, and your goals."
+            "text": "Yes. You can submit the form or use the WhatsApp button if you prefer a direct conversation."
           }
         }
       ],
@@ -232,12 +232,37 @@
 <label class="field">Start Date<input autocomplete="off" id="dateStart" type="date"></label>
 <label class="field">End Date Optional<input autocomplete="off" id="dateEnd" type="date"></label>
 </div>
-<div class="grid-2">
+<div class="grid-2 guestAccommodationGrid">
 <label class="field">Number of Guests<select name="number_of_guests"><option value="">Select</option><option>1</option><option>2</option><option>3 to 4</option><option>5 to 8</option><option>9+</option></select></label>
-<label class="field">Preferred Tour Type<select name="preferred_tour_type"><option value="">Select</option><option>Half-Day Tour</option><option>Full-Day Tour</option><option>Custom / Private Tour</option><option>Photography-Focused Tour</option><option>Not Sure Yet</option></select></label>
-</div>
 <label class="field">Accommodation Needs<input name="accommodation_needs" placeholder="Optional hotel name, pickup notes, or route needs" type="text"></label>
+</div>
+<fieldset class="tourPrimary" aria-describedby="tourPrimaryHelp">
+<legend>Primary Tour or Experience*</legend>
+<p class="fieldHelp" id="tourPrimaryHelp">Choose the main experience you want us to plan. Select “Not Sure Yet” if you would like our recommendation.</p>
+<div class="tourPrimaryGrid">
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" required type="radio" value="Half-Day Tour"><span><strong>Half-Day Birdwatching</strong><small>A focused morning or afternoon route.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Full-Day Tour"><span><strong>Full-Day Birdwatching</strong><small>More habitats, time, and route flexibility.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Photography-Focused Tour"><span><strong>Photography-Focused Tour</strong><small>Plan around light, subjects, pace, and positioning.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Night Walk"><span><strong>Night Walk</strong><small>A dedicated evening wildlife experience.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Quito to Mindo Day Trip"><span><strong>Quito to Mindo Day Trip</strong><small>A complete private day planned from Quito.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Custom / Private Tour"><span><strong>Custom / Private Tour</strong><small>A flexible route shaped around your priorities.</small></span></label>
+<label class="tourPrimaryOption tourPrimaryOption--wide"><input data-primary-tour name="preferred_tour_type" type="radio" value="Not Sure Yet"><span><strong>Not Sure Yet</strong><small>Share your goals and let us recommend the best primary experience.</small></span></label>
+</div>
+</fieldset>
+<fieldset class="tourAddOns" aria-describedby="tourAddOnsHelp">
+<legend>Optional Additions</legend>
+<p class="fieldHelp" id="tourAddOnsHelp">Select all that apply. Leave these blank if you only want the primary experience.</p>
+<div class="tourAddOnGrid">
+<label class="tourAddOnOption"><input data-tour-add-on type="checkbox" value="Night Walk"><span><strong>Night Walk</strong><small>Add an evening wildlife experience.</small></span></label>
+<label class="tourAddOnOption"><input data-tour-add-on type="checkbox" value="Additional Birding Day"><span><strong>Additional Birding Day</strong><small>Plan another day, route, or elevation.</small></span></label>
+<label class="tourAddOnOption"><input data-tour-add-on type="checkbox" value="Transportation"><span><strong>Transportation</strong><small>Request Quito, airport, hotel, or route transport.</small></span></label>
+<label class="tourAddOnOption"><input data-tour-add-on type="checkbox" value="Accommodation Assistance"><span><strong>Accommodation Assistance</strong><small>Ask for lodging or stay-planning help.</small></span></label>
+<label class="tourAddOnOption tourAddOnOption--wide"><input data-tour-add-on id="otherAddOnToggle" type="checkbox" value="Other Activity or Tour"><span><strong>Other Activity or Tour</strong><small>Tell us what else you would like to include.</small></span></label>
+</div>
+<label class="field tourOtherDetails" id="otherAddOnWrap" hidden>Other activity or tour details<input id="otherAddOnDetails" placeholder="For example: chocolate tour, waterfalls, cable car, or another activity" type="text"></label>
+</fieldset>
 <label class="field">Special Interests<input name="special_interests" placeholder="Toucan Barbet, Cock-of-the-rock, hummingbirds, tanagers, antpittas, photography, etc." type="text"></label>
+<input id="tourAddOnsValue" name="tour_add_ons" type="hidden" value="">
 <input id="sourcePage" name="source_page" type="hidden" value="">
 <input id="uaField" name="user_agent" type="hidden" value="">
 <input id="landingPageField" name="landing_page" type="hidden" value="">
@@ -339,23 +364,29 @@
 <section class="sectionBox compactSection" aria-label="Frequently asked questions">
 <div class="sectionHead"><div><span class="eyebrow">FAQ</span><h2>Tour Request Questions</h2></div></div>
 <div class="faqGrid">
-<div class="faqCard"><h3>Is this an instant online booking?</h3><p>No. This is a tour request. A representative confirms availability, price, timing, logistics, and next steps manually.</p></div>
-<div class="faqCard"><h3>Do I pay now?</h3><p>No payment is required on this page. The form starts the planning process.</p></div>
-<div class="faqCard"><h3>Can I use WhatsApp instead?</h3><p>Yes. Use the WhatsApp button if you prefer a direct conversation.</p></div>
-<div class="faqCard"><h3>What should I include?</h3><p>Dates, group size, target birds, photography goals, walking pace, and lodging or pickup notes are the most useful details.</p></div>
-<div class="faqCard"><h3>Can beginners request a tour?</h3><p>Yes. Private tours can be adapted for beginners, photographers, families, and experienced birders.</p></div>
-<div class="faqCard"><h3>Which tour length should I choose?</h3><p>Half-day works for limited time. Full-day is better for more habitat coverage. Custom private tours are best for target species.</p></div>
-<div class="faqCard"><h3>Can you help with target birds?</h3><p>Yes. Share your target list and we will advise what is realistic for your dates and route.</p></div>
-<div class="faqCard"><h3>Where are the tours?</h3><p>Most requests focus on Mindo and nearby cloud forest birding routes in Ecuador.</p></div>
+<div class="faqCard"><h3>Is this an instant online booking?</h3><p>No. This page sends a tour request. We confirm availability, pricing, timing, logistics, and next steps personally before the tour is finalized.</p></div>
+<div class="faqCard"><h3>Do I need to pay when I submit the request?</h3><p>No payment is required when you submit the form. Your request starts the planning conversation.</p></div>
+<div class="faqCard"><h3>How quickly will you reply?</h3><p>We usually reply within one business day by email or WhatsApp, especially when you include dates, group size, and tour goals.</p></div>
+<div class="faqCard"><h3>Which primary experiences can I request?</h3><p>You can request half-day or full-day birdwatching, a photography tour, Night Walk, Quito to Mindo Day Trip, or a custom private tour.</p></div>
+<div class="faqCard"><h3>Can I request multiple experiences?</h3><p>Yes. Choose one primary experience, then select optional additions such as a Night Walk, another birding day, transportation, accommodation help, or another activity.</p></div>
+<div class="faqCard"><h3>What details should I include?</h3><p>Dates, group size, target birds, photography priorities, preferred pace, lodging, pickup notes, and other activity interests are most useful.</p></div>
+<div class="faqCard"><h3>Can beginners request a private tour?</h3><p>Yes. Private tours can be adapted for beginners, photographers, families, and experienced birders seeking particular species.</p></div>
+<div class="faqCard"><h3>Can I use WhatsApp instead?</h3><p>Yes. You can submit the form or use the WhatsApp button if you prefer a direct conversation.</p></div>
 </div>
 </section>
 
-<section class="finalCta sectionBox" aria-label="Final tour request call to action">
-<h2>Ready to plan your Mindo birdwatching day?</h2>
-<p>Send your request now and our team will help you choose the best private birding option for your dates, goals, and group.</p>
-<div class="ctaRow ctaRow--equal">
+<section class="finalCta finalCta--split" aria-label="Final tour request call to action">
+<div class="finalGrid">
+<div class="finalLeft">
+<span class="eyebrow">Ready to plan?</span>
+<h2>Plan the right Mindo experience for your trip</h2>
+<p>Send your dates, group size, primary experience, and any optional additions. We will review the combination and confirm availability, timing, pricing, and logistics personally.</p>
+<div class="ctaRow ctaRow--inline">
 <a class="btn primary" href="#request-form" data-analytics-event="tour_request_click" data-analytics-label="Final Send Tour Request" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="tour_request_page">Send Tour Request</a>
 <a class="btn secondary" href="#request-form" data-whatsapp-message-key="book_tour_en" data-analytics-event="tour_whatsapp_click" data-analytics-label="Final WhatsApp" data-analytics-link-type="whatsapp" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="tour_request_page">Message on WhatsApp</a>
+</div>
+</div>
+<aside class="nextSteps"><h3>What happens next</h3><ol><li>We review your dates, group, primary tour, and additions.</li><li>We confirm a realistic combination, guide availability, and logistics.</li><li>You receive the recommended plan, pricing, and booking steps.</li></ol></aside>
 </div>
 </section>
 </main>
@@ -417,8 +448,29 @@
       }
       var ds = document.getElementById("dateStart");
       var de = document.getElementById("dateEnd");
-      if(ds) ds.addEventListener("change", combineDates);
+      function localTodayIso(){
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, "0");
+        var day = String(now.getDate()).padStart(2, "0");
+        return year + "-" + month + "-" + day;
+      }
+
+      function applyDateMinimums(){
+        var today = localTodayIso();
+        if(ds) ds.min = today;
+        if(de){
+          de.min = ds && ds.value && ds.value > today ? ds.value : today;
+          if(de.value && de.value < de.min) de.value = "";
+        }
+      }
+
+      if(ds) ds.addEventListener("change", function(){
+        applyDateMinimums();
+        combineDates();
+      });
       if(de) de.addEventListener("change", combineDates);
+      applyDateMinimums();
       combineDates();
 
       var copyBtn = document.getElementById("copyEmailBtn");
@@ -460,6 +512,48 @@
       var errorEl = document.getElementById("formErrorMsg");
       var submitBtn = document.getElementById("submitBtn");
       var iframe = document.getElementById("mbwHiddenFrame");
+      var preferredTourInputs = Array.prototype.slice.call(document.querySelectorAll("[data-primary-tour]"));
+      var addOnInputs = Array.prototype.slice.call(document.querySelectorAll("[data-tour-add-on]"));
+      var addOnsValue = document.getElementById("tourAddOnsValue");
+      var otherAddOnToggle = document.getElementById("otherAddOnToggle");
+      var otherAddOnWrap = document.getElementById("otherAddOnWrap");
+      var otherAddOnDetails = document.getElementById("otherAddOnDetails");
+
+      function updateTourAddOns(){
+        var primaryIsNightWalk = preferredTourInputs.some(function(input){
+          return input.checked && input.value === "Night Walk";
+        });
+        var values = [];
+
+        addOnInputs.forEach(function(input){
+          if(input.value === "Night Walk"){
+            input.disabled = primaryIsNightWalk;
+            if(primaryIsNightWalk) input.checked = false;
+          }
+
+          if(!input.checked || input.disabled) return;
+          if(input === otherAddOnToggle){
+            var details = otherAddOnDetails ? otherAddOnDetails.value.trim() : "";
+            values.push(details ? "Other: " + details : "Other Activity or Tour");
+          }else{
+            values.push(input.value);
+          }
+        });
+
+        if(otherAddOnWrap){
+          otherAddOnWrap.hidden = !(otherAddOnToggle && otherAddOnToggle.checked);
+        }
+        if(addOnsValue) addOnsValue.value = values.join(" | ");
+      }
+
+      preferredTourInputs.forEach(function(input){
+        input.addEventListener("change", updateTourAddOns);
+      });
+      addOnInputs.forEach(function(input){
+        input.addEventListener("change", updateTourAddOns);
+      });
+      if(otherAddOnDetails) otherAddOnDetails.addEventListener("input", updateTourAddOns);
+      updateTourAddOns();
 
       var pending = false;
       var done = false;
@@ -502,6 +596,7 @@
           if(ds) ds.value = "";
           if(de) de.value = "";
           combineDates();
+          updateTourAddOns();
           if(ua) ua.value = navigator.userAgent || "";
           if(sp) sp.value = window.location.href;
         }catch(e){}
@@ -531,6 +626,7 @@
 
       if(form){
         form.addEventListener("submit", function(){
+          updateTourAddOns();
           hideMsgs();
           done = false;
           pending = true;
