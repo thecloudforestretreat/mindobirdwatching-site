@@ -25,12 +25,12 @@
 <!-- Global / shared CSS (approved) -->
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
-<link href="/assets/css/pages/recommendations.css" rel="stylesheet"/>
+<link href="/assets/css/pages/recommendations.css?v=20260723-6" rel="stylesheet"/>
 <!-- Head-only JS (approved) -->
 <script defer="" src="/assets/js/head.js"></script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mindobirdwatching.com/es/recomendaciones/mindo_eco/#webpage","url":"https://mindobirdwatching.com/es/recomendaciones/mindo_eco/","name":"Alojamientos en Mindo, Ecuador | Eco Chalet, Suite y Glamping","description":"Descubre alojamientos en Mindo, Ecuador, incluyendo eco chalet, suite y glamping junto al río, ideales para observadores de aves y viajeros de naturaleza.","inLanguage":"es","isPartOf":{"@type":"WebSite","name":"Mindo Bird Watching","url":"https://mindobirdwatching.com/"},"about":[{"@type":"Place","name":"Mindo, Ecuador"},{"@type":"Thing","name":"Alojamientos ecológicos en el bosque nublado"},{"@type":"Thing","name":"Planificación de viajes de observación de aves"}]},{"@type":"BreadcrumbList","@id":"https://mindobirdwatching.com/es/recomendaciones/mindo_eco/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://mindobirdwatching.com/es/"},{"@type":"ListItem","position":2,"name":"Recomendaciones","item":"https://mindobirdwatching.com/es/recomendaciones/"},{"@type":"ListItem","position":3,"name":"Alojamientos Mindo Eco","item":"https://mindobirdwatching.com/es/recomendaciones/mindo_eco/"}]},{"@type":"FAQPage","@id":"https://mindobirdwatching.com/es/recomendaciones/mindo_eco/#faq","mainEntity":[{"@type":"Question","name":"¿Cuál es la mejor época para alojarse en Mindo?","acceptedAnswer":{"@type":"Answer","text":"Mindo se puede visitar durante todo el año. Para observar aves, las mañanas suelen ser mejores, y aun en períodos lluviosos normalmente hay ventanas útiles para jardines de colibríes, senderos, cascadas y actividades en el pueblo."}},{"@type":"Question","name":"¿Qué deberían llevar los visitantes?","acceptedAnswer":{"@type":"Answer","text":"Lleva protección ligera para la lluvia, calzado cómodo, repelente, binoculares o cámara si planeas observar aves y un itinerario flexible para el clima del bosque nublado."}},{"@type":"Question","name":"¿Estos alojamientos son buenos para observar aves?","acceptedAnswer":{"@type":"Answer","text":"Funcionan bien como bases de naturaleza, especialmente si planeas salidas tempranas con guía o visitas jardines de colibríes, senderos, cascadas y rutas de observación cercanas."}},{"@type":"Question","name":"¿La reserva del alojamiento se hace con Mindo Bird Watching?","acceptedAnswer":{"@type":"Answer","text":"No. Esta página ayuda a comparar alojamientos recomendados. La disponibilidad, el precio, las reglas y la reserva se gestionan en Airbnb o en la plataforma del anfitrión."}}]},{"@type":"LocalBusiness","@id":"https://mindobirdwatching.com/#localbusiness","name":"Mindo Bird Watching","url":"https://mindobirdwatching.com/","image":"https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg","address":{"@type":"PostalAddress","addressLocality":"Mindo","addressRegion":"Pichincha","addressCountry":"EC"}}]}</script>
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image:secure_url"/><meta content="Alojamientos ecológicos y viaje de naturaleza en Mindo, Ecuador" property="og:image:alt"/><meta content="Alojamientos ecológicos y viaje de naturaleza en Mindo, Ecuador" name="twitter:image:alt"/></head>
-<body data-css-cluster="recommendations" data-page-content-group="recommendations" data-page-language="es" data-page-region="mindo" data-page-type="local_recommendation_page">
+<body data-css-cluster="recommendations" data-recommendation="mindo-eco" data-page-content-group="recommendations" data-page-language="es" data-page-region="mindo" data-page-type="local_recommendation_page">
 <!-- Match homepage container + header/footer injection pattern -->
 <div class="container">
 <div data-current-lang="es" id="siteHeader"></div><nav aria-label="Selector de idioma" class="rawLangLinks"><a data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="local_recommendation_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/recommendations/mindo_eco/" hreflang="en" lang="en">English</a> <a aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="local_recommendation_page" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/recomendaciones/mindo_eco/" hreflang="es" lang="es">Español</a></nav>
@@ -586,7 +586,17 @@
       carousels.forEach(function(car){
         var track = car.querySelector(".recTrack");
         var slides = car.querySelectorAll(".recSlide");
+        var dotsHost = car.querySelector(".recDots");
         var dots = Array.prototype.slice.call(car.querySelectorAll(".recDot"));
+        if (dotsHost && dots.length !== slides.length) {
+          dotsHost.textContent = "";
+          Array.prototype.forEach.call(slides, function(_, i){
+            var dot = document.createElement("span");
+            dot.className = "recDot" + (i === 0 ? " active" : "");
+            dotsHost.appendChild(dot);
+          });
+          dots = Array.prototype.slice.call(dotsHost.querySelectorAll(".recDot"));
+        }
         var prev = car.querySelector(".recNav.prev");
         var next = car.querySelector(".recNav.next");
         var interval = Number(car.getAttribute("data-interval") || "0");
