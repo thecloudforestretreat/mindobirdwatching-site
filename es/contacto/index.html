@@ -31,6 +31,7 @@
 
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
+<link href="/assets/css/pages/travel-guides.css?v=20260723-contact-3" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script async="" defer="" src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 <style>
@@ -603,7 +604,7 @@ input[type="date"]{
 }
 </script>
 </head>
-<body data-page-content-group="contact" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="contact_page">
+<body data-css-cluster="travel_guides" data-page-content-group="contact" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="contact_page">
 <div class="container">
 <div data-current-lang="es" id="siteHeader"></div><nav aria-label="Selector de idioma" class="rawLangLinks"><a data-analytics-content-group="contact" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/contact/" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="contact_page" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/contact/" hreflang="en" lang="en">English</a>
 <a aria-current="page" data-analytics-content-group="contact" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/es/contacto/" data-analytics-location="language_switch" data-analytics-page-language="es" data-analytics-page-type="contact_page" data-analytics-region="mindo" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/contacto/" hreflang="es" lang="es">Español</a>
@@ -612,7 +613,7 @@ input[type="date"]{
 <main class="page card">
 <div aria-label="Diseño de contacto" class="contactLayout">
 <div aria-label="Columna izquierda" class="leftStack">
-<div>
+<div class="contactHero">
 <h1>Reserva Tu Guía Privado de Avistamiento de Aves en Mindo</h1>
 <p class="lede">
           Planifica un tour privado de avistamiento de aves en Mindo con guías locales que conocen el bosque nublado, las especies objetivo, los mejores horarios para fotografía y la logística del viaje. Envíanos tus fechas, tamaño de grupo e intereses, y te ayudaremos a elegir la experiencia adecuada.
@@ -683,8 +684,8 @@ input[type="date"]{
 <label>
 <span class="labelText">Fechas de visita</span>
 <div class="dateRange">
-<input autocomplete="off" id="dateStart" type="date"/>
-<input autocomplete="off" id="dateEnd" type="date"/>
+<input aria-label="Fecha de inicio" autocomplete="off" id="dateStart" title="Fecha de inicio" type="date"/>
+<input aria-label="Fecha final opcional" autocomplete="off" id="dateEnd" title="Fecha final opcional" type="date"/>
 </div>
 <p class="dateHint">Elige una fecha de inicio y una fecha de fin (opcional).</p>
 <input id="datesCombined" name="dates_of_visit" type="hidden" value=""/>
@@ -708,6 +709,11 @@ input[type="date"]{
 <option>Tour de medio día</option>
 <option>Tour de día completo</option>
 <option>Tour personalizado / privado</option>
+<option>Tour de varios días</option>
+<option>Viaje de un día de Quito a Mindo</option>
+<option>Caminata nocturna</option>
+<option>Actividades</option>
+<option>Combinación</option>
 <option>Aún no estoy seguro</option>
 </select>
 </label>
@@ -765,6 +771,27 @@ input[type="date"]{
 </div>
 </div>
 </div>
+<section aria-label="Planifica tu experiencia de avistamiento en Mindo" class="finalCta finalCta--split">
+<div class="finalGrid">
+<div class="finalLeft">
+<p class="eyebrow">¿LISTO PARA PLANIFICAR?</p>
+<h2>Planifica la experiencia adecuada en Mindo para tu viaje</h2>
+<p>Comparte tus fechas, número de personas, objetivos de avistamiento y ritmo preferido. Revisaremos tu solicitud y responderemos con orientación práctica sobre ruta, horarios y reserva.</p>
+<div class="ctaRow">
+<a class="btn primary" href="#contactForm">Enviar un mensaje</a>
+<a class="btn secondary" href="/es/tours/">Ver tours de avistamiento</a>
+</div>
+</div>
+<aside class="nextSteps">
+<h3>Qué pasa después</h3>
+<ol>
+<li>Revisamos tus fechas, grupo, intereses y ritmo preferido.</li>
+<li>Recomendamos una ruta y un horario realistas.</li>
+<li>Recibes disponibilidad, precio y pasos claros para reservar.</li>
+</ol>
+</aside>
+</div>
+</section>
 </main>
 <div id="siteFooter"></div>
 </div>
@@ -816,8 +843,46 @@ input[type="date"]{
   }
   var ds = document.getElementById("dateStart");
   var de = document.getElementById("dateEnd");
-  if(ds) ds.addEventListener("change", combineDates);
-  if(de) de.addEventListener("change", combineDates);
+
+  function localTodayISO(){
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = String(now.getMonth() + 1).padStart(2, "0");
+    var day = String(now.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+  }
+
+  function applyDateLimits(){
+    var today = localTodayISO();
+    if(ds) ds.min = today;
+    if(de){
+      de.min = (ds && ds.value && ds.value > today) ? ds.value : today;
+      if(de.value && de.value < de.min) de.value = "";
+    }
+  }
+
+  function validateDates(){
+    var today = localTodayISO();
+    var minimumEnd = (ds && ds.value && ds.value > today) ? ds.value : today;
+    if(ds){
+      ds.setCustomValidity(ds.value && ds.value < today ? "La fecha de inicio debe ser hoy o una fecha futura." : "");
+    }
+    if(de){
+      de.setCustomValidity(de.value && de.value < minimumEnd ? "La fecha final debe ser igual o posterior a la fecha de inicio." : "");
+    }
+    return (!ds || ds.reportValidity()) && (!de || de.reportValidity());
+  }
+
+  if(ds) ds.addEventListener("change", function(){
+    applyDateLimits();
+    validateDates();
+    combineDates();
+  });
+  if(de) de.addEventListener("change", function(){
+    validateDates();
+    combineDates();
+  });
+  applyDateLimits();
   combineDates();
 
   var copyBtn = document.getElementById("copyEmailBtn");
@@ -915,7 +980,12 @@ input[type="date"]{
   hideMsgs();
 
   if(form){
-    form.addEventListener("submit", function(){
+    form.addEventListener("submit", function(ev){
+      applyDateLimits();
+      if(!validateDates()){
+        ev.preventDefault();
+        return;
+      }
       hideMsgs();
       done = false;
       pending = true;
