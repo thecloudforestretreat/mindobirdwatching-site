@@ -1011,6 +1011,106 @@ body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .sec
 
 /* Legacy unscoped CTA locks disabled. They do not describe the bookingPanel
    markup used by this cluster and must not leak into other page components. */
+/* Book-tour primary experience and optional additions */
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns{
+  min-width:0;
+  margin:4px 0 14px;
+  padding:clamp(14px,2vw,18px);
+  border:1px solid var(--line,rgba(19,73,45,.18));
+  border-radius:16px;
+  background:rgba(246,250,240,.72);
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns legend{
+  padding:0 7px;
+  color:var(--green,#0d5925);
+  font-weight:800;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns .fieldHelp{
+  margin:0 0 12px;
+  color:var(--muted,#58636b);
+  font-size:.92rem;
+  line-height:1.45;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  min-width:0;
+  padding:12px;
+  border:1px solid var(--line,rgba(19,73,45,.18));
+  border-radius:14px;
+  background:#fff;
+  cursor:pointer;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption--wide{
+  grid-column:1 / -1;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption input[type="checkbox"]{
+  flex:0 0 18px;
+  width:18px !important;
+  min-width:18px !important;
+  height:18px;
+  margin:2px 0 0;
+  padding:0 !important;
+  accent-color:var(--green,#0d5925);
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption span{
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption strong{
+  color:var(--ink,#071923);
+  line-height:1.25;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption small{
+  color:var(--muted,#58636b);
+  font-size:.82rem;
+  line-height:1.35;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption:has(input:checked){
+  border-color:rgba(13,89,37,.55);
+  background:rgba(226,239,224,.72);
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption:has(input:disabled){
+  opacity:.52;
+  cursor:not-allowed;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourOtherDetails{
+  margin:12px 0 0;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourOtherDetails[hidden]{
+  display:none !important;
+}
+
+@media(max-width:640px){
+  body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnGrid{
+    grid-template-columns:1fr;
+  }
+
+  body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption--wide{
+    grid-column:auto;
+  }
+}
+
 @media not all {
 /* MBW FINAL CTA + BUTTON CONSISTENCY LOCK v2026-07-16 */
 :where(.finalCta,.final-cta,.bottomCta,.bottom-cta,.closingCta,.closing-cta,.ctaBand,.cta-band,.finalCtaBand,.final-cta-band,.planCta,.plan-cta,.bookingCta,.booking-cta,.tourFinalCta,.tour-final-cta,.shopFinalCta,.recommendationsFinalCta){
