@@ -783,7 +783,7 @@
             email:"mindobirdwatching@gmail.com",
             whatsapp:"",
             logo:"https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png",
-            hero:"https://mindobirdwatching.com/assets/images/pages/home/MBW-Assets-homepage-top.jpg",
+            hero:"https://mindobirdwatching.com/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_hero_01.jpg",
             icons:[
               { href:"https://www.mindobirdwatching.com", img:"https://i.imgur.com/fSPayjc.png", alt:"Website", w:28, h:28 },
               { href:"https://www.instagram.com/mindobirdwatching/", img:"https://cdn-icons-png.flaticon.com/512/2111/2111463.png", alt:"Instagram", w:28, h:28 },
@@ -937,7 +937,7 @@
               eyebrow:"Door-to-door transportation",
               title:"Quito to Mindo Transportation",
               description:"We can coordinate private transportation from Quito or Quito Airport to Mindo and back. Please share pickup/drop-off details and luggage quantity so we can choose the right vehicle.",
-              price:"$99 each way",
+              price:"$99 each way / $180 round trip",
               duration:"About 1.5 hours",
               image:"https://mindobirdwatching.com/assets/images/pages/home/MBW-Assets-homepage-top.jpg",
               url:"https://mindobirdwatching.com/quito-to-mindo-cloud-forest-day-trip/",
@@ -1283,7 +1283,8 @@
           hasSelectedType(selectedBlocks, "nextSteps") ? "" : renderNextSteps({ title: "Next Steps", description: nextSteps }),
           renderReadyCta(brand, nextSteps),
           renderSignature(brand),
-          "<tr><td align='center' style='padding:14px 24px 6px; color:rgba(7,25,35,.68); font-size:12px; line-height:18px; font-weight:800;'>" + esc(t("footerName")) + "</td></tr>",
+          renderTravelerNote(),
+          renderBrandFooter(brand),
           "</table>",
           "</td></tr></table>",
           "</body></html>"
@@ -1426,7 +1427,7 @@
           "<td width='38%' valign='top'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.28); border-radius:14px;'><tr><td align='center' style='padding:13px; text-align:center;'>" +
           priceLines.map(line => "<p style='margin:0 0 6px; font-size:13px; line-height:18px; color:#071923;'>" + esc(line) + "</p>").join("") +
-          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:132px; margin:6px 4px 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
+          (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:148px; margin:6px 4px 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
           (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:132px; margin:0 4px 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || t("defaultVideoCta")) + "</a>" : "") +
           "</td></tr></table>" +
           "</td></tr></table>" +
@@ -1436,7 +1437,7 @@
       function renderSmallFeatureCard(block){
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
-          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
           "<td width='54%' valign='middle' style='padding-right:18px;'>" +
           (block.eyebrow ? "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#0D5925; font-weight:900;'>" + esc(block.eyebrow) + "</div>" : "") +
@@ -1504,6 +1505,23 @@
           "</tr></table>" +
           "<p style='margin:5px 0 0; font-size:12px; line-height:18px; color:rgba(7,25,35,.72); font-weight:800;'>Mindo, Ecuador<br><a href='" + attr(brand.site) + "' style='color:#0D5925; text-decoration:underline;'>mindobirdwatching.com</a> | <a href='mailto:" + attr(brand.email) + "' style='color:#0D5925; text-decoration:underline;'>" + esc(brand.email) + "</a></p>" +
           "</td></tr></table></td></tr>";
+      }
+
+      function renderTravelerNote(){
+        return "" +
+          "<tr><td style='padding:10px 20px 0;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.25); border-radius:14px;'><tr><td align='center' style='padding:14px 18px;'>" +
+          "<p style='margin:0; color:rgba(7,25,35,.76); font-size:12px; line-height:18px; font-weight:700;'>Traveling solo? We can help coordinate joining an open tour, based on availability. Groups of two or more will travel in a small group of 2–8 guests unless a private tour is selected.</p>" +
+          "</td></tr></table></td></tr>";
+      }
+
+      function renderBrandFooter(brand){
+        return "" +
+          "<tr><td align='center' style='padding:14px 24px 6px;'>" +
+          "<table role='presentation' cellspacing='0' cellpadding='0' border='0'><tr>" +
+          "<td valign='middle' style='padding-right:6px;'><a href='" + attr(brand.site) + "'><img src='" + attr(brand.logo) + "' width='34' height='34' alt='Mindo Bird Watching logo' style='display:block; width:34px; height:34px; border:0;'></a></td>" +
+          "<td valign='middle' style='color:#32453d; font-size:11px; line-height:16px; font-weight:900;'>Mindo Bird Watching © " + new Date().getFullYear() + "</td>" +
+          "</tr></table></td></tr>";
       }
 
       function buildWhatsAppUrl(message){
