@@ -232,10 +232,20 @@
 <label class="field">Start Date<input autocomplete="off" id="dateStart" type="date"></label>
 <label class="field">End Date Optional<input autocomplete="off" id="dateEnd" type="date"></label>
 </div>
-<div class="grid-2">
 <label class="field">Number of Guests<select name="number_of_guests"><option value="">Select</option><option>1</option><option>2</option><option>3 to 4</option><option>5 to 8</option><option>9+</option></select></label>
-<label class="field">Primary Tour or Experience<select id="preferredTourType" name="preferred_tour_type"><option value="">Select</option><option value="Half-Day Tour">Half-Day Birdwatching</option><option value="Full-Day Tour">Full-Day Birdwatching</option><option value="Photography-Focused Tour">Photography-Focused Tour</option><option value="Night Walk">Night Walk</option><option value="Quito to Mindo Day Trip">Quito to Mindo Day Trip</option><option value="Custom / Private Tour">Custom / Private Tour</option><option value="Not Sure Yet">Not Sure Yet</option></select></label>
+<fieldset class="tourPrimary" aria-describedby="tourPrimaryHelp">
+<legend>Primary Tour or Experience*</legend>
+<p class="fieldHelp" id="tourPrimaryHelp">Choose the main experience you want us to plan. Select “Not Sure Yet” if you would like our recommendation.</p>
+<div class="tourPrimaryGrid">
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" required type="radio" value="Half-Day Tour"><span><strong>Half-Day Birdwatching</strong><small>A focused morning or afternoon route.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Full-Day Tour"><span><strong>Full-Day Birdwatching</strong><small>More habitats, time, and route flexibility.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Photography-Focused Tour"><span><strong>Photography-Focused Tour</strong><small>Plan around light, subjects, pace, and positioning.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Night Walk"><span><strong>Night Walk</strong><small>A dedicated evening wildlife experience.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Quito to Mindo Day Trip"><span><strong>Quito to Mindo Day Trip</strong><small>A complete private day planned from Quito.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Custom / Private Tour"><span><strong>Custom / Private Tour</strong><small>A flexible route shaped around your priorities.</small></span></label>
+<label class="tourPrimaryOption tourPrimaryOption--wide"><input data-primary-tour name="preferred_tour_type" type="radio" value="Not Sure Yet"><span><strong>Not Sure Yet</strong><small>Share your goals and let us recommend the best primary experience.</small></span></label>
 </div>
+</fieldset>
 <fieldset class="tourAddOns" aria-describedby="tourAddOnsHelp">
 <legend>Optional Additions</legend>
 <p class="fieldHelp" id="tourAddOnsHelp">Select all that apply. Leave these blank if you only want the primary experience.</p>
@@ -479,7 +489,7 @@
       var errorEl = document.getElementById("formErrorMsg");
       var submitBtn = document.getElementById("submitBtn");
       var iframe = document.getElementById("mbwHiddenFrame");
-      var preferredTour = document.getElementById("preferredTourType");
+      var preferredTourInputs = Array.prototype.slice.call(document.querySelectorAll("[data-primary-tour]"));
       var addOnInputs = Array.prototype.slice.call(document.querySelectorAll("[data-tour-add-on]"));
       var addOnsValue = document.getElementById("tourAddOnsValue");
       var otherAddOnToggle = document.getElementById("otherAddOnToggle");
@@ -487,7 +497,9 @@
       var otherAddOnDetails = document.getElementById("otherAddOnDetails");
 
       function updateTourAddOns(){
-        var primaryIsNightWalk = preferredTour && preferredTour.value === "Night Walk";
+        var primaryIsNightWalk = preferredTourInputs.some(function(input){
+          return input.checked && input.value === "Night Walk";
+        });
         var values = [];
 
         addOnInputs.forEach(function(input){
@@ -511,7 +523,9 @@
         if(addOnsValue) addOnsValue.value = values.join(" | ");
       }
 
-      if(preferredTour) preferredTour.addEventListener("change", updateTourAddOns);
+      preferredTourInputs.forEach(function(input){
+        input.addEventListener("change", updateTourAddOns);
+      });
       addOnInputs.forEach(function(input){
         input.addEventListener("change", updateTourAddOns);
       });
