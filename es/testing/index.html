@@ -31,7 +31,7 @@
 <link href="/site.webmanifest" rel="manifest">
 <link href="/assets/css/site.css" rel="stylesheet">
 <link href="/assets/css/header.css" rel="stylesheet">
-<link href="/assets/css/pages/tour-collection.css?v=20260723-6" rel="stylesheet">
+<link href="/assets/css/pages/tour-collection.css?v=20260723-7" rel="stylesheet">
 <script defer src="/assets/js/head.js"></script>
 <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 <script type="application/ld+json">
@@ -233,6 +233,18 @@
 <label class="field">Fecha de fin opcional<input autocomplete="off" id="dateEnd" type="date"></label>
 </div>
 <p class="dateError" id="dateValidationMsg" role="alert" hidden></p>
+<div class="mobileDatePicker" id="mobileDatePicker" hidden>
+<div class="mobileDatePicker__dialog" role="dialog" aria-modal="true" aria-labelledby="mobileDatePickerTitle">
+<div class="mobileDatePicker__header">
+<button aria-label="Mes anterior" id="mobileDatePrev" type="button">‹</button>
+<strong id="mobileDatePickerTitle"></strong>
+<button aria-label="Mes siguiente" id="mobileDateNext" type="button">›</button>
+</div>
+<div class="mobileDatePicker__weekdays" aria-hidden="true"><span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span></div>
+<div class="mobileDatePicker__days" id="mobileDateDays"></div>
+<div class="mobileDatePicker__footer"><button id="mobileDateClear" type="button">Borrar</button><button id="mobileDateClose" type="button">Cerrar</button></div>
+</div>
+</div>
 <div class="grid-2 guestAccommodationGrid">
 <label class="field">Número de personas<select name="number_of_guests"><option value="">Seleccionar</option><option>1</option><option>2</option><option>3 a 4</option><option>5 a 8</option><option>9+</option></select></label>
 <label class="field">Necesidades de alojamiento<input name="accommodation_needs" placeholder="Hotel opcional, notas de recogida o necesidades de ruta" type="text"></label>
@@ -506,6 +518,104 @@
       applyDateMinimums();
       validateDates(false);
       combineDates();
+
+      var mobileDatePicker = document.getElementById("mobileDatePicker");
+      var mobileDateTitle = document.getElementById("mobileDatePickerTitle");
+      var mobileDateDays = document.getElementById("mobileDateDays");
+      var mobileDatePrev = document.getElementById("mobileDatePrev");
+      var mobileDateNext = document.getElementById("mobileDateNext");
+      var mobileDateClear = document.getElementById("mobileDateClear");
+      var mobileDateClose = document.getElementById("mobileDateClose");
+      var mobileDateTarget = null;
+      var mobileDateCursor = null;
+      var mobileDateMode = window.matchMedia("(max-width:760px) and (pointer:coarse)").matches;
+
+      function isoFromParts(year, month, day){
+        return year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+      }
+
+      function renderMobileDatePicker(){
+        if(!mobileDateDays || !mobileDateCursor || !mobileDateTarget) return;
+        var year = mobileDateCursor.getFullYear();
+        var month = mobileDateCursor.getMonth();
+        var firstDay = new Date(year, month, 1).getDay();
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var minimum = mobileDateTarget.min || localTodayIso();
+        var minimumMonth = minimum.slice(0, 7);
+        mobileDateTitle.textContent = mobileDateCursor.toLocaleDateString("es-EC", {month:"long", year:"numeric"});
+        mobileDateDays.innerHTML = "";
+        for(var blank = 0; blank < firstDay; blank++){
+          mobileDateDays.appendChild(document.createElement("span"));
+        }
+        for(var day = 1; day <= daysInMonth; day++){
+          (function(dateNumber){
+            var iso = isoFromParts(year, month, dateNumber);
+            var button = document.createElement("button");
+            button.type = "button";
+            button.textContent = String(dateNumber);
+            button.disabled = iso < minimum;
+            button.setAttribute("aria-label", new Date(year, month, dateNumber).toLocaleDateString("es-EC", {dateStyle:"long"}));
+            if(iso === localTodayIso()) button.classList.add("is-today");
+            if(iso === mobileDateTarget.value) button.classList.add("is-selected");
+            button.addEventListener("click", function(){
+              mobileDateTarget.value = iso;
+              if(mobileDateTarget === ds && de && de.value && de.value < ds.value) de.value = "";
+              closeMobileDatePicker();
+              handleDateUpdate();
+            });
+            mobileDateDays.appendChild(button);
+          })(day);
+        }
+        mobileDatePrev.disabled = (year + "-" + String(month + 1).padStart(2, "0")) <= minimumMonth;
+      }
+
+      function openMobileDatePicker(target){
+        if(!mobileDateMode || !mobileDatePicker) return;
+        applyDateMinimums();
+        mobileDateTarget = target;
+        var seed = target.value || target.min || localTodayIso();
+        mobileDateCursor = new Date(seed + "T12:00:00");
+        mobileDatePicker.hidden = false;
+        document.body.classList.add("mobileDatePickerOpen");
+        renderMobileDatePicker();
+      }
+
+      function closeMobileDatePicker(){
+        if(!mobileDatePicker) return;
+        mobileDatePicker.hidden = true;
+        document.body.classList.remove("mobileDatePickerOpen");
+      }
+
+      if(mobileDateMode){
+        [ds, de].forEach(function(input){
+          if(!input) return;
+          input.readOnly = true;
+          input.addEventListener("click", function(event){
+            event.preventDefault();
+            openMobileDatePicker(input);
+          });
+        });
+        if(mobileDatePrev) mobileDatePrev.addEventListener("click", function(){
+          mobileDateCursor.setMonth(mobileDateCursor.getMonth() - 1);
+          renderMobileDatePicker();
+        });
+        if(mobileDateNext) mobileDateNext.addEventListener("click", function(){
+          mobileDateCursor.setMonth(mobileDateCursor.getMonth() + 1);
+          renderMobileDatePicker();
+        });
+        if(mobileDateClear) mobileDateClear.addEventListener("click", function(){
+          if(mobileDateTarget) mobileDateTarget.value = "";
+          closeMobileDatePicker();
+          handleDateUpdate();
+        });
+        if(mobileDateClose) mobileDateClose.addEventListener("click", closeMobileDatePicker);
+        mobileDatePicker.addEventListener("click", function(event){
+          if(event.target === mobileDatePicker) closeMobileDatePicker();
+        });
+        document.addEventListener("keydown", function(event){
+          if(event.key === "Escape") closeMobileDatePicker();
+        });
+      }
 
       var copyBtn = document.getElementById("copyEmailBtn");
       var toast = document.getElementById("copyToast");
