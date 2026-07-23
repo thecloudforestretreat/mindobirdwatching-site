@@ -27,12 +27,12 @@
 <!-- Global / shared CSS (approved) -->
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/>
-<link href="/assets/css/pages/recommendations.css?v=20260723-3" rel="stylesheet"/>
+<link href="/assets/css/pages/recommendations.css?v=20260723-6" rel="stylesheet"/>
 <!-- Head-only JS (approved) -->
 <script defer="" src="/assets/js/head.js"></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebPage", "@id": "https://mindobirdwatching.com/recommendations/mindo_eco/#webpage", "url": "https://mindobirdwatching.com/recommendations/mindo_eco/", "name": "Eco Stays in Mindo, Ecuador | Lodges, Cabins & Glamping", "description": "Compare three hand-picked eco stays in Mindo, Ecuador, including lodges, riverfront cabins, and glamping options near birding, waterfalls, and cloud forest nature.", "inLanguage": "en", "isPartOf": {"@type": "WebSite", "name": "Mindo Bird Watching", "url": "https://mindobirdwatching.com/"}, "about": [{"@type": "Place", "name": "Mindo, Ecuador"}, {"@type": "Thing", "name": "Cloud forest eco stays"}, {"@type": "Thing", "name": "Birdwatching travel planning"}]}, {"@type": "BreadcrumbList", "@id": "https://mindobirdwatching.com/recommendations/mindo_eco/#breadcrumb", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mindobirdwatching.com/"}, {"@type": "ListItem", "position": 2, "name": "Recommendations", "item": "https://mindobirdwatching.com/recommendations/"}, {"@type": "ListItem", "position": 3, "name": "Mindo Eco Stays", "item": "https://mindobirdwatching.com/recommendations/mindo_eco/"}]}, {"@type": "FAQPage", "@id": "https://mindobirdwatching.com/recommendations/mindo_eco/#faq", "mainEntity": [{"@type": "Question", "name": "When is the best time to stay in Mindo?", "acceptedAnswer": {"@type": "Answer", "text": "Mindo can be visited year-round. For birding, mornings are usually best, and rainy periods often still leave usable windows for feeders, trails, waterfalls, and town activities."}}, {"@type": "Question", "name": "What should visitors bring?", "acceptedAnswer": {"@type": "Answer", "text": "Bring light rain protection, comfortable shoes, insect repellent, binoculars or a camera if you plan to watch birds, and a flexible schedule for cloud forest weather."}}, {"@type": "Question", "name": "Are these stays good for birdwatching?", "acceptedAnswer": {"@type": "Answer", "text": "They work well as nature-forward bases, especially if you plan early departures with a guide or choose feeder gardens, trails, waterfalls, and nearby birding routes around your lodging."}}, {"@type": "Question", "name": "Do I book through Mindo Bird Watching?", "acceptedAnswer": {"@type": "Answer", "text": "No. This recommendation page helps you compare trusted stays. Availability, price, house rules, and booking are handled on Airbnb or the host platform."}}]}, {"@type": "LocalBusiness", "@id": "https://mindobirdwatching.com/#localbusiness", "name": "Mindo Bird Watching", "url": "https://mindobirdwatching.com/", "image": "https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg", "address": {"@type": "PostalAddress", "addressLocality": "Mindo", "addressRegion": "Pichincha", "addressCountry": "EC"}}]}</script>
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image:secure_url"/></head>
-<body data-css-cluster="recommendations" data-page-content-group="recommendations" data-page-language="en" data-page-region="mindo" data-page-type="local_recommendation_page">
+<body data-css-cluster="recommendations" data-recommendation="mindo-eco" data-page-content-group="recommendations" data-page-language="en" data-page-region="mindo" data-page-type="local_recommendation_page">
 <!-- Match homepage container + header/footer injection pattern -->
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="local_recommendation_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/recommendations/mindo_eco/" hreflang="en" lang="en">English</a> <a data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="local_recommendation_page" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/recomendaciones/mindo_eco/" hreflang="es" lang="es">Español</a></nav>
@@ -595,7 +595,17 @@
       carousels.forEach(function(car){
         var track = car.querySelector(".recTrack");
         var slides = car.querySelectorAll(".recSlide");
+        var dotsHost = car.querySelector(".recDots");
         var dots = Array.prototype.slice.call(car.querySelectorAll(".recDot"));
+        if (dotsHost && dots.length !== slides.length) {
+          dotsHost.textContent = "";
+          Array.prototype.forEach.call(slides, function(_, i){
+            var dot = document.createElement("span");
+            dot.className = "recDot" + (i === 0 ? " active" : "");
+            dotsHost.appendChild(dot);
+          });
+          dots = Array.prototype.slice.call(dotsHost.querySelectorAll(".recDot"));
+        }
         var prev = car.querySelector(".recNav.prev");
         var next = car.querySelector(".recNav.next");
         var interval = Number(car.getAttribute("data-interval") || "0");
