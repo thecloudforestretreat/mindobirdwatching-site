@@ -1576,10 +1576,9 @@ body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm .ctaRow >
 }
 
 body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm #submitBtn{
-  color:var(--ink,#071923) !important;
-  background:#fff0ad !important;
-  border-color:#e6b81e !important;
-  box-shadow:0 7px 16px rgba(230,184,30,.12) !important;
+  font-family:inherit !important;
+  font-size:.95rem !important;
+  font-weight:850 !important;
 }
 
 @media(max-width:760px){
@@ -1599,3 +1598,37 @@ body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm #submitBt
   }
 }
 /* === END MBW BOOK-TOUR MOBILE FIELD + PRIMARY CTA POLISH 2026-07-23 === */
+
+/* iOS Safari gives native date controls an intrinsic width wider than their
+   grid column. Keep the native picker but constrain its rendered box. */
+@supports (-webkit-touch-callout:none){
+  @media(max-width:760px){
+    body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm .grid-2 > .field{
+      width:100% !important;
+      min-width:0 !important;
+      max-width:100% !important;
+      overflow:hidden !important;
+    }
+
+    body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm input[type="date"]{
+      -webkit-appearance:none !important;
+      appearance:none !important;
+      display:block !important;
+      inline-size:-webkit-fill-available !important;
+      width:-webkit-fill-available !important;
+      min-inline-size:0 !important;
+      min-width:0 !important;
+      max-inline-size:100% !important;
+      max-width:100% !important;
+      margin-inline:0 !important;
+      box-sizing:border-box !important;
+      overflow:hidden !important;
+    }
+
+    body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm input[type="date"]::-webkit-date-and-time-value{
+      min-width:0 !important;
+      margin:0 !important;
+      text-align:left !important;
+    }
+  }
+}
