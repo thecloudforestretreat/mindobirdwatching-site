@@ -1650,3 +1650,108 @@ body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm .dateErro
 body.tourRequestPage[data-css-cluster="tour_collection"] #bookTourForm .dateError[hidden]{
   display:none !important;
 }
+
+.mobileDatePicker[hidden]{display:none !important}
+
+@media(max-width:760px) and (pointer:coarse){
+  body.mobileDatePickerOpen{overflow:hidden}
+
+  .mobileDatePicker{
+    position:fixed;
+    inset:0;
+    z-index:100000;
+    display:grid;
+    place-items:center;
+    padding:18px;
+    background:rgba(8,25,18,.52);
+  }
+
+  .mobileDatePicker__dialog{
+    width:min(100%,420px);
+    padding:18px;
+    border:1px solid #cbd6cc;
+    border-radius:22px;
+    background:#fff;
+    box-shadow:0 18px 60px rgba(7,28,17,.28);
+  }
+
+  .mobileDatePicker__header,
+  .mobileDatePicker__footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .mobileDatePicker__header strong{
+    color:#0d5f2d;
+    font-size:1.15rem;
+    text-transform:capitalize;
+  }
+
+  .mobileDatePicker__header button,
+  .mobileDatePicker__footer button{
+    min-width:44px;
+    min-height:44px;
+    border:1px solid #a9c5ae;
+    border-radius:12px;
+    background:#edf4ee;
+    color:#10212b;
+    font:800 1rem/1 inherit;
+  }
+
+  .mobileDatePicker__header button{font-size:1.8rem}
+  .mobileDatePicker__header button:disabled{opacity:.3}
+
+  .mobileDatePicker__weekdays,
+  .mobileDatePicker__days{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:5px;
+  }
+
+  .mobileDatePicker__weekdays{
+    margin:18px 0 8px;
+    color:#68736d;
+    font-size:.72rem;
+    font-weight:800;
+    text-align:center;
+  }
+
+  .mobileDatePicker__days{margin-bottom:18px}
+  .mobileDatePicker__days > span{min-height:42px}
+
+  .mobileDatePicker__days button{
+    min-width:0;
+    min-height:42px;
+    padding:0;
+    border:1px solid transparent;
+    border-radius:50%;
+    background:transparent;
+    color:#10212b;
+    font:750 .95rem/1 inherit;
+  }
+
+  .mobileDatePicker__days button:disabled{
+    color:#b5bcb7;
+    background:#f2f4f2;
+    text-decoration:line-through;
+    cursor:not-allowed;
+  }
+
+  .mobileDatePicker__days button.is-today{
+    border-color:#0d6b35;
+    color:#0d6b35;
+  }
+
+  .mobileDatePicker__days button.is-selected{
+    border-color:#0d6b35;
+    background:#0d6b35;
+    color:#fff;
+  }
+
+  .mobileDatePicker__footer button:last-child{
+    border-color:#e8b100;
+    background:#fff3bf;
+  }
+}
