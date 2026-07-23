@@ -843,8 +843,46 @@ input[type="date"]{
   }
   var ds = document.getElementById("dateStart");
   var de = document.getElementById("dateEnd");
-  if(ds) ds.addEventListener("change", combineDates);
-  if(de) de.addEventListener("change", combineDates);
+
+  function localTodayISO(){
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = String(now.getMonth() + 1).padStart(2, "0");
+    var day = String(now.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+  }
+
+  function applyDateLimits(){
+    var today = localTodayISO();
+    if(ds) ds.min = today;
+    if(de){
+      de.min = (ds && ds.value && ds.value > today) ? ds.value : today;
+      if(de.value && de.value < de.min) de.value = "";
+    }
+  }
+
+  function validateDates(){
+    var today = localTodayISO();
+    var minimumEnd = (ds && ds.value && ds.value > today) ? ds.value : today;
+    if(ds){
+      ds.setCustomValidity(ds.value && ds.value < today ? "La fecha de inicio debe ser hoy o una fecha futura." : "");
+    }
+    if(de){
+      de.setCustomValidity(de.value && de.value < minimumEnd ? "La fecha final debe ser igual o posterior a la fecha de inicio." : "");
+    }
+    return (!ds || ds.reportValidity()) && (!de || de.reportValidity());
+  }
+
+  if(ds) ds.addEventListener("change", function(){
+    applyDateLimits();
+    validateDates();
+    combineDates();
+  });
+  if(de) de.addEventListener("change", function(){
+    validateDates();
+    combineDates();
+  });
+  applyDateLimits();
   combineDates();
 
   var copyBtn = document.getElementById("copyEmailBtn");
@@ -942,7 +980,12 @@ input[type="date"]{
   hideMsgs();
 
   if(form){
-    form.addEventListener("submit", function(){
+    form.addEventListener("submit", function(ev){
+      applyDateLimits();
+      if(!validateDates()){
+        ev.preventDefault();
+        return;
+      }
       hideMsgs();
       done = false;
       pending = true;
