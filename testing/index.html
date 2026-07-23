@@ -31,7 +31,7 @@
 <link href="/site.webmanifest" rel="manifest">
 <link href="/assets/css/site.css" rel="stylesheet">
 <link href="/assets/css/header.css" rel="stylesheet">
-<link href="/assets/css/pages/tour-collection.css?v=20260723-2" rel="stylesheet">
+<link href="/assets/css/pages/tour-collection.css?v=20260723-3" rel="stylesheet">
 <script defer src="/assets/js/head.js"></script>
 <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 <script type="application/ld+json">
@@ -232,7 +232,10 @@
 <label class="field">Start Date<input autocomplete="off" id="dateStart" type="date"></label>
 <label class="field">End Date Optional<input autocomplete="off" id="dateEnd" type="date"></label>
 </div>
+<div class="grid-2 guestAccommodationGrid">
 <label class="field">Number of Guests<select name="number_of_guests"><option value="">Select</option><option>1</option><option>2</option><option>3 to 4</option><option>5 to 8</option><option>9+</option></select></label>
+<label class="field">Accommodation Needs<input name="accommodation_needs" placeholder="Optional hotel name, pickup notes, or route needs" type="text"></label>
+</div>
 <fieldset class="tourPrimary" aria-describedby="tourPrimaryHelp">
 <legend>Primary Tour or Experience*</legend>
 <p class="fieldHelp" id="tourPrimaryHelp">Choose the main experience you want us to plan. Select “Not Sure Yet” if you would like our recommendation.</p>
@@ -258,7 +261,6 @@
 </div>
 <label class="field tourOtherDetails" id="otherAddOnWrap" hidden>Other activity or tour details<input id="otherAddOnDetails" placeholder="For example: chocolate tour, waterfalls, cable car, or another activity" type="text"></label>
 </fieldset>
-<label class="field">Accommodation Needs<input name="accommodation_needs" placeholder="Optional hotel name, pickup notes, or route needs" type="text"></label>
 <label class="field">Special Interests<input name="special_interests" placeholder="Toucan Barbet, Cock-of-the-rock, hummingbirds, tanagers, antpittas, photography, etc." type="text"></label>
 <input id="tourAddOnsValue" name="tour_add_ons" type="hidden" value="">
 <input id="sourcePage" name="source_page" type="hidden" value="">
@@ -446,8 +448,29 @@
       }
       var ds = document.getElementById("dateStart");
       var de = document.getElementById("dateEnd");
-      if(ds) ds.addEventListener("change", combineDates);
+      function localTodayIso(){
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, "0");
+        var day = String(now.getDate()).padStart(2, "0");
+        return year + "-" + month + "-" + day;
+      }
+
+      function applyDateMinimums(){
+        var today = localTodayIso();
+        if(ds) ds.min = today;
+        if(de){
+          de.min = ds && ds.value && ds.value > today ? ds.value : today;
+          if(de.value && de.value < de.min) de.value = "";
+        }
+      }
+
+      if(ds) ds.addEventListener("change", function(){
+        applyDateMinimums();
+        combineDates();
+      });
       if(de) de.addEventListener("change", combineDates);
+      applyDateMinimums();
       combineDates();
 
       var copyBtn = document.getElementById("copyEmailBtn");
