@@ -2883,12 +2883,20 @@ body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .guestsLab
     grid-template-columns: minmax(0, 1fr);
   }
 }
-/* Bird Quest closing section: neutralize the legacy two-layer treatment and
-   use the same single inset final-CTA card used throughout the site. */
-body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCta {
-  width: auto;
+/* Bird Quest closing section: shared two-layer site treatment. */
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCtaFrame {
+  margin: 18px 0 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: linear-gradient(180deg,rgba(243,249,236,.94),rgba(233,243,221,.9));
+  box-shadow: var(--shadow);
+}
+
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .finalCtaFrame > .finalCta {
+  width: 100%;
   max-width: none;
-  margin: 18px 24px 24px;
+  margin: 0;
   padding: 16px;
   box-sizing: border-box;
   border: 1px solid var(--line);
@@ -2897,7 +2905,7 @@ body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.c
   box-shadow: var(--shadow);
 }
 
-body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCta > .finalGrid {
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .finalCtaFrame > .finalCta > .finalGrid {
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -2912,8 +2920,8 @@ body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .birdQu
 }
 
 @media (max-width: 760px) {
-  body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCta {
-    margin: 14px;
-    padding: 16px;
+  body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCtaFrame {
+    margin-top: 14px;
+    padding: 14px;
   }
 }
