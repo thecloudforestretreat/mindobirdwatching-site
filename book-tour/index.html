@@ -31,7 +31,7 @@
 <link href="/site.webmanifest" rel="manifest">
 <link href="/assets/css/site.css" rel="stylesheet">
 <link href="/assets/css/header.css" rel="stylesheet">
-<link href="/assets/css/pages/tour-collection.css?v=20260723-3" rel="stylesheet">
+<link href="/assets/css/pages/tour-collection.css?v=20260723-8" rel="stylesheet">
 <script defer src="/assets/js/head.js"></script>
 <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 <script type="application/ld+json">
@@ -232,6 +232,7 @@
 <label class="field">Start Date<input autocomplete="off" id="dateStart" type="date"></label>
 <label class="field">End Date Optional<input autocomplete="off" id="dateEnd" type="date"></label>
 </div>
+<p class="dateError" id="dateValidationMsg" role="alert" hidden></p>
 <div class="grid-2 guestAccommodationGrid">
 <label class="field">Number of Guests<select name="number_of_guests"><option value="">Select</option><option>1</option><option>2</option><option>3 to 4</option><option>5 to 8</option><option>9+</option></select></label>
 <label class="field">Accommodation Needs<input name="accommodation_needs" placeholder="Optional hotel name, pickup notes, or route needs" type="text"></label>
@@ -448,6 +449,7 @@
       }
       var ds = document.getElementById("dateStart");
       var de = document.getElementById("dateEnd");
+      var dateValidationMsg = document.getElementById("dateValidationMsg");
       function localTodayIso(){
         var now = new Date();
         var year = now.getFullYear();
@@ -461,16 +463,48 @@
         if(ds) ds.min = today;
         if(de){
           de.min = ds && ds.value && ds.value > today ? ds.value : today;
-          if(de.value && de.value < de.min) de.value = "";
         }
       }
 
-      if(ds) ds.addEventListener("change", function(){
+      function validateDates(showMessage){
+        var today = localTodayIso();
+        var message = "";
+        var invalidField = null;
+        if(ds) ds.setCustomValidity("");
+        if(de) de.setCustomValidity("");
+        if(ds && ds.value && ds.value < today){
+          message = "Start date must be today or a future date.";
+          invalidField = ds;
+        }else if(de && de.value && de.value < today){
+          message = "End date must be today or a future date.";
+          invalidField = de;
+        }else if(ds && de && ds.value && de.value && de.value < ds.value){
+          message = "End date must be the same as or later than the start date.";
+          invalidField = de;
+        }
+        if(invalidField) invalidField.setCustomValidity(message);
+        if(dateValidationMsg){
+          dateValidationMsg.textContent = message;
+          dateValidationMsg.hidden = !(showMessage && message);
+        }
+        return !message;
+      }
+
+      function handleDateUpdate(){
         applyDateMinimums();
+        validateDates(true);
         combineDates();
-      });
-      if(de) de.addEventListener("change", combineDates);
+      }
+      if(ds){
+        ds.addEventListener("input", handleDateUpdate);
+        ds.addEventListener("change", handleDateUpdate);
+      }
+      if(de){
+        de.addEventListener("input", handleDateUpdate);
+        de.addEventListener("change", handleDateUpdate);
+      }
       applyDateMinimums();
+      validateDates(false);
       combineDates();
 
       var copyBtn = document.getElementById("copyEmailBtn");
@@ -581,7 +615,12 @@
         pending = false;
         if(fallbackTimer) clearTimeout(fallbackTimer);
         setBtnSending(false);
-        if(successEl) successEl.style.display = "block";
+        if(successEl){
+          successEl.style.display = "block";
+          window.setTimeout(function(){
+            successEl.scrollIntoView({behavior:"smooth", block:"center"});
+          }, 0);
+        }
         if(errorEl) errorEl.style.display = "none";
 
         trackGA("tour_request_submit", {
@@ -595,6 +634,8 @@
           form.reset();
           if(ds) ds.value = "";
           if(de) de.value = "";
+          applyDateMinimums();
+          validateDates(false);
           combineDates();
           updateTourAddOns();
           if(ua) ua.value = navigator.userAgent || "";
@@ -625,8 +666,36 @@
       hideMsgs();
 
       if(form){
-        form.addEventListener("submit", function(){
+        form.addEventListener("invalid", function(event){
+          var field = event.target;
+          if(!field || !field.matches("input, select, textarea")) return;
+          pending = false;
+          done = false;
+          setBtnSending(false);
+          if(errorEl){
+            errorEl.textContent = field.validationMessage || "Please complete the required fields before sending your request.";
+            errorEl.style.display = "block";
+          }
+          window.setTimeout(function(){
+            field.scrollIntoView({behavior:"smooth", block:"center"});
+          }, 0);
+        }, true);
+
+        form.addEventListener("submit", function(event){
           updateTourAddOns();
+          applyDateMinimums();
+          if(!validateDates(true)){
+            event.preventDefault();
+            pending = false;
+            done = false;
+            setBtnSending(false);
+            var invalidDate = ds && !ds.checkValidity() ? ds : de;
+            if(invalidDate){
+              invalidDate.reportValidity();
+              invalidDate.scrollIntoView({behavior:"smooth", block:"center"});
+            }
+            return;
+          }
           hideMsgs();
           done = false;
           pending = true;
