@@ -2905,19 +2905,15 @@ body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.c
   box-shadow: none;
 }
 
-/* Leave terminal scroll clearance for the persistent quest HUD so the normal
-   social and copyright footer can still be viewed at the end of the page. */
-body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] > .container {
-  padding-bottom: 96px;
+/* The quest already exposes progress in its main interface. Remove the
+   duplicate fixed HUD so it cannot cover the shared site footer. */
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .birdQuestHud {
+  display: none !important;
 }
 
 @media (max-width: 760px) {
   body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCta {
     margin: 14px;
     padding: 16px;
-  }
-
-  body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] > .container {
-    padding-bottom: 112px;
   }
 }
