@@ -1012,6 +1012,7 @@ body[data-css-cluster="tour_collection"][data-page-content-group="booking"] .sec
 /* Legacy unscoped CTA locks disabled. They do not describe the bookingPanel
    markup used by this cluster and must not leak into other page components. */
 /* Book-tour primary experience and optional additions */
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimary,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns{
   min-width:0;
   margin:4px 0 14px;
@@ -1021,12 +1022,14 @@ body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns{
   background:rgba(246,250,240,.72);
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimary legend,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns legend{
   padding:0 7px;
   color:var(--green,#0d5925);
   font-weight:800;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimary .fieldHelp,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns .fieldHelp{
   margin:0 0 12px;
   color:var(--muted,#58636b);
@@ -1034,12 +1037,14 @@ body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOns .fieldHelp{
   line-height:1.45;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryGrid,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnGrid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:10px;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption{
   display:flex;
   align-items:flex-start;
@@ -1052,10 +1057,27 @@ body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption{
   cursor:pointer;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption{
+  position:relative;
+  min-height:88px;
+  padding:14px 42px 14px 14px;
+  border-width:1.5px;
+  box-shadow:0 8px 18px rgba(20,60,32,.05);
+  transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption:hover{
+  border-color:rgba(13,89,37,.45);
+  box-shadow:0 12px 24px rgba(20,60,32,.1);
+  transform:translateY(-1px);
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption--wide,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption--wide{
   grid-column:1 / -1;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption input[type="radio"],
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption input[type="checkbox"]{
   flex:0 0 18px;
   width:18px !important;
@@ -1066,21 +1088,41 @@ body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption input[
   accent-color:var(--green,#0d5925);
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption input[type="radio"]{
+  position:absolute;
+  top:14px;
+  right:14px;
+  margin:0;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption span,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption span{
   display:grid;
   gap:3px;
   min-width:0;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption strong,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption strong{
   color:var(--ink,#071923);
   line-height:1.25;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption small,
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption small{
   color:var(--muted,#58636b);
   font-size:.82rem;
   line-height:1.35;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption:has(input:checked){
+  border-color:var(--green,#0d5925);
+  background:linear-gradient(135deg,rgba(226,239,224,.95),rgba(246,250,240,.96));
+  box-shadow:0 12px 28px rgba(13,89,37,.14),inset 0 0 0 1px rgba(13,89,37,.12);
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption:has(input:checked) strong{
+  color:var(--green,#0d5925);
 }
 
 body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption:has(input:checked){
@@ -1101,11 +1143,33 @@ body[data-css-cluster="tour_collection"].tourRequestPage .tourOtherDetails[hidde
   display:none !important;
 }
 
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split .finalGrid,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split .finalLeft,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split .nextSteps,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split h2,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split h3,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split p,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split ol,
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split li{
+  text-align:left !important;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split .finalLeft{
+  align-items:flex-start !important;
+}
+
+body[data-css-cluster="tour_collection"].tourRequestPage .finalCta.finalCta--split .nextSteps{
+  align-items:stretch !important;
+}
+
 @media(max-width:640px){
+  body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryGrid,
   body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnGrid{
     grid-template-columns:1fr;
   }
 
+  body[data-css-cluster="tour_collection"].tourRequestPage .tourPrimaryOption--wide,
   body[data-css-cluster="tour_collection"].tourRequestPage .tourAddOnOption--wide{
     grid-column:auto;
   }
