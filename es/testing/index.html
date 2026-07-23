@@ -31,7 +31,7 @@
 <link href="/site.webmanifest" rel="manifest">
 <link href="/assets/css/site.css" rel="stylesheet">
 <link href="/assets/css/header.css" rel="stylesheet">
-<link href="/assets/css/pages/tour-collection.css?v=20260723-2" rel="stylesheet">
+<link href="/assets/css/pages/tour-collection.css?v=20260723-3" rel="stylesheet">
 <script defer src="/assets/js/head.js"></script>
 <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 <script type="application/ld+json">
@@ -232,7 +232,10 @@
 <label class="field">Fecha de inicio<input autocomplete="off" id="dateStart" type="date"></label>
 <label class="field">Fecha de fin opcional<input autocomplete="off" id="dateEnd" type="date"></label>
 </div>
+<div class="grid-2 guestAccommodationGrid">
 <label class="field">Número de personas<select name="number_of_guests"><option value="">Seleccionar</option><option>1</option><option>2</option><option>3 a 4</option><option>5 a 8</option><option>9+</option></select></label>
+<label class="field">Necesidades de alojamiento<input name="accommodation_needs" placeholder="Hotel opcional, notas de recogida o necesidades de ruta" type="text"></label>
+</div>
 <fieldset class="tourPrimary" aria-describedby="tourPrimaryHelp">
 <legend>Tour o experiencia principal*</legend>
 <p class="fieldHelp" id="tourPrimaryHelp">Elige la experiencia principal que deseas planificar. Selecciona “Aún no estoy seguro” si quieres nuestra recomendación.</p>
@@ -258,7 +261,6 @@
 </div>
 <label class="field tourOtherDetails" id="otherAddOnWrap" hidden>Detalles de la otra actividad o tour<input id="otherAddOnDetails" placeholder="Por ejemplo: tour de chocolate, cascadas, tarabita u otra actividad" type="text"></label>
 </fieldset>
-<label class="field">Necesidades de alojamiento<input name="accommodation_needs" placeholder="Hotel opcional, notas de recogida o necesidades de ruta" type="text"></label>
 <label class="field">Intereses especiales<input name="special_interests" placeholder="Tucán Barbudo, gallito de la peña, colibríes, tángaras, tororoíes, fotografía, etc." type="text"></label>
 <input id="tourAddOnsValue" name="tour_add_ons" type="hidden" value="">
 <input id="sourcePage" name="source_page" type="hidden" value="">
@@ -446,8 +448,29 @@
       }
       var ds = document.getElementById("dateStart");
       var de = document.getElementById("dateEnd");
-      if(ds) ds.addEventListener("change", combineDates);
+      function localTodayIso(){
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, "0");
+        var day = String(now.getDate()).padStart(2, "0");
+        return year + "-" + month + "-" + day;
+      }
+
+      function applyDateMinimums(){
+        var today = localTodayIso();
+        if(ds) ds.min = today;
+        if(de){
+          de.min = ds && ds.value && ds.value > today ? ds.value : today;
+          if(de.value && de.value < de.min) de.value = "";
+        }
+      }
+
+      if(ds) ds.addEventListener("change", function(){
+        applyDateMinimums();
+        combineDates();
+      });
       if(de) de.addEventListener("change", combineDates);
+      applyDateMinimums();
       combineDates();
 
       var copyBtn = document.getElementById("copyEmailBtn");
