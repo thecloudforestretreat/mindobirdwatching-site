@@ -2883,12 +2883,22 @@ body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .guestsLab
     grid-template-columns: minmax(0, 1fr);
   }
 }
-/* Bird Quest: keep the closing CTA at the same desktop measure as the
-   homepage closing component without changing other travel-guide pages. */
-@media (min-width: 761px) {
-  body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .finalCta {
-    width: 100%;
-    max-width: 768px;
-    margin-inline: auto;
+/* Bird Quest: use the complete page-shell width for the standard closing CTA.
+   This preserves the homepage proportions and keeps all three actions inline. */
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .finalCta {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+/* Leave enough terminal scroll space for the persistent quest HUD so the
+   standard social and copyright footer remains visible at the page bottom. */
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] > .container {
+  padding-bottom: 96px;
+}
+
+@media (max-width: 760px) {
+  body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] > .container {
+    padding-bottom: 112px;
   }
 }
