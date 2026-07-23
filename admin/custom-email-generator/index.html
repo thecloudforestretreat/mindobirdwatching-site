@@ -679,6 +679,13 @@
               description: "Para pajareo temprano y caminata nocturna, lo mejor es alojarse en Mindo o muy cerca del punto de recogida. Mindo Glambird es una opción que recomendamos por ubicación y comodidad.",
               primaryCta: "Ver alojamiento"
             },
+            "lodging-recommendations": {
+              eyebrow: "Más opciones para hospedarse",
+              title: "Alojamientos recomendados en Mindo",
+              description: "Descubran una selección especial de alojamientos con encanto, rodeados de naturaleza y bien ubicados para disfrutar el bosque nublado. Exploren nuestras alternativas recomendadas y encuentren la estadía ideal para complementar su experiencia de aviturismo en Mindo.",
+              url: "https://mindobirdwatching.com/es/recomendaciones/",
+              primaryCta: "Ver alojamientos recomendados"
+            },
             "bird-quest": {
               eyebrow: "Antes del tour",
               title: "Bird Quest",
@@ -729,7 +736,28 @@
       };
 
       function getCatalog(){
-        return window.MBW_EMAIL_BLOCKS || buildDefaultCatalog();
+        return ensureRecommendationBlock(window.MBW_EMAIL_BLOCKS || buildDefaultCatalog());
+      }
+
+      function ensureRecommendationBlock(catalog){
+        const blocks = (catalog && catalog.blocks) || [];
+        if(blocks.some(block => block.id === "lodging-recommendations")) return catalog;
+        return Object.assign({}, catalog, {
+          blocks: blocks.concat({
+            id:"lodging-recommendations",
+            group:"planning",
+            type:"feature",
+            eyebrow:"More places to stay",
+            title:"Recommended Lodging in Mindo",
+            description:"Discover a handpicked collection of inviting stays surrounded by nature and thoughtfully located for exploring the cloud forest. Browse our recommended lodging alternatives and find the perfect place to complement your birding experience in Mindo.",
+            price:"",
+            duration:"",
+            image:"https://mindobirdwatching.com/assets/images/pages/recommendations/dominique/eco_suite/mbw_dom_eco_suite_02.jpg",
+            url:"https://mindobirdwatching.com/recommendations/",
+            video:"",
+            primaryCta:"View Recommended Lodging"
+          })
+        });
       }
 
       function getLocalizedCatalog(){
@@ -957,6 +985,20 @@
               url:"https://mindobirdwatching.com/recommendations/mindoglambird/",
               video:"",
               primaryCta:"View Lodging"
+            },
+            {
+              id:"lodging-recommendations",
+              group:"planning",
+              type:"feature",
+              eyebrow:"More places to stay",
+              title:"Recommended Lodging in Mindo",
+              description:"Discover a handpicked collection of inviting stays surrounded by nature and thoughtfully located for exploring the cloud forest. Browse our recommended lodging alternatives and find the perfect place to complement your birding experience in Mindo.",
+              price:"",
+              duration:"",
+              image:"https://mindobirdwatching.com/assets/images/pages/recommendations/dominique/eco_suite/mbw_dom_eco_suite_02.jpg",
+              url:"https://mindobirdwatching.com/recommendations/",
+              video:"",
+              primaryCta:"View Recommended Lodging"
             },
             {
               id:"bird-quest",
