@@ -31,6 +31,7 @@
 
 <link href="/assets/css/site.css" rel="stylesheet"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
+<link href="/assets/css/pages/travel-guides.css?v=20260723-contact-3" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script async="" defer="" src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 <style>
@@ -603,7 +604,7 @@ input[type="date"]{
 }
 </script>
 </head>
-<body data-page-content-group="contact" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="contact_page">
+<body data-css-cluster="travel_guides" data-page-content-group="contact" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="contact_page">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-content-group="contact" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/contact/" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="contact_page" data-analytics-region="mindo" data-analytics-target-language="en" href="https://mindobirdwatching.com/contact/" hreflang="en" lang="en">English</a>
 <a data-analytics-content-group="contact" data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-link-type="external" data-analytics-link-url="https://mindobirdwatching.com/es/contacto/" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="contact_page" data-analytics-region="mindo" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/contacto/" hreflang="es" lang="es">Español</a>
@@ -612,7 +613,7 @@ input[type="date"]{
 <main class="page card">
 <div aria-label="Contact layout" class="contactLayout">
 <div aria-label="Left column" class="leftStack">
-<div>
+<div class="contactHero">
 <h1>Book Your Private Birdwatching Guide in Mindo</h1>
 <p class="lede">
           Plan a private birdwatching tour in Mindo with local guides who understand the cloud forest, target species, photography timing, and traveler logistics. Send us your dates, group size, and birding goals, and we will help you choose the right experience.
@@ -683,8 +684,8 @@ input[type="date"]{
 <label>
 <span class="labelText">Dates of Visit</span>
 <div class="dateRange">
-<input autocomplete="off" id="dateStart" type="date"/>
-<input autocomplete="off" id="dateEnd" type="date"/>
+<input aria-label="Start date" autocomplete="off" id="dateStart" title="Start date" type="date"/>
+<input aria-label="Optional end date" autocomplete="off" id="dateEnd" title="Optional end date" type="date"/>
 </div>
 <p class="dateHint">Select a start date and (optional) end date.</p>
 <input id="datesCombined" name="dates_of_visit" type="hidden" value=""/>
@@ -708,6 +709,11 @@ input[type="date"]{
 <option>Half-Day Tour</option>
 <option>Full-Day Tour</option>
 <option>Custom / Private Tour</option>
+<option>Multi-Day</option>
+<option>Quito to Mindo Day Trip</option>
+<option>Night Walk</option>
+<option>Activities</option>
+<option>Combination</option>
 <option>Not Sure Yet</option>
 </select>
 </label>
@@ -765,6 +771,27 @@ input[type="date"]{
 </div>
 </div>
 </div>
+<section aria-label="Plan your Mindo birding experience" class="finalCta finalCta--split">
+<div class="finalGrid">
+<div class="finalLeft">
+<p class="eyebrow">READY TO PLAN?</p>
+<h2>Plan the right Mindo experience for your trip</h2>
+<p>Share your dates, group size, birding goals, and preferred pace. We will review your request and reply with practical route, timing, and booking guidance.</p>
+<div class="ctaRow">
+<a class="btn primary" href="#contactForm">Send a Message</a>
+<a class="btn secondary" href="/tours/">View Birdwatching Tours</a>
+</div>
+</div>
+<aside class="nextSteps">
+<h3>What happens next</h3>
+<ol>
+<li>We review your dates, group size, interests, and preferred pace.</li>
+<li>We recommend a realistic route and timing plan.</li>
+<li>You receive availability, pricing, and clear booking steps.</li>
+</ol>
+</aside>
+</div>
+</section>
 </main>
 <div id="siteFooter"></div>
 </div>
@@ -813,8 +840,46 @@ input[type="date"]{
   }
   var ds = document.getElementById("dateStart");
   var de = document.getElementById("dateEnd");
-  if(ds) ds.addEventListener("change", combineDates);
-  if(de) de.addEventListener("change", combineDates);
+
+  function localTodayISO(){
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = String(now.getMonth() + 1).padStart(2, "0");
+    var day = String(now.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+  }
+
+  function applyDateLimits(){
+    var today = localTodayISO();
+    if(ds) ds.min = today;
+    if(de){
+      de.min = (ds && ds.value && ds.value > today) ? ds.value : today;
+      if(de.value && de.value < de.min) de.value = "";
+    }
+  }
+
+  function validateDates(){
+    var today = localTodayISO();
+    var minimumEnd = (ds && ds.value && ds.value > today) ? ds.value : today;
+    if(ds){
+      ds.setCustomValidity(ds.value && ds.value < today ? "Start date must be today or a future date." : "");
+    }
+    if(de){
+      de.setCustomValidity(de.value && de.value < minimumEnd ? "End date must be the same as or later than the start date." : "");
+    }
+    return (!ds || ds.reportValidity()) && (!de || de.reportValidity());
+  }
+
+  if(ds) ds.addEventListener("change", function(){
+    applyDateLimits();
+    validateDates();
+    combineDates();
+  });
+  if(de) de.addEventListener("change", function(){
+    validateDates();
+    combineDates();
+  });
+  applyDateLimits();
   combineDates();
 
   var copyBtn = document.getElementById("copyEmailBtn");
@@ -912,7 +977,12 @@ input[type="date"]{
   hideMsgs();
 
   if(form){
-    form.addEventListener("submit", function(){
+    form.addEventListener("submit", function(ev){
+      applyDateLimits();
+      if(!validateDates()){
+        ev.preventDefault();
+        return;
+      }
       hideMsgs();
       done = false;
       pending = true;
