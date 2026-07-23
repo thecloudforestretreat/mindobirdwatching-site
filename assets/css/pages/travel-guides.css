@@ -2883,23 +2883,40 @@ body[data-css-cluster="travel_guides"][data-page-type="contact_page"] .guestsLab
     grid-template-columns: minmax(0, 1fr);
   }
 }
-/* Bird Quest: use the complete page-shell width for the standard closing CTA.
-   This preserves the homepage proportions and keeps all three actions inline. */
-body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .finalCta {
-  grid-column: 1 / -1;
-  width: 100%;
+/* Bird Quest closing section: neutralize the legacy two-layer treatment and
+   use the same single inset final-CTA card used throughout the site. */
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCta {
+  width: auto;
   max-width: none;
-  margin-inline: 0;
+  margin: 18px 24px 24px;
+  padding: 16px;
   box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
 }
 
-/* Leave enough terminal scroll space for the persistent quest HUD so the
-   standard social and copyright footer remains visible at the page bottom. */
+body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCta > .finalGrid {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Leave terminal scroll clearance for the persistent quest HUD so the normal
+   social and copyright footer can still be viewed at the end of the page. */
 body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] > .container {
   padding-bottom: 96px;
 }
 
 @media (max-width: 760px) {
+  body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] .page.card > .finalCta {
+    margin: 14px;
+    padding: 16px;
+  }
+
   body[data-css-cluster="travel_guides"][data-page-type="bird_quest_page"] > .container {
     padding-bottom: 112px;
   }
