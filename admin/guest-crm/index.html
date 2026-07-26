@@ -275,6 +275,7 @@
   <script>
     (function(){
       "use strict";
+      const CRM_API_DEFAULT = "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
       const els = {};
       const state = { records: [], selectedId: "", view: "dashboard", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", tourItems: [] };
       const fields = ["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","notesInput","internalInput"];
@@ -330,7 +331,7 @@
         fields.forEach(id=>{ if(els[id]) els[id].addEventListener("input",()=>{ renderPayload(); renderDuplicateNotice(); }); });
       }
       function setView(view){ state.view=view; document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===view)); document.querySelectorAll(".view").forEach(v=>v.classList.remove("active")); document.getElementById(view+"View").classList.add("active"); render(); }
-      function loadSettings(){ els.apiUrlInput.value=localStorage.getItem("mbwCrmApiUrl")||""; }
+      function loadSettings(){ els.apiUrlInput.value=localStorage.getItem("mbwCrmApiUrl")||CRM_API_DEFAULT; }
       function saveSettings(){ localStorage.setItem("mbwCrmApiUrl",clean(els.apiUrlInput.value)); showToast("Settings saved"); }
       function loadLocalRecords(){ try{ state.records=dedupeRecords(JSON.parse(localStorage.getItem("mbwCrmRecords")||"[]").map(normalizeCrmRecord)); }catch(e){ state.records=[]; } }
       function saveLocalRecords(){ localStorage.setItem("mbwCrmRecords",JSON.stringify(state.records)); }
@@ -390,24 +391,55 @@
       function loadDemoRecords(show){ state.records=[demo("INQ-DEMO-001","Jeanne Friedman","Full-Day Birdwatching Tour","2026-12-08","new","not_sent","unpaid","Cock-of-the-rock, tanagers, umbrella bird"),demo("INQ-DEMO-002","Jared","Two full days guided birding","2026-11-19","quoted","sent","unpaid","Rental vehicle. Interested in target bird builder."),demo("INQ-DEMO-003","Lauren","Quito to Mindo Day Trip","2026-11-13","booked","accepted","deposit_paid","2 guests, door-to-door Quito pickup")]; state.selectedId=state.records[0].inquiry_id; saveLocalRecords(); fillForm(getSelected()); render(); if(show) showToast("Demo records loaded"); }
       function demo(id,name,tour,date,status,quote,payment,notes){ return {inquiry_id:id,guest_id:"G-"+id.slice(-3),full_name:name,first_name:name.split(" ")[0]||"",last_name:name.split(" ").slice(1).join(" "),phone_number:"",phone_normalized:"",email:"",country:"",tour_type:tour,interest_category:tour,guest_count:"2",requested_date:date,duration_preference:"",transportation_needed:"",status,quote_status:quote,payment_status:payment,availability_status:"pending",followup_date:"",notes,internal_notes:"",created_at:new Date().toISOString(),updated_at:new Date().toISOString()}; }
       async function api(action,data){
-        const url=clean(els.apiUrlInput.value)||localStorage.getItem("mbwCrmApiUrl")||"";
+        const url=clean(els.apiUrlInput.value)||localStorage.getItem("mbwCrmApiUrl")||CRM_API_DEFAULT;
         if(!url) throw new Error("Add CRM API webhook URL in Settings");
+        const payload={action,...data};
+        const isRead=action==="list_inquiries";
+        const attempts=isRead?2:1;
         let lastError=null;
-        for(let attempt=0;attempt<3;attempt++){
+        for(let attempt=0;attempt<attempts;attempt++){
           const controller=new AbortController();
-          const timer=setTimeout(()=>controller.abort(),16000);
+          const timer=setTimeout(()=>controller.abort(),25000);
           try{
-            const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...data}),signal:controller.signal,cache:"no-store"});
-            const text=await res.text();
+            let res=await fetch(url,{
+              method:"POST",
+              headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+              body:new URLSearchParams({payload:JSON.stringify(payload)}).toString(),
+              signal:controller.signal,
+              cache:"no-store",
+              credentials:"omit"
+            });
+            let text=await res.text();
+            // Backward compatibility while the matching n8n workflow update is being deployed.
+            if(res.ok&&!text){
+              res=await fetch(url,{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify(payload),
+                signal:controller.signal,
+                cache:"no-store",
+                credentials:"omit"
+              });
+              text=await res.text();
+            }
             if(!res.ok) throw new Error("API returned "+res.status+(text?": "+text.slice(0,160):""));
-            try{return text?JSON.parse(text):{};}catch(parseError){throw new Error("API returned invalid JSON");}
+            let result;
+            try{result=text?JSON.parse(text):null;}catch(parseError){throw new Error("API returned invalid JSON");}
+            if(!result) throw new Error("API returned an empty response");
+            if(result.ok===false) throw new Error(result.error||"API rejected the request");
+            return result;
           }catch(error){
             lastError=error;
-            if(attempt<2) await wait(650*(attempt+1));
+            if(attempt<attempts-1) await wait(750*(attempt+1));
           }finally{clearTimeout(timer);}
         }
         const prefix=action==="list_inquiries"?"Live CRM load failed":"Live CRM save failed";
-        throw new Error(prefix+": "+(lastError&&lastError.name==="AbortError"?"request timed out":lastError.message));
+        const detail=lastError&&lastError.name==="AbortError"
+          ?"request timed out"
+          :(lastError&&lastError.message==="Load failed"
+            ?"mobile browser could not reach the CRM API. Check the connection and deploy the mobile-safe n8n workflow."
+            :(lastError&&lastError.message)||"unknown network error");
+        throw new Error(prefix+": "+detail);
       }
       async function refreshCrm(){
         try{
@@ -433,8 +465,11 @@
       async function saveRecord(){
         const payload=buildSavePayload();
         const duplicates=findDuplicateRecords(payload.record);
+        const saveButtons=[els.saveBtn,els.bottomSaveBtn,els.detailTopSaveBtn].filter(Boolean);
+        if(saveButtons.some(button=>button.disabled)) return;
+        saveButtons.forEach(button=>{ button.disabled=true; button.dataset.originalText=button.textContent; button.textContent="Saving…"; });
         try{
-          if(clean(els.apiUrlInput.value)){
+          if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT){
             await api(payload.action,payload);
             upsert(payload.record);
             showToast(duplicates.length?"Saved. Possible duplicate flagged below.":"Saved to live Google Sheet");
@@ -445,7 +480,10 @@
           saveLocalRecords();
           render();
         }catch(e){ showToast(e.message); }
-        finally { state.forceContactedAt=false; }
+        finally {
+          state.forceContactedAt=false;
+          saveButtons.forEach(button=>{ button.disabled=false; button.textContent=button.dataset.originalText||"Save Record"; });
+        }
       }
       function startNewRecord(){ state.selectedId=""; state.tourItems=[]; fields.filter(id=>!["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].includes(id)).forEach(id=>{ if(els[id]) els[id].value=""; }); els.modeInput.value="create"; els.sourceInput.value="manual_email"; els.recordStatusInput.value="new"; els.quoteStatusInput.value="not_sent"; els.paymentStatusInput.value="unpaid"; els.serviceTypeInput.value="Birdwatching"; els.priorityInput.value="auto"; els.availabilityInput.value="pending"; els.groupingPreferenceInput.value="unknown"; els.groupingStatusInput.value="unmatched"; els.transportInput.value="Unknown"; els.followupInput.value=datePlusDays(3); renderTourItems(); updateStatusField(); toggleReviewActions({status:"new"}); toggleInvoiceActions({status:"new",payment_status:"unpaid"}); setView("intake"); renderDuplicateNotice(); renderPayload(); setTimeout(()=>els.firstNameInput.focus(),80); window.scrollTo({top:0,behavior:"smooth"}); showToast("Ready for new guest"); }
       function buildSavePayload(){ const mode=els.modeInput.value; const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; return {action,record,guest_row:buildGuestRow(record),inquiry_row:record}; }
