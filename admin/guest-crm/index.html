@@ -435,7 +435,32 @@
       function optionsHtml(options,value){ const selected=clean(value); return options.map(option=>{ const opt=clean(option); const isSelected=opt===selected||(selected&&opt.startsWith(selected+" -"))||(opt&&selected.startsWith(opt+" -")); return `<option value="${esc(option)}" ${isSelected?"selected":""}>${esc(option||"Select")}</option>`; }).join(""); }
       function handleTourItemInput(event){ const field=event&&event.target&&event.target.closest("[data-tour-field]"); if(field&&(field.dataset.tourField==="product"||field.dataset.tourField==="tour")){ const card=field.closest(".tourItem"); const priceInput=card&&card.querySelector('[data-tour-field="price"]'); if(priceInput&&!clean(priceInput.value)){ const product=card.querySelector('[data-tour-field="product"]').value; const tour=card.querySelector('[data-tour-field="tour"]').value; priceInput.value=standardPriceForProduct(product,tour); } } state.tourItems=collectTourItems(); renderPayload(); }
       function handleTourItemClick(event){ const button=event.target.closest("[data-tour-action]"); if(!button) return; const card=button.closest(".tourItem"); state.tourItems=collectTourItems().filter(item=>item.id!==card.dataset.id); renderTourItems(); renderPayload(); }
-      function findDuplicateRecords(record){ const email=clean(record.email).toLowerCase(); const phone=clean(record.phone_normalized||record.phone_number); const name=clean(record.full_name).toLowerCase(); const date=toDateValue(record.requested_date||record.requested_date_start); return state.records.filter(item=>item.inquiry_id!==record.inquiry_id&&!isArchivedStatus(item.status)).filter(item=>{ const sameEmail=email&&clean(item.email).toLowerCase()===email; const samePhone=phone&&clean(item.phone_normalized||item.phone_number)===phone; const sameNameDate=name&&date&&clean(item.full_name).toLowerCase()===name&&toDateValue(item.requested_date||item.requested_date_start)===date; return sameEmail||samePhone||sameNameDate; }); }
+      function comparableEmail(record){ return clean(record.email_normalized||record.email).toLowerCase(); }
+      function comparablePhone(record){ return clean(record.phone_normalized||record.phone_number||record.phone_raw).replace(/\D/g,""); }
+      function activeOtherRecords(record){ return state.records.filter(item=>item.inquiry_id!==record.inquiry_id&&!isArchivedStatus(item.status)); }
+      function findExistingGuest(record){
+        const email=comparableEmail(record);
+        const phone=comparablePhone(record);
+        if(!email&&!phone) return null;
+        return activeOtherRecords(record).find(item=>(email&&comparableEmail(item)===email)||(phone&&comparablePhone(item)===phone))||null;
+      }
+      function findBookingDuplicate(record){
+        const email=comparableEmail(record);
+        const phone=comparablePhone(record);
+        const name=clean(record.full_name).toLowerCase();
+        const date=toDateValue(record.requested_date||record.requested_date_start);
+        const tour=clean(record.tour_type||record.tour_category).toLowerCase();
+        if(!date) return null;
+        return activeOtherRecords(record).find(item=>{
+          const sameDate=toDateValue(item.requested_date||item.requested_date_start)===date;
+          const sameEmail=email&&comparableEmail(item)===email;
+          const samePhone=phone&&comparablePhone(item)===phone;
+          const sameName=name&&clean(item.full_name).toLowerCase()===name;
+          const sameTour=!tour||!clean(item.tour_type||item.tour_category)||clean(item.tour_type||item.tour_category).toLowerCase()===tour;
+          return sameDate&&(sameEmail||samePhone||(sameName&&sameTour));
+        })||null;
+      }
+      function findDuplicateRecords(record){ const email=comparableEmail(record); const phone=comparablePhone(record); const name=clean(record.full_name).toLowerCase(); const date=toDateValue(record.requested_date||record.requested_date_start); return activeOtherRecords(record).filter(item=>{ const sameEmail=email&&comparableEmail(item)===email; const samePhone=phone&&comparablePhone(item)===phone; const sameNameDate=name&&date&&clean(item.full_name).toLowerCase()===name&&toDateValue(item.requested_date||item.requested_date_start)===date; return sameEmail||samePhone||sameNameDate; }); }
       function renderDuplicateNotice(){ if(!els.duplicateNotice) return; const record=formRecord(); const matches=findDuplicateRecords(record); if(!matches.length){ els.duplicateNotice.hidden=true; els.duplicateNotice.classList.remove("show"); els.duplicateNotice.innerHTML=""; return; } els.duplicateNotice.hidden=false; els.duplicateNotice.classList.add("show"); els.duplicateNotice.innerHTML=`<strong>Possible duplicate:</strong> ${matches.slice(0,3).map(r=>esc(r.full_name||"Guest")+" ("+esc(r.requested_date||"No date")+")").join(", ")}. Keep separate if this is a new trip or click a match to review it.<br>${matches.slice(0,3).map(r=>`<button type="button" data-id="${esc(r.inquiry_id)}">${esc(r.full_name||"Review record")}</button>`).join("")}`; els.duplicateNotice.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>selectRecord(btn.dataset.id))); }
       function calendarEntriesForRecord(record){ const items=normalizeTourItems(record); if(items.length) return items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||record.tour_type,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})); return [record]; }
       function loadDemoRecords(show){ state.records=[demo("INQ-DEMO-001","Jeanne Friedman","Full-Day Birdwatching Tour","2026-12-08","new","not_sent","unpaid","Cock-of-the-rock, tanagers, umbrella bird"),demo("INQ-DEMO-002","Jared","Two full days guided birding","2026-11-19","quoted","sent","unpaid","Rental vehicle. Interested in target bird builder."),demo("INQ-DEMO-003","Lauren","Quito to Mindo Day Trip","2026-11-13","booked","accepted","deposit_paid","2 guests, door-to-door Quito pickup")]; state.selectedId=state.records[0].inquiry_id; saveLocalRecords(); fillForm(getSelected()); render(); if(show) showToast("Demo records loaded"); }
@@ -513,19 +538,35 @@
         }
       }
       async function saveRecord(){
-        const payload=buildSavePayload();
-        const duplicates=findDuplicateRecords(payload.record);
+        let payload=buildSavePayload();
         const saveButtons=[els.saveBtn,els.bottomSaveBtn,els.detailTopSaveBtn].filter(Boolean);
         if(saveButtons.some(button=>button.disabled)) return;
         saveButtons.forEach(button=>{ button.disabled=true; button.dataset.originalText=button.textContent; button.textContent="Saving…"; });
         try{
+          const isCreate=els.modeInput.value==="create"||els.modeInput.value==="returning";
+          if(isCreate&&(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)){
+            const latest=await api("list_inquiries",{filters:{}});
+            const incoming=applyDuplicateFamilyArchives(extractRecords(latest).map(normalizeCrmRecord).filter(r=>r.inquiry_id));
+            state.records=applyDuplicateFamilyArchives(dedupeRecords(mergeLiveWithLocal(incoming)));
+            payload=buildSavePayload();
+          }
+          const duplicate=findBookingDuplicate(payload.record);
+          if(isCreate&&duplicate){
+            state.selectedId=duplicate.inquiry_id;
+            fillForm(duplicate);
+            saveLocalRecords();
+            render();
+            showToast("Not saved: this guest already has a booking for that date. The existing record is now open.");
+            return;
+          }
+          const reusedGuest=els.modeInput.value==="create"&&payload.action==="create_returning_inquiry";
           if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT){
             await api(payload.action,payload);
             upsert(payload.record);
-            showToast(duplicates.length?"Saved. Possible duplicate flagged below.":"Saved to live Google Sheet");
+            showToast(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet");
           } else {
             upsert(payload.record);
-            showToast(duplicates.length?"Saved locally. Possible duplicate flagged below.":"Saved locally");
+            showToast(reusedGuest?"Saved locally under the existing guest.":"Saved locally");
           }
           saveLocalRecords();
           render();
@@ -536,7 +577,7 @@
         }
       }
       function startNewRecord(){ state.selectedId=""; state.tourItems=[]; fields.filter(id=>!["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].includes(id)).forEach(id=>{ if(els[id]) els[id].value=""; }); els.modeInput.value="create"; els.sourceInput.value="manual_email"; els.recordStatusInput.value="new"; els.quoteStatusInput.value="not_sent"; els.paymentStatusInput.value="unpaid"; els.serviceTypeInput.value="Birdwatching"; els.priorityInput.value="auto"; els.availabilityInput.value="pending"; els.groupingPreferenceInput.value="unknown"; els.groupingStatusInput.value="unmatched"; els.transportInput.value="Unknown"; els.followupInput.value=datePlusDays(3); renderTourItems(); updateStatusField(); toggleReviewActions({status:"new"}); toggleInvoiceActions({status:"new",payment_status:"unpaid"}); setView("intake"); renderDuplicateNotice(); renderPayload(); setTimeout(()=>els.firstNameInput.focus(),80); window.scrollTo({top:0,behavior:"smooth"}); showToast("Ready for new guest"); }
-      function buildSavePayload(){ const mode=els.modeInput.value; const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; return {action,record,guest_row:buildGuestRow(record),inquiry_row:record}; }
+      function buildSavePayload(){ const mode=els.modeInput.value; const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; if(mode==="create"){ const existing=findExistingGuest(record); if(existing&&existing.guest_id){ record.guest_id=existing.guest_id; action="create_returning_inquiry"; } } return {action,record,guest_row:buildGuestRow(record),inquiry_row:record}; }
       function formRecord(){
         const now=new Date().toISOString();
         const selected=getSelected()||{};
