@@ -184,6 +184,7 @@
               <button id="markContactedBtn" type="button">Mark Contacted Now</button>
               <button id="detailTopSaveBtn" class="primary" type="button">Save Record</button>
               <button id="detailMarkDuplicateBtn" class="dangerBtn" type="button">Mark Duplicate</button>
+              <button id="copyGuideMessageBtn" type="button">Copy Guide Message</button>
               <button id="copyReviewWhatsAppBtn" type="button">Copy Review WhatsApp</button>
               <button id="copyReviewEmailBtn" type="button">Copy Review Email</button>
             </div>
@@ -286,7 +287,7 @@
       const fields = ["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","notesInput","internalInput"];
       document.addEventListener("DOMContentLoaded", init);
       function init(){ cache(); bind(); initQuickFilters(); loadSettings(); loadLocalRecords(); if(!state.records.length) loadDemoRecords(false); render(); if(clean(els.apiUrlInput.value)) refreshCrm(); }
-      function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","addTourItemBtn","tourItemsList","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
+      function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","addTourItemBtn","tourItemsList","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
       function bind(){
         document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>setView(btn.dataset.view)));
         ["searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].forEach(id=>els[id].addEventListener("input",render));
@@ -323,6 +324,7 @@
         els.markContactedBtn.addEventListener("click",markContactedNow);
         els.markDuplicateBtn.addEventListener("click",markDuplicateRecord);
         els.detailMarkDuplicateBtn.addEventListener("click",markDuplicateRecord);
+        els.copyGuideMessageBtn.addEventListener("click",copyGuideMessage);
         els.copyReviewWhatsAppBtn.addEventListener("click",()=>copyReviewMessage("whatsapp"));
         els.copyReviewEmailBtn.addEventListener("click",()=>copyReviewMessage("email"));
         els.calendarPrevBtn.addEventListener("click",()=>moveCalendar(-1));
@@ -679,6 +681,40 @@
       function toolRecord(r){ return Object.assign({},r,{guest_name:r.full_name||"",guestName:r.full_name||"",guest_email:r.email||"",guestEmail:r.email||"",guest_phone:r.phone_number||"",guestPhone:r.phone_number||"",tour_date:r.requested_date||"",tourDate:r.requested_date||"",tour_interest:r.tour_type||"",guestCount:r.guest_count||"",pickupLocation:r.pickup_location||"",invoiceNo:r.invoice_no||"",datePaid:r.date_paid||"",serviceType:r.service_type||"",productSelected:r.product_selected||""}); }
       function openConfirmationTool(){ const r=toolRecord(getSelected()||formRecord()); const draft=Object.assign({},r,{source:"guest_crm",guest_name:r.full_name||"",guest:r.full_name||"",guest_phone:r.phone_number||"",tour_date:r.requested_date||"",tour_date_end:r.requested_date_end||"",tour:r.tour_type||"",tour_type:r.tour_type||"",pickup_location:r.pickup_location||"",transportation:r.transportation_needed||"",duration:r.duration_preference||"",notes:r.notes||""}); localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(draft)); localStorage.setItem("mbwGuestCrmSelectedRecord",JSON.stringify(draft)); localStorage.setItem("mbwTourConfirmationDraft",JSON.stringify(draft)); const params=new URLSearchParams({source:"guest_crm",guest:draft.guest_name||"",guest_name:draft.guest_name||"",full_name:draft.guest_name||"",guest_phone:draft.guest_phone||"",phone:draft.guest_phone||"",tour_date:draft.tour_date||"",requested_date:draft.tour_date||"",tour_date_end:draft.tour_date_end||"",tour:draft.tour||"",tour_type:draft.tour_type||"",pickup_location:draft.pickup_location||"",pickup:draft.pickup_location||"",transportation:draft.transportation||"",duration:draft.duration||"",notes:draft.notes||""}); window.open("https://admin.mindobirdwatching.com/tour-confirmation-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
       function copyReviewMessage(type){ const r=getSelected(); if(!r){showToast("Select a record first");return;} const name=(r.first_name||r.full_name||"").split(" ")[0]||"there"; const msg="Hi "+name+", hope all is well and Mindo treated you great. When you can, please help us out with a review of your experience with Mindo Bird Watching. Thank you.\\n\\nhttps://g.page/r/CdMlIYMGgBIvEAE"; navigator.clipboard.writeText(msg).then(()=>showToast(type==="email"?"Review email text copied":"Review WhatsApp text copied")).catch(()=>showToast("Could not copy message")); }
+      async function copyGuideMessage(){
+        const selected=getSelected()||{};
+        const names=clean(els.fullNameInput.value)||clean(selected.full_name);
+        const phone=cleanPhoneText(els.phoneInput.value)||clean(selected.phone_number||selected.phone_normalized);
+        const pickup=clean(els.pickupLocationInput.value)||clean(selected.pickup_location);
+        const missing=[];
+        if(!names) missing.push("name");
+        if(!phone) missing.push("phone number");
+        if(!pickup) missing.push("pickup location");
+        if(missing.length){ showToast("Add "+missing.join(", ")+" before copying"); return; }
+        const message=["Name(s): "+names,"Phone Number: "+phone,"Pick Up Location: "+pickup].join("\n");
+        try{
+          await copyPlainText(message);
+          showToast("Guide message copied");
+        }catch(error){
+          showToast("Could not copy guide message");
+        }
+      }
+      async function copyPlainText(text){
+        if(navigator.clipboard&&window.isSecureContext){
+          try{ await navigator.clipboard.writeText(text); return; }catch(error){}
+        }
+        const textarea=document.createElement("textarea");
+        textarea.value=text;
+        textarea.setAttribute("readonly","");
+        textarea.style.position="fixed";
+        textarea.style.opacity="0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0,textarea.value.length);
+        const copied=document.execCommand("copy");
+        textarea.remove();
+        if(!copied) throw new Error("Clipboard unavailable");
+      }
       function toggleReviewActions(r){ const show=["booked","completed"].includes(normalizeStatus(r.status)); [els.copyReviewWhatsAppBtn,els.copyReviewEmailBtn].forEach(btn=>{ if(btn) btn.style.display=show?"inline-flex":"none"; }); }
       function toggleInvoiceActions(r){ const enabled=canCopyInvoiceTsv(r||{}); [els.copyInvoiceTsvBtn,els.detailCopyInvoiceTsvBtn].forEach(btn=>{ if(btn) btn.disabled=!enabled; }); }
       function canCopyInvoiceTsv(r){ const status=normalizeStatus(r.status); const payment=normalizePayment(r.payment_status); return ["booked","completed"].includes(status)||["deposit_paid","paid"].includes(payment); }
