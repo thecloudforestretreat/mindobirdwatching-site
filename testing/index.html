@@ -1305,10 +1305,19 @@
         const short = String(item.message_short || "").trim();
         const ready = String(item.whatsapp_ready || "").trim();
         const long = String(item.message_long || "").trim();
-        if(/(?:full day|half day tour\s*[12])/i.test(title) && length !== "detailed") return short || ready || title;
-        if(length === "quick") return short || title;
-        if(length === "detailed") return ready || long || short || title;
-        return ready || short || title;
+        const bot = String(item.bot_response || "").trim();
+        const isDayTour = /(?:full day|half day tour\s*[12])/i.test(title);
+
+        // Quick is intentionally factual: day tours retain their useful
+        // time/price line, while other activities use only their name and cost.
+        if(length === "quick") return isDayTour ? (short || title) : title;
+
+        // Detailed prefers the fullest editorial source instead of reusing the
+        // same WhatsApp-ready copy shown by Standard.
+        if(length === "detailed") return long || bot || ready || short || title;
+
+        // Standard uses one concise, guest-ready description when available.
+        return ready || bot || short || long || title;
       }
 
       function cleanMessageText(value){
