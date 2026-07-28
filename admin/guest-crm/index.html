@@ -454,6 +454,20 @@
         const rowB=clean(b&&(b.source_row_number||b.source_row||b.row_number));
         return Boolean(rowA&&rowB&&rowA===rowB&&createdA&&createdA===createdB&&comparablePhone(a)&&comparablePhone(a)===comparablePhone(b));
       }
+      function sameSourceSubmissionClone(a,b){
+        const phoneA=comparablePhone(a), phoneB=comparablePhone(b);
+        const createdA=sourceTimestamp(a&&a.created_at), createdB=sourceTimestamp(b&&b.created_at);
+        const rowA=clean(a&&(a.source_row_number||a.source_row||a.row_number));
+        const rowB=clean(b&&(b.source_row_number||b.source_row||b.row_number));
+        if(!phoneA||phoneA!==phoneB||!createdA||createdA!==createdB||!rowA||rowA!==rowB) return false;
+        const dateA=toDateValue(a&&(a.requested_date||a.requested_date_start));
+        const dateB=toDateValue(b&&(b.requested_date||b.requested_date_start));
+        const tourA=normalizeTourCategory(a&&(a.tour_type||a.tour_category));
+        const tourB=normalizeTourCategory(b&&(b.tour_type||b.tour_category));
+        const compatibleDate=!dateA||!dateB||dateA===dateB;
+        const compatibleTour=!tourA||!tourB||tourA===tourB;
+        return compatibleDate&&compatibleTour;
+      }
       function archiveDuplicateRecord(record,note){
         const existingNotes=clean(record.internal_notes);
         return Object.assign({},record,{
@@ -782,16 +796,25 @@
         const current=getSelected()||formRecord();
         if(!current||!current.inquiry_id){ showToast("Select a record first"); return; }
         const name=current.full_name||"this guest";
-        if(!window.confirm("Mark only this selected record for "+name+" as a duplicate? Other tours and records for this guest will remain active.")) return;
+        const targets=state.records.filter(record=>!isArchivedStatus(record.status)&&(record.inquiry_id===current.inquiry_id||sameSourceSubmissionClone(record,current)));
+        const count=Math.max(targets.length,1);
+        const prompt=count>1
+          ?"Archive all "+count+" records created from the same original submission for "+name+"? Separately dated tours will remain active."
+          :"Mark only this selected record for "+name+" as a duplicate? Other tours and records for this guest will remain active.";
+        if(!window.confirm(prompt)) return;
         const today=datePlusDays(0);
         const note="Marked duplicate on "+today+". Kept for audit trail.";
-        const archived=archiveDuplicateRecord(current,note);
+        const archivedTargets=(targets.length?targets:[current]).map(record=>archiveDuplicateRecord(record,note));
         const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
         buttons.forEach(button=>{button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Archiving…";});
+        let saved=0;
         try{
-          await api("update_inquiry",{record:archived,inquiry_row:archived});
-          const index=state.records.findIndex(record=>record.inquiry_id===archived.inquiry_id);
-          if(index>=0) state.records[index]=normalizeCrmRecord(archived);
+          for(const archived of archivedTargets){
+            await api("update_inquiry",{record:archived,inquiry_row:archived});
+            const index=state.records.findIndex(record=>record.inquiry_id===archived.inquiry_id);
+            if(index>=0) state.records[index]=normalizeCrmRecord(archived);
+            saved++;
+          }
           saveLocalRecords();
           state.activeQueue="all";
           els.viewFilter.value="all";
@@ -799,11 +822,11 @@
           state.selectedId=next?next.inquiry_id:"";
           fillForm(next);
           render();
-          showToast("Selected record archived; other guest tours remain active");
+          showToast(saved>1?saved+" source-clone records archived":"Selected record archived; other guest tours remain active");
         }catch(error){
           saveLocalRecords();
           render();
-          showToast("Duplicate save failed: "+error.message);
+          showToast((saved?saved+" records archived; ":"")+"duplicate save failed: "+error.message);
         }finally{
           buttons.forEach(button=>{button.disabled=false;button.textContent=button.dataset.originalText||"Mark Duplicate";});
         }
