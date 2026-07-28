@@ -778,7 +778,13 @@
         const today=toDateValue(datePlusDays(0));
         return dates.every(date=>date<today);
       }
-      function getPriorityRecords(records){ if(["completed","cancelled","didNotBook","duplicate"].includes(state.activeQueue)) return records; if(state.activeQueue==="all") return records.filter(r=>!isClosedStatus(r.status)&&!isPastTourRecord(r)); return records.filter(r=>!isPastTourRecord(r)); }
+      function getPriorityRecords(records){
+        if(["completed","cancelled","didNotBook","duplicate"].includes(state.activeQueue)) return records;
+        const eligible=(state.activeQueue==="all"?records.filter(r=>!isClosedStatus(r.status)):records).filter(r=>!isPastTourRecord(r));
+        const newRecords=eligible.filter(r=>normalizeStatus(r.status)==="new");
+        const remaining=eligible.filter(r=>normalizeStatus(r.status)!=="new");
+        return newRecords.concat(remaining);
+      }
       function renderQueueState(){ document.querySelectorAll("[data-queue]").forEach(btn=>btn.classList.toggle("activeQueue",btn.dataset.queue===state.activeQueue)); if(els.lastRefreshText) els.lastRefreshText.textContent="Last refreshed: "+(state.lastRefresh?formatDateTime(state.lastRefresh):"Not yet"); }
       function renderQueueNavigator(records){ if(!els.queueNav) return; records=records||getFiltered(); const queue=queueLabel(els.viewFilter.value||state.activeQueue||"all"); const selected=getSelected(); const idx=records.findIndex(r=>r.inquiry_id===state.selectedId); if(idx>=0) state.queueCursorIndex=idx; const total=records.length; const position=idx>=0?idx+1:Math.min(Math.max(state.queueCursorIndex+1,1),Math.max(total,1)); els.queueNavEyebrow.textContent=queue+" queue"; if(!selected){ els.queueNavText.textContent=total?("No record selected · "+total+" in queue"):"No records in this queue"; } else if(idx>=0){ els.queueNavText.textContent=(selected.full_name||"Selected record")+" · "+position+" / "+total; } else { els.queueNavText.textContent=(selected.full_name||"Saved record")+" moved out of "+queue+" · "+total+" remaining"; } els.queuePrevBtn.disabled=!total || (idx>=0?idx<=0:state.queueCursorIndex<=0); els.queueNextBtn.disabled=!total || (idx>=0?idx>=total-1:state.queueCursorIndex>=total); }
       function navigateQueue(direction){ const records=getFiltered(); if(!records.length){ showToast("No records in this queue"); return; } let idx=records.findIndex(r=>r.inquiry_id===state.selectedId); if(idx<0) idx=Math.min(Math.max(state.queueCursorIndex,0),records.length-1); else idx=idx+direction; idx=Math.min(Math.max(idx,0),records.length-1); state.queueCursorIndex=idx; selectRecord(records[idx].inquiry_id); showToast((idx+1)+" / "+records.length+" in "+queueLabel(els.viewFilter.value||state.activeQueue||"all")); }
@@ -798,7 +804,7 @@
         const current=getSelected()||formRecord();
         if(!current||!current.inquiry_id){ showToast("Select a record first"); return; }
         const name=current.full_name||"this guest";
-        const targets=state.records.filter(record=>!isArchivedStatus(record.status)&&(record.inquiry_id===current.inquiry_id||sameSourceSubmissionClone(record,current)));
+        const targets=state.records.filter(record=>record.inquiry_id===current.inquiry_id||sameSourceSubmissionClone(record,current));
         const count=Math.max(targets.length,1);
         const prompt=count>1
           ?"Archive all "+count+" records created from the same original submission for "+name+"? Separately dated tours will remain active."
