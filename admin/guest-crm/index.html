@@ -284,9 +284,12 @@
       const CRM_API_DEFAULT = "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
       const els = {};
       const state = { records: [], selectedId: "", view: "dashboard", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", tourItems: [] };
+      let refreshInFlight=false;
+      let refreshRetryTimer=0;
+      let refreshRetryAttempt=0;
       const fields = ["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","notesInput","internalInput"];
       document.addEventListener("DOMContentLoaded", init);
-      function init(){ cache(); bind(); initQuickFilters(); loadSettings(); loadLocalRecords(); if(!state.records.length) loadDemoRecords(false); render(); if(clean(els.apiUrlInput.value)) refreshCrm(); }
+      function init(){ cache(); bind(); initQuickFilters(); loadSettings(); loadLocalRecords(); if(!state.records.length) loadDemoRecords(false); render(); window.addEventListener("online",()=>{ refreshRetryAttempt=0; scheduleRefreshRetry(500); }); if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT) refreshCrm(); }
       function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","addTourItemBtn","tourItemsList","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
       function bind(){
         document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>setView(btn.dataset.view)));
@@ -470,11 +473,11 @@
         if(!url) throw new Error("Add CRM API webhook URL in Settings");
         const payload={action,...data};
         const isRead=action==="list_inquiries";
-        const attempts=isRead?2:1;
+        const attempts=isRead?4:1;
         let lastError=null;
         for(let attempt=0;attempt<attempts;attempt++){
           const controller=new AbortController();
-          const timer=setTimeout(()=>controller.abort(),25000);
+          const timer=setTimeout(()=>controller.abort(),30000);
           try{
             let res=await fetch(url,{
               method:"POST",
@@ -505,7 +508,7 @@
             return result;
           }catch(error){
             lastError=error;
-            if(attempt<attempts-1) await wait(750*(attempt+1));
+            if(attempt<attempts-1) await wait([1000,2500,5000][attempt]||5000);
           }finally{clearTimeout(timer);}
         }
         const prefix=action==="list_inquiries"?"Live CRM load failed":"Live CRM save failed";
@@ -516,7 +519,16 @@
             :(lastError&&lastError.message)||"unknown network error");
         throw new Error(prefix+": "+detail);
       }
-      async function refreshCrm(){
+      function scheduleRefreshRetry(delay){
+        clearTimeout(refreshRetryTimer);
+        const delays=[15000,30000,60000,120000,300000];
+        const retryDelay=Number(delay)||delays[Math.min(refreshRetryAttempt,delays.length-1)];
+        refreshRetryTimer=setTimeout(()=>refreshCrm(true),retryDelay);
+      }
+      async function refreshCrm(background){
+        if(refreshInFlight) return;
+        const isBackground=background===true;
+        refreshInFlight=true;
         try{
           saveSettings();
           const result=await api("list_inquiries",{filters:{}});
@@ -529,13 +541,17 @@
           saveLocalRecords();
           fillForm(getSelected());
           render();
-          showToast("CRM refreshed: "+state.records.length+" records");
+          clearTimeout(refreshRetryTimer);
+          refreshRetryAttempt=0;
+          showToast((isBackground?"Live CRM connection restored: ":"CRM refreshed: ")+state.records.length+" records");
         }catch(e){
           loadLocalRecords();
           fillForm(getSelected());
           render();
-          showToast((state.records.length?"Live load failed. Showing saved CRM snapshot.":e.message));
-        }
+          refreshRetryAttempt+=1;
+          scheduleRefreshRetry();
+          if(!isBackground) showToast((state.records.length?"Live CRM unavailable. Showing this device's saved snapshot; automatic retry is active.":e.message));
+        }finally{ refreshInFlight=false; }
       }
       async function saveRecord(){
         let payload=buildSavePayload();
