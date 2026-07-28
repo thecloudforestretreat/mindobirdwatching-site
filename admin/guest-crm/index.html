@@ -117,7 +117,7 @@
               <button class="stat queue-completed" data-queue="completed" type="button"><span>Completed</span><strong id="statCompleted">0</strong></button>
               <button class="stat queue-cancelled" data-queue="cancelled" type="button"><span>Cancelled</span><strong id="statCancelled">0</strong></button>
               <button class="stat queue-did-not-book" data-queue="didNotBook" type="button"><span>Did Not Book</span><strong id="statDidNotBook">0</strong></button>
-              <button class="stat" data-queue="all" type="button"><span>Total</span><strong id="statTotal">0</strong></button>
+              <button class="stat" data-queue="all" type="button" title="All records except archived duplicates"><span>Working records</span><strong id="statTotal">0</strong></button>
             </div>
             <h2 class="panelTitle">Priority Records</h2>
             <div class="records" id="priorityRecords"></div>
@@ -636,7 +636,9 @@
           render();
           clearTimeout(refreshRetryTimer);
           refreshRetryAttempt=0;
-          showToast((isBackground?"Live CRM connection restored: ":"CRM refreshed: ")+state.records.length+" records");
+          const archivedCount=state.records.filter(record=>isArchivedStatus(record.status)).length;
+          const workingCount=state.records.length-archivedCount;
+          showToast((isBackground?"Live CRM connection restored: ":"CRM refreshed: ")+state.records.length+" loaded · "+workingCount+" working · "+archivedCount+" archived");
         }catch(e){
           loadLocalRecords();
           fillForm(getSelected());
