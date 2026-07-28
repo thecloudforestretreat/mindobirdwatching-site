@@ -568,7 +568,7 @@
     .messagePreview{resize:vertical;line-height:1.45;min-height:210px}
     .messageMeter{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#557064}
     .messageMeter .warning{color:#a13a24;font-weight:800}
-    .builderActions{display:grid;grid-template-columns:1fr 1fr auto;gap:7px}
+    .builderActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
     .detailActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
     .moreDetails{border:1px solid #d6ded9;border-radius:12px;padding:10px}
     .moreDetails summary{cursor:pointer;font-weight:800;color:#145f31}
@@ -599,7 +599,7 @@
     @media(max-width:640px){
       .builderFields{grid-template-columns:1fr}
       .builderActions{grid-template-columns:1fr 1fr}
-      .builderActions .secondary{grid-column:1/-1}
+      .builderActions .secondary{grid-column:auto}
       .messagePreview{min-height:250px}
       .itemActions .btn{min-height:42px}
     }
@@ -624,29 +624,38 @@
     .textButton{font-size:12px}
     .replyWorkspace{grid-template-columns:minmax(500px,1.35fr) minmax(330px,.65fr);gap:14px}
     .resultsPanel .panelHead{align-items:flex-start}
-    .resultsPanel .itemList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px}
-    .resultsPanel .itemBtn{display:grid;grid-template-columns:1fr auto;align-content:start;min-height:165px;padding:14px;border-radius:14px}
+    .resultsPanel .itemList{display:grid;grid-template-columns:1fr;gap:7px;padding:10px}
+    .resultsPanel .itemBtn{display:grid;grid-template-columns:minmax(190px,1.45fr) minmax(105px,.55fr) minmax(120px,.7fr) auto;align-items:center;min-height:0;padding:10px 12px;border-radius:12px}
     .itemTitle{font-size:15px;line-height:1.25}
     .itemMeta{margin-top:5px}
-    .itemFacts{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+    .itemFacts{grid-column:3;display:flex;gap:5px;flex-wrap:wrap;margin:0}
     .itemFact{font-size:10px;font-weight:800;background:#edf4ed;color:#27533a;border-radius:999px;padding:4px 7px}
-    .itemSummary{grid-column:1/-1;color:#55645c;font-size:12px;line-height:1.4;margin:2px 0 10px}
+    .itemSummary{display:none}
+    .resultsPanel .itemBtn>div:first-child{grid-column:1;grid-row:1}
+    .resultsPanel .itemBtn>.price{grid-column:2;grid-row:1}
+    .resultsPanel .itemBtn .itemActions{grid-column:4;grid-row:1;display:flex;min-width:168px}
+    .resultsPanel .itemBtn .itemActions .btn{padding:9px 11px;white-space:nowrap}
     .builderPanel{top:14px;max-height:calc(100vh - 28px);overflow:auto}
     .detailModal{display:none;position:fixed;z-index:1001;inset:6vh max(20px,calc((100vw - 760px)/2));max-height:88vh;overflow:auto;box-shadow:0 25px 80px rgba(0,35,16,.28)}
     .detailModal.isOpen{display:block}
     .modalBackdrop{position:fixed;z-index:1000;inset:0;background:rgba(5,27,15,.55);backdrop-filter:blur(2px)}
     .modalClose{border:0;background:#edf2ed;width:34px;height:34px;border-radius:50%;font-size:24px;cursor:pointer}
     .mobileBuilderClose{display:none}
+    .editSelectionsBtn{display:none;border:0;background:transparent;color:#0b612e;font-weight:800;cursor:pointer}
     .builderHeadActions{display:flex;align-items:center;gap:7px}
     .detailModal .detailPane{padding:16px}
-    .socialPanel{margin-top:14px}
+    .socialPanel{display:none!important}
+    #siteHeader,#siteFooter{display:none!important}
+    [id*="whatsapp-widget" i],[class*="whatsapp-widget" i],[id*="whatsapp-float" i],[class*="whatsapp-float" i],
+    [id*="chat-widget" i],[class*="chat-widget" i],.joinchat,.wa__btn_popup{display:none!important}
+    .mobileModeBar{display:none}
     @media(max-width:980px){
       .hero{grid-template-columns:1fr auto}
       .heroFilters{grid-column:1/-1;grid-row:2;grid-template-columns:150px 1fr}
       .quickCategories{grid-template-columns:1fr}
       .categoryIntro{min-width:0}
       .replyWorkspace{grid-template-columns:1fr}
-      .resultsPanel .itemList{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .resultsPanel .itemBtn{grid-template-columns:minmax(180px,1.2fr) minmax(105px,.6fr) minmax(120px,.7fr) auto}
       .builderPanel{position:static;max-height:none}
     }
     @media(max-width:640px){
@@ -660,14 +669,23 @@
       .categoryChip{white-space:nowrap;min-height:42px}
       .recentItems{padding-left:12px}
       .resultsPanel .itemList{grid-template-columns:1fr;padding:10px}
-      .resultsPanel .itemBtn{min-height:0}
+      .resultsPanel .itemBtn{display:grid;grid-template-columns:1fr auto;min-height:0;gap:7px}
+      .resultsPanel .itemBtn>div:first-child{grid-column:1;grid-row:1}
+      .resultsPanel .itemBtn>.price{grid-column:2;grid-row:1}
+      .resultsPanel .itemBtn .itemFacts{grid-column:1/-1;grid-row:2}
+      .resultsPanel .itemBtn .itemActions{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:1fr 1fr;min-width:0}
       .replyWorkspace{gap:10px}
       .builderPanel{display:none}
       .builderPanel.mobileOpen{display:block;position:fixed;z-index:1100;inset:0;border-radius:0;overflow:auto;max-height:none;padding-bottom:90px}
       .builderPanel.mobileOpen .panelHead{position:sticky;top:0;background:#fff;z-index:2}
       .mobileBuilderClose{display:inline-grid;place-items:center}
+      .editSelectionsBtn{display:inline-block}
       .detailModal{inset:0;border-radius:0;max-height:none}
       .socialPanel{display:none}
+      .mobileModeBar{display:grid;grid-template-columns:1fr 1fr;position:fixed;z-index:1050;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:5px;border-radius:999px;background:#fff;box-shadow:0 10px 30px rgba(8,50,25,.25)}
+      .mobileModeBar button{display:block;border:0;border-radius:999px;padding:13px 12px;font:800 15px/1.1 system-ui;background:transparent;color:#173327}
+      .mobileModeBar button[aria-current="page"]{background:#0b612e;color:#fff}
+      .mobileBuilderBar{margin:0;width:auto;position:static;box-shadow:none}
     }
   </style>
 <meta content="Internal staff reference for Mindo Bird Watching team members, with quick call notes, WhatsApp-ready replies, booking links, pricing references, and social links." name="description"/><link href="https://admin.mindobirdwatching.com/staff-info/" rel="canonical"/><meta content="website" property="og:type"/><meta content="Mindo Bird Watching" property="og:site_name"/><meta content="en_US" property="og:locale"/><meta content="MBW Staff Info Library" property="og:title"/><meta content="Internal staff reference for Mindo Bird Watching team members with quick answers, booking links, and social links." property="og:description"/><meta content="https://admin.mindobirdwatching.com/staff-info/" property="og:url"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" property="og:image"/><meta content="Mindo Bird Watching" property="og:image:alt"/><meta content="summary" name="twitter:card"/><meta content="MBW Staff Info Library" name="twitter:title"/><meta content="Internal staff reference for Mindo Bird Watching team members." name="twitter:description"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" name="twitter:image"/><link href="/site.webmanifest" rel="manifest"/><link href="/assets/css/site.css" rel="stylesheet"/><link href="/assets/css/header.css?v=1" rel="stylesheet"/><script defer="" src="/assets/js/site-config.js"></script><script type="application/ld+json">[
@@ -794,7 +812,7 @@
 <aside aria-label="Message builder" class="panel builderPanel" id="builderPanel">
 <div class="panelHead">
 <h2 id="builderTitle">Message builder</h2>
-<div class="builderHeadActions"><span class="count" id="selectedCount">0</span><button class="modalClose mobileBuilderClose" id="closeBuilderBtn" type="button" aria-label="Close builder">×</button></div>
+<div class="builderHeadActions"><button class="editSelectionsBtn" id="editSelectionsBtn" type="button">← Edit selections</button><span class="count" id="selectedCount">0</span><button class="modalClose mobileBuilderClose" id="closeBuilderBtn" type="button" aria-label="Close builder">×</button></div>
 </div>
 <div class="builderBody">
 <div class="builderFields">
@@ -814,13 +832,17 @@
 <div class="builderActions">
 <button class="btn primary" id="copyMessageBtn" type="button">Copy WhatsApp</button>
 <button class="btn" id="openWhatsAppBtn" type="button">Open WhatsApp</button>
+<button class="btn secondary" id="regenerateMessageBtn" type="button">Regenerate</button>
 <button class="btn secondary" id="clearMessageBtn" type="button">Clear</button>
 </div>
 </div>
 </aside>
 </section>
 <div class="modalBackdrop" id="modalBackdrop" hidden></div>
-<button class="mobileBuilderBar" id="mobileBuilderBar" type="button">Build message · <span>0</span> items</button>
+<nav class="mobileModeBar" aria-label="Staff reply workflow">
+<button id="mobileBrowseBtn" type="button" aria-current="page">Browse</button>
+<button class="mobileBuilderBar" id="mobileBuilderBar" type="button">Message · <span>0</span></button>
+</nav>
 <section aria-label="Social links" class="panel socialPanel">
 <div class="panelHead">
 <h2 id="socialTitle">Social links</h2>
@@ -834,6 +856,8 @@
 <script>
     (function(){
       "use strict";
+      window.MBW_DISABLE_WHATSAPP_WIDGET = true;
+      window.MBW_INTERNAL_STAFF_PAGE = true;
 
       const BASE = "https://mindobirdwatching.com";
       const DATA_URL = "https://script.google.com/macros/s/AKfycbzPORSX9WyGwLkBs3BIrkSmdHSPpmPTSQg1CtpGw-8Ak2q9vBEbx8qQ9UdRBCSyrDg/exec";
@@ -954,6 +978,9 @@
         ,modalBackdrop: document.getElementById("modalBackdrop")
         ,closeDetailsBtn: document.getElementById("closeDetailsBtn")
         ,closeBuilderBtn: document.getElementById("closeBuilderBtn")
+        ,mobileBrowseBtn: document.getElementById("mobileBrowseBtn")
+        ,regenerateMessageBtn: document.getElementById("regenerateMessageBtn")
+        ,editSelectionsBtn: document.getElementById("editSelectionsBtn")
       };
 
       let DATA = { languages: {} };
@@ -964,7 +991,8 @@
         query: "",
         activeId: "",
         selected: [],
-        recent: []
+        recent: [],
+        manualDraft: false
       };
 
       function esc(value){
@@ -1149,10 +1177,24 @@
 
       function allItemsForLanguage(){
         const langData = DATA.languages && DATA.languages[state.lang] ? DATA.languages[state.lang] : {};
-        return Object.keys(langData).reduce((all, subject) => {
+        const library = Object.keys(langData).reduce((all, subject) => {
           if(subject.toLowerCase() !== "social") all.push(...(langData[subject] || []));
           return all;
         }, []);
+        const social = socialFallback.map((row, index) => ({
+          id: `social-${index}`,
+          subject: "Social & Reviews",
+          topic: "Links",
+          title: row.title,
+          message_short: row.title,
+          source_url: row.url,
+          social_url: row.url,
+          image_url: row.icon,
+          cost: "",
+          priority: 0,
+          sort_order: index
+        }));
+        return library.concat(social);
       }
 
       function selectedRecords(){
@@ -1183,6 +1225,7 @@
           button.addEventListener("click", () => {
             const id = button.dataset.recentAdd;
             if(!state.selected.map(String).includes(String(id))) state.selected.push(id);
+            state.manualDraft = false;
             renderList();
             renderBuilder();
           });
@@ -1200,7 +1243,7 @@
       }
 
       function renderCategories(){
-        const subjects = subjectsForLang(state.lang);
+        const subjects = subjectsForLang(state.lang).concat(["Social & Reviews"]);
         const labels = ["All", ...subjects];
         els.categoryChips.innerHTML = labels.map(subject => {
           const active = subject === "All" ? !state.subject : subject === state.subject;
@@ -1242,6 +1285,7 @@
         const short = String(item.message_short || "").trim();
         const ready = String(item.whatsapp_ready || "").trim();
         const long = String(item.message_long || "").trim();
+        if(/(?:full day|half day tour\s*[12])/i.test(title) && length !== "detailed") return short || ready || title;
         if(length === "quick") return short || title;
         if(length === "detailed") return ready || long || short || title;
         return ready || short || title;
@@ -1256,6 +1300,28 @@
           .trim();
       }
 
+      function guestLabel(item){
+        const title = String(item.title || item.topic || "Option");
+        if(/half day tour\s*1/i.test(title)) return state.lang === "es" ? "Medio Día 1" : "Half Day 1";
+        if(/half day tour\s*2/i.test(title)) return state.lang === "es" ? "Medio Día 2" : "Half Day 2";
+        if(/full day/i.test(title)) return state.lang === "es" ? "Día Completo" : "Full Day";
+        return title.replace(/\s*[-–—].*$/, "").trim();
+      }
+
+      function saveDraft(){
+        const priority = (document.querySelector('input[name="previewPriority"]:checked') || {}).value || "page";
+        try{
+          localStorage.setItem("mbwStaffMessageDraft", JSON.stringify({
+            selected: state.selected,
+            guestName: els.guestName.value,
+            length: els.messageLength.value,
+            priority,
+            message: els.messagePreview.value,
+            manualDraft: state.manualDraft
+          }));
+        }catch(error){}
+      }
+
       function buildMessage(){
         const records = selectedRecords();
         const name = String(els.guestName.value || "").trim();
@@ -1266,12 +1332,21 @@
 
         if(!records.length) return "";
 
+        const socialRecords = records.filter(item => item.subject === "Social & Reviews");
+        const contentRecords = records.filter(item => item.subject !== "Social & Reviews");
         const intro = isSpanish
-          ? (records.length > 1 ? "Estas son algunas opciones que recomendamos:" : "Esta es una opción que recomendamos:")
-          : (records.length > 1 ? "Here are a few options we recommend:" : "Here is an option we recommend:");
+          ? (contentRecords.length > 1 ? "Estas son algunas opciones que recomendamos:" : contentRecords.length ? "Esta es una opción que recomendamos:" : "Aquí tienes los enlaces:")
+          : (contentRecords.length > 1 ? "Here are a few options we recommend:" : contentRecords.length ? "Here is an option we recommend:" : "Here are the links:");
 
-        const bullets = records.map(item => {
+        const bullets = contentRecords.map(item => {
           let text = cleanMessageText(conciseText(item, length));
+          const label = guestLabel(item);
+          if(/(?:full day|half day)/i.test(label)){
+            text = text
+              .replace(/^\*?(?:full day|half day(?:\s*(?:tour)?\s*[12])?)\*?\s*/i, "")
+              .replace(/^\*?(?:día completo|medio día(?:\s*[12])?)\*?\s*/i, "");
+            text = `*${label}* ${text}`.trim();
+          }
           if(length === "quick" && text.length > 135) text = text.slice(0, 132).trimEnd() + "…";
           if(length === "standard" && text.length > 240) text = text.slice(0, 237).trimEnd() + "…";
           const cost = String(item.cost || "").trim();
@@ -1282,22 +1357,24 @@
         });
 
         const pages = records.map(item => String(item.source_url || "").trim()).filter(Boolean);
-        const videos = records.map(videoFor).filter(Boolean);
-        const uniquePages = [...new Set(pages)];
+        const contentPages = contentRecords.map(item => String(item.source_url || "").trim()).filter(Boolean);
+        const videos = contentRecords.map(videoFor).filter(Boolean);
+        const uniquePages = [...new Set(contentPages)];
         const uniqueVideos = [...new Set(videos)];
         const links = [];
-        if(priority === "page" && uniquePages[0]) links.push(`${isSpanish ? "Detalles" : "Details"}: ${uniquePages[0]}`);
-        if(priority === "video" && uniqueVideos[0]) links.push(`${isSpanish ? "Video" : "Watch"}: ${uniqueVideos[0]}`);
+        if(priority === "page" && uniquePages[0]) links.push(`*${isSpanish ? "Detalles:" : "Details:"}* ${uniquePages[0]}`);
+        if(priority === "video" && uniqueVideos[0]) links.push(`*${isSpanish ? "Video:" : "Watch:"}* ${uniqueVideos[0]}`);
         if(priority !== "none"){
-          if(priority !== "page" && uniquePages[0]) links.push(`${isSpanish ? "Detalles" : "Details"}: ${uniquePages[0]}`);
-          if(priority !== "video" && uniqueVideos[0]) links.push(`${isSpanish ? "Video" : "Watch"}: ${uniqueVideos[0]}`);
+          if(priority !== "page" && uniquePages[0]) links.push(`*${isSpanish ? "Detalles:" : "Details:"}* ${uniquePages[0]}`);
+          if(priority !== "video" && uniqueVideos[0]) links.push(`*${isSpanish ? "Video:" : "Watch:"}* ${uniqueVideos[0]}`);
         }
+        socialRecords.forEach(item => links.push(`*${guestLabel(item)}:* ${item.social_url || item.source_url}`));
 
         const close = isSpanish
           ? "Envíanos tus fechas y número de personas para confirmar disponibilidad."
           : "Send us your preferred dates and group size, and we’ll check availability.";
 
-        return [greeting, intro, bullets.join("\n"), links.join("\n"), close].filter(Boolean).join("\n\n");
+        return [greeting, intro, bullets.join("\n"), links.join("\n"), contentRecords.length ? close : ""].filter(Boolean).join("\n\n");
       }
 
       function renderBuilder(){
@@ -1323,13 +1400,14 @@
         els.selectedItems.querySelectorAll("[data-remove]").forEach(button => {
           button.addEventListener("click", () => {
             state.selected = state.selected.filter(id => String(id) !== String(button.dataset.remove));
+            state.manualDraft = false;
             renderList();
             renderBuilder();
           });
         });
 
         const message = buildMessage();
-        if(document.activeElement !== els.messagePreview) els.messagePreview.value = message;
+        if(!state.manualDraft && document.activeElement !== els.messagePreview) els.messagePreview.value = message;
         const count = els.messagePreview.value.length;
         const target = els.messageLength.value === "quick" ? 400 : els.messageLength.value === "detailed" ? 1000 : 700;
         els.charCount.textContent = `${count} ${isSpanish ? "caracteres" : "characters"}`;
@@ -1337,6 +1415,7 @@
           ? (isSpanish ? "Considera acortar el mensaje" : "Consider shortening the message")
           : (isSpanish ? "Buena longitud para WhatsApp" : "Good WhatsApp length");
         els.messageStatus.classList.toggle("warning", count > target);
+        saveDraft();
       }
 
       function renderDetail(item, skipScroll){
@@ -1403,6 +1482,7 @@
         const addCurrent = document.getElementById("addCurrentItem");
         if(addCurrent) addCurrent.addEventListener("click", () => {
           if(!state.selected.map(String).includes(String(item.id))) state.selected.push(item.id);
+          state.manualDraft = false;
           renderList();
           renderDetail(item, true);
           renderBuilder();
@@ -1417,6 +1497,8 @@
         const hasGlobalQuery = String(state.query || "").trim();
         const items = hasGlobalQuery || !state.subject
           ? filterByTopic(allItemsForLanguage(), "")
+          : state.subject === "Social & Reviews"
+            ? allItemsForLanguage().filter(item => item.subject === "Social & Reviews")
           : filterByTopic(itemsFor(state.lang, state.subject), state.topic);
         els.countBadge.textContent = String(items.length);
 
@@ -1465,6 +1547,7 @@
             const id = card.getAttribute("data-id");
             if(state.selected.map(String).includes(String(id))) state.selected = state.selected.filter(value => String(value) !== String(id));
             else state.selected.push(id);
+            state.manualDraft = false;
             rememberItem(id);
             renderList();
             renderBuilder();
@@ -1592,9 +1675,18 @@
       });
 
       els.copyBookBtn.addEventListener("click", () => copyText(currentText().bookUrl));
-      [els.guestName, els.messageLength].forEach(control => control.addEventListener("input", renderBuilder));
-      document.querySelectorAll('input[name="previewPriority"]').forEach(control => control.addEventListener("change", renderBuilder));
-      els.messagePreview.addEventListener("input", renderBuilder);
+      [els.guestName, els.messageLength].forEach(control => control.addEventListener("input", () => {
+        state.manualDraft = false;
+        renderBuilder();
+      }));
+      document.querySelectorAll('input[name="previewPriority"]').forEach(control => control.addEventListener("change", () => {
+        state.manualDraft = false;
+        renderBuilder();
+      }));
+      els.messagePreview.addEventListener("input", () => {
+        state.manualDraft = true;
+        renderBuilder();
+      });
       els.copyMessageBtn.addEventListener("click", () => copyText(els.messagePreview.value));
       els.openWhatsAppBtn.addEventListener("click", () => {
         const message = String(els.messagePreview.value || "").trim();
@@ -1602,14 +1694,23 @@
       });
       els.clearMessageBtn.addEventListener("click", () => {
         state.selected = [];
+        state.manualDraft = false;
         els.guestName.value = "";
+        els.messagePreview.value = "";
         renderList();
+        renderBuilder();
+      });
+      els.regenerateMessageBtn.addEventListener("click", () => {
+        state.manualDraft = false;
+        els.messagePreview.value = buildMessage();
         renderBuilder();
       });
       els.mobileBuilderBar.addEventListener("click", () => {
         if(window.matchMedia("(max-width: 640px)").matches){
           els.builderPanel.classList.add("mobileOpen");
           document.body.style.overflow = "hidden";
+          els.mobileBrowseBtn.removeAttribute("aria-current");
+          els.mobileBuilderBar.setAttribute("aria-current", "page");
         }else{
           els.builderPanel.scrollIntoView({ behavior:"smooth", block:"start" });
         }
@@ -1617,6 +1718,21 @@
       els.closeBuilderBtn.addEventListener("click", () => {
         els.builderPanel.classList.remove("mobileOpen");
         document.body.style.overflow = "";
+        els.mobileBrowseBtn.setAttribute("aria-current", "page");
+        els.mobileBuilderBar.removeAttribute("aria-current");
+      });
+      els.editSelectionsBtn.addEventListener("click", () => {
+        els.builderPanel.classList.remove("mobileOpen");
+        document.body.style.overflow = "";
+        els.mobileBrowseBtn.setAttribute("aria-current", "page");
+        els.mobileBuilderBar.removeAttribute("aria-current");
+        document.querySelector(".quickCategories").scrollIntoView({ behavior:"smooth", block:"start" });
+      });
+      els.mobileBrowseBtn.addEventListener("click", () => {
+        els.builderPanel.classList.remove("mobileOpen");
+        document.body.style.overflow = "";
+        els.mobileBrowseBtn.setAttribute("aria-current", "page");
+        els.mobileBuilderBar.removeAttribute("aria-current");
       });
       els.closeDetailsBtn.addEventListener("click", closeDetails);
       els.modalBackdrop.addEventListener("click", closeDetails);
@@ -1629,6 +1745,26 @@
 
       els.langSel.value = "en";
       try{ state.recent = JSON.parse(localStorage.getItem("mbwStaffRecent") || "[]"); }catch(error){ state.recent = []; }
+      try{
+        const draft = JSON.parse(localStorage.getItem("mbwStaffMessageDraft") || "null");
+        if(draft){
+          state.selected = Array.isArray(draft.selected) ? draft.selected : [];
+          state.manualDraft = Boolean(draft.manualDraft);
+          els.guestName.value = draft.guestName || "";
+          els.messageLength.value = draft.length || "standard";
+          els.messagePreview.value = draft.message || "";
+          const priorityControl = document.querySelector(`input[name="previewPriority"][value="${draft.priority || "page"}"]`);
+          if(priorityControl) priorityControl.checked = true;
+        }
+      }catch(error){}
+      const removeStaffWidgets = () => {
+        document.querySelectorAll(
+          '[id*="whatsapp-widget" i],[class*="whatsapp-widget" i],[id*="whatsapp-float" i],[class*="whatsapp-float" i],' +
+          '[id*="chat-widget" i],[class*="chat-widget" i],.joinchat,.wa__btn_popup'
+        ).forEach(node => node.remove());
+      };
+      removeStaffWidgets();
+      new MutationObserver(removeStaffWidgets).observe(document.documentElement, { childList:true, subtree:true });
       setStaticText();
       loadData();
     })();
