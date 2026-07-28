@@ -1374,12 +1374,15 @@
         const bullets = contentRecords.map(item => {
           let text = cleanMessageText(conciseText(item, length));
           const label = guestLabel(item);
-          if(/(?:full day|half day)/i.test(label)){
+          const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          text = text.replace(new RegExp(`^\\*?${escapedLabel}\\*?\\s*(?:[.:–—-]\\s*)?`, "i"), "");
+          const isDayTour = /(?:full day|half day)/i.test(label);
+          if(isDayTour){
             text = text
               .replace(/^\*?(?:full day|half day(?:\s*(?:tour)?\s*[12])?)\*?\s*/i, "")
               .replace(/^\*?(?:día completo|medio día(?:\s*[12])?)\*?\s*/i, "");
-            text = `*${label}* ${text}`.trim();
           }
+          text = `*${label}*${text ? `${isDayTour ? " " : " — "}${text}` : ""}`;
           if(length === "quick" && text.length > 135) text = text.slice(0, 132).trimEnd() + "…";
           if(length === "standard" && text.length > 240) text = text.slice(0, 237).trimEnd() + "…";
           const cost = displayCost(item.cost);
