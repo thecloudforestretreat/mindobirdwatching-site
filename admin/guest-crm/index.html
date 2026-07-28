@@ -471,6 +471,7 @@
       function archiveDuplicateRecord(record,note){
         const existingNotes=clean(record.internal_notes);
         return Object.assign({},record,{
+          previous_status:isArchivedStatus(record.status)?(record.previous_status||""):normalizeStatus(record.status),
           status:"duplicate",
           priority:"",
           availability_status:"archived",
@@ -742,7 +743,7 @@
         const explicitProduct=pick(row,"product_selected")||clean(storedPrimary.product_selected).split(" - ")[0];
         const explicitDuration=normalizeDuration(pick(row,"duration_preference")||storedPrimary.duration);
         const explicitService=pick(row,"service_type")||deriveServiceType(storedPrimary.tour||tour);
-        return Object.assign({},row,{inquiry_id:pick(row,"inquiry_id","id","source_record_id")||("INQ-"+stamp()+"-"+lastFour(norm||phone)),guest_id:pick(row,"guest_id")||("G-"+stamp()+"-"+lastFour(norm||phone)),first_name:first,last_name:last,full_name:full||"Guest",phone_number:phone,phone_raw:phone,phone_normalized:norm,email:pick(row,"email","guest_email","Email"),email_normalized:pick(row,"email_normalized")||pick(row,"email","guest_email","Email").toLowerCase(),country:country,home_country:country,source_type:source,source_tab:pick(row,"source_tab")||source,source_page:pick(row,"source_page"),source_row:pick(row,"source_row"),assigned_to:pick(row,"assigned_to"),tour_type:tour,tour_category:tour,interest_category:pick(row,"interest_category","tour_category")||tour,guest_count:pick(row,"guest_count","guest_count_text","number_of_guests"),guest_count_text:pick(row,"guest_count_text","guest_count","number_of_guests"),requested_date:requested,requested_date_start:requested,requested_date_end:requestedEnd,requested_date_text:requestedText||requested,duration_preference:explicitDuration,transportation_needed:normalizeTransportation(pick(row,"transportation_needed")),accommodation_needed:pick(row,"accommodation_needed","accommodation_needs"),pickup_location:pick(row,"pickup_location"),priority:priority,status:status,quote_status:pick(row,"quote_status")||"not_sent",payment_status:normalizePayment(pick(row,"payment_status")||"unpaid"),invoice_no:pick(row,"invoice_no","invoice_number"),date_paid:toDateValue(pick(row,"date_paid","payment_received_at")),payment_method:pick(row,"payment_method"),service_type:explicitService,product_selected:explicitProduct||deriveProductCode(storedPrimary.tour),tour_completed:existingCompleted||(status==="completed"?"Yes":"No"),availability_status:pick(row,"availability_status")||"pending",grouping_preference:pick(row,"grouping_preference")||"unknown",grouping_status:pick(row,"grouping_status")||"unmatched",quoted_amount:pick(row,"quoted_amount"),quoted_currency:pick(row,"quoted_currency"),followup_date:toDateValue(pick(row,"followup_date")),notes:notes,internal_notes:internalNotes,tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):pick(row,"tour_count","tour_content"),tour_content:tourItems.length?String(tourItems.length):pick(row,"tour_content","tour_count"),stage_changed_at:pick(row,"stage_changed_at"),last_contacted_at:pick(row,"last_contacted_at"),next_action:pick(row,"next_action"),created_at:pick(row,"created_at"),updated_at:pick(row,"updated_at")});
+        return Object.assign({},row,{inquiry_id:pick(row,"inquiry_id","id","source_record_id")||("INQ-"+stamp()+"-"+lastFour(norm||phone)),guest_id:pick(row,"guest_id")||("G-"+stamp()+"-"+lastFour(norm||phone)),first_name:first,last_name:last,full_name:full||"Guest",phone_number:phone,phone_raw:phone,phone_normalized:norm,email:pick(row,"email","guest_email","Email"),email_normalized:pick(row,"email_normalized")||pick(row,"email","guest_email","Email").toLowerCase(),country:country,home_country:country,source_type:source,source_tab:pick(row,"source_tab")||source,source_page:pick(row,"source_page"),source_row:pick(row,"source_row"),assigned_to:pick(row,"assigned_to"),tour_type:tour,tour_category:tour,interest_category:pick(row,"interest_category","tour_category")||tour,guest_count:pick(row,"guest_count","guest_count_text","number_of_guests"),guest_count_text:pick(row,"guest_count_text","guest_count","number_of_guests"),requested_date:requested,requested_date_start:requested,requested_date_end:requestedEnd,requested_date_text:requestedText||requested,duration_preference:explicitDuration,transportation_needed:normalizeTransportation(pick(row,"transportation_needed")),accommodation_needed:pick(row,"accommodation_needed","accommodation_needs"),pickup_location:pick(row,"pickup_location"),priority:priority,status:status,_source_status:normalizeStatus(pick(row,"status")||"new"),quote_status:pick(row,"quote_status")||"not_sent",payment_status:normalizePayment(pick(row,"payment_status")||"unpaid"),invoice_no:pick(row,"invoice_no","invoice_number"),date_paid:toDateValue(pick(row,"date_paid","payment_received_at")),payment_method:pick(row,"payment_method"),service_type:explicitService,product_selected:explicitProduct||deriveProductCode(storedPrimary.tour),tour_completed:existingCompleted||(status==="completed"?"Yes":"No"),availability_status:pick(row,"availability_status")||"pending",grouping_preference:pick(row,"grouping_preference")||"unknown",grouping_status:pick(row,"grouping_status")||"unmatched",quoted_amount:pick(row,"quoted_amount"),quoted_currency:pick(row,"quoted_currency"),followup_date:toDateValue(pick(row,"followup_date")),notes:notes,internal_notes:internalNotes,tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):pick(row,"tour_count","tour_content"),tour_content:tourItems.length?String(tourItems.length):pick(row,"tour_content","tour_count"),stage_changed_at:pick(row,"stage_changed_at"),last_contacted_at:pick(row,"last_contacted_at"),next_action:pick(row,"next_action"),created_at:pick(row,"created_at"),updated_at:pick(row,"updated_at")});
       }
       function dedupeRecords(records){ const seen=new Set(); return records.filter(record=>{ const key=record.inquiry_id; if(!key||seen.has(key)) return false; seen.add(key); return true; }); }
       function pick(row,...keys){ for(const key of keys){ const value=row[key]; if(value!==undefined&&value!==null&&String(value).trim()!=="") return String(value).trim(); } return ""; }
@@ -800,19 +801,24 @@
       function markContactedNow(){ if(!state.selectedId&&els.modeInput.value==="update"){ showToast("Select a record first"); return; } state.forceContactedAt=true; saveRecord(); }
       function handleDuplicateAction(){ const current=getSelected()||formRecord(); return isArchivedStatus(current&&current.status)?restoreDuplicateRecord():markDuplicateRecord(); }
       function updateDuplicateActionButtons(record){ const restore=isArchivedStatus(record&&record.status); [els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean).forEach(button=>{ button.textContent=restore?"Restore Record":"Mark Duplicate"; button.classList.toggle("dangerBtn",!restore); }); }
+      function canonicalRecordScore(record){ let score=0; if(toDateValue(record.requested_date||record.requested_date_start)) score+=40; if(!["","new","duplicate"].includes(normalizeStatus(record._source_status||record.status))) score+=30; if(clean(record.last_contacted_at)) score+=20; if(clean(record.next_action)) score+=10; if(!["","unknown"].includes(clean(record.grouping_preference).toLowerCase())) score+=10; return score; }
+      function chooseCanonicalRecord(records){ return records.slice().sort((a,b)=>canonicalRecordScore(b)-canonicalRecordScore(a)||String(a.created_at||"").localeCompare(String(b.created_at||"")))[0]||null; }
+      function inferRestoredStatus(record){ const previous=normalizeStatus(record.previous_status||""); if(previous&&!isArchivedStatus(previous)&&previous!=="new") return previous; const source=normalizeStatus(record._source_status||""); if(source&&!isArchivedStatus(source)&&source!=="new") return source; const action=clean(record.next_action).toLowerCase(); if(clean(record.last_contacted_at)&&(action.includes("itinerary")||action.includes("planning")||action.includes("prepare"))) return "planning"; return source&&!isArchivedStatus(source)?source:"contacted"; }
       async function markDuplicateRecord(){
         const current=getSelected()||formRecord();
         if(!current||!current.inquiry_id){ showToast("Select a record first"); return; }
         const name=current.full_name||"this guest";
         const targets=state.records.filter(record=>record.inquiry_id===current.inquiry_id||sameSourceSubmissionClone(record,current));
-        const count=Math.max(targets.length,1);
-        const prompt=count>1
-          ?"Archive all "+count+" records created from the same original submission for "+name+"? Separately dated tours will remain active."
+        const canonical=targets.length>1?chooseCanonicalRecord(targets):null;
+        const archiveTargets=canonical?targets.filter(record=>record.inquiry_id!==canonical.inquiry_id):targets;
+        const count=Math.max(archiveTargets.length,1);
+        const prompt=canonical
+          ?"Keep the strongest "+name+" record active and archive its "+count+" incomplete source clone"+(count===1?"":"s")+"?"
           :"Mark only this selected record for "+name+" as a duplicate? Other tours and records for this guest will remain active.";
         if(!window.confirm(prompt)) return;
         const today=datePlusDays(0);
         const note="Marked duplicate on "+today+". Kept for audit trail.";
-        const archivedTargets=(targets.length?targets:[current]).map(record=>archiveDuplicateRecord(record,note));
+        const archivedTargets=(archiveTargets.length?archiveTargets:[current]).map(record=>archiveDuplicateRecord(record,note));
         const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
         buttons.forEach(button=>{button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Archiving…";});
         let saved=0;
@@ -826,7 +832,7 @@
           saveLocalRecords();
           state.activeQueue="all";
           els.viewFilter.value="all";
-          const next=state.records.find(record=>!isArchivedStatus(record.status));
+          const next=(canonical&&state.records.find(record=>record.inquiry_id===canonical.inquiry_id))||state.records.find(record=>!isArchivedStatus(record.status));
           state.selectedId=next?next.inquiry_id:"";
           fillForm(next);
           render();
@@ -842,7 +848,7 @@
       async function restoreDuplicateRecord(){
         const current=getSelected();
         if(!current||!current.inquiry_id){ showToast("Select an archived duplicate first"); return; }
-        const itemStatus=(normalizeTourItems(current).map(item=>normalizeStatus(item.status)).find(status=>status&&!isArchivedStatus(status)))||"contacted";
+        const itemStatus=(normalizeTourItems(current).map(item=>normalizeStatus(item.status)).find(status=>status&&!isArchivedStatus(status)))||inferRestoredStatus(current);
         const restored=Object.assign({},current,{status:itemStatus,availability_status:"pending",priority:normalizePriority(current.priority||autoPriority(current.requested_date)),updated_at:new Date().toISOString(),internal_notes:(clean(current.internal_notes)+"\nRestored from duplicate archive on "+datePlusDays(0)+".").trim()});
         const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
         buttons.forEach(button=>{button.disabled=true;button.textContent="Restoring…";});
