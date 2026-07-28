@@ -286,9 +286,10 @@
     }
 
     .price{
-      min-width:138px;
-      max-width:none;
-      padding:5px 8px;
+      width:max-content;
+      min-width:0;
+      max-width:100%;
+      padding:4px 10px;
       border:1px solid var(--line);
       border-radius:999px;
       background:rgba(255,255,255,.48);
@@ -543,6 +544,157 @@
         grid-template-columns:36px minmax(0, 1fr) 76px;
       }
     }
+    .builderWorkspace{
+      grid-template-columns:minmax(250px,.72fr) minmax(350px,1.15fr) minmax(320px,.95fr);
+      align-items:start;
+    }
+    .builderPanel{position:sticky;top:18px}
+    .builderBody{padding:14px;display:grid;gap:12px}
+    .builderFields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .builderFields label,.previewLabel{display:grid;gap:5px;font-size:11px;font-weight:800;text-transform:uppercase;color:#3d5147}
+    .builderFields input,.builderFields select,.messagePreview{
+      width:100%;border:1px solid #cad4ce;border-radius:12px;background:#fff;color:#10231c;
+      padding:10px 12px;font:inherit;box-sizing:border-box
+    }
+    .previewChoice{border:1px solid #d6ded9;border-radius:12px;padding:9px 11px;display:flex;gap:12px;flex-wrap:wrap}
+    .previewChoice legend{font-size:11px;font-weight:800;text-transform:uppercase;color:#3d5147;padding:0 4px}
+    .previewChoice label{font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px}
+    .selectedItems{display:grid;gap:7px;max-height:230px;overflow:auto}
+    .selectedRow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;border:1px solid #d6ded9;border-radius:12px;padding:9px;background:#fbfcfa}
+    .selectedRow strong{display:block;font-size:12px;line-height:1.25}
+    .selectedRow small{display:block;color:#68766f;margin-top:2px}
+    .selectedRow>button{border:0;background:transparent;font-size:22px;color:#7e302d;cursor:pointer}
+    .linkBadges{display:flex;gap:3px}
+    .linkBadges span{font-size:9px;background:#e6f1e6;color:#0d5c2d;border-radius:999px;padding:3px 5px;font-weight:800;text-transform:uppercase}
+    .selectedLinkOptions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .selectedLinkOptions label{display:flex;gap:3px;align-items:center;font-size:10px;font-weight:800;color:#3d5b4b}
+    .messagePreview{resize:vertical;line-height:1.45;min-height:210px}
+    .messageMeter{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#557064}
+    .messageMeter .warning{color:#a13a24;font-weight:800}
+    .builderActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .detailActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
+    .moreDetails{border:1px solid #d6ded9;border-radius:12px;padding:10px}
+    .moreDetails summary{cursor:pointer;font-weight:800;color:#145f31}
+    .itemActions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .itemBtn{cursor:default}
+    .selectedAdd{background:#e4f3e7;color:#0d5c2d;border-color:#8abe98}
+    .mobileBuilderBar{display:none}
+    @media(max-width:1180px){
+      .builderWorkspace{grid-template-columns:minmax(230px,.7fr) minmax(360px,1fr)}
+      .builderPanel{grid-column:1/-1;position:static}
+      .builderBody{grid-template-columns:minmax(280px,.8fr) minmax(340px,1.2fr)}
+      .builderFields,.previewChoice,.selectedItems{grid-column:1}
+      .previewLabel,.messagePreview,.messageMeter,.builderActions{grid-column:2}
+      .previewLabel{grid-row:1}
+      .messagePreview{grid-row:2/5}
+    }
+    @media(max-width:980px){
+      .builderWorkspace{display:grid;grid-template-columns:1fr}
+      .builderPanel{grid-column:auto}
+      .builderBody{display:grid;grid-template-columns:1fr}
+      .builderFields,.previewChoice,.selectedItems,.previewLabel,.messagePreview,.messageMeter,.builderActions{grid-column:1;grid-row:auto}
+      .mobileBuilderBar{
+        display:block;position:sticky;bottom:12px;z-index:30;width:calc(100% - 24px);max-width:540px;
+        margin:12px auto;border:0;border-radius:999px;padding:14px 18px;background:#0b612e;color:#fff;
+        font:800 15px/1.1 system-ui;box-shadow:0 10px 26px rgba(8,50,25,.28)
+      }
+    }
+    @media(max-width:640px){
+      .builderFields{grid-template-columns:1fr}
+      .builderActions{grid-template-columns:1fr 1fr}
+      .builderActions .secondary{grid-column:auto}
+      .messagePreview{min-height:250px}
+      .itemActions .btn{min-height:42px}
+    }
+    /* Reply Center redesign */
+    .hero{grid-template-columns:minmax(260px,.7fr) minmax(380px,1.3fr) auto}
+    #subjSel.closest-fallback{display:none}
+    .heroFilters .field:has(#subjSel),.heroFilters .field:has(#topicSel){display:none}
+    .libraryStructureFilter{display:none!important}
+    .heroFilters{grid-template-columns:180px minmax(280px,1fr);align-content:center}
+    .visuallyHidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    .languageToggle{display:inline-grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid #cbd6ce;border-radius:999px;background:#eef3ed}
+    .languageToggle button{border:0;border-radius:999px;padding:7px 12px;background:transparent;color:#344b40;font-weight:800;cursor:pointer}
+    .languageToggle button[aria-pressed="true"]{background:#0b612e;color:#fff;box-shadow:0 2px 7px rgba(8,50,25,.18)}
+    .quickCategories{margin-top:14px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+    .categoryIntro{display:grid;gap:2px;min-width:210px}
+    .categoryIntro strong{font-family:Georgia,serif;color:#0b612e;font-size:18px}
+    .categoryIntro span,.panelSub{font-size:12px;color:#647169;margin:3px 0 0}
+    .categoryChips{display:flex;gap:8px;flex-wrap:wrap}
+    .categoryChip{border:1px solid #cbd6ce;background:#fff;border-radius:999px;padding:9px 13px;font-weight:800;color:#173327;cursor:pointer}
+    .categoryChip[aria-pressed="true"]{background:#0b612e;color:#fff;border-color:#0b612e}
+    .recentPanel{margin-top:12px}
+    .recentItems{display:flex;gap:8px;overflow:auto;padding:12px 14px 14px;scrollbar-width:thin}
+    .recentCard{min-width:150px;max-width:190px;border:1px solid #d6ded9;border-radius:10px;background:#fff;padding:8px 10px;display:grid;gap:4px}
+    .recentCard strong{font-size:12px;line-height:1.25}
+    .recentCard button,.textButton{border:0;background:transparent;color:#0b612e;font-weight:800;cursor:pointer;text-align:left;padding:0}
+    .textButton{font-size:12px}
+    .replyWorkspace{grid-template-columns:minmax(500px,1.35fr) minmax(330px,.65fr);gap:14px}
+    .resultsPanel .panelHead{align-items:flex-start}
+    .resultsPanel .itemList{display:grid;grid-template-columns:1fr;gap:7px;padding:10px}
+    .resultsPanel .itemBtn{display:grid;grid-template-columns:minmax(190px,1.45fr) minmax(72px,max-content) minmax(82px,.7fr) auto;align-items:center;column-gap:14px;min-height:0;padding:10px 12px;border-radius:12px}
+    .itemTitle{font-size:15px;line-height:1.25}
+    .itemMeta{margin-top:5px}
+    .itemFacts{grid-column:3;display:block;margin:0;padding-left:2px;color:#607068;font-size:11px;white-space:nowrap}
+    .itemFact{font-size:11px;font-weight:700;background:transparent;color:#607068;border-radius:0;padding:0}
+    .itemFact+.itemFact:before{content:" · ";color:#8a968f}
+    .itemSummary{display:none}
+    .resultsPanel .itemBtn>div:first-child{grid-column:1;grid-row:1}
+    .resultsPanel .itemBtn>.price{grid-column:2;grid-row:1;justify-self:start}
+    .resultsPanel .itemBtn .itemActions{grid-column:4;grid-row:1;display:flex;min-width:168px}
+    .resultsPanel .itemBtn .itemActions .btn{padding:9px 11px;white-space:nowrap}
+    .builderPanel{top:14px;max-height:calc(100vh - 28px);overflow:auto}
+    .detailModal{display:none;position:fixed;z-index:1001;inset:6vh max(20px,calc((100vw - 760px)/2));max-height:88vh;overflow:auto;box-shadow:0 25px 80px rgba(0,35,16,.28)}
+    .detailModal.isOpen{display:block}
+    .modalBackdrop{position:fixed;z-index:1000;inset:0;background:rgba(5,27,15,.55);backdrop-filter:blur(2px)}
+    .modalClose{border:0;background:#edf2ed;width:34px;height:34px;border-radius:50%;font-size:24px;cursor:pointer}
+    .mobileBuilderClose{display:none}
+    .editSelectionsBtn{display:none;border:0;background:transparent;color:#0b612e;font-weight:800;cursor:pointer}
+    .builderHeadActions{display:flex;align-items:center;gap:7px}
+    .detailModal .detailPane{padding:16px}
+    .socialPanel{display:none!important}
+    #siteHeader,#siteFooter{display:none!important}
+    [id*="whatsapp-widget" i],[class*="whatsapp-widget" i],[id*="whatsapp-float" i],[class*="whatsapp-float" i],
+    [id*="chat-widget" i],[class*="chat-widget" i],.joinchat,.wa__btn_popup{display:none!important}
+    .mobileModeBar{display:none}
+    @media(max-width:980px){
+      .hero{grid-template-columns:1fr auto}
+      .heroFilters{grid-column:1/-1;grid-row:2;grid-template-columns:150px 1fr}
+      .quickCategories{grid-template-columns:1fr}
+      .categoryIntro{min-width:0}
+      .replyWorkspace{grid-template-columns:1fr}
+      .resultsPanel .itemBtn{grid-template-columns:minmax(180px,1.2fr) minmax(72px,max-content) minmax(82px,.7fr) auto}
+      .builderPanel{position:static;max-height:none}
+    }
+    @media(max-width:640px){
+      .hero{display:grid;grid-template-columns:1fr}
+      .heroActions{grid-column:1;grid-row:3;display:flex}
+      .staffBrand{display:none}
+      .heroFilters{grid-column:1;grid-template-columns:1fr}
+      .heroFilters .field:has(#langSel){max-width:none}
+      .quickCategories{padding:13px;margin-top:10px}
+      .categoryChips{flex-wrap:nowrap;overflow:auto;padding-bottom:3px}
+      .categoryChip{white-space:nowrap;min-height:42px}
+      .recentItems{padding-left:12px}
+      .resultsPanel .itemList{grid-template-columns:1fr;padding:10px}
+      .resultsPanel .itemBtn{display:grid;grid-template-columns:1fr auto;min-height:0;gap:7px}
+      .resultsPanel .itemBtn>div:first-child{grid-column:1;grid-row:1}
+      .resultsPanel .itemBtn>.price{grid-column:2;grid-row:1;justify-self:end}
+      .resultsPanel .itemBtn .itemFacts{grid-column:1/-1;grid-row:2}
+      .resultsPanel .itemBtn .itemActions{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:1fr 1fr;min-width:0}
+      .replyWorkspace{gap:10px}
+      .builderPanel{display:none}
+      .builderPanel.mobileOpen{display:block;position:fixed;z-index:1100;inset:0;border-radius:0;overflow:auto;max-height:none;padding-bottom:90px}
+      .builderPanel.mobileOpen .panelHead{position:sticky;top:0;background:#fff;z-index:2}
+      .mobileBuilderClose{display:inline-grid;place-items:center}
+      .editSelectionsBtn{display:inline-block}
+      .detailModal{inset:0;border-radius:0;max-height:none}
+      .socialPanel{display:none}
+      .mobileModeBar{display:grid;grid-template-columns:1fr 1fr;position:fixed;z-index:1050;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:5px;border-radius:999px;background:#fff;box-shadow:0 10px 30px rgba(8,50,25,.25)}
+      .mobileModeBar button{display:block;border:0;border-radius:999px;padding:13px 12px;font:800 15px/1.1 system-ui;background:transparent;color:#173327}
+      .mobileModeBar button[aria-current="page"]{background:#0b612e;color:#fff}
+      .mobileBuilderBar{margin:0;width:auto;position:static;box-shadow:none}
+    }
   </style>
 <meta content="Internal staff reference for Mindo Bird Watching team members, with quick call notes, WhatsApp-ready replies, booking links, pricing references, and social links." name="description"/><link href="https://admin.mindobirdwatching.com/staff-info/" rel="canonical"/><meta content="website" property="og:type"/><meta content="Mindo Bird Watching" property="og:site_name"/><meta content="en_US" property="og:locale"/><meta content="MBW Staff Info Library" property="og:title"/><meta content="Internal staff reference for Mindo Bird Watching team members with quick answers, booking links, and social links." property="og:description"/><meta content="https://admin.mindobirdwatching.com/staff-info/" property="og:url"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" property="og:image"/><meta content="Mindo Bird Watching" property="og:image:alt"/><meta content="summary" name="twitter:card"/><meta content="MBW Staff Info Library" name="twitter:title"/><meta content="Internal staff reference for Mindo Bird Watching team members." name="twitter:description"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" name="twitter:image"/><link href="/site.webmanifest" rel="manifest"/><link href="/assets/css/site.css" rel="stylesheet"/><link href="/assets/css/header.css?v=1" rel="stylesheet"/><script defer="" src="/assets/js/site-config.js"></script><script type="application/ld+json">[
   {
@@ -615,17 +767,21 @@
 </div>
 <section aria-label="Filters" class="controlGrid">
 <div class="field">
-<label for="langSel" id="langLbl">Language</label>
-<select id="langSel">
+<label id="langLbl">Language</label>
+<div class="languageToggle" role="group" aria-label="Message language">
+<button type="button" data-language="en" aria-pressed="true">English</button>
+<button type="button" data-language="es" aria-pressed="false">Español</button>
+</div>
+<select id="langSel" class="visuallyHidden" aria-hidden="true" tabindex="-1">
 <option value="en">English</option>
 <option value="es">Español</option>
 </select>
 </div>
-<div class="field">
+<div class="field libraryStructureFilter">
 <label for="subjSel" id="subjLbl">Subject</label>
 <select id="subjSel"></select>
 </div>
-<div class="field">
+<div class="field libraryStructureFilter">
 <label for="topicSel" id="topicLbl">Topic</label>
 <select id="topicSel"></select>
 </div>
@@ -640,23 +796,65 @@
 <button class="btn" id="copyBookBtn" type="button">Copy booking link</button>
 </aside>
 </header>
-<section aria-label="Content" class="workspace">
-<section aria-label="Items" class="panel">
+<nav class="quickCategories panel" aria-label="Quick categories">
+<div class="categoryIntro"><strong>What do you need to share?</strong><span>Choose a category or search the entire library.</span></div>
+<div class="categoryChips" id="categoryChips"></div>
+</nav>
+<section class="recentPanel panel" id="recentPanel" hidden>
+<div class="panelHead"><h2>Recently used</h2><button class="textButton" id="clearRecentBtn" type="button">Clear</button></div>
+<div class="recentItems" id="recentItems"></div>
+</section>
+<section aria-label="Content" class="workspace builderWorkspace replyWorkspace">
+<section aria-label="Items" class="panel resultsPanel">
 <div class="panelHead">
-<h2 id="listTitle">Items</h2>
+<div><h2 id="listTitle">Recommended information</h2><p class="panelSub">Select what is relevant, then build one concise guest reply.</p></div>
 <span class="count" id="countBadge">0</span>
 </div>
 <div class="itemList" id="itemList"></div>
 </section>
-<section aria-label="Details" class="panel">
+<section aria-label="Details" class="panel detailModal" id="detailModal" aria-hidden="true">
 <div class="panelHead">
 <h2 id="detailHead">Details</h2>
+<button class="modalClose" id="closeDetailsBtn" type="button" aria-label="Close details">×</button>
 </div>
 <div class="detailPane" id="detailPane">
 <p class="empty" id="emptyState">Select an item to see details.</p>
 </div>
 </section>
+<aside aria-label="Message builder" class="panel builderPanel" id="builderPanel">
+<div class="panelHead">
+<h2 id="builderTitle">Message builder</h2>
+<div class="builderHeadActions"><button class="editSelectionsBtn" id="editSelectionsBtn" type="button">← Edit selections</button><span class="count" id="selectedCount">0</span><button class="modalClose mobileBuilderClose" id="closeBuilderBtn" type="button" aria-label="Close builder">×</button></div>
+</div>
+<div class="builderBody">
+<div class="builderFields">
+<label>Guest name<input id="guestName" type="text" placeholder="Optional"/></label>
+<label>Length<select id="messageLength"><option value="quick">Quick</option><option value="standard" selected>Standard</option><option value="detailed">Detailed</option></select></label>
+</div>
+<fieldset class="previewChoice">
+<legend>Link preview priority</legend>
+<label><input name="previewPriority" type="radio" value="page" checked/> Page</label>
+<label><input name="previewPriority" type="radio" value="video"/> Video</label>
+<label><input name="previewPriority" type="radio" value="none"/> None</label>
+</fieldset>
+<div class="selectedItems" id="selectedItems"><p class="empty">Add relevant items to build a concise reply.</p></div>
+<label class="previewLabel" for="messagePreview">WhatsApp message</label>
+<textarea id="messagePreview" class="messagePreview" rows="13"></textarea>
+<div class="messageMeter"><span id="messageStatus">Ready</span><strong id="charCount">0 characters</strong></div>
+<div class="builderActions">
+<button class="btn primary" id="copyMessageBtn" type="button">Copy WhatsApp</button>
+<button class="btn" id="openWhatsAppBtn" type="button">Open WhatsApp</button>
+<button class="btn secondary" id="regenerateMessageBtn" type="button">Regenerate</button>
+<button class="btn secondary" id="clearMessageBtn" type="button">Clear</button>
+</div>
+</div>
+</aside>
 </section>
+<div class="modalBackdrop" id="modalBackdrop" hidden></div>
+<nav class="mobileModeBar" aria-label="Staff reply workflow">
+<button id="mobileBrowseBtn" type="button" aria-current="page">Browse</button>
+<button class="mobileBuilderBar" id="mobileBuilderBar" type="button">Message · <span>0</span></button>
+</nav>
 <section aria-label="Social links" class="panel socialPanel">
 <div class="panelHead">
 <h2 id="socialTitle">Social links</h2>
@@ -670,6 +868,8 @@
 <script>
     (function(){
       "use strict";
+      window.MBW_DISABLE_WHATSAPP_WIDGET = true;
+      window.MBW_INTERNAL_STAFF_PAGE = true;
 
       const BASE = "https://mindobirdwatching.com";
       const DATA_URL = "https://script.google.com/macros/s/AKfycbzPORSX9WyGwLkBs3BIrkSmdHSPpmPTSQg1CtpGw-8Ak2q9vBEbx8qQ9UdRBCSyrDg/exec";
@@ -684,7 +884,7 @@
           topic: "Topic",
           search: "Search",
           searchPlaceholder: "Tour, price, pickup, review...",
-          items: "Items",
+          items: "Recommended information",
           details: "Details",
           empty: "Select an item to see details.",
           copy: "Copy",
@@ -715,7 +915,7 @@
           topic: "Tema",
           search: "Buscar",
           searchPlaceholder: "Tour, precio, recogida, reseña...",
-          items: "Items",
+          items: "Información recomendada",
           details: "Detalle",
           empty: "Selecciona un item para ver el detalle.",
           copy: "Copiar",
@@ -768,7 +968,31 @@
         listTitle: document.getElementById("listTitle"),
         detailHead: document.getElementById("detailHead"),
         socialTitle: document.getElementById("socialTitle"),
-        socialGrid: document.getElementById("socialGrid")
+        socialGrid: document.getElementById("socialGrid"),
+        builderPanel: document.getElementById("builderPanel"),
+        builderTitle: document.getElementById("builderTitle"),
+        selectedCount: document.getElementById("selectedCount"),
+        selectedItems: document.getElementById("selectedItems"),
+        guestName: document.getElementById("guestName"),
+        messageLength: document.getElementById("messageLength"),
+        messagePreview: document.getElementById("messagePreview"),
+        messageStatus: document.getElementById("messageStatus"),
+        charCount: document.getElementById("charCount"),
+        copyMessageBtn: document.getElementById("copyMessageBtn"),
+        openWhatsAppBtn: document.getElementById("openWhatsAppBtn"),
+        clearMessageBtn: document.getElementById("clearMessageBtn"),
+        mobileBuilderBar: document.getElementById("mobileBuilderBar")
+        ,categoryChips: document.getElementById("categoryChips")
+        ,recentPanel: document.getElementById("recentPanel")
+        ,recentItems: document.getElementById("recentItems")
+        ,clearRecentBtn: document.getElementById("clearRecentBtn")
+        ,detailModal: document.getElementById("detailModal")
+        ,modalBackdrop: document.getElementById("modalBackdrop")
+        ,closeDetailsBtn: document.getElementById("closeDetailsBtn")
+        ,closeBuilderBtn: document.getElementById("closeBuilderBtn")
+        ,mobileBrowseBtn: document.getElementById("mobileBrowseBtn")
+        ,regenerateMessageBtn: document.getElementById("regenerateMessageBtn")
+        ,editSelectionsBtn: document.getElementById("editSelectionsBtn")
       };
 
       let DATA = { languages: {} };
@@ -777,7 +1001,11 @@
         subject: "Tours",
         topic: "Birdwatching",
         query: "",
-        activeId: ""
+        activeId: "",
+        selected: [],
+        recent: [],
+        manualDraft: false,
+        linkPrefs: {}
       };
 
       function esc(value){
@@ -809,7 +1037,7 @@
           if(!grouped[lang][subject]) grouped[lang][subject] = [];
 
           grouped[lang][subject].push({
-            id: row.content_id || row.original_id || "",
+            id: row.content_id || row.original_id || [lang, subject, row.topic, row.title].join("|"),
             content_id: row.content_id || "",
             original_id: row.original_id || "",
             subject,
@@ -945,6 +1173,9 @@
         els.detailHead.textContent = text.details;
         els.socialTitle.textContent = text.social;
         els.copyBookBtn.textContent = text.bookBtn;
+        document.querySelectorAll("[data-language]").forEach(button => {
+          button.setAttribute("aria-pressed", String(button.dataset.language === state.lang));
+        });
       }
 
       function block(label, body, copyLabel){
@@ -958,6 +1189,289 @@
             <div class="infoBody">${esc(body)}</div>
           </section>
         `;
+      }
+
+      function allItemsForLanguage(){
+        const langData = DATA.languages && DATA.languages[state.lang] ? DATA.languages[state.lang] : {};
+        const library = Object.keys(langData).reduce((all, subject) => {
+          if(subject.toLowerCase() !== "social") all.push(...(langData[subject] || []));
+          return all;
+        }, []);
+        const social = socialFallback.map((row, index) => ({
+          id: `social-${index}`,
+          subject: "Social & Reviews",
+          topic: "Links",
+          title: row.title,
+          message_short: row.title,
+          source_url: row.url,
+          social_url: row.url,
+          image_url: row.icon,
+          cost: "",
+          priority: 0,
+          sort_order: index
+        }));
+        return library.concat(social);
+      }
+
+      function selectedRecords(){
+        const selectedIds = new Set(state.selected.map(String));
+        return allItemsForLanguage().filter(item => selectedIds.has(String(item.id)));
+      }
+
+      function translationKey(item){
+        return String(item.original_id || item.content_id || item.id || "").trim();
+      }
+
+      function rememberItem(id){
+        const value = String(id || "");
+        if(!value) return;
+        state.recent = [value, ...state.recent.filter(itemId => String(itemId) !== value)].slice(0, 6);
+        try{ localStorage.setItem("mbwStaffRecent", JSON.stringify(state.recent)); }catch(error){}
+        renderRecent();
+      }
+
+      function renderRecent(){
+        const byId = new Map(allItemsForLanguage().map(item => [String(item.id), item]));
+        const rows = state.recent.map(id => byId.get(String(id))).filter(Boolean);
+        els.recentPanel.hidden = !rows.length;
+        els.recentItems.innerHTML = rows.map(item => `
+          <article class="recentCard">
+            <strong>${esc(item.title || item.topic)}</strong>
+            <small>${esc(displayCost(item.cost) || item.subtopic || "")}</small>
+            <button type="button" data-recent-add="${esc(item.id)}">+ Add to message</button>
+          </article>
+        `).join("");
+        els.recentItems.querySelectorAll("[data-recent-add]").forEach(button => {
+          button.addEventListener("click", () => {
+            const id = button.dataset.recentAdd;
+            if(!state.selected.map(String).includes(String(id))) state.selected.push(id);
+            state.manualDraft = false;
+            renderList();
+            renderBuilder();
+          });
+        });
+      }
+
+      function iconForSubject(subject){
+        const value = String(subject || "").toLowerCase();
+        if(value.includes("transport")) return "🚐";
+        if(value.includes("lodg") || value.includes("hotel") || value.includes("recommend")) return "🏡";
+        if(value.includes("activ")) return "🌿";
+        if(value.includes("question") || value.includes("polic")) return "💬";
+        if(value.includes("tour")) return "🐦";
+        return "✦";
+      }
+
+      function renderCategories(){
+        const subjects = subjectsForLang(state.lang).concat(["Social & Reviews"]);
+        const labels = ["All", ...subjects];
+        els.categoryChips.innerHTML = labels.map(subject => {
+          const active = subject === "All" ? !state.subject : subject === state.subject;
+          return `<button class="categoryChip" type="button" data-category="${esc(subject)}" aria-pressed="${active}">${subject === "All" ? "✦ " : iconForSubject(subject) + " "}${esc(subject)}</button>`;
+        }).join("");
+        els.categoryChips.querySelectorAll("[data-category]").forEach(button => {
+          button.addEventListener("click", () => {
+            const subject = button.dataset.category;
+            state.subject = subject === "All" ? "" : subject;
+            state.topic = "";
+            state.activeId = "";
+            if(state.subject) els.subjSel.value = state.subject;
+            renderCategories();
+            renderList();
+          });
+        });
+      }
+
+      function openDetails(){
+        els.detailModal.classList.add("isOpen");
+        els.detailModal.setAttribute("aria-hidden", "false");
+        els.modalBackdrop.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeDetails(){
+        els.detailModal.classList.remove("isOpen");
+        els.detailModal.setAttribute("aria-hidden", "true");
+        els.modalBackdrop.hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      function videoFor(item){
+        return String(item.youtube_url || item.instagram_url || "").trim();
+      }
+
+      function conciseText(item, length){
+        const title = String(item.title || item.subtopic || item.topic || "Option").trim();
+        const short = String(item.message_short || "").trim();
+        const ready = String(item.whatsapp_ready || "").trim();
+        const long = String(item.message_long || "").trim();
+        const bot = String(item.bot_response || "").trim();
+        const isDayTour = /(?:full day|half day tour\s*[12])/i.test(title);
+
+        // Quick is intentionally factual: day tours retain their useful
+        // time/price line, while other activities use only their name and cost.
+        if(length === "quick") return isDayTour ? (short || title) : title;
+
+        // Detailed prefers the fullest editorial source instead of reusing the
+        // same WhatsApp-ready copy shown by Standard.
+        if(length === "detailed") return long || bot || ready || short || title;
+
+        // Standard uses one concise, guest-ready description when available.
+        return ready || bot || short || long || title;
+      }
+
+      function cleanMessageText(value){
+        return String(value || "")
+          .replace(/https?:\/\/\S+/g, "")
+          .replace(/\*?(?:more info|más información|details|detalles)\s*:?\*?/gi, "")
+          .replace(/^(?:we can help coordinate|podemos ayudar(?:te)? a coordinar)\s+/i, "")
+          .replace(/\s+\n/g, "\n")
+          .replace(/[ \t]{2,}/g, " ")
+          .trim();
+      }
+
+      function guestLabel(item){
+        const title = String(item.title || item.topic || "Option");
+        if(/half day tour\s*1/i.test(title)) return state.lang === "es" ? "Medio Día 1" : "Half Day 1";
+        if(/half day tour\s*2/i.test(title)) return state.lang === "es" ? "Medio Día 2" : "Half Day 2";
+        if(/full day/i.test(title)) return state.lang === "es" ? "Día Completo" : "Full Day";
+        return title.replace(/\s*[-–—].*$/, "").trim();
+      }
+
+      function displayCost(value){
+        const cost = String(value || "").trim();
+        if(/^\d+(?:\.\d+)?$/.test(cost)) return `$${cost}`;
+        return cost;
+      }
+
+      function linkPreference(item, type){
+        const prefs = state.linkPrefs[String(item.id)] || {};
+        return prefs[type] !== false;
+      }
+
+      function saveDraft(){
+        const priority = (document.querySelector('input[name="previewPriority"]:checked') || {}).value || "page";
+        try{
+          localStorage.setItem("mbwStaffMessageDraft", JSON.stringify({
+            selected: state.selected,
+            guestName: els.guestName.value,
+            length: els.messageLength.value,
+            priority,
+            message: els.messagePreview.value,
+            manualDraft: state.manualDraft,
+            linkPrefs: state.linkPrefs
+          }));
+        }catch(error){}
+      }
+
+      function buildMessage(){
+        const records = selectedRecords();
+        const name = String(els.guestName.value || "").trim();
+        const length = els.messageLength.value || "standard";
+        const priority = (document.querySelector('input[name="previewPriority"]:checked') || {}).value || "page";
+        const isSpanish = state.lang === "es";
+        const greeting = name ? (isSpanish ? `Hola ${name}!` : `Hi ${name}!`) : (isSpanish ? "¡Hola!" : "Hello!");
+
+        if(!records.length) return "";
+
+        const socialRecords = records.filter(item => item.subject === "Social & Reviews");
+        const contentRecords = records.filter(item => item.subject !== "Social & Reviews");
+        const intro = isSpanish
+          ? (contentRecords.length > 1 ? "Estas son algunas opciones que recomendamos:" : contentRecords.length ? "Esta es una opción que recomendamos:" : "Aquí tienes los enlaces:")
+          : (contentRecords.length > 1 ? "Here are a few options we recommend:" : contentRecords.length ? "Here is an option we recommend:" : "Here are the links:");
+
+        const bullets = contentRecords.map(item => {
+          let text = cleanMessageText(conciseText(item, length));
+          const label = guestLabel(item);
+          const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          text = text.replace(new RegExp(`^\\*?${escapedLabel}\\*?\\s*(?:[.:–—-]\\s*)?`, "i"), "");
+          const isDayTour = /(?:full day|half day)/i.test(label);
+          if(isDayTour){
+            text = text
+              .replace(/^\*?(?:full day|half day(?:\s*(?:tour)?\s*[12])?)\*?\s*/i, "")
+              .replace(/^\*?(?:día completo|medio día(?:\s*[12])?)\*?\s*/i, "");
+          }
+          text = `*${label}*${text ? `${isDayTour ? " " : " — "}${text}` : ""}`;
+          if(length === "quick" && text.length > 135) text = text.slice(0, 132).trimEnd() + "…";
+          if(length === "standard" && text.length > 240) text = text.slice(0, 237).trimEnd() + "…";
+          const cost = displayCost(item.cost);
+          const amount = (cost.match(/\d+(?:\.\d+)?/) || [])[0];
+          const alreadyHasAmount = amount && new RegExp(`(?:\\$|USD\\s*)?${amount}(?!\\d)`, "i").test(text);
+          if(cost && !alreadyHasAmount && !text.toLowerCase().includes(cost.toLowerCase())) text += ` — ${cost}`;
+          return `• ${text}`;
+        });
+
+        const contentPages = contentRecords.filter(item => linkPreference(item, "page")).map(item => String(item.source_url || "").trim()).filter(Boolean);
+        const videos = contentRecords.filter(item => linkPreference(item, "video")).map(videoFor).filter(Boolean);
+        const uniquePages = [...new Set(contentPages)];
+        const uniqueVideos = [...new Set(videos)];
+        const links = [];
+        if(priority === "page" && uniquePages[0]) links.push(`*${isSpanish ? "Detalles:" : "Details:"}* ${uniquePages[0]}`);
+        if(priority === "video" && uniqueVideos[0]) links.push(`*${isSpanish ? "Video:" : "Watch:"}* ${uniqueVideos[0]}`);
+        if(priority !== "none"){
+          if(priority !== "page" && uniquePages[0]) links.push(`*${isSpanish ? "Detalles:" : "Details:"}* ${uniquePages[0]}`);
+          if(priority !== "video" && uniqueVideos[0]) links.push(`*${isSpanish ? "Video:" : "Watch:"}* ${uniqueVideos[0]}`);
+        }
+        socialRecords.filter(item => linkPreference(item, "page")).forEach(item => links.push(`*${guestLabel(item)}:* ${item.social_url || item.source_url}`));
+
+        const close = isSpanish
+          ? "Envíanos tus fechas y número de personas para confirmar disponibilidad."
+          : "Send us your preferred dates and group size, and we’ll check availability.";
+
+        return [greeting, intro, bullets.join("\n"), links.join("\n\n"), contentRecords.length ? close : ""].filter(Boolean).join("\n\n");
+      }
+
+      function renderBuilder(){
+        const records = selectedRecords();
+        const isSpanish = state.lang === "es";
+        els.selectedCount.textContent = String(records.length);
+        els.mobileBuilderBar.querySelector("span").textContent = String(records.length);
+        els.mobileBuilderBar.lastChild.textContent = isSpanish ? " elementos" : " items";
+        els.builderTitle.textContent = isSpanish ? "Crear mensaje" : "Message builder";
+
+        els.selectedItems.innerHTML = records.length ? records.map(item => {
+          const page = String(item.source_url || "").trim();
+          const video = videoFor(item);
+          return `
+            <article class="selectedRow">
+              <div><strong>${esc(item.title || item.topic)}</strong><small>${esc(displayCost(item.cost) || item.topic || "")}</small></div>
+              <div class="selectedLinkOptions">
+                ${page ? `<label><input type="checkbox" data-link-id="${esc(item.id)}" data-link-type="page" ${linkPreference(item, "page") ? "checked" : ""}>${item.subject === "Social & Reviews" ? "Link" : "Page"}</label>` : ""}
+                ${video ? `<label><input type="checkbox" data-link-id="${esc(item.id)}" data-link-type="video" ${linkPreference(item, "video") ? "checked" : ""}>Video</label>` : ""}
+              </div>
+              <button type="button" data-remove="${esc(item.id)}" aria-label="Remove">×</button>
+            </article>
+          `;
+        }).join("") : `<p class="empty">${isSpanish ? "Agrega elementos relevantes para crear una respuesta breve." : "Add relevant items to build a concise reply."}</p>`;
+
+        els.selectedItems.querySelectorAll("[data-remove]").forEach(button => {
+          button.addEventListener("click", () => {
+            state.selected = state.selected.filter(id => String(id) !== String(button.dataset.remove));
+            state.manualDraft = false;
+            renderList();
+            renderBuilder();
+          });
+        });
+        els.selectedItems.querySelectorAll("[data-link-id]").forEach(control => {
+          control.addEventListener("change", () => {
+            const id = String(control.dataset.linkId);
+            if(!state.linkPrefs[id]) state.linkPrefs[id] = {};
+            state.linkPrefs[id][control.dataset.linkType] = control.checked;
+            state.manualDraft = false;
+            renderBuilder();
+          });
+        });
+
+        const message = buildMessage();
+        if(!state.manualDraft && document.activeElement !== els.messagePreview) els.messagePreview.value = message;
+        const count = els.messagePreview.value.length;
+        const target = els.messageLength.value === "quick" ? 400 : els.messageLength.value === "detailed" ? 1000 : 700;
+        els.charCount.textContent = `${count} ${isSpanish ? "caracteres" : "characters"}`;
+        els.messageStatus.textContent = count > target
+          ? (isSpanish ? "Considera acortar el mensaje" : "Consider shortening the message")
+          : (isSpanish ? "Buena longitud para WhatsApp" : "Good WhatsApp length");
+        els.messageStatus.classList.toggle("warning", count > target);
+        saveDraft();
       }
 
       function renderDetail(item, skipScroll){
@@ -993,25 +1507,41 @@
           </section>
         ` : "";
 
+        const alreadySelected = state.selected.map(String).includes(String(item.id));
         els.detailPane.innerHTML = `
           <div class="detailTop">
             <h3 class="detailTitle">${esc(title)}</h3>
             ${item.last_updated ? `<div class="updated">${esc(text.updated)}: ${esc(item.last_updated)}</div>` : ""}
           </div>
+          <div class="detailActions">
+            <button class="btn primary" id="addCurrentItem" type="button">${alreadySelected ? "✓ Added" : "+ Add to message"}</button>
+            <button class="btn secondary" type="button" data-copy="${esc(whatsappReady || shortText)}">${esc(text.whatsapp)}</button>
+          </div>
           <div class="blocks">
             ${block(text.short, shortText, text.copyShort)}
             ${block(text.whatsapp, whatsappReady, text.copy)}
-            ${block(text.bot, botResponse, text.copy)}
-            ${block(text.long, longText, text.copyLong)}
             ${block(text.cost, cost, text.copyCost)}
             ${block(text.source, sourceUrl, text.copyUrl)}
-            ${imageBlock}
-            ${block(text.notes, staffNotes, text.copy)}
+            <details class="moreDetails"><summary>More details</summary>
+              ${block(text.bot, botResponse, text.copy)}
+              ${block(text.long, longText, text.copyLong)}
+              ${videoFor(item) ? block("Video", videoFor(item), text.copyUrl) : ""}
+              ${imageBlock}
+              ${block(text.notes, staffNotes, text.copy)}
+            </details>
           </div>
         `;
 
         Array.from(els.detailPane.querySelectorAll("[data-copy]")).forEach(button => {
           button.addEventListener("click", () => copyText(button.getAttribute("data-copy")));
+        });
+        const addCurrent = document.getElementById("addCurrentItem");
+        if(addCurrent) addCurrent.addEventListener("click", () => {
+          if(!state.selected.map(String).includes(String(item.id))) state.selected.push(item.id);
+          state.manualDraft = false;
+          renderList();
+          renderDetail(item, true);
+          renderBuilder();
         });
 
         if(!skipScroll && window.matchMedia("(max-width: 980px)").matches){
@@ -1020,7 +1550,12 @@
       }
 
       function renderList(){
-        const items = filterByTopic(itemsFor(state.lang, state.subject), state.topic);
+        const hasGlobalQuery = String(state.query || "").trim();
+        const items = hasGlobalQuery || !state.subject
+          ? filterByTopic(allItemsForLanguage(), "")
+          : state.subject === "Social & Reviews"
+            ? allItemsForLanguage().filter(item => item.subject === "Social & Reviews")
+          : filterByTopic(itemsFor(state.lang, state.subject), state.topic);
         els.countBadge.textContent = String(items.length);
 
         if(!items.length){
@@ -1034,28 +1569,51 @@
           const title = item.title || item.subtopic || item.topic || "Item";
           const meta = [item.subtopic, item.topic].filter(Boolean).join(" - ");
           const selected = String(item.id) === String(state.activeId);
+          const summarySource = cleanMessageText(item.message_short || item.whatsapp_ready || item.message_long || "");
+          const summary = summarySource.length > 120 ? summarySource.slice(0, 117).trimEnd() + "…" : summarySource;
+          const hasPage = Boolean(String(item.source_url || "").trim());
+          const hasVideo = Boolean(videoFor(item));
 
           return `
-            <button class="itemBtn" type="button" data-id="${esc(item.id)}" aria-current="${selected ? "true" : "false"}">
+            <article class="itemBtn" data-id="${esc(item.id)}" aria-current="${selected ? "true" : "false"}">
               <div>
                 <div class="itemTitle">${esc(title)}</div>
                 <div class="itemMeta">${esc(meta)}</div>
               </div>
-              ${item.cost ? `<div class="price">${esc(item.cost)}</div>` : `<div></div>`}
-            </button>
+              ${item.cost ? `<div class="price">${esc(displayCost(item.cost))}</div>` : `<div></div>`}
+              <div class="itemFacts">${hasPage ? `<span class="itemFact">${item.subject === "Social & Reviews" ? "Link" : "Page"}</span>` : ""}${hasVideo ? '<span class="itemFact">Video</span>' : ""}</div>
+              ${summary ? `<p class="itemSummary">${esc(summary)}</p>` : ""}
+              <div class="itemActions">
+                <button class="btn secondary viewItem" type="button">Details</button>
+                <button class="btn ${state.selected.map(String).includes(String(item.id)) ? "selectedAdd" : "primary"} addItem" type="button">${state.selected.map(String).includes(String(item.id)) ? "✓ Added" : "+ Add"}</button>
+              </div>
+            </article>
           `;
         }).join("");
 
-        Array.from(els.itemList.querySelectorAll("[data-id]")).forEach(button => {
-          button.addEventListener("click", () => {
-            state.activeId = button.getAttribute("data-id");
+        Array.from(els.itemList.querySelectorAll("[data-id]")).forEach(card => {
+          card.querySelector(".viewItem").addEventListener("click", () => {
+            state.activeId = card.getAttribute("data-id");
+            const item = items.find(row => String(row.id) === String(state.activeId));
+            renderDetail(item, true);
+            rememberItem(state.activeId);
+            openDetails();
+          });
+          card.querySelector(".addItem").addEventListener("click", () => {
+            const id = card.getAttribute("data-id");
+            if(state.selected.map(String).includes(String(id))) state.selected = state.selected.filter(value => String(value) !== String(id));
+            else state.selected.push(id);
+            state.manualDraft = false;
+            rememberItem(id);
             renderList();
+            renderBuilder();
           });
         });
 
         const active = items.find(item => String(item.id) === String(state.activeId)) || items[0];
         state.activeId = active.id;
         renderDetail(active, true);
+        renderBuilder();
       }
 
       function socialIconFor(title){
@@ -1118,6 +1676,8 @@
 
         renderList();
         renderSocial();
+        renderCategories();
+        renderRecent();
       }
 
       async function fetchJson(url){
@@ -1142,13 +1702,30 @@
       }
 
       els.langSel.addEventListener("change", () => {
+        const previousRecords = selectedRecords();
+        const previousPrefs = new Map(previousRecords.map(item => [translationKey(item), state.linkPrefs[String(item.id)] || {}]));
+        const selectedKeys = new Set(previousRecords.map(translationKey));
         state.lang = els.langSel.value === "es" ? "es" : "en";
         state.subject = state.lang === "en" ? "Tours" : "Tours";
         state.topic = "Birdwatching";
         state.query = "";
         els.searchInput.value = "";
         state.activeId = "";
+        state.linkPrefs = {};
+        state.selected = allItemsForLanguage().filter(item => selectedKeys.has(translationKey(item))).map(item => {
+          state.linkPrefs[String(item.id)] = previousPrefs.get(translationKey(item)) || {};
+          return item.id;
+        });
+        state.manualDraft = false;
         refreshSelectors();
+      });
+      document.querySelectorAll("[data-language]").forEach(button => {
+        button.addEventListener("click", () => {
+          const nextLanguage = button.dataset.language === "es" ? "es" : "en";
+          if(nextLanguage === state.lang) return;
+          els.langSel.value = nextLanguage;
+          els.langSel.dispatchEvent(new Event("change", { bubbles:true }));
+        });
       });
 
       els.subjSel.addEventListener("change", () => {
@@ -1171,8 +1748,98 @@
       });
 
       els.copyBookBtn.addEventListener("click", () => copyText(currentText().bookUrl));
+      [els.guestName, els.messageLength].forEach(control => control.addEventListener("input", () => {
+        state.manualDraft = false;
+        renderBuilder();
+      }));
+      document.querySelectorAll('input[name="previewPriority"]').forEach(control => control.addEventListener("change", () => {
+        state.manualDraft = false;
+        renderBuilder();
+      }));
+      els.messagePreview.addEventListener("input", () => {
+        state.manualDraft = true;
+        renderBuilder();
+      });
+      els.copyMessageBtn.addEventListener("click", () => copyText(els.messagePreview.value));
+      els.openWhatsAppBtn.addEventListener("click", () => {
+        const message = String(els.messagePreview.value || "").trim();
+        if(message) window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank", "noopener");
+      });
+      els.clearMessageBtn.addEventListener("click", () => {
+        state.selected = [];
+        state.manualDraft = false;
+        state.linkPrefs = {};
+        els.guestName.value = "";
+        els.messagePreview.value = "";
+        renderList();
+        renderBuilder();
+      });
+      els.regenerateMessageBtn.addEventListener("click", () => {
+        state.manualDraft = false;
+        els.messagePreview.value = buildMessage();
+        renderBuilder();
+      });
+      els.mobileBuilderBar.addEventListener("click", () => {
+        if(window.matchMedia("(max-width: 640px)").matches){
+          els.builderPanel.classList.add("mobileOpen");
+          document.body.style.overflow = "hidden";
+          els.mobileBrowseBtn.removeAttribute("aria-current");
+          els.mobileBuilderBar.setAttribute("aria-current", "page");
+        }else{
+          els.builderPanel.scrollIntoView({ behavior:"smooth", block:"start" });
+        }
+      });
+      els.closeBuilderBtn.addEventListener("click", () => {
+        els.builderPanel.classList.remove("mobileOpen");
+        document.body.style.overflow = "";
+        els.mobileBrowseBtn.setAttribute("aria-current", "page");
+        els.mobileBuilderBar.removeAttribute("aria-current");
+      });
+      els.editSelectionsBtn.addEventListener("click", () => {
+        els.builderPanel.classList.remove("mobileOpen");
+        document.body.style.overflow = "";
+        els.mobileBrowseBtn.setAttribute("aria-current", "page");
+        els.mobileBuilderBar.removeAttribute("aria-current");
+        document.querySelector(".quickCategories").scrollIntoView({ behavior:"smooth", block:"start" });
+      });
+      els.mobileBrowseBtn.addEventListener("click", () => {
+        els.builderPanel.classList.remove("mobileOpen");
+        document.body.style.overflow = "";
+        els.mobileBrowseBtn.setAttribute("aria-current", "page");
+        els.mobileBuilderBar.removeAttribute("aria-current");
+      });
+      els.closeDetailsBtn.addEventListener("click", closeDetails);
+      els.modalBackdrop.addEventListener("click", closeDetails);
+      document.addEventListener("keydown", event => { if(event.key === "Escape") closeDetails(); });
+      els.clearRecentBtn.addEventListener("click", () => {
+        state.recent = [];
+        try{ localStorage.removeItem("mbwStaffRecent"); }catch(error){}
+        renderRecent();
+      });
 
       els.langSel.value = "en";
+      try{ state.recent = JSON.parse(localStorage.getItem("mbwStaffRecent") || "[]"); }catch(error){ state.recent = []; }
+      try{
+        const draft = JSON.parse(localStorage.getItem("mbwStaffMessageDraft") || "null");
+        if(draft){
+          state.selected = Array.isArray(draft.selected) ? draft.selected : [];
+          state.manualDraft = Boolean(draft.manualDraft);
+          state.linkPrefs = draft.linkPrefs && typeof draft.linkPrefs === "object" ? draft.linkPrefs : {};
+          els.guestName.value = draft.guestName || "";
+          els.messageLength.value = draft.length || "standard";
+          els.messagePreview.value = draft.message || "";
+          const priorityControl = document.querySelector(`input[name="previewPriority"][value="${draft.priority || "page"}"]`);
+          if(priorityControl) priorityControl.checked = true;
+        }
+      }catch(error){}
+      const removeStaffWidgets = () => {
+        document.querySelectorAll(
+          '[id*="whatsapp-widget" i],[class*="whatsapp-widget" i],[id*="whatsapp-float" i],[class*="whatsapp-float" i],' +
+          '[id*="chat-widget" i],[class*="chat-widget" i],.joinchat,.wa__btn_popup'
+        ).forEach(node => node.remove());
+      };
+      removeStaffWidgets();
+      new MutationObserver(removeStaffWidgets).observe(document.documentElement, { childList:true, subtree:true });
       setStaticText();
       loadData();
     })();
