@@ -1308,9 +1308,14 @@
         const bot = String(item.bot_response || "").trim();
         const isDayTour = /(?:full day|half day tour\s*[12])/i.test(title);
 
-        // Quick is intentionally factual: day tours retain their useful
-        // time/price line, while other activities use only their name and cost.
-        if(length === "quick") return isDayTour ? (short || title) : title;
+        // Quick is intentionally factual. Day tours retain their useful
+        // time/price line; other activities keep only a structured time range
+        // from the short copy plus the name (the cost is added by buildMessage).
+        if(length === "quick"){
+          if(isDayTour) return short || title;
+          const timeRange = short.match(/\(\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM)\s*[-–—]\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM)\s*\)/i);
+          return timeRange ? `${title} ${timeRange[0]}` : title;
+        }
 
         // Detailed prefers the fullest editorial source instead of reusing the
         // same WhatsApp-ready copy shown by Standard.
@@ -1391,13 +1396,16 @@
               .replace(/^\*?(?:full day|half day(?:\s*(?:tour)?\s*[12])?)\*?\s*/i, "")
               .replace(/^\*?(?:día completo|medio día(?:\s*[12])?)\*?\s*/i, "");
           }
-          text = `*${label}*${text ? `${isDayTour ? " " : " — "}${text}` : ""}`;
+          const isTimeOnly = /^\(\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM)\s*[-–—]\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM)\s*\)$/i.test(text);
+          text = `*${label}*${text ? `${isDayTour || isTimeOnly ? " " : " — "}${text}` : ""}`;
           if(length === "quick" && text.length > 135) text = text.slice(0, 132).trimEnd() + "…";
           if(length === "standard" && text.length > 240) text = text.slice(0, 237).trimEnd() + "…";
           const cost = displayCost(item.cost);
           const amount = (cost.match(/\d+(?:\.\d+)?/) || [])[0];
           const alreadyHasAmount = amount && new RegExp(`(?:\\$|USD\\s*)?${amount}(?!\\d)`, "i").test(text);
-          if(cost && !alreadyHasAmount && !text.toLowerCase().includes(cost.toLowerCase())) text += ` — ${cost}`;
+          if(cost && !alreadyHasAmount && !text.toLowerCase().includes(cost.toLowerCase())){
+            text += `${length === "quick" && isTimeOnly ? " | " : " — "}${cost}`;
+          }
           return `• ${text}`;
         });
 
