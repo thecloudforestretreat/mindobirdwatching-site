@@ -565,6 +565,8 @@
     .selectedRow>button{border:0;background:transparent;font-size:22px;color:#7e302d;cursor:pointer}
     .linkBadges{display:flex;gap:3px}
     .linkBadges span{font-size:9px;background:#e6f1e6;color:#0d5c2d;border-radius:999px;padding:3px 5px;font-weight:800;text-transform:uppercase}
+    .selectedLinkOptions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .selectedLinkOptions label{display:flex;gap:3px;align-items:center;font-size:10px;font-weight:800;color:#3d5b4b}
     .messagePreview{resize:vertical;line-height:1.45;min-height:210px}
     .messageMeter{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#557064}
     .messageMeter .warning{color:#a13a24;font-weight:800}
@@ -609,6 +611,10 @@
     .heroFilters .field:has(#subjSel),.heroFilters .field:has(#topicSel){display:none}
     .libraryStructureFilter{display:none!important}
     .heroFilters{grid-template-columns:180px minmax(280px,1fr);align-content:center}
+    .visuallyHidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    .languageToggle{display:inline-grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid #cbd6ce;border-radius:999px;background:#eef3ed}
+    .languageToggle button{border:0;border-radius:999px;padding:7px 12px;background:transparent;color:#344b40;font-weight:800;cursor:pointer}
+    .languageToggle button[aria-pressed="true"]{background:#0b612e;color:#fff;box-shadow:0 2px 7px rgba(8,50,25,.18)}
     .quickCategories{margin-top:14px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
     .categoryIntro{display:grid;gap:2px;min-width:210px}
     .categoryIntro strong{font-family:Georgia,serif;color:#0b612e;font-size:18px}
@@ -618,7 +624,7 @@
     .categoryChip[aria-pressed="true"]{background:#0b612e;color:#fff;border-color:#0b612e}
     .recentPanel{margin-top:12px}
     .recentItems{display:flex;gap:8px;overflow:auto;padding:12px 14px 14px;scrollbar-width:thin}
-    .recentCard{min-width:190px;max-width:240px;border:1px solid #d6ded9;border-radius:12px;background:#fff;padding:10px;display:grid;gap:6px}
+    .recentCard{min-width:150px;max-width:190px;border:1px solid #d6ded9;border-radius:10px;background:#fff;padding:8px 10px;display:grid;gap:4px}
     .recentCard strong{font-size:12px;line-height:1.25}
     .recentCard button,.textButton{border:0;background:transparent;color:#0b612e;font-weight:800;cursor:pointer;text-align:left;padding:0}
     .textButton{font-size:12px}
@@ -628,8 +634,9 @@
     .resultsPanel .itemBtn{display:grid;grid-template-columns:minmax(190px,1.45fr) minmax(105px,.55fr) minmax(120px,.7fr) auto;align-items:center;min-height:0;padding:10px 12px;border-radius:12px}
     .itemTitle{font-size:15px;line-height:1.25}
     .itemMeta{margin-top:5px}
-    .itemFacts{grid-column:3;display:flex;gap:5px;flex-wrap:wrap;margin:0}
-    .itemFact{font-size:10px;font-weight:800;background:#edf4ed;color:#27533a;border-radius:999px;padding:4px 7px}
+    .itemFacts{grid-column:3;display:block;margin:0;color:#607068;font-size:11px;white-space:nowrap}
+    .itemFact{font-size:11px;font-weight:700;background:transparent;color:#607068;border-radius:0;padding:0}
+    .itemFact+.itemFact:before{content:" · ";color:#8a968f}
     .itemSummary{display:none}
     .resultsPanel .itemBtn>div:first-child{grid-column:1;grid-row:1}
     .resultsPanel .itemBtn>.price{grid-column:2;grid-row:1}
@@ -759,8 +766,12 @@
 </div>
 <section aria-label="Filters" class="controlGrid">
 <div class="field">
-<label for="langSel" id="langLbl">Language</label>
-<select id="langSel">
+<label id="langLbl">Language</label>
+<div class="languageToggle" role="group" aria-label="Message language">
+<button type="button" data-language="en" aria-pressed="true">English</button>
+<button type="button" data-language="es" aria-pressed="false">Español</button>
+</div>
+<select id="langSel" class="visuallyHidden" aria-hidden="true" tabindex="-1">
 <option value="en">English</option>
 <option value="es">Español</option>
 </select>
@@ -992,7 +1003,8 @@
         activeId: "",
         selected: [],
         recent: [],
-        manualDraft: false
+        manualDraft: false,
+        linkPrefs: {}
       };
 
       function esc(value){
@@ -1160,6 +1172,9 @@
         els.detailHead.textContent = text.details;
         els.socialTitle.textContent = text.social;
         els.copyBookBtn.textContent = text.bookBtn;
+        document.querySelectorAll("[data-language]").forEach(button => {
+          button.setAttribute("aria-pressed", String(button.dataset.language === state.lang));
+        });
       }
 
       function block(label, body, copyLabel){
@@ -1202,6 +1217,10 @@
         return allItemsForLanguage().filter(item => selectedIds.has(String(item.id)));
       }
 
+      function translationKey(item){
+        return String(item.original_id || item.content_id || item.id || "").trim();
+      }
+
       function rememberItem(id){
         const value = String(id || "");
         if(!value) return;
@@ -1217,7 +1236,7 @@
         els.recentItems.innerHTML = rows.map(item => `
           <article class="recentCard">
             <strong>${esc(item.title || item.topic)}</strong>
-            <small>${esc(item.cost || item.subtopic || "")}</small>
+            <small>${esc(displayCost(item.cost) || item.subtopic || "")}</small>
             <button type="button" data-recent-add="${esc(item.id)}">+ Add to message</button>
           </article>
         `).join("");
@@ -1308,6 +1327,17 @@
         return title.replace(/\s*[-–—].*$/, "").trim();
       }
 
+      function displayCost(value){
+        const cost = String(value || "").trim();
+        if(/^\d+(?:\.\d+)?$/.test(cost)) return `$${cost}`;
+        return cost;
+      }
+
+      function linkPreference(item, type){
+        const prefs = state.linkPrefs[String(item.id)] || {};
+        return prefs[type] !== false;
+      }
+
       function saveDraft(){
         const priority = (document.querySelector('input[name="previewPriority"]:checked') || {}).value || "page";
         try{
@@ -1317,7 +1347,8 @@
             length: els.messageLength.value,
             priority,
             message: els.messagePreview.value,
-            manualDraft: state.manualDraft
+            manualDraft: state.manualDraft,
+            linkPrefs: state.linkPrefs
           }));
         }catch(error){}
       }
@@ -1349,16 +1380,15 @@
           }
           if(length === "quick" && text.length > 135) text = text.slice(0, 132).trimEnd() + "…";
           if(length === "standard" && text.length > 240) text = text.slice(0, 237).trimEnd() + "…";
-          const cost = String(item.cost || "").trim();
+          const cost = displayCost(item.cost);
           const amount = (cost.match(/\d+(?:\.\d+)?/) || [])[0];
           const alreadyHasAmount = amount && new RegExp(`(?:\\$|USD\\s*)?${amount}(?!\\d)`, "i").test(text);
           if(cost && !alreadyHasAmount && !text.toLowerCase().includes(cost.toLowerCase())) text += ` — ${cost}`;
           return `• ${text}`;
         });
 
-        const pages = records.map(item => String(item.source_url || "").trim()).filter(Boolean);
-        const contentPages = contentRecords.map(item => String(item.source_url || "").trim()).filter(Boolean);
-        const videos = contentRecords.map(videoFor).filter(Boolean);
+        const contentPages = contentRecords.filter(item => linkPreference(item, "page")).map(item => String(item.source_url || "").trim()).filter(Boolean);
+        const videos = contentRecords.filter(item => linkPreference(item, "video")).map(videoFor).filter(Boolean);
         const uniquePages = [...new Set(contentPages)];
         const uniqueVideos = [...new Set(videos)];
         const links = [];
@@ -1368,13 +1398,13 @@
           if(priority !== "page" && uniquePages[0]) links.push(`*${isSpanish ? "Detalles:" : "Details:"}* ${uniquePages[0]}`);
           if(priority !== "video" && uniqueVideos[0]) links.push(`*${isSpanish ? "Video:" : "Watch:"}* ${uniqueVideos[0]}`);
         }
-        socialRecords.forEach(item => links.push(`*${guestLabel(item)}:* ${item.social_url || item.source_url}`));
+        socialRecords.filter(item => linkPreference(item, "page")).forEach(item => links.push(`*${guestLabel(item)}:* ${item.social_url || item.source_url}`));
 
         const close = isSpanish
           ? "Envíanos tus fechas y número de personas para confirmar disponibilidad."
           : "Send us your preferred dates and group size, and we’ll check availability.";
 
-        return [greeting, intro, bullets.join("\n"), links.join("\n"), contentRecords.length ? close : ""].filter(Boolean).join("\n\n");
+        return [greeting, intro, bullets.join("\n"), links.join("\n\n"), contentRecords.length ? close : ""].filter(Boolean).join("\n\n");
       }
 
       function renderBuilder(){
@@ -1390,8 +1420,11 @@
           const video = videoFor(item);
           return `
             <article class="selectedRow">
-              <div><strong>${esc(item.title || item.topic)}</strong><small>${esc(item.cost || item.topic || "")}</small></div>
-              <div class="linkBadges">${page ? "<span>Page</span>" : ""}${video ? "<span>Video</span>" : ""}</div>
+              <div><strong>${esc(item.title || item.topic)}</strong><small>${esc(displayCost(item.cost) || item.topic || "")}</small></div>
+              <div class="selectedLinkOptions">
+                ${page ? `<label><input type="checkbox" data-link-id="${esc(item.id)}" data-link-type="page" ${linkPreference(item, "page") ? "checked" : ""}>${item.subject === "Social & Reviews" ? "Link" : "Page"}</label>` : ""}
+                ${video ? `<label><input type="checkbox" data-link-id="${esc(item.id)}" data-link-type="video" ${linkPreference(item, "video") ? "checked" : ""}>Video</label>` : ""}
+              </div>
               <button type="button" data-remove="${esc(item.id)}" aria-label="Remove">×</button>
             </article>
           `;
@@ -1402,6 +1435,15 @@
             state.selected = state.selected.filter(id => String(id) !== String(button.dataset.remove));
             state.manualDraft = false;
             renderList();
+            renderBuilder();
+          });
+        });
+        els.selectedItems.querySelectorAll("[data-link-id]").forEach(control => {
+          control.addEventListener("change", () => {
+            const id = String(control.dataset.linkId);
+            if(!state.linkPrefs[id]) state.linkPrefs[id] = {};
+            state.linkPrefs[id][control.dataset.linkType] = control.checked;
+            state.manualDraft = false;
             renderBuilder();
           });
         });
@@ -1524,8 +1566,8 @@
                 <div class="itemTitle">${esc(title)}</div>
                 <div class="itemMeta">${esc(meta)}</div>
               </div>
-              ${item.cost ? `<div class="price">${esc(item.cost)}</div>` : `<div></div>`}
-              <div class="itemFacts">${hasPage ? '<span class="itemFact">🌐 Page</span>' : ""}${hasVideo ? '<span class="itemFact">▶ Video</span>' : ""}${item.last_updated ? '<span class="itemFact">✓ Updated</span>' : ""}</div>
+              ${item.cost ? `<div class="price">${esc(displayCost(item.cost))}</div>` : `<div></div>`}
+              <div class="itemFacts">${hasPage ? `<span class="itemFact">${item.subject === "Social & Reviews" ? "Link" : "Page"}</span>` : ""}${hasVideo ? '<span class="itemFact">Video</span>' : ""}</div>
               ${summary ? `<p class="itemSummary">${esc(summary)}</p>` : ""}
               <div class="itemActions">
                 <button class="btn secondary viewItem" type="button">Details</button>
@@ -1646,13 +1688,30 @@
       }
 
       els.langSel.addEventListener("change", () => {
+        const previousRecords = selectedRecords();
+        const previousPrefs = new Map(previousRecords.map(item => [translationKey(item), state.linkPrefs[String(item.id)] || {}]));
+        const selectedKeys = new Set(previousRecords.map(translationKey));
         state.lang = els.langSel.value === "es" ? "es" : "en";
         state.subject = state.lang === "en" ? "Tours" : "Tours";
         state.topic = "Birdwatching";
         state.query = "";
         els.searchInput.value = "";
         state.activeId = "";
+        state.linkPrefs = {};
+        state.selected = allItemsForLanguage().filter(item => selectedKeys.has(translationKey(item))).map(item => {
+          state.linkPrefs[String(item.id)] = previousPrefs.get(translationKey(item)) || {};
+          return item.id;
+        });
+        state.manualDraft = false;
         refreshSelectors();
+      });
+      document.querySelectorAll("[data-language]").forEach(button => {
+        button.addEventListener("click", () => {
+          const nextLanguage = button.dataset.language === "es" ? "es" : "en";
+          if(nextLanguage === state.lang) return;
+          els.langSel.value = nextLanguage;
+          els.langSel.dispatchEvent(new Event("change", { bubbles:true }));
+        });
       });
 
       els.subjSel.addEventListener("change", () => {
@@ -1695,6 +1754,7 @@
       els.clearMessageBtn.addEventListener("click", () => {
         state.selected = [];
         state.manualDraft = false;
+        state.linkPrefs = {};
         els.guestName.value = "";
         els.messagePreview.value = "";
         renderList();
@@ -1750,6 +1810,7 @@
         if(draft){
           state.selected = Array.isArray(draft.selected) ? draft.selected : [];
           state.manualDraft = Boolean(draft.manualDraft);
+          state.linkPrefs = draft.linkPrefs && typeof draft.linkPrefs === "object" ? draft.linkPrefs : {};
           els.guestName.value = draft.guestName || "";
           els.messageLength.value = draft.length || "standard";
           els.messagePreview.value = draft.message || "";
