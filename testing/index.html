@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site-config.js?v=20260719" defer></script>
-  <script src="/assets/js/email-blocks.js?v=20260719" defer></script>
+  <script src="/assets/js/email-blocks.js?v=20260729b" defer></script>
   <style>
     :root{
       --mbw-green:#0D5925;
@@ -748,8 +748,8 @@
             },
             "birding-beyond-lodge": {
               eyebrow: "Por qué explorar con nosotros",
-              title: "Aviturismo más allá del lodge",
-              description: "Nuestros tours van más allá de los alrededores de un solo lodge. Visitamos reservas cuidadosamente seleccionadas, senderos de bosque nublado, comederos y reconocidos sitios de observación en toda la región de Mindo, ofreciendo una mayor variedad de hábitats y mejores oportunidades para encontrar sus aves más representativas. Cada itinerario se adapta a sus intereses, tiempo disponible y la actividad reciente de las aves.",
+              title: "Descubre los mejores sitios de avistamiento de Mindo",
+              description: "Nuestros tours van más allá de los alrededores de un solo lodge. Visitamos reservas, senderos de bosque nublado, comederos y reconocidos sitios de observación en toda la región de Mindo, ofreciendo una mayor variedad de hábitats y mejores oportunidades para encontrar sus aves más representativas.",
               duration: "Múltiples hábitats y localidades",
               url: "https://mindobirdwatching.com/es/tours/",
               primaryCta: "Explorar nuestros tours"
@@ -803,27 +803,19 @@
       };
 
       function getCatalog(){
-        return ensureRecommendationBlock(window.MBW_EMAIL_BLOCKS || buildDefaultCatalog());
+        return ensureRequiredBlocks(window.MBW_EMAIL_BLOCKS || buildDefaultCatalog());
       }
 
-      function ensureRecommendationBlock(catalog){
-        const blocks = (catalog && catalog.blocks) || [];
-        if(blocks.some(block => block.id === "lodging-recommendations")) return catalog;
-        return Object.assign({}, catalog, {
-          blocks: blocks.concat({
-            id:"lodging-recommendations",
-            group:"planning",
-            type:"feature",
-            eyebrow:"More places to stay",
-            title:"Recommended Lodging in Mindo",
-            description:"Discover a handpicked collection of inviting stays surrounded by nature and thoughtfully located for exploring the cloud forest. Browse our recommended lodging alternatives and find the perfect place to complement your birding experience in Mindo.",
-            price:"",
-            duration:"",
-            image:"https://mindobirdwatching.com/assets/images/pages/recommendations/dominique/eco_suite/mbw_dom_eco_suite_02.jpg",
-            url:"https://mindobirdwatching.com/recommendations/",
-            video:"",
-            primaryCta:"View Recommended Lodging"
-          })
+      function ensureRequiredBlocks(catalog){
+        const fallback = buildDefaultCatalog();
+        const loadedBlocks = (catalog && catalog.blocks) || [];
+        const loadedIds = new Set(loadedBlocks.map(block => block.id));
+        const requiredIds = new Set(["lodging-recommendations", "birding-beyond-lodge", "video-week"]);
+        const missingRequired = fallback.blocks.filter(block => requiredIds.has(block.id) && !loadedIds.has(block.id));
+        return Object.assign({}, fallback, catalog || {}, {
+          brand: Object.assign({}, fallback.brand, (catalog && catalog.brand) || {}),
+          groups: (catalog && catalog.groups && catalog.groups.length) ? catalog.groups : fallback.groups,
+          blocks: loadedBlocks.concat(missingRequired)
         });
       }
 
@@ -1133,8 +1125,8 @@
               group:"tours",
               type:"info",
               eyebrow:"Why tour with us",
-              title:"Birding Beyond the Lodge",
-              description:"Our tours go beyond the grounds of a single lodge. We visit carefully selected reserves, cloud-forest trails, feeding areas, and renowned birding locations throughout the Mindo region—giving you a greater variety of habitats and better opportunities to encounter its remarkable birds. Each itinerary is planned around your interests, available time, and current bird activity.",
+              title:"Explore Mindo’s Best Birding Locations",
+              description:"Our tours go beyond the grounds of a single lodge. We visit carefully selected reserves, forest trails, feeding areas, and renowned birding sites throughout the Mindo region—giving you a greater variety of habitats and a better opportunity to encounter the area’s remarkable birds. Each itinerary is planned around your interests, available time, and current bird activity.",
               price:"",
               duration:"Multiple habitats and locations",
               image:"https://mindobirdwatching.com/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_hero_01.jpg",
@@ -1200,12 +1192,12 @@
         }
 
         loadFirstAvailableScript([
-          "/assets/js/email-blocks.js?v=20260719",
-          "/custom-email-generator/assets/js/email-blocks.js?v=20260719",
-          "email-blocks.js?v=20260719",
-          "assets/js/email-blocks.js?v=20260719",
-          "../assets/js/email-blocks.js?v=20260719",
-          "../../assets/js/email-blocks.js?v=20260719",
+          "/assets/js/email-blocks.js?v=20260729b",
+          "/custom-email-generator/assets/js/email-blocks.js?v=20260729b",
+          "email-blocks.js?v=20260729b",
+          "assets/js/email-blocks.js?v=20260729b",
+          "../assets/js/email-blocks.js?v=20260729b",
+          "../../assets/js/email-blocks.js?v=20260729b",
         ], () => done(), () => !!window.MBW_EMAIL_BLOCKS);
       }
 
@@ -1648,8 +1640,15 @@
           "</td></tr></table></td></tr>";
       }
 
+      function normalizeExternalUrl(value){
+        let url = clean(value);
+        if(/^ttps:\/\//i.test(url)) url = "h" + url;
+        else if(url && !/^https?:\/\//i.test(url)) url = "https://" + url.replace(/^\/+/, "");
+        return url;
+      }
+
       function renderVideoWeek(block){
-        const url = clean(els.videoUrlInput.value);
+        const url = normalizeExternalUrl(els.videoUrlInput.value);
         if(!url) return "";
         const title = clean(els.videoTitleInput.value) || block.title || (getLanguage() === "es" ? "Video de la semana" : "Video of the Week");
         const description = clean(els.videoIntroInput.value) || block.description || "";
@@ -1675,9 +1674,9 @@
         const text = clean(els.nextStepsInput.value) || block.description || "";
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
-          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#0D5925; border-radius:18px;'><tr><td style='padding:20px 22px;'>" +
-          "<h2 style=\"margin:0 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:28px; color:#ffffff;\">" + esc(block.title) + "</h2>" +
-          "<p style='margin:0; font-size:14px; line-height:22px; color:#F4FAEF;'>" + esc(text) + "</p>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.28); border-radius:18px;'><tr><td style='padding:20px 22px; text-align:left;'>" +
+          "<h2 style=\"margin:0 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:28px; color:#0D5925;\">" + esc(block.title) + "</h2>" +
+          "<p style='margin:0; font-size:14px; line-height:22px; color:#536067;'>" + esc(text) + "</p>" +
           "</td></tr></table></td></tr>";
       }
 
