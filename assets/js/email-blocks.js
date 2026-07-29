@@ -215,6 +215,44 @@ window.MBW_EMAIL_BLOCKS = {
       secondaryCta: ""
     },
     {
+      id: "lodging-recommendations",
+      group: "planning",
+      type: "feature",
+      eyebrow: "More places to stay",
+      title: "Recommended Lodging in Mindo",
+      description: "Discover a handpicked collection of inviting stays surrounded by nature and thoughtfully located for exploring the cloud forest. Browse our recommended lodging alternatives and find the perfect place to complement your birding experience in Mindo.",
+      price: "",
+      duration: "",
+      image: "https://mindobirdwatching.com/assets/images/pages/recommendations/dominique/eco_suite/mbw_dom_eco_suite_02.jpg",
+      url: "https://mindobirdwatching.com/recommendations/",
+      video: "",
+      primaryCta: "View Recommended Lodging",
+      secondaryCta: ""
+    },
+    {
+      id: "birding-beyond-lodge",
+      group: "tours",
+      type: "info",
+      eyebrow: "Why explore with us",
+      title: "Explore Mindo’s Best Birding Locations",
+      description: "Our tours go beyond the grounds of a single lodge. We visit carefully selected reserves, forest trails, feeding areas, and renowned birding sites throughout the Mindo region—giving you a greater variety of habitats and a better opportunity to encounter the area’s remarkable birds. Each itinerary is planned around your interests, available time, and current bird activity.",
+      price: "",
+      duration: "Multiple habitats and locations",
+      image: "https://mindobirdwatching.com/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_hero_01.jpg",
+      url: "https://mindobirdwatching.com/tours/",
+      video: "",
+      primaryCta: "Explore Our Tours",
+      secondaryCta: ""
+    },
+    {
+      id: "video-week",
+      group: "social",
+      type: "videoWeek",
+      eyebrow: "Featured this week",
+      title: "Video of the Week",
+      description: "Get a glimpse of the remarkable birds and experiences waiting for you in Mindo."
+    },
+    {
       id: "included",
       group: "planning",
       type: "included",
