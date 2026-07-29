@@ -140,6 +140,27 @@
       outline:none;
     }
     .field textarea{ min-height:88px; resize:vertical; line-height:1.45; }
+    .dateControl{ position:relative; }
+    .dateControl #datesInput{ padding-right:48px; cursor:pointer; }
+    .dateControl .calendarIcon{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      color:var(--mbw-green);
+      font-size:18px;
+      line-height:1;
+      pointer-events:none;
+    }
+    .dateControl .dateNative{
+      position:absolute;
+      right:0;
+      top:0;
+      width:48px;
+      height:100%;
+      opacity:0;
+      cursor:pointer;
+    }
     .inlineGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .presetGrid{
       display:grid;
@@ -389,17 +410,31 @@
           <div class="inlineGrid">
             <div class="field">
               <label for="guestNameInput">Guest Name</label>
-              <input id="guestNameInput" type="text" placeholder="Guest Name" />
+              <input id="guestNameInput" type="text" autocapitalize="words" autocomplete="name" placeholder="Guest Name" />
             </div>
             <div class="field">
               <label for="guestCountInput">Guests</label>
-              <input id="guestCountInput" type="text" placeholder="2 guests" />
+              <select id="guestCountInput">
+                <option value="" selected>Select</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8+">8+</option>
+              </select>
             </div>
           </div>
           <div class="inlineGrid">
             <div class="field">
               <label for="datesInput">Dates</label>
-              <input id="datesInput" type="text" placeholder="July or August" />
+              <div class="dateControl">
+                <input id="datesInput" type="text" inputmode="none" readonly placeholder="MM-DD-YYYY" />
+                <span class="calendarIcon" aria-hidden="true">▣</span>
+                <input id="datesPickerInput" class="dateNative" type="date" aria-label="Choose tour date" />
+              </div>
             </div>
             <div class="field">
               <label for="languageInput">Language</label>
@@ -504,6 +539,7 @@ experiences waiting for you in Mindo.</textarea>
 
       function init(){
         cacheEls();
+        els.datesPickerInput.min = localTodayIso();
         loadSiteConfigIfNeeded(() => {
           loadBlockCatalogIfNeeded(() => {
             const catalog = getCatalog();
@@ -525,7 +561,7 @@ experiences waiting for you in Mindo.</textarea>
 
       function cacheEls(){
         [
-          "emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "languageInput", "heroEyebrowInput",
+          "emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "datesPickerInput", "languageInput", "heroEyebrowInput",
           "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "videoWeekInput", "videoFields", "videoUrlInput", "videoTitleInput", "videoIntroInput", "videoPreview",
           "selectedSummary", "blockGroups", "emailPreview", "htmlOutput", "copyHtmlBtn", "downloadHtmlBtn",
           "copyRenderedBtn", "toggleHtmlBtn", "resetBtn", "resetOrderBtn", "toast"
@@ -541,6 +577,18 @@ experiences waiting for you in Mindo.</textarea>
           applyLanguageDefaults();
           applyVideoLanguageDefaults();
           renderBlockControls();
+          updateEmail();
+        });
+        els.guestNameInput.addEventListener("blur", () => {
+          els.guestNameInput.value = titleCaseName(els.guestNameInput.value);
+          updateEmail();
+        });
+        els.datesInput.addEventListener("click", () => {
+          if(typeof els.datesPickerInput.showPicker === "function") els.datesPickerInput.showPicker();
+          else els.datesPickerInput.click();
+        });
+        els.datesPickerInput.addEventListener("change", () => {
+          els.datesInput.value = formatDisplayDate(els.datesPickerInput.value);
           updateEmail();
         });
         els.videoWeekInput.addEventListener("change", () => {
@@ -574,9 +622,17 @@ experiences waiting for you in Mindo.</textarea>
         const guests = record.guest_count || record.guestCount || "";
         const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
         const tour = record.tour_type || record.tour_category || record.tour_interest || "";
-        if(guestName) els.guestNameInput.value = guestName;
-        if(guests) els.guestCountInput.value = String(guests).includes("guest") ? guests : guests + " guests";
-        if(date) els.datesInput.value = date;
+        if(guestName) els.guestNameInput.value = titleCaseName(guestName);
+        if(guests){
+          const count = String(guests).match(/\d+/);
+          const normalizedGuests = count && Number(count[0]) >= 8 ? "8+" : (count ? count[0] : "");
+          if([...els.guestCountInput.options].some(option => option.value === normalizedGuests)) els.guestCountInput.value = normalizedGuests;
+        }
+        if(date){
+          const isoDate = normalizeDateToIso(date);
+          els.datesPickerInput.value = isoDate;
+          els.datesInput.value = formatDisplayDate(isoDate || date);
+        }
         if(tour) els.emailTitleInput.value = tour + " Options";
       }
 
@@ -1354,6 +1410,7 @@ experiences waiting for you in Mindo.</textarea>
         els.guestNameInput.value = "";
         els.guestCountInput.value = "";
         els.datesInput.value = "";
+        els.datesPickerInput.value = "";
         els.languageInput.value = "en";
         els.heroEyebrowInput.value = "Private & group cloud forest tours";
         els.showHeroInput.checked = true;
@@ -1455,13 +1512,14 @@ experiences waiting for you in Mindo.</textarea>
         const catalog = getLocalizedCatalog();
         const brand = applySiteContact(catalog.brand);
         const selectedBlocks = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id)));
-        const guestName = clean(els.guestNameInput.value) || "Guest Name";
-        const dates = clean(els.datesInput.value);
+        const guestName = firstNameOnly(els.guestNameInput.value) || "Guest";
+        const dates = formatDisplayDate(els.datesPickerInput.value || els.datesInput.value);
         const guestCount = clean(els.guestCountInput.value);
         const title = clean(els.emailTitleInput.value) || "Mindo Cloud Forest Tour Options";
         const intro = clean(els.introInput.value);
         const nextSteps = clean(els.nextStepsInput.value);
-        const meta = [dates, guestCount].filter(Boolean).join(" | ");
+        const guestMeta = guestCount ? guestCount + " " + (getLanguage() === "es" ? "Huésped(es)" : "Guest(s)") : "";
+        const meta = [dates, guestMeta].filter(Boolean).join(" | ");
 
         return [
           "<!doctype html>",
@@ -1812,6 +1870,42 @@ experiences waiting for you in Mindo.</textarea>
 
       function clean(value){
         return String(value || "").trim();
+      }
+
+      function firstNameOnly(value){
+        return titleCaseName(value).split(/\s+/)[0] || "";
+      }
+
+      function titleCaseName(value){
+        return clean(value)
+          .toLocaleLowerCase()
+          .split(/(\s+|-|['’])/)
+          .map(part => /^[\s-'’]+$/.test(part) ? part : (part ? part.charAt(0).toLocaleUpperCase() + part.slice(1) : ""))
+          .join("");
+      }
+
+      function localTodayIso(){
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        return year + "-" + month + "-" + day;
+      }
+
+      function normalizeDateToIso(value){
+        const text = clean(value);
+        const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if(iso) return iso[1] + "-" + iso[2] + "-" + iso[3];
+        const display = text.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+        if(display) return display[3] + "-" + display[1] + "-" + display[2];
+        return "";
+      }
+
+      function formatDisplayDate(value){
+        const iso = normalizeDateToIso(value);
+        if(!iso) return clean(value);
+        const parts = iso.split("-");
+        return parts[1] + "-" + parts[2] + "-" + parts[0];
       }
 
       function esc(value){
