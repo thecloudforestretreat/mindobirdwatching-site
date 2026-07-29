@@ -250,7 +250,7 @@ window.MBW_EMAIL_BLOCKS = {
       type: "videoWeek",
       eyebrow: "Featured this week",
       title: "Video of the Week",
-      description: "Get a glimpse of the remarkable birds and experiences waiting for you in Mindo."
+      description: "Get a glimpse of the remarkable birds and\nexperiences waiting for you in Mindo."
     },
     {
       id: "included",
