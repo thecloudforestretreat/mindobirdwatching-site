@@ -5,7 +5,7 @@ window.MBW_EMAIL_BLOCKS = {
     email: "mindobirdwatching@gmail.com",
     whatsapp: "",
     logo: "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png",
-    hero: "https://mindobirdwatching.com/assets/images/pages/home/MBW-Assets-homepage-top.jpg",
+    hero: "https://mindobirdwatching.com/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_hero_01.jpg",
     colors: {
       green: "#0D5925",
       bg: "#C7DAAC",
@@ -238,7 +238,7 @@ window.MBW_EMAIL_BLOCKS = {
       description: "Our tours go beyond the grounds of a single lodge. We visit carefully selected reserves, forest trails, feeding areas, and renowned birding sites throughout the Mindo region—giving you a greater variety of habitats and a better opportunity to encounter the area’s remarkable birds. Each itinerary is planned around your interests, available time, and current bird activity.",
       price: "",
       duration: "Multiple habitats and locations",
-      image: "https://mindobirdwatching.com/assets/images/pages/tours/quest-five-toucans-guide/mbw_tours_quest_five_toucans_guide_hero_01.jpg",
+      image: "",
       url: "https://mindobirdwatching.com/tours/",
       video: "",
       primaryCta: "Explore Our Tours",
