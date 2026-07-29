@@ -410,7 +410,7 @@
           <div class="inlineGrid">
             <div class="field">
               <label for="guestNameInput">Guest Name</label>
-              <input id="guestNameInput" type="text" placeholder="Guest Name" />
+              <input id="guestNameInput" type="text" autocapitalize="words" autocomplete="name" placeholder="Guest Name" />
             </div>
             <div class="field">
               <label for="guestCountInput">Guests</label>
@@ -431,11 +431,10 @@
             <div class="field">
               <label for="datesInput">Dates</label>
               <div class="dateControl">
-                <input id="datesInput" type="text" inputmode="none" readonly placeholder="MM-DD-YYYY" aria-describedby="datesHelp" />
+                <input id="datesInput" type="text" inputmode="none" readonly placeholder="MM-DD-YYYY" />
                 <span class="calendarIcon" aria-hidden="true">▣</span>
                 <input id="datesPickerInput" class="dateNative" type="date" aria-label="Choose tour date" />
               </div>
-              <small id="datesHelp">Choose today or a future date.</small>
             </div>
             <div class="field">
               <label for="languageInput">Language</label>
@@ -580,6 +579,10 @@ experiences waiting for you in Mindo.</textarea>
           renderBlockControls();
           updateEmail();
         });
+        els.guestNameInput.addEventListener("blur", () => {
+          els.guestNameInput.value = titleCaseName(els.guestNameInput.value);
+          updateEmail();
+        });
         els.datesInput.addEventListener("click", () => {
           if(typeof els.datesPickerInput.showPicker === "function") els.datesPickerInput.showPicker();
           else els.datesPickerInput.click();
@@ -619,7 +622,7 @@ experiences waiting for you in Mindo.</textarea>
         const guests = record.guest_count || record.guestCount || "";
         const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
         const tour = record.tour_type || record.tour_category || record.tour_interest || "";
-        if(guestName) els.guestNameInput.value = guestName;
+        if(guestName) els.guestNameInput.value = titleCaseName(guestName);
         if(guests){
           const count = String(guests).match(/\d+/);
           const normalizedGuests = count && Number(count[0]) >= 8 ? "8+" : (count ? count[0] : "");
@@ -1870,7 +1873,15 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function firstNameOnly(value){
-        return clean(value).split(/\s+/)[0] || "";
+        return titleCaseName(value).split(/\s+/)[0] || "";
+      }
+
+      function titleCaseName(value){
+        return clean(value)
+          .toLocaleLowerCase()
+          .split(/(\s+|-|['’])/)
+          .map(part => /^[\s-'’]+$/.test(part) ? part : (part ? part.charAt(0).toLocaleUpperCase() + part.slice(1) : ""))
+          .join("");
       }
 
       function localTodayIso(){
