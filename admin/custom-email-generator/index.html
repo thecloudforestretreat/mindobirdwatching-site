@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site-config.js?v=20260719" defer></script>
-  <script src="/assets/js/email-blocks.js?v=20260719" defer></script>
+  <script src="/assets/js/email-blocks.js?v=20260729b" defer></script>
   <style>
     :root{
       --mbw-green:#0D5925;
@@ -265,6 +265,17 @@
       font-size:13px;
       font-weight:800;
     }
+    .orderToolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+    .orderToolbar .hint{margin:0}
+    .orderReset{padding:6px 9px;border:1px solid var(--mbw-line);border-radius:9px;background:#fff;color:var(--mbw-green);font-size:11px;font-weight:900;cursor:pointer}
+    .summaryItem{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center;gap:8px}
+    .summaryItemLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .orderActions{display:flex;gap:4px}
+    .orderMove{width:30px;height:30px;padding:0;border:1px solid var(--mbw-line);border-radius:8px;background:#fff;color:#0D5925;font-weight:900;cursor:pointer}
+    .orderMove:disabled{opacity:.35;cursor:not-allowed}
+    .videoFields{margin-top:9px;padding:10px;border:1px solid rgba(13,89,37,.2);border-radius:12px;background:rgba(246,250,240,.8)}
+    .videoFields[hidden]{display:none}
+    .videoPreview{margin-top:8px;padding:9px;border:1px dashed rgba(13,89,37,.3);border-radius:10px;color:#536067;font-size:12px;overflow-wrap:anywhere}
     .previewWrap{
       border:1px solid var(--mbw-line);
       border-radius:16px;
@@ -400,11 +411,11 @@
           </div>
           <div class="field">
             <label for="heroEyebrowInput">Header Label</label>
-            <input id="heroEyebrowInput" type="text" value="Private & Group Cloud Forest Tours" />
+            <input id="heroEyebrowInput" type="text" value="Private &amp; group cloud forest tours" />
           </div>
           <div class="field">
             <label for="introInput">Intro</label>
-            <textarea id="introInput">Thank you for reaching out. Below are our recommended private tour options and add-ons so you can choose the best plan for your time in Mindo.</textarea>
+            <textarea id="introInput">Thank you for reaching out. Below are our recommended private and small-group tour options and add-ons so you can choose the best plan for your time in Mindo.</textarea>
           </div>
           <div class="field">
             <label for="nextStepsInput">Custom Next Steps</label>
@@ -419,11 +430,37 @@
             <input id="compactCardsInput" type="checkbox" />
             <span><strong>Compact cards</strong><span>Shorter email with smaller sections.</span></span>
           </label>
+          <label class="optionRow" for="videoWeekInput">
+            <input id="videoWeekInput" type="checkbox" />
+            <span><strong>Video of the Week</strong><span>Optional YouTube feature near the end of the email.</span></span>
+          </label>
+          <div class="videoFields" id="videoFields" hidden>
+            <div class="field">
+              <label for="videoUrlInput">YouTube URL</label>
+              <input id="videoUrlInput" type="url" value="https://youtube.com/shorts/eu74BVrMjMU" placeholder="https://www.youtube.com/watch?v=..." />
+            </div>
+            <div class="field">
+              <label for="videoTitleInput">Video title</label>
+              <input id="videoTitleInput" type="text" value="Video of the Week" />
+            </div>
+            <div class="field">
+              <label for="videoIntroInput">Short introduction</label>
+              <textarea id="videoIntroInput">Get a glimpse of the remarkable birds and
+experiences waiting for you in Mindo.</textarea>
+            </div>
+            <div class="videoPreview" id="videoPreview">Add a YouTube URL to include this optional section.</div>
+          </div>
           <p class="hint">Use presets first, then adjust blocks and pricing overrides only where needed.</p>
         </section>
 
         <section class="panel" aria-label="Email blocks">
-          <h2 class="panelTitle">Selected Order</h2>
+          <div class="orderToolbar">
+            <div>
+              <h2 class="panelTitle">Selected Order</h2>
+              <p class="hint">Use the arrows to arrange the email. This order is remembered on this device.</p>
+            </div>
+            <button class="orderReset" type="button" id="resetOrderBtn">Recommended order</button>
+          </div>
           <div class="selectedSummary" id="selectedSummary"></div>
           <h2 class="panelTitle">Email Blocks</h2>
           <div class="blockGroups" id="blockGroups"></div>
@@ -460,6 +497,7 @@
         overrides: {},
         showHtml: false
       };
+      const ORDER_STORAGE_KEY = "mbwEmailGeneratorSectionOrderV2";
       const els = {};
 
       document.addEventListener("DOMContentLoaded", init);
@@ -475,7 +513,8 @@
                 state.order.push(block.id);
               }
             });
-            state.order = smartOrder(catalog.blocks.filter(block => state.selected.has(block.id))).map(block => block.id);
+            const savedOrder = loadSavedOrder();
+            state.order = mergeSavedOrder(savedOrder, smartOrder(catalog.blocks.filter(block => state.selected.has(block.id))).map(block => block.id));
             renderBlockControls();
             bindEvents();
             applyCrmHandoff();
@@ -487,21 +526,37 @@
       function cacheEls(){
         [
           "emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "languageInput", "heroEyebrowInput",
-          "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "selectedSummary", "blockGroups", "emailPreview", "htmlOutput", "copyHtmlBtn", "downloadHtmlBtn",
-          "copyRenderedBtn", "toggleHtmlBtn", "resetBtn", "toast"
+          "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "videoWeekInput", "videoFields", "videoUrlInput", "videoTitleInput", "videoIntroInput", "videoPreview",
+          "selectedSummary", "blockGroups", "emailPreview", "htmlOutput", "copyHtmlBtn", "downloadHtmlBtn",
+          "copyRenderedBtn", "toggleHtmlBtn", "resetBtn", "resetOrderBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
 
       function bindEvents(){
-        ["emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "heroEyebrowInput", "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput"].forEach(id => {
+        ["emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "heroEyebrowInput", "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "videoUrlInput", "videoTitleInput", "videoIntroInput"].forEach(id => {
           els[id].addEventListener("input", updateEmail);
           els[id].addEventListener("change", updateEmail);
         });
         els.languageInput.addEventListener("change", () => {
           applyLanguageDefaults();
+          applyVideoLanguageDefaults();
           renderBlockControls();
           updateEmail();
         });
+        els.videoWeekInput.addEventListener("change", () => {
+          els.videoFields.hidden = !els.videoWeekInput.checked;
+          if(els.videoWeekInput.checked){
+            state.selected.add("video-week");
+            if(!state.order.includes("video-week")) state.order.push("video-week");
+          } else {
+            state.selected.delete("video-week");
+            state.order = state.order.filter(id => id !== "video-week");
+          }
+          saveOrder();
+          renderBlockControls();
+          updateEmail();
+        });
+        els.resetOrderBtn.addEventListener("click", resetSectionOrder);
         document.querySelectorAll("[data-preset]").forEach(button => {
           button.addEventListener("click", () => applyPreset(button.dataset.preset || ""));
         });
@@ -550,8 +605,8 @@
           },
           defaults: {
             title: "Mindo Cloud Forest Tour Options",
-            headerLabel: "Private cloud forest tours",
-            intro: "Thank you for reaching out. Below are our recommended private tour options and add-ons so you can choose the best plan for your time in Mindo.",
+            headerLabel: "Private & group cloud forest tours",
+            intro: "Thank you for reaching out. Below are our recommended private and small-group tour options and add-ons so you can choose the best plan for your time in Mindo.",
             nextSteps: "If everything looks good, please reply with your preferred date, number of guests, selected tour or activities, and pickup location. If you have any questions, send them over and we will be happy to help."
           },
           groups: {},
@@ -575,7 +630,7 @@
           },
           defaults: {
             title: "Opciones de Tours en el Bosque Nublado de Mindo",
-            headerLabel: "Tours privados en el bosque nublado",
+            headerLabel: "Tours privados y grupales en el bosque nublado",
             intro: "Gracias por escribirnos. A continuación compartimos nuestras opciones recomendadas de tours privados y actividades adicionales para que puedan elegir el mejor plan para su visita a Mindo.",
             nextSteps: "Si todo se ve bien, por favor respondan con la fecha preferida, número de participantes, tour o actividades seleccionadas y lugar de recogida en Mindo. Si tienen alguna pregunta adicional, con gusto les ayudamos."
           },
@@ -692,6 +747,19 @@
               description: "Una forma divertida de emocionarse antes del tour, especialmente para niños. Los huéspedes pueden ver y escuchar algunas de las aves que podrían encontrar antes de llegar a Mindo.",
               primaryCta: "Explorar Bird Quest"
             },
+            "birding-beyond-lodge": {
+              eyebrow: "Por qué explorar con nosotros",
+              title: "Descubre los mejores sitios de avistamiento de Mindo",
+              description: "Nuestros tours van más allá de los alrededores de un solo lodge. Visitamos reservas, senderos de bosque nublado, comederos y reconocidos sitios de observación en toda la región de Mindo, ofreciendo una mayor variedad de hábitats y mejores oportunidades para encontrar sus aves más representativas.",
+              duration: "Múltiples hábitats y localidades",
+              url: "https://mindobirdwatching.com/es/tours/",
+              primaryCta: "Explorar nuestros tours"
+            },
+            "video-week": {
+              eyebrow: "Destacado de la semana",
+              title: "Video de la semana",
+              description: "Descubre algunas de las aves y\nexperiencias que te esperan en Mindo."
+            },
             included: {
               title: "Incluido",
               items: [["Incluido", "Guía local experto"], ["Entradas a reservas", "Incluidas"], ["Recogida", "Desde Mindo"], ["Óptica", "Binoculares y telescopio"]]
@@ -736,27 +804,19 @@
       };
 
       function getCatalog(){
-        return ensureRecommendationBlock(window.MBW_EMAIL_BLOCKS || buildDefaultCatalog());
+        return ensureRequiredBlocks(window.MBW_EMAIL_BLOCKS || buildDefaultCatalog());
       }
 
-      function ensureRecommendationBlock(catalog){
-        const blocks = (catalog && catalog.blocks) || [];
-        if(blocks.some(block => block.id === "lodging-recommendations")) return catalog;
-        return Object.assign({}, catalog, {
-          blocks: blocks.concat({
-            id:"lodging-recommendations",
-            group:"planning",
-            type:"feature",
-            eyebrow:"More places to stay",
-            title:"Recommended Lodging in Mindo",
-            description:"Discover a handpicked collection of inviting stays surrounded by nature and thoughtfully located for exploring the cloud forest. Browse our recommended lodging alternatives and find the perfect place to complement your birding experience in Mindo.",
-            price:"",
-            duration:"",
-            image:"https://mindobirdwatching.com/assets/images/pages/recommendations/dominique/eco_suite/mbw_dom_eco_suite_02.jpg",
-            url:"https://mindobirdwatching.com/recommendations/",
-            video:"",
-            primaryCta:"View Recommended Lodging"
-          })
+      function ensureRequiredBlocks(catalog){
+        const fallback = buildDefaultCatalog();
+        const loadedBlocks = (catalog && catalog.blocks) || [];
+        const loadedIds = new Set(loadedBlocks.map(block => block.id));
+        const requiredIds = new Set(["lodging-recommendations", "birding-beyond-lodge", "video-week"]);
+        const missingRequired = fallback.blocks.filter(block => requiredIds.has(block.id) && !loadedIds.has(block.id));
+        return Object.assign({}, fallback, catalog || {}, {
+          brand: Object.assign({}, fallback.brand, (catalog && catalog.brand) || {}),
+          groups: (catalog && catalog.groups && catalog.groups.length) ? catalog.groups : fallback.groups,
+          blocks: loadedBlocks.concat(missingRequired)
         });
       }
 
@@ -801,6 +861,52 @@
         els.heroEyebrowInput.value = defaults.headerLabel;
         els.introInput.value = defaults.intro;
         els.nextStepsInput.value = defaults.nextSteps;
+      }
+
+      function applyVideoLanguageDefaults(){
+        const spanish = getLanguage() === "es";
+        els.videoTitleInput.value = spanish ? "Video de la semana" : "Video of the Week";
+        els.videoIntroInput.value = spanish
+          ? "Descubre algunas de las aves y\nexperiencias que te esperan en Mindo."
+          : "Get a glimpse of the remarkable birds and\nexperiences waiting for you in Mindo.";
+      }
+
+      function loadSavedOrder(){
+        try {
+          const parsed = JSON.parse(localStorage.getItem(ORDER_STORAGE_KEY) || "[]");
+          return Array.isArray(parsed) ? parsed : [];
+        } catch(e) { return []; }
+      }
+
+      function saveOrder(){
+        try { localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(state.order)); } catch(e) {}
+      }
+
+      function mergeSavedOrder(saved, fallback){
+        const allowed = new Set(fallback || []);
+        const merged = (saved || []).filter(id => allowed.has(id));
+        (fallback || []).forEach(id => { if(allowed.has(id) && !merged.includes(id)) merged.push(id); });
+        return merged;
+      }
+
+      function resetSectionOrder(){
+        state.order = smartOrder(getCatalog().blocks.filter(block => state.selected.has(block.id))).map(block => block.id);
+        saveOrder();
+        renderSelectedSummary();
+        updateEmail();
+        showToast("Recommended order restored");
+      }
+
+      function moveSection(id, direction){
+        const index = state.order.indexOf(id);
+        const next = index + direction;
+        if(index < 0 || next < 0 || next >= state.order.length) return;
+        const copy = state.order.slice();
+        [copy[index], copy[next]] = [copy[next], copy[index]];
+        state.order = copy;
+        saveOrder();
+        renderSelectedSummary();
+        updateEmail();
       }
 
       function buildDefaultCatalog(){
@@ -1016,6 +1122,28 @@
               primaryCta:"Explore Bird Quest"
             },
             {
+              id:"birding-beyond-lodge",
+              group:"tours",
+              type:"info",
+              eyebrow:"Why tour with us",
+              title:"Explore Mindo’s Best Birding Locations",
+              description:"Our tours go beyond the grounds of a single lodge. We visit carefully selected reserves, forest trails, feeding areas, and renowned birding sites throughout the Mindo region—giving you a greater variety of habitats and a better opportunity to encounter the area’s remarkable birds. Each itinerary is planned around your interests, available time, and current bird activity.",
+              price:"",
+              duration:"Multiple habitats and locations",
+              image:"",
+              url:"https://mindobirdwatching.com/tours/",
+              video:"",
+              primaryCta:"Explore Our Tours"
+            },
+            {
+              id:"video-week",
+              group:"social",
+              type:"videoWeek",
+              eyebrow:"Featured this week",
+              title:"Video of the Week",
+              description:"Get a glimpse of the remarkable birds and\nexperiences waiting for you in Mindo."
+            },
+            {
               id:"included",
               group:"planning",
               type:"included",
@@ -1065,12 +1193,12 @@
         }
 
         loadFirstAvailableScript([
-          "/assets/js/email-blocks.js?v=20260719",
-          "/custom-email-generator/assets/js/email-blocks.js?v=20260719",
-          "email-blocks.js?v=20260719",
-          "assets/js/email-blocks.js?v=20260719",
-          "../assets/js/email-blocks.js?v=20260719",
-          "../../assets/js/email-blocks.js?v=20260719",
+          "/assets/js/email-blocks.js?v=20260729b",
+          "/custom-email-generator/assets/js/email-blocks.js?v=20260729b",
+          "email-blocks.js?v=20260729b",
+          "assets/js/email-blocks.js?v=20260729b",
+          "../assets/js/email-blocks.js?v=20260729b",
+          "../../assets/js/email-blocks.js?v=20260729b",
         ], () => done(), () => !!window.MBW_EMAIL_BLOCKS);
       }
 
@@ -1125,11 +1253,19 @@
           return;
         }
         els.selectedSummary.innerHTML = "";
+        const localized = new Map(getLocalizedCatalog().blocks.map(block => [block.id, block]));
         ordered.forEach((block, index) => {
           const item = document.createElement("div");
+          const label = localized.get(block.id) || block;
           item.className = "summaryItem";
-          item.innerHTML = "<span class='summaryIndex'>" + (index + 1) + "</span><span></span>";
-          item.querySelector("span:last-child").textContent = block.title;
+          item.innerHTML = "<span class='summaryIndex'>" + (index + 1) + "</span><span class='summaryItemLabel'></span><span class='orderActions'><button class='orderMove' data-move='up' type='button' aria-label='Move up'>↑</button><button class='orderMove' data-move='down' type='button' aria-label='Move down'>↓</button></span>";
+          item.querySelector(".summaryItemLabel").textContent = label.title;
+          const up = item.querySelector("[data-move='up']");
+          const down = item.querySelector("[data-move='down']");
+          up.disabled = index === 0;
+          down.disabled = index === ordered.length - 1;
+          up.addEventListener("click", () => moveSection(block.id, -1));
+          down.addEventListener("click", () => moveSection(block.id, 1));
           els.selectedSummary.appendChild(item);
         });
       }
@@ -1175,6 +1311,11 @@
             state.order = state.order.filter(id => id !== block.id);
           }
           card.classList.toggle("active", event.target.checked);
+          saveOrder();
+          if(block.id === "video-week"){
+            els.videoWeekInput.checked = event.target.checked;
+            els.videoFields.hidden = !event.target.checked;
+          }
           renderSelectedSummary();
           updateEmail();
         });
@@ -1214,11 +1355,16 @@
         els.guestCountInput.value = "";
         els.datesInput.value = "";
         els.languageInput.value = "en";
-        els.heroEyebrowInput.value = "Private cloud forest tours";
+        els.heroEyebrowInput.value = "Private & group cloud forest tours";
         els.showHeroInput.checked = true;
         els.compactCardsInput.checked = false;
-        els.introInput.value = "Thank you for reaching out. Below are our recommended private tour options and add-ons so you can choose the best plan for your time in Mindo.";
+        els.videoWeekInput.checked = false;
+        els.videoFields.hidden = true;
+        els.videoUrlInput.value = "https://youtube.com/shorts/eu74BVrMjMU";
+        applyVideoLanguageDefaults();
+        els.introInput.value = "Thank you for reaching out. Below are our recommended private and small-group tour options and add-ons so you can choose the best plan for your time in Mindo.";
         els.nextStepsInput.value = "If everything looks good, please reply with your preferred date, number of guests, selected tour or activities, and pickup location. If you have any questions, send them over and we will be happy to help.";
+        saveOrder();
         renderBlockControls();
         updateEmail();
       }
@@ -1227,21 +1373,21 @@
         const presets = {
           "half-day": {
             title: "Andean Cock-of-the-Rock Dawn Tour Option",
-            blocks: ["tour-andean", "tour-jewels", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            blocks: ["tour-andean", "tour-jewels", "birding-beyond-lodge", "included", "night-walk", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. For a private morning tour, we recommend the Andean Cock-of-the-Rock Dawn Tour first, and Jewels of the Morning Forest is another lighter half-day option. You can also add evening or relaxed Mindo activities.",
             compact: false,
             hero: true
           },
           "full-day": {
             title: "Full Day Birdwatching Tour Option",
-            blocks: ["tour-full-day", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            blocks: ["tour-full-day", "birding-beyond-lodge", "included", "night-walk", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. For the richest birding day in Mindo, we recommend our full-day Quest for Five Toucans and Andean Cock-of-the-Rock experience.",
             compact: false,
             hero: true
           },
           "family": {
             title: "Private Family Tour Options in Mindo",
-            blocks: ["tour-andean", "tour-jewels", "included", "night-walk", "activity-waterfall", "activity-chocolate", "bird-quest", "next-steps", "social-links"],
+            blocks: ["tour-andean", "tour-jewels", "birding-beyond-lodge", "included", "night-walk", "activity-waterfall", "activity-chocolate", "bird-quest", "next-steps", "social-links"],
             intro: "Thank you for reaching out. Below are private family-friendly options with colorful birds, cloud forest scenery, and add-ons that pair well with a few days in Mindo.",
             compact: false,
             hero: true
@@ -1252,7 +1398,7 @@
             intro: "Thank you for reaching out. We can coordinate transportation from Quito and pair it with a private Mindo birdwatching experience.",
             overrides: {
               "transport-quito": {
-                price: "$90 each way",
+                price: "$99 each way",
                 privatePrice: "Round trip: $180"
               }
             },
@@ -1261,7 +1407,7 @@
           },
           "custom": {
             title: "Custom Private Birding Plan",
-            blocks: ["tour-custom", "tour-full-day", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            blocks: ["tour-custom", "tour-full-day", "birding-beyond-lodge", "included", "night-walk", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. If you have specific target birds, photography goals, or habitats in mind, we can shape a custom private route around your priorities.",
             compact: false,
             hero: true
@@ -1284,6 +1430,9 @@
         els.introInput.value = presetText.intro || config.intro;
         els.showHeroInput.checked = !!config.hero;
         els.compactCardsInput.checked = !!config.compact;
+        els.videoWeekInput.checked = state.selected.has("video-week");
+        els.videoFields.hidden = !els.videoWeekInput.checked;
+        saveOrder();
         renderBlockControls();
         updateEmail();
         showToast("Preset applied");
@@ -1293,10 +1442,16 @@
         const html = buildEmailHtml();
         els.emailPreview.innerHTML = html;
         els.htmlOutput.value = html;
+        const videoUrl = clean(els.videoUrlInput.value);
+        els.videoPreview.textContent = videoUrl ? (clean(els.videoTitleInput.value) || "Video of the Week") + " — " + videoUrl : "Add a YouTube URL to include this optional section.";
         renderSelectedSummary();
       }
 
       function buildEmailHtml(){
+        if(els.videoWeekInput.checked){
+          state.selected.add("video-week");
+          if(!state.order.includes("video-week")) state.order.push("video-week");
+        }
         const catalog = getLocalizedCatalog();
         const brand = applySiteContact(catalog.brand);
         const selectedBlocks = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id)));
@@ -1345,14 +1500,8 @@
       function orderSelectedBlocks(blocks){
         const byId = new Map(blocks.map(block => [block.id, block]));
         const ordered = state.order.map(id => byId.get(id)).filter(Boolean);
-        blocks.forEach(block => {
-          if(!ordered.includes(block)) ordered.push(block);
-        });
-        return ordered.slice().sort((a, b) => {
-          const priorityDiff = blockPriority(a) - blockPriority(b);
-          if(priorityDiff) return priorityDiff;
-          return ordered.indexOf(a) - ordered.indexOf(b);
-        });
+        blocks.forEach(block => { if(!ordered.includes(block)) ordered.push(block); });
+        return ordered;
       }
 
       function blockPriority(block){
@@ -1397,7 +1546,7 @@
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(7,25,35,.14); border-radius:18px; box-shadow:0 18px 55px rgba(7,25,35,.10);'><tr><td style='padding:14px 18px;'>" +
           "<table role='presentation' cellspacing='0' cellpadding='0' border='0'><tr>" +
           "<td valign='middle' style='padding-right:12px;'><a href='" + attr(brand.site) + "'><img src='" + attr(brand.logo) + "' width='78' height='78' alt='Mindo Bird Watching' style='display:block; width:78px; height:78px; border:0;'></a></td>" +
-          "<td valign='middle'><a href='" + attr(brand.site) + "' style='text-decoration:none; color:#071923;'><span style=\"display:block; font-family:Georgia, 'Times New Roman', serif; font-size:25px; line-height:29px; color:#0D5925; font-weight:700;\">Mindo Bird Watching</span><span style='display:block; margin-top:2px; font-size:12px; line-height:16px; color:rgba(7,25,35,.72); font-weight:900; letter-spacing:.06em; text-transform:uppercase;'>Private cloud forest tours</span></a></td>" +
+          "<td valign='middle'><a href='" + attr(brand.site) + "' style='text-decoration:none; color:#071923;'><span style=\"display:block; font-family:Georgia, 'Times New Roman', serif; font-size:25px; line-height:29px; color:#0D5925; font-weight:700;\">Mindo Bird Watching</span><span style='display:block; margin-top:2px; font-size:12px; line-height:16px; color:rgba(7,25,35,.72); font-weight:900; letter-spacing:.06em; text-transform:uppercase;'>" + esc(getLanguage() === "es" ? "Tours privados y grupales en el bosque nublado" : "Private & group cloud forest tours") + "</span></a></td>" +
           "</tr></table></td></tr></table></td></tr>";
       }
 
@@ -1407,7 +1556,7 @@
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#0D5925; border-radius:18px; overflow:hidden; box-shadow:0 18px 55px rgba(7,25,35,.10);'>" +
           "<tr><td><img src='" + attr(brand.hero) + "' width='600' alt='Mindo cloud forest' style='display:block; width:100%; max-width:600px; height:auto; border:0;'></td></tr>" +
           "<tr><td style='padding:24px 26px;'>" +
-          "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#DCEBC8; font-weight:900;'>" + esc(clean(els.heroEyebrowInput.value) || "Private cloud forest tours") + "</div>" +
+          "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#DCEBC8; font-weight:900;'>" + esc(clean(els.heroEyebrowInput.value) || (getLanguage() === "es" ? "Tours privados y grupales en el bosque nublado" : "Private & group cloud forest tours")) + "</div>" +
           (meta ? "<div style='margin-top:6px; font-size:13px; line-height:18px; color:#DCEBC8; font-weight:900;'>" + esc(meta) + "</div>" : "") +
           "<h1 style=\"margin:6px 0 9px; font-family:Georgia, 'Times New Roman', serif; font-size:38px; line-height:42px; color:#ffffff; font-weight:700; letter-spacing:-.02em;\">" + esc(title) + "</h1>" +
           "<p style='margin:0; font-size:15px; line-height:23px; color:#F4FAEF;'>" + esc(t("greeting")) + " " + esc(guestName) + ", " + esc(intro) + "</p>" +
@@ -1419,7 +1568,7 @@
           "<tr><td style='padding:0 20px 10px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#0D5925; border-radius:18px; box-shadow:0 18px 55px rgba(7,25,35,.10);'>" +
           "<tr><td style='padding:24px 26px;'>" +
-          "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#DCEBC8; font-weight:900;'>" + esc(clean(els.heroEyebrowInput.value) || "Private cloud forest tours") + "</div>" +
+          "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#DCEBC8; font-weight:900;'>" + esc(clean(els.heroEyebrowInput.value) || (getLanguage() === "es" ? "Tours privados y grupales en el bosque nublado" : "Private & group cloud forest tours")) + "</div>" +
           (meta ? "<div style='margin-top:6px; font-size:13px; line-height:18px; color:#DCEBC8; font-weight:900;'>" + esc(meta) + "</div>" : "") +
           "<h1 style=\"margin:6px 0 9px; font-family:Georgia, 'Times New Roman', serif; font-size:34px; line-height:38px; color:#ffffff; font-weight:700; letter-spacing:-.02em;\">" + esc(title) + "</h1>" +
           "<p style='margin:0; font-size:15px; line-height:23px; color:#F4FAEF;'>" + esc(t("greeting")) + " " + esc(guestName) + ", " + esc(intro) + "</p>" +
@@ -1427,6 +1576,7 @@
       }
 
       function renderBlock(block){
+        if(block.type === "videoWeek") return renderVideoWeek(block);
         if(block.type === "included") return renderIncluded(block);
         if(block.type === "nextSteps") return renderNextSteps(block);
         if(block.type === "social") return renderSocial(block);
@@ -1495,6 +1645,36 @@
           "</td></tr></table></td></tr>";
       }
 
+      function normalizeExternalUrl(value){
+        let url = clean(value);
+        if(/^ttps:\/\//i.test(url)) url = "h" + url;
+        else if(url && !/^https?:\/\//i.test(url)) url = "https://" + url.replace(/^\/+/, "");
+        return url;
+      }
+
+      function renderVideoWeek(block){
+        const url = normalizeExternalUrl(els.videoUrlInput.value);
+        if(!url) return "";
+        const title = clean(els.videoTitleInput.value) || block.title || (getLanguage() === "es" ? "Video de la semana" : "Video of the Week");
+        const description = clean(els.videoIntroInput.value) || block.description || "";
+        const button = getLanguage() === "es" ? "Ver video" : "Watch Video";
+        return "" +
+          "<tr><td style='padding:0 20px 10px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(13,89,37,.28); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
+          "<td width='60%' valign='middle' style='padding-right:12px;'>" +
+          "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#0D5925; font-weight:900;'>" + esc(block.eyebrow || "") + "</div>" +
+          "<div style='font-family:Georgia,serif; font-size:25px; line-height:30px; color:#0D5925; font-weight:900; margin:4px 0 8px;'>" + esc(title) + "</div>" +
+          "<div style='font-size:14px; line-height:22px; color:#536067;'>" + esc(description).replace(/\r?\n/g, "<br>") + "</div>" +
+          "</td>" +
+          "<td width='40%' valign='middle' align='center' style='text-align:center;'>" +
+          "<a href='" + attr(url) + "' style='display:inline-block; width:176px; max-width:100%; margin:0 0 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(button) + "</a>" +
+          "</td>" +
+          "</tr></table>" +
+          "</td></tr></table>" +
+          "</td></tr>";
+      }
+
       function renderIncluded(block){
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
@@ -1507,9 +1687,9 @@
         const text = clean(els.nextStepsInput.value) || block.description || "";
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
-          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#0D5925; border-radius:18px;'><tr><td style='padding:20px 22px;'>" +
-          "<h2 style=\"margin:0 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:28px; color:#ffffff;\">" + esc(block.title) + "</h2>" +
-          "<p style='margin:0; font-size:14px; line-height:22px; color:#F4FAEF;'>" + esc(text) + "</p>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.28); border-radius:18px;'><tr><td style='padding:20px 22px; text-align:left;'>" +
+          "<h2 style=\"margin:0 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:28px; color:#0D5925;\">" + esc(block.title) + "</h2>" +
+          "<p style='margin:0; font-size:14px; line-height:22px; color:#536067;'>" + esc(text) + "</p>" +
           "</td></tr></table></td></tr>";
       }
 
