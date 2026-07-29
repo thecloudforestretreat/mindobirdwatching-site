@@ -39,6 +39,9 @@
     trail_running_en: "Hi Mindo Bird Watching, I am interested in a private trail running or active run/walk route in Mindo. Can you help me check guide availability, route options, pace, price, and next steps?\n\nPage: {url}",
     trail_running_es: "Hola Mindo Bird Watching, me interesa una ruta privada de running o run/walk activo en Mindo. ¿Me pueden ayudar a confirmar disponibilidad del guía, opciones de ruta, ritmo, precio y próximos pasos?\n\nPágina: {url}",
 
+    active_adventure_en: "Hi Mindo Bird Watching, I am interested in planning a private active adventure in Mindo. Can you help me compare trail running, waterfalls, birding routes, pace, availability, price, and next steps?\n\nPage: {url}",
+    active_adventure_es: "Hola Mindo Bird Watching, me interesa planificar una aventura activa privada en Mindo. ¿Me pueden ayudar a comparar running, cascadas, rutas con aves, ritmo, disponibilidad, precio y próximos pasos?\n\nPágina: {url}",
+
     contact_en: "Hi Mindo Bird Watching, I would like to contact your team about birdwatching in Mindo.\n\nPage: {url}",
     contact_es: "Hola Mindo Bird Watching, quiero contactar a su equipo sobre avistamiento de aves en Mindo.\n\nPágina: {url}"
   };
