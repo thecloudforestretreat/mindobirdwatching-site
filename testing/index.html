@@ -437,7 +437,7 @@
           <div class="videoFields" id="videoFields" hidden>
             <div class="field">
               <label for="videoUrlInput">YouTube URL</label>
-              <input id="videoUrlInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+              <input id="videoUrlInput" type="url" value="https://youtube.com/shorts/eu74BVrMjMU" placeholder="https://www.youtube.com/watch?v=..." />
             </div>
             <div class="field">
               <label for="videoTitleInput">Video title</label>
@@ -1359,7 +1359,7 @@
         els.compactCardsInput.checked = false;
         els.videoWeekInput.checked = false;
         els.videoFields.hidden = true;
-        els.videoUrlInput.value = "";
+        els.videoUrlInput.value = "https://youtube.com/shorts/eu74BVrMjMU";
         applyVideoLanguageDefaults();
         els.introInput.value = "Thank you for reaching out. Below are our recommended private and small-group tour options and add-ons so you can choose the best plan for your time in Mindo.";
         els.nextStepsInput.value = "If everything looks good, please reply with your preferred date, number of guests, selected tour or activities, and pickup location. If you have any questions, send them over and we will be happy to help.";
@@ -1659,12 +1659,16 @@
         const button = getLanguage() === "es" ? "Ver video" : "Watch Video";
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
-          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(13,89,37,.28); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
+          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(13,89,37,.28); border-radius:18px;'><tr>" +
+          "<td width='68%' valign='middle' style='padding:18px 10px 18px 20px;'>" +
           "<div style='font-size:11px; line-height:15px; letter-spacing:.08em; text-transform:uppercase; color:#0D5925; font-weight:900;'>" + esc(block.eyebrow || "") + "</div>" +
           "<div style='font-family:Georgia,serif; font-size:25px; line-height:30px; color:#0D5925; font-weight:900; margin:4px 0 8px;'>" + esc(title) + "</div>" +
-          "<div style='font-size:14px; line-height:22px; color:#536067; margin-bottom:12px;'>" + esc(description) + "</div>" +
-          "<a href='" + attr(url) + "' style='display:inline-block; width:150px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(button) + "</a>" +
-          "</td></tr></table>" +
+          "<div style='font-size:14px; line-height:22px; color:#536067;'>" + esc(description) + "</div>" +
+          "</td>" +
+          "<td width='32%' valign='middle' align='center' style='padding:18px 20px 18px 10px; text-align:center;'>" +
+          "<a href='" + attr(url) + "' style='display:inline-block; width:150px; max-width:100%; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(button) + "</a>" +
+          "</td>" +
+          "</tr></table>" +
           "</td></tr>";
       }
 
