@@ -36,6 +36,9 @@
     chocolate_tour_en: "Hi Mindo Bird Watching, I am interested in a chocolate tour experience in Mindo. Can you help me check availability, timing, price, and next steps?\n\nPage: {url}",
     chocolate_tour_es: "Hola Mindo Bird Watching, me interesa una experiencia de tour de chocolate en Mindo. ¿Me pueden ayudar a confirmar disponibilidad, horario, precio y próximos pasos?\n\nPágina: {url}",
 
+    trail_running_en: "Hi Mindo Bird Watching, I am interested in a private trail running or active run/walk route in Mindo. Can you help me check guide availability, route options, pace, price, and next steps?\n\nPage: {url}",
+    trail_running_es: "Hola Mindo Bird Watching, me interesa una ruta privada de running o run/walk activo en Mindo. ¿Me pueden ayudar a confirmar disponibilidad del guía, opciones de ruta, ritmo, precio y próximos pasos?\n\nPágina: {url}",
+
     contact_en: "Hi Mindo Bird Watching, I would like to contact your team about birdwatching in Mindo.\n\nPage: {url}",
     contact_es: "Hola Mindo Bird Watching, quiero contactar a su equipo sobre avistamiento de aves en Mindo.\n\nPágina: {url}"
   };
