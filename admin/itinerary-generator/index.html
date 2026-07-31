@@ -811,17 +811,36 @@
           ));
         }
 
+        const signatureIcons = [
+          {href:'https://mindobirdwatching.com',img:'https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png',w:28,h:28,alt:'Website'},
+          {href:'https://www.instagram.com/mindobirdwatching/',img:'https://cdn-icons-png.flaticon.com/512/2111/2111463.png',w:28,h:28,alt:'Instagram'},
+          {href:'https://www.tiktok.com/@mindobirdwatching',img:'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',w:28,h:28,alt:'TikTok'},
+          {href:'https://t.me/+ANc1KHoV2Y82NmI5',img:'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',w:28,h:28,alt:'Telegram'},
+          {href:'https://www.facebook.com/profile.php?id=61577783327957',img:'https://cdn-icons-png.flaticon.com/512/733/733547.png',w:28,h:28,alt:'Facebook'},
+          {href:'https://x.com/mindobirds',img:'https://cdn-icons-png.flaticon.com/512/5968/5968958.png',w:28,h:28,alt:'X'},
+          {href:'https://www.youtube.com/@MindoBirdWatching',img:'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',w:28,h:28,alt:'YouTube'},
+          {href:'https://pin.it/6O8GN1PRz',img:'https://i.imgur.com/kSrXjXZ.png',w:28,h:28,alt:'Pinterest'},
+          {href:'https://g.page/r/CdMlIYMGgBIvEAE/review',img:'https://i.imgur.com/fBPIjvV.png',w:31,h:31,alt:'Google Review'},
+          {href:whatsappUrl,img:'https://i.imgur.com/0sfOKs8.png',w:28,h:28,alt:'WhatsApp'},
+          {href:'https://mindobirdwatching.com/shop',img:'https://i.imgur.com/g53OeDX.png',w:28,h:28,alt:'Shop'}
+        ];
+
+        const signatureIconCells = signatureIcons.map(icon =>
+          `<td valign="middle" style="padding:0 7px 7px 0;"><a href="${icon.href}" target="_blank" rel="noopener noreferrer"><img src="${icon.img}" width="${icon.w}" height="${icon.h}" alt="${escapeHtml(icon.alt)}" style="display:block;width:${icon.w}px;height:${icon.h}px;border:0;"></a></td>`
+        ).join('');
+
         rows.push(row(
           `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
             <tr><td style="padding:18px;">
               <p style="margin:0 0 10px;font-size:14px;line-height:20px;color:#071923;">${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p>
-              <p style="margin:0;font-size:12px;line-height:18px;color:#536067;font-weight:800;">Mindo, Ecuador<br><a href="https://mindobirdwatching.com" style="color:#0D5925;text-decoration:underline;">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com" style="color:#0D5925;text-decoration:underline;">mindobirdwatching@gmail.com</a></p>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>${signatureIconCells}</tr></table>
+              <p style="margin:5px 0 0;font-size:12px;line-height:18px;color:#536067;font-weight:800;">Mindo, Ecuador<br><a href="https://mindobirdwatching.com" style="color:#0D5925;text-decoration:underline;">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com" style="color:#0D5925;text-decoration:underline;">mindobirdwatching@gmail.com</a></p>
             </td></tr>
           </table>`
         ));
 
         rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:14px;"><tr><td align="center" style="padding:14px 18px;color:#536067;font-size:12px;line-height:18px;font-weight:700;">${escapeHtml(c.solo)}</td></tr></table>`));
-        rows.push(`<tr><td align="center" style="padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900;"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="34" height="34" alt="Mindo Bird Watching logo" style="display:inline-block;vertical-align:middle;width:34px;height:34px;border:0;margin-right:6px;">Mindo Bird Watching &copy; 2026</td></tr>`);
+        rows.push(`<tr><td align="center" style="padding:14px 24px 6px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td valign="middle" style="padding-right:6px;"><a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="34" height="34" alt="Mindo Bird Watching logo" style="display:block;width:34px;height:34px;border:0;"></a></td><td valign="middle" style="color:#32453d;font-size:11px;line-height:16px;font-weight:900;">Mindo Bird Watching &copy; 2026</td></tr></table></td></tr>`);
 
         return `<!doctype html><html lang="${data.language === 'es' ? 'es' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(data.tripTitle || c.defaultTitle)}</title></head><body style="margin:0;padding:0;background:#C7DAAC;font-family:Arial,Helvetica,sans-serif;color:#071923;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#C7DAAC;"><tr><td align="center" style="padding:22px 10px;"><table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:640px;max-width:640px;">${rows.join('')}</table></td></tr></table></body></html>`;
       }
