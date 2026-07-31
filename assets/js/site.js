@@ -969,9 +969,17 @@
 
     if (!btn) return;
 
+    function getConfiguredWhatsAppNumber() {
+      var config = window.MBW_SITE_CONFIG || {};
+      var contact = config.contact || {};
+      var configured = String(contact.whatsappNumberDigits || "").replace(/[^\d]/g, "");
+      var fallback = String(root.getAttribute("data-wa-number") || "").replace(/[^\d]/g, "");
+
+      return configured || fallback;
+    }
+
     function buildLink(template) {
-      var numRaw = (root.getAttribute("data-wa-number") || "").toString();
-      var num = numRaw.replace(/[^\d]/g, "");
+      var num = getConfiguredWhatsAppNumber();
       if (!num) return "";
 
       var url = window.location.href;
@@ -1065,7 +1073,19 @@
     });
   }
 
-  function boot() { qsa(".mbwWaBirdFab").forEach(init); }
+  function refreshCentralizedWhatsAppLinks() {
+    if (
+      window.MBW_SITE_CONFIG &&
+      typeof window.MBW_SITE_CONFIG.updateWhatsAppLinks === "function"
+    ) {
+      window.MBW_SITE_CONFIG.updateWhatsAppLinks(document);
+    }
+  }
+
+  function boot() {
+    qsa(".mbwWaBirdFab").forEach(init);
+    refreshCentralizedWhatsAppLinks();
+  }
 
   function bootSoon() {
     boot();
