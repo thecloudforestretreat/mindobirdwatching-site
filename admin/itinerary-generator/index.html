@@ -70,7 +70,7 @@
     .previewTop h2{margin:0;color:var(--green);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
     .previewWrap{background:#C7DAAC;border:1px solid var(--line);border-radius:18px;padding:18px;overflow:auto;max-height:calc(100vh - 180px)}
     .guestPage{width:640px;margin:0 auto;color:#071923;font-family:Arial,Helvetica,sans-serif}
-    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
+    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
     .brandCard{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px 18px;background:#fff;border:1px solid rgba(7,25,35,.14)}
     .brandCard img{width:78px;height:78px;object-fit:contain;display:block;flex:0 0 auto}
     .brandName{font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;color:#0D5925;font-weight:700}
@@ -103,7 +103,7 @@
     .priceLine{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;padding:8px 0;border-bottom:1px solid rgba(13,89,37,.16);font-size:13px;line-height:18px}
     .priceLine:last-of-type{border-bottom:0}
     .priceLine.total{margin-top:8px;padding-top:13px;border-top:2px solid rgba(13,89,37,.55);border-bottom:0;font-size:18px;font-weight:950;color:#0D5925}
-    .guestNote{margin:0 20px 10px;padding:18px 20px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}
+    .guestNote{margin:0 20px 10px;padding:18px 20px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}
     .depositBox{text-align:center;margin:0 20px 10px;padding:22px 20px;background:#0D5925;color:#fff}
     .depositBox h3{margin:0 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px}
     .depositBox p{margin:0 auto 14px;max-width:520px;font-size:14px;line-height:21px;color:#F4FAEF}
@@ -125,7 +125,7 @@
     .toast{position:fixed;right:20px;bottom:20px;z-index:9999;max-width:360px;padding:12px 15px;border-radius:13px;background:#071923;color:#fff;box-shadow:0 18px 44px rgba(0,0,0,.2);font-weight:850;font-size:13px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s ease}
     .toast.show{opacity:1;transform:translateY(0)}
     @media(max-width:1180px){.appGrid{grid-template-columns:1fr}.editorPanel{position:static;max-height:none}.previewWrap{max-height:none}}
-    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}}
+    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.actions .buttonLink,.actions button{width:100%}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}}
   </style>
 </head>
 <body>
@@ -140,10 +140,11 @@
           </div>
         </div>
         <div class="actions">
-          <button type="button" id="resetBtn" class="danger">Reset</button>
-          <button type="button" id="copyWhatsAppBtn">Copy WhatsApp</button>
+          <a class="buttonLink" href="/">Admin</a>
+          <button type="button" id="copyWhatsAppBtn" class="primary">Copy WhatsApp</button>
           <button type="button" id="openWhatsAppBtn">Open WhatsApp</button>
-          <button type="button" id="downloadBtn" class="primary">Download HTML</button>
+          <button type="button" id="downloadBtn">Download HTML</button>
+          <button type="button" id="resetBtn">Reset</button>
         </div>
       </header>
 
@@ -158,6 +159,13 @@
             <div class="field">
               <label for="tripTitle">Itinerary title</label>
               <input id="tripTitle" type="text" value="Your Mindo Tour Itinerary" />
+            </div>
+            <div class="field">
+              <label for="language">Output language</label>
+              <select id="language">
+                <option value="en">English</option>
+                <option value="es">Español (Ecuador)</option>
+              </select>
             </div>
             <div class="two">
               <div class="field">
@@ -255,6 +263,16 @@
       const STORAGE_KEY = 'mbw_itinerary_generator_v1';
       const SERVICE_TYPES = ['Transportation','Full-Day Tour','Half-Day Tour','Birdwatching Tour','Night Walk','Activity','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'];
 
+      const COPY = {
+        en: {
+          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', payDeposit:'Pay $100 Tour Deposit', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
+        },
+        es: {
+          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de USD 100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', payDeposit:'Pagar depósito de USD 100', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de USD 100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de USD 100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
+        }
+      };
+      function copyFor(data){ return COPY[data && data.language === 'es' ? 'es' : 'en']; }
+
       const $ = (id) => document.getElementById(id);
       const state = { items: [] };
 
@@ -284,25 +302,28 @@
       function escapeHtml(value){
         return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
       }
-      function money(value){
+      function money(value, language='en') {
         const number = Number(value || 0);
-        return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(number);
+        return new Intl.NumberFormat(language === 'es' ? 'es-EC' : 'en-US',{style:'currency',currency:'USD'}).format(number);
       }
-      function formatDate(value){
-        if(!value) return 'Date to be confirmed';
+      function formatDate(value, language='en'){
+        const c = COPY[language === 'es' ? 'es' : 'en'];
+        if(!value) return c.dateConfirm;
         const date = new Date(value + 'T12:00:00');
-        return new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(date);
+        return new Intl.DateTimeFormat(c.locale,{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(date);
       }
-      function formatShortDate(value){
-        if(!value) return 'Date TBD';
+      function formatShortDate(value, language='en'){
+        const c = COPY[language === 'es' ? 'es' : 'en'];
+        if(!value) return c.dateTbd;
         const date = new Date(value + 'T12:00:00');
-        return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric'}).format(date);
+        return new Intl.DateTimeFormat(c.locale,{month:'short',day:'numeric',year:'numeric'}).format(date);
       }
-      function formatTime(value){
-        if(!value) return 'Time TBD';
+      function formatTime(value, language='en'){
+        const c = COPY[language === 'es' ? 'es' : 'en'];
+        if(!value) return c.timeTbd;
         const [hours,minutes] = value.split(':').map(Number);
         const date = new Date(2000,0,1,hours,minutes || 0);
-        return new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(date);
+        return new Intl.DateTimeFormat(c.locale,{hour:'numeric',minute:'2-digit'}).format(date);
       }
       function toast(message){
         const el = $('toast');
@@ -412,6 +433,7 @@
         return {
           guestName:$('guestName').value.trim(),
           tripTitle:$('tripTitle').value.trim(),
+          language:$('language').value || 'en',
           startDate:$('startDate').value,
           endDate:$('endDate').value,
           guestCount:Number($('guestCount').value || 1),
@@ -444,23 +466,24 @@
       }
 
       function itineraryContent(data,{standalone=false}={}){
+        const c = copyFor(data);
         const sum = totals(data);
         const validItems = data.items.filter(item => item.name || item.type || item.note);
         const dayMarkup = groupedItems(validItems).map(([date,items]) => `
           <section class="dayBlock">
-            <h3 class="dayTitle">${escapeHtml(formatDate(date))}</h3>
+            <h3 class="dayTitle">${escapeHtml(formatDate(date,data.language))}</h3>
             <div class="timeline">
               ${items.map(item => {
                 const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
                 return `
                   <div class="timelineItem">
-                    <div class="timeBox">${escapeHtml(formatTime(item.startTime))}${item.duration ? `<small>${escapeHtml(item.duration)}</small>` : ''}</div>
+                    <div class="timeBox">${escapeHtml(formatTime(item.startTime,data.language))}${item.duration ? `<small>${escapeHtml(item.duration)}</small>` : ''}</div>
                     <div>
-                      <span class="serviceType">${escapeHtml(item.type || 'Service')}</span>
-                      <div class="serviceName">${escapeHtml(item.name || item.type || 'Itinerary item')}</div>
+                      <span class="serviceType">${escapeHtml(item.type || c.service)}</span>
+                      <div class="serviceName">${escapeHtml(item.name || item.type || c.item)}</div>
                       ${item.note ? `<p class="serviceNote">${escapeHtml(item.note)}</p>` : ''}
                     </div>
-                    ${data.showItemPrices && lineTotal ? `<div class="itemPrice">${money(lineTotal)}</div>` : '<div></div>'}
+                    ${data.showItemPrices && lineTotal ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
                   </div>`;
               }).join('')}
             </div>
@@ -469,81 +492,58 @@
         const pricingLines = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0) !== 0).map(item => {
           const total = Number(item.quantity || 0) * Number(item.unitPrice || 0);
           const qty = Number(item.quantity || 0);
-          return `<div class="priceLine"><span>${escapeHtml(item.name || item.type)}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total)}</strong></div>`;
+          return `<div class="priceLine"><span>${escapeHtml(item.name || item.type)}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
         }).join('');
 
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
-          ? `${formatShortDate(data.startDate)} - ${formatShortDate(data.endDate)}`
-          : formatShortDate(data.startDate || data.endDate);
+          ? `${formatShortDate(data.startDate,data.language)} - ${formatShortDate(data.endDate,data.language)}`
+          : formatShortDate(data.startDate || data.endDate,data.language);
 
         return `
           <header class="brandCard">
             <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
-            <div>
-              <div class="brandName">Mindo Bird Watching</div>
-              <div class="brandTagline">Private &amp; group cloud forest tours</div>
-            </div>
+            <div><div class="brandName">Mindo Bird Watching</div><div class="brandTagline">${escapeHtml(c.brandTagline)}</div></div>
           </header>
           <section class="guestHeroCard">
             <img class="guestHeroImage" src="${HEADER_IMAGE}" alt="Mindo cloud forest birdwatching tour" />
             <div class="heroCopy">
-              <div class="heroEyebrow">Proposed Mindo tour itinerary</div>
-              <div class="heroMeta">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} Guest(s)</div>
-              <h1 class="heroTitle">${escapeHtml(data.tripTitle || 'Your Mindo Tour Itinerary')}</h1>
-              ${data.openingText ? `<p class="heroIntro">Hi ${escapeHtml(data.guestName || 'Guest')}, ${escapeHtml(data.openingText)}</p>` : `<p class="heroIntro">Hi ${escapeHtml(data.guestName || 'Guest')}, please review the proposed itinerary below.</p>`}
+              <div class="heroEyebrow">${escapeHtml(c.eyebrow)}</div>
+              <div class="heroMeta">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
+              <h1 class="heroTitle">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
+              <p class="heroIntro">${escapeHtml(c.hi)} ${escapeHtml(data.guestName || c.guest)}, ${escapeHtml(data.openingText || c.defaultOpening)}</p>
             </div>
           </section>
-          <section class="contentCard">
-            <div class="tripMeta">
-              <div class="metaCard"><span>Guest</span><strong>${escapeHtml(data.guestName || 'To be confirmed')}</strong></div>
-              <div class="metaCard"><span>Travel dates</span><strong>${escapeHtml(dateRange)}</strong></div>
-              <div class="metaCard"><span>Guests</span><strong>${escapeHtml(data.guestCount || 1)}</strong></div>
-            </div>
-          </section>
-          ${dayMarkup || '<div class="contentCard"><div class="emptyPreview">Add at least one service to build the itinerary.</div></div>'}
-          ${pricingLines ? `
-            <section class="pricingCard">
-              <h3>Pricing Breakdown</h3>
-              ${pricingLines}
-              ${sum.adjustment ? `<div class="priceLine"><span>Adjustment</span><strong>${money(sum.adjustment)}</strong></div>` : ''}
-              <div class="priceLine total"><span>Total</span><strong>${money(sum.total)}</strong></div>
-            </section>` : ''}
+          <section class="contentCard"><div class="tripMeta">
+            <div class="metaCard"><span>${escapeHtml(c.guest)}</span><strong>${escapeHtml(data.guestName || (data.language === 'es' ? 'Por confirmar' : 'To be confirmed'))}</strong></div>
+            <div class="metaCard"><span>${escapeHtml(c.travelDates)}</span><strong>${escapeHtml(dateRange)}</strong></div>
+            <div class="metaCard"><span>${escapeHtml(c.guests)}</span><strong>${escapeHtml(data.guestCount || 1)}</strong></div>
+          </div></section>
+          ${dayMarkup || `<div class="contentCard"><div class="emptyPreview">${escapeHtml(c.empty)}</div></div>`}
+          ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
           ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
-          ${data.closingText ? `<section class="guestNote">${escapeHtml(data.closingText)}</section>` : ''}
-          ${data.showDeposit ? `
-            <section class="depositBox">
-              <h3>Secure Your Tour</h3>
-              <p>Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.</p>
-              <div class="ctaButtons">
-                <a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">Pay $100 Tour Deposit</a>
-                <a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">Message Us on WhatsApp</a>
-              </div>
-            </section>` : ''}
-          <section class="signatureCard">
-            <p>Warm regards,<br><strong>Mindo Bird Watching</strong></p>
-            <div class="socialRow">
-              <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
-              <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
-              <a href="https://www.tiktok.com/@mindobirdwatching"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok"></a>
-              <a href="https://t.me/+ANc1KHoV2Y82NmI5"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram"></a>
-              <a href="https://www.facebook.com/profile.php?id=61577783327957"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
-              <a href="https://x.com/mindobirds"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968958.png" alt="X"></a>
-              <a href="https://www.youtube.com/@MindoBirdWatching"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
-              <a href="https://pin.it/6O8GN1PRz"><img src="https://i.imgur.com/kSrXjXZ.png" alt="Pinterest"></a>
-              <a href="https://g.page/r/CdMlIYMGgBIvEAE/review"><img class="reviewIcon" src="https://i.imgur.com/fBPIjvV.png" alt="Google Review"></a>
-              <a href="${buildGuestWhatsAppUrl(data)}"><img src="https://i.imgur.com/0sfOKs8.png" alt="WhatsApp"></a>
-              <a href="https://mindobirdwatching.com/shop"><img src="https://i.imgur.com/g53OeDX.png" alt="Shop"></a>
-            </div>
-            <div class="signatureLinks">Mindo, Ecuador<br><a href="https://mindobirdwatching.com">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com">mindobirdwatching@gmail.com</a></div>
-          </section>
-          <section class="soloNote">Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.</section>
-          <footer class="guestFooter"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo"><span>Mindo Bird Watching &copy; 2026</span></footer>`
+          <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
+          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(c.ready)}</h3><p>${escapeHtml(c.depositText)}</p><div class="ctaButtons"><a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a><a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
+          <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
+            <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
+            <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
+            <a href="https://www.tiktok.com/@mindobirdwatching"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok"></a>
+            <a href="https://t.me/+ANc1KHoV2Y82NmI5"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram"></a>
+            <a href="https://www.facebook.com/profile.php?id=61577783327957"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
+            <a href="https://x.com/mindobirds"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968958.png" alt="X"></a>
+            <a href="https://www.youtube.com/@MindoBirdWatching"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
+            <a href="https://pin.it/6O8GN1PRz"><img src="https://i.imgur.com/kSrXjXZ.png" alt="Pinterest"></a>
+            <a href="https://g.page/r/CdMlIYMGgBIvEAE/review"><img class="reviewIcon" src="https://i.imgur.com/fBPIjvV.png" alt="Google Review"></a>
+            <a href="${buildGuestWhatsAppUrl(data)}"><img src="https://i.imgur.com/0sfOKs8.png" alt="WhatsApp"></a>
+            <a href="https://mindobirdwatching.com/shop"><img src="https://i.imgur.com/g53OeDX.png" alt="Shop"></a>
+          </div><div class="signatureLinks">Mindo, Ecuador<br><a href="https://mindobirdwatching.com">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com">mindobirdwatching@gmail.com</a></div></section>
+          <section class="soloNote">${escapeHtml(c.solo)}</section>
+          <footer class="guestFooter"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo"><span>Mindo Bird Watching &copy; 2026</span></footer>`;
       }
 
       function buildStandaloneHtml(data){
         const content = itineraryContent(data,{standalone:true});
         return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${data.language === 'es' ? 'es' : 'en'}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -552,7 +552,7 @@
     *{box-sizing:border-box}
     body{margin:0;padding:22px 10px;background:#C7DAAC;color:#071923;font-family:Arial,Helvetica,sans-serif}
     .guestPage{width:640px;max-width:100%;margin:0 auto;color:#071923;font-family:Arial,Helvetica,sans-serif}
-    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
+    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
     .brandCard{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px 18px;background:#fff;border:1px solid rgba(7,25,35,.14)}
     .brandCard img{width:78px;height:78px;object-fit:contain;display:block;flex:0 0 auto}
     .brandName{font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;color:#0D5925;font-weight:700}
@@ -584,7 +584,7 @@
     .priceLine{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;padding:8px 0;border-bottom:1px solid rgba(13,89,37,.16);font-size:13px;line-height:18px}
     .priceLine:last-of-type{border-bottom:0}
     .priceLine.total{margin-top:8px;padding-top:13px;border-top:2px solid rgba(13,89,37,.55);border-bottom:0;font-size:18px;font-weight:950;color:#0D5925}
-    .guestNote{margin:0 20px 10px;padding:18px 20px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}
+    .guestNote{margin:0 20px 10px;padding:18px 20px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}
     .depositBox{text-align:center;margin:0 20px 10px;padding:22px 20px;background:#0D5925;color:#fff}
     .depositBox h3{margin:0 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px}
     .depositBox p{margin:0 auto 14px;max-width:520px;font-size:14px;line-height:21px;color:#F4FAEF}
@@ -603,7 +603,7 @@
     .guestFooter{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900}
     .guestFooter img{display:block;width:34px;height:34px;object-fit:contain}
     .emptyPreview{padding:36px;border:1px dashed #a9bca4;border-radius:16px;text-align:center;color:#637169;font-weight:800;background:#f7faf5}
-    @media(max-width:700px){body{padding:12px 0}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}.brandCard{padding:12px 14px}.brandCard img{width:60px;height:60px}.brandName{font-size:21px;line-height:25px}.brandTagline{font-size:10px;line-height:14px}.heroCopy{padding:20px}.heroTitle{font-size:30px;line-height:34px}.tripMeta{grid-template-columns:1fr}.timelineItem{grid-template-columns:76px minmax(0,1fr)}.itemPrice{grid-column:2}.dayTitle{font-size:22px;line-height:26px}}
+    @media(max-width:700px){body{padding:12px 0}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}.brandCard{padding:12px 14px}.brandCard img{width:60px;height:60px}.brandName{font-size:21px;line-height:25px}.brandTagline{font-size:10px;line-height:14px}.heroCopy{padding:20px}.heroTitle{font-size:30px;line-height:34px}.tripMeta{grid-template-columns:1fr}.timelineItem{grid-template-columns:76px minmax(0,1fr)}.itemPrice{grid-column:2}.dayTitle{font-size:22px;line-height:26px}}
   </style>
 </head>
 <body><article class="guestPage">${content}</article></body>
@@ -611,12 +611,13 @@
       }
 
       function buildWhatsAppMessage(data){
+        const c = copyFor(data);
         const sum = totals(data);
-        const lines = [`Hi ${data.guestName || 'there'},`,'',`Here is the proposed itinerary for ${formatShortDate(data.startDate || data.endDate)}:`,''];
+        const lines = [`${c.hi} ${data.guestName || (data.language === 'es' ? 'allí' : 'there')},`,'',`${c.here} ${formatShortDate(data.startDate || data.endDate,data.language)}:`,''];
         groupedItems(data.items.filter(item => item.name || item.type)).forEach(([date,items],groupIndex) => {
-          if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(formatShortDate(date));
+          if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(formatShortDate(date,data.language));
           items.forEach(item => {
-            const time = formatTime(item.startTime);
+            const time = formatTime(item.startTime,data.language);
             const duration = item.duration ? ` (${item.duration})` : '';
             lines.push(`${time} - ${item.name || item.type}${duration}`);
           });
@@ -624,15 +625,13 @@
         });
         const priced = data.items.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
         if(priced.length){
-          lines.push('Pricing:');
-          priced.forEach(item => lines.push(`${item.name || item.type}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0))}`));
-          if(sum.adjustment) lines.push(`Adjustment: ${money(sum.adjustment)}`);
-          lines.push(`Total: ${money(sum.total)}`,'');
+          lines.push(`${c.pricingLabel}:`);
+          priced.forEach(item => lines.push(`${item.name || item.type}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
+          if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
+          lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
-        if(data.showDeposit){
-          lines.push('You can secure the tour with the $100 deposit here:',DEPOSIT_LINK,'');
-        }
-        lines.push('Let me know if this looks good or if you would like any changes.');
+        if(data.showDeposit) lines.push(c.depositLead,DEPOSIT_LINK,'');
+        lines.push(c.finalLine);
         return lines.join('\n');
       }
 
@@ -644,7 +643,7 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           if(!raw) return false;
           const data = JSON.parse(raw);
-          ['guestName','tripTitle','startDate','endDate','guestCount','whatsappNumber','openingText','pricingNote','closingText','discount'].forEach(key => {
+          ['guestName','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','openingText','pricingNote','closingText','discount'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('showDeposit').checked = data.showDeposit !== false;
@@ -658,9 +657,9 @@
         applyDateMinimums();
         const data = getFormData();
         const sum = totals(data);
-        $('subtotalValue').textContent = money(sum.subtotal);
-        $('adjustmentValue').textContent = money(sum.adjustment);
-        $('totalValue').textContent = money(sum.total);
+        $('subtotalValue').textContent = money(sum.subtotal,data.language);
+        $('adjustmentValue').textContent = money(sum.adjustment,data.language);
+        $('totalValue').textContent = money(sum.total,data.language);
         $('guestPreview').innerHTML = itineraryContent(data);
         saveState();
       }
@@ -706,6 +705,17 @@
           $('endDate').value = $('startDate').value;
         }
       }
+
+      $('language').addEventListener('change',() => {
+        const language = $('language').value === 'es' ? 'es' : 'en';
+        const next = COPY[language];
+        const other = COPY[language === 'es' ? 'en' : 'es'];
+        if(!$('tripTitle').value.trim() || $('tripTitle').value === other.defaultTitle) $('tripTitle').value = next.defaultTitle;
+        if(!$('openingText').value.trim() || $('openingText').value === other.defaultOpening) $('openingText').value = next.defaultOpening;
+        if(!$('pricingNote').value.trim() || $('pricingNote').value === other.defaultPricing) $('pricingNote').value = next.defaultPricing;
+        if(!$('closingText').value.trim() || $('closingText').value === other.defaultClosing) $('closingText').value = next.defaultClosing;
+        updateAll(false);
+      });
       $('startDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('endDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('addItemBtn').addEventListener('click',() => addItem());
@@ -738,14 +748,15 @@
         if(!confirm('Clear the current itinerary and start again?')) return;
         localStorage.removeItem(STORAGE_KEY);
         $('guestName').value='';
-        $('tripTitle').value='Your Mindo Tour Itinerary';
+        $('language').value='en';
+        $('tripTitle').value=COPY.en.defaultTitle;
         $('startDate').value='';
         $('endDate').value='';
         $('guestCount').value='2';
         $('whatsappNumber').value='';
-        $('openingText').value='Please review the proposed itinerary below and let me know whether this matches what you have in mind.';
-        $('pricingNote').value='Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.';
-        $('closingText').value='Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.';
+        $('openingText').value=COPY.en.defaultOpening;
+        $('pricingNote').value=COPY.en.defaultPricing;
+        $('closingText').value=COPY.en.defaultClosing;
         $('discount').value='0';
         $('showDeposit').checked=true;
         $('showItemPrices').checked=true;
