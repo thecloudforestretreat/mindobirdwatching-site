@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/css/site.css" />
+  <script src="/assets/js/site-config.js?v=20260731" defer></script>
   <style>
     :root{
       --green:#0D5925;
@@ -69,7 +70,7 @@
     .previewTop h2{margin:0;color:var(--green);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
     .previewWrap{background:#C7DAAC;border:1px solid var(--line);border-radius:18px;padding:18px;overflow:auto;max-height:calc(100vh - 180px)}
     .guestPage{width:640px;margin:0 auto;color:#071923;font-family:Arial,Helvetica,sans-serif}
-    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
+    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
     .brandCard{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px 18px;background:#fff;border:1px solid rgba(7,25,35,.14)}
     .brandCard img{width:78px;height:78px;object-fit:contain;display:block;flex:0 0 auto}
     .brandName{font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;color:#0D5925;font-weight:700}
@@ -106,17 +107,25 @@
     .depositBox{text-align:center;margin:0 20px 10px;padding:22px 20px;background:#0D5925;color:#fff}
     .depositBox h3{margin:0 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px}
     .depositBox p{margin:0 auto 14px;max-width:520px;font-size:14px;line-height:21px;color:#F4FAEF}
-    .depositBtn{display:inline-block;width:220px;max-width:100%;padding:13px 10px;border-radius:14px;background:#fff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;text-align:center}
+    .ctaButtons{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+    .depositBtn,.whatsappGuestBtn{display:inline-block;width:220px;max-width:100%;padding:13px 10px;border-radius:14px;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;text-align:center}
+    .depositBtn{background:#fff;color:#0D5925}
+    .whatsappGuestBtn{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.55)}
     .signatureCard{margin:0 20px 10px;padding:18px;background:rgba(255,255,255,.92);border:1px solid rgba(7,25,35,.14)}
     .signatureCard p{margin:0;font-size:14px;line-height:20px;color:#071923}
+    .socialRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .socialRow img{display:block;width:28px;height:28px;border:0;object-fit:contain}
+    .socialRow .reviewIcon{width:31px;height:31px}
     .signatureLinks{margin-top:8px;font-size:12px;line-height:18px;color:rgba(7,25,35,.72);font-weight:800}
     .signatureLinks a{color:#0D5925;text-decoration:underline}
-    .guestFooter{text-align:center;padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900}
+    .soloNote{margin:0 20px 10px;padding:14px 18px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);border-radius:14px;text-align:center;color:rgba(7,25,35,.76);font-size:12px;line-height:18px;font-weight:700;box-shadow:0 18px 55px rgba(7,25,35,.10)}
+    .guestFooter{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900}
+    .guestFooter img{display:block;width:34px;height:34px;object-fit:contain}
     .emptyPreview{padding:36px;border:1px dashed #a9bca4;border-radius:16px;text-align:center;color:#637169;font-weight:800;background:#f7faf5}
     .toast{position:fixed;right:20px;bottom:20px;z-index:9999;max-width:360px;padding:12px 15px;border-radius:13px;background:#071923;color:#fff;box-shadow:0 18px 44px rgba(0,0,0,.2);font-weight:850;font-size:13px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s ease}
     .toast.show{opacity:1;transform:translateY(0)}
     @media(max-width:1180px){.appGrid{grid-template-columns:1fr}.editorPanel{position:static;max-height:none}.previewWrap{max-height:none}}
-    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard{margin-left:10px;margin-right:10px}}
+    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}}
   </style>
 </head>
 <body>
@@ -199,7 +208,7 @@
             </div>
             <div class="field">
               <label for="pricingNote">Pricing note</label>
-              <textarea id="pricingNote">Tours are priced at a minimum of 2 people. Availability and final pickup or drop-off details can be confirmed before the tour.</textarea>
+              <textarea id="pricingNote">Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.</textarea>
             </div>
             <div class="field">
               <label for="closingText">Closing message</label>
@@ -242,6 +251,7 @@
 
       const HEADER_IMAGE = 'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg';
       const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
+      const TEST_WHATSAPP_NUMBER = '593969076501';
       const STORAGE_KEY = 'mbw_itinerary_generator_v1';
       const SERVICE_TYPES = ['Transportation','Full-Day Tour','Half-Day Tour','Birdwatching Tour','Night Walk','Activity','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'];
 
@@ -249,6 +259,28 @@
       const state = { items: [] };
 
       function uid(){ return 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+      function todayIso(){
+        const now = new Date();
+        const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0,10);
+      }
+      function capitalizeFirst(value){
+        const text = String(value || '');
+        return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+      }
+      function getItineraryWhatsAppNumber(){
+        // Testing override. Remove this constant in version two to use site-config directly.
+        if(TEST_WHATSAPP_NUMBER) return TEST_WHATSAPP_NUMBER;
+        const configured = window.MBW_SITE_CONFIG && window.MBW_SITE_CONFIG.contact
+          ? window.MBW_SITE_CONFIG.contact.whatsappNumberDigits
+          : '';
+        return String(configured || '').replace(/\D/g,'');
+      }
+      function buildGuestWhatsAppUrl(data){
+        const number = getItineraryWhatsAppNumber();
+        const message = encodeURIComponent(buildWhatsAppMessage(data));
+        return number ? `https://wa.me/${number}?text=${message}` : '#';
+      }
       function escapeHtml(value){
         return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
       }
@@ -337,7 +369,7 @@
             <div class="two">
               <div class="field">
                 <label>Date</label>
-                <input type="date" data-field="date" value="${escapeHtml(item.date)}" />
+                <input type="date" data-field="date" min="${todayIso()}" value="${escapeHtml(item.date)}" />
               </div>
               <div class="field">
                 <label>Service type</label>
@@ -482,13 +514,30 @@
             <section class="depositBox">
               <h3>Secure Your Tour</h3>
               <p>Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.</p>
-              <a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">Pay $100 Tour Deposit</a>
+              <div class="ctaButtons">
+                <a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">Pay $100 Tour Deposit</a>
+                <a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">Message Us on WhatsApp</a>
+              </div>
             </section>` : ''}
           <section class="signatureCard">
             <p>Warm regards,<br><strong>Mindo Bird Watching</strong></p>
+            <div class="socialRow">
+              <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
+              <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
+              <a href="https://www.tiktok.com/@mindobirdwatching"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok"></a>
+              <a href="https://t.me/+ANc1KHoV2Y82NmI5"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram"></a>
+              <a href="https://www.facebook.com/profile.php?id=61577783327957"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
+              <a href="https://x.com/mindobirds"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968958.png" alt="X"></a>
+              <a href="https://www.youtube.com/@MindoBirdWatching"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
+              <a href="https://pin.it/6O8GN1PRz"><img src="https://i.imgur.com/kSrXjXZ.png" alt="Pinterest"></a>
+              <a href="https://g.page/r/CdMlIYMGgBIvEAE/review"><img class="reviewIcon" src="https://i.imgur.com/fBPIjvV.png" alt="Google Review"></a>
+              <a href="${buildGuestWhatsAppUrl(data)}"><img src="https://i.imgur.com/0sfOKs8.png" alt="WhatsApp"></a>
+              <a href="https://mindobirdwatching.com/shop"><img src="https://i.imgur.com/g53OeDX.png" alt="Shop"></a>
+            </div>
             <div class="signatureLinks">Mindo, Ecuador<br><a href="https://mindobirdwatching.com">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com">mindobirdwatching@gmail.com</a></div>
           </section>
-          <footer class="guestFooter">Mindo Bird Watching &copy; 2026</footer>`
+          <section class="soloNote">Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.</section>
+          <footer class="guestFooter"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo"><span>Mindo Bird Watching &copy; 2026</span></footer>`
       }
 
       function buildStandaloneHtml(data){
@@ -503,7 +552,7 @@
     *{box-sizing:border-box}
     body{margin:0;padding:22px 10px;background:#C7DAAC;color:#071923;font-family:Arial,Helvetica,sans-serif}
     .guestPage{width:640px;max-width:100%;margin:0 auto;color:#071923;font-family:Arial,Helvetica,sans-serif}
-    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
+    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
     .brandCard{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px 18px;background:#fff;border:1px solid rgba(7,25,35,.14)}
     .brandCard img{width:78px;height:78px;object-fit:contain;display:block;flex:0 0 auto}
     .brandName{font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;color:#0D5925;font-weight:700}
@@ -539,14 +588,22 @@
     .depositBox{text-align:center;margin:0 20px 10px;padding:22px 20px;background:#0D5925;color:#fff}
     .depositBox h3{margin:0 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px}
     .depositBox p{margin:0 auto 14px;max-width:520px;font-size:14px;line-height:21px;color:#F4FAEF}
-    .depositBtn{display:inline-block;width:220px;max-width:100%;padding:13px 10px;border-radius:14px;background:#fff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;text-align:center}
+    .ctaButtons{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+    .depositBtn,.whatsappGuestBtn{display:inline-block;width:220px;max-width:100%;padding:13px 10px;border-radius:14px;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;text-align:center}
+    .depositBtn{background:#fff;color:#0D5925}
+    .whatsappGuestBtn{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.55)}
     .signatureCard{margin:0 20px 10px;padding:18px;background:rgba(255,255,255,.92);border:1px solid rgba(7,25,35,.14)}
     .signatureCard p{margin:0;font-size:14px;line-height:20px;color:#071923}
+    .socialRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .socialRow img{display:block;width:28px;height:28px;border:0;object-fit:contain}
+    .socialRow .reviewIcon{width:31px;height:31px}
     .signatureLinks{margin-top:8px;font-size:12px;line-height:18px;color:rgba(7,25,35,.72);font-weight:800}
     .signatureLinks a{color:#0D5925;text-decoration:underline}
-    .guestFooter{text-align:center;padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900}
+    .soloNote{margin:0 20px 10px;padding:14px 18px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);border-radius:14px;text-align:center;color:rgba(7,25,35,.76);font-size:12px;line-height:18px;font-weight:700;box-shadow:0 18px 55px rgba(7,25,35,.10)}
+    .guestFooter{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900}
+    .guestFooter img{display:block;width:34px;height:34px;object-fit:contain}
     .emptyPreview{padding:36px;border:1px dashed #a9bca4;border-radius:16px;text-align:center;color:#637169;font-weight:800;background:#f7faf5}
-    @media(max-width:700px){body{padding:12px 0}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard{margin-left:10px;margin-right:10px}.brandCard{padding:12px 14px}.brandCard img{width:60px;height:60px}.brandName{font-size:21px;line-height:25px}.brandTagline{font-size:10px;line-height:14px}.heroCopy{padding:20px}.heroTitle{font-size:30px;line-height:34px}.tripMeta{grid-template-columns:1fr}.timelineItem{grid-template-columns:76px minmax(0,1fr)}.itemPrice{grid-column:2}.dayTitle{font-size:22px;line-height:26px}}
+    @media(max-width:700px){body{padding:12px 0}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}.brandCard{padding:12px 14px}.brandCard img{width:60px;height:60px}.brandName{font-size:21px;line-height:25px}.brandTagline{font-size:10px;line-height:14px}.heroCopy{padding:20px}.heroTitle{font-size:30px;line-height:34px}.tripMeta{grid-template-columns:1fr}.timelineItem{grid-template-columns:76px minmax(0,1fr)}.itemPrice{grid-column:2}.dayTitle{font-size:22px;line-height:26px}}
   </style>
 </head>
 <body><article class="guestPage">${content}</article></body>
@@ -598,6 +655,7 @@
       }
       function updateAll(shouldRenderEditors=false){
         if(shouldRenderEditors) renderEditors();
+        applyDateMinimums();
         const data = getFormData();
         const sum = totals(data);
         $('subtotalValue').textContent = money(sum.subtotal);
@@ -629,6 +687,27 @@
       document.querySelector('.editorPanel').addEventListener('change',event => {
         if(!event.target.closest('.itemEditor')) updateAll(false);
       });
+      $('guestName').addEventListener('input',event => {
+        const input = event.target;
+        const start = input.selectionStart;
+        const next = capitalizeFirst(input.value);
+        if(next !== input.value){
+          input.value = next;
+          if(start !== null) input.setSelectionRange(start,start);
+        }
+        updateAll(false);
+      });
+      function applyDateMinimums(){
+        const today = todayIso();
+        $('startDate').min = today;
+        $('endDate').min = $('startDate').value || today;
+        document.querySelectorAll('#itemsEditor input[type="date"]').forEach(input => { input.min = today; });
+        if($('startDate').value && $('endDate').value && $('endDate').value < $('startDate').value){
+          $('endDate').value = $('startDate').value;
+        }
+      }
+      $('startDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
+      $('endDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('addItemBtn').addEventListener('click',() => addItem());
       $('downloadBtn').addEventListener('click',() => {
         const data = getFormData();
@@ -653,10 +732,7 @@
       });
       $('openWhatsAppBtn').addEventListener('click',() => {
         const data = getFormData();
-        const phone = data.whatsappNumber.replace(/\D/g,'');
-        const message = encodeURIComponent(buildWhatsAppMessage(data));
-        const url = phone ? `https://wa.me/${phone}?text=${message}` : `https://wa.me/?text=${message}`;
-        window.open(url,'_blank','noopener');
+        window.open(buildGuestWhatsAppUrl(data),'_blank','noopener');
       });
       $('resetBtn').addEventListener('click',() => {
         if(!confirm('Clear the current itinerary and start again?')) return;
@@ -668,7 +744,7 @@
         $('guestCount').value='2';
         $('whatsappNumber').value='';
         $('openingText').value='Please review the proposed itinerary below and let me know whether this matches what you have in mind.';
-        $('pricingNote').value='Tours are priced at a minimum of 2 people. Availability and final pickup or drop-off details can be confirmed before the tour.';
+        $('pricingNote').value='Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.';
         $('closingText').value='Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.';
         $('discount').value='0';
         $('showDeposit').checked=true;
@@ -688,6 +764,7 @@
         state.items.push(defaultItem({type:'Night Walk',name:'Night Walk Tour',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'}));
       }
       renderEditors();
+      applyDateMinimums();
       updateAll(false);
     })();
   </script>
