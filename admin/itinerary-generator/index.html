@@ -105,7 +105,7 @@
     .priceLine.total{margin-top:8px;padding-top:13px;border-top:2px solid rgba(13,89,37,.55);border-bottom:0;font-size:18px;font-weight:950;color:#0D5925}
     .guestNote{margin:0 20px 10px;padding:18px 20px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}
     .depositBox{text-align:center;margin:0 20px 10px;padding:22px 20px;background:#0D5925;color:#fff}
-    .depositBox h3{margin:0 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px}
+    .depositBox h3{margin:0 0 8px;color:#ffffff!important;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;font-weight:700}
     .depositBox p{margin:0 auto 14px;max-width:520px;font-size:14px;line-height:21px;color:#F4FAEF}
     .ctaButtons{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
     .depositBtn,.whatsappGuestBtn{display:inline-block;width:220px;max-width:100%;padding:13px 10px;border-radius:14px;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;text-align:center}
@@ -154,7 +154,7 @@
             <h2 class="panelTitle">Guest and Trip</h2>
             <div class="field">
               <label for="guestName">Guest name</label>
-              <input id="guestName" type="text" placeholder="Matt" />
+              <input id="guestName" type="text" placeholder="Name" />
             </div>
             <div class="field">
               <label for="tripTitle">Itinerary title</label>
@@ -262,6 +262,28 @@
       const TEST_WHATSAPP_NUMBER = '593969076501';
       const STORAGE_KEY = 'mbw_itinerary_generator_v1';
       const SERVICE_TYPES = ['Transportation','Full-Day Tour','Half-Day Tour','Birdwatching Tour','Night Walk','Activity','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'];
+      const PRODUCT_OPTIONS = [
+        'MBW002 - Private Birdwatching Tour',
+        'MBW004 - Jewels of the Morning Forest',
+        'MBW005 - Andean Cock-of-the-Rock Dawn Tour',
+        'MBW006 - Quest for Five Toucans Full Day',
+        'Night Walk',
+        'Waterfall Tour / Hike',
+        'Chocolate Tour',
+        'Transportation',
+        'Other'
+      ];
+      const PRODUCT_LABELS_ES = {
+        'MBW002 - Private Birdwatching Tour':'MBW002 - Tour privado de observación de aves',
+        'MBW004 - Jewels of the Morning Forest':'MBW004 - Joyas del bosque matutino',
+        'MBW005 - Andean Cock-of-the-Rock Dawn Tour':'MBW005 - Tour al amanecer del gallito de la peña andino',
+        'MBW006 - Quest for Five Toucans Full Day':'MBW006 - Búsqueda de cinco tucanes, día completo',
+        'Night Walk':'Caminata nocturna',
+        'Waterfall Tour / Hike':'Tour de cascadas / caminata',
+        'Chocolate Tour':'Tour de chocolate',
+        'Transportation':'Transporte',
+        'Other':'Otro'
+      };
 
       const SERVICE_TYPE_LABELS = {
         en:{'Transportation':'Transportation','Full-Day Tour':'Full-Day Tour','Half-Day Tour':'Half-Day Tour','Birdwatching Tour':'Birdwatching Tour','Night Walk':'Night Walk','Activity':'Activity','Accommodation':'Accommodation','Meal':'Meal','Free Time':'Free Time','Pickup':'Pickup','Drop-off':'Drop-off','Custom':'Custom'},
@@ -309,6 +331,31 @@
         const text = String(value || '');
         const map = language === 'es' ? SAMPLE_TRANSLATIONS.enToEs : SAMPLE_TRANSLATIONS.esToEn;
         return map[text] || text;
+      }
+      function productOptionLabel(value, language='en'){
+        if(language === 'es') return PRODUCT_LABELS_ES[value] || value;
+        return value;
+      }
+      function inferProductPreset(item){
+        if(item && PRODUCT_OPTIONS.includes(item.productPreset)) return item.productPreset;
+        const name = String(item && item.name || '');
+        if(PRODUCT_OPTIONS.includes(name)) return name;
+        const legacyAliases = {
+          'Secure door-to-door transportation':'Transportation',
+          'Transporte seguro puerta a puerta':'Transportation',
+          'Full-Day Mindo Tour':'MBW006 - Quest for Five Toucans Full Day',
+          'Tour de día completo en Mindo':'MBW006 - Quest for Five Toucans Full Day',
+          'Night Walk Tour':'Night Walk',
+          'Tour de caminata nocturna':'Night Walk'
+        };
+        if(legacyAliases[name]) return legacyAliases[name];
+        const translatedMatch = Object.keys(PRODUCT_LABELS_ES).find(key => PRODUCT_LABELS_ES[key] === name);
+        return translatedMatch || 'Other';
+      }
+      function productDisplayName(item, language='en'){
+        const preset = inferProductPreset(item);
+        if(preset !== 'Other') return productOptionLabel(preset,language);
+        return translateKnownText(item && item.name,language);
       }
 
       const $ = (id) => document.getElementById(id);
@@ -371,9 +418,12 @@
         toast.timer = setTimeout(() => el.classList.remove('show'),2200);
       }
       function defaultItem(overrides = {}){
-        return Object.assign({
-          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Full-Day Tour', name:'', note:'', quantity:1, unitPrice:0
+        const item = Object.assign({
+          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Full-Day Tour', productPreset:'Other', name:'', note:'', quantity:1, unitPrice:0
         },overrides);
+        item.productPreset = inferProductPreset(item);
+        if(item.productPreset !== 'Other') item.name = item.productPreset;
+        return item;
       }
       function addItem(overrides = {}){
         state.items.push(defaultItem(overrides));
@@ -404,6 +454,19 @@
       function updateItem(id,field,value){
         const item = state.items.find(entry => entry.id === id);
         if(!item) return;
+        if(field === 'productPreset'){
+          item.productPreset = value;
+          item.name = value === 'Other' ? '' : value;
+          renderEditors();
+          updateAll(false);
+          return;
+        }
+        if(field === 'customName'){
+          item.productPreset = 'Other';
+          item.name = value;
+          updateAll(false);
+          return;
+        }
         item[field] = ['quantity','unitPrice'].includes(field) ? Number(value || 0) : value;
         updateAll(false);
       }
@@ -437,8 +500,12 @@
             </div>
             <div class="field">
               <label>Product or service name</label>
-              <input type="text" data-field="name" value="${escapeHtml(item.name)}" placeholder="Full-Day Birdwatching Tour" />
+              <select data-field="productPreset">${PRODUCT_OPTIONS.map(option => `<option value="${escapeHtml(option)}" ${inferProductPreset(item)===option?'selected':''}>${escapeHtml(productOptionLabel(option,$('language').value))}</option>`).join('')}</select>
             </div>
+            ${inferProductPreset(item) === 'Other' ? `<div class="field">
+              <label>Other product or service</label>
+              <input type="text" data-field="customName" value="${escapeHtml(item.name)}" placeholder="Type the product or service name" />
+            </div>` : ''}
             <div class="two">
               <div class="field">
                 <label>Start time</label>
@@ -506,7 +573,7 @@
       function itineraryContent(data,{standalone=false}={}){
         const c = copyFor(data);
         const sum = totals(data);
-        const validItems = data.items.filter(item => item.name || item.type || item.note);
+        const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
         const dayMarkup = groupedItems(validItems).map(([date,items]) => `
           <section class="dayBlock">
             <h3 class="dayTitle">${escapeHtml(formatDate(date,data.language))}</h3>
@@ -518,7 +585,7 @@
                     <div class="timeBox">${escapeHtml(formatTime(item.startTime,data.language))}${item.duration ? `<small>${escapeHtml(translateKnownText(item.duration,data.language))}</small>` : ''}</div>
                     <div>
                       <span class="serviceType">${escapeHtml(serviceTypeLabel(item.type,data.language))}</span>
-                      <div class="serviceName">${escapeHtml(translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language) || c.item)}</div>
+                      <div class="serviceName">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language) || c.item)}</div>
                       ${item.note ? `<p class="serviceNote">${escapeHtml(translateKnownText(item.note,data.language))}</p>` : ''}
                     </div>
                     ${data.showItemPrices && lineTotal ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
@@ -530,7 +597,7 @@
         const pricingLines = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0) !== 0).map(item => {
           const total = Number(item.quantity || 0) * Number(item.unitPrice || 0);
           const qty = Number(item.quantity || 0);
-          return `<div class="priceLine"><span>${escapeHtml(translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language))}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
+          return `<div class="priceLine"><span>${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
         }).join('');
 
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
@@ -624,7 +691,7 @@
     .priceLine.total{margin-top:8px;padding-top:13px;border-top:2px solid rgba(13,89,37,.55);border-bottom:0;font-size:18px;font-weight:950;color:#0D5925}
     .guestNote{margin:0 20px 10px;padding:18px 20px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}
     .depositBox{text-align:center;margin:0 20px 10px;padding:22px 20px;background:#0D5925;color:#fff}
-    .depositBox h3{margin:0 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px}
+    .depositBox h3{margin:0 0 8px;color:#ffffff!important;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;font-weight:700}
     .depositBox p{margin:0 auto 14px;max-width:520px;font-size:14px;line-height:21px;color:#F4FAEF}
     .ctaButtons{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
     .depositBtn,.whatsappGuestBtn{display:inline-block;width:220px;max-width:100%;padding:13px 10px;border-radius:14px;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;text-align:center}
@@ -658,14 +725,14 @@
             const time = formatTime(item.startTime,data.language);
             const durationText = translateKnownText(item.duration,data.language);
             const duration = durationText ? ` (${durationText})` : '';
-            lines.push(`${time} - ${translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language)}${duration}`);
+            lines.push(`${time} - ${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}${duration}`);
           });
           lines.push('');
         });
         const priced = data.items.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
         if(priced.length){
           lines.push(`${c.pricingLabel}:`);
-          priced.forEach(item => lines.push(`${translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
+          priced.forEach(item => lines.push(`${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
@@ -687,7 +754,7 @@
           });
           $('showDeposit').checked = data.showDeposit !== false;
           $('showItemPrices').checked = data.showItemPrices !== false;
-          state.items = Array.isArray(data.items) ? data.items.map(item => ({...defaultItem(),...item,id:item.id || uid()})) : [];
+          state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
           return true;
         }catch(error){ return false; }
       }
@@ -755,7 +822,8 @@
         if(!$('closingText').value.trim() || $('closingText').value === other.defaultClosing) $('closingText').value = next.defaultClosing;
         state.items = state.items.map(item => ({
           ...item,
-          name:translateKnownText(item.name,language),
+          name:inferProductPreset(item) === 'Other' ? translateKnownText(item.name,language) : inferProductPreset(item),
+          productPreset:inferProductPreset(item),
           duration:translateKnownText(item.duration,language),
           note:translateKnownText(item.note,language)
         }));
@@ -807,18 +875,18 @@
         $('showDeposit').checked=true;
         $('showItemPrices').checked=true;
         state.items=[];
-        addItem({type:'Transportation',name:'Secure door-to-door transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
-        addItem({type:'Full-Day Tour',name:'Full-Day Mindo Tour',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'});
-        addItem({type:'Night Walk',name:'Night Walk Tour',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'});
+        addItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
+        addItem({type:'Full-Day Tour',productPreset:'MBW006 - Quest for Five Toucans Full Day',name:'MBW006 - Quest for Five Toucans Full Day',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'});
+        addItem({type:'Night Walk',productPreset:'Night Walk',name:'Night Walk',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'});
         toast('Itinerary reset.');
       });
 
       const loaded = loadState();
       if(!loaded || !state.items.length){
         state.items=[];
-        state.items.push(defaultItem({type:'Transportation',name:'Secure door-to-door transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'}));
-        state.items.push(defaultItem({type:'Full-Day Tour',name:'Full-Day Mindo Tour',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'}));
-        state.items.push(defaultItem({type:'Night Walk',name:'Night Walk Tour',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'}));
+        state.items.push(defaultItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'}));
+        state.items.push(defaultItem({type:'Full-Day Tour',productPreset:'MBW006 - Quest for Five Toucans Full Day',name:'MBW006 - Quest for Five Toucans Full Day',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'}));
+        state.items.push(defaultItem({type:'Night Walk',productPreset:'Night Walk',name:'Night Walk',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'}));
       }
       renderEditors();
       applyDateMinimums();
