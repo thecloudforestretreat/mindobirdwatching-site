@@ -1,1 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Itinerary Generator</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/itinerary-generator/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <style>
+    :root{
+      --green:#0D5925;
+      --green-dark:#083f1b;
+      --bg:#C7DAAC;
+      --soft:#F6FAF0;
+      --ink:#071923;
+      --muted:rgba(7,25,35,.67);
+      --line:rgba(7,25,35,.14);
+      --shadow:0 18px 55px rgba(7,25,35,.10);
+      --radius:18px;
+      --danger:#b42318;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+    button,input,select,textarea{font:inherit}
+    .shell{max-width:1760px;margin:0 auto;padding:22px}
+    .pageCard{background:linear-gradient(180deg,rgba(246,250,240,.95),rgba(237,244,228,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .topBar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+    .titleWrap{display:flex;gap:12px;align-items:flex-start;min-width:0}
+    .brandMark{width:54px;height:54px;object-fit:contain;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(7,25,35,.12);flex:0 0 auto}
+    h1{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:29px;line-height:1.05;letter-spacing:-.03em}
+    .titleWrap p{margin:6px 0 0;max-width:82ch;color:var(--muted);font-size:13px;line-height:1.45;font-weight:750}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    button,.buttonLink{appearance:none;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.9);color:var(--ink);min-height:44px;padding:11px 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:900;text-decoration:none;cursor:pointer;white-space:nowrap;box-shadow:0 8px 20px rgba(7,25,35,.06)}
+    button.primary,.buttonLink.primary{background:var(--green);color:#fff;border-color:rgba(13,89,37,.35)}
+    button.danger{color:var(--danger)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .appGrid{display:grid;grid-template-columns:minmax(380px,520px) minmax(640px,1fr);gap:18px;align-items:start}
+    .panel{background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}
+    .editorPanel{max-height:calc(100vh - 36px);overflow:auto;position:sticky;top:18px}
+    .panelTitle{margin:0 0 12px;color:var(--green);font-size:14px;line-height:1.2;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
+    .section{padding-top:14px;margin-top:14px;border-top:1px solid var(--line)}
+    .section:first-of-type{padding-top:0;margin-top:0;border-top:0}
+    .field{display:grid;gap:6px;margin-bottom:11px;min-width:0}
+    label{color:var(--muted);font-size:12px;line-height:1.25;font-weight:950;text-transform:uppercase;letter-spacing:.04em}
+    input,select,textarea{width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.94);color:var(--ink);padding:11px 12px;font-weight:750;outline:none}
+    textarea{min-height:82px;resize:vertical;line-height:1.45}
+    input:focus,select:focus,textarea:focus{border-color:rgba(13,89,37,.55);box-shadow:0 0 0 3px rgba(13,89,37,.12)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .hint{margin:6px 0 0;color:rgba(7,25,35,.58);font-size:12px;line-height:1.4;font-weight:750}
+    .itemEditor{border:1px solid var(--line);border-radius:16px;background:rgba(246,250,240,.8);padding:12px;margin-bottom:10px}
+    .itemHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .itemHead strong{color:var(--green);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+    .itemActions{display:flex;gap:6px}
+    .miniBtn{min-height:34px;padding:7px 10px;border-radius:11px;font-size:12px;box-shadow:none}
+    .summaryBox{border:1px solid rgba(13,89,37,.2);border-radius:15px;background:rgba(199,218,172,.22);padding:12px;margin-top:10px}
+    .summaryRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 0;font-weight:850}
+    .summaryRow.total{margin-top:5px;padding-top:10px;border-top:1px solid rgba(13,89,37,.2);color:var(--green);font-size:18px;font-weight:950}
+    .checkRow{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.72);margin-bottom:9px}
+    .checkRow input{width:18px;height:18px;flex:0 0 auto;margin-top:1px;accent-color:var(--green)}
+    .checkRow span{font-size:12.5px;line-height:1.35;font-weight:800;color:var(--muted)}
+    .previewTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+    .previewTop h2{margin:0;color:var(--green);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+    .previewWrap{background:#dfe9cf;border:1px solid var(--line);border-radius:18px;padding:18px;overflow:auto;max-height:calc(100vh - 180px)}
+    .guestPage{width:816px;min-height:1056px;margin:0 auto;background:#fff;color:#1d2a25;box-shadow:0 18px 50px rgba(7,25,35,.16);font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+    .guestHero{height:260px;position:relative;background:#1b4e2b;overflow:hidden}
+    .guestHero img{width:100%;height:100%;object-fit:cover;display:block}
+    .guestHero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.56))}
+    .heroText{position:absolute;z-index:2;left:42px;right:42px;bottom:28px;color:#fff}
+    .heroText .eyebrow{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}
+    .heroText h2{margin:7px 0 0;font-family:Georgia,"Times New Roman",serif;font-size:38px;line-height:1.08}
+    .guestBody{padding:38px 42px 44px}
+    .intro{font-size:15px;line-height:1.65;margin:0 0 22px}
+    .tripMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+    .metaCard{border:1px solid #dce6da;border-radius:14px;padding:12px;background:#f7faf5}
+    .metaCard span{display:block;color:#68756e;font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:900}
+    .metaCard strong{display:block;margin-top:5px;color:#0D5925;font-size:13px;line-height:1.35}
+    .dayBlock{margin:0 0 24px}
+    .dayTitle{display:flex;align-items:center;gap:10px;margin-bottom:12px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:23px}
+    .dayTitle::after{content:"";height:1px;background:#d8e3d5;flex:1}
+    .timeline{display:grid;gap:10px}
+    .timelineItem{display:grid;grid-template-columns:100px minmax(0,1fr) auto;gap:14px;align-items:start;border:1px solid #dce6da;border-radius:14px;padding:14px;background:#fff}
+    .timeBox{color:#0D5925;font-weight:950;font-size:13px;line-height:1.35}
+    .timeBox small{display:block;margin-top:3px;color:#718077;font-size:11px;font-weight:800}
+    .serviceType{display:inline-flex;padding:4px 7px;border-radius:999px;background:#e9f4e4;color:#0D5925;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:900}
+    .serviceName{margin:6px 0 2px;font-size:15px;line-height:1.35;font-weight:950;color:#17241f}
+    .serviceNote{margin:0;color:#637169;font-size:12px;line-height:1.45;font-weight:700;white-space:pre-wrap}
+    .itemPrice{white-space:nowrap;color:#0D5925;font-weight:950;font-size:14px;padding-top:3px}
+    .pricingCard{border:2px solid #b8d3ad;border-radius:18px;padding:18px;background:#f6faf3;margin-top:28px}
+    .pricingCard h3{margin:0 0 12px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:22px}
+    .priceLine{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px}
+    .priceLine:last-of-type{border-bottom:0}
+    .priceLine.total{margin-top:8px;padding-top:13px;border-top:2px solid #8db680;border-bottom:0;font-size:18px;font-weight:950;color:#0D5925}
+    .guestNote{margin-top:22px;padding:15px;border-left:4px solid #0D5925;background:#f3f8ef;border-radius:0 12px 12px 0;color:#4d5d54;font-size:13px;line-height:1.55;white-space:pre-wrap}
+    .depositBox{text-align:center;margin-top:26px;padding:20px;border-radius:18px;background:#0D5925;color:#fff}
+    .depositBox h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:24px}
+    .depositBox p{margin:8px auto 15px;max-width:520px;font-size:13px;line-height:1.5;color:rgba(255,255,255,.88)}
+    .depositBtn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border-radius:999px;background:#fff;color:#0D5925;text-decoration:none;font-weight:950}
+    .guestFooter{margin-top:28px;padding-top:18px;border-top:1px solid #dbe4d8;text-align:center;color:#68756e;font-size:11px;line-height:1.55}
+    .emptyPreview{padding:36px;border:1px dashed #a9bca4;border-radius:16px;text-align:center;color:#637169;font-weight:800;background:#f7faf5}
+    .toast{position:fixed;right:20px;bottom:20px;z-index:9999;max-width:360px;padding:12px 15px;border-radius:13px;background:#071923;color:#fff;box-shadow:0 18px 44px rgba(0,0,0,.2);font-weight:850;font-size:13px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s ease}
+    .toast.show{opacity:1;transform:translateY(0)}
+    @media(max-width:1180px){.appGrid{grid-template-columns:1fr}.editorPanel{position:static;max-height:none}.previewWrap{max-height:none}}
+    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:816px}.titleWrap p{display:none}h1{font-size:24px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="pageCard">
+      <header class="topBar">
+        <div class="titleWrap">
+          <img class="brandMark" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
+          <div>
+            <h1>Itinerary Generator</h1>
+            <p>Create a polished guest itinerary with dates, service times, duration, notes, pricing, a $100 tour deposit button, downloadable HTML, and a shorter WhatsApp message.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" id="resetBtn" class="danger">Reset</button>
+          <button type="button" id="copyWhatsAppBtn">Copy WhatsApp</button>
+          <button type="button" id="openWhatsAppBtn">Open WhatsApp</button>
+          <button type="button" id="downloadBtn" class="primary">Download HTML</button>
+        </div>
+      </header>
 
+      <div class="appGrid">
+        <section class="panel editorPanel" aria-label="Itinerary editor">
+          <div class="section">
+            <h2 class="panelTitle">Guest and Trip</h2>
+            <div class="field">
+              <label for="guestName">Guest name</label>
+              <input id="guestName" type="text" placeholder="Matt" />
+            </div>
+            <div class="field">
+              <label for="tripTitle">Itinerary title</label>
+              <input id="tripTitle" type="text" value="Your Mindo Tour Itinerary" />
+            </div>
+            <div class="two">
+              <div class="field">
+                <label for="startDate">Start date</label>
+                <input id="startDate" type="date" />
+              </div>
+              <div class="field">
+                <label for="endDate">End date</label>
+                <input id="endDate" type="date" />
+              </div>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label for="guestCount">Number of guests</label>
+                <input id="guestCount" type="number" min="1" step="1" value="2" />
+              </div>
+              <div class="field">
+                <label for="whatsappNumber">Guest WhatsApp number</label>
+                <input id="whatsappNumber" type="tel" placeholder="Country code + number" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="openingText">Opening message</label>
+              <textarea id="openingText">Please review the proposed itinerary below and let me know whether this matches what you have in mind.</textarea>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2 class="panelTitle">Services and Products</h2>
+            <div id="itemsEditor"></div>
+            <button type="button" id="addItemBtn" class="primary">+ Add Service</button>
+            <p class="hint">Add transportation, tours, activities, meals, accommodation, or any custom itinerary item.</p>
+          </div>
+
+          <div class="section">
+            <h2 class="panelTitle">Pricing and Notes</h2>
+            <div class="two">
+              <div class="field">
+                <label for="discount">Discount or adjustment</label>
+                <input id="discount" type="number" step="0.01" value="0" />
+              </div>
+              <div class="field">
+                <label for="currency">Currency</label>
+                <select id="currency">
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="pricingNote">Pricing note</label>
+              <textarea id="pricingNote">Tours are priced at a minimum of 2 people. Availability and final pickup or drop-off details can be confirmed before the tour.</textarea>
+            </div>
+            <div class="field">
+              <label for="closingText">Closing message</label>
+              <textarea id="closingText">Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.</textarea>
+            </div>
+            <label class="checkRow">
+              <input id="showDeposit" type="checkbox" checked />
+              <span>Show the $100 Stripe tour deposit section in the guest itinerary.</span>
+            </label>
+            <label class="checkRow">
+              <input id="showItemPrices" type="checkbox" checked />
+              <span>Show individual service prices beside timeline items.</span>
+            </label>
+            <div class="summaryBox">
+              <div class="summaryRow"><span>Services subtotal</span><strong id="subtotalValue">$0.00</strong></div>
+              <div class="summaryRow"><span>Adjustment</span><strong id="adjustmentValue">$0.00</strong></div>
+              <div class="summaryRow total"><span>Total</span><strong id="totalValue">$0.00</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Guest itinerary preview">
+          <div class="previewTop">
+            <h2>Live Guest Preview</h2>
+            <span class="hint">The downloaded HTML matches this content.</span>
+          </div>
+          <div class="previewWrap">
+            <article id="guestPreview" class="guestPage"></article>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const HEADER_IMAGE = 'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg';
+      const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
+      const STORAGE_KEY = 'mbw_itinerary_generator_v1';
+      const SERVICE_TYPES = ['Transportation','Full-Day Tour','Half-Day Tour','Birdwatching Tour','Night Walk','Activity','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'];
+
+      const $ = (id) => document.getElementById(id);
+      const state = { items: [] };
+
+      function uid(){ return 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+      function escapeHtml(value){
+        return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+      }
+      function money(value){
+        const number = Number(value || 0);
+        return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(number);
+      }
+      function formatDate(value){
+        if(!value) return 'Date to be confirmed';
+        const date = new Date(value + 'T12:00:00');
+        return new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(date);
+      }
+      function formatShortDate(value){
+        if(!value) return 'Date TBD';
+        const date = new Date(value + 'T12:00:00');
+        return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric'}).format(date);
+      }
+      function formatTime(value){
+        if(!value) return 'Time TBD';
+        const [hours,minutes] = value.split(':').map(Number);
+        const date = new Date(2000,0,1,hours,minutes || 0);
+        return new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(date);
+      }
+      function toast(message){
+        const el = $('toast');
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => el.classList.remove('show'),2200);
+      }
+      function defaultItem(overrides = {}){
+        return Object.assign({
+          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Full-Day Tour', name:'', note:'', quantity:1, unitPrice:0
+        },overrides);
+      }
+      function addItem(overrides = {}){
+        state.items.push(defaultItem(overrides));
+        renderEditors();
+        updateAll();
+      }
+      function removeItem(id){
+        state.items = state.items.filter(item => item.id !== id);
+        renderEditors();
+        updateAll();
+      }
+      function duplicateItem(id){
+        const source = state.items.find(item => item.id === id);
+        if(!source) return;
+        const index = state.items.findIndex(item => item.id === id);
+        state.items.splice(index + 1,0,{...source,id:uid()});
+        renderEditors();
+        updateAll();
+      }
+      function moveItem(id,direction){
+        const index = state.items.findIndex(item => item.id === id);
+        const next = index + direction;
+        if(index < 0 || next < 0 || next >= state.items.length) return;
+        [state.items[index],state.items[next]] = [state.items[next],state.items[index]];
+        renderEditors();
+        updateAll();
+      }
+      function updateItem(id,field,value){
+        const item = state.items.find(entry => entry.id === id);
+        if(!item) return;
+        item[field] = ['quantity','unitPrice'].includes(field) ? Number(value || 0) : value;
+        updateAll(false);
+      }
+
+      function renderEditors(){
+        const container = $('itemsEditor');
+        if(!state.items.length){
+          container.innerHTML = '<div class="emptyPreview" style="margin-bottom:10px">No services added yet.</div>';
+          return;
+        }
+        container.innerHTML = state.items.map((item,index) => `
+          <div class="itemEditor" data-id="${item.id}">
+            <div class="itemHead">
+              <strong>Service ${index + 1}</strong>
+              <div class="itemActions">
+                <button type="button" class="miniBtn" data-action="up" ${index===0?'disabled':''}>↑</button>
+                <button type="button" class="miniBtn" data-action="down" ${index===state.items.length-1?'disabled':''}>↓</button>
+                <button type="button" class="miniBtn" data-action="duplicate">Duplicate</button>
+                <button type="button" class="miniBtn danger" data-action="remove">Remove</button>
+              </div>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label>Date</label>
+                <input type="date" data-field="date" value="${escapeHtml(item.date)}" />
+              </div>
+              <div class="field">
+                <label>Service type</label>
+                <select data-field="type">${SERVICE_TYPES.map(type => `<option value="${escapeHtml(type)}" ${type===item.type?'selected':''}>${escapeHtml(type)}</option>`).join('')}</select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Product or service name</label>
+              <input type="text" data-field="name" value="${escapeHtml(item.name)}" placeholder="Full-Day Birdwatching Tour" />
+            </div>
+            <div class="two">
+              <div class="field">
+                <label>Start time</label>
+                <input type="time" data-field="startTime" value="${escapeHtml(item.startTime)}" />
+              </div>
+              <div class="field">
+                <label>Duration</label>
+                <input type="text" data-field="duration" value="${escapeHtml(item.duration)}" placeholder="10 hours or 7:00 PM-9:00 PM" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Description or guest note</label>
+              <textarea data-field="note" placeholder="Pickup location, what is included, or any timing details.">${escapeHtml(item.note)}</textarea>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label>Quantity</label>
+                <input type="number" min="0" step="1" data-field="quantity" value="${escapeHtml(item.quantity)}" />
+              </div>
+              <div class="field">
+                <label>Unit cost</label>
+                <input type="number" min="0" step="0.01" data-field="unitPrice" value="${escapeHtml(item.unitPrice)}" />
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function getFormData(){
+        return {
+          guestName:$('guestName').value.trim(),
+          tripTitle:$('tripTitle').value.trim(),
+          startDate:$('startDate').value,
+          endDate:$('endDate').value,
+          guestCount:Number($('guestCount').value || 1),
+          whatsappNumber:$('whatsappNumber').value.trim(),
+          openingText:$('openingText').value.trim(),
+          pricingNote:$('pricingNote').value.trim(),
+          closingText:$('closingText').value.trim(),
+          discount:Number($('discount').value || 0),
+          showDeposit:$('showDeposit').checked,
+          showItemPrices:$('showItemPrices').checked,
+          items:state.items.map(item => ({...item}))
+        };
+      }
+      function totals(data){
+        const subtotal = data.items.reduce((sum,item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),0);
+        return {subtotal,adjustment:Number(data.discount || 0),total:subtotal + Number(data.discount || 0)};
+      }
+      function groupedItems(items){
+        const groups = new Map();
+        items.forEach(item => {
+          const key = item.date || '';
+          if(!groups.has(key)) groups.set(key,[]);
+          groups.get(key).push(item);
+        });
+        return [...groups.entries()].sort((a,b) => {
+          if(!a[0]) return 1;
+          if(!b[0]) return -1;
+          return a[0].localeCompare(b[0]);
+        });
+      }
+
+      function itineraryContent(data,{standalone=false}={}){
+        const sum = totals(data);
+        const validItems = data.items.filter(item => item.name || item.type || item.note);
+        const dayMarkup = groupedItems(validItems).map(([date,items]) => `
+          <section class="dayBlock">
+            <h3 class="dayTitle">${escapeHtml(formatDate(date))}</h3>
+            <div class="timeline">
+              ${items.map(item => {
+                const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
+                return `
+                  <div class="timelineItem">
+                    <div class="timeBox">${escapeHtml(formatTime(item.startTime))}${item.duration ? `<small>${escapeHtml(item.duration)}</small>` : ''}</div>
+                    <div>
+                      <span class="serviceType">${escapeHtml(item.type || 'Service')}</span>
+                      <div class="serviceName">${escapeHtml(item.name || item.type || 'Itinerary item')}</div>
+                      ${item.note ? `<p class="serviceNote">${escapeHtml(item.note)}</p>` : ''}
+                    </div>
+                    ${data.showItemPrices && lineTotal ? `<div class="itemPrice">${money(lineTotal)}</div>` : '<div></div>'}
+                  </div>`;
+              }).join('')}
+            </div>
+          </section>`).join('');
+
+        const pricingLines = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0) !== 0).map(item => {
+          const total = Number(item.quantity || 0) * Number(item.unitPrice || 0);
+          const qty = Number(item.quantity || 0);
+          return `<div class="priceLine"><span>${escapeHtml(item.name || item.type)}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total)}</strong></div>`;
+        }).join('');
+
+        const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
+          ? `${formatShortDate(data.startDate)} - ${formatShortDate(data.endDate)}`
+          : formatShortDate(data.startDate || data.endDate);
+
+        return `
+          <div class="guestHero">
+            <img src="${HEADER_IMAGE}" alt="Mindo cloud forest birdwatching tour" />
+            <div class="heroText">
+              <div class="eyebrow">Mindo Bird Watching</div>
+              <h2>${escapeHtml(data.tripTitle || 'Your Mindo Tour Itinerary')}</h2>
+            </div>
+          </div>
+          <div class="guestBody">
+            <p class="intro">Hi ${escapeHtml(data.guestName || 'Guest')},</p>
+            ${data.openingText ? `<p class="intro">${escapeHtml(data.openingText)}</p>` : ''}
+            <div class="tripMeta">
+              <div class="metaCard"><span>Guest</span><strong>${escapeHtml(data.guestName || 'To be confirmed')}</strong></div>
+              <div class="metaCard"><span>Travel dates</span><strong>${escapeHtml(dateRange)}</strong></div>
+              <div class="metaCard"><span>Guests</span><strong>${escapeHtml(data.guestCount || 1)}</strong></div>
+            </div>
+            ${dayMarkup || '<div class="emptyPreview">Add at least one service to build the itinerary.</div>'}
+            ${pricingLines ? `
+              <section class="pricingCard">
+                <h3>Pricing Breakdown</h3>
+                ${pricingLines}
+                ${sum.adjustment ? `<div class="priceLine"><span>Adjustment</span><strong>${money(sum.adjustment)}</strong></div>` : ''}
+                <div class="priceLine total"><span>Total</span><strong>${money(sum.total)}</strong></div>
+              </section>` : ''}
+            ${data.pricingNote ? `<div class="guestNote">${escapeHtml(data.pricingNote)}</div>` : ''}
+            ${data.closingText ? `<div class="guestNote">${escapeHtml(data.closingText)}</div>` : ''}
+            ${data.showDeposit ? `
+              <section class="depositBox">
+                <h3>Secure Your Tour</h3>
+                <p>Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.</p>
+                <a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">Pay $100 Tour Deposit</a>
+              </section>` : ''}
+            <footer class="guestFooter">
+              Mindo Bird Watching<br />
+              Mindo, Ecuador<br />
+              Reply by email or WhatsApp if you have any questions.
+            </footer>
+          </div>`;
+      }
+
+      function buildStandaloneHtml(data){
+        const content = itineraryContent(data,{standalone:true});
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(data.tripTitle || 'Mindo Tour Itinerary')}</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#e6eedb;color:#1d2a25;font-family:Arial,Helvetica,sans-serif;padding:24px}.guestPage{max-width:816px;margin:0 auto;background:#fff;box-shadow:0 18px 50px rgba(7,25,35,.16);overflow:hidden}.guestHero{height:260px;position:relative;background:#1b4e2b;overflow:hidden}.guestHero img{width:100%;height:100%;object-fit:cover;display:block}.guestHero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.56))}.heroText{position:absolute;z-index:2;left:42px;right:42px;bottom:28px;color:#fff}.heroText .eyebrow{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.heroText h2{margin:7px 0 0;font-family:Georgia,"Times New Roman",serif;font-size:38px;line-height:1.08}.guestBody{padding:38px 42px 44px}.intro{font-size:15px;line-height:1.65;margin:0 0 22px}.tripMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}.metaCard{border:1px solid #dce6da;border-radius:14px;padding:12px;background:#f7faf5}.metaCard span{display:block;color:#68756e;font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:900}.metaCard strong{display:block;margin-top:5px;color:#0D5925;font-size:13px;line-height:1.35}.dayBlock{margin:0 0 24px}.dayTitle{display:flex;align-items:center;gap:10px;margin-bottom:12px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:23px}.dayTitle:after{content:"";height:1px;background:#d8e3d5;flex:1}.timeline{display:grid;gap:10px}.timelineItem{display:grid;grid-template-columns:100px minmax(0,1fr) auto;gap:14px;align-items:start;border:1px solid #dce6da;border-radius:14px;padding:14px;background:#fff}.timeBox{color:#0D5925;font-weight:950;font-size:13px;line-height:1.35}.timeBox small{display:block;margin-top:3px;color:#718077;font-size:11px;font-weight:800}.serviceType{display:inline-flex;padding:4px 7px;border-radius:999px;background:#e9f4e4;color:#0D5925;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:900}.serviceName{margin:6px 0 2px;font-size:15px;line-height:1.35;font-weight:950;color:#17241f}.serviceNote{margin:0;color:#637169;font-size:12px;line-height:1.45;font-weight:700;white-space:pre-wrap}.itemPrice{white-space:nowrap;color:#0D5925;font-weight:950;font-size:14px;padding-top:3px}.pricingCard{border:2px solid #b8d3ad;border-radius:18px;padding:18px;background:#f6faf3;margin-top:28px}.pricingCard h3{margin:0 0 12px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:22px}.priceLine{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px}.priceLine:last-of-type{border-bottom:0}.priceLine.total{margin-top:8px;padding-top:13px;border-top:2px solid #8db680;border-bottom:0;font-size:18px;font-weight:950;color:#0D5925}.guestNote{margin-top:22px;padding:15px;border-left:4px solid #0D5925;background:#f3f8ef;border-radius:0 12px 12px 0;color:#4d5d54;font-size:13px;line-height:1.55;white-space:pre-wrap}.depositBox{text-align:center;margin-top:26px;padding:20px;border-radius:18px;background:#0D5925;color:#fff}.depositBox h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:24px}.depositBox p{margin:8px auto 15px;max-width:520px;font-size:13px;line-height:1.5;color:rgba(255,255,255,.88)}.depositBtn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border-radius:999px;background:#fff;color:#0D5925;text-decoration:none;font-weight:950}.guestFooter{margin-top:28px;padding-top:18px;border-top:1px solid #dbe4d8;text-align:center;color:#68756e;font-size:11px;line-height:1.55}.emptyPreview{padding:36px;border:1px dashed #a9bca4;border-radius:16px;text-align:center;color:#637169;font-weight:800;background:#f7faf5}@media(max-width:700px){body{padding:0}.guestPage{box-shadow:none}.guestHero{height:220px}.heroText{left:22px;right:22px;bottom:22px}.heroText h2{font-size:30px}.guestBody{padding:26px 20px 34px}.tripMeta{grid-template-columns:1fr}.timelineItem{grid-template-columns:78px minmax(0,1fr)}.itemPrice{grid-column:2}.dayTitle{font-size:20px}}
+  </style>
+</head>
+<body><article class="guestPage">${content}</article></body>
+</html>`;
+      }
+
+      function buildWhatsAppMessage(data){
+        const sum = totals(data);
+        const lines = [`Hi ${data.guestName || 'there'},`,'',`Here is the proposed itinerary for ${formatShortDate(data.startDate || data.endDate)}:`,''];
+        groupedItems(data.items.filter(item => item.name || item.type)).forEach(([date,items],groupIndex) => {
+          if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(formatShortDate(date));
+          items.forEach(item => {
+            const time = formatTime(item.startTime);
+            const duration = item.duration ? ` (${item.duration})` : '';
+            lines.push(`${time} - ${item.name || item.type}${duration}`);
+          });
+          lines.push('');
+        });
+        const priced = data.items.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
+        if(priced.length){
+          lines.push('Pricing:');
+          priced.forEach(item => lines.push(`${item.name || item.type}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0))}`));
+          if(sum.adjustment) lines.push(`Adjustment: ${money(sum.adjustment)}`);
+          lines.push(`Total: ${money(sum.total)}`,'');
+        }
+        if(data.showDeposit){
+          lines.push('You can secure the tour with the $100 deposit here:',DEPOSIT_LINK,'');
+        }
+        lines.push('Let me know if this looks good or if you would like any changes.');
+        return lines.join('\n');
+      }
+
+      function saveState(){
+        try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(getFormData())); }catch(error){}
+      }
+      function loadState(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return false;
+          const data = JSON.parse(raw);
+          ['guestName','tripTitle','startDate','endDate','guestCount','whatsappNumber','openingText','pricingNote','closingText','discount'].forEach(key => {
+            if($(key) && data[key] !== undefined) $(key).value = data[key];
+          });
+          $('showDeposit').checked = data.showDeposit !== false;
+          $('showItemPrices').checked = data.showItemPrices !== false;
+          state.items = Array.isArray(data.items) ? data.items.map(item => ({...defaultItem(),...item,id:item.id || uid()})) : [];
+          return true;
+        }catch(error){ return false; }
+      }
+      function updateAll(shouldRenderEditors=false){
+        if(shouldRenderEditors) renderEditors();
+        const data = getFormData();
+        const sum = totals(data);
+        $('subtotalValue').textContent = money(sum.subtotal);
+        $('adjustmentValue').textContent = money(sum.adjustment);
+        $('totalValue').textContent = money(sum.total);
+        $('guestPreview').innerHTML = itineraryContent(data);
+        saveState();
+      }
+
+      $('itemsEditor').addEventListener('input',event => {
+        const editor = event.target.closest('.itemEditor');
+        const field = event.target.dataset.field;
+        if(editor && field) updateItem(editor.dataset.id,field,event.target.value);
+      });
+      $('itemsEditor').addEventListener('click',event => {
+        const button = event.target.closest('button[data-action]');
+        if(!button) return;
+        const editor = button.closest('.itemEditor');
+        const id = editor.dataset.id;
+        const action = button.dataset.action;
+        if(action === 'remove') removeItem(id);
+        if(action === 'duplicate') duplicateItem(id);
+        if(action === 'up') moveItem(id,-1);
+        if(action === 'down') moveItem(id,1);
+      });
+      document.querySelector('.editorPanel').addEventListener('input',event => {
+        if(!event.target.closest('.itemEditor')) updateAll(false);
+      });
+      document.querySelector('.editorPanel').addEventListener('change',event => {
+        if(!event.target.closest('.itemEditor')) updateAll(false);
+      });
+      $('addItemBtn').addEventListener('click',() => addItem());
+      $('downloadBtn').addEventListener('click',() => {
+        const data = getFormData();
+        if(!data.guestName) toast('Add the guest name before downloading.');
+        const html = buildStandaloneHtml(data);
+        const blob = new Blob([html],{type:'text/html;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const safeName = (data.guestName || 'guest').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+        link.href = url;
+        link.download = `mindo-itinerary-${safeName || 'guest'}.html`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url),1000);
+        toast('Guest itinerary HTML downloaded.');
+      });
+      $('copyWhatsAppBtn').addEventListener('click',async() => {
+        const message = buildWhatsAppMessage(getFormData());
+        try{ await navigator.clipboard.writeText(message); toast('WhatsApp message copied.'); }
+        catch(error){ prompt('Copy this WhatsApp message:',message); }
+      });
+      $('openWhatsAppBtn').addEventListener('click',() => {
+        const data = getFormData();
+        const phone = data.whatsappNumber.replace(/\D/g,'');
+        const message = encodeURIComponent(buildWhatsAppMessage(data));
+        const url = phone ? `https://wa.me/${phone}?text=${message}` : `https://wa.me/?text=${message}`;
+        window.open(url,'_blank','noopener');
+      });
+      $('resetBtn').addEventListener('click',() => {
+        if(!confirm('Clear the current itinerary and start again?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        $('guestName').value='';
+        $('tripTitle').value='Your Mindo Tour Itinerary';
+        $('startDate').value='';
+        $('endDate').value='';
+        $('guestCount').value='2';
+        $('whatsappNumber').value='';
+        $('openingText').value='Please review the proposed itinerary below and let me know whether this matches what you have in mind.';
+        $('pricingNote').value='Tours are priced at a minimum of 2 people. Availability and final pickup or drop-off details can be confirmed before the tour.';
+        $('closingText').value='Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.';
+        $('discount').value='0';
+        $('showDeposit').checked=true;
+        $('showItemPrices').checked=true;
+        state.items=[];
+        addItem({type:'Transportation',name:'Secure door-to-door transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
+        addItem({type:'Full-Day Tour',name:'Full-Day Mindo Tour',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'});
+        addItem({type:'Night Walk',name:'Night Walk Tour',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'});
+        toast('Itinerary reset.');
+      });
+
+      const loaded = loadState();
+      if(!loaded || !state.items.length){
+        state.items=[];
+        state.items.push(defaultItem({type:'Transportation',name:'Secure door-to-door transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'}));
+        state.items.push(defaultItem({type:'Full-Day Tour',name:'Full-Day Mindo Tour',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'}));
+        state.items.push(defaultItem({type:'Night Walk',name:'Night Walk Tour',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'}));
+      }
+      renderEditors();
+      updateAll(false);
+    })();
+  </script>
+</body>
+</html>
