@@ -18,7 +18,7 @@
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
   // This is the only WhatsApp number stored in the site files.
-  var whatsappNumberDigits = "13054585402";
+  var whatsappNumberDigits = "593969076501";
 
   window.MBW_SITE_CONFIG.contact = {
     whatsappNumberDigits: whatsappNumberDigits,
