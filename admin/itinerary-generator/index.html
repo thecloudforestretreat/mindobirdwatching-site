@@ -164,7 +164,7 @@
               <label for="language">Output language</label>
               <select id="language">
                 <option value="en">English</option>
-                <option value="es">Español (Ecuador)</option>
+                <option value="es">Español</option>
               </select>
             </div>
             <div class="two">
@@ -263,15 +263,53 @@
       const STORAGE_KEY = 'mbw_itinerary_generator_v1';
       const SERVICE_TYPES = ['Transportation','Full-Day Tour','Half-Day Tour','Birdwatching Tour','Night Walk','Activity','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'];
 
+      const SERVICE_TYPE_LABELS = {
+        en:{'Transportation':'Transportation','Full-Day Tour':'Full-Day Tour','Half-Day Tour':'Half-Day Tour','Birdwatching Tour':'Birdwatching Tour','Night Walk':'Night Walk','Activity':'Activity','Accommodation':'Accommodation','Meal':'Meal','Free Time':'Free Time','Pickup':'Pickup','Drop-off':'Drop-off','Custom':'Custom'},
+        es:{'Transportation':'Transporte','Full-Day Tour':'Tour de día completo','Half-Day Tour':'Tour de medio día','Birdwatching Tour':'Tour de observación de aves','Night Walk':'Caminata nocturna','Activity':'Actividad','Accommodation':'Alojamiento','Meal':'Comida','Free Time':'Tiempo libre','Pickup':'Recogida','Drop-off':'Regreso','Custom':'Personalizado'}
+      };
+      const SAMPLE_TRANSLATIONS = {
+        enToEs:{
+          'Secure door-to-door transportation':'Transporte seguro puerta a puerta',
+          'Round trip':'Ida y vuelta',
+          'Pickup and drop-off locations to be confirmed.':'Los lugares de recogida y regreso están por confirmar.',
+          'Full-Day Mindo Tour':'Tour de día completo en Mindo',
+          'Approximately 10 hours':'Aproximadamente 10 horas',
+          'Arrival in Mindo and start of the full-day tour.':'Llegada a Mindo e inicio del tour de día completo.',
+          'Night Walk Tour':'Tour de caminata nocturna',
+          'Approximately 2 hours':'Aproximadamente 2 horas',
+          'Evening wildlife experience before returning to Quito.':'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.'
+        },
+        esToEn:{
+          'Transporte seguro puerta a puerta':'Secure door-to-door transportation',
+          'Ida y vuelta':'Round trip',
+          'Los lugares de recogida y regreso están por confirmar.':'Pickup and drop-off locations to be confirmed.',
+          'Tour de día completo en Mindo':'Full-Day Mindo Tour',
+          'Aproximadamente 10 horas':'Approximately 10 hours',
+          'Llegada a Mindo e inicio del tour de día completo.':'Arrival in Mindo and start of the full-day tour.',
+          'Tour de caminata nocturna':'Night Walk Tour',
+          'Aproximadamente 2 horas':'Approximately 2 hours',
+          'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.':'Evening wildlife experience before returning to Quito.'
+        }
+      };
+
       const COPY = {
         en: {
           locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', payDeposit:'Pay $100 Tour Deposit', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
         },
         es: {
-          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de USD 100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', payDeposit:'Pagar depósito de USD 100', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de USD 100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de USD 100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
+          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', payDeposit:'Pagar depósito de $100', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
         }
       };
       function copyFor(data){ return COPY[data && data.language === 'es' ? 'es' : 'en']; }
+      function serviceTypeLabel(type, language='en'){
+        const lang = language === 'es' ? 'es' : 'en';
+        return (SERVICE_TYPE_LABELS[lang] && SERVICE_TYPE_LABELS[lang][type]) || type || COPY[lang].service;
+      }
+      function translateKnownText(value, language){
+        const text = String(value || '');
+        const map = language === 'es' ? SAMPLE_TRANSLATIONS.enToEs : SAMPLE_TRANSLATIONS.esToEn;
+        return map[text] || text;
+      }
 
       const $ = (id) => document.getElementById(id);
       const state = { items: [] };
@@ -394,7 +432,7 @@
               </div>
               <div class="field">
                 <label>Service type</label>
-                <select data-field="type">${SERVICE_TYPES.map(type => `<option value="${escapeHtml(type)}" ${type===item.type?'selected':''}>${escapeHtml(type)}</option>`).join('')}</select>
+                <select data-field="type">${SERVICE_TYPES.map(type => `<option value="${escapeHtml(type)}" ${type===item.type?'selected':''}>${escapeHtml(serviceTypeLabel(type,$('language').value))}</option>`).join('')}</select>
               </div>
             </div>
             <div class="field">
@@ -477,11 +515,11 @@
                 const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
                 return `
                   <div class="timelineItem">
-                    <div class="timeBox">${escapeHtml(formatTime(item.startTime,data.language))}${item.duration ? `<small>${escapeHtml(item.duration)}</small>` : ''}</div>
+                    <div class="timeBox">${escapeHtml(formatTime(item.startTime,data.language))}${item.duration ? `<small>${escapeHtml(translateKnownText(item.duration,data.language))}</small>` : ''}</div>
                     <div>
-                      <span class="serviceType">${escapeHtml(item.type || c.service)}</span>
-                      <div class="serviceName">${escapeHtml(item.name || item.type || c.item)}</div>
-                      ${item.note ? `<p class="serviceNote">${escapeHtml(item.note)}</p>` : ''}
+                      <span class="serviceType">${escapeHtml(serviceTypeLabel(item.type,data.language))}</span>
+                      <div class="serviceName">${escapeHtml(translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language) || c.item)}</div>
+                      ${item.note ? `<p class="serviceNote">${escapeHtml(translateKnownText(item.note,data.language))}</p>` : ''}
                     </div>
                     ${data.showItemPrices && lineTotal ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
                   </div>`;
@@ -492,7 +530,7 @@
         const pricingLines = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0) !== 0).map(item => {
           const total = Number(item.quantity || 0) * Number(item.unitPrice || 0);
           const qty = Number(item.quantity || 0);
-          return `<div class="priceLine"><span>${escapeHtml(item.name || item.type)}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
+          return `<div class="priceLine"><span>${escapeHtml(translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language))}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
         }).join('');
 
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
@@ -522,7 +560,7 @@
           ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
           ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(c.ready)}</h3><p>${escapeHtml(c.depositText)}</p><div class="ctaButtons"><a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a><a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
+          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(c.ready || (data.language === 'es' ? '¿Listo para continuar?' : 'Ready to Move Forward?'))}</h3><p>${escapeHtml(c.depositText)}</p><div class="ctaButtons"><a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a><a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -618,15 +656,16 @@
           if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(formatShortDate(date,data.language));
           items.forEach(item => {
             const time = formatTime(item.startTime,data.language);
-            const duration = item.duration ? ` (${item.duration})` : '';
-            lines.push(`${time} - ${item.name || item.type}${duration}`);
+            const durationText = translateKnownText(item.duration,data.language);
+            const duration = durationText ? ` (${durationText})` : '';
+            lines.push(`${time} - ${translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language)}${duration}`);
           });
           lines.push('');
         });
         const priced = data.items.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
         if(priced.length){
           lines.push(`${c.pricingLabel}:`);
-          priced.forEach(item => lines.push(`${item.name || item.type}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
+          priced.forEach(item => lines.push(`${translateKnownText(item.name,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
@@ -714,6 +753,13 @@
         if(!$('openingText').value.trim() || $('openingText').value === other.defaultOpening) $('openingText').value = next.defaultOpening;
         if(!$('pricingNote').value.trim() || $('pricingNote').value === other.defaultPricing) $('pricingNote').value = next.defaultPricing;
         if(!$('closingText').value.trim() || $('closingText').value === other.defaultClosing) $('closingText').value = next.defaultClosing;
+        state.items = state.items.map(item => ({
+          ...item,
+          name:translateKnownText(item.name,language),
+          duration:translateKnownText(item.duration,language),
+          note:translateKnownText(item.note,language)
+        }));
+        renderEditors();
         updateAll(false);
       });
       $('startDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
