@@ -471,3 +471,31 @@ body[data-page-type="shop_policy"] .updated {
     transition: none;
   }
 }
+
+/* Product/policy shell lock.
+   The legacy global shop fallback sets main.shopPage.page.card to padding: 0.
+   Keep the hub edge-to-edge, but restore the standard site inset on content pages. */
+body[data-page-content-group="shop"][data-page-type="shop_product_page"]
+  main.page.card.shopPage,
+body[data-page-content-group="shop"][data-page-type="shop_policy_page"]
+  main.page.card.shopPage {
+  padding: 22px !important;
+}
+
+@media (max-width: 900px) {
+  body[data-page-content-group="shop"][data-page-type="shop_product_page"]
+    main.page.card.shopPage,
+  body[data-page-content-group="shop"][data-page-type="shop_policy_page"]
+    main.page.card.shopPage {
+    padding: 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-page-content-group="shop"][data-page-type="shop_product_page"]
+    main.page.card.shopPage,
+  body[data-page-content-group="shop"][data-page-type="shop_policy_page"]
+    main.page.card.shopPage {
+    padding: 14px !important;
+  }
+}
