@@ -1,0 +1,464 @@
+/* =========================================================
+   Mindo Bird Watching — Shop cluster
+   Routes:
+   - /shop/
+   - /shop/product/
+   - /shop/return-policy/
+   - /shop/shipping-policy/
+   Global final CTA geometry intentionally remains in site.css.
+   ========================================================= */
+
+body[data-page-content-group="shop"] .page,
+body[data-page-content-group="shop"] .page * {
+  box-sizing: border-box;
+}
+
+body[data-page-content-group="shop"] .breadcrumbs,
+body[data-page-content-group="shop"] .breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+body[data-page-content-group="shop"] .breadcrumbs a,
+body[data-page-content-group="shop"] .breadcrumb a {
+  color: var(--forest);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+body[data-page-content-group="shop"] :is(.heroCopy, .heroMedia, .shopHeroCard) {
+  min-width: 0;
+}
+
+body[data-page-content-group="shop"] :is(.contentSection, .faqSection, .shopSection) {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+body[data-page-content-group="shop"] :is(.contentSection, .faqSection, .shopSection) > .sectionHead {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+body[data-page-content-group="shop"] :is(.block, .trustBox, .faqCard, .sectionBox) {
+  min-width: 0;
+}
+
+body[data-page-content-group="shop"] :is(.block, .trustBox) {
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-page-content-group="shop"] :is(.block, .trustBox) .ctaRow.alignBottom {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+/* Shop hub */
+body[data-page-type="shop_page"] main.shopPage.page.card {
+  padding: 0;
+  overflow: hidden;
+}
+
+body[data-page-type="shop_page"] .shopWrap {
+  padding: 22px;
+}
+
+body[data-page-type="shop_page"] .kicker {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+body[data-page-type="shop_page"] h1 {
+  margin: 0 0 10px;
+  color: var(--forest);
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1;
+}
+
+body[data-page-type="shop_page"] .lead {
+  max-width: 72ch;
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: clamp(16px, 1.5vw, 19px);
+  line-height: 1.55;
+}
+
+body[data-page-type="shop_page"] .shopHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+  align-items: stretch;
+  gap: 18px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+body[data-page-type="shop_page"] .shopHeroCard {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, .74);
+  box-shadow: var(--shadow);
+}
+
+body[data-page-type="shop_page"] .heroPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body[data-page-type="shop_page"] .previewFrame {
+  position: relative;
+  min-height: 340px;
+  height: clamp(340px, 38vw, 540px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+body[data-page-type="shop_page"] :is(.previewCarousel, .previewSlides, .previewSlide) {
+  width: 100%;
+  height: 100%;
+}
+
+body[data-page-type="shop_page"] .previewCarousel {
+  position: relative;
+  overflow: hidden;
+}
+
+body[data-page-type="shop_page"] .previewSlides {
+  display: flex;
+  transform: translate3d(0, 0, 0);
+  transition: transform 420ms ease;
+}
+
+body[data-page-type="shop_page"] .previewSlide {
+  display: flex;
+  flex: 0 0 100%;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+body[data-page-type="shop_page"] .previewSlide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+body[data-page-type="shop_page"] .previewDots {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+body[data-page-type="shop_page"] .previewDot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 1px solid rgba(21, 95, 44, .45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .82);
+  cursor: pointer;
+}
+
+body[data-page-type="shop_page"] .previewDot:is(.isActive, [aria-selected="true"]) {
+  width: 24px;
+  border-color: var(--forest);
+  background: var(--forest);
+}
+
+body[data-page-type="shop_page"] .previewCaption {
+  margin-top: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .64);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+body[data-page-type="shop_page"] .metaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+body[data-page-type="shop_page"] .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: var(--forest);
+  opacity: .55;
+  transform: translateY(-1px);
+}
+
+body[data-page-type="shop_page"] .valueGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+body[data-page-type="shop_page"] .productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+
+body[data-page-type="shop_page"] .productCard {
+  display: flex;
+  min-width: 0;
+  min-height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .78);
+  box-shadow: var(--shadow);
+}
+
+body[data-page-type="shop_page"] .productImg {
+  display: flex;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+body[data-page-type="shop_page"] .productImg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+body[data-page-type="shop_page"] .productTitle {
+  margin: 14px 14px 8px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+body[data-page-type="shop_page"] .productDesc {
+  margin: 0 14px 14px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+body[data-page-type="shop_page"] .productRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding: 0 14px 14px;
+}
+
+body[data-page-type="shop_page"] .priceTag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--forest);
+  font-size: 17px;
+  font-weight: 950;
+}
+
+/* Product and shipping-policy content pages */
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) main.shopPage {
+  display: grid;
+  gap: 0;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy,
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, .72);
+  box-shadow: var(--shadow);
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy h1 {
+  margin: 0 0 10px;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy > p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia {
+  margin: 0;
+  overflow: hidden;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  object-fit: cover;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) :is(.grid2, .quickGrid) {
+  display: grid;
+  align-items: stretch;
+  gap: 14px;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .quickGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Return policy */
+body[data-page-type="shop_policy"] .policySummary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body[data-page-type="shop_policy"] .policyNotice {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 4px solid rgba(255, 215, 0, .85);
+  background: rgba(255, 248, 204, .72);
+}
+
+body[data-page-type="shop_policy"] .policyNotice .btn {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+body[data-page-type="shop_policy"] .updated {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  body[data-page-type="shop_page"] .shopHero {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, .85fr);
+  }
+
+  body[data-page-type="shop_page"] .productGrid,
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .quickGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  body[data-page-type="shop_page"] .shopWrap {
+    padding: 16px;
+  }
+
+  body[data-page-type="shop_page"] .shopHero,
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .hero,
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-type="shop_page"] .valueGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-page-type="shop_page"] .previewFrame {
+    height: clamp(320px, 72vw, 520px);
+  }
+
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia img {
+    min-height: 280px;
+    max-height: 460px;
+  }
+
+  body[data-page-type="shop_policy"] .policySummary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-page-type="shop_page"] .shopWrap {
+    padding: 14px;
+  }
+
+  body[data-page-type="shop_page"] :is(.productGrid, .valueGrid),
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .quickGrid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-type="shop_page"] .previewFrame {
+    min-height: 300px;
+    height: 380px;
+  }
+
+  body[data-page-type="shop_page"] .productImg {
+    aspect-ratio: 1 / 1;
+  }
+
+  body[data-page-type="shop_page"] .productRow {
+    align-items: stretch;
+  }
+
+  body[data-page-type="shop_page"] .productRow .btn,
+  body[data-page-type="shop_policy"] .policyNotice .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page-type="shop_page"] .previewSlides {
+    transition: none;
+  }
+}
