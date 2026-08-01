@@ -1,121 +1,372 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>MBW Admin | Operations Hub</title>
-<meta content="noindex, nofollow" name="robots"/>
-<meta content="#0D5925" name="theme-color"/>
-<link href="https://admin.mindobirdwatching.com/" rel="canonical"/>
-<link href="/favicon.ico" rel="icon" sizes="any"/>
-<link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
-<link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
-<link href="/site.webmanifest" rel="manifest"/>
-<link href="/assets/css/site.css" rel="stylesheet"/>
-<style>
-    :root{--green:#0D5925;--bg:#C7DAAC;--soft:#F6FAF0;--ink:#071923;--muted:rgba(7,25,35,.68);--line:rgba(7,25,35,.14);--shadow:0 18px 55px rgba(7,25,35,.10);--radius:18px}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
-    .shell{max-width:1320px;margin:0 auto;padding:28px}
-    .hero{background:linear-gradient(180deg,rgba(246,250,240,.96),rgba(237,244,228,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
-    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
-    .brand{display:flex;align-items:center;gap:14px;min-width:0;max-width:100%;overflow:hidden}
-    .brand img{width:62px;height:62px;object-fit:contain;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(7,25,35,.12)}
-    h1{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:36px;line-height:1.05;letter-spacing:-.03em}
-    .brand p{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.45;font-weight:800;max-width:72ch;white-space:normal;overflow-wrap:anywhere}
-    .status{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:8px 12px;border:1px solid rgba(13,89,37,.18);border-radius:999px;background:#fff;color:var(--green);font-weight:950;white-space:nowrap}
-    .status::before{content:"";width:9px;height:9px;border-radius:999px;background:var(--green)}
-    .quick{display:grid;grid-template-columns:1.35fr .65fr;gap:18px;margin-bottom:18px}
-    .panel{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
-    .panel h2{margin:0 0 8px;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:1.1}
-    .panel p{margin:0;color:var(--muted);font-size:14px;line-height:1.55;font-weight:750}
-    .actions{display:grid;gap:10px}
-    .btn{appearance:none;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.88);color:var(--ink);min-height:44px;padding:11px 14px;display:inline-flex;align-items:center;justify-content:center;font:inherit;font-weight:950;text-decoration:none;white-space:nowrap;box-shadow:0 8px 20px rgba(7,25,35,.06);min-width:0}
-    .btn.primary{background:var(--green);color:#fff;border-color:rgba(13,89,37,.35)}
-    .tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-    .tool{display:grid;grid-template-rows:auto 1fr auto;gap:14px;min-height:230px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;text-decoration:none;color:var(--ink);box-shadow:0 12px 30px rgba(7,25,35,.06);transition:.16s ease}
-    .tool:hover{transform:translateY(-2px);border-color:rgba(13,89,37,.35);box-shadow:0 18px 40px rgba(7,25,35,.10)}
-    .toolTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-    .label{display:inline-flex;align-items:center;min-height:28px;padding:6px 9px;border-radius:999px;background:#EAF6DF;color:var(--green);border:1px solid #B6D990;font-size:11px;line-height:1;font-weight:950;text-transform:uppercase;letter-spacing:.05em}
-    .arrow{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:#F6FAF0;border:1px solid var(--line);font-weight:950;color:var(--green)}
-    .tool h3{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:1.05}
-    .tool p{margin:8px 0 0;color:rgba(7,25,35,.72);font-size:14px;line-height:1.45;font-weight:750}
-    .meta{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid rgba(7,25,35,.1);color:rgba(7,25,35,.58);font-size:12px;font-weight:900}
-    .external .label{background:#FFF7D6;color:#7A4B00;border-color:#F3D675}
-    .reports .label{background:#EFE8FF;color:#5B21B6;border-color:#DDD6FE}
-    .disabled{opacity:.74}
-    .disabled .label{background:#F1F5F9;color:#475569;border-color:#CBD5E1}
-    @media(max-width:980px){.quick,.tools{grid-template-columns:1fr 1fr}.tool{min-height:210px}}
-    @media(max-width:680px){.shell{padding:12px}.hero{padding:14px;border-radius:14px}.top{align-items:stretch}.brand{align-items:center;gap:10px}.brand>div{min-width:0}.brand img{width:48px;height:48px}h1{font-size:clamp(27px,8vw,36px);overflow-wrap:anywhere}.status{width:100%;justify-content:center}.quick,.tools{grid-template-columns:1fr}.actions{grid-template-columns:1fr 1fr}.btn{width:100%;white-space:normal;line-height:1.15;padding:10px 8px}.tool{min-height:0}.panel{padding:14px}.brand p{font-size:12px;line-height:1.35;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.panel p,.tool p{overflow-wrap:anywhere}}
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>About Us | Mindo Bird Watching</title>
+<meta name="description" content="Meet Mindo Bird Watching, a local cloud forest guiding team offering personalized Mindo birdwatching tours, route planning, target-species help, and private guide support."/>
+<link rel="canonical" href="https://mindobirdwatching.com/about-us/"/>
+<link rel="alternate" hreflang="en" href="https://mindobirdwatching.com/about-us/"/>
+<link rel="alternate" hreflang="es" href="https://mindobirdwatching.com/es/sobre-nosotros/"/>
+<link rel="alternate" hreflang="x-default" href="https://mindobirdwatching.com/about-us/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Mindo Bird Watching"/>
+<meta property="og:title" content="About Us | Mindo Bird Watching"/>
+<meta property="og:description" content="Meet Mindo Bird Watching, a local cloud forest guiding team offering personalized Mindo birdwatching tours, route planning, target-species help, and private guide support."/>
+<meta property="og:url" content="https://mindobirdwatching.com/about-us/"/>
+<meta property="og:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg"/>
+<meta property="og:image:secure_url" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="Mindo Bird Watching guide in the cloud forest of Mindo, Ecuador"/>
+<meta property="og:locale" content="en_US"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="About Us | Mindo Bird Watching"/>
+<meta name="twitter:description" content="Meet Mindo Bird Watching, a local cloud forest guiding team offering personalized Mindo birdwatching tours, route planning, target-species help, and private guide support."/>
+<meta name="twitter:image" content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg"/>
+<meta name="twitter:image:alt" content="Mindo Bird Watching guide in the cloud forest of Mindo, Ecuador"/>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="manifest" href="/site.webmanifest"/>
+<link rel="stylesheet" href="/assets/css/site.css"/>
+<link rel="stylesheet" href="/assets/css/header.css?v=1"/>
+<script defer src="/assets/js/head.js"></script>
+<script defer src="/assets/js/site-config.js"></script>
+<script defer src="/assets/js/includes.js?v=1"></script>
+<script defer src="/assets/js/site.js?v=1"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://mindobirdwatching.com/about-us/#webpage",
+      "url": "https://mindobirdwatching.com/about-us/",
+      "name": "About Us | Mindo Bird Watching",
+      "description": "Meet Mindo Bird Watching, a local cloud forest guiding team offering personalized Mindo birdwatching tours, route planning, target-species help, and private guide support.",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@id": "https://mindobirdwatching.com/#website"
+      },
+      "primaryImageOfPage": {
+        "@id": "https://mindobirdwatching.com/about-us/#primaryimage"
+      },
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "Mindo Bird Watching"
+        },
+        {
+          "@type": "Thing",
+          "name": "Mindo, Ecuador"
+        },
+        {
+          "@type": "Thing",
+          "name": "cloud forest birdwatching"
+        },
+        {
+          "@type": "Thing",
+          "name": "local birding guide"
+        }
+      ],
+      "dateModified": "2026-07-07"
+    },
+    {
+      "@type": "ImageObject",
+      "@id": "https://mindobirdwatching.com/about-us/#primaryimage",
+      "url": "https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg",
+      "contentUrl": "https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg",
+      "caption": "Mindo Bird Watching guide in the cloud forest of Mindo, Ecuador"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://mindobirdwatching.com/about-us/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://mindobirdwatching.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "About Us",
+          "item": "https://mindobirdwatching.com/about-us/"
+        }
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://mindobirdwatching.com/#organization",
+      "name": "Mindo Bird Watching",
+      "url": "https://mindobirdwatching.com/",
+      "email": "tours@mindobirdwatching.com",
+      "areaServed": {
+        "@type": "Place",
+        "name": "Mindo, Ecuador"
+      }
+    },
+    {
+      "@type": "Service",
+      "@id": "https://mindobirdwatching.com/about-us/#guide-service",
+      "name": "Private Mindo birdwatching guide planning",
+      "serviceType": "Private birdwatching tours and route planning",
+      "provider": {
+        "@id": "https://mindobirdwatching.com/#organization"
+      },
+      "areaServed": {
+        "@type": "Place",
+        "name": "Mindo, Ecuador"
+      },
+      "url": "https://mindobirdwatching.com/about-us/",
+      "offers": {
+        "@type": "Offer",
+        "url": "https://mindobirdwatching.com/book-tour/"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://mindobirdwatching.com/about-us/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Who is Mindo Bird Watching?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mindo Bird Watching is a local guiding and tour planning service focused on birdwatching experiences in Mindo, Ecuador's cloud forest."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes the guiding style different?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tours are personalized around the guest's birding level, photography goals, available time, and current cloud forest conditions."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can beginners join a Mindo Bird Watching tour?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Tours are designed for experienced birders, photographers, families, and first-time nature travelers who want expert local guidance."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How should travelers start planning?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Share your travel dates, group size, birding level, target species, and whether you are coming from Quito or staying in Mindo."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 </head>
-<body>
-<main class="shell">
-<section aria-label="Mindo Bird Watching admin hub" class="hero">
-<header class="top">
-<div class="brand">
-<img alt="Mindo Bird Watching" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png"/>
-<div>
-<h1>MBW Admin Hub</h1>
-<p>Guest operations, emails, invoices, confirmations, and reports from one clean starting point.</p>
-</div>
-</div>
-<span class="status">Admin only</span>
-</header>
-<div class="quick">
-<section class="panel">
-<h2>Today’s Command Center</h2>
-<p>Start with the CRM for live guest management, then jump into the email and invoice tools when a guest is ready for a reply, quote, or confirmation.</p>
-</section>
-<nav aria-label="Primary admin shortcuts" class="actions">
-<a class="btn primary" href="/guest-crm/">Open Guest CRM</a>
-<a class="btn" href="/reports/">View Reports</a>
+<body data-page-content-group="site_content" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="about">
+<div class="container">
+<div id="siteHeader" data-current-lang="en"></div>
+<nav class="rawLangLinks" aria-label="Language switch">
+<a aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="about_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/about-us/" hreflang="en" lang="en">English</a>
+<a data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="about_page" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/sobre-nosotros/" hreflang="es" lang="es">Español</a>
 </nav>
+
+<main class="page card aboutPage" role="main">
+<div class="wrap">
+<section class="aboutHeroNew" aria-label="About Mindo Bird Watching">
+<div class="aboutLeft stack">
+<section class="fillCard introCard" aria-label="About us overview">
+<p class="socialKicker">LOCAL CLOUD FOREST GUIDING</p>
+<h1>About Us</h1>
+<p>At Mindo Bird Watching, we share the breathtaking beauty of Ecuador's cloud forest and the birdlife that makes Mindo one of the most rewarding places to bird in South America.</p>
+<p>With years of field experience as a birdwatching guide, our focus is helping visitors discover toucans, hummingbirds, tanagers, the Andean Cock-of-the-Rock, and many other species through patient, personalized guiding.</p>
+<p>Our tours are built for experienced birders, photographers, families, and first-time nature travelers. We combine local route knowledge, flexible pacing, and practical planning so each guest can enjoy the forest with confidence.</p>
+<div class="ctaRow">
+<a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Book a Tour" data-analytics-location="hero" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/book-tour/">Book a Tour</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Explore Tours" data-analytics-location="hero" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/tours/">Explore Tours</a>
 </div>
-<section aria-label="Admin tools" class="tools">
-<a class="tool" href="https://admin.mindobirdwatching.com/guest-crm/">
-<span class="toolTop"><span class="label">Guests</span><span class="arrow">→</span></span>
-<span><h3>Guest CRM</h3><p>Manage inquiries, statuses, follow-ups, guest details, and handoffs into email or invoice tools.</p></span>
-<span class="meta"><span>Live Google Sheet via n8n</span><span>Core</span></span>
-</a>
-<a class="tool" href="https://admin.mindobirdwatching.com/custom-email-generator/">
-<span class="toolTop"><span class="label">Email</span><span class="arrow">→</span></span>
-<span><h3>Custom Email Generator</h3><p>Build polished HTML replies with tour cards, activities, pricing overrides, and your signature.</p></span>
-<span class="meta"><span>Gmail-ready HTML</span><span>Active</span></span>
-</a>
-<a class="tool" href="https://admin.mindobirdwatching.com/staff-info/">
-<span class="toolTop"><span class="label">Staff</span><span class="arrow">→</span></span>
-<span><h3>Staff Info Library</h3><p>Search bilingual, copy-ready answers for tours, activities, transportation, FAQs, links, and staff notes.</p></span>
-<span class="meta"><span>Live sheet + fallback</span><span>Active</span></span>
-</a>
-<a class="tool" href="https://admin.mindobirdwatching.com/itinerary-generator/">
-<span class="toolTop"><span class="label">Itinerary</span><span class="arrow">→</span></span>
-<span><h3>Itinerary Generator</h3><p>Create polished guest itineraries with service times, durations, notes, pricing, deposit links, HTML downloads, and WhatsApp summaries.</p></span>
-<span class="meta"><span>Guest-ready HTML</span><span>Active</span></span>
-</a>
-<a class="tool" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/">
-<span class="toolTop"><span class="label">Invoice</span><span class="arrow">→</span></span>
-<span><h3>Zelle Invoice Generator</h3><p>Create one-page payment invoices with guest details, line items, Zelle instructions, and PDF output.</p></span>
-<span class="meta"><span>PDF workflow</span><span>Active</span></span>
-</a>
-<a class="tool external" href="https://mindobirdwatching.com/book-tour/create/">
-<span class="toolTop"><span class="label">Stripe</span><span class="arrow">↗</span></span>
-<span><h3>Create Stripe Invoice</h3><p>Open the existing book-tour create page for Stripe payment links and online invoice workflows.</p></span>
-<span class="meta"><span>Main website</span><span>External</span></span>
-</a>
-<a class="tool" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/">
-<span class="toolTop"><span class="label">Confirm</span><span class="arrow">→</span></span>
-<span><h3>Tour Confirmation Generator</h3><p>Prepare clean confirmation details after payment, including pickup, itinerary, and guest notes.</p></span>
-<span class="meta"><span>Confirmation email</span><span>Tool</span></span>
-</a>
-<a class="tool reports" href="https://admin.mindobirdwatching.com/reports/">
-<span class="toolTop"><span class="label">Reports</span><span class="arrow">→</span></span>
-<span><h3>Reports</h3><p>View Looker dashboards for KPIs, site performance, social media, SEO, and operations.</p></span>
-<span class="meta"><span>Looker Studio</span><span>Moved</span></span>
-</a>
 </section>
+
+<section class="fillCard" id="quick-answer" aria-labelledby="quick-answer-title">
+<p class="socialKicker">QUICK ANSWER</p>
+<h2 class="fillTitle" id="quick-answer-title">What should travelers know before planning with us?</h2>
+<p>Mindo Bird Watching is a local birding team focused on private and small-group cloud forest experiences in Mindo, Ecuador. We help guests choose the right tour length, route, timing, target species plan, and pace based on experience level, photography goals, weather, and current bird activity.</p>
 </section>
+
+<section class="fillCard" aria-label="Traveler highlight">
+<h2 class="fillTitle">Traveler Highlight</h2>
+<p class="quote">"Incredible experience! I didn't realize how much I would enjoy this. Looking back on my trip to Ecuador this was definitely one of my highlights. Unforgettable experience and the tour guide is so friendly and knowledgeable."</p>
+<div class="quoteMeta">
+<span class="stars"><span class="starRow">★★★★★</span><span class="who">Abigail, USA</span></span>
+<a class="reviewLink" data-analytics-event="outbound_link_click" data-analytics-label="Read on Google" data-analytics-location="traveler_highlight" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://maps.app.goo.gl/eBu55MP1F5mZJWtt9" rel="noopener noreferrer" target="_blank">Read on Google</a>
+</div>
+</section>
+
+<section class="fillCard" aria-label="Follow Mindo Bird Watching">
+<div class="socialTop">
+<span class="socialKicker">Meet the guide + follow along</span>
+<p class="socialCopy">Want the full story, guiding style, and what to expect on a birding morning? Start with our guide page, then follow our latest sightings and reels.</p>
+</div>
+<div class="socialGrid">
+<a class="btn secondary socialBtn" data-analytics-event="internal_link_click" data-analytics-label="Our Guide" data-analytics-location="social_links" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/our-guide/"><span class="ico cc" aria-hidden="true"></span><span class="label">Our Guide</span></a>
+<a class="btn secondary socialBtn" data-analytics-event="outbound_link_click" data-analytics-label="Instagram" data-analytics-location="social_links" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://instagram.com/mindobirdwatching/" rel="noopener noreferrer" target="_blank"><span class="ico ig" aria-hidden="true"></span><span class="label">Instagram</span></a>
+<a class="btn secondary socialBtn" data-analytics-event="outbound_link_click" data-analytics-label="Facebook" data-analytics-location="social_links" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://facebook.com/profile.php?id=61577783327957" rel="noopener noreferrer" target="_blank"><span class="ico fb" aria-hidden="true"></span><span class="label">Facebook</span></a>
+<a class="btn secondary socialBtn" data-analytics-event="outbound_link_click" data-analytics-label="TikTok" data-analytics-location="social_links" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://tiktok.com/@mindobirdwatching" rel="noopener noreferrer" target="_blank"><span class="ico tt" aria-hidden="true"></span><span class="label">TikTok</span></a>
+<a class="btn secondary socialBtn" data-analytics-event="outbound_link_click" data-analytics-label="YouTube" data-analytics-location="social_links" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://youtube.com/@MindoBirdWatching" rel="noopener noreferrer" target="_blank"><span class="ico yt" aria-hidden="true"></span><span class="label">YouTube</span></a>
+<a class="btn secondary socialBtn" data-analytics-event="outbound_link_click" data-analytics-label="Gift Shop" data-analytics-location="social_links" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://shop.MindoBirdWatching.com" rel="noopener noreferrer" target="_blank"><span class="ico gs" aria-hidden="true"></span><span class="label">Gift Shop</span></a>
+</div>
+</section>
+</div>
+
+<aside class="aboutRight" aria-label="Mindo cloud forest">
+<div class="sideImage">
+<img src="/assets/images/pages/MBW-Assets-93-AboutUs.jpg" alt="Mindo Bird Watching guide in the cloud forest of Mindo, Ecuador" width="700" height="980" loading="eager" decoding="async"/>
+<div class="sideImageCaption">Cloud forest, close-up.<span>Quiet trails, hummingbirds, toucans, tanagers, and the best birding routes in Mindo.</span></div>
+</div>
+</aside>
+</section>
+
+<section class="section" aria-labelledby="why-title">
+<div class="sectionHead">
+<h2 id="why-title">Why travelers choose Mindo Bird Watching</h2>
+<p class="sectionHint">Practical local knowledge, flexible planning, and guide-led birding built around real conditions in the cloud forest.</p>
+</div>
+<div class="grid">
+<article class="mini"><h2>Local Guide</h2><p>Years of experience guiding birders through Mindo's cloud forest, route access, and changing bird activity.</p></article>
+<article class="mini"><h2>Personalized Tours</h2><p>Helpful for experienced birders, photographers, families, and first-time nature lovers who want a smooth start.</p></article>
+<article class="mini"><h2>Best Birding Spots</h2><p>Route decisions are based on timing, target species, weather, habitat, and current local observations.</p></article>
+</div>
+</section>
+
+<section class="partnerRow" aria-labelledby="extend-title">
+<div class="partnerHead">
+<h2 id="extend-title">Extend your journey</h2>
+<p>If you are flying into Quito, these planning links help you connect Mindo with a wider Ecuador trip.</p>
+</div>
+<div class="partnerGrid">
+<article class="partnerCard">
+<div class="partnerMedia"><img src="/assets/images/promos/mbw_promo_tcfr_003.jpg" alt="The Cloud Forest Retreat near Quito and Mindo" width="320" height="320" loading="lazy" decoding="async"/></div>
+<div class="partnerBody">
+<p class="partnerKicker">Suggested stay near Quito</p>
+<h3>The Cloud Forest Retreat</h3>
+<p>A calm 1 to 3 night reset before or after Mindo, about 1.5 to 2 hours from Mindo. Good for decompressing, scenic views, and slow mornings.</p>
+<div class="partnerActions">
+<a class="btn secondary" data-analytics-event="outbound_link_click" data-analytics-label="Explore The Retreat" data-analytics-location="partner_row" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://www.thecloudforestretreat.com/" rel="noopener noreferrer" target="_blank">Explore The Retreat</a>
+<a class="btn secondary" data-analytics-event="contact_method_click" data-analytics-label="Ask Us How To Combine" data-analytics-location="partner_row" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/contact/">Ask Us How To Combine</a>
+</div>
+</div>
+</article>
+<article class="partnerCard">
+<div class="partnerMedia"><img src="/assets/images/promos/mbw_promo_ee_002.jpg" alt="Experience Ecuador travel planning inspiration" width="320" height="320" loading="lazy" decoding="async"/></div>
+<div class="partnerBody">
+<p class="partnerKicker">More ideas for your trip</p>
+<h3>Experience Ecuador</h3>
+<p>Looking for other destinations and experiences while you are in Ecuador? Browse hand-picked itineraries and inspiration beyond Mindo.</p>
+<div class="partnerActions">
+<a class="btn secondary" data-analytics-event="outbound_link_click" data-analytics-label="Browse Ideas" data-analytics-location="partner_row" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://experienceecuador.com/" rel="noopener noreferrer" target="_blank">Browse Ideas</a>
+<a class="btn secondary" data-analytics-event="outbound_link_click" data-analytics-label="Plan Your Trip" data-analytics-location="partner_row" data-analytics-page-language="en" data-analytics-page-type="about_page" href="https://experienceecuador.com/trip-builder/" rel="noopener noreferrer" target="_blank">Plan Your Trip</a>
+</div>
+</div>
+</article>
+</div>
+</section>
+
+<section class="section" id="faqs" aria-labelledby="faq-title">
+<div class="sectionHead">
+<h2 id="faq-title">About Mindo Bird Watching FAQs</h2>
+<p class="sectionHint">Answer-first details about our guiding style, planning support, and who our tours are for.</p>
+</div>
+<div class="faqGrid">
+<article class="faqCard"><h3>Who is Mindo Bird Watching?</h3><p>Mindo Bird Watching is a local guiding and tour planning service focused on birdwatching experiences in Mindo's cloud forest.</p></article>
+<article class="faqCard"><h3>What makes the guiding style different?</h3><p>We personalize each outing around guest goals, target species, weather, photography needs, available time, and current bird activity.</p></article>
+<article class="faqCard"><h3>Can beginners join?</h3><p>Yes. Tours are welcoming for first-time birders and nature travelers, while still being useful for experienced birders and photographers.</p></article>
+<article class="faqCard"><h3>How should I start planning?</h3><p>Share your dates, group size, birding level, target species, and whether you are coming from Quito or staying in Mindo.</p></article>
+</div>
+</section>
+
+
+<section class="section" aria-labelledby="choose-tour-title">
+<div class="sectionHead">
+<h2 id="choose-tour-title">Choose the right birding plan with us</h2>
+<p class="sectionHint">Use our local guide knowledge to match your dates, target birds, photography goals, and time window to a realistic Mindo route.</p>
+</div>
+<div class="grid-2">
+<article class="sectionBox">
+<h3>Focused morning birding</h3>
+<p>Best for travelers who want strong early activity, hummingbirds, toucans, tanagers, and a smooth introduction to the cloud forest before the day gets quiet.</p>
+<div class="ctaRow alignBottom">
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="View Half-Day Tours" data-analytics-location="commercial_choice_cards" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/tours/half-day/">View Half-Day Tours</a>
+</div>
+</article>
+<article class="sectionBox">
+<h3>Full-day target-species route</h3>
+<p>Best for birders and photographers who want more habitat variety, more route flexibility, and a better chance of building a longer species list.</p>
+<div class="ctaRow alignBottom">
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="View Full-Day Tours" data-analytics-location="commercial_choice_cards" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/tours/full-day/">View Full-Day Tours</a>
+</div>
+</article>
+<article class="sectionBox">
+<h3>Coming from Quito</h3>
+<p>We help you plan an early pickup, realistic travel timing, morning birding priorities, and whether a same-day return or overnight stay makes more sense.</p>
+<div class="ctaRow alignBottom">
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Plan Quito to Mindo" data-analytics-location="commercial_choice_cards" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/quito-to-mindo-day-trip/">Plan Quito to Mindo</a>
+</div>
+</article>
+<article class="sectionBox">
+<h3>Private guide planning</h3>
+<p>Tell us your birding level, camera setup, target species, mobility needs, and available time. We will suggest the route that fits your goals best.</p>
+<div class="ctaRow alignBottom">
+<a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Ask for a Custom Plan" data-analytics-location="commercial_choice_cards" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/book-tour/">Ask for a Custom Plan</a>
+</div>
+</article>
+</div>
+</section>
+
+<section class="section" aria-labelledby="related-title">
+<div class="sectionHead">
+<h2 id="related-title">Helpful planning pages</h2>
+<p class="sectionHint">Same-language links for tours, birds, trip planning, and booking questions.</p>
+</div>
+<div class="internalLinks">
+<a class="linkCard" data-analytics-event="internal_link_click" data-analytics-label="Birdwatching Tours" data-analytics-location="related_pages" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/tours/"><strong>Birdwatching Tours</strong><span>Compare private birding options, routes, and tour lengths.</span></a>
+<a class="linkCard" data-analytics-event="internal_link_click" data-analytics-label="Birds of Mindo" data-analytics-location="related_pages" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/birds-of-mindo/"><strong>Birds of Mindo</strong><span>Explore target species, families, and cloud forest birdlife.</span></a>
+<a class="linkCard" data-analytics-event="internal_link_click" data-analytics-label="Plan Your Trip" data-analytics-location="related_pages" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/plan-your-trip/"><strong>Plan Your Trip</strong><span>Prepare for timing, transport, weather, and route planning.</span></a>
+<a class="linkCard" data-analytics-event="internal_link_click" data-analytics-label="Contact Us" data-analytics-location="related_pages" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/contact/"><strong>Contact Us</strong><span>Ask about dates, target birds, photography goals, or custom pacing.</span></a>
+</div>
+</section>
+
+<section class="finalCta" aria-labelledby="final-cta-title">
+<div class="finalGrid">
+<div class="finalLeft">
+<p class="socialKicker">START PLANNING</p>
+<h2 id="final-cta-title">Tell us what you hope to see in Mindo</h2>
+<p>Share your travel dates, birding level, photography goals, target birds, pickup needs, and how much time you have. We will point you toward the best Mindo route and tour length, whether that is a focused morning, a full-day target-species route, or a broader Ecuador birding plan.</p>
+<div class="ctaRow finalActions">
+<a class="btn primary" data-analytics-event="tour_booking_click" data-analytics-label="Book a Tour" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/book-tour/">Book a Tour</a>
+<a class="btn secondary" data-analytics-event="whatsapp_click" data-analytics-label="WhatsApp" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="about_page" data-analytics-link-url="dynamic_whatsapp" data-whatsapp-message-key="default_en" href="/contact/">WhatsApp</a>
+<a class="btn secondary" data-analytics-event="contact_method_click" data-analytics-label="Contact Us" data-analytics-location="final_cta" data-analytics-page-language="en" data-analytics-page-type="about_page" href="/contact/">Contact Us</a>
+</div>
+</div>
+<div class="nextSteps">
+<h3>What happens next</h3>
+<ol>
+<li>We review your dates, group size, and birding goals.</li>
+<li>We suggest a realistic route for the season and weather.</li>
+<li>You confirm timing, pickup needs, and the best tour length.</li>
+<li>Your guide adjusts the day around real bird activity.</li>
+</ol>
+</div>
+</div>
+</section>
+</div>
 </main>
+<div id="siteFooter"></div>
+</div>
 </body>
 </html>
