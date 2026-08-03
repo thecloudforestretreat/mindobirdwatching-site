@@ -753,7 +753,8 @@
       appScriptUrl: "https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec",
       defaultQrUrl: "https://www.mindobirdwatching.com/",
       defaultGuideImage: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png",
-      birdwatchingGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg",
+      birdwatchingGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png",
+      activitiesGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_activities_001.png",
       nightWalkImage: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg",
       nightWalkGuide: "Neicer",
       nightWalkGuidePhone: "+593 98 095 5817",
@@ -789,10 +790,10 @@
         ],
         guides: [
           { "guide": "Chicho", "guide_phone": "+593 98 600 5054", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
-          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
-          { "guide": "Anderson", "guide_phone": "+593 99 078 5026", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
-          { "guide": "Abel", "guide_phone": "+593 99 098 0074", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
-          { "guide": "Other", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" }
+          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Anderson", "guide_phone": "+593 99 078 5026", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Abel", "guide_phone": "+593 99 098 0074", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Other", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
         ],
         tours: []
       }
@@ -813,10 +814,10 @@
       };
       const BUILT_IN_GUIDES = [
         { guide:"Chicho", guide_phone:"+593 98 600 5054", image_url:"https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
-        { guide:"Neicer", guide_phone:"+593 98 095 5817", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
-        { guide:"Anderson", guide_phone:"+593 99 078 5026", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
-        { guide:"Abel", guide_phone:"+593 99 098 0074", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
-        { guide:"Other", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" }
+        { guide:"Neicer", guide_phone:"+593 98 095 5817", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Anderson", guide_phone:"+593 99 078 5026", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Abel", guide_phone:"+593 99 098 0074", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Other", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
       ];
 
       const els = {};
@@ -1318,6 +1319,29 @@
           .some(value => /night\s*walk/i.test(String(value || "")));
       }
 
+      function selectedTourText(){
+        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value, els.tourTypeInput.value]
+          .filter(Boolean).join(" ").toLowerCase();
+      }
+
+      function isBirdwatchingSelected(){
+        const text = selectedTourText();
+        return /bird|cock[-\s]*of[-\s]*the[-\s]*rock|toucan|jewels|morning forest/.test(text);
+      }
+
+      function isActivitySelected(){
+        const text = selectedTourText();
+        return Boolean(text) && !isNightWalkSelected() && !isBirdwatchingSelected() && !/^(none\s*)+$/.test(text);
+      }
+
+      function confirmationImageFor(guide){
+        const config = window.MBW_CONFIRMATION_CONFIG;
+        if(isNightWalkSelected()) return config.nightWalkImage;
+        if(isBirdwatchingSelected()) return String(guide || "").toLowerCase() === "chicho" ? config.defaultGuideImage : config.birdwatchingGuideImage;
+        if(isActivitySelected()) return config.activitiesGuideImage;
+        return imageForGuide(guide);
+      }
+
       function applyNightWalkDefaults(force){
         if(!isNightWalkSelected()) return;
         const config = window.MBW_CONFIRMATION_CONFIG;
@@ -1347,7 +1371,7 @@
         const pickupLocation = els.pickupLocationInput.value || "";
         els.outTransportation.innerHTML = buildTransportationDisplay(transport, pickupLocation);
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
-        setGuideImage(nightWalk ? window.MBW_CONFIRMATION_CONFIG.nightWalkImage : imageForGuide(guide));
+        setGuideImage(confirmationImageFor(guide));
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
       }
 
