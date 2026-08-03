@@ -59,6 +59,7 @@
       .recordServiceRow{grid-template-columns:1fr;gap:2px}
       .guestHistoryTrip{flex-basis:100%;min-width:0}
     }
+    .calendarViewSwitch{display:inline-flex;padding:3px;border:1px solid var(--line);border-radius:12px;background:#F4F7F1;gap:3px}.calendarViewSwitch button{min-height:32px;padding:7px 11px;border-color:transparent;background:transparent;box-shadow:none}.calendarViewSwitch button.active{background:var(--green);border-color:var(--green);color:#fff}.pipelineListPanel[hidden],.calendarMonthPanel[hidden]{display:none}.pipelineListHint{margin:0 0 12px;color:var(--muted);font-size:12px;font-weight:800}.pipelineListPanel .records{gap:9px}
   </style>
 </head>
 <body>
@@ -78,9 +79,9 @@
         </div>
       </header>
       <nav class="tabs" aria-label="CRM views">
-        <button class="tab active" data-view="dashboard" type="button">Dashboard</button>
+        <button class="tab" data-view="dashboard" type="button">Dashboard</button>
         <button class="tab" data-view="records" type="button">Records</button>
-        <button class="tab" data-view="calendar" type="button">Calendar</button>
+        <button class="tab active" data-view="calendar" type="button">Calendar</button>
         <button class="tab" data-view="reports" type="button">Reports</button>
         <button class="tab" data-view="intake" type="button">Create / Edit</button>
         <button class="tab" data-view="settings" type="button">Settings</button>
@@ -117,7 +118,7 @@
           </div>
         </aside>
         <section class="panel">
-          <div class="view active" id="dashboardView">
+          <div class="view" id="dashboardView">
             <div class="panelHeader"><h2 class="panelTitle">Dashboard</h2><p class="lastRefresh" id="lastRefreshText">Last refreshed: Not yet</p></div>
             <div class="stats">
               <button class="stat queue-new" data-queue="new" type="button"><span>New</span><strong id="statNew">0</strong></button>
@@ -167,16 +168,21 @@
             </div>
             <div class="records" id="recordList"></div>
           </div>
-          <div class="view" id="calendarView">
+          <div class="view active" id="calendarView">
             <div class="calendarTop">
               <h2 class="calendarTitle" id="calendarTitle">Calendar</h2>
               <div class="calendarControls">
+                <span class="calendarViewSwitch" aria-label="Calendar display">
+                  <button class="active" id="calendarMonthViewBtn" type="button">Calendar</button>
+                  <button id="calendarListViewBtn" type="button">Active Pipeline List</button>
+                </span>
                 <select id="calendarModeInput" aria-label="Calendar mode"><option value="tour">Tour dates</option><option value="followups">Follow-ups</option><option value="all">All activity</option></select>
                 <button id="calendarPrevBtn" type="button">Previous</button>
                 <button id="calendarTodayBtn" type="button">Today</button>
                 <button id="calendarNextBtn" type="button">Next</button>
               </div>
             </div>
+            <div class="calendarMonthPanel" id="calendarMonthPanel">
             <div class="calendarLegends" aria-label="Calendar legend">
               <div class="legend">
                 <span class="legendLabel">Status</span>
@@ -202,6 +208,11 @@
             <div class="dayAgenda">
               <h3 class="agendaDate" id="agendaDate">Select a day</h3>
               <div class="records" id="agendaRecords"></div>
+            </div>
+            </div>
+            <div class="pipelineListPanel" id="calendarPipelineListPanel" hidden>
+              <p class="pipelineListHint">All active pipeline services in chronological order. Select any entry to open its full CRM record.</p>
+              <div class="records" id="calendarPipelineRecords"></div>
             </div>
           </div>
           <div class="view" id="reportsView">
@@ -362,7 +373,7 @@
       "use strict";
       const CRM_API_DEFAULT = "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
       const els = {};
-      const state = { records: [], selectedId: "", view: "dashboard", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", tourItems: [] };
+      const state = { records: [], selectedId: "", view: "calendar", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", calendarDisplay: "month", tourItems: [] };
       let refreshInFlight=false;
       let refreshRetryTimer=0;
       let refreshRetryAttempt=0;
@@ -372,7 +383,7 @@
       const fields = ["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","notesInput","internalInput"];
       document.addEventListener("DOMContentLoaded", init);
       function init(){ cache(); bind(); initQuickFilters(); loadSettings(); loadLocalRecords(); if(!state.records.length) loadDemoRecords(false); render(); window.addEventListener("online",()=>{ refreshRetryAttempt=0; scheduleRefreshRetry(500); }); if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT) refreshCrm(); }
-      function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput","reportRangeHint","reportActivityCount","reportGuestCount","reportBookedCount","reportActionCount","reportTableBody","copyReportBtn","downloadReportBtn","printReportBtn","copyGuideReportBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","guestHistory","addTourItemBtn","tourItemsList","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyStatusMessageBtn","generateItineraryBtn","editSavedItineraryBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
+      function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","calendarMonthViewBtn","calendarListViewBtn","calendarMonthPanel","calendarPipelineListPanel","calendarPipelineRecords","reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput","reportRangeHint","reportActivityCount","reportGuestCount","reportBookedCount","reportActionCount","reportTableBody","copyReportBtn","downloadReportBtn","printReportBtn","copyGuideReportBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","guestHistory","addTourItemBtn","tourItemsList","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyStatusMessageBtn","generateItineraryBtn","editSavedItineraryBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
       function bind(){
         document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>setView(btn.dataset.view)));
         ["searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].forEach(id=>els[id].addEventListener("input",render));
@@ -419,6 +430,8 @@
         els.calendarNextBtn.addEventListener("click",()=>moveCalendar(1));
         els.calendarTodayBtn.addEventListener("click",()=>{state.calendarDate=new Date(); state.selectedCalendarDate=datePlusDays(0); render();});
         els.calendarModeInput.addEventListener("change",()=>{state.calendarMode=els.calendarModeInput.value||"tour"; renderCalendar();});
+        els.calendarMonthViewBtn.addEventListener("click",()=>{state.calendarDisplay="month";renderCalendar();});
+        els.calendarListViewBtn.addEventListener("click",()=>{state.calendarDisplay="list";renderCalendar();});
         ["reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput"].forEach(id=>els[id].addEventListener("change",()=>{ if((id==="reportStartInput"||id==="reportEndInput")&&els[id].value) els.reportRangeInput.value="custom"; renderReports(); }));
         document.querySelectorAll("[data-report-preset]").forEach(btn=>btn.addEventListener("click",()=>applyReportPreset(btn.dataset.reportPreset)));
         els.copyReportBtn.addEventListener("click",copyReportText);
@@ -1005,8 +1018,9 @@
       function deriveServiceType(tour){ const t=clean(tour).toLowerCase(); if(t.includes("night")) return "Night Walk"; if(t.includes("activit")||t.includes("waterfall")||t.includes("chocolate")) return "Activities"; if(t.includes("transport")) return "Transportation"; if(t.includes("custom")) return "Custom Tour"; return "Birdwatching"; }
       function deriveProductCode(tour){ const t=clean(tour).toLowerCase(); if(t.includes("quest")||t.includes("five toucan")) return "MBW006"; if(t.includes("andean")||t.includes("cock")) return "MBW005"; if(t.includes("jewels")||t.includes("morning forest")) return "MBW004"; if(t.includes("night")) return "Night Walk"; if(t.includes("waterfall")) return "Waterfall Tour"; if(t.includes("chocolate")) return "Chocolate Tour"; if(t.includes("transport")) return "Transportation"; return ""; }
       function moveCalendar(months){ const d=new Date(state.calendarDate); d.setMonth(d.getMonth()+months,1); state.calendarDate=d; render(); }
-      function renderCalendar(){ if(!els.calendarGrid) return; const base=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth(),1); const title=base.toLocaleDateString("en-US",{month:"long",year:"numeric"}); const modeLabel=state.calendarMode==="followups"?"Follow-ups":state.calendarMode==="all"?"All activity":"Tour dates"; els.calendarTitle.textContent=title+" · "+modeLabel; if(els.calendarModeInput) els.calendarModeInput.value=state.calendarMode; const first=new Date(base); first.setDate(1-first.getDay()); const cells=[]; cells.push(...["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(day=>`<div class="weekday">${day}</div>`)); for(let i=0;i<42;i++){ const day=new Date(first); day.setDate(first.getDate()+i); const iso=toIsoDate(day); const outside=day.getMonth()!==base.getMonth(); const today=iso===datePlusDays(0); const past=iso<datePlusDays(0); const selected=iso===state.selectedCalendarDate; const records=calendarRecordsForDate(iso); const bookedGuests=records.filter(r=>["booked","completed"].includes(normalizeStatus(r.status))||["deposit_paid","paid"].includes(normalizePayment(r.payment_status))).reduce((sum,r)=>sum+guestNumber(r.guest_count),0); const openSolo=records.some(r=>guestNumber(r.guest_count)===1&&r.grouping_preference==="open_to_group"); const capacity=capacityInfo(bookedGuests,openSolo); const visibleEvents=records.slice(0,3).map(r=>calendarEvent(r,iso)).join(""); const moreEvents=records.length>3?`<span class="moreEvents">+${records.length-3} more</span>`:""; cells.push(`<button class="dayCell ${outside?"outside":""} ${past?"past":""} ${today?"today":""} ${selected?"selected":""}" data-date="${iso}" type="button"><span class="dayHead"><span>${day.getDate()}</span><span class="dayCount">${records.length?records.length+" item"+(records.length===1?"":"s"):""}</span></span><span class="dayEvents">${visibleEvents}${moreEvents}</span>${records.length?`<span class="capacity ${capacity.className}">${capacity.label}</span>`:""}</button>`); }
+      function renderCalendar(){ if(!els.calendarGrid) return; const listMode=state.calendarDisplay==="list"; els.calendarMonthViewBtn.classList.toggle("active",!listMode); els.calendarListViewBtn.classList.toggle("active",listMode); els.calendarMonthPanel.hidden=listMode; els.calendarPipelineListPanel.hidden=!listMode; [els.calendarModeInput,els.calendarPrevBtn,els.calendarTodayBtn,els.calendarNextBtn].forEach(control=>control.hidden=listMode); if(listMode){renderActivePipelineCalendarList();return;} const base=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth(),1); const title=base.toLocaleDateString("en-US",{month:"long",year:"numeric"}); const modeLabel=state.calendarMode==="followups"?"Follow-ups":state.calendarMode==="all"?"All activity":"Tour dates"; els.calendarTitle.textContent=title+" · "+modeLabel; if(els.calendarModeInput) els.calendarModeInput.value=state.calendarMode; const first=new Date(base); first.setDate(1-first.getDay()); const cells=[]; cells.push(...["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(day=>`<div class="weekday">${day}</div>`)); for(let i=0;i<42;i++){ const day=new Date(first); day.setDate(first.getDate()+i); const iso=toIsoDate(day); const outside=day.getMonth()!==base.getMonth(); const today=iso===datePlusDays(0); const past=iso<datePlusDays(0); const selected=iso===state.selectedCalendarDate; const records=calendarRecordsForDate(iso); const bookedGuests=records.filter(r=>["booked","completed"].includes(normalizeStatus(r.status))||["deposit_paid","paid"].includes(normalizePayment(r.payment_status))).reduce((sum,r)=>sum+guestNumber(r.guest_count),0); const openSolo=records.some(r=>guestNumber(r.guest_count)===1&&r.grouping_preference==="open_to_group"); const capacity=capacityInfo(bookedGuests,openSolo); const visibleEvents=records.slice(0,3).map(r=>calendarEvent(r,iso)).join(""); const moreEvents=records.length>3?`<span class="moreEvents">+${records.length-3} more</span>`:""; cells.push(`<button class="dayCell ${outside?"outside":""} ${past?"past":""} ${today?"today":""} ${selected?"selected":""}" data-date="${iso}" type="button"><span class="dayHead"><span>${day.getDate()}</span><span class="dayCount">${records.length?records.length+" item"+(records.length===1?"":"s"):""}</span></span><span class="dayEvents">${visibleEvents}${moreEvents}</span>${records.length?`<span class="capacity ${capacity.className}">${capacity.label}</span>`:""}</button>`); }
         els.calendarGrid.innerHTML=cells.join(""); els.calendarGrid.querySelectorAll(".dayCell").forEach(btn=>btn.addEventListener("click",()=>{state.selectedCalendarDate=btn.dataset.date; renderCalendar();})); renderAgenda(); }
+      function renderActivePipelineCalendarList(){ const active=state.records.filter(record=>!isArchivedStatus(record)&&!isClosedStatus(record.status)); const entries=active.flatMap(record=>calendarEntriesForRecord(record).map(entry=>{ const item=entry._calendar_item||primaryTourItemFromRecord(entry); const itemStatus=normalizeStatus(item.status||entry.status); const date=toDateValue(item.date||item.tour_date||entry.requested_date||entry.requested_date_start); const single=Object.assign({},item,{status:itemStatus,date:date,tour_date:date}); return Object.assign({},entry,{status:itemStatus,requested_date:date,requested_date_start:date,tour_type:item.tour||entry.tour_type,product_selected:item.product_selected||entry.product_selected,guest_count:item.guests||entry.guest_count,pickup_location:item.pickup_location||entry.pickup_location,tour_items:JSON.stringify([single]),tour_items_json:JSON.stringify([single]),tour_count:"1"}); })); entries.sort((a,b)=>{ const ad=toDateValue(a.requested_date)||"9999-12-31"; const bd=toDateValue(b.requested_date)||"9999-12-31"; return ad.localeCompare(bd)||statusRank(a)-statusRank(b)||clean(a.full_name).localeCompare(clean(b.full_name)); }); els.calendarTitle.textContent="Active Pipeline · "+entries.length+" service"+(entries.length===1?"":"s"); renderRecords(els.calendarPipelineRecords,entries); }
       function renderAgenda(){ const records=calendarRecordsForDate(state.selectedCalendarDate).sort((a,b)=>statusRank(a)-statusRank(b)); const modeLabel=state.calendarMode==="followups"?"follow-ups":state.calendarMode==="all"?"activity":"tour dates"; els.agendaDate.textContent=state.selectedCalendarDate?("Agenda for "+state.selectedCalendarDate+" · "+modeLabel):"Select a day"; renderRecords(els.agendaRecords,records); }
       function calendarRecordsForDate(iso){ const mode=state.calendarMode||"tour"; const entries=[]; state.records.forEach(r=>{ const status=normalizeStatus(r.status); if(["cancelled","did_not_book","duplicate"].includes(status)) return; const tourEntries=calendarEntriesForRecord(r).filter(entry=>isRecordOnTourDate(entry,iso)); const followHit=r.followup_date===iso; if(mode==="followups"&&followHit) entries.push(r); else if(mode==="all"){ entries.push(...tourEntries); if(followHit&&!tourEntries.length) entries.push(Object.assign({},r,{_calendar_followup:true})); } else entries.push(...tourEntries); }); return entries; }
       function isRecordOnTourDate(r,iso){ if(r._calendar_item) return r.requested_date===iso; const items=normalizeTourItems(r); if(items.length) return items.some(item=>item.tour_date===iso); const start=toDateValue(r.requested_date||r.requested_date_start); if(!start) return false; return iso===start; }
