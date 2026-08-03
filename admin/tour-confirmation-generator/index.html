@@ -390,6 +390,22 @@
       box-shadow:0 0 18px rgba(255,255,255,.72);
       filter:none;
     }
+    .certificate.birdwatchingArtMode .guideImage{
+      left:1168px;
+      top:7px;
+      width:700px;
+      height:1000px;
+      background-position:center center;
+      background-size:contain;
+    }
+    .certificate.activitiesArtMode .guideImage{
+      left:1256px;
+      top:100px;
+      width:525px;
+      height:750px;
+      background-position:center center;
+      background-size:contain;
+    }
     .mindoLetters{
       position:absolute;
       z-index:5;
@@ -624,6 +640,7 @@
               <div class="field span2">
                 <label for="contactInput">Guide Phone</label>
                 <input id="contactInput" type="text" placeholder="+593 98 600 5054" />
+                <span class="hint">Choose Other to enter a different guide phone number.</span>
               </div>
               <div class="field">
                 <label for="lengthInput">Length</label>
@@ -752,6 +769,8 @@
       appScriptUrl: "https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec",
       defaultQrUrl: "https://www.mindobirdwatching.com/",
       defaultGuideImage: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png",
+      birdwatchingGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png",
+      activitiesGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_activities_001.png",
       nightWalkImage: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg",
       nightWalkGuide: "Neicer",
       nightWalkGuidePhone: "+593 98 095 5817",
@@ -787,7 +806,10 @@
         ],
         guides: [
           { "guide": "Chicho", "guide_phone": "+593 98 600 5054", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
-          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg" }
+          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Anderson", "guide_phone": "+593 99 078 5026", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Abel", "guide_phone": "+593 99 098 0074", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Other", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
         ],
         tours: []
       }
@@ -806,6 +828,13 @@
         search: "",
         qr: null
       };
+      const BUILT_IN_GUIDES = [
+        { guide:"Chicho", guide_phone:"+593 98 600 5054", image_url:"https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
+        { guide:"Neicer", guide_phone:"+593 98 095 5817", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Anderson", guide_phone:"+593 99 078 5026", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Abel", guide_phone:"+593 99 098 0074", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Other", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
+      ];
 
       const els = {};
 
@@ -973,7 +1002,9 @@
       function hydrateData(data){
         state.data = data;
         state.records = (data.confirmations || []).filter(r => hasUsefulRecord(r));
-        state.guides = (data.guides || []).filter(g => String(val(g, ["guide", "Guide"], "") || "").trim() !== "");
+        const incomingGuides = (data.guides || []).filter(g => String(val(g, ["guide", "Guide"], "") || "").trim() !== "");
+        const builtInNames = new Set(BUILT_IN_GUIDES.map(g => g.guide.toLowerCase()));
+        state.guides = BUILT_IN_GUIDES.concat(incomingGuides.filter(g => !builtInNames.has(String(val(g, ["guide", "Guide"], "")).toLowerCase())));
         state.tours = (data.tours || []).map(t => val(t, ["tour_name", "Tour Name", "tour", "Tour", "name", "Name"], "")).filter(Boolean);
         renderGuideOptions();
         renderTourOptions();
@@ -1001,7 +1032,7 @@
           els.guideInput.appendChild(opt);
         });
         if(!state.guides.length){
-          ["Chicho", "Neicer"].forEach(name => {
+          ["Chicho", "Neicer", "Anderson", "Abel", "Other"].forEach(name => {
             const opt = document.createElement("option");
             opt.value = name;
             opt.textContent = name;
@@ -1279,8 +1310,16 @@
       }
 
       function onGuideChange(){
-        const contact = contactForGuide(els.guideInput.value);
-        if(contact) els.contactInput.value = contact;
+        const guide = els.guideInput.value;
+        const isOther = guide === "Other";
+        const contact = contactForGuide(guide);
+        els.contactInput.placeholder = isOther ? "Enter guide phone number" : "+593 98 600 5054";
+        if(isOther){
+          els.contactInput.value = "";
+          els.contactInput.focus();
+        } else if(contact){
+          els.contactInput.value = contact;
+        }
         updatePreviewFromForm();
       }
 
@@ -1294,6 +1333,29 @@
       function isNightWalkSelected(){
         return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value, els.tourTypeInput.value]
           .some(value => /night\s*walk/i.test(String(value || "")));
+      }
+
+      function selectedTourText(){
+        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value, els.tourTypeInput.value]
+          .filter(Boolean).join(" ").toLowerCase();
+      }
+
+      function isBirdwatchingSelected(){
+        const text = selectedTourText();
+        return /bird|cock[-\s]*of[-\s]*the[-\s]*rock|toucan|jewels|morning forest/.test(text);
+      }
+
+      function isActivitySelected(){
+        const text = selectedTourText();
+        return Boolean(text) && !isNightWalkSelected() && !isBirdwatchingSelected() && !/^(none\s*)+$/.test(text);
+      }
+
+      function confirmationImageFor(guide){
+        const config = window.MBW_CONFIRMATION_CONFIG;
+        if(isNightWalkSelected()) return config.nightWalkImage;
+        if(isBirdwatchingSelected()) return String(guide || "").toLowerCase() === "chicho" ? config.defaultGuideImage : config.birdwatchingGuideImage;
+        if(isActivitySelected()) return config.activitiesGuideImage;
+        return imageForGuide(guide);
       }
 
       function applyNightWalkDefaults(force){
@@ -1311,8 +1373,14 @@
       function updatePreviewFromForm(){
         const guide = els.guideInput.value || "Chicho";
         const nightWalk = isNightWalkSelected();
+        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(guide).toLowerCase() !== "chicho";
+        const activitiesArt = !nightWalk && isActivitySelected();
         const certificate = document.getElementById("certificate");
-        if(certificate) certificate.classList.toggle("nightWalkMode", nightWalk);
+        if(certificate){
+          certificate.classList.toggle("nightWalkMode", nightWalk);
+          certificate.classList.toggle("birdwatchingArtMode", birdwatchingArt);
+          certificate.classList.toggle("activitiesArtMode", activitiesArt);
+        }
         els.outDateIssued.textContent = formatDateIssued(els.dateIssuedInput.value || todayMDY());
         els.outGuests.textContent = els.guestsInput.value || "Guest Name";
         els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
@@ -1325,7 +1393,7 @@
         const pickupLocation = els.pickupLocationInput.value || "";
         els.outTransportation.innerHTML = buildTransportationDisplay(transport, pickupLocation);
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
-        setGuideImage(nightWalk ? window.MBW_CONFIRMATION_CONFIG.nightWalkImage : imageForGuide(guide));
+        setGuideImage(confirmationImageFor(guide));
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
       }
 
@@ -1411,6 +1479,9 @@
       function renderExportCanvas(){
         const imageUrls = getExportImageUrls();
         const nightWalk = isNightWalkSelected();
+        const guideName = els.guideInput.value || "Chicho";
+        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(guideName).toLowerCase() !== "chicho";
+        const activitiesArt = !nightWalk && isActivitySelected();
         return Promise.all([
           loadExportImage(imageUrls.background),
           loadExportImage(imageUrls.logo),
@@ -1438,6 +1509,10 @@
           drawContain(ctx, mindo, 1158, 530, 720, getContainHeight(mindo, 720));
           if(nightWalk){
             drawCoverCircle(ctx, guide, 1329, 239, 472);
+          } else if(activitiesArt){
+            drawContain(ctx, guide, 1256, 100, 525, 750);
+          } else if(birdwatchingArt){
+            drawContain(ctx, guide, 1168, 7, 700, 1000);
           } else {
             drawContain(ctx, guide, 1180, 140, 700, 1000);
           }
@@ -1687,6 +1762,9 @@
       }
 
       function imageForGuide(name){
+        if(["neicer","anderson","abel"].includes(String(name || "").toLowerCase())){
+          return window.MBW_CONFIRMATION_CONFIG.birdwatchingGuideImage;
+        }
         const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
         return g ? val(g, ["image_url", "Image URL"], window.MBW_CONFIRMATION_CONFIG.defaultGuideImage) : window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
       }
