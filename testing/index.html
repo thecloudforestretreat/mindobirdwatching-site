@@ -390,6 +390,22 @@
       box-shadow:0 0 18px rgba(255,255,255,.72);
       filter:none;
     }
+    .certificate.birdwatchingArtMode .guideImage{
+      left:1180px;
+      top:100px;
+      width:700px;
+      height:1000px;
+      background-position:center center;
+      background-size:contain;
+    }
+    .certificate.activitiesArtMode .guideImage{
+      left:1329px;
+      top:100px;
+      width:525px;
+      height:750px;
+      background-position:center center;
+      background-size:contain;
+    }
     .mindoLetters{
       position:absolute;
       z-index:5;
@@ -1357,8 +1373,14 @@
       function updatePreviewFromForm(){
         const guide = els.guideInput.value || "Chicho";
         const nightWalk = isNightWalkSelected();
+        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(guide).toLowerCase() !== "chicho";
+        const activitiesArt = !nightWalk && isActivitySelected();
         const certificate = document.getElementById("certificate");
-        if(certificate) certificate.classList.toggle("nightWalkMode", nightWalk);
+        if(certificate){
+          certificate.classList.toggle("nightWalkMode", nightWalk);
+          certificate.classList.toggle("birdwatchingArtMode", birdwatchingArt);
+          certificate.classList.toggle("activitiesArtMode", activitiesArt);
+        }
         els.outDateIssued.textContent = formatDateIssued(els.dateIssuedInput.value || todayMDY());
         els.outGuests.textContent = els.guestsInput.value || "Guest Name";
         els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
@@ -1457,6 +1479,9 @@
       function renderExportCanvas(){
         const imageUrls = getExportImageUrls();
         const nightWalk = isNightWalkSelected();
+        const guideName = els.guideInput.value || "Chicho";
+        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(guideName).toLowerCase() !== "chicho";
+        const activitiesArt = !nightWalk && isActivitySelected();
         return Promise.all([
           loadExportImage(imageUrls.background),
           loadExportImage(imageUrls.logo),
@@ -1484,6 +1509,10 @@
           drawContain(ctx, mindo, 1158, 530, 720, getContainHeight(mindo, 720));
           if(nightWalk){
             drawCoverCircle(ctx, guide, 1329, 239, 472);
+          } else if(activitiesArt){
+            drawContain(ctx, guide, 1329, 100, 525, 750);
+          } else if(birdwatchingArt){
+            drawContain(ctx, guide, 1180, 100, 700, 1000);
           } else {
             drawContain(ctx, guide, 1180, 140, 700, 1000);
           }
