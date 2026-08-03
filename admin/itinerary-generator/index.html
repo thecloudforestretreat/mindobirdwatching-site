@@ -284,7 +284,23 @@
         'MBW006 - Quest for Five Toucans Full Day',
         'Night Walk',
         'Waterfall Tour / Hike',
+        'Waterfall Tour',
         'Chocolate Tour',
+        'Coffee Tour',
+        'Butterfly Garden',
+        'Frog Concert',
+        'Quad Tour',
+        'Canopy',
+        'Orchid Garden Tour',
+        'Tubing',
+        'Rafting',
+        'Canyoning',
+        'Paintball',
+        'Horseback Riding',
+        'Mountain Biking',
+        'Double Extreme Swing',
+        'Extreme Bike – Sky Bike',
+        'Sky Ride',
         'Transportation',
         'Other'
       ];
@@ -898,6 +914,52 @@
           return true;
         }catch(error){ return false; }
       }
+      function loadCrmItineraryDraft(){
+        const params = new URLSearchParams(window.location.search);
+        if(params.get('source') !== 'guest_crm') return null;
+        try{
+          const draft = JSON.parse(localStorage.getItem('mbwItineraryGeneratorDraft') || 'null');
+          if(draft && draft.source === 'guest_crm') return draft;
+        }catch(error){}
+        return {
+          source:'guest_crm',
+          guestName:params.get('guest') || '',
+          whatsappNumber:params.get('phone') || '',
+          guestCount:Number(params.get('guests') || 1),
+          startDate:params.get('start_date') || '',
+          endDate:params.get('end_date') || params.get('start_date') || '',
+          items:[]
+        };
+      }
+      function applyCrmItineraryDraft(draft){
+        if(!draft) return false;
+        $('guestName').value = capitalizeFirst(draft.guestName || '');
+        $('tripTitle').value = draft.tripTitle || COPY.en.defaultTitle;
+        $('language').value = draft.language === 'es' ? 'es' : 'en';
+        $('startDate').value = draft.startDate || '';
+        $('endDate').value = draft.endDate || draft.startDate || '';
+        $('guestCount').value = Number(draft.guestCount || 1);
+        $('whatsappNumber').value = draft.whatsappNumber || '';
+        if(draft.openingText) $('openingText').value = draft.openingText;
+        state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
+          const requestedProduct = String(raw.productPreset || raw.name || 'Other');
+          const knownProduct = PRODUCT_OPTIONS.includes(requestedProduct);
+          return defaultItem({
+            id:uid(),
+            date:raw.date || draft.startDate || '',
+            startTime:raw.startTime || '',
+            duration:raw.duration || '',
+            type:SERVICE_TYPES.includes(raw.type) ? raw.type : 'Custom',
+            productPreset:knownProduct ? requestedProduct : 'Other',
+            name:knownProduct ? requestedProduct : String(raw.name || requestedProduct),
+            note:raw.note || raw.description || '',
+            quantity:Number(raw.quantity || draft.guestCount || 1),
+            unitPrice:Number(raw.unitPrice || 0)
+          });
+        });
+        applyLanguageDefaults($('language').value,true);
+        return true;
+      }
       function updateAll(shouldRenderEditors=false){
         if(shouldRenderEditors) renderEditors();
         applyDateMinimums();
@@ -1042,7 +1104,8 @@
         toast('Itinerary reset.');
       });
 
-      const loaded = loadState();
+      const crmDraft = loadCrmItineraryDraft();
+      const loaded = crmDraft ? applyCrmItineraryDraft(crmDraft) : loadState();
       if(!loaded || !state.items.length){
         state.items=[];
         state.items.push(defaultItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'}));
