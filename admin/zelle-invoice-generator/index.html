@@ -1212,19 +1212,66 @@
           activeButton.textContent = "Preparing image...";
         }
 
+        let exportStage = null;
         try{
           if(document.fonts && document.fonts.ready) await document.fonts.ready;
           await waitForInvoiceImages();
-          const canvas = await window.html2canvas(els.invoicePreview, {
+          const exportWidth = els.invoicePreview.scrollWidth;
+          const exportHeight = els.invoicePreview.scrollHeight;
+
+          exportStage = document.createElement("div");
+          Object.assign(exportStage.style, {
+            position:"fixed",
+            left:"-100000px",
+            top:"0",
+            width:exportWidth + "px",
+            minHeight:exportHeight + "px",
+            margin:"0",
+            padding:"0",
+            background:"#ffffff",
+            backgroundColor:"#ffffff",
+            backgroundImage:"none",
+            opacity:"1",
+            filter:"none",
+            mixBlendMode:"normal",
+            zIndex:"2147483647",
+            overflow:"hidden",
+            pointerEvents:"none"
+          });
+          exportStage.setAttribute("aria-hidden", "true");
+
+          const exportInvoice = els.invoicePreview.cloneNode(true);
+          exportInvoice.removeAttribute("id");
+          Object.assign(exportInvoice.style, {
+            width:exportWidth + "px",
+            minHeight:exportHeight + "px",
+            height:"auto",
+            margin:"0",
+            background:"#ffffff",
+            backgroundColor:"#ffffff",
+            backgroundImage:"none",
+            opacity:"1",
+            filter:"none",
+            mixBlendMode:"normal",
+            boxShadow:"none"
+          });
+          exportStage.appendChild(exportInvoice);
+          document.body.appendChild(exportStage);
+
+          await new Promise(resolve => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+          });
+
+          const canvas = await window.html2canvas(exportInvoice, {
             backgroundColor:"#ffffff",
             scale:Math.min(2, window.devicePixelRatio || 2),
             useCORS:true,
             allowTaint:false,
             logging:false,
-            width:els.invoicePreview.scrollWidth,
-            height:els.invoicePreview.scrollHeight,
-            windowWidth:els.invoicePreview.scrollWidth,
-            windowHeight:els.invoicePreview.scrollHeight
+            width:exportWidth,
+            height:exportHeight,
+            windowWidth:exportWidth,
+            windowHeight:exportHeight
           });
           const fileName = buildPdfTitle() + ".png";
           canvas.toBlob(async blob => {
@@ -1265,6 +1312,7 @@
           console.error(error);
           showToast("Image export failed. Try again or use desktop PDF.");
         }finally{
+          if(exportStage) exportStage.remove();
           if(activeButton && activeButton.tagName === "BUTTON"){
             activeButton.disabled = false;
             activeButton.textContent = originalText;
