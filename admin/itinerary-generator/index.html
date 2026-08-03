@@ -145,6 +145,7 @@
         </div>
         <div class="actions">
           <a class="buttonLink" href="/">Admin</a>
+          <button type="button" id="saveCrmBtn" disabled>Save Itinerary to CRM</button>
           <button type="button" id="copyHtmlBtn" class="primary">Copy HTML</button>
           <button type="button" id="copyWhatsAppBtn">Copy WhatsApp</button>
           <button type="button" id="openWhatsAppBtn">Open WhatsApp</button>
@@ -278,6 +279,7 @@
       const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
       const DEFAULT_WHATSAPP_NUMBER = '593969076501';
       const STORAGE_KEY = 'mbw_itinerary_generator_v1';
+      const CRM_API_URL = 'https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api';
       const SERVICE_TYPES = ['Transportation','Full-Day Tour','Half-Day Tour','Birdwatching Tour','Night Walk','Activity','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'];
       const PRODUCT_OPTIONS = [
         'MBW002 - Private Birdwatching Tour',
@@ -438,7 +440,7 @@
       }
 
       const $ = (id) => document.getElementById(id);
-      const state = { items: [] };
+      const state = { items: [], inquiryId:'', itineraryVersion:0, itineraryStatus:'draft', crmRecord:null };
 
       function uid(){ return 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
       function todayIso(){
@@ -970,6 +972,12 @@
       }
       function applyCrmItineraryDraft(draft){
         if(!draft) return false;
+        state.inquiryId = String(draft.inquiryId || '');
+        state.itineraryVersion = Number(draft.itineraryVersion || 0);
+        state.itineraryStatus = draft.itineraryStatus || 'draft';
+        try{ state.crmRecord = JSON.parse(localStorage.getItem('mbwSelectedCrmRecord') || 'null'); }catch(error){ state.crmRecord = null; }
+        $('saveCrmBtn').disabled = !state.inquiryId;
+        $('saveCrmBtn').title = state.inquiryId ? `Save to inquiry ${state.inquiryId}` : 'Open this generator from a CRM inquiry to save it';
         $('guestName').value = capitalizeFirst(draft.guestName || '');
         $('tripTitle').value = draft.tripTitle || COPY.en.defaultTitle;
         $('language').value = draft.language === 'es' ? 'es' : 'en';
@@ -996,6 +1004,48 @@
         });
         applyLanguageDefaults($('language').value,true);
         return true;
+      }
+      async function crmApi(action,data={}){
+        const response = await fetch(CRM_API_URL,{
+          method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+          body:new URLSearchParams({payload:JSON.stringify({action,...data})}).toString(),
+          cache:'no-store',
+          credentials:'omit'
+        });
+        const text = await response.text();
+        let result;
+        try{ result = JSON.parse(text); }catch(error){ throw new Error(text || `CRM returned ${response.status}`); }
+        if(!response.ok || result.ok === false) throw new Error(result.error || result.message || `CRM returned ${response.status}`);
+        return result;
+      }
+      async function saveItineraryToCrm(){
+        if(!state.inquiryId){ toast('Open the itinerary from a CRM inquiry before saving.'); return; }
+        const button = $('saveCrmBtn');
+        button.disabled = true;
+        button.textContent = 'Saving…';
+        try{
+          const listed = await crmApi('list_inquiries');
+          const records = Array.isArray(listed) ? listed : (listed.records || listed.data || listed.inquiries || []);
+          const current = records.find(record => String(record.inquiry_id || '') === state.inquiryId) || state.crmRecord;
+          if(!current) throw new Error('The linked CRM inquiry could not be found');
+          const nextVersion = Math.max(Number(current.itinerary_version || 0),state.itineraryVersion) + 1;
+          const updatedAt = new Date().toISOString();
+          const itinerary = {...getFormData(),source:'guest_crm',inquiryId:state.inquiryId,itineraryVersion:nextVersion,itineraryStatus:'draft',itineraryUpdatedAt:updatedAt};
+          const record = {...current,itinerary_json:JSON.stringify(itinerary),itinerary_updated_at:updatedAt,itinerary_version:String(nextVersion),itinerary_status:'draft',updated_at:updatedAt};
+          await crmApi('update_inquiry',{record,inquiry_row:record});
+          state.itineraryVersion = nextVersion;
+          state.itineraryStatus = 'draft';
+          state.crmRecord = record;
+          localStorage.setItem('mbwSelectedCrmRecord',JSON.stringify(record));
+          localStorage.setItem('mbwItineraryGeneratorDraft',JSON.stringify(itinerary));
+          toast(`Itinerary saved to CRM · version ${nextVersion}`);
+        }catch(error){
+          toast('CRM save failed: ' + error.message);
+        }finally{
+          button.disabled = false;
+          button.textContent = 'Save Itinerary to CRM';
+        }
       }
       function updateAll(shouldRenderEditors=false){
         if(shouldRenderEditors) renderEditors();
@@ -1069,6 +1119,7 @@
       $('startDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('endDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('addItemBtn').addEventListener('click',() => addItem());
+      $('saveCrmBtn').addEventListener('click',saveItineraryToCrm);
       $('downloadBtn').addEventListener('click',() => {
         const data = getFormData();
         if(!data.guestName) toast('Add the guest name before downloading.');
