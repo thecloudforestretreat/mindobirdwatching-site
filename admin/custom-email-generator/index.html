@@ -445,6 +445,14 @@
             </div>
           </div>
           <div class="field">
+            <label for="emailWhatsappNumberInput">WhatsApp Number Linked in Email</label>
+            <select id="emailWhatsappNumberInput">
+              <option value="593969076501" selected>+593 96 907 6501 (Default)</option>
+              <option value="13054585402">+1 305 458 5402</option>
+            </select>
+            <p class="hint">This number is used by the email’s WhatsApp button and icon. Your selection is remembered on this device.</p>
+          </div>
+          <div class="field">
             <label for="heroEyebrowInput">Header Label</label>
             <input id="heroEyebrowInput" type="text" value="Private &amp; group cloud forest tours" />
           </div>
@@ -533,12 +541,15 @@ experiences waiting for you in Mindo.</textarea>
         showHtml: false
       };
       const ORDER_STORAGE_KEY = "mbwEmailGeneratorSectionOrderV2";
+      const WHATSAPP_STORAGE_KEY = "mbwEmailGeneratorWhatsappNumber";
+      const DEFAULT_WHATSAPP_NUMBER = "593969076501";
       const els = {};
 
       document.addEventListener("DOMContentLoaded", init);
 
       function init(){
         cacheEls();
+        loadWhatsappPreference();
         els.datesPickerInput.min = localTodayIso();
         loadSiteConfigIfNeeded(() => {
           loadBlockCatalogIfNeeded(() => {
@@ -562,6 +573,7 @@ experiences waiting for you in Mindo.</textarea>
       function cacheEls(){
         [
           "emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "datesPickerInput", "languageInput", "heroEyebrowInput",
+          "emailWhatsappNumberInput",
           "introInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "videoWeekInput", "videoFields", "videoUrlInput", "videoTitleInput", "videoIntroInput", "videoPreview",
           "selectedSummary", "blockGroups", "emailPreview", "htmlOutput", "copyHtmlBtn", "downloadHtmlBtn",
           "copyRenderedBtn", "toggleHtmlBtn", "resetBtn", "resetOrderBtn", "toast"
@@ -577,6 +589,10 @@ experiences waiting for you in Mindo.</textarea>
           applyLanguageDefaults();
           applyVideoLanguageDefaults();
           renderBlockControls();
+          updateEmail();
+        });
+        els.emailWhatsappNumberInput.addEventListener("change", () => {
+          localStorage.setItem(WHATSAPP_STORAGE_KEY, selectedWhatsappNumber());
           updateEmail();
         });
         els.guestNameInput.addEventListener("blur", () => {
@@ -634,6 +650,15 @@ experiences waiting for you in Mindo.</textarea>
           els.datesInput.value = formatDisplayDate(isoDate || date);
         }
         if(tour) els.emailTitleInput.value = tour + " Options";
+      }
+
+      function selectedWhatsappNumber(){
+        return String(els.emailWhatsappNumberInput.value || DEFAULT_WHATSAPP_NUMBER).replace(/\D/g, "") || DEFAULT_WHATSAPP_NUMBER;
+      }
+
+      function loadWhatsappPreference(){
+        const saved = String(localStorage.getItem(WHATSAPP_STORAGE_KEY) || "").replace(/\D/g, "");
+        els.emailWhatsappNumberInput.value = ["593969076501","13054585402"].includes(saved) ? saved : DEFAULT_WHATSAPP_NUMBER;
       }
 
       function getCrmHandoff(){
@@ -1586,9 +1611,9 @@ experiences waiting for you in Mindo.</textarea>
         const nextBrand = Object.assign({}, brand || {});
         const config = window.MBW_SITE_CONFIG || {};
         const contact = config.contact || {};
-        const number = String(contact.whatsappNumberDigits || "").replace(/\D/g, "");
+        const number = selectedWhatsappNumber();
         if(contact.email) nextBrand.email = contact.email;
-        nextBrand.whatsapp = "https://wa.me/" + (number || "13054585402");
+        nextBrand.whatsapp = "https://wa.me/" + number;
         if(Array.isArray(nextBrand.icons)){
           nextBrand.icons = nextBrand.icons.map(icon => {
             if(String(icon.alt || "").toLowerCase() !== "whatsapp") return icon;
@@ -1805,13 +1830,7 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function buildWhatsAppUrl(message){
-        const config = window.MBW_SITE_CONFIG || {};
-        const contact = config.contact || {};
-        const number = String(contact.whatsappNumberDigits || "").replace(/\D/g, "");
-        if(number) return "https://wa.me/" + number + "?text=" + encodeURIComponent(message);
-        const brand = applySiteContact(getCatalog().brand);
-        const base = String(brand.whatsapp || "https://wa.me/13054585402").split("?")[0];
-        return base + "?text=" + encodeURIComponent(message);
+        return "https://wa.me/" + selectedWhatsappNumber() + "?text=" + encodeURIComponent(message);
       }
 
       function copyHtml(){
