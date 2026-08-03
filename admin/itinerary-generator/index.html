@@ -60,6 +60,8 @@
     .itemHead strong{color:var(--green);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
     .itemActions{display:flex;gap:6px}
     .miniBtn{min-height:34px;padding:7px 10px;border-radius:11px;font-size:12px;box-shadow:none}
+    .timeSelectGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+    .timeSelectGrid select{padding-left:8px;padding-right:8px;text-align:center;text-align-last:center}
     .summaryBox{border:1px solid rgba(13,89,37,.2);border-radius:15px;background:rgba(199,218,172,.22);padding:12px;margin-top:10px}
     .summaryRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 0;font-weight:850}
     .summaryRow.total{margin-top:5px;padding-top:10px;border-top:1px solid rgba(13,89,37,.2);color:var(--green);font-size:18px;font-weight:950}
@@ -483,6 +485,25 @@
         const date = new Date(2000,0,1,hours,minutes || 0);
         return new Intl.DateTimeFormat(c.locale,{hour:'numeric',minute:'2-digit'}).format(date);
       }
+      function timeParts(value){
+        const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+        if(!match) return {hour:'',minute:'00',meridiem:'AM'};
+        const hour24 = Number(match[1]);
+        return {hour:String(hour24 % 12 || 12),minute:['00','15','30','45'].includes(match[2]) ? match[2] : '00',meridiem:hour24 >= 12 ? 'PM' : 'AM'};
+      }
+      function timeFromParts(hour,minute,meridiem){
+        if(!hour) return '';
+        let hour24 = Number(hour) % 12;
+        if(meridiem === 'PM') hour24 += 12;
+        return String(hour24).padStart(2,'0') + ':' + (['00','15','30','45'].includes(minute) ? minute : '00');
+      }
+      function normalizeDurationChoice(value,type=''){
+        const text = String(value || '').trim().toLowerCase();
+        if(text === 'half day' || text.includes('half')) return 'Half Day';
+        if(text === 'full day' || text.includes('full') || text.includes('10 hour')) return 'Full Day';
+        if(text === 'evening' || text.includes('evening') || text.includes('night') || (text.includes('2 hour') && String(type).toLowerCase().includes('night'))) return 'Evening';
+        return 'Flexible';
+      }
       function toast(message){
         const el = $('toast');
         el.textContent = message;
@@ -494,6 +515,12 @@
         const item = Object.assign({
           id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Full-Day Tour', productPreset:'Other', name:'', note:'', quantity:1, unitPrice:0
         },overrides);
+        const parts = timeParts(item.startTime);
+        item.startHour = item.startHour || parts.hour;
+        item.startMinute = item.startMinute || parts.minute;
+        item.startMeridiem = item.startMeridiem || parts.meridiem;
+        item.startTime = timeFromParts(item.startHour,item.startMinute,item.startMeridiem);
+        item.duration = normalizeDurationChoice(item.duration,item.type);
         item.productPreset = inferProductPreset(item);
         if(item.productPreset !== 'Other') item.name = item.productPreset;
         return item;
@@ -540,6 +567,12 @@
           updateAll(false);
           return;
         }
+        if(['startHour','startMinute','startMeridiem'].includes(field)){
+          item[field] = value;
+          item.startTime = timeFromParts(item.startHour,item.startMinute,item.startMeridiem);
+          updateAll(false);
+          return;
+        }
         item[field] = ['quantity','unitPrice'].includes(field) ? Number(value || 0) : value;
         updateAll(false);
       }
@@ -582,11 +615,15 @@
             <div class="two">
               <div class="field">
                 <label>Start time</label>
-                <input type="time" data-field="startTime" value="${escapeHtml(item.startTime)}" />
+                <div class="timeSelectGrid">
+                  <select data-field="startHour" aria-label="Start hour"><option value="">Hour</option>${Array.from({length:12},(_,i)=>String(i+1)).map(hour=>`<option value="${hour}" ${item.startHour===hour?'selected':''}>${hour}</option>`).join('')}</select>
+                  <select data-field="startMinute" aria-label="Start minutes">${['00','15','30','45'].map(minute=>`<option value="${minute}" ${item.startMinute===minute?'selected':''}>${minute}</option>`).join('')}</select>
+                  <select data-field="startMeridiem" aria-label="Start AM or PM">${['AM','PM'].map(period=>`<option value="${period}" ${item.startMeridiem===period?'selected':''}>${period}</option>`).join('')}</select>
+                </div>
               </div>
               <div class="field">
                 <label>Duration</label>
-                <input type="text" data-field="duration" value="${escapeHtml(item.duration)}" placeholder="10 hours or 7:00 PM-9:00 PM" />
+                <select data-field="duration">${['Half Day','Full Day','Flexible','Evening'].map(duration=>`<option value="${duration}" ${item.duration===duration?'selected':''}>${duration}</option>`).join('')}</select>
               </div>
             </div>
             <div class="field">
