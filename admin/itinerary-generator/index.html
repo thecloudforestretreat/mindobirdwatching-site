@@ -241,6 +241,10 @@
               <span>Show the $100 Stripe tour deposit section in the guest itinerary.</span>
             </label>
             <label class="checkRow">
+              <input id="depositPaid" type="checkbox" />
+              <span>The guest has paid the $100 deposit. Show the deposit-received WhatsApp message instead.</span>
+            </label>
+            <label class="checkRow">
               <input id="showItemPrices" type="checkbox" checked />
               <span>Show individual service prices beside timeline items.</span>
             </label>
@@ -351,10 +355,10 @@
 
       const COPY = {
         en: {
-          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', payDeposit:'Pay $100 Tour Deposit', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
+          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay $100 Tour Deposit', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
         },
         es: {
-          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', payDeposit:'Pagar depósito de $100', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
+          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito de $100', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
         }
       };
       const DEFAULT_TEXT_VARIANTS = {
@@ -451,6 +455,12 @@
       function capitalizeFirst(value){
         const text = String(value || '');
         return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+      }
+      function guestFirstName(value){
+        return String(value || '').trim().split(/\s+/)[0] || '';
+      }
+      function openingWithoutGreeting(value){
+        return String(value || '').trim().replace(/^(?:hi|hello|hola)\s+[^,\\n]+[,!]?\\s*/i,'').trim();
       }
       function getItineraryWhatsAppNumber(){
         const selected = $('replyWhatsappNumber') ? $('replyWhatsappNumber').value : '';
@@ -662,6 +672,7 @@
           closingText:$('closingText').value.trim(),
           discount:Number($('discount').value || 0),
           showDeposit:$('showDeposit').checked,
+          depositPaid:$('depositPaid').checked,
           showItemPrices:$('showItemPrices').checked,
           items:state.items.map(item => ({...item}))
         };
@@ -729,7 +740,7 @@
               <div class="heroEyebrow">${escapeHtml(c.eyebrow)}</div>
               <div class="heroMeta">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
               <h1 class="heroTitle">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
-              <p class="heroIntro">${escapeHtml(c.hi)} ${escapeHtml(data.guestName || c.guest)}, ${escapeHtml(data.openingText || c.defaultOpening)}</p>
+              <p class="heroIntro">${escapeHtml(c.hi)} ${escapeHtml(guestFirstName(data.guestName) || c.guest)}, ${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p>
             </div>
           </section>
           <section class="contentCard"><div class="tripMeta">
@@ -741,7 +752,7 @@
           ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
           ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(c.ready || (data.language === 'es' ? '¿Listo para continuar?' : 'Ready to Move Forward?'))}</h3><p>${escapeHtml(c.depositText)}</p><div class="ctaButtons"><a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a><a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
+          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid ? '' : `<a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -766,7 +777,7 @@
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
           ? `${formatShortDate(data.startDate,data.language)} - ${formatShortDate(data.endDate,data.language)}`
           : formatShortDate(data.startDate || data.endDate,data.language);
-        const guestName = data.guestName || (data.language === 'es' ? 'Huésped' : 'Guest');
+        const guestName = guestFirstName(data.guestName) || (data.language === 'es' ? 'Huésped' : 'Guest');
         const whatsappUrl = buildGuestWhatsAppUrl(data);
 
         const rows = [];
@@ -792,7 +803,7 @@
               <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900;">${escapeHtml(c.eyebrow)}</div>
               <div style="margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900;">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
               <h1 style="margin:6px 0 9px;font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:42px;color:#ffffff;font-weight:700;letter-spacing:-.02em;">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
-              <p style="margin:0;font-size:15px;line-height:23px;color:#F4FAEF;">${escapeHtml(c.hi)} ${escapeHtml(guestName)}, ${escapeHtml(data.openingText || c.defaultOpening)}</p>
+              <p style="margin:0;font-size:15px;line-height:23px;color:#F4FAEF;">${escapeHtml(c.hi)} ${escapeHtml(guestName)}, ${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p>
             </td></tr>
           </table>`
         ));
@@ -862,9 +873,9 @@
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;">
               <tr><td align="center" style="padding:22px 20px;">
-                <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(c.ready)}</h2>
-                <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(c.depositText)}</p>
-                <a href="${DEPOSIT_LINK}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>
+                <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h2>
+                <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p>
+                ${data.depositPaid ? '' : `<a href="${DEPOSIT_LINK}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>`}
                 <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
               </td></tr>
             </table>`
@@ -912,7 +923,7 @@
       function buildWhatsAppMessage(data){
         const c = copyFor(data);
         const sum = totals(data);
-        const lines = [`${c.hi} ${data.guestName || (data.language === 'es' ? 'allí' : 'there')},`,'',`${c.here} ${formatShortDate(data.startDate || data.endDate,data.language)}:`,''];
+        const lines = [`${c.hi} ${guestFirstName(data.guestName) || (data.language === 'es' ? 'allí' : 'there')},`,'',`${c.here} ${formatShortDate(data.startDate || data.endDate,data.language)}:`,''];
         groupedItems(data.items.filter(item => item.name || item.type)).forEach(([date,items],groupIndex) => {
           if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(formatShortDate(date,data.language));
           items.forEach(item => {
@@ -930,7 +941,7 @@
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
-        if(data.showDeposit) lines.push(c.depositLead,DEPOSIT_LINK,'');
+        if(data.showDeposit) lines.push(data.depositPaid ? c.depositPaidText : c.depositLead,...(data.depositPaid ? [] : [DEPOSIT_LINK]),'');
         lines.push(c.finalLine);
         return lines.join('\n');
       }
@@ -947,6 +958,7 @@
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('showDeposit').checked = data.showDeposit !== false;
+          $('depositPaid').checked = data.depositPaid === true;
           $('showItemPrices').checked = data.showItemPrices !== false;
           state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
           applyLanguageDefaults($('language').value,true);
@@ -986,6 +998,10 @@
         $('guestCount').value = Number(draft.guestCount || 1);
         $('whatsappNumber').value = draft.whatsappNumber || '';
         if(draft.openingText) $('openingText').value = draft.openingText;
+        const paymentStatus = String(draft.paymentStatus || draft.payment_status || state.crmRecord?.payment_status || '').toLowerCase();
+        $('showDeposit').checked = draft.showDeposit !== false;
+        $('depositPaid').checked = draft.depositPaid === true || ['deposit_paid','paid'].includes(paymentStatus);
+        $('showItemPrices').checked = draft.showItemPrices !== false;
         state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
           const requestedProduct = String(raw.productPreset || raw.name || 'Other');
           const knownProduct = PRODUCT_OPTIONS.includes(requestedProduct);
@@ -1184,6 +1200,7 @@
         $('closingText').value=COPY.en.defaultClosing;
         $('discount').value='0';
         $('showDeposit').checked=true;
+        $('depositPaid').checked=false;
         $('showItemPrices').checked=true;
         state.items=[];
         addItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
