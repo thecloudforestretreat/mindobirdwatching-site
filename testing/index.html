@@ -3,1055 +3,1844 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MBW Admin | Itinerary Generator</title>
+  <title>MBW Admin | Tour Confirmation Generator</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0D5925" />
-  <link rel="canonical" href="https://admin.mindobirdwatching.com/itinerary-generator/" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" />
+
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
+
   <link rel="stylesheet" href="/assets/css/site.css" />
-  <script src="/assets/js/site-config.js?v=20260731" defer></script>
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <script src="/assets/js/head.js" defer></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+
   <style>
     :root{
-      --green:#0D5925;
-      --green-dark:#083f1b;
-      --bg:#C7DAAC;
-      --soft:#F6FAF0;
-      --ink:#071923;
-      --muted:rgba(7,25,35,.67);
-      --line:rgba(7,25,35,.14);
-      --shadow:0 18px 55px rgba(7,25,35,.10);
-      --radius:18px;
-      --danger:#b42318;
+      --mbw-green:#075f28;
+      --mbw-green-dark:#06481f;
+      --mbw-red:#df2c1d;
+      --mbw-yellow:#fff3bd;
+      --mbw-soft:#eef7ed;
+      --mbw-panel:#ffffff;
+      --mbw-border:rgba(7,25,35,.14);
+      --mbw-shadow:0 18px 55px rgba(7,25,35,.10);
     }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
-    button,input,select,textarea{font:inherit}
-    .shell{max-width:1760px;margin:0 auto;padding:22px}
-    .pageCard{background:linear-gradient(180deg,rgba(246,250,240,.95),rgba(237,244,228,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-    .topBar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
-    .titleWrap{display:flex;gap:12px;align-items:flex-start;min-width:0}
-    .brandMark{width:54px;height:54px;object-fit:contain;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(7,25,35,.12);flex:0 0 auto}
-    h1{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:29px;line-height:1.05;letter-spacing:-.03em}
-    .titleWrap p{margin:6px 0 0;max-width:82ch;color:var(--muted);font-size:13px;line-height:1.45;font-weight:750}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    button,.buttonLink{appearance:none;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.9);color:var(--ink);min-height:44px;padding:11px 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:900;text-decoration:none;cursor:pointer;white-space:nowrap;box-shadow:0 8px 20px rgba(7,25,35,.06)}
-    button.primary,.buttonLink.primary{background:var(--green);color:#fff;border-color:rgba(13,89,37,.35)}
-    button.danger{color:var(--danger)}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    .appGrid{display:grid;grid-template-columns:minmax(380px,520px) minmax(640px,1fr);gap:18px;align-items:start}
-    .panel{background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}
-    .editorPanel{max-height:calc(100vh - 36px);overflow:auto;position:sticky;top:18px}
-    .panelTitle{margin:0 0 12px;color:var(--green);font-size:14px;line-height:1.2;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
-    .section{padding-top:14px;margin-top:14px;border-top:1px solid var(--line)}
-    .section:first-of-type{padding-top:0;margin-top:0;border-top:0}
-    .field{display:grid;gap:6px;margin-bottom:11px;min-width:0}
-    label{color:var(--muted);font-size:12px;line-height:1.25;font-weight:950;text-transform:uppercase;letter-spacing:.04em}
-    input,select,textarea{width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.94);color:var(--ink);padding:11px 12px;font-weight:750;outline:none}
-    textarea{min-height:82px;resize:vertical;line-height:1.45}
-    input:focus,select:focus,textarea:focus{border-color:rgba(13,89,37,.55);box-shadow:0 0 0 3px rgba(13,89,37,.12)}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    .hint{margin:6px 0 0;color:rgba(7,25,35,.58);font-size:12px;line-height:1.4;font-weight:750}
-    .itemEditor{border:1px solid var(--line);border-radius:16px;background:rgba(246,250,240,.8);padding:12px;margin-bottom:10px}
-    .itemHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-    .itemHead strong{color:var(--green);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
-    .itemActions{display:flex;gap:6px}
-    .miniBtn{min-height:34px;padding:7px 10px;border-radius:11px;font-size:12px;box-shadow:none}
-    .summaryBox{border:1px solid rgba(13,89,37,.2);border-radius:15px;background:rgba(199,218,172,.22);padding:12px;margin-top:10px}
-    .summaryRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 0;font-weight:850}
-    .summaryRow.total{margin-top:5px;padding-top:10px;border-top:1px solid rgba(13,89,37,.2);color:var(--green);font-size:18px;font-weight:950}
-    .checkRow{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.72);margin-bottom:9px}
-    .checkRow input{width:18px;height:18px;flex:0 0 auto;margin-top:1px;accent-color:var(--green)}
-    .checkRow span{font-size:12.5px;line-height:1.35;font-weight:800;color:var(--muted)}
-    .previewTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-    .previewTop h2{margin:0;color:var(--green);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
-    .previewWrap{background:#C7DAAC;border:1px solid var(--line);border-radius:18px;padding:18px;overflow:auto;max-height:calc(100vh - 180px)}
-    .guestPage{width:640px;margin:0 auto;color:#071923;font-family:Arial,Helvetica,sans-serif}
-    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
-    .brandCard{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px 18px;background:#fff;border:1px solid rgba(7,25,35,.14)}
-    .brandCard img{width:78px;height:78px;object-fit:contain;display:block;flex:0 0 auto}
-    .brandName{font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;color:#0D5925;font-weight:700}
-    .brandTagline{margin-top:2px;font-size:12px;line-height:16px;color:rgba(7,25,35,.72);font-weight:900;letter-spacing:.06em;text-transform:uppercase}
-    .guestHeroCard{margin:0 20px 10px;background:#0D5925;color:#fff}
-    .guestHeroImage{display:block;width:100%;height:auto;max-height:none;object-fit:contain;background:#0D5925}
-    .heroCopy{padding:24px 26px}
-    .heroEyebrow{font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900}
-    .heroMeta{margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900}
-    .heroTitle{margin:6px 0 9px;font-family:Georgia,"Times New Roman",serif;font-size:38px;line-height:42px;color:#fff;font-weight:700;letter-spacing:-.02em}
-    .heroIntro{margin:0;font-size:15px;line-height:23px;color:#F4FAEF;white-space:pre-wrap}
-    .contentCard{margin:0 20px 10px;padding:18px 20px;background:#fff;border:1px solid rgba(7,25,35,.14)}
-    .greeting{margin:0 0 12px;font-size:14px;line-height:21px;color:#071923}
-    .tripMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    .metaCard{border:1px solid rgba(13,89,37,.22);border-radius:14px;padding:12px;background:#F6FAF0}
-    .metaCard span{display:block;color:rgba(7,25,35,.62);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:900}
-    .metaCard strong{display:block;margin-top:5px;color:#0D5925;font-size:13px;line-height:1.35}
-    .dayBlock{margin:0 20px 10px;padding:20px 22px;background:#fff;border:1px solid rgba(7,25,35,.14)}
-    .dayTitle{margin:0 0 14px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px}
-    .timeline{display:grid;gap:10px}
-    .timelineItem{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:14px;align-items:start;border:1px solid rgba(13,89,37,.20);border-radius:14px;padding:13px;background:#F6FAF0}
-    .timeBox{color:#0D5925;font-weight:950;font-size:13px;line-height:1.35}
-    .timeBox small{display:block;margin-top:3px;color:rgba(7,25,35,.62);font-size:11px;font-weight:800}
-    .serviceType{display:inline-flex;padding:4px 7px;border-radius:999px;background:#EAF6DF;color:#0D5925;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:900}
-    .serviceName{margin:6px 0 2px;font-size:15px;line-height:1.35;font-weight:950;color:#071923}
-    .serviceNote{margin:0;color:rgba(7,25,35,.70);font-size:12px;line-height:1.45;font-weight:700;white-space:pre-wrap}
-    .itemPrice{white-space:nowrap;color:#0D5925;font-weight:950;font-size:14px;padding-top:3px}
-    .pricingCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}
-    .pricingCard h3{margin:0 0 12px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}
-    .priceLine{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;padding:8px 0;border-bottom:1px solid rgba(13,89,37,.16);font-size:13px;line-height:18px}
-    .priceLine:last-of-type{border-bottom:0}
-    .priceLine.total{margin-top:8px;padding-top:13px;border-top:2px solid rgba(13,89,37,.55);border-bottom:0;font-size:18px;font-weight:950;color:#0D5925}
-    .guestNote{margin:0 20px 10px;padding:18px 20px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}.nextStepsCard{margin:0 20px 10px;padding:20px 22px;background:#F6FAF0;border:1px solid rgba(13,89,37,.28)}.nextStepsCard h3{margin:0 0 8px;color:#0D5925;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:28px}.nextStepsCard p{margin:0;color:#536067;font-size:14px;line-height:22px;white-space:pre-wrap}
-    .depositBox{text-align:center;margin:0 20px 10px;padding:22px 20px;background:#0D5925;color:#fff}
-    .depositBox h3{margin:0 0 8px;color:#ffffff!important;font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;font-weight:700}
-    .depositBox p{margin:0 auto 14px;max-width:520px;font-size:14px;line-height:21px;color:#F4FAEF}
-    .ctaButtons{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
-    .depositBtn,.whatsappGuestBtn{display:inline-block;width:220px;max-width:100%;padding:13px 10px;border-radius:14px;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;text-align:center}
-    .depositBtn{background:#fff;color:#0D5925}
-    .whatsappGuestBtn{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.55)}
-    .signatureCard{margin:0 20px 10px;padding:18px;background:rgba(255,255,255,.92);border:1px solid rgba(7,25,35,.14)}
-    .signatureCard p{margin:0;font-size:14px;line-height:20px;color:#071923}
-    .socialRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
-    .socialRow img{display:block;width:28px;height:28px;border:0;object-fit:contain}
-    .socialRow .reviewIcon{width:31px;height:31px}
-    .signatureLinks{margin-top:8px;font-size:12px;line-height:18px;color:rgba(7,25,35,.72);font-weight:800}
-    .signatureLinks a{color:#0D5925;text-decoration:underline}
-    .soloNote{margin:0 20px 10px;padding:14px 18px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);border-radius:14px;text-align:center;color:rgba(7,25,35,.76);font-size:12px;line-height:18px;font-weight:700;box-shadow:0 18px 55px rgba(7,25,35,.10)}
-    .guestFooter{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900}
-    .guestFooter img{display:block;width:34px;height:34px;object-fit:contain}
-    .emptyPreview{padding:36px;border:1px dashed #a9bca4;border-radius:16px;text-align:center;color:#637169;font-weight:800;background:#f7faf5}
-    .codeOutput{width:100%;min-height:220px;margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:12px;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;resize:vertical;background:#071923;color:#F6FAF0}
-    .codeOutput[hidden]{display:none}
-    .toast{position:fixed;right:20px;bottom:20px;z-index:9999;max-width:360px;padding:12px 15px;border-radius:13px;background:#071923;color:#fff;box-shadow:0 18px 44px rgba(0,0,0,.2);font-weight:850;font-size:13px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s ease}
-    .toast.show{opacity:1;transform:translateY(0)}
-    @media(max-width:1180px){.appGrid{grid-template-columns:1fr}.editorPanel{position:static;max-height:none}.previewWrap{max-height:none}}
-    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.actions .buttonLink,.actions button{width:100%}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}}
+
+    body{ padding-bottom:0; }
+    .container{ max-width: 1680px; }
+    .page{ margin-top:18px; padding:18px; }
+    .page.card{
+      background:linear-gradient(180deg, rgba(246,250,240,.9), rgba(237,244,228,.92));
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+    }
+
+    .adminTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    .adminTitle{ display:flex; align-items:flex-start; gap:12px; min-width:0; }
+    .adminLogo{
+      width:48px;
+      height:48px;
+      border-radius:999px;
+      object-fit:cover;
+      border:1px solid rgba(7,25,35,.12);
+      box-shadow:0 8px 24px rgba(7,25,35,.12);
+      flex:0 0 auto;
+    }
+    .adminTitle h1{
+      margin:0;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-size:24px;
+      line-height:1.1;
+      letter-spacing:-.03em;
+      font-weight:950;
+      text-transform:uppercase;
+    }
+    .adminTitle p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      max-width:88ch;
+    }
+    .adminActions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .btnAdmin{
+      appearance:none;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.78);
+      color:var(--ink);
+      box-shadow:var(--shadow);
+      min-height:44px;
+      padding:11px 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+      font-family:var(--font-body);
+      text-decoration:none;
+    }
+    .btnAdmin.primary{ background:var(--forest); color:#fff; border-color:rgba(13,89,37,.35); }
+    .btnAdmin.danger{ background:#d83d3d; color:#fff; border-color:rgba(216,61,61,.35); }
+    .btnAdmin:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .appGrid{
+      display:grid;
+      grid-template-columns:360px minmax(0,1fr);
+      gap:16px;
+      align-items:start;
+    }
+    .sidePanel,
+    .controlPanel,
+    .previewPanel{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.74);
+      box-shadow:var(--shadow);
+    }
+    .sidePanel{ padding:14px; position:sticky; top:92px; }
+    .panelTitle{
+      margin:0 0 12px;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-weight:950;
+      font-size:14px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .tabs{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+    .tabBtn{
+      appearance:none;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.7);
+      padding:9px 8px;
+      font-weight:900;
+      color:var(--ink);
+      cursor:pointer;
+      font-size:12px;
+    }
+    .tabBtn.active{ background:rgba(13,89,37,.13); border-color:rgba(13,89,37,.34); color:var(--forest); }
+    .searchBox{ position:relative; margin-bottom:12px; }
+    .searchBox input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.75);
+      padding:12px 12px;
+      font:inherit;
+      font-weight:800;
+      outline:none;
+    }
+    .records{ display:grid; gap:10px; max-height:58vh; overflow:auto; padding-right:2px; }
+    .recordBtn{
+      appearance:none;
+      text-align:left;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:rgba(255,255,255,.78);
+      padding:12px;
+      cursor:pointer;
+      display:grid;
+      gap:7px;
+      box-shadow:0 8px 20px rgba(7,25,35,.05);
+    }
+    .recordBtn.active{ border-color:rgba(13,89,37,.45); background:linear-gradient(135deg, rgba(13,89,37,.10), rgba(255,255,255,.78)); }
+    .recordMain{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .recordName{ font-weight:950; color:var(--ink); line-height:1.25; }
+    .recordDate{ color:var(--muted); font-size:12.5px; font-weight:800; }
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 9px;
+      border-radius:999px;
+      font-size:11.5px;
+      font-weight:950;
+      background:rgba(255,243,189,.9);
+      color:#7a5400;
+      white-space:nowrap;
+    }
+    .statusPill.generated{ background:rgba(220,245,225,.9); color:#14612b; }
+    .statusPill.sent{ background:rgba(220,235,255,.9); color:#174d8c; }
+    .emptyState{ color:var(--muted); font-weight:800; font-size:13px; line-height:1.5; padding:12px; }
+    .sideFooter{ margin-top:12px; color:var(--muted); font-size:12.5px; font-weight:800; }
+
+    .mainStack{ display:grid; gap:16px; min-width:0; }
+    .controlPanel{ padding:14px; }
+    .controlGrid{
+      display:grid;
+      grid-template-columns:1.3fr .7fr .7fr;
+      gap:12px;
+      align-items:end;
+    }
+    .field{ display:grid; gap:6px; min-width:0; }
+    .field label{
+      display:block;
+      color:var(--ink);
+      font-size:12.5px;
+      font-weight:950;
+      line-height:1.2;
+    }
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:rgba(255,255,255,.82);
+      color:var(--ink);
+      min-height:42px;
+      padding:10px 11px;
+      font:inherit;
+      font-size:13.5px;
+      font-weight:800;
+      outline:none;
+      box-shadow:0 8px 18px rgba(7,25,35,.04);
+    }
+    .field textarea{ min-height:70px; resize:vertical; line-height:1.45; }
+    .field input[type="date"]{
+      -webkit-appearance:none;
+      appearance:none;
+      display:block;
+      max-width:100%;
+      min-width:0;
+      box-sizing:border-box;
+    }
+    .field input[type="date"]::-webkit-date-and-time-value{
+      text-align:left;
+      min-height:20px;
+    }
+    .editGrid{
+      display:grid;
+      grid-template-columns:repeat(6, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .editGrid .span2{ grid-column:span 2; }
+    .editGrid .span3{ grid-column:span 3; }
+    .editGrid .span6{ grid-column:1 / -1; }
+    .editGrid .span4{ grid-column:1 / -1; }
+    .miniNote{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.45;
+      font-weight:800;
+    }
+
+    .previewPanel{ padding:14px; min-width:0; }
+    .previewTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .previewTop h2{
+      margin:0;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .previewHint{ color:var(--muted); font-size:12.5px; font-weight:800; }
+    .previewShell{
+      width:100%;
+      overflow:auto;
+      border:1px solid rgba(7,25,35,.12);
+      border-radius:18px;
+      background:#f6f8f3;
+      padding:14px;
+    }
+    .previewScale{
+      position:relative;
+      width:1920px;
+      height:1080px;
+      transform-origin:top left;
+      overflow:visible;
+    }
+
+    .certificate{
+      width:1920px;
+      height:1080px;
+      position:relative;
+      overflow:hidden;
+      background:#edf4e6;
+      color:var(--mbw-green);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    .certificate *{ box-sizing:border-box; }
+    .certBg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:0;
+    }
+    .certOverlay{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      background:linear-gradient(90deg, rgba(255,255,255,.25) 0%, rgba(255,255,255,.08) 54%, rgba(255,255,255,.16) 100%);
+    }
+    .certificate.nightWalkMode .certOverlay{
+      background:linear-gradient(90deg, rgba(3,18,16,.72) 0%, rgba(4,25,21,.66) 54%, rgba(2,13,12,.74) 100%);
+    }
+    .certificate.nightWalkMode .certTitle,
+    .certificate.nightWalkMode .dateIssuedBox,
+    .certificate.nightWalkMode .infoBlock,
+    .certificate.nightWalkMode .certLabel,
+    .certificate.nightWalkMode .certValue,
+    .certificate.nightWalkMode .noteLine,
+    .certificate.nightWalkMode .footerIg,
+    .certificate.nightWalkMode .footerWeb{
+      color:#fff;
+      text-shadow:0 2px 4px rgba(0,0,0,.55);
+    }
+    .certLogo{
+      position:absolute;
+      left:62px;
+      top:58px;
+      width:330px;
+      height:330px;
+      object-fit:contain;
+      z-index:2;
+      filter:drop-shadow(0 8px 10px rgba(0,0,0,.16));
+    }
+    .certTitle{
+      position:absolute;
+      z-index:2;
+      left:585px;
+      top:112px;
+      width:760px;
+      text-align:center;
+      color:var(--mbw-green);
+      font-size:90px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:.02em;
+      white-space:nowrap;
+    }
+    .dateIssuedBox{
+      position:absolute;
+      z-index:2;
+      left:805px;
+      top:235px;
+      min-width:270px;
+      text-align:center;
+      color:var(--mbw-green);
+      font-size:34px;
+      line-height:1;
+      font-weight:950;
+      padding:0;
+      border:0;
+      background:transparent;
+    }
+    .guideImage{
+      position:absolute;
+      z-index:6;
+      left:1180px;
+      top:140px;
+      width:700px;
+      height:1000px;
+      background-repeat:no-repeat;
+      background-position:center center;
+      background-size:contain;
+      filter:drop-shadow(0 14px 16px rgba(0,0,0,.15));
+      pointer-events:none;
+    }
+    .certificate.nightWalkMode .guideImage{
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
+      border-radius:50%;
+      background-size:cover;
+      box-shadow:0 0 18px rgba(255,255,255,.72);
+      filter:none;
+    }
+    .mindoLetters{
+      position:absolute;
+      z-index:5;
+      left:1158px;
+      top:530px;
+      width:720px;
+      height:auto;
+      object-fit:contain;
+      pointer-events:none;
+    }
+    .infoBlock{
+      position:absolute;
+      z-index:3;
+      left:220px;
+      top:420px;
+      width:640px;
+      display:grid;
+      grid-template-columns:185px 1fr;
+      gap:18px 18px;
+      align-items:start;
+      color:var(--mbw-green);
+    }
+    .certLabel{
+      font-size:25px;
+      line-height:1.12;
+      font-weight:950;
+      text-align:left;
+      white-space:nowrap;
+      padding-top:4px;
+    }
+    .certValue{
+      display:inline-block;
+      width:max-content;
+      max-width:455px;
+      color:var(--mbw-green);
+      font-size:30px;
+      line-height:1.12;
+      font-weight:950;
+      padding:0;
+      border:0;
+      background:transparent;
+      word-break:normal;
+    }
+    .certValue.small{ font-size:27px; }
+    .certValue.big{ font-size:36px; text-transform:uppercase; }
+    .certValue.wrap{ white-space:normal; max-width:455px; }
+    .qrBox{
+      position:absolute;
+      z-index:4;
+      left:875px;
+      top:555px;
+      width:174px;
+      height:174px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 5px 12px rgba(0,0,0,.08);
+    }
+    .qrBox img,
+    .qrBox canvas{ width:160px !important; height:160px !important; }
+    .noteLine{
+      position:absolute;
+      z-index:4;
+      left:220px;
+      top:905px;
+      color:var(--mbw-green);
+      font-size:25px;
+      line-height:1.1;
+      font-weight:950;
+      padding:0;
+      border:0;
+      background:transparent;
+      max-width:720px;
+      white-space:normal;
+    }
+    .footerIg{
+      position:absolute;
+      z-index:4;
+      left:132px;
+      bottom:44px;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      color:var(--mbw-green);
+      font-size:36px;
+      font-weight:950;
+      letter-spacing:-.02em;
+    }
+    .footerIg img{ width:49px; height:49px; object-fit:contain; }
+    .footerWeb{
+      position:absolute;
+      z-index:4;
+      left:675px;
+      bottom:44px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      color:var(--mbw-green);
+      font-size:34px;
+      font-weight:950;
+      letter-spacing:-.02em;
+    }
+    .footerWeb img{ width:49px; height:49px; border-radius:999px; object-fit:cover; }
+
+    .previewExportActions{
+      justify-content:flex-start;
+      margin-top:12px;
+    }
+
+    .mobileTools{
+      display:none;
+      margin-bottom:12px;
+      gap:10px;
+      grid-template-columns:1fr 1fr;
+    }
+
+    @media (max-width:1200px){
+      .appGrid{ grid-template-columns:320px minmax(0,1fr); }
+      .editGrid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .editGrid .span3,
+      .editGrid .span4,
+      .editGrid .span6{ grid-column:1 / -1; }
+    }
+    @media (max-width:980px){
+      .appGrid{ grid-template-columns:1fr; }
+      .sidePanel{ position:relative; top:auto; }
+      .records{ max-height:300px; }
+      .controlGrid{ grid-template-columns:1fr; }
+      .adminActions{ width:100%; justify-content:stretch; }
+      .adminActions .btnAdmin{ flex:1 1 150px; }
+      .mobileTools{ display:grid; }
+    }
+    @media (max-width:640px){
+      html, body{ overflow-x:hidden; }
+      .container{ padding:14px; }
+      .page{ padding:12px; }
+      .adminTitle h1{ font-size:19px; }
+      .adminLogo{ width:42px; height:42px; }
+      .tabs{ grid-template-columns:1fr; }
+      .editGrid{ grid-template-columns:1fr; }
+      .editGrid .span2,
+      .editGrid .span3,
+      .editGrid .span4,
+      .editGrid .span6{ grid-column:auto; }
+      .btnAdmin{ width:100%; }
+      .mobileTools{ grid-template-columns:1fr; }
+      .previewShell{ padding:8px; border-radius:14px; }
+    }
   </style>
 </head>
+
 <body>
-  <main class="shell">
-    <section class="pageCard">
-      <header class="topBar">
-        <div class="titleWrap">
-          <img class="brandMark" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
+  <div class="container">
+    <div id="siteHeader"></div>
+
+    <main class="page card" aria-label="MBW Tour Confirmation Generator">
+      <div class="adminTop">
+        <div class="adminTitle">
+          <img class="adminLogo" src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching logo" />
           <div>
-            <h1>Itinerary Generator</h1>
-            <p>Create a polished guest itinerary with dates, service times, duration, notes, pricing, a $100 tour deposit button, downloadable HTML, and a shorter WhatsApp message.</p>
+            <h1>MBW Tour Confirmation Generator</h1>
+            <p>Select a booking from Google Sheets, preview the final 1920x1080 confirmation, then export the image or PDF from the preview area.</p>
           </div>
         </div>
-        <div class="actions">
-          <a class="buttonLink" href="/">Admin</a>
-          <button type="button" id="copyHtmlBtn" class="primary">Copy HTML</button>
-          <button type="button" id="copyWhatsAppBtn">Copy WhatsApp</button>
-          <button type="button" id="openWhatsAppBtn">Open WhatsApp</button>
-          <button type="button" id="downloadBtn">Download HTML</button>
-          <button type="button" id="resetBtn">Reset</button>
+        <div class="adminActions">
+          <a class="btnAdmin" href="/">Admin</a>
+          <button class="btnAdmin primary" type="button" id="manualEntryBtn">New Manual Confirmation</button>
+          <button class="btnAdmin" type="button" id="refreshBtn">Refresh Data</button>
         </div>
-      </header>
+      </div>
+
+      <div class="mobileTools">
+        <button class="btnAdmin" type="button" id="jumpPreviewBtn">Jump to Preview</button>
+        <button class="btnAdmin" type="button" id="jumpListBtn">Jump to List</button>
+      </div>
 
       <div class="appGrid">
-        <section class="panel editorPanel" aria-label="Itinerary editor">
-          <div class="section">
-            <h2 class="panelTitle">Guest and Trip</h2>
-            <div class="field">
-              <label for="guestName">Guest name</label>
-              <input id="guestName" type="text" placeholder="Name" />
-            </div>
-            <div class="field">
-              <label for="tripTitle">Itinerary title</label>
-              <input id="tripTitle" type="text" value="Your Mindo Tour Itinerary" />
-            </div>
-            <div class="field">
-              <label for="language">Output language</label>
-              <select id="language">
-                <option value="en">English</option>
-                <option value="es">Español</option>
-              </select>
-            </div>
-            <div class="two">
-              <div class="field">
-                <label for="startDate">Start date</label>
-                <input id="startDate" type="date" />
-              </div>
-              <div class="field">
-                <label for="endDate">End date</label>
-                <input id="endDate" type="date" />
-              </div>
-            </div>
-            <div class="two">
-              <div class="field">
-                <label for="guestCount">Number of guests</label>
-                <input id="guestCount" type="number" min="1" step="1" value="2" />
-              </div>
-              <div class="field">
-                <label for="whatsappNumber">Guest WhatsApp number</label>
-                <input id="whatsappNumber" type="tel" placeholder="Country code + number" />
-              </div>
-            </div>
-            <div class="field">
-              <label for="replyWhatsappNumber">WhatsApp Number Linked in Itinerary</label>
-              <select id="replyWhatsappNumber">
-                <option value="593969076501" selected>+593 96 907 6501 (Default)</option>
-                <option value="13054585402">+1 305 458 5402</option>
-              </select>
-              <p class="hint">This number is used by the itinerary’s WhatsApp button and icon. Your selection is remembered on this device.</p>
-            </div>
-            <div class="field">
-              <label for="openingText">Opening message</label>
-              <textarea id="openingText">Please review the proposed itinerary below and let me know whether this matches what you have in mind.</textarea>
-            </div>
+        <aside class="sidePanel" id="listPanel" aria-label="Tour confirmation list">
+          <h2 class="panelTitle">Tour Confirmations</h2>
+          <div class="tabs" role="group" aria-label="Status filter">
+            <button class="tabBtn active" type="button" data-status="all">All</button>
+            <button class="tabBtn" type="button" data-status="Pending">Pending</button>
+            <button class="tabBtn" type="button" data-status="Generated">Generated</button>
           </div>
-
-          <div class="section">
-            <h2 class="panelTitle">Services and Products</h2>
-            <div id="itemsEditor"></div>
-            <button type="button" id="addItemBtn" class="primary">+ Add Service</button>
-            <p class="hint">Add transportation, tours, activities, meals, accommodation, or any custom itinerary item.</p>
+          <div class="searchBox">
+            <input id="searchInput" type="search" placeholder="Search by guest, date, guide..." autocomplete="off" />
           </div>
+          <div class="records" id="records"></div>
+          <div class="sideFooter" id="listCount">Loading confirmations...</div>
+        </aside>
 
-          <div class="section">
-            <h2 class="panelTitle">Pricing and Notes</h2>
-            <div class="two">
+        <section class="mainStack" id="previewPanelAnchor">
+          <section class="controlPanel" aria-label="Confirmation details">
+            <h2 class="panelTitle">Confirmation Details</h2>
+            <div class="controlGrid">
               <div class="field">
-                <label for="discount">Discount or adjustment</label>
-                <input id="discount" type="number" step="0.01" value="0" />
+                <label for="bookingSelect">Select Confirmation</label>
+                <select id="bookingSelect"></select>
               </div>
               <div class="field">
-                <label for="currency">Currency</label>
-                <select id="currency">
-                  <option value="USD">USD</option>
+                <label for="statusInput">Status</label>
+                <select id="statusInput">
+                  <option>Pending</option>
+                  <option>Generated</option>
+                  <option>Sent</option>
                 </select>
               </div>
-            </div>
-            <div class="field">
-              <label for="pricingNote">Pricing note</label>
-              <textarea id="pricingNote">Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.</textarea>
-            </div>
-            <div class="field">
-              <label for="closingText">Closing message</label>
-              <textarea id="closingText">Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.</textarea>
-            </div>
-            <label class="checkRow">
-              <input id="showDeposit" type="checkbox" checked />
-              <span>Show the $100 Stripe tour deposit section in the guest itinerary.</span>
-            </label>
-            <label class="checkRow">
-              <input id="showItemPrices" type="checkbox" checked />
-              <span>Show individual service prices beside timeline items.</span>
-            </label>
-            <div class="summaryBox">
-              <div class="summaryRow"><span>Services subtotal</span><strong id="subtotalValue">$0.00</strong></div>
-              <div class="summaryRow"><span>Adjustment</span><strong id="adjustmentValue">$0.00</strong></div>
-              <div class="summaryRow total"><span>Total</span><strong id="totalValue">$0.00</strong></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel" aria-label="Guest itinerary preview">
-          <div class="previewTop">
-            <h2>Live Guest Preview</h2>
-            <div class="actions">
-              <button type="button" id="copyRenderedBtn" class="primary">Copy Rendered</button>
-              <button type="button" id="toggleHtmlBtn">Show HTML</button>
-            </div>
-          </div>
-          <div class="previewWrap">
-            <div id="guestPreview" class="guestPage"></div>
-          </div>
-          <textarea id="htmlOutput" class="codeOutput" spellcheck="false" hidden></textarea>
-        </section>
-      </div>
-    </section>
-  </main>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <script>
-    (() => {
-      'use strict';
-
-      const HEADER_IMAGE = 'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg';
-      const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
-      const DEFAULT_WHATSAPP_NUMBER = '593969076501';
-      const STORAGE_KEY = 'mbw_itinerary_generator_v1';
-      const SERVICE_TYPES = ['Transportation','Full-Day Tour','Half-Day Tour','Birdwatching Tour','Night Walk','Activity','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'];
-      const PRODUCT_OPTIONS = [
-        'MBW002 - Private Birdwatching Tour',
-        'MBW004 - Jewels of the Morning Forest',
-        'MBW005 - Andean Cock-of-the-Rock Dawn Tour',
-        'MBW006 - Quest for Five Toucans Full Day',
-        'Night Walk',
-        'Waterfall Tour / Hike',
-        'Chocolate Tour',
-        'Transportation',
-        'Other'
-      ];
-      const PRODUCT_LABELS_ES = {
-        'MBW002 - Private Birdwatching Tour':'MBW002 - Tour privado de observación de aves',
-        'MBW004 - Jewels of the Morning Forest':'MBW004 - Joyas del bosque matutino',
-        'MBW005 - Andean Cock-of-the-Rock Dawn Tour':'MBW005 - Tour al amanecer del gallito de la peña andino',
-        'MBW006 - Quest for Five Toucans Full Day':'MBW006 - Búsqueda de cinco tucanes, día completo',
-        'Night Walk':'Caminata nocturna',
-        'Waterfall Tour / Hike':'Tour de cascadas / caminata',
-        'Chocolate Tour':'Tour de chocolate',
-        'Transportation':'Transporte',
-        'Other':'Otro'
-      };
-
-      const SERVICE_TYPE_LABELS = {
-        en:{'Transportation':'Transportation','Full-Day Tour':'Full-Day Tour','Half-Day Tour':'Half-Day Tour','Birdwatching Tour':'Birdwatching Tour','Night Walk':'Night Walk','Activity':'Activity','Accommodation':'Accommodation','Meal':'Meal','Free Time':'Free Time','Pickup':'Pickup','Drop-off':'Drop-off','Custom':'Custom'},
-        es:{'Transportation':'Transporte','Full-Day Tour':'Tour de día completo','Half-Day Tour':'Tour de medio día','Birdwatching Tour':'Tour de observación de aves','Night Walk':'Caminata nocturna','Activity':'Actividad','Accommodation':'Alojamiento','Meal':'Comida','Free Time':'Tiempo libre','Pickup':'Recogida','Drop-off':'Regreso','Custom':'Personalizado'}
-      };
-      const SAMPLE_TRANSLATIONS = {
-        enToEs:{
-          'Secure door-to-door transportation':'Transporte seguro puerta a puerta',
-          'Round trip':'Ida y vuelta',
-          'Pickup and drop-off locations to be confirmed.':'Los lugares de recogida y regreso están por confirmar.',
-          'Full-Day Mindo Tour':'Tour de día completo en Mindo',
-          'Approximately 10 hours':'Aproximadamente 10 horas',
-          'Arrival in Mindo and start of the full-day tour.':'Llegada a Mindo e inicio del tour de día completo.',
-          'Night Walk Tour':'Tour de caminata nocturna',
-          'Approximately 2 hours':'Aproximadamente 2 horas',
-          'Evening wildlife experience before returning to Quito.':'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.'
-        },
-        esToEn:{
-          'Transporte seguro puerta a puerta':'Secure door-to-door transportation',
-          'Ida y vuelta':'Round trip',
-          'Los lugares de recogida y regreso están por confirmar.':'Pickup and drop-off locations to be confirmed.',
-          'Tour de día completo en Mindo':'Full-Day Mindo Tour',
-          'Aproximadamente 10 horas':'Approximately 10 hours',
-          'Llegada a Mindo e inicio del tour de día completo.':'Arrival in Mindo and start of the full-day tour.',
-          'Tour de caminata nocturna':'Night Walk Tour',
-          'Aproximadamente 2 horas':'Approximately 2 hours',
-          'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.':'Evening wildlife experience before returning to Quito.'
-        }
-      };
-
-      const COPY = {
-        en: {
-          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', payDeposit:'Pay $100 Tour Deposit', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
-        },
-        es: {
-          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', payDeposit:'Pagar depósito de $100', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
-        }
-      };
-      const DEFAULT_TEXT_VARIANTS = {
-        title: [
-          COPY.en.defaultTitle,
-          COPY.es.defaultTitle
-        ],
-        opening: [
-          COPY.en.defaultOpening,
-          COPY.es.defaultOpening
-        ],
-        pricing: [
-          COPY.en.defaultPricing,
-          COPY.es.defaultPricing,
-          'Tours are priced at a minimum of 2 people. Availability and final pickup or drop-off details can be confirmed before the tour.',
-          'Los tours tienen un precio mínimo equivalente a 2 personas. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.'
-        ],
-        closing: [
-          COPY.en.defaultClosing,
-          COPY.es.defaultClosing,
-          'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de USD 100 que aparece a continuación.',
-          'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the USD 100 deposit below.'
-        ]
-      };
-
-      function isKnownDefaultText(kind,value){
-        const normalized = String(value || '').trim();
-        return !normalized || (DEFAULT_TEXT_VARIANTS[kind] || []).includes(normalized);
-      }
-
-      function applyLanguageDefaults(language,{forceKnownDefaults=true}={}){
-        const lang = language === 'es' ? 'es' : 'en';
-        const next = COPY[lang];
-
-        if(forceKnownDefaults && isKnownDefaultText('title',$('tripTitle').value)){
-          $('tripTitle').value = next.defaultTitle;
-        }
-        if(forceKnownDefaults && isKnownDefaultText('opening',$('openingText').value)){
-          $('openingText').value = next.defaultOpening;
-        }
-        if(forceKnownDefaults && isKnownDefaultText('pricing',$('pricingNote').value)){
-          $('pricingNote').value = next.defaultPricing;
-        }
-        if(forceKnownDefaults && isKnownDefaultText('closing',$('closingText').value)){
-          $('closingText').value = next.defaultClosing;
-        }
-      }
-
-      function copyFor(data){ return COPY[data && data.language === 'es' ? 'es' : 'en']; }
-      function serviceTypeLabel(type, language='en'){
-        const lang = language === 'es' ? 'es' : 'en';
-        return (SERVICE_TYPE_LABELS[lang] && SERVICE_TYPE_LABELS[lang][type]) || type || COPY[lang].service;
-      }
-      function translateKnownText(value, language){
-        const text = String(value || '');
-        const map = language === 'es' ? SAMPLE_TRANSLATIONS.enToEs : SAMPLE_TRANSLATIONS.esToEn;
-        return map[text] || text;
-      }
-      function productOptionLabel(value, language='en'){
-        if(language === 'es') return PRODUCT_LABELS_ES[value] || value;
-        return value;
-      }
-      function inferProductPreset(item){
-        if(item && PRODUCT_OPTIONS.includes(item.productPreset)) return item.productPreset;
-        const name = String(item && item.name || '');
-        if(PRODUCT_OPTIONS.includes(name)) return name;
-        const legacyAliases = {
-          'Secure door-to-door transportation':'Transportation',
-          'Transporte seguro puerta a puerta':'Transportation',
-          'Full-Day Mindo Tour':'MBW006 - Quest for Five Toucans Full Day',
-          'Tour de día completo en Mindo':'MBW006 - Quest for Five Toucans Full Day',
-          'Night Walk Tour':'Night Walk',
-          'Tour de caminata nocturna':'Night Walk'
-        };
-        if(legacyAliases[name]) return legacyAliases[name];
-        const translatedMatch = Object.keys(PRODUCT_LABELS_ES).find(key => PRODUCT_LABELS_ES[key] === name);
-        return translatedMatch || 'Other';
-      }
-      function productDisplayName(item, language='en'){
-        const preset = inferProductPreset(item);
-        if(preset !== 'Other') return productOptionLabel(preset,language);
-        return translateKnownText(item && item.name,language);
-      }
-
-      const $ = (id) => document.getElementById(id);
-      const state = { items: [] };
-
-      function uid(){ return 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-      function todayIso(){
-        const now = new Date();
-        const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-        return local.toISOString().slice(0,10);
-      }
-      function capitalizeFirst(value){
-        const text = String(value || '');
-        return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
-      }
-      function getItineraryWhatsAppNumber(){
-        const selected = $('replyWhatsappNumber') ? $('replyWhatsappNumber').value : '';
-        return String(selected || DEFAULT_WHATSAPP_NUMBER).replace(/\D/g,'') || DEFAULT_WHATSAPP_NUMBER;
-      }
-      function buildGuestWhatsAppUrl(data){
-        const number = getItineraryWhatsAppNumber();
-        const message = encodeURIComponent(buildWhatsAppMessage(data));
-        return number ? `https://wa.me/${number}?text=${message}` : '#';
-      }
-      function escapeHtml(value){
-        return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-      }
-      function money(value, language='en') {
-        const number = Number(value || 0);
-        return new Intl.NumberFormat(language === 'es' ? 'es-EC' : 'en-US',{style:'currency',currency:'USD'}).format(number);
-      }
-      function formatDate(value, language='en'){
-        const c = COPY[language === 'es' ? 'es' : 'en'];
-        if(!value) return c.dateConfirm;
-        const date = new Date(value + 'T12:00:00');
-        return new Intl.DateTimeFormat(c.locale,{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(date);
-      }
-      function formatShortDate(value, language='en'){
-        const c = COPY[language === 'es' ? 'es' : 'en'];
-        if(!value) return c.dateTbd;
-        const date = new Date(value + 'T12:00:00');
-        return new Intl.DateTimeFormat(c.locale,{month:'short',day:'numeric',year:'numeric'}).format(date);
-      }
-      function formatTime(value, language='en'){
-        const c = COPY[language === 'es' ? 'es' : 'en'];
-        if(!value) return c.timeTbd;
-        const [hours,minutes] = value.split(':').map(Number);
-        const date = new Date(2000,0,1,hours,minutes || 0);
-        return new Intl.DateTimeFormat(c.locale,{hour:'numeric',minute:'2-digit'}).format(date);
-      }
-      function toast(message){
-        const el = $('toast');
-        el.textContent = message;
-        el.classList.add('show');
-        clearTimeout(toast.timer);
-        toast.timer = setTimeout(() => el.classList.remove('show'),2200);
-      }
-      function defaultItem(overrides = {}){
-        const item = Object.assign({
-          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Full-Day Tour', productPreset:'Other', name:'', note:'', quantity:1, unitPrice:0
-        },overrides);
-        item.productPreset = inferProductPreset(item);
-        if(item.productPreset !== 'Other') item.name = item.productPreset;
-        return item;
-      }
-      function addItem(overrides = {}){
-        state.items.push(defaultItem(overrides));
-        renderEditors();
-        updateAll();
-      }
-      function removeItem(id){
-        state.items = state.items.filter(item => item.id !== id);
-        renderEditors();
-        updateAll();
-      }
-      function duplicateItem(id){
-        const source = state.items.find(item => item.id === id);
-        if(!source) return;
-        const index = state.items.findIndex(item => item.id === id);
-        state.items.splice(index + 1,0,{...source,id:uid()});
-        renderEditors();
-        updateAll();
-      }
-      function moveItem(id,direction){
-        const index = state.items.findIndex(item => item.id === id);
-        const next = index + direction;
-        if(index < 0 || next < 0 || next >= state.items.length) return;
-        [state.items[index],state.items[next]] = [state.items[next],state.items[index]];
-        renderEditors();
-        updateAll();
-      }
-      function updateItem(id,field,value){
-        const item = state.items.find(entry => entry.id === id);
-        if(!item) return;
-        if(field === 'productPreset'){
-          item.productPreset = value;
-          item.name = value === 'Other' ? '' : value;
-          renderEditors();
-          updateAll(false);
-          return;
-        }
-        if(field === 'customName'){
-          item.productPreset = 'Other';
-          item.name = value;
-          updateAll(false);
-          return;
-        }
-        item[field] = ['quantity','unitPrice'].includes(field) ? Number(value || 0) : value;
-        updateAll(false);
-      }
-
-      function renderEditors(){
-        const container = $('itemsEditor');
-        if(!state.items.length){
-          container.innerHTML = '<div class="emptyPreview" style="margin-bottom:10px">No services added yet.</div>';
-          return;
-        }
-        container.innerHTML = state.items.map((item,index) => `
-          <div class="itemEditor" data-id="${item.id}">
-            <div class="itemHead">
-              <strong>Service ${index + 1}</strong>
-              <div class="itemActions">
-                <button type="button" class="miniBtn" data-action="up" ${index===0?'disabled':''}>↑</button>
-                <button type="button" class="miniBtn" data-action="down" ${index===state.items.length-1?'disabled':''}>↓</button>
-                <button type="button" class="miniBtn" data-action="duplicate">Duplicate</button>
-                <button type="button" class="miniBtn danger" data-action="remove">Remove</button>
+              <div class="field">
+                <label for="guideInput">Guide</label>
+                <select id="guideInput"></select>
               </div>
             </div>
-            <div class="two">
-              <div class="field">
-                <label>Date</label>
-                <input type="date" data-field="date" min="${todayIso()}" value="${escapeHtml(item.date)}" />
+
+            <div class="editGrid">
+              <div class="field span2">
+                <label for="dateIssuedInput">Date Issued</label>
+                <input id="dateIssuedInput" type="date" />
+              </div>
+              <div class="field span2">
+                <label for="guestsInput">Guest Name(s)</label>
+                <input id="guestsInput" type="text" placeholder="Primary guest + other guest names" />
+              </div>
+              <div class="field span2">
+                <label for="guestPhoneInput">Guest Phone</label>
+                <input id="guestPhoneInput" type="text" placeholder="+1 555 000 0000" />
+              </div>
+              <div class="field span2">
+                <label for="tourDateInput">Tour Date</label>
+                <input id="tourDateInput" type="date" />
+              </div>
+              <div class="field span2">
+                <label for="contactInput">Guide Phone</label>
+                <input id="contactInput" type="text" placeholder="+593 98 600 5054" />
+                <span class="hint">Choose Other to enter a different guide phone number.</span>
               </div>
               <div class="field">
-                <label>Service type</label>
-                <select data-field="type">${SERVICE_TYPES.map(type => `<option value="${escapeHtml(type)}" ${type===item.type?'selected':''}>${escapeHtml(serviceTypeLabel(type,$('language').value))}</option>`).join('')}</select>
-              </div>
-            </div>
-            <div class="field">
-              <label>Product or service name</label>
-              <select data-field="productPreset">${PRODUCT_OPTIONS.map(option => `<option value="${escapeHtml(option)}" ${inferProductPreset(item)===option?'selected':''}>${escapeHtml(productOptionLabel(option,$('language').value))}</option>`).join('')}</select>
-            </div>
-            ${inferProductPreset(item) === 'Other' ? `<div class="field">
-              <label>Other product or service</label>
-              <input type="text" data-field="customName" value="${escapeHtml(item.name)}" placeholder="Type the product or service name" />
-            </div>` : ''}
-            <div class="two">
-              <div class="field">
-                <label>Start time</label>
-                <input type="time" data-field="startTime" value="${escapeHtml(item.startTime)}" />
+                <label for="lengthInput">Length</label>
+                <select id="lengthInput">
+                  <option>2 hrs</option>
+                  <option>Half Day</option>
+                  <option selected>Full Day</option>
+                  <option>Multi Day</option>
+                </select>
               </div>
               <div class="field">
-                <label>Duration</label>
-                <input type="text" data-field="duration" value="${escapeHtml(item.duration)}" placeholder="10 hours or 7:00 PM-9:00 PM" />
+                <label for="pickupTimeInput">Pickup Time</label>
+                <select id="pickupTimeInput"></select>
+              </div>
+              <div class="field span2">
+                <label for="tour1Input">Tour Type 1</label>
+                <select id="tour1Input"></select>
+              </div>
+              <div class="field span2">
+                <label for="tour2Input">Tour Type 2</label>
+                <select id="tour2Input"></select>
+              </div>
+              <div class="field span2">
+                <label for="tour3Input">Tour Type 3</label>
+                <select id="tour3Input"></select>
+              </div>
+              <div class="field span3">
+                <label for="tourTypeInput">Tour Type Display</label>
+                <input id="tourTypeInput" type="text" placeholder="Jewels of the Morning Forest + Night Walk" />
+              </div>
+              <div class="field span3">
+                <label for="transportationInput">Transportation</label>
+                <input id="transportationInput" type="text" placeholder="Quito -> Mindo -> Quito" />
+              </div>
+              <div class="field span3">
+                <label for="pickupLocationInput">Pickup Location</label>
+                <input id="pickupLocationInput" type="text" placeholder="Hotel or pickup location" />
+              </div>
+              <div class="field span3">
+                <label for="qrInput">QR Code URL</label>
+                <input id="qrInput" type="text" placeholder="https://mindobirdwatching.com/..." />
+              </div>
+              <div class="field span6">
+                <label for="notesInput">Notes</label>
+                <textarea id="notesInput" placeholder="We will pick you up at your location latest 3:00 am."></textarea>
               </div>
             </div>
-            <div class="field">
-              <label>Description or guest note</label>
-              <textarea data-field="note" placeholder="Pickup location, what is included, or any timing details.">${escapeHtml(item.note)}</textarea>
-            </div>
-            <div class="two">
-              <div class="field">
-                <label>Quantity</label>
-                <input type="number" min="0" step="1" data-field="quantity" value="${escapeHtml(item.quantity)}" />
-              </div>
-              <div class="field">
-                <label>Unit cost</label>
-                <input type="number" min="0" step="0.01" data-field="unitPrice" value="${escapeHtml(item.unitPrice)}" />
-              </div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      function getFormData(){
-        applyLanguageDefaults($('language').value,true);
-        return {
-          guestName:$('guestName').value.trim(),
-          tripTitle:$('tripTitle').value.trim(),
-          language:$('language').value || 'en',
-          startDate:$('startDate').value,
-          endDate:$('endDate').value,
-          guestCount:Number($('guestCount').value || 1),
-          whatsappNumber:$('whatsappNumber').value.trim(),
-          replyWhatsappNumber:getItineraryWhatsAppNumber(),
-          openingText:$('openingText').value.trim(),
-          pricingNote:$('pricingNote').value.trim(),
-          closingText:$('closingText').value.trim(),
-          discount:Number($('discount').value || 0),
-          showDeposit:$('showDeposit').checked,
-          showItemPrices:$('showItemPrices').checked,
-          items:state.items.map(item => ({...item}))
-        };
-      }
-      function totals(data){
-        const subtotal = data.items.reduce((sum,item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),0);
-        return {subtotal,adjustment:Number(data.discount || 0),total:subtotal + Number(data.discount || 0)};
-      }
-      function groupedItems(items){
-        const groups = new Map();
-        items.forEach(item => {
-          const key = item.date || '';
-          if(!groups.has(key)) groups.set(key,[]);
-          groups.get(key).push(item);
-        });
-        return [...groups.entries()].sort((a,b) => {
-          if(!a[0]) return 1;
-          if(!b[0]) return -1;
-          return a[0].localeCompare(b[0]);
-        });
-      }
-
-      function itineraryContent(data,{standalone=false}={}){
-        const c = copyFor(data);
-        const sum = totals(data);
-        const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
-        const dayMarkup = groupedItems(validItems).map(([date,items]) => `
-          <section class="dayBlock">
-            <h3 class="dayTitle">${escapeHtml(formatDate(date,data.language))}</h3>
-            <div class="timeline">
-              ${items.map(item => {
-                const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
-                return `
-                  <div class="timelineItem">
-                    <div class="timeBox">${escapeHtml(formatTime(item.startTime,data.language))}${item.duration ? `<small>${escapeHtml(translateKnownText(item.duration,data.language))}</small>` : ''}</div>
-                    <div>
-                      <span class="serviceType">${escapeHtml(serviceTypeLabel(item.type,data.language))}</span>
-                      <div class="serviceName">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language) || c.item)}</div>
-                      ${item.note ? `<p class="serviceNote">${escapeHtml(translateKnownText(item.note,data.language))}</p>` : ''}
-                    </div>
-                    ${data.showItemPrices && lineTotal ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
-                  </div>`;
-              }).join('')}
-            </div>
-          </section>`).join('');
-
-        const pricingLines = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0) !== 0).map(item => {
-          const total = Number(item.quantity || 0) * Number(item.unitPrice || 0);
-          const qty = Number(item.quantity || 0);
-          return `<div class="priceLine"><span>${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
-        }).join('');
-
-        const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
-          ? `${formatShortDate(data.startDate,data.language)} - ${formatShortDate(data.endDate,data.language)}`
-          : formatShortDate(data.startDate || data.endDate,data.language);
-
-        return `
-          <header class="brandCard">
-            <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
-            <div><div class="brandName">Mindo Bird Watching</div><div class="brandTagline">${escapeHtml(c.brandTagline)}</div></div>
-          </header>
-          <section class="guestHeroCard">
-            <img class="guestHeroImage" src="${HEADER_IMAGE}" alt="Mindo cloud forest birdwatching tour" />
-            <div class="heroCopy">
-              <div class="heroEyebrow">${escapeHtml(c.eyebrow)}</div>
-              <div class="heroMeta">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
-              <h1 class="heroTitle">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
-              <p class="heroIntro">${escapeHtml(c.hi)} ${escapeHtml(data.guestName || c.guest)}, ${escapeHtml(data.openingText || c.defaultOpening)}</p>
+            <p class="miniNote">Edits here affect the preview and exports. Sheet status updates will connect in the next Apps Script step.</p>
+            <div class="adminActions" style="margin-top:12px; justify-content:flex-start;">
+              <button class="btnAdmin primary" type="button" id="markGeneratedBtn">Save and Mark Generated</button>
+              <button class="btnAdmin danger" type="button" id="markSentBtn">Mark as Sent</button>
             </div>
           </section>
-          <section class="contentCard"><div class="tripMeta">
-            <div class="metaCard"><span>${escapeHtml(c.guest)}</span><strong>${escapeHtml(data.guestName || (data.language === 'es' ? 'Por confirmar' : 'To be confirmed'))}</strong></div>
-            <div class="metaCard"><span>${escapeHtml(c.travelDates)}</span><strong>${escapeHtml(dateRange)}</strong></div>
-            <div class="metaCard"><span>${escapeHtml(c.guests)}</span><strong>${escapeHtml(data.guestCount || 1)}</strong></div>
-          </div></section>
-          ${dayMarkup || `<div class="contentCard"><div class="emptyPreview">${escapeHtml(c.empty)}</div></div>`}
-          ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
-          ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
-          <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(c.ready || (data.language === 'es' ? '¿Listo para continuar?' : 'Ready to Move Forward?'))}</h3><p>${escapeHtml(c.depositText)}</p><div class="ctaButtons"><a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a><a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
-          <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
-            <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
-            <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
-            <a href="https://www.tiktok.com/@mindobirdwatching"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok"></a>
-            <a href="https://t.me/+ANc1KHoV2Y82NmI5"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram"></a>
-            <a href="https://www.facebook.com/profile.php?id=61577783327957"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
-            <a href="https://x.com/mindobirds"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968958.png" alt="X"></a>
-            <a href="https://www.youtube.com/@MindoBirdWatching"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
-            <a href="https://pin.it/6O8GN1PRz"><img src="https://i.imgur.com/kSrXjXZ.png" alt="Pinterest"></a>
-            <a href="https://g.page/r/CdMlIYMGgBIvEAE/review"><img class="reviewIcon" src="https://i.imgur.com/fBPIjvV.png" alt="Google Review"></a>
-            <a href="${buildGuestWhatsAppUrl(data)}"><img src="https://i.imgur.com/0sfOKs8.png" alt="WhatsApp"></a>
-            <a href="https://mindobirdwatching.com/shop"><img src="https://i.imgur.com/g53OeDX.png" alt="Shop"></a>
-          </div><div class="signatureLinks">Mindo, Ecuador<br><a href="https://mindobirdwatching.com">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com">mindobirdwatching@gmail.com</a></div></section>
-          <section class="soloNote">${escapeHtml(c.solo)}</section>
-          <footer class="guestFooter"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo"><span>Mindo Bird Watching &copy; 2026</span></footer>`;
+
+          <section class="previewPanel" aria-label="1920 by 1080 confirmation preview">
+            <div class="previewTop">
+              <h2>Preview 1920x1080</h2>
+              <div class="previewHint" id="previewHint">Ready</div>
+            </div>
+            <div class="previewShell" id="previewShell">
+              <div class="previewScale" id="previewScale">
+                <div class="certificate" id="certificate">
+                  <img class="certBg" src="https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_tour_confirmation_background.png" alt="" crossorigin="anonymous" />
+                  <div class="certOverlay" aria-hidden="true"></div>
+                  <img class="certLogo" src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching" crossorigin="anonymous" />
+                  <div class="certTitle">TOUR CONFIRMATION</div>
+                  <div class="dateIssuedBox">Date Issued: <span id="outDateIssued">06/17/2026</span></div>
+                  <div class="guideImage" id="outGuideImage" role="img" aria-label="Guide"></div>
+                  <img class="mindoLetters" src="https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_mindo_letters.png" alt="Mindo" crossorigin="anonymous" />
+
+                  <div class="infoBlock">
+                    <div class="certLabel">Guest(s):</div>
+                    <div class="certValue" id="outGuests">Alisha Riasati & Jesse Best</div>
+
+                    <div class="certLabel">Guest Phone:</div>
+                    <div class="certValue small" id="outGuestPhone">+1 555 000 0000</div>
+
+                    <div class="certLabel">Tour Date:</div>
+                    <div class="certValue" id="outTourDate">Saturday, June 20th, 2026</div>
+
+                    <div class="certLabel">Guide:</div>
+                    <div class="certValue" id="outGuide">Chicho</div>
+
+                    <div class="certLabel">Contact #:</div>
+                    <div class="certValue small" id="outContact">+593 98 600 5054</div>
+
+                    <div class="certLabel">Tour Type:</div>
+                    <div class="certValue small wrap" id="outTourType">Quest for Five Toucans & the Andean Cock-of-the-Rock</div>
+
+                    <div class="certLabel">Length:</div>
+                    <div class="certValue big" id="outLength">FULL DAY</div>
+
+                    <div class="certLabel">Transportation:</div>
+                    <div class="certValue small wrap" id="outTransportation">Quito -> Mindo -> Quito:<br>Friends hotel and Rooftop - QUITO</div>
+                  </div>
+
+                  <div class="qrBox" id="qrBox"></div>
+                  <div class="noteLine" id="outNotes">***We will pick you up at your location latest 3:00 am.***</div>
+
+                  <div class="footerIg">
+                    <img src="https://mindobirdwatching.com/assets/images/tour-confirmation/icon_ig.png" alt="Instagram" crossorigin="anonymous" />
+                    <span>@mindobirdwatching</span>
+                  </div>
+                  <div class="footerWeb">
+                    <img src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="" crossorigin="anonymous" />
+                    <span>www.mindobirdwatching.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="adminActions previewExportActions">
+              <button class="btnAdmin primary" type="button" id="exportPngBtn">Export JPG 1920x1080</button>
+              <button class="btnAdmin primary" type="button" id="openImageBtn">Open Image / Save to Photos</button>
+              <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <div id="siteFooter"></div>
+  </div>
+
+  <script>
+    window.MBW_CONFIRMATION_CONFIG = {
+      appScriptUrl: "https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec",
+      defaultQrUrl: "https://www.mindobirdwatching.com/",
+      defaultGuideImage: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png",
+      birdwatchingGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg",
+      nightWalkImage: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg",
+      nightWalkGuide: "Neicer",
+      nightWalkGuidePhone: "+593 98 095 5817",
+      fallbackData: {
+        confirmations: [
+          {
+            rowNumber: 2,
+            "confirmation_id": "TC-0001",
+            "invoice_no": "MBW-0031",
+            "tour_confirmation_status": "Pending",
+            "date_issued": "06/17/2026",
+            "guests": "2",
+            "guest_name": "Alisha Riasati",
+            "other_guest_names": "Jesse Best",
+            "guest_phone": "+1 555 000 0000",
+            "tour_date": "6/20/2026",
+            "tour_guide": "Chicho",
+            "guide_phone": "+593 98 600 5054",
+            "tour_type_1": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "tour_type_2": "",
+            "tour_type_3": "",
+            "combined_tour_display": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "tour_length": "Full Day",
+            "transportation": "Quito -> Mindo -> Quito:\nFriends hotel and Rooftop - QUITO",
+            "notes": "We will pick you up at your location latest 3:00 am.",
+            "pickup_time": "3:00 AM",
+            "pickup_location": "Friends hotel and Rooftop - QUITO",
+            "qr_code_url": "https://www.mindobirdwatching.com/",
+            "confirmation_image_url": "",
+            "confirmation_pdf_url": "",
+            "date_generated": ""
+          }
+        ],
+        guides: [
+          { "guide": "Chicho", "guide_phone": "+593 98 600 5054", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
+          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
+          { "guide": "Anderson", "guide_phone": "+593 99 078 5026", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
+          { "guide": "Abel", "guide_phone": "+593 99 098 0074", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
+          { "guide": "Other", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" }
+        ],
+        tours: []
+      }
+    };
+
+    (function(){
+      "use strict";
+
+      const state = {
+        data: null,
+        records: [],
+        guides: [],
+        tours: [],
+        activeIndex: 0,
+        activeStatus: "all",
+        search: "",
+        qr: null
+      };
+      const BUILT_IN_GUIDES = [
+        { guide:"Chicho", guide_phone:"+593 98 600 5054", image_url:"https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
+        { guide:"Neicer", guide_phone:"+593 98 095 5817", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
+        { guide:"Anderson", guide_phone:"+593 99 078 5026", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
+        { guide:"Abel", guide_phone:"+593 99 098 0074", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" },
+        { guide:"Other", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-9-BirdWatching.jpg" }
+      ];
+
+      const els = {};
+
+      document.addEventListener("DOMContentLoaded", init);
+      window.addEventListener("resize", setPreviewScale);
+
+      function init(){
+        cacheEls();
+        renderPickupTimeOptions();
+        bindEvents();
+        setPreviewScale();
+        loadData();
       }
 
-      function buildEmailSafeHtml(data){
-        const c = copyFor(data);
-        const sum = totals(data);
-        const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
-        const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
-          ? `${formatShortDate(data.startDate,data.language)} - ${formatShortDate(data.endDate,data.language)}`
-          : formatShortDate(data.startDate || data.endDate,data.language);
-        const guestName = data.guestName || (data.language === 'es' ? 'Huésped' : 'Guest');
-        const whatsappUrl = buildGuestWhatsAppUrl(data);
+      function cacheEls(){
+        const ids = [
+          "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "manualEntryBtn",
+          "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
+          "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
+          "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
+          "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
+          "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
+        ];
+        ids.forEach(id => els[id] = document.getElementById(id));
+      }
 
-        const rows = [];
-        const row = content => `<tr><td style="padding:0 20px 10px;">${content}</td></tr>`;
-
-        rows.push(row(
-          `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
-            <tr><td style="padding:14px 18px;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td valign="middle" style="padding-right:12px;"><a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="78" height="78" alt="Mindo Bird Watching" style="display:block;width:78px;height:78px;border:0;"></a></td>
-                  <td valign="middle"><a href="https://mindobirdwatching.com" style="text-decoration:none;color:#071923;"><span style="display:block;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#0D5925;font-weight:700;">Mindo Bird Watching</span><span style="display:block;margin-top:2px;font-size:12px;line-height:16px;color:#536067;font-weight:900;letter-spacing:.06em;text-transform:uppercase;">${escapeHtml(c.brandTagline)}</span></a></td>
-                </tr>
-              </table>
-            </td></tr>
-          </table>`
-        ));
-
-        rows.push(row(
-          `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;overflow:hidden;">
-            <tr><td><img src="${HEADER_IMAGE}" width="600" alt="Mindo cloud forest birdwatching tour" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
-            <tr><td style="padding:24px 26px;">
-              <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900;">${escapeHtml(c.eyebrow)}</div>
-              <div style="margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900;">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
-              <h1 style="margin:6px 0 9px;font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:42px;color:#ffffff;font-weight:700;letter-spacing:-.02em;">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
-              <p style="margin:0;font-size:15px;line-height:23px;color:#F4FAEF;">${escapeHtml(c.hi)} ${escapeHtml(guestName)}, ${escapeHtml(data.openingText || c.defaultOpening)}</p>
-            </td></tr>
-          </table>`
-        ));
-
-        rows.push(row(
-          `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
-            <tr>
-              <td width="33.33%" valign="top" style="padding:14px;border-right:1px solid #d9e2d5;"><strong style="display:block;color:#536067;font-size:10px;line-height:14px;text-transform:uppercase;letter-spacing:.06em;">${escapeHtml(c.guest)}</strong><span style="display:block;margin-top:5px;color:#0D5925;font-size:13px;line-height:18px;font-weight:900;">${escapeHtml(guestName)}</span></td>
-              <td width="33.33%" valign="top" style="padding:14px;border-right:1px solid #d9e2d5;"><strong style="display:block;color:#536067;font-size:10px;line-height:14px;text-transform:uppercase;letter-spacing:.06em;">${escapeHtml(c.travelDates)}</strong><span style="display:block;margin-top:5px;color:#0D5925;font-size:13px;line-height:18px;font-weight:900;">${escapeHtml(dateRange)}</span></td>
-              <td width="33.33%" valign="top" style="padding:14px;"><strong style="display:block;color:#536067;font-size:10px;line-height:14px;text-transform:uppercase;letter-spacing:.06em;">${escapeHtml(c.guests)}</strong><span style="display:block;margin-top:5px;color:#0D5925;font-size:13px;line-height:18px;font-weight:900;">${escapeHtml(data.guestCount || 1)}</span></td>
-            </tr>
-          </table>`
-        ));
-
-        groupedItems(validItems).forEach(([date,items]) => {
-          const itemRows = items.map(item => {
-            const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
-            return `<tr><td style="padding:0 0 10px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #cfe0c8;border-radius:14px;">
-                <tr>
-                  <td width="98" valign="top" style="padding:13px 10px 13px 13px;color:#0D5925;font-size:13px;line-height:18px;font-weight:900;">${escapeHtml(formatTime(item.startTime,data.language))}${item.duration ? `<span style="display:block;margin-top:3px;color:#65736b;font-size:11px;line-height:15px;font-weight:700;">${escapeHtml(translateKnownText(item.duration,data.language))}</span>` : ''}</td>
-                  <td valign="top" style="padding:13px 8px;">
-                    <span style="display:inline-block;padding:4px 7px;border-radius:999px;background:#EAF6DF;color:#0D5925;font-size:10px;line-height:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:900;">${escapeHtml(serviceTypeLabel(item.type,data.language))}</span>
-                    <strong style="display:block;margin-top:6px;color:#071923;font-size:15px;line-height:20px;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}</strong>
-                    ${item.note ? `<span style="display:block;margin-top:2px;color:#536067;font-size:12px;line-height:17px;font-weight:700;">${escapeHtml(translateKnownText(item.note,data.language))}</span>` : ''}
-                  </td>
-                  <td width="86" valign="top" align="right" style="padding:14px 13px 13px 6px;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;white-space:nowrap;">${data.showItemPrices && lineTotal ? money(lineTotal,data.language) : ''}</td>
-                </tr>
-              </table>
-            </td></tr>`;
-          }).join('');
-          rows.push(row(
-            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
-              <tr><td style="padding:20px 22px 10px;"><h2 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#0D5925;">${escapeHtml(formatDate(date,data.language))}</h2></td></tr>
-              <tr><td style="padding:0 14px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemRows}</table></td></tr>
-            </table>`
-          ));
+      function bindEvents(){
+        document.querySelectorAll(".tabBtn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".tabBtn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            state.activeStatus = btn.dataset.status || "all";
+            renderRecords();
+          });
         });
 
-        const priced = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
-        if(priced.length){
-          const priceRows = priced.map(item => {
-            const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0);
-            const qty = Number(item.quantity || 0);
-            return `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${qty > 1 ? ` × ${qty}` : ''}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;font-weight:900;white-space:nowrap;">${money(amount,data.language)}</td></tr>`;
-          }).join('');
-          rows.push(row(
-            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:18px;">
-              <tr><td style="padding:20px 22px;">
-                <h2 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:28px;color:#0D5925;">${escapeHtml(c.pricing)}</h2>
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${priceRows}
-                  ${sum.adjustment ? `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;">${escapeHtml(c.adjustment)}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;font-weight:900;">${money(sum.adjustment,data.language)}</td></tr>` : ''}
-                  <tr><td style="padding:13px 0 0;border-top:2px solid #8db680;color:#0D5925;font-size:18px;line-height:23px;font-weight:900;">${escapeHtml(c.total)}</td><td align="right" style="padding:13px 0 0;border-top:2px solid #8db680;color:#0D5925;font-size:18px;line-height:23px;font-weight:900;">${money(sum.total,data.language)}</td></tr>
-                </table>
-              </td></tr>
-            </table>`
-          ));
+        els.searchInput.addEventListener("input", () => {
+          state.search = els.searchInput.value.trim().toLowerCase();
+          renderRecords();
+        });
+
+        els.bookingSelect.addEventListener("change", () => {
+          if(els.bookingSelect.value === "manual"){
+            startManualConfirmation();
+            return;
+          }
+          const row = Number(els.bookingSelect.value);
+          const idx = state.records.findIndex(r => Number(r.rowNumber) === row);
+          if(idx >= 0) selectRecord(idx);
+        });
+
+        ["statusInput", "guideInput", "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
+          els[id].addEventListener("input", updatePreviewFromForm);
+          els[id].addEventListener("change", updatePreviewFromForm);
+        });
+
+        els.guideInput.addEventListener("change", onGuideChange);
+        ["tour1Input", "tour2Input", "tour3Input"].forEach(id => els[id].addEventListener("change", onTourPartsChange));
+        els.tourTypeInput.addEventListener("input", updatePreviewFromForm);
+        els.refreshBtn.addEventListener("click", loadData);
+        els.manualEntryBtn.addEventListener("click", startManualConfirmation);
+        els.exportPngBtn.addEventListener("click", exportPng);
+        if(els.openImageBtn) els.openImageBtn.addEventListener("click", openImageForSaving);
+        els.exportPdfBtn.addEventListener("click", exportPdf);
+        els.markGeneratedBtn.addEventListener("click", () => updateStatus("Generated"));
+        els.markSentBtn.addEventListener("click", () => updateStatus("Sent"));
+        els.jumpPreviewBtn.addEventListener("click", () => els.previewPanelAnchor.scrollIntoView({behavior:"smooth", block:"start"}));
+        els.jumpListBtn.addEventListener("click", () => els.listPanel.scrollIntoView({behavior:"smooth", block:"start"}));
+      }
+
+      function setPreviewScale(){
+        if(!els.previewShell || !els.previewScale) return;
+        const available = Math.max(280, els.previewShell.clientWidth - 30);
+        const scale = Math.min(1, available / 1920);
+        els.previewScale.style.transform = "scale(" + scale + ")";
+        els.previewScale.style.width = Math.ceil(1920 * scale) + "px";
+        els.previewScale.style.height = Math.ceil(1080 * scale) + "px";
+        els.previewShell.style.minHeight = "0";
+      }
+
+      function val(row, keys, fallback){
+        if(!row) return fallback || "";
+        for(const key of keys){
+          if(Object.prototype.hasOwnProperty.call(row, key) && String(row[key] || "").trim() !== ""){
+            return row[key];
+          }
         }
+        return fallback || "";
+      }
 
-        if(data.pricingNote){
-          rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #d9e2d5;border-radius:18px;"><tr><td style="padding:18px 20px;color:#536067;font-size:14px;line-height:22px;">${escapeHtml(data.pricingNote)}</td></tr></table>`));
+      function statusOf(row){
+        return val(row, ["tour_confirmation_status", "Status"], "Pending");
+      }
+
+      function guideNameOf(row){
+        return val(row, ["tour_guide", "Guide"], "Chicho");
+      }
+
+      function guidePhoneOf(row){
+        return val(row, ["guide_phone", "Contact #"], "");
+      }
+
+      function guestDisplayOf(row){
+        const primary = val(row, ["guest_name", "Guest Name", "Guest Name(s)"], "");
+        const others = val(row, ["other_guest_names", "Other Guest Names"], "");
+        const legacy = val(row, ["Guests"], "");
+        const countOnly = val(row, ["guests"], "");
+        const parts = [primary, others].map(v => String(v || "").trim()).filter(Boolean);
+        if(parts.length) return parts.join(" & ");
+        if(legacy && !/^\d+$/.test(String(legacy).trim())) return legacy;
+        if(countOnly && !/^\d+$/.test(String(countOnly).trim())) return countOnly;
+        return "";
+      }
+
+      function guestPhoneOf(row){
+        return val(row, ["guest_phone", "Guest Phone", "Guest Phone #", "guest_phone_number"], "");
+      }
+
+      function dateIssuedOf(row){
+        return val(row, ["date_issued", "Date Issued"], "");
+      }
+
+      function tourDateOf(row){
+        return val(row, ["tour_date", "Tour Date"], "");
+      }
+
+      function tourLengthOf(row){
+        return val(row, ["tour_length", "Length"], "Full Day");
+      }
+
+      function pickupTimeOf(row){
+        return val(row, ["pickup_time", "Pickup Time"], "3:00 AM");
+      }
+
+      function pickupLocationOf(row){
+        return val(row, ["pickup_location", "Pickup Location"], "");
+      }
+
+      function qrUrlOf(row){
+        return val(row, ["qr_code_url", "QR Code URL"], window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
+      }
+
+      function notesOf(row){
+        return val(row, ["notes", "Notes"], "");
+      }
+
+      function transportOf(row){
+        return val(row, ["transportation", "Transportation"], "");
+      }
+
+      function loadData(){
+        setHint("Loading sheet data...");
+        jsonp(window.MBW_CONFIRMATION_CONFIG.appScriptUrl, { action:"data" })
+          .then(data => {
+            if(!data || !Array.isArray(data.confirmations)) throw new Error("Invalid data response");
+            hydrateData(data);
+            setHint("Loaded from Google Sheet");
+          })
+          .catch(() => {
+            hydrateData(window.MBW_CONFIRMATION_CONFIG.fallbackData);
+            setHint("Preview mode. Check Apps Script JSONP endpoint if Google Sheet data does not load.");
+          });
+      }
+
+      function hydrateData(data){
+        state.data = data;
+        state.records = (data.confirmations || []).filter(r => hasUsefulRecord(r));
+        const incomingGuides = (data.guides || []).filter(g => String(val(g, ["guide", "Guide"], "") || "").trim() !== "");
+        const builtInNames = new Set(BUILT_IN_GUIDES.map(g => g.guide.toLowerCase()));
+        state.guides = BUILT_IN_GUIDES.concat(incomingGuides.filter(g => !builtInNames.has(String(val(g, ["guide", "Guide"], "")).toLowerCase())));
+        state.tours = (data.tours || []).map(t => val(t, ["tour_name", "Tour Name", "tour", "Tour", "name", "Name"], "")).filter(Boolean);
+        renderGuideOptions();
+        renderTourOptions();
+        renderBookingOptions();
+        renderRecords();
+        if(hasInboundCrmRecord()){
+          startManualConfirmation();
+          applyInboundCrmRecord();
         }
+        else if(state.records.length){ selectRecord(0); }
+        else { fillForm({}); updatePreviewFromForm(); }
+      }
 
-        rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:18px;"><tr><td style="padding:20px 22px;"><h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:28px;color:#0D5925;">${escapeHtml(c.nextSteps)}</h2><p style="margin:0;color:#536067;font-size:14px;line-height:22px;">${escapeHtml(data.closingText || c.defaultClosing)}</p></td></tr></table>`));
+      function hasUsefulRecord(r){
+        return ["confirmation_id", "invoice_no", "guest_name", "other_guest_names", "guest_phone", "tour_date", "tour_guide", "tour_type_1", "combined_tour_display", "tour_confirmation_status", "Guests", "Tour Date", "Guide", "Tour Type 1", "Combined Tour Display", "Status"].some(k => String(r[k] || "").trim() !== "");
+      }
 
-        if(data.showDeposit){
-          rows.push(row(
-            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;">
-              <tr><td align="center" style="padding:22px 20px;">
-                <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(c.ready)}</h2>
-                <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(c.depositText)}</p>
-                <a href="${DEPOSIT_LINK}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>
-                <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
-              </td></tr>
-            </table>`
-          ));
+      function renderGuideOptions(){
+        els.guideInput.innerHTML = "";
+        state.guides.forEach(g => {
+          const name = val(g, ["guide", "Guide"], "");
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          els.guideInput.appendChild(opt);
+        });
+        if(!state.guides.length){
+          ["Chicho", "Neicer", "Anderson", "Abel", "Other"].forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            els.guideInput.appendChild(opt);
+          });
         }
+      }
 
-        const signatureIcons = [
-          {href:'https://mindobirdwatching.com',img:'https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png',w:28,h:28,alt:'Website'},
-          {href:'https://www.instagram.com/mindobirdwatching/',img:'https://cdn-icons-png.flaticon.com/512/2111/2111463.png',w:28,h:28,alt:'Instagram'},
-          {href:'https://www.tiktok.com/@mindobirdwatching',img:'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',w:28,h:28,alt:'TikTok'},
-          {href:'https://t.me/+ANc1KHoV2Y82NmI5',img:'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',w:28,h:28,alt:'Telegram'},
-          {href:'https://www.facebook.com/profile.php?id=61577783327957',img:'https://cdn-icons-png.flaticon.com/512/733/733547.png',w:28,h:28,alt:'Facebook'},
-          {href:'https://x.com/mindobirds',img:'https://cdn-icons-png.flaticon.com/512/5968/5968958.png',w:28,h:28,alt:'X'},
-          {href:'https://www.youtube.com/@MindoBirdWatching',img:'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',w:28,h:28,alt:'YouTube'},
-          {href:'https://pin.it/6O8GN1PRz',img:'https://i.imgur.com/kSrXjXZ.png',w:28,h:28,alt:'Pinterest'},
-          {href:'https://g.page/r/CdMlIYMGgBIvEAE/review',img:'https://i.imgur.com/fBPIjvV.png',w:31,h:31,alt:'Google Review'},
-          {href:whatsappUrl,img:'https://i.imgur.com/0sfOKs8.png',w:28,h:28,alt:'WhatsApp'},
-          {href:'https://mindobirdwatching.com/shop',img:'https://i.imgur.com/g53OeDX.png',w:28,h:28,alt:'Shop'}
+      function renderTourOptions(){
+        const tourSelects = [els.tour1Input, els.tour2Input, els.tour3Input].filter(Boolean);
+        const fallbackTours = [
+          "Jewels of the Morning Forest",
+          "Dance of the Andean Cock-of-the-Rock",
+          "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+          "Custom Half Day",
+          "Custom Full Day",
+          "Nature Excursion",
+          "Solo Birdwatching Experience",
+          "Chocolate Tour",
+          "Coffee Tour",
+          "Waterfall Hike",
+          "Canopy/Ziplining",
+          "Butterfly Garden",
+          "Night Walk",
+          "Half-Day to Full-Day Extension",
+          "Canyoning"
+        ];
+        const tours = state.tours.length ? state.tours.slice() : fallbackTours.slice();
+        if(!tours.some(name => /night\s*walk/i.test(String(name || "")))) tours.push("Night Walk");
+        tourSelects.forEach((select, idx) => {
+          const current = select.value;
+          select.innerHTML = "";
+          const empty = document.createElement("option");
+          empty.value = "";
+          empty.textContent = idx === 0 ? "Select tour" : "None";
+          select.appendChild(empty);
+          tours.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+          });
+          select.value = current;
+        });
+      }
+
+      function renderPickupTimeOptions(){
+        if(!els.pickupTimeInput) return;
+        const times = [];
+        for(let hour = 3; hour <= 12; hour++){
+          for(let min of [0, 15, 30, 45]){
+            if(hour === 12 && min > 0) continue;
+            const label = hour + ":" + String(min).padStart(2, "0") + " AM";
+            times.push(label);
+          }
+        }
+        for(let hour = 1; hour <= 11; hour++){
+          for(let min of [0, 15, 30, 45]){
+            times.push(hour + ":" + String(min).padStart(2, "0") + " PM");
+          }
+        }
+        times.push("12:00 PM");
+        times.forEach(time => {
+          const opt = document.createElement("option");
+          opt.value = time;
+          opt.textContent = time;
+          els.pickupTimeInput.appendChild(opt);
+        });
+      }
+
+      function renderBookingOptions(){
+        els.bookingSelect.innerHTML = "";
+        const manualOption = document.createElement("option");
+        manualOption.value = "manual";
+        manualOption.textContent = "Manual / New Confirmation";
+        els.bookingSelect.appendChild(manualOption);
+        state.records.forEach((r, idx) => {
+          const opt = document.createElement("option");
+          opt.value = r.rowNumber || idx;
+          opt.textContent = labelForRecord(r);
+          els.bookingSelect.appendChild(opt);
+        });
+      }
+
+      function renderRecords(){
+        const filtered = filteredRecords();
+        els.records.innerHTML = "";
+        if(!filtered.length){
+          const div = document.createElement("div");
+          div.className = "emptyState";
+          div.textContent = "No confirmations match this filter.";
+          els.records.appendChild(div);
+        } else {
+          filtered.forEach(item => {
+            const r = item.record;
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "recordBtn" + (item.index === state.activeIndex ? " active" : "");
+            btn.innerHTML = "<div class='recordMain'><div><div class='recordName'></div><div class='recordDate'></div></div><span class='statusPill'></span></div>";
+            btn.querySelector(".recordName").textContent = guestDisplayOf(r) || val(r, ["invoice_no"], "") || "Unnamed confirmation";
+            btn.querySelector(".recordDate").textContent = formatTourDateShort(tourDateOf(r));
+            const pill = btn.querySelector(".statusPill");
+            const status = statusOf(r);
+            pill.textContent = status;
+            pill.classList.toggle("generated", status === "Generated");
+            pill.classList.toggle("sent", status === "Sent");
+            btn.addEventListener("click", () => selectRecord(item.index));
+            els.records.appendChild(btn);
+          });
+        }
+        els.listCount.textContent = "Total: " + state.records.length + " confirmations";
+      }
+
+      function filteredRecords(){
+        return state.records.map((record, index) => ({record, index})).filter(item => {
+          const r = item.record;
+          const statusOk = state.activeStatus === "all" || String(statusOf(r)) === state.activeStatus;
+          const hay = [guestDisplayOf(r), guestPhoneOf(r), tourDateOf(r), guideNameOf(r), statusOf(r), tourDisplay(r), val(r, ["invoice_no"], ""), val(r, ["confirmation_id"], "")].join(" ").toLowerCase();
+          const searchOk = !state.search || hay.includes(state.search);
+          return statusOk && searchOk;
+        });
+      }
+
+      function selectRecord(index){
+        state.activeIndex = index;
+        const r = state.records[index] || {};
+        fillForm(r);
+        els.bookingSelect.value = r.rowNumber || index;
+        renderRecords();
+        updatePreviewFromForm();
+      }
+
+      function startManualConfirmation(){
+        state.activeIndex = -1;
+        els.bookingSelect.value = "manual";
+        els.statusInput.value = "Pending";
+        els.dateIssuedInput.value = toDateInputValue(todayMDY());
+        els.guestsInput.value = "";
+        els.guestPhoneInput.value = "";
+        els.tourDateInput.value = "";
+        setSelectValue(els.guideInput, "Chicho");
+        els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
+        setSelectValue(els.lengthInput, "Full Day");
+        setSelectValue(els.pickupTimeInput, "3:00 AM");
+        setSelectValue(els.tour1Input, "");
+        setSelectValue(els.tour2Input, "");
+        setSelectValue(els.tour3Input, "");
+        els.tourTypeInput.value = "";
+        els.transportationInput.value = "";
+        els.pickupLocationInput.value = "";
+        els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
+        els.notesInput.value = "";
+        renderRecords();
+        updatePreviewFromForm();
+        setHint("Manual confirmation ready — enter guest and tour details");
+      }
+
+      function getInboundValue(data, keys, fallback){
+        for(const key of keys){
+          if(data[key] !== undefined && data[key] !== null && String(data[key]).trim() !== "") return String(data[key]).trim();
+        }
+        return fallback || "";
+      }
+
+      function getInboundData(){
+        const params = new URLSearchParams(window.location.search);
+        const data = {};
+        params.forEach((value, key) => { data[key] = value; });
+        ["mbwTourConfirmationDraft", "mbwSelectedCrmRecord", "mbwGuestCrmSelectedRecord"].forEach(key => {
+          try {
+            const stored = JSON.parse(localStorage.getItem(key) || "{}");
+            Object.keys(stored).forEach(storedKey => {
+              if(data[storedKey] === undefined || data[storedKey] === "") data[storedKey] = stored[storedKey];
+            });
+          } catch(_) {}
+        });
+        return data;
+      }
+
+      function hasInboundCrmRecord(){
+        const data = getInboundData();
+        return Boolean(getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName", "email", "phone", "phone_number", "requested_date", "tour_date", "date"], ""));
+      }
+
+      function normalizeInboundTourText(value){
+        return String(value || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
+      }
+
+      function displayTourFromCrm(tourText){
+        const normalized = normalizeInboundTourText(tourText);
+        if(!normalized) return "";
+        if(normalized.includes("night walk")) return "Night Walk";
+        if(normalized.includes("jewels") || normalized.includes("morning forest")) return "Jewels of the Morning Forest";
+        if(normalized.includes("andean") || normalized.includes("cock")) return "Dance of the Andean Cock-of-the-Rock";
+        if(normalized.includes("five") || normalized.includes("toucan") || normalized.includes("quest") || normalized.includes("full day")) return "Quest for Five Toucans & the Andean Cock-of-the-Rock";
+        if(normalized.includes("half day")) return "Half Day Birdwatching Tour";
+        if(normalized.includes("tour activities")) return "Tour + Activities";
+        return tourText;
+      }
+
+      function lengthFromCrm(tourText, durationText){
+        const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
+        if(text.includes("night walk")) return "Night Walk";
+        if(text.includes("half")) return "Half Day";
+        if(text.includes("full")) return "Full Day";
+        return "";
+      }
+
+      function pickupTimeFromCrm(tourText, durationText){
+        const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
+        if(text.includes("night walk")) return "7:30 PM";
+        if(text.includes("full") || text.includes("quest") || text.includes("toucan")) return "5:00 AM";
+        if(text.includes("andean") || text.includes("cock")) return "5:00 AM";
+        if(text.includes("jewels")) return "6:00 AM";
+        return "5:00 AM";
+      }
+
+      function applyInboundCrmRecord(){
+        const data = getInboundData();
+        const fullName = getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName"], "");
+        const phone = getInboundValue(data, ["guest_phone", "phone", "phone_number", "guestPhone", "phone_normalized"], "");
+        const tourDate = getInboundValue(data, ["tour_date", "requested_date", "requested_date_start", "date"], "");
+        const tourText = getInboundValue(data, ["tour", "tour_type", "tour_interest"], "");
+        const duration = getInboundValue(data, ["duration_preference", "duration"], "");
+        const pickup = getInboundValue(data, ["pickup_location", "pickup", "pickupLocation", "pickup_address_or_hotel"], "");
+        const transportation = getInboundValue(data, ["transportation", "transportation_needed"], "");
+        const notes = getInboundValue(data, ["notes", "message_questions", "guest_notes"], "");
+        const displayTour = displayTourFromCrm(tourText);
+        const displayLength = lengthFromCrm(tourText, duration) || "Full Day";
+
+        state.activeIndex = -1;
+        els.bookingSelect.value = "manual";
+        els.statusInput.value = "Pending";
+        els.dateIssuedInput.value = toDateInputValue(todayMDY());
+        els.guestsInput.value = fullName;
+        els.guestPhoneInput.value = phone;
+        els.tourDateInput.value = toDateInputValue(tourDate);
+        setSelectValue(els.guideInput, "Chicho");
+        els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
+        setSelectValue(els.lengthInput, displayLength);
+        setSelectValue(els.pickupTimeInput, pickupTimeFromCrm(tourText, duration));
+        setSelectValue(els.tour1Input, displayTour);
+        setSelectValue(els.tour2Input, "");
+        setSelectValue(els.tour3Input, "");
+        els.tourTypeInput.value = displayTour || tourText || "";
+        els.transportationInput.value = transportation && transportation !== "No" ? (pickup ? transportation + "\n" + pickup : transportation) : (pickup ? "Mindo pickup\n" + pickup : "Mindo pickup");
+        els.pickupLocationInput.value = pickup;
+        els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
+        els.notesInput.value = notes || "Thank you for booking with Mindo Bird Watching.";
+        applyNightWalkDefaults(false);
+        renderRecords();
+        updatePreviewFromForm();
+        setHint("Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting.");
+      }
+
+      function fillForm(r){
+        els.statusInput.value = statusOf(r);
+        els.guideInput.value = guideNameOf(r);
+        els.dateIssuedInput.value = toDateInputValue(dateIssuedOf(r) || todayMDY());
+        els.guestsInput.value = guestDisplayOf(r);
+        els.guestPhoneInput.value = guestPhoneOf(r);
+        els.tourDateInput.value = toDateInputValue(tourDateOf(r));
+        els.contactInput.value = guidePhoneOf(r) || contactForGuide(els.guideInput.value) || "";
+        els.lengthInput.value = normalizeLength(tourLengthOf(r));
+        setSelectValue(els.pickupTimeInput, normalizePickupTime(pickupTimeOf(r)));
+        setSelectValue(els.tour1Input, val(r, ["tour_type_1", "Tour Type 1"], ""));
+        setSelectValue(els.tour2Input, val(r, ["tour_type_2", "Tour Type 2"], ""));
+        setSelectValue(els.tour3Input, val(r, ["tour_type_3", "Tour Type 3"], ""));
+        els.tourTypeInput.value = tourDisplay(r);
+        els.transportationInput.value = buildTransportation(r);
+        els.pickupLocationInput.value = pickupLocationOf(r);
+        els.qrInput.value = qrUrlOf(r);
+        els.notesInput.value = notesOf(r) || buildDefaultNote(r);
+        applyNightWalkDefaults(false);
+      }
+
+      function onGuideChange(){
+        const guide = els.guideInput.value;
+        const isOther = guide === "Other";
+        const contact = contactForGuide(guide);
+        els.contactInput.placeholder = isOther ? "Enter guide phone number" : "+593 98 600 5054";
+        if(isOther){
+          els.contactInput.value = "";
+          els.contactInput.focus();
+        } else if(contact){
+          els.contactInput.value = contact;
+        }
+        updatePreviewFromForm();
+      }
+
+      function onTourPartsChange(){
+        const parts = [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value].filter(Boolean);
+        els.tourTypeInput.value = parts.join(" + ");
+        applyNightWalkDefaults(true);
+        updatePreviewFromForm();
+      }
+
+      function isNightWalkSelected(){
+        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value, els.tourTypeInput.value]
+          .some(value => /night\s*walk/i.test(String(value || "")));
+      }
+
+      function applyNightWalkDefaults(force){
+        if(!isNightWalkSelected()) return;
+        const config = window.MBW_CONFIRMATION_CONFIG;
+        setSelectValue(els.guideInput, config.nightWalkGuide);
+        els.contactInput.value = config.nightWalkGuidePhone;
+        setSelectValue(els.lengthInput, "2 hrs");
+        if(force || !els.pickupTimeInput.value) setSelectValue(els.pickupTimeInput, "7:30 PM");
+        if(force || !els.transportationInput.value) els.transportationInput.value = "Mindo Garden";
+        if(force || !els.pickupLocationInput.value) els.pickupLocationInput.value = "Mindo Garden";
+        if(force || !els.notesInput.value) els.notesInput.value = "Pick up will be at 7:30 pm";
+      }
+
+      function updatePreviewFromForm(){
+        const guide = els.guideInput.value || "Chicho";
+        const nightWalk = isNightWalkSelected();
+        const certificate = document.getElementById("certificate");
+        if(certificate) certificate.classList.toggle("nightWalkMode", nightWalk);
+        els.outDateIssued.textContent = formatDateIssued(els.dateIssuedInput.value || todayMDY());
+        els.outGuests.textContent = els.guestsInput.value || "Guest Name";
+        els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
+        els.outTourDate.textContent = formatTourDateLong(els.tourDateInput.value || "");
+        els.outGuide.textContent = guide;
+        els.outContact.textContent = els.contactInput.value || contactForGuide(guide) || "";
+        els.outTourType.textContent = els.tourTypeInput.value || "Tour Type";
+        els.outLength.textContent = (els.lengthInput.value || "Full Day").toUpperCase();
+        const transport = els.transportationInput.value || "Transportation details";
+        const pickupLocation = els.pickupLocationInput.value || "";
+        els.outTransportation.innerHTML = buildTransportationDisplay(transport, pickupLocation);
+        els.outNotes.textContent = formatNote(els.notesInput.value || "");
+        setGuideImage(nightWalk ? window.MBW_CONFIRMATION_CONFIG.nightWalkImage : imageForGuide(guide));
+        renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
+      }
+
+      function renderQr(url){
+        if(!window.QRCode || !els.qrBox) return;
+        els.qrBox.innerHTML = "";
+        state.qr = new QRCode(els.qrBox, {
+          text: url,
+          width: 160,
+          height: 160,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+
+      function exportPng(){
+        setHint("Preparing clean 1920x1080 JPG...");
+        renderExportCanvas()
+          .then(canvas => {
+            const link = document.createElement("a");
+            link.download = fileBaseName() + ".jpg";
+            link.href = canvas.toDataURL("image/jpeg", 0.96);
+            link.click();
+            setHint("JPG exported");
+          })
+          .catch(err => setHint("JPG export failed: " + err.message));
+      }
+
+      function openImageForSaving(){
+        setHint("Preparing image...");
+        renderExportCanvas()
+          .then(canvas => new Promise(resolve => canvas.toBlob(blob => resolve({ canvas, blob }), "image/jpeg", 0.96)))
+          .then(({ canvas, blob }) => {
+            if(!blob){
+              const dataUrl = canvas.toDataURL("image/jpeg", 0.96);
+              const win = window.open();
+              if(win) win.document.write("<img src='" + dataUrl + "' style='width:100%;height:auto;'>");
+              setHint("Image opened");
+              return;
+            }
+
+            const file = new File([blob], fileBaseName() + ".jpg", { type:"image/jpeg" });
+            if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+              navigator.share({ files:[file], title:"MBW Tour Confirmation" })
+                .then(() => setHint("Share sheet opened"))
+                .catch(() => openBlobInNewTab(blob));
+            } else {
+              openBlobInNewTab(blob);
+            }
+          })
+          .catch(err => setHint("Image export failed: " + err.message));
+      }
+
+      function openBlobInNewTab(blob){
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, "_blank");
+        if(!win){
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileBaseName() + ".jpg";
+          link.click();
+        }
+        setHint("Image opened. On iPhone, use Share or long-press to save to Photos.");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+
+      function exportPdf(){
+        setHint("Preparing clean PDF...");
+        renderExportCanvas()
+          .then(canvas => {
+            const img = canvas.toDataURL("image/jpeg", 0.96);
+            const jsPDF = window.jspdf && window.jspdf.jsPDF;
+            if(!jsPDF) throw new Error("PDF library did not load");
+            const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[1920,1080] });
+            pdf.addImage(img, "JPEG", 0, 0, 1920, 1080);
+            pdf.save(fileBaseName() + ".pdf");
+            setHint("PDF exported");
+          })
+          .catch(err => setHint("PDF export failed: " + err.message));
+      }
+
+      function renderExportCanvas(){
+        const imageUrls = getExportImageUrls();
+        const nightWalk = isNightWalkSelected();
+        return Promise.all([
+          loadExportImage(imageUrls.background),
+          loadExportImage(imageUrls.logo),
+          loadExportImage(imageUrls.guide),
+          loadExportImage(imageUrls.mindo),
+          loadExportImage(imageUrls.instagram)
+        ]).then(([bg, logo, guide, mindo, instagram]) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1920;
+          canvas.height = 1080;
+          const ctx = canvas.getContext("2d");
+
+          ctx.fillStyle = "#edf4e6";
+          ctx.fillRect(0, 0, 1920, 1080);
+          drawCover(ctx, bg, 0, 0, 1920, 1080);
+
+          const grad = ctx.createLinearGradient(0, 0, 1920, 0);
+          grad.addColorStop(0, nightWalk ? "rgba(3,18,16,0.72)" : "rgba(255,255,255,0.25)");
+          grad.addColorStop(0.54, nightWalk ? "rgba(4,25,21,0.66)" : "rgba(255,255,255,0.08)");
+          grad.addColorStop(1, nightWalk ? "rgba(2,13,12,0.74)" : "rgba(255,255,255,0.16)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 1920, 1080);
+
+          drawContain(ctx, logo, 62, 58, 330, 330);
+          drawContain(ctx, mindo, 1158, 530, 720, getContainHeight(mindo, 720));
+          if(nightWalk){
+            drawCoverCircle(ctx, guide, 1329, 239, 472);
+          } else {
+            drawContain(ctx, guide, 1180, 140, 700, 1000);
+          }
+
+          ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.font = "950 90px Arial, Helvetica, sans-serif";
+          ctx.fillText("TOUR CONFIRMATION", 965, 112);
+          ctx.font = "950 34px Arial, Helvetica, sans-serif";
+          ctx.fillText("Date Issued: " + (els.outDateIssued.textContent || ""), 940, 245);
+
+          drawInfoText(ctx, nightWalk);
+          drawQrToCanvas(ctx);
+          drawFooter(ctx, instagram, logo, nightWalk);
+
+          return canvas;
+        });
+      }
+
+      function getExportImageUrls(){
+        return {
+          background: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_tour_confirmation_background.png",
+          logo: "https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png",
+          guide: getGuideImageUrlFromStyle() || window.MBW_CONFIRMATION_CONFIG.defaultGuideImage,
+          mindo: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_mindo_letters.png",
+          instagram: "https://mindobirdwatching.com/assets/images/tour-confirmation/icon_ig.png"
+        };
+      }
+
+      function loadExportImage(url){
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Could not load image: " + url));
+          img.src = url;
+        });
+      }
+
+      function drawCover(ctx, img, x, y, w, h){
+        const ir = img.width / img.height;
+        const br = w / h;
+        let sw = img.width, sh = img.height, sx = 0, sy = 0;
+        if(ir > br){
+          sw = img.height * br;
+          sx = (img.width - sw) / 2;
+        } else {
+          sh = img.width / br;
+          sy = (img.height - sh) / 2;
+        }
+        ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+      }
+
+      function drawContain(ctx, img, x, y, w, h){
+        const scale = Math.min(w / img.width, h / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        const dx = x + (w - dw) / 2;
+        const dy = y + (h - dh) / 2;
+        ctx.drawImage(img, dx, dy, dw, dh);
+      }
+
+      function drawCoverCircle(ctx, img, x, y, size){
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.clip();
+        drawCover(ctx, img, x, y, size, size);
+        ctx.restore();
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.78)";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2 - 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function getContainHeight(img, targetWidth){
+        if(!img || !img.width) return 360;
+        return targetWidth * (img.height / img.width);
+      }
+
+      function drawInfoText(ctx, nightWalk){
+        const labelX = 220;
+        const valueX = 423;
+        const rows = [
+          { label:"Guest(s):", value:els.outGuests.textContent || "", y:420, valueSize:30, maxWidth:520 },
+          { label:"Guest Phone:", value:els.outGuestPhone.textContent || "", y:470, valueSize:27, maxWidth:430 },
+          { label:"Tour Date:", value:els.outTourDate.textContent || "", y:520, valueSize:30, maxWidth:540 },
+          { label:"Guide:", value:els.outGuide.textContent || "", y:570, valueSize:30, maxWidth:400 },
+          { label:"Contact #:", value:els.outContact.textContent || "", y:620, valueSize:27, maxWidth:430 },
+          { label:"Tour Type:", value:els.outTourType.textContent || "", y:670, valueSize:27, maxWidth:455 },
+          { label:"Length:", value:els.outLength.textContent || "", y:760, valueSize:36, maxWidth:420 },
+          { label:"Transportation:", value:getPlainText(els.outTransportation), y:820, valueSize:27, maxWidth:475 }
         ];
 
-        const signatureIconCells = signatureIcons.map(icon =>
-          `<td valign="middle" style="padding:0 7px 7px 0;"><a href="${icon.href}" target="_blank" rel="noopener noreferrer"><img src="${icon.img}" width="${icon.w}" height="${icon.h}" alt="${escapeHtml(icon.alt)}" style="display:block;width:${icon.w}px;height:${icon.h}px;border:0;"></a></td>`
-        ).join('');
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
 
-        rows.push(row(
-          `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
-            <tr><td style="padding:18px;">
-              <p style="margin:0 0 10px;font-size:14px;line-height:20px;color:#071923;">${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p>
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>${signatureIconCells}</tr></table>
-              <p style="margin:5px 0 0;font-size:12px;line-height:18px;color:#536067;font-weight:800;">Mindo, Ecuador<br><a href="https://mindobirdwatching.com" style="color:#0D5925;text-decoration:underline;">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com" style="color:#0D5925;text-decoration:underline;">mindobirdwatching@gmail.com</a></p>
-            </td></tr>
-          </table>`
-        ));
-
-        rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:14px;"><tr><td align="center" style="padding:14px 18px;color:#536067;font-size:12px;line-height:18px;font-weight:700;">${escapeHtml(c.solo)}</td></tr></table>`));
-        rows.push(`<tr><td align="center" style="padding:14px 24px 6px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td valign="middle" style="padding-right:6px;"><a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="34" height="34" alt="Mindo Bird Watching logo" style="display:block;width:34px;height:34px;border:0;"></a></td><td valign="middle" style="color:#32453d;font-size:11px;line-height:16px;font-weight:900;">Mindo Bird Watching &copy; 2026</td></tr></table></td></tr>`);
-
-        return `<!doctype html><html lang="${data.language === 'es' ? 'es' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(data.tripTitle || c.defaultTitle)}</title></head><body style="margin:0;padding:0;background:#C7DAAC;font-family:Arial,Helvetica,sans-serif;color:#071923;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#C7DAAC;"><tr><td align="center" style="padding:22px 10px;"><table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:640px;max-width:640px;">${rows.join('')}</table></td></tr></table></body></html>`;
-      }
-
-      function buildStandaloneHtml(data){
-        return buildEmailSafeHtml(data);
-      }
-
-      function buildWhatsAppMessage(data){
-        const c = copyFor(data);
-        const sum = totals(data);
-        const lines = [`${c.hi} ${data.guestName || (data.language === 'es' ? 'allí' : 'there')},`,'',`${c.here} ${formatShortDate(data.startDate || data.endDate,data.language)}:`,''];
-        groupedItems(data.items.filter(item => item.name || item.type)).forEach(([date,items],groupIndex) => {
-          if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(formatShortDate(date,data.language));
-          items.forEach(item => {
-            const time = formatTime(item.startTime,data.language);
-            const durationText = translateKnownText(item.duration,data.language);
-            const duration = durationText ? ` (${durationText})` : '';
-            lines.push(`${time} - ${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}${duration}`);
-          });
-          lines.push('');
+        rows.forEach(row => {
+          ctx.font = "950 25px Arial, Helvetica, sans-serif";
+          ctx.fillText(row.label, labelX, row.y + 4);
+          ctx.font = "950 " + row.valueSize + "px Arial, Helvetica, sans-serif";
+          wrapCanvasText(ctx, row.value, valueX, row.y, row.maxWidth, Math.round(row.valueSize * 1.08));
         });
-        const priced = data.items.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
-        if(priced.length){
-          lines.push(`${c.pricingLabel}:`);
-          priced.forEach(item => lines.push(`${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
-          if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
-          lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
-        }
-        if(data.showDeposit) lines.push(c.depositLead,DEPOSIT_LINK,'');
-        lines.push(c.finalLine);
-        return lines.join('\n');
+
+        ctx.font = "950 25px Arial, Helvetica, sans-serif";
+        ctx.fillText(els.outNotes.textContent || "", 220, 905);
       }
 
-      function saveState(){
-        try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(getFormData())); }catch(error){}
+      function getPlainText(el){
+        return String(el ? el.innerText || el.textContent || "" : "").replace(/\s+\n/g, "\n").trim();
       }
-      function loadState(){
-        try{
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if(!raw) return false;
-          const data = JSON.parse(raw);
-          ['guestName','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','closingText','discount'].forEach(key => {
-            if($(key) && data[key] !== undefined) $(key).value = data[key];
+
+      function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+        const paragraphs = String(text || "").split("\n");
+        let yy = y;
+        paragraphs.forEach((paragraph, pIndex) => {
+          const words = paragraph.split(/\s+/).filter(Boolean);
+          let line = "";
+          words.forEach(word => {
+            const test = line ? line + " " + word : word;
+            if(ctx.measureText(test).width > maxWidth && line){
+              ctx.fillText(line, x, yy);
+              yy += lineHeight;
+              line = word;
+            } else {
+              line = test;
+            }
           });
-          $('showDeposit').checked = data.showDeposit !== false;
-          $('showItemPrices').checked = data.showItemPrices !== false;
-          state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
-          applyLanguageDefaults($('language').value,true);
-          return true;
-        }catch(error){ return false; }
-      }
-      function updateAll(shouldRenderEditors=false){
-        if(shouldRenderEditors) renderEditors();
-        applyDateMinimums();
-        const data = getFormData();
-        const sum = totals(data);
-        $('subtotalValue').textContent = money(sum.subtotal,data.language);
-        $('adjustmentValue').textContent = money(sum.adjustment,data.language);
-        $('totalValue').textContent = money(sum.total,data.language);
-        const emailHtml = buildEmailSafeHtml(data);
-        $('guestPreview').innerHTML = emailHtml;
-        $('htmlOutput').value = emailHtml;
-        saveState();
+          if(line){
+            ctx.fillText(line, x, yy);
+            yy += lineHeight;
+          }
+          if(pIndex < paragraphs.length - 1) yy += Math.round(lineHeight * 0.12);
+        });
       }
 
-      $('itemsEditor').addEventListener('input',event => {
-        const editor = event.target.closest('.itemEditor');
-        const field = event.target.dataset.field;
-        if(editor && field) updateItem(editor.dataset.id,field,event.target.value);
-      });
-      $('itemsEditor').addEventListener('click',event => {
-        const button = event.target.closest('button[data-action]');
-        if(!button) return;
-        const editor = button.closest('.itemEditor');
-        const id = editor.dataset.id;
-        const action = button.dataset.action;
-        if(action === 'remove') removeItem(id);
-        if(action === 'duplicate') duplicateItem(id);
-        if(action === 'up') moveItem(id,-1);
-        if(action === 'down') moveItem(id,1);
-      });
-      document.querySelector('.editorPanel').addEventListener('input',event => {
-        if(!event.target.closest('.itemEditor')) updateAll(false);
-      });
-      document.querySelector('.editorPanel').addEventListener('change',event => {
-        if(!event.target.closest('.itemEditor')) updateAll(false);
-      });
-      $('guestName').addEventListener('input',event => {
-        const input = event.target;
-        const start = input.selectionStart;
-        const next = capitalizeFirst(input.value);
-        if(next !== input.value){
-          input.value = next;
-          if(start !== null) input.setSelectionRange(start,start);
-        }
-        updateAll(false);
-      });
-      function applyDateMinimums(){
-        const today = todayIso();
-        $('startDate').min = today;
-        $('endDate').min = $('startDate').value || today;
-        document.querySelectorAll('#itemsEditor input[type="date"]').forEach(input => { input.min = today; });
-        if($('startDate').value && $('endDate').value && $('endDate').value < $('startDate').value){
-          $('endDate').value = $('startDate').value;
+      function drawQrToCanvas(ctx){
+        const qrCanvas = els.qrBox ? els.qrBox.querySelector("canvas") : null;
+        const qrImg = els.qrBox ? els.qrBox.querySelector("img") : null;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(875, 555, 174, 174);
+        if(qrCanvas){
+          ctx.drawImage(qrCanvas, 882, 562, 160, 160);
+        } else if(qrImg){
+          ctx.drawImage(qrImg, 882, 562, 160, 160);
         }
       }
 
-      $('language').addEventListener('change',() => {
-        const language = $('language').value === 'es' ? 'es' : 'en';
-        applyLanguageDefaults(language,true);
-        state.items = state.items.map(item => ({
-          ...item,
-          name:inferProductPreset(item) === 'Other' ? translateKnownText(item.name,language) : inferProductPreset(item),
-          productPreset:inferProductPreset(item),
-          duration:translateKnownText(item.duration,language),
-          note:translateKnownText(item.note,language)
-        }));
-        renderEditors();
-        updateAll(false);
-      });
-      $('startDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
-      $('endDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
-      $('addItemBtn').addEventListener('click',() => addItem());
-      $('downloadBtn').addEventListener('click',() => {
-        const data = getFormData();
-        if(!data.guestName) toast('Add the guest name before downloading.');
-        const html = buildStandaloneHtml(data);
-        const blob = new Blob([html],{type:'text/html;charset=utf-8'});
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        const safeName = (data.guestName || 'guest').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-        link.href = url;
-        link.download = `mindo-itinerary-${safeName || 'guest'}.html`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(url),1000);
-        toast('Guest itinerary HTML downloaded.');
-      });
-      $('copyHtmlBtn').addEventListener('click',async() => {
-        const html = buildEmailSafeHtml(getFormData());
-        try{ await navigator.clipboard.writeText(html); toast('Email HTML copied.'); }
-        catch(error){ prompt('Copy this email HTML:',html); }
-      });
-      $('copyRenderedBtn').addEventListener('click',() => {
-        const range = document.createRange();
-        range.selectNodeContents($('guestPreview'));
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        try{
-          document.execCommand('copy');
-          toast('Rendered email copied. Paste it into Gmail.');
-        }catch(error){
-          toast('Select the preview and copy it manually.');
-        }
-        selection.removeAllRanges();
-      });
-      $('toggleHtmlBtn').addEventListener('click',() => {
-        const output = $('htmlOutput');
-        output.hidden = !output.hidden;
-        $('toggleHtmlBtn').textContent = output.hidden ? 'Show HTML' : 'Hide HTML';
-      });
-      $('copyWhatsAppBtn').addEventListener('click',async() => {
-        const message = buildWhatsAppMessage(getFormData());
-        try{ await navigator.clipboard.writeText(message); toast('WhatsApp message copied.'); }
-        catch(error){ prompt('Copy this WhatsApp message:',message); }
-      });
-      $('openWhatsAppBtn').addEventListener('click',() => {
-        const data = getFormData();
-        window.open(buildGuestWhatsAppUrl(data),'_blank','noopener');
-      });
-      $('resetBtn').addEventListener('click',() => {
-        if(!confirm('Clear the current itinerary and start again?')) return;
-        localStorage.removeItem(STORAGE_KEY);
-        $('guestName').value='';
-        $('language').value='en';
-        $('tripTitle').value=COPY.en.defaultTitle;
-        $('startDate').value='';
-        $('endDate').value='';
-        $('guestCount').value='2';
-        $('whatsappNumber').value='';
-        $('openingText').value=COPY.en.defaultOpening;
-        $('pricingNote').value=COPY.en.defaultPricing;
-        $('closingText').value=COPY.en.defaultClosing;
-        $('discount').value='0';
-        $('showDeposit').checked=true;
-        $('showItemPrices').checked=true;
-        state.items=[];
-        addItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
-        addItem({type:'Full-Day Tour',productPreset:'MBW006 - Quest for Five Toucans Full Day',name:'MBW006 - Quest for Five Toucans Full Day',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'});
-        addItem({type:'Night Walk',productPreset:'Night Walk',name:'Night Walk',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'});
-        toast('Itinerary reset.');
-      });
-
-      const loaded = loadState();
-      if(!loaded || !state.items.length){
-        state.items=[];
-        state.items.push(defaultItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'}));
-        state.items.push(defaultItem({type:'Full-Day Tour',productPreset:'MBW006 - Quest for Five Toucans Full Day',name:'MBW006 - Quest for Five Toucans Full Day',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'}));
-        state.items.push(defaultItem({type:'Night Walk',productPreset:'Night Walk',name:'Night Walk',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'}));
+      function drawFooter(ctx, instagram, logo, nightWalk){
+        ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = "950 36px Arial, Helvetica, sans-serif";
+        drawContain(ctx, instagram, 132, 987, 49, 49);
+        ctx.fillText("@mindobirdwatching", 203, 1012);
+        drawContain(ctx, logo, 675, 987, 49, 49);
+        ctx.font = "950 34px Arial, Helvetica, sans-serif";
+        ctx.fillText("www.mindobirdwatching.com", 742, 1012);
       }
-      renderEditors();
-      applyDateMinimums();
-      updateAll(false);
+
+      function updateStatus(status){
+        const r = state.records[state.activeIndex];
+        if(!r || !r.rowNumber){
+          setHint("No sheet row selected");
+          return;
+        }
+        els.statusInput.value = status;
+        r.tour_confirmation_status = status;
+        renderRecords();
+        setHint("Status changed in preview. Apps Script update endpoint comes next.");
+      }
+
+      function jsonp(baseUrl, params){
+        return new Promise((resolve, reject) => {
+          const cbName = "mbwJsonp_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+          const url = new URL(baseUrl);
+          Object.keys(params || {}).forEach(k => url.searchParams.set(k, params[k]));
+          url.searchParams.set("callback", cbName);
+          const script = document.createElement("script");
+          const timer = setTimeout(() => cleanup(new Error("Request timed out")), 12000);
+          window[cbName] = data => cleanup(null, data);
+          script.onerror = () => cleanup(new Error("Could not load Apps Script data"));
+          script.src = url.toString();
+          document.body.appendChild(script);
+          function cleanup(err, data){
+            clearTimeout(timer);
+            delete window[cbName];
+            if(script.parentNode) script.parentNode.removeChild(script);
+            if(err) reject(err); else resolve(data);
+          }
+        });
+      }
+
+      function waitForImages(){
+        const imgs = Array.from(els.certificate.querySelectorAll("img"));
+        const imagePromises = imgs.map(img => {
+          if(img.complete && img.naturalWidth !== 0) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        });
+
+        const guideUrl = getGuideImageUrlFromStyle();
+        if(guideUrl){
+          imagePromises.push(preloadImage(guideUrl));
+        }
+
+        return Promise.all(imagePromises);
+      }
+
+      function preloadImage(url){
+        return new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = url;
+        });
+      }
+
+      function setGuideImage(url){
+        const safeUrl = url || window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
+        if(!els.outGuideImage) return;
+        els.outGuideImage.style.backgroundImage = "url('" + safeUrl.replace(/'/g, "%27") + "')";
+        els.outGuideImage.dataset.src = safeUrl;
+      }
+
+      function getGuideImageUrlFromStyle(){
+        return els.outGuideImage ? (els.outGuideImage.dataset.src || "") : "";
+      }
+
+      function labelForRecord(r){
+        const guest = guestDisplayOf(r) || val(r, ["invoice_no"], "Unnamed");
+        const date = formatTourDateShort(tourDateOf(r));
+        return date ? guest + " - " + date : guest;
+      }
+
+      function contactForGuide(name){
+        const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
+        return g ? val(g, ["guide_phone", "Contact #"], "") : "";
+      }
+
+      function imageForGuide(name){
+        if(["neicer","anderson","abel"].includes(String(name || "").toLowerCase())){
+          return window.MBW_CONFIRMATION_CONFIG.birdwatchingGuideImage;
+        }
+        const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
+        return g ? val(g, ["image_url", "Image URL"], window.MBW_CONFIRMATION_CONFIG.defaultGuideImage) : window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
+      }
+
+      function tourDisplay(r){
+        const combined = val(r, ["combined_tour_display", "Combined Tour Display"], "");
+        if(combined) return combined;
+        return [val(r, ["tour_type_1", "Tour Type 1"], ""), val(r, ["tour_type_2", "Tour Type 2"], ""), val(r, ["tour_type_3", "Tour Type 3"], "")].filter(Boolean).join(" + ");
+      }
+
+      function buildTransportation(r){
+        const transport = transportOf(r);
+        const pickup = pickupLocationOf(r);
+        if(transport && pickup && !transport.toLowerCase().includes(pickup.toLowerCase())) return transport + "\n" + pickup;
+        return transport || pickup || "";
+      }
+
+      function buildDefaultNote(r){
+        const time = pickupTimeOf(r);
+        if(time) return "We will pick you up at your location latest " + time.toLowerCase() + ".";
+        return "We will pick you up at your location latest 3:00 am.";
+      }
+
+      function formatNote(text){
+        const clean = String(text || "").trim();
+        if(!clean) return "";
+        if(clean.startsWith("***") && clean.endsWith("***")) return clean;
+        return "***" + clean + "***";
+      }
+
+      function normalizeLength(value){
+        const v = String(value || "").toLowerCase();
+        if(v.includes("2 hr") || v.includes("2 hour")) return "2 hrs";
+        if(v.includes("half")) return "Half Day";
+        if(v.includes("multi")) return "Multi Day";
+        return "Full Day";
+      }
+
+      function buildTransportationDisplay(transport, pickupLocation){
+        const cleanTransport = String(transport || "").trim();
+        const cleanPickup = String(pickupLocation || "").trim();
+        if(cleanTransport && cleanPickup && !cleanTransport.toLowerCase().includes(cleanPickup.toLowerCase())){
+          return escapeHtml(cleanTransport).replace(/\n/g, "<br>") + "<br>" + escapeHtml(cleanPickup);
+        }
+        return escapeHtml(cleanTransport || cleanPickup || "Transportation details").replace(/\n/g, "<br>");
+      }
+
+      function formatDateIssued(value){
+        const d = parseDate(value);
+        if(!d) return value || todayMDY();
+        return String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getDate()).padStart(2,"0") + "/" + d.getFullYear();
+      }
+
+      function toDateInputValue(value){
+        const d = parseDate(value);
+        if(!d) return "";
+        return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+      }
+
+      function normalizePickupTime(value){
+        const d = String(value || "").trim().toUpperCase().replace(/\s+/g, " ");
+        const m = d.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+        if(!m) return d || "3:00 AM";
+        return Number(m[1]) + ":" + m[2] + " " + m[3];
+      }
+
+      function setSelectValue(select, value){
+        if(!select) return;
+        const clean = String(value || "");
+        if(clean && !Array.from(select.options).some(opt => opt.value === clean)){
+          const opt = document.createElement("option");
+          opt.value = clean;
+          opt.textContent = clean;
+          select.appendChild(opt);
+        }
+        select.value = clean;
+      }
+
+      function formatTourDateShort(value){
+        const d = parseDate(value);
+        if(!d) return value || "";
+        return d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+      }
+
+      function formatTourDateLong(value){
+        const d = parseDate(value);
+        if(!d) return value || "Tour Date";
+        const weekday = d.toLocaleDateString("en-US", { weekday:"long" });
+        const month = d.toLocaleDateString("en-US", { month:"long" });
+        return weekday + ", " + month + " " + ordinal(d.getDate()) + ", " + d.getFullYear();
+      }
+
+      function parseDate(value){
+        if(!value) return null;
+        const s = String(value).trim();
+        const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if(m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if(iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      function ordinal(n){
+        const j = n % 10, k = n % 100;
+        if(j === 1 && k !== 11) return n + "st";
+        if(j === 2 && k !== 12) return n + "nd";
+        if(j === 3 && k !== 13) return n + "rd";
+        return n + "th";
+      }
+
+      function todayMDY(){
+        const d = new Date();
+        return String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getDate()).padStart(2,"0") + "/" + d.getFullYear();
+      }
+
+      function fileBaseName(){
+        const guest = (els.guestsInput.value || "tour-confirmation").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60);
+        const date = (els.tourDateInput.value || todayMDY()).replace(/[^0-9]+/g,"-").replace(/^-|-$/g,"");
+        return "mbw-tour-confirmation-" + guest + "-" + date;
+      }
+
+      function escapeHtml(str){
+        return String(str || "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]));
+      }
+
+      function setHint(text){
+        if(els.previewHint) els.previewHint.textContent = text;
+      }
     })();
   </script>
 </body>
