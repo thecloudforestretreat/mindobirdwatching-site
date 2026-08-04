@@ -86,6 +86,41 @@ window.MBW_EMAIL_BLOCKS = {
       primaryCta: "View Tour",
       secondaryCta: "Watch Video"
     },
+
+    {
+      id: "tour-bear-half-day",
+      group: "tours",
+      type: "tour",
+      eyebrow: "Private high-Andean wildlife tour",
+      title: "Extended Half-Day Spectacled Bear Tour",
+      description: "A private morning wildlife experience focused on searching for spectacled bears in Antisana or Cayambe-Coca. Route choice depends on recent activity, weather, access, and field conditions.",
+      price: "$120 per person",
+      privatePrice: "",
+      duration: "6:00 AM - 1:00 PM",
+      minimum: "Minimum 2 participants",
+      image: "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_img_03.jpg",
+      url: "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/",
+      video: "https://youtu.be/4C06aiONXxw",
+      primaryCta: "View Bear Tour",
+      secondaryCta: "Watch Video"
+    },
+    {
+      id: "tour-bear-full-day",
+      group: "tours",
+      type: "tour",
+      eyebrow: "Complete Andean wildlife day",
+      title: "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour",
+      description: "A full-day private experience with a morning spectacled bear search and broader opportunities for Andean Condors, deer, hummingbirds, and other high-Andean wildlife.",
+      price: "$175 per person",
+      privatePrice: "",
+      duration: "6:00 AM - 6:00 PM",
+      minimum: "Minimum 2 participants",
+      image: "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_img_03.jpg",
+      url: "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/",
+      video: "https://youtu.be/4C06aiONXxw",
+      primaryCta: "View Bear Tour",
+      secondaryCta: "Watch Video"
+    },
     {
       id: "tour-custom",
       group: "tours",
@@ -118,6 +153,24 @@ window.MBW_EMAIL_BLOCKS = {
       video: "https://youtube.com/shorts/3h5xb2C-yYs",
       primaryCta: "View Night Walk",
       secondaryCta: "Watch Video"
+    },
+
+    {
+      id: "activity-frog-concert",
+      group: "activities",
+      type: "tour",
+      eyebrow: "Evening cloud forest experience",
+      title: "Frog Concert",
+      description: "A guided nighttime walk in Mindo's cloud forest to listen for frogs and look for insects, possible snakes, phosphorescent wood, sleeping birds, and other nocturnal wildlife.",
+      price: "$10 per person",
+      privatePrice: "",
+      duration: "Approximately 2 hours",
+      minimum: "Minimum 2 participants",
+      image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_night_walk_wide_en.jpg",
+      url: "https://mindobirdwatching.com/activities/",
+      video: "",
+      primaryCta: "View Activities",
+      secondaryCta: ""
     },
     {
       id: "activity-waterfall",
