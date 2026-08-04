@@ -12,16 +12,17 @@
     var carousels = document.querySelectorAll('[data-mbw-carousel]');
 
     carousels.forEach(function(carousel){
-      var track = carousel.querySelector('.mbwCarouselTrack, .wildlifeCarouselTrack');
+      var track = carousel.querySelector('.mbwCarouselTrack, .wildlifeCarouselTrack, [data-carousel-track]');
       if(!track) return;
 
-      var slides = Array.prototype.slice.call(track.children);
+      var markedSlides = Array.prototype.slice.call(track.querySelectorAll('[data-carousel-slide]'));
+      var slides = markedSlides.length ? markedSlides : Array.prototype.slice.call(track.children);
       if(slides.length <= 1) return;
 
-      var dotsWrap = carousel.querySelector('.mbwCarouselDots, .wildlifeCarouselDots');
-      var dots = dotsWrap ? Array.prototype.slice.call(dotsWrap.querySelectorAll('span, button')) : [];
-      var prev = carousel.querySelector('[data-mbw-carousel-prev]');
-      var next = carousel.querySelector('[data-mbw-carousel-next]');
+      var dotsWrap = carousel.querySelector('.mbwCarouselDots, .wildlifeCarouselDots, .mbwDots');
+      var dots = dotsWrap ? Array.prototype.slice.call(dotsWrap.querySelectorAll('span, button, .mbwDot')) : Array.prototype.slice.call(carousel.querySelectorAll('.mbwDot'));
+      var prev = carousel.querySelector('[data-mbw-carousel-prev], [data-carousel-prev]');
+      var next = carousel.querySelector('[data-mbw-carousel-next], [data-carousel-next]');
       var index = 0;
       var timer = null;
       var delay = parseInt(carousel.getAttribute('data-mbw-carousel-delay') || '6500', 10);
@@ -30,6 +31,10 @@
 
       function render(){
         track.style.transform = 'translateX(' + (-index * 100) + '%)';
+        slides.forEach(function(slide, i){
+          slide.setAttribute('aria-hidden', i === index ? 'false' : 'true');
+          slide.classList.toggle('is-active', i === index);
+        });
         dots.forEach(function(dot, i){
           dot.classList.toggle('is-active', i === index);
           dot.setAttribute('aria-current', i === index ? 'true' : 'false');
