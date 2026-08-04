@@ -296,7 +296,9 @@
         'Chocolate Tour',
         'Coffee Tour',
         'Butterfly Garden',
-        'Frog Concert',
+        'OSO001 - Extended Half-Day Spectacled Bear Tour',
+        'OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour',
+        'ACT010 - Frog Concert',
         'Quad Tour',
         'Canopy',
         'Orchid Garden Tour',
@@ -312,11 +314,35 @@
         'Transportation',
         'Other'
       ];
+      const PRODUCT_DEFAULTS = {
+        'OSO001 - Extended Half-Day Spectacled Bear Tour': {
+          type: 'Half-Day Tour',
+          duration: '6:00 AM - 1:00 PM',
+          unitPrice: 125,
+          note: 'Private high-Andean wildlife tour in Antisana or Cayambe-Coca. Transportation, binoculars, and spotting scope are included. Wildlife sightings are not guaranteed.'
+        },
+        'OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour': {
+          type: 'Full-Day Tour',
+          duration: '6:00 AM - 6:00 PM',
+          unitPrice: 175,
+          note: 'Private full-day high-Andean wildlife experience with a morning bear search and possible Andean Condors, deer, hummingbirds, and other wildlife. Transportation and optics are included.'
+        },
+        'ACT010 - Frog Concert': {
+          type: 'Night Walk',
+          duration: 'Approximately 2 hours',
+          unitPrice: 10,
+          note: 'Guided nighttime cloud forest walk to listen for frogs and look for insects, possible snakes, phosphorescent wood, sleeping birds, and other nocturnal wildlife.'
+        }
+      };
+
       const PRODUCT_LABELS_ES = {
         'MBW002 - Private Birdwatching Tour':'MBW002 - Tour privado de observación de aves',
         'MBW004 - Jewels of the Morning Forest':'MBW004 - Joyas del bosque matutino',
         'MBW005 - Andean Cock-of-the-Rock Dawn Tour':'MBW005 - Tour al amanecer del gallito de la peña andino',
         'MBW006 - Quest for Five Toucans Full Day':'MBW006 - Búsqueda de cinco tucanes, día completo',
+        'OSO001 - Extended Half-Day Spectacled Bear Tour':'OSO001 - Tour extendido de medio día del oso de anteojos',
+        'OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour':'OSO002 - Tour de día completo del oso de anteojos, cóndor y fauna andina',
+        'ACT010 - Frog Concert':'ACT010 - Concierto de ranas',
         'Night Walk':'Caminata nocturna',
         'Waterfall Tour / Hike':'Tour de cascadas / caminata',
         'Chocolate Tour':'Tour de chocolate',
@@ -338,7 +364,10 @@
           'Arrival in Mindo and start of the full-day tour.':'Llegada a Mindo e inicio del tour de día completo.',
           'Night Walk Tour':'Tour de caminata nocturna',
           'Approximately 2 hours':'Aproximadamente 2 horas',
-          'Evening wildlife experience before returning to Quito.':'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.'
+          'Evening wildlife experience before returning to Quito.':'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.',
+          'Private high-Andean wildlife tour in Antisana or Cayambe-Coca. Transportation, binoculars, and spotting scope are included. Wildlife sightings are not guaranteed.':'Tour privado de fauna altoandina en Antisana o Cayambe-Coca. Incluye transporte, binoculares y telescopio. Los avistamientos de fauna no están garantizados.',
+          'Private full-day high-Andean wildlife experience with a morning bear search and possible Andean Condors, deer, hummingbirds, and other wildlife. Transportation and optics are included.':'Experiencia privada de día completo en los Andes con búsqueda matutina del oso y posibles cóndores andinos, venados, colibríes y otra fauna. Incluye transporte y equipo óptico.',
+          'Guided nighttime cloud forest walk to listen for frogs and look for insects, possible snakes, phosphorescent wood, sleeping birds, and other nocturnal wildlife.':'Caminata guiada nocturna por el bosque nublado para escuchar ranas y buscar insectos, posibles serpientes, madera fosforescente, aves dormidas y otra fauna nocturna.'
         },
         esToEn:{
           'Transporte seguro puerta a puerta':'Secure door-to-door transportation',
@@ -349,7 +378,10 @@
           'Llegada a Mindo e inicio del tour de día completo.':'Arrival in Mindo and start of the full-day tour.',
           'Tour de caminata nocturna':'Night Walk Tour',
           'Aproximadamente 2 horas':'Approximately 2 hours',
-          'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.':'Evening wildlife experience before returning to Quito.'
+          'Experiencia nocturna de observación de vida silvestre antes de regresar a Quito.':'Evening wildlife experience before returning to Quito.',
+          'Tour privado de fauna altoandina en Antisana o Cayambe-Coca. Incluye transporte, binoculares y telescopio. Los avistamientos de fauna no están garantizados.':'Private high-Andean wildlife tour in Antisana or Cayambe-Coca. Transportation, binoculars, and spotting scope are included. Wildlife sightings are not guaranteed.',
+          'Experiencia privada de día completo en los Andes con búsqueda matutina del oso y posibles cóndores andinos, venados, colibríes y otra fauna. Incluye transporte y equipo óptico.':'Private full-day high-Andean wildlife experience with a morning bear search and possible Andean Condors, deer, hummingbirds, and other wildlife. Transportation and optics are included.',
+          'Caminata guiada nocturna por el bosque nublado para escuchar ranas y buscar insectos, posibles serpientes, madera fosforescente, aves dormidas y otra fauna nocturna.':'Guided nighttime cloud forest walk to listen for frogs and look for insects, possible snakes, phosphorescent wood, sleeping birds, and other nocturnal wildlife.'
         }
       };
 
@@ -431,7 +463,13 @@
           'Full-Day Mindo Tour':'MBW006 - Quest for Five Toucans Full Day',
           'Tour de día completo en Mindo':'MBW006 - Quest for Five Toucans Full Day',
           'Night Walk Tour':'Night Walk',
-          'Tour de caminata nocturna':'Night Walk'
+          'Tour de caminata nocturna':'Night Walk',
+          'Frog Concert':'ACT010 - Frog Concert',
+          'Concierto de ranas':'ACT010 - Frog Concert',
+          'Extended Half-Day Spectacled Bear Tour':'OSO001 - Extended Half-Day Spectacled Bear Tour',
+          'Tour extendido de medio día del oso de anteojos':'OSO001 - Extended Half-Day Spectacled Bear Tour',
+          'Full-Day Spectacled Bear, Condor and Andean Wildlife Tour':'OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour',
+          'Tour de día completo del oso de anteojos, cóndor y fauna andina':'OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour'
         };
         if(legacyAliases[name]) return legacyAliases[name];
         const translatedMatch = Object.keys(PRODUCT_LABELS_ES).find(key => PRODUCT_LABELS_ES[key] === name);
@@ -569,6 +607,13 @@
         if(field === 'productPreset'){
           item.productPreset = value;
           item.name = value === 'Other' ? '' : value;
+          const defaults = PRODUCT_DEFAULTS[value];
+          if(defaults){
+            item.type = defaults.type;
+            item.duration = defaults.duration;
+            item.unitPrice = defaults.unitPrice;
+            item.note = defaults.note;
+          }
           renderEditors();
           updateAll(false);
           return;
