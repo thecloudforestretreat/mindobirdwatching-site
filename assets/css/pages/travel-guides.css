@@ -3415,8 +3415,8 @@ body[data-css-cluster="travel_guides"][data-page-content-group="active_adventure
 }
 
 /* Pair 153: Spectacled Bear authority guide.
-   Clean, site-consistent rules only.
-   Scoped to the bilingual pair via data-page-content-group. */
+   Uses the same compact card rhythm as the existing travel-guide pages.
+   Scoped only to the bilingual bear authority page pair. */
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideHero{
   align-items:stretch;
@@ -3440,6 +3440,8 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
   object-fit:cover;
 }
 
+/* Standard travel-guide information cards.
+   No forced card height: rows remain symmetrical through CSS Grid stretching. */
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .decisionGrid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -3455,8 +3457,9 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
   display:flex;
   flex-direction:column;
   min-width:0;
-  min-height:170px;
-  padding:18px;
+  min-height:0;
+  height:100%;
+  padding:16px;
   border:1px solid var(--line);
   border-radius:var(--r);
   background:rgba(255,255,255,.74);
@@ -3464,14 +3467,20 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .decisionCard h3{
-  margin:0 0 8px;
+  margin:0 0 7px;
   color:var(--forest);
+  font-size:1rem;
+  line-height:1.18;
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .decisionCard p{
   margin:0;
+  color:var(--muted);
+  font-size:.9rem;
+  line-height:1.55;
 }
 
+/* Carousel and video use matching cards, matching intro rows and matching media frames. */
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .guideMediaGrid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -3483,18 +3492,24 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
   display:grid;
   grid-template-rows:auto 1fr;
   min-width:0;
+  height:100%;
+  padding:16px;
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .guideMediaIntro{
-  min-height:84px;
+  min-height:72px;
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .guideMediaIntro h3{
-  margin:0 0 8px;
+  margin:0 0 7px;
+  font-size:1rem;
+  line-height:1.18;
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .guideMediaIntro p{
   margin:0;
+  font-size:.9rem;
+  line-height:1.5;
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .guidePortraitFrame{
@@ -3609,22 +3624,63 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
   background:#fff;
 }
 
+/* Tour cards follow the compact chocolate-page rhythm:
+   natural card height, balanced copy area and one aligned CTA row. */
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid{
   grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:stretch;
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .tourOption{
-  min-height:260px;
-}
-
-body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .tourBody{
+  min-height:0;
   height:100%;
 }
 
-body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .trustPill{
-  align-self:flex-start;
+body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .tourBody{
+  display:grid;
+  grid-template-rows:auto auto 1fr auto;
+  gap:9px;
+  height:100%;
+  padding:15px;
 }
 
+body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .trustPill{
+  align-self:start;
+  width:max-content;
+  max-width:100%;
+}
+
+body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .tourBody h3{
+  margin:0;
+  font-size:1.08rem;
+  line-height:1.18;
+}
+
+body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .tourBody p{
+  margin:0;
+  min-height:0;
+  font-size:.9rem;
+  line-height:1.55;
+}
+
+body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .ctaRow{
+  width:100%;
+  margin:4px 0 0;
+}
+
+body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:46px;
+  height:46px;
+  padding:0 12px;
+  line-height:1.2;
+  text-align:center;
+}
+
+/* Related planning cards remain compact and use identical button geometry. */
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .internalLinks.balancedLinks{
   grid-template-columns:repeat(4,minmax(0,1fr));
   align-items:stretch;
@@ -3634,7 +3690,9 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
   display:flex;
   flex-direction:column;
   min-width:0;
-  min-height:190px;
+  min-height:0;
+  height:100%;
+  padding:14px;
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .internalLinks.balancedLinks .linkCard > span:not(.btn){
@@ -3642,10 +3700,15 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
 }
 
 body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .internalLinks.balancedLinks .linkCardCta{
+  display:flex;
+  align-items:center;
+  justify-content:center;
   width:100%;
   min-height:44px;
-  margin-top:auto;
-  justify-content:center;
+  height:44px;
+  margin-top:12px;
+  padding:0 10px;
+  line-height:1.2;
   text-align:center;
 }
 
@@ -3674,6 +3737,12 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
   body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .guideMediaIntro{
     min-height:0;
   }
+
+  body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .bearGuideTourGrid .btn{
+    height:auto;
+    min-height:46px;
+    padding:10px 12px;
+  }
 }
 
 @media(max-width:620px){
@@ -3681,6 +3750,10 @@ body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_
   body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .decisionGrid.decisionGrid--two,
   body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .internalLinks.balancedLinks{
     grid-template-columns:1fr;
+  }
+
+  body[data-css-cluster="travel_guides"][data-page-content-group="spectacled_bear_guide"] .decisionCard{
+    height:auto;
   }
 }
 
