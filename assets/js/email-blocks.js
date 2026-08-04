@@ -115,7 +115,7 @@ window.MBW_EMAIL_BLOCKS = {
       privatePrice: "",
       duration: "6:00 AM - 6:00 PM",
       minimum: "Minimum 2 participants",
-      image: "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_img_03.jpg",
+      image: "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_hero_01.jpg",
       url: "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/",
       video: "https://youtu.be/4C06aiONXxw",
       primaryCta: "View Bear Tour",
