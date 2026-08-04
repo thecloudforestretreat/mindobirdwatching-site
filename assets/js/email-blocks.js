@@ -94,7 +94,7 @@ window.MBW_EMAIL_BLOCKS = {
       eyebrow: "Private high-Andean wildlife tour",
       title: "Extended Half-Day Spectacled Bear Tour",
       description: "A private morning wildlife experience focused on searching for spectacled bears in Antisana or Cayambe-Coca. Route choice depends on recent activity, weather, access, and field conditions.",
-      price: "$120 per person",
+      price: "$125 per person",
       privatePrice: "",
       duration: "6:00 AM - 1:00 PM",
       minimum: "Minimum 2 participants",
