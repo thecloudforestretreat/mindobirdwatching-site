@@ -254,6 +254,30 @@
       line-height:1.45;
       font-weight:800;
     }
+    .confirmationChooser{
+      grid-column:1 / -1;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:10px;
+      border:1px solid rgba(13,89,37,.18);
+      border-radius:14px;
+      background:rgba(237,244,230,.72);
+    }
+    .confirmationChooser strong{ color:var(--forest); font-size:12.5px; }
+    .confirmationTab{
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      color:var(--ink);
+      padding:8px 12px;
+      font:inherit;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .confirmationTab.active{ background:var(--forest); color:#fff; border-color:var(--forest); }
 
     .previewPanel{ padding:14px; min-width:0; }
     .previewTop{
@@ -471,7 +495,7 @@
       position:absolute;
       z-index:4;
       left:220px;
-      top:905px;
+      top:940px;
       color:var(--mbw-green);
       font-size:25px;
       line-height:1.1;
@@ -667,6 +691,10 @@
                 <label for="tour3Input">Tour Type 3</label>
                 <select id="tour3Input"></select>
               </div>
+              <div class="confirmationChooser" id="confirmationChooser">
+                <strong>Confirmations:</strong>
+                <span id="confirmationTabs">Select one or more tours</span>
+              </div>
               <div class="field span3">
                 <label for="tourTypeInput">Tour Type Display</label>
                 <input id="tourTypeInput" type="text" placeholder="Jewels of the Morning Forest + Night Walk" />
@@ -734,7 +762,10 @@
                     <div class="certValue big" id="outLength">FULL DAY</div>
 
                     <div class="certLabel">Transportation:</div>
-                    <div class="certValue small wrap" id="outTransportation">Quito -> Mindo -> Quito:<br>Friends hotel and Rooftop - QUITO</div>
+                    <div class="certValue small wrap" id="outTransportation">Pick Up</div>
+
+                    <div class="certLabel">Pickup Location:</div>
+                    <div class="certValue small wrap" id="outPickupLocation">Friends hotel and Rooftop - QUITO</div>
                   </div>
 
                   <div class="qrBox" id="qrBox"></div>
@@ -755,6 +786,8 @@
               <button class="btnAdmin primary" type="button" id="exportPngBtn">Export JPG 1920x1080</button>
               <button class="btnAdmin primary" type="button" id="openImageBtn">Open Image / Save to Photos</button>
               <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
+              <button class="btnAdmin primary" type="button" id="exportAllJpgBtn">Download All JPGs</button>
+              <button class="btnAdmin primary" type="button" id="exportAllPdfBtn">Download All PDF</button>
             </div>
           </section>
         </section>
@@ -826,7 +859,10 @@
         activeIndex: 0,
         activeStatus: "all",
         search: "",
-        qr: null
+        qr: null,
+        confirmationDrafts: [],
+        activeConfirmation: 0,
+        switchingConfirmation: false
       };
       const BUILT_IN_GUIDES = [
         { guide:"Chicho", guide_phone:"+593 98 600 5054", image_url:"https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
@@ -854,8 +890,9 @@
           "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "manualEntryBtn",
           "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
-          "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outNotes", "outGuideImage",
-          "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
+          "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupLocation", "outNotes", "outGuideImage",
+          "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "exportAllJpgBtn", "exportAllPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
+          "confirmationChooser", "confirmationTabs",
           "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
         ];
         ids.forEach(id => els[id] = document.getElementById(id));
@@ -899,6 +936,8 @@
         els.exportPngBtn.addEventListener("click", exportPng);
         if(els.openImageBtn) els.openImageBtn.addEventListener("click", openImageForSaving);
         els.exportPdfBtn.addEventListener("click", exportPdf);
+        els.exportAllJpgBtn.addEventListener("click", exportAllJpgs);
+        els.exportAllPdfBtn.addEventListener("click", exportAllPdf);
         els.markGeneratedBtn.addEventListener("click", () => updateStatus("Generated"));
         els.markSentBtn.addEventListener("click", () => updateStatus("Sent"));
         els.jumpPreviewBtn.addEventListener("click", () => els.previewPanelAnchor.scrollIntoView({behavior:"smooth", block:"start"}));
@@ -1003,8 +1042,8 @@
         state.data = data;
         state.records = (data.confirmations || []).filter(r => hasUsefulRecord(r));
         const incomingGuides = (data.guides || []).filter(g => String(val(g, ["guide", "Guide"], "") || "").trim() !== "");
-        const builtInNames = new Set(BUILT_IN_GUIDES.map(g => g.guide.toLowerCase()));
-        state.guides = BUILT_IN_GUIDES.concat(incomingGuides.filter(g => !builtInNames.has(String(val(g, ["guide", "Guide"], "")).toLowerCase())));
+        const incomingNames = new Set(incomingGuides.map(g => String(val(g, ["guide", "Guide"], "")).toLowerCase()));
+        state.guides = incomingGuides.concat(BUILT_IN_GUIDES.filter(g => !incomingNames.has(g.guide.toLowerCase())));
         state.tours = (data.tours || []).map(t => val(t, ["tour_name", "Tour Name", "tour", "Tour", "name", "Name"], "")).filter(Boolean);
         renderGuideOptions();
         renderTourOptions();
@@ -1081,6 +1120,10 @@
 
       function renderPickupTimeOptions(){
         if(!els.pickupTimeInput) return;
+        const flexible = document.createElement("option");
+        flexible.value = "Flexible";
+        flexible.textContent = "Flexible";
+        els.pickupTimeInput.appendChild(flexible);
         const times = [];
         for(let hour = 3; hour <= 12; hour++){
           for(let min of [0, 15, 30, 45]){
@@ -1176,15 +1219,16 @@
         setSelectValue(els.guideInput, "Chicho");
         els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
         setSelectValue(els.lengthInput, "Full Day");
-        setSelectValue(els.pickupTimeInput, "3:00 AM");
+        setSelectValue(els.pickupTimeInput, "5:00 AM");
         setSelectValue(els.tour1Input, "");
         setSelectValue(els.tour2Input, "");
         setSelectValue(els.tour3Input, "");
         els.tourTypeInput.value = "";
-        els.transportationInput.value = "";
+        els.transportationInput.value = "Pick Up";
         els.pickupLocationInput.value = "";
         els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
         els.notesInput.value = "";
+        rebuildConfirmations(true);
         renderRecords();
         updatePreviewFromForm();
         setHint("Manual confirmation ready — enter guest and tour details");
@@ -1243,7 +1287,7 @@
 
       function pickupTimeFromCrm(tourText, durationText){
         const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
-        if(text.includes("night walk")) return "7:30 PM";
+        if(text.includes("night walk")) return "7:00 PM";
         if(text.includes("full") || text.includes("quest") || text.includes("toucan")) return "5:00 AM";
         if(text.includes("andean") || text.includes("cock")) return "5:00 AM";
         if(text.includes("jewels")) return "6:00 AM";
@@ -1278,11 +1322,11 @@
         setSelectValue(els.tour2Input, "");
         setSelectValue(els.tour3Input, "");
         els.tourTypeInput.value = displayTour || tourText || "";
-        els.transportationInput.value = transportation && transportation !== "No" ? (pickup ? transportation + "\n" + pickup : transportation) : (pickup ? "Mindo pickup\n" + pickup : "Mindo pickup");
+        els.transportationInput.value = normalizeTransportation(transportation);
         els.pickupLocationInput.value = pickup;
         els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
         els.notesInput.value = notes || "Thank you for booking with Mindo Bird Watching.";
-        applyNightWalkDefaults(false);
+        rebuildConfirmations(true);
         renderRecords();
         updatePreviewFromForm();
         setHint("Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting.");
@@ -1306,7 +1350,125 @@
         els.pickupLocationInput.value = pickupLocationOf(r);
         els.qrInput.value = qrUrlOf(r);
         els.notesInput.value = notesOf(r) || buildDefaultNote(r);
-        applyNightWalkDefaults(false);
+        rebuildConfirmations(true);
+      }
+
+      function selectedTours(){
+        const seen = new Set();
+        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value]
+          .map(v => String(v || "").trim())
+          .filter(v => v && !/^none$/i.test(v) && !/^transportation$/i.test(v))
+          .filter(v => {
+            const key = v.toLowerCase();
+            if(seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+      }
+
+      function tourCategory(tour){
+        const text = normalizeInboundTourText(tour);
+        if(text.includes("night walk")) return "night";
+        if(text.includes("bear")) return "bear";
+        if(/chocolate|coffee|waterfall|canopy|ziplin|butterfly|canyon|frog|activity|activities|nature excursion/.test(text)) return "activity";
+        return "birding";
+      }
+
+      function defaultTimeForTour(tour){
+        const text = String(tour || "");
+        const normalized = normalizeInboundTourText(text);
+        if(/\bmbw[\s-]*0*04\b/i.test(text)) return "6:00 AM";
+        if(/\bmbw[\s-]*0*05\b/i.test(text) || /\bmbw[\s-]*0*06\b/i.test(text)) return "5:00 AM";
+        if(normalized.includes("night walk")) return "7:00 PM";
+        if(normalized.includes("bear")) return "6:00 AM";
+        if(tourCategory(tour) === "activity") return "Flexible";
+        return "5:00 AM";
+      }
+
+      function defaultDraftForTour(tour, previous){
+        const category = tourCategory(tour);
+        const night = category === "night";
+        const guide = night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuide : (previous && previous.guide) || els.guideInput.value || "Chicho";
+        return {
+          tour,
+          display: tour,
+          guide,
+          contact: contactForGuide(guide) || (night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuidePhone : ""),
+          length: night ? "2 hrs" : ((previous && previous.length) || els.lengthInput.value || "Full Day"),
+          pickupTime: defaultTimeForTour(tour),
+          transportation: "Pick Up",
+          pickupLocation: (previous && previous.pickupLocation) || els.pickupLocationInput.value || "",
+          notes: (previous && previous.notes) || els.notesInput.value || ""
+        };
+      }
+
+      function saveActiveDraft(){
+        if(state.switchingConfirmation || !state.confirmationDrafts.length) return;
+        const draft = state.confirmationDrafts[state.activeConfirmation];
+        if(!draft) return;
+        draft.guide = els.guideInput.value;
+        draft.contact = els.contactInput.value;
+        draft.length = els.lengthInput.value;
+        draft.pickupTime = els.pickupTimeInput.value;
+        draft.transportation = els.transportationInput.value;
+        draft.pickupLocation = els.pickupLocationInput.value;
+        draft.notes = els.notesInput.value;
+        draft.display = els.tourTypeInput.value || draft.tour;
+      }
+
+      function loadActiveDraft(){
+        const draft = state.confirmationDrafts[state.activeConfirmation];
+        if(!draft) return;
+        state.switchingConfirmation = true;
+        setSelectValue(els.guideInput, draft.guide);
+        els.contactInput.value = draft.contact || contactForGuide(draft.guide) || "";
+        setSelectValue(els.lengthInput, draft.length);
+        setSelectValue(els.pickupTimeInput, draft.pickupTime);
+        els.tourTypeInput.value = draft.display || draft.tour;
+        els.transportationInput.value = draft.transportation || "Pick Up";
+        els.pickupLocationInput.value = draft.pickupLocation || "";
+        els.notesInput.value = draft.notes || "";
+        state.switchingConfirmation = false;
+      }
+
+      function rebuildConfirmations(reset){
+        const tours = selectedTours();
+        const previousDrafts = reset ? [] : state.confirmationDrafts.slice();
+        if(!reset) saveActiveDraft();
+        state.confirmationDrafts = tours.map(tour => {
+          const existing = previousDrafts.find(d => d.tour.toLowerCase() === tour.toLowerCase());
+          return existing || defaultDraftForTour(tour, previousDrafts[0]);
+        });
+        state.activeConfirmation = Math.min(state.activeConfirmation, Math.max(0, state.confirmationDrafts.length - 1));
+        if(state.confirmationDrafts.length) loadActiveDraft();
+        else els.tourTypeInput.value = "";
+        renderConfirmationTabs();
+      }
+
+      function renderConfirmationTabs(){
+        if(!els.confirmationTabs) return;
+        els.confirmationTabs.innerHTML = "";
+        if(!state.confirmationDrafts.length){
+          els.confirmationTabs.textContent = "Select one or more tours";
+          return;
+        }
+        state.confirmationDrafts.forEach((draft, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "confirmationTab" + (index === state.activeConfirmation ? " active" : "");
+          button.textContent = (index + 1) + ". " + draft.tour;
+          button.addEventListener("click", () => switchConfirmation(index));
+          els.confirmationTabs.appendChild(button);
+        });
+      }
+
+      function switchConfirmation(index){
+        if(index === state.activeConfirmation || !state.confirmationDrafts[index]) return;
+        saveActiveDraft();
+        state.activeConfirmation = index;
+        loadActiveDraft();
+        renderConfirmationTabs();
+        updatePreviewFromForm();
       }
 
       function onGuideChange(){
@@ -1324,20 +1486,16 @@
       }
 
       function onTourPartsChange(){
-        const parts = [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value].filter(Boolean);
-        els.tourTypeInput.value = parts.join(" + ");
-        applyNightWalkDefaults(true);
+        rebuildConfirmations(false);
         updatePreviewFromForm();
       }
 
       function isNightWalkSelected(){
-        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value, els.tourTypeInput.value]
-          .some(value => /night\s*walk/i.test(String(value || "")));
+        return /night\s*walk/i.test(String(els.tourTypeInput.value || ""));
       }
 
       function selectedTourText(){
-        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value, els.tourTypeInput.value]
-          .filter(Boolean).join(" ").toLowerCase();
+        return String(els.tourTypeInput.value || "").toLowerCase();
       }
 
       function isBirdwatchingSelected(){
@@ -1346,8 +1504,7 @@
       }
 
       function isActivitySelected(){
-        const text = selectedTourText();
-        return Boolean(text) && !isNightWalkSelected() && !isBirdwatchingSelected() && !/^(none\s*)+$/.test(text);
+        return tourCategory(els.tourTypeInput.value) === "activity";
       }
 
       function confirmationImageFor(guide){
@@ -1361,13 +1518,11 @@
       function applyNightWalkDefaults(force){
         if(!isNightWalkSelected()) return;
         const config = window.MBW_CONFIRMATION_CONFIG;
-        setSelectValue(els.guideInput, config.nightWalkGuide);
-        els.contactInput.value = config.nightWalkGuidePhone;
+        if(!els.guideInput.value || force) setSelectValue(els.guideInput, config.nightWalkGuide);
+        if(!els.contactInput.value || force) els.contactInput.value = contactForGuide(els.guideInput.value) || config.nightWalkGuidePhone;
         setSelectValue(els.lengthInput, "2 hrs");
-        if(force || !els.pickupTimeInput.value) setSelectValue(els.pickupTimeInput, "7:30 PM");
-        if(force || !els.transportationInput.value) els.transportationInput.value = "Mindo Garden";
-        if(force || !els.pickupLocationInput.value) els.pickupLocationInput.value = "Mindo Garden";
-        if(force || !els.notesInput.value) els.notesInput.value = "Pick up will be at 7:30 pm";
+        if(force || !els.pickupTimeInput.value) setSelectValue(els.pickupTimeInput, "7:00 PM");
+        if(force || !els.transportationInput.value) els.transportationInput.value = "Pick Up";
       }
 
       function updatePreviewFromForm(){
@@ -1391,10 +1546,12 @@
         els.outLength.textContent = (els.lengthInput.value || "Full Day").toUpperCase();
         const transport = els.transportationInput.value || "Transportation details";
         const pickupLocation = els.pickupLocationInput.value || "";
-        els.outTransportation.innerHTML = buildTransportationDisplay(transport, pickupLocation);
+        els.outTransportation.textContent = transport;
+        els.outPickupLocation.textContent = pickupLocation || "To be confirmed";
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
         setGuideImage(confirmationImageFor(guide));
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
+        saveActiveDraft();
       }
 
       function renderQr(url){
@@ -1411,6 +1568,7 @@
       }
 
       function exportPng(){
+        if(!validateCurrentConfirmation()) return;
         setHint("Preparing clean 1920x1080 JPG...");
         renderExportCanvas()
           .then(canvas => {
@@ -1462,6 +1620,7 @@
       }
 
       function exportPdf(){
+        if(!validateCurrentConfirmation()) return;
         setHint("Preparing clean PDF...");
         renderExportCanvas()
           .then(canvas => {
@@ -1474,6 +1633,83 @@
             setHint("PDF exported");
           })
           .catch(err => setHint("PDF export failed: " + err.message));
+      }
+
+      function validateCurrentConfirmation(){
+        const missing = [];
+        if(!els.guestsInput.value.trim()) missing.push("guest name");
+        if(!els.tourDateInput.value) missing.push("tour date");
+        if(!els.tourTypeInput.value.trim()) missing.push("tour");
+        if(!els.guideInput.value) missing.push("guide");
+        if(els.guideInput.value !== "Other" && !els.contactInput.value.trim()) missing.push("guide phone");
+        if(els.transportationInput.value.trim().toLowerCase() === "pick up" && !els.pickupLocationInput.value.trim()) missing.push("pickup location");
+        if(missing.length){
+          setHint("Before exporting, add: " + missing.join(", "));
+          return false;
+        }
+        return true;
+      }
+
+      async function renderAllConfirmationCanvases(){
+        saveActiveDraft();
+        const original = state.activeConfirmation;
+        const rendered = [];
+        for(let index = 0; index < state.confirmationDrafts.length; index++){
+          state.activeConfirmation = index;
+          loadActiveDraft();
+          updatePreviewFromForm();
+          if(!validateCurrentConfirmation()) throw new Error("Confirmation " + (index + 1) + " is incomplete");
+          rendered.push({ canvas:await renderExportCanvas(), name:fileBaseName() });
+        }
+        state.activeConfirmation = original;
+        loadActiveDraft();
+        renderConfirmationTabs();
+        updatePreviewFromForm();
+        return rendered;
+      }
+
+      async function exportAllJpgs(){
+        if(state.confirmationDrafts.length < 2){
+          exportPng();
+          return;
+        }
+        setHint("Preparing all confirmation JPGs...");
+        try{
+          const rendered = await renderAllConfirmationCanvases();
+          rendered.forEach((item, index) => {
+            setTimeout(() => {
+              const link = document.createElement("a");
+              link.download = item.name + ".jpg";
+              link.href = item.canvas.toDataURL("image/jpeg", 0.96);
+              link.click();
+            }, index * 250);
+          });
+          setHint(rendered.length + " JPG confirmations downloaded");
+        } catch(err){
+          setHint("All JPG export failed: " + err.message);
+        }
+      }
+
+      async function exportAllPdf(){
+        if(state.confirmationDrafts.length < 2){
+          exportPdf();
+          return;
+        }
+        setHint("Preparing multi-page PDF...");
+        try{
+          const rendered = await renderAllConfirmationCanvases();
+          const jsPDF = window.jspdf && window.jspdf.jsPDF;
+          if(!jsPDF) throw new Error("PDF library did not load");
+          const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[1920,1080] });
+          rendered.forEach((item, index) => {
+            if(index) pdf.addPage([1920,1080], "landscape");
+            pdf.addImage(item.canvas.toDataURL("image/jpeg", 0.96), "JPEG", 0, 0, 1920, 1080);
+          });
+          pdf.save(fileBaseNameBase() + "-all-tours.pdf");
+          setHint(rendered.length + "-page PDF exported");
+        } catch(err){
+          setHint("All PDF export failed: " + err.message);
+        }
       }
 
       function renderExportCanvas(){
@@ -1608,7 +1844,8 @@
           { label:"Contact #:", value:els.outContact.textContent || "", y:620, valueSize:27, maxWidth:430 },
           { label:"Tour Type:", value:els.outTourType.textContent || "", y:670, valueSize:27, maxWidth:455 },
           { label:"Length:", value:els.outLength.textContent || "", y:760, valueSize:36, maxWidth:420 },
-          { label:"Transportation:", value:getPlainText(els.outTransportation), y:820, valueSize:27, maxWidth:475 }
+          { label:"Transportation:", value:getPlainText(els.outTransportation), y:820, valueSize:27, maxWidth:475 },
+          { label:"Pickup Location:", value:getPlainText(els.outPickupLocation), y:870, valueSize:24, maxWidth:475 }
         ];
 
         ctx.textAlign = "left";
@@ -1623,7 +1860,7 @@
         });
 
         ctx.font = "950 25px Arial, Helvetica, sans-serif";
-        ctx.fillText(els.outNotes.textContent || "", 220, 905);
+        ctx.fillText(els.outNotes.textContent || "", 220, 940);
       }
 
       function getPlainText(el){
@@ -1758,7 +1995,13 @@
 
       function contactForGuide(name){
         const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
-        return g ? val(g, ["guide_phone", "Contact #"], "") : "";
+        return g ? normalizeGuidePhone(val(g, ["guide_phone", "Contact #"], "")) : "";
+      }
+
+      function normalizeGuidePhone(value){
+        const clean = String(value || "").trim();
+        if(/^593[\s-]/.test(clean)) return "+" + clean;
+        return clean;
       }
 
       function imageForGuide(name){
@@ -1777,9 +2020,15 @@
 
       function buildTransportation(r){
         const transport = transportOf(r);
-        const pickup = pickupLocationOf(r);
-        if(transport && pickup && !transport.toLowerCase().includes(pickup.toLowerCase())) return transport + "\n" + pickup;
-        return transport || pickup || "";
+        return normalizeTransportation(transport);
+      }
+
+      function normalizeTransportation(value){
+        const clean = String(value || "").trim();
+        if(!clean || /^(yes|no)$/i.test(clean)) return "Pick Up";
+        const firstLine = clean.split(/\r?\n/)[0].trim();
+        if(/^yes/i.test(firstLine)) return "Pick Up";
+        return firstLine || "Pick Up";
       }
 
       function buildDefaultNote(r){
@@ -1882,6 +2131,11 @@
       }
 
       function fileBaseName(){
+        const tour = (els.tourTypeInput.value || "tour").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,45);
+        return fileBaseNameBase() + "-" + tour;
+      }
+
+      function fileBaseNameBase(){
         const guest = (els.guestsInput.value || "tour-confirmation").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60);
         const date = (els.tourDateInput.value || todayMDY()).replace(/[^0-9]+/g,"-").replace(/^-|-$/g,"");
         return "mbw-tour-confirmation-" + guest + "-" + date;
