@@ -31,6 +31,14 @@
     align-items: start;
   }
 
+  .paySummary {
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
   .payPanel {
     background: rgba(255,255,255,0.38);
     border: 1px solid var(--line);
@@ -282,6 +290,29 @@
     color: var(--ink);
   }
 
+  .summary-totals {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(7,25,35,0.14);
+  }
+
+  .summary-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+
+  .summary-total-row.remaining {
+    margin-top: 4px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(7,25,35,0.18);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+
   .action-row {
     display: flex;
     flex-wrap: wrap;
@@ -384,6 +415,8 @@
 
     .paySummary {
       position: static;
+      max-height: none;
+      overflow: visible;
     }
   }
 
@@ -571,6 +604,11 @@
             </div>
           </div>
           <input id="bookingId" type="hidden" />
+          <div class="field">
+            <label for="depositPaymentIntentId">Stripe PaymentIntent ID (optional historical lookup)</label>
+            <input id="depositPaymentIntentId" type="text" placeholder="pi_..." autocomplete="off" spellcheck="false" />
+            <div class="hint">Use this when an older deposit was collected before CRM IDs were added to Stripe.</div>
+          </div>
           <div id="depositDetails" class="hint">No CRM inquiry is linked. Deposit lookup is unavailable.</div>
           <label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-weight:800;">
             <input id="applyDeposit" type="checkbox" style="width:auto;" disabled />
@@ -673,6 +711,7 @@
         <div class="summary-box">
           <div class="summary-title">Booking summary</div>
           <div id="summaryItems"></div>
+          <div id="summaryTotals" class="summary-totals" aria-live="polite"></div>
         </div>
 
         <div class="summary-box">
@@ -813,6 +852,7 @@
     statusBox: document.getElementById("statusBox"),
     modeChip: document.getElementById("modeChip"),
     summaryItems: document.getElementById("summaryItems"),
+    summaryTotals: document.getElementById("summaryTotals"),
     actionSummary: document.getElementById("actionSummary"),
     resultLinkBox: document.getElementById("resultLinkBox"),
     stripeEnvironment: document.getElementById("stripeEnvironment"),
@@ -826,6 +866,7 @@
     inquiryId: document.getElementById("inquiryId"),
     guestId: document.getElementById("guestId"),
     bookingId: document.getElementById("bookingId"),
+    depositPaymentIntentId: document.getElementById("depositPaymentIntentId"),
     depositDetails: document.getElementById("depositDetails"),
     applyDeposit: document.getElementById("applyDeposit"),
     depositLookupBtn: document.getElementById("depositLookupBtn"),
@@ -856,6 +897,7 @@
     els.applyDeposit.disabled = true;
     els.depositDetails.textContent = message || "No available Stripe deposit found for this inquiry.";
     clearGeneratedResult();
+    renderSummary();
   }
 
   function renderDeposit(deposit) {
@@ -871,12 +913,14 @@
       ${deposit.eligibility_message ? `<br /><strong>${deposit.eligibility_message}</strong>` : ""}
     `;
     clearGeneratedResult();
+    renderSummary();
   }
 
   async function lookupDeposit() {
     const inquiryId = els.inquiryId.value.trim();
-    if (!inquiryId) {
-      clearDeposit("Import a saved CRM inquiry before checking for a deposit.");
+    const paymentIntentId = els.depositPaymentIntentId.value.trim();
+    if (!inquiryId && !paymentIntentId) {
+      clearDeposit("Import a saved CRM inquiry or enter a Stripe PaymentIntent ID.");
       return;
     }
     els.depositLookupBtn.disabled = true;
@@ -884,9 +928,20 @@
     try {
       const params = new URLSearchParams({
         inquiry_id: inquiryId,
+        payment_intent_id: paymentIntentId,
         stripe_environment: els.stripeEnvironment.value
       });
-      const res = await fetch(`/stripe/api/deposits/available?${params.toString()}`, { cache: "no-store" });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      let res;
+      try {
+        res = await fetch(`/stripe/api/deposits/available?${params.toString()}`, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "Deposit lookup failed.");
       if (!data.found) {
@@ -896,10 +951,13 @@
       if (data.guest_id && !els.guestId.value) els.guestId.value = data.guest_id;
       renderDeposit(data);
     } catch (err) {
-      clearDeposit(err.message || "Deposit lookup failed.");
-      showStatus(err.message || "Deposit lookup failed.", "error");
+      const message = err && err.name === "AbortError"
+        ? "Deposit lookup timed out after 12 seconds. Please try again or enter the PaymentIntent ID."
+        : (err.message || "Deposit lookup failed.");
+      clearDeposit(message);
+      showStatus(message, "error");
     } finally {
-      els.depositLookupBtn.disabled = !els.inquiryId.value.trim();
+      els.depositLookupBtn.disabled = !els.inquiryId.value.trim() && !els.depositPaymentIntentId.value.trim();
       els.depositLookupBtn.textContent = "Check for deposit";
     }
   }
@@ -1468,11 +1526,13 @@ function createItem(initial = {}) {
     const items = state.items;
     if (!items.length) {
       els.summaryItems.innerHTML = '<div class="summary-empty">No booking items yet.</div>';
+      els.summaryTotals.innerHTML = "";
       return;
     }
 
     els.summaryItems.innerHTML = "";
     let knownCount = 0;
+    let bookingSubtotal = 0;
 
     items.forEach((item, index) => {
       const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
@@ -1496,6 +1556,9 @@ function createItem(initial = {}) {
       const reasonDisplay = formatPricingReason(item.pricing_reason);
       const finalPricePerPerson = tour ? getFinalAdjustedPrice(item, tour) : 0;
       const finalAdjustedTotal = hasOverridePrice(item) ? finalPricePerPerson * chargedQuantity : 0;
+      const itemTotal = tour
+        ? (hasOverridePrice(item) ? finalAdjustedTotal : standardAmount * chargedQuantity)
+        : 0;
       const priceLine = adjustmentDisplay
         ? flatPriced
           ? `$${finalAdjustedTotal.toFixed(2)} USD per booking (adjusted)`
@@ -1505,7 +1568,10 @@ function createItem(initial = {}) {
         ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} ${flatPriced ? "per booking" : "per person"}, adjustment ${adjustmentDisplay}, final $${finalPricePerPerson.toFixed(2)} ${flatPriced ? "per booking" : "per person"}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
         : "";
 
-      if (tour) knownCount += 1;
+      if (tour) {
+        knownCount += 1;
+        bookingSubtotal += itemTotal;
+      }
 
       div.innerHTML = `
         <div class="summary-item-name">${name}</div>
@@ -1530,6 +1596,25 @@ function createItem(initial = {}) {
       warn.textContent = "Some items are incomplete. Select a tour for every row before creating a link or invoice.";
       els.summaryItems.appendChild(warn);
     }
+
+    const depositAmount = state.deposit && els.applyDeposit.checked
+      ? Number(state.deposit.amount || 0)
+      : 0;
+    const amountRemaining = Math.max(0, bookingSubtotal - depositAmount);
+    els.summaryTotals.innerHTML = `
+      <div class="summary-total-row">
+        <span>Booking subtotal</span>
+        <strong>$${bookingSubtotal.toFixed(2)} USD</strong>
+      </div>
+      <div class="summary-total-row">
+        <span>Deposit ${depositAmount ? "applied" : "not applied"}</span>
+        <strong>${depositAmount ? `−$${depositAmount.toFixed(2)} USD` : "$0.00 USD"}</strong>
+      </div>
+      <div class="summary-total-row remaining">
+        <span>Amount remaining</span>
+        <span>$${amountRemaining.toFixed(2)} USD</span>
+      </div>
+    `;
   }
 
   function updateModeUI() {
@@ -2075,10 +2160,16 @@ function createItem(initial = {}) {
   els.copyBtn.addEventListener("click", onCopy);
   els.openBtn.addEventListener("click", onOpen);
   els.depositLookupBtn.addEventListener("click", lookupDeposit);
-  els.applyDeposit.addEventListener("change", clearGeneratedResult);
+  els.applyDeposit.addEventListener("change", () => {
+    clearGeneratedResult();
+    renderSummary();
+  });
+  els.depositPaymentIntentId.addEventListener("input", () => {
+    els.depositLookupBtn.disabled = !els.inquiryId.value.trim() && !els.depositPaymentIntentId.value.trim();
+  });
   els.stripeEnvironment.addEventListener("change", () => {
     clearDeposit("Stripe environment changed. Check again for an available deposit.");
-    els.depositLookupBtn.disabled = !els.inquiryId.value.trim();
+    els.depositLookupBtn.disabled = !els.inquiryId.value.trim() && !els.depositPaymentIntentId.value.trim();
   });
 
   els.defaultLanguage.addEventListener("change", () => {
