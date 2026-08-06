@@ -558,6 +558,27 @@
           </div>
         </div>
 
+        <div class="payPanel" id="depositPanel" style="margin:4px 0 18px;padding:14px;background:rgba(255,255,255,.72);">
+          <div class="section-title" style="margin-top:0;">Existing deposit</div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="inquiryId">CRM inquiry ID</label>
+              <input id="inquiryId" type="text" readonly placeholder="Import a saved CRM inquiry" />
+            </div>
+            <div class="field">
+              <label for="guestId">Guest ID</label>
+              <input id="guestId" type="text" readonly placeholder="Imported from CRM" />
+            </div>
+          </div>
+          <input id="bookingId" type="hidden" />
+          <div id="depositDetails" class="hint">No CRM inquiry is linked. Deposit lookup is unavailable.</div>
+          <label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-weight:800;">
+            <input id="applyDeposit" type="checkbox" style="width:auto;" disabled />
+            Apply the verified Stripe deposit to this invoice
+          </label>
+          <button id="depositLookupBtn" class="action-btn secondary" type="button" style="margin-top:12px;" disabled>Check for deposit</button>
+        </div>
+
         <div class="grid-2">
           <div class="field">
             <label class="req" for="mainFirstName">Main contact first name</label>
@@ -777,7 +798,8 @@
     generatedOpenUrl: "",
     invoiceRequestInFlight: false,
     lastInvoiceFingerprint: "",
-    lastInvoiceResult: null
+    lastInvoiceResult: null,
+    deposit: null
   };
 
   const els = {
@@ -801,6 +823,12 @@
     mainPhone: document.getElementById("mainPhone"),
     whatsappNumber: document.getElementById("whatsappNumber"),
     agentId: document.getElementById("agentId"),
+    inquiryId: document.getElementById("inquiryId"),
+    guestId: document.getElementById("guestId"),
+    bookingId: document.getElementById("bookingId"),
+    depositDetails: document.getElementById("depositDetails"),
+    applyDeposit: document.getElementById("applyDeposit"),
+    depositLookupBtn: document.getElementById("depositLookupBtn"),
     defaultLanguage: document.getElementById("defaultLanguage"),
     pickupLocationLabel: document.getElementById("pickupLocationLabel"),
     pickupAddress: document.getElementById("pickupAddress"),
@@ -820,6 +848,60 @@
   function clearStatus() {
     els.statusBox.textContent = "";
     els.statusBox.className = "status";
+  }
+
+  function clearDeposit(message) {
+    state.deposit = null;
+    els.applyDeposit.checked = false;
+    els.applyDeposit.disabled = true;
+    els.depositDetails.textContent = message || "No available Stripe deposit found for this inquiry.";
+    clearGeneratedResult();
+  }
+
+  function renderDeposit(deposit) {
+    state.deposit = deposit;
+    els.applyDeposit.disabled = deposit.can_apply === false;
+    els.applyDeposit.checked = deposit.can_apply !== false;
+    const paidDate = deposit.created_at ? new Date(deposit.created_at).toLocaleDateString() : "Unknown date";
+    els.depositDetails.innerHTML = `
+      <strong>Verified deposit found:</strong> ${deposit.currency} ${Number(deposit.amount || 0).toFixed(2)}
+      <br />Paid: ${paidDate}
+      <br />PaymentIntent: <strong>${deposit.payment_intent_id}</strong>
+      <br />Status: <strong>${deposit.deposit_status || "available"}</strong>
+      ${deposit.eligibility_message ? `<br /><strong>${deposit.eligibility_message}</strong>` : ""}
+    `;
+    clearGeneratedResult();
+  }
+
+  async function lookupDeposit() {
+    const inquiryId = els.inquiryId.value.trim();
+    if (!inquiryId) {
+      clearDeposit("Import a saved CRM inquiry before checking for a deposit.");
+      return;
+    }
+    els.depositLookupBtn.disabled = true;
+    els.depositLookupBtn.textContent = "Checking...";
+    try {
+      const params = new URLSearchParams({
+        inquiry_id: inquiryId,
+        stripe_environment: els.stripeEnvironment.value
+      });
+      const res = await fetch(`/stripe/api/deposits/available?${params.toString()}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Deposit lookup failed.");
+      if (!data.found) {
+        clearDeposit("No unapplied Stripe deposit was found for this inquiry.");
+        return;
+      }
+      if (data.guest_id && !els.guestId.value) els.guestId.value = data.guest_id;
+      renderDeposit(data);
+    } catch (err) {
+      clearDeposit(err.message || "Deposit lookup failed.");
+      showStatus(err.message || "Deposit lookup failed.", "error");
+    } finally {
+      els.depositLookupBtn.disabled = !els.inquiryId.value.trim();
+      els.depositLookupBtn.textContent = "Check for deposit";
+    }
   }
 
   function clearGeneratedResult() {
@@ -1086,6 +1168,17 @@ function createItem(initial = {}) {
     };
   }
 
+  function applyInboundIdentity() {
+    const data = getInboundData();
+    const inquiryId = getInboundValue(data, "inquiry_id", "inquiryId");
+    const guestId = getInboundValue(data, "guest_id", "guestId");
+    const bookingId = getInboundValue(data, "booking_id", "bookingId");
+    setFieldValue(els.inquiryId, inquiryId);
+    setFieldValue(els.guestId, guestId);
+    setFieldValue(els.bookingId, bookingId);
+    els.depositLookupBtn.disabled = !inquiryId;
+  }
+
   function setFieldValue(field, value) {
     if (!field || value === undefined || value === null || String(value).trim() === "") return;
     field.value = String(value).trim();
@@ -1153,6 +1246,9 @@ function createItem(initial = {}) {
     const quantity = getInboundValue(data, "party", "guests", "guest_count", "number_of_people");
     const tourText = getInboundValue(data, "tour", "tour_type", "tour_interest");
     const tourCode = findInboundTourCode(tourText, language);
+    const inquiryId = getInboundValue(data, "inquiry_id", "inquiryId");
+    const guestId = getInboundValue(data, "guest_id", "guestId");
+    const bookingId = getInboundValue(data, "booking_id", "bookingId");
 
     setFieldValue(els.mainFirstName, firstName);
     setFieldValue(els.mainLastName, lastName);
@@ -1162,6 +1258,10 @@ function createItem(initial = {}) {
     setFieldValue(els.pickupLocationLabel, pickupLabel);
     setFieldValue(els.pickupAddress, pickup);
     setFieldValue(els.defaultLanguage, language);
+    setFieldValue(els.inquiryId, inquiryId);
+    setFieldValue(els.guestId, guestId);
+    setFieldValue(els.bookingId, bookingId);
+    els.depositLookupBtn.disabled = !inquiryId;
 
     if (notes || tourText) {
       const noteLines = [];
@@ -1186,6 +1286,7 @@ function createItem(initial = {}) {
     if (firstName || lastName || email || phone || pickup || tourDate || quantity || tourText) {
       showStatus(tourCode || !tourText ? "Guest details imported from CRM." : "Guest details imported from CRM. Please select the exact tour before creating the invoice.", "info");
     }
+    if (inquiryId) lookupDeposit();
   }
 
   function removeItem(id) {
@@ -1522,6 +1623,12 @@ function createItem(initial = {}) {
       tour_date: item.tour_date,
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
       agent_id: els.agentId.value.trim(),
+      inquiry_id: els.inquiryId.value.trim(),
+      guest_id: els.guestId.value.trim(),
+      booking_id: els.bookingId.value.trim(),
+      deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
+        ? state.deposit.payment_intent_id
+        : "",
 
       price_override_per_person: (() => {
         const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
@@ -1554,6 +1661,12 @@ function createItem(initial = {}) {
       notes: els.globalNotes.value.trim(),
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
       agent_id: els.agentId.value.trim(),
+      inquiry_id: els.inquiryId.value.trim(),
+      guest_id: els.guestId.value.trim(),
+      booking_id: els.bookingId.value.trim(),
+      deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
+        ? state.deposit.payment_intent_id
+        : "",
       items: state.items.map(item => {
         const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
 
@@ -1824,6 +1937,19 @@ function createItem(initial = {}) {
       return;
     }
 
+    if (state.deposit && els.applyDeposit.checked) {
+      const confirmedDeposit = await showConfirmModal({
+        title: "Confirm deposit application",
+        message: `Apply the verified ${state.deposit.currency} ${Number(state.deposit.amount || 0).toFixed(2)} deposit to this Stripe invoice?`,
+        confirmText: "Apply deposit",
+        cancelText: "Cancel"
+      });
+      if (!confirmedDeposit) {
+        showStatus("Invoice cancelled. The deposit was not applied.", "info");
+        return;
+      }
+    }
+
     if (hasSinglePersonItem()) {
       const confirmed = await showConfirmModal({
         title: "Confirm invoice",
@@ -1860,6 +1986,8 @@ function createItem(initial = {}) {
       const invoiceId = data.invoice_id || "";
       const invoiceNumber = data.invoice_number || "";
       const invoiceStatus = data.invoice_status || (multi ? "open" : "open");
+      const depositApplied = Number(data.deposit_applied_amount || 0);
+      const amountRemaining = data.amount_remaining != null ? Number(data.amount_remaining) : null;
       const agentId = els.agentId.value.trim();
 
       state.lastInvoiceFingerprint = invoiceFingerprint;
@@ -1887,6 +2015,8 @@ function createItem(initial = {}) {
         Status: <strong>${invoiceStatus || "-"}</strong>
         <br />
         Mode: <strong>${multi ? "Multi-item invoice" : "Single-item invoice"}</strong>
+        ${depositApplied ? `<br />Deposit applied: <strong>$${depositApplied.toFixed(2)}</strong>` : ""}
+        ${amountRemaining !== null ? `<br />Amount remaining: <strong>$${amountRemaining.toFixed(2)}</strong>` : ""}
         ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
         <br />
         <strong>Safety:</strong> This page will not create another invoice for these same booking details.
@@ -1920,6 +2050,7 @@ function createItem(initial = {}) {
       hideWhatsAppWidgets();
       const widgetObserver = new MutationObserver(hideWhatsAppWidgets);
       widgetObserver.observe(document.documentElement, { childList: true, subtree: true });
+      applyInboundIdentity();
       await loadTours();
       addItem();
       applyInboundPrefill();
@@ -1943,6 +2074,12 @@ function createItem(initial = {}) {
   els.sendInvoiceBtn.addEventListener("click", onSendInvoice);
   els.copyBtn.addEventListener("click", onCopy);
   els.openBtn.addEventListener("click", onOpen);
+  els.depositLookupBtn.addEventListener("click", lookupDeposit);
+  els.applyDeposit.addEventListener("change", clearGeneratedResult);
+  els.stripeEnvironment.addEventListener("change", () => {
+    clearDeposit("Stripe environment changed. Check again for an available deposit.");
+    els.depositLookupBtn.disabled = !els.inquiryId.value.trim();
+  });
 
   els.defaultLanguage.addEventListener("change", () => {
     clearGeneratedResult();
