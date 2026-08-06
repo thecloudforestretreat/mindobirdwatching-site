@@ -281,6 +281,13 @@
 
       const HEADER_IMAGE = 'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg';
       const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
+      function getDepositLink(){
+        const inquiryId = String(state.inquiryId || state.crmRecord?.inquiry_id || '').trim();
+        if(!inquiryId) return DEPOSIT_LINK;
+        const url = new URL(DEPOSIT_LINK);
+        url.searchParams.set('client_reference_id',inquiryId);
+        return url.toString();
+      }
       const DEFAULT_WHATSAPP_NUMBER = '593969076501';
       const STORAGE_KEY = 'mbw_itinerary_generator_v1';
       const CRM_API_URL = 'https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api';
@@ -797,7 +804,7 @@
           ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
           ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid ? '' : `<a class="depositBtn" href="${DEPOSIT_LINK}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
+          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid ? '' : `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -920,7 +927,7 @@
               <tr><td align="center" style="padding:22px 20px;">
                 <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h2>
                 <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p>
-                ${data.depositPaid ? '' : `<a href="${DEPOSIT_LINK}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>`}
+                ${data.depositPaid ? '' : `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>`}
                 <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
               </td></tr>
             </table>`
@@ -986,7 +993,7 @@
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
-        if(data.showDeposit) lines.push(data.depositPaid ? c.depositPaidText : c.depositLead,...(data.depositPaid ? [] : [DEPOSIT_LINK]),'');
+        if(data.showDeposit) lines.push(data.depositPaid ? c.depositPaidText : c.depositLead,...(data.depositPaid ? [] : [getDepositLink()]),'');
         lines.push(c.finalLine);
         return lines.join('\n');
       }
@@ -1019,6 +1026,7 @@
         }catch(error){}
         return {
           source:'guest_crm',
+          inquiryId:params.get('inquiry_id') || '',
           guestName:params.get('guest') || '',
           whatsappNumber:params.get('phone') || '',
           guestCount:Number(params.get('guests') || 1),
