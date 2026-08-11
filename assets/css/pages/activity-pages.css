@@ -19,6 +19,7 @@ body[data-page-content-group="activities"] .nextSteps {
 
 body[data-page-content-group="activities"] .hero {
   gap: 18px;
+  align-items: start;
 }
 
 body[data-page-content-group="activities"] .heroCard {
@@ -61,12 +62,34 @@ body[data-page-content-group="activities"] .ctaRow .btn {
 
 body[data-page-content-group="activities"] .heroMediaFrame {
   aspect-ratio: 4 / 3;
-  min-height: 0;
+  min-height: 0 !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+  overflow: hidden;
 }
 
 body[data-page-content-group="activities"] .heroMediaFrame img {
   object-fit: cover;
   object-position: center;
+}
+
+body[data-page-content-group="activities"] .heroMedia {
+  align-self: start;
+  height: auto !important;
+  min-height: 0 !important;
+  display: block;
+}
+
+body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame {
+  aspect-ratio: 4 / 5;
+  max-height: 560px;
+  background: #061d11;
+}
+
+body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame img {
+  object-fit: contain;
+  object-position: center;
+  background: #061d11;
 }
 
 body[data-page-content-group="activities"] .section {
@@ -102,6 +125,11 @@ body[data-page-content-group="activities"] .mediaGrid {
   max-width: 980px;
 }
 
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoCard) {
+  grid-template-columns: minmax(0, .78fr) minmax(0, 1fr);
+  align-items: start;
+}
+
 body[data-page-content-group="activities"] .mediaCard {
   min-width: 0;
 }
@@ -111,6 +139,35 @@ body[data-page-content-group="activities"] .carouselViewport,
 body[data-page-content-group="activities"] .videoFrame {
   aspect-ratio: 9 / 16;
   background: #061d11;
+}
+
+body[data-page-content-group="activities"] .videoCarouselViewport {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+body[data-page-content-group="activities"] .videoCarouselSlide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+}
+
+body[data-page-content-group="activities"] .videoCarouselSlide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body[data-page-content-group="activities"] .videoCarouselSlide .videoFrame {
+  width: 100%;
+  height: 100%;
+}
+
+body[data-page-content-group="activities"] .singleVideoCard .videoFrame,
+body[data-page-content-group="activities"] .singleVideoFrame {
+  aspect-ratio: 16 / 9;
 }
 
 body[data-page-content-group="activities"] .videoFrame iframe,
@@ -172,6 +229,11 @@ body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"
   body[data-page-content-group="activities"] .heroMediaFrame {
     aspect-ratio: 16 / 10;
   }
+
+  body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame {
+    aspect-ratio: 4 / 5;
+    max-height: none;
+  }
 }
 
 @media (max-width: 760px) {
@@ -205,6 +267,7 @@ body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"
   }
 
   body[data-page-content-group="activities"] .mediaGrid,
+  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoCard),
   body[data-page-content-group="activities"] .infoGrid,
   body[data-page-content-group="activities"] .wildlifeGrid,
   body[data-page-content-group="activities"] .relatedGrid,
@@ -216,6 +279,11 @@ body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"
   body[data-page-content-group="activities"] .carouselViewport,
   body[data-page-content-group="activities"] .videoFrame {
     aspect-ratio: 4 / 5;
+  }
+
+  body[data-page-content-group="activities"] .singleVideoCard .videoFrame,
+  body[data-page-content-group="activities"] .singleVideoFrame {
+    aspect-ratio: 16 / 9;
   }
 
   body[data-page-content-group="activities"] .ctaRow .btn,
