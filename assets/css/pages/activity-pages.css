@@ -81,11 +81,35 @@ body[data-page-content-group="activities"] .heroMediaFrame img {
 }
 
 body[data-page-content-group="activities"] .heroMedia {
-  align-self: stretch;
+  align-self: start;
   height: auto !important;
-  min-height: 100% !important;
+  min-height: 0 !important;
   display: flex;
   flex-direction: column;
+}
+
+body[data-page-content-group="activities"][data-hero-card-sync="true"] .heroMedia {
+  align-self: stretch;
+  min-height: 100% !important;
+}
+
+body[data-page-content-group="activities"][data-hero-media-fit="contain"] .heroMediaFrame {
+  background: #fff;
+}
+
+body[data-page-content-group="activities"][data-hero-media-fit="contain"] .heroMediaFrame img {
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+}
+
+body[data-page-content-group="activities"][data-hero-media-fit="cover"] .heroMediaFrame img {
+  object-fit: cover;
+  object-position: center;
+}
+
+body[data-page-content-group="activities"][data-hero-media-position="top"] .heroMediaFrame img {
+  object-position: center top;
 }
 
 body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"] .heroMediaFrame {
@@ -145,6 +169,74 @@ body[data-page-content-group="activities"] .highlightGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+body[data-page-content-group="activities"] .activityFactGrid,
+body[data-page-content-group="activities"] .comparisonGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body[data-page-content-group="activities"] .activityFact,
+body[data-page-content-group="activities"] .comparisonCard {
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, .035);
+}
+
+body[data-page-content-group="activities"] .activityFact span,
+body[data-page-content-group="activities"] .comparisonCard span {
+  display: block;
+  margin: 0 0 5px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+body[data-page-content-group="activities"] .activityFact strong,
+body[data-page-content-group="activities"] .comparisonCard strong {
+  display: block;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+body[data-page-content-group="activities"] .activityFact p,
+body[data-page-content-group="activities"] .comparisonCard p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+body[data-page-content-group="activities"] .bookingPrompt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(15, 92, 45, .2);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(250, 253, 246, .96), rgba(231, 241, 220, .68));
+}
+
+body[data-page-content-group="activities"] .bookingPrompt h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+body[data-page-content-group="activities"] .bookingPrompt p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
 }
 
 body[data-page-content-group="activities"] .highlightGrid .infoCard p {
@@ -211,6 +303,66 @@ body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMe
 body[data-page-content-group="activities"] .relatedCard a {
   margin-top: auto;
   align-self: flex-start;
+}
+
+body[data-page-content-group="activities"] .butterflyGrid,
+body[data-page-content-group="activities"] .internalLinks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+body[data-page-content-group="activities"] .internalLinks.balancedLinks {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body[data-page-content-group="activities"] .linkCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100%;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, .04);
+}
+
+body[data-page-content-group="activities"] .linkCard strong {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+body[data-page-content-group="activities"] .linkCardDesc {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+body[data-page-content-group="activities"] .linkCardCta {
+  width: 100%;
+  margin-top: auto;
+}
+
+body[data-page-content-group="activities"] .finalCta--split .finalGrid {
+  align-items: stretch;
+}
+
+body[data-page-content-group="activities"] .finalCta--split .ctaRow--inline {
+  align-items: center;
+}
+
+body[data-page-content-group="activities"] .nextSteps ol {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+body[data-page-content-group="activities"] .nextSteps li + li {
+  margin-top: 5px;
 }
 
 body[data-page-content-group="activities"] .mediaGrid {
@@ -344,8 +496,17 @@ body[data-page-type="activities_hub"] .activityChip--status {
     grid-template-columns: 1fr;
   }
 
+  body[data-page-content-group="activities"] .internalLinks.balancedLinks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   body[data-page-content-group="activities"] .heroCard h1 {
     max-width: none;
+  }
+
+  body[data-page-content-group="activities"] .activityFactGrid,
+  body[data-page-content-group="activities"] .comparisonGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   body[data-page-content-group="activities"] .heroMediaFrame {
@@ -399,7 +560,11 @@ body[data-page-type="activities_hub"] .activityChip--status {
   body[data-page-content-group="activities"] .mediaGrid,
   body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoCard),
   body[data-page-content-group="activities"] .infoGrid,
+  body[data-page-content-group="activities"] .activityFactGrid,
+  body[data-page-content-group="activities"] .comparisonGrid,
   body[data-page-content-group="activities"] .highlightGrid,
+  body[data-page-content-group="activities"] .butterflyGrid,
+  body[data-page-content-group="activities"] .internalLinks,
   body[data-page-content-group="activities"] .wildlifeGrid,
   body[data-page-content-group="activities"] .relatedGrid,
   body[data-page-content-group="activities"] .finalGrid {
@@ -415,6 +580,10 @@ body[data-page-type="activities_hub"] .activityChip--status {
   body[data-page-content-group="activities"] .singleVideoCard .videoFrame,
   body[data-page-content-group="activities"] .singleVideoFrame {
     aspect-ratio: 16 / 9;
+  }
+
+  body[data-page-content-group="activities"] .bookingPrompt {
+    grid-template-columns: 1fr;
   }
 
   body[data-page-content-group="activities"] .ctaRow .btn,
