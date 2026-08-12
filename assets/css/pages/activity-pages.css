@@ -1694,22 +1694,26 @@ body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .ziplini
 
 /* =========================================================
    Trail Running in Mindo
-   Approved activity-page consistency lock
-   - two-column hero like the approved activity detail pages
-   - route images always shown in full, never cropped
-   - balanced repeated-card grids
-   - mobile-first collapse without orphan cards
+   Corrected activity-page consistency lock
+
+   Important:
+   The trail-running carousel mechanics are owned by travel-guides.css.
+   Do not override carouselViewport height/positioning or carouselSlide
+   display/positioning here. That previously collapsed the hero images.
+
+   This file only aligns the hero/card rhythm and ensures images remain
+   fully visible without cropping.
    ========================================================= */
 
-body[data-activity-variant="trail_running"] .activeHero {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero {
   display: grid;
   grid-template-columns: 1.02fr .98fr;
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody,
-body[data-activity-variant="trail_running"] .activeHero .heroMedia {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroMedia {
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -1717,72 +1721,71 @@ body[data-activity-variant="trail_running"] .activeHero .heroMedia {
   overflow: hidden;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 18px;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody h1 {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody h1 {
   margin: 0;
   max-width: none;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody .lede {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .lede {
   max-width: 72ch;
   margin: 0;
   line-height: 1.45;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody .chips {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .chips {
   align-items: center;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody .chip {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .chip {
   min-height: 34px;
   white-space: normal;
   text-align: center;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody .ctaRow {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .ctaRow {
   gap: 10px;
   align-items: center;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .heroBody .ctaRow .btn {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .ctaRow .btn {
   min-height: 46px;
   white-space: normal;
   text-align: center;
 }
 
-body[data-activity-variant="trail_running"] .heroProofPanel {
-  margin-top: 0;
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .heroProofPanel {
   padding: 12px 13px;
   border: 1px solid rgba(15, 92, 45, .18);
   border-radius: 12px;
   background: rgba(250, 253, 246, .78);
 }
 
-body[data-activity-variant="trail_running"] .heroProofPanel strong {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .heroProofPanel strong {
   display: block;
   margin-bottom: 8px;
   color: var(--green);
 }
 
-body[data-activity-variant="trail_running"] .heroProofPanel p {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .heroProofPanel p {
   margin: 8px 0 0;
   font-size: 13.5px;
   line-height: 1.4;
 }
 
-body[data-activity-variant="trail_running"] .proofGrid {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .proofGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-body[data-activity-variant="trail_running"] .proofGrid span {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .proofGrid span {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1797,58 +1800,16 @@ body[data-activity-variant="trail_running"] .proofGrid span {
   text-align: center;
 }
 
-/* Natural-ratio hero carousel. No cover/crop behavior. */
-body[data-activity-variant="trail_running"] .activeHero .heroMedia {
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  height: auto !important;
-  min-height: 0 !important;
-}
-
-body[data-activity-variant="trail_running"] .activeHero .carouselViewport {
-  position: relative;
-  width: 100%;
-  height: auto !important;
-  min-height: 0 !important;
-  aspect-ratio: auto !important;
-  overflow: hidden;
-  background: #fff;
-}
-
-body[data-activity-variant="trail_running"] .activeHero .carouselSlide {
-  position: relative !important;
-  inset: auto !important;
-  display: none;
-  width: 100%;
-  margin: 0;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-
-body[data-activity-variant="trail_running"] .activeHero .carouselSlide.active {
-  display: block;
-}
-
-body[data-activity-variant="trail_running"] .activeHero .carouselSlide img {
-  display: block;
-  width: 100%;
-  height: auto !important;
-  max-height: none !important;
+/* Preserve travel-guides carousel mechanics.
+   Only enforce full-image visibility inside the working slides. */
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .carouselSlide img {
   object-fit: contain !important;
   object-position: center !important;
   background: #fff;
-  border-radius: 0;
 }
 
-body[data-activity-variant="trail_running"] .activeHero .carouselOverlay {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
-}
-
-body[data-activity-variant="trail_running"] .activeHero .mediaCaption {
+/* Keep hero caption visually consistent without changing the viewport. */
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .mediaCaption {
   margin: 0;
   min-height: 48px;
   padding: 10px 12px;
@@ -1859,25 +1820,25 @@ body[data-activity-variant="trail_running"] .activeHero .mediaCaption {
   background: #fff;
 }
 
-/* Balanced 4-card modules */
-body[data-activity-variant="trail_running"] .metricGrid,
-body[data-activity-variant="trail_running"] .decisionGrid,
-body[data-activity-variant="trail_running"] .trailFourGrid {
+/* Balanced repeated-card modules. */
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricGrid,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionGrid,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailFourGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
 }
 
-body[data-activity-variant="trail_running"] .metricCard,
-body[data-activity-variant="trail_running"] .decisionCard,
-body[data-activity-variant="trail_running"] .trailFourGrid .infoCard {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailFourGrid .infoCard {
   min-width: 0;
   min-height: 100%;
 }
 
-body[data-activity-variant="trail_running"] .metricCard,
-body[data-activity-variant="trail_running"] .decisionCard {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -1885,7 +1846,7 @@ body[data-activity-variant="trail_running"] .decisionCard {
   box-shadow: 0 10px 22px rgba(0, 0, 0, .035);
 }
 
-body[data-activity-variant="trail_running"] .metricCard span {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard span {
   display: block;
   margin-bottom: 5px;
   color: var(--green);
@@ -1896,95 +1857,91 @@ body[data-activity-variant="trail_running"] .metricCard span {
   text-transform: uppercase;
 }
 
-body[data-activity-variant="trail_running"] .metricCard strong,
-body[data-activity-variant="trail_running"] .decisionCard h3 {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard strong,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard h3 {
   display: block;
   margin: 0;
   color: var(--ink);
   line-height: 1.2;
 }
 
-body[data-activity-variant="trail_running"] .metricCard p,
-body[data-activity-variant="trail_running"] .decisionCard p {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard p,
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard p {
   margin: 7px 0 0;
   color: var(--muted);
   line-height: 1.4;
 }
 
-body[data-activity-variant="trail_running"] .trailPrepGrid {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailPrepGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
 }
 
-body[data-activity-variant="trail_running"] .trailPrepGrid > * {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailPrepGrid > * {
   min-width: 0;
 }
 
-body[data-activity-variant="trail_running"] .guideNote {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .guideNote {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #fff;
 }
 
-body[data-activity-variant="trail_running"] .guideNote p {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .guideNote p {
   margin: 7px 0 0;
 }
 
-body[data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
 }
 
-body[data-activity-variant="trail_running"] .trailRelatedSection .relatedCard {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedCard {
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 100%;
 }
 
-body[data-activity-variant="trail_running"] .faqGrid {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .faqGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
 }
 
-body[data-activity-variant="trail_running"] .faqGrid .faqCard {
+body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .faqGrid .faqCard {
   min-width: 0;
   min-height: 100%;
 }
 
-body[data-activity-variant="trail_running"] .finalCta--split .finalGrid {
-  align-items: stretch;
-}
-
 @media (max-width: 1000px) and (min-width: 761px) {
-  body[data-activity-variant="trail_running"] .activeHero {
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero {
     grid-template-columns: 1fr 1fr;
   }
 
-  body[data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid {
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 760px) {
-  body[data-activity-variant="trail_running"] .activeHero {
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero {
     grid-template-columns: 1fr;
   }
 
-  body[data-activity-variant="trail_running"] .proofGrid,
-  body[data-activity-variant="trail_running"] .metricGrid,
-  body[data-activity-variant="trail_running"] .decisionGrid,
-  body[data-activity-variant="trail_running"] .trailFourGrid,
-  body[data-activity-variant="trail_running"] .trailPrepGrid,
-  body[data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid,
-  body[data-activity-variant="trail_running"] .faqGrid {
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .proofGrid,
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricGrid,
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionGrid,
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailFourGrid,
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailPrepGrid,
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid,
+  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .faqGrid {
     grid-template-columns: 1fr;
   }
 }
