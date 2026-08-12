@@ -118,6 +118,20 @@ body[data-page-content-group="activities"][data-hero-media-position="center"] .h
 }
 
 
+/* Canyoning hero uses a verified 1080 x 1920 portrait image.
+   Keep the full image visible while preventing the portrait media column from
+   forcing unnecessary empty space in the text card. */
+body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .hero {
+  grid-template-columns: minmax(0, 1.35fr) minmax(250px, .65fr);
+  align-items: start;
+}
+
+body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMedia {
+  width: 100%;
+  max-width: 360px;
+  justify-self: end;
+}
+
 body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame {
   aspect-ratio: 9 / 16;
   background: #fff;
@@ -525,6 +539,11 @@ body[data-page-type="activities_hub"] .activityChip--status {
 }
 
 @media (max-width: 1000px) {
+  body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMedia {
+    max-width: 360px;
+    justify-self: center;
+  }
+
   body[data-page-content-group="activities"] .hero {
     grid-template-columns: 1fr;
   }
@@ -557,19 +576,7 @@ body[data-page-type="activities_hub"] .activityChip--status {
     aspect-ratio: 9 / 16;
   }
 
-  
-body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame img {
-  object-fit: contain;
-  object-position: center;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .heroMediaFrame {
+  body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .heroMediaFrame {
     aspect-ratio: 9 / 16;
   }
 
@@ -610,7 +617,10 @@ body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .he
     aspect-ratio: 4 / 3;
   }
 
-  body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame,
+  body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame {
+    aspect-ratio: 9 / 16;
+  }
+
   body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .heroMediaFrame,
   body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"] .heroMediaFrame,
   body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame {
