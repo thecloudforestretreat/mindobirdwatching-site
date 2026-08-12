@@ -1261,3 +1261,81 @@ body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .ac
     gap: 7px;
   }
 }
+
+/* =========================================================
+   MBW single-video media symmetry lock
+   Keeps a standalone YouTube/fallback video card the same
+   width and media height as the adjacent image carousel card.
+   This intentionally comes last so it overrides the older
+   generic 16:9 single-video rule.
+   ========================================================= */
+
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) > .mediaCard {
+  min-width: 0;
+  height: 100%;
+}
+
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) > .mediaCard .mediaInner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame,
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .carouselViewport {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  height: auto;
+  min-height: 0;
+}
+
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #061d11;
+}
+
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 14px;
+}
+
+body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .mediaFooter {
+  min-height: 48px;
+}
+
+/* Tablet: keep both media cards paired and equal. */
+@media (max-width: 1000px) and (min-width: 761px) {
+  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame,
+  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .carouselViewport {
+    aspect-ratio: 9 / 16;
+  }
+}
+
+/* Mobile: stack cards, while keeping video and image media
+   frames at the same approved mobile proportion. */
+@media (max-width: 760px) {
+  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame,
+  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .carouselViewport {
+    aspect-ratio: 4 / 5;
+  }
+}
+
