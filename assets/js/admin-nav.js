@@ -1,133 +1,105 @@
-:root {
-  --admin-green: #0d5925;
-  --admin-ink: #071923;
-  --admin-muted: rgba(7, 25, 35, 0.7);
-  --admin-line: rgba(7, 25, 35, 0.14);
-  --admin-soft: #f6faf0;
-  --admin-nav-shadow: 0 12px 34px rgba(7, 25, 35, 0.1);
-}
+(function () {
+  "use strict";
 
-.adminGlobalNav {
-  width: min(calc(100% - 32px), 1120px);
-  margin: 16px auto 0;
-  padding: 9px 10px;
-  background: rgba(246, 250, 240, 0.96);
-  border: 1px solid var(--admin-line);
-  border-radius: 16px;
-  box-shadow: var(--admin-nav-shadow);
-}
+  var pages = [
+    { id: "admin", label: "Admin Hub", href: "/" },
+    { id: "guest-crm", label: "Guest CRM", href: "/guest-crm/" },
+    { id: "email", label: "Email Generator", href: "/custom-email-generator/" },
+    { id: "staff", label: "Staff Info", href: "/staff-info/" },
+    { id: "itinerary", label: "Itinerary", href: "/itinerary-generator/" },
+    { id: "zelle", label: "Zelle Invoice", href: "/zelle-invoice-generator/" },
+    {
+      id: "stripe",
+      label: "Stripe Invoice",
+      href: "https://mindobirdwatching.com/book-tour/create/",
+      external: true
+    },
+    { id: "confirmation", label: "Tour Confirmation", href: "/tour-confirmation-generator/" },
+    { id: "reports", label: "Reports", href: "/reports/" }
+  ];
 
-.adminGlobalNav__inner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-}
-
-.adminGlobalNav__label {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--admin-green);
-  font-size: 13px;
-  font-weight: 950;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.adminGlobalNav__logo {
-  width: 25px;
-  height: 25px;
-  flex: 0 0 25px;
-  display: block;
-  object-fit: contain;
-  border-radius: 999px;
-  background: #fff;
-}
-
-.adminGlobalNav__links {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  overflow-x: auto;
-  padding: 1px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(13, 89, 37, 0.35) transparent;
-}
-
-.adminGlobalNav__link {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 8px 10px;
-  color: var(--admin-ink);
-  background: #fff;
-  border: 1px solid var(--admin-line);
-  border-radius: 11px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1.15;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, border-color 0.15s ease,
-    color 0.15s ease, transform 0.15s ease;
-}
-
-.adminGlobalNav__link:hover,
-.adminGlobalNav__link:focus-visible {
-  color: var(--admin-green);
-  background: #eef7e7;
-  border-color: rgba(13, 89, 37, 0.38);
-  transform: translateY(-1px);
-  outline: none;
-}
-
-.adminGlobalNav__link[aria-current="page"] {
-  color: #fff;
-  background: var(--admin-green);
-  border-color: var(--admin-green);
-  cursor: default;
-  transform: none;
-}
-
-.adminGlobalNav__external::after {
-  content: "\2197";
-  margin-left: 6px;
-  font-size: 11px;
-}
-
-@media (max-width: 760px) {
-  .adminGlobalNav {
-    width: calc(100% - 24px);
-    margin-top: 12px;
-    padding: 10px;
-    border-radius: 14px;
+  function normalizePath(pathname) {
+    var path = pathname || "/";
+    if (!path.endsWith("/")) path += "/";
+    return path;
   }
 
-  .adminGlobalNav__inner {
-    gap: 9px;
+  function currentPageId(host) {
+    if (host.dataset.adminPage) return host.dataset.adminPage;
+
+    var path = normalizePath(window.location.pathname);
+    if (path === "/") return "admin";
+
+    for (var i = 0; i < pages.length; i += 1) {
+      if (!pages[i].external && normalizePath(pages[i].href) === path) {
+        return pages[i].id;
+      }
+    }
+
+    return "";
   }
 
-  .adminGlobalNav__label span {
-    display: none;
+  function makeLink(page, activeId) {
+    var link = document.createElement("a");
+    link.className = "adminGlobalNav__link" + (page.external ? " adminGlobalNav__external" : "");
+    link.href = page.href;
+    link.textContent = page.label;
+
+    if (page.id === activeId) {
+      link.setAttribute("aria-current", "page");
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+      });
+    } else if (page.id !== "admin") {
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
+
+    return link;
   }
 
-  .adminGlobalNav__links {
-    margin-right: -2px;
+  function render(host) {
+    if (host.dataset.adminNavReady === "true") return;
+
+    var activeId = currentPageId(host);
+    var nav = document.createElement("nav");
+    var inner = document.createElement("div");
+    var label = document.createElement("span");
+    var logo = document.createElement("img");
+    var brandText = document.createElement("span");
+    var links = document.createElement("div");
+
+    nav.className = "adminGlobalNav";
+    nav.setAttribute("aria-label", "Admin pages");
+    inner.className = "adminGlobalNav__inner";
+    label.className = "adminGlobalNav__label";
+    logo.className = "adminGlobalNav__logo";
+    logo.src = "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png";
+    logo.alt = "";
+    brandText.textContent = "MBW Admin";
+    label.appendChild(logo);
+    label.appendChild(brandText);
+    links.className = "adminGlobalNav__links";
+
+    pages.forEach(function (page) {
+      links.appendChild(makeLink(page, activeId));
+    });
+
+    inner.appendChild(label);
+    inner.appendChild(links);
+    nav.appendChild(inner);
+    host.appendChild(nav);
+    host.dataset.adminNavReady = "true";
   }
 
-  .adminGlobalNav__link {
-    min-height: 36px;
+  function init() {
+    var hosts = document.querySelectorAll("[data-admin-nav]");
+    hosts.forEach(render);
   }
-}
 
-@media print {
-  .adminGlobalNav {
-    display: none !important;
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
   }
-}
+})();
