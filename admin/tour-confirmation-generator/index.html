@@ -1097,11 +1097,13 @@
           "Canopy/Ziplining",
           "Butterfly Garden",
           "Night Walk",
+          "Private Insect & Macro Wildlife Search",
           "Half-Day to Full-Day Extension",
           "Canyoning"
         ];
         const tours = state.tours.length ? state.tours.slice() : fallbackTours.slice();
         if(!tours.some(name => /night\s*walk/i.test(String(name || "")))) tours.push("Night Walk");
+        if(!tours.some(name => /insect|macro/i.test(String(name || "")))) tours.push("Private Insect & Macro Wildlife Search");
         tourSelects.forEach((select, idx) => {
           const current = select.value;
           select.innerHTML = "";
@@ -1269,6 +1271,7 @@
       function displayTourFromCrm(tourText){
         const normalized = normalizeInboundTourText(tourText);
         if(!normalized) return "";
+        if(normalized.includes("insect") || normalized.includes("macro")) return "Private Insect & Macro Wildlife Search";
         if(normalized.includes("night walk")) return "Night Walk";
         if(normalized.includes("jewels") || normalized.includes("morning forest")) return "Jewels of the Morning Forest";
         if(normalized.includes("andean") || normalized.includes("cock")) return "Dance of the Andean Cock-of-the-Rock";
@@ -1280,6 +1283,7 @@
 
       function lengthFromCrm(tourText, durationText){
         const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
+        if(text.includes("insect") || text.includes("macro")) return "Flexible";
         if(text.includes("night walk")) return "Night Walk";
         if(text.includes("half")) return "Half Day";
         if(text.includes("full")) return "Full Day";
@@ -1369,9 +1373,10 @@
 
       function tourCategory(tour){
         const text = normalizeInboundTourText(tour);
+        if(text.includes("insect") || text.includes("macro")) return "activity";
         if(text.includes("night walk")) return "night";
         if(text.includes("bear")) return "bear";
-        if(/chocolate|coffee|waterfall|canopy|ziplin|butterfly|canyon|frog|activity|activities|nature excursion/.test(text)) return "activity";
+        if(/chocolate|coffee|waterfall|canopy|ziplin|butterfly|canyon|frog|insect|macro|activity|activities|nature excursion/.test(text)) return "activity";
         return "birding";
       }
 
