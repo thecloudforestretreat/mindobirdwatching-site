@@ -387,105 +387,192 @@ body[data-css-cluster="bird_species"][data-page-type="guide_page"][data-page-con
   flex:1 1 auto;
 }
 
-/* Reusable species hub cards and vertical media modules. */
-body[data-css-cluster="bird_species"] .speciesCardGrid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:16px;
-  align-items:stretch;
+/* Reusable bird-species hubs and approved media-card pattern. */
+body[data-css-cluster="bird_species"] .speciesCardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
 }
 
-body[data-css-cluster="bird_species"] .speciesCard{
-  overflow:hidden;
-  display:flex;
-  min-width:0;
-  flex-direction:column;
-  border:1px solid var(--line);
-  border-radius:var(--r);
-  background:rgba(255,255,255,.8);
-  box-shadow:var(--shadow);
+body[data-css-cluster="bird_species"] .speciesCard,
+body[data-css-cluster="bird_species"] .speciesRouteCard,
+body[data-css-cluster="bird_species"] .mediaCard {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, .8);
+  box-shadow: var(--shadow);
 }
 
-body[data-css-cluster="bird_species"] .speciesCardImage{
-  display:block;
-  aspect-ratio:4/3;
-  overflow:hidden;
-  background:var(--forest);
+body[data-css-cluster="bird_species"] .speciesCardImage {
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #061d11;
 }
 
-body[data-css-cluster="bird_species"] .speciesCardImage img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  transition:transform .25s ease;
+body[data-css-cluster="bird_species"] .speciesCardImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .25s ease;
 }
 
-body[data-css-cluster="bird_species"] .speciesCardImage:hover img{transform:scale(1.03)}
+body[data-css-cluster="bird_species"] .speciesCardImage:hover img { transform: scale(1.03); }
 
-body[data-css-cluster="bird_species"] .speciesCardBody{
-  display:flex;
-  flex:1;
-  flex-direction:column;
-  align-items:flex-start;
-  padding:18px;
+body[data-css-cluster="bird_species"] .speciesCardBody,
+body[data-css-cluster="bird_species"] .speciesRouteCard {
+  padding: 18px;
 }
 
-body[data-css-cluster="bird_species"] .speciesCardBody h3{margin:5px 0 8px;color:var(--forest)}
-body[data-css-cluster="bird_species"] .speciesCardBody p{flex:1;margin:0 0 16px;color:var(--muted)}
-body[data-css-cluster="bird_species"] .speciesFamily{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
-
-body[data-css-cluster="bird_species"] .mediaFeature{
-  display:grid;
-  grid-template-columns:minmax(240px,360px) minmax(0,1fr);
-  gap:18px;
-  align-items:center;
+body[data-css-cluster="bird_species"] .speciesCardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-body[data-css-cluster="bird_species"] .verticalVideo,
-body[data-css-cluster="bird_species"] .speciesCarousel{
-  width:min(100%,360px);
-  aspect-ratio:9/16;
-  overflow:hidden;
-  border:1px solid var(--line);
-  border-radius:var(--r);
-  background:#061a10;
-  box-shadow:var(--shadow);
+body[data-css-cluster="bird_species"] .speciesCardBody h3 { margin: 5px 0 8px; color: var(--forest); line-height: 1.2; }
+body[data-css-cluster="bird_species"] .speciesCardBody p { flex: 1; margin: 0 0 16px; color: var(--muted); }
+body[data-css-cluster="bird_species"] .speciesCardBody .btn { margin-top: auto; }
+body[data-css-cluster="bird_species"] .speciesFamily { color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+body[data-css-cluster="bird_species"] .speciesRouteCard {
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--soft);
 }
 
-body[data-css-cluster="bird_species"] .verticalVideo iframe,
-body[data-css-cluster="bird_species"] .carouselSlide img{width:100%;height:100%;border:0;object-fit:cover}
+body[data-css-cluster="bird_species"] .speciesRouteCard p { flex: 1; color: var(--muted); }
+body[data-css-cluster="bird_species"] .speciesRouteCard .btn { margin-top: auto; }
 
-body[data-css-cluster="bird_species"] .speciesMediaGrid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(240px,360px));
-  gap:18px;
-  justify-content:center;
-  align-items:start;
+body[data-css-cluster="bird_species"] .mediaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 380px));
+  gap: 16px;
+  justify-content: center;
+  align-items: start;
+  max-width: 980px;
+  margin-inline: auto;
 }
 
-body[data-css-cluster="bird_species"] .speciesCarousel{position:relative}
-body[data-css-cluster="bird_species"] .carouselViewport,
-body[data-css-cluster="bird_species"] .carouselSlide{width:100%;height:100%}
-body[data-css-cluster="bird_species"] .carouselSlide{display:none;margin:0}
-body[data-css-cluster="bird_species"] .carouselSlide.active{display:block}
-body[data-css-cluster="bird_species"] .carouselOverlay{position:absolute;inset:auto 10px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+body[data-css-cluster="bird_species"] .mediaCard { padding: 8px; }
+
+body[data-css-cluster="bird_species"] .videoFrame,
+body[data-css-cluster="bird_species"] .carouselViewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 9 / 16;
+  border-radius: 14px;
+  background: #061d11;
+}
+
+body[data-css-cluster="bird_species"] .videoFrame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 14px;
+}
+
+body[data-css-cluster="bird_species"] .carouselSlide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+}
+
+body[data-css-cluster="bird_species"] .carouselSlide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body[data-css-cluster="bird_species"] .carouselSlide img {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  object-fit: contain;
+  object-position: center;
+  background: #061d11;
+}
+
+body[data-css-cluster="bird_species"] .carouselOverlay {
+  position: absolute;
+  z-index: 2;
+  inset: auto 10px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 body[data-css-cluster="bird_species"] .carouselBtn,
-body[data-css-cluster="bird_species"] .carouselDot{border:0;border-radius:999px;background:rgba(255,255,255,.9);color:var(--forest);cursor:pointer}
-body[data-css-cluster="bird_species"] .carouselBtn{width:34px;height:34px;font-weight:800}
-body[data-css-cluster="bird_species"] .carouselDots{display:flex;gap:6px;padding:7px 9px;border-radius:999px;background:rgba(6,26,16,.72)}
-body[data-css-cluster="bird_species"] .carouselDot{width:8px;height:8px;padding:0;opacity:.55}
-body[data-css-cluster="bird_species"] .carouselDot.active{opacity:1;background:#fff}
-
-@media(max-width:900px){
-  body[data-css-cluster="bird_species"] .speciesCardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  body[data-css-cluster="bird_species"] .mediaFeature{grid-template-columns:1fr}
+body[data-css-cluster="bird_species"] .carouselDot {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .94);
+  color: var(--forest);
+  cursor: pointer;
 }
 
-@media(max-width:620px){
+body[data-css-cluster="bird_species"] .carouselBtn { width: 34px; height: 34px; font-weight: 800; }
+body[data-css-cluster="bird_species"] .carouselDots { display: flex; gap: 6px; padding: 7px 9px; border-radius: 999px; background: rgba(6, 29, 17, .76); }
+body[data-css-cluster="bird_species"] .carouselDot { width: 8px; height: 8px; padding: 0; opacity: .55; }
+body[data-css-cluster="bird_species"] .carouselDot.active { opacity: 1; background: #fff; }
+
+body[data-css-cluster="bird_species"] .mediaFooter {
+  display: flex;
+  flex: 1;
+  min-height: 70px;
+  flex-direction: column;
+  padding: 10px 6px 4px;
+}
+
+body[data-css-cluster="bird_species"] .mediaFooter strong { color: var(--forest); }
+body[data-css-cluster="bird_species"] .mediaFooter span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+body[data-css-cluster="bird_species"] .internalLinks.balancedLinks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+body[data-css-cluster="bird_species"] .internalLinks.balancedLinks > .linkCard {
+  display: flex;
+  min-width: 0;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px;
+}
+
+body[data-css-cluster="bird_species"] .internalLinks.balancedLinks .linkCardDesc { flex: 1; margin: 8px 0 16px; color: var(--muted); }
+body[data-css-cluster="bird_species"] .internalLinks.balancedLinks .linkCardCta { width: 100%; margin-top: auto; white-space: normal; }
+
+body[data-css-cluster="bird_species"] .finalCta .finalGrid { gap: 16px; align-items: stretch; }
+body[data-css-cluster="bird_species"] .finalLeft { min-width: 0; }
+body[data-css-cluster="bird_species"] .finalLeft .ctaRow { display: flex; flex-wrap: wrap; }
+body[data-css-cluster="bird_species"] .finalLeft .btn { flex: 1 1 160px; max-width: 100%; white-space: normal; }
+body[data-css-cluster="bird_species"] .nextSteps { min-width: 0; }
+
+@media (max-width: 1000px) {
+  body[data-css-cluster="bird_species"] .speciesCardGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-css-cluster="bird_species"] .internalLinks.balancedLinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  body[data-css-cluster="bird_species"] .mediaGrid,
   body[data-css-cluster="bird_species"] .speciesCardGrid,
-  body[data-css-cluster="bird_species"] .speciesMediaGrid{grid-template-columns:1fr}
-  body[data-css-cluster="bird_species"] .verticalVideo,
-  body[data-css-cluster="bird_species"] .speciesCarousel{width:min(100%,420px);margin-inline:auto}
+  body[data-css-cluster="bird_species"] .internalLinks.balancedLinks { grid-template-columns: 1fr; }
+  body[data-css-cluster="bird_species"] .mediaCard { width: min(100%, 430px); margin-inline: auto; }
+  body[data-css-cluster="bird_species"] .finalLeft .btn { flex-basis: 100%; }
 }
 
 @media(max-width:1000px){
