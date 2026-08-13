@@ -131,8 +131,10 @@
     @media(max-width:1180px){.appGrid{grid-template-columns:1fr}.editorPanel{position:static;max-height:none}.previewWrap{max-height:none}}
     @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.actions .buttonLink,.actions button{width:100%}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}}
   </style>
+<link rel="stylesheet" href="/assets/css/admin.css?v=5">
 </head>
 <body>
+<div data-admin-nav data-admin-page="itinerary" data-admin-nav-ready="true"><nav class="adminGlobalNav" aria-label="Admin pages"><div class="adminGlobalNav__inner"><span class="adminGlobalNav__label"><img class="adminGlobalNav__logo" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt=""><span>MBW Admin</span></span><div class="adminGlobalNav__links"><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/">Admin Hub</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/guest-crm/" target="_blank" rel="noopener noreferrer">Guest CRM</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/custom-email-generator/" target="_blank" rel="noopener noreferrer">Email Generator</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/staff-info/" target="_blank" rel="noopener noreferrer">Staff Info</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/itinerary-generator/" aria-current="page">Itinerary</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" target="_blank" rel="noopener noreferrer">Zelle Invoice</a><a class="adminGlobalNav__link adminGlobalNav__external" href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer">Stripe Invoice</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" target="_blank" rel="noopener noreferrer">Tour Confirmation</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/reports/" target="_blank" rel="noopener noreferrer">Reports</a></div></div></nav></div>
   <main class="shell">
     <section class="pageCard">
       <header class="topBar">
@@ -144,7 +146,7 @@
           </div>
         </div>
         <div class="actions">
-          <a class="buttonLink" href="/">Admin</a>
+          
           <button type="button" id="saveCrmBtn" disabled>Save Itinerary to CRM</button>
           <button type="button" id="copyHtmlBtn" class="primary">Copy HTML</button>
           <button type="button" id="copyWhatsAppBtn">Copy WhatsApp</button>
@@ -236,10 +238,10 @@
               <label for="closingText">Closing message</label>
               <textarea id="closingText">Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.</textarea>
             </div>
-            <label class="checkRow">
-              <input id="showDeposit" type="checkbox" checked />
-              <span>Show the $100 Stripe tour deposit section in the guest itinerary.</span>
-            </label>
+            <label class="checkRow"><input id="showDeposit" type="checkbox" checked /><span>Show the tour deposit button.</span></label>
+            <div class="field"><label for="depositLink">Deposit payment URL</label><input id="depositLink" type="url" value="https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05" placeholder="https://…" /><p class="hint">The deposit button appears only when this is a valid HTTPS URL.</p></div>
+            <label class="checkRow"><input id="showInvoice" type="checkbox" /><span>Show a Pay Invoice button.</span></label>
+            <div class="field"><label for="invoiceLink">Invoice payment URL</label><input id="invoiceLink" type="url" placeholder="https://invoice-payment-link…" /><p class="hint">Paste the unique invoice URL for this guest.</p></div>
             <label class="checkRow">
               <input id="depositPaid" type="checkbox" />
               <span>The guest has paid the $100 deposit. Show the deposit-received WhatsApp message instead.</span>
@@ -281,10 +283,12 @@
 
       const HEADER_IMAGE = 'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg';
       const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
+      function validHttpsUrl(value){ try{ const url=new URL(String(value||'').trim()); return url.protocol==='https:' ? url.toString() : ''; }catch(error){ return ''; } }
       function getDepositLink(){
         const inquiryId = String(state.inquiryId || state.crmRecord?.inquiry_id || '').trim();
         if(!inquiryId) return DEPOSIT_LINK;
-        const url = new URL(DEPOSIT_LINK);
+        const customLink = validHttpsUrl($('depositLink')?.value) || DEPOSIT_LINK;
+        const url = new URL(customLink);
         url.searchParams.set('client_reference_id',inquiryId);
         return url.toString();
       }
@@ -394,10 +398,10 @@
 
       const COPY = {
         en: {
-          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay $100 Tour Deposit', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
+          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay Tour Deposit', payInvoice:'Pay Invoice', invoiceText:'Use the secure invoice link below to complete your payment.', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
         },
         es: {
-          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito de $100', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
+          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
         }
       };
       const DEFAULT_TEXT_VARIANTS = {
@@ -725,6 +729,9 @@
           discount:Number($('discount').value || 0),
           showDeposit:$('showDeposit').checked,
           depositPaid:$('depositPaid').checked,
+          depositLink:$('depositLink').value.trim(),
+          showInvoice:$('showInvoice').checked,
+          invoiceLink:$('invoiceLink').value.trim(),
           showItemPrices:$('showItemPrices').checked,
           items:state.items.map(item => ({...item}))
         };
@@ -804,7 +811,7 @@
           ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
           ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${data.showDeposit ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid ? '' : `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
+          ${data.showDeposit || (data.showInvoice && validHttpsUrl(data.invoiceLink)) ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid || !validHttpsUrl(data.depositLink) ? '' : `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -921,13 +928,13 @@
 
         rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:18px;"><tr><td style="padding:20px 22px;"><h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:28px;color:#0D5925;">${escapeHtml(c.nextSteps)}</h2><p style="margin:0;color:#536067;font-size:14px;line-height:22px;">${escapeHtml(data.closingText || c.defaultClosing)}</p></td></tr></table>`));
 
-        if(data.showDeposit){
+        if(data.showDeposit || (data.showInvoice && validHttpsUrl(data.invoiceLink))){
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;">
               <tr><td align="center" style="padding:22px 20px;">
                 <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h2>
                 <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p>
-                ${data.depositPaid ? '' : `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>`}
+                ${data.depositPaid || !validHttpsUrl(data.depositLink) ? '' : `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>`}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
                 <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
               </td></tr>
             </table>`
@@ -993,7 +1000,8 @@
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
-        if(data.showDeposit) lines.push(data.depositPaid ? c.depositPaidText : c.depositLead,...(data.depositPaid ? [] : [getDepositLink()]),'');
+        if(data.showDeposit) lines.push(data.depositPaid ? c.depositPaidText : c.depositLead,...(data.depositPaid || !validHttpsUrl(data.depositLink) ? [] : [getDepositLink()]),'');
+        if(data.showInvoice && validHttpsUrl(data.invoiceLink)) lines.push(c.invoiceText,validHttpsUrl(data.invoiceLink),'');
         lines.push(c.finalLine);
         return lines.join('\n');
       }
@@ -1006,11 +1014,12 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           if(!raw) return false;
           const data = JSON.parse(raw);
-          ['guestName','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','closingText','discount'].forEach(key => {
+          ['guestName','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','closingText','discount','depositLink','invoiceLink'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('showDeposit').checked = data.showDeposit !== false;
           $('depositPaid').checked = data.depositPaid === true;
+          $('showInvoice').checked = data.showInvoice === true;
           $('showItemPrices').checked = data.showItemPrices !== false;
           state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
           applyLanguageDefaults($('language').value,true);
@@ -1054,6 +1063,9 @@
         const paymentStatus = String(draft.paymentStatus || draft.payment_status || state.crmRecord?.payment_status || '').toLowerCase();
         $('showDeposit').checked = draft.showDeposit !== false;
         $('depositPaid').checked = draft.depositPaid === true || ['deposit_paid','paid'].includes(paymentStatus);
+        $('depositLink').value = draft.depositLink || DEPOSIT_LINK;
+        $('showInvoice').checked = draft.showInvoice === true;
+        $('invoiceLink').value = draft.invoiceLink || draft.invoice_url || '';
         $('showItemPrices').checked = draft.showItemPrices !== false;
         state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
           const requestedProduct = String(raw.productPreset || raw.name || 'Other');
@@ -1254,6 +1266,9 @@
         $('discount').value='0';
         $('showDeposit').checked=true;
         $('depositPaid').checked=false;
+        $('depositLink').value=DEPOSIT_LINK;
+        $('showInvoice').checked=false;
+        $('invoiceLink').value='';
         $('showItemPrices').checked=true;
         state.items=[];
         addItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
@@ -1275,5 +1290,6 @@
       updateAll(false);
     })();
   </script>
+<script defer src="/assets/js/admin-nav.js?v=5"></script>
 </body>
 </html>
