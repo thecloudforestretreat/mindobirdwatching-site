@@ -387,6 +387,107 @@ body[data-css-cluster="bird_species"][data-page-type="guide_page"][data-page-con
   flex:1 1 auto;
 }
 
+/* Reusable species hub cards and vertical media modules. */
+body[data-css-cluster="bird_species"] .speciesCardGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="bird_species"] .speciesCard{
+  overflow:hidden;
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.8);
+  box-shadow:var(--shadow);
+}
+
+body[data-css-cluster="bird_species"] .speciesCardImage{
+  display:block;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  background:var(--forest);
+}
+
+body[data-css-cluster="bird_species"] .speciesCardImage img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:transform .25s ease;
+}
+
+body[data-css-cluster="bird_species"] .speciesCardImage:hover img{transform:scale(1.03)}
+
+body[data-css-cluster="bird_species"] .speciesCardBody{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  align-items:flex-start;
+  padding:18px;
+}
+
+body[data-css-cluster="bird_species"] .speciesCardBody h3{margin:5px 0 8px;color:var(--forest)}
+body[data-css-cluster="bird_species"] .speciesCardBody p{flex:1;margin:0 0 16px;color:var(--muted)}
+body[data-css-cluster="bird_species"] .speciesFamily{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+
+body[data-css-cluster="bird_species"] .mediaFeature{
+  display:grid;
+  grid-template-columns:minmax(240px,360px) minmax(0,1fr);
+  gap:18px;
+  align-items:center;
+}
+
+body[data-css-cluster="bird_species"] .verticalVideo,
+body[data-css-cluster="bird_species"] .speciesCarousel{
+  width:min(100%,360px);
+  aspect-ratio:9/16;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:#061a10;
+  box-shadow:var(--shadow);
+}
+
+body[data-css-cluster="bird_species"] .verticalVideo iframe,
+body[data-css-cluster="bird_species"] .carouselSlide img{width:100%;height:100%;border:0;object-fit:cover}
+
+body[data-css-cluster="bird_species"] .speciesMediaGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(240px,360px));
+  gap:18px;
+  justify-content:center;
+  align-items:start;
+}
+
+body[data-css-cluster="bird_species"] .speciesCarousel{position:relative}
+body[data-css-cluster="bird_species"] .carouselViewport,
+body[data-css-cluster="bird_species"] .carouselSlide{width:100%;height:100%}
+body[data-css-cluster="bird_species"] .carouselSlide{display:none;margin:0}
+body[data-css-cluster="bird_species"] .carouselSlide.active{display:block}
+body[data-css-cluster="bird_species"] .carouselOverlay{position:absolute;inset:auto 10px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+body[data-css-cluster="bird_species"] .carouselBtn,
+body[data-css-cluster="bird_species"] .carouselDot{border:0;border-radius:999px;background:rgba(255,255,255,.9);color:var(--forest);cursor:pointer}
+body[data-css-cluster="bird_species"] .carouselBtn{width:34px;height:34px;font-weight:800}
+body[data-css-cluster="bird_species"] .carouselDots{display:flex;gap:6px;padding:7px 9px;border-radius:999px;background:rgba(6,26,16,.72)}
+body[data-css-cluster="bird_species"] .carouselDot{width:8px;height:8px;padding:0;opacity:.55}
+body[data-css-cluster="bird_species"] .carouselDot.active{opacity:1;background:#fff}
+
+@media(max-width:900px){
+  body[data-css-cluster="bird_species"] .speciesCardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body[data-css-cluster="bird_species"] .mediaFeature{grid-template-columns:1fr}
+}
+
+@media(max-width:620px){
+  body[data-css-cluster="bird_species"] .speciesCardGrid,
+  body[data-css-cluster="bird_species"] .speciesMediaGrid{grid-template-columns:1fr}
+  body[data-css-cluster="bird_species"] .verticalVideo,
+  body[data-css-cluster="bird_species"] .speciesCarousel{width:min(100%,420px);margin-inline:auto}
+}
+
 @media(max-width:1000px){
   body[data-css-cluster="bird_species"][data-page-type="guide_page"][data-page-content-group="hummingbird_sanctuary"] .internalLinks{
     grid-template-columns:repeat(2,minmax(0,1fr));
