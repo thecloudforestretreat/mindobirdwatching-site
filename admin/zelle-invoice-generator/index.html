@@ -757,20 +757,47 @@
 
       const logoUrl = "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png";
       const itemOptions = [
-        "Dance of the Andean Cock-of-the-Rock Dawn Tour",
-        "Jewels of the Morning Forest Birding Tour",
-        "Quest for Five Toucans & the Andean Cock-of-the-Rock",
-        "Custom Private Birding Tour",
-        "Night Walk",
-        "Private Insect & Macro Wildlife Search",
-        "Waterfall Tour / Hike",
-        "Chocolate Tour",
-        "Quito to Mindo Transportation",
-        "Mindo to Quito Transportation",
-        "Private Roundtrip Transportation",
-        "Deposit",
+        "MBW002 - Cloud Forest Icons Tour",
+        "MBW004 - Jewels of the Morning Forest",
+        "MBW005 - Dance of the Andean Cock-of-the-Rock",
+        "MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock",
+        "MBW007 - Custom Half Day",
+        "MBW008 - Custom Full Day",
+        "MBW009 - Flora Excursion",
+        "MBW010 - Solo Birdwatching Experience",
+        "MBW011 - Chocolate Tour",
+        "MBW012 - Coffee Tour",
+        "MBW013 - Waterfall Hike",
+        "MBW014 - Canopy/Ziplining",
+        "MBW015 - Butterfly Garden",
+        "MBW016 - Night Walk",
+        "MBW017 - Half-Day to Full-Day Extension",
+        "TRANS01 - Quito -> Mindo",
+        "TRANS02 - Mindo -> Quito",
+        "TRANS03 - Quito -> Mindo -> Quito",
+        "TRANS04 - Airport Pick Up",
+        "TRANS05 - Custom",
+        "TRANS06 - Quito -> Mindo -> Quito",
+        "DEP001 - Reservation Deposit",
+        "ACT002 - Waterfalls",
+        "ACT003 - Nambillo Waterfall",
+        "ACT004 - Quad Tour",
+        "ACT009 - Orchid Garden Tour",
+        "ACT010 - Frog Concert",
+        "ACT011 - Mindo River Tubing",
+        "ACT013 - Canyoning",
+        "ACT015 - Paintball",
+        "ACT016 - Horseback Riding",
+        "ACT017 - Mountain Biking",
+        "ACT018 - Double Extreme Swing",
+        "ACT019 - Extreme Bike – Sky Bike",
+        "ACT020 - Sky Ride",
+        "ACT021 - Private Insect & Macro Wildlife Search",
+        "OSO001 - Extended Half-Day Spectacled Bear Tour",
+        "OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour",
+        "ACCOM01 - Accommodation Booking",
         "Other"
-      ];
+];
 
       const els = {};
       const state = {
@@ -783,7 +810,7 @@
         cacheEls();
         setDefaultDates();
         state.items = [
-          { description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"" }
+          { description:"MBW005 - Dance of the Andean Cock-of-the-Rock", qty:2, price:85, note:"" }
         ];
         bindEvents();
         applyCrmHandoff();
@@ -947,36 +974,91 @@
         }
       }
 
-      function normalizeDescription(value){
-        const text = clean(value);
-        const low = text.toLowerCase();
-        if(low.includes("mbw004") || low.includes("jewel")) return "Jewels of the Morning Forest Birding Tour";
-        if(low.includes("mbw005") || low.includes("cock") || low.includes("andean")) return "Dance of the Andean Cock-of-the-Rock Dawn Tour";
-        if(low.includes("mbw006") || low.includes("quest") || low.includes("five toucan")) return "Quest for Five Toucans & the Andean Cock-of-the-Rock";
-        if(low.includes("insect") || low.includes("macro")) return "Private Insect & Macro Wildlife Search";
-        if(low.includes("night")) return "Night Walk";
-        if(low.includes("waterfall")) return "Waterfall Tour / Hike";
-        if(low.includes("chocolate")) return "Chocolate Tour";
-        if(low.includes("transport") && low.includes("round")) return "Private Roundtrip Transportation";
-        if(low.includes("quito") && low.includes("mindo")) return "Quito to Mindo Transportation";
-        if(low.includes("mindo") && low.includes("quito")) return "Mindo to Quito Transportation";
-        if(low.includes("custom")) return "Custom Private Birding Tour";
-        return itemOptions.includes(text) ? text : (text || "Custom Private Birding Tour");
+      const PRODUCT_PRICE_BY_CODE = {
+          "MBW002": "70",
+          "MBW004": "60",
+          "MBW005": "85",
+          "MBW006": "115",
+          "MBW007": "90",
+          "MBW008": "135",
+          "MBW009": "30",
+          "MBW010": "80",
+          "MBW011": "15",
+          "MBW012": "15",
+          "MBW013": "20",
+          "MBW014": "35",
+          "MBW015": "15",
+          "MBW016": "30",
+          "MBW017": "25",
+          "TRANS01": "99",
+          "TRANS02": "99",
+          "TRANS03": "190",
+          "TRANS04": "99",
+          "TRANS05": "100",
+          "TRANS06": "180",
+          "DEP001": "100",
+          "ACT002": "10",
+          "ACT003": "10",
+          "ACT004": "30",
+          "ACT009": "10",
+          "ACT010": "10",
+          "ACT011": "40",
+          "ACT013": "25",
+          "ACT015": "20",
+          "ACT016": "25",
+          "ACT017": "10",
+          "ACT018": "25",
+          "ACT019": "20",
+          "ACT020": "15",
+          "ACT021": "110",
+          "OSO001": "125",
+          "OSO002": "175",
+};
+      const PRODUCT_LABEL_BY_CODE = {
+        "MBW002": "MBW002 - Cloud Forest Icons Tour",
+        "MBW004": "MBW004 - Jewels of the Morning Forest",
+        "MBW005": "MBW005 - Dance of the Andean Cock-of-the-Rock",
+        "MBW006": "MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock",
+        "MBW007": "MBW007 - Custom Half Day",
+        "MBW008": "MBW008 - Custom Full Day",
+        "MBW009": "MBW009 - Flora Excursion",
+        "MBW010": "MBW010 - Solo Birdwatching Experience",
+        "MBW011": "MBW011 - Chocolate Tour",
+        "MBW012": "MBW012 - Coffee Tour",
+        "MBW013": "MBW013 - Waterfall Hike",
+        "MBW014": "MBW014 - Canopy/Ziplining",
+        "MBW015": "MBW015 - Butterfly Garden",
+        "MBW016": "MBW016 - Night Walk",
+        "TRANS01": "TRANS01 - Quito -> Mindo",
+        "TRANS02": "TRANS02 - Mindo -> Quito",
+        "TRANS03": "TRANS03 - Quito -> Mindo -> Quito",
+        "TRANS04": "TRANS04 - Airport Pick Up",
+        "TRANS05": "TRANS05 - Custom",
+        "TRANS06": "TRANS06 - Quito -> Mindo -> Quito",
+        "DEP001": "DEP001 - Reservation Deposit",
+        "ACT002": "ACT002 - Waterfalls",
+        "ACT003": "ACT003 - Nambillo Waterfall",
+        "ACT004": "ACT004 - Quad Tour",
+        "ACT009": "ACT009 - Orchid Garden Tour",
+        "ACT010": "ACT010 - Frog Concert",
+        "ACT011": "ACT011 - Mindo River Tubing",
+        "ACT013": "ACT013 - Canyoning",
+        "ACT015": "ACT015 - Paintball",
+        "ACT016": "ACT016 - Horseback Riding",
+        "ACT017": "ACT017 - Mountain Biking",
+        "ACT018": "ACT018 - Double Extreme Swing",
+        "ACT019": "ACT019 - Extreme Bike – Sky Bike",
+        "ACT020": "ACT020 - Sky Ride",
+        "ACT021": "ACT021 - Private Insect & Macro Wildlife Search",
+        "OSO001": "OSO001 - Extended Half-Day Spectacled Bear Tour",
+        "OSO002": "OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour",
+        "ACCOM01": "ACCOM01 - Accommodation Booking",
+};
+      function productCodeFromText(value){ const text=clean(value); const match=text.match(/^([A-Z]+[A-Z0-9-]*)\s+-\s+/); if(match) return match[1]; const upper=text.toUpperCase(); if(PRODUCT_LABEL_BY_CODE[upper]) return upper; const low=text.toLowerCase(); return Object.keys(PRODUCT_LABEL_BY_CODE).find(code => low.includes(code.toLowerCase()) || low.includes(PRODUCT_LABEL_BY_CODE[code].replace(/^([A-Z]+[A-Z0-9-]*)\s+-\s+/,"").toLowerCase())) || ""; }
+      function normalizeDescription(value){ const text=clean(value); const code=productCodeFromText(text); return code&&PRODUCT_LABEL_BY_CODE[code] ? PRODUCT_LABEL_BY_CODE[code] : (itemOptions.includes(text) ? text : (text || "Other"));
       }
 
-      function priceFor(description, product, quotedAmount){
-        const quoted = Number(quotedAmount || "");
-        const text = (description + " " + (product || "")).toLowerCase();
-        if(quoted > 0 && (text.includes("custom") || !text.trim())) return quoted;
-        if(text.includes("mbw004") || text.includes("jewel")) return 55;
-        if(text.includes("mbw005") || text.includes("cock") || text.includes("andean")) return 85;
-        if(text.includes("mbw006") || text.includes("quest") || text.includes("five toucan")) return 110;
-        if(text.includes("night")) return 30;
-        if(text.includes("waterfall")) return 15;
-        if(text.includes("chocolate")) return 15;
-        if(text.includes("roundtrip")) return 180;
-        if(text.includes("transport")) return 99;
-        return quoted > 0 ? quoted : 0;
+      function priceFor(description, product, quotedAmount){ const quoted=Number(quotedAmount||""); const code=productCodeFromText(description)||productCodeFromText(product); if(code&&PRODUCT_PRICE_BY_CODE[code]) return Number(PRODUCT_PRICE_BY_CODE[code])||0; return quoted>0 ? quoted : 0;
       }
 
       function setDefaultDates(){
@@ -1054,7 +1136,7 @@
         els.adjustmentAmount.value = "0";
         delete els.dueDate.dataset.manuallyChanged;
         setDefaultDates();
-        state.items = [{ description:"Dance of the Andean Cock-of-the-Rock Dawn Tour", qty:2, price:85, note:"" }];
+        state.items = [{ description:"MBW005 - Dance of the Andean Cock-of-the-Rock", qty:2, price:85, note:"" }];
         renderItems();
         updateInvoice();
         showToast("Invoice reset");
