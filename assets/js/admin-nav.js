@@ -59,7 +59,7 @@
   }
 
   function render(host) {
-    if (host.dataset.adminNavReady === "true") return;
+    if (host.dataset.adminNavReady === "true" || host.querySelector(".adminGlobalNav")) return;
 
     var activeId = currentPageId(host);
     var nav = document.createElement("nav");
