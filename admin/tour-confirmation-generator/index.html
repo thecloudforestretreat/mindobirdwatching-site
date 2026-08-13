@@ -1084,12 +1084,13 @@
       function renderTourOptions(){
         const tourSelects = [els.tour1Input, els.tour2Input, els.tour3Input].filter(Boolean);
         const fallbackTours = [
+          "Cloud Forest Icons Tour",
           "Jewels of the Morning Forest",
           "Dance of the Andean Cock-of-the-Rock",
           "Quest for Five Toucans & the Andean Cock-of-the-Rock",
           "Custom Half Day",
           "Custom Full Day",
-          "Nature Excursion",
+          "Flora Excursion",
           "Solo Birdwatching Experience",
           "Chocolate Tour",
           "Coffee Tour",
@@ -1097,10 +1098,30 @@
           "Canopy/Ziplining",
           "Butterfly Garden",
           "Night Walk",
-          "Private Insect & Macro Wildlife Search",
+          "Night Walk $30 legacy price",
           "Half-Day to Full-Day Extension",
-          "Canyoning"
-        ];
+          "Waterfalls",
+          "Nambillo Waterfall",
+          "Quad Tour",
+          "Orchid Garden Tour",
+          "Frog Concert",
+          "Mindo River Tubing",
+          "Canyoning",
+          "Paintball",
+          "Horseback Riding",
+          "Mountain Biking",
+          "Double Extreme Swing",
+          "Extreme Bike – Sky Bike",
+          "Sky Ride",
+          "Private Insect & Macro Wildlife Search",
+          "Extended Half-Day Spectacled Bear Tour",
+          "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour",
+          "Tubing - 1 Person",
+          "Tubing - Group/Bundle",
+          "Tubing - Large Group/Bundle",
+          "Stripe Test Product",
+          "Extended Tour Upgrade"
+];
         const tours = state.tours.length ? state.tours.slice() : fallbackTours.slice();
         if(!tours.some(name => /night\s*walk/i.test(String(name || "")))) tours.push("Night Walk");
         if(!tours.some(name => /insect|macro/i.test(String(name || "")))) tours.push("Private Insect & Macro Wildlife Search");
@@ -1271,6 +1292,12 @@
       function displayTourFromCrm(tourText){
         const normalized = normalizeInboundTourText(tourText);
         if(!normalized) return "";
+        if(normalized.includes("act021")) return "Private Insect & Macro Wildlife Search";
+        if(normalized.includes("act015")) return "Paintball";
+        if(normalized.includes("act013")) return "Canyoning";
+        if(normalized.includes("act011")) return "Mindo River Tubing";
+        if(normalized.includes("act009")) return "Orchid Garden Tour";
+        if(normalized.includes("act004")) return "Quad Tour";
         if(normalized.includes("insect") || normalized.includes("macro")) return "Private Insect & Macro Wildlife Search";
         if(normalized.includes("night walk")) return "Night Walk";
         if(normalized.includes("jewels") || normalized.includes("morning forest")) return "Jewels of the Morning Forest";
