@@ -441,7 +441,7 @@
               </section>
               <div>
                 <section class="workspaceCard"><h3>Scheduled services</h3><p class="workspaceCardLead" id="assignmentCount">No assignments recorded.</p><div id="assignmentList" class="assignmentList"></div></section>
-                <section class="workspaceCard" style="margin-top:14px"><h3>Provider message</h3><p class="workspaceCardLead">Create a ready-to-send guide or transportation message from scheduled services.</p><div class="operationsToolbar"><select id="messageServiceFilter"><option value="">All services</option><option>Birdwatching</option><option>Activity</option><option>Specialty Wildlife</option><option>Transportation</option><option>Accommodation</option><option>Meal</option><option>Free Time</option><option>Pickup</option><option>Drop-off</option><option>Custom</option></select><label class="inlineCheck"><input id="messageIncludeCosts" type="checkbox" checked /> Include costs</label><button id="generateMessageBtn" type="button">Generate preview</button><button id="copyOperationsMessageBtn" class="primary" type="button">Copy message</button></div><textarea id="operationsMessage" class="messageOutput" spellcheck="false" placeholder="Your ready-to-send provider message will appear here"></textarea></section>
+                <section class="workspaceCard" style="margin-top:14px"><h3>Provider message</h3><p class="workspaceCardLead">Create ready-to-send guide, driver, or activity-provider messages from scheduled services.</p><div class="operationsToolbar"><select id="messageServiceFilter"><option value="">All scheduled services</option><option>Birdwatching</option><option>Activity</option><option>Specialty Wildlife</option><option>Transportation</option><option>Accommodation</option><option>Meal</option><option>Free Time</option><option>Pickup</option><option>Drop-off</option><option>Custom</option></select><label class="inlineCheck"><input id="messageIncludeCosts" type="checkbox" checked /> Include costs</label><button id="generateMessageBtn" type="button">Generate preview</button><button id="copyOperationsMessageBtn" class="primary" type="button">Copy message</button></div><textarea id="operationsMessage" class="messageOutput" spellcheck="false" placeholder="Your ready-to-send provider message will appear here"></textarea></section>
               </div></div>
             </section>
             <div class="field"><label for="notesInput">Guest Notes</label><textarea id="notesInput"></textarea></div>
@@ -551,7 +551,7 @@
         els.saveInteractionBtn.addEventListener("click",saveInteraction);
         els.clearInteractionBtn.addEventListener("click",clearInteractionForm);
         els.interactionTimeline.addEventListener("click",handleInteractionAction);
-        els.assignmentService.addEventListener("change",()=>{renderProviderOptions();applyAssignmentServiceDefaults();els.messageServiceFilter.value=els.assignmentService.value;});
+        els.assignmentService.addEventListener("change",()=>{renderProviderOptions();applyAssignmentServiceDefaults();});
         els.assignmentProvider.addEventListener("change",()=>{els.assignmentProviderOtherWrap.hidden=els.assignmentProvider.value!=="Other";});
         els.saveAssignmentBtn.addEventListener("click",saveAssignment);
         els.clearAssignmentBtn.addEventListener("click",clearAssignmentForm);
@@ -1118,7 +1118,7 @@
           const chips=itinerary.slice(0,3).map(item=>{ const label=serviceItemLabel(item); return `<span class="recordServiceChip"><b aria-hidden="true">${label.icon}</b><span>${esc(label.label)}</span></span>`; }).join("");
           const extra=itinerary.length>3?`<span class="recordServiceCount">+${itinerary.length-3}</span>`:"";
           const services=itinerary.length>1?`<div class="recordServices"><span class="recordServiceCount">${itinerary.length} services</span>${chips}${extra}</div><details class="recordServiceDetails"><summary>View itinerary</summary><div class="recordServiceRows">${itinerary.map(item=>{ const label=serviceItemLabel(item); return `<div class="recordServiceRow"><strong>${label.icon} ${esc(item.tour||label.label)}</strong><span>${urgentDateHtml(item.date||item.tour_date||r.requested_date||"No date")}</span><span>${esc(item.guests||r.guest_count||"?")} guests</span></div>`; }).join("")}</div></details>`:"";
-          return `<article class="record ${r.inquiry_id===state.selectedId?"active":""}" data-id="${esc(r.inquiry_id)}"><div><h3>${esc(r.full_name||"Guest")}</h3><p><span class="serviceInline" title="${esc(service.fullLabel)}"><span class="serviceIcon" aria-hidden="true">${service.icon}</span>${esc(service.label)}</span> | ${date} | ${esc(r.guest_count||"?")} guests</p>${services}<span class="recordMeta">Updated ${esc(formatDateTime(r.updated_at||r.created_at))}</span></div><div class="recordBadges">${priorityPill}<span class="pill ${statusClass(status)}">${esc(labelStatus(status))}</span></div></article>`;
+          return `<article class="record ${r.inquiry_id===state.selectedId?"active":""}" data-id="${esc(r.inquiry_id)}"><div><h3>${esc(r.full_name||"Guest")}</h3><p><span class="serviceInline" title="${esc(service.fullLabel)}"><span class="serviceIcon" aria-hidden="true">${service.icon}</span>${esc(service.label)}</span> | ${date} | ${esc(r.guest_count||"?")} guests</p>${services}${readinessChipsHtml(r,"compact")}<span class="recordMeta">Updated ${esc(formatDateTime(r.updated_at||r.created_at))}</span></div><div class="recordBadges">${priorityPill}<span class="pill ${statusClass(status)}">${esc(labelStatus(status))}</span></div></article>`;
         }).join(""):"<p class='hint'>No matching records.</p>";
         target.querySelectorAll(".record").forEach(el=>el.addEventListener("click",event=>{ if(event.target.closest("details")) return; selectRecord(el.dataset.id); }));
       }
@@ -1128,6 +1128,45 @@
       function yesValue(value){ return ["1","true","yes","y"].includes(clean(value).toLowerCase()); }
       function isArchivedStatus(value){ return value&&typeof value==="object"?(yesValue(value.is_archived)||normalizeStatus(value.status)==="duplicate"):normalizeStatus(value)==="duplicate"; }
       function guestIdentityMatch(a,b){ const guestA=clean(a&&a.guest_id),guestB=clean(b&&b.guest_id); if(guestA&&guestB) return guestA===guestB; const emailA=comparableEmail(a||{}),emailB=comparableEmail(b||{}); if(emailA&&emailB) return emailA===emailB; const phoneA=comparablePhone(a||{}),phoneB=comparablePhone(b||{}); return !!phoneA&&phoneA===phoneB; }
+      function interactionMatchesRecord(item,record){ if(!item||!record) return false; const inquiryA=clean(item.inquiry_id),inquiryB=clean(record.inquiry_id); if(inquiryA&&inquiryB&&inquiryA===inquiryB) return true; const guestA=clean(item.guest_id),guestB=clean(record.guest_id); if(guestA&&guestB&&guestA===guestB) return true; const bookingA=clean(item.booking_id),bookingB=clean(record.booking_id); return !!bookingA&&bookingA===bookingB; }
+      function assignmentBelongsToRecord(item,record){ if(!item||!record) return false; const inquiryA=clean(item.inquiry_id),inquiryB=clean(record.inquiry_id); if(inquiryA&&inquiryB&&inquiryA===inquiryB) return true; const guestA=clean(item.guest_id),guestB=clean(record.guest_id); if(guestA&&guestB&&guestA===guestB) return true; const bookingA=clean(item.booking_id),bookingB=clean(record.booking_id); if(bookingA&&bookingB&&bookingA===bookingB) return true; return !inquiryA&&!guestA&&clean(item.guest_name)&&clean(record.full_name)&&clean(item.guest_name).toLowerCase()===clean(record.full_name).toLowerCase(); }
+      function currentInteractionRows(record){ const seen=new Set(),merged=[]; (state.interactions||[]).forEach(item=>{ const key=clean(item.interaction_id)||[item.inquiry_id,item.guest_id,item.occurred_at,item.interaction_type,item.note].map(clean).join("|"); if(seen.has(key)) return; seen.add(key); merged.push(item); }); return merged.filter(item=>interactionMatchesRecord(item,record)).filter(item=>clean(item.is_deleted).toLowerCase()!=="yes"); }
+      function currentAssignmentRows(record){ const seen=new Set(),merged=[]; [...(state.assignments||[]),...(state.allAssignments||[])].forEach(item=>{ const key=clean(item.assignment_id)||[item.inquiry_id,item.guest_id,item.service_date,item.start_time,item.service_type,item.provider_name,item.pickup_location].map(clean).join("|"); if(seen.has(key)) return; seen.add(key); merged.push(item); }); return merged.filter(item=>assignmentBelongsToRecord(item,record)).filter(item=>clean(item.is_deleted).toLowerCase()!=="yes").filter(item=>normalizeStatus(item.assignment_status)!=="cancelled").sort((a,b)=>((a.service_date||"")+" "+(a.start_time||"")).localeCompare((b.service_date||"")+" "+(b.start_time||""))); }
+      function daysUntilTour(record){ const d=parseDateOnly(record.requested_date||record.requested_date_start); if(!d) return Number.POSITIVE_INFINITY; const today=parseDateOnly(datePlusDays(0)); return Math.floor((d-today)/86400000); }
+      function isUrgentReadiness(record){ const days=daysUntilTour(record); return days>=0&&days<=1; }
+      function hasConfirmationInteraction(record){ return currentInteractionRows(record).some(item=>/confirmation|confirmaci[oó]n|confirmed tour|tour confirmed/i.test([item.interaction_type,item.note].map(clean).join(" "))); }
+      function readinessChipHtml(item){ return `<span class="readinessChip readinessChip--${esc(item.state)}" title="${esc(item.title||item.label)}">${esc(item.label)}</span>`; }
+      function readinessChipsHtml(record,mode){ if(!record) return ""; const items=readinessItems(record); const chosen=mode==="compact"?items.filter(item=>item.compact).slice(0,4):items; if(!chosen.length) return ""; return `<div class="${mode==="compact"?"recordReadinessCompact":"recordReadiness"}">${chosen.map(readinessChipHtml).join("")}</div>`; }
+      function readinessItems(record){
+        const status=normalizeStatus(record.status);
+        const quote=clean(record.quote_status).toLowerCase();
+        const payment=normalizePayment(record.payment_status);
+        const urgent=isUrgentReadiness(record);
+        const closed=isClosedStatus(status);
+        const accepted=quote==="accepted"||["deposit_pending","deposit_paid","booked","completed"].includes(status)||["deposit_pending","deposit_paid","paid"].includes(payment);
+        const quoteSent=quote==="sent"||quote==="accepted"||status==="quoted"||accepted;
+        const invoiceSent=Boolean(clean(record.invoice_no));
+        const bookedish=["deposit_pending","deposit_paid","booked","completed"].includes(status)||["deposit_pending","deposit_paid","paid"].includes(payment);
+        const assignments=currentAssignmentRows(record);
+        const informed=assignments.filter(item=>String(item.provider_informed).toLowerCase()==="yes").length;
+        let paymentLabel="Payment later",paymentState="muted";
+        if(payment==="paid"){ paymentLabel="Paid"; paymentState="complete"; }
+        else if(payment==="deposit_paid"){ paymentLabel="Deposit paid"; paymentState="complete"; }
+        else if(payment==="deposit_pending"||status==="deposit_pending"){ paymentLabel="Deposit pending"; paymentState=urgent?"urgent":"pending"; }
+        else if(accepted||bookedish){ paymentLabel="Payment pending"; paymentState=urgent?"urgent":"pending"; }
+        const providerState=!assignments.length?(bookedish&&urgent?"urgent":"muted"):(informed>=assignments.length?"complete":(urgent?"urgent":"pending"));
+        const providerLabel=!assignments.length?(bookedish?"Providers needed":"Providers later"):`Providers ${informed}/${assignments.length}`;
+        const confirmationSent=hasConfirmationInteraction(record);
+        const confirmationState=confirmationSent?"complete":(bookedish?(urgent?"urgent":"pending"):"muted");
+        return [
+          {key:"quote",label:quoteSent?"Quote sent":"Quote not sent",state:quoteSent?"complete":(status==="new"||closed?"muted":"pending"),compact:false,title:"Guest quote / proposal status"},
+          {key:"accepted",label:accepted?"Accepted":"Not accepted",state:accepted?"complete":(quoteSent?"pending":"muted"),compact:accepted||quoteSent,title:"Guest accepted the quoted plan"},
+          {key:"invoice",label:invoiceSent?"Invoice sent":(accepted?"Invoice needed":"Invoice later"),state:invoiceSent?"complete":(accepted?(urgent?"urgent":"pending"):"muted"),compact:accepted||invoiceSent,title:"Invoice number exists on the record"},
+          {key:"payment",label:paymentLabel,state:paymentState,compact:paymentState!=="muted",title:"Payment or deposit status"},
+          {key:"providers",label:providerLabel,state:providerState,compact:assignments.length>0||(bookedish&&urgent),title:"Scheduled providers marked informed"},
+          {key:"confirmation",label:confirmationSent?"Confirmation sent":"Confirmation pending",state:confirmationState,compact:confirmationSent||(bookedish&&urgent),title:"Detected from confirmation interaction notes"}
+        ].filter(item=>!(closed&&item.state==="muted"));
+      }
       function renderGuestHistory(){
         if(!els.guestHistory) return;
         const current=getSelected()||(els.modeInput&&els.modeInput.value!=="create"?formRecord():null);
@@ -1136,7 +1175,7 @@
         if(!trips.length){ els.guestHistory.hidden=true; els.guestHistory.innerHTML=""; return; }
         const completed=trips.filter(row=>normalizeStatus(row.status)==="completed").length;
         els.guestHistory.hidden=false;
-        els.guestHistory.innerHTML=`<div class="guestHistoryHead"><strong>Guest history</strong><span>${trips.length} trip${trips.length===1?"":"s"} · ${completed} completed</span></div><div class="guestHistoryTrips">${trips.slice(0,6).map(row=>{ const items=recordItineraryItems(row); const summary=items.map(item=>serviceItemLabel(item).icon+" "+(item.tour||serviceItemLabel(item).label)).join(" · "); return `<span class="guestHistoryTrip">${urgentDateHtml(row.requested_date||row.requested_date_start||"No date")} · ${esc(normalizeStatus(row.status))}<small class="guestHistoryTripServices">${esc(summary||row.tour_type||row.service_type||"Tour")}</small></span>`; }).join("")}</div>`;
+        els.guestHistory.innerHTML=`<div class="guestHistoryHead"><strong>Guest history</strong><span>${trips.length} trip${trips.length===1?"":"s"} · ${completed} completed</span></div>${readinessChipsHtml(current,"full")}<div class="guestHistoryTrips">${trips.slice(0,6).map(row=>{ const items=recordItineraryItems(row); const summary=items.map(item=>serviceItemLabel(item).icon+" "+(item.tour||serviceItemLabel(item).label)).join(" · "); return `<span class="guestHistoryTrip">${urgentDateHtml(row.requested_date||row.requested_date_start||"No date")} · ${esc(normalizeStatus(row.status))}<small class="guestHistoryTripServices">${esc(summary||row.tour_type||row.service_type||"Tour")}</small></span>`; }).join("")}</div>`;
       }
       function isClosedStatus(status){ return ["completed","cancelled","did_not_book","duplicate"].includes(normalizeStatus(status)); }
       function normalizePayment(value){ const payment=clean(value).toLowerCase().replace(/[-\s]+/g,"_"); if(payment==="deposit_sent") return "deposit_pending"; return payment||"unpaid"; }
@@ -1194,8 +1233,8 @@
             api("list_assignments",{}),
             state.providers.length?Promise.resolve({records:state.providers}):api("list_providers",{})
           ]);
-          if(state.selectedId!==requestedId) return; state.interactions=extractRecords(interactionResult); state.assignments=extractRecords(assignmentResult); state.allAssignments=extractRecords(allAssignmentResult); state.providers=extractRecords(providerResult); renderWorkspaces();
-        }catch(error){showToast(error.message);renderWorkspaces();}finally{state.workspaceLoading=false;}
+          if(state.selectedId!==requestedId) return; state.interactions=extractRecords(interactionResult); state.assignments=extractRecords(assignmentResult); state.allAssignments=extractRecords(allAssignmentResult); state.providers=extractRecords(providerResult); renderWorkspaces(); renderGuestHistory(); renderRecords(els.priorityRecords,getPriorityRecords(getFiltered()).slice(0,6)); renderRecords(els.recordList,getFiltered());
+        }catch(error){showToast(error.message);renderWorkspaces();renderGuestHistory();}finally{state.workspaceLoading=false;}
       }
       function localDateTimeValue(date){ const d=date?new Date(date):new Date(); if(Number.isNaN(d.getTime())) return ""; const off=d.getTimezoneOffset(); return new Date(d.getTime()-off*60000).toISOString().slice(0,16); }
       function clearInteractionForm(){ els.saveInteractionBtn.dataset.id=""; els.interactionDirection.value="incoming"; els.interactionChannel.value="whatsapp"; els.interactionType.value="guest_message"; els.interactionOccurredAt.value=localDateTimeValue(); els.interactionNote.value=""; els.interactionFollowup.checked=false; els.interactionFollowupAt.value=""; els.interactionFollowupFields.hidden=true; els.saveInteractionBtn.textContent="Save Interaction"; }
@@ -1216,7 +1255,7 @@
       function applyAssignmentServiceDefaults(){els.assignmentTime.value=defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value="";}
       function renderProviderOptions(){ const current=els.assignmentProvider.value;const rows=providersForService(els.assignmentService.value);els.assignmentProvider.innerHTML=rows.map(row=>`<option value="${esc(row.provider_name)}" data-role="${esc(row.provider_role||"")}" ${String(row.is_default).toLowerCase()==="yes"?"data-default=\"1\"":""}>${esc(row.provider_name)}</option>`).join("");const preferred=rows.find(row=>String(row.is_default).toLowerCase()==="yes");els.assignmentProvider.value=rows.some(row=>row.provider_name===current)?current:(preferred?.provider_name||rows[0]?.provider_name||"Other");els.assignmentProviderOtherWrap.hidden=els.assignmentProvider.value!=="Other"; }
       function assignmentServiceForRecord(record){const text=(clean(record?.service_type)+" "+clean(record?.product_selected)+" "+clean(record?.tour_type)).toLowerCase();if(text.includes("night"))return "Night Walk";if(text.includes("transport"))return "Transportation";if(text.includes("bear"))return "Spectacled Bear Tour";if(text&&/activity|waterfall|chocolate|coffee|butterfly|frog|quad|canopy|orchid|tubing|rafting|canyoning|horseback|biking|swing/.test(text))return "Other Activities";return "Birdwatching";}
-      function clearAssignmentForm(){ const record=getSelected();els.assignmentId.value="";els.assignmentGroupId.value="";els.assignmentService.value=assignmentServiceForRecord(record);els.assignmentStatus.value="pending";els.assignmentDate.value=record?.requested_date||"";els.assignmentTime.value=defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value="";els.assignmentPickup.value=record?.pickup_location||"";els.assignmentDropoff.value="";els.assignmentDirection.value="";els.assignmentCost.value="";els.assignmentExtraCost.value="";els.assignmentInformed.checked=false;els.assignmentNote.value="";els.assignmentProviderOther.value="";els.saveAssignmentBtn.textContent="Save Assignment";els.messageServiceFilter.value=els.assignmentService.value;renderProviderOptions(); }
+      function clearAssignmentForm(){ const record=getSelected();els.assignmentId.value="";els.assignmentGroupId.value="";els.assignmentService.value=assignmentServiceForRecord(record);els.assignmentStatus.value="pending";els.assignmentDate.value=record?.requested_date||"";els.assignmentTime.value=defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value="";els.assignmentPickup.value=record?.pickup_location||"";els.assignmentDropoff.value="";els.assignmentDirection.value="";els.assignmentCost.value="";els.assignmentExtraCost.value="";els.assignmentInformed.checked=false;els.assignmentNote.value="";els.assignmentProviderOther.value="";els.saveAssignmentBtn.textContent="Save Assignment";els.messageServiceFilter.value="";renderProviderOptions(); }
       function renderAssignments(){ const rows=state.assignments||[];els.assignmentCount.textContent=rows.length?`${rows.length} scheduled service${rows.length===1?"":"s"}.`:"No assignments recorded yet.";els.assignmentList.innerHTML=rows.length?rows.map(item=>{const cost=Number(item.provider_cost||0)+Number(item.extra_cost||0),transport=item.service_type==="Transportation";return `<article class="assignmentItem"><div class="assignmentTop"><div><h4>${esc(item.service_type||"Service")} · <span class="opsStatus-${esc(item.assignment_status||"pending")}">${esc(labelStatus(item.assignment_status||"pending"))}</span></h4><p>${esc(displayDate(item.service_date))}${item.start_time?" · "+esc(formatTime(item.start_time)):""}${item.end_time?"–"+esc(formatTime(item.end_time)):""} · ${esc(item.provider_name==="Other"?(item.provider_name_other||"Other"):item.provider_name||"Unassigned")}</p></div><span class="assignmentCost">${cost?"$"+cost.toFixed(2):"—"}</span></div><p>${esc([item.pickup_location,item.dropoff_location].filter(Boolean).join(" → ")||item.internal_note||"No route or note")}</p><div class="timelineMeta"><div class="timelineTags"><span class="miniTag">${String(item.provider_informed).toLowerCase()==="yes"?"Informed":"Not informed"}</span>${item.trip_direction?`<span class="miniTag">${esc(item.trip_direction==="return"?"Return":"Outbound")}</span>`:""}</div><div class="timelineActions">${transport?`<button class="miniAction" data-assignment-action="return" data-id="${esc(item.assignment_id)}" type="button">Add return leg</button>`:""}<button class="miniAction" data-assignment-action="edit" data-id="${esc(item.assignment_id)}" type="button">Edit</button><button class="miniAction danger" data-assignment-action="delete" data-id="${esc(item.assignment_id)}" type="button">Delete</button></div></div></article>`;}).join(""):'<div class="workspaceEmpty">Add the first guide, driver, or activity provider assignment.</div>'; }
       async function saveAssignment(){ const record=getSelected();if(!record){showToast("Select a guest first");return;}if(!els.assignmentDate.value){showToast("Choose a service date");return;}const selected=els.assignmentProvider.options[els.assignmentProvider.selectedIndex];const assignment={assignment_id:els.assignmentId.value,assignment_group_id:els.assignmentGroupId.value,guest_id:record.guest_id||"",inquiry_id:record.inquiry_id||"",booking_id:record.booking_id||"",service_date:els.assignmentDate.value,start_time:els.assignmentTime.value,end_time:els.assignmentEndTime.value,service_type:els.assignmentService.value,product_selected:record.product_selected||"",guest_name:record.full_name||"",guest_count:record.guest_count||"",provider_role:selected?.dataset.role||"other",provider_name:els.assignmentProvider.value,provider_name_other:els.assignmentProvider.value==="Other"?clean(els.assignmentProviderOther.value):"",pickup_location:clean(els.assignmentPickup.value),dropoff_location:clean(els.assignmentDropoff.value),trip_direction:els.assignmentDirection.value,round_trip:"No",provider_cost:els.assignmentCost.value,extra_cost:els.assignmentExtraCost.value,currency:"USD",assignment_status:els.assignmentStatus.value,provider_informed:els.assignmentInformed.checked?"Yes":"No",provider_informed_by:els.assignmentInformed.checked?els.assignmentStaff.value:"",internal_note:clean(els.assignmentNote.value),created_by:els.assignmentStaff.value};if(assignment.provider_name==="Other"&&!assignment.provider_name_other){showToast("Enter the provider name");return;}els.saveAssignmentBtn.disabled=true;try{await api(assignment.assignment_id?"update_assignment":"create_assignment",{assignment});clearAssignmentForm();await loadGuestWorkspace();showToast("Assignment saved");}catch(error){showToast(error.message);}finally{els.saveAssignmentBtn.disabled=false;} }
       async function handleAssignmentAction(event){
@@ -1236,7 +1275,7 @@
           els.assignmentDirection.value=action==="return"?"return":(item.trip_direction||"");
           els.assignmentCost.value=action==="return"?"":(item.provider_cost||"");els.assignmentExtraCost.value=action==="return"?"":(item.extra_cost||"");
           els.assignmentStaff.value=item.created_by||"JPG";els.assignmentInformed.checked=action==="edit"&&String(item.provider_informed).toLowerCase()==="yes";els.assignmentNote.value=action==="edit"?(item.internal_note||""):"";
-          els.saveAssignmentBtn.textContent=action==="return"?"Save Return Leg":"Update Assignment";els.messageServiceFilter.value=els.assignmentService.value;
+          els.saveAssignmentBtn.textContent=action==="return"?"Save Return Leg":"Update Assignment";
           window.scrollTo({top:els.operationsWorkspace.offsetTop-20,behavior:"smooth"});return;
         }
         if(!confirm("Remove this assignment?"))return;try{await api("delete_assignment",{assignment:{...item}});await loadGuestWorkspace();showToast("Assignment removed");}catch(error){showToast(error.message);}
@@ -1244,29 +1283,37 @@
       function displayDate(value){if(!value)return"";const raw=String(value).trim();const date=/^\d{4}-\d{2}-\d{2}$/.test(raw)?new Date(raw+"T12:00:00"):new Date(raw);if(Number.isNaN(date.getTime()))return raw;return date.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
       function formatTime(value){if(!value)return"";const parts=String(value).split(":");let hour=Number(parts[0]),minute=parts[1]||"00";const suffix=hour>=12?"pm":"am";hour=hour%12||12;return hour+":"+minute+suffix;}
       function nearestQuarterTime(value){const raw=clean(value).toLowerCase();if(!raw)return"";const match=raw.match(/^(\d{1,2}):(\d{2})(?:\s*(am|pm))?/);if(!match)return"";let hour=Number(match[1]),minute=Number(match[2]);if(match[3]==="pm"&&hour<12)hour+=12;if(match[3]==="am"&&hour===12)hour=0;let total=hour*60+Math.round(minute/15)*15;total%=1440;return String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0");}
+      function providerDisplayName(item){ return item.provider_name==="Other"?(item.provider_name_other||"Other"):(item.provider_name||"Unassigned"); }
+      function serviceLabel(item){ return item.product_selected||item.service_type||"Scheduled service"; }
+      function assignmentCostText(item){ const cost=Number(item.provider_cost||0),extra=Number(item.extra_cost||0),total=cost+extra; if(!els.messageIncludeCosts.checked||!total) return ""; return extra?`Cost: $${cost.toFixed(2)} + $${extra.toFixed(2)} extra = $${total.toFixed(2)}`:`Cost: $${cost.toFixed(2)}`; }
+      function scheduledServiceSummary(rows){ return rows.map(item=>`- ${item.service_type||"Service"}: ${displayDate(item.service_date)||"Date TBD"}${item.start_time?" · "+formatTime(item.start_time):""}${item.end_time?"-"+formatTime(item.end_time):""} · ${providerDisplayName(item)}`).join("\n"); }
       function generateOperationsMessage(){
         const service=els.messageServiceFilter.value,record=getSelected()||{};
-        const rows=(state.allAssignments||state.assignments||[]).filter(item=>item.inquiry_id===record.inquiry_id).filter(item=>!service||item.service_type===service).filter(item=>item.assignment_status!=="cancelled").sort((a,b)=>(a.service_date+" "+a.start_time).localeCompare(b.service_date+" "+b.start_time));
-        if(!rows.length){els.operationsMessage.value="No matching assignments.";return;}
-        const provider=item=>item.provider_name==="Other"?(item.provider_name_other||"Other"):(item.provider_name||"Unassigned");
-        const costLine=item=>{const cost=Number(item.provider_cost||0),extra=Number(item.extra_cost||0);return els.messageIncludeCosts.checked&&(cost||extra)?`Cost: $${cost}${extra?" + $"+extra:""}`:"";};
-        if(service==="Transportation"){
-          const confirmed=rows.filter(item=>item.assignment_status==="confirmed"||item.assignment_status==="completed"),pending=rows.filter(item=>item.assignment_status==="pending");
-          const block=(title,list)=>{if(!list.length)return"";const groups=new Map();list.forEach(item=>{const key=item.assignment_group_id||item.assignment_id;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item);});return title+":\n\n"+[...groups.values()].map((group,index)=>{const first=group[0],cost=Number(first.provider_cost||0),extra=Number(first.extra_cost||0),price=els.messageIncludeCosts.checked&&(cost||extra)?`$${cost}${extra?" + $"+extra:""}`:"";return `${index+1})${price?" "+price:""}\n`+group.map(item=>`${item.service_date||"Date TBD"} - ${item.start_time?formatTime(item.start_time):"???"} - ${item.pickup_location||"?"} - ${item.dropoff_location||"?"}${item.trip_direction?" ("+(item.trip_direction==="return"?"regreso":"ida")+")":""} - ${item.guest_name||record.full_name||"Guest"}`).join("\n");}).join("\n\n");};
-          els.operationsMessage.value=[block("Transporte Confirmado",confirmed),block("Transporte Pendiente",pending)].filter(Boolean).join("\n\n");return;
-        }
-        els.operationsMessage.value=rows.map((item,index)=>[
-          rows.length>1?`Service ${index+1}`:"Guide Assignment",
-          `Name(s): ${item.guest_name||record.full_name||""}`,
-          `Phone Number: ${record.phone_number||record.phone_normalized||""}`,
-          `Pick Up Location: ${item.pickup_location||record.pickup_location||""}`,
-          `Service: ${item.service_type||record.product_selected||record.tour_type||""}`,
-          `Date: ${item.service_date||""}`,
-          `Time: ${item.start_time?formatTime(item.start_time):"TBD"}${item.end_time?" – "+formatTime(item.end_time):""}`,
-          `Guide / Provider: ${provider(item)}`,
-          `Guests: ${item.guest_count||record.guest_count||""}`,
-          costLine(item),item.internal_note?`Notes: ${item.internal_note}`:""
-        ].filter(Boolean).join("\n")).join("\n\n");
+        const allRows=currentAssignmentRows(record);
+        const rows=allRows.filter(item=>!service||item.service_type===service);
+        if(!allRows.length){els.operationsMessage.value="No scheduled services found for this guest yet. Save one guide, activity provider, or transportation assignment first.";return;}
+        if(!rows.length){els.operationsMessage.value=`No ${service} assignments found for this guest.\n\nScheduled services currently saved:\n${scheduledServiceSummary(allRows)}\n\nSwitch the filter to “All scheduled services” to generate every provider message.`;return;}
+        const groups=new Map();
+        rows.forEach(item=>{ const provider=providerDisplayName(item),role=item.provider_role||item.service_type||"Provider",key=provider+"|"+role; if(!groups.has(key)) groups.set(key,{provider,role,items:[]}); groups.get(key).items.push(item); });
+        const intro=[`Provider messages for ${record.full_name||rows[0]?.guest_name||"Guest"}`,record.phone_number||record.phone_normalized?`Guest phone: ${record.phone_number||record.phone_normalized}`:"",`Scheduled services included: ${rows.length}${service?" "+service:""}`].filter(Boolean).join("\n");
+        const blocks=[...groups.values()].map(group=>{
+          const lines=group.items.map((item,index)=>[
+            `${group.items.length>1?index+1+". ":""}${serviceLabel(item)}`,
+            `Service type: ${item.service_type||"Service"}`,
+            `Status: ${labelStatus(item.assignment_status||"pending")}`,
+            `Guest(s): ${item.guest_name||record.full_name||""}${item.guest_count?` · ${item.guest_count} guest${Number(item.guest_count)===1?"":"s"}`:(record.guest_count?` · ${record.guest_count} guest${Number(record.guest_count)===1?"":"s"}`:"")}`,
+            `Date: ${displayDate(item.service_date)||"Date TBD"}`,
+            `Time: ${item.start_time?formatTime(item.start_time):"TBD"}${item.end_time?"-"+formatTime(item.end_time):""}`,
+            item.pickup_location||record.pickup_location?`Pickup: ${item.pickup_location||record.pickup_location}`:"",
+            item.dropoff_location?`Drop-off: ${item.dropoff_location}`:"",
+            item.trip_direction?`Direction: ${item.trip_direction==="return"?"Return / regreso":"Outbound / ida"}`:"",
+            assignmentCostText(item),
+            item.internal_note?`Notes: ${item.internal_note}`:"",
+            String(item.provider_informed).toLowerCase()==="yes"?"Already marked informed in CRM":""
+          ].filter(Boolean).join("\n")).join("\n\n");
+          return `MESSAGE FOR ${group.provider.toUpperCase()}\n${lines}`;
+        });
+        els.operationsMessage.value=[intro,...blocks].join("\n\n---\n\n");
       }
       async function copyOperationsMessage(){if(!clean(els.operationsMessage.value))generateOperationsMessage();try{await navigator.clipboard.writeText(els.operationsMessage.value);showToast("Operations message copied");}catch(error){prompt("Copy operations message:",els.operationsMessage.value);} }
       function renderTable(target,row,cols){ target.innerHTML=cols.map(c=>`<tr><th>${esc(c)}</th><td>${esc(row[c]||"")}</td></tr>`).join(""); }
