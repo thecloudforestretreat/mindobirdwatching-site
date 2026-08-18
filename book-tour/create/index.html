@@ -1058,6 +1058,22 @@
     return state.items.some(item => Number(item.quantity) === 1);
   }
 
+  function getBelowMinimumItems() {
+    return state.items.flatMap((item, index) => {
+      const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
+      const minimum = Number(tour && tour.min_person || 0);
+      const quantity = Number(item.quantity || 0);
+      if (!tour || !minimum || quantity >= minimum) return [];
+      return [{
+        item_number: index + 1,
+        tour_code: tour.tour_code,
+        tour_title: tour.tour_title,
+        actual_party_size: quantity,
+        minimum_party_size: minimum
+      }];
+    });
+  }
+
   function formatCurrencyDisplay(v) {
     return v || "-";
   }
@@ -2036,15 +2052,25 @@ function createItem(initial = {}) {
     }
 
     if (hasSinglePersonItem()) {
+      const belowMinimumItems = getBelowMinimumItems();
+      const affectedText = belowMinimumItems.length
+        ? `\n\nBelow-minimum item${belowMinimumItems.length === 1 ? "" : "s"}: ${belowMinimumItems.map(item => `Item ${item.item_number} (${item.tour_code}: ${item.actual_party_size} guest, minimum ${item.minimum_party_size})`).join("; ")}`
+        : "";
       const confirmed = await showConfirmModal({
         title: "Confirm invoice",
-        message: "Are you sure you want to send an invoice for just 1 person?",
+        message: `Are you sure you want to send an invoice for just 1 person?${affectedText}`,
         confirmText: "Continue",
         cancelText: "Cancel"
       });
       if (!confirmed) {
         showStatus("Invoice cancelled.", "info");
         return;
+      }
+
+      if (belowMinimumItems.length) {
+        payload.minimum_party_override = true;
+        payload.minimum_party_override_reason = "staff_confirmed_single_guest";
+        payload.minimum_party_override_items = belowMinimumItems;
       }
     }
 
