@@ -679,6 +679,27 @@ experiences waiting for you in Mindo.</textarea>
         els.resetBtn.addEventListener("click", resetGenerator);
       }
 
+      function crmEmailItems(record){
+        const source = record && (record.tour_items_json || record.tour_items);
+        if(Array.isArray(source)) return source.filter(Boolean);
+        if(typeof source !== "string" || !source.trim()) return [];
+        try { const parsed=JSON.parse(source); return Array.isArray(parsed)?parsed.filter(Boolean):[]; }
+        catch(e){ return []; }
+      }
+
+      function emailBlockForCrmItem(item){
+        const text=String((item&&item.product_selected)||item.product||item.tour||"").toLowerCase();
+        if(/mbw004|jewels of the morning/.test(text)) return "tour-jewels";
+        if(/mbw005|andean cock|cock-of-the-rock dawn/.test(text)) return "tour-andean";
+        if(/mbw006|five toucans|quest for five/.test(text)) return "tour-full-day";
+        if(/oso001|extended half-day spectacled/.test(text)) return "tour-bear-half-day";
+        if(/oso002|full-day spectacled/.test(text)) return "tour-bear-full-day";
+        if(/mbw016|night walk/.test(text)) return "night-walk";
+        if(/trans\d+|transport|quito.*mindo|mindo.*quito/.test(text)) return "transport-quito";
+        if(/waterfall|chocolate|activity/.test(text)) return "activities-more";
+        return "";
+      }
+
       function applyCrmHandoff(){
         const record = getCrmHandoff();
         if(!record) return;
@@ -686,6 +707,7 @@ experiences waiting for you in Mindo.</textarea>
         const guests = record.guest_count || record.guestCount || "";
         const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
         const tour = record.tour_type || record.tour_category || record.tour_interest || "";
+        const importedBlocks=crmEmailItems(record).map(emailBlockForCrmItem).filter(Boolean);
         if(guestName) els.guestNameInput.value = titleCaseName(guestName);
         if(guests){
           const count = String(guests).match(/\d+/);
@@ -698,6 +720,11 @@ experiences waiting for you in Mindo.</textarea>
           els.datesInput.value = formatDisplayDate(isoDate || date);
         }
         if(tour) els.emailTitleInput.value = tour + " Options";
+        if(importedBlocks.length){
+          importedBlocks.forEach(id=>state.selected.add(id));
+          state.order=smartOrder(getCatalog().blocks.filter(block=>state.selected.has(block.id))).map(block=>block.id);
+          saveOrder();
+        }
       }
 
       function selectedWhatsappNumber(){
@@ -711,9 +738,11 @@ experiences waiting for you in Mindo.</textarea>
 
       function getCrmHandoff(){
         const params = new URLSearchParams(window.location.search);
-        const fromParams = { full_name: params.get("guest") || params.get("name") || "", email: params.get("email") || "", phone_number: params.get("phone") || "", guest_count: params.get("guests") || "", requested_date: params.get("date") || "", tour_type: params.get("tour") || "", pickup_location: params.get("pickup") || "" };
-        if(Object.values(fromParams).some(Boolean)) return fromParams;
-        try { return JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { return null; }
+        const fromParams = { full_name: params.get("guest") || params.get("name") || "", email: params.get("email") || "", phone_number: params.get("phone") || "", guest_count: params.get("guests") || "", requested_date: params.get("date") || "", tour_type: params.get("tour") || "", pickup_location: params.get("pickup") || "", tour_items_json:params.get("tour_items_json")||params.get("tour_items")||"", tour_items:params.get("tour_items")||params.get("tour_items_json")||"" };
+        let stored=null;
+        try { stored=JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { stored=null; }
+        if(Object.values(fromParams).some(Boolean)) return Object.assign({},stored||{},Object.fromEntries(Object.entries(fromParams).filter(([,value])=>value)));
+        return stored;
       }
 
       const EMAIL_I18N = {
