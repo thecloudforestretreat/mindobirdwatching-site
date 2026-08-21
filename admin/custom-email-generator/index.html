@@ -165,6 +165,7 @@
     .presetGrid{
       display:grid;
       grid-template-columns:1fr 1fr;
+      grid-auto-rows:1fr;
       gap:8px;
       margin-bottom:14px;
     }
@@ -181,6 +182,8 @@
       font-weight:950;
       cursor:pointer;
       text-align:center;
+      width:100%;
+      min-height:48px;
     }
     .presetBtn:hover{ border-color:rgba(13,89,37,.36); background:rgba(13,89,37,.08); }
     .optionRow{
@@ -232,17 +235,35 @@
       border:1px solid var(--mbw-line);
       border-radius:16px;
       background:rgba(246,250,240,.72);
-      padding:12px;
+      padding:0;
+      overflow:hidden;
     }
-    .blockGroup h3{
-      margin:0 0 10px;
+    .blockGroupHeader{
+      width:100%;
+      min-height:52px;
+      padding:12px 14px;
+      border:0;
+      background:transparent;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
       color:var(--mbw-green);
       font-size:13px;
       line-height:1.2;
       font-weight:950;
       letter-spacing:.05em;
       text-transform:uppercase;
+      cursor:pointer;
+      text-align:left;
     }
+    .blockGroupHeader:hover{ background:rgba(13,89,37,.055); }
+    .blockGroupHeaderMeta{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+    .blockGroupCount{min-width:30px;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid var(--mbw-line);font-size:11px;text-align:center}
+    .blockGroupChevron{font-size:17px;transition:transform .18s ease}
+    .blockGroup.isOpen .blockGroupChevron{transform:rotate(180deg)}
+    .blockGroupBody{display:none;padding:0 12px 12px}
+    .blockGroup.isOpen .blockGroupBody{display:block}
     .blockList{ display:grid; gap:10px; }
     .blockToggle{
       border:1px solid var(--mbw-line);
@@ -272,6 +293,8 @@
       line-height:1;
       font-weight:950;
       cursor:pointer;
+      width:100%;
+      min-height:38px;
     }
     .overrideGrid{ display:none; grid-template-columns:1fr; gap:8px; margin-top:9px; }
     .blockToggle.showOverrides .overrideGrid{ display:grid; }
@@ -540,9 +563,11 @@ experiences waiting for you in Mindo.</textarea>
         selected: new Set(),
         order: [],
         overrides: {},
+        openGroups: new Set(["tours"]),
         showHtml: false
       };
       const ORDER_STORAGE_KEY = "mbwEmailGeneratorSectionOrderV2";
+      const GROUP_STORAGE_KEY = "mbwEmailGeneratorOpenGroupsV1";
       const WHATSAPP_STORAGE_KEY = "mbwEmailGeneratorWhatsappNumber";
       const DEFAULT_WHATSAPP_NUMBER = "593969076501";
       const els = {};
@@ -552,6 +577,10 @@ experiences waiting for you in Mindo.</textarea>
       function init(){
         cacheEls();
         loadWhatsappPreference();
+        try{
+          const savedGroups = JSON.parse(sessionStorage.getItem(GROUP_STORAGE_KEY) || "null");
+          if(Array.isArray(savedGroups)) state.openGroups = new Set(savedGroups);
+        }catch(error){}
         els.datesPickerInput.min = localTodayIso();
         loadSiteConfigIfNeeded(() => {
           loadBlockCatalogIfNeeded(() => {
@@ -802,16 +831,6 @@ experiences waiting for you in Mindo.</textarea>
               secondaryCta: "Ver video"
             },
 
-            "activity-frog-concert": {
-              eyebrow: "Experiencia nocturna en el bosque nublado",
-              title: "Concierto de Ranas",
-              description: "Caminata guiada nocturna en el bosque nublado de Mindo para escuchar ranas y buscar insectos, posibles serpientes, madera fosforescente, aves dormidas y otra fauna nocturna.",
-              price: "$10 por persona",
-              duration: "Aproximadamente 2 horas",
-              minimum: "Mínimo 2 participantes",
-              image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_night_walk_wide_en.jpg",
-              primaryCta: "Ver actividades"
-            },
             "activity-waterfall": {
               eyebrow: "Caminata de naturaleza",
               title: "Tour de Cascadas",
@@ -863,6 +882,15 @@ experiences waiting for you in Mindo.</textarea>
               title: "Bird Quest",
               description: "Una forma divertida de emocionarse antes del tour, especialmente para niños. Los huéspedes pueden ver y escuchar algunas de las aves que podrían encontrar antes de llegar a Mindo.",
               primaryCta: "Explorar Bird Quest"
+            },
+            "target-bird-builder": {
+              eyebrow: "Planifica según tus especies objetivo",
+              title: "Constructor de Tour de Aves Objetivo",
+              description: "Comparte las aves que más deseas observar, tus fechas, ritmo, objetivos de fotografía y otras preferencias para que podamos preparar una ruta y cotización más enfocadas.",
+              price: "Cotización personalizada según la ruta",
+              duration: "Flexible",
+              url: "https://mindobirdwatching.com/es/tours/constructor-tour-aves-objetivo/",
+              primaryCta: "Crear tour de aves objetivo"
             },
             "birding-beyond-lodge": {
               eyebrow: "Por qué explorar con nosotros",
@@ -927,13 +955,24 @@ experiences waiting for you in Mindo.</textarea>
       function ensureRequiredBlocks(catalog){
         const fallback = buildDefaultCatalog();
         const loadedBlocks = (catalog && catalog.blocks) || [];
-        const loadedIds = new Set(loadedBlocks.map(block => block.id));
-        const requiredIds = new Set(["lodging-recommendations", "birding-beyond-lodge", "video-week"]);
-        const missingRequired = fallback.blocks.filter(block => requiredIds.has(block.id) && !loadedIds.has(block.id));
+        const mergedById = new Map(loadedBlocks.map(block => [block.id, block]));
+        fallback.blocks.forEach(block => { if(!mergedById.has(block.id)) mergedById.set(block.id, block); });
+        const desiredOrder = [
+          "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
+          "night-walk", "activity-chocolate", "activity-waterfall", "activities-more",
+          "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest", "target-bird-builder",
+          "included", "next-steps", "social-links", "video-week"
+        ];
+        const allowed = new Set(desiredOrder);
+        const blocks = desiredOrder.map(id => mergedById.get(id)).filter(Boolean).map(block => {
+          if(block.id === "included") return Object.assign({}, block, {group:"included"});
+          if(block.id === "next-steps") return Object.assign({}, block, {group:"nextSteps"});
+          return block;
+        });
         return Object.assign({}, fallback, catalog || {}, {
           brand: Object.assign({}, fallback.brand, (catalog && catalog.brand) || {}),
-          groups: (catalog && catalog.groups && catalog.groups.length) ? catalog.groups : fallback.groups,
-          blocks: loadedBlocks.concat(missingRequired)
+          groups: fallback.groups,
+          blocks: blocks.filter(block => allowed.has(block.id))
         });
       }
 
@@ -1053,6 +1092,8 @@ experiences waiting for you in Mindo.</textarea>
             { id:"tours", label:"Tours" },
             { id:"activities", label:"Activities" },
             { id:"planning", label:"Planning" },
+            { id:"included", label:"Included" },
+            { id:"nextSteps", label:"Next Steps" },
             { id:"social", label:"Social / Reviews" }
           ],
           blocks:[
@@ -1175,21 +1216,6 @@ experiences waiting for you in Mindo.</textarea>
             },
 
             {
-              id:"activity-frog-concert",
-              group:"activities",
-              type:"tour",
-              eyebrow:"Evening cloud forest experience",
-              title:"Frog Concert",
-              description:"A guided nighttime walk in Mindo's cloud forest to listen for frogs and look for insects, possible snakes, phosphorescent wood, sleeping birds, and other nocturnal wildlife.",
-              price:"$10 per person",
-              duration:"Approximately 2 hours",
-              minimum:"Minimum 2 participants",
-              image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_night_walk_wide_en.jpg",
-              url:"https://mindobirdwatching.com/activities/",
-              video:"",
-              primaryCta:"View Activities"
-            },
-            {
               id:"activity-waterfall",
               group:"activities",
               type:"tour",
@@ -1232,7 +1258,7 @@ experiences waiting for you in Mindo.</textarea>
             },
             {
               id:"transport-quito",
-              group:"planning",
+              group:"included",
               type:"info",
               eyebrow:"Door-to-door transportation",
               title:"Quito to Mindo Transportation",
@@ -1246,7 +1272,7 @@ experiences waiting for you in Mindo.</textarea>
             },
             {
               id:"lodging-mindo-glambird",
-              group:"planning",
+              group:"nextSteps",
               type:"feature",
               eyebrow:"Recommended lodging",
               title:"Mindo Glambird",
@@ -1288,6 +1314,22 @@ experiences waiting for you in Mindo.</textarea>
               primaryCta:"Explore Bird Quest"
             },
             {
+              id:"target-bird-builder",
+              group:"planning",
+              type:"feature",
+              eyebrow:"Plan around your target species",
+              title:"Custom Target Bird Tour Builder",
+              description:"Share the birds you most want to see, your available dates, pace, photography goals, and other preferences so we can prepare a more focused custom route and quote.",
+              price:"Custom quote after route planning",
+              duration:"Flexible",
+              image:"https://mindobirdwatching.com/assets/images/pages/mbw_custom_tour_01.jpg",
+              imageStyle:"wide",
+              url:"https://mindobirdwatching.com/tours/target-bird-tour-builder/",
+              urlEs:"https://mindobirdwatching.com/es/tours/constructor-tour-aves-objetivo/",
+              video:"",
+              primaryCta:"Build Your Target Bird Tour"
+            },
+            {
               id:"birding-beyond-lodge",
               group:"tours",
               type:"info",
@@ -1311,7 +1353,7 @@ experiences waiting for you in Mindo.</textarea>
             },
             {
               id:"included",
-              group:"planning",
+              group:"included",
               type:"included",
               defaultSelected:true,
               title:"Included",
@@ -1319,7 +1361,7 @@ experiences waiting for you in Mindo.</textarea>
             },
             {
               id:"next-steps",
-              group:"planning",
+              group:"nextSteps",
               type:"nextSteps",
               defaultSelected:true,
               title:"Next Steps",
@@ -1401,11 +1443,22 @@ experiences waiting for you in Mindo.</textarea>
         }
         catalog.groups.forEach(group => {
           const wrap = document.createElement("section");
-          wrap.className = "blockGroup";
-          wrap.innerHTML = "<h3></h3><div class='blockList'></div>";
-          wrap.querySelector("h3").textContent = group.label;
+          const groupBlocks = catalog.blocks.filter(block => block.group === group.id);
+          const selectedCount = groupBlocks.filter(block => state.selected.has(block.id)).length;
+          const isOpen = state.openGroups.has(group.id);
+          wrap.className = "blockGroup" + (isOpen ? " isOpen" : "");
+          wrap.innerHTML = "<button class='blockGroupHeader' type='button' aria-expanded='" + isOpen + "'><span class='blockGroupLabel'></span><span class='blockGroupHeaderMeta'><span class='blockGroupCount'></span><span class='blockGroupChevron'>⌄</span></span></button><div class='blockGroupBody'><div class='blockList'></div></div>";
+          wrap.querySelector(".blockGroupLabel").textContent = group.label;
+          wrap.querySelector(".blockGroupCount").textContent = selectedCount + "/" + groupBlocks.length;
           const list = wrap.querySelector(".blockList");
-          catalog.blocks.filter(block => block.group === group.id).forEach(block => list.appendChild(renderBlockToggle(block)));
+          groupBlocks.forEach(block => list.appendChild(renderBlockToggle(block)));
+          wrap.querySelector(".blockGroupHeader").addEventListener("click", () => {
+            if(state.openGroups.has(group.id)) state.openGroups.delete(group.id);
+            else state.openGroups.add(group.id);
+            sessionStorage.setItem(GROUP_STORAGE_KEY, JSON.stringify(Array.from(state.openGroups)));
+            wrap.classList.toggle("isOpen");
+            wrap.querySelector(".blockGroupHeader").setAttribute("aria-expanded", String(wrap.classList.contains("isOpen")));
+          });
           els.blockGroups.appendChild(wrap);
         });
         renderSelectedSummary();
@@ -1476,13 +1529,12 @@ experiences waiting for you in Mindo.</textarea>
             state.selected.delete(block.id);
             state.order = state.order.filter(id => id !== block.id);
           }
-          card.classList.toggle("active", event.target.checked);
           saveOrder();
           if(block.id === "video-week"){
             els.videoWeekInput.checked = event.target.checked;
             els.videoFields.hidden = !event.target.checked;
           }
-          renderSelectedSummary();
+          renderBlockControls();
           updateEmail();
         });
 
@@ -1574,14 +1626,14 @@ experiences waiting for you in Mindo.</textarea>
           },
           "custom": {
             title: "Custom Private Birding Plan",
-            blocks: ["tour-custom", "tour-full-day", "birding-beyond-lodge", "included", "night-walk", "activities-more", "next-steps", "social-links"],
+            blocks: ["tour-custom", "target-bird-builder", "tour-full-day", "birding-beyond-lodge", "included", "night-walk", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. If you have specific target birds, photography goals, or habitats in mind, we can shape a custom private route around your priorities.",
             compact: false,
             hero: true
           },
           "activities": {
             title: "Mindo Activities and Night Walk Options",
-            blocks: ["night-walk", "activity-frog-concert", "activity-waterfall", "activity-chocolate", "activities-more", "next-steps", "social-links"],
+            blocks: ["night-walk", "activity-chocolate", "activity-waterfall", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. Here are relaxed Mindo activity options that pair well with your time in the cloud forest.",
             compact: false,
             hero: true
@@ -1599,6 +1651,9 @@ experiences waiting for you in Mindo.</textarea>
         els.compactCardsInput.checked = !!config.compact;
         els.videoWeekInput.checked = state.selected.has("video-week");
         els.videoFields.hidden = !els.videoWeekInput.checked;
+        const groupByBlock = new Map(getCatalog().blocks.map(block => [block.id, block.group]));
+        config.blocks.forEach(id => { const group = groupByBlock.get(id); if(group) state.openGroups.add(group); });
+        sessionStorage.setItem(GROUP_STORAGE_KEY, JSON.stringify(Array.from(state.openGroups)));
         saveOrder();
         renderBlockControls();
         updateEmail();
@@ -1676,7 +1731,7 @@ experiences waiting for you in Mindo.</textarea>
         if(block.id === "transport-quito") return 0;
         if(block.group === "tours") return 10;
         if(block.type === "included") return 20;
-        if(block.id === "night-walk" || block.id === "activity-frog-concert") return 30;
+        if(block.id === "night-walk") return 30;
         if(block.group === "activities") return 40;
         if(block.group === "planning" && block.type !== "nextSteps") return 50;
         if(block.type === "nextSteps") return 60;
@@ -1788,7 +1843,7 @@ experiences waiting for you in Mindo.</textarea>
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.28); border-radius:14px;'><tr><td align='center' style='padding:13px; text-align:center;'>" +
           priceLines.map(line => "<p style='margin:0 0 6px; font-size:13px; line-height:18px; color:#071923;'>" + esc(line) + "</p>").join("") +
           (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:148px; margin:6px 4px 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
-          (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:132px; margin:0 4px 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || t("defaultVideoCta")) + "</a>" : "") +
+          (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:148px; margin:0 4px 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || t("defaultVideoCta")) + "</a>" : "") +
           "</td></tr></table>" +
           "</td></tr></table>" +
           "</td></tr></table></td></tr>";
