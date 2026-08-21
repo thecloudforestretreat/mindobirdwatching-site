@@ -121,7 +121,7 @@ export async function onRequestPost({ request, env }) {
       const hasBirding = primary.service === "Birdwatching" || additions.some(item => item.service_type === "Birdwatching");
       const interest = hasActivity && hasBirding ? "Tour + Activity" : primary.interest;
       const primaryItem = { id:"primary", tour:primary.tour, date:rawDates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:primary.product, service_type:primary.service, duration:primary.duration, status:"new", pickup_location:"", price:"", notes:"Primary request" };
-      const tourItems = [primaryItem].concat(additions.map((item, index) => ({ id:"addon-" + (index + 1), tour:item.tour, date:"", guests, product_selected:item.product_selected, service_type:item.service_type, duration:item.tour === "Night Walk" ? "Evening activity" : "", status:"new", pickup_location:"", price:"", notes:"Requested on website" })));
+      const tourItems = [primaryItem].concat(additions.map((item, index) => ({ id:"addon-" + (index + 1), tour:item.tour, date:primaryItem.date, tour_date:primaryItem.date, guests, product_selected:item.product_selected, service_type:item.service_type, duration:item.tour === "Night Walk" ? "Evening activity" : "", status:"new", pickup_location:"", price:"", notes:"Requested on website" })));
       return {
         tour_type:interest,
         tour_category:interest,
