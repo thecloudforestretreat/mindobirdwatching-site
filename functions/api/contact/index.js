@@ -79,13 +79,48 @@ export async function onRequestPost({ request, env }) {
       return iframeReply("error", `Security check failed. Try again. (${code})`);
     }
 
+    function canonicalContactFields(data) {
+      const raw = String(data.get("preferred_tour_type") || "").trim();
+      const key = raw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const map = {
+        "half-day tour": ["Birdwatching","Birdwatching","Half-Day Birdwatching","Half Day"],
+        "tour de medio dia": ["Birdwatching","Birdwatching","Half-Day Birdwatching","Half Day"],
+        "full-day tour": ["Birdwatching","Birdwatching","Full-Day Birdwatching","Full Day"],
+        "tour de dia completo": ["Birdwatching","Birdwatching","Full-Day Birdwatching","Full Day"],
+        "custom / private tour": ["Birdwatching","Custom","Custom / Private Tour","Flexible"],
+        "tour personalizado / privado": ["Birdwatching","Custom","Custom / Private Tour","Flexible"],
+        "multi-day": ["Multi Day","Birdwatching","Multi-Day Birdwatching","Flexible"],
+        "tour de varios dias": ["Multi Day","Birdwatching","Multi-Day Birdwatching","Flexible"],
+        "quito to mindo day trip": ["Birdwatching","Birdwatching","Quito to Mindo Day Trip","Full Day"],
+        "viaje de un dia de quito a mindo": ["Birdwatching","Birdwatching","Quito to Mindo Day Trip","Full Day"],
+        "night walk": ["Activity","Activity","Night Walk","Evening activity"],
+        "caminata nocturna": ["Activity","Activity","Night Walk","Evening activity"],
+        "activities": ["Activity","Activity","Activity — details in guest message","Flexible"],
+        "actividades": ["Activity","Activity","Activity — details in guest message","Flexible"],
+        "combination": ["Tour + Activity","Custom","Combination of Tour and Activity","Flexible"],
+        "combinacion": ["Tour + Activity","Custom","Combination of Tour and Activity","Flexible"],
+        "not sure yet": ["Other","Custom","Not Sure Yet","Flexible"],
+        "aun no estoy seguro": ["Other","Custom","Not Sure Yet","Flexible"]
+      };
+      const match = map[key] || [raw ? "Other" : "", raw ? "Custom" : "", raw, ""];
+      const product = match[2] === "Night Walk" ? "MBW016" : "";
+      const dates = String(data.get("dates_of_visit") || "").trim();
+      const guests = String(data.get("number_of_guests") || "").trim();
+      const items = match[2] ? [{ id:"primary", tour:match[2], date:dates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:product, service_type:match[1], duration:match[3], status:"new", pickup_location:"", price:"", notes:"Primary request" }] : [];
+      return { tour_type:match[0], tour_category:match[0], interest_category:match[0], service_type:match[1], product_selected:product, duration_preference:match[3], tour_items:JSON.stringify(items), tour_items_json:JSON.stringify(items), tour_count:String(items.length), tour_content:String(items.length) };
+    }
+
     // Build payload for Apps Script (must include cf_secret)
     const body = new URLSearchParams();
+    const canonical = canonicalContactFields(formData);
+    const canonicalKeys = new Set(Object.keys(canonical));
     for (const [k, v] of formData.entries()) {
       if (k === "cf-turnstile-response") continue;
       if (k === "website") continue;
+      if (canonicalKeys.has(k)) continue;
       body.append(k, v.toString());
     }
+    Object.entries(canonical).forEach(([key, value]) => body.set(key, value));
 
     // This is what your Apps Script checks:
     body.append("cf_secret", sharedSecret);
