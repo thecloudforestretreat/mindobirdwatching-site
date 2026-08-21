@@ -414,21 +414,32 @@
       box-shadow:0 0 18px rgba(255,255,255,.72);
       filter:none;
     }
-    .certificate.birdwatchingArtMode .guideImage{
-      left:1168px;
-      top:7px;
-      width:700px;
-      height:1000px;
+    .certificate.standardArtMode .guideImage{
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
       background-position:center center;
       background-size:contain;
+      filter:none;
+    }
+    .certificate.birdwatchingArtMode .guideImage{
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
+      background-position:center center;
+      background-size:contain;
+      filter:none;
     }
     .certificate.activitiesArtMode .guideImage{
-      left:1256px;
-      top:100px;
-      width:525px;
-      height:750px;
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
       background-position:center center;
       background-size:contain;
+      filter:none;
     }
     .mindoLetters{
       position:absolute;
@@ -1373,7 +1384,7 @@
         draft.pickupTime=pickupTimeFromCrm(tour,item.duration||item.duration_preference);
         draft.transportation=normalizeTransportation(item.transportation_needed||common.transportation)||"Pick Up";
         draft.pickupLocation=item.pickup_location||item.pickup||common.pickup||"";
-        draft.notes=item.notes||common.notes||"";
+        draft.notes=item.notes||"";
         return draft;
       }
 
@@ -1386,7 +1397,6 @@
         const duration = getInboundValue(data, ["duration_preference", "duration"], "");
         const pickup = getInboundValue(data, ["pickup_location", "pickup", "pickupLocation", "pickup_address_or_hotel"], "");
         const transportation = getInboundValue(data, ["transportation", "transportation_needed"], "");
-        const notes = getInboundValue(data, ["notes", "message_questions", "guest_notes"], "");
         const displayTour = displayTourFromCrm(tourText);
         const displayLength = lengthFromCrm(tourText, duration) || "Full Day";
         const items=inboundTourItems(data);
@@ -1410,10 +1420,10 @@
         els.transportationInput.value = normalizeTransportation(transportation);
         els.pickupLocationInput.value = pickup;
         els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
-        els.notesInput.value = notes || "Thank you for booking with Mindo Bird Watching.";
+        els.notesInput.value = "";
         rebuildConfirmations(true);
         if(items.length){
-          const common={tourDate,pickup,transportation,notes};
+          const common={tourDate,pickup,transportation};
           state.confirmationDrafts=items.map(item=>confirmationDraftFromInboundItem(item,common));
           state.activeConfirmation=0;
           loadActiveDraft();
@@ -1637,6 +1647,7 @@
         const certificate = document.getElementById("certificate");
         if(certificate){
           certificate.classList.toggle("nightWalkMode", nightWalk);
+          certificate.classList.toggle("standardArtMode", !nightWalk);
           certificate.classList.toggle("birdwatchingArtMode", birdwatchingArt);
           certificate.classList.toggle("activitiesArtMode", activitiesArt);
         }
