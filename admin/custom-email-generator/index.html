@@ -564,6 +564,7 @@ experiences waiting for you in Mindo.</textarea>
         order: [],
         overrides: {},
         openGroups: new Set(["tours"]),
+        reviewSummary: { rating: 5.0, count: 141, mapsUrl: "https://g.page/r/CdMlIYMGgBIvEAE/review" },
         showHtml: false
       };
       const ORDER_STORAGE_KEY = "mbwEmailGeneratorSectionOrderV2";
@@ -597,8 +598,24 @@ experiences waiting for you in Mindo.</textarea>
             bindEvents();
             applyCrmHandoff();
             updateEmail();
+            loadReviewSummary();
           });
         });
+      }
+
+      function loadReviewSummary(){
+        fetch("/api/reviews?ts=" + Date.now(), { cache:"no-store" })
+          .then(response => response.ok ? response.json() : Promise.reject(new Error("Review API unavailable")))
+          .then(data => {
+            const rating = data && data.summary && Number(data.summary.rating);
+            const count = data && data.summary && Number(data.summary.review_count);
+            const mapsUrl = data && data.place && clean(data.place.maps_url);
+            if(Number.isFinite(rating) && rating > 0) state.reviewSummary.rating = rating;
+            if(Number.isFinite(count) && count > 0) state.reviewSummary.count = count;
+            if(mapsUrl) state.reviewSummary.mapsUrl = mapsUrl;
+            updateEmail();
+          })
+          .catch(() => {});
       }
 
       function cacheEls(){
@@ -761,6 +778,7 @@ experiences waiting for you in Mindo.</textarea>
               privatePrice: "$105 por persona si es privado/exclusivo",
               duration: "5:00 AM - 10:00 AM",
               minimum: "Mínimo 2 participantes",
+              note: "El desayuno está disponible en la primera reserva por aproximadamente $5 por persona y se coordina y paga directamente con la reserva.",
               image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw005_es.jpg",
               primaryCta: "Ver tour",
               secondaryCta: "Ver video"
@@ -784,6 +802,7 @@ experiences waiting for you in Mindo.</textarea>
               privatePrice: "$135 por persona si es privado/exclusivo",
               duration: "5:00 AM - 3:00 PM",
               minimum: "Mínimo 2 participantes",
+              note: "El desayuno está disponible en la primera reserva por aproximadamente $5 por persona y se coordina y paga directamente con la reserva.",
               image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_FDT_mbw006_es.jpg",
               primaryCta: "Ver tour",
               secondaryCta: "Ver video"
@@ -955,7 +974,8 @@ experiences waiting for you in Mindo.</textarea>
       function ensureRequiredBlocks(catalog){
         const fallback = buildDefaultCatalog();
         const loadedBlocks = (catalog && catalog.blocks) || [];
-        const mergedById = new Map(loadedBlocks.map(block => [block.id, block]));
+        const fallbackById = new Map(fallback.blocks.map(block => [block.id, block]));
+        const mergedById = new Map(loadedBlocks.map(block => [block.id, Object.assign({}, fallbackById.get(block.id) || {}, block)]));
         fallback.blocks.forEach(block => { if(!mergedById.has(block.id)) mergedById.set(block.id, block); });
         const desiredOrder = [
           "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
@@ -967,6 +987,8 @@ experiences waiting for you in Mindo.</textarea>
         const blocks = desiredOrder.map(id => mergedById.get(id)).filter(Boolean).map(block => {
           if(block.id === "included") return Object.assign({}, block, {group:"included"});
           if(block.id === "next-steps") return Object.assign({}, block, {group:"nextSteps"});
+          if(block.id === "birding-beyond-lodge") return Object.assign({}, block, {image:"https://mindobirdwatching.com/assets/images/locations/mbw_view_0001.jpg"});
+          if(block.id === "tour-andean" || block.id === "tour-full-day") return Object.assign({}, block, {note:fallbackById.get(block.id).note});
           return block;
         });
         return Object.assign({}, fallback, catalog || {}, {
@@ -1109,6 +1131,7 @@ experiences waiting for you in Mindo.</textarea>
               privatePrice:"$105 per person if private/exclusive",
               duration:"5:00 AM - 10:00 AM",
               minimum:"Minimum 2 participants",
+              note:"Breakfast is available at the first reserve for approximately $5 per person and is arranged and paid directly with the reserve.",
               image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw005_en.jpg",
               url:"https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/",
               video:"https://youtu.be/_a72Vla28Fw",
@@ -1144,6 +1167,7 @@ experiences waiting for you in Mindo.</textarea>
               privatePrice:"$135 per person if private/exclusive",
               duration:"5:00 AM - 3:00 PM",
               minimum:"Minimum 2 participants",
+              note:"Breakfast is available at the first reserve for approximately $5 per person and is arranged and paid directly with the reserve.",
               image:"https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_FDT_mbw006_en.jpg",
               url:"https://mindobirdwatching.com/tours/quest-five-toucans-guide/",
               video:"https://youtube.com/shorts/MAXizZKXI_8",
@@ -1338,7 +1362,7 @@ experiences waiting for you in Mindo.</textarea>
               description:"Our tours go beyond the grounds of a single lodge. We visit carefully selected reserves, forest trails, feeding areas, and renowned birding sites throughout the Mindo region—giving you a greater variety of habitats and a better opportunity to encounter the area’s remarkable birds. Each itinerary is planned around your interests, available time, and current bird activity.",
               price:"",
               duration:"Multiple habitats and locations",
-              image:"",
+              image:"https://mindobirdwatching.com/assets/images/locations/mbw_view_0001.jpg",
               url:"https://mindobirdwatching.com/tours/",
               video:"",
               primaryCta:"Explore Our Tours"
@@ -1821,6 +1845,7 @@ experiences waiting for you in Mindo.</textarea>
           "</td>" +
           "<td width='32%' valign='top' align='center' style='text-align:center;'>" +
           priceLines.map(line => "<p style='margin:0 0 5px; font-size:12.5px; line-height:17px; color:#071923;'>" + esc(line) + "</p>").join("") +
+          (block.note ? "<p style='margin:7px 0 4px; font-size:11px; line-height:16px; color:#536067; font-style:italic;'>*" + esc(block.note) + "</p>" : "") +
           (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:130px; margin:6px 0 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
           (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:130px; margin:0 0 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:9px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || t("defaultVideoCta")) + "</a>" : "") +
           "</td></tr></table></td></tr></table></td></tr>";
@@ -1842,6 +1867,7 @@ experiences waiting for you in Mindo.</textarea>
           "<td width='38%' valign='top'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.28); border-radius:14px;'><tr><td align='center' style='padding:13px; text-align:center;'>" +
           priceLines.map(line => "<p style='margin:0 0 6px; font-size:13px; line-height:18px; color:#071923;'>" + esc(line) + "</p>").join("") +
+          (block.note ? "<p style='margin:8px 0 5px; font-size:11px; line-height:16px; color:#536067; font-style:italic;'>*" + esc(block.note) + "</p>" : "") +
           (block.url ? "<a href='" + attr(block.url) + "' style='display:inline-block; width:148px; margin:6px 4px 8px; background:#0D5925; color:#ffffff; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; text-align:center;'>" + esc(block.primaryCta || t("defaultCta")) + "</a>" : "") +
           (block.video ? "<a href='" + attr(block.video) + "' style='display:inline-block; width:148px; margin:0 4px 8px; background:rgba(13,89,37,.14); color:#071923; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:10px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(block.secondaryCta || t("defaultVideoCta")) + "</a>" : "") +
           "</td></tr></table>" +
@@ -1917,13 +1943,20 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function renderSocial(block){
+        const rating = Number(state.reviewSummary.rating || 5).toFixed(1);
+        const reviewCount = Number(state.reviewSummary.count || 141).toLocaleString("en-US");
+        const reviewLabel = getLanguage() === "es" ? "reseñas de Google" : "Google reviews";
+        const mapsUrl = state.reviewSummary.mapsUrl || (block.links[0] && block.links[0][1]) || "https://g.page/r/CdMlIYMGgBIvEAE/review";
+        const links = block.links.map((link, index) => index === 0 ? [link[0], mapsUrl] : link);
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
-          "<td width='60%' valign='middle' style='padding-right:12px;'><h2 style=\"margin:0 0 7px; font-family:Georgia, 'Times New Roman', serif; font-size:23px; line-height:27px; color:#0D5925;\">" + esc(block.title) + "</h2><p style='margin:0; font-size:13px; line-height:20px; color:rgba(7,25,35,.76);'>" + esc(block.description) + "</p></td>" +
+          "<td width='60%' valign='middle' style='padding-right:12px;'><h2 style=\"margin:0 0 7px; font-family:Georgia, 'Times New Roman', serif; font-size:23px; line-height:27px; color:#0D5925;\">" + esc(block.title) + "</h2>" +
+          "<p style='margin:0 0 9px; font-size:14px; line-height:20px; color:#071923; font-weight:800;'>" + esc(rating) + " <span style='color:#F4B400; letter-spacing:1px;'>★★★★★</span> <a href='" + attr(mapsUrl) + "' style='color:#3047B5; text-decoration:none; font-weight:800;'>" + esc(reviewCount + " " + reviewLabel) + "</a></p>" +
+          "<p style='margin:0; font-size:13px; line-height:20px; color:rgba(7,25,35,.76);'>" + esc(block.description) + "</p></td>" +
           "<td width='40%' valign='middle' align='center' style='text-align:center;'>" +
-          block.links.map((link, index) => "<a href='" + attr(link[1]) + "' style='display:inline-block; width:176px; margin:0 0 8px; background:" + (index === 0 ? "#0D5925" : "rgba(13,89,37,.14)") + "; color:" + (index === 0 ? "#ffffff" : "#071923") + "; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(link[0]) + "</a>").join("") +
+          links.map((link, index) => "<a href='" + attr(link[1]) + "' style='display:inline-block; width:176px; margin:0 0 8px; background:" + (index === 0 ? "#0D5925" : "rgba(13,89,37,.14)") + "; color:" + (index === 0 ? "#ffffff" : "#071923") + "; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(link[0]) + "</a>").join("") +
           "</td></tr></table></td></tr></table></td></tr>";
       }
 
