@@ -1303,6 +1303,52 @@ function createItem(initial = {}) {
     return loose ? loose.tour_code : "";
   }
 
+  function parseInboundTourItems(data) {
+    const source = getInboundValue(data, "tour_items_json", "tour_items");
+    if (!source) return [];
+    try {
+      const parsed = JSON.parse(source);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function inboundTourCode(item, language) {
+    const product = String(item.product_selected || item.product || "").trim();
+    const codeMatch = product.match(/\b[A-Z]{2,}\d{2,}\b/i);
+    if (codeMatch) {
+      const exact = state.tours.find(tour =>
+        tour.language === language &&
+        String(tour.tour_code || "").toUpperCase() === codeMatch[0].toUpperCase()
+      );
+      if (exact) return exact.tour_code;
+    }
+    return findInboundTourCode(product || item.tour || item.description || "", language);
+  }
+
+  function createInboundBookingItem(item, data, language) {
+    const tourCode = inboundTourCode(item, language);
+    const tour = getTourByCodeAndLanguage(tourCode, language);
+    const quotedPrice = Number(String(item.price || item.quoted_amount || item.unit_price || "").replace(/[^0-9.-]/g, ""));
+    const standardPrice = tour ? Number(parseTourAmount(tour)) : 0;
+    const adjustment = Number.isFinite(quotedPrice) && quotedPrice > 0 && tour
+      ? quotedPrice - standardPrice
+      : 0;
+    const pickup = String(item.pickup_location || item.pickup || "").trim();
+    const notes = [item.notes || item.note || "", pickup ? `Pickup: ${pickup}` : ""].filter(Boolean).join(" | ");
+    return createItem({
+      tour_code: tourCode,
+      tour_date: item.date || item.tour_date || getInboundValue(data, "tour_date", "date", "requested_date") || getDefaultTomorrowISO(),
+      quantity: item.guests || item.quantity || getInboundValue(data, "party", "guests", "guest_count") || 1,
+      language,
+      item_notes: notes,
+      price_override_per_person: adjustment ? String(adjustment) : "",
+      pricing_reason: adjustment ? "CRM quoted price" : "",
+      pricing_notes: adjustment ? `Imported quoted price: $${quotedPrice} per person` : ""
+    });
+  }
+
   function applyInboundPrefill() {
     const data = getInboundData();
     const fullName = getInboundValue(data, "full_name", "name", "guest", "guest_name", "guestName");
@@ -1323,6 +1369,7 @@ function createItem(initial = {}) {
     const inquiryId = getInboundValue(data, "inquiry_id", "inquiryId");
     const guestId = getInboundValue(data, "guest_id", "guestId");
     const bookingId = getInboundValue(data, "booking_id", "bookingId");
+    const inboundItems = parseInboundTourItems(data);
 
     setFieldValue(els.mainFirstName, firstName);
     setFieldValue(els.mainLastName, lastName);
@@ -1344,7 +1391,12 @@ function createItem(initial = {}) {
       setFieldValue(els.globalNotes, noteLines.join("\n\n"));
     }
 
-    if (state.items.length) {
+    if (inboundItems.length) {
+      state.items = inboundItems.map(item => createInboundBookingItem(item, data, language));
+      renderItems();
+      renderSummary();
+      updateModeUI();
+    } else if (state.items.length) {
       Object.assign(state.items[0], {
         language,
         tour_code: tourCode || state.items[0].tour_code,
@@ -1358,7 +1410,12 @@ function createItem(initial = {}) {
     }
 
     if (firstName || lastName || email || phone || pickup || tourDate || quantity || tourText) {
-      showStatus(tourCode || !tourText ? "Guest details imported from CRM." : "Guest details imported from CRM. Please select the exact tour before creating the invoice.", "info");
+      const missingItems = inboundItems.filter(item => !inboundTourCode(item, language));
+      showStatus(missingItems.length
+        ? `Guest details imported. ${missingItems.length} service item(s) need an exact Stripe product selection.`
+        : inboundItems.length
+          ? `Guest details and ${inboundItems.length} service items imported from CRM.`
+          : (tourCode || !tourText ? "Guest details imported from CRM." : "Guest details imported from CRM. Please select the exact tour before creating the invoice."), "info");
     }
     if (inquiryId) lookupDeposit();
   }
