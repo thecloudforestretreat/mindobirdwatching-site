@@ -79,13 +79,76 @@ export async function onRequestPost({ request, env }) {
       return iframeReply("error", `Security check failed. Try again. (${code})`);
     }
 
+    function canonicalRequestFields(data) {
+      const rawPrimary = String(data.get("preferred_tour_type") || "").trim();
+      const rawAddOns = String(data.get("tour_add_ons") || "").trim();
+      const rawDates = String(data.get("dates_of_visit") || "").trim();
+      const guests = String(data.get("number_of_guests") || "").trim();
+      const primaryKey = rawPrimary.toLowerCase();
+      const primaryMap = {
+        "half-day tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Half-Day Birdwatching", product:"", duration:"Half Day" },
+        "full-day tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Full-Day Birdwatching", product:"", duration:"Full Day" },
+        "photography-focused tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Photography-Focused Birdwatching Tour", product:"", duration:"Flexible" },
+        "night walk": { interest:"Activity", service:"Activity", tour:"Night Walk", product:"MBW016", duration:"Evening activity" },
+        "quito to mindo day trip": { interest:"Birdwatching", service:"Birdwatching", tour:"Quito to Mindo Day Trip", product:"", duration:"Full Day" },
+        "custom / private tour": { interest:"Birdwatching", service:"Custom", tour:"Custom / Private Tour", product:"", duration:"Flexible" },
+        "not sure yet": { interest:"Other", service:"Custom", tour:"Not Sure Yet", product:"", duration:"Flexible" }
+      };
+      const primary = primaryMap[primaryKey] || { interest:"Other", service:"Custom", tour:rawPrimary || "Not Sure Yet", product:"", duration:"Flexible" };
+      const addOnMap = {
+        "night walk": { tour:"Night Walk", service_type:"Activity", product_selected:"MBW016" },
+        "additional birding day": { tour:"Additional Birding Day", service_type:"Birdwatching", product_selected:"" },
+        "transportation": { tour:"Transportation Requested", service_type:"Transportation", product_selected:"" },
+        "accommodation assistance": { tour:"Accommodation Assistance", service_type:"Accommodation", product_selected:"ACCOM01" }
+      };
+      let groupingPreference = "unknown";
+      const additions = [];
+      rawAddOns.split(/\s*\|\s*/).filter(Boolean).forEach(value => {
+        const lower = value.toLowerCase();
+        if (lower.indexOf("tour format:") === 0) {
+          if (lower.includes("private") && !lower.includes("either")) groupingPreference = "private_only";
+          else if (lower.includes("group") || lower.includes("either")) groupingPreference = "open_to_group";
+          return;
+        }
+        if (lower.indexOf("other:") === 0) {
+          const detail = value.slice(value.indexOf(":") + 1).trim();
+          additions.push({ tour:detail || "Other Activity or Tour", service_type:"Custom", product_selected:"Other" });
+          return;
+        }
+        additions.push(addOnMap[lower] || { tour:value, service_type:"Custom", product_selected:"Other" });
+      });
+      const hasActivity = additions.some(item => item.service_type === "Activity");
+      const hasBirding = primary.service === "Birdwatching" || additions.some(item => item.service_type === "Birdwatching");
+      const interest = hasActivity && hasBirding ? "Tour + Activity" : primary.interest;
+      const primaryItem = { id:"primary", tour:primary.tour, date:rawDates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:primary.product, service_type:primary.service, duration:primary.duration, status:"new", pickup_location:"", price:"", notes:"Primary request" };
+      const tourItems = [primaryItem].concat(additions.map((item, index) => ({ id:"addon-" + (index + 1), tour:item.tour, date:"", guests, product_selected:item.product_selected, service_type:item.service_type, duration:item.tour === "Night Walk" ? "Evening activity" : "", status:"new", pickup_location:"", price:"", notes:"Requested on website" })));
+      return {
+        tour_type:interest,
+        tour_category:interest,
+        interest_category:interest,
+        service_type:primary.service,
+        product_selected:primary.product,
+        duration_preference:primary.duration,
+        grouping_preference:groupingPreference,
+        transportation_needed:additions.some(item => item.service_type === "Transportation") ? "Yes" : "Unknown",
+        tour_items:JSON.stringify(tourItems),
+        tour_items_json:JSON.stringify(tourItems),
+        tour_count:String(tourItems.length),
+        tour_content:String(tourItems.length)
+      };
+    }
+
     // Build payload for Apps Script (must include cf_secret)
     const body = new URLSearchParams();
+    const canonical = canonicalRequestFields(formData);
+    const canonicalKeys = new Set(Object.keys(canonical));
     for (const [k, v] of formData.entries()) {
       if (k === "cf-turnstile-response") continue;
       if (k === "website") continue;
+      if (canonicalKeys.has(k)) continue;
       body.append(k, v.toString());
     }
+    Object.entries(canonical).forEach(([key, value]) => body.set(key, value));
 
     // This is what your Apps Script checks:
     body.append("cf_secret", sharedSecret);
