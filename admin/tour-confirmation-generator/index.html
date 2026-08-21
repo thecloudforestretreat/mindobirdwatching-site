@@ -643,6 +643,10 @@
                 <label for="guideInput">Guide</label>
                 <select id="guideInput"></select>
               </div>
+              <div class="field" id="customGuideField" hidden>
+                <label for="customGuideInput">Custom Guide Name</label>
+                <input id="customGuideInput" type="text" placeholder="Enter guide or driver name" />
+              </div>
             </div>
 
             <div class="editGrid">
@@ -843,6 +847,8 @@
           { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
           { "guide": "Anderson", "guide_phone": "+593 99 078 5026", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
           { "guide": "Abel", "guide_phone": "+593 99 098 0074", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Juan", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Javier", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
           { "guide": "Other", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
         ],
         tours: []
@@ -870,6 +876,8 @@
         { guide:"Neicer", guide_phone:"+593 98 095 5817", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
         { guide:"Anderson", guide_phone:"+593 99 078 5026", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
         { guide:"Abel", guide_phone:"+593 99 098 0074", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Juan", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Javier", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
         { guide:"Other", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
       ];
 
@@ -888,7 +896,7 @@
 
       function cacheEls(){
         const ids = [
-          "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "manualEntryBtn",
+          "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "customGuideField", "customGuideInput", "manualEntryBtn",
           "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
           "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupLocation", "outNotes", "outGuideImage",
@@ -924,7 +932,7 @@
           if(idx >= 0) selectRecord(idx);
         });
 
-        ["statusInput", "guideInput", "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
+        ["statusInput", "guideInput", "customGuideInput", "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
           els[id].addEventListener("input", updatePreviewFromForm);
           els[id].addEventListener("change", updatePreviewFromForm);
         });
@@ -1298,11 +1306,16 @@
         if(normalized.includes("act011")) return "Mindo River Tubing";
         if(normalized.includes("act009")) return "Orchid Garden Tour";
         if(normalized.includes("act004")) return "Quad Tour";
+        if(normalized.includes("trans06")) return "Quito → Mindo → Quito Transportation";
+        if(normalized.includes("trans01")) return "Quito → Mindo Transportation";
+        if(normalized.includes("trans02")) return "Mindo → Quito Transportation";
+        if(normalized.includes("oso001")) return "Extended Half-Day Spectacled Bear Tour";
+        if(normalized.includes("oso002")) return "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour";
         if(normalized.includes("insect") || normalized.includes("macro")) return "Private Insect & Macro Wildlife Search";
         if(normalized.includes("night walk")) return "Night Walk";
         if(normalized.includes("jewels") || normalized.includes("morning forest")) return "Jewels of the Morning Forest";
-        if(normalized.includes("andean") || normalized.includes("cock")) return "Dance of the Andean Cock-of-the-Rock";
         if(normalized.includes("five") || normalized.includes("toucan") || normalized.includes("quest") || normalized.includes("full day")) return "Quest for Five Toucans & the Andean Cock-of-the-Rock";
+        if(normalized.includes("andean") || normalized.includes("cock")) return "Dance of the Andean Cock-of-the-Rock";
         if(normalized.includes("half day")) return "Half Day Birdwatching Tour";
         if(normalized.includes("tour activities")) return "Tour + Activities";
         return tourText;
@@ -1326,6 +1339,44 @@
         return "5:00 AM";
       }
 
+      function inboundTourItems(data){
+        const source=getInboundValue(data,["tour_items_json","tour_items"],"");
+        if(!source) return [];
+        try{ const parsed=JSON.parse(source); return Array.isArray(parsed)?parsed.filter(Boolean):[]; }
+        catch(error){ return []; }
+      }
+
+      function inboundItemTour(item){
+        return displayTourFromCrm(item.product_selected||item.product||item.tour||item.tour_type||item.name||"");
+      }
+
+      function defaultGuideForInboundItem(item){
+        const text=normalizeInboundTourText([item.service_type,item.product_selected,item.product,item.tour].filter(Boolean).join(" "));
+        if(text.includes("night walk")) return window.MBW_CONFIRMATION_CONFIG.nightWalkGuide||"Neicer";
+        if(text.includes("transport")) return "Juan";
+        if(text.includes("bear")||text.includes("oso001")||text.includes("oso002")) return "Javier";
+        if(/bird|mbw004|mbw005|mbw006|cock|toucan|jewels/.test(text)) return "Chicho";
+        return "Other";
+      }
+
+      function confirmationDraftFromInboundItem(item,common){
+        const tour=inboundItemTour(item)||"Custom Service";
+        const guide=defaultGuideForInboundItem(item);
+        const draft=defaultDraftForTour(tour,null);
+        draft.tour=tour;
+        draft.display=tour;
+        draft.date=toDateInputValue(item.date||item.tour_date||common.tourDate);
+        draft.guide=guide;
+        draft.customGuideName="";
+        draft.contact=contactForGuide(guide)||"";
+        draft.length=lengthFromCrm(tour,item.duration||item.duration_preference)||draft.length;
+        draft.pickupTime=pickupTimeFromCrm(tour,item.duration||item.duration_preference);
+        draft.transportation=normalizeTransportation(item.transportation_needed||common.transportation)||"Pick Up";
+        draft.pickupLocation=item.pickup_location||item.pickup||common.pickup||"";
+        draft.notes=item.notes||common.notes||"";
+        return draft;
+      }
+
       function applyInboundCrmRecord(){
         const data = getInboundData();
         const fullName = getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName"], "");
@@ -1338,6 +1389,7 @@
         const notes = getInboundValue(data, ["notes", "message_questions", "guest_notes"], "");
         const displayTour = displayTourFromCrm(tourText);
         const displayLength = lengthFromCrm(tourText, duration) || "Full Day";
+        const items=inboundTourItems(data);
 
         state.activeIndex = -1;
         els.bookingSelect.value = "manual";
@@ -1350,18 +1402,26 @@
         els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
         setSelectValue(els.lengthInput, displayLength);
         setSelectValue(els.pickupTimeInput, pickupTimeFromCrm(tourText, duration));
-        setSelectValue(els.tour1Input, displayTour);
-        setSelectValue(els.tour2Input, "");
-        setSelectValue(els.tour3Input, "");
+        const itemTours=items.map(inboundItemTour);
+        setSelectValue(els.tour1Input, itemTours[0]||displayTour);
+        setSelectValue(els.tour2Input, itemTours[1]||"");
+        setSelectValue(els.tour3Input, itemTours[2]||"");
         els.tourTypeInput.value = displayTour || tourText || "";
         els.transportationInput.value = normalizeTransportation(transportation);
         els.pickupLocationInput.value = pickup;
         els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
         els.notesInput.value = notes || "Thank you for booking with Mindo Bird Watching.";
         rebuildConfirmations(true);
+        if(items.length){
+          const common={tourDate,pickup,transportation,notes};
+          state.confirmationDrafts=items.map(item=>confirmationDraftFromInboundItem(item,common));
+          state.activeConfirmation=0;
+          loadActiveDraft();
+          renderConfirmationTabs();
+        }
         renderRecords();
         updatePreviewFromForm();
-        setHint("Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting.");
+        setHint(items.length?`Loaded ${items.length} scheduled service${items.length===1?"":"s"} from the CRM. Review guide and pickup details before exporting.`:"Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting.");
       }
 
       function fillForm(r){
@@ -1389,7 +1449,7 @@
         const seen = new Set();
         return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value]
           .map(v => String(v || "").trim())
-          .filter(v => v && !/^none$/i.test(v) && !/^transportation$/i.test(v))
+          .filter(v => v && !/^none$/i.test(v))
           .filter(v => {
             const key = v.toLowerCase();
             if(seen.has(key)) return false;
@@ -1403,6 +1463,7 @@
         if(text.includes("insect") || text.includes("macro")) return "activity";
         if(text.includes("night walk")) return "night";
         if(text.includes("bear")) return "bear";
+        if(text.includes("transport") || text.includes("trans06")) return "transportation";
         if(/chocolate|coffee|waterfall|canopy|ziplin|butterfly|canyon|frog|insect|macro|activity|activities|nature excursion/.test(text)) return "activity";
         return "birding";
       }
@@ -1421,12 +1482,14 @@
       function defaultDraftForTour(tour, previous){
         const category = tourCategory(tour);
         const night = category === "night";
-        const guide = night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuide : (previous && previous.guide) || els.guideInput.value || "Chicho";
+        const guide = night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuide : category === "transportation" ? "Juan" : category === "bear" ? "Javier" : (previous && previous.guide) || els.guideInput.value || "Chicho";
         return {
           tour,
           display: tour,
           guide,
+          customGuideName:"",
           contact: contactForGuide(guide) || (night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuidePhone : ""),
+          date:els.tourDateInput.value||"",
           length: night ? "2 hrs" : ((previous && previous.length) || els.lengthInput.value || "Full Day"),
           pickupTime: defaultTimeForTour(tour),
           transportation: "Pick Up",
@@ -1440,7 +1503,9 @@
         const draft = state.confirmationDrafts[state.activeConfirmation];
         if(!draft) return;
         draft.guide = els.guideInput.value;
+        draft.customGuideName = els.guideInput.value === "Other" ? els.customGuideInput.value.trim() : "";
         draft.contact = els.contactInput.value;
+        draft.date = els.tourDateInput.value;
         draft.length = els.lengthInput.value;
         draft.pickupTime = els.pickupTimeInput.value;
         draft.transportation = els.transportationInput.value;
@@ -1454,7 +1519,10 @@
         if(!draft) return;
         state.switchingConfirmation = true;
         setSelectValue(els.guideInput, draft.guide);
+        els.customGuideInput.value = draft.customGuideName || "";
+        els.customGuideField.hidden = draft.guide !== "Other";
         els.contactInput.value = draft.contact || contactForGuide(draft.guide) || "";
+        els.tourDateInput.value = draft.date || els.tourDateInput.value;
         setSelectValue(els.lengthInput, draft.length);
         setSelectValue(els.pickupTimeInput, draft.pickupTime);
         els.tourTypeInput.value = draft.display || draft.tour;
@@ -1507,11 +1575,13 @@
       function onGuideChange(){
         const guide = els.guideInput.value;
         const isOther = guide === "Other";
+        els.customGuideField.hidden = !isOther;
         const contact = contactForGuide(guide);
         els.contactInput.placeholder = isOther ? "Enter guide phone number" : "+593 98 600 5054";
         if(isOther){
+          els.customGuideInput.value = "";
           els.contactInput.value = "";
-          els.contactInput.focus();
+          els.customGuideInput.focus();
         } else if(contact){
           els.contactInput.value = contact;
         }
@@ -1559,9 +1629,10 @@
       }
 
       function updatePreviewFromForm(){
-        const guide = els.guideInput.value || "Chicho";
+        const selectedGuide = els.guideInput.value || "Chicho";
+        const guide = selectedGuide === "Other" ? (els.customGuideInput.value.trim() || "Guide to be confirmed") : selectedGuide;
         const nightWalk = isNightWalkSelected();
-        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(guide).toLowerCase() !== "chicho";
+        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(selectedGuide).toLowerCase() !== "chicho";
         const activitiesArt = !nightWalk && isActivitySelected();
         const certificate = document.getElementById("certificate");
         if(certificate){
@@ -1574,7 +1645,7 @@
         els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
         els.outTourDate.textContent = formatTourDateLong(els.tourDateInput.value || "");
         els.outGuide.textContent = guide;
-        els.outContact.textContent = els.contactInput.value || contactForGuide(guide) || "";
+        els.outContact.textContent = els.contactInput.value || contactForGuide(selectedGuide) || "";
         els.outTourType.textContent = els.tourTypeInput.value || "Tour Type";
         els.outLength.textContent = (els.lengthInput.value || "Full Day").toUpperCase();
         const transport = els.transportationInput.value || "Transportation details";
@@ -1582,7 +1653,7 @@
         els.outTransportation.textContent = transport;
         els.outPickupLocation.textContent = pickupLocation || "To be confirmed";
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
-        setGuideImage(confirmationImageFor(guide));
+        setGuideImage(confirmationImageFor(selectedGuide));
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
         saveActiveDraft();
       }
@@ -1674,7 +1745,8 @@
         if(!els.tourDateInput.value) missing.push("tour date");
         if(!els.tourTypeInput.value.trim()) missing.push("tour");
         if(!els.guideInput.value) missing.push("guide");
-        if(els.guideInput.value !== "Other" && !els.contactInput.value.trim()) missing.push("guide phone");
+        if(els.guideInput.value === "Other" && !els.customGuideInput.value.trim()) missing.push("custom guide name");
+        if(!els.contactInput.value.trim()) missing.push("guide phone");
         if(els.transportationInput.value.trim().toLowerCase() === "pick up" && !els.pickupLocationInput.value.trim()) missing.push("pickup location");
         if(missing.length){
           setHint("Before exporting, add: " + missing.join(", "));
