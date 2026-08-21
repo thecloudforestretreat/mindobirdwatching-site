@@ -1093,6 +1093,10 @@
         const params = new URLSearchParams(window.location.search);
         if(params.get('source') !== 'guest_crm') return null;
         try{
+          const urlDraft = JSON.parse(params.get('itinerary_json') || 'null');
+          if(urlDraft && urlDraft.source === 'guest_crm' && Array.isArray(urlDraft.items)) return urlDraft;
+        }catch(error){}
+        try{
           const draft = JSON.parse(localStorage.getItem('mbwItineraryGeneratorDraft') || 'null');
           if(draft && draft.source === 'guest_crm') return draft;
         }catch(error){}
