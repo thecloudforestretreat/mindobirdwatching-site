@@ -27938,10 +27938,16 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
   function showFormMessage(kind, text){
     var success = document.getElementById("targetFormSuccess");
     var error = document.getElementById("targetFormError");
-    if(success) success.style.display = kind === "success" ? "block" : "none";
+    if(success){
+      if(text && kind !== "error") success.textContent = text;
+      success.style.display = (kind === "success" || kind === "pending") ? "block" : "none";
+      success.setAttribute("role", "status");
+      success.setAttribute("aria-live", "polite");
+    }
     if(error){
       if(text) error.textContent = text;
       error.style.display = kind === "error" ? "block" : "none";
+      error.setAttribute("role", "alert");
     }
   }
 
@@ -28151,7 +28157,7 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
         submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revision del guia" : "Request Guide Review";
       }, 6000);
     }
-    showFormMessage("success");
+    showFormMessage("pending", "Sending your target bird request...");
     track("target_guide_review_submit", {
       selected_count: selected.size,
       has_email: Boolean(form.querySelector("input[name='visitor_email']") && form.querySelector("input[name='visitor_email']").value),
@@ -28160,6 +28166,8 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
   });
 
   window.addEventListener("message", function(event){
+    var frame = document.getElementById("targetBirdHiddenFrame");
+    if(event.origin !== window.location.origin || !frame || event.source !== frame.contentWindow) return;
     var data = event.data || {};
     if(!data || data.type !== "mbw-target-bird") return;
     var form = document.querySelector("[data-lead-form]");
@@ -28169,7 +28177,7 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
       submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revision del guia" : "Request Guide Review";
     }
     if(data.status === "ok"){
-      showFormMessage("success", "");
+      showFormMessage("success", data.message || "Your target bird request was received.");
       track("target_guide_review_success", { selected_count: selected.size });
     } else {
       showFormMessage("error", data.message || (PAGE_LANG === "es" ? "No pudimos enviar la solicitud. Intenta de nuevo o usa WhatsApp." : "We could not send the request. Please try again or use WhatsApp."));
