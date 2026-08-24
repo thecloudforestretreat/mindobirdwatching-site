@@ -852,7 +852,7 @@ function renderFooterFallback(lang) {
     <a href="https://www.youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="YouTube"><img src="/assets/images/icons/mbw_yt.png" alt="YouTube" loading="lazy"></a>
     <a href="https://twitter.com/mindobirds" target="_blank" rel="noopener" aria-label="X / Twitter"><img src="/assets/images/icons/mbw_x.png" alt="X" loading="lazy"></a>
     <a href="https://www.pinterest.com/mindobirdwatching/" target="_blank" rel="noopener" aria-label="Pinterest"><img src="/assets/images/icons/mbw_pin.png" alt="Pinterest" loading="lazy"></a>
-    <a href="https://wa.me/13054585402" target="_blank" rel="noopener" aria-label="WhatsApp"><img src="/assets/images/icons/mbw_wa.png" alt="WhatsApp" loading="lazy"></a>
+    <a href="${isEs ? "/es/contacto/" : "/contact/"}" data-whatsapp-message-key="${isEs ? "default_es" : "default_en"}" data-analytics-link-url="dynamic_whatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><img src="/assets/images/icons/mbw_wa.png" alt="WhatsApp" loading="lazy"></a>
     <a href="https://g.page/r/CdMlIYMGgBIvEAE/review" target="_blank" rel="noopener" aria-label="Google Review"><img src="/assets/images/icons/mbw_gr.png" alt="Google Review" loading="lazy"></a>
   </div>
   <div class="footer-bottom">
