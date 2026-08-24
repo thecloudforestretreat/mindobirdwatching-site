@@ -353,7 +353,7 @@ function renderFooterFallback(lang) {
     <a href="https://www.tiktok.com/@mindobirdwatching" target="_blank" rel="noopener" aria-label="TikTok"><img src="/assets/images/icons/mbw_tt.png" alt="TikTok" loading="lazy"></a>
     <a href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener" aria-label="Facebook"><img src="/assets/images/icons/mbw_fb.png" alt="Facebook" loading="lazy"></a>
     <a href="https://www.youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="YouTube"><img src="/assets/images/icons/mbw_yt.png" alt="YouTube" loading="lazy"></a>
-    <a href="https://wa.me/13054585402" target="_blank" rel="noopener" aria-label="WhatsApp"><img src="/assets/images/icons/mbw_wa.png" alt="WhatsApp" loading="lazy"></a>
+    <a href="${isEs ? "/es/contacto/" : "/contact/"}" data-whatsapp-message-key="${isEs ? "default_es" : "default_en"}" data-analytics-link-url="dynamic_whatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><img src="/assets/images/icons/mbw_wa.png" alt="WhatsApp" loading="lazy"></a>
     <a href="https://g.page/r/CdMlIYMGgBIvEAE/review" target="_blank" rel="noopener" aria-label="Google Review"><img src="/assets/images/icons/mbw_gr.png" alt="Google Review" loading="lazy"></a>
   </div>
   <div class="footer-bottom">
@@ -776,7 +776,7 @@ ${pageCss()}
           <div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk"></div>
           <div class="heroActions">
             <button class="btn primary" type="submit">${isEs ? "Solicitar revision" : "Request Review"}</button>
-            <a class="btn secondary" href="https://wa.me/13054585402" target="_blank" rel="noopener" data-whatsapp-action>${isEs ? "WhatsApp" : "WhatsApp"}</a>
+            <a class="btn secondary" href="${isEs ? "/es/contacto/" : "/contact/"}" target="_blank" rel="noopener noreferrer" data-whatsapp-action data-whatsapp-message-key="${isEs ? "birdwatching_tour_inquiry_es" : "birdwatching_tour_inquiry_en"}" data-analytics-link-url="dynamic_whatsapp">${isEs ? "WhatsApp" : "WhatsApp"}</a>
           </div>
           <p class="muted">${isEs ? "Este formulario usa Cloudflare Turnstile para reducir bots. La revision final la hace MBW." : "This form uses Cloudflare Turnstile to reduce bots. The final review is handled by MBW."}</p>
           <div class="success" id="recentSightingsSuccess">${isEs ? "Solicitud enviada. Revisaremos actividad reciente y rutas." : "Request sent. We will review recent activity and routes."}</div>
