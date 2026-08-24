@@ -1,1 +1,588 @@
+/* =========================================================
+   Mindo Bird Watching
+   Reserve / Birding Site Page Family
+   File: /assets/css/pages/reserve-pages.css
+   Version: 2026-08-24
+   Requires: /assets/css/site.css loaded first
+   Scope: body[data-css-cluster="reserve_pages"]
+   ========================================================= */
 
+body[data-css-cluster="reserve_pages"]{
+  --reserve-card-bg: rgba(255,255,255,.78);
+  --reserve-card-strong: rgba(255,255,255,.92);
+  --reserve-soft: rgba(13,89,37,.08);
+  --reserve-soft-strong: rgba(13,89,37,.13);
+  --reserve-line: rgba(13,89,37,.18);
+  --reserve-line-strong: rgba(13,89,37,.30);
+  --reserve-shadow: 0 14px 34px rgba(7,25,35,.08);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero{
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero .heroCopy,
+body[data-css-cluster="reserve_pages"] .reserveHero .heroVisual{
+  min-width:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero .heroVisual{
+  overflow:hidden;
+  background:var(--reserve-card-strong);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero .heroVisual img{
+  width:100%;
+  height:100%;
+  min-height:360px;
+  object-fit:cover;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHeroMeta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:2px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHeroMeta .pill{
+  background:rgba(255,255,255,.78);
+  border-color:var(--reserve-line);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveQuickAnswer{
+  display:grid;
+  gap:10px;
+  padding:18px 20px;
+  border:1px solid var(--reserve-line);
+  border-radius:var(--r);
+  background:var(--reserve-card-strong);
+  box-shadow:var(--reserve-shadow);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveQuickAnswer h2,
+body[data-css-cluster="reserve_pages"] .reserveQuickAnswer h3{
+  margin:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveQuickAnswer p{
+  margin:0;
+  color:var(--ink);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFactsGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFactCard,
+body[data-css-cluster="reserve_pages"] .reserveFeatureCard,
+body[data-css-cluster="reserve_pages"] .reserveDistanceCard,
+body[data-css-cluster="reserve_pages"] .reserveFitCard,
+body[data-css-cluster="reserve_pages"] .reserveBirdCard,
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard{
+  min-width:0;
+  height:100%;
+  padding:16px;
+  border:1px solid var(--reserve-line);
+  border-radius:16px;
+  background:var(--reserve-card-bg);
+  box-shadow:0 10px 24px rgba(7,25,35,.06);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFactCard,
+body[data-css-cluster="reserve_pages"] .reserveFeatureCard,
+body[data-css-cluster="reserve_pages"] .reserveDistanceCard,
+body[data-css-cluster="reserve_pages"] .reserveFitCard,
+body[data-css-cluster="reserve_pages"] .reserveBirdCard,
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard{
+  display:flex;
+  flex-direction:column;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFactLabel,
+body[data-css-cluster="reserve_pages"] .reserveFeatureLabel,
+body[data-css-cluster="reserve_pages"] .reserveDistanceLabel{
+  margin:0 0 6px;
+  color:var(--forest);
+  font-size:11px;
+  line-height:1.25;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFactValue,
+body[data-css-cluster="reserve_pages"] .reserveDistanceValue{
+  margin:0;
+  color:var(--ink);
+  font-family:var(--font-head);
+  font-size:23px;
+  line-height:1.15;
+  font-weight:700;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFactNote,
+body[data-css-cluster="reserve_pages"] .reserveDistanceNote{
+  margin:7px 0 0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFeaturesGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFeatureCard{
+  gap:7px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFeatureCard h3{
+  margin:0;
+  font-size:18px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFeatureCard p{
+  margin:0;
+  color:var(--ink);
+  font-size:14px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFeatureStatus{
+  display:inline-flex;
+  width:max-content;
+  max-width:100%;
+  align-items:center;
+  gap:7px;
+  padding:6px 9px;
+  border-radius:999px;
+  border:1px solid var(--reserve-line-strong);
+  background:var(--reserve-soft);
+  color:var(--forest);
+  font-size:12px;
+  line-height:1.2;
+  font-weight:900;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveDistanceGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveDistanceCard{
+  gap:6px;
+  padding:18px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveDistanceCard .ctaRow{
+  margin-top:auto;
+  padding-top:12px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveTravelCaveat{
+  margin:10px 0 0;
+  padding:11px 13px;
+  border-left:4px solid rgba(13,89,37,.34);
+  border-radius:10px;
+  background:rgba(255,255,255,.58);
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.55;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveMapGrid{
+  display:grid;
+  grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);
+  gap:16px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveMapPanel{
+  min-width:0;
+  padding:18px;
+  border:1px solid var(--reserve-line);
+  border-radius:var(--r);
+  background:var(--reserve-card-bg);
+  box-shadow:var(--reserve-shadow);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveMapPanel h3{
+  margin:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveMapPanel p{
+  margin:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveMapPanel .ctaRow{
+  margin-top:auto;
+  padding-top:4px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveMapFrame{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--reserve-line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.58);
+  box-shadow:var(--reserve-shadow);
+  aspect-ratio:16/10;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveMapFrame iframe{
+  width:100%;
+  height:100%;
+  min-height:320px;
+  display:block;
+  border:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFitGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFitCard{
+  gap:8px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFitCard h3{
+  margin:0;
+  font-size:19px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveFitCard p{
+  margin:0;
+  color:var(--ink);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveBirdGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveBirdCard{
+  gap:8px;
+  overflow:hidden;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveBirdCard img{
+  width:calc(100% + 32px);
+  max-width:none;
+  margin:-16px -16px 4px;
+  aspect-ratio:4/3;
+  object-fit:cover;
+  border-bottom:1px solid var(--reserve-line);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveBirdCard h3{
+  margin:0;
+  font-size:18px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveBirdCard p{
+  margin:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveEbirdCard{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:18px;
+  align-items:center;
+  padding:18px 20px;
+  border:1px solid var(--reserve-line);
+  border-radius:var(--r);
+  background:var(--reserve-card-strong);
+  box-shadow:var(--reserve-shadow);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveEbirdLogo{
+  width:132px;
+  max-width:24vw;
+  height:auto;
+  object-fit:contain;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveEbirdBody{
+  min-width:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveEbirdBody h3{
+  margin:0 0 5px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveEbirdBody p{
+  margin:0;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveEbirdAction{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveComparisonGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveRelatedGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard{
+  gap:8px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard h3{
+  margin:0;
+  font-size:18px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard p{
+  margin:0;
+  font-size:14px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard .ctaRow,
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard > .btn{
+  margin-top:auto;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveDirectoryGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveDirectoryGrid .reserveRelatedCard{
+  min-height:100%;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveSourceNote{
+  margin:0;
+  padding:11px 13px;
+  border:1px solid rgba(13,89,37,.15);
+  border-radius:12px;
+  background:rgba(255,255,255,.52);
+  color:var(--muted);
+  font-size:12.5px;
+  line-height:1.55;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveExternalMark{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  color:var(--forest);
+  font-weight:800;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveSectionLead{
+  max-width:76ch;
+  margin:0 0 14px;
+  color:var(--muted);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveCompactList{
+  margin:0;
+  padding-left:20px;
+  color:var(--ink);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveCompactList li + li{
+  margin-top:7px;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveVerifiedLabel{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  padding:6px 9px;
+  border:1px solid rgba(13,89,37,.28);
+  border-radius:999px;
+  background:rgba(13,89,37,.08);
+  color:var(--forest);
+  font-size:11px;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero .ctaRow,
+body[data-css-cluster="reserve_pages"] .reserveMapPanel .ctaRow,
+body[data-css-cluster="reserve_pages"] .reserveDistanceCard .ctaRow,
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard .ctaRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  max-width:100%;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero .btn,
+body[data-css-cluster="reserve_pages"] .reserveMapPanel .btn,
+body[data-css-cluster="reserve_pages"] .reserveDistanceCard .btn,
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard .btn,
+body[data-css-cluster="reserve_pages"] .reserveEbirdCard .btn{
+  white-space:normal;
+  text-align:center;
+}
+
+body[data-css-cluster="reserve_pages"] .reserveRelatedCard .btn,
+body[data-css-cluster="reserve_pages"] .reserveMapPanel .btn,
+body[data-css-cluster="reserve_pages"] .reserveDistanceCard .btn,
+body[data-css-cluster="reserve_pages"] .reserveEbirdCard .btn{
+  background:rgba(13,89,37,.14);
+  border-color:rgba(13,89,37,.35);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero .btn.primary{
+  background:rgba(255,215,0,.22);
+  border-color:rgba(255,215,0,.55);
+}
+
+body[data-css-cluster="reserve_pages"] .reserveHero .btn.secondary{
+  background:rgba(13,89,37,.14);
+  border-color:rgba(13,89,37,.35);
+}
+
+/* Keep FAQ and final CTA aligned with the global approved system. */
+body[data-css-cluster="reserve_pages"] .faqGrid{
+  align-items:stretch;
+}
+
+body[data-css-cluster="reserve_pages"] .faqCard{
+  height:100%;
+}
+
+body[data-css-cluster="reserve_pages"] .finalCta .ctaRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  max-width:100%;
+}
+
+body[data-css-cluster="reserve_pages"] .finalCta .btn{
+  white-space:normal;
+}
+
+/* Tablet */
+@media (max-width:1000px){
+  body[data-css-cluster="reserve_pages"] .reserveFactsGrid,
+  body[data-css-cluster="reserve_pages"] .reserveRelatedGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveFeaturesGrid,
+  body[data-css-cluster="reserve_pages"] .reserveFitGrid,
+  body[data-css-cluster="reserve_pages"] .reserveBirdGrid,
+  body[data-css-cluster="reserve_pages"] .reserveDirectoryGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveMapGrid{
+    grid-template-columns:1fr;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveMapFrame{
+    aspect-ratio:16/9;
+  }
+}
+
+/* Mobile */
+@media (max-width:700px){
+  body[data-css-cluster="reserve_pages"] .reserveHero{
+    grid-template-columns:1fr;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveHero .heroVisual img{
+    min-height:0;
+    aspect-ratio:4/3;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveFactsGrid,
+  body[data-css-cluster="reserve_pages"] .reserveFeaturesGrid,
+  body[data-css-cluster="reserve_pages"] .reserveDistanceGrid,
+  body[data-css-cluster="reserve_pages"] .reserveFitGrid,
+  body[data-css-cluster="reserve_pages"] .reserveBirdGrid,
+  body[data-css-cluster="reserve_pages"] .reserveComparisonGrid,
+  body[data-css-cluster="reserve_pages"] .reserveRelatedGrid,
+  body[data-css-cluster="reserve_pages"] .reserveDirectoryGrid{
+    grid-template-columns:1fr;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveEbirdCard{
+    grid-template-columns:1fr;
+    gap:12px;
+    text-align:left;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveEbirdLogo{
+    width:118px;
+    max-width:50%;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveEbirdAction{
+    justify-content:flex-start;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveEbirdAction .btn{
+    width:100%;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveMapFrame{
+    aspect-ratio:4/3;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveMapFrame iframe{
+    min-height:280px;
+  }
+}
+
+@media (max-width:480px){
+  body[data-css-cluster="reserve_pages"] .reserveQuickAnswer,
+  body[data-css-cluster="reserve_pages"] .reserveFactCard,
+  body[data-css-cluster="reserve_pages"] .reserveFeatureCard,
+  body[data-css-cluster="reserve_pages"] .reserveDistanceCard,
+  body[data-css-cluster="reserve_pages"] .reserveFitCard,
+  body[data-css-cluster="reserve_pages"] .reserveBirdCard,
+  body[data-css-cluster="reserve_pages"] .reserveRelatedCard,
+  body[data-css-cluster="reserve_pages"] .reserveMapPanel,
+  body[data-css-cluster="reserve_pages"] .reserveEbirdCard{
+    padding:14px;
+  }
+
+  body[data-css-cluster="reserve_pages"] .reserveFactValue,
+  body[data-css-cluster="reserve_pages"] .reserveDistanceValue{
+    font-size:21px;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  body[data-css-cluster="reserve_pages"] *{
+    scroll-behavior:auto;
+  }
+}
