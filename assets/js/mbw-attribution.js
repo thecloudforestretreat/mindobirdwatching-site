@@ -8,7 +8,7 @@
   if (window.MBWAttribution && window.MBWAttribution.version) return;
   if (window.top !== window.self) return;
 
-  var VERSION = "1.1.0";
+  var VERSION = "1.2.0";
   var ENDPOINT = "/api/attribution/session";
   var CONTACT_ENDPOINT = "/api/attribution/contact-intent";
   var STORAGE_KEY = "mbw_attribution_v1";
@@ -490,6 +490,31 @@
       if (!details) return null;
       sendContactIntent(contactPayload(anchor, channel, contactIntentId, details));
       return contactIntentId;
+    },
+    prepareContactUrl: function (href, metadata) {
+      var anchor = document.createElement("a");
+      var meta = metadata || {};
+      anchor.setAttribute("href", String(href || ""));
+      if (meta.label) anchor.setAttribute("data-analytics-label", String(meta.label));
+      if (meta.location) anchor.setAttribute("data-analytics-location", String(meta.location));
+      if (meta.tour) anchor.setAttribute("data-analytics-tour", String(meta.tour));
+      if (meta.message_key) anchor.setAttribute("data-whatsapp-message-key", String(meta.message_key));
+      if (meta.agent_id) anchor.setAttribute("data-agent-id", String(meta.agent_id));
+
+      var channel = contactType(anchor);
+      if (!channel) return { url: String(href || ""), contact_intent_id: null };
+
+      var contactIntentId = makeContactIntentId();
+      var details = channel === "whatsapp"
+        ? addReferenceToWhatsApp(anchor, contactIntentId)
+        : addReferenceToEmail(anchor, contactIntentId);
+      if (!details) return { url: String(href || ""), contact_intent_id: null };
+
+      sendContactIntent(contactPayload(anchor, channel, contactIntentId, details));
+      return {
+        url: anchor.getAttribute("href") || String(href || ""),
+        contact_intent_id: contactIntentId
+      };
     }
   };
 
