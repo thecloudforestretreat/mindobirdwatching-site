@@ -7,7 +7,7 @@
   if (window.MBWAttribution || document.querySelector('script[data-mbw-attribution="true"]')) return;
 
   var script = document.createElement("script");
-  script.src = "/assets/js/mbw-attribution.js?v=20260825-2";
+  script.src = "/assets/js/mbw-attribution.js?v=20260825-3";
   script.async = true;
   script.setAttribute("data-mbw-attribution", "true");
   script.onerror = function () {
@@ -1007,6 +1007,17 @@
       return "https://wa.me/" + num + "?text=" + encodeURIComponent(msg);
     }
 
+    function prepareAttributedWhatsAppLink(link, label, location) {
+      var attribution = window.MBWAttribution;
+      if (!attribution || typeof attribution.prepareContactUrl !== "function") return link;
+
+      var prepared = attribution.prepareContactUrl(link, {
+        label: label || "WhatsApp smart CTA",
+        location: location || "floating_whatsapp"
+      });
+      return prepared && prepared.url ? prepared.url : link;
+    }
+
     function openPanel() {
       root.classList.add("is-open");
       btn.setAttribute("aria-expanded", "true");
@@ -1041,6 +1052,7 @@
     function goWhatsApp(template, label, location) {
       var link = buildLink(template);
       if (!link) return;
+      link = prepareAttributedWhatsAppLink(link, label, location);
       trackWhatsApp(label || "WhatsApp smart CTA", location || "floating_whatsapp", link);
       window.location.href = link;
     }
@@ -1086,7 +1098,9 @@
         var link = buildLink(template);
         if (!link) return;
 
-        trackWhatsApp(cleanText(a.textContent) || "WhatsApp smart CTA option", "floating_whatsapp_panel", link);
+        var actionLabel = cleanText(a.textContent) || "WhatsApp smart CTA option";
+        link = prepareAttributedWhatsAppLink(link, actionLabel, "floating_whatsapp_panel");
+        trackWhatsApp(actionLabel, "floating_whatsapp_panel", link);
         closePanel();
         window.open(link, "_blank", "noopener,noreferrer");
       }, { passive: false });
