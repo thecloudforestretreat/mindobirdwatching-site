@@ -1,5 +1,5 @@
 /* Mindo Bird Watching — first-party attribution collector
- * Version: 1.0.0
+ * Version: 1.1.0
  * Stores anonymous visitor/session attribution and sends it to Cloudflare D1.
  */
 (function () {
@@ -8,8 +8,9 @@
   if (window.MBWAttribution && window.MBWAttribution.version) return;
   if (window.top !== window.self) return;
 
-  var VERSION = "1.0.0";
+  var VERSION = "1.1.0";
   var ENDPOINT = "/api/attribution/session";
+  var CONTACT_ENDPOINT = "/api/attribution/contact-intent";
   var STORAGE_KEY = "mbw_attribution_v1";
   var SESSION_TIMEOUT_MS = 30 * 60 * 1000;
   var MAX_STORAGE_AGE_MS = 180 * 24 * 60 * 60 * 1000;
@@ -53,6 +54,23 @@
       value = Date.now().toString(36) + Math.random().toString(36).slice(2);
     }
     return prefix + "_" + value;
+  }
+
+  function makeContactIntentId() {
+    var timePart = Date.now().toString(36).slice(-6);
+    var randomPart = "";
+
+    if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+      var bytes = new Uint8Array(5);
+      window.crypto.getRandomValues(bytes);
+      randomPart = Array.prototype.map.call(bytes, function (byte) {
+        return (byte % 36).toString(36);
+      }).join("");
+    } else {
+      randomPart = Math.random().toString(36).slice(2, 7).padEnd(5, "0");
+    }
+
+    return "ci_" + timePart + randomPart;
   }
 
   function readStorage() {
@@ -284,6 +302,156 @@
     });
   }
 
+  function contactType(anchor) {
+    var href = (anchor.getAttribute("href") || "").trim();
+    if (!href) return null;
+    if (anchor.hasAttribute("data-whatsapp-message-key")) return "whatsapp";
+    if (/^(?:https?:\/\/)?(?:wa\.me|api\.whatsapp\.com|web\.whatsapp\.com)(?:\/|$)/i.test(href)) return "whatsapp";
+    if (/^whatsapp:/i.test(href)) return "whatsapp";
+    if (/^mailto:/i.test(href)) return "email_link";
+    return null;
+  }
+
+  function whatsappDestination(url, anchor) {
+    var configured = cleanValue(anchor.getAttribute("data-whatsapp-number"), 32);
+    if (configured) return configured.replace(/\D/g, "");
+
+    var pathNumber = (url.pathname || "").replace(/\D/g, "");
+    if (pathNumber) return pathNumber;
+
+    return cleanValue(url.searchParams.get("phone"), 32);
+  }
+
+  function agentForDestination(destination, anchor) {
+    var explicit = cleanValue(anchor.getAttribute("data-agent-id"), 64);
+    if (explicit) return explicit;
+
+    var digits = String(destination || "").replace(/\D/g, "");
+    if (digits === "13054585402") return "susana";
+    if (digits === "593969076501") return "mbw_admin";
+    return null;
+  }
+
+  function addReferenceToWhatsApp(anchor, contactIntentId) {
+    var href = anchor.getAttribute("href") || "";
+    var url;
+    try {
+      url = new URL(href, window.location.origin);
+    } catch (error) {
+      return null;
+    }
+
+    var language = (document.documentElement.lang || "en").toLowerCase();
+    var referenceLabel = language.indexOf("es") === 0 ? "Referencia" : "Reference";
+    var referenceLine = referenceLabel + ": " + contactIntentId;
+    var message = cleanValue(url.searchParams.get("text"), 3500) || "";
+    if (message.indexOf(contactIntentId) === -1) {
+      message = message ? message + "\n\n" + referenceLine : referenceLine;
+    }
+    url.searchParams.set("text", message);
+    anchor.setAttribute("href", url.toString());
+
+    return {
+      destination: whatsappDestination(url, anchor),
+      agent_id: agentForDestination(whatsappDestination(url, anchor), anchor)
+    };
+  }
+
+  function addReferenceToEmail(anchor, contactIntentId) {
+    var href = anchor.getAttribute("href") || "";
+    var url;
+    try {
+      url = new URL(href);
+    } catch (error) {
+      return null;
+    }
+
+    var language = (document.documentElement.lang || "en").toLowerCase();
+    var referenceLabel = language.indexOf("es") === 0 ? "Referencia" : "Reference";
+    var referenceLine = referenceLabel + ": " + contactIntentId;
+    var body = cleanValue(url.searchParams.get("body"), 3500) || "";
+    if (body.indexOf(contactIntentId) === -1) {
+      body = body ? body + "\n\n" + referenceLine : referenceLine;
+    }
+    url.searchParams.set("body", body);
+    anchor.setAttribute("href", url.toString());
+
+    return {
+      destination: cleanValue(url.pathname, 320),
+      agent_id: cleanValue(anchor.getAttribute("data-agent-id"), 64)
+    };
+  }
+
+  function contactPayload(anchor, channel, contactIntentId, details) {
+    var dataset = anchor.dataset || {};
+    var label = cleanValue(dataset.analyticsLabel, 320) ||
+      cleanValue(anchor.getAttribute("aria-label"), 320) ||
+      cleanValue(anchor.textContent, 320);
+
+    return {
+      contact_intent_id: contactIntentId,
+      visitor_id: state.visitor_id,
+      session_id: state.session_id,
+      channel: channel,
+      agent_id: details && details.agent_id,
+      destination: details && details.destination,
+      message_key: cleanValue(anchor.getAttribute("data-whatsapp-message-key"), 128),
+      tour_interest: cleanValue(dataset.analyticsTour || dataset.analyticsGuide || label, 320),
+      page_url: safeLandingPage(),
+      cta_location: cleanValue(dataset.analyticsLocation, 128),
+      cta_label: label,
+      page_language: cleanValue(dataset.analyticsPageLanguage || document.documentElement.lang || "en", 12),
+      intent_status: "opened",
+      attribution_quality: statusFor(state) === "captured" ? "verified" : "partial",
+      occurred_at: nowIso()
+    };
+  }
+
+  function sendContactIntent(payload) {
+    return window.fetch(CONTACT_ENDPOINT, {
+      method: "POST",
+      credentials: "same-origin",
+      keepalive: true,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function (response) {
+      if (response.status === 409) {
+        return send(state).then(function () {
+          return window.fetch(CONTACT_ENDPOINT, {
+            method: "POST",
+            credentials: "same-origin",
+            keepalive: true,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        });
+      }
+      return response;
+    }).catch(function (error) {
+      if (window.console && typeof window.console.warn === "function") {
+        window.console.warn("MBW contact intent was not saved", error);
+      }
+      return null;
+    });
+  }
+
+  function handleContactClick(event) {
+    var target = event.target;
+    var anchor = target && typeof target.closest === "function" ? target.closest("a") : null;
+    if (!anchor) return;
+
+    var channel = contactType(anchor);
+    if (!channel) return;
+
+    var contactIntentId = makeContactIntentId();
+    var details = channel === "whatsapp"
+      ? addReferenceToWhatsApp(anchor, contactIntentId)
+      : addReferenceToEmail(anchor, contactIntentId);
+
+    if (!details) return;
+    sendContactIntent(contactPayload(anchor, channel, contactIntentId, details));
+  }
+
   var state = updateState(readStorage());
   writeStorage(state);
 
@@ -310,8 +478,21 @@
       state = updateState(state);
       writeStorage(state);
       return send(state);
+    },
+    createContactIntent: function (anchor) {
+      if (!anchor || anchor.tagName !== "A") return null;
+      var channel = contactType(anchor);
+      if (!channel) return null;
+      var contactIntentId = makeContactIntentId();
+      var details = channel === "whatsapp"
+        ? addReferenceToWhatsApp(anchor, contactIntentId)
+        : addReferenceToEmail(anchor, contactIntentId);
+      if (!details) return null;
+      sendContactIntent(contactPayload(anchor, channel, contactIntentId, details));
+      return contactIntentId;
     }
   };
 
+  document.addEventListener("click", handleContactClick, true);
   send(state);
 })();
