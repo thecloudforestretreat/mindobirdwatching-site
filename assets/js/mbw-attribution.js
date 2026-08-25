@@ -8,7 +8,7 @@
   if (window.MBWAttribution && window.MBWAttribution.version) return;
   if (window.top !== window.self) return;
 
-  var VERSION = "1.2.0";
+  var VERSION = "1.3.0";
   var ENDPOINT = "/api/attribution/session";
   var CONTACT_ENDPOINT = "/api/attribution/contact-intent";
   var STORAGE_KEY = "mbw_attribution_v1";
@@ -435,6 +435,115 @@
     });
   }
 
+  function setHiddenField(form, name, value) {
+    var field = form.querySelector('input[type="hidden"][name="' + name + '"]');
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = name;
+      form.appendChild(field);
+    }
+    field.value = value == null ? "" : String(value);
+  }
+
+  function touchFields(prefix, touch) {
+    var value = touch || {};
+    var fields = {};
+    fields[prefix + "_source"] = value.source;
+    fields[prefix + "_medium"] = value.medium;
+    fields[prefix + "_campaign"] = value.campaign;
+    fields[prefix + "_content"] = value.content;
+    fields[prefix + "_term"] = value.term;
+    fields[prefix + "_landing_page"] = value.landing_page;
+    fields[prefix + "_referrer"] = value.referrer;
+    fields[prefix + "_date"] = value.date;
+    return fields;
+  }
+
+  function contactFormChannel(form) {
+    var action = form.getAttribute("action") || "";
+    var pathname;
+    try {
+      pathname = new URL(action, window.location.origin).pathname;
+    } catch (error) {
+      return null;
+    }
+    if (pathname === "/api/contact" || pathname === "/api/book-tour") return "email_form";
+    return null;
+  }
+
+  function formValue(form, names) {
+    for (var i = 0; i < names.length; i += 1) {
+      var field = form.elements && form.elements[names[i]];
+      if (!field) continue;
+      var value = cleanValue(field.value, 320);
+      if (value) return value;
+    }
+    return null;
+  }
+
+  function handleContactFormSubmit(event) {
+    var form = event.target;
+    if (!form || form.tagName !== "FORM") return;
+
+    var channel = contactFormChannel(form);
+    if (!channel) return;
+
+    var contactIntentId = makeContactIntentId();
+    var utm = currentUtm(state);
+    var fields = {
+      contact_intent_id: contactIntentId,
+      website_visitor_id: state.visitor_id,
+      website_session_id: state.session_id,
+      attribution_status: statusFor(state),
+      attribution_quality: statusFor(state) === "captured" ? "verified" : "partial",
+      utm_source: utm.source,
+      utm_medium: utm.medium,
+      utm_campaign: utm.campaign,
+      utm_content: utm.content,
+      utm_term: utm.term,
+      gclid: state.click_ids && state.click_ids.gclid,
+      gbraid: state.click_ids && state.click_ids.gbraid,
+      wbraid: state.click_ids && state.click_ids.wbraid,
+      fbclid: state.click_ids && state.click_ids.fbclid
+    };
+    Object.assign(fields, touchFields("first_touch", state.first_touch));
+    Object.assign(fields, touchFields("last_touch", state.last_touch));
+    Object.keys(fields).forEach(function (name) {
+      setHiddenField(form, name, fields[name]);
+    });
+
+    var submitter = event.submitter;
+    var submitLabel = cleanValue(submitter && submitter.textContent, 320) ||
+      cleanValue(form.getAttribute("data-analytics-label"), 320) ||
+      "Contact form submission";
+    var action = form.getAttribute("action") || "/api/contact";
+    var tourInterest = formValue(form, [
+      "preferred_tour_type",
+      "primary_tour",
+      "tour_type",
+      "product_selected",
+      "special_interests"
+    ]);
+
+    sendContactIntent({
+      contact_intent_id: contactIntentId,
+      visitor_id: state.visitor_id,
+      session_id: state.session_id,
+      channel: channel,
+      destination: action,
+      message_key: null,
+      tour_interest: tourInterest,
+      page_url: safeLandingPage(),
+      cta_location: cleanValue(form.getAttribute("data-analytics-location"), 128) || "contact_form",
+      cta_label: submitLabel,
+      page_language: cleanValue(form.getAttribute("data-analytics-page-language") || document.documentElement.lang || "en", 12),
+      intent_status: "submitted",
+      attribution_quality: fields.attribution_quality,
+      occurred_at: nowIso()
+    });
+  }
+
   function handleContactClick(event) {
     var target = event.target;
     var anchor = target && typeof target.closest === "function" ? target.closest("a") : null;
@@ -519,5 +628,6 @@
   };
 
   document.addEventListener("click", handleContactClick, true);
+  document.addEventListener("submit", handleContactFormSubmit, true);
   send(state);
 })();
