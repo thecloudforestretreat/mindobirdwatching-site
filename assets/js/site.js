@@ -1,3 +1,23 @@
+/* MBW shared attribution loader */
+(function loadMBWAttribution() {
+  "use strict";
+
+  var path = window.location.pathname || "/";
+  if (/^\/admin(?:\/|$)/i.test(path) || /^\/book-tour\/pay(?:\/|$)/i.test(path)) return;
+  if (window.MBWAttribution || document.querySelector('script[data-mbw-attribution="true"]')) return;
+
+  var script = document.createElement("script");
+  script.src = "/assets/js/mbw-attribution.js?v=20260825-1";
+  script.async = true;
+  script.setAttribute("data-mbw-attribution", "true");
+  script.onerror = function () {
+    if (window.console && typeof window.console.warn === "function") {
+      window.console.warn("MBW attribution collector could not be loaded");
+    }
+  };
+  document.head.appendChild(script);
+})();
+
 /* /assets/js/site.js
    Mindo Bird Watching global site controller and analytics engine
    Updated: 2026-06-05
