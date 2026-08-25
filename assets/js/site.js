@@ -7,7 +7,7 @@
   if (window.MBWAttribution || document.querySelector('script[data-mbw-attribution="true"]')) return;
 
   var script = document.createElement("script");
-  script.src = "/assets/js/mbw-attribution.js?v=20260825-3";
+  script.src = "/assets/js/mbw-attribution.js?v=20260825-4";
   script.async = true;
   script.setAttribute("data-mbw-attribution", "true");
   script.onerror = function () {
