@@ -940,6 +940,11 @@
         const params = new URLSearchParams(window.location.search);
         let stored = null;
         try { stored = JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { stored = null; }
+        const parameterInquiryId = clean(params.get("inquiry_id"));
+        const storedInquiryId = clean(stored && (stored.inquiry_id || stored.inquiryId));
+        const compatibleStored = !parameterInquiryId
+          ? stored
+          : (storedInquiryId === parameterInquiryId ? stored : null);
         const fromParams = {
           full_name: params.get("guest") || params.get("name") || params.get("full_name") || "",
           email: params.get("email") || "",
@@ -963,8 +968,8 @@
           invoice_id: params.get("invoice_id") || params.get("invoice_number") || ""
         };
         const hasParams = Object.values(fromParams).some(Boolean);
-        if(hasParams) return Object.assign({}, stored || {}, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
-        return stored;
+        if(hasParams) return Object.assign({}, compatibleStored || {}, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
+        return compatibleStored;
       }
 
       function buildItemsFromRecord(record, guestFallback, pickupFallback){
