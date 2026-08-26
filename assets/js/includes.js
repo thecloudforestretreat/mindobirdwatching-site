@@ -1,7 +1,7 @@
 /* =========================================================
    MBW Includes JS (Single Header + Mobile Menu + Language Switch)
-   Version: v3.0 - Single shared header architecture
-   Updated: 2026-05-20
+   Version: v3.1 - Single shared header architecture
+   Updated: 2026-08-26
 
    Responsibilities:
    - Inject the single shared header include
@@ -55,9 +55,22 @@
   }
 
   function getRawLangUrl(lang) {
-    var selector = '.rawLangLinks a[hreflang="' + lang + '"], .rawLangLinks a[lang="' + lang + '"]';
-    var a = document.querySelector(selector);
-    if (a && a.getAttribute("href")) return a.getAttribute("href");
+    var rawSelector = '.rawLangLinks a[hreflang="' + lang + '"], .rawLangLinks a[lang="' + lang + '"]';
+    var rawLink = document.querySelector(rawSelector);
+    var rawHref = rawLink ? rawLink.getAttribute("href") : "";
+
+    if (rawHref) return rawHref;
+
+    // Fallback to the page's standard hreflang declarations in <head>.
+    // This makes the visible EN/ES switch follow the same translated URL pair
+    // used by search engines, even when .rawLangLinks is missing from a page.
+    var alternateSelector = 'link[rel="alternate"][hreflang="' + lang + '"]';
+    var alternateLink = document.querySelector(alternateSelector);
+    var alternateHref = alternateLink ? alternateLink.getAttribute("href") : "";
+
+    if (alternateHref) return alternateHref;
+
+    // Final safety fallback only when neither page-level source exists.
     if (lang === "es") return "/es/";
     return "/";
   }
