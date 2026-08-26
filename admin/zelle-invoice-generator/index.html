@@ -361,6 +361,27 @@
       line-height:1.35;
       font-weight:700;
     }
+    .attributionCard{
+      border:1px solid var(--mbw-line);
+      border-radius:14px;
+      background:rgba(255,255,255,.78);
+      padding:12px;
+      margin-top:10px;
+    }
+    .attributionStatus{
+      margin:0 0 10px;
+      padding:9px 11px;
+      border-radius:11px;
+      background:rgba(7,25,35,.06);
+      color:var(--mbw-muted);
+      font-size:12px;
+      line-height:1.4;
+      font-weight:900;
+    }
+    .attributionStatus[data-state="linked"]{background:rgba(13,89,37,.12);color:var(--mbw-green);}
+    .attributionStatus[data-state="error"]{background:rgba(168,35,35,.10);color:#8a1f1f;}
+    .attributionIds{font-size:11px;line-height:1.5;color:var(--mbw-muted);overflow-wrap:anywhere;}
+    .attributionIds strong{color:var(--mbw-ink);}
     .invoiceMeta a{ color:#0057b8; text-decoration:underline; }
     .topInfo{
       display:grid;
@@ -634,6 +655,7 @@
           </div>
         </div>
         <div class="actions">
+          <button id="recordBtn" type="button">Record Zelle Invoice</button>
           <button class="primary" id="printBtn" type="button">Save as PDF</button>
           <button id="imageBtn" type="button">Download Image</button>
           <button id="emailHtmlBtn" type="button">Download Email HTML</button>
@@ -723,6 +745,10 @@
             </div>
             <div class="paymentSummary" id="paymentSummary">Payment request will update after items are added.</div>
             <p class="hint">Use a negative amount for discounts, for example <strong>-20</strong>.</p>
+            <div class="attributionCard" id="attributionCard">
+              <p class="attributionStatus" id="attributionStatus" data-state="unlinked">Load this invoice from the CRM to connect it to marketing attribution.</p>
+              <div class="attributionIds" id="attributionIds"></div>
+            </div>
           </div>
         </section>
 
@@ -801,7 +827,9 @@
 
       const els = {};
       const state = {
-        items: []
+        items: [],
+        ids: { inquiry_id:"", guest_id:"", booking_id:"", quote_id:"" },
+        attribution: { status:"unlinked", linkId:"", fingerprint:"", error:"" }
       };
 
       document.addEventListener("DOMContentLoaded", init);
@@ -816,13 +844,14 @@
         applyCrmHandoff();
         renderItems();
         updateInvoice();
+        renderAttributionStatus();
       }
 
       function cacheEls(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
           "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "adjustmentLabel", "adjustmentAmount", "paymentSummary", "itemsEditor",
-          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "bottomEmailHtmlBtn", "bottomCopyEmailHtmlBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "resetBtn", "toast"
+          "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "bottomEmailHtmlBtn", "bottomCopyEmailHtmlBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "recordBtn", "attributionStatus", "attributionIds", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
 
@@ -845,6 +874,7 @@
           updateInvoice();
         });
         els.addItemBtn.addEventListener("click", addItem);
+        els.recordBtn.addEventListener("click", recordZelleInvoice);
         els.printBtn.addEventListener("click", printInvoice);
         if(els.bottomPrintBtn) els.bottomPrintBtn.addEventListener("click", printInvoice);
         if(els.imageBtn) els.imageBtn.addEventListener("click", exportInvoiceImage);
@@ -859,6 +889,9 @@
       }
 
       function handleGlobalInput(){
+        if(state.attribution.status === "linked" && attributionFingerprint() !== state.attribution.fingerprint){
+          setAttributionStatus("changed", "Invoice details changed. Record the Zelle invoice again before sending it.");
+        }
         updateInvoice();
       }
 
@@ -871,6 +904,14 @@
         const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
         const pickup = record.pickup_location || record.pickupLocation || "";
         const guests = Number(record.guest_count || record.guestCount || 2) || 2;
+        state.ids = {
+          inquiry_id: clean(record.inquiry_id || record.inquiryId),
+          guest_id: clean(record.guest_id || record.guestId),
+          booking_id: clean(record.booking_id || record.bookingId),
+          quote_id: clean(record.quote_id || record.quoteId)
+        };
+        const importedInvoiceId = clean(record.invoice_id || record.invoice_number || record.invoiceNumber);
+        if(importedInvoiceId) els.invoiceNumber.value = importedInvoiceId;
         if(guestName) els.guestName.value = guestName;
         if(guestEmail) els.guestEmail.value = guestEmail;
         if(guestPhone) els.guestPhone.value = guestPhone;
@@ -892,6 +933,7 @@
         }
         const requestedDeposit = Number(record.deposit_amount || record.depositAmount || "");
         if(requestedDeposit > 0) els.depositAmount.value = requestedDeposit;
+        renderAttributionStatus();
       }
 
       function getCrmHandoff(){
@@ -913,7 +955,12 @@
           tour_items: params.get("tour_items") || params.get("tour_items_json") || "",
           payment_status: params.get("payment_status") || "",
           payment_request: params.get("payment_request") || params.get("paymentMode") || params.get("payment_mode") || "",
-          deposit_amount: params.get("deposit_amount") || params.get("deposit") || ""
+          deposit_amount: params.get("deposit_amount") || params.get("deposit") || "",
+          inquiry_id: params.get("inquiry_id") || "",
+          guest_id: params.get("guest_id") || "",
+          booking_id: params.get("booking_id") || "",
+          quote_id: params.get("quote_id") || "",
+          invoice_id: params.get("invoice_id") || params.get("invoice_number") || ""
         };
         const hasParams = Object.values(fromParams).some(Boolean);
         if(hasParams) return Object.assign({}, stored || {}, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
@@ -1139,8 +1186,11 @@
         delete els.dueDate.dataset.manuallyChanged;
         setDefaultDates();
         state.items = [{ description:"MBW005 - Dance of the Andean Cock-of-the-Rock", qty:2, price:85, note:"" }];
+        state.ids = { inquiry_id:"", guest_id:"", booking_id:"", quote_id:"" };
+        state.attribution = { status:"unlinked", linkId:"", fingerprint:"", error:"" };
         renderItems();
         updateInvoice();
+        renderAttributionStatus();
         showToast("Invoice reset");
       }
 
@@ -1536,7 +1586,7 @@
 
       function buildEmailBody(){
         const guest = clean(els.guestName.value) || "there";
-        const extraGuests = clean(els.notes.value);
+        const extraGuests = clean(els.invoiceNotes.value);
         const pickup = clean(els.pickupLocation.value);
         const totals = getInvoiceTotals();
         const plan = getPaymentPlan(totals.total);
@@ -1572,7 +1622,7 @@
         const guestName = clean(els.guestName.value) || "Guest";
         const guestFirst = guestName.split(/\s+/)[0] || "there";
         const pickup = clean(els.pickupLocation.value);
-        const extraGuests = clean(els.notes.value);
+        const extraGuests = clean(els.invoiceNotes.value);
         const paymentHeading = plan.mode === "deposit" ? "Tour Deposit Request" : "Tour Payment Request";
         const paymentIntro = plan.mode === "deposit"
           ? "Attached is your Zelle invoice requesting the tour deposit so we can hold your Mindo plans."
@@ -1656,6 +1706,7 @@
       }
 
       function signatureIcons(){
+        const contact = getContact();
         const icons = [
           { href:"https://www.mindobirdwatching.com", img:"https://i.imgur.com/fSPayjc.png", alt:"Website", size:24 },
           { href:"https://www.instagram.com/mindobirdwatching/", img:"https://cdn-icons-png.flaticon.com/512/2111/2111463.png", alt:"Instagram", size:24 },
@@ -1682,7 +1733,8 @@
         const digits = String(contact.whatsappNumberDigits || "13054585402").replace(/\D/g, "");
         return {
           email: contact.email || "mindobirdwatching@gmail.com",
-          phoneDisplay: contact.whatsappDisplayNumber || ("+" + digits)
+          phoneDisplay: contact.whatsappDisplayNumber || ("+" + digits),
+          whatsappNumberDigits: digits
         };
       }
 
@@ -1749,6 +1801,78 @@
 
       function attr(value){
         return esc(value);
+      }
+
+      function validId(value){
+        return /^[A-Za-z0-9_.-]{1,128}$/.test(clean(value));
+      }
+
+      function attributionFingerprint(){
+        return [state.ids.inquiry_id, state.ids.guest_id, state.ids.booking_id, state.ids.quote_id, clean(els.invoiceNumber.value)].join("|");
+      }
+
+      function validateAttributionInput(){
+        if(!validId(state.ids.inquiry_id)) return "This invoice was not loaded from a CRM inquiry.";
+        if(!validId(els.invoiceNumber.value) || /^(xxxx|draft)$/i.test(clean(els.invoiceNumber.value))) return "Enter the final invoice number before recording attribution.";
+        if(!clean(els.guestName.value)) return "Enter the guest name before recording attribution.";
+        if(!clean(els.guestEmail.value)) return "Enter the guest email before recording attribution.";
+        if(getInvoiceTotals().total <= 0) return "The invoice total must be greater than zero.";
+        return "";
+      }
+
+      function setAttributionStatus(status, message, linkId){
+        state.attribution.status = status;
+        state.attribution.linkId = linkId || state.attribution.linkId || "";
+        state.attribution.error = status === "error" ? message : "";
+        els.attributionStatus.dataset.state = status === "linked" ? "linked" : (status === "error" ? "error" : "unlinked");
+        els.attributionStatus.textContent = message;
+        renderAttributionStatus();
+      }
+
+      function renderAttributionStatus(){
+        if(!els.attributionStatus || !els.attributionIds) return;
+        const rows = [
+          ["Inquiry", state.ids.inquiry_id], ["Guest", state.ids.guest_id],
+          ["Booking", state.ids.booking_id], ["Quote", state.ids.quote_id],
+          ["Invoice", clean(els.invoiceNumber.value)], ["Link", state.attribution.linkId]
+        ].filter(([, value]) => value);
+        els.attributionIds.innerHTML = rows.length
+          ? rows.map(([label, value]) => "<div><strong>" + esc(label) + ":</strong> " + esc(value) + "</div>").join("")
+          : "No CRM identifiers loaded.";
+        els.recordBtn.disabled = state.attribution.status === "saving";
+        els.recordBtn.textContent = state.attribution.status === "saving" ? "Recording..." : (state.attribution.status === "linked" ? "Attribution Linked" : "Record Zelle Invoice");
+      }
+
+      async function recordZelleInvoice(){
+        const validationError = validateAttributionInput();
+        if(validationError){
+          setAttributionStatus("error", validationError);
+          showToast(validationError);
+          return;
+        }
+        setAttributionStatus("saving", "Recording this Zelle invoice in the attribution system...");
+        try{
+          const response = await fetch("/api/attribution/zelle-link", {
+            method:"POST",
+            headers:{ "content-type":"application/json" },
+            body:JSON.stringify({
+              inquiry_id:state.ids.inquiry_id,
+              guest_id:state.ids.guest_id,
+              booking_id:state.ids.booking_id,
+              quote_id:state.ids.quote_id,
+              invoice_id:clean(els.invoiceNumber.value)
+            })
+          });
+          const result = await response.json().catch(() => ({ ok:false, error:"invalid_server_response" }));
+          if(!response.ok || !result.ok) throw new Error(result.error || "attribution_link_failed");
+          state.attribution.fingerprint = attributionFingerprint();
+          setAttributionStatus("linked", "Attribution linked successfully.", result.attribution_link_id);
+          showToast("Zelle invoice attribution linked");
+        }catch(error){
+          console.error(error);
+          setAttributionStatus("error", "Not linked: " + (error.message || "unknown_error"));
+          showToast("Zelle attribution was not linked");
+        }
       }
     })();
   </script>
