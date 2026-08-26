@@ -1,7 +1,13 @@
+const ADMIN_ORIGIN = "https://admin.mindobirdwatching.com";
+
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
   "x-content-type-options": "nosniff",
+  "access-control-allow-origin": ADMIN_ORIGIN,
+  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-allow-headers": "content-type",
+  "vary": "Origin",
 };
 
 function reply(status, body) {
@@ -21,6 +27,11 @@ function validId(value) {
 
 export async function onRequestPost({ request, env }) {
   try {
+    const origin = request.headers.get("origin") || "";
+    if (origin !== ADMIN_ORIGIN) {
+      return reply(403, { ok: false, error: "origin_not_allowed" });
+    }
+
     const fetchSite = (request.headers.get("sec-fetch-site") || "").toLowerCase();
     if (fetchSite && !["same-origin", "same-site", "none"].includes(fetchSite)) {
       return reply(403, { ok: false, error: "cross_site_request_rejected" });
@@ -87,4 +98,12 @@ export async function onRequestPost({ request, env }) {
 
 export async function onRequestGet() {
   return reply(405, { ok: false, error: "method_not_allowed" });
+}
+
+export async function onRequestOptions({ request }) {
+  const origin = request.headers.get("origin") || "";
+  if (origin !== ADMIN_ORIGIN) {
+    return reply(403, { ok: false, error: "origin_not_allowed" });
+  }
+  return new Response(null, { status: 204, headers: JSON_HEADERS });
 }
