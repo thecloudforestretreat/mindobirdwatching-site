@@ -604,6 +604,7 @@
             </div>
           </div>
           <input id="bookingId" type="hidden" />
+          <input id="quoteId" type="hidden" />
           <div class="field">
             <label for="depositPaymentIntentId">Stripe PaymentIntent ID (optional historical lookup)</label>
             <input id="depositPaymentIntentId" type="text" placeholder="pi_..." autocomplete="off" spellcheck="false" />
@@ -866,6 +867,7 @@
     inquiryId: document.getElementById("inquiryId"),
     guestId: document.getElementById("guestId"),
     bookingId: document.getElementById("bookingId"),
+    quoteId: document.getElementById("quoteId"),
     depositPaymentIntentId: document.getElementById("depositPaymentIntentId"),
     depositDetails: document.getElementById("depositDetails"),
     applyDeposit: document.getElementById("applyDeposit"),
@@ -1247,9 +1249,11 @@ function createItem(initial = {}) {
     const inquiryId = getInboundValue(data, "inquiry_id", "inquiryId");
     const guestId = getInboundValue(data, "guest_id", "guestId");
     const bookingId = getInboundValue(data, "booking_id", "bookingId");
+    const quoteId = getInboundValue(data, "quote_id", "quoteId");
     setFieldValue(els.inquiryId, inquiryId);
     setFieldValue(els.guestId, guestId);
     setFieldValue(els.bookingId, bookingId);
+    setFieldValue(els.quoteId, quoteId);
     els.depositLookupBtn.disabled = !inquiryId;
   }
 
@@ -1369,6 +1373,7 @@ function createItem(initial = {}) {
     const inquiryId = getInboundValue(data, "inquiry_id", "inquiryId");
     const guestId = getInboundValue(data, "guest_id", "guestId");
     const bookingId = getInboundValue(data, "booking_id", "bookingId");
+    const quoteId = getInboundValue(data, "quote_id", "quoteId");
     const inboundItems = parseInboundTourItems(data);
 
     setFieldValue(els.mainFirstName, firstName);
@@ -1382,6 +1387,7 @@ function createItem(initial = {}) {
     setFieldValue(els.inquiryId, inquiryId);
     setFieldValue(els.guestId, guestId);
     setFieldValue(els.bookingId, bookingId);
+    setFieldValue(els.quoteId, quoteId);
     els.depositLookupBtn.disabled = !inquiryId;
 
     if (notes || tourText) {
@@ -1784,6 +1790,7 @@ function createItem(initial = {}) {
       inquiry_id: els.inquiryId.value.trim(),
       guest_id: els.guestId.value.trim(),
       booking_id: els.bookingId.value.trim(),
+      quote_id: els.quoteId.value.trim(),
       deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
         ? state.deposit.payment_intent_id
         : "",
@@ -1822,6 +1829,7 @@ function createItem(initial = {}) {
       inquiry_id: els.inquiryId.value.trim(),
       guest_id: els.guestId.value.trim(),
       booking_id: els.bookingId.value.trim(),
+      quote_id: els.quoteId.value.trim(),
       deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
         ? state.deposit.payment_intent_id
         : "",
@@ -2157,6 +2165,8 @@ function createItem(initial = {}) {
       const depositApplied = Number(data.deposit_applied_amount || 0);
       const amountRemaining = data.amount_remaining != null ? Number(data.amount_remaining) : null;
       const agentId = els.agentId.value.trim();
+      const attributionLinked = data.attribution_linked === true;
+      const attributionLinkError = data.attribution_link_error || "";
 
       state.lastInvoiceFingerprint = invoiceFingerprint;
       state.lastInvoiceResult = {
@@ -2186,6 +2196,9 @@ function createItem(initial = {}) {
         ${depositApplied ? `<br />Deposit applied: <strong>$${depositApplied.toFixed(2)}</strong>` : ""}
         ${amountRemaining !== null ? `<br />Amount remaining: <strong>$${amountRemaining.toFixed(2)}</strong>` : ""}
         ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
+        <br />
+        Attribution: <strong>${attributionLinked ? "Linked" : "Not linked"}</strong>
+        ${!attributionLinked && attributionLinkError ? `<br />Attribution note: <strong>${attributionLinkError}</strong>` : ""}
         <br />
         <strong>Safety:</strong> This page will not create another invoice for these same booking details.
       `;
