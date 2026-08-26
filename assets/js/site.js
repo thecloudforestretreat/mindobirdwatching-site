@@ -1,3 +1,225 @@
+/* MBW privacy consent + Google Tag Manager loader
+   - Establishes Google Consent Mode defaults before GTM loads
+   - Remembers the visitor's choice
+   - Keeps the website and contact actions fully usable without consent
+   - Loads GTM in advanced consent mode for privacy-safe measurement
+*/
+(function loadMBWConsentAndGTM() {
+  "use strict";
+
+  var GTM_ID = "GTM-PQV9F24V";
+  var STORAGE_KEY = "mbw_consent_v1";
+  var CONSENT_VERSION = 1;
+  var path = window.location.pathname || "/";
+
+  if (/^\/admin(?:\/|$)/i.test(path) || /^\/book-tour\/pay(?:\/|$)/i.test(path)) return;
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+
+  function readChoice() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || parsed.version !== CONSENT_VERSION) return null;
+      if (parsed.choice !== "accepted" && parsed.choice !== "rejected") return null;
+      return parsed;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function consentState(choice) {
+    var granted = choice === "accepted" ? "granted" : "denied";
+    return {
+      ad_storage: granted,
+      analytics_storage: granted,
+      ad_user_data: granted,
+      ad_personalization: granted,
+      personalization_storage: granted,
+      functionality_storage: "granted",
+      security_storage: "granted"
+    };
+  }
+
+  var savedChoice = readChoice();
+  var initialState = consentState(savedChoice ? savedChoice.choice : "rejected");
+  initialState.wait_for_update = savedChoice ? 0 : 500;
+  window.gtag("consent", "default", initialState);
+  window.gtag("set", "ads_data_redaction", true);
+
+  window.__mbwConsentStatus = savedChoice ? savedChoice.choice : "unknown";
+
+  function loadGTM() {
+    if (document.querySelector('script[data-mbw-gtm="true"]')) return;
+    var script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(GTM_ID);
+    script.setAttribute("data-mbw-gtm", "true");
+    (document.head || document.documentElement).appendChild(script);
+  }
+
+  function expireCookie(name) {
+    var host = window.location.hostname || "";
+    var domains = ["", host, "." + host];
+    if (host.indexOf("www.") === 0) domains.push("." + host.slice(4));
+    domains.forEach(function (domain) {
+      var domainPart = domain ? "; domain=" + domain : "";
+      document.cookie = name + "=; Max-Age=0; path=/" + domainPart + "; SameSite=Lax";
+    });
+  }
+
+  function clearOptionalCookies() {
+    var names = (document.cookie || "").split(";").map(function (part) {
+      return part.split("=")[0].trim();
+    }).filter(function (name) {
+      return /^_ga(?:_|$)/.test(name) || name === "_gid" || name === "_gat" || name === "_fbp" || name === "_fbc";
+    });
+    names.forEach(expireCookie);
+  }
+
+  function persistChoice(choice) {
+    var record = {
+      version: CONSENT_VERSION,
+      choice: choice,
+      updated_at: new Date().toISOString()
+    };
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record)); }
+    catch (error) { /* Consent still applies for this page even if storage is unavailable. */ }
+    return record;
+  }
+
+  function emitChoice(choice) {
+    window.__mbwConsentStatus = choice;
+    window.gtag("consent", "update", consentState(choice));
+    if (choice === "rejected") clearOptionalCookies();
+
+    window.dataLayer.push({
+      event: "mbw_consent_update",
+      mbw_consent_status: choice
+    });
+
+    try {
+      document.dispatchEvent(new CustomEvent("mbw:consent-update", {
+        detail: { status: choice }
+      }));
+    } catch (error) { /* Older browsers still receive the dataLayer update. */ }
+  }
+
+  function isSpanish() {
+    var lang = (document.documentElement.getAttribute("lang") || "").toLowerCase();
+    return lang.indexOf("es") === 0 || /^\/es(?:\/|$)/i.test(window.location.pathname || "");
+  }
+
+  function addStyles() {
+    if (document.getElementById("mbw-consent-styles")) return;
+    var style = document.createElement("style");
+    style.id = "mbw-consent-styles";
+    style.textContent = [
+      ".mbwConsent{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483000;max-width:760px;margin:0 auto;padding:16px;border:1px solid rgba(10,87,42,.22);border-radius:16px;background:#fff;color:#10231a;box-shadow:0 12px 38px rgba(0,0,0,.22);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}",
+      ".mbwConsent[hidden]{display:none!important}",
+      ".mbwConsent__row{display:flex;align-items:center;gap:16px}",
+      ".mbwConsent__copy{flex:1;min-width:0}",
+      ".mbwConsent__title{margin:0 0 4px;color:#0a572a;font-size:17px;font-weight:800}",
+      ".mbwConsent__text{margin:0;color:#33463b}",
+      ".mbwConsent__text a{color:#0a572a;font-weight:700}",
+      ".mbwConsent__actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}",
+      ".mbwConsent__button{min-height:42px;padding:9px 15px;border:1px solid #0a572a;border-radius:999px;background:#fff;color:#0a572a;font:inherit;font-weight:800;cursor:pointer}",
+      ".mbwConsent__button--accept{background:#0a572a;color:#fff}",
+      ".mbwConsent__button:focus-visible,.mbwConsentManage:focus-visible{outline:3px solid #f2c94c;outline-offset:2px}",
+      ".mbwConsentManage{position:fixed;left:12px;bottom:12px;z-index:2147482999;padding:7px 11px;border:1px solid rgba(10,87,42,.28);border-radius:999px;background:rgba(255,255,255,.96);color:#0a572a;box-shadow:0 4px 16px rgba(0,0,0,.14);font:700 12px/1 system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;cursor:pointer}",
+      ".mbwConsentManage[hidden]{display:none!important}",
+      "@media(max-width:680px){.mbwConsent{left:10px;right:10px;bottom:10px;padding:14px}.mbwConsent__row{display:block}.mbwConsent__actions{margin-top:12px}.mbwConsent__button{flex:1}.mbwConsentManage{left:8px;bottom:8px}}"
+    ].join("");
+    document.head.appendChild(style);
+  }
+
+  function buildBanner() {
+    if (!document.body || document.getElementById("mbw-consent")) return;
+    addStyles();
+
+    var spanish = isSpanish();
+    var banner = document.createElement("section");
+    banner.id = "mbw-consent";
+    banner.className = "mbwConsent";
+    banner.setAttribute("role", "dialog");
+    banner.setAttribute("aria-live", "polite");
+    banner.setAttribute("aria-labelledby", "mbw-consent-title");
+    banner.innerHTML =
+      '<div class="mbwConsent__row">' +
+        '<div class="mbwConsent__copy">' +
+          '<h2 class="mbwConsent__title" id="mbw-consent-title">' +
+            (spanish ? "Tu privacidad" : "Your privacy") +
+          '</h2>' +
+          '<p class="mbwConsent__text">' +
+            (spanish
+              ? 'Usamos analítica opcional para mejorar el sitio y medir nuestros anuncios. El sitio, WhatsApp y los formularios funcionan aunque rechaces. <a href="/es/politica-de-privacidad/">Más información</a>.'
+              : 'We use optional analytics to improve the site and measure our ads. The site, WhatsApp, and forms still work if you decline. <a href="/privacy-policy/">Learn more</a>.') +
+          '</p>' +
+        '</div>' +
+        '<div class="mbwConsent__actions">' +
+          '<button class="mbwConsent__button" type="button" data-mbw-consent="reject">' +
+            (spanish ? "Rechazar" : "Decline") +
+          '</button>' +
+          '<button class="mbwConsent__button mbwConsent__button--accept" type="button" data-mbw-consent="accept">' +
+            (spanish ? "Aceptar" : "Accept") +
+          '</button>' +
+        '</div>' +
+      '</div>';
+
+    var manage = document.createElement("button");
+    manage.type = "button";
+    manage.id = "mbw-consent-manage";
+    manage.className = "mbwConsentManage";
+    manage.textContent = spanish ? "Privacidad" : "Privacy";
+    manage.setAttribute("aria-label", spanish ? "Cambiar preferencias de privacidad" : "Change privacy preferences");
+
+    function showBanner() {
+      banner.hidden = false;
+      manage.hidden = true;
+      window.setTimeout(function () {
+        var first = banner.querySelector("button");
+        if (first) first.focus();
+      }, 0);
+    }
+
+    function hideBanner() {
+      banner.hidden = true;
+      manage.hidden = false;
+    }
+
+    banner.addEventListener("click", function (event) {
+      var button = event.target && event.target.closest ? event.target.closest("[data-mbw-consent]") : null;
+      if (!button) return;
+      var choice = button.getAttribute("data-mbw-consent") === "accept" ? "accepted" : "rejected";
+      persistChoice(choice);
+      emitChoice(choice);
+      hideBanner();
+    });
+
+    manage.addEventListener("click", showBanner);
+    document.body.appendChild(banner);
+    document.body.appendChild(manage);
+
+    if (savedChoice) hideBanner();
+    else showBanner();
+
+    window.MBWConsent = {
+      version: "1.0.0",
+      getStatus: function () { return window.__mbwConsentStatus || "unknown"; },
+      open: showBanner,
+      accept: function () { persistChoice("accepted"); emitChoice("accepted"); hideBanner(); },
+      reject: function () { persistChoice("rejected"); emitChoice("rejected"); hideBanner(); }
+    };
+  }
+
+  loadGTM();
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", buildBanner);
+  else buildBanner();
+})();
+
 /* MBW shared attribution loader */
 (function loadMBWAttribution() {
   "use strict";
