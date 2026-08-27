@@ -221,3 +221,109 @@
     display: none !important;
   }
 }
+
+/* =========================================================
+   Admin action hierarchy
+   Green = primary page action
+   Yellow = recommended step (strongly encouraged, not forced)
+   ========================================================= */
+
+.adminAction--primary {
+  background: var(--admin-green) !important;
+  color: #fff !important;
+  border-color: var(--admin-green) !important;
+  box-shadow: 0 8px 20px rgba(13, 89, 37, 0.16);
+}
+
+.adminAction--primary:hover,
+.adminAction--primary:focus-visible {
+  background: #0a4a1f !important;
+  border-color: #0a4a1f !important;
+  color: #fff !important;
+}
+
+.adminAction--recommended {
+  background: #fff2a8 !important;
+  color: #4f3a00 !important;
+  border-color: #d6ad14 !important;
+  box-shadow: 0 8px 20px rgba(214, 173, 20, 0.14);
+}
+
+.adminAction--recommended:hover,
+.adminAction--recommended:focus-visible {
+  background: #ffe87a !important;
+  border-color: #bf9300 !important;
+  color: #3e2d00 !important;
+}
+
+.adminAction--primary:disabled,
+.adminAction--recommended:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.adminActionGuide {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.adminActionGuide__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-line);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.adminActionGuide__item::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 999px;
+}
+
+.adminActionGuide__item--primary {
+  color: #0d5925;
+  background: #e4f4e7;
+  border-color: #93c9a0;
+}
+
+.adminActionGuide__item--primary::before {
+  background: var(--admin-green);
+}
+
+.adminActionGuide__item--recommended {
+  color: #6a4b00;
+  background: #fff8cf;
+  border-color: #e3c552;
+}
+
+.adminActionGuide__item--recommended::before {
+  background: #d6ad14;
+}
+
+@media (max-width: 760px) {
+  .adminActionGuide {
+    justify-content: flex-start;
+  }
+}
+
+@media print {
+  .adminActionGuide {
+    display: none !important;
+  }
+}
+
