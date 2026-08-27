@@ -510,6 +510,36 @@
       font-size:12px;
       line-height:1.35;
     }
+
+    .zellePaymentBlock{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 112px;
+      gap:12px;
+      align-items:start;
+    }
+
+    .zelleQrWrap{
+      text-align:center;
+    }
+
+    .zelleQr{
+      width:112px;
+      height:112px;
+      display:block;
+      object-fit:contain;
+      background:#fff;
+      border:1px solid #d8ded5;
+      border-radius:8px;
+      padding:4px;
+    }
+
+    .zelleQrLabel{
+      margin:4px 0 0 !important;
+      color:#51605a;
+      font-size:8px !important;
+      line-height:1.2 !important;
+      font-weight:800;
+    }
     .totalsTable{
       width:100%;
       border-collapse:collapse;
@@ -640,7 +670,7 @@
       }
     }
   </style>
-<link rel="stylesheet" href="/assets/css/admin.css?v=5">
+<link rel="stylesheet" href="/assets/css/admin.css?v=6">
 </head>
 <body>
 <div data-admin-nav data-admin-page="zelle" data-admin-nav-ready="true"><nav class="adminGlobalNav" aria-label="Admin pages"><div class="adminGlobalNav__inner"><span class="adminGlobalNav__label"><img class="adminGlobalNav__logo" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt=""><span>MBW Admin</span></span><div class="adminGlobalNav__links"><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/">Admin Hub</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/guest-crm/" target="_blank" rel="noopener noreferrer">Guest CRM</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/custom-email-generator/" target="_blank" rel="noopener noreferrer">Email Generator</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/staff-info/" target="_blank" rel="noopener noreferrer">Staff Info</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/itinerary-generator/" target="_blank" rel="noopener noreferrer">Itinerary</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" aria-current="page">Zelle Invoice</a><a class="adminGlobalNav__link adminGlobalNav__external" href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer">Stripe Invoice</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" target="_blank" rel="noopener noreferrer">Tour Confirmation</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/reports/" target="_blank" rel="noopener noreferrer">Reports</a></div></div></nav></div>
@@ -654,15 +684,21 @@
             <p>Create a clean one-page invoice for Zelle payments, print/save it as PDF, and open a prepared Gmail message for the guest.</p>
           </div>
         </div>
-        <div class="actions">
-          <button id="recordBtn" type="button">Record Zelle Invoice</button>
-          <button class="primary" id="printBtn" type="button">Save as PDF</button>
-          <button id="imageBtn" type="button">Download Image</button>
-          <button id="emailHtmlBtn" type="button">Download Email HTML</button>
-          <button id="emailBtn" type="button">Open Gmail Draft</button>
-          <button id="copyEmailHtmlBtn" type="button">Copy Email HTML</button>
-          <button id="copyEmailBtn" type="button">Copy Email Text</button>
-          <button id="resetBtn" type="button">Reset</button>
+        <div>
+          <div class="actions">
+            <button class="adminAction--recommended" id="recordBtn" type="button">Record Zelle Invoice</button>
+            <button id="printBtn" type="button">Save as PDF</button>
+            <button class="adminAction--primary" id="imageBtn" type="button">Download Image</button>
+            <button id="emailHtmlBtn" type="button">Download Email HTML</button>
+            <button id="emailBtn" type="button">Open Gmail Draft</button>
+            <button id="copyEmailHtmlBtn" type="button">Copy Email HTML</button>
+            <button id="copyEmailBtn" type="button">Copy Email Text</button>
+            <button id="resetBtn" type="button">Reset</button>
+          </div>
+          <div class="adminActionGuide" aria-label="Admin action guide">
+            <span class="adminActionGuide__item adminActionGuide__item--primary">Primary action</span>
+            <span class="adminActionGuide__item adminActionGuide__item--recommended">Recommended step</span>
+          </div>
         </div>
       </header>
 
@@ -764,7 +800,7 @@
             </div>
             <div class="previewActions">
               <p class="mobilePrintHint">On mobile, image export opens the share sheet when available. This is the easiest option for WhatsApp.</p>
-              <button class="primary" id="bottomImageBtn" type="button">Download Invoice Image</button>
+              <button class="adminAction--primary" id="bottomImageBtn" type="button">Download Invoice Image</button>
               <button id="bottomEmailHtmlBtn" type="button">Download Email HTML</button>
               <button id="bottomCopyEmailHtmlBtn" type="button">Copy Email HTML</button>
               <button id="bottomPrintBtn" type="button">Save as PDF</button>
@@ -782,6 +818,8 @@
       "use strict";
 
       const logoUrl = "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png";
+      const zellePaymentEmail = "payments@mindobirdwatching.com";
+      const zelleQrUrl = "/assets/images/payments/zelle-qr.png";
       const itemOptions = [
         "MBW002 - Cloud Forest Icons Tour",
         "MBW004 - Jewels of the Morning Forest",
@@ -1271,7 +1309,10 @@
             (notes ? noteRow(notes) : "") +
           "</tbody></table>" +
           "<div class='invoiceBottom'>" +
-            "<div class='zelleBox'><h3>Zelle Instructions:</h3><p>Name: Mindo Bird Watching</p><p>Email: " + esc(contact.email) + "</p></div>" +
+            "<div class='zelleBox'><div class='zellePaymentBlock'>" +
+              "<div><h3>Zelle Instructions:</h3><p>Name: Mindo Bird Watching</p><p>Email: <strong>" + esc(contact.paymentEmail) + "</strong></p><p>Scan the QR code with your banking app to pay.</p></div>" +
+              "<div class='zelleQrWrap'><img class='zelleQr' src='" + attr(zelleQrUrl) + "' alt='Zelle payment QR code for Mindo Bird Watching' /><p class='zelleQrLabel'>Scan to pay with Zelle</p></div>" +
+            "</div></div>" +
             "<table class='totalsTable'><tbody>" +
               "<tr><td>Subtotal</td><td><strong>" + esc(formatMoney(subtotal)) + "</strong></td></tr>" +
               "<tr><td>" + esc(adjustmentLabel) + "</td><td>" + esc(formatMoney(adjustment)) + "</td></tr>" +
@@ -1608,6 +1649,7 @@
           (pickup || extraGuests ? "\n" : "") +
           "Booking total: " + formatMoney(totals.total) + "\n" +
           (plan.mode === "deposit" ? "Deposit requested now: " + formatMoney(plan.requested) + "\nRemaining balance after deposit: " + formatMoney(plan.remaining) + "\n\n" : "Amount requested now: " + formatMoney(plan.requested) + "\n\n") +
+          "Zelle payment email: " + getContact().paymentEmail + "\n\n" +
           "Once the requested payment is received, we will send your official tour confirmation.\n\n" +
           "In the meantime, you are welcome to follow our recent sightings, videos, and tour ideas here:\n" +
           "Instagram: https://instagram.com/mindobirdwatching\n" +
@@ -1737,7 +1779,8 @@
         const contact = config.contact || {};
         const digits = String(contact.whatsappNumberDigits || "13054585402").replace(/\D/g, "");
         return {
-          email: contact.email || "payments@mindobirdwatching.com",
+          email: contact.email || zellePaymentEmail,
+          paymentEmail: zellePaymentEmail,
           phoneDisplay: contact.whatsappDisplayNumber || ("+" + digits),
           whatsappNumberDigits: digits
         };
