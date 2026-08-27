@@ -301,11 +301,33 @@
     }
     .invoiceHeader{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:28px;
+      grid-template-columns:1fr 126px 1fr;
+      gap:22px;
       align-items:start;
       border-top:4px solid var(--mbw-green);
       padding-top:12px;
+    }
+
+    .invoiceQrTop{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      text-align:center;
+      padding-top:2px;
+    }
+
+    .invoiceQrTop .zelleQr{
+      width:118px;
+      height:118px;
+    }
+
+    .invoiceQrTop .zelleQrLabel{
+      margin-top:4px !important;
+      font-size:8px !important;
+      line-height:1.2 !important;
+      color:#51605a;
+      font-weight:800;
     }
     .invoiceLogoWrap{
       position:relative;
@@ -409,7 +431,7 @@
       font-weight:900;
     }
     .amountDue{
-      text-align:center;
+      text-align:right;
       color:var(--mbw-green);
       padding-top:10px;
     }
@@ -512,10 +534,7 @@
     }
 
     .zellePaymentBlock{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) 112px;
-      gap:12px;
-      align-items:start;
+      display:block;
     }
 
     .zelleQrWrap{
@@ -1286,6 +1305,7 @@
         return "" +
           "<div class='invoiceHeader'>" +
             "<div class='invoiceLogoWrap'><span class='invoiceLogoFallback'>MBW</span><img class='invoiceLogo' crossorigin='anonymous' src='" + attr(logoUrl) + "' alt='Mindo Bird Watching' onerror='this.style.display=\"none\"' /></div>" +
+            "<div class='invoiceQrTop'><img class='zelleQr' src='" + attr(zelleQrUrl) + "' alt='Zelle payment QR code for Mindo Bird Watching' /><p class='zelleQrLabel'>Scan to pay with Zelle</p></div>" +
             "<div class='invoiceMeta'><h2>INVOICE</h2><p>Mindo Bird Watching</p><p>Ph: " + esc(contact.phoneDisplay) + "</p><p><a href='https://www.mindobirdwatching.com'>www.mindobirdwatching.com</a></p></div>" +
           "</div>" +
           "<div class='topInfo'>" +
@@ -1310,8 +1330,7 @@
           "</tbody></table>" +
           "<div class='invoiceBottom'>" +
             "<div class='zelleBox'><div class='zellePaymentBlock'>" +
-              "<div><h3>Zelle Instructions:</h3><p>Name: Mindo Bird Watching</p><p>Email: <strong>" + esc(contact.paymentEmail) + "</strong></p><p>Scan the QR code with your banking app to pay.</p></div>" +
-              "<div class='zelleQrWrap'><img class='zelleQr' src='" + attr(zelleQrUrl) + "' alt='Zelle payment QR code for Mindo Bird Watching' /><p class='zelleQrLabel'>Scan to pay with Zelle</p></div>" +
+              "<div><h3>Zelle Instructions:</h3><p>Name: Mindo Bird Watching</p><p>Email: <strong>" + esc(contact.paymentEmail) + "</strong></p><p>Use the QR code above or this email in your banking app.</p></div>" +
             "</div></div>" +
             "<table class='totalsTable'><tbody>" +
               "<tr><td>Subtotal</td><td><strong>" + esc(formatMoney(subtotal)) + "</strong></td></tr>" +
@@ -1533,7 +1552,7 @@
           "html,body{margin:0;padding:0;background:#fff;color:#333;font-family:Arial,Helvetica,sans-serif;}" +
           "a{color:#0057b8;text-decoration:underline;}" +
           ".invoicePage{width:8.5in;height:11in;min-height:11in;margin:0;background:#fff;color:#333;padding:.48in .52in .38in;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.35;overflow:hidden;}" +
-          ".invoiceHeader{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;border-top:4px solid #0D5925;padding-top:12px;}" +
+          ".invoiceHeader{display:grid;grid-template-columns:1fr 126px 1fr;gap:22px;align-items:start;border-top:4px solid #0D5925;padding-top:12px;}" +".invoiceQrTop{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding-top:2px;}" +".invoiceQrTop .zelleQr{width:118px;height:118px;}" +".invoiceQrTop .zelleQrLabel{margin-top:4px!important;font-size:8px!important;line-height:1.2!important;color:#51605a;font-weight:800;}" +
           ".invoiceLogoWrap{position:relative;width:126px;height:126px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:#F6FAF0;overflow:hidden;}" +
           ".invoiceLogoFallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border:3px solid #A8C98E;border-radius:999px;color:#0D5925;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1;font-weight:900;text-align:center;letter-spacing:.02em;}" +
           ".invoiceLogo{position:relative;z-index:2;width:126px;height:126px;object-fit:contain;display:block;background:#fff;}" +
@@ -1544,7 +1563,7 @@
           ".infoTable{width:100%;border-collapse:collapse;color:#222;}" +
           ".infoTable th,.infoTable td{padding:3px 0;text-align:left;vertical-align:top;font-size:13px;line-height:1.3;}" +
           ".infoTable th{width:116px;color:#0D5925;font-weight:900;}" +
-          ".amountDue{text-align:center;color:#0D5925;padding-top:10px;}" +
+          ".amountDue{text-align:right;color:#0D5925;padding-top:10px;}" +
           ".amountDue strong{display:block;font-size:13px;line-height:1.2;text-transform:uppercase;letter-spacing:.04em;}" +
           ".amountDue span{display:block;margin-top:5px;font-size:20px;line-height:1.1;font-weight:400;}" +
           ".amountDue em{display:block;margin-top:6px;color:#51605a;font-size:11px;line-height:1.25;font-style:normal;font-weight:800;}" +
