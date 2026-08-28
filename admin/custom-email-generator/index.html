@@ -391,11 +391,105 @@
       .previewWrap{ padding:8px; }
       .emailPreview{ width:100%; }
     }
+  
+
+    /* =========================================================
+       2026-08-28 ADMIN LAYOUT REPAIR
+       Keep the generator self-contained and prevent site.css
+       container rules from stretching or collapsing the workspace.
+       ========================================================= */
+    html, body{ width:100%; min-height:100%; overflow-x:hidden; }
+    body[data-admin-layout="email"]{
+      margin:0;
+      background:var(--mbw-bg);
+    }
+    body[data-admin-layout="email"] > .container{
+      width:min(calc(100% - 32px), 1720px);
+      max-width:none;
+      margin:0 auto;
+      padding:0;
+    }
+    body[data-admin-layout="email"] .page{
+      width:100%;
+      margin:16px 0 32px;
+      padding:18px;
+    }
+    body[data-admin-layout="email"] .appGrid{
+      width:100%;
+      display:grid;
+      grid-template-columns:minmax(300px, 340px) minmax(360px, 440px) minmax(0, 1fr);
+      gap:16px;
+      align-items:start;
+    }
+    body[data-admin-layout="email"] .panel,
+    body[data-admin-layout="email"] .previewPanel{
+      min-width:0;
+      max-width:100%;
+    }
+    body[data-admin-layout="email"] .previewWrap{
+      width:100%;
+      max-width:100%;
+      overflow:auto;
+    }
+    body[data-admin-layout="email"] .sticky{ top:82px; }
+
+    @media (max-width:1480px){
+      body[data-admin-layout="email"] > .container{
+        width:min(calc(100% - 28px), 1360px);
+      }
+      body[data-admin-layout="email"] .appGrid{
+        grid-template-columns:minmax(300px, 340px) minmax(0, 1fr);
+      }
+      body[data-admin-layout="email"] .previewPanel{
+        grid-column:1 / -1;
+      }
+      body[data-admin-layout="email"] .sticky{ position:static; }
+    }
+
+    @media (max-width:900px){
+      body[data-admin-layout="email"] > .container{
+        width:calc(100% - 24px);
+      }
+      body[data-admin-layout="email"] .page{
+        margin-top:12px;
+        padding:12px;
+      }
+      body[data-admin-layout="email"] .appGrid,
+      body[data-admin-layout="email"] .inlineGrid{
+        grid-template-columns:1fr;
+      }
+      body[data-admin-layout="email"] .previewPanel{
+        grid-column:auto;
+      }
+      body[data-admin-layout="email"] .adminTop{
+        display:grid;
+        grid-template-columns:1fr;
+      }
+      body[data-admin-layout="email"] .adminActions{
+        width:100%;
+        justify-content:stretch;
+      }
+      body[data-admin-layout="email"] .adminActions .btnAdmin{
+        flex:1 1 180px;
+      }
+    }
+
+    @media (max-width:560px){
+      body[data-admin-layout="email"] > .container{ width:calc(100% - 16px); }
+      body[data-admin-layout="email"] .page{ padding:10px; }
+      body[data-admin-layout="email"] .adminTitle{ align-items:center; }
+      body[data-admin-layout="email"] .adminLogo{ width:42px; height:42px; }
+      body[data-admin-layout="email"] .adminTitle h1{ font-size:20px; }
+      body[data-admin-layout="email"] .adminActions .btnAdmin{ width:100%; flex-basis:100%; }
+      body[data-admin-layout="email"] .presetGrid{ grid-template-columns:1fr; }
+      body[data-admin-layout="email"] .previewWrap{ padding:6px; }
+    }
+
   </style>
-<link rel="stylesheet" href="/assets/css/admin.css?v=5">
+<link rel="stylesheet" href="/assets/css/admin.css?v=6">
 </head>
 
-<body>
+<body data-admin-layout="email">
 <div data-admin-nav data-admin-page="email" data-admin-nav-ready="true"><nav class="adminGlobalNav" aria-label="Admin pages"><div class="adminGlobalNav__inner"><span class="adminGlobalNav__label"><img class="adminGlobalNav__logo" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt=""><span>MBW Admin</span></span><div class="adminGlobalNav__links"><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/">Admin Hub</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/guest-crm/" target="_blank" rel="noopener noreferrer">Guest CRM</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/custom-email-generator/" aria-current="page">Email Generator</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/staff-info/" target="_blank" rel="noopener noreferrer">Staff Info</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/itinerary-generator/" target="_blank" rel="noopener noreferrer">Itinerary</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" target="_blank" rel="noopener noreferrer">Zelle Invoice</a><a class="adminGlobalNav__link adminGlobalNav__external" href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer">Stripe Invoice</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" target="_blank" rel="noopener noreferrer">Tour Confirmation</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/reports/" target="_blank" rel="noopener noreferrer">Reports</a></div></div></nav></div>
   <div class="container">
     <div id="siteHeader"></div>
