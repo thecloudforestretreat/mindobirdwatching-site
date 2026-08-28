@@ -695,6 +695,164 @@
       .mobileModeBar button[aria-current="page"]{background:#0b612e;color:#fff}
       .mobileBuilderBar{margin:0;width:auto;position:static;box-shadow:none}
     }
+  
+
+    /* =========================================================
+       2026-08-28 STAFF INFO LAYOUT REPAIR
+       Final scoped rules intentionally win over the older layout
+       generations above without changing the application logic.
+       ========================================================= */
+    body[data-admin-layout="staff"]{
+      margin:0;
+      background:var(--bg);
+    }
+    body[data-admin-layout="staff"] .staffInfoShell{
+      width:min(calc(100% - 32px), 1280px);
+      max-width:none;
+      margin:0 auto;
+      padding:20px 0 34px;
+    }
+    body[data-admin-layout="staff"] .app{
+      width:100%;
+      max-width:none;
+      margin:14px 0 0;
+      padding:0;
+    }
+    body[data-admin-layout="staff"] .hero{
+      width:100%;
+      display:grid;
+      grid-template-columns:minmax(280px,.82fr) minmax(420px,1.18fr) auto;
+      gap:14px;
+      align-items:stretch;
+      padding:14px;
+    }
+    body[data-admin-layout="staff"] .heroFilters,
+    body[data-admin-layout="staff"] .controlGrid{
+      min-width:0;
+      width:100%;
+    }
+    body[data-admin-layout="staff"] .heroFilters{
+      display:grid;
+      grid-template-columns:minmax(180px, .44fr) minmax(260px, 1fr);
+      gap:10px;
+      align-content:center;
+    }
+    body[data-admin-layout="staff"] .heroActions{
+      min-width:132px;
+      align-self:center;
+    }
+    body[data-admin-layout="staff"] .quickCategories,
+    body[data-admin-layout="staff"] .recentPanel,
+    body[data-admin-layout="staff"] .replyWorkspace{
+      width:100%;
+      max-width:100%;
+    }
+    body[data-admin-layout="staff"] .replyWorkspace{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) minmax(350px, 390px);
+      gap:14px;
+      align-items:start;
+    }
+    body[data-admin-layout="staff"] .resultsPanel,
+    body[data-admin-layout="staff"] .builderPanel{
+      min-width:0;
+      max-width:100%;
+    }
+    body[data-admin-layout="staff"] .builderPanel{
+      position:sticky;
+      top:14px;
+      max-height:calc(100vh - 28px);
+      overflow:auto;
+    }
+    body[data-admin-layout="staff"] .resultsPanel .itemBtn{
+      grid-template-columns:minmax(0, 1fr) max-content minmax(90px, auto) max-content;
+      column-gap:10px;
+    }
+    body[data-admin-layout="staff"] .resultsPanel .itemBtn .itemActions{
+      min-width:154px;
+    }
+
+    @media (max-width:1100px){
+      body[data-admin-layout="staff"] .staffInfoShell{
+        width:min(calc(100% - 28px), 980px);
+      }
+      body[data-admin-layout="staff"] .hero{
+        grid-template-columns:1fr auto;
+      }
+      body[data-admin-layout="staff"] .titleBlock{ grid-column:1; }
+      body[data-admin-layout="staff"] .heroActions{ grid-column:2; grid-row:1; }
+      body[data-admin-layout="staff"] .heroFilters{
+        grid-column:1 / -1;
+        grid-row:2;
+        grid-template-columns:180px minmax(0,1fr);
+      }
+      body[data-admin-layout="staff"] .replyWorkspace{
+        grid-template-columns:1fr;
+      }
+      body[data-admin-layout="staff"] .builderPanel{
+        position:static;
+        max-height:none;
+      }
+    }
+
+    @media (max-width:760px){
+      body[data-admin-layout="staff"] .staffInfoShell{ width:calc(100% - 24px); padding-top:14px; }
+      body[data-admin-layout="staff"] .hero{ grid-template-columns:1fr; padding:12px; }
+      body[data-admin-layout="staff"] .heroActions{
+        grid-column:1;
+        grid-row:3;
+        display:flex;
+        width:100%;
+      }
+      body[data-admin-layout="staff"] .staffBrand{ display:none; }
+      body[data-admin-layout="staff"] .heroFilters{
+        grid-column:1;
+        grid-row:2;
+        grid-template-columns:1fr;
+      }
+      body[data-admin-layout="staff"] .quickCategories{
+        grid-template-columns:1fr;
+        gap:10px;
+      }
+      body[data-admin-layout="staff"] .categoryChips{
+        flex-wrap:nowrap;
+        overflow-x:auto;
+        padding-bottom:4px;
+      }
+      body[data-admin-layout="staff"] .resultsPanel .itemBtn{
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:7px;
+      }
+      body[data-admin-layout="staff"] .resultsPanel .itemBtn>div:first-child{ grid-column:1; grid-row:1; }
+      body[data-admin-layout="staff"] .resultsPanel .itemBtn>.price{ grid-column:2; grid-row:1; }
+      body[data-admin-layout="staff"] .resultsPanel .itemBtn .itemFacts{ grid-column:1 / -1; grid-row:2; }
+      body[data-admin-layout="staff"] .resultsPanel .itemBtn .itemActions{
+        grid-column:1 / -1;
+        grid-row:3;
+        min-width:0;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+      }
+      body[data-admin-layout="staff"] .builderPanel{ display:none; }
+      body[data-admin-layout="staff"] .builderPanel.mobileOpen{
+        display:block;
+        position:fixed;
+        z-index:1100;
+        inset:0;
+        border-radius:0;
+        overflow:auto;
+        max-height:none;
+        padding-bottom:90px;
+      }
+    }
+
+    @media (max-width:520px){
+      body[data-admin-layout="staff"] .staffInfoShell{ width:calc(100% - 16px); }
+      body[data-admin-layout="staff"] .heroActions{ display:grid; grid-template-columns:1fr; }
+      body[data-admin-layout="staff"] .btn{ width:100%; }
+      body[data-admin-layout="staff"] .builderFields{ grid-template-columns:1fr; }
+    }
+
   </style>
 <meta content="Internal staff reference for Mindo Bird Watching team members, with quick call notes, WhatsApp-ready replies, booking links, pricing references, and social links." name="description"/><link href="https://admin.mindobirdwatching.com/staff-info/" rel="canonical"/><meta content="website" property="og:type"/><meta content="Mindo Bird Watching" property="og:site_name"/><meta content="en_US" property="og:locale"/><meta content="MBW Staff Info Library" property="og:title"/><meta content="Internal staff reference for Mindo Bird Watching team members with quick answers, booking links, and social links." property="og:description"/><meta content="https://admin.mindobirdwatching.com/staff-info/" property="og:url"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" property="og:image"/><meta content="Mindo Bird Watching" property="og:image:alt"/><meta content="summary" name="twitter:card"/><meta content="MBW Staff Info Library" name="twitter:title"/><meta content="Internal staff reference for Mindo Bird Watching team members." name="twitter:description"/><meta content="https://mindobirdwatching.com/apple-touch-icon.png" name="twitter:image"/><link href="/site.webmanifest" rel="manifest"/><link href="/assets/css/site.css" rel="stylesheet"/><link href="/assets/css/header.css?v=1" rel="stylesheet"/><script defer="" src="/assets/js/site-config.js"></script><script type="application/ld+json">[
   {
@@ -755,9 +913,9 @@
       "https://www.youtube.com/@MindoBirdWatching"
     ]
   }
-]</script><link rel="stylesheet" href="/assets/css/admin.css?v=5">
+]</script><link rel="stylesheet" href="/assets/css/admin.css?v=6">
 </head>
-<body data-page-content-group="staff" data-page-language="en" data-page-type="staff_info">
+<body data-admin-layout="staff" data-page-content-group="staff" data-page-language="en" data-page-type="staff_info">
 <div data-admin-nav data-admin-page="staff" data-admin-nav-ready="true"><nav class="adminGlobalNav" aria-label="Admin pages"><div class="adminGlobalNav__inner"><span class="adminGlobalNav__label"><img class="adminGlobalNav__logo" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt=""><span>MBW Admin</span></span><div class="adminGlobalNav__links"><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/">Admin Hub</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/guest-crm/" target="_blank" rel="noopener noreferrer">Guest CRM</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/custom-email-generator/" target="_blank" rel="noopener noreferrer">Email Generator</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/staff-info/" aria-current="page">Staff Info</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/itinerary-generator/" target="_blank" rel="noopener noreferrer">Itinerary</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" target="_blank" rel="noopener noreferrer">Zelle Invoice</a><a class="adminGlobalNav__link adminGlobalNav__external" href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer">Stripe Invoice</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" target="_blank" rel="noopener noreferrer">Tour Confirmation</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/reports/" target="_blank" rel="noopener noreferrer">Reports</a></div></div></nav></div>
 <div class="container staffInfoShell">
 <div data-current-lang="en" id="siteHeader"></div>
