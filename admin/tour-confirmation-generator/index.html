@@ -590,11 +590,117 @@
       .mobileTools{ grid-template-columns:1fr; }
       .previewShell{ padding:8px; border-radius:14px; }
     }
+  
+
+    /* =========================================================
+       2026-08-28 ADMIN LAYOUT REPAIR
+       Define the page tokens locally and keep the confirmation
+       workspace independent from public-site container changes.
+       ========================================================= */
+    :root{
+      --forest:#075f28;
+      --ink:#071923;
+      --muted:rgba(7,25,35,.70);
+      --line:rgba(7,25,35,.14);
+      --r:18px;
+      --shadow:0 18px 55px rgba(7,25,35,.10);
+      --font-body:Arial, Helvetica, sans-serif;
+    }
+    html, body{ width:100%; min-height:100%; overflow-x:hidden; }
+    body[data-admin-layout="confirmation"]{
+      margin:0;
+      background:#C7DAAC;
+      color:var(--ink);
+    }
+    body[data-admin-layout="confirmation"] > .container{
+      width:min(calc(100% - 32px), 1640px);
+      max-width:none;
+      margin:0 auto;
+      padding:0;
+    }
+    body[data-admin-layout="confirmation"] .page{
+      width:100%;
+      margin:16px 0 32px;
+      padding:18px;
+    }
+    body[data-admin-layout="confirmation"] .appGrid{
+      width:100%;
+      display:grid;
+      grid-template-columns:minmax(280px, 320px) minmax(0, 1fr);
+      gap:16px;
+      align-items:start;
+    }
+    body[data-admin-layout="confirmation"] .mainStack,
+    body[data-admin-layout="confirmation"] .controlPanel,
+    body[data-admin-layout="confirmation"] .previewPanel,
+    body[data-admin-layout="confirmation"] .previewShell{
+      min-width:0;
+      max-width:100%;
+    }
+    body[data-admin-layout="confirmation"] .sidePanel{ top:82px; }
+    body[data-admin-layout="confirmation"] .previewShell{
+      width:100%;
+      overflow:auto;
+    }
+
+    @media (max-width:1180px){
+      body[data-admin-layout="confirmation"] > .container{
+        width:min(calc(100% - 28px), 1120px);
+      }
+      body[data-admin-layout="confirmation"] .appGrid{
+        grid-template-columns:minmax(250px, 300px) minmax(0, 1fr);
+      }
+      body[data-admin-layout="confirmation"] .controlGrid{
+        grid-template-columns:1fr 1fr;
+      }
+      body[data-admin-layout="confirmation"] .controlGrid > :first-child{
+        grid-column:1 / -1;
+      }
+      body[data-admin-layout="confirmation"] .editGrid{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+      }
+      body[data-admin-layout="confirmation"] .editGrid .span2,
+      body[data-admin-layout="confirmation"] .editGrid .span3,
+      body[data-admin-layout="confirmation"] .editGrid .span4,
+      body[data-admin-layout="confirmation"] .editGrid .span6{
+        grid-column:auto;
+      }
+      body[data-admin-layout="confirmation"] .editGrid .span6,
+      body[data-admin-layout="confirmation"] .confirmationChooser{
+        grid-column:1 / -1;
+      }
+    }
+
+    @media (max-width:900px){
+      body[data-admin-layout="confirmation"] > .container{ width:calc(100% - 24px); }
+      body[data-admin-layout="confirmation"] .page{ margin-top:12px; padding:12px; }
+      body[data-admin-layout="confirmation"] .appGrid{ grid-template-columns:1fr; }
+      body[data-admin-layout="confirmation"] .sidePanel{ position:static; }
+      body[data-admin-layout="confirmation"] .records{ max-height:360px; }
+      body[data-admin-layout="confirmation"] .adminTop{ display:grid; grid-template-columns:1fr; }
+      body[data-admin-layout="confirmation"] .adminActions{ width:100%; justify-content:stretch; }
+      body[data-admin-layout="confirmation"] .adminActions .btnAdmin{ flex:1 1 180px; }
+    }
+
+    @media (max-width:620px){
+      body[data-admin-layout="confirmation"] > .container{ width:calc(100% - 16px); }
+      body[data-admin-layout="confirmation"] .page{ padding:10px; }
+      body[data-admin-layout="confirmation"] .adminLogo{ width:42px; height:42px; }
+      body[data-admin-layout="confirmation"] .adminTitle h1{ font-size:20px; }
+      body[data-admin-layout="confirmation"] .controlGrid,
+      body[data-admin-layout="confirmation"] .editGrid{ grid-template-columns:1fr; }
+      body[data-admin-layout="confirmation"] .controlGrid > :first-child,
+      body[data-admin-layout="confirmation"] .editGrid .span6,
+      body[data-admin-layout="confirmation"] .confirmationChooser{ grid-column:auto; }
+      body[data-admin-layout="confirmation"] .adminActions .btnAdmin{ width:100%; flex-basis:100%; }
+      body[data-admin-layout="confirmation"] .previewShell{ padding:8px; }
+    }
+
   </style>
-<link rel="stylesheet" href="/assets/css/admin.css?v=5">
+<link rel="stylesheet" href="/assets/css/admin.css?v=6">
 </head>
 
-<body>
+<body data-admin-layout="confirmation">
 <div data-admin-nav data-admin-page="confirmation" data-admin-nav-ready="true"><nav class="adminGlobalNav" aria-label="Admin pages"><div class="adminGlobalNav__inner"><span class="adminGlobalNav__label"><img class="adminGlobalNav__logo" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt=""><span>MBW Admin</span></span><div class="adminGlobalNav__links"><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/">Admin Hub</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/guest-crm/" target="_blank" rel="noopener noreferrer">Guest CRM</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/custom-email-generator/" target="_blank" rel="noopener noreferrer">Email Generator</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/staff-info/" target="_blank" rel="noopener noreferrer">Staff Info</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/itinerary-generator/" target="_blank" rel="noopener noreferrer">Itinerary</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" target="_blank" rel="noopener noreferrer">Zelle Invoice</a><a class="adminGlobalNav__link adminGlobalNav__external" href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer">Stripe Invoice</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" aria-current="page">Tour Confirmation</a><a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/reports/" target="_blank" rel="noopener noreferrer">Reports</a></div></div></nav></div>
   <div class="container">
     <div id="siteHeader"></div>
