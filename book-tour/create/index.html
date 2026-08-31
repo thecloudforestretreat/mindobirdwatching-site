@@ -1334,7 +1334,8 @@ function createItem(initial = {}) {
   function createInboundBookingItem(item, data, language) {
     const tourCode = inboundTourCode(item, language);
     const tour = getTourByCodeAndLanguage(tourCode, language);
-    const quotedPrice = Number(String(item.price || item.quoted_amount || item.unit_price || "").replace(/[^0-9.-]/g, ""));
+    const rawQuotedPrice = String(item.price || item.quoted_amount || item.unit_price || "").trim().replace(/^\$/, "").replace(/,/g, "");
+    const quotedPrice = /^\d+(?:\.\d{1,2})?$/.test(rawQuotedPrice) ? Number(rawQuotedPrice) : NaN;
     const standardPrice = tour ? Number(parseTourAmount(tour)) : 0;
     const adjustment = Number.isFinite(quotedPrice) && quotedPrice > 0 && tour
       ? quotedPrice - standardPrice
