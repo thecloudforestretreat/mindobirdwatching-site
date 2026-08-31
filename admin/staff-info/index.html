@@ -1681,7 +1681,7 @@
             ${item.last_updated ? `<div class="updated">${esc(text.updated)}: ${esc(item.last_updated)}</div>` : ""}
           </div>
           <div class="detailActions">
-            <button class="btn primary" id="addCurrentItem" type="button">${alreadySelected ? "✓ Added" : "+ Add to message"}</button>
+            <button class="btn ${alreadySelected ? "selectedAdd" : "adminAction--recommended"}" id="addCurrentItem" type="button">${alreadySelected ? "✓ Added" : "+ Add to message"}</button>
             <button class="btn secondary" type="button" data-copy="${esc(whatsappReady || shortText)}">${esc(text.whatsapp)}</button>
           </div>
           <div class="blocks">
@@ -1752,7 +1752,7 @@
               ${summary ? `<p class="itemSummary">${esc(summary)}</p>` : ""}
               <div class="itemActions">
                 <button class="btn secondary viewItem" type="button">Details</button>
-                <button class="btn ${state.selected.map(String).includes(String(item.id)) ? "selectedAdd" : "primary"} addItem" type="button">${state.selected.map(String).includes(String(item.id)) ? "✓ Added" : "+ Add"}</button>
+                <button class="btn ${state.selected.map(String).includes(String(item.id)) ? "selectedAdd" : "adminAction--recommended"} addItem" type="button">${state.selected.map(String).includes(String(item.id)) ? "✓ Added" : "+ Add"}</button>
               </div>
             </article>
           `;
