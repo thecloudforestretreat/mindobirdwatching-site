@@ -84,6 +84,7 @@ export async function onRequestPost({ request, env }) {
       const rawAddOns = String(data.get("tour_add_ons") || "").trim();
       const rawDates = String(data.get("dates_of_visit") || "").trim();
       const guests = String(data.get("number_of_guests") || "").trim();
+      const pickup = String(data.get("pickup_location") || "").trim();
       const primaryKey = rawPrimary.toLowerCase();
       const primaryMap = {
         "half-day tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Half-Day Birdwatching", product:"", duration:"Half Day" },
@@ -92,6 +93,9 @@ export async function onRequestPost({ request, env }) {
         "night walk": { interest:"Activity", service:"Activity", tour:"Night Walk", product:"MBW016", duration:"Evening activity" },
         "quito to mindo day trip": { interest:"Birdwatching", service:"Birdwatching", tour:"Quito to Mindo Day Trip", product:"", duration:"Full Day" },
         "custom / private tour": { interest:"Birdwatching", service:"Custom", tour:"Custom / Private Tour", product:"", duration:"Flexible" },
+        "private mindo birding": { interest:"Birdwatching", service:"Birdwatching", tour:"Private Mindo Birding", product:"", duration:"Flexible" },
+        "spectacled bear experience": { interest:"Wildlife", service:"Wildlife", tour:"Spectacled Bear Experience", product:"", duration:"Extended Half Day or Full Day" },
+        "mindo night walk": { interest:"Activity", service:"Activity", tour:"Night Walk", product:"MBW016", duration:"Evening activity" },
         "not sure yet": { interest:"Other", service:"Custom", tour:"Not Sure Yet", product:"", duration:"Flexible" }
       };
       const primary = primaryMap[primaryKey] || { interest:"Other", service:"Custom", tour:rawPrimary || "Not Sure Yet", product:"", duration:"Flexible" };
@@ -120,8 +124,8 @@ export async function onRequestPost({ request, env }) {
       const hasActivity = additions.some(item => item.service_type === "Activity");
       const hasBirding = primary.service === "Birdwatching" || additions.some(item => item.service_type === "Birdwatching");
       const interest = hasActivity && hasBirding ? "Tour + Activity" : primary.interest;
-      const primaryItem = { id:"primary", tour:primary.tour, date:rawDates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:primary.product, service_type:primary.service, duration:primary.duration, status:"new", pickup_location:"", price:"", notes:"Primary request" };
-      const tourItems = [primaryItem].concat(additions.map((item, index) => ({ id:"addon-" + (index + 1), tour:item.tour, date:primaryItem.date, tour_date:primaryItem.date, guests, product_selected:item.product_selected, service_type:item.service_type, duration:item.tour === "Night Walk" ? "Evening activity" : "", status:"new", pickup_location:"", price:"", notes:"Requested on website" })));
+      const primaryItem = { id:"primary", tour:primary.tour, date:rawDates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:primary.product, service_type:primary.service, duration:primary.duration, status:"new", pickup_location:pickup, price:"", notes:"Primary request" };
+      const tourItems = [primaryItem].concat(additions.map((item, index) => ({ id:"addon-" + (index + 1), tour:item.tour, date:primaryItem.date, tour_date:primaryItem.date, guests, product_selected:item.product_selected, service_type:item.service_type, duration:item.tour === "Night Walk" ? "Evening activity" : "", status:"new", pickup_location:pickup, price:"", notes:"Requested on website" })));
       return {
         tour_type:interest,
         tour_category:interest,
