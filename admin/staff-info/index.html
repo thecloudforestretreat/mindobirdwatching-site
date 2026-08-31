@@ -707,7 +707,7 @@
       background:var(--bg);
     }
     body[data-admin-layout="staff"] .staffInfoShell{
-      width:min(calc(100% - 32px), 1280px);
+      width:min(calc(100% - 40px), 1520px);
       max-width:none;
       margin:0 auto;
       padding:20px 0 34px;
@@ -749,8 +749,8 @@
     }
     body[data-admin-layout="staff"] .replyWorkspace{
       display:grid;
-      grid-template-columns:minmax(0, 1fr) minmax(350px, 390px);
-      gap:14px;
+      grid-template-columns:minmax(0, 1fr) minmax(410px, 460px);
+      gap:18px;
       align-items:start;
     }
     body[data-admin-layout="staff"] .resultsPanel,
@@ -765,14 +765,34 @@
       overflow:auto;
     }
     body[data-admin-layout="staff"] .resultsPanel .itemBtn{
-      grid-template-columns:minmax(0, 1fr) max-content minmax(90px, auto) max-content;
-      column-gap:10px;
+      grid-template-columns:minmax(280px, 1.6fr) max-content minmax(110px, .6fr) max-content;
+      column-gap:14px;
     }
     body[data-admin-layout="staff"] .resultsPanel .itemBtn .itemActions{
-      min-width:154px;
+      min-width:172px;
     }
 
-    @media (max-width:1100px){
+    body[data-admin-layout="staff"] .builderBody{
+      padding:16px;
+      gap:14px;
+    }
+
+    body[data-admin-layout="staff"] .messagePreview{
+      min-height:320px;
+    }
+
+    body[data-admin-layout="staff"] .recentItems{
+      display:grid;
+      grid-template-columns:repeat(6, minmax(0, 1fr));
+      overflow:visible;
+    }
+
+    body[data-admin-layout="staff"] .recentCard{
+      min-width:0;
+      max-width:none;
+    }
+
+    @media (max-width:900px){
       body[data-admin-layout="staff"] .staffInfoShell{
         width:min(calc(100% - 28px), 980px);
       }
@@ -792,6 +812,9 @@
       body[data-admin-layout="staff"] .builderPanel{
         position:static;
         max-height:none;
+      }
+      body[data-admin-layout="staff"] .recentItems{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
       }
     }
 
@@ -819,6 +842,15 @@
         overflow-x:auto;
         padding-bottom:4px;
       }
+      body[data-admin-layout="staff"] .recentItems{
+        display:flex;
+        overflow-x:auto;
+      }
+      body[data-admin-layout="staff"] .recentCard{
+        min-width:150px;
+        max-width:190px;
+      }
+      body[data-admin-layout="staff"] .messagePreview{ min-height:250px; }
       body[data-admin-layout="staff"] .resultsPanel .itemBtn{
         grid-template-columns:minmax(0,1fr) auto;
         gap:7px;
@@ -1001,7 +1033,7 @@
 <textarea id="messagePreview" class="messagePreview" rows="13"></textarea>
 <div class="messageMeter"><span id="messageStatus">Ready</span><strong id="charCount">0 characters</strong></div>
 <div class="builderActions">
-<button class="btn primary" id="copyMessageBtn" type="button">Copy WhatsApp</button>
+<button class="btn adminAction--primary" id="copyMessageBtn" type="button">Copy WhatsApp</button>
 <button class="btn" id="openWhatsAppBtn" type="button">Open WhatsApp</button>
 <button class="btn secondary" id="regenerateMessageBtn" type="button">Regenerate</button>
 <button class="btn secondary" id="clearMessageBtn" type="button">Clear</button>
