@@ -459,7 +459,7 @@
       width:640px;
       display:grid;
       grid-template-columns:185px 1fr;
-      gap:18px 18px;
+      gap:12px 18px;
       align-items:start;
       color:var(--mbw-green);
     }
@@ -506,7 +506,7 @@
       position:absolute;
       z-index:4;
       left:220px;
-      top:940px;
+      top:950px;
       color:var(--mbw-green);
       font-size:25px;
       line-height:1.1;
@@ -886,6 +886,9 @@
                     <div class="certLabel">Transportation:</div>
                     <div class="certValue small wrap" id="outTransportation">Pick Up</div>
 
+                    <div class="certLabel">Pickup Time:</div>
+                    <div class="certValue small" id="outPickupTime">5:00 AM</div>
+
                     <div class="certLabel">Pickup Location:</div>
                     <div class="certValue small wrap" id="outPickupLocation">Friends hotel and Rooftop - QUITO</div>
                   </div>
@@ -1016,7 +1019,7 @@
           "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "customGuideField", "customGuideInput", "manualEntryBtn",
           "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
-          "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupLocation", "outNotes", "outGuideImage",
+          "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupTime", "outPickupLocation", "outNotes", "outGuideImage",
           "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "exportAllJpgBtn", "exportAllPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
           "confirmationChooser", "confirmationTabs",
           "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
@@ -1766,8 +1769,10 @@
         els.outTourType.textContent = els.tourTypeInput.value || "Tour Type";
         els.outLength.textContent = (els.lengthInput.value || "Full Day").toUpperCase();
         const transport = els.transportationInput.value || "Transportation details";
+        const pickupTime = normalizePickupTime(els.pickupTimeInput.value) || els.pickupTimeInput.value || "To be confirmed";
         const pickupLocation = els.pickupLocationInput.value || "";
         els.outTransportation.textContent = transport;
+        els.outPickupTime.textContent = pickupTime;
         els.outPickupLocation.textContent = pickupLocation || "To be confirmed";
         els.outNotes.textContent = formatNote(els.notesInput.value || "");
         setGuideImage(confirmationImageFor(selectedGuide));
@@ -2066,8 +2071,9 @@
           { label:"Contact #:", value:els.outContact.textContent || "", y:620, valueSize:27, maxWidth:430 },
           { label:"Tour Type:", value:els.outTourType.textContent || "", y:670, valueSize:27, maxWidth:455 },
           { label:"Length:", value:els.outLength.textContent || "", y:760, valueSize:36, maxWidth:420 },
-          { label:"Transportation:", value:getPlainText(els.outTransportation), y:820, valueSize:27, maxWidth:475 },
-          { label:"Pickup Location:", value:getPlainText(els.outPickupLocation), y:870, valueSize:24, maxWidth:475 }
+          { label:"Transportation:", value:getPlainText(els.outTransportation), y:800, valueSize:27, maxWidth:475 },
+          { label:"Pickup Time:", value:getPlainText(els.outPickupTime), y:845, valueSize:27, maxWidth:475 },
+          { label:"Pickup Location:", value:getPlainText(els.outPickupLocation), y:890, valueSize:24, maxWidth:475 }
         ];
 
         ctx.textAlign = "left";
@@ -2082,7 +2088,7 @@
         });
 
         ctx.font = "950 25px Arial, Helvetica, sans-serif";
-        ctx.fillText(els.outNotes.textContent || "", 220, 940);
+        ctx.fillText(els.outNotes.textContent || "", 220, 950);
       }
 
       function getPlainText(el){
