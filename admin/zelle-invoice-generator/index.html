@@ -1057,7 +1057,9 @@
       }
 
       function numberFromMoney(value){
-        const n = Number(String(value || "").replace(/[^0-9.-]/g, ""));
+        const raw = String(value == null ? "" : value).trim().replace(/^\$/, "").replace(/,/g, "");
+        if(!/^-?\d+(?:\.\d{1,2})?$/.test(raw)) return 0;
+        const n = Number(raw);
         return Number.isFinite(n) ? n : 0;
       }
 
