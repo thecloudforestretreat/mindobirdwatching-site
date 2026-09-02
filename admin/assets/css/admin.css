@@ -456,3 +456,78 @@ body[data-admin-layout] .adminGlobalNav__links{
     padding:8px;
   }
 }
+
+/* =========================================================
+   SHARED CARD RHYTHM + SEMANTIC STATUS COLORS
+   Use on dashboards so spacing and connection states remain
+   consistent across admin tools.
+   ========================================================= */
+:root {
+  --admin-card-gap: 16px;
+  --admin-state-live-bg: #e5f5e8;
+  --admin-state-live-fg: #0b6528;
+  --admin-state-live-line: #91cca0;
+  --admin-state-view-bg: #eaf2fb;
+  --admin-state-view-fg: #245b86;
+  --admin-state-view-line: #a9c8e1;
+  --admin-state-pending-bg: #fff4d6;
+  --admin-state-pending-fg: #805400;
+  --admin-state-pending-line: #e7c45a;
+  --admin-state-error-bg: #fde8e5;
+  --admin-state-error-fg: #9b2c20;
+  --admin-state-error-line: #e5a197;
+}
+
+.adminCardStack {
+  display: grid;
+  gap: var(--admin-card-gap);
+}
+
+.adminCardStack > * {
+  margin-block: 0;
+}
+
+.adminStateBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 24px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.adminStateBadge--live,
+.adminStateBadge--verified {
+  color: var(--admin-state-live-fg);
+  background: var(--admin-state-live-bg);
+  border-color: var(--admin-state-live-line);
+}
+
+.adminStateBadge--view {
+  color: var(--admin-state-view-fg);
+  background: var(--admin-state-view-bg);
+  border-color: var(--admin-state-view-line);
+}
+
+.adminStateBadge--pending {
+  color: var(--admin-state-pending-fg);
+  background: var(--admin-state-pending-bg);
+  border-color: var(--admin-state-pending-line);
+}
+
+.adminStateBadge--error {
+  color: var(--admin-state-error-fg);
+  background: var(--admin-state-error-bg);
+  border-color: var(--admin-state-error-line);
+}
+
+@media (max-width: 900px) {
+  :root { --admin-card-gap: 14px; }
+}
