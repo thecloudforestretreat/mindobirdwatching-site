@@ -650,7 +650,7 @@
       function mergeLiveWithLocal(incoming){ const local=safeLocalRecords(); return incoming.map(record=>mergeRecordPreservingLocal(record,findLocalMatch(record,local))); }
       function safeLocalRecords(){ try{ return JSON.parse(localStorage.getItem("mbwCrmRecords")||"[]").filter(hasMeaningfulCrmData).map(normalizeCrmRecord); }catch(e){ return []; } }
       function findLocalMatch(record,local){ const id=record.inquiry_id||""; if(id) return local.find(item=>item.inquiry_id===id); const email=clean(record.email).toLowerCase(); const phone=clean(record.phone_normalized||record.phone_number); return local.find(item=>(email&&clean(item.email).toLowerCase()===email)||(phone&&clean(item.phone_normalized||item.phone_number)===phone)); }
-      function mergeRecordPreservingLocal(live,local){ if(!local) return live; const merged=Object.assign({},live); ["country","home_country","tour_items","tour_items_json","tour_count","tour_content"].forEach(key=>{ if(!clean(merged[key])&&clean(local[key])) merged[key]=local[key]; }); const localCountry=clean(local.country||local.home_country); const liveCountry=clean(merged.country||merged.home_country); if(!liveCountry&&localCountry){ merged.country=localCountry; merged.home_country=localCountry; } else if(liveCountry){ merged.country=clean(merged.country)||liveCountry; merged.home_country=clean(merged.home_country)||liveCountry; } if((!normalizeTourItems(merged).length)&&normalizeTourItems(local).length){ const items=normalizeTourItems(local); merged.tour_items=serializeTourItems(items); merged.tour_items_json=merged.tour_items; merged.tour_count=String(items.length); merged.tour_content=String(items.length); } return merged; }
+      function mergeRecordPreservingLocal(live,local){ if(!local) return live; const merged=Object.assign({},live); ["country","home_country","tour_items","tour_items_json","tour_count","tour_content","itinerary_json","itinerary_updated_at","itinerary_version","itinerary_status"].forEach(key=>{ if(!clean(merged[key])&&clean(local[key])) merged[key]=local[key]; }); const localCountry=clean(local.country||local.home_country); const liveCountry=clean(merged.country||merged.home_country); if(!liveCountry&&localCountry){ merged.country=localCountry; merged.home_country=localCountry; } else if(liveCountry){ merged.country=clean(merged.country)||liveCountry; merged.home_country=clean(merged.home_country)||liveCountry; } if((!normalizeTourItems(merged).length)&&normalizeTourItems(local).length){ const items=normalizeTourItems(local); merged.tour_items=serializeTourItems(items); merged.tour_items_json=merged.tour_items; merged.tour_count=String(items.length); merged.tour_content=String(items.length); } return merged; }
       function duplicateFamilyKey(record){
         const guest=clean(record&&record.guest_id).toLowerCase();
         const phone=String(record&&(record.phone_normalized||record.phone_number||record.phone_raw)||"").replace(/\D/g,"");
@@ -1332,7 +1332,7 @@
       function queueLabel(value){const labels={all:"All Records",upcoming7:"Upcoming 7",followups:"Follow-ups",urgent:"Urgent",new:"New",contacted:"Contacted",planning:"Planning",qualified:"Qualified",followUp:"Follow Up",activePipeline:"Active Pipeline",quoted:"Quoted",depositPending:"Deposit Pending",depositPaid:"Deposit Paid",paymentPending:"Payment Pending",booked:"Booked",completed:"Completed",cancelled:"Cancelled",didNotBook:"Did Not Book",duplicate:"Duplicate"};return labels[value]||"Current";}
       function getSelected(){ return state.records.find(r=>r.inquiry_id===state.selectedId)||null; }
       function fillForm(r){ if(!r) return; const status=normalizeStatus(r.status||"new"); const primary=primaryTourItemFromRecord(r); els.modeInput.value="update"; if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=r.inquiry_id||""; els.guestIdInput.value=r.guest_id||""; setSelectValue(els.sourceInput,r.source_type||r.source_tab||"manual_whatsapp"); els.firstNameInput.value=capitalizeInitial(r.first_name||""); els.lastNameInput.value=capitalizeInitial(r.last_name||""); els.fullNameInput.value=[els.firstNameInput.value,els.lastNameInput.value].filter(Boolean).join(" ")||r.full_name||""; els.phoneInput.value=r.phone_number||""; els.emailInput.value=r.email||""; els.countryInput.value=r.country||r.home_country||""; setSelectValue(els.tourInput,normalizeTourCategory(r.tour_type||r.tour_category)); els.guestCountInput.value=r.guest_count||""; els.dateInput.value=toDateValue(r.requested_date||r.requested_date_start); els.recordStatusInput.value=status; updateStatusField(); updateStatusMessageButton(); els.quoteStatusInput.value=r.quote_status||"not_sent"; els.paymentStatusInput.value=normalizePayment(r.payment_status||"unpaid"); els.invoiceNoInput.value=r.invoice_no||""; els.datePaidInput.value=toDateValue(r.date_paid)||""; els.paymentMethodInput.value=r.payment_method||""; setSelectValue(els.serviceTypeInput,r.service_type||deriveServiceType(primary.tour||r.tour_type)); setSelectValue(els.productSelectedInput,productLabelFromCode(r.product_selected||primary.product_selected)); setSelectValue(els.durationInput,normalizeDuration(r.duration_preference||primary.duration)); els.transportInput.value=normalizeTransportation(r.transportation_needed); els.followupInput.value=toDateValue(r.followup_date)||""; els.priorityInput.value=isClosedStatus(status)?"":normalizePriority(r.priority||autoPriority(r.requested_date)); els.availabilityInput.value=r.availability_status||"pending"; els.groupingPreferenceInput.value=r.grouping_preference||"unknown"; els.groupingStatusInput.value=r.grouping_status||"unmatched"; els.pickupLocationInput.value=r.pickup_location||""; els.quotedAmountInput.value=r.quoted_amount||""; els.notesInput.value=r.notes||""; els.internalInput.value=r.internal_notes||""; state.tourItems=additionalTourItemsForForm(r); renderTourItems(); renderDuplicateNotice(); updateDuplicateActionButtons(r); toggleReviewActions(r); toggleInvoiceActions(r); }
-      const fillFormWithoutQuoteOptions=fillForm; fillForm=function(record){fillFormWithoutQuoteOptions(record);fillQuoteOptions(record)};
+      const fillFormWithoutQuoteOptions=fillForm; fillForm=function(record){fillFormWithoutQuoteOptions(record);fillQuoteOptions(record);updateItineraryActions(record)};
       function renderDetail(){ const r=getSelected()||{}; renderTable(els.detailTable,r,["inquiry_id","guest_id","is_archived","archive_reason","full_name","phone_number","email","tour_type","guest_count","requested_date","priority","status","quote_status","payment_status","availability_status"]); renderTable(els.actionTable,r,["archived_at","completed_date","invoice_no","date_paid","payment_method","service_type","product_selected","followup_date","last_contacted_at","duration_preference","transportation_needed","pickup_location","grouping_preference","grouping_status","quoted_amount","quote_sent_at","quote_sent_channel","quote_notes","notes","internal_notes","created_at","updated_at"]); }
       function workspaceContextHtml(record,label){ return `<div class="workspaceContext"><div><h2>${esc(record.full_name||"Guest")}</h2><p>${esc(label)} · ${esc(record.inquiry_id||"")} · ${esc(record.phone_number||record.email||"No contact information")}</p></div><span class="contextBadge">${esc(labelStatus(record.status||"new"))}</span></div>`; }
       function renderWorkspaces(){
@@ -1583,8 +1583,90 @@
       function itineraryProduct(value,tour){ const product=clean(value); const map={MBW002:"MBW002 - Private Birdwatching Tour",MBW004:"MBW004 - Jewels of the Morning Forest",MBW005:"MBW005 - Andean Cock-of-the-Rock Dawn Tour",MBW006:"MBW006 - Quest for Five Toucans Full Day"}; return map[product]||product||clean(tour)||"Other"; }
       function itineraryServiceType(item){ const text=(clean(item.product_selected)+" "+clean(item.tour)).toLowerCase(); if(text.includes("transport")) return "Transportation"; if(text.includes("insect")||text.includes("macro")||text.includes("bear")||text.includes("oso")) return "Specialty Wildlife"; if(/night|waterfall|chocolate|coffee|butterfly|frog|quad|canopy|orchid|tubing|rafting|canyoning|paintball|horseback|mountain biking|swing|sky bike|sky ride/.test(text)) return "Activity"; return "Birdwatching"; }
       function openItineraryTool(){ const record=formRecord(); const sourceItems=itineraryItemsFromForm(collectTourItems()); const items=sourceItems.map((item,index)=>{ const product=itineraryProduct(item.product_selected,item.tour); const pickup=clean(item.pickup_location); const itemNote=dedupeNoteText(item.notes); return {date:toDateValue(item.date||item.tour_date||record.requested_date),startTime:"",duration:clean(item.duration||record.duration_preference),type:itineraryServiceType(item),productPreset:product,name:product,description:itemNote,note:[itemNote,pickup?("Pickup: "+pickup):""].filter(Boolean).join(" · "),quantity:Number(String(item.guests||record.guest_count||1).match(/\d+/)?.[0]||1),unitPrice:Number(item.price||(index===0?record.quoted_amount:0)||0)}; }); const dates=items.map(item=>item.date).filter(Boolean).sort(); const draft={source:"guest_crm",createdAt:new Date().toISOString(),inquiryId:record.inquiry_id||"",guestName:record.full_name||"",whatsappNumber:record.phone_number||"",guestCount:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),startDate:dates[0]||record.requested_date||"",endDate:dates[dates.length-1]||record.requested_date_end||record.requested_date||"",tripTitle:"Your Mindo Tour Itinerary",openingText:"Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.",items:items}; localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record))); localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft)); const draftJson=JSON.stringify(draft); const params=new URLSearchParams({source:"guest_crm",inquiry_id:draft.inquiryId,draft:draft.createdAt,itinerary_json:draftJson,guest:draft.guestName,phone:draft.whatsappNumber,start_date:draft.startDate,end_date:draft.endDate,guests:String(draft.guestCount)}); window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
-      function openSavedItinerary(){ const record=getSelected(); if(!record||!clean(record.itinerary_json)){ showToast("No saved itinerary for this inquiry"); return; } try{ const draft=JSON.parse(record.itinerary_json); draft.source="guest_crm"; draft.inquiryId=record.inquiry_id; draft.itineraryVersion=Number(record.itinerary_version||draft.itineraryVersion||1); draft.itineraryStatus=record.itinerary_status||draft.itineraryStatus||"draft"; localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record))); localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft)); const params=new URLSearchParams({source:"guest_crm",saved:"1",inquiry_id:record.inquiry_id,draft:record.itinerary_updated_at||Date.now()}); window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }catch(error){ showToast("Saved itinerary data is invalid"); } }
-      function updateItineraryActions(record){ const hasSaved=Boolean(record&&clean(record.itinerary_json)); if(els.editSavedItineraryBtn){ els.editSavedItineraryBtn.disabled=!hasSaved; els.editSavedItineraryBtn.title=hasSaved?("Saved "+(record.itinerary_updated_at?formatDateTime(record.itinerary_updated_at):"itinerary")):"No saved itinerary yet"; } }
+      function openSavedItinerary(){
+        const record=getSelected();
+        if(!record){ showToast("Select a record first"); return; }
+        if(clean(record.itinerary_json)){
+          try{
+            const draft=JSON.parse(record.itinerary_json);
+            draft.source="guest_crm";
+            draft.inquiryId=record.inquiry_id;
+            draft.itineraryVersion=Number(record.itinerary_version||draft.itineraryVersion||1);
+            draft.itineraryStatus=record.itinerary_status||draft.itineraryStatus||"draft";
+            localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record)));
+            localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft));
+            const params=new URLSearchParams({source:"guest_crm",saved:"1",inquiry_id:record.inquiry_id,draft:record.itinerary_updated_at||Date.now()});
+            window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer");
+            return;
+          }catch(error){
+            showToast("Saved itinerary data is invalid. Rebuilding from CRM record.");
+          }
+        }
+        const sourceItems=itineraryItemsFromForm(normalizeTourItems(record));
+        const items=sourceItems.map((item,index)=>{
+          const product=itineraryProduct(item.product_selected,item.tour);
+          const pickup=clean(item.pickup_location||record.pickup_location);
+          const itemNote=dedupeNoteText(item.notes||item.note||"");
+          return {
+            date:toDateValue(item.date||item.tour_date||record.requested_date||record.requested_date_start),
+            startTime:clean(item.start_time||item.startTime),
+            duration:clean(item.duration||record.duration_preference),
+            type:itineraryServiceType(item),
+            productPreset:product,
+            name:product,
+            description:itemNote,
+            note:[itemNote,pickup?("Pickup: "+pickup):""].filter(Boolean).join(" · "),
+            quantity:Number(String(item.guests||record.guest_count||1).match(/\d+/)?.[0]||1),
+            unitPrice:Number(item.price||(index===0?record.quoted_amount:0)||0)
+          };
+        });
+        if(!items.length){
+          const product=itineraryProduct(record.product_selected,record.tour_type);
+          items.push({
+            date:toDateValue(record.requested_date||record.requested_date_start),
+            startTime:"",
+            duration:clean(record.duration_preference),
+            type:itineraryServiceType({product_selected:record.product_selected,tour:record.tour_type}),
+            productPreset:product,
+            name:product,
+            description:"",
+            note:clean(record.pickup_location)?("Pickup: "+clean(record.pickup_location)):"",
+            quantity:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),
+            unitPrice:Number(record.quoted_amount||0)
+          });
+        }
+        const dates=items.map(item=>item.date).filter(Boolean).sort();
+        const draft={
+          source:"guest_crm",
+          createdAt:new Date().toISOString(),
+          inquiryId:record.inquiry_id||"",
+          itineraryVersion:Number(record.itinerary_version||0),
+          itineraryStatus:"draft",
+          guestName:record.full_name||"",
+          whatsappNumber:record.phone_number||"",
+          guestCount:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),
+          startDate:dates[0]||record.requested_date||record.requested_date_start||"",
+          endDate:dates[dates.length-1]||record.requested_date_end||record.requested_date||record.requested_date_start||"",
+          tripTitle:"Your Mindo Tour Itinerary",
+          openingText:"Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.",
+          items:items
+        };
+        localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record)));
+        localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft));
+        const params=new URLSearchParams({source:"guest_crm",rebuild:"1",inquiry_id:record.inquiry_id||"",draft:draft.createdAt});
+        window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer");
+      }
+      function updateItineraryActions(record){
+        const hasSaved=Boolean(record&&clean(record.itinerary_json));
+        const canRebuild=Boolean(record&&(normalizeTourItems(record).length||clean(record.tour_type)||clean(record.product_selected)||clean(record.requested_date)||clean(record.requested_date_start)));
+        if(els.editSavedItineraryBtn){
+          els.editSavedItineraryBtn.disabled=!(hasSaved||canRebuild);
+          els.editSavedItineraryBtn.textContent=hasSaved?"Edit Saved Itinerary":"Rebuild Itinerary";
+          els.editSavedItineraryBtn.title=hasSaved
+            ?("Saved "+(record.itinerary_updated_at?formatDateTime(record.itinerary_updated_at):"itinerary"))
+            :(canRebuild?"Rebuild an editable itinerary from this CRM record":"No itinerary or tour data available");
+        }
+      }
       function copyReviewMessage(type){ const r=getSelected(); if(!r){showToast("Select a record first");return;} const name=(r.first_name||r.full_name||"").split(" ")[0]||"there"; const msg="Hi "+name+", hope all is well and Mindo treated you great. When you can, please help us out with a review of your experience with Mindo Bird Watching. Thank you.\\n\\nhttps://g.page/r/CdMlIYMGgBIvEAE"; navigator.clipboard.writeText(msg).then(()=>showToast(type==="email"?"Review email text copied":"Review WhatsApp text copied")).catch(()=>showToast("Could not copy message")); }
       async function copyGuideMessage(){
         const selected=getSelected()||{};
