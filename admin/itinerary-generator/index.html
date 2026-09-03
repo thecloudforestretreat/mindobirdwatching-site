@@ -1182,12 +1182,17 @@
           const itinerary = {...getFormData(),source:'guest_crm',inquiryId:state.inquiryId,itineraryVersion:nextVersion,itineraryStatus:'draft',itineraryUpdatedAt:updatedAt};
           const record = {...current,itinerary_json:JSON.stringify(itinerary),itinerary_updated_at:updatedAt,itinerary_version:String(nextVersion),itinerary_status:'draft',updated_at:updatedAt};
           await crmApi('update_inquiry',{record,inquiry_row:record});
-          state.itineraryVersion = nextVersion;
-          state.itineraryStatus = 'draft';
-          state.crmRecord = record;
-          localStorage.setItem('mbwSelectedCrmRecord',JSON.stringify(record));
+          const verifiedList = await crmApi('list_inquiries');
+          const verifiedRecords = Array.isArray(verifiedList) ? verifiedList : (verifiedList.records || verifiedList.data || verifiedList.inquiries || []);
+          const verified = verifiedRecords.find(row => String(row.inquiry_id || '') === state.inquiryId);
+          if(!verified || !verified.itinerary_json) throw new Error('CRM returned success, but the saved itinerary could not be verified in crm_inquiries');
+          state.itineraryVersion = Number(verified.itinerary_version || nextVersion);
+          state.itineraryStatus = verified.itinerary_status || 'draft';
+          state.crmRecord = verified;
+          localStorage.setItem('mbwSelectedCrmRecord',JSON.stringify(verified));
           localStorage.setItem('mbwItineraryGeneratorDraft',JSON.stringify(itinerary));
-          toast(`Itinerary saved to CRM · version ${nextVersion}`);
+          localStorage.setItem('mbwCrmItinerarySaved',JSON.stringify({inquiry_id:state.inquiryId,record:verified,saved_at:new Date().toISOString()}));
+          toast(`Itinerary saved to CRM · version ${state.itineraryVersion}`);
         }catch(error){
           toast('CRM save failed: ' + error.message);
         }finally{
