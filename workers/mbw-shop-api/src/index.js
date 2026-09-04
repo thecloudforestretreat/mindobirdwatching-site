@@ -779,6 +779,15 @@ async function createStripeCheckoutSession(
     "pay"
   );
 
+  /*
+    MBW storefront prices, shipping, and customer-facing
+    totals are intentionally USD-only.
+  */
+  params.set(
+    "adaptive_pricing[enabled]",
+    "false"
+  );
+
   data.items.forEach((item, index) => {
     const prefix =
       `line_items[${index}]`;
@@ -1333,63 +1342,114 @@ async function fetchPrintifyProducts(env) {
   }
 
   const shopId = String(env.PRINTIFY_SHOP_ID).trim();
+  const allProducts = [];
+  const seenIds = new Set();
 
-  let response;
+  /*
+    Printify paginates the product list.
+    Fetch every page so newly published products appear
+    automatically without editing the storefront.
+  */
+  let page = 1;
+  const perPage = 50;
+  const maxPages = 100;
 
-  try {
-    response = await fetch(
-      `https://api.printify.com/v1/shops/${shopId}/products.json`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${env.PRINTIFY_API_TOKEN}`,
-          Accept: "application/json"
+  while (page <= maxPages) {
+    let response;
+
+    try {
+      response = await fetch(
+        `https://api.printify.com/v1/shops/${shopId}/products.json?page=${page}&limit=${perPage}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              `Bearer ${env.PRINTIFY_API_TOKEN}`,
+            Accept: "application/json"
+          }
         }
-      }
-    );
-  } catch {
-    return {
-      ok: false,
-      status: 502,
-      body: {
+      );
+    } catch {
+      return {
         ok: false,
-        error: "Unable to contact Printify"
-      }
-    };
-  }
+        status: 502,
+        body: {
+          ok: false,
+          error: "Unable to contact Printify"
+        }
+      };
+    }
 
-  let data;
+    let data;
 
-  try {
-    data = await response.json();
-  } catch {
-    return {
-      ok: false,
-      status: 502,
-      body: {
+    try {
+      data = await response.json();
+    } catch {
+      return {
         ok: false,
-        error: "Printify returned an invalid response"
-      }
-    };
-  }
+        status: 502,
+        body: {
+          ok: false,
+          error:
+            "Printify returned an invalid response"
+        }
+      };
+    }
 
-  if (!response.ok) {
-    return {
-      ok: false,
-      status: 502,
-      body: {
+    if (!response.ok) {
+      return {
         ok: false,
-        error: "Unable to load shop catalog"
+        status: 502,
+        body: {
+          ok: false,
+          error:
+            "Unable to load shop catalog"
+        }
+      };
+    }
+
+    const pageProducts =
+      Array.isArray(data.data)
+        ? data.data
+        : [];
+
+    pageProducts.forEach((product) => {
+      if (
+        product &&
+        product.id &&
+        !seenIds.has(String(product.id))
+      ) {
+        seenIds.add(String(product.id));
+        allProducts.push(product);
       }
-    };
+    });
+
+    /*
+      Printify responses normally expose last_page/current_page.
+      The length fallback also safely stops when the final page
+      contains fewer than the requested page size.
+    */
+    const currentPage =
+      Number(data.current_page || page);
+
+    const lastPage =
+      Number(data.last_page || 0);
+
+    if (
+      (lastPage > 0 && currentPage >= lastPage) ||
+      pageProducts.length === 0 ||
+      pageProducts.length < perPage
+    ) {
+      break;
+    }
+
+    page += 1;
   }
 
   return {
     ok: true,
     status: 200,
-    products: Array.isArray(data.data)
-      ? data.data
-      : []
+    products: allProducts
   };
 }
 
