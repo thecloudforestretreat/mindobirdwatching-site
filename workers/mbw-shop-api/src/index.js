@@ -11,6 +11,20 @@ export default {
       return handleOptions(request);
     }
 
+    if (
+      request.method === "POST" &&
+      url.pathname === "/checkout/session"
+    ) {
+      return handleCheckoutSession(request, env);
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/shipping/quote"
+    ) {
+      return handleShippingQuote(request, env);
+    }
+
     if (request.method !== "GET") {
       return jsonResponse(
         {
@@ -27,7 +41,8 @@ export default {
         {
           ok: true,
           service: "mbw-shop-api",
-          message: "Mindo Bird Watching shop API is running"
+          message: "Mindo Bird Watching shop API is running",
+          checkout: true
         },
         200,
         request
@@ -38,7 +53,14 @@ export default {
       return jsonResponse(
         {
           ok: true,
-          status: "healthy"
+          status: "healthy",
+          stripe_configured:
+            Boolean(env.STRIPE_SECRET_KEY),
+          printify_configured:
+            Boolean(
+              env.PRINTIFY_API_TOKEN &&
+              env.PRINTIFY_SHOP_ID
+            )
         },
         200,
         request
@@ -79,6 +101,953 @@ export default {
     );
   }
 };
+
+
+async function handleCheckoutSession(
+  request,
+  env
+) {
+  const originError =
+    validateWriteOrigin(request);
+
+  if (originError) {
+    return jsonResponse(
+      originError,
+      403,
+      request
+    );
+  }
+
+  if (!env.STRIPE_SECRET_KEY) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "STRIPE_SECRET_KEY is not configured"
+      },
+      500,
+      request
+    );
+  }
+
+  const parsed = await parseCheckoutRequest(
+    request,
+    env
+  );
+
+  if (!parsed.ok) {
+    return jsonResponse(
+      parsed.body,
+      parsed.status,
+      request
+    );
+  }
+
+  const shippingResult =
+    await fetchPrintifyShippingQuote(
+      env,
+      parsed.printifyLineItems,
+      parsed.address
+    );
+
+  if (!shippingResult.ok) {
+    return jsonResponse(
+      shippingResult.body,
+      shippingResult.status,
+      request
+    );
+  }
+
+  const shippingOptions =
+    normalizeShippingOptions(
+      shippingResult.shipping
+    );
+
+  if (shippingOptions.length === 0) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "No shipping method is available for this address"
+      },
+      400,
+      request
+    );
+  }
+
+  const referenceId =
+    `mbw_${crypto.randomUUID()}`;
+
+  const stripeResult =
+    await createStripeCheckoutSession(
+      env,
+      {
+        referenceId,
+        items: parsed.items,
+        address: parsed.address,
+        shippingOptions
+      }
+    );
+
+  if (!stripeResult.ok) {
+    return jsonResponse(
+      stripeResult.body,
+      stripeResult.status,
+      request
+    );
+  }
+
+  return jsonResponse(
+    {
+      ok: true,
+      session_id: stripeResult.session.id,
+      checkout_url: stripeResult.session.url,
+      reference_id: referenceId
+    },
+    200,
+    request
+  );
+}
+
+async function handleShippingQuote(
+  request,
+  env
+) {
+  const originError =
+    validateWriteOrigin(request);
+
+  if (originError) {
+    return jsonResponse(
+      originError,
+      403,
+      request
+    );
+  }
+
+  const parsed = await parseCheckoutRequest(
+    request,
+    env
+  );
+
+  if (!parsed.ok) {
+    return jsonResponse(
+      parsed.body,
+      parsed.status,
+      request
+    );
+  }
+
+  const shippingResult =
+    await fetchPrintifyShippingQuote(
+      env,
+      parsed.printifyLineItems,
+      parsed.address
+    );
+
+  if (!shippingResult.ok) {
+    return jsonResponse(
+      shippingResult.body,
+      shippingResult.status,
+      request
+    );
+  }
+
+  const shippingOptions =
+    normalizeShippingOptions(
+      shippingResult.shipping
+    );
+
+  return jsonResponse(
+    {
+      ok: true,
+      currency: "usd",
+      subtotal: parsed.subtotal,
+      shipping_options: shippingOptions
+    },
+    200,
+    request
+  );
+}
+
+async function parseCheckoutRequest(
+  request,
+  env
+) {
+  const configError =
+    validatePrintifyConfig(env, true);
+
+  if (configError) {
+    return {
+      ok: false,
+      status: 500,
+      body: configError
+    };
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return {
+      ok: false,
+      status: 400,
+      body: {
+        ok: false,
+        error: "Invalid JSON request body"
+      }
+    };
+  }
+
+  const rawItems = Array.isArray(body.items)
+    ? body.items
+    : [];
+
+  if (
+    rawItems.length === 0 ||
+    rawItems.length > 25
+  ) {
+    return {
+      ok: false,
+      status: 400,
+      body: {
+        ok: false,
+        error:
+          "Cart must contain between 1 and 25 items"
+      }
+    };
+  }
+
+  const addressResult =
+    normalizeCheckoutAddress(body.address);
+
+  if (!addressResult.ok) {
+    return {
+      ok: false,
+      status: 400,
+      body: {
+        ok: false,
+        error: addressResult.error
+      }
+    };
+  }
+
+  const catalogResult =
+    await fetchPrintifyProducts(env);
+
+  if (!catalogResult.ok) {
+    return catalogResult;
+  }
+
+  const productMap = new Map(
+    catalogResult.products.map((product) => [
+      String(product.id),
+      product
+    ])
+  );
+
+  const trustedItems = [];
+  const printifyLineItems = [];
+  let subtotal = 0;
+
+  for (const rawItem of rawItems) {
+    const productId =
+      String(rawItem.product_id || "").trim();
+
+    const variantId =
+      Number(rawItem.variant_id);
+
+    const quantity =
+      Number(rawItem.quantity);
+
+    if (
+      !productId ||
+      !Number.isInteger(variantId) ||
+      !Number.isInteger(quantity) ||
+      quantity < 1 ||
+      quantity > 20
+    ) {
+      return {
+        ok: false,
+        status: 400,
+        body: {
+          ok: false,
+          error:
+            "Each cart item requires a valid product_id, variant_id, and quantity from 1 to 20"
+        }
+      };
+    }
+
+    const product =
+      productMap.get(productId);
+
+    if (
+      !product ||
+      product.visible === false
+    ) {
+      return {
+        ok: false,
+        status: 400,
+        body: {
+          ok: false,
+          error:
+            "A product in the cart is no longer available"
+        }
+      };
+    }
+
+    const variant =
+      getEnabledVariants(product).find(
+        (item) =>
+          Number(item.id) === variantId
+      );
+
+    if (!variant) {
+      return {
+        ok: false,
+        status: 400,
+        body: {
+          ok: false,
+          error:
+            "A selected product option is no longer available"
+        }
+      };
+    }
+
+    const unitAmount =
+      Number(variant.price);
+
+    if (
+      !Number.isInteger(unitAmount) ||
+      unitAmount < 0
+    ) {
+      return {
+        ok: false,
+        status: 500,
+        body: {
+          ok: false,
+          error:
+            "Unable to verify the current product price"
+        }
+      };
+    }
+
+    const optionLabels =
+      describeVariantOptions(
+        product,
+        variant
+      );
+
+    const image =
+      getVariantImage(
+        product,
+        variant.id
+      );
+
+    trustedItems.push({
+      product_id: product.id,
+      variant_id: variant.id,
+      quantity,
+      unit_amount: unitAmount,
+      title:
+        product.title ||
+        "Mindo Bird Watching product",
+      variant_label:
+        optionLabels || variant.title || "",
+      image
+    });
+
+    printifyLineItems.push({
+      product_id: product.id,
+      variant_id: variant.id,
+      quantity
+    });
+
+    subtotal +=
+      unitAmount * quantity;
+  }
+
+  return {
+    ok: true,
+    items: trustedItems,
+    printifyLineItems,
+    address: addressResult.address,
+    subtotal
+  };
+}
+
+function normalizeCheckoutAddress(raw) {
+  const address =
+    raw && typeof raw === "object"
+      ? raw
+      : {};
+
+  const normalized = {
+    first_name:
+      cleanText(address.first_name, 80),
+    last_name:
+      cleanText(address.last_name, 80),
+    email:
+      cleanText(address.email, 160),
+    phone:
+      cleanText(address.phone, 40),
+    country:
+      cleanText(address.country, 2)
+        .toUpperCase(),
+    region:
+      cleanText(address.region, 100),
+    address1:
+      cleanText(address.address1, 160),
+    address2:
+      cleanText(address.address2, 160),
+    city:
+      cleanText(address.city, 100),
+    zip:
+      cleanText(address.zip, 40)
+  };
+
+  const required = [
+    "first_name",
+    "last_name",
+    "email",
+    "country",
+    "address1",
+    "city",
+    "zip"
+  ];
+
+  for (const key of required) {
+    if (!normalized[key]) {
+      return {
+        ok: false,
+        error:
+          `Shipping address is missing ${key}`
+      };
+    }
+  }
+
+  if (
+    !/^[A-Z]{2}$/.test(normalized.country)
+  ) {
+    return {
+      ok: false,
+      error:
+        "Shipping country must be a two-letter country code"
+    };
+  }
+
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      normalized.email
+    )
+  ) {
+    return {
+      ok: false,
+      error:
+        "A valid email address is required"
+    };
+  }
+
+  return {
+    ok: true,
+    address: normalized
+  };
+}
+
+async function fetchPrintifyShippingQuote(
+  env,
+  lineItems,
+  address
+) {
+  const shopId =
+    String(env.PRINTIFY_SHOP_ID).trim();
+
+  let response;
+
+  try {
+    response = await fetch(
+      `https://api.printify.com/v1/shops/${shopId}/orders/shipping.json`,
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            `Bearer ${env.PRINTIFY_API_TOKEN}`,
+          Accept: "application/json",
+          "Content-Type":
+            "application/json"
+        },
+        body: JSON.stringify({
+          line_items: lineItems,
+          address_to: address
+        })
+      }
+    );
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Unable to contact Printify for shipping"
+      }
+    };
+  }
+
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Printify returned an invalid shipping response"
+      }
+    };
+  }
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: 400,
+      body: {
+        ok: false,
+        error:
+          extractPrintifyError(
+            data,
+            "Unable to calculate shipping for this address"
+          )
+      }
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    shipping: data
+  };
+}
+
+function normalizeShippingOptions(raw) {
+  const definitions = [
+    {
+      key: "economy",
+      label: "Economy shipping",
+      method: 4
+    },
+    {
+      key: "standard",
+      label: "Standard shipping",
+      method: 1
+    },
+    {
+      key: "priority",
+      label: "Priority shipping",
+      method: 2
+    },
+    {
+      key: "express",
+      label: "Express shipping",
+      method: 2
+    },
+    {
+      key: "printify_express",
+      label: "Printify Express",
+      method: 3
+    }
+  ];
+
+  const seen = new Set();
+  const result = [];
+
+  definitions.forEach((definition) => {
+    const amount =
+      Number(raw && raw[definition.key]);
+
+    if (
+      !Number.isInteger(amount) ||
+      amount < 0
+    ) {
+      return;
+    }
+
+    /*
+      Printify's transitional shipping API can
+      expose overlapping names. Avoid showing two
+      identical method/price choices.
+    */
+    const signature =
+      `${definition.method}:${amount}`;
+
+    if (seen.has(signature)) {
+      return;
+    }
+
+    seen.add(signature);
+
+    result.push({
+      code: definition.key,
+      display_name: definition.label,
+      amount,
+      shipping_method:
+        definition.method
+    });
+  });
+
+  return result.slice(0, 5);
+}
+
+async function createStripeCheckoutSession(
+  env,
+  data
+) {
+  const params = new URLSearchParams();
+
+  params.set("mode", "payment");
+  params.set(
+    "success_url",
+    "https://mindobirdwatching.com/shop/?checkout=success&session_id={CHECKOUT_SESSION_ID}"
+  );
+  params.set(
+    "cancel_url",
+    "https://mindobirdwatching.com/shop/?checkout=cancelled"
+  );
+  params.set(
+    "client_reference_id",
+    data.referenceId
+  );
+  params.set(
+    "customer_email",
+    data.address.email
+  );
+  params.set(
+    "submit_type",
+    "pay"
+  );
+
+  data.items.forEach((item, index) => {
+    const prefix =
+      `line_items[${index}]`;
+
+    params.set(
+      `${prefix}[quantity]`,
+      String(item.quantity)
+    );
+    params.set(
+      `${prefix}[price_data][currency]`,
+      "usd"
+    );
+    params.set(
+      `${prefix}[price_data][unit_amount]`,
+      String(item.unit_amount)
+    );
+    params.set(
+      `${prefix}[price_data][product_data][name]`,
+      item.title
+    );
+
+    if (item.variant_label) {
+      params.set(
+        `${prefix}[price_data][product_data][description]`,
+        item.variant_label
+      );
+    }
+
+    if (item.image) {
+      params.set(
+        `${prefix}[price_data][product_data][images][0]`,
+        item.image
+      );
+    }
+
+    params.set(
+      `${prefix}[price_data][product_data][metadata][printify_product_id]`,
+      String(item.product_id)
+    );
+    params.set(
+      `${prefix}[price_data][product_data][metadata][printify_variant_id]`,
+      String(item.variant_id)
+    );
+  });
+
+  data.shippingOptions.forEach(
+    (option, index) => {
+      const prefix =
+        `shipping_options[${index}][shipping_rate_data]`;
+
+      params.set(
+        `${prefix}[type]`,
+        "fixed_amount"
+      );
+      params.set(
+        `${prefix}[display_name]`,
+        option.display_name
+      );
+      params.set(
+        `${prefix}[fixed_amount][amount]`,
+        String(option.amount)
+      );
+      params.set(
+        `${prefix}[fixed_amount][currency]`,
+        "usd"
+      );
+      params.set(
+        `${prefix}[metadata][printify_shipping_code]`,
+        option.code
+      );
+      params.set(
+        `${prefix}[metadata][printify_shipping_method]`,
+        String(option.shipping_method)
+      );
+    }
+  );
+
+  /*
+    These metadata fields give the future Stripe
+    webhook enough verified information to create
+    the Printify order without trusting the browser
+    after payment.
+  */
+  params.set(
+    "metadata[mbw_reference_id]",
+    data.referenceId
+  );
+  params.set(
+    "metadata[mbw_items]",
+    JSON.stringify(
+      data.items.map((item) => ({
+        p: String(item.product_id),
+        v: Number(item.variant_id),
+        q: Number(item.quantity)
+      }))
+    )
+  );
+  params.set(
+    "metadata[ship_first_name]",
+    data.address.first_name
+  );
+  params.set(
+    "metadata[ship_last_name]",
+    data.address.last_name
+  );
+  params.set(
+    "metadata[ship_email]",
+    data.address.email
+  );
+  params.set(
+    "metadata[ship_phone]",
+    data.address.phone
+  );
+  params.set(
+    "metadata[ship_country]",
+    data.address.country
+  );
+  params.set(
+    "metadata[ship_region]",
+    data.address.region
+  );
+  params.set(
+    "metadata[ship_address1]",
+    data.address.address1
+  );
+  params.set(
+    "metadata[ship_address2]",
+    data.address.address2
+  );
+  params.set(
+    "metadata[ship_city]",
+    data.address.city
+  );
+  params.set(
+    "metadata[ship_zip]",
+    data.address.zip
+  );
+
+  let response;
+
+  try {
+    response = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions",
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            `Bearer ${env.STRIPE_SECRET_KEY}`,
+          "Content-Type":
+            "application/x-www-form-urlencoded"
+        },
+        body: params.toString()
+      }
+    );
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Unable to contact Stripe"
+      }
+    };
+  }
+
+  let stripeData;
+
+  try {
+    stripeData = await response.json();
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Stripe returned an invalid response"
+      }
+    };
+  }
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          stripeData &&
+          stripeData.error &&
+          stripeData.error.message
+            ? stripeData.error.message
+            : "Unable to create Stripe Checkout"
+      }
+    };
+  }
+
+  return {
+    ok: true,
+    session: stripeData
+  };
+}
+
+function describeVariantOptions(
+  product,
+  variant
+) {
+  if (
+    !Array.isArray(product.options) ||
+    !Array.isArray(variant.options)
+  ) {
+    return variant.title || "";
+  }
+
+  const labels = [];
+
+  product.options.forEach((option) => {
+    const value = Array.isArray(option.values)
+      ? option.values.find((candidate) =>
+          variant.options.some(
+            (selectedId) =>
+              String(selectedId) ===
+              String(candidate.id)
+          )
+        )
+      : null;
+
+    if (value && value.title) {
+      labels.push(value.title);
+    }
+  });
+
+  return labels.join(" / ");
+}
+
+function getVariantImage(
+  product,
+  variantId
+) {
+  const rawImages =
+    Array.isArray(product.images)
+      ? product.images
+      : [];
+
+  let match = rawImages.find(
+    (image) =>
+      image &&
+      image.src &&
+      Array.isArray(image.variant_ids) &&
+      image.variant_ids.some(
+        (id) =>
+          String(id) ===
+          String(variantId)
+      )
+  );
+
+  if (!match) {
+    match = rawImages.find(
+      (image) =>
+        image &&
+        image.src &&
+        String(image.src).includes(
+          `/${variantId}/`
+        )
+    );
+  }
+
+  return match && match.src
+    ? match.src
+    : getPrimaryImage(rawImages);
+}
+
+function cleanText(value, maxLength) {
+  return String(value || "")
+    .trim()
+    .replace(/[\u0000-\u001F\u007F]/g, "")
+    .slice(0, maxLength);
+}
+
+function extractPrintifyError(
+  data,
+  fallback
+) {
+  if (
+    data &&
+    typeof data.message === "string" &&
+    data.message.trim()
+  ) {
+    return data.message.trim();
+  }
+
+  if (
+    data &&
+    data.errors &&
+    typeof data.errors.reason === "string"
+  ) {
+    return data.errors.reason;
+  }
+
+  return fallback;
+}
+
+function validateWriteOrigin(request) {
+  const origin =
+    request.headers.get("Origin");
+
+  if (
+    origin &&
+    !ALLOWED_ORIGINS.has(origin)
+  ) {
+    return {
+      ok: false,
+      error: "Origin not allowed"
+    };
+  }
+
+  return null;
+}
 
 async function handleCatalog(request, env) {
   const result = await fetchPrintifyProducts(env);
@@ -922,7 +1891,7 @@ function handleOptions(request) {
       "Access-Control-Allow-Origin":
         origin,
       "Access-Control-Allow-Methods":
-        "GET, OPTIONS",
+        "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers":
         "Content-Type",
       "Access-Control-Max-Age":
