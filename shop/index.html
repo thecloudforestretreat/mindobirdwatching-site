@@ -30,7 +30,7 @@
   <meta name="theme-color" content="#0f5f3a">
 
   <link rel="stylesheet" href="/assets/css/site.css">
-  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-12">
+  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-13">
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
 
   <script defer src="/assets/js/head.js?v=1"></script>
@@ -352,6 +352,84 @@
 
   <script defer src="/assets/js/includes.js?v=1"></script>
   <script src="/assets/js/site.js?v=34"></script>
+<script id="mbw-shop-hide-floating-whatsapp">
+(function(){
+  "use strict";
+
+  function isWhatsappNode(node){
+    if(!node || node.nodeType !== 1) return false;
+
+    var href = String(node.getAttribute && node.getAttribute("href") || "").toLowerCase();
+    var aria = String(node.getAttribute && node.getAttribute("aria-label") || "").toLowerCase();
+    var title = String(node.getAttribute && node.getAttribute("title") || "").toLowerCase();
+    var text = String(node.textContent || "").trim().toLowerCase();
+
+    return (
+      href.indexOf("wa.me") !== -1 ||
+      href.indexOf("whatsapp.com") !== -1 ||
+      aria.indexOf("whatsapp") !== -1 ||
+      title.indexOf("whatsapp") !== -1 ||
+      text === "whatsapp"
+    );
+  }
+
+  function hideFloatingWhatsapp(){
+    var nodes = Array.prototype.slice.call(
+      document.querySelectorAll(
+        'a[href*="wa.me"],a[href*="whatsapp.com"],[aria-label*="WhatsApp"],[aria-label*="whatsapp"],[title*="WhatsApp"],[title*="whatsapp"]'
+      )
+    );
+
+    document.querySelectorAll("body *").forEach(function(node){
+      if(
+        nodes.indexOf(node) === -1 &&
+        String(node.textContent || "").trim().toLowerCase() === "whatsapp"
+      ){
+        nodes.push(node);
+      }
+    });
+
+    nodes.forEach(function(node){
+      var current = node;
+
+      for(var depth = 0; current && depth < 6; depth += 1){
+        var style = window.getComputedStyle(current);
+
+        if(style.position === "fixed"){
+          current.style.setProperty("display","none","important");
+          current.setAttribute("aria-hidden","true");
+          return;
+        }
+
+        current = current.parentElement;
+      }
+    });
+  }
+
+  function start(){
+    hideFloatingWhatsapp();
+
+    var observer = new MutationObserver(function(){
+      hideFloatingWhatsapp();
+    });
+
+    observer.observe(document.body,{
+      childList:true,
+      subtree:true
+    });
+
+    window.setTimeout(hideFloatingWhatsapp,500);
+    window.setTimeout(hideFloatingWhatsapp,1500);
+    window.setTimeout(hideFloatingWhatsapp,3000);
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded",start);
+  }else{
+    start();
+  }
+})();
+</script>
 
 
   <script>
