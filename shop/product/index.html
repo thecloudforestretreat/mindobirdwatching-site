@@ -28,7 +28,7 @@
 <meta content="#0f5f3a" name="theme-color"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/pages/shop.css?v=20260904-10" rel="stylesheet"/>
+<link href="/assets/css/pages/shop.css?v=20260904-11" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script defer="" src="/assets/js/site-config.js"></script>
 <script type="application/ld+json">
@@ -365,12 +365,12 @@
       <div class="mbwCheckoutGrid">
         <label class="mbwCheckoutField">
           <span>First name</span>
-          <input autocomplete="given-name" id="mbwShipFirstName" maxlength="80" name="first_name" required type="text">
+          <input autocapitalize="words" autocomplete="given-name" id="mbwShipFirstName" maxlength="80" name="first_name" required type="text">
         </label>
 
         <label class="mbwCheckoutField">
           <span>Last name</span>
-          <input autocomplete="family-name" id="mbwShipLastName" maxlength="80" name="last_name" required type="text">
+          <input autocapitalize="words" autocomplete="family-name" id="mbwShipLastName" maxlength="80" name="last_name" required type="text">
         </label>
 
         <label class="mbwCheckoutField mbwCheckoutWide">
@@ -462,6 +462,15 @@
 
   function money(value){
     return "$" + Number(value || 0).toFixed(2);
+  }
+
+  function capitalizeName(value){
+    return String(value || "").replace(
+      /(^|[\s'-])([a-z])/g,
+      function(match, prefix, letter){
+        return prefix + letter.toUpperCase();
+      }
+    );
   }
 
   function moneyCents(value){
@@ -769,7 +778,16 @@
     Object.keys(map).forEach(function(id){
       var field = document.getElementById(id);
       if(field && data[map[id]]){
-        field.value = data[map[id]];
+        var restored = data[map[id]];
+
+        if(
+          id === "mbwShipFirstName" ||
+          id === "mbwShipLastName"
+        ){
+          restored = capitalizeName(restored);
+        }
+
+        field.value = restored;
       }
     });
   }
@@ -1002,6 +1020,16 @@
   });
 
   document.addEventListener("input", function(event){
+    if(
+      event.target.id === "mbwShipFirstName" ||
+      event.target.id === "mbwShipLastName"
+    ){
+      var capitalized = capitalizeName(event.target.value);
+      if(event.target.value !== capitalized){
+        event.target.value = capitalized;
+      }
+    }
+
     if(event.target.closest("#mbwCheckoutForm")){
       resetShippingState();
     }
@@ -1172,13 +1200,6 @@
       add.disabled=false;
       buy.disabled=false;
 
-      var variantNeedle="/"+state.selectedVariant.id+"/";
-      var variantImageIndex=state.images.findIndex(function(image){
-        return String(image.src||"").indexOf(variantNeedle)!==-1;
-      });
-      if(variantImageIndex>=0 && variantImageIndex!==state.imageIndex){
-        setImage(variantImageIndex);
-      }
     }else{
       status.textContent="Choose the available options above.";
       status.classList.remove("isReady");
@@ -1229,8 +1250,8 @@
     });
   }
 
-  function switchImageForColor(optionName,optionId){
-    if(!state.product || !Array.isArray(state.product.color_images)) return;
+  function switchGalleryForColor(optionName,optionId){
+    if(!state.product) return;
 
     var option=state.product.options.find(function(item){
       return item.name===optionName;
@@ -1238,17 +1259,61 @@
 
     if(!option || optionKind(option)!=="color") return;
 
-    var match=state.product.color_images.find(function(item){
+    var galleries=Array.isArray(state.product.color_galleries)
+      ? state.product.color_galleries
+      : [];
+
+    var match=galleries.find(function(item){
       return Number(item.option_id)===Number(optionId);
     });
 
-    if(match && match.image){
-      showImageSource(match.image);
+    if(match && Array.isArray(match.images) && match.images.length){
+      renderGallery(match.images);
+      return;
     }
+
+    /*
+      Compatibility fallback for any temporarily cached
+      Worker response that only contains color_images.
+    */
+    var oldMap=Array.isArray(state.product.color_images)
+      ? state.product.color_images
+      : [];
+
+    var oldMatch=oldMap.find(function(item){
+      return Number(item.option_id)===Number(optionId);
+    });
+
+    if(oldMatch && oldMatch.image){
+      showImageSource(oldMatch.image);
+      return;
+    }
+
+    renderGallery(state.baseImages);
   }
 
-  function renderGallery(){
-    state.images=(state.product.images&&state.product.images.length)?state.product.images:(state.product.image?[{src:state.product.image,position:"front"}]:[]);
+  function galleryLabel(position){
+    var value=String(position||"").toLowerCase();
+
+    if(value==="front" || value.indexOf("front-")===0){
+      return "Front";
+    }
+
+    if(value==="back" || value.indexOf("back-")===0){
+      return "Back";
+    }
+
+    return "View";
+  }
+
+  function renderGallery(images){
+    var nextImages=Array.isArray(images) && images.length
+      ? images
+      : state.baseImages;
+
+    state.images=nextImages.slice();
+    state.imageIndex=0;
+
     var thumbs=document.getElementById("mbwProductThumbs");
     var count=state.images.length;
 
@@ -1278,8 +1343,16 @@
         ? '<span class="mbwThumbMore">+'+extra+' more</span>'
         : '';
 
-      return '<button type="button" class="mbwProductThumb'+(i===0?' isActive':'')+'" data-gallery-index="'+i+'" aria-label="Show product image '+(i+1)+'">'+
-        '<img src="'+escAttr(image.src)+'" alt="">'+extraBadge+'</button>';
+      var viewBadge=
+        '<span class="mbwThumbPosition">'+
+          esc(galleryLabel(image.position))+
+        '</span>';
+
+      return '<button type="button" class="mbwProductThumb'+(i===0?' isActive':'')+'" data-gallery-index="'+i+'" aria-label="Show '+escAttr(galleryLabel(image.position))+' product image">'+
+        '<img src="'+escAttr(image.src)+'" alt="">'+
+        viewBadge+
+        extraBadge+
+      '</button>';
     }).join("");
 
     setImage(0);
@@ -1324,7 +1397,11 @@
     document.getElementById("productDescription").textContent="Made to order with Mindo-inspired bird and cloud forest artwork.";
     document.title=product.title+" | Mindo Bird Watching";
 
-    renderGallery();
+    state.baseImages=(product.images&&product.images.length)
+      ? product.images.slice()
+      : (product.image?[{src:product.image,position:"front"}]:[]);
+
+    renderGallery(state.baseImages);
     renderSelectors();
     syncState();
   }
@@ -1373,7 +1450,7 @@
 
       renderSelectors();
       syncState();
-      switchImageForColor(optionName,optionId);
+      switchGalleryForColor(optionName,optionId);
       return;
     }
     var thumb=e.target.closest("[data-gallery-index]");
