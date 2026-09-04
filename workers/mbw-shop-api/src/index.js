@@ -1652,7 +1652,14 @@ function getAvailableOptions(
             )
             .map((value) => ({
               id: value.id,
-              title: value.title
+              title: value.title,
+              colors: Array.isArray(value.colors)
+                ? value.colors
+                : [],
+              color:
+                typeof value.color === "string"
+                  ? value.color
+                  : null
             }))
         : [];
 
