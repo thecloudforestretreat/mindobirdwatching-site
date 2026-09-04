@@ -527,6 +527,14 @@ function normalizeCheckoutAddress(raw) {
   }
 
   if (
+    normalized.country === "US" &&
+    normalized.region
+  ) {
+    normalized.region =
+      normalized.region.toUpperCase();
+  }
+
+  if (
     !/^[A-Z]{2}$/.test(normalized.country)
   ) {
     return {
@@ -577,8 +585,19 @@ async function fetchPrintifyShippingQuote(
             "application/json"
         },
         body: JSON.stringify({
-          line_items: lineItems,
-          address_to: address
+          line_items: lineItems.map(
+            (item, index) => ({
+              product_id: item.product_id,
+              variant_id: item.variant_id,
+              quantity: item.quantity,
+              external_id:
+                `mbw-line-${index + 1}`
+            })
+          ),
+          address_to:
+            buildPrintifyShippingAddress(
+              address
+            )
         })
       }
     );
@@ -630,6 +649,37 @@ async function fetchPrintifyShippingQuote(
     status: 200,
     shipping: data
   };
+}
+
+function buildPrintifyShippingAddress(
+  address
+) {
+  const result = {
+    first_name: address.first_name,
+    last_name: address.last_name,
+    email: address.email,
+    country: address.country,
+    region: address.region,
+    address1: address.address1,
+    city: address.city,
+    zip: address.zip
+  };
+
+  /*
+    Do not send empty optional values to Printify.
+    Some validation layers treat an empty phone or
+    address2 as an invalid supplied value rather than
+    an omitted optional value.
+  */
+  if (address.phone) {
+    result.phone = address.phone;
+  }
+
+  if (address.address2) {
+    result.address2 = address.address2;
+  }
+
+  return result;
 }
 
 function normalizeShippingOptions(raw) {
@@ -1013,23 +1063,115 @@ function extractPrintifyError(
   data,
   fallback
 ) {
-  if (
-    data &&
-    typeof data.message === "string" &&
-    data.message.trim()
-  ) {
-    return data.message.trim();
-  }
+  const details = [];
 
-  if (
-    data &&
-    data.errors &&
-    typeof data.errors.reason === "string"
-  ) {
-    return data.errors.reason;
+  collectPrintifyErrorStrings(
+    data,
+    details,
+    0
+  );
+
+  const cleaned = Array.from(
+    new Set(
+      details
+        .map((value) =>
+          String(value || "").trim()
+        )
+        .filter(Boolean)
+    )
+  );
+
+  if (cleaned.length > 0) {
+    return cleaned.slice(0, 4).join(" | ");
   }
 
   return fallback;
+}
+
+function collectPrintifyErrorStrings(
+  value,
+  output,
+  depth
+) {
+  if (
+    value == null ||
+    depth > 5 ||
+    output.length >= 8
+  ) {
+    return;
+  }
+
+  if (typeof value === "string") {
+    if (value.trim()) {
+      output.push(value.trim());
+    }
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) =>
+      collectPrintifyErrorStrings(
+        item,
+        output,
+        depth + 1
+      )
+    );
+    return;
+  }
+
+  if (typeof value !== "object") {
+    return;
+  }
+
+  const priorityKeys = [
+    "message",
+    "reason",
+    "error",
+    "errors",
+    "detail",
+    "details"
+  ];
+
+  priorityKeys.forEach((key) => {
+    if (
+      Object.prototype.hasOwnProperty.call(
+        value,
+        key
+      )
+    ) {
+      collectPrintifyErrorStrings(
+        value[key],
+        output,
+        depth + 1
+      );
+    }
+  });
+
+  Object.keys(value).forEach((key) => {
+    if (priorityKeys.includes(key)) {
+      return;
+    }
+
+    const child = value[key];
+
+    if (
+      typeof child === "string" &&
+      child.trim()
+    ) {
+      output.push(
+        `${key}: ${child.trim()}`
+      );
+    } else if (
+      child &&
+      typeof child === "object"
+    ) {
+      collectPrintifyErrorStrings(
+        child,
+        output,
+        depth + 1
+      );
+    }
+  });
 }
 
 function validateWriteOrigin(request) {
@@ -1316,6 +1458,11 @@ function normalizeDetailedProduct(product) {
   );
 
   const images = normalizeImages(product.images);
+  const colorGalleries = buildColorGalleries(
+    product.images,
+    options,
+    enabledVariants
+  );
 
   const prices = enabledVariants
     .map((variant) => Number(variant.price))
@@ -1357,11 +1504,26 @@ function normalizeDetailedProduct(product) {
     option_summary_parts:
       buildOptionSummaryParts(options),
 
-    color_images: buildColorImageMap(
-      product.images,
-      options,
-      enabledVariants
-    ),
+    /*
+      Every color gets its own mockup gallery.
+      This lets the storefront change color immediately
+      while still preserving front/back/context views.
+    */
+    color_galleries: colorGalleries,
+
+    /*
+      Kept for compatibility with any cached V7/V8 page.
+      The first image is the preferred front image.
+    */
+    color_images: colorGalleries.map((gallery) => ({
+      option_id: gallery.option_id,
+      title: gallery.title,
+      image:
+        gallery.images.length > 0
+          ? gallery.images[0].src
+          : null,
+      variant_ids: gallery.variant_ids
+    })),
 
     options,
     variants: enabledVariants
@@ -1600,7 +1762,7 @@ function uniqueTitles(values) {
 }
 
 
-function buildColorImageMap(
+function buildColorGalleries(
   rawImages,
   options,
   enabledVariants
@@ -1614,46 +1776,21 @@ function buildColorImageMap(
     return [];
   }
 
-  const images = rawImages
-    .filter(
-      (image) =>
-        image &&
-        image.src
-    )
-    .slice()
-    .sort((a, b) => {
-      const aFront =
-        String(a.position || "")
-          .toLowerCase() === "front"
-          ? 1
-          : 0;
-
-      const bFront =
-        String(b.position || "")
-          .toLowerCase() === "front"
-          ? 1
-          : 0;
-
-      if (aFront !== bFront) {
-        return bFront - aFront;
-      }
-
-      const aDefault =
-        a.is_default === true ? 1 : 0;
-
-      const bDefault =
-        b.is_default === true ? 1 : 0;
-
-      return bDefault - aDefault;
-    });
+  const sourceImages = rawImages.filter(
+    (image) =>
+      image &&
+      image.src
+  );
 
   return colorOption.values
     .map((value) => {
       const variantIds =
         enabledVariants
           .filter((variant) =>
-            variant.options.includes(
-              Number(value.id)
+            variant.options.some(
+              (optionId) =>
+                String(optionId) ===
+                String(value.id)
             )
           )
           .map((variant) =>
@@ -1668,43 +1805,102 @@ function buildColorImageMap(
         variantIds.map(String)
       );
 
-      let match = images.find(
-        (image) =>
-          Array.isArray(image.variant_ids) &&
-          image.variant_ids.some(
+      const matching = sourceImages.filter(
+        (image) => {
+          if (
+            Array.isArray(image.variant_ids) &&
+            image.variant_ids.some(
+              (variantId) =>
+                idSet.has(String(variantId))
+            )
+          ) {
+            return true;
+          }
+
+          return variantIds.some(
             (variantId) =>
-              idSet.has(String(variantId))
-          )
+              String(image.src).includes(
+                `/${variantId}/`
+              )
+          );
+        }
       );
 
-      /*
-        Some Printify mockup responses encode the
-        variant ID in the image URL instead of
-        exposing variant_ids. Use that as a safe
-        fallback.
-      */
-      if (!match) {
-        match = images.find((image) =>
-          variantIds.some((variantId) =>
-            String(image.src).includes(
-              `/${variantId}/`
-            )
-          )
-        );
-      }
+      const seen = new Set();
 
-      if (!match) {
+      const gallery = matching
+        .slice()
+        .sort((a, b) => {
+          const rankA =
+            mockupPositionRank(a.position);
+
+          const rankB =
+            mockupPositionRank(b.position);
+
+          if (rankA !== rankB) {
+            return rankA - rankB;
+          }
+
+          const defaultA =
+            a.is_default === true ? 1 : 0;
+
+          const defaultB =
+            b.is_default === true ? 1 : 0;
+
+          return defaultB - defaultA;
+        })
+        .filter((image) => {
+          if (seen.has(image.src)) {
+            return false;
+          }
+
+          seen.add(image.src);
+          return true;
+        })
+        .slice(0, 10)
+        .map((image) => ({
+          src: image.src,
+          position:
+            image.position || "other",
+          is_default:
+            image.is_default === true
+        }));
+
+      if (!gallery.length) {
         return null;
       }
 
       return {
         option_id: value.id,
         title: value.title,
-        image: match.src,
-        variant_ids: variantIds
+        variant_ids: variantIds,
+        images: gallery
       };
     })
     .filter(Boolean);
+}
+
+function mockupPositionRank(position) {
+  const value =
+    String(position || "")
+      .trim()
+      .toLowerCase();
+
+  if (
+    value === "front" ||
+    value.startsWith("front-")
+  ) {
+    return 0;
+  }
+
+  if (
+    value === "back" ||
+    value.startsWith("back-")
+  ) {
+    return 1;
+  }
+
+  return 2;
 }
 
 function getPrimaryImage(rawImages) {
