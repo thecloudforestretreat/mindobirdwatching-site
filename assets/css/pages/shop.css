@@ -1078,3 +1078,187 @@ body[data-page-type="shop_page"] .storeHeroBadge{
     transition:none;
   }
 }
+/* =========================================================
+   MBW Shop Storefront V3 - visual symmetry pass
+   2026-09-04
+   - white/green hero caption
+   - five-slide hero carousel
+   - normalized product media framing
+   - aligned product titles, prices and CTA buttons
+   ========================================================= */
+
+/* Hero caption: lighter, more premium, and consistent with MBW cards. */
+body[data-page-type="shop_page"] .storeHeroBadge{
+  left:18px;
+  right:18px;
+  bottom:18px;
+  padding:13px 15px;
+  border:1px solid rgba(15,95,58,.24);
+  background:rgba(255,255,255,.94);
+  color:var(--forest);
+  box-shadow:0 10px 28px rgba(7,25,35,.12);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+}
+
+body[data-page-type="shop_page"] .storeHeroBadge strong,
+body[data-page-type="shop_page"] .storeHeroBadge span{
+  color:var(--forest);
+}
+
+body[data-page-type="shop_page"] .storeHeroBadge strong{
+  font-weight:950;
+}
+
+body[data-page-type="shop_page"] .storeHeroBadge span{
+  opacity:.76;
+  font-weight:800;
+}
+
+/* Keep the carousel dots clearly visible above the light caption. */
+body[data-page-type="shop_page"] .storeHeroDots{
+  bottom:84px;
+}
+
+body[data-page-type="shop_page"] .storeHeroDot{
+  border-color:rgba(255,255,255,.96);
+  background:rgba(15,95,58,.48);
+  box-shadow:0 1px 4px rgba(7,25,35,.18);
+}
+
+body[data-page-type="shop_page"] .storeHeroDot.isActive{
+  background:#fff;
+}
+
+/* Product grid symmetry. */
+body[data-page-type="shop_page"] .storeProductGrid{
+  align-items:stretch;
+  grid-auto-rows:1fr;
+}
+
+body[data-page-type="shop_page"] .storeProductCard{
+  height:100%;
+  min-height:0;
+}
+
+/* Every product gets the same media frame.
+   Apparel and bags retain the complete product mockup.
+   Mug lifestyle images are allowed to crop slightly so they do not show
+   the large white bands visible in the original source aspect ratio. */
+body[data-page-type="shop_page"] .storeProductMedia{
+  aspect-ratio:1 / 1.08;
+  min-height:0;
+  background:#fff;
+}
+
+body[data-page-type="shop_page"] .storeProductMedia img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+}
+
+body[data-page-type="shop_page"] .storeProductCard[data-category="mugs"] .storeProductMedia img{
+  object-fit:cover;
+  object-position:center;
+  transform:scale(1.035);
+}
+
+body[data-page-type="shop_page"] .storeProductCard[data-category="mugs"]:hover .storeProductMedia img{
+  transform:scale(1.06);
+}
+
+/* Keep the metadata, title, price and CTA geometry identical across cards. */
+body[data-page-type="shop_page"] .storeProductBody{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  min-height:0;
+  padding:14px;
+}
+
+body[data-page-type="shop_page"] .storeProductMeta{
+  min-height:18px;
+}
+
+body[data-page-type="shop_page"] .storeProductBody .productTitle{
+  display:-webkit-box;
+  min-height:4.05em;
+  margin:10px 0 14px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  line-clamp:3;
+}
+
+body[data-page-type="shop_page"] .storeProductFooter{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+  gap:12px;
+  width:100%;
+  margin-top:auto;
+  padding-top:4px;
+}
+
+body[data-page-type="shop_page"] .storePriceBlock{
+  min-width:0;
+  align-self:end;
+}
+
+body[data-page-type="shop_page"] .storePriceBlock .priceTag{
+  min-height:24px;
+  line-height:1.15;
+}
+
+body[data-page-type="shop_page"] .storeProductButton{
+  align-self:end;
+  min-width:112px;
+  min-height:44px;
+  justify-content:center;
+  white-space:nowrap;
+}
+
+/* Slightly tighten the gap between filters and the first product row. */
+body[data-page-type="shop_page"] .storeTools{
+  margin-bottom:14px;
+}
+
+@media (max-width:1100px){
+  body[data-page-type="shop_page"] .storeProductBody .productTitle{
+    min-height:4.05em;
+  }
+}
+
+@media (max-width:640px){
+  body[data-page-type="shop_page"] .storeHeroBadge{
+    left:12px;
+    right:12px;
+    bottom:12px;
+  }
+
+  body[data-page-type="shop_page"] .storeHeroDots{
+    right:18px;
+    bottom:78px;
+  }
+
+  body[data-page-type="shop_page"] .storeProductMedia{
+    aspect-ratio:1 / 1;
+  }
+
+  body[data-page-type="shop_page"] .storeProductBody .productTitle{
+    min-height:0;
+    -webkit-line-clamp:unset;
+    line-clamp:unset;
+  }
+
+  body[data-page-type="shop_page"] .storeProductFooter{
+    grid-template-columns:1fr;
+    align-items:stretch;
+  }
+
+  body[data-page-type="shop_page"] .storeProductButton{
+    width:100%;
+  }
+}
