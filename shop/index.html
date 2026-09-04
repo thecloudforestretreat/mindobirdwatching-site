@@ -30,7 +30,7 @@
   <meta name="theme-color" content="#0f5f3a">
 
   <link rel="stylesheet" href="/assets/css/site.css">
-  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-11">
+  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-12">
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
 
   <script defer src="/assets/js/head.js?v=1"></script>
@@ -162,6 +162,13 @@
             <article class="storeSkeleton"></article>
             <article class="storeSkeleton"></article>
           </section>
+
+          <div class="storeLoadMoreWrap" id="storeLoadMoreWrap" hidden>
+            <button class="btn secondary storeLoadMore" id="storeLoadMore" type="button">
+              Load More Products
+            </button>
+            <p class="storeLoadMoreMeta" id="storeLoadMoreMeta"></p>
+          </div>
 
           <div id="catalogEmpty" class="storeEmpty" hidden>
             <strong>No products match your filters.</strong>
@@ -428,6 +435,8 @@
     var API_BASE = "https://mbw-shop-api.thecloudforestretreat.workers.dev";
     var catalog = [];
     var activeCategory = "all";
+    var visibleProductLimit = 12;
+    var productsPerPage = 12;
 
     /* Temporary bridge so the existing product page remains valid until
        /shop/product/ is upgraded to consume Printify IDs in the next step. */
@@ -482,8 +491,11 @@
 
     function cardMarkup(product) {
       var category = categoryFor(product);
-      var variants = Number(product.variant_count || 0);
-      var variantCopy = variants === 1 ? "1 option" : variants + " options";
+      var variantCopy = product.option_summary || (
+        Number(product.variant_count || 0) === 1
+          ? "1 option"
+          : Number(product.variant_count || 0) + " options"
+      );
       return [
         '<article class="productCard storeProductCard" data-category="' + category + '">',
           '<a class="storeProductMedia" href="' + productHref(product) + '" aria-label="View ' + escapeHtml(product.title) + '">',
@@ -519,18 +531,54 @@
       return products;
     }
 
-    function renderCatalog() {
+    function renderCatalog(resetLimit) {
       var grid = document.getElementById("dynamicProductGrid");
       var empty = document.getElementById("catalogEmpty");
       var summary = document.getElementById("catalogSummary");
+      var loadMoreWrap = document.getElementById("storeLoadMoreWrap");
+      var loadMoreMeta = document.getElementById("storeLoadMoreMeta");
       var products = getVisibleProducts();
 
-      grid.innerHTML = products.map(cardMarkup).join("");
+      if (resetLimit === true) {
+        visibleProductLimit = productsPerPage;
+      }
+
+      var shownProducts = products.slice(0, visibleProductLimit);
+
+      grid.innerHTML = shownProducts.map(cardMarkup).join("");
       grid.setAttribute("aria-busy", "false");
       empty.hidden = products.length !== 0;
-      summary.textContent = products.length === catalog.length
-        ? catalog.length + " current products, synced from our fulfillment catalog."
-        : products.length + " of " + catalog.length + " products shown.";
+
+      if (products.length === catalog.length) {
+        summary.textContent =
+          catalog.length +
+          " current products, synced from our fulfillment catalog.";
+      } else {
+        summary.textContent =
+          products.length +
+          " matching products from " +
+          catalog.length +
+          " current products.";
+      }
+
+      var hasMore =
+        shownProducts.length < products.length;
+
+      if (loadMoreWrap) {
+        loadMoreWrap.hidden =
+          products.length === 0 || !hasMore;
+      }
+
+      if (loadMoreMeta) {
+        loadMoreMeta.textContent =
+          products.length === 0
+            ? ""
+            : "Showing " +
+              shownProducts.length +
+              " of " +
+              products.length +
+              " products";
+      }
     }
 
     async function loadCatalog() {
@@ -547,6 +595,7 @@
         var data = await response.json();
         if (!data || data.ok !== true || !Array.isArray(data.products)) throw new Error("Invalid catalog response");
         catalog = data.products.slice();
+        visibleProductLimit = productsPerPage;
         status.textContent = "Live catalog";
         renderCatalog();
       } catch (err) {
@@ -565,11 +614,22 @@
       document.querySelectorAll(".storeFilter").forEach(function (item) {
         item.classList.toggle("isActive", item === button);
       });
-      renderCatalog();
+      renderCatalog(true);
     });
 
-    document.getElementById("shopSearch").addEventListener("input", renderCatalog);
-    document.getElementById("shopSort").addEventListener("change", renderCatalog);
+    document.getElementById("shopSearch").addEventListener("input", function () {
+      renderCatalog(true);
+    });
+
+    document.getElementById("shopSort").addEventListener("change", function () {
+      renderCatalog(true);
+    });
+
+    document.getElementById("storeLoadMore").addEventListener("click", function () {
+      visibleProductLimit += productsPerPage;
+      renderCatalog(false);
+    });
+
     document.getElementById("catalogRetry").addEventListener("click", loadCatalog);
 
     loadCatalog();
