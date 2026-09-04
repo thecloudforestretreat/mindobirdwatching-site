@@ -1,2040 +1,1119 @@
-/* MBW activity page cluster
-   Path in repo: /assets/css/pages/activity-pages.css
-   Load after /assets/css/site.css and existing page CSS.
-*/
+/* =========================================================
+   Mindo Bird Watching - Shop cluster
+   Routes:
+   - /shop/
+   - /shop/product/
+   - /shop/return-policy/
+   - /shop/shipping-policy/
+   Global final CTA geometry intentionally remains in site.css.
+   ========================================================= */
 
-body[data-page-content-group="activities"] .page.card {
-  overflow: visible;
+body[data-page-content-group="shop"] .page,
+body[data-page-content-group="shop"] .page * {
+  box-sizing: border-box;
 }
 
-body[data-page-content-group="activities"] .heroCard,
-body[data-page-content-group="activities"] .heroMedia,
-body[data-page-content-group="activities"] .infoCard,
-body[data-page-content-group="activities"] .mediaCard,
-body[data-page-content-group="activities"] .noteCard,
-body[data-page-content-group="activities"] .relatedCard,
-body[data-page-content-group="activities"] .nextSteps {
-  border-radius: 14px;
+body[data-page-content-group="shop"] .breadcrumbs,
+body[data-page-content-group="shop"] .breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
-body[data-page-content-group="activities"] .hero {
-  gap: 18px;
-  align-items: stretch;
+body[data-page-content-group="shop"] .breadcrumbs a,
+body[data-page-content-group="shop"] .breadcrumb a {
+  color: var(--forest);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-body[data-page-content-group="activities"] .heroCard {
+body[data-page-content-group="shop"] :is(.heroCopy, .heroMedia, .shopHeroCard) {
+  min-width: 0;
+}
+
+body[data-page-content-group="shop"] :is(.contentSection, .faqSection, .shopSection) {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+body[data-page-content-group="shop"] :is(.contentSection, .faqSection, .shopSection) > .sectionHead {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+body[data-page-content-group="shop"] :is(.block, .trustBox, .faqCard, .sectionBox) {
+  min-width: 0;
+}
+
+body[data-page-content-group="shop"] :is(.block, .trustBox) {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  justify-content: flex-start;
 }
 
-body[data-page-content-group="activities"] .heroCard h1 {
-  max-width: none;
+body[data-page-content-group="shop"] :is(.block, .trustBox) .ctaRow.alignBottom {
+  margin-top: auto;
+  padding-top: 12px;
 }
 
-body[data-page-content-group="activities"] .lede {
-  max-width: 72ch;
-  line-height: 1.45;
-}
-
-body[data-page-content-group="activities"] .chips {
-  align-items: center;
-}
-
-body[data-page-content-group="activities"] .chip {
-  min-height: 34px;
-  white-space: normal;
-  text-align: center;
-}
-
-body[data-page-content-group="activities"] .chip--price {
-  background: rgba(255, 211, 49, .22);
-  border-color: rgba(214, 168, 0, .34);
-}
-
-body[data-page-content-group="activities"] .ctaRow {
-  align-items: center;
-  gap: 10px;
-}
-
-body[data-page-content-group="activities"] .ctaRow .btn {
-  min-height: 46px;
-  white-space: normal;
-  text-align: center;
-}
-
-body[data-page-content-group="activities"] .heroMediaFrame {
-  aspect-ratio: 4 / 3;
-  min-height: 0 !important;
-  height: auto !important;
-  flex: 0 0 auto !important;
+/* Shop hub */
+body[data-page-type="shop_page"] main.shopPage.page.card {
+  padding: 0;
   overflow: hidden;
 }
 
-body[data-page-content-group="activities"] .heroMediaFrame img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  background: #fff;
+body[data-page-type="shop_page"] .shopWrap {
+  padding: 22px;
 }
 
-body[data-page-content-group="activities"] .heroMedia {
-  align-self: start;
-  height: auto !important;
-  min-height: 0 !important;
-  display: flex;
-  flex-direction: column;
-}
-
-body[data-page-content-group="activities"][data-hero-card-sync="true"] .heroMedia {
-  align-self: stretch;
-  min-height: 100% !important;
-}
-
-body[data-page-content-group="activities"][data-hero-media-fit="contain"] .heroMediaFrame {
-  background: #fff;
-}
-
-body[data-page-content-group="activities"][data-hero-media-fit="contain"] .heroMediaFrame img {
-  object-fit: contain;
-  object-position: center;
-  background: #fff;
-}
-
-body[data-page-content-group="activities"][data-hero-media-fit="cover"] .heroMediaFrame img {
-  object-fit: cover;
-  object-position: center;
-}
-
-body[data-page-content-group="activities"][data-hero-media-position="top"] .heroMediaFrame img {
-  object-position: center top;
-}
-
-body[data-page-content-group="activities"][data-hero-media-position="center"] .heroMediaFrame img {
-  object-position: center;
-}
-
-
-body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame img {
-  object-fit: contain;
-  object-position: center;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .heroMediaFrame img {
-  object-fit: contain;
-  object-position: center;
-  background: #fff;
-}
-
-body[data-page-content-group="activities"]:not([data-hero-media-fit="cover"]) .heroMediaFrame img {
-  object-fit: contain !important;
-  object-position: center !important;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"] .heroMediaFrame img {
-  object-fit: contain;
-  object-position: center;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #061d11;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame img {
-  object-fit: contain;
-  object-position: center;
-  background: #061d11;
-}
-
-body[data-page-content-group="activities"] .section {
-  margin-top: 24px;
-}
-
-body[data-page-content-group="activities"] .section--compact {
-  margin-top: 18px;
-}
-
-body[data-page-content-group="activities"] .sectionHead {
-  align-items: flex-end;
-}
-
-body[data-page-content-group="activities"] .sectionHead p {
-  max-width: 62ch;
-}
-
-body[data-page-content-group="activities"] .infoGrid,
-body[data-page-content-group="activities"] .highlightGrid,
-body[data-page-content-group="activities"] .wildlifeGrid,
-body[data-page-content-group="activities"] .relatedGrid {
-  align-items: stretch;
-}
-
-body[data-page-content-group="activities"] .infoCard,
-body[data-page-content-group="activities"] .relatedCard {
-  display: flex;
-  flex-direction: column;
-}
-
-body[data-page-content-group="activities"] .highlightGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-body[data-page-content-group="activities"] .activityFactGrid,
-body[data-page-content-group="activities"] .comparisonGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-body[data-page-content-group="activities"] .activityFact,
-body[data-page-content-group="activities"] .comparisonCard {
-  min-width: 0;
-  padding: 13px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, .035);
-}
-
-body[data-page-content-group="activities"] .activityFact span,
-body[data-page-content-group="activities"] .comparisonCard span {
-  display: block;
-  margin: 0 0 5px;
-  color: var(--green);
-  font-size: 11px;
+body[data-page-type="shop_page"] .kicker {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
   font-weight: 900;
-  letter-spacing: .06em;
-  line-height: 1.1;
+  letter-spacing: .14em;
   text-transform: uppercase;
 }
 
-body[data-page-content-group="activities"] .activityFact strong,
-body[data-page-content-group="activities"] .comparisonCard strong {
-  display: block;
-  color: var(--ink);
-  font-size: 15px;
-  line-height: 1.2;
+body[data-page-type="shop_page"] h1 {
+  margin: 0 0 10px;
+  color: var(--forest);
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1;
 }
 
-body[data-page-content-group="activities"] .activityFact p,
-body[data-page-content-group="activities"] .comparisonCard p {
-  margin: 7px 0 0;
+body[data-page-type="shop_page"] .lead {
+  max-width: 72ch;
+  margin: 0 0 16px;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-body[data-page-content-group="activities"] .bookingPrompt {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
-  padding: 16px;
-  border: 1px solid rgba(15, 92, 45, .2);
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(250, 253, 246, .96), rgba(231, 241, 220, .68));
-}
-
-body[data-page-content-group="activities"] .bookingPrompt h2 {
-  margin: 0 0 6px;
-  font-size: 22px;
-  line-height: 1.15;
-}
-
-body[data-page-content-group="activities"] .bookingPrompt p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.45;
-}
-
-body[data-page-content-group="activities"] .highlightGrid .infoCard p {
-  margin: 0;
-}
-
-body[data-page-content-group="activities"] .heroInsight {
-  padding: 11px 13px;
-  border: 1px solid rgba(15, 92, 45, .18);
-  border-radius: 12px;
-  background: rgba(250, 253, 246, .78);
-}
-
-body[data-page-content-group="activities"] .heroInsight h2 {
-  font-size: 18px;
-  line-height: 1.15;
-  margin: 0 0 7px;
-}
-
-body[data-page-content-group="activities"] .heroInsight p {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-body[data-page-content-group="activities"] .experienceHighlights--compact {
-  margin-top: 0;
-  padding: 12px 13px;
-}
-
-body[data-page-content-group="activities"] .experienceHighlights--compact h2 {
-  font-size: 18px;
-  line-height: 1.15;
-  margin: 0 0 8px;
-}
-
-body[data-page-content-group="activities"] .experienceHighlights--compact ul {
-  margin: 0;
-  padding-left: 18px;
-}
-
-body[data-page-content-group="activities"] .experienceHighlights--compact li {
-  margin: 0 0 5px;
-  line-height: 1.3;
-}
-
-body[data-page-content-group="activities"] .experienceHighlights--compact li:last-child {
-  margin-bottom: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-content-group="activities"] .relatedCard a {
-  margin-top: auto;
-  align-self: flex-start;
-}
-
-body[data-page-content-group="activities"] .butterflyGrid,
-body[data-page-content-group="activities"] .internalLinks {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-body[data-page-content-group="activities"] .internalLinks.balancedLinks {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-content-group="activities"] .linkCard {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 100%;
-  gap: 8px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, .04);
-}
-
-body[data-page-content-group="activities"] .linkCard strong {
-  color: var(--ink);
-  font-size: 15px;
-  line-height: 1.15;
-}
-
-body[data-page-content-group="activities"] .linkCardDesc {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-body[data-page-content-group="activities"] .linkCardCta {
-  width: 100%;
-  margin-top: auto;
-}
-
-body[data-page-content-group="activities"] .finalCta--split .finalGrid {
-  align-items: stretch;
-}
-
-body[data-page-content-group="activities"] .finalCta--split .ctaRow--inline {
-  align-items: center;
-}
-
-body[data-page-content-group="activities"] .nextSteps ol {
-  margin: 8px 0 0;
-  padding-left: 18px;
-  color: var(--muted);
+  font-size: clamp(16px, 1.5vw, 19px);
   line-height: 1.55;
 }
 
-body[data-page-content-group="activities"] .nextSteps li + li {
-  margin-top: 5px;
-}
-
-body[data-page-content-group="activities"] .mediaGrid {
-  max-width: 980px;
-}
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoCard) {
-  grid-template-columns: minmax(0, .78fr) minmax(0, 1fr);
-  align-items: start;
-}
-
-body[data-page-content-group="activities"] .mediaCard {
-  min-width: 0;
-}
-
-body[data-page-content-group="activities"] .videoCarouselViewport,
-body[data-page-content-group="activities"] .carouselViewport,
-body[data-page-content-group="activities"] .videoFrame {
-  aspect-ratio: 9 / 16;
-  background: #061d11;
-}
-
-body[data-page-content-group="activities"] .videoCarouselViewport {
-  position: relative;
-  overflow: hidden;
-  border-radius: 14px;
-}
-
-body[data-page-content-group="activities"] .videoCarouselSlide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .28s ease;
-}
-
-body[data-page-content-group="activities"] .videoCarouselSlide.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-body[data-page-content-group="activities"] .videoCarouselSlide .videoFrame {
-  width: 100%;
-  height: 100%;
-}
-
-body[data-page-content-group="activities"] .singleVideoCard .videoFrame,
-body[data-page-content-group="activities"] .singleVideoFrame {
-  aspect-ratio: 16 / 9;
-}
-
-body[data-page-content-group="activities"] .videoFrame iframe,
-body[data-page-content-group="activities"] .carouselSlide img {
-  border-radius: 14px;
-}
-
-body[data-page-content-group="activities"] .carouselSlide img {
-  object-fit: contain;
-  object-position: center;
-  background: #061d11;
-}
-
-body[data-page-content-group="activities"] .mediaFooter {
-  min-height: 48px;
-}
-
-body[data-page-content-group="activities"] .finalCta .finalGrid {
-  gap: 16px;
-  align-items: stretch;
-}
-
-body[data-page-content-group="activities"] .finalLeft {
-  min-width: 0;
-}
-
-body[data-page-content-group="activities"] .finalLeft .ctaRow {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-body[data-page-content-group="activities"] .finalLeft .btn {
-  flex: 1 1 160px;
-}
-
-body[data-page-content-group="activities"] .nextSteps {
-  min-width: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"] .chip--status {
-  background: var(--soft);
-  border-color: var(--line);
-}
-
-body[data-page-type="activities_hub"] .activityHubCard--unavailable {
-  border-color: var(--line);
-  background: #fff;
-}
-
-body[data-page-type="activities_hub"] .activityHubCard--unavailable .activityMedia {
-  position: relative;
-}
-
-body[data-page-type="activities_hub"] .activityHubCard--unavailable .activityMedia::after {
-  content: "Status";
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .92);
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .04em;
-  padding: 6px 9px;
-  text-transform: uppercase;
-}
-
-body[data-page-language="es"][data-page-type="activities_hub"] .activityHubCard--unavailable .activityMedia::after {
-  content: "Estado";
-}
-
-body[data-page-type="activities_hub"] .activityChip--status {
-  border-color: var(--line);
-  background: var(--soft);
-  color: var(--green);
-}
-
-
-/* Chocolate tour symmetry lock */
-body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .heroMediaFrame {
-  aspect-ratio: auto;
-  height: auto !important;
-  min-height: 0 !important;
-  overflow: visible;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .heroMediaFrame img {
-  display: block;
-  width: 100%;
-  height: auto !important;
-  max-width: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .chocolateCultureGrid {
+body[data-page-type="shop_page"] .shopHero {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
   align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .chocolateCultureGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-/* Coffee tour: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .coffeeCultureGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .coffeeCultureGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-/* Double Extreme Swing: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-
-/* Frog Concert: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .frogWildlifeGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .frogWildlifeGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-/* Horseback Riding: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .horsebackSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .horsebackSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-/* Mountain Biking: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .mountainBikingSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .mountainBikingSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-/* Nature Walk: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .natureWalkSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .natureWalkSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-/* Orchid Garden: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .orchidSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .orchidSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-/* Paintball: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .paintballSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="paintball"] .paintballSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-
-/* Quad Tour: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .quadSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .quadSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-
-/* Sky Bike and Sky Ride: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .skyBikeSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .skyBikeSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-
-/* Tubing: approved Night Walk-style portrait hero */
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .tubingSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="tubing"] .tubingSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-
-
-/* Waterfall Tour: approved landscape hero with full-image visibility */
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMediaFrame {
-  aspect-ratio: 16 / 10;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMediaFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .waterfallSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .waterfallSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-@media (max-width: 1000px) {
-
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMediaFrame {
-    aspect-ratio: 16 / 10;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .waterfallSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="tubing"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="tubing"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="tubing"] .tubingSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .skyBikeSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .quadSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="paintball"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="paintball"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="paintball"] .paintballSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .orchidSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .natureWalkSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .mountainBikingSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .horsebackSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .frogWildlifeGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .activityFactGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .coffeeCultureGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .heroMediaFrame {
-    aspect-ratio: auto;
-    height: auto !important;
-  }
-
-
-body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .chocolateCultureGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body[data-page-content-group="activities"] .hero {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-page-content-group="activities"] .internalLinks.balancedLinks {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body[data-page-content-group="activities"] .heroCard h1 {
-    max-width: none;
-  }
-
-  body[data-page-content-group="activities"] .activityFactGrid,
-  body[data-page-content-group="activities"] .comparisonGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body[data-page-content-group="activities"] .heroMediaFrame {
-    aspect-ratio: 16 / 10;
-    min-height: 0 !important;
-    height: auto !important;
-    flex: 0 0 auto !important;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  
-body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame img {
-  object-fit: contain;
-  object-position: center;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-}
-
-@media (max-width: 760px) {
-
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMediaFrame {
-    aspect-ratio: 16 / 10;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .waterfallSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="tubing"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="tubing"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="tubing"] .tubingSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="sky_bike_sky_ride"] .skyBikeSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="quad_tour"] .quadSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="paintball"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="paintball"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="paintball"] .paintballSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="orchid_garden"] .orchidSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="nature_walk"] .natureWalkSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="mountain_biking"] .mountainBikingSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="horseback_riding"] .horsebackSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="frog_concert"] .frogWildlifeGrid {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="double_extreme_swing"] .activityFactGrid {
-    grid-template-columns: 1fr;
-  }
-
-
-
-  body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="coffee_tour"] .coffeeCultureGrid {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .heroMediaFrame {
-    aspect-ratio: auto;
-    height: auto !important;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .heroMediaFrame img {
-    width: 100%;
-    height: auto !important;
-    object-fit: contain !important;
-    object-position: center !important;
-  }
-
-
-body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="chocolate_tour"] .chocolateCultureGrid {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-page-content-group="activities"] .page {
-    padding: 16px;
-  }
-
-  body[data-page-content-group="activities"] .heroCard {
-    padding: 16px;
-  }
-
-  body[data-page-content-group="activities"] .heroCard h1 {
-    max-width: none;
-  }
-
-  body[data-page-content-group="activities"] .chips {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body[data-page-content-group="activities"] .chip {
-    width: 100%;
-    justify-content: center;
-    padding: 8px 9px;
-    font-size: 11.5px;
-    line-height: 1.2;
-  }
-
-  body[data-page-content-group="activities"] .heroMediaFrame {
-    aspect-ratio: 4 / 3;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="canyoning"] .heroMediaFrame,
-  body[data-page-type="activity_tour"][data-activity-variant="butterfly_tour"] .heroMediaFrame,
-  body[data-page-type="activity_tour"][data-activity-variant="rafting_unavailable"] .heroMediaFrame,
-  body[data-page-type="activity_tour"][data-activity-variant="night_walk"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-  }
-
-  body[data-page-content-group="activities"] .mediaGrid,
-  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoCard),
-  body[data-page-content-group="activities"] .infoGrid,
-  body[data-page-content-group="activities"] .activityFactGrid,
-  body[data-page-content-group="activities"] .comparisonGrid,
-  body[data-page-content-group="activities"] .highlightGrid,
-  body[data-page-content-group="activities"] .butterflyGrid,
-  body[data-page-content-group="activities"] .internalLinks,
-  body[data-page-content-group="activities"] .wildlifeGrid,
-  body[data-page-content-group="activities"] .relatedGrid,
-  body[data-page-content-group="activities"] .finalGrid {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-page-content-group="activities"] .videoCarouselViewport,
-  body[data-page-content-group="activities"] .carouselViewport,
-  body[data-page-content-group="activities"] .videoFrame {
-    aspect-ratio: 4 / 5;
-  }
-
-  body[data-page-content-group="activities"] .singleVideoCard .videoFrame,
-  body[data-page-content-group="activities"] .singleVideoFrame {
-    aspect-ratio: 16 / 9;
-  }
-
-  body[data-page-content-group="activities"] .bookingPrompt {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-page-content-group="activities"] .ctaRow .btn,
-  body[data-page-content-group="activities"] .finalLeft .btn {
-    flex: 1 1 100%;
-    width: 100%;
-  }
-}
-
-@media (max-width: 430px) {
-  body[data-page-content-group="activities"] .heroCard h1 {
-    font-size: 36px;
-  }
-
-  body[data-page-content-group="activities"] .sectionHead h2 {
-    font-size: 24px;
-  }
-
-  body[data-page-content-group="activities"] .chips {
-    gap: 7px;
-  }
-}
-
-/* =========================================================
-   MBW single-video media symmetry lock
-   Keeps a standalone YouTube/fallback video card the same
-   width and media height as the adjacent image carousel card.
-   This intentionally comes last so it overrides the older
-   generic 16:9 single-video rule.
-   ========================================================= */
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-}
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) > .mediaCard {
-  min-width: 0;
-  height: 100%;
-}
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) > .mediaCard .mediaInner {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame,
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .carouselViewport {
-  width: 100%;
-  aspect-ratio: 9 / 16;
-  height: auto;
-  min-height: 0;
-}
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame {
-  position: relative;
-  overflow: hidden;
-  border-radius: 14px;
-  background: #061d11;
-}
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 14px;
-}
-
-body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .mediaFooter {
-  min-height: 48px;
-}
-
-/* Tablet: keep both media cards paired and equal. */
-@media (max-width: 1000px) and (min-width: 761px) {
-  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-  }
-
-  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame,
-  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .carouselViewport {
-    aspect-ratio: 9 / 16;
-  }
-}
-
-/* Mobile: stack cards, while keeping video and image media
-   frames at the same approved mobile proportion. */
-@media (max-width: 760px) {
-  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) {
-    grid-template-columns: 1fr;
-  }
-
-  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .singleVideoFrame,
-  body[data-page-content-group="activities"] .mediaGrid:has(.singleVideoFrame) .carouselViewport {
-    aspect-ratio: 4 / 5;
-  }
-}
-
-
-/* =========================================================
-   Ziplining / Canopy: approved Night Walk-style portrait hero
-   Verified hero asset: act_ziplining_01.jpg = 3072 x 5504
-   Ratio is effectively 9:16. Keep the full image visible.
-   ========================================================= */
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .heroMediaFrame {
-  aspect-ratio: 9 / 16;
-  height: auto !important;
-  max-height: none;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .heroMediaFrame img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .hero {
-  grid-template-columns: 1.02fr .98fr;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .heroCard {
-  min-height: 0;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .heroMedia {
-  justify-content: space-between;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .activityFactGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .zipliningSpecialGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .zipliningSpecialGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-@media (max-width: 1000px) and (min-width: 761px) {
-  body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .heroMediaFrame {
-    aspect-ratio: 9 / 14;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .zipliningSpecialGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 760px) {
-  body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .heroMediaFrame {
-    aspect-ratio: 9 / 16;
-    height: auto !important;
-    max-height: none;
-  }
-
-  body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .activityFactGrid,
-  body[data-page-type="activity_tour"][data-activity-variant="ziplining"] .zipliningSpecialGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-/* =========================================================
-   Trail Running in Mindo
-   Corrected activity-page consistency lock
-
-   Important:
-   The trail-running carousel mechanics are owned by travel-guides.css.
-   Do not override carouselViewport height/positioning or carouselSlide
-   display/positioning here. That previously collapsed the hero images.
-
-   This file only aligns the hero/card rhythm and ensures images remain
-   fully visible without cropping.
-   ========================================================= */
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero {
-  display: grid;
-  grid-template-columns: 1.02fr .98fr;
   gap: 18px;
-  align-items: stretch;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroMedia {
-  min-width: 0;
+body[data-page-type="shop_page"] .shopHeroCard {
+  padding: 20px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, .74);
+  box-shadow: var(--shadow);
+}
+
+body[data-page-type="shop_page"] .heroPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body[data-page-type="shop_page"] .previewFrame {
+  position: relative;
+  min-height: 340px;
+  height: clamp(340px, 38vw, 540px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
   background: #fff;
+}
+
+body[data-page-type="shop_page"] :is(.previewCarousel, .previewSlides, .previewSlide) {
+  width: 100%;
+  height: 100%;
+}
+
+body[data-page-type="shop_page"] .previewCarousel {
+  position: relative;
   overflow: hidden;
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody {
+body[data-page-type="shop_page"] .previewSlides {
   display: flex;
+  transform: translate3d(0, 0, 0);
+  transition: transform 420ms ease;
+}
+
+body[data-page-type="shop_page"] .previewSlide {
+  display: flex;
+  flex: 0 0 100%;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+body[data-page-type="shop_page"] .previewSlide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+body[data-page-type="shop_page"] .previewDots {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+body[data-page-type="shop_page"] .previewDot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 1px solid rgba(21, 95, 44, .45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .82);
+  cursor: pointer;
+}
+
+body[data-page-type="shop_page"] .previewDot:is(.isActive, [aria-selected="true"]) {
+  width: 24px;
+  border-color: var(--forest);
+  background: var(--forest);
+}
+
+body[data-page-type="shop_page"] .previewCaption {
+  margin-top: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .64);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+body[data-page-type="shop_page"] .metaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+body[data-page-type="shop_page"] .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: var(--forest);
+  opacity: .55;
+  transform: translateY(-1px);
+}
+
+body[data-page-type="shop_page"] .valueGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+body[data-page-type="shop_page"] .productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+
+body[data-page-type="shop_page"] .productCard {
+  display: flex;
+  min-width: 0;
+  min-height: 100%;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .78);
+  box-shadow: var(--shadow);
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody h1 {
-  margin: 0;
-  max-width: none;
+body[data-page-type="shop_page"] .productImg {
+  display: flex;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .lede {
-  max-width: 72ch;
-  margin: 0;
+body[data-page-type="shop_page"] .productImg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+body[data-page-type="shop_page"] .productTitle {
+  margin: 14px 14px 8px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+body[data-page-type="shop_page"] .productDesc {
+  margin: 0 14px 14px;
+  color: var(--muted);
+  font-size: 14px;
   line-height: 1.45;
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .chips {
-  align-items: center;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .chip {
-  min-height: 34px;
-  white-space: normal;
-  text-align: center;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .ctaRow {
-  gap: 10px;
-  align-items: center;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .heroBody .ctaRow .btn {
-  min-height: 46px;
-  white-space: normal;
-  text-align: center;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .heroProofPanel {
-  padding: 12px 13px;
-  border: 1px solid rgba(15, 92, 45, .18);
-  border-radius: 12px;
-  background: rgba(250, 253, 246, .78);
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .heroProofPanel strong {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--green);
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .heroProofPanel p {
-  margin: 8px 0 0;
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .proofGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .proofGrid span {
+body[data-page-type="shop_page"] .productRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 7px 8px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding: 0 14px 14px;
 }
 
-/* Preserve travel-guides carousel mechanics.
-   Only enforce full-image visibility inside the working slides. */
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .carouselSlide img {
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
+body[data-page-type="shop_page"] .priceTag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--forest);
+  font-size: 17px;
+  font-weight: 950;
 }
 
-/* Keep hero caption visually consistent without changing the viewport. */
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero .mediaCaption {
-  margin: 0;
-  min-height: 48px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.4;
-  background: #fff;
-}
-
-/* Balanced repeated-card modules. */
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricGrid,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionGrid,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailFourGrid {
+/* Product and shipping-policy content pages */
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) main.shopPage {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
+  gap: 0;
+  padding: 22px;
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailFourGrid .infoCard {
-  min-width: 0;
-  min-height: 100%;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard {
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, .035);
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard span {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .06em;
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard strong,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard h3 {
-  display: block;
-  margin: 0;
-  color: var(--ink);
-  line-height: 1.2;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricCard p,
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionCard p {
-  margin: 7px 0 0;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailPrepGrid {
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .hero {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr);
   align-items: stretch;
+  gap: 16px;
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailPrepGrid > * {
-  min-width: 0;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .guideNote {
-  padding: 14px;
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy,
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia {
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, .72);
+  box-shadow: var(--shadow);
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .guideNote p {
-  margin: 7px 0 0;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
-
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedCard {
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  min-height: 100%;
+  align-items: flex-start;
+  padding: 20px;
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .faqGrid {
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy h1 {
+  margin: 0 0 10px;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroCopy > p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia {
+  margin: 0;
+  overflow: hidden;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  object-fit: cover;
+}
+
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) :is(.grid2, .quickGrid) {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
   align-items: stretch;
+  gap: 14px;
 }
 
-body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .faqGrid .faqCard {
-  min-width: 0;
-  min-height: 100%;
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-@media (max-width: 1000px) and (min-width: 761px) {
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero {
-    grid-template-columns: 1fr 1fr;
+body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .quickGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Return policy */
+body[data-page-type="shop_policy"] .policySummary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body[data-page-type="shop_policy"] .policyNotice {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 4px solid rgba(255, 215, 0, .85);
+  background: rgba(255, 248, 204, .72);
+}
+
+body[data-page-type="shop_policy"] .policyNotice .btn {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+body[data-page-type="shop_policy"] .updated {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  body[data-page-type="shop_page"] .shopHero {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, .85fr);
   }
 
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid {
+  body[data-page-type="shop_page"] .productGrid,
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .quickGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 760px) {
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .activeHero {
+@media (max-width: 900px) {
+  body[data-page-type="shop_page"] .shopWrap {
+    padding: 16px;
+  }
+
+  body[data-page-type="shop_page"] .shopHero,
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .hero,
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .grid2 {
     grid-template-columns: 1fr;
   }
 
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .proofGrid,
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .metricGrid,
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .decisionGrid,
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailFourGrid,
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailPrepGrid,
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .trailRelatedSection .relatedGrid,
-  body[data-page-content-group="active_adventures"][data-page-type="activity_detail_page"][data-activity-variant="trail_running"] .faqGrid {
+  body[data-page-type="shop_page"] .valueGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-page-type="shop_page"] .previewFrame {
+    height: clamp(320px, 72vw, 520px);
+  }
+
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .heroMedia img {
+    min-height: 280px;
+    max-height: 460px;
+  }
+
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) main.shopPage {
+    padding: 16px;
+  }
+
+  body[data-page-type="shop_policy"] .policySummary {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-page-type="shop_page"] .shopWrap {
+    padding: 14px;
+  }
+
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) main.shopPage {
+    padding: 14px;
+  }
+
+  body[data-page-type="shop_page"] :is(.productGrid, .valueGrid),
+  body:is([data-page-type="shop_product_page"], [data-page-type="shop_policy_page"]) .quickGrid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-type="shop_page"] .previewFrame {
+    min-height: 300px;
+    height: 380px;
+  }
+
+  body[data-page-type="shop_page"] .productImg {
+    aspect-ratio: 1 / 1;
+  }
+
+  body[data-page-type="shop_page"] .productRow {
+    align-items: stretch;
+  }
+
+  body[data-page-type="shop_page"] .productRow .btn,
+  body[data-page-type="shop_policy"] .policyNotice .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page-type="shop_page"] .previewSlides {
+    transition: none;
+  }
+}
+
+/* Product/policy shell lock.
+   The legacy global shop fallback sets main.shopPage.page.card to padding: 0.
+   Keep the hub edge-to-edge, but restore the standard site inset on content pages. */
+body[data-page-content-group="shop"][data-page-type="shop_product_page"]
+  main.page.card.shopPage,
+body[data-page-content-group="shop"][data-page-type="shop_policy_page"]
+  main.page.card.shopPage {
+  padding: 22px !important;
+}
+
+@media (max-width: 900px) {
+  body[data-page-content-group="shop"][data-page-type="shop_product_page"]
+    main.page.card.shopPage,
+  body[data-page-content-group="shop"][data-page-type="shop_policy_page"]
+    main.page.card.shopPage {
+    padding: 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-page-content-group="shop"][data-page-type="shop_product_page"]
+    main.page.card.shopPage,
+  body[data-page-content-group="shop"][data-page-type="shop_policy_page"]
+    main.page.card.shopPage {
+    padding: 14px !important;
   }
 }
 
 /* =========================================================
-   Waterfall Tour: natural landscape hero + 3-video carousel
-   Scope: EN/ES waterfall activity pages only.
+   MBW Shop Storefront V2 - 2026-09-04
+   Dynamic catalog from mbw-shop-api.
+   Scoped to shop_page only.
+   ========================================================= */
+body[data-page-type="shop_page"] .shopStorefrontV2{
+  display:grid;
+  gap:28px;
+}
+body[data-page-type="shop_page"] .srOnly{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+body[data-page-type="shop_page"] .storeHero{
+  display:grid;
+  grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr);
+  gap:20px;
+  align-items:stretch;
+}
+body[data-page-type="shop_page"] .storeHeroCopy,
+body[data-page-type="shop_page"] .storeHeroVisual{
+  border:1px solid var(--line);
+  border-radius:24px;
+  overflow:hidden;
+  background:rgba(255,255,255,.82);
+  box-shadow:var(--shadow);
+}
+body[data-page-type="shop_page"] .storeHeroCopy{
+  padding:clamp(24px,4vw,48px);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+body[data-page-type="shop_page"] .storeEyebrow{
+  margin:0 0 10px;
+  color:var(--forest);
+  font-size:12px;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+body[data-page-type="shop_page"] .storeHero h1{
+  max-width:13ch;
+  margin:0 0 16px;
+  font-size:clamp(38px,5.8vw,72px);
+  line-height:.98;
+}
+body[data-page-type="shop_page"] .storeLead{
+  max-width:62ch;
+  margin:0;
+  font-size:clamp(16px,1.55vw,19px);
+  line-height:1.65;
+  color:var(--muted);
+}
+body[data-page-type="shop_page"] .storeHeroActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:22px;
+}
+body[data-page-type="shop_page"] .storeTrustStrip{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:22px;
+}
+body[data-page-type="shop_page"] .storeTrustStrip span{
+  display:inline-flex;
+  align-items:center;
+  min-height:32px;
+  padding:7px 11px;
+  border:1px solid rgba(13,89,37,.18);
+  border-radius:999px;
+  background:rgba(13,89,37,.06);
+  color:var(--forest);
+  font-size:12px;
+  font-weight:800;
+}
+body[data-page-type="shop_page"] .storeHeroVisual{
+  position:relative;
+  min-height:470px;
+  background:#fff;
+}
+body[data-page-type="shop_page"] .storeHeroVisual img{
+  width:100%;
+  height:100%;
+  min-height:470px;
+  object-fit:cover;
+}
+body[data-page-type="shop_page"] .storeHeroBadge{
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:16px;
+  background:rgba(7,25,35,.82);
+  color:#fff;
+  backdrop-filter:blur(10px);
+}
+body[data-page-type="shop_page"] .storeHeroBadge strong,
+body[data-page-type="shop_page"] .storeHeroBadge span{
+  color:#fff;
+}
+body[data-page-type="shop_page"] .storeHeroBadge span{
+  font-size:12px;
+  opacity:.82;
+}
+body[data-page-type="shop_page"] .storeBenefits{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+body[data-page-type="shop_page"] .storeBenefits article{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:12px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.72);
+}
+body[data-page-type="shop_page"] .storeBenefitIcon{
+  display:grid;
+  place-items:center;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:var(--forest);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+body[data-page-type="shop_page"] .storeBenefits strong{
+  display:block;
+  margin-bottom:5px;
+  color:var(--ink);
+}
+body[data-page-type="shop_page"] .storeBenefits p{
+  margin:0;
+  font-size:13px;
+  line-height:1.5;
+}
+body[data-page-type="shop_page"] .storeCatalogSection{
+  padding-top:8px;
+}
+body[data-page-type="shop_page"] .storeCatalogHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:16px;
+}
+body[data-page-type="shop_page"] .storeCatalogHead h2{
+  margin:0 0 6px;
+  font-size:clamp(30px,4vw,46px);
+}
+body[data-page-type="shop_page"] .storeCatalogSummary{
+  margin:0;
+}
+body[data-page-type="shop_page"] .storeCatalogStatus{
+  flex:0 0 auto;
+  padding:8px 12px;
+  border:1px solid rgba(13,89,37,.18);
+  border-radius:999px;
+  background:rgba(255,255,255,.7);
+  color:var(--forest);
+  font-size:12px;
+  font-weight:900;
+}
+body[data-page-type="shop_page"] .storeTools{
+  display:grid;
+  grid-template-columns:minmax(190px,1fr) auto minmax(170px,auto);
+  gap:12px;
+  align-items:center;
+  margin-bottom:18px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,255,255,.66);
+}
+body[data-page-type="shop_page"] .storeSearch input,
+body[data-page-type="shop_page"] .storeSortWrap select{
+  width:100%;
+  min-height:44px;
+  border:1px solid rgba(7,25,35,.16);
+  border-radius:12px;
+  background:#fff;
+  color:var(--ink);
+  font:inherit;
+  padding:10px 12px;
+}
+body[data-page-type="shop_page"] .storeCategoryFilters{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  justify-content:center;
+}
+body[data-page-type="shop_page"] .storeFilter{
+  min-height:40px;
+  padding:8px 12px;
+  border:1px solid rgba(13,89,37,.18);
+  border-radius:999px;
+  background:#fff;
+  color:var(--forest);
+  font:800 12px/1 var(--font-body);
+  cursor:pointer;
+}
+body[data-page-type="shop_page"] .storeFilter.isActive{
+  background:var(--forest);
+  color:#fff;
+  border-color:var(--forest);
+}
+body[data-page-type="shop_page"] .storeProductGrid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+}
+body[data-page-type="shop_page"] .storeProductCard{
+  border-radius:20px;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+body[data-page-type="shop_page"] .storeProductCard:hover{
+  transform:translateY(-3px);
+  border-color:rgba(13,89,37,.28);
+  box-shadow:0 20px 48px rgba(7,25,35,.13);
+}
+body[data-page-type="shop_page"] .storeProductMedia{
+  position:relative;
+  display:block;
+  aspect-ratio:4/4.4;
+  overflow:hidden;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+body[data-page-type="shop_page"] .storeProductMedia img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  transition:transform .28s ease;
+}
+body[data-page-type="shop_page"] .storeProductCard:hover .storeProductMedia img{
+  transform:scale(1.025);
+}
+body[data-page-type="shop_page"] .storeProductBadge{
+  position:absolute;
+  top:12px;
+  left:12px;
+  display:inline-flex;
+  padding:7px 9px;
+  border-radius:999px;
+  border:1px solid rgba(13,89,37,.20);
+  background:rgba(247,251,243,.94);
+  color:var(--forest);
+  font-size:11px;
+  font-weight:900;
+  box-shadow:0 5px 14px rgba(0,0,0,.08);
+}
+body[data-page-type="shop_page"] .storeProductBody{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  padding:14px;
+}
+body[data-page-type="shop_page"] .storeProductMeta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+body[data-page-type="shop_page"] .storeProductBody .productTitle{
+  margin:10px 0 18px;
+  font-size:17px;
+  line-height:1.35;
+}
+body[data-page-type="shop_page"] .storeProductBody .productTitle a{
+  color:var(--ink);
+}
+body[data-page-type="shop_page"] .storeProductFooter{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:auto;
+}
+body[data-page-type="shop_page"] .storePriceBlock{
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+}
+body[data-page-type="shop_page"] .storePriceBlock .priceTag{
+  min-height:0;
+  font-size:18px;
+}
+body[data-page-type="shop_page"] .storePriceBlock small{
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+}
+body[data-page-type="shop_page"] .storeProductButton{
+  white-space:nowrap;
+}
+body[data-page-type="shop_page"] .storeSkeleton{
+  min-height:440px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:linear-gradient(110deg,rgba(255,255,255,.58) 8%,rgba(255,255,255,.92) 18%,rgba(255,255,255,.58) 33%);
+  background-size:200% 100%;
+  animation:mbwShopShimmer 1.35s linear infinite;
+}
+@keyframes mbwShopShimmer{
+  to{background-position-x:-200%;}
+}
+body[data-page-type="shop_page"] .storeCatalogError,
+body[data-page-type="shop_page"] .storeEmpty{
+  padding:28px;
+  border:1px dashed rgba(13,89,37,.28);
+  border-radius:18px;
+  background:rgba(255,255,255,.68);
+  text-align:center;
+}
+body[data-page-type="shop_page"] .storeCatalogError p,
+body[data-page-type="shop_page"] .storeEmpty p{
+  margin:6px 0 14px;
+}
+body[data-page-type="shop_page"] .storeInfoBand{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+body[data-page-type="shop_page"] .storeInfoBand article{
+  padding:24px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:rgba(255,255,255,.72);
+}
+body[data-page-type="shop_page"] .storeInfoBand h2{
+  font-size:26px;
+  margin-bottom:10px;
+}
+body[data-page-type="shop_page"] .storeTextLink{
+  display:inline-block;
+  margin-top:5px;
+  color:var(--forest);
+  font-weight:900;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+body[data-page-type="shop_page"] .storeStory{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:clamp(24px,4vw,42px);
+  border-radius:24px;
+  background:var(--forest);
+  color:#fff;
+}
+body[data-page-type="shop_page"] .storeStory .storeEyebrow,
+body[data-page-type="shop_page"] .storeStory h2,
+body[data-page-type="shop_page"] .storeStory p{
+  color:#fff;
+}
+body[data-page-type="shop_page"] .storeStory h2{
+  max-width:18ch;
+  font-size:clamp(28px,3.5vw,42px);
+}
+body[data-page-type="shop_page"] .storeStory p{
+  max-width:68ch;
+  opacity:.86;
+}
+body[data-page-type="shop_page"] .storeStoryActions{
+  display:flex;
+  flex:0 0 auto;
+  flex-wrap:wrap;
+  gap:9px;
+}
+body[data-page-type="shop_page"] .storeStory .btn.primary{
+  background:#fff;
+  border-color:#fff;
+  color:var(--forest);
+}
+body[data-page-type="shop_page"] .storeStory .btn.secondary{
+  border-color:rgba(255,255,255,.55);
+  color:#fff;
+  background:transparent;
+}
+@media (max-width:980px){
+  body[data-page-type="shop_page"] .storeHero{grid-template-columns:1fr;}
+  body[data-page-type="shop_page"] .storeHeroVisual{min-height:380px;}
+  body[data-page-type="shop_page"] .storeHeroVisual img{min-height:380px;}
+  body[data-page-type="shop_page"] .storeBenefits{grid-template-columns:1fr;}
+  body[data-page-type="shop_page"] .storeTools{grid-template-columns:1fr;}
+  body[data-page-type="shop_page"] .storeCategoryFilters{justify-content:flex-start;}
+  body[data-page-type="shop_page"] .storeProductGrid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  body[data-page-type="shop_page"] .storeStory{align-items:flex-start;flex-direction:column;}
+}
+@media (max-width:640px){
+  body[data-page-type="shop_page"] .shopWrap{padding:14px;}
+  body[data-page-type="shop_page"] .storeHeroCopy{padding:24px 20px;}
+  body[data-page-type="shop_page"] .storeHero h1{font-size:40px;}
+  body[data-page-type="shop_page"] .storeHeroVisual,
+  body[data-page-type="shop_page"] .storeHeroVisual img{min-height:320px;}
+  body[data-page-type="shop_page"] .storeHeroBadge{align-items:flex-start;flex-direction:column;gap:3px;}
+  body[data-page-type="shop_page"] .storeCatalogHead{align-items:flex-start;flex-direction:column;}
+  body[data-page-type="shop_page"] .storeProductGrid{grid-template-columns:1fr;}
+  body[data-page-type="shop_page"] .storeInfoBand{grid-template-columns:1fr;}
+  body[data-page-type="shop_page"] .storeProductFooter{align-items:stretch;flex-direction:column;}
+  body[data-page-type="shop_page"] .storeProductButton{width:100%;text-align:center;}
+  body[data-page-type="shop_page"] .storeStoryActions{width:100%;}
+  body[data-page-type="shop_page"] .storeStoryActions .btn{width:100%;text-align:center;}
+}
+@media (prefers-reduced-motion:reduce){
+  body[data-page-type="shop_page"] .storeProductCard,
+  body[data-page-type="shop_page"] .storeProductMedia img{transition:none;}
+  body[data-page-type="shop_page"] .storeProductCard:hover,
+  body[data-page-type="shop_page"] .storeProductCard:hover .storeProductMedia img{transform:none;}
+  body[data-page-type="shop_page"] .storeSkeleton{animation:none;}
+}
+/* =========================================================
+   MBW Shop Hero Carousel + Sitewide Final CTA Alignment
+   2026-09-04
    ========================================================= */
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .hero {
-  align-items: start;
+body[data-page-type="shop_page"] .storeHeroCarousel{
+  position:relative;
+  min-height:470px;
+  isolation:isolate;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMedia {
-  align-self: start !important;
-  min-height: 0 !important;
-  height: auto !important;
-  justify-content: flex-start;
+body[data-page-type="shop_page"] .storeHeroTrack,
+body[data-page-type="shop_page"] .storeHeroSlide{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMediaFrame {
-  aspect-ratio: auto;
-  min-height: 0 !important;
-  height: auto !important;
-  max-height: none;
-  overflow: hidden;
-  background: #fff;
+body[data-page-type="shop_page"] .storeHeroSlide{
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .42s ease;
+  background:#fff;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .heroMediaFrame img {
-  display: block;
-  width: 100%;
-  height: auto !important;
-  max-width: 100%;
-  object-fit: contain !important;
-  object-position: center !important;
-  background: #fff;
+body[data-page-type="shop_page"] .storeHeroSlide.isActive{
+  opacity:1;
+  pointer-events:auto;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .mediaGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
+body[data-page-type="shop_page"] .storeHeroSlide img{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:470px;
+  object-fit:cover;
+  object-position:center;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .mediaGrid > .mediaCard,
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .mediaGrid > .mediaCard .mediaInner {
-  min-width: 0;
-  height: 100%;
+body[data-page-type="shop_page"] .storeHeroArrow{
+  position:absolute;
+  top:50%;
+  z-index:4;
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  padding:0;
+  border:1px solid rgba(255,255,255,.62);
+  border-radius:999px;
+  background:rgba(7,25,35,.70);
+  color:#fff;
+  font:900 28px/1 Arial,sans-serif;
+  cursor:pointer;
+  transform:translateY(-50%);
+  backdrop-filter:blur(8px);
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .mediaGrid > .mediaCard .mediaInner {
-  display: flex;
-  flex-direction: column;
+body[data-page-type="shop_page"] .storeHeroArrow:hover{
+  background:rgba(7,25,35,.88);
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .videoCarouselViewport,
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .carouselViewport {
-  width: 100%;
-  aspect-ratio: 9 / 16;
-  min-height: 0;
-  height: auto;
+body[data-page-type="shop_page"] .storeHeroArrowPrev{
+  left:14px;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .videoCarouselViewport {
-  touch-action: pan-y;
+body[data-page-type="shop_page"] .storeHeroArrowNext{
+  right:14px;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .videoCarouselSlide .videoFrame {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
+body[data-page-type="shop_page"] .storeHeroDots{
+  position:absolute;
+  z-index:5;
+  right:24px;
+  bottom:84px;
+  display:flex;
+  align-items:center;
+  gap:7px;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .videoCarouselSlide .videoFrame iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 14px;
+body[data-page-type="shop_page"] .storeHeroDot{
+  width:9px;
+  height:9px;
+  padding:0;
+  border:1px solid rgba(255,255,255,.82);
+  border-radius:999px;
+  background:rgba(255,255,255,.48);
+  cursor:pointer;
+  transition:width .18s ease,background .18s ease;
 }
 
-body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .mediaFooter {
-  margin-top: auto;
+body[data-page-type="shop_page"] .storeHeroDot.isActive{
+  width:26px;
+  background:#fff;
 }
 
-@media (max-width: 760px) {
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .mediaGrid {
-    grid-template-columns: 1fr;
+body[data-page-type="shop_page"] .storeHeroBadge{
+  z-index:3;
+}
+
+/* Use the global finalCta/finalGrid/nextSteps system so the bottom of
+   the shop matches the rest of the MBW site instead of using a custom
+   green storefront footer block. */
+body[data-page-type="shop_page"] .shopFinalCta{
+  margin-top:0;
+}
+
+body[data-page-type="shop_page"] .shopFinalCta .finalGrid{
+  align-items:stretch;
+}
+
+body[data-page-type="shop_page"] .shopFinalCta .finalLeft{
+  min-width:0;
+}
+
+body[data-page-type="shop_page"] .shopFinalCta .finalLeft > p:not(.kicker){
+  max-width:68ch;
+}
+
+body[data-page-type="shop_page"] .shopFinalCta .ctaRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+body[data-page-type="shop_page"] .shopFinalCta .nextSteps{
+  min-width:0;
+}
+
+body[data-page-type="shop_page"] .shopFinalCta .nextSteps ol{
+  margin:8px 0 0;
+  padding-left:18px;
+}
+
+body[data-page-type="shop_page"] .shopFinalCta .nextSteps li + li{
+  margin-top:5px;
+}
+
+/* Keep the real site footer entirely on the global site.css geometry. */
+body[data-page-type="shop_page"] #siteFooter{
+  margin:0;
+  padding:0;
+}
+
+@media (max-width:980px){
+  body[data-page-type="shop_page"] .storeHeroCarousel,
+  body[data-page-type="shop_page"] .storeHeroSlide img{
+    min-height:380px;
+  }
+}
+
+@media (max-width:640px){
+  body[data-page-type="shop_page"] .storeHeroCarousel,
+  body[data-page-type="shop_page"] .storeHeroSlide img{
+    min-height:320px;
   }
 
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .videoCarouselViewport,
-  body[data-page-type="activity_tour"][data-activity-variant="waterfall_tour"] .carouselViewport {
-    aspect-ratio: 4 / 5;
+  body[data-page-type="shop_page"] .storeHeroArrow{
+    width:38px;
+    height:38px;
+    font-size:25px;
+  }
+
+  body[data-page-type="shop_page"] .storeHeroDots{
+    right:18px;
+    bottom:96px;
+  }
+
+  body[data-page-type="shop_page"] .shopFinalCta .ctaRow .btn{
+    width:100%;
+    justify-content:center;
   }
 }
 
+@media (prefers-reduced-motion:reduce){
+  body[data-page-type="shop_page"] .storeHeroSlide,
+  body[data-page-type="shop_page"] .storeHeroDot{
+    transition:none;
+  }
+}
