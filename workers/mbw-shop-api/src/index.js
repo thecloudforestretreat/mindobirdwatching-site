@@ -388,6 +388,12 @@ function normalizeDetailedProduct(product) {
     option_summary_parts:
       buildOptionSummaryParts(options),
 
+    color_images: buildColorImageMap(
+      product.images,
+      options,
+      enabledVariants
+    ),
+
     options,
     variants: enabledVariants
   };
@@ -624,6 +630,114 @@ function uniqueTitles(values) {
   return titles;
 }
 
+
+function buildColorImageMap(
+  rawImages,
+  options,
+  enabledVariants
+) {
+  const colorOption = options.find(isColorOption);
+
+  if (
+    !colorOption ||
+    !Array.isArray(rawImages)
+  ) {
+    return [];
+  }
+
+  const images = rawImages
+    .filter(
+      (image) =>
+        image &&
+        image.src
+    )
+    .slice()
+    .sort((a, b) => {
+      const aFront =
+        String(a.position || "")
+          .toLowerCase() === "front"
+          ? 1
+          : 0;
+
+      const bFront =
+        String(b.position || "")
+          .toLowerCase() === "front"
+          ? 1
+          : 0;
+
+      if (aFront !== bFront) {
+        return bFront - aFront;
+      }
+
+      const aDefault =
+        a.is_default === true ? 1 : 0;
+
+      const bDefault =
+        b.is_default === true ? 1 : 0;
+
+      return bDefault - aDefault;
+    });
+
+  return colorOption.values
+    .map((value) => {
+      const variantIds =
+        enabledVariants
+          .filter((variant) =>
+            variant.options.includes(
+              Number(value.id)
+            )
+          )
+          .map((variant) =>
+            Number(variant.id)
+          );
+
+      if (!variantIds.length) {
+        return null;
+      }
+
+      const idSet = new Set(
+        variantIds.map(String)
+      );
+
+      let match = images.find(
+        (image) =>
+          Array.isArray(image.variant_ids) &&
+          image.variant_ids.some(
+            (variantId) =>
+              idSet.has(String(variantId))
+          )
+      );
+
+      /*
+        Some Printify mockup responses encode the
+        variant ID in the image URL instead of
+        exposing variant_ids. Use that as a safe
+        fallback.
+      */
+      if (!match) {
+        match = images.find((image) =>
+          variantIds.some((variantId) =>
+            String(image.src).includes(
+              `/${variantId}/`
+            )
+          )
+        );
+      }
+
+      if (!match) {
+        return null;
+      }
+
+      return {
+        option_id: value.id,
+        title: value.title,
+        image: match.src,
+        variant_ids: variantIds
+      };
+    })
+    .filter(Boolean);
+}
+
 function getPrimaryImage(rawImages) {
   const images = normalizeImages(rawImages);
 
@@ -662,7 +776,7 @@ function normalizeImages(rawImages) {
       seen.add(image.src);
       return true;
     })
-    .slice(0, 8)
+    .slice(0, 12)
     .map((image) => ({
       src: image.src,
       position:
