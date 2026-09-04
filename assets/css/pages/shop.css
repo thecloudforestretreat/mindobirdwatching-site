@@ -1998,4 +1998,150 @@ body[data-page-type="shop_product_page"] :is(.block,.trustBox,.faqCard){
     transition:none;
   }
 }
+/* =========================================================
+   MBW Product Detail V6.1
+   Color swatch UI repair
+   2026-09-04
+   ========================================================= */
 
+/*
+  Keep the option name/value in the header and use the choices below
+  as true visual swatches. This also catches older product-page markup
+  where the color-name span does not yet have .mbwColorText.
+*/
+body[data-page-type="shop_product_page"] .mbwColorRow{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice{
+  position:relative;
+  display:grid;
+  place-items:center;
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  min-width:42px;
+  min-height:42px;
+  max-width:42px;
+  padding:4px;
+  overflow:visible;
+  border:1px solid rgba(7,25,35,.16);
+  border-radius:999px;
+  background:#fff;
+  color:transparent;
+  font-size:0;
+  line-height:0;
+  cursor:pointer;
+  box-shadow:none;
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice > span:not(.mbwSwatch),
+body[data-page-type="shop_product_page"] .mbwColorChoice .mbwColorText{
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0,0,0,0) !important;
+  clip-path:inset(50%) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice .mbwSwatch{
+  display:block;
+  width:30px;
+  height:30px;
+  min-width:30px;
+  min-height:30px;
+  margin:0;
+  border:1px solid rgba(7,25,35,.24);
+  border-radius:999px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.55),
+    0 1px 4px rgba(7,25,35,.08);
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice:hover:not(:disabled){
+  transform:translateY(-1px);
+  border-color:rgba(15,95,58,.50);
+  box-shadow:0 4px 12px rgba(7,25,35,.08);
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice.isSelected{
+  border-color:var(--forest);
+  background:#fff;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 5px var(--forest);
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice.isSelected::after{
+  content:"";
+  position:absolute;
+  right:-2px;
+  bottom:-2px;
+  width:13px;
+  height:13px;
+  border:2px solid #fff;
+  border-radius:999px;
+  background:var(--forest);
+  box-shadow:0 1px 4px rgba(7,25,35,.16);
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice:disabled{
+  opacity:.28;
+  cursor:not-allowed;
+}
+
+body[data-page-type="shop_product_page"] .mbwColorChoice:disabled::before{
+  content:"";
+  position:absolute;
+  z-index:2;
+  width:32px;
+  height:1px;
+  background:rgba(7,25,35,.46);
+  transform:rotate(-45deg);
+}
+
+/* Give the selected color name enough room and make it read clearly. */
+body[data-page-type="shop_product_page"] .mbwOptionHeader{
+  min-height:20px;
+}
+
+body[data-page-type="shop_product_page"] .mbwSelectedValue{
+  min-width:0;
+  overflow:hidden;
+  color:var(--forest);
+  font-weight:850;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* On touch devices the targets remain comfortably tappable. */
+@media(max-width:640px){
+  body[data-page-type="shop_product_page"] .mbwColorRow{
+    gap:12px;
+  }
+
+  body[data-page-type="shop_product_page"] .mbwColorChoice{
+    flex-basis:44px;
+    width:44px;
+    height:44px;
+    min-width:44px;
+    min-height:44px;
+    max-width:44px;
+  }
+
+  body[data-page-type="shop_product_page"] .mbwColorChoice .mbwSwatch{
+    width:32px;
+    height:32px;
+    min-width:32px;
+    min-height:32px;
+  }
+}
