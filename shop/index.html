@@ -27,13 +27,59 @@
 <link href="/assets/css/header.css?v=1" rel="stylesheet"/><!-- Head behavior (if present on other pages) -->
 <script defer="" src="/assets/js/head.js?v=1"></script>
 
-<meta content="en_US" property="og:locale"/></head>
+<meta content="en_US" property="og:locale"/>
+<style id="mbw-cart-styles">
+  .mbwCartLauncher{position:fixed;right:18px;bottom:18px;z-index:9000;border:0;border-radius:999px;background:#0f5f3a;color:#fff;font:800 14px/1 Arial,sans-serif;padding:13px 17px;box-shadow:0 10px 30px rgba(0,0,0,.22);cursor:pointer}
+  .mbwCartLauncher:hover{filter:brightness(.96)}
+  .mbwCartBackdrop{position:fixed;inset:0;background:rgba(7,25,35,.48);z-index:9001;display:none}
+  .mbwCartBackdrop.isOpen{display:block}
+  .mbwCartDrawer{position:fixed;top:0;right:0;width:min(430px,100%);height:100%;background:#fff;z-index:9002;transform:translateX(105%);transition:transform .22s ease;box-shadow:-18px 0 50px rgba(0,0,0,.18);display:flex;flex-direction:column}
+  .mbwCartDrawer.isOpen{transform:translateX(0)}
+  .mbwCartHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px 14px;border-bottom:1px solid rgba(7,25,35,.12)}
+  .mbwCartHead h2{margin:0;font-size:22px;color:#0f5f3a}
+  .mbwCartClose{border:1px solid rgba(7,25,35,.18);background:#fff;border-radius:10px;width:38px;height:38px;font-size:22px;cursor:pointer}
+  .mbwCartBody{padding:14px 18px;overflow:auto;flex:1}
+  .mbwCartEmpty{padding:22px 4px;color:#536067;line-height:1.55}
+  .mbwCartItem{display:grid;grid-template-columns:72px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid rgba(7,25,35,.10)}
+  .mbwCartItem img{width:72px;height:72px;object-fit:cover;border-radius:10px;background:#f3f6f2}
+  .mbwCartItemTitle{font-weight:800;color:#071923;font-size:13px;line-height:1.35}
+  .mbwCartItemMeta{font-size:12px;color:#65716b;margin-top:4px;line-height:1.45}
+  .mbwCartItemPrice{font-weight:900;color:#0f5f3a;white-space:nowrap;font-size:13px}
+  .mbwCartQty{display:flex;align-items:center;gap:7px;margin-top:9px}
+  .mbwCartQty button{width:30px;height:30px;border:1px solid rgba(7,25,35,.16);border-radius:8px;background:#fff;cursor:pointer;font-weight:900}
+  .mbwCartQty span{min-width:22px;text-align:center;font-weight:800}
+  .mbwCartRemove{border:0;background:transparent;color:#8b2d2d;text-decoration:underline;cursor:pointer;padding:0;margin-top:8px;font-size:12px}
+  .mbwCartFoot{padding:16px 18px 20px;border-top:1px solid rgba(7,25,35,.12);background:#f8faf7}
+  .mbwCartSubtotal{display:flex;justify-content:space-between;gap:12px;font-weight:900;font-size:18px;color:#071923;margin-bottom:5px}
+  .mbwCartNote{font-size:11px;line-height:1.5;color:#65716b;margin:0 0 12px}
+  .mbwCartCheckout{display:block;width:100%;border:0;border-radius:12px;background:#0f5f3a;color:#fff;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:13px 14px;cursor:pointer}
+  .mbwCartContinue{display:block;width:100%;border:1px solid rgba(15,95,58,.25);border-radius:12px;background:#fff;color:#0f5f3a;text-align:center;font-weight:900;font-size:13px;padding:11px 14px;margin-top:8px;cursor:pointer}
+  .mbwPurchaseBox{margin-top:18px;padding:16px;border:1px solid rgba(15,95,58,.20);background:#f6faf2;border-radius:14px}
+  .mbwPurchasePrice{font-size:26px;font-weight:900;color:#0f5f3a;margin:0 0 12px}
+  .mbwPurchaseGrid{display:grid;grid-template-columns:1fr 110px;gap:10px}
+  .mbwField label{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#536067;margin-bottom:5px}
+  .mbwField input{width:100%;box-sizing:border-box;border:1px solid rgba(7,25,35,.20);border-radius:10px;padding:11px 12px;font:inherit;background:#fff;color:#071923}
+  .mbwPurchaseActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+  .mbwPurchaseActions button{border-radius:11px;padding:12px 13px;font-weight:900;cursor:pointer}
+  .mbwAddBtn{border:1px solid #0f5f3a;background:#fff;color:#0f5f3a}
+  .mbwBuyBtn{border:1px solid #0f5f3a;background:#0f5f3a;color:#fff}
+  .mbwPurchaseHelp{font-size:11px;line-height:1.5;color:#65716b;margin:9px 0 0}
+  .mbwShopCartBar{display:flex;justify-content:flex-end;margin:0 0 14px}
+  .mbwShopCartBtn{border:1px solid rgba(15,95,58,.25);background:#fff;color:#0f5f3a;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
+  @media (max-width:640px){
+    .mbwCartLauncher{right:12px;bottom:12px}
+    .mbwPurchaseGrid,.mbwPurchaseActions{grid-template-columns:1fr}
+  }
+</style>
+
+</head>
 <body data-page-content-group="shop" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="shop_page" class="shopPage">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-event="outbound_link_click" data-analytics-label="English" data-analytics-location="external" data-analytics-page-language="en" data-analytics-page-type="shop_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/shop/" hreflang="en" lang="en">English</a>
 <span>Español coming soon</span></nav>
 <main class="page card shopPage" role="main">
 <div class="shopWrap">
+<div class="mbwShopCartBar"><button class="mbwShopCartBtn" id="mbwShopCartTop" type="button">View Cart (<span id="mbwShopCartTopCount">0</span>)</button></div>
 <section class="shopHero">
 <div class="shopHeroCard">
 <p class="kicker">SHOP</p>
@@ -62,7 +108,7 @@
 </div>
 <div class="miniCard">
 <b>Simple checkout</b>
-<p>Each item opens a product page on our site before secure checkout with our print partner.</p>
+<p>Each item opens a product page where you can choose your option, add it to your cart, and send your order.</p>
 </div>
 </div>
 </div>
@@ -99,7 +145,7 @@
 </section>
 <div class="sectionHead" id="products">
 <h2>All shop products</h2>
-<p class="subline">Explore all current products from the Mindo Bird Watching shop. Each product page includes price, availability, product details, United States shipping notes, and secure checkout through our print partner.</p>
+<p class="subline">Explore all current products from the Mindo Bird Watching shop. Each product page includes price, product details, United States shipping notes, option entry, and an Add to Cart flow.</p>
 </div>
 <div class="sectionHead" id="shirts-and-tops">
 <h2>Shirts &amp; Tops</h2>
@@ -112,7 +158,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$34.99</span>
-<a aria-label="View product: MBW Family Long Sleeve Tee - Cloud Forest Wildlife Graphic (Black &amp; Chocolate Only)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_longsleeve_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_longsleeve_dark">View Product</a>
+<a aria-label="View product: MBW Family Long Sleeve Tee - Cloud Forest Wildlife Graphic (Black &amp; Chocolate Only)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_familia_longsleeve_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_longsleeve_dark">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -121,7 +167,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$29.99</span>
-<a aria-label="View product: MBW Toucan Coffee &amp; Cocoa Tee - Black &amp; Chocolate | Mindo Ecuador Souvenir Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mindo_cacao_coffee_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_coffee_dark">View Product</a>
+<a aria-label="View product: MBW Toucan Coffee &amp; Cocoa Tee - Black &amp; Chocolate | Mindo Ecuador Souvenir Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_toucan_mindo_cacao_coffee_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_coffee_dark">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -130,7 +176,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$29.99</span>
-<a aria-label="View product: MBW Toucan Coffee &amp; Cocoa Tee - Mindo Ecuador Wildlife Travel Souvenir" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mindo_cacao_coffee_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_coffee_colors">View Product</a>
+<a aria-label="View product: MBW Toucan Coffee &amp; Cocoa Tee - Mindo Ecuador Wildlife Travel Souvenir" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_toucan_mindo_cacao_coffee_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_coffee_colors">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -139,7 +185,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$29.99</span>
-<a aria-label="View product: Mindo Bird Watching T-Shirt - Tourism Dept. Ecuador Nature Tee" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tourism_dept" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tourism_dept">View Product</a>
+<a aria-label="View product: Mindo Bird Watching T-Shirt - Tourism Dept. Ecuador Nature Tee" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_tourism_dept" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tourism_dept">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -148,7 +194,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$29.99</span>
-<a aria-label="View product: MBW Family Tee - Wildlife Edition (Black &amp; Chocolate)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: familia_shirt_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=familia_shirt_dark">View Product</a>
+<a aria-label="View product: MBW Family Tee - Wildlife Edition (Black &amp; Chocolate)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: familia_shirt_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=familia_shirt_dark">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -157,7 +203,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$29.99</span>
-<a aria-label="View product: MBW Family Tee - Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: familia_shirt_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=familia_shirt_colors">View Product</a>
+<a aria-label="View product: MBW Family Tee - Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: familia_shirt_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=familia_shirt_colors">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -166,7 +212,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$24.99</span>
-<a aria-label="View product: Toucan Graphic T-Shirt - Mindo Ecuador Souvenir Tee" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_toucan_flag_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_flag_shirt">View Product</a>
+<a aria-label="View product: Toucan Graphic T-Shirt - Mindo Ecuador Souvenir Tee" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_tri_toucan_flag_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_flag_shirt">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -175,7 +221,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$29.99</span>
-<a aria-label="View product: Mindo Ecuador Three Amigos Bird Tee - Toucan, Tanager &amp; Hummingbird Graphic Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_three_amigos_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_three_amigos_shirt">View Product</a>
+<a aria-label="View product: Mindo Ecuador Three Amigos Bird Tee - Toucan, Tanager &amp; Hummingbird Graphic Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_three_amigos_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_three_amigos_shirt">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -184,7 +230,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$29.99</span>
-<a aria-label="View product: Toucan Trio Graphic T-Shirt - Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_toucan_flag_two_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_flag_two_shirt">View Product</a>
+<a aria-label="View product: Toucan Trio Graphic T-Shirt - Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_tri_toucan_flag_two_shirt" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_flag_two_shirt">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -193,7 +239,7 @@
 <p class="productDesc">A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.</p>
 <div class="productRow">
 <span class="priceTag">$25.92</span>
-<a aria-label="View product: Tri Hummingbirds in Ecuadorian Flag T-Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_humming_shirt_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_shirt_white">View Product</a>
+<a aria-label="View product: Tri Hummingbirds in Ecuadorian Flag T-Shirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_tri_humming_shirt_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_shirt_white">Choose Options</a>
 </div>
 </article>
 </section>
@@ -208,7 +254,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$14.99</span>
-<a aria-label="View product: Mindo Bird Watching Logo Mug - Black Ceramic Coffee Cup (11oz/15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_coffee_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_coffee_mug_black">View Product</a>
+<a aria-label="View product: Mindo Bird Watching Logo Mug - Black Ceramic Coffee Cup (11oz/15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_coffee_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_coffee_mug_black">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -217,7 +263,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$12.99</span>
-<a aria-label="View product: Mindo Bird Watching Mug - Tropical Toucan &amp; Parrot Coffee Cup (11oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_coffee_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_coffee_mug_white">View Product</a>
+<a aria-label="View product: Mindo Bird Watching Mug - Tropical Toucan &amp; Parrot Coffee Cup (11oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_coffee_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_coffee_mug_white">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -226,7 +272,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$14.99</span>
-<a aria-label="View product: MBW Family Black Coffee Mug - Bird Watching Souvenir Cup (11oz / 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_mug_black">View Product</a>
+<a aria-label="View product: MBW Family Black Coffee Mug - Bird Watching Souvenir Cup (11oz / 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_familia_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_mug_black">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -235,7 +281,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$14.99</span>
-<a aria-label="View product: MBW Three Amigos Birds Mug - Colorful 11oz Travel Souvenir Cup" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_three_amigos_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_three_amigos_mug_white">View Product</a>
+<a aria-label="View product: MBW Three Amigos Birds Mug - Colorful 11oz Travel Souvenir Cup" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_three_amigos_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_three_amigos_mug_white">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -244,7 +290,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$14.99</span>
-<a aria-label="View product: MBW Toucan Mug - Mindo Ecuador Bird Watching Coffee Cup (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mug_black">View Product</a>
+<a aria-label="View product: MBW Toucan Mug - Mindo Ecuador Bird Watching Coffee Cup (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_toucan_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mug_black">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -253,7 +299,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$14.99</span>
-<a aria-label="View product: MBW Family Coffee Mug - Mindo Ecuador Wildlife Souvenir (11oz Ceramic)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_mug_white">View Product</a>
+<a aria-label="View product: MBW Family Coffee Mug - Mindo Ecuador Wildlife Souvenir (11oz Ceramic)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_familia_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_mug_white">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -262,7 +308,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$14.99</span>
-<a aria-label="View product: Mindo Bird Watching Black Coffee Mug - Toucan Wildlife Nature Travel Souvenir (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_toucan_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_mug_black">View Product</a>
+<a aria-label="View product: Mindo Bird Watching Black Coffee Mug - Toucan Wildlife Nature Travel Souvenir (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_tri_toucan_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_toucan_mug_black">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -271,7 +317,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$14.99</span>
-<a aria-label="View product: Hummingbird Trio Black Mug - Colorful Hummingbird Art Coffee Cup (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_humming_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_mug_black">View Product</a>
+<a aria-label="View product: Hummingbird Trio Black Mug - Colorful Hummingbird Art Coffee Cup (11oz &amp; 15oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_tri_humming_mug_black" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_mug_black">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -280,7 +326,7 @@
 <p class="productDesc">A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.</p>
 <div class="productRow">
 <span class="priceTag">$12.99</span>
-<a aria-label="View product: Mindo Bird Watching White Mug - Hummingbird Nature Coffee Cup (11oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_tri_humming_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_mug_white">View Product</a>
+<a aria-label="View product: Mindo Bird Watching White Mug - Hummingbird Nature Coffee Cup (11oz)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_tri_humming_mug_white" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_tri_humming_mug_white">Choose Options</a>
 </div>
 </article>
 </section>
@@ -295,7 +341,7 @@
 <p class="productDesc">A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.</p>
 <div class="productRow">
 <span class="priceTag">$39.99</span>
-<a aria-label="View product: MBW Family Hoodie - Black &amp; Chocolate - Bear &amp; Birds Graphic Mindo Ecuador Sweatshirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_hoodie_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_hoodie_dark">View Product</a>
+<a aria-label="View product: MBW Family Hoodie - Black &amp; Chocolate - Bear &amp; Birds Graphic Mindo Ecuador Sweatshirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_familia_hoodie_dark" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_hoodie_dark">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -304,7 +350,7 @@
 <p class="productDesc">A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.</p>
 <div class="productRow">
 <span class="priceTag">$39.99</span>
-<a aria-label="View product: MBW Toucan Coffee &amp; Chocolate Hoodie - Mindo Ecuador Travel Souvenir Pullover" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_toucan_mindo_cacao_hoodie" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_hoodie">View Product</a>
+<a aria-label="View product: MBW Toucan Coffee &amp; Chocolate Hoodie - Mindo Ecuador Travel Souvenir Pullover" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_toucan_mindo_cacao_hoodie" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_toucan_mindo_cacao_hoodie">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -313,7 +359,7 @@
 <p class="productDesc">A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.</p>
 <div class="productRow">
 <span class="priceTag">$46.53</span>
-<a aria-label="View product: MBW Family Hoodie - Bear &amp; Birds Graphic Mindo Ecuador Sweatshirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_familia_hoodie_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_hoodie_colors">View Product</a>
+<a aria-label="View product: MBW Family Hoodie - Bear &amp; Birds Graphic Mindo Ecuador Sweatshirt" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_familia_hoodie_colors" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_familia_hoodie_colors">Choose Options</a>
 </div>
 </article>
 </section>
@@ -328,7 +374,7 @@
 <p class="productDesc">A practical made-to-order carry option with Mindo birding style for daily errands or travel.</p>
 <div class="productRow">
 <span class="priceTag">$39.99</span>
-<a aria-label="View product: Mindo Bird Watching Drawstring Bag - Tropical Toucan Rainforest Emblem" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_drawstring_bag" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_drawstring_bag">View Product</a>
+<a aria-label="View product: Mindo Bird Watching Drawstring Bag - Tropical Toucan Rainforest Emblem" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_drawstring_bag" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_drawstring_bag">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -337,7 +383,7 @@
 <p class="productDesc">A practical made-to-order carry option with Mindo birding style for daily errands or travel.</p>
 <div class="productRow">
 <span class="priceTag">$34.99</span>
-<a aria-label="View product: Mindo Bird Watching Tote Bag - Organic Cotton Eco Tote (Toucan &amp; Cloud Forest Design)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_eco_tote" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_eco_tote">View Product</a>
+<a aria-label="View product: Mindo Bird Watching Tote Bag - Organic Cotton Eco Tote (Toucan &amp; Cloud Forest Design)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_eco_tote" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_eco_tote">Choose Options</a>
 </div>
 </article>
 <article class="productCard">
@@ -346,7 +392,7 @@
 <p class="productDesc">A practical made-to-order carry option with Mindo birding style for daily errands or travel.</p>
 <div class="productRow">
 <span class="priceTag">$39.99</span>
-<a aria-label="View product: Organic Canvas Tote - Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_canvas_tote" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_canvas_tote">View Product</a>
+<a aria-label="View product: Organic Canvas Tote - Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_canvas_tote" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_canvas_tote">Choose Options</a>
 </div>
 </article>
 </section>
@@ -361,7 +407,7 @@
 <p class="productDesc">A reusable made-to-order bottle with tropical Mindo artwork for trails, travel, and everyday use.</p>
 <div class="productRow">
 <span class="priceTag">$24.99</span>
-<a aria-label="View product: Mindo Bird Watching Water Bottle - 20oz Tritan Sport Bottle with Tropical Logo" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="View Product: mbw_sport_bottle" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_sport_bottle">View Product</a>
+<a aria-label="View product: Mindo Bird Watching Water Bottle - 20oz Tritan Sport Bottle with Tropical Logo" class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Choose Options: mbw_sport_bottle" data-analytics-location="shop_product_card" data-analytics-page-language="en" data-analytics-page-type="shop_page" href="/shop/product/?id=mbw_sport_bottle">Choose Options</a>
 </div>
 </article>
 </section>
@@ -876,5 +922,168 @@
       ]
     }
   ]
-}</script></body>
+}</script>
+<div class="mbwCartBackdrop" id="mbwCartBackdrop" aria-hidden="true"></div>
+<aside class="mbwCartDrawer" id="mbwCartDrawer" aria-hidden="true" aria-label="Shopping cart">
+  <div class="mbwCartHead">
+    <h2>Your cart</h2>
+    <button class="mbwCartClose" id="mbwCartClose" type="button" aria-label="Close cart">&times;</button>
+  </div>
+  <div class="mbwCartBody" id="mbwCartBody"></div>
+  <div class="mbwCartFoot">
+    <div class="mbwCartSubtotal"><span>Subtotal</span><span id="mbwCartSubtotal">$0.00</span></div>
+    <p class="mbwCartNote">Shipping, taxes, production timing, and final product availability are confirmed before payment.</p>
+    <button class="mbwCartCheckout" id="mbwCartCheckout" type="button">Send order on WhatsApp</button>
+    <button class="mbwCartContinue" id="mbwCartContinue" type="button">Continue shopping</button>
+  </div>
+</aside>
+<button class="mbwCartLauncher" id="mbwCartLauncher" type="button" aria-label="Open shopping cart">Cart (<span id="mbwCartCount">0</span>)</button>
+
+
+<script id="mbw-cart-script">
+(function(){
+  "use strict";
+  const STORAGE_KEY = "MBW_SHOP_CART_V1";
+  const WHATSAPP_NUMBER = "13054585402";
+
+  function money(n){ return "$" + Number(n || 0).toFixed(2); }
+  function parsePrice(v){ return Number(String(v || "").replace(/[^0-9.]/g,"")) || 0; }
+  function getCart(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+    catch(e){ return []; }
+  }
+  function saveCart(cart){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    renderCart();
+  }
+  function itemKey(item){ return [item.id,item.option || ""].join("::"); }
+
+  window.MBW_CART = {
+    add: function(item){
+      const cart = getCart();
+      const key = itemKey(item);
+      const existing = cart.find(x => itemKey(x) === key);
+      if(existing) existing.qty += item.qty || 1;
+      else cart.push({
+        id:item.id,
+        title:item.title,
+        price:parsePrice(item.price),
+        image:item.image || "",
+        option:item.option || "",
+        qty:item.qty || 1
+      });
+      saveCart(cart);
+    },
+    open: openCart
+  };
+
+  function changeQty(key, delta){
+    const cart = getCart();
+    const row = cart.find(x => itemKey(x) === key);
+    if(!row) return;
+    row.qty = Math.max(1, Number(row.qty || 1) + delta);
+    saveCart(cart);
+  }
+  function removeItem(key){
+    saveCart(getCart().filter(x => itemKey(x) !== key));
+  }
+  function openCart(){
+    document.getElementById("mbwCartBackdrop")?.classList.add("isOpen");
+    document.getElementById("mbwCartDrawer")?.classList.add("isOpen");
+    document.getElementById("mbwCartDrawer")?.setAttribute("aria-hidden","false");
+  }
+  function closeCart(){
+    document.getElementById("mbwCartBackdrop")?.classList.remove("isOpen");
+    document.getElementById("mbwCartDrawer")?.classList.remove("isOpen");
+    document.getElementById("mbwCartDrawer")?.setAttribute("aria-hidden","true");
+  }
+  function checkoutWhatsApp(){
+    const cart = getCart();
+    if(!cart.length){ openCart(); return; }
+    const lines = [
+      "Hello Mindo Bird Watching, I would like to order:",
+      ""
+    ];
+    cart.forEach((item, i) => {
+      lines.push((i+1) + ". " + item.title);
+      if(item.option) lines.push("   Option: " + item.option);
+      lines.push("   Qty: " + item.qty + " | " + money(item.price * item.qty));
+    });
+    const total = cart.reduce((s,x) => s + (x.price * x.qty), 0);
+    lines.push("");
+    lines.push("Subtotal: " + money(total));
+    lines.push("");
+    lines.push("Please confirm availability, shipping, and the secure payment link.");
+    window.location.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(lines.join("\n"));
+  }
+  function renderCart(){
+    const body = document.getElementById("mbwCartBody");
+    const count = document.getElementById("mbwCartCount");
+    const subtotal = document.getElementById("mbwCartSubtotal");
+    if(!body || !count || !subtotal) return;
+    const cart = getCart();
+    count.textContent = cart.reduce((s,x)=>s + Number(x.qty || 0),0);
+    subtotal.textContent = money(cart.reduce((s,x)=>s + (Number(x.price||0)*Number(x.qty||0)),0));
+    if(!cart.length){
+      body.innerHTML = '<div class="mbwCartEmpty"><strong>Your cart is empty.</strong><br>Choose a product, select the option you want, and add it to your cart.</div>';
+      return;
+    }
+    body.innerHTML = cart.map(item => {
+      const key = itemKey(item).replace(/"/g,"&quot;");
+      return '<div class="mbwCartItem">' +
+        '<img src="' + (item.image || "/MBW-Assets-OG-Image.jpg") + '" alt="">' +
+        '<div><div class="mbwCartItemTitle">' + escapeHtml(item.title) + '</div>' +
+        (item.option ? '<div class="mbwCartItemMeta">Option: ' + escapeHtml(item.option) + '</div>' : '') +
+        '<div class="mbwCartQty">' +
+          '<button type="button" data-cart-action="minus" data-key="' + key + '" aria-label="Decrease quantity">-</button>' +
+          '<span>' + item.qty + '</span>' +
+          '<button type="button" data-cart-action="plus" data-key="' + key + '" aria-label="Increase quantity">+</button>' +
+        '</div>' +
+        '<button type="button" class="mbwCartRemove" data-cart-action="remove" data-key="' + key + '">Remove</button></div>' +
+        '<div class="mbwCartItemPrice">' + money(item.price * item.qty) + '</div>' +
+      '</div>';
+    }).join("");
+  }
+  function escapeHtml(v){
+    return String(v || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+  }
+
+  document.addEventListener("click", function(e){
+    const actionEl = e.target.closest("[data-cart-action]");
+    if(actionEl){
+      const key = actionEl.getAttribute("data-key") || "";
+      const action = actionEl.getAttribute("data-cart-action");
+      if(action === "plus") changeQty(key, 1);
+      if(action === "minus") changeQty(key, -1);
+      if(action === "remove") removeItem(key);
+    }
+  });
+
+  document.getElementById("mbwCartLauncher")?.addEventListener("click", openCart);
+  document.getElementById("mbwCartClose")?.addEventListener("click", closeCart);
+  document.getElementById("mbwCartBackdrop")?.addEventListener("click", closeCart);
+  document.getElementById("mbwCartContinue")?.addEventListener("click", closeCart);
+  document.getElementById("mbwCartCheckout")?.addEventListener("click", checkoutWhatsApp);
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeCart(); });
+  renderCart();
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+  function syncTopCount(){
+    const a = document.getElementById("mbwCartCount");
+    const b = document.getElementById("mbwShopCartTopCount");
+    if(a && b) b.textContent = a.textContent;
+  }
+  document.getElementById("mbwShopCartTop")?.addEventListener("click", function(){
+    window.MBW_CART?.open();
+  });
+  syncTopCount();
+  window.addEventListener("storage", syncTopCount);
+  document.addEventListener("click", function(){ setTimeout(syncTopCount, 0); });
+})();
+</script>
+</body>
 </html>
