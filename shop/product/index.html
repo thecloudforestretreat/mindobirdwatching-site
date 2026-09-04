@@ -32,7 +32,7 @@
 
   <link rel="stylesheet" href="/assets/css/header.css">
   <link rel="stylesheet" href="/assets/css/site.css">
-  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260801-2">
+  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-4">
 
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site-config.js" defer></script>
@@ -176,6 +176,47 @@
   }
 </style>
 
+
+<style id="mbw-product-v2-styles">
+  .mbwProductGallery{display:flex!important;flex-direction:column;gap:10px;padding:12px;background:#fff}
+  .mbwProductMain{position:relative;min-height:420px;display:grid;place-items:center;overflow:hidden;border-radius:16px;background:#fff}
+  .mbwProductMain img{width:100%;height:100%;max-height:620px;object-fit:contain!important;background:#fff}
+  .mbwGalleryArrow{position:absolute;top:50%;z-index:2;width:42px;height:42px;border:1px solid rgba(7,25,35,.16);border-radius:999px;background:rgba(255,255,255,.92);color:#0f5f3a;font-size:28px;font-weight:900;line-height:1;cursor:pointer;transform:translateY(-50%);box-shadow:0 6px 18px rgba(0,0,0,.10)}
+  .mbwGalleryPrev{left:12px}.mbwGalleryNext{right:12px}
+  .mbwProductThumbs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .mbwProductThumb{border:1px solid rgba(7,25,35,.14);border-radius:10px;padding:4px;background:#fff;cursor:pointer;overflow:hidden}
+  .mbwProductThumb.isActive{border-color:#0f5f3a;box-shadow:0 0 0 2px rgba(15,95,58,.12)}
+  .mbwProductThumb img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:7px}
+  .mbwPurchaseBoxV2{display:grid;gap:16px}
+  .mbwVariantSelectors{display:grid;gap:16px}
+  .mbwVariantGroup{display:grid;gap:9px}
+  .mbwOptionHeader{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .mbwOptionLabel{font-size:12px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:#536067}
+  .mbwSelectedValue{font-size:12px;font-weight:900;color:#0f5f3a}
+  .mbwChoiceRow{display:flex;flex-wrap:wrap;gap:8px}
+  .mbwSizeChoice,.mbwTextChoice{min-width:48px;min-height:42px;padding:9px 12px;border:1px solid rgba(7,25,35,.18);border-radius:10px;background:#fff;color:#071923;font:900 13px/1 Arial,sans-serif;cursor:pointer}
+  .mbwSizeChoice.isSelected,.mbwTextChoice.isSelected{border-color:#0f5f3a;background:#edf7ef;color:#0f5f3a;box-shadow:0 0 0 2px rgba(15,95,58,.10)}
+  .mbwSizeChoice:disabled,.mbwTextChoice:disabled{opacity:.38;cursor:not-allowed;text-decoration:line-through}
+  .mbwColorRow{display:flex;flex-wrap:wrap;gap:10px}
+  .mbwColorChoice{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:7px 10px 7px 8px;border:1px solid rgba(7,25,35,.18);border-radius:999px;background:#fff;color:#071923;font:900 12px/1 Arial,sans-serif;cursor:pointer}
+  .mbwColorChoice.isSelected{border-color:#0f5f3a;background:#edf7ef;color:#0f5f3a;box-shadow:0 0 0 2px rgba(15,95,58,.10)}
+  .mbwColorChoice:disabled{opacity:.38;cursor:not-allowed}
+  .mbwSwatch{width:24px;height:24px;border-radius:999px;border:1px solid rgba(7,25,35,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+  .mbwQuantityRow{display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .mbwQtyStepper{display:grid;grid-template-columns:42px 62px 42px;align-items:center;border:1px solid rgba(7,25,35,.16);border-radius:12px;overflow:hidden;background:#fff}
+  .mbwQtyStepper button{height:42px;border:0;background:#fff;color:#0f5f3a;font-size:20px;font-weight:950;cursor:pointer}
+  .mbwQtyStepper input{width:100%;height:42px;border:0;border-left:1px solid rgba(7,25,35,.10);border-right:1px solid rgba(7,25,35,.10);text-align:center;font-weight:900;color:#071923;-moz-appearance:textfield}
+  .mbwQtyStepper input::-webkit-outer-spin-button,.mbwQtyStepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .mbwVariantStatus{margin:0;font-size:12px;line-height:1.45;color:#65716b}
+  .mbwVariantStatus.isReady{color:#0f5f3a;font-weight:900}
+  .mbwPurchaseActions button:disabled{opacity:.45;cursor:not-allowed}
+  @media(max-width:640px){
+    .mbwProductMain{min-height:320px}
+    .mbwProductThumbs{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .mbwColorChoice{width:100%;justify-content:flex-start}
+  }
+</style>
+
 </head>
 <body data-page-type="shop_product_page" data-page-language="en" data-page-content-group="shop" data-page-region="mindo">
   <div class="container">
@@ -200,18 +241,29 @@
             <a class="btn secondary" href="/shop/" data-analytics-event="internal_link_click" data-analytics-label="Back to shop" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page">Back to shop</a>
           </div>
 
-<div class="mbwPurchaseBox" aria-label="Purchase options">
+<div class="mbwPurchaseBox mbwPurchaseBoxV2" aria-label="Purchase options">
   <p class="mbwPurchasePrice" id="mbwPurchasePrice">$0.00</p>
-  <div class="mbwPurchaseGrid">
-    <div class="mbwField">
-      <label for="mbwProductOption">Size / color / option</label>
-      <input id="mbwProductOption" type="text" autocomplete="off" placeholder="Example: Medium, Black or 15oz">
-    </div>
-    <div class="mbwField">
-      <label for="mbwProductQty">Quantity</label>
-      <input id="mbwProductQty" type="number" min="1" max="20" value="1" inputmode="numeric">
+
+  <div id="mbwVariantSelectors" class="mbwVariantSelectors" aria-live="polite"></div>
+
+  <div class="mbwQuantityRow">
+    <span class="mbwOptionLabel">Quantity</span>
+    <div class="mbwQtyStepper" role="group" aria-label="Quantity">
+      <button id="mbwQtyMinus" type="button" aria-label="Decrease quantity">-</button>
+      <input id="mbwProductQty" type="number" min="1" max="20" value="1" inputmode="numeric" aria-label="Quantity">
+      <button id="mbwQtyPlus" type="button" aria-label="Increase quantity">+</button>
     </div>
   </div>
+
+  <p class="mbwVariantStatus" id="mbwVariantStatus">Select your product options.</p>
+
+  <div class="mbwPurchaseActions">
+    <button class="mbwAddBtn" id="mbwAddToCart" type="button" disabled>Add to Cart</button>
+    <button class="mbwBuyBtn" id="mbwBuyNow" type="button" disabled>Buy Now</button>
+  </div>
+
+  <p class="mbwPurchaseHelp">Choose the available color and size. Unavailable combinations are disabled automatically.</p>
+</div>
   <div class="mbwPurchaseActions">
     <button class="mbwAddBtn" id="mbwAddToCart" type="button">Add to Cart</button>
     <button class="mbwBuyBtn" id="mbwBuyNow" type="button">Order Now</button>
@@ -220,8 +272,13 @@
 </div>
 
         </div>
-        <figure class="heroMedia">
-          <img id="productImage" src="/MBW-Assets-OG-Image.jpg" alt="Mindo Bird Watching shop product preview" loading="eager" decoding="async">
+        <figure class="heroMedia mbwProductGallery" aria-label="Product images">
+          <div class="mbwProductMain">
+            <img id="productImage" src="/MBW-Assets-OG-Image.jpg" alt="Mindo Bird Watching shop product preview" loading="eager" decoding="async">
+            <button class="mbwGalleryArrow mbwGalleryPrev" id="mbwGalleryPrev" type="button" aria-label="Previous image">&#8249;</button>
+            <button class="mbwGalleryArrow mbwGalleryNext" id="mbwGalleryNext" type="button" aria-label="Next image">&#8250;</button>
+          </div>
+          <div class="mbwProductThumbs" id="mbwProductThumbs" aria-label="Product image thumbnails"></div>
         </figure>
       </section>
 
@@ -362,8 +419,8 @@
   <div class="mbwCartBody" id="mbwCartBody"></div>
   <div class="mbwCartFoot">
     <div class="mbwCartSubtotal"><span>Subtotal</span><span id="mbwCartSubtotal">$0.00</span></div>
-    <p class="mbwCartNote">Shipping, taxes, production timing, and final product availability are confirmed before payment.</p>
-    <button class="mbwCartCheckout" id="mbwCartCheckout" type="button">Send order on WhatsApp</button>
+    <p class="mbwCartNote">Shipping and taxes are calculated at secure checkout.</p>
+    <button class="mbwCartCheckout" id="mbwCartCheckout" type="button">Checkout coming next</button>
     <button class="mbwCartContinue" id="mbwCartContinue" type="button">Continue shopping</button>
   </div>
 </aside>
@@ -371,39 +428,6 @@
 
     <div id="siteFooter"></div>
   </div>
-
-  <script>
-    window.MBW_PRODUCTS = [{"id": "mbw_familia_longsleeve_dark", "title": "MBW Family Long Sleeve Tee — Cloud Forest Wildlife Graphic (Black & Chocolate Only)", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$34.99", "image": "/assets/images/shop/mbw_familia_longsleeve_dark.jpg", "alt": "MBW Family Long Sleeve Tee — Cloud Forest Wildlife Graphic (Black & Chocolate Only)"}, {"id": "mbw_toucan_mindo_cacao_coffee_dark", "title": "MBW Toucan Coffee & Cocoa Tee — Black & Chocolate | Mindo Ecuador Souvenir Shirt", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$29.99", "image": "/assets/images/shop/mbw_toucan_mindo_cacao_coffee_dark.jpg", "alt": "MBW Toucan Coffee & Cocoa Tee — Black & Chocolate | Mindo Ecuador Souvenir Shirt"}, {"id": "mbw_toucan_mindo_cacao_coffee_colors", "title": "MBW Toucan Coffee & Cocoa Tee — Mindo Ecuador Wildlife Travel Souvenir", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$29.99", "image": "/assets/images/shop/mbw_toucan_mindo_cacao_coffee_colors.jpg", "alt": "MBW Toucan Coffee & Cocoa Tee — Mindo Ecuador Wildlife Travel Souvenir"}, {"id": "mbw_tourism_dept", "title": "Mindo Bird Watching T-Shirt — “Tourism Dept.” Ecuador Nature Tee", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$29.99", "image": "/assets/images/shop/mbw_tourism_dept.jpg", "alt": "Mindo Bird Watching T-Shirt — “Tourism Dept.” Ecuador Nature Tee"}, {"id": "familia_shirt_dark", "title": "MBW Family Tee — Wildlife Edition (Black & Chocolate)", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$29.99", "image": "/assets/images/shop/familia_shirt_dark.jpg", "alt": "MBW Family Tee — Wildlife Edition (Black & Chocolate)"}, {"id": "familia_shirt_colors", "title": "MBW Family Tee — Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$29.99", "image": "/assets/images/shop/familia_shirt_colors.jpg", "alt": "MBW Family Tee — Mindo Ecuador Wildlife Graphic Shirt | Tri-Blend Adventure Souvenir"}, {"id": "mbw_tri_toucan_flag_shirt", "title": "Toucan Graphic T-Shirt — Mindo Ecuador Souvenir Tee", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$24.99", "image": "/assets/images/shop/mbw_tri_toucan_flag_shirt.jpg", "alt": "Toucan Graphic T-Shirt — Mindo Ecuador Souvenir Tee"}, {"id": "mbw_three_amigos_shirt", "title": "Mindo Ecuador “Three Amigos” Bird Tee — Toucan, Tanager & Hummingbird Graphic Shirt", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$29.99", "image": "/assets/images/shop/mbw_three_amigos_shirt.jpg", "alt": "Mindo Ecuador “Three Amigos” Bird Tee — Toucan, Tanager & Hummingbird Graphic Shirt"}, {"id": "mbw_tri_toucan_flag_two_shirt", "title": "Toucan Trio Graphic T-Shirt — Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$29.99", "image": "/assets/images/shop/mbw_tri_toucan_flag_two_shirt.jpg", "alt": "Toucan Trio Graphic T-Shirt — Colorful Tropical Bird Art (Front Chest Logo, Back Illustration) | Mindo Bird Watching"}, {"id": "mbw_tri_humming_shirt_white", "title": "Tri Hummingbirds in Ecuadorian Flag T-Shirt", "desc": "A soft made-to-order tee with Mindo-inspired bird artwork for travel, birding, and everyday wear.", "price": "$25.92", "image": "/assets/images/shop/mbw_tri_humming_shirt_white.jpg", "alt": "Tri Hummingbirds in Ecuadorian Flag T-Shirt"}, {"id": "mbw_coffee_mug_black", "title": "Mindo Bird Watching Logo Mug — Black Ceramic Coffee Cup (11oz/15oz)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$14.99", "image": "/assets/images/shop/mbw_coffee_mug_black.jpg", "alt": "Mindo Bird Watching Logo Mug — Black Ceramic Coffee Cup (11oz/15oz)"}, {"id": "mbw_coffee_mug_white", "title": "Mindo Bird Watching Mug — Tropical Toucan & Parrot Coffee Cup (11oz)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$12.99", "image": "/assets/images/shop/mbw_coffee_mug_white.jpg", "alt": "Mindo Bird Watching Mug — Tropical Toucan & Parrot Coffee Cup (11oz)"}, {"id": "mbw_familia_mug_black", "title": "MBW Family Black Coffee Mug — Bird Watching Souvenir Cup (11oz / 15oz)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$14.99", "image": "/assets/images/shop/mbw_familia_mug_black.jpg", "alt": "MBW Family Black Coffee Mug — Bird Watching Souvenir Cup (11oz / 15oz)"}, {"id": "mbw_three_amigos_mug_white", "title": "MBW “Three Amigos” Birds Mug — Colorful 11oz Travel Souvenir Cup", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$14.99", "image": "/assets/images/shop/mbw_three_amigos_mug_white.jpg", "alt": "MBW “Three Amigos” Birds Mug — Colorful 11oz Travel Souvenir Cup"}, {"id": "mbw_toucan_mug_black", "title": "MBW Toucan Mug — Mindo Ecuador Bird Watching Coffee Cup (11oz & 15oz)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$14.99", "image": "/assets/images/shop/mbw_toucan_mug_black.jpg", "alt": "MBW Toucan Mug — Mindo Ecuador Bird Watching Coffee Cup (11oz & 15oz)"}, {"id": "mbw_familia_mug_white", "title": "MBW Family Coffee Mug – Mindo Ecuador Wildlife Souvenir (11oz Ceramic)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$14.99", "image": "/assets/images/shop/mbw_familia_mug_white.jpg", "alt": "MBW Family Coffee Mug – Mindo Ecuador Wildlife Souvenir (11oz Ceramic)"}, {"id": "mbw_tri_toucan_mug_black", "title": "Mindo Bird Watching Black Coffee Mug – Toucan Wildlife Nature Travel Souvenir (11oz & 15oz)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$14.99", "image": "/assets/images/shop/mbw_tri_toucan_mug_black.jpg", "alt": "Mindo Bird Watching Black Coffee Mug – Toucan Wildlife Nature Travel Souvenir (11oz & 15oz)"}, {"id": "mbw_tri_humming_mug_black", "title": "Hummingbird Trio Black Mug — Colorful Hummingbird Art Coffee Cup (11oz & 15oz)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$14.99", "image": "/assets/images/shop/mbw_tri_humming_mug_black_v2.jpg", "alt": "Hummingbird Trio Black Mug — Colorful Hummingbird Art Coffee Cup (11oz & 15oz)"}, {"id": "mbw_tri_humming_mug_white", "title": "Mindo Bird Watching White Mug — Hummingbird Nature Coffee Cup (11oz)", "desc": "A made-to-order birding mug for quiet mornings, coffee breaks, and Mindo memories.", "price": "$12.99", "image": "/assets/images/shop/mbw_tri_humming_mug_white.jpg", "alt": "Mindo Bird Watching White Mug — Hummingbird Nature Coffee Cup (11oz)"}, {"id": "mbw_familia_hoodie_dark", "title": "MBW Family Hoodie — Black & Chocolate — Bear & Birds Graphic “Mindo • Ecuador” Sweatshirt", "desc": "A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.", "price": "$39.99", "image": "/assets/images/shop/mbw_familia_hoodie_dark.jpg", "alt": "MBW Family Hoodie — Black & Chocolate — Bear & Birds Graphic “Mindo • Ecuador” Sweatshirt"}, {"id": "mbw_toucan_mindo_cacao_hoodie", "title": "MBW Toucan Coffee & Chocolate Hoodie — Mindo Ecuador Travel Souvenir Pullover", "desc": "A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.", "price": "$39.99", "image": "/assets/images/shop/mbw_toucan_mindo_cacao_hoodie.jpg", "alt": "MBW Toucan Coffee & Chocolate Hoodie — Mindo Ecuador Travel Souvenir Pullover"}, {"id": "mbw_familia_hoodie_colors", "title": "MBW Family Hoodie — Bear & Birds Graphic “Mindo • Ecuador” Sweatshirt", "desc": "A cozy made-to-order layer with Mindo-inspired bird and cloud forest artwork.", "price": "$46.53", "image": "/assets/images/shop/mbw_familia_hoodie_colors.jpg", "alt": "MBW Family Hoodie — Bear & Birds Graphic “Mindo • Ecuador” Sweatshirt"}, {"id": "mbw_drawstring_bag", "title": "Mindo Bird Watching Drawstring Bag — Tropical Toucan Rainforest Emblem", "desc": "A practical made-to-order carry option with Mindo birding style for daily errands or travel.", "price": "$39.99", "image": "/assets/images/shop/mbw_drawstring_bag.jpg", "alt": "Mindo Bird Watching Drawstring Bag — Tropical Toucan Rainforest Emblem"}, {"id": "mbw_eco_tote", "title": "Mindo Bird Watching Tote Bag — Organic Cotton Eco Tote (Toucan & Cloud Forest Design)", "desc": "A practical made-to-order carry option with Mindo birding style for daily errands or travel.", "price": "$34.99", "image": "/assets/images/shop/mbw_eco_tote.jpg", "alt": "Mindo Bird Watching Tote Bag — Organic Cotton Eco Tote (Toucan & Cloud Forest Design)"}, {"id": "mbw_canvas_tote", "title": "Organic Canvas Tote – Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)", "desc": "A practical made-to-order carry option with Mindo birding style for daily errands or travel.", "price": "$39.99", "image": "/assets/images/shop/mbw_canvas_tote.jpg", "alt": "Organic Canvas Tote – Mindo Bird Watching Souvenir Bag (Mindo, Ecuador)"}, {"id": "mbw_sport_bottle", "title": "Mindo Bird Watching Water Bottle — 20oz Tritan Sport Bottle with Tropical Logo", "desc": "A reusable made-to-order bottle with tropical Mindo artwork for trails, travel, and everyday use.", "price": "$24.99", "image": "/assets/images/shop/mbw_sport_bottle.jpg", "alt": "Mindo Bird Watching Water Bottle — 20oz Tritan Sport Bottle with Tropical Logo"}];
-
-    (function(){
-      "use strict";
-
-      const params = new URLSearchParams(window.location.search);
-      const requestedId = params.get("id") || "";
-      const products = Array.isArray(window.MBW_PRODUCTS) ? window.MBW_PRODUCTS : [];
-      const product = products.find(item => item.id === requestedId) || products[0];
-
-      const titleEl = document.getElementById("productTitle");
-      const leadEl = document.getElementById("productLead");
-      const descEl = document.getElementById("productDescription");
-      const priceEl = document.getElementById("productPrice");
-      const imageEl = document.getElementById("productImage");
-
-      if(product){
-        titleEl.textContent = product.title || "Mindo Bird Watching shop product";
-        leadEl.textContent = "View price, availability, shipping notes, and secure checkout details for this Mindo-inspired shop product.";
-        descEl.textContent = product.desc || "This item is part of the Mindo Bird Watching shop collection, inspired by birds, cloud forest wildlife, and travel memories from Mindo, Ecuador.";
-        priceEl.textContent = product.price || "Price shown at checkout";
-
-        if(product.image){
-          imageEl.src = product.image;
-          imageEl.alt = product.alt || product.title || "Mindo Bird Watching shop product";
-        }
-
-        document.title = product.title + " | Mindo Bird Watching";
-      }
-    })();
-  </script>
 
 <script id="mbw-cart-script">
 (function(){
@@ -421,7 +445,7 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
     renderCart();
   }
-  function itemKey(item){ return [item.id,item.option || ""].join("::"); }
+  function itemKey(item){ return [item.id,item.variant_id || "",item.option || ""].join("::"); }
 
   window.MBW_CART = {
     add: function(item){
@@ -431,6 +455,7 @@
       if(existing) existing.qty += item.qty || 1;
       else cart.push({
         id:item.id,
+        variant_id:item.variant_id || null,
         title:item.title,
         price:parsePrice(item.price),
         image:item.image || "",
@@ -528,49 +553,273 @@
   document.getElementById("mbwCartClose")?.addEventListener("click", closeCart);
   document.getElementById("mbwCartBackdrop")?.addEventListener("click", closeCart);
   document.getElementById("mbwCartContinue")?.addEventListener("click", closeCart);
-  document.getElementById("mbwCartCheckout")?.addEventListener("click", checkoutWhatsApp);
+  document.getElementById("mbwCartCheckout")?.addEventListener("click", function(){ openCart(); });
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeCart(); });
   renderCart();
 })();
 </script>
 
 
-<script>
+
+
+  
+<script id="mbw-product-v2-script">
 (function(){
   "use strict";
-  function parsePrice(v){ return Number(String(v || "").replace(/[^0-9.]/g,"")) || 0; }
-  function currentProduct(){
-    const params = new URLSearchParams(window.location.search);
-    const requestedId = params.get("id") || "";
-    const products = Array.isArray(window.MBW_PRODUCTS) ? window.MBW_PRODUCTS : [];
-    return products.find(item => item.id === requestedId) || products[0] || null;
+
+  var API_BASE = "https://mbw-shop-api.thecloudforestretreat.workers.dev";
+  var state = { product:null, selections:{}, selectedVariant:null, images:[], imageIndex:0 };
+
+  function money(cents){ var n=Number(cents); return Number.isFinite(n) ? "$"+(n/100).toFixed(2) : "Price unavailable"; }
+  function norm(v){ return String(v||"").trim().toLowerCase(); }
+
+  function colorHex(name){
+    var key=norm(name).replace(/[^a-z0-9]+/g," ");
+    var exact={
+      "black":"#111111","white":"#f7f7f4","natural":"#e6dcc8","navy":"#23395d",
+      "chocolate":"#5c3a2e","brown":"#6b4a36","military green":"#59644a",
+      "heather white":"#ecebe8","tri blend heather white":"#e8e6e1",
+      "tri blend vintage black":"#2a2a2a","tri blend macchiato":"#a88a6d",
+      "tri blend military green":"#65705a","vintage black":"#2a2a2a",
+      "macchiato":"#a88a6d","red":"#b92c2c","royal":"#244ea3","blue":"#2e6aa6",
+      "green":"#3c7a4d","gray":"#8b8f92","grey":"#8b8f92","charcoal":"#4b5054",
+      "sand":"#d8c6a2","cream":"#f0e6cf","pink":"#d988a1","purple":"#72538b",
+      "orange":"#d7772f","yellow":"#e0bd38"
+    };
+    if(exact[key]) return exact[key];
+    if(key.includes("black")) return "#222";
+    if(key.includes("white")) return "#f7f7f4";
+    if(key.includes("navy")) return "#23395d";
+    if(key.includes("green")) return "#59644a";
+    if(key.includes("brown")||key.includes("chocolate")||key.includes("macchiato")) return "#8a6b53";
+    if(key.includes("gray")||key.includes("grey")||key.includes("charcoal")) return "#777d82";
+    if(key.includes("blue")||key.includes("royal")) return "#3564a3";
+    if(key.includes("red")) return "#b92c2c";
+    if(key.includes("pink")) return "#d988a1";
+    if(key.includes("purple")) return "#72538b";
+    if(key.includes("orange")) return "#d7772f";
+    if(key.includes("yellow")) return "#e0bd38";
+    return "#c9c9c9";
   }
-  function addCurrent(openAfter){
-    const product = currentProduct();
-    if(!product || !window.MBW_CART) return;
-    const option = (document.getElementById("mbwProductOption")?.value || "").trim();
-    const qty = Math.max(1, Math.min(20, Number(document.getElementById("mbwProductQty")?.value || 1)));
+
+  function optionKind(option){
+    var t=norm(option.type), n=norm(option.name);
+    if(t==="color"||n.includes("color")) return "color";
+    if(t==="size"||n.includes("size")) return "size";
+    return "text";
+  }
+
+  function candidates(excludeName){
+    if(!state.product) return [];
+    return state.product.variants.filter(function(variant){
+      return state.product.options.every(function(option){
+        if(option.name===excludeName) return true;
+        var selected=state.selections[option.name];
+        if(selected==null) return true;
+        return variant.options.indexOf(Number(selected))!==-1;
+      });
+    });
+  }
+
+  function available(optionName,valueId){
+    return candidates(optionName).some(function(v){ return v.options.indexOf(Number(valueId))!==-1; });
+  }
+
+  function valueTitle(option,id){
+    var v=(option.values||[]).find(function(x){ return Number(x.id)===Number(id); });
+    return v?v.title:"";
+  }
+
+  function selectedVariant(){
+    var required=state.product.options.filter(function(o){ return o.values&&o.values.length>1; });
+    if(!required.every(function(o){ return state.selections[o.name]!=null; })) return null;
+    return state.product.variants.find(function(v){
+      return state.product.options.every(function(o){
+        var id=state.selections[o.name];
+        return id==null || v.options.indexOf(Number(id))!==-1;
+      });
+    })||null;
+  }
+
+  function renderSelectors(){
+    var root=document.getElementById("mbwVariantSelectors");
+    var visible=state.product.options.filter(function(o){ return o.values&&o.values.length>1; });
+
+    if(!visible.length){
+      root.innerHTML="";
+      state.selectedVariant=state.product.variants[0]||null;
+      syncState();
+      return;
+    }
+
+    root.innerHTML=visible.map(function(option){
+      var kind=optionKind(option), selected=state.selections[option.name];
+      var current=selected!=null?valueTitle(option,selected):"Select";
+
+      var choices=option.values.map(function(value){
+        var disabled=!available(option.name,value.id);
+        var isSel=Number(selected)===Number(value.id);
+
+        if(kind==="color"){
+          return '<button class="mbwColorChoice'+(isSel?' isSelected':'')+'" type="button" data-option-name="'+escAttr(option.name)+'" data-option-id="'+value.id+'"'+(disabled?' disabled':'')+'>'+
+            '<span class="mbwSwatch" style="background:'+colorHex(value.title)+'"></span><span>'+esc(value.title)+'</span></button>';
+        }
+
+        var cls=kind==="size"?"mbwSizeChoice":"mbwTextChoice";
+        return '<button class="'+cls+(isSel?' isSelected':'')+'" type="button" data-option-name="'+escAttr(option.name)+'" data-option-id="'+value.id+'"'+(disabled?' disabled':'')+'>'+esc(value.title)+'</button>';
+      }).join("");
+
+      return '<div class="mbwVariantGroup"><div class="mbwOptionHeader"><span class="mbwOptionLabel">'+esc(option.name)+'</span><span class="mbwSelectedValue">'+esc(current)+'</span></div><div class="'+(kind==="color"?"mbwColorRow":"mbwChoiceRow")+'">'+choices+'</div></div>';
+    }).join("");
+  }
+
+  function syncState(){
+    state.selectedVariant=selectedVariant();
+
+    var price=document.getElementById("mbwPurchasePrice");
+    var infoPrice=document.getElementById("productPrice");
+    var status=document.getElementById("mbwVariantStatus");
+    var add=document.getElementById("mbwAddToCart");
+    var buy=document.getElementById("mbwBuyNow");
+
+    var cents=state.selectedVariant?state.selectedVariant.price:state.product.min_price;
+    if(price) price.textContent=money(cents);
+    if(infoPrice) infoPrice.textContent=state.product.min_price===state.product.max_price ? money(state.product.min_price) : money(state.product.min_price)+" - "+money(state.product.max_price);
+
+    if(state.selectedVariant){
+      status.textContent="In stock - selected variant ready.";
+      status.classList.add("isReady");
+      add.disabled=false; buy.disabled=false;
+    }else{
+      status.textContent="Choose the available options above.";
+      status.classList.remove("isReady");
+      add.disabled=true; buy.disabled=true;
+    }
+  }
+
+  function defaultSingles(){
+    state.product.options.forEach(function(o){
+      if(o.values&&o.values.length===1) state.selections[o.name]=Number(o.values[0].id);
+    });
+  }
+
+  function setImage(i){
+    if(!state.images.length) return;
+    state.imageIndex=(i+state.images.length)%state.images.length;
+    var img=document.getElementById("productImage");
+    img.src=state.images[state.imageIndex].src;
+    img.alt=state.product.title+" - product image "+(state.imageIndex+1);
+    document.querySelectorAll(".mbwProductThumb").forEach(function(btn,index){ btn.classList.toggle("isActive",index===state.imageIndex); });
+  }
+
+  function renderGallery(){
+    state.images=(state.product.images&&state.product.images.length)?state.product.images:(state.product.image?[{src:state.product.image,position:"front"}]:[]);
+    var thumbs=document.getElementById("mbwProductThumbs");
+    thumbs.innerHTML=state.images.map(function(image,i){
+      return '<button type="button" class="mbwProductThumb'+(i===0?' isActive':'')+'" data-gallery-index="'+i+'" aria-label="Show product image '+(i+1)+'"><img src="'+escAttr(image.src)+'" alt=""></button>';
+    }).join("");
+    setImage(0);
+  }
+
+  function optionDescription(){
+    var parts=[];
+    state.product.options.forEach(function(o){
+      var id=state.selections[o.name];
+      if(id==null) return;
+      var title=valueTitle(o,id);
+      if(title) parts.push(o.name+": "+title);
+    });
+    return parts.join(" | ");
+  }
+
+  function addToCart(openAfter){
+    if(!state.selectedVariant||!window.MBW_CART) return;
+    var qty=Math.max(1,Math.min(20,Number(document.getElementById("mbwProductQty").value||1)));
     window.MBW_CART.add({
-      id: product.id,
-      title: product.title,
-      price: parsePrice(product.price),
-      image: product.image,
-      option: option,
-      qty: qty
+      id:state.product.id,
+      variant_id:state.selectedVariant.id,
+      title:state.product.title,
+      price:state.selectedVariant.price/100,
+      image:state.images[state.imageIndex]?state.images[state.imageIndex].src:state.product.image,
+      option:optionDescription(),
+      qty:qty
     });
     if(openAfter) window.MBW_CART.open();
   }
-  function sync(){
-    const product = currentProduct();
-    if(!product) return;
-    const priceEl = document.getElementById("mbwPurchasePrice");
-    if(priceEl) priceEl.textContent = product.price || "Price confirmed before payment";
+
+  function esc(v){ return String(v==null?"":v).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]; }); }
+  function escAttr(v){ return esc(v).replace(/`/g,"&#096;"); }
+
+  function hydrate(product){
+    state.product=product;
+    state.selections={};
+    defaultSingles();
+
+    document.getElementById("productTitle").textContent=product.title;
+    document.getElementById("productLead").textContent=product.option_summary ? product.option_summary+". Choose the available options below." : "Choose the available options below.";
+    document.getElementById("productDescription").textContent="Made to order with Mindo-inspired bird and cloud forest artwork.";
+    document.title=product.title+" | Mindo Bird Watching";
+
+    renderGallery();
+    renderSelectors();
+    syncState();
   }
-  document.getElementById("mbwAddToCart")?.addEventListener("click", function(){ addCurrent(true); });
-  document.getElementById("mbwBuyNow")?.addEventListener("click", function(){ addCurrent(true); });
-  sync();
+
+  function resolveId(id){
+    var map={
+      "mbw_canvas_tote":"6a9ac799af238959ba07aded",
+      "mbw_coffee_mug_black":"6a9ac798af238959ba07adec",
+      "mbw_drawstring_bag":"6a9ac798af238959ba07adeb",
+      "mbw_coffee_mug_white":"6a9ac798af238959ba07adea",
+      "mbw_toucan_mindo_cacao_coffee_dark":"6a9ac797af238959ba07ade9",
+      "familia_shirt_colors":"6a9ac796af238959ba07ade8",
+      "mbw_toucan_mindo_cacao_coffee_colors":"6a9ac795af238959ba07ade7",
+      "mbw_tourism_dept":"6a9ac794af238959ba07ade6",
+      "mbw_sport_bottle":"6a9ac794af238959ba07ade5",
+      "familia_shirt_dark":"6a9ac793af238959ba07ade4",
+      "mbw_familia_longsleeve_dark":"6a9ac792af238959ba07ade3",
+      "mbw_familia_hoodie_dark":"6a9ac78eaf238959ba07ade2"
+    };
+    return map[id]||id;
+  }
+
+  async function load(){
+    var id=resolveId(new URLSearchParams(window.location.search).get("id")||"");
+    if(!id){ window.location.href="/shop/"; return; }
+
+    try{
+      var res=await fetch(API_BASE+"/catalog/"+encodeURIComponent(id),{headers:{"Accept":"application/json"}});
+      var data=await res.json();
+      if(!res.ok||!data.ok||!data.product) throw new Error("unavailable");
+      hydrate(data.product);
+    }catch(e){
+      document.getElementById("productTitle").textContent="Product unavailable";
+      document.getElementById("productLead").textContent="We could not load this product right now.";
+      document.getElementById("mbwVariantStatus").textContent="Please return to the shop and try again.";
+    }
+  }
+
+  document.addEventListener("click",function(e){
+    var choice=e.target.closest("[data-option-name][data-option-id]");
+    if(choice){
+      state.selections[choice.getAttribute("data-option-name")]=Number(choice.getAttribute("data-option-id"));
+      renderSelectors(); syncState(); return;
+    }
+    var thumb=e.target.closest("[data-gallery-index]");
+    if(thumb) setImage(Number(thumb.getAttribute("data-gallery-index")));
+  });
+
+  document.getElementById("mbwGalleryPrev").addEventListener("click",function(){ setImage(state.imageIndex-1); });
+  document.getElementById("mbwGalleryNext").addEventListener("click",function(){ setImage(state.imageIndex+1); });
+  document.getElementById("mbwQtyMinus").addEventListener("click",function(){ var x=document.getElementById("mbwProductQty"); x.value=Math.max(1,Number(x.value||1)-1); });
+  document.getElementById("mbwQtyPlus").addEventListener("click",function(){ var x=document.getElementById("mbwProductQty"); x.value=Math.min(20,Number(x.value||1)+1); });
+  document.getElementById("mbwAddToCart").addEventListener("click",function(){ addToCart(true); });
+  document.getElementById("mbwBuyNow").addEventListener("click",function(){ addToCart(true); });
+
+  load();
 })();
 </script>
+
 
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
