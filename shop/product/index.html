@@ -28,7 +28,7 @@
 <meta content="#0f5f3a" name="theme-color"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/pages/shop.css?v=20260904-7" rel="stylesheet"/>
+<link href="/assets/css/pages/shop.css?v=20260904-8" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script defer="" src="/assets/js/site-config.js"></script>
 <script type="application/ld+json">
@@ -190,11 +190,25 @@
 <button aria-label="Next image" class="mbwGalleryArrow mbwGalleryNext" id="mbwGalleryNext" type="button">&#8250;</button>
 </div>
 <div aria-label="Product image thumbnails" class="mbwProductThumbs" id="mbwProductThumbs"></div>
-</figure><div class="heroCopy">
+<div aria-label="About the collection" class="mbwGalleryStory">
+<div class="mbwGalleryStoryCopy">
+<span class="mbwGalleryStoryEyebrow">INSPIRED BY MINDO</span>
+<h2>Cloud forest character, made to travel.</h2>
+<p>Each piece is part of the Mindo Bird Watching collection, inspired by the birds, wildlife, and colors of Mindo, Ecuador.</p>
+</div>
+<div aria-label="Product assurances" class="mbwGalleryStoryFacts">
+<span>Made to order</span>
+<span>Print fulfilled</span>
+<span>MBW support</span>
+</div>
+</div></figure><div class="heroCopy">
 <p class="eyebrow">MINDO BIRD WATCHING SHOP</p>
 <h1 id="productTitle">Loading product...</h1>
-<p id="productLead">Select an available color and size, then choose your quantity.</p>
-
+<p id="productLead">Choose your color, size, and quantity. We only show combinations currently available from our fulfillment catalog.</p>
+<div class="heroActions">
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Shipping and checkout notes" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page" href="#checkout-notes">Shipping details</a>
+<a class="btn secondary" data-analytics-event="internal_link_click" data-analytics-label="Back to shop" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page" href="/shop/">Back to shop</a>
+</div>
 <div aria-label="Purchase options" class="mbwPurchaseBox mbwPurchaseBoxV2">
 <div class="mbwPurchaseTopline">
 <div>
@@ -221,10 +235,6 @@
 <span>Made to order</span>
 <span>Secure checkout</span>
 <span>US shipping</span>
-</div>
-<div class="mbwPurchaseLinks">
-  <a href="#checkout-notes">Shipping and returns</a>
-  <a href="/contact/">Need help?</a>
 </div>
 </div>
 </div></section>
@@ -594,8 +604,8 @@
         var isSel=Number(selected)===Number(value.id);
 
         if(kind==="color"){
-          return '<button class="mbwColorChoice'+(isSel?' isSelected':'')+'" type="button" data-option-name="'+escAttr(option.name)+'" data-option-id="'+value.id+'" aria-label="'+escAttr(value.title)+'" title="'+escAttr(value.title)+'"'+(disabled?' disabled':'')+'>'+
-            '<span class="mbwSwatch" style="background:'+colorHex(value.title)+'"></span><span class="mbwColorText">'+esc(value.title)+'</span></button>';
+          return '<button class="mbwColorChoice'+(isSel?' isSelected':'')+'" type="button" data-option-name="'+escAttr(option.name)+'" data-option-id="'+value.id+'"'+(disabled?' disabled':'')+'>'+
+            '<span class="mbwSwatch" style="background:'+colorHex(value.title)+'"></span><span>'+esc(value.title)+'</span></button>';
         }
 
         var cls=kind==="size"?"mbwSizeChoice":"mbwTextChoice";
@@ -669,9 +679,38 @@
   function renderGallery(){
     state.images=(state.product.images&&state.product.images.length)?state.product.images:(state.product.image?[{src:state.product.image,position:"front"}]:[]);
     var thumbs=document.getElementById("mbwProductThumbs");
-    thumbs.innerHTML=state.images.map(function(image,i){
-      return '<button type="button" class="mbwProductThumb'+(i===0?' isActive':'')+'" data-gallery-index="'+i+'" aria-label="Show product image '+(i+1)+'"><img src="'+escAttr(image.src)+'" alt=""></button>';
+    var count=state.images.length;
+
+    if(!thumbs){
+      setImage(0);
+      return;
+    }
+
+    thumbs.className="mbwProductThumbs";
+    thumbs.setAttribute("data-count",String(count));
+
+    if(count<=1){
+      thumbs.innerHTML="";
+      thumbs.classList.add("isHidden");
+      setImage(0);
+      return;
+    }
+
+    thumbs.classList.remove("isHidden");
+
+    var visibleLimit=count>6?6:count;
+    var visibleImages=state.images.slice(0,visibleLimit);
+    var extra=Math.max(0,count-visibleLimit);
+
+    thumbs.innerHTML=visibleImages.map(function(image,i){
+      var extraBadge=(i===visibleImages.length-1&&extra>0)
+        ? '<span class="mbwThumbMore">+'+extra+' more</span>'
+        : '';
+
+      return '<button type="button" class="mbwProductThumb'+(i===0?' isActive':'')+'" data-gallery-index="'+i+'" aria-label="Show product image '+(i+1)+'">'+
+        '<img src="'+escAttr(image.src)+'" alt="">'+extraBadge+'</button>';
     }).join("");
+
     setImage(0);
   }
 
@@ -710,7 +749,7 @@
     defaultSingles();
 
     document.getElementById("productTitle").textContent=product.title;
-    document.getElementById("productLead").textContent=product.option_summary ? product.option_summary+" available." : "Choose an available variant below.";
+    document.getElementById("productLead").textContent=product.option_summary ? product.option_summary+". Choose the available options below." : "Choose the available options below.";
     document.getElementById("productDescription").textContent="Made to order with Mindo-inspired bird and cloud forest artwork.";
     document.title=product.title+" | Mindo Bird Watching";
 
