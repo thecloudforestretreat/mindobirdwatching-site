@@ -936,3 +936,145 @@ body[data-page-type="shop_page"] .storeStory .btn.secondary{
   body[data-page-type="shop_page"] .storeProductCard:hover .storeProductMedia img{transform:none;}
   body[data-page-type="shop_page"] .storeSkeleton{animation:none;}
 }
+/* =========================================================
+   MBW Shop Hero Carousel - FIX
+   2026-09-04
+   The slide positioning is intentionally explicit so duplicated
+   placeholder images occupy one frame instead of stacking vertically.
+   ========================================================= */
+
+body[data-page-type="shop_page"] .storeHeroCarousel{
+  position:relative;
+  min-height:470px;
+  overflow:hidden;
+  isolation:isolate;
+  background:#fff;
+}
+
+body[data-page-type="shop_page"] .storeHeroTrack{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  overflow:hidden;
+}
+
+body[data-page-type="shop_page"] .storeHeroSlide{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .38s ease, visibility 0s linear .38s;
+}
+
+body[data-page-type="shop_page"] .storeHeroSlide.isActive{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:opacity .38s ease;
+}
+
+body[data-page-type="shop_page"] .storeHeroSlide img{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:0;
+  object-fit:cover;
+  object-position:center;
+}
+
+body[data-page-type="shop_page"] .storeHeroArrow{
+  position:absolute;
+  top:50%;
+  z-index:5;
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  padding:0;
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:999px;
+  background:rgba(7,25,35,.68);
+  color:#fff;
+  font:900 28px/1 Arial,sans-serif;
+  cursor:pointer;
+  transform:translateY(-50%);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+
+body[data-page-type="shop_page"] .storeHeroArrow:hover,
+body[data-page-type="shop_page"] .storeHeroArrow:focus-visible{
+  background:rgba(7,25,35,.90);
+}
+
+body[data-page-type="shop_page"] .storeHeroArrowPrev{
+  left:14px;
+}
+
+body[data-page-type="shop_page"] .storeHeroArrowNext{
+  right:14px;
+}
+
+body[data-page-type="shop_page"] .storeHeroDots{
+  position:absolute;
+  right:24px;
+  bottom:82px;
+  z-index:6;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+body[data-page-type="shop_page"] .storeHeroDot{
+  width:9px;
+  height:9px;
+  padding:0;
+  border:1px solid rgba(255,255,255,.88);
+  border-radius:999px;
+  background:rgba(255,255,255,.52);
+  cursor:pointer;
+  transition:width .18s ease, background .18s ease;
+}
+
+body[data-page-type="shop_page"] .storeHeroDot.isActive{
+  width:26px;
+  background:#fff;
+}
+
+body[data-page-type="shop_page"] .storeHeroBadge{
+  z-index:4;
+}
+
+@media (max-width:980px){
+  body[data-page-type="shop_page"] .storeHeroCarousel{
+    min-height:380px;
+  }
+}
+
+@media (max-width:640px){
+  body[data-page-type="shop_page"] .storeHeroCarousel{
+    min-height:320px;
+  }
+
+  body[data-page-type="shop_page"] .storeHeroArrow{
+    width:38px;
+    height:38px;
+    font-size:25px;
+  }
+
+  body[data-page-type="shop_page"] .storeHeroDots{
+    right:18px;
+    bottom:96px;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  body[data-page-type="shop_page"] .storeHeroSlide,
+  body[data-page-type="shop_page"] .storeHeroDot{
+    transition:none;
+  }
+}
