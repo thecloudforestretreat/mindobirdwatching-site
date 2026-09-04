@@ -30,7 +30,7 @@
   <meta name="theme-color" content="#0f5f3a">
 
   <link rel="stylesheet" href="/assets/css/site.css">
-  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-10">
+  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-11">
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
 
   <script defer src="/assets/js/head.js?v=1"></script>
@@ -256,12 +256,12 @@
       <div class="mbwCheckoutGrid">
         <label class="mbwCheckoutField">
           <span>First name</span>
-          <input autocomplete="given-name" id="mbwShipFirstName" maxlength="80" name="first_name" required type="text">
+          <input autocapitalize="words" autocomplete="given-name" id="mbwShipFirstName" maxlength="80" name="first_name" required type="text">
         </label>
 
         <label class="mbwCheckoutField">
           <span>Last name</span>
-          <input autocomplete="family-name" id="mbwShipLastName" maxlength="80" name="last_name" required type="text">
+          <input autocapitalize="words" autocomplete="family-name" id="mbwShipLastName" maxlength="80" name="last_name" required type="text">
         </label>
 
         <label class="mbwCheckoutField mbwCheckoutWide">
@@ -589,6 +589,15 @@
     return "$" + Number(value || 0).toFixed(2);
   }
 
+  function capitalizeName(value){
+    return String(value || "").replace(
+      /(^|[\s'-])([a-z])/g,
+      function(match, prefix, letter){
+        return prefix + letter.toUpperCase();
+      }
+    );
+  }
+
   function moneyCents(value){
     return "$" + (Number(value || 0) / 100).toFixed(2);
   }
@@ -894,7 +903,16 @@
     Object.keys(map).forEach(function(id){
       var field = document.getElementById(id);
       if(field && data[map[id]]){
-        field.value = data[map[id]];
+        var restored = data[map[id]];
+
+        if(
+          id === "mbwShipFirstName" ||
+          id === "mbwShipLastName"
+        ){
+          restored = capitalizeName(restored);
+        }
+
+        field.value = restored;
       }
     });
   }
@@ -1127,6 +1145,16 @@
   });
 
   document.addEventListener("input", function(event){
+    if(
+      event.target.id === "mbwShipFirstName" ||
+      event.target.id === "mbwShipLastName"
+    ){
+      var capitalized = capitalizeName(event.target.value);
+      if(event.target.value !== capitalized){
+        event.target.value = capitalized;
+      }
+    }
+
     if(event.target.closest("#mbwCheckoutForm")){
       resetShippingState();
     }
