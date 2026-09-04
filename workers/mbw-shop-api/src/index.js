@@ -54,8 +54,10 @@ export default {
         {
           ok: true,
           status: "healthy",
+          stripe_mode:
+            normalizeStripeMode(env.STRIPE_MODE),
           stripe_configured:
-            Boolean(env.STRIPE_SECRET_KEY),
+            Boolean(getStripeSecretKey(env)),
           printify_configured:
             Boolean(
               env.PRINTIFY_API_TOKEN &&
@@ -103,6 +105,26 @@ export default {
 };
 
 
+function normalizeStripeMode(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase() === "test"
+    ? "test"
+    : "live";
+}
+
+function getStripeSecretKey(env) {
+  const mode =
+    normalizeStripeMode(env.STRIPE_MODE);
+
+  if (mode === "test") {
+    return env.STRIPE_TEST_SECRET_KEY || "";
+  }
+
+  return env.STRIPE_SECRET_KEY || "";
+}
+
+
 async function handleCheckoutSession(
   request,
   env
@@ -118,12 +140,20 @@ async function handleCheckoutSession(
     );
   }
 
-  if (!env.STRIPE_SECRET_KEY) {
+  const stripeSecretKey =
+    getStripeSecretKey(env);
+
+  if (!stripeSecretKey) {
+    const stripeMode =
+      normalizeStripeMode(env.STRIPE_MODE);
+
     return jsonResponse(
       {
         ok: false,
         error:
-          "STRIPE_SECRET_KEY is not configured"
+          stripeMode === "test"
+            ? "STRIPE_TEST_SECRET_KEY is not configured"
+            : "STRIPE_SECRET_KEY is not configured"
       },
       500,
       request
@@ -202,7 +232,9 @@ async function handleCheckoutSession(
       ok: true,
       session_id: stripeResult.session.id,
       checkout_url: stripeResult.session.url,
-      reference_id: referenceId
+      reference_id: referenceId,
+      stripe_mode:
+        normalizeStripeMode(env.STRIPE_MODE)
     },
     200,
     request
@@ -945,7 +977,7 @@ async function createStripeCheckoutSession(
         method: "POST",
         headers: {
           Authorization:
-            `Bearer ${env.STRIPE_SECRET_KEY}`,
+            `Bearer ${getStripeSecretKey(env)}`,
           "Content-Type":
             "application/x-www-form-urlencoded"
         },
