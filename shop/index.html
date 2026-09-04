@@ -30,7 +30,7 @@
   <meta name="theme-color" content="#0f5f3a">
 
   <link rel="stylesheet" href="/assets/css/site.css">
-  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-3">
+  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-10">
   <link rel="stylesheet" href="/assets/css/header.css?v=1">
 
   <script defer src="/assets/js/head.js?v=1"></script>
@@ -59,7 +59,7 @@
             </div>
             <div class="storeTrustStrip" aria-label="Shop highlights">
               <span>Made to order</span>
-              <span>Secure checkout coming next</span>
+              <span>Secure Stripe checkout</span>
               <span>Product support from MBW</span>
             </div>
           </div>
@@ -209,7 +209,138 @@
       </div>
     </main>
 
-    <div id="siteFooter"></div>
+    <div aria-hidden="true" class="mbwCartBackdrop" id="mbwCartBackdrop"></div>
+<aside aria-hidden="true" aria-label="Shopping cart" class="mbwCartDrawer" id="mbwCartDrawer">
+  <div class="mbwCartHead">
+    <div>
+      <span class="mbwCartEyebrow">MINDO BIRD WATCHING SHOP</span>
+      <h2 id="mbwCartTitle">Your cart</h2>
+    </div>
+    <button aria-label="Close cart" class="mbwCartClose" id="mbwCartClose" type="button">&#215;</button>
+  </div>
+
+  <div class="mbwCartStage" id="mbwCartStageCart">
+    <div class="mbwCartBody" id="mbwCartBody"></div>
+
+    <div class="mbwCartFoot">
+      <div class="mbwCartSubtotal">
+        <span>Subtotal</span>
+        <span id="mbwCartSubtotal">$0.00</span>
+      </div>
+      <p class="mbwCartNote">
+        Product prices are re-verified by our server before checkout.
+        Shipping is calculated from your delivery address.
+      </p>
+      <button class="mbwCartCheckout" id="mbwCartCheckout" type="button">
+        Continue to Shipping
+      </button>
+      <button class="mbwCartContinue" id="mbwCartContinue" type="button">
+        Continue shopping
+      </button>
+    </div>
+  </div>
+
+  <div class="mbwCartStage" hidden id="mbwCartStageShipping">
+    <form class="mbwCheckoutForm" id="mbwCheckoutForm" novalidate>
+      <div class="mbwCheckoutIntro">
+        <button class="mbwCheckoutBack" id="mbwCheckoutBack" type="button">
+          &#8249; Back to cart
+        </button>
+        <h3>Shipping details</h3>
+        <p>
+          Enter the delivery address so we can confirm current Printify
+          shipping before sending you to secure Stripe Checkout.
+        </p>
+      </div>
+
+      <div class="mbwCheckoutGrid">
+        <label class="mbwCheckoutField">
+          <span>First name</span>
+          <input autocomplete="given-name" id="mbwShipFirstName" maxlength="80" name="first_name" required type="text">
+        </label>
+
+        <label class="mbwCheckoutField">
+          <span>Last name</span>
+          <input autocomplete="family-name" id="mbwShipLastName" maxlength="80" name="last_name" required type="text">
+        </label>
+
+        <label class="mbwCheckoutField mbwCheckoutWide">
+          <span>Email</span>
+          <input autocomplete="email" id="mbwShipEmail" maxlength="160" name="email" required type="email">
+        </label>
+
+        <label class="mbwCheckoutField mbwCheckoutWide">
+          <span>Phone <small>Optional</small></span>
+          <input autocomplete="tel" id="mbwShipPhone" maxlength="40" name="phone" type="tel">
+        </label>
+
+        <label class="mbwCheckoutField mbwCheckoutWide">
+          <span>Street address</span>
+          <input autocomplete="address-line1" id="mbwShipAddress1" maxlength="160" name="address1" required type="text">
+        </label>
+
+        <label class="mbwCheckoutField mbwCheckoutWide">
+          <span>Apartment, suite, etc. <small>Optional</small></span>
+          <input autocomplete="address-line2" id="mbwShipAddress2" maxlength="160" name="address2" type="text">
+        </label>
+
+        <label class="mbwCheckoutField">
+          <span>City</span>
+          <input autocomplete="address-level2" id="mbwShipCity" maxlength="100" name="city" required type="text">
+        </label>
+
+        <label class="mbwCheckoutField">
+          <span>State</span>
+          <input autocomplete="address-level1" id="mbwShipRegion" maxlength="100" name="region" placeholder="FL" required type="text">
+        </label>
+
+        <label class="mbwCheckoutField">
+          <span>ZIP code</span>
+          <input autocomplete="postal-code" id="mbwShipZip" maxlength="40" name="zip" required type="text">
+        </label>
+
+        <label class="mbwCheckoutField">
+          <span>Country</span>
+          <select autocomplete="country" id="mbwShipCountry" name="country">
+            <option selected value="US">United States</option>
+          </select>
+        </label>
+      </div>
+
+      <div aria-live="polite" class="mbwCheckoutMessage" hidden id="mbwCheckoutMessage"></div>
+
+      <div class="mbwShippingPreview" hidden id="mbwShippingPreview">
+        <div class="mbwShippingPreviewHead">
+          <strong>Current shipping</strong>
+          <span id="mbwShippingStartingAt"></span>
+        </div>
+        <div id="mbwShippingOptions"></div>
+        <p>
+          You will choose the available shipping method on Stripe's secure
+          checkout page.
+        </p>
+      </div>
+
+      <button class="mbwQuoteBtn" id="mbwQuoteShipping" type="button">
+        Calculate Shipping
+      </button>
+
+      <button class="mbwSecureCheckoutBtn" disabled id="mbwSecureCheckout" type="submit">
+        Continue to Secure Checkout
+      </button>
+
+      <div class="mbwCheckoutTrust">
+        <span>Stripe secure payment</span>
+        <span>Printify fulfillment</span>
+        <span>MBW support</span>
+      </div>
+    </form>
+  </div>
+</aside>
+<button aria-label="Open shopping cart" class="mbwCartLauncher" id="mbwCartLauncher" type="button">
+  Cart (<span id="mbwCartCount">0</span>)
+</button>
+<div id="siteFooter"></div>
   </div>
 
   <script defer src="/assets/js/includes.js?v=1"></script>
@@ -352,8 +483,7 @@
     function cardMarkup(product) {
       var category = categoryFor(product);
       var variants = Number(product.variant_count || 0);
-      var variantCopy = product.option_summary ||
-        (variants === 1 ? "1 option" : variants + " options");
+      var variantCopy = variants === 1 ? "1 option" : variants + " options";
       return [
         '<article class="productCard storeProductCard" data-category="' + category + '">',
           '<a class="storeProductMedia" href="' + productHref(product) + '" aria-label="View ' + escapeHtml(product.title) + '">',
@@ -445,6 +575,592 @@
     loadCatalog();
   })();
   </script>
+
+  <script id="mbw-cart-script">
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "MBW_SHOP_CART_V1";
+  var SHIPPING_KEY = "MBW_SHOP_SHIPPING_V1";
+  var API_BASE = "https://mbw-shop-api.thecloudforestretreat.workers.dev";
+  var shippingVerified = false;
+
+  function money(value){
+    return "$" + Number(value || 0).toFixed(2);
+  }
+
+  function moneyCents(value){
+    return "$" + (Number(value || 0) / 100).toFixed(2);
+  }
+
+  function parsePrice(value){
+    return Number(String(value || "").replace(/[^0-9.]/g, "")) || 0;
+  }
+
+  function escapeHtml(value){
+    return String(value || "").replace(/[&<>"']/g, function(char){
+      return {
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      }[char];
+    });
+  }
+
+  function getCart(){
+    try{
+      var value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      return Array.isArray(value) ? value : [];
+    }catch(error){
+      return [];
+    }
+  }
+
+  function saveCart(cart){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    shippingVerified = false;
+    renderCart();
+  }
+
+  function itemKey(item){
+    return [
+      item.id,
+      item.variant_id || "",
+      item.option || ""
+    ].join("::");
+  }
+
+  function checkoutItems(){
+    return getCart().map(function(item){
+      return {
+        product_id: String(item.id || ""),
+        variant_id: Number(item.variant_id),
+        quantity: Math.max(1, Math.min(20, Number(item.qty || 1)))
+      };
+    });
+  }
+
+  function addItem(item){
+    var cart = getCart();
+    var key = itemKey(item);
+    var existing = cart.find(function(row){
+      return itemKey(row) === key;
+    });
+
+    if(existing){
+      existing.qty = Math.min(
+        20,
+        Number(existing.qty || 1) + Number(item.qty || 1)
+      );
+      existing.image = item.image || existing.image;
+      existing.option = item.option || existing.option;
+    }else{
+      cart.push({
+        id: item.id,
+        variant_id: item.variant_id || null,
+        title: item.title,
+        price: parsePrice(item.price),
+        image: item.image || "",
+        option: item.option || "",
+        qty: Math.max(1, Math.min(20, Number(item.qty || 1)))
+      });
+    }
+
+    saveCart(cart);
+  }
+
+  window.MBW_CART = {
+    add: addItem,
+    open: openCart,
+    checkout: function(){
+      openCart();
+      showShippingStage();
+    }
+  };
+
+  function changeQty(key, delta){
+    var cart = getCart();
+    var row = cart.find(function(item){
+      return itemKey(item) === key;
+    });
+
+    if(!row) return;
+
+    row.qty = Math.max(
+      1,
+      Math.min(20, Number(row.qty || 1) + delta)
+    );
+
+    saveCart(cart);
+  }
+
+  function removeItem(key){
+    saveCart(
+      getCart().filter(function(item){
+        return itemKey(item) !== key;
+      })
+    );
+  }
+
+  function setBodyLocked(locked){
+    document.documentElement.classList.toggle("mbwCartOpen", locked);
+  }
+
+  function openCart(){
+    var backdrop = document.getElementById("mbwCartBackdrop");
+    var drawer = document.getElementById("mbwCartDrawer");
+
+    if(backdrop) backdrop.classList.add("isOpen");
+    if(drawer){
+      drawer.classList.add("isOpen");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+
+    setBodyLocked(true);
+  }
+
+  function closeCart(){
+    var backdrop = document.getElementById("mbwCartBackdrop");
+    var drawer = document.getElementById("mbwCartDrawer");
+
+    if(backdrop) backdrop.classList.remove("isOpen");
+    if(drawer){
+      drawer.classList.remove("isOpen");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    setBodyLocked(false);
+  }
+
+  function showCartStage(){
+    var cartStage = document.getElementById("mbwCartStageCart");
+    var shippingStage = document.getElementById("mbwCartStageShipping");
+    var title = document.getElementById("mbwCartTitle");
+
+    if(cartStage) cartStage.hidden = false;
+    if(shippingStage) shippingStage.hidden = true;
+    if(title) title.textContent = "Your cart";
+  }
+
+  function showShippingStage(){
+    var cart = getCart();
+
+    if(!cart.length){
+      showCartStage();
+      openCart();
+      return;
+    }
+
+    var cartStage = document.getElementById("mbwCartStageCart");
+    var shippingStage = document.getElementById("mbwCartStageShipping");
+    var title = document.getElementById("mbwCartTitle");
+
+    if(cartStage) cartStage.hidden = true;
+    if(shippingStage) shippingStage.hidden = false;
+    if(title) title.textContent = "Checkout";
+
+    restoreShippingForm();
+    resetShippingState();
+  }
+
+  function renderCart(){
+    var body = document.getElementById("mbwCartBody");
+    var count = document.getElementById("mbwCartCount");
+    var subtotal = document.getElementById("mbwCartSubtotal");
+    var checkout = document.getElementById("mbwCartCheckout");
+
+    if(!body || !count || !subtotal) return;
+
+    var cart = getCart();
+    var itemCount = cart.reduce(function(total, item){
+      return total + Number(item.qty || 0);
+    }, 0);
+
+    var subtotalValue = cart.reduce(function(total, item){
+      return total + (
+        Number(item.price || 0) *
+        Number(item.qty || 0)
+      );
+    }, 0);
+
+    count.textContent = String(itemCount);
+    subtotal.textContent = money(subtotalValue);
+
+    if(checkout){
+      checkout.disabled = !cart.length;
+    }
+
+    if(!cart.length){
+      body.innerHTML =
+        '<div class="mbwCartEmpty">' +
+          '<span class="mbwCartEmptyIcon">MBW</span>' +
+          '<strong>Your cart is empty.</strong>' +
+          '<p>Choose a product, select an available option, and add it to your cart.</p>' +
+          '<a href="/shop/">Browse the shop</a>' +
+        '</div>';
+      return;
+    }
+
+    body.innerHTML = cart.map(function(item){
+      var key = itemKey(item).replace(/"/g, "&quot;");
+      var image = item.image || "/MBW-Assets-OG-Image.jpg";
+
+      return (
+        '<article class="mbwCartItem">' +
+          '<img src="' + escapeHtml(image) + '" alt="">' +
+          '<div class="mbwCartItemCopy">' +
+            '<div class="mbwCartItemTitle">' + escapeHtml(item.title) + '</div>' +
+            (item.option
+              ? '<div class="mbwCartItemMeta">' + escapeHtml(item.option) + '</div>'
+              : '') +
+            '<div class="mbwCartQty">' +
+              '<button type="button" data-cart-action="minus" data-key="' + key + '" aria-label="Decrease quantity">-</button>' +
+              '<span>' + Number(item.qty || 1) + '</span>' +
+              '<button type="button" data-cart-action="plus" data-key="' + key + '" aria-label="Increase quantity">+</button>' +
+            '</div>' +
+            '<button type="button" class="mbwCartRemove" data-cart-action="remove" data-key="' + key + '">Remove</button>' +
+          '</div>' +
+          '<div class="mbwCartItemPrice">' + money(Number(item.price || 0) * Number(item.qty || 0)) + '</div>' +
+        '</article>'
+      );
+    }).join("");
+  }
+
+  function shippingAddress(){
+    return {
+      first_name: valueOf("mbwShipFirstName"),
+      last_name: valueOf("mbwShipLastName"),
+      email: valueOf("mbwShipEmail"),
+      phone: valueOf("mbwShipPhone"),
+      address1: valueOf("mbwShipAddress1"),
+      address2: valueOf("mbwShipAddress2"),
+      city: valueOf("mbwShipCity"),
+      region: valueOf("mbwShipRegion"),
+      zip: valueOf("mbwShipZip"),
+      country: valueOf("mbwShipCountry") || "US"
+    };
+  }
+
+  function valueOf(id){
+    var field = document.getElementById(id);
+    return field ? String(field.value || "").trim() : "";
+  }
+
+  function validateShippingForm(){
+    var form = document.getElementById("mbwCheckoutForm");
+
+    if(!form) return false;
+
+    if(!form.reportValidity()){
+      return false;
+    }
+
+    return true;
+  }
+
+  function persistShippingForm(){
+    try{
+      localStorage.setItem(
+        SHIPPING_KEY,
+        JSON.stringify(shippingAddress())
+      );
+    }catch(error){}
+  }
+
+  function restoreShippingForm(){
+    var data;
+
+    try{
+      data = JSON.parse(localStorage.getItem(SHIPPING_KEY) || "{}");
+    }catch(error){
+      data = {};
+    }
+
+    var map = {
+      mbwShipFirstName: "first_name",
+      mbwShipLastName: "last_name",
+      mbwShipEmail: "email",
+      mbwShipPhone: "phone",
+      mbwShipAddress1: "address1",
+      mbwShipAddress2: "address2",
+      mbwShipCity: "city",
+      mbwShipRegion: "region",
+      mbwShipZip: "zip",
+      mbwShipCountry: "country"
+    };
+
+    Object.keys(map).forEach(function(id){
+      var field = document.getElementById(id);
+      if(field && data[map[id]]){
+        field.value = data[map[id]];
+      }
+    });
+  }
+
+  function setCheckoutMessage(message, type){
+    var box = document.getElementById("mbwCheckoutMessage");
+
+    if(!box) return;
+
+    if(!message){
+      box.hidden = true;
+      box.textContent = "";
+      box.className = "mbwCheckoutMessage";
+      return;
+    }
+
+    box.hidden = false;
+    box.textContent = message;
+    box.className =
+      "mbwCheckoutMessage " +
+      (type === "error" ? "isError" : "isInfo");
+  }
+
+  function resetShippingState(){
+    shippingVerified = false;
+
+    var preview = document.getElementById("mbwShippingPreview");
+    var secureButton = document.getElementById("mbwSecureCheckout");
+
+    if(preview) preview.hidden = true;
+    if(secureButton) secureButton.disabled = true;
+
+    setCheckoutMessage("", "");
+  }
+
+  function setLoading(button, loading, text){
+    if(!button) return;
+
+    if(loading){
+      button.dataset.originalText = button.textContent;
+      button.textContent = text;
+      button.disabled = true;
+      button.classList.add("isLoading");
+    }else{
+      button.textContent =
+        button.dataset.originalText || button.textContent;
+      button.classList.remove("isLoading");
+    }
+  }
+
+  async function requestJson(path, payload){
+    var response = await fetch(
+      API_BASE + path,
+      {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    var data;
+
+    try{
+      data = await response.json();
+    }catch(error){
+      throw new Error("The shop server returned an invalid response.");
+    }
+
+    if(!response.ok || !data || data.ok !== true){
+      throw new Error(
+        data && data.error
+          ? data.error
+          : "The request could not be completed."
+      );
+    }
+
+    return data;
+  }
+
+  async function calculateShipping(){
+    var button = document.getElementById("mbwQuoteShipping");
+    var secureButton = document.getElementById("mbwSecureCheckout");
+
+    if(!validateShippingForm()) return;
+
+    persistShippingForm();
+    resetShippingState();
+    setLoading(button, true, "Calculating shipping...");
+    setCheckoutMessage(
+      "Checking current product availability, pricing, and shipping...",
+      "info"
+    );
+
+    try{
+      var data = await requestJson(
+        "/shipping/quote",
+        {
+          items: checkoutItems(),
+          address: shippingAddress()
+        }
+      );
+
+      var options = Array.isArray(data.shipping_options)
+        ? data.shipping_options
+        : [];
+
+      if(!options.length){
+        throw new Error(
+          "No shipping method is currently available for this address."
+        );
+      }
+
+      var optionBox = document.getElementById("mbwShippingOptions");
+      var preview = document.getElementById("mbwShippingPreview");
+      var startingAt = document.getElementById("mbwShippingStartingAt");
+
+      options.sort(function(a, b){
+        return Number(a.amount || 0) - Number(b.amount || 0);
+      });
+
+      if(optionBox){
+        optionBox.innerHTML = options.map(function(option){
+          return (
+            '<div class="mbwShippingOption">' +
+              '<span>' + escapeHtml(option.display_name || "Shipping") + '</span>' +
+              '<strong>' + moneyCents(option.amount) + '</strong>' +
+            '</div>'
+          );
+        }).join("");
+      }
+
+      if(startingAt){
+        startingAt.textContent =
+          "from " + moneyCents(options[0].amount);
+      }
+
+      if(preview) preview.hidden = false;
+
+      shippingVerified = true;
+
+      if(secureButton){
+        secureButton.disabled = false;
+      }
+
+      setCheckoutMessage(
+        "Shipping confirmed. Continue when you are ready.",
+        "info"
+      );
+    }catch(error){
+      setCheckoutMessage(
+        error && error.message
+          ? error.message
+          : "We could not calculate shipping.",
+        "error"
+      );
+    }finally{
+      setLoading(button, false, "");
+      if(button) button.disabled = false;
+    }
+  }
+
+  async function createCheckout(event){
+    event.preventDefault();
+
+    if(!validateShippingForm()) return;
+
+    if(!shippingVerified){
+      setCheckoutMessage(
+        "Please calculate shipping before continuing to secure checkout.",
+        "error"
+      );
+      return;
+    }
+
+    var button = document.getElementById("mbwSecureCheckout");
+    persistShippingForm();
+
+    setLoading(button, true, "Opening secure checkout...");
+    setCheckoutMessage(
+      "Creating your secure Stripe Checkout session...",
+      "info"
+    );
+
+    try{
+      var data = await requestJson(
+        "/checkout/session",
+        {
+          items: checkoutItems(),
+          address: shippingAddress()
+        }
+      );
+
+      if(!data.checkout_url){
+        throw new Error(
+          "Stripe Checkout did not return a checkout URL."
+        );
+      }
+
+      window.location.assign(data.checkout_url);
+    }catch(error){
+      setCheckoutMessage(
+        error && error.message
+          ? error.message
+          : "We could not open secure checkout.",
+        "error"
+      );
+
+      if(button){
+        button.disabled = false;
+        button.classList.remove("isLoading");
+        button.textContent = "Continue to Secure Checkout";
+      }
+    }
+  }
+
+  document.addEventListener("click", function(event){
+    var actionElement = event.target.closest("[data-cart-action]");
+
+    if(actionElement){
+      var key = actionElement.getAttribute("data-key") || "";
+      var action = actionElement.getAttribute("data-cart-action");
+
+      if(action === "plus") changeQty(key, 1);
+      if(action === "minus") changeQty(key, -1);
+      if(action === "remove") removeItem(key);
+    }
+  });
+
+  document.addEventListener("input", function(event){
+    if(event.target.closest("#mbwCheckoutForm")){
+      resetShippingState();
+    }
+  });
+
+  var launcher = document.getElementById("mbwCartLauncher");
+  var close = document.getElementById("mbwCartClose");
+  var backdrop = document.getElementById("mbwCartBackdrop");
+  var continueButton = document.getElementById("mbwCartContinue");
+  var checkoutButton = document.getElementById("mbwCartCheckout");
+  var backButton = document.getElementById("mbwCheckoutBack");
+  var quoteButton = document.getElementById("mbwQuoteShipping");
+  var checkoutForm = document.getElementById("mbwCheckoutForm");
+
+  if(launcher) launcher.addEventListener("click", function(){
+    showCartStage();
+    openCart();
+  });
+
+  if(close) close.addEventListener("click", closeCart);
+  if(backdrop) backdrop.addEventListener("click", closeCart);
+  if(continueButton) continueButton.addEventListener("click", closeCart);
+  if(checkoutButton) checkoutButton.addEventListener("click", showShippingStage);
+  if(backButton) backButton.addEventListener("click", showCartStage);
+  if(quoteButton) quoteButton.addEventListener("click", calculateShipping);
+  if(checkoutForm) checkoutForm.addEventListener("submit", createCheckout);
+
+  document.addEventListener("keydown", function(event){
+    if(event.key === "Escape") closeCart();
+  });
+
+  renderCart();
+})();
+</script>
 
   <script type="application/ld+json">
   {
