@@ -352,7 +352,8 @@
     function cardMarkup(product) {
       var category = categoryFor(product);
       var variants = Number(product.variant_count || 0);
-      var variantCopy = variants === 1 ? "1 option" : variants + " options";
+      var variantCopy = product.option_summary ||
+        (variants === 1 ? "1 option" : variants + " options");
       return [
         '<article class="productCard storeProductCard" data-category="' + category + '">',
           '<a class="storeProductMedia" href="' + productHref(product) + '" aria-label="View ' + escapeHtml(product.title) + '">',
