@@ -28,7 +28,7 @@
 <meta content="#0f5f3a" name="theme-color"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/pages/shop.css?v=20260904-8" rel="stylesheet"/>
+<link href="/assets/css/pages/shop.css?v=20260904-9" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script defer="" src="/assets/js/site-config.js"></script>
 <script type="application/ld+json">
@@ -676,6 +676,47 @@
     document.querySelectorAll(".mbwProductThumb").forEach(function(btn,index){ btn.classList.toggle("isActive",index===state.imageIndex); });
   }
 
+  function showImageSource(src){
+    if(!src) return;
+
+    var existingIndex=state.images.findIndex(function(image){
+      return String(image.src||"")===String(src);
+    });
+
+    if(existingIndex>=0){
+      setImage(existingIndex);
+      return;
+    }
+
+    var img=document.getElementById("productImage");
+    if(img){
+      img.src=src;
+      img.alt=state.product.title+" - selected color";
+    }
+
+    document.querySelectorAll(".mbwProductThumb").forEach(function(btn){
+      btn.classList.remove("isActive");
+    });
+  }
+
+  function switchImageForColor(optionName,optionId){
+    if(!state.product || !Array.isArray(state.product.color_images)) return;
+
+    var option=state.product.options.find(function(item){
+      return item.name===optionName;
+    });
+
+    if(!option || optionKind(option)!=="color") return;
+
+    var match=state.product.color_images.find(function(item){
+      return Number(item.option_id)===Number(optionId);
+    });
+
+    if(match && match.image){
+      showImageSource(match.image);
+    }
+  }
+
   function renderGallery(){
     state.images=(state.product.images&&state.product.images.length)?state.product.images:(state.product.image?[{src:state.product.image,position:"front"}]:[]);
     var thumbs=document.getElementById("mbwProductThumbs");
@@ -795,8 +836,15 @@
   document.addEventListener("click",function(e){
     var choice=e.target.closest("[data-option-name][data-option-id]");
     if(choice){
-      state.selections[choice.getAttribute("data-option-name")]=Number(choice.getAttribute("data-option-id"));
-      renderSelectors(); syncState(); return;
+      var optionName=choice.getAttribute("data-option-name");
+      var optionId=Number(choice.getAttribute("data-option-id"));
+
+      state.selections[optionName]=optionId;
+
+      renderSelectors();
+      syncState();
+      switchImageForColor(optionName,optionId);
+      return;
     }
     var thumb=e.target.closest("[data-gallery-index]");
     if(thumb) setImage(Number(thumb.getAttribute("data-gallery-index")));
