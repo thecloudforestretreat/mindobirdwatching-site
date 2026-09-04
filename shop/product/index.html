@@ -32,7 +32,7 @@
 
   <link rel="stylesheet" href="/assets/css/header.css">
   <link rel="stylesheet" href="/assets/css/site.css">
-  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-5">
+  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260904-6">
 
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site-config.js" defer></script>
@@ -196,35 +196,45 @@
         <div class="heroCopy">
           <p class="eyebrow">MINDO BIRD WATCHING SHOP</p>
           <h1 id="productTitle">Loading product...</h1>
-          <p id="productLead">Choose your color, size, and quantity, then add the exact available variant to your cart.</p>
+          <p id="productLead">Choose your color, size, and quantity. We only show combinations currently available from our fulfillment catalog.</p>
           <div class="heroActions">
             <a class="btn secondary" href="#checkout-notes" data-analytics-event="internal_link_click" data-analytics-label="Shipping and checkout notes" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page">Shipping details</a>
             <a class="btn secondary" href="/shop/" data-analytics-event="internal_link_click" data-analytics-label="Back to shop" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page">Back to shop</a>
           </div>
 
 <div class="mbwPurchaseBox mbwPurchaseBoxV2" aria-label="Purchase options">
-  <p class="mbwPurchasePrice" id="mbwPurchasePrice">$0.00</p>
+            <div class="mbwPurchaseTopline">
+              <div>
+                <span class="mbwPurchaseLabel">Price</span>
+                <p class="mbwPurchasePrice" id="mbwPurchasePrice">$0.00</p>
+              </div>
+              <span class="mbwStockPill" id="mbwStockPill">Choose options</span>
+            </div>
 
-  <div id="mbwVariantSelectors" class="mbwVariantSelectors" aria-live="polite"></div>
+            <div id="mbwVariantSelectors" class="mbwVariantSelectors" aria-live="polite"></div>
 
-  <div class="mbwQuantityRow">
-    <span class="mbwOptionLabel">Quantity</span>
-    <div class="mbwQtyStepper" role="group" aria-label="Quantity">
-      <button id="mbwQtyMinus" type="button" aria-label="Decrease quantity">-</button>
-      <input id="mbwProductQty" type="number" min="1" max="20" value="1" inputmode="numeric" aria-label="Quantity">
-      <button id="mbwQtyPlus" type="button" aria-label="Increase quantity">+</button>
-    </div>
-  </div>
+            <div class="mbwQuantityRow">
+              <span class="mbwOptionLabel">Quantity</span>
+              <div class="mbwQtyStepper" role="group" aria-label="Quantity">
+                <button id="mbwQtyMinus" type="button" aria-label="Decrease quantity">-</button>
+                <input id="mbwProductQty" type="number" min="1" max="20" value="1" inputmode="numeric" aria-label="Quantity">
+                <button id="mbwQtyPlus" type="button" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
 
-  <p class="mbwVariantStatus" id="mbwVariantStatus">Select your product options.</p>
+            <p class="mbwVariantStatus" id="mbwVariantStatus">Choose your available color and size.</p>
 
-  <div class="mbwPurchaseActions">
-    <button class="mbwAddBtn" id="mbwAddToCart" type="button" disabled>Add to Cart</button>
-    <button class="mbwBuyBtn" id="mbwBuyNow" type="button" disabled>Buy Now</button>
-  </div>
+            <div class="mbwPurchaseActions">
+              <button class="mbwAddBtn" id="mbwAddToCart" type="button" disabled>Add to Cart</button>
+              <button class="mbwBuyBtn" id="mbwBuyNow" type="button" disabled>Buy Now</button>
+            </div>
 
-  <p class="mbwPurchaseHelp">Choose the available color and size. Unavailable combinations are disabled automatically.</p>
-</div>
+            <div class="mbwPurchaseTrust" aria-label="Purchase assurances">
+              <span>Made to order</span>
+              <span>Secure checkout</span>
+              <span>US shipping</span>
+            </div>
+          </div>
 
         </div>
         <figure class="heroMedia mbwProductGallery" aria-label="Product images">
@@ -271,7 +281,7 @@
           </article>
           <article class="trustBox">
             <h3>Secure checkout</h3>
-            <p>Choose an available product variant and add it to your cart. Secure Stripe checkout will calculate the final shipping and payment details.</p>
+            <p>Choose an available product variant and add it to your cart. Secure Stripe checkout will handle payment and final shipping details.</p>
           </article>
           <article class="trustBox">
             <h3>Need help?</h3>
@@ -624,7 +634,8 @@
         return '<button class="'+cls+(isSel?' isSelected':'')+'" type="button" data-option-name="'+escAttr(option.name)+'" data-option-id="'+value.id+'"'+(disabled?' disabled':'')+'>'+esc(value.title)+'</button>';
       }).join("");
 
-      return '<div class="mbwVariantGroup"><div class="mbwOptionHeader"><span class="mbwOptionLabel">'+esc(option.name)+'</span><span class="mbwSelectedValue">'+esc(current)+'</span></div><div class="'+(kind==="color"?"mbwColorRow":"mbwChoiceRow")+'">'+choices+'</div></div>';
+      var displayName=kind==="color"?"Color":(kind==="size"?"Size":option.name);
+      return '<div class="mbwVariantGroup"><div class="mbwOptionHeader"><span class="mbwOptionLabel">'+esc(displayName)+'</span><span class="mbwSelectedValue">'+esc(current)+'</span></div><div class="'+(kind==="color"?"mbwColorRow":"mbwChoiceRow")+'">'+choices+'</div></div>';
     }).join("");
   }
 
@@ -641,22 +652,34 @@
     if(price) price.textContent=money(cents);
     if(infoPrice) infoPrice.textContent=state.product.min_price===state.product.max_price ? money(state.product.min_price) : money(state.product.min_price)+" - "+money(state.product.max_price);
 
-    if(state.selectedVariant){
-      status.textContent="In stock - selected variant ready.";
-      status.classList.add("isReady");
-      add.disabled=false; buy.disabled=false;
+    var stockPill=document.getElementById("mbwStockPill");
 
-      var variantNeedle = "/" + state.selectedVariant.id + "/";
-      var matchingImageIndex = state.images.findIndex(function(image){
-        return String(image.src || "").indexOf(variantNeedle) !== -1;
+    if(state.selectedVariant){
+      status.textContent="In stock - ready to add to cart.";
+      status.classList.add("isReady");
+      if(stockPill){
+        stockPill.textContent="In stock";
+        stockPill.classList.add("isReady");
+      }
+      add.disabled=false;
+      buy.disabled=false;
+
+      var variantNeedle="/"+state.selectedVariant.id+"/";
+      var variantImageIndex=state.images.findIndex(function(image){
+        return String(image.src||"").indexOf(variantNeedle)!==-1;
       });
-      if(matchingImageIndex >= 0 && matchingImageIndex !== state.imageIndex){
-        setImage(matchingImageIndex);
+      if(variantImageIndex>=0 && variantImageIndex!==state.imageIndex){
+        setImage(variantImageIndex);
       }
     }else{
       status.textContent="Choose the available options above.";
       status.classList.remove("isReady");
-      add.disabled=true; buy.disabled=true;
+      if(stockPill){
+        stockPill.textContent="Choose options";
+        stockPill.classList.remove("isReady");
+      }
+      add.disabled=true;
+      buy.disabled=true;
     }
   }
 
