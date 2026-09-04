@@ -81,9 +81,7 @@ export default {
 };
 
 async function handleCatalog(request, env) {
-  const result = await fetchPrintifyProducts(
-    env
-  );
+  const result = await fetchPrintifyProducts(env);
 
   if (!result.ok) {
     return jsonResponse(
@@ -93,9 +91,7 @@ async function handleCatalog(request, env) {
     );
   }
 
-  const rawProducts = result.products;
-
-  const products = rawProducts
+  const products = result.products
     .filter(
       (product) =>
         product &&
@@ -116,8 +112,7 @@ async function handleCatalog(request, env) {
     200,
     request,
     {
-      "Cache-Control":
-        "public, max-age=300"
+      "Cache-Control": "public, max-age=300"
     }
   );
 }
@@ -138,9 +133,7 @@ async function handleCatalogProduct(
     );
   }
 
-  const result = await fetchPrintifyProducts(
-    env
-  );
+  const result = await fetchPrintifyProducts(env);
 
   if (!result.ok) {
     return jsonResponse(
@@ -152,11 +145,10 @@ async function handleCatalogProduct(
 
   const product = result.products.find(
     (item) =>
-      String(item.id) ===
-      String(productId)
+      String(item.id) === String(productId)
   );
 
-  if (!product) {
+  if (!product || product.visible === false) {
     return jsonResponse(
       {
         ok: false,
@@ -167,23 +159,9 @@ async function handleCatalogProduct(
     );
   }
 
-  if (product.visible === false) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "Product not available"
-      },
-      404,
-      request
-    );
-  }
+  const normalized = normalizeDetailedProduct(product);
 
-  const normalized =
-    normalizeDetailedProduct(product);
-
-  if (
-    normalized.variants.length === 0
-  ) {
+  if (normalized.variants.length === 0) {
     return jsonResponse(
       {
         ok: false,
@@ -202,8 +180,7 @@ async function handleCatalogProduct(
     200,
     request,
     {
-      "Cache-Control":
-        "public, max-age=300"
+      "Cache-Control": "public, max-age=300"
     }
   );
 }
@@ -212,9 +189,7 @@ async function handleDebugProducts(
   request,
   env
 ) {
-  const result = await fetchPrintifyProducts(
-    env
-  );
+  const result = await fetchPrintifyProducts(env);
 
   if (!result.ok) {
     return jsonResponse(
@@ -236,8 +211,7 @@ async function handleDebugProducts(
 }
 
 async function fetchPrintifyProducts(env) {
-  const configError =
-    validatePrintifyConfig(env, true);
+  const configError = validatePrintifyConfig(env, true);
 
   if (configError) {
     return {
@@ -247,9 +221,7 @@ async function fetchPrintifyProducts(env) {
     };
   }
 
-  const shopId = String(
-    env.PRINTIFY_SHOP_ID
-  ).trim();
+  const shopId = String(env.PRINTIFY_SHOP_ID).trim();
 
   let response;
 
@@ -259,8 +231,7 @@ async function fetchPrintifyProducts(env) {
       {
         method: "GET",
         headers: {
-          Authorization:
-            `Bearer ${env.PRINTIFY_API_TOKEN}`,
+          Authorization: `Bearer ${env.PRINTIFY_API_TOKEN}`,
           Accept: "application/json"
         }
       }
@@ -271,8 +242,7 @@ async function fetchPrintifyProducts(env) {
       status: 502,
       body: {
         ok: false,
-        error:
-          "Unable to contact Printify"
+        error: "Unable to contact Printify"
       }
     };
   }
@@ -287,8 +257,7 @@ async function fetchPrintifyProducts(env) {
       status: 502,
       body: {
         ok: false,
-        error:
-          "Printify returned an invalid response"
+        error: "Printify returned an invalid response"
       }
     };
   }
@@ -299,8 +268,7 @@ async function fetchPrintifyProducts(env) {
       status: 502,
       body: {
         ok: false,
-        error:
-          "Unable to load shop catalog"
+        error: "Unable to load shop catalog"
       }
     };
   }
@@ -314,16 +282,15 @@ async function fetchPrintifyProducts(env) {
   };
 }
 
-function normalizeCatalogProduct(
-  product
-) {
-  const enabledVariants =
-    getEnabledVariants(product);
+function normalizeCatalogProduct(product) {
+  const enabledVariants = getEnabledVariants(product);
+  const availableOptions = getAvailableOptions(
+    product,
+    enabledVariants
+  );
 
   const prices = enabledVariants
-    .map((variant) =>
-      Number(variant.price)
-    )
+    .map((variant) => Number(variant.price))
     .filter(
       (price) =>
         Number.isFinite(price) &&
@@ -338,77 +305,51 @@ function normalizeCatalogProduct(
     ? Math.max(...prices)
     : null;
 
-  const image =
-    getPrimaryImage(product.images);
-
   return {
     id: product.id,
     slug: createSlug(product.title),
     title:
       product.title ||
       "Mindo Bird Watching product",
-    image,
+    image: getPrimaryImage(product.images),
     min_price: minPrice,
     max_price: maxPrice,
-    variant_count:
+    variant_count: enabledVariants.length,
+
+    /*
+      Storefront-friendly option metadata.
+
+      Example apparel:
+      option_summary: "S-3XL | 8 colors"
+
+      Example tote:
+      option_summary: "One size | 3 colors"
+
+      We still keep variant_count internally, but the shop should display
+      option_summary because shoppers think in sizes and colors, not the
+      total number of size/color combinations.
+    */
+    option_summary: summarizeOptions(
+      availableOptions,
       enabledVariants.length
+    ),
+    option_summary_parts: buildOptionSummaryParts(
+      availableOptions
+    )
   };
 }
 
-function normalizeDetailedProduct(
-  product
-) {
-  const enabledVariants =
-    getEnabledVariants(product);
+function normalizeDetailedProduct(product) {
+  const enabledVariants = getEnabledVariants(product);
+  const options = getAvailableOptions(
+    product,
+    enabledVariants
+  );
 
-  const usedOptionIds = new Set();
-
-  for (const variant of enabledVariants) {
-    for (const optionId of variant.options) {
-      usedOptionIds.add(
-        String(optionId)
-      );
-    }
-  }
-
-  const options = Array.isArray(
-    product.options
-  )
-    ? product.options
-        .map((option) => {
-          const values =
-            Array.isArray(option.values)
-              ? option.values
-                  .filter((value) =>
-                    usedOptionIds.has(
-                      String(value.id)
-                    )
-                  )
-                  .map((value) => ({
-                    id: value.id,
-                    title: value.title
-                  }))
-              : [];
-
-          return {
-            name: option.name || "",
-            type: option.type || "",
-            values
-          };
-        })
-        .filter(
-          (option) =>
-            option.values.length > 0
-        )
-    : [];
-
-  const images =
-    normalizeImages(product.images);
+  const images = normalizeImages(product.images);
 
   const prices = enabledVariants
-    .map((variant) =>
-      Number(variant.price)
-    )
+    .map((variant) => Number(variant.price))
     .filter(
       (price) =>
         Number.isFinite(price) &&
@@ -439,8 +380,15 @@ function normalizeDetailedProduct(
         ? Math.max(...prices)
         : null,
 
-    options,
+    option_summary: summarizeOptions(
+      options,
+      enabledVariants.length
+    ),
 
+    option_summary_parts:
+      buildOptionSummaryParts(options),
+
+    options,
     variants: enabledVariants
   };
 }
@@ -466,23 +414,222 @@ function getEnabledVariants(product) {
         ? Number(variant.price)
         : 0,
       available: true,
-      options: Array.isArray(
-        variant.options
-      )
+      options: Array.isArray(variant.options)
         ? variant.options
         : []
     }));
 }
 
-function getPrimaryImage(rawImages) {
-  const images =
-    normalizeImages(rawImages);
+function getAvailableOptions(
+  product,
+  enabledVariants
+) {
+  const usedOptionIds = new Set();
 
-  if (images.length === 0) {
-    return null;
+  enabledVariants.forEach((variant) => {
+    variant.options.forEach((optionId) => {
+      usedOptionIds.add(String(optionId));
+    });
+  });
+
+  if (!Array.isArray(product.options)) {
+    return [];
   }
 
-  return images[0].src;
+  return product.options
+    .map((option) => {
+      const values = Array.isArray(option.values)
+        ? option.values
+            .filter((value) =>
+              usedOptionIds.has(String(value.id))
+            )
+            .map((value) => ({
+              id: value.id,
+              title: value.title
+            }))
+        : [];
+
+      return {
+        name: option.name || "",
+        type: option.type || "",
+        values
+      };
+    })
+    .filter(
+      (option) =>
+        option.values.length > 0
+    );
+}
+
+function buildOptionSummaryParts(options) {
+  const sizeOption = options.find(isSizeOption);
+  const colorOption = options.find(isColorOption);
+
+  const sizeTitles = sizeOption
+    ? uniqueTitles(sizeOption.values)
+    : [];
+
+  const colorTitles = colorOption
+    ? uniqueTitles(colorOption.values)
+    : [];
+
+  return {
+    size_label: summarizeSizes(sizeTitles),
+    size_count: sizeTitles.length,
+    color_count: colorTitles.length
+  };
+}
+
+function summarizeOptions(
+  options,
+  variantCount
+) {
+  const parts = buildOptionSummaryParts(options);
+  const labels = [];
+
+  if (parts.size_label) {
+    labels.push(parts.size_label);
+  }
+
+  if (parts.color_count > 0) {
+    labels.push(
+      parts.color_count === 1
+        ? "1 color"
+        : `${parts.color_count} colors`
+    );
+  }
+
+  if (labels.length > 0) {
+    return labels.join(" | ");
+  }
+
+  if (variantCount === 1) {
+    return "1 option";
+  }
+
+  if (variantCount > 1) {
+    return `${variantCount} options`;
+  }
+
+  return "";
+}
+
+function summarizeSizes(titles) {
+  if (!titles.length) {
+    return "";
+  }
+
+  if (titles.length === 1) {
+    return titles[0];
+  }
+
+  const standard = titles
+    .map((title) => ({
+      title,
+      rank: standardSizeRank(title)
+    }))
+    .filter((item) => item.rank !== null)
+    .sort((a, b) => a.rank - b.rank);
+
+  /*
+    Only compress to a range when every available value is a recognized
+    apparel size. This avoids misleading labels for products with
+    non-standard size names.
+  */
+  if (standard.length === titles.length) {
+    return `${standard[0].title}-${standard[standard.length - 1].title}`;
+  }
+
+  /*
+    Short non-apparel lists such as 11oz / 15oz are more useful when
+    shown explicitly.
+  */
+  if (titles.length <= 3) {
+    return titles.join(" / ");
+  }
+
+  return `${titles.length} sizes`;
+}
+
+function standardSizeRank(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
+  const ranks = {
+    "XXS": 10,
+    "2XS": 10,
+    "XS": 20,
+    "S": 30,
+    "M": 40,
+    "L": 50,
+    "XL": 60,
+    "XXL": 70,
+    "2XL": 70,
+    "XXXL": 80,
+    "3XL": 80,
+    "4XL": 90,
+    "5XL": 100,
+    "6XL": 110
+  };
+
+  return Object.prototype.hasOwnProperty.call(
+    ranks,
+    normalized
+  )
+    ? ranks[normalized]
+    : null;
+}
+
+function isSizeOption(option) {
+  const type = String(option.type || "").toLowerCase();
+  const name = String(option.name || "").toLowerCase();
+
+  return (
+    type === "size" ||
+    name === "size" ||
+    name === "sizes" ||
+    name.includes("size")
+  );
+}
+
+function isColorOption(option) {
+  const type = String(option.type || "").toLowerCase();
+  const name = String(option.name || "").toLowerCase();
+
+  return (
+    type === "color" ||
+    name === "color" ||
+    name === "colors" ||
+    name.includes("color")
+  );
+}
+
+function uniqueTitles(values) {
+  const seen = new Set();
+  const titles = [];
+
+  values.forEach((value) => {
+    const title = String(value.title || "").trim();
+
+    if (!title || seen.has(title)) {
+      return;
+    }
+
+    seen.add(title);
+    titles.push(title);
+  });
+
+  return titles;
+}
+
+function getPrimaryImage(rawImages) {
+  const images = normalizeImages(rawImages);
+
+  return images.length > 0
+    ? images[0].src
+    : null;
 }
 
 function normalizeImages(rawImages) {
@@ -556,8 +703,7 @@ async function handlePrintifyShops(
     return jsonResponse(
       {
         ok: false,
-        error:
-          "Unable to contact Printify"
+        error: "Unable to contact Printify"
       },
       502,
       request
@@ -572,8 +718,7 @@ async function handlePrintifyShops(
     return jsonResponse(
       {
         ok: false,
-        error:
-          "Printify returned an invalid response"
+        error: "Printify returned an invalid response"
       },
       502,
       request
@@ -584,8 +729,7 @@ async function handlePrintifyShops(
     return jsonResponse(
       {
         ok: false,
-        error:
-          "Unable to load Printify shops"
+        error: "Unable to load Printify shops"
       },
       502,
       request
