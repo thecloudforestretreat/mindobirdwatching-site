@@ -63,8 +63,32 @@
               <span>Product support from MBW</span>
             </div>
           </div>
-          <div class="storeHeroVisual" aria-hidden="true">
-            <img src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_02.jpg" alt="" loading="eager" decoding="async">
+          <div class="storeHeroVisual storeHeroCarousel" data-store-hero-carousel aria-label="Mindo Bird Watching merchandise preview">
+            <div class="storeHeroTrack">
+              <div class="storeHeroSlide isActive">
+                <img src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_02.jpg" alt="Mindo Bird Watching merchandise preview" loading="eager" decoding="async">
+              </div>
+              <div class="storeHeroSlide">
+                <img src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_02.jpg" alt="Mindo Bird Watching merchandise preview placeholder 2" loading="eager" decoding="async">
+              </div>
+              <div class="storeHeroSlide">
+                <img src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_02.jpg" alt="Mindo Bird Watching merchandise preview placeholder 3" loading="eager" decoding="async">
+              </div>
+              <div class="storeHeroSlide">
+                <img src="/assets/images/merch/clothing/worn/mbw_merch_tshirt_worn_02.jpg" alt="Mindo Bird Watching merchandise preview placeholder 4" loading="eager" decoding="async">
+              </div>
+            </div>
+
+            <button class="storeHeroArrow storeHeroArrowPrev" type="button" aria-label="Previous hero image">&#8249;</button>
+            <button class="storeHeroArrow storeHeroArrowNext" type="button" aria-label="Next hero image">&#8250;</button>
+
+            <div class="storeHeroDots" role="tablist" aria-label="Select hero image">
+              <button class="storeHeroDot isActive" type="button" aria-label="Show hero image 1" aria-selected="true"></button>
+              <button class="storeHeroDot" type="button" aria-label="Show hero image 2" aria-selected="false"></button>
+              <button class="storeHeroDot" type="button" aria-label="Show hero image 3" aria-selected="false"></button>
+              <button class="storeHeroDot" type="button" aria-label="Show hero image 4" aria-selected="false"></button>
+            </div>
+
             <div class="storeHeroBadge">
               <strong>From Mindo</strong>
               <span>Birding inspired merchandise</span>
@@ -156,15 +180,26 @@
           </article>
         </section>
 
-        <section class="storeStory" aria-labelledby="store-story-title">
-          <div>
-            <p class="storeEyebrow">MORE THAN MERCH</p>
-            <h2 id="store-story-title">The birds behind the designs are waiting in Mindo.</h2>
-            <p>The shop is part of Mindo Bird Watching. If a design makes you want to see the real birds and cloud forest, explore our private birding experiences and trip planning resources.</p>
-          </div>
-          <div class="storeStoryActions">
-            <a class="btn primary" href="/tours/">Explore birding tours</a>
-            <a class="btn secondary" href="/plan-your-trip/">Plan your trip</a>
+        <section class="finalCta shopFinalCta" aria-labelledby="shop-final-title">
+          <div class="finalGrid">
+            <div class="finalLeft">
+              <p class="kicker">MORE THAN MERCH</p>
+              <h2 id="shop-final-title">The birds behind the designs are waiting in Mindo.</h2>
+              <p>The shop is part of Mindo Bird Watching. If a design makes you want to see the real birds and cloud forest, explore our private birding experiences and trip planning resources.</p>
+              <div class="ctaRow alignBottom">
+                <a class="btn primary" href="/tours/">Explore birding tours</a>
+                <a class="btn secondary" href="/plan-your-trip/">Plan your trip</a>
+              </div>
+            </div>
+            <div class="nextSteps">
+              <h3>Shop and explore</h3>
+              <ol>
+                <li>Browse the live Mindo Bird Watching collection.</li>
+                <li>Open a product to review its current options and price.</li>
+                <li>Check shipping and return information before ordering.</li>
+                <li>Explore tours and trip planning inspired by the same cloud forest.</li>
+              </ol>
+            </div>
           </div>
         </section>
       </div>
@@ -175,6 +210,81 @@
 
   <script defer src="/assets/js/includes.js?v=1"></script>
   <script src="/assets/js/site.js?v=34"></script>
+
+
+  <script>
+  (function () {
+    "use strict";
+
+    var root = document.querySelector("[data-store-hero-carousel]");
+    if (!root) return;
+
+    var slides = Array.prototype.slice.call(root.querySelectorAll(".storeHeroSlide"));
+    var dots = Array.prototype.slice.call(root.querySelectorAll(".storeHeroDot"));
+    var prev = root.querySelector(".storeHeroArrowPrev");
+    var next = root.querySelector(".storeHeroArrowNext");
+    var index = 0;
+    var timer = null;
+    var interval = 4500;
+
+    function show(nextIndex) {
+      if (!slides.length) return;
+      index = (nextIndex + slides.length) % slides.length;
+
+      slides.forEach(function (slide, i) {
+        slide.classList.toggle("isActive", i === index);
+      });
+
+      dots.forEach(function (dot, i) {
+        var active = i === index;
+        dot.classList.toggle("isActive", active);
+        dot.setAttribute("aria-selected", active ? "true" : "false");
+      });
+    }
+
+    function stop() {
+      if (timer) window.clearInterval(timer);
+      timer = null;
+    }
+
+    function start() {
+      stop();
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      timer = window.setInterval(function () {
+        show(index + 1);
+      }, interval);
+    }
+
+    if (prev) {
+      prev.addEventListener("click", function () {
+        show(index - 1);
+        start();
+      });
+    }
+
+    if (next) {
+      next.addEventListener("click", function () {
+        show(index + 1);
+        start();
+      });
+    }
+
+    dots.forEach(function (dot, i) {
+      dot.addEventListener("click", function () {
+        show(i);
+        start();
+      });
+    });
+
+    root.addEventListener("mouseenter", stop);
+    root.addEventListener("mouseleave", start);
+    root.addEventListener("focusin", stop);
+    root.addEventListener("focusout", start);
+
+    show(0);
+    start();
+  })();
+  </script>
 
   <script>
   (function () {
