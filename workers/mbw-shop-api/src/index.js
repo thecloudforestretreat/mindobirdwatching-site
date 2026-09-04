@@ -788,6 +788,16 @@ async function createStripeCheckoutSession(
     "false"
   );
 
+  /*
+    Allow MBW customers to enter Stripe promotion codes
+    directly on hosted Checkout. Stripe validates and
+    records the discount server-side.
+  */
+  params.set(
+    "allow_promotion_codes",
+    "true"
+  );
+
   data.items.forEach((item, index) => {
     const prefix =
       `line_items[${index}]`;
