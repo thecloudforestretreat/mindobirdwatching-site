@@ -28,7 +28,7 @@
 <meta content="#0f5f3a" name="theme-color"/>
 <link href="/assets/css/header.css" rel="stylesheet"/>
 <link href="/assets/css/site.css" rel="stylesheet"/>
-<link href="/assets/css/pages/shop.css?v=20260904-13" rel="stylesheet"/>
+<link href="/assets/css/pages/shop.css?v=20260904-14" rel="stylesheet"/>
 <script defer="" src="/assets/js/head.js"></script>
 <script defer="" src="/assets/js/site-config.js"></script>
 <script type="application/ld+json">
@@ -130,14 +130,14 @@
 <body data-page-content-group="shop" data-page-language="en" data-page-region="mindo" data-page-type="shop_product_page">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div>
-<nav aria-label="Breadcrumb" class="breadcrumbs">
+<main class="page card shopPage" role="main">
+<nav aria-label="Breadcrumb" class="breadcrumbs mbwProductBreadcrumb">
 <a href="/">Home</a>
 <span aria-hidden="true">/</span>
 <a href="/shop/">Shop</a>
 <span aria-hidden="true">/</span>
 <span>Product</span>
 </nav>
-<main class="page card shopPage" role="main">
 <section class="hero">
 
 
@@ -1104,6 +1104,38 @@
     return "#c9c9c9";
   }
 
+  function officialColor(value){
+    if(!value) return "";
+
+    var candidates=[];
+
+    if(Array.isArray(value.colors)){
+      candidates=candidates.concat(value.colors);
+    }
+
+    if(value.color){
+      candidates.push(value.color);
+    }
+
+    for(var i=0;i<candidates.length;i++){
+      var candidate=String(candidates[i]||"").trim();
+
+      if(/^#[0-9a-f]{3,8}$/i.test(candidate)){
+        return candidate;
+      }
+
+      if(/^[0-9a-f]{6}$/i.test(candidate)){
+        return "#"+candidate;
+      }
+
+      if(/^rgb\(/i.test(candidate) || /^rgba\(/i.test(candidate)){
+        return candidate;
+      }
+    }
+
+    return colorHex(value.title);
+  }
+
   function optionKind(option){
     var t=norm(option.type), n=norm(option.name);
     if(t==="color"||n.includes("color")) return "color";
@@ -1163,8 +1195,8 @@
         var isSel=Number(selected)===Number(value.id);
 
         if(kind==="color"){
-          return '<button class="mbwColorChoice'+(isSel?' isSelected':'')+'" type="button" data-option-name="'+escAttr(option.name)+'" data-option-id="'+value.id+'"'+(disabled?' disabled':'')+'>'+
-            '<span class="mbwSwatch" style="background:'+colorHex(value.title)+'"></span><span>'+esc(value.title)+'</span></button>';
+          return '<button class="mbwColorChoice'+(isSel?' isSelected':'')+'" type="button" data-option-name="'+escAttr(option.name)+'" data-option-id="'+value.id+'" aria-label="Color: '+escAttr(value.title)+'" title="'+escAttr(value.title)+'"'+(disabled?' disabled':'')+'>'+
+            '<span class="mbwSwatch" style="background:'+escAttr(officialColor(value))+'"></span><span class="mbwColorText">'+esc(value.title)+'</span></button>';
         }
 
         var cls=kind==="size"?"mbwSizeChoice":"mbwTextChoice";
