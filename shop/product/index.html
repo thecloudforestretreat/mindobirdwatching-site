@@ -92,7 +92,7 @@
             "name": "What should visitors know before using the Mindo Bird Watching shop?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The shop is a small made-to-order collection inspired by Mindo birds and cloud forest travel. Product pages show item details, price, availability, shipping notes, and checkout through our print partner."
+              "text": "The shop is a small made-to-order collection inspired by Mindo birds and cloud forest travel. Product pages show item details, price, availability, shipping notes, and a cart so you can send the exact products you want to order."
             }
           },
           {
@@ -131,6 +131,51 @@
     ]
   }
   </script>
+
+<style id="mbw-cart-styles">
+  .mbwCartLauncher{position:fixed;right:18px;bottom:18px;z-index:9000;border:0;border-radius:999px;background:#0f5f3a;color:#fff;font:800 14px/1 Arial,sans-serif;padding:13px 17px;box-shadow:0 10px 30px rgba(0,0,0,.22);cursor:pointer}
+  .mbwCartLauncher:hover{filter:brightness(.96)}
+  .mbwCartBackdrop{position:fixed;inset:0;background:rgba(7,25,35,.48);z-index:9001;display:none}
+  .mbwCartBackdrop.isOpen{display:block}
+  .mbwCartDrawer{position:fixed;top:0;right:0;width:min(430px,100%);height:100%;background:#fff;z-index:9002;transform:translateX(105%);transition:transform .22s ease;box-shadow:-18px 0 50px rgba(0,0,0,.18);display:flex;flex-direction:column}
+  .mbwCartDrawer.isOpen{transform:translateX(0)}
+  .mbwCartHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px 14px;border-bottom:1px solid rgba(7,25,35,.12)}
+  .mbwCartHead h2{margin:0;font-size:22px;color:#0f5f3a}
+  .mbwCartClose{border:1px solid rgba(7,25,35,.18);background:#fff;border-radius:10px;width:38px;height:38px;font-size:22px;cursor:pointer}
+  .mbwCartBody{padding:14px 18px;overflow:auto;flex:1}
+  .mbwCartEmpty{padding:22px 4px;color:#536067;line-height:1.55}
+  .mbwCartItem{display:grid;grid-template-columns:72px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid rgba(7,25,35,.10)}
+  .mbwCartItem img{width:72px;height:72px;object-fit:cover;border-radius:10px;background:#f3f6f2}
+  .mbwCartItemTitle{font-weight:800;color:#071923;font-size:13px;line-height:1.35}
+  .mbwCartItemMeta{font-size:12px;color:#65716b;margin-top:4px;line-height:1.45}
+  .mbwCartItemPrice{font-weight:900;color:#0f5f3a;white-space:nowrap;font-size:13px}
+  .mbwCartQty{display:flex;align-items:center;gap:7px;margin-top:9px}
+  .mbwCartQty button{width:30px;height:30px;border:1px solid rgba(7,25,35,.16);border-radius:8px;background:#fff;cursor:pointer;font-weight:900}
+  .mbwCartQty span{min-width:22px;text-align:center;font-weight:800}
+  .mbwCartRemove{border:0;background:transparent;color:#8b2d2d;text-decoration:underline;cursor:pointer;padding:0;margin-top:8px;font-size:12px}
+  .mbwCartFoot{padding:16px 18px 20px;border-top:1px solid rgba(7,25,35,.12);background:#f8faf7}
+  .mbwCartSubtotal{display:flex;justify-content:space-between;gap:12px;font-weight:900;font-size:18px;color:#071923;margin-bottom:5px}
+  .mbwCartNote{font-size:11px;line-height:1.5;color:#65716b;margin:0 0 12px}
+  .mbwCartCheckout{display:block;width:100%;border:0;border-radius:12px;background:#0f5f3a;color:#fff;text-align:center;text-decoration:none;font-weight:900;font-size:14px;padding:13px 14px;cursor:pointer}
+  .mbwCartContinue{display:block;width:100%;border:1px solid rgba(15,95,58,.25);border-radius:12px;background:#fff;color:#0f5f3a;text-align:center;font-weight:900;font-size:13px;padding:11px 14px;margin-top:8px;cursor:pointer}
+  .mbwPurchaseBox{margin-top:18px;padding:16px;border:1px solid rgba(15,95,58,.20);background:#f6faf2;border-radius:14px}
+  .mbwPurchasePrice{font-size:26px;font-weight:900;color:#0f5f3a;margin:0 0 12px}
+  .mbwPurchaseGrid{display:grid;grid-template-columns:1fr 110px;gap:10px}
+  .mbwField label{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#536067;margin-bottom:5px}
+  .mbwField input{width:100%;box-sizing:border-box;border:1px solid rgba(7,25,35,.20);border-radius:10px;padding:11px 12px;font:inherit;background:#fff;color:#071923}
+  .mbwPurchaseActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+  .mbwPurchaseActions button{border-radius:11px;padding:12px 13px;font-weight:900;cursor:pointer}
+  .mbwAddBtn{border:1px solid #0f5f3a;background:#fff;color:#0f5f3a}
+  .mbwBuyBtn{border:1px solid #0f5f3a;background:#0f5f3a;color:#fff}
+  .mbwPurchaseHelp{font-size:11px;line-height:1.5;color:#65716b;margin:9px 0 0}
+  .mbwShopCartBar{display:flex;justify-content:flex-end;margin:0 0 14px}
+  .mbwShopCartBtn{border:1px solid rgba(15,95,58,.25);background:#fff;color:#0f5f3a;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
+  @media (max-width:640px){
+    .mbwCartLauncher{right:12px;bottom:12px}
+    .mbwPurchaseGrid,.mbwPurchaseActions{grid-template-columns:1fr}
+  }
+</style>
+
 </head>
 <body data-page-type="shop_product_page" data-page-language="en" data-page-content-group="shop" data-page-region="mindo">
   <div class="container">
@@ -151,9 +196,29 @@
           <h1 id="productTitle">Loading product...</h1>
           <p id="productLead">View price, availability, shipping notes, and secure checkout details for this Mindo Bird Watching shop product.</p>
           <div class="heroActions">
-            <a class="btn primary" href="#checkout-notes" data-analytics-event="primary_cta_click" data-analytics-label="Product checkout notes" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page">Shipping and checkout notes</a>
+            <a class="btn secondary" href="#checkout-notes" data-analytics-event="internal_link_click" data-analytics-label="Shipping and checkout notes" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page">Shipping details</a>
             <a class="btn secondary" href="/shop/" data-analytics-event="internal_link_click" data-analytics-label="Back to shop" data-analytics-location="shop_product_hero" data-analytics-page-language="en" data-analytics-page-type="shop_product_page">Back to shop</a>
           </div>
+
+<div class="mbwPurchaseBox" aria-label="Purchase options">
+  <p class="mbwPurchasePrice" id="mbwPurchasePrice">$0.00</p>
+  <div class="mbwPurchaseGrid">
+    <div class="mbwField">
+      <label for="mbwProductOption">Size / color / option</label>
+      <input id="mbwProductOption" type="text" autocomplete="off" placeholder="Example: Medium, Black or 15oz">
+    </div>
+    <div class="mbwField">
+      <label for="mbwProductQty">Quantity</label>
+      <input id="mbwProductQty" type="number" min="1" max="20" value="1" inputmode="numeric">
+    </div>
+  </div>
+  <div class="mbwPurchaseActions">
+    <button class="mbwAddBtn" id="mbwAddToCart" type="button">Add to Cart</button>
+    <button class="mbwBuyBtn" id="mbwBuyNow" type="button">Order Now</button>
+  </div>
+  <p class="mbwPurchaseHelp">Because these products are made to order, enter the size, color, or product option you want. We confirm final availability and shipping before payment.</p>
+</div>
+
         </div>
         <figure class="heroMedia">
           <img id="productImage" src="/MBW-Assets-OG-Image.jpg" alt="Mindo Bird Watching shop product preview" loading="eager" decoding="async">
@@ -194,7 +259,7 @@
           </article>
           <article class="trustBox">
             <h3>Secure checkout</h3>
-            <p>Product purchases are completed through the connected print-partner checkout flow, not through a public inventory catalog.</p>
+            <p>Add the item to your cart and send the order to our team. We confirm the exact product option, current shipping, and provide the secure payment link for the order.</p>
           </article>
           <article class="trustBox">
             <h3>Need help?</h3>
@@ -248,7 +313,7 @@
         <div class="faqGrid">
           <article class="faqCard">
             <h3>What should visitors know before using the Mindo Bird Watching shop?</h3>
-            <p>The shop is a small made-to-order collection inspired by Mindo birds and cloud forest travel. Product pages show item details, price, availability, shipping notes, and checkout through our print partner.</p>
+            <p>The shop is a small made-to-order collection inspired by Mindo birds and cloud forest travel. Product pages show item details, price, availability, shipping notes, and a cart so you can send the exact products you want to order.</p>
           </article>
           <article class="faqCard">
             <h3>Does the shop replace booking a tour?</h3>
@@ -287,6 +352,23 @@
       </section>
     </main>
 
+
+<div class="mbwCartBackdrop" id="mbwCartBackdrop" aria-hidden="true"></div>
+<aside class="mbwCartDrawer" id="mbwCartDrawer" aria-hidden="true" aria-label="Shopping cart">
+  <div class="mbwCartHead">
+    <h2>Your cart</h2>
+    <button class="mbwCartClose" id="mbwCartClose" type="button" aria-label="Close cart">&times;</button>
+  </div>
+  <div class="mbwCartBody" id="mbwCartBody"></div>
+  <div class="mbwCartFoot">
+    <div class="mbwCartSubtotal"><span>Subtotal</span><span id="mbwCartSubtotal">$0.00</span></div>
+    <p class="mbwCartNote">Shipping, taxes, production timing, and final product availability are confirmed before payment.</p>
+    <button class="mbwCartCheckout" id="mbwCartCheckout" type="button">Send order on WhatsApp</button>
+    <button class="mbwCartContinue" id="mbwCartContinue" type="button">Continue shopping</button>
+  </div>
+</aside>
+<button class="mbwCartLauncher" id="mbwCartLauncher" type="button" aria-label="Open shopping cart">Cart (<span id="mbwCartCount">0</span>)</button>
+
     <div id="siteFooter"></div>
   </div>
 
@@ -322,6 +404,174 @@
       }
     })();
   </script>
+
+<script id="mbw-cart-script">
+(function(){
+  "use strict";
+  const STORAGE_KEY = "MBW_SHOP_CART_V1";
+  const WHATSAPP_NUMBER = "13054585402";
+
+  function money(n){ return "$" + Number(n || 0).toFixed(2); }
+  function parsePrice(v){ return Number(String(v || "").replace(/[^0-9.]/g,"")) || 0; }
+  function getCart(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+    catch(e){ return []; }
+  }
+  function saveCart(cart){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    renderCart();
+  }
+  function itemKey(item){ return [item.id,item.option || ""].join("::"); }
+
+  window.MBW_CART = {
+    add: function(item){
+      const cart = getCart();
+      const key = itemKey(item);
+      const existing = cart.find(x => itemKey(x) === key);
+      if(existing) existing.qty += item.qty || 1;
+      else cart.push({
+        id:item.id,
+        title:item.title,
+        price:parsePrice(item.price),
+        image:item.image || "",
+        option:item.option || "",
+        qty:item.qty || 1
+      });
+      saveCart(cart);
+    },
+    open: openCart
+  };
+
+  function changeQty(key, delta){
+    const cart = getCart();
+    const row = cart.find(x => itemKey(x) === key);
+    if(!row) return;
+    row.qty = Math.max(1, Number(row.qty || 1) + delta);
+    saveCart(cart);
+  }
+  function removeItem(key){
+    saveCart(getCart().filter(x => itemKey(x) !== key));
+  }
+  function openCart(){
+    document.getElementById("mbwCartBackdrop")?.classList.add("isOpen");
+    document.getElementById("mbwCartDrawer")?.classList.add("isOpen");
+    document.getElementById("mbwCartDrawer")?.setAttribute("aria-hidden","false");
+  }
+  function closeCart(){
+    document.getElementById("mbwCartBackdrop")?.classList.remove("isOpen");
+    document.getElementById("mbwCartDrawer")?.classList.remove("isOpen");
+    document.getElementById("mbwCartDrawer")?.setAttribute("aria-hidden","true");
+  }
+  function checkoutWhatsApp(){
+    const cart = getCart();
+    if(!cart.length){ openCart(); return; }
+    const lines = [
+      "Hello Mindo Bird Watching, I would like to order:",
+      ""
+    ];
+    cart.forEach((item, i) => {
+      lines.push((i+1) + ". " + item.title);
+      if(item.option) lines.push("   Option: " + item.option);
+      lines.push("   Qty: " + item.qty + " | " + money(item.price * item.qty));
+    });
+    const total = cart.reduce((s,x) => s + (x.price * x.qty), 0);
+    lines.push("");
+    lines.push("Subtotal: " + money(total));
+    lines.push("");
+    lines.push("Please confirm availability, shipping, and the secure payment link.");
+    window.location.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(lines.join("\n"));
+  }
+  function renderCart(){
+    const body = document.getElementById("mbwCartBody");
+    const count = document.getElementById("mbwCartCount");
+    const subtotal = document.getElementById("mbwCartSubtotal");
+    if(!body || !count || !subtotal) return;
+    const cart = getCart();
+    count.textContent = cart.reduce((s,x)=>s + Number(x.qty || 0),0);
+    subtotal.textContent = money(cart.reduce((s,x)=>s + (Number(x.price||0)*Number(x.qty||0)),0));
+    if(!cart.length){
+      body.innerHTML = '<div class="mbwCartEmpty"><strong>Your cart is empty.</strong><br>Choose a product, select the option you want, and add it to your cart.</div>';
+      return;
+    }
+    body.innerHTML = cart.map(item => {
+      const key = itemKey(item).replace(/"/g,"&quot;");
+      return '<div class="mbwCartItem">' +
+        '<img src="' + (item.image || "/MBW-Assets-OG-Image.jpg") + '" alt="">' +
+        '<div><div class="mbwCartItemTitle">' + escapeHtml(item.title) + '</div>' +
+        (item.option ? '<div class="mbwCartItemMeta">Option: ' + escapeHtml(item.option) + '</div>' : '') +
+        '<div class="mbwCartQty">' +
+          '<button type="button" data-cart-action="minus" data-key="' + key + '" aria-label="Decrease quantity">-</button>' +
+          '<span>' + item.qty + '</span>' +
+          '<button type="button" data-cart-action="plus" data-key="' + key + '" aria-label="Increase quantity">+</button>' +
+        '</div>' +
+        '<button type="button" class="mbwCartRemove" data-cart-action="remove" data-key="' + key + '">Remove</button></div>' +
+        '<div class="mbwCartItemPrice">' + money(item.price * item.qty) + '</div>' +
+      '</div>';
+    }).join("");
+  }
+  function escapeHtml(v){
+    return String(v || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+  }
+
+  document.addEventListener("click", function(e){
+    const actionEl = e.target.closest("[data-cart-action]");
+    if(actionEl){
+      const key = actionEl.getAttribute("data-key") || "";
+      const action = actionEl.getAttribute("data-cart-action");
+      if(action === "plus") changeQty(key, 1);
+      if(action === "minus") changeQty(key, -1);
+      if(action === "remove") removeItem(key);
+    }
+  });
+
+  document.getElementById("mbwCartLauncher")?.addEventListener("click", openCart);
+  document.getElementById("mbwCartClose")?.addEventListener("click", closeCart);
+  document.getElementById("mbwCartBackdrop")?.addEventListener("click", closeCart);
+  document.getElementById("mbwCartContinue")?.addEventListener("click", closeCart);
+  document.getElementById("mbwCartCheckout")?.addEventListener("click", checkoutWhatsApp);
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeCart(); });
+  renderCart();
+})();
+</script>
+
+
+<script>
+(function(){
+  "use strict";
+  function parsePrice(v){ return Number(String(v || "").replace(/[^0-9.]/g,"")) || 0; }
+  function currentProduct(){
+    const params = new URLSearchParams(window.location.search);
+    const requestedId = params.get("id") || "";
+    const products = Array.isArray(window.MBW_PRODUCTS) ? window.MBW_PRODUCTS : [];
+    return products.find(item => item.id === requestedId) || products[0] || null;
+  }
+  function addCurrent(openAfter){
+    const product = currentProduct();
+    if(!product || !window.MBW_CART) return;
+    const option = (document.getElementById("mbwProductOption")?.value || "").trim();
+    const qty = Math.max(1, Math.min(20, Number(document.getElementById("mbwProductQty")?.value || 1)));
+    window.MBW_CART.add({
+      id: product.id,
+      title: product.title,
+      price: parsePrice(product.price),
+      image: product.image,
+      option: option,
+      qty: qty
+    });
+    if(openAfter) window.MBW_CART.open();
+  }
+  function sync(){
+    const product = currentProduct();
+    if(!product) return;
+    const priceEl = document.getElementById("mbwPurchasePrice");
+    if(priceEl) priceEl.textContent = product.price || "Price confirmed before payment";
+  }
+  document.getElementById("mbwAddToCart")?.addEventListener("click", function(){ addCurrent(true); });
+  document.getElementById("mbwBuyNow")?.addEventListener("click", function(){ addCurrent(true); });
+  sync();
+})();
+</script>
+
   <script src="/assets/js/includes.js" defer></script>
   <script src="/assets/js/site.js" defer></script>
 </body>
