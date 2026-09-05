@@ -1,4 +1,4 @@
-/* MBW SHOP API V19 - PRINTIFY MANUAL ORDER CREATION */
+/* MBW SHOP API V20 - PRINTIFY SIGNED WEBHOOK SYNC */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -10,6 +10,13 @@ export default {
 
     if (request.method === "OPTIONS") {
       return handleOptions(request);
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/webhooks/printify"
+    ) {
+      return handlePrintifyWebhook(request, env);
     }
 
     if (
@@ -92,7 +99,11 @@ export default {
               env.PRINTIFY_ORDER_CREATION_ENABLED
             ),
           printify_production_submission_enabled:
-            false
+            false,
+          printify_webhook_configured:
+            Boolean(
+              env.PRINTIFY_WEBHOOK_SECRET
+            )
         },
         200,
         request
@@ -168,6 +179,609 @@ function getStripeWebhookSecret(env) {
   }
 
   return env.STRIPE_WEBHOOK_SECRET || "";
+}
+
+
+async function handlePrintifyWebhook(
+  request,
+  env
+) {
+  if (
+    !env.PRINTIFY_WEBHOOK_SECRET ||
+    !env.DB ||
+    !env.PRINTIFY_SHOP_ID
+  ) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Printify webhook is not configured"
+      },
+      503,
+      request
+    );
+  }
+
+  const rawBody = await request.text();
+  const signature =
+    request.headers.get("X-Pfy-Signature") || "";
+
+  const verified =
+    await verifyPrintifySignature(
+      rawBody,
+      signature,
+      env.PRINTIFY_WEBHOOK_SECRET
+    );
+
+  if (!verified) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Invalid Printify webhook signature"
+      },
+      401,
+      request
+    );
+  }
+
+  let event;
+  try {
+    event = JSON.parse(rawBody);
+  } catch (_) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Invalid Printify webhook JSON"
+      },
+      400,
+      request
+    );
+  }
+
+  const eventId = cleanText(event && event.id, 160);
+  const eventType = cleanText(event && event.type, 100);
+  const resource =
+    event && event.resource &&
+    typeof event.resource === "object"
+      ? event.resource
+      : {};
+  const printifyOrderId = cleanText(resource.id, 160);
+  const data =
+    resource.data &&
+    typeof resource.data === "object"
+      ? resource.data
+      : {};
+  const shopId = String(data.shop_id || "").trim();
+
+  if (!eventId || !eventType || !printifyOrderId) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Incomplete Printify webhook payload"
+      },
+      400,
+      request
+    );
+  }
+
+  if (
+    shopId &&
+    shopId !== String(env.PRINTIFY_SHOP_ID)
+  ) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Printify shop ID mismatch"
+      },
+      403,
+      request
+    );
+  }
+
+  const supported = new Set([
+    "order:updated",
+    "order:sent-to-production",
+    "order:shipment:created",
+    "order:shipment:delivered"
+  ]);
+
+  if (!supported.has(eventType)) {
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        ignored: true,
+        event_type: eventType
+      },
+      200,
+      request
+    );
+  }
+
+  await ensurePrintifyWebhookStorage(env);
+
+  const existing =
+    await env.DB
+      .prepare(
+        `SELECT event_id
+         FROM printify_webhook_events
+         WHERE event_id = ?
+         LIMIT 1`
+      )
+      .bind(eventId)
+      .first();
+
+  if (existing) {
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        duplicate: true,
+        event_id: eventId,
+        event_type: eventType
+      },
+      200,
+      request
+    );
+  }
+
+  const order =
+    await env.DB
+      .prepare(
+        `SELECT
+           id,
+           mbw_order_id,
+           printify_order_id,
+           printify_status,
+           fulfillment_status
+         FROM orders
+         WHERE printify_order_id = ?
+         LIMIT 1`
+      )
+      .bind(printifyOrderId)
+      .first();
+
+  if (!order || !order.id) {
+    await recordPrintifyWebhookEvent(
+      env,
+      eventId,
+      eventType,
+      printifyOrderId,
+      null,
+      "order_not_found",
+      "No MBW order matched the Printify order ID",
+      rawBody
+    );
+
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        matched: false,
+        event_id: eventId,
+        event_type: eventType
+      },
+      200,
+      request
+    );
+  }
+
+  try {
+    const update =
+      buildPrintifyWebhookUpdate(
+        eventType,
+        data,
+        order
+      );
+
+    await updateOrderFromPrintifyWebhook(
+      env,
+      order.id,
+      eventId,
+      eventType,
+      update,
+      rawBody
+    );
+
+    await recordPrintifyWebhookEvent(
+      env,
+      eventId,
+      eventType,
+      printifyOrderId,
+      order.id,
+      "processed",
+      null,
+      rawBody
+    );
+
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        matched: true,
+        duplicate: false,
+        event_id: eventId,
+        event_type: eventType,
+        mbw_order_id: order.mbw_order_id,
+        printify_order_id: printifyOrderId,
+        printify_status: update.printify_status,
+        fulfillment_status: update.fulfillment_status,
+        tracking_number:
+          update.tracking_number || null
+      },
+      200,
+      request
+    );
+  } catch (error) {
+    const message =
+      cleanText(
+        error && error.message
+          ? error.message
+          : String(error),
+        500
+      );
+
+    await recordPrintifyWebhookEvent(
+      env,
+      eventId,
+      eventType,
+      printifyOrderId,
+      order.id,
+      "failed",
+      message,
+      rawBody
+    );
+
+    return jsonResponse(
+      {
+        ok: false,
+        received: true,
+        event_id: eventId,
+        event_type: eventType,
+        error: message
+      },
+      500,
+      request
+    );
+  }
+}
+
+async function verifyPrintifySignature(
+  rawBody,
+  providedSignature,
+  secret
+) {
+  const signature =
+    String(providedSignature || "").trim();
+
+  if (!signature.startsWith("sha256=")) {
+    return false;
+  }
+
+  const key =
+    await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      {
+        name: "HMAC",
+        hash: "SHA-256"
+      },
+      false,
+      ["sign"]
+    );
+
+  const digest =
+    await crypto.subtle.sign(
+      "HMAC",
+      key,
+      new TextEncoder().encode(rawBody)
+    );
+
+  const expected =
+    "sha256=" +
+    Array.from(new Uint8Array(digest))
+      .map((byte) =>
+        byte.toString(16).padStart(2, "0")
+      )
+      .join("");
+
+  return constantTimeEqual(expected, signature);
+}
+
+function constantTimeEqual(a, b) {
+  const left =
+    new TextEncoder().encode(String(a || ""));
+  const right =
+    new TextEncoder().encode(String(b || ""));
+
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  let diff = 0;
+  for (let i = 0; i < left.length; i += 1) {
+    diff |= left[i] ^ right[i];
+  }
+
+  return diff === 0;
+}
+
+async function ensurePrintifyWebhookStorage(env) {
+  const info =
+    await env.DB
+      .prepare("PRAGMA table_info(orders)")
+      .all();
+
+  const names =
+    new Set(
+      (
+        info && Array.isArray(info.results)
+          ? info.results
+          : []
+      ).map((row) => String(row.name || ""))
+    );
+
+  const additions = [
+    ["printify_sent_to_production_at", "TEXT"],
+    ["printify_shipped_at", "TEXT"],
+    ["printify_delivered_at", "TEXT"],
+    ["tracking_carrier", "TEXT"],
+    ["tracking_url", "TEXT"],
+    ["last_printify_event_id", "TEXT"],
+    ["last_printify_event_type", "TEXT"],
+    ["last_printify_event_at", "TEXT"],
+    ["raw_printify_webhook_json", "TEXT"]
+  ];
+
+  for (const [name, type] of additions) {
+    if (!names.has(name)) {
+      await env.DB
+        .prepare(
+          `ALTER TABLE orders ADD COLUMN ${name} ${type}`
+        )
+        .run();
+    }
+  }
+
+  await env.DB
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS printify_webhook_events (
+         event_id TEXT PRIMARY KEY,
+         event_type TEXT NOT NULL,
+         printify_order_id TEXT NOT NULL,
+         order_id INTEGER,
+         processing_status TEXT NOT NULL,
+         error TEXT,
+         raw_json TEXT NOT NULL,
+         created_at TEXT NOT NULL,
+         processed_at TEXT
+       )`
+    )
+    .run();
+
+  await env.DB
+    .prepare(
+      `CREATE INDEX IF NOT EXISTS idx_printify_webhook_events_order
+       ON printify_webhook_events(printify_order_id)`
+    )
+    .run();
+}
+
+function buildPrintifyWebhookUpdate(
+  eventType,
+  data,
+  order
+) {
+  const now = new Date().toISOString();
+  const currentPrintify =
+    cleanText(order.printify_status, 100) || "created";
+  const currentFulfillment =
+    cleanText(order.fulfillment_status, 100) ||
+    "manual_approval";
+
+  const update = {
+    printify_status: currentPrintify,
+    fulfillment_status: currentFulfillment,
+    sent_to_production_at: null,
+    shipped_at: null,
+    delivered_at: null,
+    tracking_carrier: null,
+    tracking_number: null,
+    tracking_url: null,
+    event_at: now
+  };
+
+  if (eventType === "order:updated") {
+    const status = cleanText(data.status, 100);
+
+    if (status) {
+      update.printify_status = status;
+      update.fulfillment_status =
+        mapPrintifyFulfillmentStatus(
+          status,
+          currentFulfillment
+        );
+    }
+  }
+
+  if (eventType === "order:sent-to-production") {
+    update.printify_status = "in-production";
+    update.fulfillment_status = "in_production";
+    update.sent_to_production_at = now;
+  }
+
+  if (eventType === "order:shipment:created") {
+    const carrier =
+      data.carrier &&
+      typeof data.carrier === "object"
+        ? data.carrier
+        : {};
+
+    update.printify_status = "fulfilled";
+    update.fulfillment_status = "shipped";
+    update.shipped_at =
+      cleanText(data.shipped_at, 100) || now;
+    update.tracking_carrier =
+      cleanText(carrier.code, 100);
+    update.tracking_number =
+      cleanText(carrier.tracking_number, 200);
+    update.tracking_url =
+      cleanText(carrier.tracking_url, 500);
+  }
+
+  if (eventType === "order:shipment:delivered") {
+    const carrier =
+      data.carrier &&
+      typeof data.carrier === "object"
+        ? data.carrier
+        : {};
+
+    update.printify_status = "delivered";
+    update.fulfillment_status = "delivered";
+    update.delivered_at =
+      cleanText(data.delivered_at, 100) || now;
+    update.tracking_carrier =
+      cleanText(carrier.code, 100);
+    update.tracking_number =
+      cleanText(carrier.tracking_number, 200);
+    update.tracking_url =
+      cleanText(carrier.tracking_url, 500);
+  }
+
+  return update;
+}
+
+function mapPrintifyFulfillmentStatus(
+  status,
+  fallback
+) {
+  const value =
+    String(status || "").trim().toLowerCase();
+
+  if (value === "on-hold" || value === "on_hold") {
+    return "manual_approval";
+  }
+
+  if (value === "pending" || value === "pre-transit") {
+    return "pending";
+  }
+
+  if (
+    value === "in-production" ||
+    value === "in_production"
+  ) {
+    return "in_production";
+  }
+
+  if (value === "fulfilled" || value === "shipped") {
+    return "shipped";
+  }
+
+  if (value === "delivered") {
+    return "delivered";
+  }
+
+  if (value === "canceled" || value === "cancelled") {
+    return "canceled";
+  }
+
+  return fallback || value || "pending";
+}
+
+async function updateOrderFromPrintifyWebhook(
+  env,
+  orderId,
+  eventId,
+  eventType,
+  update,
+  rawBody
+) {
+  const now = new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         printify_status = ?,
+         fulfillment_status = ?,
+         printify_sent_to_production_at =
+           COALESCE(?, printify_sent_to_production_at),
+         printify_shipped_at =
+           COALESCE(?, printify_shipped_at),
+         printify_delivered_at =
+           COALESCE(?, printify_delivered_at),
+         tracking_carrier =
+           COALESCE(?, tracking_carrier),
+         tracking_number =
+           COALESCE(?, tracking_number),
+         tracking_url =
+           COALESCE(?, tracking_url),
+         last_printify_event_id = ?,
+         last_printify_event_type = ?,
+         last_printify_event_at = ?,
+         raw_printify_webhook_json = ?,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      update.printify_status,
+      update.fulfillment_status,
+      update.sent_to_production_at,
+      update.shipped_at,
+      update.delivered_at,
+      update.tracking_carrier,
+      update.tracking_number,
+      update.tracking_url,
+      eventId,
+      eventType,
+      update.event_at,
+      rawBody,
+      now,
+      orderId
+    )
+    .run();
+}
+
+async function recordPrintifyWebhookEvent(
+  env,
+  eventId,
+  eventType,
+  printifyOrderId,
+  orderId,
+  processingStatus,
+  error,
+  rawBody
+) {
+  const now = new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `INSERT OR IGNORE INTO printify_webhook_events (
+         event_id,
+         event_type,
+         printify_order_id,
+         order_id,
+         processing_status,
+         error,
+         raw_json,
+         created_at,
+         processed_at
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(
+      eventId,
+      eventType,
+      printifyOrderId,
+      orderId,
+      processingStatus,
+      error,
+      rawBody,
+      now,
+      processingStatus === "processed"
+        ? now
+        : null
+    )
+    .run();
 }
 
 async function handleStripeWebhook(
