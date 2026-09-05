@@ -1960,6 +1960,7 @@ function normalizeCheckoutAddress(raw) {
     "first_name",
     "last_name",
     "email",
+    "phone",
     "country",
     "address1",
     "city",
@@ -2210,7 +2211,7 @@ async function createStripeCheckoutSession(
   params.set("mode", "payment");
   params.set(
     "success_url",
-    "https://mindobirdwatching.com/shop/?checkout=success&session_id={CHECKOUT_SESSION_ID}"
+    "https://mindobirdwatching.com/shop/order-confirmation/?session_id={CHECKOUT_SESSION_ID}"
   );
   params.set(
     "cancel_url",
