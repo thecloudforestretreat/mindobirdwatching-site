@@ -2588,7 +2588,6 @@ function normalizeCheckoutAddress(raw) {
     "first_name",
     "last_name",
     "email",
-    "phone",
     "country",
     "address1",
     "city",
