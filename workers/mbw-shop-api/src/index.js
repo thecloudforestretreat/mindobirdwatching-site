@@ -1,4 +1,4 @@
-/* MBW SHOP API V22 - PRINTIFY ORDER IDEMPOTENCY RECOVERY */
+/* MBW SHOP API V23 - PRINTIFY IDEMPOTENCY RECOVERY HARDENING */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -98,6 +98,12 @@ export default {
             isTrueEnv(
               env.PRINTIFY_ORDER_CREATION_ENABLED
             ),
+          printify_order_recovery_only_enabled:
+            isTrueEnv(
+              env.PRINTIFY_ORDER_RECOVERY_ONLY
+            ),
+          printify_idempotency_recovery_version:
+            "v23",
           printify_production_submission_enabled:
             false,
           printify_webhook_configured:
@@ -2172,18 +2178,36 @@ async function createPrintifyOrderIfEnabled(
       order.mbw_order_id
     );
 
-  if (preflightRecovery) {
+  if (!preflightRecovery.ok) {
+    const message =
+      preflightRecovery.error ||
+      "Printify recovery lookup failed";
+
+    await markPrintifyOrderFailed(
+      env,
+      order.id,
+      message
+    );
+
+    return {
+      ok: false,
+      status: "recovery_lookup_failed",
+      error: message
+    };
+  }
+
+  if (preflightRecovery.order) {
     await saveRecoveredPrintifyOrder(
       env,
       order.id,
-      preflightRecovery
+      preflightRecovery.order
     );
 
     return {
       ok: true,
       status:
         cleanText(
-          preflightRecovery.status,
+          preflightRecovery.order.status,
           80
         ) || "created",
       skipped: false,
@@ -2191,13 +2215,22 @@ async function createPrintifyOrderIfEnabled(
       recovered: true,
       printify_order_id:
         cleanText(
-          preflightRecovery.id,
+          preflightRecovery.order.id,
           160
         ),
       fulfillment_status:
         printifyFulfillmentStatusFromOrder(
-          preflightRecovery
+          preflightRecovery.order
         )
+    };
+  }
+
+  if (isTrueEnv(env.PRINTIFY_ORDER_RECOVERY_ONLY)) {
+    return {
+      ok: false,
+      status: "recovery_not_found",
+      error:
+        "Recovery-only mode is enabled and no matching Printify order was found"
     };
   }
 
@@ -2409,18 +2442,18 @@ async function createPrintifyOrderIfEnabled(
         order.mbw_order_id
       );
 
-    if (recovered) {
+    if (recovered.ok && recovered.order) {
       await saveRecoveredPrintifyOrder(
         env,
         order.id,
-        recovered
+        recovered.order
       );
 
       return {
         ok: true,
         status:
           cleanText(
-            recovered.status,
+            recovered.order.status,
             80
           ) || "created",
         skipped: false,
@@ -2428,12 +2461,12 @@ async function createPrintifyOrderIfEnabled(
         recovered: true,
         printify_order_id:
           cleanText(
-            recovered.id,
+            recovered.order.id,
             160
           ),
         fulfillment_status:
           printifyFulfillmentStatusFromOrder(
-            recovered
+            recovered.order
           )
       };
     }
@@ -2470,18 +2503,18 @@ async function createPrintifyOrderIfEnabled(
         order.mbw_order_id
       );
 
-    if (recovered) {
+    if (recovered.ok && recovered.order) {
       await saveRecoveredPrintifyOrder(
         env,
         order.id,
-        recovered
+        recovered.order
       );
 
       return {
         ok: true,
         status:
           cleanText(
-            recovered.status,
+            recovered.order.status,
             80
           ) || "created",
         skipped: false,
@@ -2489,12 +2522,12 @@ async function createPrintifyOrderIfEnabled(
         recovered: true,
         printify_order_id:
           cleanText(
-            recovered.id,
+            recovered.order.id,
             160
           ),
         fulfillment_status:
           printifyFulfillmentStatusFromOrder(
-            recovered
+            recovered.order
           )
       };
     }
@@ -2555,11 +2588,11 @@ async function createPrintifyOrderIfEnabled(
         order.mbw_order_id
       );
 
-    if (recovered) {
-      data = recovered;
+    if (recovered.ok && recovered.order) {
+      data = recovered.order;
       printifyOrderId =
         cleanText(
-          recovered.id,
+          recovered.order.id,
           160
         );
     }
@@ -2647,13 +2680,20 @@ async function findExistingPrintifyOrderForMbwOrder(
     !env.PRINTIFY_API_TOKEN ||
     !env.PRINTIFY_SHOP_ID
   ) {
-    return null;
+    return {
+      ok: false,
+      order: null,
+      error:
+        "Printify recovery lookup configuration is incomplete"
+    };
   }
 
   /*
-   * Printify's order-list endpoint currently supports pagination but does not
-   * expose an external_id query parameter. New orders are expected near the
-   * front of the list, so scan up to 10 pages (100 recent orders).
+   * V23 recovery behavior:
+   * - Distinguish not-found from API/auth/scope failure.
+   * - Never create a second order when the recovery lookup itself failed.
+   * - Scan up to 100 recent Printify orders.
+   * - Match only deterministic MBW identifiers.
    */
   for (
     let page = 1;
@@ -2680,16 +2720,37 @@ async function findExistingPrintifyOrderForMbwOrder(
           }
         );
 
-      if (!response.ok) {
-        return null;
-      }
-
       data =
         await response
           .json()
           .catch(() => ({}));
-    } catch {
-      return null;
+    } catch (error) {
+      return {
+        ok: false,
+        order: null,
+        error:
+          `Printify recovery lookup network error: ${cleanText(error && error.message ? error.message : String(error), 300)}`
+      };
+    }
+
+    if (!response.ok) {
+      const detail =
+        cleanText(
+          data &&
+          (data.message || data.error)
+            ? typeof (data.message || data.error) === "string"
+              ? (data.message || data.error)
+              : JSON.stringify(data.message || data.error)
+            : "",
+          300
+        );
+
+      return {
+        ok: false,
+        order: null,
+        error:
+          `Printify recovery lookup returned HTTP ${response.status}${detail ? `: ${detail}` : ""}. Verify the Worker token includes orders.read.`
+      };
     }
 
     const orders =
@@ -2705,7 +2766,11 @@ async function findExistingPrintifyOrderForMbwOrder(
           target
         )
       ) {
-        return candidate;
+        return {
+          ok: true,
+          order: candidate,
+          error: null
+        };
       }
     }
 
@@ -2714,7 +2779,11 @@ async function findExistingPrintifyOrderForMbwOrder(
     }
   }
 
-  return null;
+  return {
+    ok: true,
+    order: null,
+    error: null
+  };
 }
 
 function printifyOrderMatchesMbwOrder(
@@ -2728,20 +2797,32 @@ function printifyOrderMatchesMbwOrder(
     return false;
   }
 
+  const exactCandidates = [
+    candidate.external_id,
+    candidate.label,
+    candidate.app_order_id
+  ];
+
   const metadata =
     candidate.metadata &&
     typeof candidate.metadata === "object"
       ? candidate.metadata
       : {};
 
-  const label =
-    cleanText(
-      metadata.shop_order_label,
-      200
-    );
+  exactCandidates.push(
+    metadata.external_id,
+    metadata.label,
+    metadata.shop_order_id,
+    metadata.shop_order_label
+  );
 
-  if (label === mbwOrderId) {
-    return true;
+  for (const value of exactCandidates) {
+    if (
+      cleanText(value, 240) ===
+      mbwOrderId
+    ) {
+      return true;
+    }
   }
 
   const lineItems =
@@ -2753,26 +2834,33 @@ function printifyOrderMatchesMbwOrder(
     `${mbwOrderId}-item-`;
 
   for (const item of lineItems) {
+    if (!item) {
+      continue;
+    }
+
     const itemMetadata =
-      item &&
       item.metadata &&
       typeof item.metadata === "object"
         ? item.metadata
         : {};
 
-    const externalId =
-      cleanText(
-        itemMetadata.external_id,
-        240
-      );
+    const itemExternalIds = [
+      item.external_id,
+      itemMetadata.external_id
+    ];
 
-    if (
-      externalId &&
-      externalId.startsWith(
-        expectedPrefix
-      )
-    ) {
-      return true;
+    for (const value of itemExternalIds) {
+      const externalId =
+        cleanText(value, 240);
+
+      if (
+        externalId &&
+        externalId.startsWith(
+          expectedPrefix
+        )
+      ) {
+        return true;
+      }
     }
   }
 
