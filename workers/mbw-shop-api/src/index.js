@@ -1759,13 +1759,7 @@ function buildCustomerOrderEmailHtml(
             </td>
           </tr>
 
-          <tr>
-            <td style="padding:18px 26px;background:#F8FAF8;border-top:1px solid #E7ECE8;font-size:12px;line-height:18px;color:#667085;">
-              Mindo Bird Watching<br>
-              <a href="https://mindobirdwatching.com/shop/" style="color:#0D5925;text-decoration:none;">mindobirdwatching.com/shop</a><br>
-              <a href="mailto:${escapeEmailHtml(order.customer_email ? (String(order.customer_email).includes("@mindobirdwatching.com") ? order.customer_email : "notifications@mindobirdwatching.com") : "notifications@mindobirdwatching.com")}" style="color:#0D5925;text-decoration:none;">notifications@mindobirdwatching.com</a>
-            </td>
-          </tr>
+          ${buildTransactionalEmailFooterHtml()}
         </table>
       </td>
     </tr>
@@ -2317,13 +2311,7 @@ function buildAdminOrderEmailHtml(
             </td>
           </tr>
 
-          <tr>
-            <td style="padding:18px 26px;background:#F8FAF8;border-top:1px solid #E7ECE8;font-size:12px;line-height:18px;color:#667085;">
-              Mindo Bird Watching<br>
-              notifications@mindobirdwatching.com<br>
-              mindobirdwatching.com
-            </td>
-          </tr>
+          ${buildTransactionalEmailFooterHtml()}
         </table>
       </td>
     </tr>
@@ -2392,6 +2380,40 @@ function buildAdminOrderEmailText(
         array[index - 1] !== "";
     })
     .join("\n");
+}
+
+
+function buildTransactionalEmailFooterHtml() {
+  return `
+          <tr>
+            <td style="padding:20px 22px;background:#F8FAF8;border-top:1px solid #E7ECE8;">
+              <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#0D5925;font-weight:900;">
+                Stay connected with Mindo Bird Watching
+              </div>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:12px;">
+                <tr>
+                  <td style="padding:0 7px 7px 0;"><a href="https://www.mindobirdwatching.com"><img src="https://i.imgur.com/fSPayjc.png" width="28" height="28" alt="Website" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="28" height="28" alt="Instagram" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://www.tiktok.com/@mindobirdwatching"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="28" height="28" alt="TikTok" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://t.me/+ANc1KHoV2Y82NmI5"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" width="28" height="28" alt="Telegram" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://www.facebook.com/profile.php?id=61577783327957"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="28" height="28" alt="Facebook" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://x.com/mindobirds"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968958.png" width="28" height="28" alt="X" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://www.youtube.com/@MindoBirdWatching"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" width="28" height="28" alt="YouTube" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://pin.it/6O8GN1PRz"><img src="https://i.imgur.com/kSrXjXZ.png" width="28" height="28" alt="Pinterest" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://g.page/r/CdMlIYMGgBIvEAE/review"><img src="https://i.imgur.com/fBPIjvV.png" width="31" height="31" alt="Google Review" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 7px 7px 0;"><a href="https://wa.me/13054585402"><img src="https://i.imgur.com/0sfOKs8.png" width="28" height="28" alt="WhatsApp" style="display:block;border:0;"></a></td>
+                  <td style="padding:0 0 7px 0;"><a href="https://mindobirdwatching.com/shop/"><img src="https://i.imgur.com/g53OeDX.png" width="28" height="28" alt="Shop" style="display:block;border:0;"></a></td>
+                </tr>
+              </table>
+
+              <p style="margin:5px 0 0;font-size:12px;line-height:18px;color:#536067;font-weight:800;">
+                Mindo, Ecuador<br>
+                <a href="https://mindobirdwatching.com" style="color:#0D5925;">mindobirdwatching.com</a> |
+                <a href="mailto:mindobirdwatching@gmail.com" style="color:#0D5925;">mindobirdwatching@gmail.com</a>
+              </p>
+            </td>
+          </tr>`;
 }
 
 function formatEmailMoney(
@@ -3199,6 +3221,7 @@ function normalizeCheckoutAddress(raw) {
     "first_name",
     "last_name",
     "email",
+    "phone",
     "country",
     "address1",
     "city",
