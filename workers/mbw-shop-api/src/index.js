@@ -1,4 +1,4 @@
-/* MBW SHOP API V20 - PRINTIFY SIGNED WEBHOOK SYNC */
+/* MBW SHOP API V21 - PRINTIFY SHIPPING EMAILS */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -103,6 +103,12 @@ export default {
           printify_webhook_configured:
             Boolean(
               env.PRINTIFY_WEBHOOK_SECRET
+            ),
+          shipping_email_sync_enabled:
+            Boolean(
+              env.RESEND_API_KEY &&
+              env.MBW_ORDER_FROM_EMAIL &&
+              env.MBW_ADMIN_ORDER_EMAIL
             )
         },
         200,
@@ -302,7 +308,9 @@ async function handlePrintifyWebhook(
   const existing =
     await env.DB
       .prepare(
-        `SELECT event_id
+        `SELECT
+           event_id,
+           processing_status
          FROM printify_webhook_events
          WHERE event_id = ?
          LIMIT 1`
@@ -310,7 +318,10 @@ async function handlePrintifyWebhook(
       .bind(eventId)
       .first();
 
-  if (existing) {
+  if (
+    existing &&
+    existing.processing_status === "processed"
+  ) {
     return jsonResponse(
       {
         ok: true,
@@ -381,6 +392,36 @@ async function handlePrintifyWebhook(
       update,
       rawBody
     );
+
+    if (
+      eventType === "order:shipment:created"
+    ) {
+      const customerShippingEmail =
+        await sendCustomerShippingConfirmation(
+          env,
+          order.id
+        );
+
+      if (!customerShippingEmail.ok) {
+        throw new Error(
+          customerShippingEmail.error ||
+          "Customer shipping confirmation email failed"
+        );
+      }
+
+      const adminShippingEmail =
+        await sendAdminShippingConfirmation(
+          env,
+          order.id
+        );
+
+      if (!adminShippingEmail.ok) {
+        throw new Error(
+          adminShippingEmail.error ||
+          "Admin shipping confirmation email failed"
+        );
+      }
+    }
 
     await recordPrintifyWebhookEvent(
       env,
@@ -529,7 +570,13 @@ async function ensurePrintifyWebhookStorage(env) {
     ["last_printify_event_id", "TEXT"],
     ["last_printify_event_type", "TEXT"],
     ["last_printify_event_at", "TEXT"],
-    ["raw_printify_webhook_json", "TEXT"]
+    ["raw_printify_webhook_json", "TEXT"],
+    ["shipping_email_status", "TEXT"],
+    ["shipping_email_sent_at", "TEXT"],
+    ["shipping_email_error", "TEXT"],
+    ["admin_shipping_email_status", "TEXT"],
+    ["admin_shipping_email_sent_at", "TEXT"],
+    ["admin_shipping_email_error", "TEXT"]
   ];
 
   for (const [name, type] of additions) {
@@ -755,7 +802,7 @@ async function recordPrintifyWebhookEvent(
 
   await env.DB
     .prepare(
-      `INSERT OR IGNORE INTO printify_webhook_events (
+      `INSERT INTO printify_webhook_events (
          event_id,
          event_type,
          printify_order_id,
@@ -766,7 +813,15 @@ async function recordPrintifyWebhookEvent(
          created_at,
          processed_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(event_id) DO UPDATE SET
+         event_type = excluded.event_type,
+         printify_order_id = excluded.printify_order_id,
+         order_id = COALESCE(excluded.order_id, printify_webhook_events.order_id),
+         processing_status = excluded.processing_status,
+         error = excluded.error,
+         raw_json = excluded.raw_json,
+         processed_at = excluded.processed_at`
     )
     .bind(
       eventId,
@@ -2458,6 +2513,800 @@ async function markPrintifyOrderFailed(
     )
     .run();
 }
+
+
+async function sendCustomerShippingConfirmation(
+  env,
+  orderId
+) {
+  if (
+    !env.RESEND_API_KEY ||
+    !env.MBW_ORDER_FROM_EMAIL
+  ) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Resend customer shipping email configuration is incomplete"
+    };
+  }
+
+  const order =
+    await loadShippingEmailOrder(
+      env,
+      orderId
+    );
+
+  if (!order) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Order could not be loaded for customer shipping email"
+    };
+  }
+
+  if (!order.customer_email) {
+    await markShippingEmailFailed(
+      env,
+      order.id,
+      "customer",
+      "Customer email is missing"
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: "Customer email is missing"
+    };
+  }
+
+  if (
+    order.shipping_email_status ===
+    "sent"
+  ) {
+    return {
+      ok: true,
+      status: "sent",
+      duplicate: true
+    };
+  }
+
+  const claimed =
+    await claimShippingEmail(
+      env,
+      order.id,
+      "customer"
+    );
+
+  if (!claimed) {
+    const current =
+      await env.DB
+        .prepare(
+          `SELECT shipping_email_status
+           FROM orders
+           WHERE id = ?
+           LIMIT 1`
+        )
+        .bind(order.id)
+        .first();
+
+    if (
+      current &&
+      current.shipping_email_status ===
+      "sent"
+    ) {
+      return {
+        ok: true,
+        status: "sent",
+        duplicate: true
+      };
+    }
+
+    return {
+      ok: true,
+      status:
+        current &&
+        current.shipping_email_status
+          ? current.shipping_email_status
+          : "sending",
+      duplicate: true
+    };
+  }
+
+  const items =
+    await loadShippingEmailItems(
+      env,
+      order.id
+    );
+
+  const subject =
+    `Your Mindo Bird Watching order has shipped - ${order.mbw_order_id}`;
+
+  const html =
+    buildCustomerShippingEmailHtml(
+      order,
+      items
+    );
+
+  const text =
+    buildCustomerShippingEmailText(
+      order,
+      items
+    );
+
+  const result =
+    await sendResendShippingEmail(
+      env,
+      {
+        to: order.customer_email,
+        subject,
+        html,
+        text,
+        idempotencyKey:
+          `mbw-shipping-customer-${order.mbw_order_id}`
+      }
+    );
+
+  if (!result.ok) {
+    await markShippingEmailFailed(
+      env,
+      order.id,
+      "customer",
+      result.error
+    );
+
+    return result;
+  }
+
+  const sentAt =
+    new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         shipping_email_status = 'sent',
+         shipping_email_sent_at = ?,
+         shipping_email_error = NULL,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      sentAt,
+      sentAt,
+      order.id
+    )
+    .run();
+
+  return {
+    ok: true,
+    status: "sent",
+    duplicate: false,
+    resend_email_id:
+      result.resend_email_id || null
+  };
+}
+
+async function sendAdminShippingConfirmation(
+  env,
+  orderId
+) {
+  if (
+    !env.RESEND_API_KEY ||
+    !env.MBW_ORDER_FROM_EMAIL ||
+    !env.MBW_ADMIN_ORDER_EMAIL
+  ) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Resend admin shipping email configuration is incomplete"
+    };
+  }
+
+  const order =
+    await loadShippingEmailOrder(
+      env,
+      orderId
+    );
+
+  if (!order) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Order could not be loaded for admin shipping email"
+    };
+  }
+
+  if (
+    order.admin_shipping_email_status ===
+    "sent"
+  ) {
+    return {
+      ok: true,
+      status: "sent",
+      duplicate: true
+    };
+  }
+
+  const claimed =
+    await claimShippingEmail(
+      env,
+      order.id,
+      "admin"
+    );
+
+  if (!claimed) {
+    const current =
+      await env.DB
+        .prepare(
+          `SELECT admin_shipping_email_status
+           FROM orders
+           WHERE id = ?
+           LIMIT 1`
+        )
+        .bind(order.id)
+        .first();
+
+    if (
+      current &&
+      current.admin_shipping_email_status ===
+      "sent"
+    ) {
+      return {
+        ok: true,
+        status: "sent",
+        duplicate: true
+      };
+    }
+
+    return {
+      ok: true,
+      status:
+        current &&
+        current.admin_shipping_email_status
+          ? current.admin_shipping_email_status
+          : "sending",
+      duplicate: true
+    };
+  }
+
+  const items =
+    await loadShippingEmailItems(
+      env,
+      order.id
+    );
+
+  const subject =
+    `MBW order shipped - ${order.mbw_order_id}`;
+
+  const html =
+    buildAdminShippingEmailHtml(
+      order,
+      items
+    );
+
+  const text =
+    buildAdminShippingEmailText(
+      order,
+      items
+    );
+
+  const result =
+    await sendResendShippingEmail(
+      env,
+      {
+        to: env.MBW_ADMIN_ORDER_EMAIL,
+        subject,
+        html,
+        text,
+        idempotencyKey:
+          `mbw-shipping-admin-${order.mbw_order_id}`
+      }
+    );
+
+  if (!result.ok) {
+    await markShippingEmailFailed(
+      env,
+      order.id,
+      "admin",
+      result.error
+    );
+
+    return result;
+  }
+
+  const sentAt =
+    new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         admin_shipping_email_status = 'sent',
+         admin_shipping_email_sent_at = ?,
+         admin_shipping_email_error = NULL,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      sentAt,
+      sentAt,
+      order.id
+    )
+    .run();
+
+  return {
+    ok: true,
+    status: "sent",
+    duplicate: false,
+    resend_email_id:
+      result.resend_email_id || null
+  };
+}
+
+async function loadShippingEmailOrder(
+  env,
+  orderId
+) {
+  return env.DB
+    .prepare(
+      `SELECT
+         id,
+         mbw_order_id,
+         stripe_mode,
+         currency,
+         customer_email,
+         customer_first_name,
+         customer_last_name,
+         customer_phone,
+         shipping_address1,
+         shipping_address2,
+         shipping_city,
+         shipping_region,
+         shipping_postal_code,
+         shipping_country,
+         shipping_method_name,
+         printify_order_id,
+         printify_status,
+         fulfillment_status,
+         printify_shipped_at,
+         tracking_carrier,
+         tracking_number,
+         tracking_url,
+         shipping_email_status,
+         admin_shipping_email_status
+       FROM orders
+       WHERE id = ?
+       LIMIT 1`
+    )
+    .bind(orderId)
+    .first();
+}
+
+async function loadShippingEmailItems(
+  env,
+  orderId
+) {
+  const rows =
+    await env.DB
+      .prepare(
+        `SELECT
+           product_title,
+           variant_label,
+           quantity,
+           image_url
+         FROM order_items
+         WHERE order_id = ?
+         ORDER BY id ASC`
+      )
+      .bind(orderId)
+      .all();
+
+  return rows &&
+    Array.isArray(rows.results)
+      ? rows.results
+      : [];
+}
+
+async function claimShippingEmail(
+  env,
+  orderId,
+  audience
+) {
+  const admin =
+    audience === "admin";
+
+  const statusColumn =
+    admin
+      ? "admin_shipping_email_status"
+      : "shipping_email_status";
+
+  const errorColumn =
+    admin
+      ? "admin_shipping_email_error"
+      : "shipping_email_error";
+
+  const now =
+    new Date().toISOString();
+
+  const staleBefore =
+    new Date(
+      Date.now() - 10 * 60 * 1000
+    ).toISOString();
+
+  const query =
+    `UPDATE orders
+     SET
+       ${statusColumn} = 'sending',
+       ${errorColumn} = NULL,
+       updated_at = ?
+     WHERE id = ?
+       AND (
+         ${statusColumn} IS NULL
+         OR ${statusColumn} = ''
+         OR ${statusColumn} = 'pending'
+         OR ${statusColumn} = 'failed'
+         OR (
+           ${statusColumn} = 'sending'
+           AND updated_at < ?
+         )
+       )`;
+
+  const result =
+    await env.DB
+      .prepare(query)
+      .bind(
+        now,
+        orderId,
+        staleBefore
+      )
+      .run();
+
+  return Boolean(
+    result &&
+    result.meta &&
+    Number(result.meta.changes || 0) > 0
+  );
+}
+
+async function markShippingEmailFailed(
+  env,
+  orderId,
+  audience,
+  message
+) {
+  const admin =
+    audience === "admin";
+
+  const statusColumn =
+    admin
+      ? "admin_shipping_email_status"
+      : "shipping_email_status";
+
+  const errorColumn =
+    admin
+      ? "admin_shipping_email_error"
+      : "shipping_email_error";
+
+  const now =
+    new Date().toISOString();
+
+  console.error(
+    `${admin ? "Admin" : "Customer"} shipping email failed:`,
+    cleanText(message, 500)
+  );
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         ${statusColumn} = 'failed',
+         ${errorColumn} = ?,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      cleanText(message, 500),
+      now,
+      orderId
+    )
+    .run();
+}
+
+async function sendResendShippingEmail(
+  env,
+  details
+) {
+  let response;
+  let data;
+
+  try {
+    response =
+      await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+          headers: {
+            "Authorization":
+              `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type":
+              "application/json",
+            "Idempotency-Key":
+              details.idempotencyKey
+          },
+          body: JSON.stringify({
+            from:
+              `Mindo Bird Watching <${env.MBW_ORDER_FROM_EMAIL}>`,
+            to: [details.to],
+            reply_to:
+              env.MBW_ADMIN_ORDER_EMAIL ||
+              env.MBW_ORDER_FROM_EMAIL,
+            subject: details.subject,
+            html: details.html,
+            text: details.text
+          })
+        }
+      );
+
+    data =
+      await response
+        .json()
+        .catch(() => ({}));
+  } catch (error) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        cleanText(
+          error && error.message
+            ? error.message
+            : String(error),
+          500
+        )
+    };
+  }
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        cleanText(
+          data &&
+          (data.message || data.error)
+            ? data.message || data.error
+            : `Resend returned HTTP ${response.status}`,
+          500
+        )
+    };
+  }
+
+  return {
+    ok: true,
+    status: "sent",
+    resend_email_id:
+      data && data.id
+        ? data.id
+        : null
+  };
+}
+
+function buildCustomerShippingEmailHtml(
+  order,
+  items
+) {
+  const firstName =
+    cleanText(
+      order.customer_first_name ||
+      "there",
+      80
+    );
+
+  const trackingBlock =
+    order.tracking_url
+      ? `<a href="${escapeEmailHtml(order.tracking_url)}" style="display:inline-block;background:#0D5925;color:#FFFFFF;text-decoration:none;font-weight:800;font-size:14px;line-height:20px;padding:12px 18px;border-radius:10px;">Track your package</a>`
+      : `<div style="font-size:14px;line-height:22px;color:#475467;">Tracking is being prepared by the carrier. We will keep your order record updated as Printify sends new shipment information.</div>`;
+
+  const itemRows =
+    items.map((item) => {
+      const variant =
+        item.variant_label
+          ? `<div style="font-size:12px;line-height:18px;color:#667085;margin-top:3px;">${escapeEmailHtml(item.variant_label)}</div>`
+          : "";
+
+      const image =
+        item.image_url
+          ? `<img src="${escapeEmailHtml(item.image_url)}" width="54" height="54" alt="" style="display:block;width:54px;height:54px;object-fit:cover;border-radius:9px;border:1px solid #E7ECE8;">`
+          : "";
+
+      return `
+        <tr>
+          <td style="padding:11px 0;border-bottom:1px solid #EEF2EF;width:66px;vertical-align:top;">${image}</td>
+          <td style="padding:11px 8px;border-bottom:1px solid #EEF2EF;vertical-align:top;">
+            <div style="font-size:14px;line-height:20px;font-weight:800;color:#173A24;">${escapeEmailHtml(item.product_title || "MBW Shop product")}</div>
+            ${variant}
+          </td>
+          <td align="right" style="padding:11px 0;border-bottom:1px solid #EEF2EF;font-size:13px;line-height:20px;font-weight:700;color:#475467;vertical-align:top;">Qty ${Number(item.quantity || 0)}</td>
+        </tr>`;
+    }).join("");
+
+  return `
+<!doctype html>
+<html>
+<body style="margin:0;padding:0;background:#F6F8FB;font-family:Arial,sans-serif;color:#173A24;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F8FB;">
+    <tr>
+      <td align="center" style="padding:28px 14px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#FFFFFF;border:1px solid #E7ECE8;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td align="center" style="padding:28px 28px 14px;">
+              <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="72" height="72" alt="Mindo Bird Watching" style="display:block;width:72px;height:72px;object-fit:contain;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 28px;">
+              <div style="font-size:26px;line-height:34px;font-weight:900;color:#0D5925;">Your order is on the way</div>
+              <div style="font-size:15px;line-height:24px;color:#475467;margin-top:8px;">Hi ${escapeEmailHtml(firstName)}, your Mindo Bird Watching order has shipped.</div>
+
+              <div style="margin-top:22px;padding:18px;background:#F4F9F5;border:1px solid #DDECE1;border-radius:14px;">
+                <div style="font-size:12px;line-height:18px;color:#667085;font-weight:800;text-transform:uppercase;">Order</div>
+                <div style="font-size:14px;line-height:21px;color:#0D5925;font-weight:900;word-break:break-all;margin-top:3px;">${escapeEmailHtml(order.mbw_order_id)}</div>
+                <div style="font-size:13px;line-height:20px;color:#475467;margin-top:12px;">
+                  <strong>Carrier:</strong> ${escapeEmailHtml(order.tracking_carrier || "Carrier pending")}<br>
+                  <strong>Tracking:</strong> ${escapeEmailHtml(order.tracking_number || "Tracking number pending")}<br>
+                  <strong>Shipping method:</strong> ${escapeEmailHtml(order.shipping_method_name || "Shipping")}
+                </div>
+                <div style="margin-top:16px;">${trackingBlock}</div>
+              </div>
+
+              <div style="font-size:16px;line-height:24px;font-weight:900;color:#173A24;margin-top:24px;">Items in this shipment</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">${itemRows}</table>
+
+              <div style="font-size:13px;line-height:21px;color:#667085;margin-top:20px;">Carrier scans can take a little time to appear after a shipping label is created. Use the tracking link above when available for the latest delivery progress.</div>
+            </td>
+          </tr>
+          <tr>
+            <td>${buildTransactionalEmailFooterHtml()}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildCustomerShippingEmailText(
+  order,
+  items
+) {
+  const lines = [
+    "Mindo Bird Watching",
+    "",
+    `Your order has shipped: ${order.mbw_order_id}`,
+    `Carrier: ${order.tracking_carrier || "Carrier pending"}`,
+    `Tracking number: ${order.tracking_number || "Tracking number pending"}`,
+    `Tracking URL: ${order.tracking_url || "Not available yet"}`,
+    `Shipping method: ${order.shipping_method_name || "Shipping"}`,
+    "",
+    "Items:"
+  ];
+
+  for (const item of items) {
+    lines.push(
+      `- ${item.product_title || "MBW Shop product"}${item.variant_label ? ` - ${item.variant_label}` : ""} x ${Number(item.quantity || 0)}`
+    );
+  }
+
+  lines.push(
+    "",
+    "Carrier scans can take a little time to appear after the shipment is created.",
+    "",
+    "Mindo Bird Watching",
+    "Mindo, Ecuador",
+    "mindobirdwatching.com"
+  );
+
+  return lines.join("\n");
+}
+
+function buildAdminShippingEmailHtml(
+  order,
+  items
+) {
+  const customerName =
+    [
+      order.customer_first_name,
+      order.customer_last_name
+    ]
+      .filter(Boolean)
+      .join(" ") || "-";
+
+  const itemRows =
+    items.map((item) => `
+      <tr>
+        <td style="padding:9px 0;border-bottom:1px solid #EEF2EF;font-size:13px;line-height:20px;color:#173A24;">
+          <strong>${escapeEmailHtml(item.product_title || "MBW Shop product")}</strong>
+          ${item.variant_label ? `<div style="color:#667085;">${escapeEmailHtml(item.variant_label)}</div>` : ""}
+        </td>
+        <td align="right" style="padding:9px 0;border-bottom:1px solid #EEF2EF;font-size:13px;line-height:20px;color:#475467;">Qty ${Number(item.quantity || 0)}</td>
+      </tr>`).join("");
+
+  const trackingLink =
+    order.tracking_url
+      ? `<a href="${escapeEmailHtml(order.tracking_url)}" style="color:#0D5925;font-weight:800;">Open carrier tracking</a>`
+      : "Tracking URL not available yet";
+
+  return `
+<!doctype html>
+<html>
+<body style="margin:0;padding:0;background:#F6F8FB;font-family:Arial,sans-serif;color:#173A24;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F8FB;">
+    <tr>
+      <td align="center" style="padding:28px 14px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#FFFFFF;border:1px solid #E7ECE8;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="padding:28px;">
+              <div style="font-size:24px;line-height:32px;font-weight:900;color:#0D5925;">MBW order shipped</div>
+              <div style="font-size:14px;line-height:22px;color:#475467;margin-top:7px;">Printify reported a new shipment for this paid order.</div>
+
+              <div style="margin-top:20px;padding:16px;background:#F4F9F5;border:1px solid #DDECE1;border-radius:14px;font-size:13px;line-height:21px;color:#475467;">
+                <strong style="color:#173A24;">MBW order:</strong> ${escapeEmailHtml(order.mbw_order_id)}<br>
+                <strong style="color:#173A24;">Printify order:</strong> ${escapeEmailHtml(order.printify_order_id || "-")}<br>
+                <strong style="color:#173A24;">Customer:</strong> ${escapeEmailHtml(customerName)}<br>
+                <strong style="color:#173A24;">Email:</strong> ${escapeEmailHtml(order.customer_email || "-")}<br>
+                <strong style="color:#173A24;">Carrier:</strong> ${escapeEmailHtml(order.tracking_carrier || "Pending")}<br>
+                <strong style="color:#173A24;">Tracking:</strong> ${escapeEmailHtml(order.tracking_number || "Pending")}<br>
+                <strong style="color:#173A24;">Tracking link:</strong> ${trackingLink}
+              </div>
+
+              <div style="font-size:16px;line-height:24px;font-weight:900;color:#173A24;margin-top:22px;">Shipment items</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">${itemRows}</table>
+
+              <div style="font-size:12px;line-height:19px;color:#667085;margin-top:18px;">This notification is generated from the signed Printify shipment webhook. Duplicate webhook deliveries are protected by D1 state and Resend idempotency keys.</div>
+            </td>
+          </tr>
+          <tr>
+            <td>${buildTransactionalEmailFooterHtml()}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildAdminShippingEmailText(
+  order,
+  items
+) {
+  const lines = [
+    "MBW order shipped",
+    "",
+    `MBW order: ${order.mbw_order_id}`,
+    `Printify order: ${order.printify_order_id || "-"}`,
+    `Customer: ${[order.customer_first_name, order.customer_last_name].filter(Boolean).join(" ") || "-"}`,
+    `Email: ${order.customer_email || "-"}`,
+    `Carrier: ${order.tracking_carrier || "Pending"}`,
+    `Tracking number: ${order.tracking_number || "Pending"}`,
+    `Tracking URL: ${order.tracking_url || "Not available yet"}`,
+    "",
+    "Items:"
+  ];
+
+  for (const item of items) {
+    lines.push(
+      `- ${item.product_title || "MBW Shop product"}${item.variant_label ? ` - ${item.variant_label}` : ""} x ${Number(item.quantity || 0)}`
+    );
+  }
+
+  return lines.join("\n");
+}
+
 
 async function sendCustomerOrderConfirmation(
   env,
