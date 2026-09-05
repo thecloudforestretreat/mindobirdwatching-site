@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order Confirmation | Mindo Bird Watching</title>
+  <meta name="description" content="Your Mindo Bird Watching shop order confirmation.">
+  <meta name="robots" content="noindex,follow">
+  <link rel="canonical" href="https://mindobirdwatching.com/shop/order-confirmation/">
+
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/pages/shop.css?v=20260905-14">
+  <link rel="stylesheet" href="/assets/css/header.css?v=1">
+
+  <script src="/assets/js/head.js?v=1"></script>
+  <script src="/assets/js/site-config.js"></script>
+</head>
+<body data-page-content-group="shop" data-page-language="en" data-page-type="shop_order_confirmation">
+  <div id="siteHeader"></div>
+
+  <main class="page card shopConfirmationPage">
+    <nav class="shopBreadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>/</span>
+      <a href="/shop/">Shop</a>
+      <span>/</span>
+      <span>Order confirmation</span>
+    </nav>
+
+    <section class="shopConfirmationShell" aria-live="polite">
+      <div id="mbwConfirmLoading" class="shopConfirmationState">
+        <div class="shopConfirmationSpinner" aria-hidden="true"></div>
+        <p class="shopEyebrow">Mindo Bird Watching Shop</p>
+        <h1>Confirming your payment...</h1>
+        <p>Stripe has returned you to Mindo Bird Watching. We are securely matching your payment with your order.</p>
+      </div>
+
+      <div id="mbwConfirmSuccess" class="shopConfirmationContent" hidden>
+        <header class="shopConfirmationHero">
+          <div class="shopConfirmationCheck" aria-hidden="true">OK</div>
+          <div>
+            <p class="shopEyebrow">Payment confirmed</p>
+            <h1>Thank you for your order.</h1>
+            <p>Your payment was received and your order is being prepared for fulfillment.</p>
+          </div>
+        </header>
+
+        <div class="shopConfirmationGrid">
+          <section class="shopConfirmationPanel">
+            <div class="shopConfirmationPanelHead">
+              <h2>Order summary</h2>
+              <span id="mbwOrderReference" class="shopOrderReference"></span>
+            </div>
+
+            <div id="mbwOrderItems" class="shopConfirmationItems"></div>
+
+            <dl class="shopConfirmationTotals">
+              <div><dt>Subtotal</dt><dd id="mbwSubtotal">$0.00</dd></div>
+              <div id="mbwDiscountRow" hidden><dt>Discount <span id="mbwCoupon"></span></dt><dd id="mbwDiscount">-$0.00</dd></div>
+              <div><dt>Shipping</dt><dd id="mbwShipping">$0.00</dd></div>
+              <div id="mbwTaxRow" hidden><dt>Tax</dt><dd id="mbwTax">$0.00</dd></div>
+              <div class="shopConfirmationTotal"><dt>Total paid</dt><dd id="mbwTotal">$0.00</dd></div>
+            </dl>
+          </section>
+
+          <aside class="shopConfirmationAside">
+            <section class="shopConfirmationPanel">
+              <h2>Delivery details</h2>
+              <p id="mbwCustomerEmail" class="shopConfirmationStrong"></p>
+              <address id="mbwShippingAddress"></address>
+              <div class="shopConfirmationMeta">
+                <span>Shipping method</span>
+                <strong id="mbwShippingMethod">Shipping</strong>
+              </div>
+            </section>
+
+            <section class="shopConfirmationPanel">
+              <h2>What happens next?</h2>
+              <p>Your order has been paid. We will prepare it for fulfillment and send shipping details when tracking becomes available.</p>
+              <div class="shopConfirmationStatus">
+                <span class="shopStatusDot" aria-hidden="true"></span>
+                <span>Payment received</span>
+              </div>
+            </section>
+          </aside>
+        </div>
+
+        <div class="shopConfirmationActions">
+          <a class="btn primary" href="/shop/" data-analytics-event="primary_cta_click" data-analytics-label="Continue shopping" data-analytics-location="order_confirmation">Continue Shopping</a>
+          <a class="btn secondary" href="/contact/" data-analytics-event="primary_cta_click" data-analytics-label="Order support" data-analytics-location="order_confirmation">Order Support</a>
+        </div>
+      </div>
+
+      <div id="mbwConfirmError" class="shopConfirmationState shopConfirmationError" hidden>
+        <p class="shopEyebrow">Order confirmation</p>
+        <h1>We are still confirming your order.</h1>
+        <p id="mbwConfirmErrorText">Your payment may already be complete. Please wait a moment and try again.</p>
+        <div class="shopConfirmationActions">
+          <button class="btn primary" id="mbwRetryConfirmation" type="button">Try Again</button>
+          <a class="btn secondary" href="/contact/">Contact MBW</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="siteFooter"></div>
+
+  <script>
+  (function(){
+    "use strict";
+
+    var API_BASE = "https://mbw-shop-api.thecloudforestretreat.workers.dev";
+    var CART_KEY = "MBW_SHOP_CART_V1";
+    var SHIPPING_KEY = "MBW_SHOP_SHIPPING_V1";
+    var PURCHASE_KEY_PREFIX = "MBW_PURCHASE_RECORDED_V1_";
+    var MAX_ATTEMPTS = 8;
+    var RETRY_DELAY_MS = 1400;
+
+    var loading = document.getElementById("mbwConfirmLoading");
+    var success = document.getElementById("mbwConfirmSuccess");
+    var errorBox = document.getElementById("mbwConfirmError");
+    var retryButton = document.getElementById("mbwRetryConfirmation");
+    var errorText = document.getElementById("mbwConfirmErrorText");
+
+    function money(cents, currency){
+      var code = String(currency || "usd").toUpperCase();
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: code
+      }).format(Number(cents || 0) / 100);
+    }
+
+    function text(id, value){
+      var el = document.getElementById(id);
+      if(el) el.textContent = value == null ? "" : String(value);
+    }
+
+    function clearPurchasedCart(){
+      try{
+        localStorage.removeItem(CART_KEY);
+        localStorage.removeItem(SHIPPING_KEY);
+      }catch(error){}
+    }
+
+    function recordPurchase(order){
+      var key = PURCHASE_KEY_PREFIX + order.mbw_order_id;
+
+      try{
+        if(localStorage.getItem(key) === "1") return;
+      }catch(error){}
+
+      var items = (order.items || []).map(function(item){
+        return {
+          item_id: String(item.printify_product_id || ""),
+          item_name: String(item.product_title || ""),
+          item_variant: String(item.variant_label || ""),
+          price: Number(item.unit_amount_cents || 0) / 100,
+          quantity: Number(item.quantity || 0)
+        };
+      });
+
+      var payload = {
+        transaction_id: String(order.mbw_order_id || ""),
+        value: Number(order.total_cents || 0) / 100,
+        currency: String(order.currency || "usd").toUpperCase(),
+        shipping: Number(order.shipping_cents || 0) / 100,
+        tax: Number(order.tax_cents || 0) / 100,
+        coupon: String(order.promotion_code || ""),
+        items: items
+      };
+
+      if(typeof window.gtag === "function"){
+        window.gtag("event", "purchase", payload);
+      }else if(Array.isArray(window.dataLayer)){
+        window.dataLayer.push({
+          event: "purchase",
+          ecommerce: payload
+        });
+      }
+
+      try{
+        localStorage.setItem(key, "1");
+      }catch(error){}
+    }
+
+    function renderOrder(order){
+      var currency = order.currency || "usd";
+
+      text("mbwOrderReference", order.mbw_order_id || "");
+      text("mbwCustomerEmail", order.customer && order.customer.email ? order.customer.email : "");
+      text("mbwShippingMethod", order.shipping_method && order.shipping_method.name ? order.shipping_method.name : "Shipping");
+
+      text("mbwSubtotal", money(order.subtotal_cents, currency));
+      text("mbwShipping", money(order.shipping_cents, currency));
+      text("mbwTotal", money(order.total_cents, currency));
+
+      var discountRow = document.getElementById("mbwDiscountRow");
+      if(Number(order.discount_cents || 0) > 0){
+        if(discountRow) discountRow.hidden = false;
+        text("mbwDiscount", "-" + money(order.discount_cents, currency));
+        text("mbwCoupon", order.promotion_code ? "(" + order.promotion_code + ")" : "");
+      }
+
+      var taxRow = document.getElementById("mbwTaxRow");
+      if(Number(order.tax_cents || 0) > 0){
+        if(taxRow) taxRow.hidden = false;
+        text("mbwTax", money(order.tax_cents, currency));
+      }
+
+      var address = order.shipping_address || {};
+      var addressParts = [
+        address.address1,
+        address.address2,
+        [address.city, address.region, address.postal_code].filter(Boolean).join(", "),
+        address.country
+      ].filter(Boolean);
+
+      var addressEl = document.getElementById("mbwShippingAddress");
+      if(addressEl){
+        addressEl.innerHTML = "";
+        addressParts.forEach(function(part){
+          var line = document.createElement("div");
+          line.textContent = part;
+          addressEl.appendChild(line);
+        });
+      }
+
+      var itemsBox = document.getElementById("mbwOrderItems");
+      if(itemsBox){
+        itemsBox.innerHTML = "";
+
+        (order.items || []).forEach(function(item){
+          var row = document.createElement("article");
+          row.className = "shopConfirmationItem";
+
+          var image = document.createElement("img");
+          image.src = item.image_url || "/MBW-Assets-OG-Image.jpg";
+          image.alt = "";
+
+          var copy = document.createElement("div");
+          copy.className = "shopConfirmationItemCopy";
+
+          var titleEl = document.createElement("strong");
+          titleEl.textContent = item.product_title || "MBW product";
+
+          var variant = document.createElement("span");
+          variant.textContent = item.variant_label || "";
+
+          var qty = document.createElement("small");
+          qty.textContent = "Qty " + Number(item.quantity || 0);
+
+          copy.appendChild(titleEl);
+          if(item.variant_label) copy.appendChild(variant);
+          copy.appendChild(qty);
+
+          var amount = document.createElement("strong");
+          amount.className = "shopConfirmationItemAmount";
+          amount.textContent = money(item.line_total_cents, currency);
+
+          row.appendChild(image);
+          row.appendChild(copy);
+          row.appendChild(amount);
+          itemsBox.appendChild(row);
+        });
+      }
+
+      clearPurchasedCart();
+      recordPurchase(order);
+
+      if(loading) loading.hidden = true;
+      if(errorBox) errorBox.hidden = true;
+      if(success) success.hidden = false;
+    }
+
+    async function loadConfirmation(attempt){
+      attempt = attempt || 1;
+
+      var params = new URLSearchParams(window.location.search || "");
+      var sessionId = params.get("session_id") || "";
+
+      if(!sessionId){
+        if(loading) loading.hidden = true;
+        if(errorBox) errorBox.hidden = false;
+        if(errorText) errorText.textContent = "The Stripe Checkout Session ID is missing from this confirmation link.";
+        return;
+      }
+
+      try{
+        var response = await fetch(
+          API_BASE + "/order/confirmation?session_id=" + encodeURIComponent(sessionId),
+          {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            }
+          }
+        );
+
+        var data = await response.json().catch(function(){
+          return {};
+        });
+
+        if(response.ok && data.ok && data.order){
+          renderOrder(data.order);
+          return;
+        }
+
+        if(data.retryable && attempt < MAX_ATTEMPTS){
+          window.setTimeout(function(){
+            loadConfirmation(attempt + 1);
+          }, RETRY_DELAY_MS);
+          return;
+        }
+
+        throw new Error(data.error || "We could not load your confirmed order.");
+      }catch(error){
+        if(attempt < MAX_ATTEMPTS){
+          window.setTimeout(function(){
+            loadConfirmation(attempt + 1);
+          }, RETRY_DELAY_MS);
+          return;
+        }
+
+        if(loading) loading.hidden = true;
+        if(success) success.hidden = true;
+        if(errorBox) errorBox.hidden = false;
+        if(errorText){
+          errorText.textContent =
+            error && error.message
+              ? error.message
+              : "Your payment may already be complete. Please wait a moment and try again.";
+        }
+      }
+    }
+
+    if(retryButton){
+      retryButton.addEventListener("click", function(){
+        if(errorBox) errorBox.hidden = true;
+        if(success) success.hidden = true;
+        if(loading) loading.hidden = false;
+        loadConfirmation(1);
+      });
+    }
+
+    loadConfirmation(1);
+  })();
+  </script>
+</body>
+</html>
