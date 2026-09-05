@@ -3187,6 +3187,58 @@ function normalizeAttribution(raw) {
   };
 }
 
+
+function normalizeUsPhoneNumber(value) {
+  const raw =
+    cleanText(value, 40);
+
+  if (!raw) {
+    return {
+      ok: false,
+      error:
+        "Phone number is required"
+    };
+  }
+
+  if (/[A-Za-z]/.test(raw)) {
+    return {
+      ok: false,
+      error:
+        "Enter a valid 10-digit US phone number"
+    };
+  }
+
+  let digits =
+    raw.replace(/\D/g, "");
+
+  if (
+    digits.length === 11 &&
+    digits.startsWith("1")
+  ) {
+    digits =
+      digits.slice(1);
+  }
+
+  if (
+    digits.length !== 10 ||
+    !/^[2-9]\d{2}[2-9]\d{6}$/.test(
+      digits
+    )
+  ) {
+    return {
+      ok: false,
+      error:
+        "Enter a valid 10-digit US phone number"
+    };
+  }
+
+  return {
+    ok: true,
+    e164:
+      `+1${digits}`
+  };
+}
+
 function normalizeCheckoutAddress(raw) {
   const address =
     raw && typeof raw === "object"
@@ -3216,6 +3268,23 @@ function normalizeCheckoutAddress(raw) {
     zip:
       cleanText(address.zip, 40)
   };
+
+  if (normalized.country === "US") {
+    const phoneResult =
+      normalizeUsPhoneNumber(
+        normalized.phone
+      );
+
+    if (!phoneResult.ok) {
+      return {
+        ok: false,
+        error: phoneResult.error
+      };
+    }
+
+    normalized.phone =
+      phoneResult.e164;
+  }
 
   const required = [
     "first_name",
