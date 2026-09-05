@@ -13,6 +13,13 @@ export default {
 
     if (
       request.method === "POST" &&
+      url.pathname === "/webhooks/stripe"
+    ) {
+      return handleStripeWebhook(request, env);
+    }
+
+    if (
+      request.method === "POST" &&
       url.pathname === "/checkout/session"
     ) {
       return handleCheckoutSession(request, env);
@@ -62,7 +69,11 @@ export default {
             Boolean(
               env.PRINTIFY_API_TOKEN &&
               env.PRINTIFY_SHOP_ID
-            )
+            ),
+          database_configured:
+            Boolean(env.DB),
+          stripe_webhook_configured:
+            Boolean(getStripeWebhookSecret(env))
         },
         200,
         request
@@ -122,6 +133,1005 @@ function getStripeSecretKey(env) {
   }
 
   return env.STRIPE_SECRET_KEY || "";
+}
+
+
+function getStripeWebhookSecret(env) {
+  const mode =
+    normalizeStripeMode(env.STRIPE_MODE);
+
+  if (mode === "test") {
+    return env.STRIPE_TEST_WEBHOOK_SECRET || "";
+  }
+
+  return env.STRIPE_WEBHOOK_SECRET || "";
+}
+
+async function handleStripeWebhook(
+  request,
+  env
+) {
+  if (!env.DB) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "D1 binding DB is not configured"
+      },
+      500,
+      request
+    );
+  }
+
+  const webhookSecret =
+    getStripeWebhookSecret(env);
+
+  if (!webhookSecret) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          normalizeStripeMode(env.STRIPE_MODE) === "test"
+            ? "STRIPE_TEST_WEBHOOK_SECRET is not configured"
+            : "STRIPE_WEBHOOK_SECRET is not configured"
+      },
+      500,
+      request
+    );
+  }
+
+  const signatureHeader =
+    request.headers.get("Stripe-Signature") || "";
+
+  const rawBody =
+    await request.text();
+
+  const verified =
+    await verifyStripeWebhookSignature(
+      rawBody,
+      signatureHeader,
+      webhookSecret
+    );
+
+  if (!verified.ok) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: verified.error
+      },
+      400,
+      request
+    );
+  }
+
+  let event;
+
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Invalid Stripe webhook JSON"
+      },
+      400,
+      request
+    );
+  }
+
+  if (
+    !event ||
+    event.type !== "checkout.session.completed"
+  ) {
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        ignored: true,
+        event_type: event && event.type
+          ? event.type
+          : null
+      },
+      200,
+      request
+    );
+  }
+
+  const sessionFromEvent =
+    event.data &&
+    event.data.object
+      ? event.data.object
+      : null;
+
+  if (
+    !sessionFromEvent ||
+    !sessionFromEvent.id
+  ) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "Stripe event is missing the Checkout Session"
+      },
+      400,
+      request
+    );
+  }
+
+  const stripeResult =
+    await fetchStripeCheckoutForOrder(
+      env,
+      sessionFromEvent.id
+    );
+
+  if (!stripeResult.ok) {
+    return jsonResponse(
+      stripeResult.body,
+      stripeResult.status,
+      request
+    );
+  }
+
+  const session =
+    stripeResult.session;
+
+  if (session.payment_status !== "paid") {
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        ignored: true,
+        reason:
+          "Checkout Session is not paid",
+        payment_status:
+          session.payment_status || null
+      },
+      200,
+      request
+    );
+  }
+
+  const saveResult =
+    await saveStripeOrderToD1(
+      env,
+      session,
+      stripeResult.lineItems
+    );
+
+  if (!saveResult.ok) {
+    return jsonResponse(
+      saveResult.body,
+      saveResult.status,
+      request
+    );
+  }
+
+  return jsonResponse(
+    {
+      ok: true,
+      received: true,
+      order_saved: true,
+      duplicate: saveResult.duplicate,
+      mbw_order_id:
+        saveResult.mbw_order_id,
+      stripe_session_id:
+        session.id,
+      fulfillment_status:
+        saveResult.fulfillment_status
+    },
+    200,
+    request
+  );
+}
+
+async function verifyStripeWebhookSignature(
+  payload,
+  signatureHeader,
+  secret
+) {
+  if (!signatureHeader) {
+    return {
+      ok: false,
+      error:
+        "Missing Stripe-Signature header"
+    };
+  }
+
+  const fields =
+    signatureHeader.split(",");
+
+  let timestamp = "";
+  const signatures = [];
+
+  fields.forEach((field) => {
+    const parts = field.split("=");
+
+    if (parts.length !== 2) {
+      return;
+    }
+
+    const key = parts[0].trim();
+    const value = parts[1].trim();
+
+    if (key === "t") {
+      timestamp = value;
+    }
+
+    if (key === "v1") {
+      signatures.push(value);
+    }
+  });
+
+  if (!timestamp || signatures.length === 0) {
+    return {
+      ok: false,
+      error:
+        "Invalid Stripe-Signature header"
+    };
+  }
+
+  const timestampNumber =
+    Number(timestamp);
+
+  if (!Number.isFinite(timestampNumber)) {
+    return {
+      ok: false,
+      error:
+        "Invalid Stripe webhook timestamp"
+    };
+  }
+
+  const toleranceSeconds = 300;
+  const nowSeconds =
+    Math.floor(Date.now() / 1000);
+
+  if (
+    Math.abs(nowSeconds - timestampNumber) >
+    toleranceSeconds
+  ) {
+    return {
+      ok: false,
+      error:
+        "Stripe webhook timestamp is outside the allowed tolerance"
+    };
+  }
+
+  const encoder =
+    new TextEncoder();
+
+  const key =
+    await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secret),
+      {
+        name: "HMAC",
+        hash: "SHA-256"
+      },
+      false,
+      ["verify"]
+    );
+
+  const signedPayload =
+    encoder.encode(
+      `${timestamp}.${payload}`
+    );
+
+  for (const signature of signatures) {
+    const signatureBytes =
+      hexToBytes(signature);
+
+    if (!signatureBytes) {
+      continue;
+    }
+
+    const valid =
+      await crypto.subtle.verify(
+        "HMAC",
+        key,
+        signatureBytes,
+        signedPayload
+      );
+
+    if (valid) {
+      return { ok: true };
+    }
+  }
+
+  return {
+    ok: false,
+    error:
+      "Stripe webhook signature verification failed"
+  };
+}
+
+function hexToBytes(value) {
+  const hex =
+    String(value || "").trim();
+
+  if (
+    !hex ||
+    hex.length % 2 !== 0 ||
+    !/^[0-9a-f]+$/i.test(hex)
+  ) {
+    return null;
+  }
+
+  const result =
+    new Uint8Array(hex.length / 2);
+
+  for (
+    let index = 0;
+    index < hex.length;
+    index += 2
+  ) {
+    result[index / 2] =
+      parseInt(
+        hex.slice(index, index + 2),
+        16
+      );
+  }
+
+  return result;
+}
+
+async function fetchStripeCheckoutForOrder(
+  env,
+  sessionId
+) {
+  const stripeKey =
+    getStripeSecretKey(env);
+
+  if (!stripeKey) {
+    return {
+      ok: false,
+      status: 500,
+      body: {
+        ok: false,
+        error:
+          "Stripe API key is not configured"
+      }
+    };
+  }
+
+  const sessionUrl =
+    "https://api.stripe.com/v1/checkout/sessions/" +
+    encodeURIComponent(sessionId) +
+    "?expand[]=shipping_cost.shipping_rate" +
+    "&expand[]=discounts.promotion_code";
+
+  let sessionResponse;
+
+  try {
+    sessionResponse =
+      await fetch(
+        sessionUrl,
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              `Bearer ${stripeKey}`,
+            Accept:
+              "application/json"
+          }
+        }
+      );
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Unable to retrieve Checkout Session from Stripe"
+      }
+    };
+  }
+
+  let session;
+
+  try {
+    session =
+      await sessionResponse.json();
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Stripe returned an invalid Checkout Session"
+      }
+    };
+  }
+
+  if (!sessionResponse.ok) {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          session &&
+          session.error &&
+          session.error.message
+            ? session.error.message
+            : "Unable to retrieve Checkout Session"
+      }
+    };
+  }
+
+  const lineItemsUrl =
+    "https://api.stripe.com/v1/checkout/sessions/" +
+    encodeURIComponent(sessionId) +
+    "/line_items?limit=100" +
+    "&expand[]=data.price.product";
+
+  let lineItemsResponse;
+
+  try {
+    lineItemsResponse =
+      await fetch(
+        lineItemsUrl,
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              `Bearer ${stripeKey}`,
+            Accept:
+              "application/json"
+          }
+        }
+      );
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Unable to retrieve Stripe line items"
+      }
+    };
+  }
+
+  let lineItemsData;
+
+  try {
+    lineItemsData =
+      await lineItemsResponse.json();
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          "Stripe returned invalid line items"
+      }
+    };
+  }
+
+  if (!lineItemsResponse.ok) {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          lineItemsData &&
+          lineItemsData.error &&
+          lineItemsData.error.message
+            ? lineItemsData.error.message
+            : "Unable to retrieve Stripe line items"
+      }
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    session,
+    lineItems:
+      Array.isArray(lineItemsData.data)
+        ? lineItemsData.data
+        : []
+  };
+}
+
+async function saveStripeOrderToD1(
+  env,
+  session,
+  stripeLineItems
+) {
+  const existing =
+    await env.DB
+      .prepare(
+        `SELECT
+           id,
+           mbw_order_id,
+           fulfillment_status
+         FROM orders
+         WHERE stripe_session_id = ?
+         LIMIT 1`
+      )
+      .bind(session.id)
+      .first();
+
+  if (existing) {
+    return {
+      ok: true,
+      duplicate: true,
+      mbw_order_id:
+        existing.mbw_order_id,
+      fulfillment_status:
+        existing.fulfillment_status ||
+        "pending"
+    };
+  }
+
+  const metadata =
+    session.metadata || {};
+
+  const mbwOrderId =
+    cleanText(
+      metadata.mbw_reference_id ||
+      session.client_reference_id ||
+      `mbw_${session.id}`,
+      180
+    );
+
+  const customerDetails =
+    session.customer_details || {};
+
+  const totalDetails =
+    session.total_details || {};
+
+  const shippingCost =
+    session.shipping_cost || {};
+
+  const shippingRate =
+    shippingCost.shipping_rate &&
+    typeof shippingCost.shipping_rate === "object"
+      ? shippingCost.shipping_rate
+      : null;
+
+  const promotionCode =
+    getStripePromotionCode(session);
+
+  const now =
+    new Date().toISOString();
+
+  let insertResult;
+
+  try {
+    insertResult =
+      await env.DB
+        .prepare(
+          `INSERT OR IGNORE INTO orders (
+             mbw_order_id,
+             stripe_mode,
+             stripe_session_id,
+             stripe_payment_intent_id,
+             stripe_customer_id,
+             payment_status,
+             currency,
+             subtotal_cents,
+             discount_cents,
+             shipping_cents,
+             tax_cents,
+             total_cents,
+             promotion_code,
+             customer_email,
+             customer_first_name,
+             customer_last_name,
+             customer_phone,
+             shipping_address1,
+             shipping_address2,
+             shipping_city,
+             shipping_region,
+             shipping_postal_code,
+             shipping_country,
+             shipping_method_name,
+             shipping_method_code,
+             printify_status,
+             fulfillment_status,
+             confirmation_email_status,
+             shipping_email_status,
+             raw_stripe_session_json,
+             created_at,
+             updated_at
+           ) VALUES (
+             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?,
+             ?, ?,
+             ?, ?,
+             ?, ?,
+             ?, ?, ?
+           )`
+        )
+        .bind(
+          mbwOrderId,
+          normalizeStripeMode(env.STRIPE_MODE),
+          session.id,
+          stripeObjectId(
+            session.payment_intent
+          ),
+          stripeObjectId(
+            session.customer
+          ),
+          session.payment_status ||
+            "paid",
+          String(
+            session.currency || "usd"
+          ).toLowerCase(),
+          Number(
+            session.amount_subtotal || 0
+          ),
+          Number(
+            totalDetails.amount_discount || 0
+          ),
+          Number(
+            shippingCost.amount_total || 0
+          ),
+          Number(
+            totalDetails.amount_tax || 0
+          ),
+          Number(
+            session.amount_total || 0
+          ),
+          promotionCode,
+          cleanText(
+            customerDetails.email ||
+            session.customer_email ||
+            metadata.ship_email,
+            160
+          ),
+          cleanText(
+            metadata.ship_first_name,
+            80
+          ),
+          cleanText(
+            metadata.ship_last_name,
+            80
+          ),
+          cleanText(
+            customerDetails.phone ||
+            metadata.ship_phone,
+            40
+          ),
+          cleanText(
+            metadata.ship_address1,
+            160
+          ),
+          cleanText(
+            metadata.ship_address2,
+            160
+          ),
+          cleanText(
+            metadata.ship_city,
+            100
+          ),
+          cleanText(
+            metadata.ship_region,
+            100
+          ),
+          cleanText(
+            metadata.ship_zip,
+            40
+          ),
+          cleanText(
+            metadata.ship_country,
+            2
+          ),
+          cleanText(
+            shippingRate &&
+            shippingRate.display_name
+              ? shippingRate.display_name
+              : "",
+            120
+          ),
+          cleanText(
+            shippingRate &&
+            shippingRate.metadata &&
+            shippingRate.metadata
+              .printify_shipping_method
+              ? shippingRate.metadata
+                  .printify_shipping_method
+              : "",
+            40
+          ),
+          "pending",
+          "pending",
+          "pending",
+          "pending",
+          JSON.stringify(session),
+          now,
+          now
+        )
+        .run();
+  } catch (error) {
+    return {
+      ok: false,
+      status: 500,
+      body: {
+        ok: false,
+        error:
+          "Unable to save Stripe order to D1",
+        detail:
+          cleanText(
+            error && error.message
+              ? error.message
+              : String(error),
+            300
+          )
+      }
+    };
+  }
+
+  if (
+    !insertResult ||
+    !insertResult.meta ||
+    Number(insertResult.meta.changes || 0) === 0
+  ) {
+    const duplicate =
+      await env.DB
+        .prepare(
+          `SELECT
+             mbw_order_id,
+             fulfillment_status
+           FROM orders
+           WHERE stripe_session_id = ?
+           LIMIT 1`
+        )
+        .bind(session.id)
+        .first();
+
+    return {
+      ok: true,
+      duplicate: true,
+      mbw_order_id:
+        duplicate &&
+        duplicate.mbw_order_id
+          ? duplicate.mbw_order_id
+          : mbwOrderId,
+      fulfillment_status:
+        duplicate &&
+        duplicate.fulfillment_status
+          ? duplicate.fulfillment_status
+          : "pending"
+    };
+  }
+
+  const order =
+    await env.DB
+      .prepare(
+        `SELECT id
+         FROM orders
+         WHERE stripe_session_id = ?
+         LIMIT 1`
+      )
+      .bind(session.id)
+      .first();
+
+  if (!order || !order.id) {
+    return {
+      ok: false,
+      status: 500,
+      body: {
+        ok: false,
+        error:
+          "Order was saved but could not be reloaded"
+      }
+    };
+  }
+
+  const metadataItems =
+    parseMbwMetadataItems(
+      metadata.mbw_items
+    );
+
+  const itemStatements = [];
+
+  stripeLineItems.forEach(
+    (lineItem, index) => {
+      const product =
+        lineItem &&
+        lineItem.price &&
+        lineItem.price.product &&
+        typeof lineItem.price.product === "object"
+          ? lineItem.price.product
+          : {};
+
+      const productMetadata =
+        product.metadata || {};
+
+      const fallbackMeta =
+        metadataItems[index] || {};
+
+      const quantity =
+        Number(lineItem.quantity || 1);
+
+      const unitAmount =
+        lineItem.price &&
+        Number.isFinite(
+          Number(lineItem.price.unit_amount)
+        )
+          ? Number(lineItem.price.unit_amount)
+          : quantity > 0
+            ? Math.round(
+                Number(
+                  lineItem.amount_subtotal || 0
+                ) / quantity
+              )
+            : 0;
+
+      const lineTotal =
+        Number(
+          lineItem.amount_subtotal || 0
+        );
+
+      itemStatements.push(
+        env.DB
+          .prepare(
+            `INSERT INTO order_items (
+               order_id,
+               printify_product_id,
+               printify_variant_id,
+               product_title,
+               variant_label,
+               quantity,
+               unit_amount_cents,
+               line_total_cents,
+               image_url,
+               created_at
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+          .bind(
+            order.id,
+            cleanText(
+              productMetadata
+                .printify_product_id ||
+              fallbackMeta.p,
+              120
+            ),
+            Number(
+              productMetadata
+                .printify_variant_id ||
+              fallbackMeta.v ||
+              0
+            ),
+            cleanText(
+              product.name ||
+              lineItem.description ||
+              "Mindo Bird Watching product",
+              300
+            ),
+            cleanText(
+              product.description || "",
+              300
+            ),
+            quantity,
+            unitAmount,
+            lineTotal,
+            Array.isArray(product.images) &&
+            product.images.length > 0
+              ? cleanText(
+                  product.images[0],
+                  1000
+                )
+              : "",
+            now
+          )
+      );
+    }
+  );
+
+  if (itemStatements.length > 0) {
+    try {
+      await env.DB.batch(
+        itemStatements
+      );
+    } catch (error) {
+      await env.DB
+        .prepare(
+          "DELETE FROM orders WHERE id = ?"
+        )
+        .bind(order.id)
+        .run();
+
+      return {
+        ok: false,
+        status: 500,
+        body: {
+          ok: false,
+          error:
+            "Unable to save order items to D1",
+          detail:
+            cleanText(
+              error && error.message
+                ? error.message
+                : String(error),
+              300
+            )
+        }
+      };
+    }
+  }
+
+  return {
+    ok: true,
+    duplicate: false,
+    mbw_order_id: mbwOrderId,
+    fulfillment_status: "pending"
+  };
+}
+
+function stripeObjectId(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (
+    typeof value === "object" &&
+    value.id
+  ) {
+    return value.id;
+  }
+
+  return null;
+}
+
+function parseMbwMetadataItems(value) {
+  if (!value) {
+    return [];
+  }
+
+  try {
+    const parsed =
+      JSON.parse(value);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function getStripePromotionCode(session) {
+  if (
+    !Array.isArray(session.discounts) ||
+    session.discounts.length === 0
+  ) {
+    return null;
+  }
+
+  for (const discount of session.discounts) {
+    if (!discount) {
+      continue;
+    }
+
+    const promotion =
+      discount.promotion_code;
+
+    if (
+      promotion &&
+      typeof promotion === "object" &&
+      promotion.code
+    ) {
+      return cleanText(
+        promotion.code,
+        120
+      );
+    }
+  }
+
+  return null;
 }
 
 
