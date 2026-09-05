@@ -1,4 +1,4 @@
-/* MBW SHOP API V21 - PRINTIFY SHIPPING EMAILS */
+/* MBW SHOP API V22 - PRINTIFY ORDER IDEMPOTENCY RECOVERY */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -2148,11 +2148,56 @@ async function createPrintifyOrderIfEnabled(
         "created",
       skipped: false,
       duplicate: true,
+      recovered: false,
       printify_order_id:
         order.printify_order_id,
       fulfillment_status:
         order.fulfillment_status ||
         "manual_approval"
+    };
+  }
+
+  /*
+   * V22 cross-system idempotency recovery.
+   *
+   * A previous Worker attempt can successfully create an order in Printify
+   * and then fail before D1 stores Printify's returned order ID. On the next
+   * Stripe webhook retry, recover that existing remote order BEFORE issuing
+   * another POST. The MBW order ID is sent to Printify as both external_id
+   * and label, while every line item also carries a deterministic external_id.
+   */
+  const preflightRecovery =
+    await findExistingPrintifyOrderForMbwOrder(
+      env,
+      order.mbw_order_id
+    );
+
+  if (preflightRecovery) {
+    await saveRecoveredPrintifyOrder(
+      env,
+      order.id,
+      preflightRecovery
+    );
+
+    return {
+      ok: true,
+      status:
+        cleanText(
+          preflightRecovery.status,
+          80
+        ) || "created",
+      skipped: false,
+      duplicate: true,
+      recovered: true,
+      printify_order_id:
+        cleanText(
+          preflightRecovery.id,
+          160
+        ),
+      fulfillment_status:
+        printifyFulfillmentStatusFromOrder(
+          preflightRecovery
+        )
     };
   }
 
@@ -2236,6 +2281,11 @@ async function createPrintifyOrderIfEnabled(
     });
   }
 
+  const shippingMethod =
+    printifyShippingMethodCode(
+      order.shipping_method_code
+    );
+
   const payload = {
     external_id:
       order.mbw_order_id,
@@ -2244,15 +2294,11 @@ async function createPrintifyOrderIfEnabled(
     line_items:
       lineItems,
     shipping_method:
-      printifyShippingMethodCode(
-        order.shipping_method_code
-      ),
+      shippingMethod,
     is_printify_express:
       false,
     is_economy_shipping:
-      printifyShippingMethodCode(
-        order.shipping_method_code
-      ) === 4,
+      shippingMethod === 4,
     send_shipping_notification:
       false,
     address_to: {
@@ -2343,7 +2389,9 @@ async function createPrintifyOrderIfEnabled(
             "Content-Type":
               "application/json",
             "Accept":
-              "application/json"
+              "application/json",
+            "User-Agent":
+              "MindoBirdWatching-Shop/1.0"
           },
           body:
             JSON.stringify(payload)
@@ -2355,6 +2403,41 @@ async function createPrintifyOrderIfEnabled(
         .json()
         .catch(() => ({}));
   } catch (error) {
+    const recovered =
+      await findExistingPrintifyOrderForMbwOrder(
+        env,
+        order.mbw_order_id
+      );
+
+    if (recovered) {
+      await saveRecoveredPrintifyOrder(
+        env,
+        order.id,
+        recovered
+      );
+
+      return {
+        ok: true,
+        status:
+          cleanText(
+            recovered.status,
+            80
+          ) || "created",
+        skipped: false,
+        duplicate: true,
+        recovered: true,
+        printify_order_id:
+          cleanText(
+            recovered.id,
+            160
+          ),
+        fulfillment_status:
+          printifyFulfillmentStatusFromOrder(
+            recovered
+          )
+      };
+    }
+
     const message =
       cleanText(
         error && error.message
@@ -2377,6 +2460,45 @@ async function createPrintifyOrderIfEnabled(
   }
 
   if (!response.ok) {
+    /*
+     * Printify can reject a retry because external_id is already present.
+     * Recover the existing remote order before treating the attempt as failed.
+     */
+    const recovered =
+      await findExistingPrintifyOrderForMbwOrder(
+        env,
+        order.mbw_order_id
+      );
+
+    if (recovered) {
+      await saveRecoveredPrintifyOrder(
+        env,
+        order.id,
+        recovered
+      );
+
+      return {
+        ok: true,
+        status:
+          cleanText(
+            recovered.status,
+            80
+          ) || "created",
+        skipped: false,
+        duplicate: true,
+        recovered: true,
+        printify_order_id:
+          cleanText(
+            recovered.id,
+            160
+          ),
+        fulfillment_status:
+          printifyFulfillmentStatusFromOrder(
+            recovered
+          )
+      };
+    }
+
     const message =
       cleanText(
         data &&
@@ -2418,7 +2540,7 @@ async function createPrintifyOrderIfEnabled(
     };
   }
 
-  const printifyOrderId =
+  let printifyOrderId =
     cleanText(
       data && data.id
         ? data.id
@@ -2427,9 +2549,31 @@ async function createPrintifyOrderIfEnabled(
     );
 
   if (!printifyOrderId) {
-    const message =
-      "Printify created the order but did not return an order ID";
+    const recovered =
+      await findExistingPrintifyOrderForMbwOrder(
+        env,
+        order.mbw_order_id
+      );
 
+    if (recovered) {
+      data = recovered;
+      printifyOrderId =
+        cleanText(
+          recovered.id,
+          160
+        );
+    }
+  }
+
+  if (!printifyOrderId) {
+    const message =
+      "Printify created the order but no recoverable order ID was found";
+
+    /*
+     * Do not issue another Printify create request in this invocation.
+     * Stripe can retry the webhook; V22 preflight recovery runs before any
+     * future POST and can bind the already-created remote order to D1.
+     */
     await markPrintifyOrderFailed(
       env,
       order.id,
@@ -2447,6 +2591,12 @@ async function createPrintifyOrderIfEnabled(
   const createdAt =
     new Date().toISOString();
 
+  /*
+   * If this D1 write fails after Printify accepted the order, the webhook
+   * invocation fails and Stripe retries. On that retry, V22's preflight scan
+   * finds the existing Printify order and saves the binding instead of POSTing
+   * a second order.
+   */
   await env.DB
     .prepare(
       `UPDATE orders
@@ -2474,11 +2624,263 @@ async function createPrintifyOrderIfEnabled(
     status: "created",
     skipped: false,
     duplicate: false,
+    recovered: false,
     printify_order_id:
       printifyOrderId,
     fulfillment_status:
       "manual_approval"
   };
+}
+
+async function findExistingPrintifyOrderForMbwOrder(
+  env,
+  mbwOrderId
+) {
+  const target =
+    cleanText(
+      mbwOrderId,
+      160
+    );
+
+  if (
+    !target ||
+    !env.PRINTIFY_API_TOKEN ||
+    !env.PRINTIFY_SHOP_ID
+  ) {
+    return null;
+  }
+
+  /*
+   * Printify's order-list endpoint currently supports pagination but does not
+   * expose an external_id query parameter. New orders are expected near the
+   * front of the list, so scan up to 10 pages (100 recent orders).
+   */
+  for (
+    let page = 1;
+    page <= 10;
+    page += 1
+  ) {
+    let response;
+    let data;
+
+    try {
+      response =
+        await fetch(
+          `https://api.printify.com/v1/shops/${encodeURIComponent(env.PRINTIFY_SHOP_ID)}/orders.json?limit=10&page=${page}`,
+          {
+            method: "GET",
+            headers: {
+              "Authorization":
+                `Bearer ${env.PRINTIFY_API_TOKEN}`,
+              "Accept":
+                "application/json",
+              "User-Agent":
+                "MindoBirdWatching-Shop/1.0"
+            }
+          }
+        );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      data =
+        await response
+          .json()
+          .catch(() => ({}));
+    } catch {
+      return null;
+    }
+
+    const orders =
+      data &&
+      Array.isArray(data.data)
+        ? data.data
+        : [];
+
+    for (const candidate of orders) {
+      if (
+        printifyOrderMatchesMbwOrder(
+          candidate,
+          target
+        )
+      ) {
+        return candidate;
+      }
+    }
+
+    if (orders.length < 10) {
+      break;
+    }
+  }
+
+  return null;
+}
+
+function printifyOrderMatchesMbwOrder(
+  candidate,
+  mbwOrderId
+) {
+  if (
+    !candidate ||
+    !mbwOrderId
+  ) {
+    return false;
+  }
+
+  const metadata =
+    candidate.metadata &&
+    typeof candidate.metadata === "object"
+      ? candidate.metadata
+      : {};
+
+  const label =
+    cleanText(
+      metadata.shop_order_label,
+      200
+    );
+
+  if (label === mbwOrderId) {
+    return true;
+  }
+
+  const lineItems =
+    Array.isArray(candidate.line_items)
+      ? candidate.line_items
+      : [];
+
+  const expectedPrefix =
+    `${mbwOrderId}-item-`;
+
+  for (const item of lineItems) {
+    const itemMetadata =
+      item &&
+      item.metadata &&
+      typeof item.metadata === "object"
+        ? item.metadata
+        : {};
+
+    const externalId =
+      cleanText(
+        itemMetadata.external_id,
+        240
+      );
+
+    if (
+      externalId &&
+      externalId.startsWith(
+        expectedPrefix
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function printifyFulfillmentStatusFromOrder(
+  printifyOrder
+) {
+  const status =
+    cleanText(
+      printifyOrder &&
+      printifyOrder.status,
+      80
+    ).toLowerCase();
+
+  if (
+    status === "fulfilled" ||
+    status === "shipped"
+  ) {
+    return "shipped";
+  }
+
+  if (
+    status === "in-production" ||
+    status === "in_production"
+  ) {
+    return "in_production";
+  }
+
+  if (
+    status === "canceled" ||
+    status === "cancelled"
+  ) {
+    return "canceled";
+  }
+
+  if (
+    status === "on-hold" ||
+    status === "on_hold" ||
+    status === "pending" ||
+    status === "created"
+  ) {
+    return "manual_approval";
+  }
+
+  return "manual_approval";
+}
+
+async function saveRecoveredPrintifyOrder(
+  env,
+  orderId,
+  printifyOrder
+) {
+  const printifyOrderId =
+    cleanText(
+      printifyOrder &&
+      printifyOrder.id,
+      160
+    );
+
+  if (!printifyOrderId) {
+    throw new Error(
+      "Recovered Printify order is missing an ID"
+    );
+  }
+
+  const now =
+    new Date().toISOString();
+
+  const printifyStatus =
+    cleanText(
+      printifyOrder &&
+      printifyOrder.status,
+      80
+    ) || "created";
+
+  const fulfillmentStatus =
+    printifyFulfillmentStatusFromOrder(
+      printifyOrder
+    );
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         printify_order_id = ?,
+         printify_status = ?,
+         fulfillment_status = ?,
+         raw_printify_order_json = ?,
+         printify_order_created_at = COALESCE(printify_order_created_at, ?),
+         printify_order_error = NULL,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      printifyOrderId,
+      printifyStatus,
+      fulfillmentStatus,
+      JSON.stringify(printifyOrder),
+      cleanText(
+        printifyOrder.created_at,
+        100
+      ) || now,
+      now,
+      orderId
+    )
+    .run();
 }
 
 async function markPrintifyOrderFailed(
