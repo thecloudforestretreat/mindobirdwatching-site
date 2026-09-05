@@ -127,6 +127,7 @@
   </script>
 
 </head>
+<!-- MBW SHOP CHECKOUT V18.2 -->
 <body data-page-content-group="shop" data-page-language="en" data-page-region="mindo" data-page-type="shop_product_page">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"></div>
@@ -345,13 +346,13 @@
         Continue to Shipping
       </button>
       <button class="mbwCartContinue" id="mbwCartContinue" type="button">
-        Continue shopping
+        Continue Shopping
       </button>
     </div>
   </div>
 
   <div class="mbwCartStage" hidden id="mbwCartStageShipping">
-    <form class="mbwCheckoutForm" id="mbwCheckoutForm" novalidate>
+    <form class="mbwCheckoutForm" id="mbwCheckoutForm">
       <div class="mbwCheckoutIntro">
         <button class="mbwCheckoutBack" id="mbwCheckoutBack" type="button">
           &#8249; Back to cart
@@ -380,8 +381,9 @@
         </label>
 
         <label class="mbwCheckoutField mbwCheckoutWide">
-          <span>Phone <small>Optional</small></span>
-          <input autocomplete="tel" id="mbwShipPhone" maxlength="40" name="phone" type="tel">
+          <span>Phone</span>
+          <input autocomplete="tel" id="mbwShipPhone" inputmode="tel" maxlength="20" name="phone" placeholder="(305) 555-0123" required type="tel" aria-describedby="mbwShipPhoneHint">
+          <small id="mbwShipPhoneHint">Required. Enter a valid 10-digit US phone number.</small>
         </label>
 
         <label class="mbwCheckoutField mbwCheckoutWide">
@@ -713,12 +715,58 @@
     }).join("");
   }
 
+  function normalizeUsPhone(value){
+    var raw = String(value || "").trim();
+
+    if(!raw){
+      return {
+        ok: false,
+        error: "Phone number is required."
+      };
+    }
+
+    if(/[A-Za-z]/.test(raw)){
+      return {
+        ok: false,
+        error: "Enter a valid 10-digit US phone number."
+      };
+    }
+
+    var digits = raw.replace(/\D/g, "");
+
+    if(digits.length === 11 && digits.charAt(0) === "1"){
+      digits = digits.slice(1);
+    }
+
+    if(
+      digits.length !== 10 ||
+      !/^[2-9]\d{2}[2-9]\d{6}$/.test(digits)
+    ){
+      return {
+        ok: false,
+        error: "Enter a valid 10-digit US phone number."
+      };
+    }
+
+    return {
+      ok: true,
+      digits: digits,
+      e164: "+1" + digits,
+      display:
+        "(" + digits.slice(0,3) + ") " +
+        digits.slice(3,6) + "-" +
+        digits.slice(6)
+    };
+  }
+
   function shippingAddress(){
+    var phoneResult = normalizeUsPhone(valueOf("mbwShipPhone"));
+
     return {
       first_name: valueOf("mbwShipFirstName"),
       last_name: valueOf("mbwShipLastName"),
       email: valueOf("mbwShipEmail"),
-      phone: valueOf("mbwShipPhone"),
+      phone: phoneResult.ok ? phoneResult.e164 : valueOf("mbwShipPhone"),
       address1: valueOf("mbwShipAddress1"),
       address2: valueOf("mbwShipAddress2"),
       city: valueOf("mbwShipCity"),
@@ -735,11 +783,30 @@
 
   function validateShippingForm(){
     var form = document.getElementById("mbwCheckoutForm");
+    var phoneField = document.getElementById("mbwShipPhone");
 
     if(!form) return false;
 
+    if(phoneField){
+      phoneField.setCustomValidity("");
+
+      var phoneResult = normalizeUsPhone(phoneField.value);
+
+      if(!phoneResult.ok){
+        phoneField.setCustomValidity(phoneResult.error);
+      }
+    }
+
     if(!form.reportValidity()){
       return false;
+    }
+
+    if(phoneField){
+      var validPhone = normalizeUsPhone(phoneField.value);
+
+      if(validPhone.ok){
+        phoneField.value = validPhone.display;
+      }
     }
 
     return true;
@@ -789,6 +856,26 @@
         }
 
         field.value = restored;
+      }
+    });
+  }
+
+  var phoneInput = document.getElementById("mbwShipPhone");
+
+  if(phoneInput){
+    phoneInput.addEventListener("input", function(){
+      phoneInput.setCustomValidity("");
+      resetShippingState();
+    });
+
+    phoneInput.addEventListener("blur", function(){
+      var result = normalizeUsPhone(phoneInput.value);
+
+      if(result.ok){
+        phoneInput.value = result.display;
+        phoneInput.setCustomValidity("");
+      }else if(phoneInput.value.trim()){
+        phoneInput.setCustomValidity(result.error);
       }
     });
   }
