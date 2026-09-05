@@ -80,6 +80,10 @@ export default {
       );
     }
 
+    if (url.pathname === "/order/confirmation") {
+      return handleOrderConfirmation(request, env, url);
+    }
+
     if (url.pathname === "/catalog") {
       return handleCatalog(request, env);
     }
@@ -732,6 +736,26 @@ async function saveStripeOrderToD1(
              shipping_country,
              shipping_method_name,
              shipping_method_code,
+
+             landing_page,
+             referrer,
+
+             first_utm_source,
+             first_utm_medium,
+             first_utm_campaign,
+             first_utm_content,
+             first_utm_term,
+
+             current_utm_source,
+             current_utm_medium,
+             current_utm_campaign,
+             current_utm_content,
+             current_utm_term,
+
+             gclid,
+             fbclid,
+             attribution_json,
+
              printify_status,
              fulfillment_status,
              confirmation_email_status,
@@ -746,7 +770,10 @@ async function saveStripeOrderToD1(
              ?, ?, ?, ?, ?, ?,
              ?, ?,
              ?, ?,
-             ?, ?,
+             ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?,
+             ?, ?, ?,
+             ?, ?, ?, ?, ?,
              ?, ?, ?
            )`
         )
@@ -841,6 +868,100 @@ async function saveStripeOrderToD1(
               : "",
             40
           ),
+
+          cleanText(
+            metadata.landing_page,
+            500
+          ),
+          cleanText(
+            metadata.referrer,
+            500
+          ),
+
+          cleanText(
+            metadata.first_utm_source,
+            120
+          ),
+          cleanText(
+            metadata.first_utm_medium,
+            120
+          ),
+          cleanText(
+            metadata.first_utm_campaign,
+            180
+          ),
+          cleanText(
+            metadata.first_utm_content,
+            180
+          ),
+          cleanText(
+            metadata.first_utm_term,
+            180
+          ),
+
+          cleanText(
+            metadata.current_utm_source,
+            120
+          ),
+          cleanText(
+            metadata.current_utm_medium,
+            120
+          ),
+          cleanText(
+            metadata.current_utm_campaign,
+            180
+          ),
+          cleanText(
+            metadata.current_utm_content,
+            180
+          ),
+          cleanText(
+            metadata.current_utm_term,
+            180
+          ),
+
+          cleanText(
+            metadata.gclid,
+            250
+          ),
+          cleanText(
+            metadata.fbclid,
+            250
+          ),
+          JSON.stringify({
+            landing_page:
+              cleanText(metadata.landing_page, 500),
+            referrer:
+              cleanText(metadata.referrer, 500),
+
+            first_utm_source:
+              cleanText(metadata.first_utm_source, 120),
+            first_utm_medium:
+              cleanText(metadata.first_utm_medium, 120),
+            first_utm_campaign:
+              cleanText(metadata.first_utm_campaign, 180),
+            first_utm_content:
+              cleanText(metadata.first_utm_content, 180),
+            first_utm_term:
+              cleanText(metadata.first_utm_term, 180),
+
+            current_utm_source:
+              cleanText(metadata.current_utm_source, 120),
+            current_utm_medium:
+              cleanText(metadata.current_utm_medium, 120),
+            current_utm_campaign:
+              cleanText(metadata.current_utm_campaign, 180),
+            current_utm_content:
+              cleanText(metadata.current_utm_content, 180),
+            current_utm_term:
+              cleanText(metadata.current_utm_term, 180),
+
+            gclid:
+              cleanText(metadata.gclid, 250),
+            fbclid:
+              cleanText(metadata.fbclid, 250)
+          }),
+
           "pending",
           "pending",
           "pending",
@@ -1135,6 +1256,247 @@ function getStripePromotionCode(session) {
 }
 
 
+async function handleOrderConfirmation(
+  request,
+  env,
+  url
+) {
+  if (!env.DB) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "D1 binding DB is not configured"
+      },
+      500,
+      request
+    );
+  }
+
+  const sessionId =
+    cleanText(
+      url.searchParams.get("session_id"),
+      255
+    );
+
+  if (
+    !sessionId ||
+    !/^cs_(test|live)_[A-Za-z0-9]+$/.test(
+      sessionId
+    )
+  ) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "A valid Stripe Checkout Session ID is required"
+      },
+      400,
+      request
+    );
+  }
+
+  const order =
+    await env.DB
+      .prepare(
+        `SELECT
+           id,
+           mbw_order_id,
+           stripe_mode,
+           stripe_session_id,
+           payment_status,
+           currency,
+
+           subtotal_cents,
+           discount_cents,
+           shipping_cents,
+           tax_cents,
+           total_cents,
+           promotion_code,
+
+           customer_email,
+           customer_first_name,
+           customer_last_name,
+           customer_phone,
+
+           shipping_address1,
+           shipping_address2,
+           shipping_city,
+           shipping_region,
+           shipping_postal_code,
+           shipping_country,
+
+           shipping_method_name,
+           shipping_method_code,
+
+           fulfillment_status,
+           printify_status,
+           tracking_number,
+           tracking_url,
+           carrier,
+
+           created_at,
+           updated_at
+         FROM orders
+         WHERE stripe_session_id = ?
+         LIMIT 1`
+      )
+      .bind(sessionId)
+      .first();
+
+  if (!order) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "Order confirmation is not available yet",
+        retryable: true
+      },
+      404,
+      request
+    );
+  }
+
+  if (order.payment_status !== "paid") {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "This order is not marked as paid"
+      },
+      409,
+      request
+    );
+  }
+
+  const itemResult =
+    await env.DB
+      .prepare(
+        `SELECT
+           printify_product_id,
+           printify_variant_id,
+           product_title,
+           variant_label,
+           quantity,
+           unit_amount_cents,
+           line_total_cents,
+           image_url
+         FROM order_items
+         WHERE order_id = ?
+         ORDER BY id ASC`
+      )
+      .bind(order.id)
+      .all();
+
+  const items =
+    itemResult &&
+    Array.isArray(itemResult.results)
+      ? itemResult.results
+      : [];
+
+  return jsonResponse(
+    {
+      ok: true,
+      order: {
+        mbw_order_id:
+          order.mbw_order_id,
+        stripe_mode:
+          order.stripe_mode,
+        payment_status:
+          order.payment_status,
+        currency:
+          order.currency,
+
+        subtotal_cents:
+          Number(order.subtotal_cents || 0),
+        discount_cents:
+          Number(order.discount_cents || 0),
+        shipping_cents:
+          Number(order.shipping_cents || 0),
+        tax_cents:
+          Number(order.tax_cents || 0),
+        total_cents:
+          Number(order.total_cents || 0),
+        promotion_code:
+          order.promotion_code || "",
+
+        customer: {
+          email:
+            order.customer_email || "",
+          first_name:
+            order.customer_first_name || "",
+          last_name:
+            order.customer_last_name || "",
+          phone:
+            order.customer_phone || ""
+        },
+
+        shipping_address: {
+          address1:
+            order.shipping_address1 || "",
+          address2:
+            order.shipping_address2 || "",
+          city:
+            order.shipping_city || "",
+          region:
+            order.shipping_region || "",
+          postal_code:
+            order.shipping_postal_code || "",
+          country:
+            order.shipping_country || ""
+        },
+
+        shipping_method: {
+          name:
+            order.shipping_method_name || "",
+          code:
+            order.shipping_method_code || ""
+        },
+
+        fulfillment_status:
+          order.fulfillment_status || "pending",
+        printify_status:
+          order.printify_status || "",
+        tracking: {
+          carrier:
+            order.carrier || "",
+          number:
+            order.tracking_number || "",
+          url:
+            order.tracking_url || ""
+        },
+
+        created_at:
+          order.created_at,
+        updated_at:
+          order.updated_at,
+
+        items: items.map((item) => ({
+          printify_product_id:
+            item.printify_product_id,
+          printify_variant_id:
+            Number(item.printify_variant_id || 0),
+          product_title:
+            item.product_title,
+          variant_label:
+            item.variant_label || "",
+          quantity:
+            Number(item.quantity || 0),
+          unit_amount_cents:
+            Number(item.unit_amount_cents || 0),
+          line_total_cents:
+            Number(item.line_total_cents || 0),
+          image_url:
+            item.image_url || ""
+        }))
+      }
+    },
+    200,
+    request
+  );
+}
+
+
 async function handleCheckoutSession(
   request,
   env
@@ -1225,6 +1587,7 @@ async function handleCheckoutSession(
         referenceId,
         items: parsed.items,
         address: parsed.address,
+        attribution: parsed.attribution,
         shippingOptions
       }
     );
@@ -1362,6 +1725,9 @@ async function parseCheckoutRequest(
 
   const addressResult =
     normalizeCheckoutAddress(body.address);
+
+  const attribution =
+    normalizeAttribution(body.attribution);
 
   if (!addressResult.ok) {
     return {
@@ -1514,7 +1880,49 @@ async function parseCheckoutRequest(
     items: trustedItems,
     printifyLineItems,
     address: addressResult.address,
+    attribution,
     subtotal
+  };
+}
+
+function normalizeAttribution(raw) {
+  const data =
+    raw && typeof raw === "object"
+      ? raw
+      : {};
+
+  return {
+    landing_page:
+      cleanText(data.landing_page, 500),
+    referrer:
+      cleanText(data.referrer, 500),
+
+    first_utm_source:
+      cleanText(data.first_utm_source, 120),
+    first_utm_medium:
+      cleanText(data.first_utm_medium, 120),
+    first_utm_campaign:
+      cleanText(data.first_utm_campaign, 180),
+    first_utm_content:
+      cleanText(data.first_utm_content, 180),
+    first_utm_term:
+      cleanText(data.first_utm_term, 180),
+
+    current_utm_source:
+      cleanText(data.current_utm_source, 120),
+    current_utm_medium:
+      cleanText(data.current_utm_medium, 120),
+    current_utm_campaign:
+      cleanText(data.current_utm_campaign, 180),
+    current_utm_content:
+      cleanText(data.current_utm_content, 180),
+    current_utm_term:
+      cleanText(data.current_utm_term, 180),
+
+    gclid:
+      cleanText(data.gclid, 250),
+    fbclid:
+      cleanText(data.fbclid, 250)
   };
 }
 
@@ -1977,6 +2385,53 @@ async function createStripeCheckoutSession(
     "metadata[ship_zip]",
     data.address.zip
   );
+
+  const attribution =
+    data.attribution || {};
+
+  const attributionFields = {
+    landing_page:
+      attribution.landing_page,
+    referrer:
+      attribution.referrer,
+
+    first_utm_source:
+      attribution.first_utm_source,
+    first_utm_medium:
+      attribution.first_utm_medium,
+    first_utm_campaign:
+      attribution.first_utm_campaign,
+    first_utm_content:
+      attribution.first_utm_content,
+    first_utm_term:
+      attribution.first_utm_term,
+
+    current_utm_source:
+      attribution.current_utm_source,
+    current_utm_medium:
+      attribution.current_utm_medium,
+    current_utm_campaign:
+      attribution.current_utm_campaign,
+    current_utm_content:
+      attribution.current_utm_content,
+    current_utm_term:
+      attribution.current_utm_term,
+
+    gclid:
+      attribution.gclid,
+    fbclid:
+      attribution.fbclid
+  };
+
+  Object.entries(attributionFields)
+    .forEach(([key, value]) => {
+      if (value) {
+        params.set(
+          `metadata[${key}]`,
+          String(value)
+        );
+      }
+    });
 
   let response;
 
