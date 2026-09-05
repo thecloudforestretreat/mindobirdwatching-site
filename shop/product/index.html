@@ -127,6 +127,7 @@
   </script>
 
 </head>
+<!-- MBW PRODUCT V18.3 QTY RESET -->
 <!-- MBW SHOP CHECKOUT V18.2 -->
 <body data-page-content-group="shop" data-page-language="en" data-page-region="mindo" data-page-type="shop_product_page">
 <div class="container">
@@ -1491,7 +1492,10 @@
 
   function addToCart(openAfter){
     if(!state.selectedVariant||!window.MBW_CART) return;
-    var qty=Math.max(1,Math.min(20,Number(document.getElementById("mbwProductQty").value||1)));
+
+    var qtyInput=document.getElementById("mbwProductQty");
+    var qty=Math.max(1,Math.min(20,Number(qtyInput&&qtyInput.value||1)));
+
     window.MBW_CART.add({
       id:state.product.id,
       variant_id:state.selectedVariant.id,
@@ -1501,6 +1505,11 @@
       option:optionDescription(),
       qty:qty
     });
+
+    if(qtyInput){
+      qtyInput.value="1";
+    }
+
     if(openAfter) window.MBW_CART.open();
   }
 
