@@ -80,6 +80,11 @@ export default {
             Boolean(
               env.MBW_ORDER_FROM_EMAIL &&
               env.MBW_ADMIN_ORDER_EMAIL
+            ),
+          customer_order_email_configured:
+            Boolean(
+              env.RESEND_API_KEY &&
+              env.MBW_ORDER_FROM_EMAIL
             )
         },
         200,
@@ -344,6 +349,36 @@ async function handleStripeWebhook(
     );
   }
 
+  const customerEmailResult =
+    await sendCustomerOrderConfirmation(
+      env,
+      session.id
+    );
+
+  if (!customerEmailResult.ok) {
+    return jsonResponse(
+      {
+        ok: false,
+        received: true,
+        order_saved: true,
+        duplicate: saveResult.duplicate,
+        mbw_order_id:
+          saveResult.mbw_order_id,
+        stripe_session_id:
+          session.id,
+        admin_email_status:
+          adminEmailResult.status,
+        customer_email_status:
+          customerEmailResult.status || "failed",
+        error:
+          customerEmailResult.error ||
+          "Customer order confirmation email could not be sent"
+      },
+      500,
+      request
+    );
+  }
+
   return jsonResponse(
     {
       ok: true,
@@ -359,7 +394,11 @@ async function handleStripeWebhook(
       admin_email_status:
         adminEmailResult.status,
       admin_email_duplicate:
-        Boolean(adminEmailResult.duplicate)
+        Boolean(adminEmailResult.duplicate),
+      customer_email_status:
+        customerEmailResult.status,
+      customer_email_duplicate:
+        Boolean(customerEmailResult.duplicate)
     },
     200,
     request
@@ -1217,6 +1256,578 @@ async function saveStripeOrderToD1(
   };
 }
 
+
+
+async function sendCustomerOrderConfirmation(
+  env,
+  stripeSessionId
+) {
+  if (
+    !env.RESEND_API_KEY ||
+    !env.MBW_ORDER_FROM_EMAIL
+  ) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Resend customer email configuration is incomplete"
+    };
+  }
+
+  const order =
+    await env.DB
+      .prepare(
+        `SELECT
+           id,
+           mbw_order_id,
+           stripe_mode,
+           stripe_session_id,
+           payment_status,
+           currency,
+           subtotal_cents,
+           discount_cents,
+           shipping_cents,
+           tax_cents,
+           total_cents,
+           promotion_code,
+           customer_email,
+           customer_first_name,
+           customer_last_name,
+           customer_phone,
+           shipping_address1,
+           shipping_address2,
+           shipping_city,
+           shipping_region,
+           shipping_postal_code,
+           shipping_country,
+           shipping_method_name,
+           shipping_method_code,
+           confirmation_email_status,
+           updated_at
+         FROM orders
+         WHERE stripe_session_id = ?
+         LIMIT 1`
+      )
+      .bind(stripeSessionId)
+      .first();
+
+  if (!order || !order.id) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Saved order could not be loaded for customer email"
+    };
+  }
+
+  if (!order.customer_email) {
+    await markCustomerEmailFailed(
+      env,
+      order.id,
+      "Customer email is missing"
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Customer email is missing"
+    };
+  }
+
+  if (
+    order.confirmation_email_status ===
+    "sent"
+  ) {
+    return {
+      ok: true,
+      status: "sent",
+      duplicate: true
+    };
+  }
+
+  const now =
+    new Date().toISOString();
+
+  const staleBefore =
+    new Date(
+      Date.now() - 10 * 60 * 1000
+    ).toISOString();
+
+  const claim =
+    await env.DB
+      .prepare(
+        `UPDATE orders
+         SET
+           confirmation_email_status = 'sending',
+           updated_at = ?
+         WHERE id = ?
+           AND (
+             confirmation_email_status IS NULL
+             OR confirmation_email_status = ''
+             OR confirmation_email_status = 'pending'
+             OR confirmation_email_status = 'failed'
+             OR (
+               confirmation_email_status = 'sending'
+               AND updated_at < ?
+             )
+           )`
+      )
+      .bind(
+        now,
+        order.id,
+        staleBefore
+      )
+      .run();
+
+  const claimed =
+    claim &&
+    claim.meta &&
+    Number(claim.meta.changes || 0) > 0;
+
+  if (!claimed) {
+    const current =
+      await env.DB
+        .prepare(
+          `SELECT confirmation_email_status
+           FROM orders
+           WHERE id = ?
+           LIMIT 1`
+        )
+        .bind(order.id)
+        .first();
+
+    if (
+      current &&
+      current.confirmation_email_status ===
+      "sent"
+    ) {
+      return {
+        ok: true,
+        status: "sent",
+        duplicate: true
+      };
+    }
+
+    return {
+      ok: true,
+      status:
+        current &&
+        current.confirmation_email_status
+          ? current.confirmation_email_status
+          : "sending",
+      duplicate: true
+    };
+  }
+
+  const items =
+    await env.DB
+      .prepare(
+        `SELECT
+           printify_product_id,
+           printify_variant_id,
+           product_title,
+           variant_label,
+           quantity,
+           unit_amount_cents,
+           line_total_cents,
+           image_url
+         FROM order_items
+         WHERE order_id = ?
+         ORDER BY id ASC`
+      )
+      .bind(order.id)
+      .all();
+
+  const orderItems =
+    items &&
+    Array.isArray(items.results)
+      ? items.results
+      : [];
+
+  const subject =
+    `Your Mindo Bird Watching order is confirmed - ${order.mbw_order_id}`;
+
+  const html =
+    buildCustomerOrderEmailHtml(
+      order,
+      orderItems
+    );
+
+  const text =
+    buildCustomerOrderEmailText(
+      order,
+      orderItems
+    );
+
+  let response;
+  let data;
+
+  try {
+    response =
+      await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+          headers: {
+            "Authorization":
+              `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type":
+              "application/json",
+            "Idempotency-Key":
+              `mbw-customer-${order.mbw_order_id}`
+          },
+          body: JSON.stringify({
+            from:
+              `Mindo Bird Watching <${env.MBW_ORDER_FROM_EMAIL}>`,
+            to: [
+              order.customer_email
+            ],
+            reply_to:
+              env.MBW_ADMIN_ORDER_EMAIL ||
+              env.MBW_ORDER_FROM_EMAIL,
+            subject,
+            html,
+            text
+          })
+        }
+      );
+
+    data =
+      await response
+        .json()
+        .catch(() => ({}));
+  } catch (error) {
+    const message =
+      cleanText(
+        error && error.message
+          ? error.message
+          : String(error),
+        500
+      );
+
+    await markCustomerEmailFailed(
+      env,
+      order.id,
+      message
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: message
+    };
+  }
+
+  if (!response.ok) {
+    const message =
+      cleanText(
+        data &&
+        (data.message || data.error)
+          ? data.message || data.error
+          : `Resend returned HTTP ${response.status}`,
+        500
+      );
+
+    await markCustomerEmailFailed(
+      env,
+      order.id,
+      message
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: message
+    };
+  }
+
+  const sentAt =
+    new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         confirmation_email_status = 'sent',
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      sentAt,
+      order.id
+    )
+    .run();
+
+  return {
+    ok: true,
+    status: "sent",
+    duplicate: false,
+    resend_email_id:
+      data && data.id
+        ? data.id
+        : null
+  };
+}
+
+async function markCustomerEmailFailed(
+  env,
+  orderId,
+  message
+) {
+  const now =
+    new Date().toISOString();
+
+  console.error(
+    "Customer order confirmation email failed:",
+    cleanText(message, 500)
+  );
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         confirmation_email_status = 'failed',
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      now,
+      orderId
+    )
+    .run();
+}
+
+function buildCustomerOrderEmailHtml(
+  order,
+  items
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+
+  const firstName =
+    cleanText(
+      order.customer_first_name ||
+      "there",
+      80
+    );
+
+  const addressLines = [
+    order.shipping_address1,
+    order.shipping_address2,
+    [
+      order.shipping_city,
+      order.shipping_region,
+      order.shipping_postal_code
+    ]
+      .filter(Boolean)
+      .join(", "),
+    order.shipping_country
+  ]
+    .filter(Boolean)
+    .map(escapeEmailHtml)
+    .join("<br>");
+
+  const itemRows =
+    (items || [])
+      .map((item) => {
+        const variant =
+          item.variant_label
+            ? `<div style="font-size:12px;line-height:18px;color:#667085;margin-top:3px;">${escapeEmailHtml(item.variant_label)}</div>`
+            : "";
+
+        const image =
+          item.image_url
+            ? `<td width="58" valign="top" style="padding:14px 14px 14px 0;border-bottom:1px solid #E7ECE8;">
+                 <img src="${escapeEmailHtml(item.image_url)}" width="54" height="54" alt="" style="display:block;width:54px;height:54px;object-fit:cover;border-radius:9px;border:1px solid #E7ECE8;">
+               </td>`
+            : "";
+
+        return `
+          <tr>
+            ${image}
+            <td style="padding:14px 0;border-bottom:1px solid #E7ECE8;vertical-align:top;">
+              <div style="font-size:14px;line-height:20px;font-weight:800;color:#173A24;">
+                ${escapeEmailHtml(item.product_title || "MBW Shop product")}
+              </div>
+              ${variant}
+              <div style="font-size:12px;line-height:18px;color:#667085;margin-top:5px;">
+                Qty ${Number(item.quantity || 0)} x ${formatEmailMoney(item.unit_amount_cents, currency)}
+              </div>
+            </td>
+            <td align="right" style="padding:14px 0 14px 16px;border-bottom:1px solid #E7ECE8;vertical-align:top;font-size:14px;line-height:20px;font-weight:800;color:#173A24;white-space:nowrap;">
+              ${formatEmailMoney(item.line_total_cents, currency)}
+            </td>
+          </tr>`;
+      })
+      .join("");
+
+  const promoRow =
+    Number(order.discount_cents || 0) > 0
+      ? `
+        <tr>
+          <td style="padding:5px 0;font-size:13px;color:#475467;">
+            Discount${order.promotion_code ? ` (${escapeEmailHtml(order.promotion_code)})` : ""}
+          </td>
+          <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">
+            -${formatEmailMoney(order.discount_cents, currency)}
+          </td>
+        </tr>`
+      : "";
+
+  return `<!doctype html>
+<html>
+<body style="margin:0;padding:0;background:#F3F7F1;font-family:Arial,Helvetica,sans-serif;color:#173A24;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F3F7F1;">
+    <tr>
+      <td align="center" style="padding:28px 14px;">
+        <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:620px;background:#FFFFFF;border:1px solid #DDE7DE;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="padding:24px 26px;background:#0D5925;color:#FFFFFF;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td valign="middle" style="padding-right:12px;">
+                    <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="46" height="46" alt="Mindo Bird Watching" style="display:block;width:46px;height:46px;border-radius:50%;background:#FFFFFF;">
+                  </td>
+                  <td valign="middle">
+                    <div style="font-size:12px;line-height:18px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Mindo Bird Watching Shop</div>
+                    <div style="font-size:25px;line-height:31px;font-weight:800;margin-top:2px;">Order confirmed</div>
+                  </td>
+                </tr>
+              </table>
+              <div style="font-size:13px;line-height:20px;margin-top:12px;opacity:.92;">
+                Hi ${escapeEmailHtml(firstName)}, your payment was received successfully.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 26px;">
+              <div style="font-size:13px;line-height:20px;color:#475467;">
+                Thank you for shopping with Mindo Bird Watching. We have received your order and will prepare it for fulfillment.
+              </div>
+
+              <div style="margin-top:18px;padding:13px 15px;border-radius:12px;background:#F5F9F4;border:1px solid #DDE7DE;">
+                <div style="font-size:11px;line-height:17px;color:#667085;text-transform:uppercase;letter-spacing:.06em;font-weight:800;">Order ID</div>
+                <div style="font-size:13px;line-height:20px;font-weight:800;color:#0D5925;word-break:break-all;margin-top:3px;">${escapeEmailHtml(order.mbw_order_id)}</div>
+              </div>
+
+              <div style="height:22px;"></div>
+
+              <div style="font-size:17px;line-height:24px;font-weight:800;color:#173A24;">Your order</div>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:6px;">
+                ${itemRows || `<tr><td style="padding:14px 0;color:#667085;">No line items were found.</td></tr>`}
+              </table>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;">
+                <tr>
+                  <td style="padding:5px 0;font-size:13px;color:#475467;">Subtotal</td>
+                  <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">${formatEmailMoney(order.subtotal_cents, currency)}</td>
+                </tr>
+                ${promoRow}
+                <tr>
+                  <td style="padding:5px 0;font-size:13px;color:#475467;">Shipping</td>
+                  <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">${formatEmailMoney(order.shipping_cents, currency)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:5px 0;font-size:13px;color:#475467;">Tax</td>
+                  <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">${formatEmailMoney(order.tax_cents, currency)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0 0;border-top:1px solid #DDE7DE;font-size:15px;font-weight:800;color:#173A24;">Total paid</td>
+                  <td align="right" style="padding:12px 0 0;border-top:1px solid #DDE7DE;font-size:17px;font-weight:800;color:#0D5925;">${formatEmailMoney(order.total_cents, currency)}</td>
+                </tr>
+              </table>
+
+              <div style="height:24px;"></div>
+
+              <div style="font-size:15px;line-height:22px;font-weight:800;color:#173A24;">Delivery details</div>
+              <div style="font-size:13px;line-height:20px;color:#475467;margin-top:8px;">
+                ${addressLines || "-"}<br>
+                <strong style="color:#0D5925;">${escapeEmailHtml(order.shipping_method_name || "Shipping method")}</strong>
+              </div>
+
+              <div style="margin-top:24px;padding:14px 16px;border-radius:12px;background:#F5F9F4;border:1px solid #DDE7DE;font-size:13px;line-height:20px;color:#475467;">
+                <strong style="color:#173A24;">What happens next?</strong><br>
+                We will prepare your order for fulfillment. Once it ships, we will email you the carrier and tracking information.
+              </div>
+
+              <div style="margin-top:20px;font-size:12px;line-height:18px;color:#667085;">
+                Questions about your order? Reply to this email and our team will help.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:18px 26px;background:#F8FAF8;border-top:1px solid #E7ECE8;font-size:12px;line-height:18px;color:#667085;">
+              Mindo Bird Watching<br>
+              <a href="https://mindobirdwatching.com/shop/" style="color:#0D5925;text-decoration:none;">mindobirdwatching.com/shop</a><br>
+              <a href="mailto:${escapeEmailHtml(order.customer_email ? (String(order.customer_email).includes("@mindobirdwatching.com") ? order.customer_email : "notifications@mindobirdwatching.com") : "notifications@mindobirdwatching.com")}" style="color:#0D5925;text-decoration:none;">notifications@mindobirdwatching.com</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildCustomerOrderEmailText(
+  order,
+  items
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+
+  const firstName =
+    order.customer_first_name ||
+    "there";
+
+  const lines = [
+    "MINDO BIRD WATCHING SHOP",
+    "ORDER CONFIRMED",
+    "",
+    `Hi ${firstName},`,
+    "",
+    "Your payment was received successfully.",
+    `Order ID: ${order.mbw_order_id || "-"}`,
+    "",
+    "YOUR ORDER"
+  ];
+
+  (items || []).forEach((item) => {
+    lines.push(
+      `${Number(item.quantity || 0)} x ${item.product_title || "MBW Shop product"}${item.variant_label ? ` - ${item.variant_label}` : ""} = ${formatEmailMoney(item.line_total_cents, currency)}`
+    );
+  });
+
+  lines.push(
+    "",
+    `Subtotal: ${formatEmailMoney(order.subtotal_cents, currency)}`,
+    `Discount: ${formatEmailMoney(order.discount_cents, currency)}`,
+    `Shipping: ${formatEmailMoney(order.shipping_cents, currency)}`,
+    `Tax: ${formatEmailMoney(order.tax_cents, currency)}`,
+    `TOTAL PAID: ${formatEmailMoney(order.total_cents, currency)}`,
+    "",
+    "DELIVERY",
+    order.shipping_address1 || "",
+    order.shipping_address2 || "",
+    [order.shipping_city, order.shipping_region, order.shipping_postal_code].filter(Boolean).join(", "),
+    order.shipping_country || "",
+    `Shipping method: ${order.shipping_method_name || "-"}`,
+    "",
+    "WHAT HAPPENS NEXT?",
+    "We will prepare your order for fulfillment. Once it ships, we will email you the carrier and tracking information.",
+    "",
+    "Questions? Reply to this email.",
+    "Mindo Bird Watching"
+  );
+
+  return lines.join("\n");
+}
 
 async function sendAdminOrderConfirmation(
   env,
