@@ -721,6 +721,138 @@
   var STORAGE_KEY = "MBW_SHOP_CART_V1";
   var SHIPPING_KEY = "MBW_SHOP_SHIPPING_V1";
   var API_BASE = "https://mbw-shop-api.thecloudforestretreat.workers.dev";
+
+  var ATTRIBUTION_FIRST_KEY = "mbw_shop_attribution_first_v1";
+  var ATTRIBUTION_CURRENT_KEY = "mbw_shop_attribution_current_v1";
+
+  function safeStorageGet(key){
+    try{
+      return JSON.parse(localStorage.getItem(key) || "null");
+    }catch(error){
+      return null;
+    }
+  }
+
+  function safeStorageSet(key, value){
+    try{
+      localStorage.setItem(key, JSON.stringify(value));
+    }catch(error){
+      // Attribution should never block shopping or checkout.
+    }
+  }
+
+  function cleanAttributionValue(value, maxLength){
+    var cleaned = String(value || "").trim();
+    if(!cleaned) return "";
+    return cleaned.slice(0, maxLength || 500);
+  }
+
+  function readCampaignParams(){
+    var params = new URLSearchParams(window.location.search || "");
+
+    return {
+      utm_source: cleanAttributionValue(params.get("utm_source"), 120),
+      utm_medium: cleanAttributionValue(params.get("utm_medium"), 120),
+      utm_campaign: cleanAttributionValue(params.get("utm_campaign"), 180),
+      utm_content: cleanAttributionValue(params.get("utm_content"), 180),
+      utm_term: cleanAttributionValue(params.get("utm_term"), 180),
+      gclid: cleanAttributionValue(params.get("gclid"), 250),
+      fbclid: cleanAttributionValue(params.get("fbclid"), 250)
+    };
+  }
+
+  function hasCampaignSignal(data){
+    return !!(
+      data.utm_source ||
+      data.utm_medium ||
+      data.utm_campaign ||
+      data.utm_content ||
+      data.utm_term ||
+      data.gclid ||
+      data.fbclid
+    );
+  }
+
+  function initializeAttribution(){
+    var campaign = readCampaignParams();
+    var landingPage = cleanAttributionValue(window.location.href, 500);
+    var referrer = cleanAttributionValue(document.referrer, 500);
+    var first = safeStorageGet(ATTRIBUTION_FIRST_KEY);
+
+    if(!first){
+      first = {
+        landing_page: landingPage,
+        referrer: referrer,
+        utm_source: campaign.utm_source,
+        utm_medium: campaign.utm_medium,
+        utm_campaign: campaign.utm_campaign,
+        utm_content: campaign.utm_content,
+        utm_term: campaign.utm_term,
+        gclid: campaign.gclid,
+        fbclid: campaign.fbclid
+      };
+      safeStorageSet(ATTRIBUTION_FIRST_KEY, first);
+    }
+
+    var current = safeStorageGet(ATTRIBUTION_CURRENT_KEY) || {};
+
+    if(hasCampaignSignal(campaign)){
+      current = {
+        utm_source: campaign.utm_source,
+        utm_medium: campaign.utm_medium,
+        utm_campaign: campaign.utm_campaign,
+        utm_content: campaign.utm_content,
+        utm_term: campaign.utm_term,
+        gclid: campaign.gclid || current.gclid || "",
+        fbclid: campaign.fbclid || current.fbclid || ""
+      };
+      safeStorageSet(ATTRIBUTION_CURRENT_KEY, current);
+    }else if(!safeStorageGet(ATTRIBUTION_CURRENT_KEY)){
+      current = {
+        utm_source: "",
+        utm_medium: "",
+        utm_campaign: "",
+        utm_content: "",
+        utm_term: "",
+        gclid: "",
+        fbclid: ""
+      };
+      safeStorageSet(ATTRIBUTION_CURRENT_KEY, current);
+    }
+
+    return {
+      first: first,
+      current: current
+    };
+  }
+
+  function checkoutAttribution(){
+    var state = initializeAttribution();
+    var first = state.first || {};
+    var current = state.current || {};
+
+    return {
+      landing_page: cleanAttributionValue(first.landing_page, 500),
+      referrer: cleanAttributionValue(first.referrer, 500),
+
+      first_utm_source: cleanAttributionValue(first.utm_source, 120),
+      first_utm_medium: cleanAttributionValue(first.utm_medium, 120),
+      first_utm_campaign: cleanAttributionValue(first.utm_campaign, 180),
+      first_utm_content: cleanAttributionValue(first.utm_content, 180),
+      first_utm_term: cleanAttributionValue(first.utm_term, 180),
+
+      current_utm_source: cleanAttributionValue(current.utm_source, 120),
+      current_utm_medium: cleanAttributionValue(current.utm_medium, 120),
+      current_utm_campaign: cleanAttributionValue(current.utm_campaign, 180),
+      current_utm_content: cleanAttributionValue(current.utm_content, 180),
+      current_utm_term: cleanAttributionValue(current.utm_term, 180),
+
+      gclid: cleanAttributionValue(current.gclid || first.gclid, 250),
+      fbclid: cleanAttributionValue(current.fbclid || first.fbclid, 250)
+    };
+  }
+
+  initializeAttribution();
   var shippingVerified = false;
 
   function money(value){
@@ -1152,7 +1284,8 @@
         "/shipping/quote",
         {
           items: checkoutItems(),
-          address: shippingAddress()
+          address: shippingAddress(),
+          attribution: checkoutAttribution()
         }
       );
 
@@ -1242,7 +1375,8 @@
         "/checkout/session",
         {
           items: checkoutItems(),
-          address: shippingAddress()
+          address: shippingAddress(),
+          attribution: checkoutAttribution()
         }
       );
 
