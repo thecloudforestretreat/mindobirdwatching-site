@@ -73,7 +73,14 @@ export default {
           database_configured:
             Boolean(env.DB),
           stripe_webhook_configured:
-            Boolean(getStripeWebhookSecret(env))
+            Boolean(getStripeWebhookSecret(env)),
+          resend_configured:
+            Boolean(env.RESEND_API_KEY),
+          admin_order_email_configured:
+            Boolean(
+              env.MBW_ORDER_FROM_EMAIL &&
+              env.MBW_ADMIN_ORDER_EMAIL
+            )
         },
         200,
         request
@@ -309,6 +316,34 @@ async function handleStripeWebhook(
     );
   }
 
+  const adminEmailResult =
+    await sendAdminOrderConfirmation(
+      env,
+      session.id
+    );
+
+  if (!adminEmailResult.ok) {
+    return jsonResponse(
+      {
+        ok: false,
+        received: true,
+        order_saved: true,
+        duplicate: saveResult.duplicate,
+        mbw_order_id:
+          saveResult.mbw_order_id,
+        stripe_session_id:
+          session.id,
+        admin_email_status:
+          adminEmailResult.status || "failed",
+        error:
+          adminEmailResult.error ||
+          "Admin order email could not be sent"
+      },
+      500,
+      request
+    );
+  }
+
   return jsonResponse(
     {
       ok: true,
@@ -320,7 +355,11 @@ async function handleStripeWebhook(
       stripe_session_id:
         session.id,
       fulfillment_status:
-        saveResult.fulfillment_status
+        saveResult.fulfillment_status,
+      admin_email_status:
+        adminEmailResult.status,
+      admin_email_duplicate:
+        Boolean(adminEmailResult.duplicate)
     },
     200,
     request
@@ -710,8 +749,7 @@ async function saveStripeOrderToD1(
     insertResult =
       await env.DB
         .prepare(
-          `INSERT OR IGNORE INTO orders
-           (
+          `INSERT OR IGNORE INTO orders (
              mbw_order_id,
              stripe_mode,
              stripe_session_id,
@@ -764,15 +802,8 @@ async function saveStripeOrderToD1(
              raw_stripe_session_json,
              created_at,
              updated_at
-           )
-           VALUES (
-             ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?
+           ) VALUES (
+             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
            )`
         )
         .bind(
@@ -1184,6 +1215,605 @@ async function saveStripeOrderToD1(
     mbw_order_id: mbwOrderId,
     fulfillment_status: "pending"
   };
+}
+
+
+async function sendAdminOrderConfirmation(
+  env,
+  stripeSessionId
+) {
+  if (
+    !env.RESEND_API_KEY ||
+    !env.MBW_ORDER_FROM_EMAIL ||
+    !env.MBW_ADMIN_ORDER_EMAIL
+  ) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Resend admin email configuration is incomplete"
+    };
+  }
+
+  const order =
+    await env.DB
+      .prepare(
+        `SELECT
+           id,
+           mbw_order_id,
+           stripe_mode,
+           stripe_session_id,
+           payment_status,
+           currency,
+           subtotal_cents,
+           discount_cents,
+           shipping_cents,
+           tax_cents,
+           total_cents,
+           promotion_code,
+           customer_email,
+           customer_first_name,
+           customer_last_name,
+           customer_phone,
+           shipping_address1,
+           shipping_address2,
+           shipping_city,
+           shipping_region,
+           shipping_postal_code,
+           shipping_country,
+           shipping_method_name,
+           shipping_method_code,
+           admin_confirmation_email_status,
+           admin_confirmation_email_sent_at,
+           updated_at
+         FROM orders
+         WHERE stripe_session_id = ?
+         LIMIT 1`
+      )
+      .bind(stripeSessionId)
+      .first();
+
+  if (!order || !order.id) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Saved order could not be loaded for admin email"
+    };
+  }
+
+  if (
+    order.admin_confirmation_email_status ===
+    "sent"
+  ) {
+    return {
+      ok: true,
+      status: "sent",
+      duplicate: true
+    };
+  }
+
+  const now =
+    new Date().toISOString();
+
+  const staleBefore =
+    new Date(
+      Date.now() - 10 * 60 * 1000
+    ).toISOString();
+
+  const claim =
+    await env.DB
+      .prepare(
+        `UPDATE orders
+         SET
+           admin_confirmation_email_status = 'sending',
+           admin_confirmation_email_error = NULL,
+           updated_at = ?
+         WHERE id = ?
+           AND (
+             admin_confirmation_email_status IS NULL
+             OR admin_confirmation_email_status = ''
+             OR admin_confirmation_email_status = 'pending'
+             OR admin_confirmation_email_status = 'failed'
+             OR (
+               admin_confirmation_email_status = 'sending'
+               AND updated_at < ?
+             )
+           )`
+      )
+      .bind(
+        now,
+        order.id,
+        staleBefore
+      )
+      .run();
+
+  const claimed =
+    claim &&
+    claim.meta &&
+    Number(claim.meta.changes || 0) > 0;
+
+  if (!claimed) {
+    const current =
+      await env.DB
+        .prepare(
+          `SELECT
+             admin_confirmation_email_status
+           FROM orders
+           WHERE id = ?
+           LIMIT 1`
+        )
+        .bind(order.id)
+        .first();
+
+    if (
+      current &&
+      current.admin_confirmation_email_status ===
+      "sent"
+    ) {
+      return {
+        ok: true,
+        status: "sent",
+        duplicate: true
+      };
+    }
+
+    return {
+      ok: true,
+      status:
+        current &&
+        current.admin_confirmation_email_status
+          ? current.admin_confirmation_email_status
+          : "sending",
+      duplicate: true
+    };
+  }
+
+  const items =
+    await env.DB
+      .prepare(
+        `SELECT
+           printify_product_id,
+           printify_variant_id,
+           product_title,
+           variant_label,
+           quantity,
+           unit_amount_cents,
+           line_total_cents,
+           image_url
+         FROM order_items
+         WHERE order_id = ?
+         ORDER BY id ASC`
+      )
+      .bind(order.id)
+      .all();
+
+  const orderItems =
+    items &&
+    Array.isArray(items.results)
+      ? items.results
+      : [];
+
+  const subject =
+    `[MBW Shop] New paid order ${order.mbw_order_id}`;
+
+  const html =
+    buildAdminOrderEmailHtml(
+      order,
+      orderItems
+    );
+
+  const text =
+    buildAdminOrderEmailText(
+      order,
+      orderItems
+    );
+
+  let response;
+  let data;
+
+  try {
+    response =
+      await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+          headers: {
+            "Authorization":
+              `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type":
+              "application/json",
+            "Idempotency-Key":
+              `mbw-admin-${order.mbw_order_id}`
+          },
+          body: JSON.stringify({
+            from:
+              `Mindo Bird Watching <${env.MBW_ORDER_FROM_EMAIL}>`,
+            to: [
+              env.MBW_ADMIN_ORDER_EMAIL
+            ],
+            reply_to:
+              order.customer_email ||
+              env.MBW_ORDER_FROM_EMAIL,
+            subject,
+            html,
+            text
+          })
+        }
+      );
+
+    data =
+      await response
+        .json()
+        .catch(() => ({}));
+  } catch (error) {
+    const message =
+      cleanText(
+        error && error.message
+          ? error.message
+          : String(error),
+        500
+      );
+
+    await markAdminEmailFailed(
+      env,
+      order.id,
+      message
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: message
+    };
+  }
+
+  if (!response.ok) {
+    const message =
+      cleanText(
+        data &&
+        (data.message || data.error)
+          ? data.message || data.error
+          : `Resend returned HTTP ${response.status}`,
+        500
+      );
+
+    await markAdminEmailFailed(
+      env,
+      order.id,
+      message
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: message
+    };
+  }
+
+  const sentAt =
+    new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         admin_confirmation_email_status = 'sent',
+         admin_confirmation_email_sent_at = ?,
+         admin_confirmation_email_error = NULL,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      sentAt,
+      sentAt,
+      order.id
+    )
+    .run();
+
+  return {
+    ok: true,
+    status: "sent",
+    duplicate: false,
+    resend_email_id:
+      data && data.id
+        ? data.id
+        : null
+  };
+}
+
+async function markAdminEmailFailed(
+  env,
+  orderId,
+  message
+) {
+  const now =
+    new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         admin_confirmation_email_status = 'failed',
+         admin_confirmation_email_error = ?,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      cleanText(message, 500),
+      now,
+      orderId
+    )
+    .run();
+}
+
+function buildAdminOrderEmailHtml(
+  order,
+  items
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+
+  const customerName =
+    [
+      order.customer_first_name,
+      order.customer_last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    "Customer";
+
+  const addressLines = [
+    order.shipping_address1,
+    order.shipping_address2,
+    [
+      order.shipping_city,
+      order.shipping_region,
+      order.shipping_postal_code
+    ]
+      .filter(Boolean)
+      .join(", "),
+    order.shipping_country
+  ]
+    .filter(Boolean)
+    .map(escapeEmailHtml)
+    .join("<br>");
+
+  const itemRows =
+    (items || [])
+      .map((item) => {
+        const variant =
+          item.variant_label
+            ? `<div style="font-size:12px;line-height:18px;color:#667085;margin-top:3px;">${escapeEmailHtml(item.variant_label)}</div>`
+            : "";
+
+        const ids =
+          `<div style="font-size:11px;line-height:17px;color:#98A2B3;margin-top:4px;">Printify product: ${escapeEmailHtml(item.printify_product_id || "-")} &nbsp; Variant: ${escapeEmailHtml(String(item.printify_variant_id || "-"))}</div>`;
+
+        return `
+          <tr>
+            <td style="padding:14px 0;border-bottom:1px solid #E7ECE8;vertical-align:top;">
+              <div style="font-size:14px;line-height:20px;font-weight:800;color:#173A24;">
+                ${escapeEmailHtml(item.product_title || "MBW Shop product")}
+              </div>
+              ${variant}
+              ${ids}
+              <div style="font-size:12px;line-height:18px;color:#667085;margin-top:5px;">
+                Qty ${Number(item.quantity || 0)} x ${formatEmailMoney(item.unit_amount_cents, currency)}
+              </div>
+            </td>
+            <td align="right" style="padding:14px 0 14px 16px;border-bottom:1px solid #E7ECE8;vertical-align:top;font-size:14px;line-height:20px;font-weight:800;color:#173A24;white-space:nowrap;">
+              ${formatEmailMoney(item.line_total_cents, currency)}
+            </td>
+          </tr>`;
+      })
+      .join("");
+
+  const promoRow =
+    Number(order.discount_cents || 0) > 0
+      ? `
+        <tr>
+          <td style="padding:5px 0;font-size:13px;color:#475467;">
+            Discount${order.promotion_code ? ` (${escapeEmailHtml(order.promotion_code)})` : ""}
+          </td>
+          <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">
+            -${formatEmailMoney(order.discount_cents, currency)}
+          </td>
+        </tr>`
+      : "";
+
+  return `<!doctype html>
+<html>
+<body style="margin:0;padding:0;background:#F3F7F1;font-family:Arial,Helvetica,sans-serif;color:#173A24;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F3F7F1;">
+    <tr>
+      <td align="center" style="padding:28px 14px;">
+        <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:620px;background:#FFFFFF;border:1px solid #DDE7DE;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="padding:24px 26px;background:#0D5925;color:#FFFFFF;">
+              <div style="font-size:12px;line-height:18px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Mindo Bird Watching Shop</div>
+              <div style="font-size:26px;line-height:32px;font-weight:800;margin-top:4px;">New paid order</div>
+              <div style="font-size:13px;line-height:20px;margin-top:6px;opacity:.9;">Payment has been verified by Stripe and the order is saved in D1.</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 26px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="font-size:12px;line-height:18px;color:#667085;">MBW order ID</td>
+                  <td align="right" style="font-size:12px;line-height:18px;color:#667085;">Stripe mode</td>
+                </tr>
+                <tr>
+                  <td style="padding-top:3px;font-size:14px;line-height:20px;font-weight:800;color:#0D5925;word-break:break-all;">${escapeEmailHtml(order.mbw_order_id)}</td>
+                  <td align="right" style="padding-top:3px;font-size:14px;line-height:20px;font-weight:800;color:#173A24;text-transform:uppercase;">${escapeEmailHtml(order.stripe_mode || "")}</td>
+                </tr>
+              </table>
+
+              <div style="height:22px;"></div>
+
+              <div style="font-size:17px;line-height:24px;font-weight:800;color:#173A24;">Order items</div>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:6px;">
+                ${itemRows || `<tr><td style="padding:14px 0;color:#667085;">No line items were found.</td></tr>`}
+              </table>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;">
+                <tr>
+                  <td style="padding:5px 0;font-size:13px;color:#475467;">Subtotal</td>
+                  <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">${formatEmailMoney(order.subtotal_cents, currency)}</td>
+                </tr>
+                ${promoRow}
+                <tr>
+                  <td style="padding:5px 0;font-size:13px;color:#475467;">Shipping</td>
+                  <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">${formatEmailMoney(order.shipping_cents, currency)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:5px 0;font-size:13px;color:#475467;">Tax</td>
+                  <td align="right" style="padding:5px 0;font-size:13px;color:#475467;">${formatEmailMoney(order.tax_cents, currency)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0 0;border-top:1px solid #DDE7DE;font-size:15px;font-weight:800;color:#173A24;">Total paid</td>
+                  <td align="right" style="padding:12px 0 0;border-top:1px solid #DDE7DE;font-size:17px;font-weight:800;color:#0D5925;">${formatEmailMoney(order.total_cents, currency)}</td>
+                </tr>
+              </table>
+
+              <div style="height:24px;"></div>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td width="50%" valign="top" style="padding-right:12px;">
+                    <div style="font-size:13px;font-weight:800;color:#173A24;">Customer</div>
+                    <div style="font-size:13px;line-height:20px;color:#475467;margin-top:7px;">
+                      ${escapeEmailHtml(customerName)}<br>
+                      ${escapeEmailHtml(order.customer_email || "-")}<br>
+                      ${escapeEmailHtml(order.customer_phone || "-")}
+                    </div>
+                  </td>
+                  <td width="50%" valign="top" style="padding-left:12px;">
+                    <div style="font-size:13px;font-weight:800;color:#173A24;">Delivery</div>
+                    <div style="font-size:13px;line-height:20px;color:#475467;margin-top:7px;">
+                      ${addressLines || "-"}<br>
+                      <strong>${escapeEmailHtml(order.shipping_method_name || "Shipping method not recorded")}</strong>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="margin-top:24px;padding:14px 16px;border-radius:12px;background:#FFF8DF;border:1px solid #F2D675;font-size:13px;line-height:20px;color:#594A00;">
+                <strong>Action required:</strong> This notification confirms payment only. No Printify fulfillment order is created by this Worker version yet.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:18px 26px;background:#F8FAF8;border-top:1px solid #E7ECE8;font-size:12px;line-height:18px;color:#667085;">
+              Mindo Bird Watching<br>
+              notifications@mindobirdwatching.com<br>
+              mindobirdwatching.com
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildAdminOrderEmailText(
+  order,
+  items
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+
+  const lines = [
+    "MINDO BIRD WATCHING SHOP",
+    "NEW PAID ORDER",
+    "",
+    `MBW order ID: ${order.mbw_order_id || "-"}`,
+    `Stripe mode: ${order.stripe_mode || "-"}`,
+    `Payment status: ${order.payment_status || "-"}`,
+    "",
+    "ITEMS"
+  ];
+
+  (items || []).forEach((item) => {
+    lines.push(
+      `${Number(item.quantity || 0)} x ${item.product_title || "MBW Shop product"}${item.variant_label ? ` - ${item.variant_label}` : ""} = ${formatEmailMoney(item.line_total_cents, currency)}`
+    );
+    lines.push(
+      `Printify product: ${item.printify_product_id || "-"} | Variant: ${item.printify_variant_id || "-"}`
+    );
+  });
+
+  lines.push(
+    "",
+    `Subtotal: ${formatEmailMoney(order.subtotal_cents, currency)}`,
+    `Discount: ${formatEmailMoney(order.discount_cents, currency)}`,
+    `Shipping: ${formatEmailMoney(order.shipping_cents, currency)}`,
+    `Tax: ${formatEmailMoney(order.tax_cents, currency)}`,
+    `TOTAL PAID: ${formatEmailMoney(order.total_cents, currency)}`,
+    "",
+    `Customer: ${[order.customer_first_name, order.customer_last_name].filter(Boolean).join(" ") || "-"}`,
+    `Email: ${order.customer_email || "-"}`,
+    `Phone: ${order.customer_phone || "-"}`,
+    "",
+    "Delivery:",
+    order.shipping_address1 || "",
+    order.shipping_address2 || "",
+    [order.shipping_city, order.shipping_region, order.shipping_postal_code].filter(Boolean).join(", "),
+    order.shipping_country || "",
+    `Shipping method: ${order.shipping_method_name || "-"}`,
+    "",
+    "ACTION REQUIRED:",
+    "Payment is confirmed, but this Worker version does not create the Printify fulfillment order yet."
+  );
+
+  return lines
+    .filter((line, index, array) => {
+      if (line !== "") {
+        return true;
+      }
+      return index === 0 ||
+        array[index - 1] !== "";
+    })
+    .join("\n");
+}
+
+function formatEmailMoney(
+  cents,
+  currency
+) {
+  const value =
+    Number(cents || 0) / 100;
+
+  const code =
+    String(currency || "USD")
+      .toUpperCase();
+
+  try {
+    return new Intl.NumberFormat(
+      "en-US",
+      {
+        style: "currency",
+        currency: code
+      }
+    ).format(value);
+  } catch {
+    return `$${value.toFixed(2)}`;
+  }
+}
+
+function escapeEmailHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function stripeObjectId(value) {
