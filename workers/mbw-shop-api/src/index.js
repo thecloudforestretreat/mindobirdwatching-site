@@ -1,3 +1,4 @@
+/* MBW SHOP API V19 - PRINTIFY MANUAL ORDER CREATION */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -85,7 +86,13 @@ export default {
             Boolean(
               env.RESEND_API_KEY &&
               env.MBW_ORDER_FROM_EMAIL
-            )
+            ),
+          printify_order_creation_enabled:
+            isTrueEnv(
+              env.PRINTIFY_ORDER_CREATION_ENABLED
+            ),
+          printify_production_submission_enabled:
+            false
         },
         200,
         request
@@ -379,6 +386,39 @@ async function handleStripeWebhook(
     );
   }
 
+  const printifyOrderResult =
+    await createPrintifyOrderIfEnabled(
+      env,
+      session.id
+    );
+
+  if (!printifyOrderResult.ok) {
+    return jsonResponse(
+      {
+        ok: false,
+        received: true,
+        order_saved: true,
+        duplicate: saveResult.duplicate,
+        mbw_order_id:
+          saveResult.mbw_order_id,
+        stripe_session_id:
+          session.id,
+        admin_email_status:
+          adminEmailResult.status,
+        customer_email_status:
+          customerEmailResult.status,
+        printify_order_status:
+          printifyOrderResult.status ||
+          "failed",
+        error:
+          printifyOrderResult.error ||
+          "Printify order could not be created"
+      },
+      500,
+      request
+    );
+  }
+
   return jsonResponse(
     {
       ok: true,
@@ -390,6 +430,7 @@ async function handleStripeWebhook(
       stripe_session_id:
         session.id,
       fulfillment_status:
+        printifyOrderResult.fulfillment_status ||
         saveResult.fulfillment_status,
       admin_email_status:
         adminEmailResult.status,
@@ -398,7 +439,16 @@ async function handleStripeWebhook(
       customer_email_status:
         customerEmailResult.status,
       customer_email_duplicate:
-        Boolean(customerEmailResult.duplicate)
+        Boolean(customerEmailResult.duplicate),
+      printify_order_status:
+        printifyOrderResult.status,
+      printify_order_id:
+        printifyOrderResult.printify_order_id ||
+        null,
+      printify_order_creation_skipped:
+        Boolean(printifyOrderResult.skipped),
+      printify_manual_approval_required:
+        true
     },
     200,
     request
@@ -1257,6 +1307,543 @@ async function saveStripeOrderToD1(
 }
 
 
+
+
+function isTrueEnv(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase() === "true";
+}
+
+async function ensurePrintifyOrderColumns(env) {
+  const info =
+    await env.DB
+      .prepare(
+        "PRAGMA table_info(orders)"
+      )
+      .all();
+
+  const names =
+    new Set(
+      (
+        info &&
+        Array.isArray(info.results)
+          ? info.results
+          : []
+      ).map((row) =>
+        String(row.name || "")
+      )
+    );
+
+  const additions = [];
+
+  if (!names.has("printify_order_id")) {
+    additions.push(
+      "ALTER TABLE orders ADD COLUMN printify_order_id TEXT"
+    );
+  }
+
+  if (!names.has("raw_printify_order_json")) {
+    additions.push(
+      "ALTER TABLE orders ADD COLUMN raw_printify_order_json TEXT"
+    );
+  }
+
+  if (!names.has("printify_order_created_at")) {
+    additions.push(
+      "ALTER TABLE orders ADD COLUMN printify_order_created_at TEXT"
+    );
+  }
+
+  if (!names.has("printify_order_error")) {
+    additions.push(
+      "ALTER TABLE orders ADD COLUMN printify_order_error TEXT"
+    );
+  }
+
+  for (const sql of additions) {
+    await env.DB.prepare(sql).run();
+  }
+}
+
+function printifyShippingMethodCode(value) {
+  const code =
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  if (
+    code === "4" ||
+    code === "economy"
+  ) {
+    return 4;
+  }
+
+  if (
+    code === "2" ||
+    code === "priority" ||
+    code === "express"
+  ) {
+    return 2;
+  }
+
+  return 1;
+}
+
+async function createPrintifyOrderIfEnabled(
+  env,
+  stripeSessionId
+) {
+  const enabled =
+    isTrueEnv(
+      env.PRINTIFY_ORDER_CREATION_ENABLED
+    );
+
+  if (!enabled) {
+    return {
+      ok: true,
+      status: "disabled",
+      skipped: true,
+      fulfillment_status:
+        "pending"
+    };
+  }
+
+  if (
+    !env.PRINTIFY_API_TOKEN ||
+    !env.PRINTIFY_SHOP_ID
+  ) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Printify configuration is incomplete"
+    };
+  }
+
+  await ensurePrintifyOrderColumns(env);
+
+  const order =
+    await env.DB
+      .prepare(
+        `SELECT
+           id,
+           mbw_order_id,
+           stripe_mode,
+           payment_status,
+           customer_email,
+           customer_first_name,
+           customer_last_name,
+           customer_phone,
+           shipping_address1,
+           shipping_address2,
+           shipping_city,
+           shipping_region,
+           shipping_postal_code,
+           shipping_country,
+           shipping_method_name,
+           shipping_method_code,
+           printify_order_id,
+           printify_status,
+           fulfillment_status
+         FROM orders
+         WHERE stripe_session_id = ?
+         LIMIT 1`
+      )
+      .bind(stripeSessionId)
+      .first();
+
+  if (!order || !order.id) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Saved order could not be loaded for Printify"
+    };
+  }
+
+  if (order.payment_status !== "paid") {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Printify order creation requires a paid Stripe order"
+    };
+  }
+
+  if (order.printify_order_id) {
+    return {
+      ok: true,
+      status:
+        order.printify_status ||
+        "created",
+      skipped: false,
+      duplicate: true,
+      printify_order_id:
+        order.printify_order_id,
+      fulfillment_status:
+        order.fulfillment_status ||
+        "manual_approval"
+    };
+  }
+
+  const itemResult =
+    await env.DB
+      .prepare(
+        `SELECT
+           id,
+           printify_product_id,
+           printify_variant_id,
+           quantity
+         FROM order_items
+         WHERE order_id = ?
+         ORDER BY id ASC`
+      )
+      .bind(order.id)
+      .all();
+
+  const rows =
+    itemResult &&
+    Array.isArray(itemResult.results)
+      ? itemResult.results
+      : [];
+
+  if (!rows.length) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Order has no Printify line items"
+    };
+  }
+
+  const lineItems = [];
+
+  for (const item of rows) {
+    const productId =
+      cleanText(
+        item.printify_product_id,
+        120
+      );
+
+    const variantId =
+      Number(
+        item.printify_variant_id || 0
+      );
+
+    const quantity =
+      Math.max(
+        1,
+        Number(item.quantity || 1)
+      );
+
+    if (
+      !productId ||
+      !Number.isInteger(variantId) ||
+      variantId <= 0
+    ) {
+      const message =
+        "Order contains an invalid Printify product or variant";
+
+      await markPrintifyOrderFailed(
+        env,
+        order.id,
+        message
+      );
+
+      return {
+        ok: false,
+        status: "failed",
+        error: message
+      };
+    }
+
+    lineItems.push({
+      product_id: productId,
+      variant_id: variantId,
+      quantity,
+      external_id:
+        `${order.mbw_order_id}-item-${item.id}`
+    });
+  }
+
+  const payload = {
+    external_id:
+      order.mbw_order_id,
+    label:
+      order.mbw_order_id,
+    line_items:
+      lineItems,
+    shipping_method:
+      printifyShippingMethodCode(
+        order.shipping_method_code
+      ),
+    is_printify_express:
+      false,
+    is_economy_shipping:
+      printifyShippingMethodCode(
+        order.shipping_method_code
+      ) === 4,
+    send_shipping_notification:
+      false,
+    address_to: {
+      first_name:
+        cleanText(
+          order.customer_first_name,
+          80
+        ),
+      last_name:
+        cleanText(
+          order.customer_last_name,
+          80
+        ),
+      email:
+        cleanText(
+          order.customer_email,
+          160
+        ),
+      phone:
+        cleanText(
+          order.customer_phone,
+          40
+        ),
+      country:
+        cleanText(
+          order.shipping_country,
+          2
+        ),
+      region:
+        cleanText(
+          order.shipping_region,
+          100
+        ),
+      address1:
+        cleanText(
+          order.shipping_address1,
+          160
+        ),
+      address2:
+        cleanText(
+          order.shipping_address2,
+          160
+        ),
+      city:
+        cleanText(
+          order.shipping_city,
+          100
+        ),
+      zip:
+        cleanText(
+          order.shipping_postal_code,
+          40
+        )
+    }
+  };
+
+  const now =
+    new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         printify_status = 'creating',
+         fulfillment_status = 'creating',
+         printify_order_error = NULL,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      now,
+      order.id
+    )
+    .run();
+
+  let response;
+  let data;
+
+  try {
+    response =
+      await fetch(
+        `https://api.printify.com/v1/shops/${encodeURIComponent(env.PRINTIFY_SHOP_ID)}/orders.json`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization":
+              `Bearer ${env.PRINTIFY_API_TOKEN}`,
+            "Content-Type":
+              "application/json",
+            "Accept":
+              "application/json"
+          },
+          body:
+            JSON.stringify(payload)
+        }
+      );
+
+    data =
+      await response
+        .json()
+        .catch(() => ({}));
+  } catch (error) {
+    const message =
+      cleanText(
+        error && error.message
+          ? error.message
+          : String(error),
+        500
+      );
+
+    await markPrintifyOrderFailed(
+      env,
+      order.id,
+      message
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: message
+    };
+  }
+
+  if (!response.ok) {
+    const message =
+      cleanText(
+        data &&
+        (
+          data.message ||
+          data.error ||
+          data.errors
+        )
+          ? typeof (
+              data.message ||
+              data.error ||
+              data.errors
+            ) === "string"
+            ? (
+                data.message ||
+                data.error ||
+                data.errors
+              )
+            : JSON.stringify(
+                data.message ||
+                data.error ||
+                data.errors
+              )
+          : `Printify returned HTTP ${response.status}`,
+        500
+      );
+
+    await markPrintifyOrderFailed(
+      env,
+      order.id,
+      message,
+      data
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: message
+    };
+  }
+
+  const printifyOrderId =
+    cleanText(
+      data && data.id
+        ? data.id
+        : "",
+      160
+    );
+
+  if (!printifyOrderId) {
+    const message =
+      "Printify created the order but did not return an order ID";
+
+    await markPrintifyOrderFailed(
+      env,
+      order.id,
+      message,
+      data
+    );
+
+    return {
+      ok: false,
+      status: "failed",
+      error: message
+    };
+  }
+
+  const createdAt =
+    new Date().toISOString();
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         printify_order_id = ?,
+         printify_status = 'created',
+         fulfillment_status = 'manual_approval',
+         raw_printify_order_json = ?,
+         printify_order_created_at = ?,
+         printify_order_error = NULL,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      printifyOrderId,
+      JSON.stringify(data),
+      createdAt,
+      createdAt,
+      order.id
+    )
+    .run();
+
+  return {
+    ok: true,
+    status: "created",
+    skipped: false,
+    duplicate: false,
+    printify_order_id:
+      printifyOrderId,
+    fulfillment_status:
+      "manual_approval"
+  };
+}
+
+async function markPrintifyOrderFailed(
+  env,
+  orderId,
+  message,
+  raw = null
+) {
+  const now =
+    new Date().toISOString();
+
+  await ensurePrintifyOrderColumns(env);
+
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         printify_status = 'failed',
+         fulfillment_status = 'printify_error',
+         raw_printify_order_json = ?,
+         printify_order_error = ?,
+         updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      raw
+        ? JSON.stringify(raw)
+        : null,
+      cleanText(message, 500),
+      now,
+      orderId
+    )
+    .run();
+}
 
 async function sendCustomerOrderConfirmation(
   env,
@@ -2306,7 +2893,7 @@ function buildAdminOrderEmailHtml(
               </table>
 
               <div style="margin-top:24px;padding:14px 16px;border-radius:12px;background:#FFF8DF;border:1px solid #F2D675;font-size:13px;line-height:20px;color:#594A00;">
-                <strong>Action required:</strong> This notification confirms payment only. No Printify fulfillment order is created by this Worker version yet.
+                <strong>Action required:</strong> Payment is confirmed. If Printify order creation is enabled, the fulfillment order is created after this email and remains under Manual approval. Review it in Printify before sending it to production.
               </div>
             </td>
           </tr>
@@ -2368,7 +2955,7 @@ function buildAdminOrderEmailText(
     `Shipping method: ${order.shipping_method_name || "-"}`,
     "",
     "ACTION REQUIRED:",
-    "Payment is confirmed, but this Worker version does not create the Printify fulfillment order yet."
+    "Payment is confirmed. If Printify order creation is enabled, the order is created under Manual approval. Review it in Printify before sending it to production."
   );
 
   return lines
@@ -2592,6 +3179,7 @@ async function handleOrderConfirmation(
 
            fulfillment_status,
            printify_status,
+           printify_order_id,
            tracking_number,
            tracking_url,
            carrier,
@@ -2718,6 +3306,8 @@ async function handleOrderConfirmation(
           order.fulfillment_status || "pending",
         printify_status:
           order.printify_status || "",
+        printify_order_id:
+          order.printify_order_id || "",
         tracking: {
           carrier:
             order.carrier || "",
