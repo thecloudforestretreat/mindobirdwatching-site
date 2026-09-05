@@ -710,7 +710,8 @@ async function saveStripeOrderToD1(
     insertResult =
       await env.DB
         .prepare(
-          `INSERT OR IGNORE INTO orders (
+          `INSERT OR IGNORE INTO orders
+           (
              mbw_order_id,
              stripe_mode,
              stripe_session_id,
@@ -763,18 +764,15 @@ async function saveStripeOrderToD1(
              raw_stripe_session_json,
              created_at,
              updated_at
-           ) VALUES (
+           )
+           VALUES (
              ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?,
-             ?, ?,
-             ?, ?,
-             ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?,
-             ?, ?, ?,
-             ?, ?, ?, ?, ?,
-             ?, ?, ?
+             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?
            )`
         )
         .bind(
