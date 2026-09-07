@@ -81,7 +81,7 @@ export async function onRequestPost({ request, env }) {
     const guestId = cleanId(payload.guest_id);
     const contactIntentId = cleanId(payload.contact_intent_id);
 
-    if (!inquiryId || !contactIntentId) {
+    if ((!inquiryId && payload.action !== "lookup_reference") || !contactIntentId) {
       return reply(400, {
         ok: false,
         error: "valid_inquiry_and_contact_intent_ids_required",
@@ -109,6 +109,15 @@ export async function onRequestPost({ request, env }) {
       return reply(409, { ok: false, error: "contact_intent_not_found" });
     }
 
+
+    const session = await env.MBW_ATTRIBUTION_DB.prepare("SELECT * FROM sessions WHERE session_id = ? AND visitor_id = ? LIMIT 1").bind(contactIntent.session_id, contactIntent.visitor_id).first();
+    if (!session) return reply(409,{ok:false,error:"reference_session_not_found"});
+    const attribution = {contact_intent_id:contactIntentId,website_visitor_id:contactIntent.visitor_id,website_session_id:contactIntent.session_id,attribution_status:session.attribution_status||"unavailable",attribution_quality:session.attribution_status==="captured"?"verified":"partial"};
+    ["first_touch_source","first_touch_medium","first_touch_campaign","first_touch_content","first_touch_term","first_touch_landing_page","first_touch_referrer","first_touch_date","last_touch_source","last_touch_medium","last_touch_campaign","last_touch_content","last_touch_term","last_touch_landing_page","last_touch_referrer","last_touch_date","utm_source","utm_medium","utm_campaign","utm_content","utm_term","gclid","gbraid","wbraid","fbclid","meta_campaign_id","meta_adset_id","meta_ad_id"].forEach(key=>{attribution[key]=session[key]||"";});
+    for(const page of [session.last_touch_landing_page,session.first_touch_landing_page]){
+      try{const params=new URL(page).searchParams;["meta_campaign_id","meta_adset_id","meta_ad_id"].forEach(key=>{const value=params.get(key);if(!attribution[key]&&value&&/^\d+$/.test(value))attribution[key]=value;});}catch(_){}
+    }
+    if(payload.action==="lookup_reference")return reply(200,{ok:true,attribution,match_status:"found"});
     const contactChannel = channels.has(requestedChannel)
       ? requestedChannel
       : (channels.has(contactIntent.channel) ? contactIntent.channel : "other");
@@ -213,6 +222,7 @@ export async function onRequestPost({ request, env }) {
       inquiry_id: inquiryId,
       guest_id: guestId,
       match_status: "matched",
+      attribution,
     });
   } catch (error) {
     console.error("CRM-contact attribution write failed", error);
