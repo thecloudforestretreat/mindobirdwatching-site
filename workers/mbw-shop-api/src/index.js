@@ -1,4 +1,4 @@
-/* MBW SHOP API V23 - PRINTIFY IDEMPOTENCY RECOVERY HARDENING */
+/* MBW SHOP API V24 - GOOGLE MERCHANT FEED + PRINTIFY IDEMPOTENCY HARDENING */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -104,6 +104,10 @@ export default {
             ),
           printify_idempotency_recovery_version:
             "v23",
+          google_merchant_feed_enabled:
+            true,
+          google_merchant_feed_version:
+            "v24",
           printify_production_submission_enabled:
             false,
           printify_webhook_configured:
@@ -124,6 +128,10 @@ export default {
 
     if (url.pathname === "/order/confirmation") {
       return handleOrderConfirmation(request, env, url);
+    }
+
+    if (url.pathname === "/google-merchant-feed.xml") {
+      return handleGoogleMerchantFeed(request, env);
     }
 
     if (url.pathname === "/catalog") {
@@ -6581,6 +6589,301 @@ function validateWriteOrigin(request) {
   return null;
 }
 
+async function handleGoogleMerchantFeed(
+  request,
+  env
+) {
+  const result = await fetchPrintifyProducts(env);
+
+  if (!result.ok) {
+    return jsonResponse(
+      result.body,
+      result.status,
+      request
+    );
+  }
+
+  const products = result.products
+    .filter(
+      (product) =>
+        product &&
+        product.visible !== false
+    )
+    .map(normalizeGoogleMerchantProduct)
+    .filter(Boolean);
+
+  const items = products
+    .map(buildGoogleMerchantItemXml)
+    .join("\n");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+  <channel>
+    <title>Mindo Bird Watching Shop</title>
+    <link>https://mindobirdwatching.com/shop/</link>
+    <description>Mindo Bird Watching merchandise from Mindo, Ecuador</description>
+${items}
+  </channel>
+</rss>`;
+
+  return new Response(xml, {
+    status: 200,
+    headers: {
+      "Content-Type":
+        "application/rss+xml; charset=UTF-8",
+      "Cache-Control":
+        "public, max-age=300",
+      "X-Content-Type-Options": "nosniff"
+    }
+  });
+}
+
+function normalizeGoogleMerchantProduct(product) {
+  const enabledVariants = getEnabledVariants(product);
+
+  if (enabledVariants.length === 0) {
+    return null;
+  }
+
+  /*
+    Merchant Center receives one offer for each published MBW product.
+    We intentionally use the first enabled/available Printify variant so
+    the submitted price and apparel attributes describe a real purchasable
+    option while keeping the Merchant catalog aligned to the 21-product
+    Printify source of truth rather than expanding every size/color into
+    hundreds of separate Merchant offers.
+  */
+  const primaryVariant = enabledVariants[0];
+  const optionLookup = buildPrintifyOptionLookup(product);
+  const selectedOptions = resolveVariantOptionValues(
+    primaryVariant,
+    optionLookup
+  );
+
+  const title = cleanMerchantText(
+    product.title ||
+      "Mindo Bird Watching product",
+    150
+  );
+
+  const description = cleanMerchantDescription(
+    product.description ||
+      `${title} from Mindo Bird Watching.`
+  );
+
+  const image = getPrimaryImage(product.images);
+  const priceCents = Number(primaryVariant.price);
+
+  if (
+    !product.id ||
+    !title ||
+    !image ||
+    !Number.isFinite(priceCents) ||
+    priceCents < 0
+  ) {
+    return null;
+  }
+
+  const apparel = isGoogleMerchantApparelProduct(
+    title
+  );
+
+  return {
+    id: String(product.id),
+    title,
+    description,
+    link:
+      "https://mindobirdwatching.com/shop/product/?id=" +
+      encodeURIComponent(String(product.id)),
+    image,
+    price: `${(priceCents / 100).toFixed(2)} USD`,
+    availability: "in_stock",
+    condition: "new",
+    brand: "Mindo Bird Watching",
+    identifier_exists: "false",
+    apparel,
+    color: apparel
+      ? selectedOptions.color || null
+      : null,
+    size: apparel
+      ? selectedOptions.size || null
+      : null,
+    gender: apparel ? "unisex" : null,
+    age_group: apparel ? "adult" : null
+  };
+}
+
+function buildPrintifyOptionLookup(product) {
+  const lookup = new Map();
+
+  if (!Array.isArray(product.options)) {
+    return lookup;
+  }
+
+  for (const option of product.options) {
+    if (!option || !Array.isArray(option.values)) {
+      continue;
+    }
+
+    const kind = merchantOptionKind(option);
+
+    for (const value of option.values) {
+      if (!value || value.id === undefined) {
+        continue;
+      }
+
+      lookup.set(String(value.id), {
+        kind,
+        title: cleanMerchantText(
+          value.title || "",
+          100
+        )
+      });
+    }
+  }
+
+  return lookup;
+}
+
+function resolveVariantOptionValues(
+  variant,
+  optionLookup
+) {
+  const result = {
+    color: null,
+    size: null
+  };
+
+  const optionIds =
+    variant && Array.isArray(variant.options)
+      ? variant.options
+      : [];
+
+  for (const optionId of optionIds) {
+    const match = optionLookup.get(
+      String(optionId)
+    );
+
+    if (!match || !match.title) {
+      continue;
+    }
+
+    if (match.kind === "color" && !result.color) {
+      result.color = match.title;
+    }
+
+    if (match.kind === "size" && !result.size) {
+      result.size = match.title;
+    }
+  }
+
+  return result;
+}
+
+function merchantOptionKind(option) {
+  const value = `${option && option.name ? option.name : ""} ${option && option.type ? option.type : ""}`
+    .toLowerCase();
+
+  if (value.includes("color") || value.includes("colour")) {
+    return "color";
+  }
+
+  if (
+    value.includes("size") ||
+    value.includes("dimension")
+  ) {
+    return "size";
+  }
+
+  return "other";
+}
+
+function isGoogleMerchantApparelProduct(title) {
+  const value = String(title || "")
+    .toLowerCase();
+
+  return /(tee|t-shirt|t shirt|shirt|hoodie|sweatshirt|long sleeve|long-sleeve)/.test(
+    value
+  );
+}
+
+function buildGoogleMerchantItemXml(product) {
+  const rows = [
+    "    <item>",
+    `      <g:id>${escapeXml(product.id)}</g:id>`,
+    `      <g:title>${escapeXml(product.title)}</g:title>`,
+    `      <g:description>${escapeXml(product.description)}</g:description>`,
+    `      <g:link>${escapeXml(product.link)}</g:link>`,
+    `      <g:image_link>${escapeXml(product.image)}</g:image_link>`,
+    `      <g:availability>${product.availability}</g:availability>`,
+    `      <g:price>${product.price}</g:price>`,
+    `      <g:condition>${product.condition}</g:condition>`,
+    `      <g:brand>${escapeXml(product.brand)}</g:brand>`,
+    `      <g:identifier_exists>${product.identifier_exists}</g:identifier_exists>`
+  ];
+
+  if (product.apparel) {
+    if (product.color) {
+      rows.push(
+        `      <g:color>${escapeXml(product.color)}</g:color>`
+      );
+    }
+
+    if (product.size) {
+      rows.push(
+        `      <g:size>${escapeXml(product.size)}</g:size>`
+      );
+    }
+
+    rows.push(
+      `      <g:gender>${product.gender}</g:gender>`,
+      `      <g:age_group>${product.age_group}</g:age_group>`
+    );
+  }
+
+  rows.push("    </item>");
+  return rows.join("\n");
+}
+
+function cleanMerchantDescription(value) {
+  const text = String(value || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return cleanMerchantText(text, 5000);
+}
+
+function cleanMerchantText(value, maxLength) {
+  const text = String(value || "")
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!maxLength || text.length <= maxLength) {
+    return text;
+  }
+
+  return text.slice(0, maxLength).trim();
+}
+
+function escapeXml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 async function handleCatalog(request, env) {
   const result = await fetchPrintifyProducts(env);
 
@@ -6746,7 +7049,9 @@ async function fetchPrintifyProducts(env) {
           headers: {
             Authorization:
               `Bearer ${env.PRINTIFY_API_TOKEN}`,
-            Accept: "application/json"
+            Accept: "application/json",
+            "User-Agent":
+              "MindoBirdWatching-Shop/1.0"
           }
         }
       );
