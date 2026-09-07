@@ -1,4 +1,4 @@
-/* MBW SHOP API V24 - GOOGLE MERCHANT FEED + PRINTIFY IDEMPOTENCY HARDENING */
+/* MBW SHOP API V25 - MERCHANT FEED CLEANUP + PRINTIFY PUBLISH SYNC */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -107,7 +107,9 @@ export default {
           google_merchant_feed_enabled:
             true,
           google_merchant_feed_version:
-            "v24",
+            "v25",
+          printify_product_publish_sync_supported:
+            true,
           printify_production_submission_enabled:
             false,
           printify_webhook_configured:
@@ -294,6 +296,23 @@ async function handlePrintifyWebhook(
       },
       403,
       request
+    );
+  }
+
+  /*
+    Custom Printify API stores do not publish to an external ecommerce
+    platform automatically. Clicking Publish in Printify locks the product
+    and emits product:publish:started. Because the MBW storefront reads the
+    Printify catalog dynamically, acknowledge create/update publishing here
+    so Printify unlocks the product for future edits and duplication.
+  */
+  if (eventType === "product:publish:started") {
+    return handlePrintifyProductPublishStarted(
+      request,
+      env,
+      eventId,
+      printifyOrderId,
+      data
     );
   }
 
@@ -541,6 +560,142 @@ async function verifyPrintifySignature(
 
   return constantTimeEqual(expected, signature);
 }
+
+async function handlePrintifyProductPublishStarted(
+  request,
+  env,
+  eventId,
+  productId,
+  data
+) {
+  const action = cleanText(
+    data && data.action,
+    40
+  ).toLowerCase();
+
+  if (!productId) {
+    return jsonResponse(
+      {
+        ok: false,
+        received: true,
+        event_id: eventId || null,
+        error: "Printify publish event is missing the product ID"
+      },
+      400,
+      request
+    );
+  }
+
+  /*
+    The MBW storefront is dynamic. For create/update, the Printify product
+    itself is already the source of truth, so there is no second catalog
+    write to wait for before acknowledging publishing.
+  */
+  if (action && action !== "create" && action !== "update") {
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        ignored: true,
+        event_id: eventId || null,
+        event_type: "product:publish:started",
+        product_id: productId,
+        action
+      },
+      200,
+      request
+    );
+  }
+
+  const endpoint =
+    `https://api.printify.com/v1/shops/${encodeURIComponent(env.PRINTIFY_SHOP_ID)}/products/${encodeURIComponent(productId)}/publishing_succeeded.json`;
+
+  const externalHandle =
+    "https://mindobirdwatching.com/shop/product/?id=" +
+    encodeURIComponent(productId);
+
+  let response;
+  let body;
+
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Authorization":
+          `Bearer ${env.PRINTIFY_API_TOKEN}`,
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "User-Agent":
+          "MindoBirdWatching-Shop/1.0"
+      },
+      body: JSON.stringify({
+        external: {
+          id: String(productId),
+          handle: externalHandle
+        }
+      })
+    });
+
+    body = await response
+      .json()
+      .catch(() => ({}));
+  } catch (error) {
+    return jsonResponse(
+      {
+        ok: false,
+        received: true,
+        event_id: eventId || null,
+        event_type: "product:publish:started",
+        product_id: productId,
+        action: action || null,
+        error:
+          `Unable to acknowledge Printify publishing: ${cleanText(error && error.message ? error.message : String(error), 300)}`
+      },
+      502,
+      request
+    );
+  }
+
+  if (!response.ok) {
+    return jsonResponse(
+      {
+        ok: false,
+        received: true,
+        event_id: eventId || null,
+        event_type: "product:publish:started",
+        product_id: productId,
+        action: action || null,
+        error:
+          cleanText(
+            body && (body.message || body.error)
+              ? typeof (body.message || body.error) === "string"
+                ? (body.message || body.error)
+                : JSON.stringify(body.message || body.error)
+              : `Printify returned HTTP ${response.status}`,
+            400
+          )
+      },
+      502,
+      request
+    );
+  }
+
+  return jsonResponse(
+    {
+      ok: true,
+      received: true,
+      event_id: eventId || null,
+      event_type: "product:publish:started",
+      product_id: productId,
+      action: action || null,
+      publishing_status: "succeeded",
+      external_handle: externalHandle
+    },
+    200,
+    request
+  );
+}
+
 
 function constantTimeEqual(a, b) {
   const left =
@@ -6646,18 +6801,19 @@ function normalizeGoogleMerchantProduct(product) {
   }
 
   /*
-    Merchant Center receives one offer for each published MBW product.
-    We intentionally use the first enabled/available Printify variant so
-    the submitted price and apparel attributes describe a real purchasable
-    option while keeping the Merchant catalog aligned to the 21-product
-    Printify source of truth rather than expanding every size/color into
-    hundreds of separate Merchant offers.
+    Merchant Center receives one offer per published Printify product.
+    Do not attach a single arbitrary size or color to a multi-variant
+    product-level offer. The landing page lets the shopper choose the
+    actual variant. Use the lowest enabled retail price for the offer.
   */
-  const primaryVariant = enabledVariants[0];
-  const optionLookup = buildPrintifyOptionLookup(product);
-  const selectedOptions = resolveVariantOptionValues(
-    primaryVariant,
-    optionLookup
+  const priceCents = Math.min(
+    ...enabledVariants
+      .map((variant) => Number(variant.price))
+      .filter(
+        (price) =>
+          Number.isFinite(price) &&
+          price >= 0
+      )
   );
 
   const title = cleanMerchantText(
@@ -6672,7 +6828,6 @@ function normalizeGoogleMerchantProduct(product) {
   );
 
   const image = getPrimaryImage(product.images);
-  const priceCents = Number(primaryVariant.price);
 
   if (
     !product.id ||
@@ -6702,12 +6857,6 @@ function normalizeGoogleMerchantProduct(product) {
     brand: "Mindo Bird Watching",
     identifier_exists: "false",
     apparel,
-    color: apparel
-      ? selectedOptions.color || null
-      : null,
-    size: apparel
-      ? selectedOptions.size || null
-      : null,
     gender: apparel ? "unisex" : null,
     age_group: apparel ? "adult" : null
   };
@@ -6823,18 +6972,6 @@ function buildGoogleMerchantItemXml(product) {
   ];
 
   if (product.apparel) {
-    if (product.color) {
-      rows.push(
-        `      <g:color>${escapeXml(product.color)}</g:color>`
-      );
-    }
-
-    if (product.size) {
-      rows.push(
-        `      <g:size>${escapeXml(product.size)}</g:size>`
-      );
-    }
-
     rows.push(
       `      <g:gender>${product.gender}</g:gender>`,
       `      <g:age_group>${product.age_group}</g:age_group>`
@@ -6846,20 +6983,90 @@ function buildGoogleMerchantItemXml(product) {
 }
 
 function cleanMerchantDescription(value) {
-  const text = String(value || "")
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
+  const text = decodeMerchantHtmlEntities(
+    String(value || "")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\\r\\n|\\n|\\r/g, " ")
+  )
     .replace(/\s+/g, " ")
     .trim();
 
   return cleanMerchantText(text, 5000);
+}
+
+function decodeMerchantHtmlEntities(value) {
+  const named = {
+    amp: "&",
+    apos: "'",
+    quot: '"',
+    lt: "<",
+    gt: ">",
+    nbsp: " ",
+    mdash: "-",
+    ndash: "-",
+    hellip: "...",
+    lsquo: "'",
+    rsquo: "'",
+    ldquo: '"',
+    rdquo: '"',
+    bull: "•",
+    middot: "•",
+    deg: "°",
+    sup2: "²",
+    times: "×",
+    eacute: "é",
+    Eacute: "É",
+    aacute: "á",
+    Aacute: "Á",
+    iacute: "í",
+    Iacute: "Í",
+    oacute: "ó",
+    Oacute: "Ó",
+    uacute: "ú",
+    Uacute: "Ú",
+    ntilde: "ñ",
+    Ntilde: "Ñ"
+  };
+
+  return String(value || "").replace(
+    /&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]+);/gi,
+    (match, entity) => {
+      if (entity[0] === "#") {
+        const isHex = /^#x/i.test(entity);
+        const numeric = parseInt(
+          entity.slice(isHex ? 2 : 1),
+          isHex ? 16 : 10
+        );
+
+        if (
+          Number.isFinite(numeric) &&
+          numeric > 0 &&
+          numeric <= 0x10ffff
+        ) {
+          try {
+            return String.fromCodePoint(numeric);
+          } catch (_) {
+            return " ";
+          }
+        }
+
+        return " ";
+      }
+
+      if (Object.prototype.hasOwnProperty.call(named, entity)) {
+        return named[entity];
+      }
+
+      const lower = entity.toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(named, lower)) {
+        return named[lower];
+      }
+
+      return " ";
+    }
+  );
 }
 
 function cleanMerchantText(value, maxLength) {
