@@ -52,7 +52,15 @@
   window.__mbwConsentStatus = savedChoice ? savedChoice.choice : "unknown";
 
   function loadGTM() {
-    if (document.querySelector('script[data-mbw-gtm="true"]')) return;
+    // Recognize both the current loader and a cached legacy head.js loader.
+    if (document.querySelector('script[data-mbw-gtm="true"]') ||
+        document.querySelector('script[src*="googletagmanager.com/gtm.js?id=' + GTM_ID + '"]')) return;
+
+    // Consent defaults above must precede the GTM bootstrap event.
+    window.dataLayer.push({
+      "gtm.start": new Date().getTime(),
+      event: "gtm.js"
+    });
     var script = document.createElement("script");
     script.async = true;
     script.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(GTM_ID);
