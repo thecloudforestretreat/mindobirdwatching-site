@@ -851,12 +851,12 @@
           "MBW008": "Birdwatching",
           "MBW009": "nature_excursion",
           "MBW010": "Birdwatching",
-          "MBW011": "Experience",
-          "MBW012": "Experience",
-          "MBW013": "Nature Excursion",
-          "MBW014": "Adventure",
-          "MBW015": "Nature",
-          "MBW016": "Wildlife",
+          "MBW011": "Activity",
+          "MBW012": "Activity",
+          "MBW013": "Activity",
+          "MBW014": "Activity",
+          "MBW015": "Activity",
+          "MBW016": "Activity",
           "MBW017": "Tour Upgrade",
           "TRANS01": "Transportation",
           "TRANS02": "Transportation",
@@ -865,19 +865,19 @@
           "TRANS05": "Transportation",
           "TRANS06": "Transportation",
           "DEP001": "Deposit",
-          "ACT002": "Nature Excursion",
-          "ACT003": "Nature Excursion",
-          "ACT004": "guided_activity",
-          "ACT009": "guided_activity",
-          "ACT010": "Wildlife",
-          "ACT011": "guided_activity",
-          "ACT013": "guided_activity",
-          "ACT015": "guided_activity",
-          "ACT016": "Nature Excursion",
-          "ACT017": "Adventure",
-          "ACT018": "Adventure",
-          "ACT019": "Adventure",
-          "ACT020": "Adventure",
+          "ACT002": "Activity",
+          "ACT003": "Activity",
+          "ACT004": "Activity",
+          "ACT009": "Activity",
+          "ACT010": "Activity",
+          "ACT011": "Activity",
+          "ACT013": "Activity",
+          "ACT015": "Activity",
+          "ACT016": "Activity",
+          "ACT017": "Activity",
+          "ACT018": "Activity",
+          "ACT019": "Activity",
+          "ACT020": "Activity",
           "ACT021": "Specialty Wildlife",
           "OSO001": "Wildlife",
           "OSO002": "Wildlife",
@@ -907,11 +907,17 @@
         const primary=primaryTourItemFromRecord(record);
         let primaryRemoved=false;
         const mainDate=toDateValue(record.requested_date||record.requested_date_start);
+        const endDate=toDateValue(record.requested_date_end);
         return items.filter(item=>{
           if(!primaryRemoved&&sameTourItem(item,primary)){ primaryRemoved=true; return false; }
           if(clean(item.id)==="primary") return false;
           return !sameTourItem(item,primary);
-        }).map(item=>normalizeTourItem(Object.assign({},item,{date:toDateValue(item.date||item.tour_date)||mainDate,tour_date:toDateValue(item.date||item.tour_date)||mainDate})));
+        }).flatMap(expandRecognizedAdditionalItem).map(item=>{
+          const normalized=normalizeTourItem(item);
+          const inheritedWebsiteDate=endDate&&endDate!==mainDate&&normalized.date===mainDate&&/(?:requested on website|guest request)/i.test(normalized.notes);
+          const itemDate=inheritedWebsiteDate?"":normalized.date;
+          return normalizeTourItem(Object.assign({},normalized,{date:itemDate,tour_date:itemDate}));
+        });
       }
       function itineraryItemsFromForm(additional){
         const primary=primaryTourItemFromForm();
@@ -927,6 +933,29 @@
         return items.filter(validTourItem);
       }
       function serviceItemLabel(item){ const visual=serviceVisual({tour_type:item.tour,service_type:item.service_type||item.tour,product_selected:item.product_selected}); return {icon:visual.icon,label:item.tour||productTitle(item.product_selected)||visual.label||"Service"}; }
+      function requestAllocation(tour){
+        const value=clean(tour).toLowerCase();
+        if(value==="night walk") return {tour:"Night Walk",service_type:"Activity",product_selected:"MBW016 - Night Walk",duration:"Evening activity"};
+        if(value==="chocolate tour") return {tour:"Chocolate Tour",service_type:"Activity",product_selected:"MBW011 - Chocolate Tour"};
+        if(value==="orchid garden tour") return {tour:"Orchid Garden Tour",service_type:"Activity",product_selected:"ACT009 - Orchid Garden Tour"};
+        if(value==="coffee tour") return {tour:"Coffee Tour",service_type:"Activity",product_selected:"MBW012 - Coffee Tour"};
+        if(value==="accommodation assistance") return {tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01 - Accommodation Booking"};
+        if(value==="transportation requested") return {tour:"Transportation Requested",service_type:"Transportation",product_selected:""};
+        if(value==="additional birding day") return {tour:"Additional Birding Day",service_type:"Birdwatching",product_selected:"",duration:"Full Day"};
+        return null;
+      }
+      function expandRecognizedAdditionalItem(item){
+        const normalized=normalizeTourItem(item);
+        const text=clean(normalized.tour);
+        const lower=text.toLowerCase();
+        if(productCodeFromValue(normalized.product_selected)!=="OTHER"&&clean(normalized.product_selected)!=="Other") return [normalized];
+        const matches=[];
+        if(/\bchocolate(?:\s+tour)?\b/.test(lower)) matches.push(requestAllocation("Chocolate Tour"));
+        if(/\borchid(?:\s+garden)?(?:\s+tour)?\b/.test(lower)) matches.push(requestAllocation("Orchid Garden Tour"));
+        if(/\bcoffee(?:\s+tour)?\b/.test(lower)) matches.push(requestAllocation("Coffee Tour"));
+        if(!matches.length) return [Object.assign({},normalized,{tour:"Other Activity or Tour",notes:normalized.notes?normalized.notes+" · Guest request: "+text:"Guest request: "+text})];
+        return matches.map((allocation,index)=>normalizeTourItem(Object.assign({},normalized,allocation,{id:normalized.id+"-"+(index+1),notes:[normalized.notes,"Guest request: "+text].filter(Boolean).join(" · ")})));
+      }
       function legacyAddOnItems(record){const raw=pick(record,"tour_add_ons","optional_additions","add_ons");if(!raw)return[];return raw.split(/\s*\|\s*/).filter(Boolean).flatMap((value,index)=>{const lower=clean(value).toLowerCase();if(lower.startsWith("tour format:"))return[];if(lower==="night walk")return[{id:"addon-"+(index+1),tour:"Night Walk",service_type:"Activity",product_selected:"MBW016",duration:"Evening activity",status:"new",notes:"Requested on website"}];if(lower==="additional birding day")return[{id:"addon-"+(index+1),tour:"Additional Birding Day",service_type:"Birdwatching",status:"new",notes:"Requested on website"}];if(lower==="transportation")return[{id:"addon-"+(index+1),tour:"Transportation Requested",service_type:"Transportation",status:"new",notes:"Requested on website"}];if(lower==="accommodation assistance")return[{id:"addon-"+(index+1),tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01",status:"new",notes:"Requested on website"}];const detail=lower.startsWith("other:")?value.slice(value.indexOf(":")+1).trim():value;return[{id:"addon-"+(index+1),tour:detail||"Other Activity or Tour",service_type:"Custom",product_selected:"Other",status:"new",notes:"Requested on website"}];});}
       function normalizeTourItems(record){ if(!record) return []; let source=record.tour_items_json||record.tour_items||""; if(Array.isArray(source)) return source.map(normalizeTourItem).filter(validTourItem); if(typeof source==="string"&&source.trim()){ try{ const parsed=JSON.parse(source); if(Array.isArray(parsed)) return parsed.map(normalizeTourItem).filter(validTourItem); }catch(e){ return source.split(/\\s*\\|\\s*/).map(chunk=>{ const parts=chunk.split("::"); return normalizeTourItem({date:parts[0],tour:parts[1],guests:parts[2],product:parts[3],status:parts[4],pickup_location:parts[5],price:parts[6],notes:parts[7]}); }).filter(validTourItem); } } return legacyAddOnItems(record).map(normalizeTourItem).filter(validTourItem); }
       function normalizeTourItem(item){ item=item||{}; const tour=clean(item.tour||item.tour_type||item.name||item.product_selected); const date=toDateValue(item.date||item.tour_date||item.requested_date); const guests=clean(item.guests||item.guest_count||item.party_size); const product=clean(item.product_selected||item.product||deriveProductCode(tour)); const price=clean(item.price||item.quoted_amount||item.unit_price||item.price_per_person||item.per_person||item.amount); const serviceType=clean(item.service_type)||deriveServiceType(product||tour); return {id:clean(item.id)||"TI-"+stamp()+"-"+Math.random().toString(16).slice(2,6),tour:tour,service_type:serviceType,date:date,tour_date:date,guests:guests,product_selected:product,duration:clean(item.duration||item.duration_preference),status:normalizeStatus(item.status||"booked"),pickup_location:clean(item.pickup_location||item.pickup||""),price:price,notes:clean(item.notes||"")}; }
@@ -939,9 +968,9 @@
       function collectQuoteOptions(){if(!els.quoteOptionsList)return[];return Array.from(els.quoteOptionsList.querySelectorAll("[data-quote-code]")).map(row=>{const price=clean(row.querySelector('[data-quote-field="price"]')?.value);const description=clean(row.querySelector('[data-quote-field="description"]')?.value);return{code:row.dataset.quoteCode,name:description||row.dataset.quoteName,price:price,basis:row.querySelector('[data-quote-field="basis"]')?.value||"per_person",currency:"USD"}}).filter(item=>item.price)}
       function fillQuoteOptions(record){const items=parseQuoteOptions(record&&record.quote_options_json);if(els.quoteOptionsList){els.quoteOptionsList.querySelectorAll("[data-quote-code]").forEach(row=>{const item=items.find(entry=>clean(entry.code).toUpperCase()===clean(row.dataset.quoteCode).toUpperCase())||{};const price=row.querySelector('[data-quote-field="price"]'),basis=row.querySelector('[data-quote-field="basis"]'),description=row.querySelector('[data-quote-field="description"]');if(price)price.value=item.price||"";if(basis)basis.value=item.basis||"per_person";if(description)description.value=item.code==="OTHER"?(item.name||""):""})}if(els.quoteSentAtInput)els.quoteSentAtInput.value=localDateTimeValue(record&&record.quote_sent_at);if(els.quoteSentChannelInput)els.quoteSentChannelInput.value=clean(record&&record.quote_sent_channel);if(els.quoteNotesInput)els.quoteNotesInput.value=clean(record&&record.quote_notes);if(els.quoteOptionsPanel)els.quoteOptionsPanel.open=Boolean(items.length||clean(record&&record.quote_sent_at)||clean(record&&record.quote_notes))}
       function markQuotesSent(){const options=collectQuoteOptions();if(!options.length){showToast("Enter at least one quoted price");return}if(!els.quoteSentChannelInput.value){showToast("Choose how the quote was sent");return}els.quoteSentAtInput.value=localDateTimeValue(new Date().toISOString());els.quoteStatusInput.value="sent";saveRecord()}
-      function tourItemHtml(item,index){ const tourOptions=["","Half-Day Birdwatching","Full-Day Birdwatching","Additional Birding Day","Night Walk","Transportation Requested","Accommodation Assistance","Specialty Wildlife","Other Activity or Tour","Other"]; const serviceOptions=["","Birdwatching","Activity","Specialty Wildlife","Transportation","Accommodation","Custom"]; const productOptions=MBW_PRODUCT_OPTIONS; const statusOptions=["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","booked","completed","cancelled","did_not_book","duplicate"]; const heading=[item.tour||productTitle(item.product_selected)||`Service ${index+2}`,item.service_type].filter(Boolean).join(" · "); return `<article class="tourItem" data-id="${esc(item.id)}"><div class="tourItemTop"><strong>${esc(heading)}</strong><button type="button" data-tour-action="remove">Remove</button></div><div class="tourItemGrid"><label class="field">Specific Request<select data-tour-field="tour">${optionsHtml(tourOptions,item.tour)}</select></label><label class="field">Service Type<select data-tour-field="service">${optionsHtml(serviceOptions,item.service_type)}</select></label><label class="field">Product / Service<select data-tour-field="product">${optionsHtml(productOptions,item.product_selected)}</select></label><label class="field">Date<input type="date" data-tour-field="date" value="${esc(item.date||item.tour_date)}"></label><label class="field">Guests<input data-tour-field="guests" value="${esc(item.guests)}" placeholder="2"></label><label class="field">Price per person<input data-tour-field="price" inputmode="decimal" value="${esc(item.price)}" placeholder="Optional"></label><label class="field">Duration<select data-tour-field="duration">${optionsHtml(["","Half Day","Full Day","Flexible","Evening activity"],item.duration)}</select></label><label class="field">Calendar status<select data-tour-field="status">${optionsHtml(statusOptions,item.status)}</select></label><label class="field">Pickup<input data-tour-field="pickup" value="${esc(item.pickup_location)}" placeholder="Hotel or meeting point"></label><label class="field tourItemNotes">Notes<input data-tour-field="notes" value="${esc(item.notes)}" placeholder="Optional"></label></div></article>`; }
+      function tourItemHtml(item,index){ const tourOptions=["","Half-Day Birdwatching","Full-Day Birdwatching","Additional Birding Day","Night Walk","Chocolate Tour","Orchid Garden Tour","Coffee Tour","Transportation Requested","Accommodation Assistance","Specialty Wildlife","Other Activity or Tour","Other"]; const serviceOptions=["","Birdwatching","Activity","Specialty Wildlife","Transportation","Accommodation","Custom"]; const productOptions=[""].concat(MBW_PRODUCT_OPTIONS); const statusOptions=["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","booked","completed","cancelled","did_not_book","duplicate"]; const heading=[item.tour||productTitle(item.product_selected)||`Service ${index+2}`,item.service_type].filter(Boolean).join(" · "); return `<article class="tourItem" data-id="${esc(item.id)}"><div class="tourItemTop"><strong>${esc(heading)}</strong><button type="button" data-tour-action="remove">Remove</button></div><div class="tourItemGrid"><label class="field">Specific Request<select data-tour-field="tour">${optionsHtml(tourOptions,item.tour)}</select></label><label class="field">Service Type<select data-tour-field="service">${optionsHtml(serviceOptions,item.service_type)}</select></label><label class="field">Product / Service<select data-tour-field="product">${optionsHtml(productOptions,item.product_selected)}</select></label><label class="field">Date<input type="date" data-tour-field="date" value="${esc(item.date||item.tour_date)}"></label><label class="field">Guests<input data-tour-field="guests" value="${esc(item.guests)}" placeholder="2"></label><label class="field">Price per person<input data-tour-field="price" inputmode="decimal" value="${esc(item.price)}" placeholder="Optional"></label><label class="field">Duration<select data-tour-field="duration">${optionsHtml(["","Half Day","Full Day","Flexible","Evening activity"],item.duration)}</select></label><label class="field">Calendar status<select data-tour-field="status">${optionsHtml(statusOptions,item.status)}</select></label><label class="field">Pickup<input data-tour-field="pickup" value="${esc(item.pickup_location)}" placeholder="Hotel or meeting point"></label><label class="field tourItemNotes">Notes<input data-tour-field="notes" value="${esc(item.notes)}" placeholder="Optional"></label></div></article>`; }
       function optionsHtml(options,value){const selected=clean(value),rows=options.slice(),machineLabels=new Set(["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book","duplicate","unpaid","paid","refunded","not_sent","sent","accepted","declined"]);if(selected&&!rows.some(option=>{const opt=clean(option);return opt===selected||opt.startsWith(selected+" -")||selected.startsWith(opt+" -");}))rows.splice(rows[0]===""?1:0,0,selected);return rows.map(option=>{const opt=clean(option),isSelected=opt===selected||(selected&&opt.startsWith(selected+" -"))||(opt&&selected.startsWith(opt+" -")),label=machineLabels.has(opt)?labelStatus(opt):(POPULAR_PRODUCT_CODES.has(productCode(opt))?popularProductLabel(opt):(option||"Select"));return `<option value="${esc(option)}" ${isSelected?"selected":""}>${esc(label)}</option>`;}).join("");}
-      function handleTourItemInput(event){ const field=event&&event.target&&event.target.closest("[data-tour-field]"); if(field&&(field.dataset.tourField==="product"||field.dataset.tourField==="tour")){ const card=field.closest(".tourItem"); const priceInput=card&&card.querySelector('[data-tour-field="price"]'); if(priceInput&&!clean(priceInput.value)){ const product=card.querySelector('[data-tour-field="product"]').value; const tour=card.querySelector('[data-tour-field="tour"]').value; priceInput.value=standardPriceForProduct(product,tour); } } state.tourItems=collectTourItems(); renderPayload(); }
+      function handleTourItemInput(event){ const field=event&&event.target&&event.target.closest("[data-tour-field]"); if(field&&(field.dataset.tourField==="product"||field.dataset.tourField==="tour")){ const card=field.closest(".tourItem"); const productField=card&&card.querySelector('[data-tour-field="product"]'); const serviceField=card&&card.querySelector('[data-tour-field="service"]'); const durationField=card&&card.querySelector('[data-tour-field="duration"]'); const tourField=card&&card.querySelector('[data-tour-field="tour"]'); if(field.dataset.tourField==="tour"){ const allocation=requestAllocation(tourField.value); if(allocation){ setSelectValue(serviceField,allocation.service_type); setSelectValue(productField,allocation.product_selected); if(allocation.duration)setSelectValue(durationField,allocation.duration); } }else if(clean(productField.value)){ setSelectValue(serviceField,deriveServiceType(productField.value)); } const priceInput=card&&card.querySelector('[data-tour-field="price"]'); if(priceInput&&!clean(priceInput.value)) priceInput.value=standardPriceForProduct(productField.value,tourField.value); } state.tourItems=collectTourItems(); renderPayload(); }
       function handleTourItemClick(event){ const button=event.target.closest("[data-tour-action]"); if(!button) return; const card=button.closest(".tourItem"); state.tourItems=collectTourItems().filter(item=>item.id!==card.dataset.id); renderTourItems(); renderPayload(); }
       function comparableEmail(record){ return clean(record.email_normalized||record.email).toLowerCase(); }
       function comparablePhone(record){ return clean(record.phone_normalized||record.phone_number||record.phone_raw).replace(/\D/g,""); }
