@@ -3,19 +3,15 @@
    Updated: 2026-06-05
 
    Responsibilities:
-   - Load the Google Tag Manager container
    - Load shared head assets
    - Apply cache-busted header.css
    - Add font preconnects and font stylesheet
    - Add favicon, Apple touch icon, and manifest links
    - Add safe default metadata fallbacks only when missing
 
-   Important:
-   - GTM-PQV9F24V is currently an empty container
-   - Do NOT configure GA4 in GTM during this installation phase
-   - Do NOT initialize gtag here
-   - Do NOT add analytics click listeners here
-   - GA4 and custom event tracking remain centralized in /assets/js/site.js
+   Tracking ownership:
+   - site.js establishes consent defaults and loads GTM once.
+   - This helper only loads presentation assets and metadata.
 */
 
 (function () {
@@ -25,26 +21,6 @@
   if (!HEAD) return;
 
   var VERSION = "20260605-gtm-install";
-  var GTM_ID = "GTM-PQV9F24V";
-
-  function injectGoogleTagManager() {
-    window.dataLayer = window.dataLayer || [];
-
-    if (document.querySelector('script[src*="googletagmanager.com/gtm.js?id=' + GTM_ID + '"]')) {
-      return;
-    }
-
-    window.dataLayer.push({
-      "gtm.start": new Date().getTime(),
-      event: "gtm.js"
-    });
-
-    var script = document.createElement("script");
-    script.async = true;
-    script.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(GTM_ID);
-    HEAD.appendChild(script);
-  }
-
   function addLink(rel, href, extra) {
     if (!href) return null;
     extra = extra || {};
@@ -133,7 +109,6 @@
     addMeta("og:image", "/assets/images/og/og-default-1200x630.jpg", true);
   }
 
-  injectGoogleTagManager();
   injectHeaderCss();
   injectFontAssets();
   injectIconsAndManifest();
