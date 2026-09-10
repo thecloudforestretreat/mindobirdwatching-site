@@ -319,7 +319,13 @@
     .orderReset:hover,.orderReset:focus-visible{background:#eef7e7;border-color:rgba(13,89,37,.48);outline:none}
     .summaryGroup{display:grid;gap:6px}
     .summaryGroupHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 2px 5px;border-bottom:1px solid rgba(13,89,37,.18);color:var(--mbw-green);font-size:10.5px;line-height:1.2;font-weight:950;letter-spacing:.07em;text-transform:uppercase}
+    .summaryGroupLabel{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .summaryGroupActions{display:flex;align-items:center;gap:4px;flex:0 0 auto}
     .summaryGroupCount{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:20px;padding:0 6px;border-radius:999px;background:rgba(13,89,37,.1);font-size:10px;letter-spacing:0}
+    .groupMove{width:25px;height:25px;padding:0;border:1px solid rgba(13,89,37,.2);border-radius:7px;background:#fff;color:var(--mbw-green);font-size:12px;font-weight:950;cursor:pointer}
+    .groupMove:hover,.groupMove:focus-visible{background:#eef7e7;border-color:rgba(13,89,37,.42);outline:none}
+    .groupMove:disabled{opacity:.28;cursor:not-allowed}
+    .summaryContext{margin:1px 0 2px 30px;padding:6px 8px;border-left:3px solid rgba(13,89,37,.35);color:rgba(7,25,35,.62);font-size:10.5px;line-height:1.35;font-weight:800}
     .summaryItem{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center;gap:8px}
     .summaryItemLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .orderActions{display:flex;gap:4px}
@@ -643,7 +649,7 @@ experiences waiting for you in Mindo.</textarea>
           <div class="orderToolbar">
             <div>
               <h2 class="panelTitle">Selected Order</h2>
-              <p class="hint">New selections are placed automatically. Use the arrows to adjust items within each section; your order is remembered on this device.</p>
+              <p class="hint">New selections are placed automatically. Move complete sections with the header arrows, or adjust individual items within each section. Your order is remembered on this device.</p>
             </div>
             <button class="orderReset" type="button" id="resetOrderBtn" title="Restore the default group and item sequence"><span aria-hidden="true">↻</span> Reset recommended order</button>
           </div>
@@ -680,12 +686,14 @@ experiences waiting for you in Mindo.</textarea>
       const state = {
         selected: new Set(),
         order: [],
+        groupOrder: ["tours", "activities", "planning", "nextSteps", "social"],
         overrides: {},
         openGroups: new Set(["tours"]),
         reviewSummary: { rating: 5.0, count: 152, mapsUrl: "https://g.page/r/CdMlIYMGgBIvEAE/review" },
         showHtml: false
       };
       const ORDER_STORAGE_KEY = "mbwEmailGeneratorSectionOrderV2";
+      const GROUP_ORDER_STORAGE_KEY = "mbwEmailGeneratorGroupOrderV1";
       const GROUP_STORAGE_KEY = "mbwEmailGeneratorOpenGroupsV1";
       const WHATSAPP_STORAGE_KEY = "mbwEmailGeneratorWhatsappNumber";
       const DEFAULT_WHATSAPP_NUMBER = "593969076501";
@@ -712,6 +720,7 @@ experiences waiting for you in Mindo.</textarea>
               }
             });
             const savedOrder = loadSavedOrder();
+            state.groupOrder = loadSavedGroupOrder();
             state.order = normalizeGroupedOrder(mergeSavedOrder(savedOrder, smartOrder(catalog.blocks.filter(block => state.selected.has(block.id))).map(block => block.id)));
             renderBlockControls();
             bindEvents();
@@ -1257,7 +1266,24 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function saveOrder(){
-        try { localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(state.order)); } catch(e) {}
+        try {
+          localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(state.order));
+          localStorage.setItem(GROUP_ORDER_STORAGE_KEY, JSON.stringify(state.groupOrder));
+        } catch(e) {}
+      }
+
+      function defaultGroupOrder(){
+        return ["tours", "activities", "planning", "nextSteps", "social"];
+      }
+
+      function loadSavedGroupOrder(){
+        try {
+          const parsed = JSON.parse(localStorage.getItem(GROUP_ORDER_STORAGE_KEY) || "[]");
+          const allowed = defaultGroupOrder();
+          const saved = Array.isArray(parsed) ? parsed.filter(id => allowed.includes(id)) : [];
+          allowed.forEach(id => { if(!saved.includes(id)) saved.push(id); });
+          return saved;
+        } catch(e) { return defaultGroupOrder(); }
       }
 
       function mergeSavedOrder(saved, fallback){
@@ -1270,7 +1296,7 @@ experiences waiting for you in Mindo.</textarea>
       function normalizeGroupedOrder(order){
         const catalog = getCatalog();
         const byId = new Map(catalog.blocks.map(block => [block.id, block]));
-        const groupOrder = (catalog.groups || []).map(group => group.id);
+        const groupOrder = state.groupOrder.concat(["included"]);
         const result = [];
         groupOrder.forEach(groupId => {
           (order || []).forEach(id => {
@@ -1283,6 +1309,7 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function resetSectionOrder(){
+        state.groupOrder = defaultGroupOrder();
         state.order = smartOrder(getCatalog().blocks.filter(block => state.selected.has(block.id))).map(block => block.id);
         saveOrder();
         renderSelectedSummary();
@@ -1304,6 +1331,28 @@ experiences waiting for you in Mindo.</textarea>
         saveOrder();
         renderSelectedSummary();
         updateEmail();
+      }
+
+      function moveGroup(groupId, direction){
+        const active = activeGroupIds();
+        const activeIndex = active.indexOf(groupId);
+        const targetGroup = active[activeIndex + direction];
+        if(activeIndex < 0 || !targetGroup) return;
+        const from = state.groupOrder.indexOf(groupId);
+        const to = state.groupOrder.indexOf(targetGroup);
+        if(from < 0 || to < 0) return;
+        const copy = state.groupOrder.slice();
+        [copy[from], copy[to]] = [copy[to], copy[from]];
+        state.groupOrder = copy;
+        saveOrder();
+        renderSelectedSummary();
+        updateEmail();
+      }
+
+      function activeGroupIds(){
+        const byId = new Map(getCatalog().blocks.map(block => [block.id, block]));
+        const selectedGroups = new Set(Array.from(state.selected).map(id => byId.get(id)).filter(block => block && block.id !== "included").map(block => block.group));
+        return state.groupOrder.filter(groupId => selectedGroups.has(groupId));
       }
 
       function buildDefaultCatalog(){
@@ -1715,15 +1764,16 @@ experiences waiting for you in Mindo.</textarea>
 
       function renderSelectedSummary(){
         const catalog = getCatalog();
-        const ordered = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id)));
+        const ordered = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id) && block.id !== "included"));
         if(!ordered.length){
-          els.selectedSummary.innerHTML = "<div class='summaryItem'>No blocks selected.</div>";
+          els.selectedSummary.innerHTML = "<div class='summaryItem'>" + (state.selected.has("included") ? "Select a tour or Night Walk to place its Included details." : "No blocks selected.") + "</div>";
           return;
         }
         els.selectedSummary.innerHTML = "";
         const localizedCatalog = getLocalizedCatalog();
         const localized = new Map(localizedCatalog.blocks.map(block => [block.id, block]));
         const groupLabels = new Map(localizedCatalog.groups.map(group => [group.id, group.label]));
+        const activeGroups = activeGroupIds();
         const groups = [];
         ordered.forEach(block => {
           let group = groups.find(entry => entry.id === block.group);
@@ -1736,8 +1786,15 @@ experiences waiting for you in Mindo.</textarea>
           section.className = "summaryGroup";
           const heading = document.createElement("div");
           heading.className = "summaryGroupHeader";
-          heading.innerHTML = "<span></span><span class='summaryGroupCount'>" + group.blocks.length + "</span>";
-          heading.querySelector("span").textContent = groupLabels.get(group.id) || group.id;
+          heading.innerHTML = "<span class='summaryGroupLabel'></span><span class='summaryGroupActions'><button class='groupMove' data-group-move='up' type='button' aria-label='Move section up'>↑</button><button class='groupMove' data-group-move='down' type='button' aria-label='Move section down'>↓</button><span class='summaryGroupCount'>" + group.blocks.length + "</span></span>";
+          heading.querySelector(".summaryGroupLabel").textContent = groupLabels.get(group.id) || group.id;
+          const groupIndex = activeGroups.indexOf(group.id);
+          const groupUp = heading.querySelector("[data-group-move='up']");
+          const groupDown = heading.querySelector("[data-group-move='down']");
+          groupUp.disabled = groupIndex === 0;
+          groupDown.disabled = groupIndex === activeGroups.length - 1;
+          groupUp.addEventListener("click", () => moveGroup(group.id, -1));
+          groupDown.addEventListener("click", () => moveGroup(group.id, 1));
           section.appendChild(heading);
           group.blocks.forEach((block, groupIndex) => {
           const index = globalIndex++;
@@ -1754,6 +1811,14 @@ experiences waiting for you in Mindo.</textarea>
           down.addEventListener("click", () => moveSection(block.id, 1));
           section.appendChild(item);
           });
+          const showsTourInclusions = group.id === "tours" && state.selected.has("included") && group.blocks.length;
+          const showsNightWalkInclusions = group.id === "activities" && state.selected.has("included") && group.blocks.some(block => block.id === "night-walk");
+          if(showsTourInclusions || showsNightWalkInclusions){
+            const context = document.createElement("div");
+            context.className = "summaryContext";
+            context.textContent = showsNightWalkInclusions && !showsTourInclusions ? "Included details follow Night Walk" : "Included details follow selected tours";
+            section.appendChild(context);
+          }
           els.selectedSummary.appendChild(section);
         });
       }
@@ -1829,6 +1894,7 @@ experiences waiting for you in Mindo.</textarea>
       function resetGenerator(){
         state.selected.clear();
         state.order = [];
+        state.groupOrder = defaultGroupOrder();
         state.overrides = {};
         getCatalog().blocks.forEach(block => {
           if(block.defaultSelected){
@@ -1913,6 +1979,7 @@ experiences waiting for you in Mindo.</textarea>
         if(!config) return;
         const presetText = (EMAIL_I18N[getLanguage()].presets || {})[preset] || {};
         state.selected = new Set(config.blocks);
+        state.groupOrder = defaultGroupOrder();
         state.order = smartOrder(getCatalog().blocks.filter(block => state.selected.has(block.id))).map(block => block.id);
         state.overrides = Object.assign({}, config.overrides || {});
         setEmailTitle(presetText.title || config.title);
@@ -1946,7 +2013,8 @@ experiences waiting for you in Mindo.</textarea>
         }
         const catalog = getLocalizedCatalog();
         const brand = applySiteContact(catalog.brand);
-        const selectedBlocks = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id)));
+        const includedBlock = catalog.blocks.find(block => block.id === "included" && state.selected.has(block.id));
+        const selectedBlocks = orderSelectedBlocks(catalog.blocks.filter(block => state.selected.has(block.id) && block.id !== "included"));
         const guestName = firstNameOnly(els.guestNameInput.value) || "Guest";
         const dates = formatDisplayDate(els.datesPickerInput.value || els.datesInput.value);
         const guestCount = clean(els.guestCountInput.value);
@@ -1970,7 +2038,7 @@ experiences waiting for you in Mindo.</textarea>
           "<table role='presentation' width='640' cellspacing='0' cellpadding='0' border='0' style='width:640px; max-width:640px;'>",
           renderHeader(brand),
           els.showHeroInput.checked ? renderHero(brand, title, guestName, meta, combinedIntro(directAnswer, intro)) : renderIntroOnly(title, guestName, meta, combinedIntro(directAnswer, intro)),
-          renderOrderedBlocks(selectedBlocks),
+          renderOrderedBlocks(selectedBlocks, includedBlock),
           hasSelectedType(selectedBlocks, "nextSteps") ? "" : renderNextSteps({ title: "Next Steps", description: nextSteps }),
           renderReadyCta(brand, nextSteps),
           renderSignature(brand),
@@ -1986,13 +2054,17 @@ experiences waiting for you in Mindo.</textarea>
         return [clean(directAnswer), clean(intro)].filter(Boolean).join("\n\n");
       }
 
-      function renderOrderedBlocks(blocks){
+      function renderOrderedBlocks(blocks, includedBlock){
         const groupLabels = new Map(getLocalizedCatalog().groups.map(group => [group.id, group.label]));
         let previousGroup = "";
-        return blocks.map(block => {
+        return blocks.map((block, index) => {
           const showHeading = ["tours", "activities", "planning"].includes(block.group) && block.group !== previousGroup;
           previousGroup = block.group;
-          return (showHeading ? renderEmailGroupHeading(groupLabels.get(block.group) || block.group) : "") + renderBlock(resolveBlock(block));
+          const nextBlock = blocks[index + 1];
+          const closesTours = block.group === "tours" && (!nextBlock || nextBlock.group !== "tours");
+          const followsNightWalk = block.id === "night-walk";
+          const contextualIncluded = includedBlock && (closesTours || followsNightWalk) ? renderIncluded(resolveBlock(includedBlock)) : "";
+          return (showHeading ? renderEmailGroupHeading(groupLabels.get(block.group) || block.group) : "") + renderBlock(resolveBlock(block)) + contextualIncluded;
         }).join("");
       }
 
@@ -2014,9 +2086,13 @@ experiences waiting for you in Mindo.</textarea>
 
       function orderSelectedBlocks(blocks){
         const byId = new Map(blocks.map(block => [block.id, block]));
-        const ordered = state.order.map(id => byId.get(id)).filter(Boolean);
-        blocks.forEach(block => { if(!ordered.includes(block)) ordered.push(block); });
-        return ordered;
+        const itemPosition = new Map(state.order.map((id, index) => [id, index]));
+        const groupPosition = new Map(state.groupOrder.map((id, index) => [id, index]));
+        return blocks.slice().sort((a, b) => {
+          const groupDifference = (groupPosition.get(a.group) ?? 999) - (groupPosition.get(b.group) ?? 999);
+          if(groupDifference) return groupDifference;
+          return (itemPosition.get(a.id) ?? blockPriority(a)) - (itemPosition.get(b.id) ?? blockPriority(b));
+        }).filter(block => byId.has(block.id));
       }
 
       function blockPriority(block){
