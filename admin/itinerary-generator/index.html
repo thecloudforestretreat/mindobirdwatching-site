@@ -150,6 +150,7 @@
         <div class="actions">
           
           <button type="button" id="saveCrmBtn" disabled>Save Itinerary to CRM</button>
+          <button type="button" id="createZelleBtn">Create Zelle Invoice</button>
           <button type="button" id="copyHtmlBtn" class="primary">Copy HTML</button>
           <button type="button" id="copyWhatsAppBtn">Copy WhatsApp</button>
           <button type="button" id="openWhatsAppBtn">Open WhatsApp</button>
@@ -165,6 +166,10 @@
             <div class="field">
               <label for="guestName">Guest name</label>
               <input id="guestName" type="text" placeholder="Name" />
+            </div>
+            <div class="field">
+              <label for="guestEmail">Guest email</label>
+              <input id="guestEmail" type="email" placeholder="guest@example.com" />
             </div>
             <div class="field">
               <label for="tripTitle">Itinerary title</label>
@@ -245,8 +250,17 @@
               <label for="closingText">Closing message</label>
               <textarea id="closingText">Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.</textarea>
             </div>
-            <label class="checkRow"><input id="showDeposit" type="checkbox" checked /><span>Show the tour deposit button.</span></label>
+            <label class="checkRow"><input id="showDeposit" type="checkbox" checked disabled /><span>Stripe tour deposit is included on every itinerary.</span></label>
             <div class="field"><label for="depositLink">Deposit payment URL</label><input id="depositLink" type="url" value="https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05" placeholder="https://…" /><p class="hint">The deposit button appears only when this is a valid HTTPS URL.</p></div>
+            <label class="checkRow"><input id="offerZelle" type="checkbox" /><span>Also offer Zelle for this U.S. guest.</span></label>
+            <div class="field" id="zelleEmailField" hidden>
+              <label for="zelleEmail">Zelle payment email</label>
+              <select id="zelleEmail">
+                <option value="mindobirdwatching@gmail.com">mindobirdwatching@gmail.com (Current default)</option>
+                <option value="payments@mindobirdwatching.com">payments@mindobirdwatching.com (Future default)</option>
+              </select>
+              <p class="hint">This address appears in the guest itinerary and transfers to the Zelle invoice.</p>
+            </div>
             <label class="checkRow"><input id="showInvoice" type="checkbox" /><span>Show a Pay Invoice button.</span></label>
             <div class="field"><label for="invoiceLink">Invoice payment URL</label><input id="invoiceLink" type="url" placeholder="https://invoice-payment-link…" /><p class="hint">Paste the unique invoice URL for this guest.</p></div>
             <label class="checkRow">
@@ -290,6 +304,8 @@
 
       const HEADER_IMAGE = 'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg';
       const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
+      const ZELLE_INVOICE_URL = 'https://admin.mindobirdwatching.com/zelle-invoice-generator/';
+      const ZELLE_HANDOFF_KEY = 'mbwZelleInvoiceDraft';
       function validHttpsUrl(value){ try{ const url=new URL(String(value||'').trim()); return url.protocol==='https:' ? url.toString() : ''; }catch(error){ return ''; } }
       function getDepositLink(){
         const inquiryId = String(state.inquiryId || state.crmRecord?.inquiry_id || '').trim();
@@ -494,10 +510,10 @@
 
       const COPY = {
         en: {
-          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay Tour Deposit', payInvoice:'Pay Invoice', invoiceText:'Use the secure invoice link below to complete your payment.', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what we discussed.', defaultPricing:'The prices shown reflect the tour and rate arrangement already discussed. Final service details are summarized below.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
+          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay Tour Deposit', payInvoice:'Pay Invoice', invoiceText:'Use the secure invoice link below to complete your payment.', zelleOption:'U.S. travelers may also send the $100 tour deposit through Zelle to', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what we discussed.', defaultPricing:'The prices shown reflect the tour and rate arrangement already discussed. Final service details are summarized below.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
         },
         es: {
-          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que conversamos.', defaultPricing:'Los precios mostrados reflejan el tour y la tarifa que ya conversamos. Los detalles finales de cada servicio se resumen a continuación.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
+          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura en su totalidad, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', zelleOption:'Los viajeros de Estados Unidos también pueden enviar el depósito de $100 por Zelle a', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que conversamos.', defaultPricing:'Los precios mostrados reflejan el tour y la tarifa que ya conversamos. Los detalles finales de cada servicio se resumen a continuación.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
         }
       };
       const DEFAULT_TEXT_VARIANTS = {
@@ -867,6 +883,7 @@
         applyLanguageDefaults($('language').value,true);
         return {
           guestName:$('guestName').value.trim(),
+          guestEmail:$('guestEmail').value.trim(),
           tripTitle:$('tripTitle').value.trim(),
           language:$('language').value || 'en',
           startDate:$('startDate').value,
@@ -879,9 +896,11 @@
           adjustmentReason:$('adjustmentReason').value.trim(),
           closingText:$('closingText').value.trim(),
           discount:Number($('discount').value || 0),
-          showDeposit:$('showDeposit').checked,
+          showDeposit:true,
           depositPaid:$('depositPaid').checked,
-          depositLink:$('depositLink').value.trim(),
+          depositLink:validHttpsUrl($('depositLink').value) || DEPOSIT_LINK,
+          offerZelle:$('offerZelle').checked,
+          zelleEmail:$('zelleEmail').value,
           showInvoice:$('showInvoice').checked,
           invoiceLink:$('invoiceLink').value.trim(),
           showItemPrices:$('showItemPrices').checked,
@@ -963,7 +982,7 @@
           ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
           ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${data.showDeposit || (data.showInvoice && validHttpsUrl(data.invoiceLink)) ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid || !validHttpsUrl(data.depositLink) ? '' : `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div></section>` : ''}
+          ${data.showDeposit || (data.showInvoice && validHttpsUrl(data.invoiceLink)) ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid || !validHttpsUrl(data.depositLink) ? '' : `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div>${data.offerZelle && !data.depositPaid ? `<p style="margin:12px 0 0;font-size:12px"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}</section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -1087,6 +1106,7 @@
                 <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p>
                 ${data.depositPaid || !validHttpsUrl(data.depositLink) ? '' : `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>`}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
                 <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
+                ${data.offerZelle && !data.depositPaid ? `<p style="margin:12px 0 0;color:#ffffff;font-size:12px;line-height:18px;"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}
               </td></tr>
             </table>`
           ));
@@ -1151,6 +1171,7 @@
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
         if(data.showDeposit) lines.push(data.depositPaid ? c.depositPaidText : c.depositLead,...(data.depositPaid || !validHttpsUrl(data.depositLink) ? [] : [getDepositLink()]),'');
+        if(data.offerZelle && !data.depositPaid) lines.push(`${c.zelleOption} ${data.zelleEmail}`,'');
         if(data.showInvoice && validHttpsUrl(data.invoiceLink)) lines.push(c.invoiceText,validHttpsUrl(data.invoiceLink),'');
         lines.push(c.finalLine);
         return lines.join('\n');
@@ -1164,10 +1185,12 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           if(!raw) return false;
           const data = JSON.parse(raw);
-          ['guestName','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositLink','invoiceLink'].forEach(key => {
+          ['guestName','guestEmail','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositLink','zelleEmail','invoiceLink'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
-          $('showDeposit').checked = data.showDeposit !== false;
+          $('showDeposit').checked = true;
+          $('offerZelle').checked = data.offerZelle === true;
+          $('zelleEmailField').hidden = !$('offerZelle').checked;
           $('depositPaid').checked = data.depositPaid === true;
           $('showInvoice').checked = data.showInvoice === true;
           $('showItemPrices').checked = data.showItemPrices !== false;
@@ -1191,6 +1214,7 @@
           source:'guest_crm',
           inquiryId:params.get('inquiry_id') || '',
           guestName:params.get('guest') || '',
+          guestEmail:params.get('email') || '',
           whatsappNumber:params.get('phone') || '',
           guestCount:Number(params.get('guests') || 1),
           startDate:params.get('start_date') || '',
@@ -1207,6 +1231,7 @@
         $('saveCrmBtn').disabled = !state.inquiryId;
         $('saveCrmBtn').title = state.inquiryId ? `Save to inquiry ${state.inquiryId}` : 'Open this generator from a CRM inquiry to save it';
         $('guestName').value = capitalizeFirst(draft.guestName || '');
+        $('guestEmail').value = draft.guestEmail || state.crmRecord?.email || state.crmRecord?.guest_email || '';
         $('tripTitle').value = draft.tripTitle || COPY.en.defaultTitle;
         $('language').value = draft.language === 'es' ? 'es' : 'en';
         $('startDate').value = draft.startDate || '';
@@ -1218,7 +1243,10 @@
         if(draft.adjustmentReason) $('adjustmentReason').value = draft.adjustmentReason;
         if(draft.closingText) $('closingText').value = draft.closingText;
         const paymentStatus = String(draft.paymentStatus || draft.payment_status || state.crmRecord?.payment_status || '').toLowerCase();
-        $('showDeposit').checked = draft.showDeposit !== false;
+        $('showDeposit').checked = true;
+        $('offerZelle').checked = draft.offerZelle === true;
+        $('zelleEmail').value = draft.zelleEmail || 'mindobirdwatching@gmail.com';
+        $('zelleEmailField').hidden = !$('offerZelle').checked;
         $('depositPaid').checked = draft.depositPaid === true || ['deposit_paid','paid'].includes(paymentStatus);
         $('depositLink').value = draft.depositLink || DEPOSIT_LINK;
         $('showInvoice').checked = draft.showInvoice === true;
@@ -1293,6 +1321,49 @@
           button.textContent = 'Save Itinerary to CRM';
         }
       }
+      function createZelleInvoice(){
+        if(!$('offerZelle').checked){
+          $('offerZelle').checked = true;
+          $('zelleEmailField').hidden = false;
+        }
+        const data = getFormData();
+        const sum = totals(data);
+        if(!data.items.length){ toast('Add at least one service before creating the invoice.'); return; }
+        const createdAt = new Date().toISOString();
+        const sourceVersion = Number(state.itineraryVersion || 0);
+        const draft = {
+          source:'itinerary_generator', createdAt,
+          itineraryVersion:sourceVersion, itineraryTitle:data.tripTitle,
+          inquiry_id:String(state.inquiryId || state.crmRecord?.inquiry_id || ''),
+          guest_id:String(state.crmRecord?.guest_id || ''), booking_id:String(state.crmRecord?.booking_id || ''), quote_id:String(state.crmRecord?.quote_id || ''),
+          full_name:data.guestName,
+          email:data.guestEmail || state.crmRecord?.email || state.crmRecord?.guest_email || '',
+          phone_number:data.whatsappNumber, guest_count:data.guestCount,
+          requested_date:data.startDate, requested_date_end:data.endDate,
+          payment_request:'deposit', deposit_amount:100,
+          zelle_payment_email:data.zelleEmail || 'mindobirdwatching@gmail.com',
+          quoted_amount:sum.total, adjustment_amount:sum.adjustment,
+          adjustment_label:data.adjustmentReason || 'Adjustments',
+          tour_items_json:JSON.stringify(data.items.map(item => ({
+            date:item.date, tour:productDisplayName(item,'en') || item.name || serviceTypeLabel(item.type,'en'),
+            description:productDisplayName(item,'en') || item.name || serviceTypeLabel(item.type,'en'),
+            guests:Number(item.quantity || 0), quantity:Number(item.quantity || 0),
+            price:Number(item.unitPrice || 0), unit_price:Number(item.unitPrice || 0), note:item.note || '',
+            start_time:item.startTime || '', duration:item.duration || '', product_selected:item.productPreset || ''
+          }))),
+          sourceFingerprint:JSON.stringify({version:sourceVersion,items:data.items,adjustment:sum.adjustment,total:sum.total})
+        };
+        try{
+          localStorage.setItem(ZELLE_HANDOFF_KEY,JSON.stringify(draft));
+          localStorage.setItem('mbwSelectedCrmRecord',JSON.stringify({...state.crmRecord,...draft}));
+        }catch(error){ toast('Could not prepare the Zelle invoice draft.'); return; }
+        const url = new URL(ZELLE_INVOICE_URL);
+        url.searchParams.set('source','itinerary');
+        if(draft.inquiry_id) url.searchParams.set('inquiry_id',draft.inquiry_id);
+        if(sourceVersion) url.searchParams.set('itinerary_version',String(sourceVersion));
+        window.open(url.toString(),'_blank','noopener');
+        toast('Zelle invoice draft prepared.');
+      }
       function updateAll(shouldRenderEditors=false){
         if(shouldRenderEditors) renderEditors();
         applyDateMinimums();
@@ -1366,6 +1437,11 @@
       $('endDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('addItemBtn').addEventListener('click',() => addItem());
       $('saveCrmBtn').addEventListener('click',saveItineraryToCrm);
+      $('createZelleBtn').addEventListener('click',createZelleInvoice);
+      $('offerZelle').addEventListener('change',() => {
+        $('zelleEmailField').hidden = !$('offerZelle').checked;
+        updateAll(false);
+      });
       $('downloadBtn').addEventListener('click',() => {
         const data = getFormData();
         if(!data.guestName) toast('Add the guest name before downloading.');
@@ -1419,6 +1495,7 @@
         if(!confirm('Clear the current itinerary and start again?')) return;
         localStorage.removeItem(STORAGE_KEY);
         $('guestName').value='';
+        $('guestEmail').value='';
         $('language').value='en';
         $('tripTitle').value=COPY.en.defaultTitle;
         $('startDate').value='';
@@ -1431,6 +1508,9 @@
         $('closingText').value=COPY.en.defaultClosing;
         $('discount').value='0';
         $('showDeposit').checked=true;
+        $('offerZelle').checked=false;
+        $('zelleEmail').value='mindobirdwatching@gmail.com';
+        $('zelleEmailField').hidden=true;
         $('depositPaid').checked=false;
         $('depositLink').value=DEPOSIT_LINK;
         $('showInvoice').checked=false;
