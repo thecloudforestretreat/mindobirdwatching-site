@@ -788,6 +788,14 @@
                 <input id="depositAmount" type="number" step="1" min="0" value="100" />
               </div>
             </div>
+            <div class="field">
+              <label for="zellePaymentEmail">Zelle Payment Email</label>
+              <select id="zellePaymentEmail">
+                <option value="mindobirdwatching@gmail.com">mindobirdwatching@gmail.com (Current default)</option>
+                <option value="payments@mindobirdwatching.com">payments@mindobirdwatching.com (Future default)</option>
+              </select>
+              <p class="hint">The selected address appears on the invoice and in the prepared email.</p>
+            </div>
             <div class="totalsEditor">
               <div class="field">
                 <label for="adjustmentLabel">Adjustment Label</label>
@@ -837,7 +845,8 @@
       "use strict";
 
       const logoUrl = "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png";
-      const zellePaymentEmail = "payments@mindobirdwatching.com";
+      const zellePaymentEmail = "mindobirdwatching@gmail.com";
+      const ITINERARY_HANDOFF_KEY = "mbwZelleInvoiceDraft";
       const zelleQrUrl = "https://mindobirdwatching.com/assets/images/payments/zelle-qr.png";
       const itemOptions = [
         "MBW002 - Cloud Forest Icons Tour",
@@ -886,6 +895,7 @@
       const state = {
         items: [],
         ids: { inquiry_id:"", guest_id:"", booking_id:"", quote_id:"" },
+        sourceItinerary: { version:0, title:"", fingerprint:"", createdAt:"" },
         attribution: { status:"unlinked", linkId:"", fingerprint:"", error:"" }
       };
 
@@ -907,7 +917,7 @@
       function cacheEls(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "adjustmentLabel", "adjustmentAmount", "paymentSummary", "itemsEditor",
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount", "paymentSummary", "itemsEditor",
           "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "bottomEmailHtmlBtn", "bottomCopyEmailHtmlBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "recordBtn", "attributionStatus", "attributionIds", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
@@ -915,7 +925,7 @@
       function bindEvents(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "adjustmentLabel", "adjustmentAmount"
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount"
         ].forEach(id => {
           els[id].addEventListener("input", handleGlobalInput);
           els[id].addEventListener("change", handleGlobalInput);
@@ -967,6 +977,12 @@
           booking_id: clean(record.booking_id || record.bookingId),
           quote_id: clean(record.quote_id || record.quoteId)
         };
+        state.sourceItinerary = {
+          version:Number(record.itineraryVersion || record.itinerary_version || 0),
+          title:clean(record.itineraryTitle || record.itinerary_title),
+          fingerprint:clean(record.sourceFingerprint || record.source_fingerprint),
+          createdAt:clean(record.createdAt || record.created_at)
+        };
         const importedInvoiceId = clean(record.invoice_id || record.invoice_number || record.invoiceNumber);
         if(importedInvoiceId) els.invoiceNumber.value = importedInvoiceId;
         if(guestName) els.guestName.value = guestName;
@@ -974,6 +990,11 @@
         if(guestPhone) els.guestPhone.value = guestPhone;
         if(date) els.tourDate.value = date;
         if(pickup) els.pickupLocation.value = pickup;
+        const paymentEmail = clean(record.zelle_payment_email || record.zelleEmail);
+        if(["mindobirdwatching@gmail.com","payments@mindobirdwatching.com"].includes(paymentEmail)) els.zellePaymentEmail.value = paymentEmail;
+        const adjustmentAmount = Number(record.adjustment_amount || record.adjustmentAmount || 0);
+        if(Number.isFinite(adjustmentAmount)) els.adjustmentAmount.value = adjustmentAmount;
+        if(record.adjustment_label || record.adjustmentLabel) els.adjustmentLabel.value = record.adjustment_label || record.adjustmentLabel;
         const handoffItems = buildItemsFromRecord(record, guests, pickup);
         if(handoffItems.length){
           state.items = handoffItems;
@@ -990,11 +1011,22 @@
         }
         const requestedDeposit = Number(record.deposit_amount || record.depositAmount || "");
         if(requestedDeposit > 0) els.depositAmount.value = requestedDeposit;
+        if(record.source === "itinerary_generator"){
+          const versionLabel = state.sourceItinerary.version ? ` version ${state.sourceItinerary.version}` : "";
+          setAttributionStatus("unlinked", `Loaded from the approved itinerary${versionLabel}. Review, assign the final invoice number, then record it before sending.`);
+        }
         renderAttributionStatus();
       }
 
       function getCrmHandoff(){
         const params = new URLSearchParams(window.location.search);
+        let itineraryDraft = null;
+        if(params.get("source") === "itinerary"){
+          try{
+            const candidate = JSON.parse(localStorage.getItem(ITINERARY_HANDOFF_KEY) || "null");
+            if(candidate && candidate.source === "itinerary_generator") itineraryDraft = candidate;
+          }catch(e){ itineraryDraft = null; }
+        }
         let stored = null;
         try { stored = JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { stored = null; }
         const parameterInquiryId = clean(params.get("inquiry_id"));
@@ -1025,6 +1057,7 @@
           invoice_id: params.get("invoice_id") || params.get("invoice_number") || ""
         };
         const hasParams = Object.values(fromParams).some(Boolean);
+        if(itineraryDraft) return Object.assign({}, compatibleStored || {}, itineraryDraft, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
         if(hasParams) return Object.assign({}, compatibleStored || {}, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
         return compatibleStored;
       }
@@ -1039,6 +1072,8 @@
             const date = clean(item.date || item.tour_date || record.requested_date);
             const noteParts = [];
             if(date) noteParts.push("Tour date: " + formatDate(date));
+            if(item.start_time) noteParts.push("Start: " + clean(item.start_time));
+            if(item.duration) noteParts.push("Duration: " + clean(item.duration));
             const itemNote = stripPickupFromItemNote(item.note || item.notes || "");
             if(itemNote) noteParts.push(itemNote);
             return { description, qty, price, note:cleanItemNote(noteParts.join(" | ")) };
@@ -1124,8 +1159,8 @@
           "ACT019": "20",
           "ACT020": "15",
           "ACT021": "110",
-          "OSO001": "125",
-          "OSO002": "175",
+          "OSO001": "150",
+          "OSO002": "200",
 };
       const PRODUCT_LABEL_BY_CODE = {
         "MBW002": "MBW002 - Cloud Forest Icons Tour",
@@ -1245,12 +1280,14 @@
         els.invoiceNotes.value = "";
         els.paymentMode.value = "deposit";
         els.depositAmount.value = "100";
+        els.zellePaymentEmail.value = zellePaymentEmail;
         els.adjustmentLabel.value = "Adjustments";
         els.adjustmentAmount.value = "0";
         delete els.dueDate.dataset.manuallyChanged;
         setDefaultDates();
         state.items = [{ description:"MBW005 - Dance of the Andean Cock-of-the-Rock", qty:2, price:85, note:"" }];
         state.ids = { inquiry_id:"", guest_id:"", booking_id:"", quote_id:"" };
+        state.sourceItinerary = { version:0, title:"", fingerprint:"", createdAt:"" };
         state.attribution = { status:"unlinked", linkId:"", fingerprint:"", error:"" };
         renderItems();
         updateInvoice();
@@ -1801,7 +1838,7 @@
         const digits = String(contact.whatsappNumberDigits || "13054585402").replace(/\D/g, "");
         return {
           email: contact.email || zellePaymentEmail,
-          paymentEmail: zellePaymentEmail,
+          paymentEmail: clean(els.zellePaymentEmail && els.zellePaymentEmail.value) || zellePaymentEmail,
           phoneDisplay: contact.whatsappDisplayNumber || ("+" + digits),
           whatsappNumberDigits: digits
         };
@@ -1903,6 +1940,7 @@
         const rows = [
           ["Inquiry", state.ids.inquiry_id], ["Guest", state.ids.guest_id],
           ["Booking", state.ids.booking_id], ["Quote", state.ids.quote_id],
+          ["Itinerary version", state.sourceItinerary.version],
           ["Invoice", clean(els.invoiceNumber.value)], ["Link", state.attribution.linkId]
         ].filter(([, value]) => value);
         els.attributionIds.innerHTML = rows.length
@@ -1929,7 +1967,9 @@
               guest_id:state.ids.guest_id,
               booking_id:state.ids.booking_id,
               quote_id:state.ids.quote_id,
-              invoice_id:clean(els.invoiceNumber.value)
+              invoice_id:clean(els.invoiceNumber.value),
+              itinerary_version:state.sourceItinerary.version || "",
+              itinerary_title:state.sourceItinerary.title || ""
             })
           });
           const result = await response.json().catch(() => ({ ok:false, error:"invalid_server_response" }));
