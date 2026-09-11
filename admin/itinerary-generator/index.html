@@ -32,15 +32,21 @@
     .shell{max-width:1760px;margin:0 auto;padding:22px}
     .pageCard{background:linear-gradient(180deg,rgba(246,250,240,.95),rgba(237,244,228,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
     .topBar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
-    .titleWrap{display:flex;gap:12px;align-items:flex-start;min-width:0}
+    .titleWrap{display:flex;gap:12px;align-items:flex-start;min-width:280px;flex:1 1 520px}
     .brandMark{width:54px;height:54px;object-fit:contain;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(7,25,35,.12);flex:0 0 auto}
     h1{margin:0;color:var(--green);font-family:Georgia,"Times New Roman",serif;font-size:29px;line-height:1.05;letter-spacing:-.03em}
     .titleWrap p{margin:6px 0 0;max-width:82ch;color:var(--muted);font-size:13px;line-height:1.45;font-weight:750}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .actions{display:flex;gap:10px;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end;align-items:center}
     button,.buttonLink{appearance:none;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.9);color:var(--ink);min-height:44px;padding:11px 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:900;text-decoration:none;cursor:pointer;white-space:nowrap;box-shadow:0 8px 20px rgba(7,25,35,.06)}
     button.primary,.buttonLink.primary{background:var(--green);color:#fff;border-color:rgba(13,89,37,.35)}
     button.danger{color:var(--danger)}
     button:disabled{opacity:.5;cursor:not-allowed}
+    #saveCrmBtn{width:190px;min-width:190px;position:relative;transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease,opacity .18s ease}
+    #saveCrmBtn .saveSpinner{display:none;width:15px;height:15px;flex:0 0 15px;border:2px solid rgba(13,89,37,.24);border-top-color:var(--green);border-radius:50%}
+    #saveCrmBtn.is-saving{opacity:1;background:#f4f8ef;color:var(--green);border-color:#9ab88f;cursor:progress;box-shadow:none}
+    #saveCrmBtn.is-saving .saveSpinner{display:inline-block;animation:saveSpin .7s linear infinite}
+    @keyframes saveSpin{to{transform:rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){#saveCrmBtn .saveSpinner{animation:none!important}}
     .appGrid{display:grid;grid-template-columns:minmax(380px,520px) minmax(640px,1fr);gap:18px;align-items:start}
     .panel{background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}
     .editorPanel{max-height:calc(100vh - 36px);overflow:auto;position:sticky;top:18px}
@@ -149,7 +155,7 @@
         </div>
         <div class="actions">
           
-          <button type="button" id="saveCrmBtn" disabled>Save Itinerary to CRM</button>
+          <button type="button" id="saveCrmBtn" disabled aria-busy="false"><span class="saveSpinner" aria-hidden="true"></span><span class="saveButtonLabel">Save Itinerary to CRM</span></button>
           <button type="button" id="createZelleBtn">Create Zelle Invoice</button>
           <button type="button" id="copyHtmlBtn" class="primary">Copy HTML</button>
           <button type="button" id="copyWhatsAppBtn">Copy WhatsApp</button>
@@ -1291,8 +1297,11 @@
       async function saveItineraryToCrm(){
         if(!state.inquiryId){ toast('Open the itinerary from a CRM inquiry before saving.'); return; }
         const button = $('saveCrmBtn');
+        const label = button.querySelector('.saveButtonLabel');
         button.disabled = true;
-        button.textContent = 'Saving…';
+        button.classList.add('is-saving');
+        button.setAttribute('aria-busy','true');
+        label.textContent = 'Saving itinerary…';
         try{
           const listed = await crmApi('list_inquiries');
           const records = Array.isArray(listed) ? listed : (listed.records || listed.data || listed.inquiries || []);
@@ -1318,7 +1327,9 @@
           toast('CRM save failed: ' + error.message);
         }finally{
           button.disabled = false;
-          button.textContent = 'Save Itinerary to CRM';
+          button.classList.remove('is-saving');
+          button.setAttribute('aria-busy','false');
+          label.textContent = 'Save Itinerary to CRM';
         }
       }
       function createZelleInvoice(){
