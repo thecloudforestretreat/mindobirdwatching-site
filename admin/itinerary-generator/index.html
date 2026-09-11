@@ -55,6 +55,9 @@
     .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
     .hint{margin:6px 0 0;color:rgba(7,25,35,.58);font-size:12px;line-height:1.4;font-weight:750}
+    .catalogMeta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-1px 0 11px;padding:9px 11px;border:1px solid rgba(13,89,37,.18);border-radius:11px;background:rgba(234,246,223,.58);color:rgba(7,25,35,.68);font-size:11px;line-height:1.35;font-weight:800}
+    .catalogMeta strong{color:var(--green);font-weight:950}
+    .catalogMeta.adjusted{background:#fff8e8;border-color:#e1bd67;color:#6d5215}
     .itemEditor{border:1px solid var(--line);border-radius:16px;background:rgba(246,250,240,.8);padding:12px;margin-bottom:10px}
     .itemHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
     .itemHead strong{color:var(--green);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
@@ -72,7 +75,7 @@
     .previewTop h2{margin:0;color:var(--green);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
     .previewWrap{background:#C7DAAC;border:1px solid var(--line);border-radius:18px;padding:18px;overflow:auto;max-height:calc(100vh - 180px)}
     .guestPage{width:640px;margin:0 auto;color:#071923;font-family:Arial,Helvetica,sans-serif}
-    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
+    .brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard{border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(7,25,35,.10)}
     .brandCard{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px 18px;background:#fff;border:1px solid rgba(7,25,35,.14)}
     .brandCard img{width:78px;height:78px;object-fit:contain;display:block;flex:0 0 auto}
     .brandName{font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:29px;color:#0D5925;font-weight:700}
@@ -120,7 +123,6 @@
     .socialRow .reviewIcon{width:31px;height:31px}
     .signatureLinks{margin-top:8px;font-size:12px;line-height:18px;color:rgba(7,25,35,.72);font-weight:800}
     .signatureLinks a{color:#0D5925;text-decoration:underline}
-    .soloNote{margin:0 20px 10px;padding:14px 18px;background:#F6FAF0;border:1px solid rgba(13,89,37,.25);border-radius:14px;text-align:center;color:rgba(7,25,35,.76);font-size:12px;line-height:18px;font-weight:700;box-shadow:0 18px 55px rgba(7,25,35,.10)}
     .guestFooter{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;padding:4px 24px 8px;color:#32453d;font-size:11px;line-height:16px;font-weight:900}
     .guestFooter img{display:block;width:34px;height:34px;object-fit:contain}
     .emptyPreview{padding:36px;border:1px dashed #a9bca4;border-radius:16px;text-align:center;color:#637169;font-weight:800;background:#f7faf5}
@@ -129,7 +131,7 @@
     .toast{position:fixed;right:20px;bottom:20px;z-index:9999;max-width:360px;padding:12px 15px;border-radius:13px;background:#071923;color:#fff;box-shadow:0 18px 44px rgba(0,0,0,.2);font-weight:850;font-size:13px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s ease}
     .toast.show{opacity:1;transform:translateY(0)}
     @media(max-width:1180px){.appGrid{grid-template-columns:1fr}.editorPanel{position:static;max-height:none}.previewWrap{max-height:none}}
-    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.actions .buttonLink,.actions button{width:100%}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard,.soloNote{margin-left:10px;margin-right:10px}}
+    @media(max-width:720px){.shell{padding:10px}.pageCard{padding:12px;border-radius:14px}.two,.three{grid-template-columns:1fr}.actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.actions .buttonLink,.actions button{width:100%}.actions button{white-space:normal}.previewWrap{padding:8px}.guestPage{width:640px}.titleWrap p{display:none}h1{font-size:24px}.brandCard,.guestHeroCard,.contentCard,.dayBlock,.pricingCard,.guestNote,.nextStepsCard,.depositBox,.signatureCard{margin-left:10px;margin-right:10px}}
   </style>
 <link rel="stylesheet" href="/assets/css/admin.css?v=5">
 </head>
@@ -142,7 +144,7 @@
           <img class="brandMark" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
           <div>
             <h1>Itinerary Generator</h1>
-            <p>Create a polished guest itinerary with dates, service times, duration, notes, pricing, a $100 tour deposit button, downloadable HTML, and a shorter WhatsApp message.</p>
+            <p>Turn an agreed tour plan into a polished guest itinerary with dates, service times, confirmed pricing, payment links, downloadable HTML, and a shorter WhatsApp message.</p>
           </div>
         </div>
         <div class="actions">
@@ -232,7 +234,12 @@
             </div>
             <div class="field">
               <label for="pricingNote">Pricing note</label>
-              <textarea id="pricingNote">Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.</textarea>
+              <textarea id="pricingNote">The prices shown reflect the tour and rate arrangement already discussed. Final service details are summarized below.</textarea>
+            </div>
+            <div class="field">
+              <label for="adjustmentReason">Adjustment note (internal)</label>
+              <input id="adjustmentReason" type="text" placeholder="Optional reason for a custom total or agreed rate" />
+              <p class="hint">Saved with the draft for staff reference. It is not shown in the guest itinerary.</p>
             </div>
             <div class="field">
               <label for="closingText">Closing message</label>
@@ -318,9 +325,6 @@
         "TRANS04 - Airport Pick Up",
         "TRANS05 - Custom",
         "TRANS06 - Quito -> Mindo -> Quito",
-        "DEP001 - Reservation Deposit",
-        "ACT002 - Waterfalls",
-        "ACT003 - Nambillo Waterfall",
         "ACT004 - Quad Tour",
         "ACT009 - Orchid Garden Tour",
         "ACT010 - Frog Concert",
@@ -328,9 +332,6 @@
         "ACT013 - Canyoning",
         "ACT015 - Paintball",
         "ACT016 - Horseback Riding",
-        "ACT017 - Mountain Biking",
-        "ACT018 - Double Extreme Swing",
-        "ACT019 - Extreme Bike – Sky Bike",
         "ACT020 - Sky Ride",
         "ACT021 - Private Insect & Macro Wildlife Search",
         "OSO001 - Extended Half-Day Spectacled Bear Tour",
@@ -375,9 +376,44 @@
         "ACT019 - Extreme Bike – Sky Bike": {"type": "Adventure", "duration": "Flexible", "unitPrice": 20, "note": "Soar above the forest on Mindo’s Sky Ride! Pedal a suspended bicycle along a 400-meter cable for the ultimate mix of adventure and stunning nature views."},
         "ACT020 - Sky Ride": {"type": "Adventure", "duration": "Flexible", "unitPrice": 15, "note": "Ride high above the cloud forest on Mindo’s thrilling double sky bike! Pedal 400 meters round-trip with a friend and take in breathtaking views from the treetops.  Adventure and scenery all in one!"},
         "ACT021 - Private Insect & Macro Wildlife Search": {"type": "Specialty Wildlife", "duration": "Custom", "unitPrice": 110, "note": "Private custom wildlife experience in Mindo focused on insects and macro wildlife such as beetles, moths, mantids, butterflies, katydids, spiders, and other small forest life. Timing and locations are selected around the guest target species, season, recent ac"},
-        "OSO001 - Extended Half-Day Spectacled Bear Tour": {"type": "Wildlife", "duration": "Extended Half Day", "unitPrice": 125, "note": "Private morning wildlife tour focused on searching for spectacled bears in Antisana or Cayambe-Coca. The route is selected according to recent wildlife activity, weather, access, and field conditions. Includes private guide, transportation, binoculars, and spo"},
-        "OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour": {"type": "Wildlife", "duration": "Full Day", "unitPrice": 175, "note": "Full-day private Spectacled Bear expedition through Ecuador's high Andes. Starting at 6:00 AM, the guide selects the most promising route between Antisana and Cayambe-Coca using recent wildlife reports and current conditions. Along the way, guests may observe "},
+        "OSO001 - Extended Half-Day Spectacled Bear Tour": {"type": "Wildlife", "duration": "Extended Half Day", "unitPrice": 150, "note": "Private morning wildlife tour focused on searching for spectacled bears in Antisana or Cayambe-Coca. The route is selected according to recent wildlife activity, weather, access, and field conditions. Includes private guide, transportation, binoculars, and spotting scope."},
+        "OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour": {"type": "Wildlife", "duration": "Full Day", "unitPrice": 200, "note": "Full-day private Spectacled Bear expedition through Ecuador's high Andes. The guide selects the most promising route using recent wildlife activity, weather, access, and field conditions. Includes private guide, transportation, binoculars, and spotting scope."},
         "ACCOM01 - Accommodation Booking": {"type": "Accommodation", "duration": "Flexible", "unitPrice": 0, "note": "Variable accommodation booking arranged by MBW. Customer charge and actual vendor cost are entered as invoice-level overrides."},
+      };
+      const PRODUCT_PRICING_RULES = {
+        "MBW002": {model:"per_person", price:70, minGuests:0},
+        "MBW004": {model:"per_person", price:60, minGuests:2},
+        "MBW005": {model:"per_person", price:85, minGuests:2},
+        "MBW006": {model:"per_person", price:115, minGuests:2},
+        "MBW007": {model:"per_person", price:90, minGuests:2},
+        "MBW008": {model:"per_person", price:135, minGuests:2},
+        "MBW009": {model:"per_person", price:30, minGuests:2},
+        "MBW010": {model:"per_person", price:80, minGuests:1},
+        "MBW011": {model:"per_person", price:15, minGuests:1},
+        "MBW012": {model:"per_person", price:15, minGuests:1},
+        "MBW013": {model:"per_person", price:20, minGuests:1},
+        "MBW014": {model:"per_person", price:35, minGuests:1},
+        "MBW015": {model:"per_person", price:15, minGuests:1},
+        "MBW016": {model:"per_person", price:30, minGuests:1},
+        "MBW017": {model:"flat", price:25, minGuests:0},
+        "TRANS01": {model:"flat", price:99, minGuests:0},
+        "TRANS02": {model:"flat", price:99, minGuests:0},
+        "TRANS03": {model:"flat", price:190, minGuests:0},
+        "TRANS04": {model:"flat", price:99, minGuests:0},
+        "TRANS05": {model:"flat", price:100, minGuests:0},
+        "TRANS06": {model:"flat", price:180, minGuests:0},
+        "ACT004": {model:"per_quad", price:30, minGuests:1},
+        "ACT009": {model:"per_person", price:10, minGuests:1},
+        "ACT010": {model:"per_person", price:10, minGuests:0},
+        "ACT011": {model:"group_minimum", price:40, minGuests:4},
+        "ACT013": {model:"per_person", price:25, minGuests:2},
+        "ACT015": {model:"per_person", price:20, minGuests:1},
+        "ACT016": {model:"per_person", price:25, minGuests:1},
+        "ACT020": {model:"per_person", price:15, minGuests:0},
+        "ACT021": {model:"per_private_session", price:110, minGuests:1},
+        "OSO001": {model:"per_person", price:150, minGuests:2},
+        "OSO002": {model:"per_person", price:200, minGuests:2},
+        "ACCOM01": {model:"flat_amount", price:0, minGuests:0}
       };
 
       const PRODUCT_LABELS_ES = {
@@ -458,10 +494,10 @@
 
       const COPY = {
         en: {
-          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay Tour Deposit', payInvoice:'Pay Invoice', invoiceText:'Use the secure invoice link below to complete your payment.', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', solo:'Traveling solo? We will work on adding you to an available group, based on availability, unless you select a private tour. Groups of two or more travel in a small group unless a private tour is selected.', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what you have in mind.', defaultPricing:'Tours are priced at a minimum of 2 people. If you are traveling solo, we will work on adding you to an available group unless you select a private tour. Availability and final pickup or drop-off details can be confirmed before the tour.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
+          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay Tour Deposit', payInvoice:'Pay Invoice', invoiceText:'Use the secure invoice link below to complete your payment.', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what we discussed.', defaultPricing:'The prices shown reflect the tour and rate arrangement already discussed. Final service details are summarized below.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
         },
         es: {
-          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', solo:'¿Viaja solo? Trataremos de incluirlo en un grupo disponible, según disponibilidad, a menos que elija un tour privado. Los grupos de dos o más personas viajan en un grupo pequeño, salvo que seleccionen un tour privado.', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.', defaultPricing:'Los tours tienen un precio mínimo equivalente a 2 personas. Si viaja solo, trataremos de incluirlo en un grupo disponible, a menos que elija un tour privado. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
+          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que conversamos.', defaultPricing:'Los precios mostrados reflejan el tour y la tarifa que ya conversamos. Los detalles finales de cada servicio se resumen a continuación.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
         }
       };
       const DEFAULT_TEXT_VARIANTS = {
@@ -471,11 +507,15 @@
         ],
         opening: [
           COPY.en.defaultOpening,
-          COPY.es.defaultOpening
+          COPY.es.defaultOpening,
+          'Please review the proposed itinerary below and let me know whether this matches what you have in mind.',
+          'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.'
         ],
         pricing: [
           COPY.en.defaultPricing,
           COPY.es.defaultPricing,
+          'Tours are priced at a minimum of 2 people. Solo travelers can either join an existing group when space is available or cover the 2-person minimum for a private departure.',
+          'Los tours tienen un precio mínimo equivalente a 2 personas. Los viajeros solos pueden unirse a un grupo existente cuando haya espacio o cubrir el mínimo de 2 personas para una salida privada.',
           'Tours are priced at a minimum of 2 people. Availability and final pickup or drop-off details can be confirmed before the tour.',
           'Los tours tienen un precio mínimo equivalente a 2 personas. La disponibilidad y los detalles finales de recogida o regreso se pueden confirmar antes del tour.'
         ],
@@ -531,10 +571,12 @@
         const legacyAliases = {
           'Secure door-to-door transportation':'Transportation',
           'Transporte seguro puerta a puerta':'Transportation',
-          'Full-Day Mindo Tour':'MBW006 - Quest for Five Toucans Full Day',
-          'Tour de día completo en Mindo':'MBW006 - Quest for Five Toucans Full Day',
-          'Night Walk Tour':'Night Walk',
-          'Tour de caminata nocturna':'Night Walk',
+          'Full-Day Mindo Tour':'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',
+          'Tour de día completo en Mindo':'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',
+          'MBW006 - Quest for Five Toucans Full Day':'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',
+          'Night Walk Tour':'MBW016 - Night Walk',
+          'Tour de caminata nocturna':'MBW016 - Night Walk',
+          'Night Walk':'MBW016 - Night Walk',
           'Frog Concert':'ACT010 - Frog Concert',
           'Concierto de ranas':'ACT010 - Frog Concert',
           'Private Insect & Macro Wildlife Search':'ACT021 - Private Insect & Macro Wildlife Search',
@@ -628,6 +670,35 @@
         if(text === 'evening' || text.includes('evening') || text.includes('night') || (text.includes('2 hour') && String(type).toLowerCase().includes('night'))) return 'Evening';
         return 'Flexible';
       }
+      function productCodeFromPreset(value){
+        const match = String(value || '').match(/^([A-Z0-9-]+)\s+-\s+/);
+        return match ? match[1] : '';
+      }
+      function pricingRuleFor(item){
+        return PRODUCT_PRICING_RULES[productCodeFromPreset(inferProductPreset(item))] || null;
+      }
+      function billingQuantityFor(rule){
+        if(!rule || rule.model !== 'per_person') return 1;
+        return Math.max(1,Number($('guestCount').value || 1));
+      }
+      function billingQuantityLabel(item){
+        const rule = pricingRuleFor(item);
+        if(!rule) return 'Quantity';
+        if(rule.model === 'per_person') return 'Guests billed';
+        if(rule.model === 'per_quad') return 'Quads';
+        return 'Quantity';
+      }
+      function pricingModelLabel(model){
+        return ({per_person:'per person',flat:'flat rate',flat_amount:'custom flat amount',per_quad:'per quad',group_minimum:'group minimum',per_private_session:'private session'})[model] || 'custom price';
+      }
+      function catalogMetaMarkup(item){
+        const rule = pricingRuleFor(item);
+        if(!rule) return '';
+        const adjusted = Number(item.unitPrice || 0) !== Number(rule.price || 0);
+        const minimum = rule.minGuests > 1 ? ` · usual minimum ${rule.minGuests}` : '';
+        const status = adjusted ? `Agreed rate entered · catalog reference ${money(rule.price)}` : `Catalog rate ${money(rule.price)}`;
+        return `<div class="catalogMeta${adjusted ? ' adjusted' : ''}" data-catalog-meta><span>${escapeHtml(status)} · ${escapeHtml(pricingModelLabel(rule.model))}${escapeHtml(minimum)}</span><strong>${adjusted ? 'Adjusted' : 'Standard'}</strong></div>`;
+      }
       function toast(message){
         const el = $('toast');
         el.textContent = message;
@@ -637,7 +708,7 @@
       }
       function defaultItem(overrides = {}){
         const item = Object.assign({
-          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Full-Day Tour', productPreset:'Other', name:'', note:'', quantity:1, unitPrice:0
+          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Custom', productPreset:'Other', name:'', note:'', quantity:1, unitPrice:0, catalogUnitPrice:0, pricingModel:'custom', minimumGuests:0
         },overrides);
         const parts = timeParts(item.startTime);
         item.startHour = item.startHour || parts.hour;
@@ -647,6 +718,12 @@
         item.duration = normalizeDurationChoice(item.duration,item.type);
         item.productPreset = inferProductPreset(item);
         if(item.productPreset !== 'Other') item.name = item.productPreset;
+        const rule = pricingRuleFor(item);
+        if(rule){
+          item.catalogUnitPrice = rule.price;
+          item.pricingModel = rule.model;
+          item.minimumGuests = rule.minGuests;
+        }
         return item;
       }
       function addItem(overrides = {}){
@@ -683,9 +760,14 @@
           item.name = value === 'Other' ? '' : value;
           const defaults = PRODUCT_DEFAULTS[value];
           if(defaults){
+            const rule = PRODUCT_PRICING_RULES[productCodeFromPreset(value)] || {model:'custom',price:defaults.unitPrice,minGuests:0};
             item.type = defaults.type;
             item.duration = defaults.duration;
-            item.unitPrice = defaults.unitPrice;
+            item.unitPrice = rule.price;
+            item.catalogUnitPrice = rule.price;
+            item.pricingModel = rule.model;
+            item.minimumGuests = rule.minGuests;
+            item.quantity = billingQuantityFor(rule);
             item.note = defaults.note;
           }
           renderEditors();
@@ -705,6 +787,11 @@
           return;
         }
         item[field] = ['quantity','unitPrice'].includes(field) ? Number(value || 0) : value;
+        if(field === 'unitPrice'){
+          const card = document.querySelector(`.itemEditor[data-id="${CSS.escape(id)}"]`);
+          const current = card && card.querySelector('[data-catalog-meta]');
+          if(current) current.outerHTML = catalogMetaMarkup(item);
+        }
         updateAll(false);
       }
 
@@ -739,6 +826,7 @@
               <label>Product / Service</label>
               <select data-field="productPreset">${PRODUCT_OPTIONS.map(option => `<option value="${escapeHtml(option)}" ${inferProductPreset(item)===option?'selected':''}>${escapeHtml(productOptionLabel(option,$('language').value))}</option>`).join('')}</select>
             </div>
+            ${catalogMetaMarkup(item)}
             ${inferProductPreset(item) === 'Other' ? `<div class="field">
               <label>Other product or service</label>
               <input type="text" data-field="customName" value="${escapeHtml(item.name)}" placeholder="Type the product or service name" />
@@ -763,11 +851,11 @@
             </div>
             <div class="two">
               <div class="field">
-                <label>Quantity</label>
+                <label>${escapeHtml(billingQuantityLabel(item))}</label>
                 <input type="number" min="0" step="1" data-field="quantity" value="${escapeHtml(item.quantity)}" />
               </div>
               <div class="field">
-                <label>Unit cost</label>
+                <label>Agreed unit price</label>
                 <input type="number" min="0" step="0.01" data-field="unitPrice" value="${escapeHtml(item.unitPrice)}" />
               </div>
             </div>
@@ -788,6 +876,7 @@
           replyWhatsappNumber:getItineraryWhatsAppNumber(),
           openingText:$('openingText').value.trim(),
           pricingNote:$('pricingNote').value.trim(),
+          adjustmentReason:$('adjustmentReason').value.trim(),
           closingText:$('closingText').value.trim(),
           discount:Number($('discount').value || 0),
           showDeposit:$('showDeposit').checked,
@@ -888,7 +977,6 @@
             <a href="${buildGuestWhatsAppUrl(data)}"><img src="https://i.imgur.com/0sfOKs8.png" alt="WhatsApp"></a>
             <a href="https://mindobirdwatching.com/shop"><img src="https://i.imgur.com/g53OeDX.png" alt="Shop"></a>
           </div><div class="signatureLinks">Mindo, Ecuador<br><a href="https://mindobirdwatching.com">mindobirdwatching.com</a> | <a href="mailto:mindobirdwatching@gmail.com">mindobirdwatching@gmail.com</a></div></section>
-          <section class="soloNote">${escapeHtml(c.solo)}</section>
           <footer class="guestFooter"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching logo"><span>Mindo Bird Watching &copy; 2026</span></footer>`;
       }
 
@@ -1032,7 +1120,6 @@
           </table>`
         ));
 
-        rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:14px;"><tr><td align="center" style="padding:14px 18px;color:#536067;font-size:12px;line-height:18px;font-weight:700;">${escapeHtml(c.solo)}</td></tr></table>`));
         rows.push(`<tr><td align="center" style="padding:14px 24px 6px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td valign="middle" style="padding-right:6px;"><a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="34" height="34" alt="Mindo Bird Watching logo" style="display:block;width:34px;height:34px;border:0;"></a></td><td valign="middle" style="color:#32453d;font-size:11px;line-height:16px;font-weight:900;">Mindo Bird Watching &copy; 2026</td></tr></table></td></tr>`);
 
         return `<!doctype html><html lang="${data.language === 'es' ? 'es' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(data.tripTitle || c.defaultTitle)}</title></head><body style="margin:0;padding:0;background:#C7DAAC;font-family:Arial,Helvetica,sans-serif;color:#071923;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#C7DAAC;"><tr><td align="center" style="padding:22px 10px;"><table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:640px;max-width:640px;">${rows.join('')}</table></td></tr></table></body></html>`;
@@ -1077,7 +1164,7 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           if(!raw) return false;
           const data = JSON.parse(raw);
-          ['guestName','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','closingText','discount','depositLink','invoiceLink'].forEach(key => {
+          ['guestName','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositLink','invoiceLink'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('showDeposit').checked = data.showDeposit !== false;
@@ -1127,6 +1214,9 @@
         $('guestCount').value = Number(draft.guestCount || 1);
         $('whatsappNumber').value = draft.whatsappNumber || '';
         if(draft.openingText) $('openingText').value = draft.openingText;
+        if(draft.pricingNote) $('pricingNote').value = draft.pricingNote;
+        if(draft.adjustmentReason) $('adjustmentReason').value = draft.adjustmentReason;
+        if(draft.closingText) $('closingText').value = draft.closingText;
         const paymentStatus = String(draft.paymentStatus || draft.payment_status || state.crmRecord?.payment_status || '').toLowerCase();
         $('showDeposit').checked = draft.showDeposit !== false;
         $('depositPaid').checked = draft.depositPaid === true || ['deposit_paid','paid'].includes(paymentStatus);
@@ -1137,6 +1227,9 @@
         state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
           const requestedProduct = String(raw.productPreset || raw.name || 'Other');
           const knownProduct = PRODUCT_OPTIONS.includes(requestedProduct);
+          const rule = knownProduct ? PRODUCT_PRICING_RULES[productCodeFromPreset(requestedProduct)] : null;
+          const hasQuantity = raw.quantity !== undefined && raw.quantity !== null && raw.quantity !== '';
+          const hasUnitPrice = raw.unitPrice !== undefined && raw.unitPrice !== null && raw.unitPrice !== '';
           return defaultItem({
             id:uid(),
             date:raw.date || draft.startDate || '',
@@ -1146,8 +1239,8 @@
             productPreset:knownProduct ? requestedProduct : 'Other',
             name:knownProduct ? requestedProduct : String(raw.name || requestedProduct),
             note:raw.note || raw.description || '',
-            quantity:Number(raw.quantity || draft.guestCount || 1),
-            unitPrice:Number(raw.unitPrice || 0)
+            quantity:hasQuantity ? Number(raw.quantity) : (rule?.model === 'per_person' ? Math.max(1,Number(draft.guestCount || 1)) : 1),
+            unitPrice:hasUnitPrice ? Number(raw.unitPrice) : Number(rule?.price || 0)
           });
         });
         applyLanguageDefaults($('language').value,true);
@@ -1334,6 +1427,7 @@
         $('whatsappNumber').value='';
         $('openingText').value=COPY.en.defaultOpening;
         $('pricingNote').value=COPY.en.defaultPricing;
+        $('adjustmentReason').value='';
         $('closingText').value=COPY.en.defaultClosing;
         $('discount').value='0';
         $('showDeposit').checked=true;
@@ -1343,9 +1437,9 @@
         $('invoiceLink').value='';
         $('showItemPrices').checked=true;
         state.items=[];
-        addItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
-        addItem({type:'Full-Day Tour',productPreset:'MBW006 - Quest for Five Toucans Full Day',name:'MBW006 - Quest for Five Toucans Full Day',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'});
-        addItem({type:'Night Walk',productPreset:'Night Walk',name:'Night Walk',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'});
+        addItem({type:'Transportation',productPreset:'TRANS06 - Quito -> Mindo -> Quito',name:'TRANS06 - Quito -> Mindo -> Quito',startTime:'03:00',duration:'Flexible',quantity:1,unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
+        addItem({type:'Birdwatching',productPreset:'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',name:'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',startTime:'05:00',duration:'Full Day',quantity:2,unitPrice:115,note:PRODUCT_DEFAULTS['MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock'].note});
+        addItem({type:'Wildlife',productPreset:'MBW016 - Night Walk',name:'MBW016 - Night Walk',startTime:'19:00',duration:'Evening',quantity:2,unitPrice:30,note:PRODUCT_DEFAULTS['MBW016 - Night Walk'].note});
         toast('Itinerary reset.');
       });
 
@@ -1353,9 +1447,9 @@
       const loaded = crmDraft ? applyCrmItineraryDraft(crmDraft) : loadState();
       if(!loaded || !state.items.length){
         state.items=[];
-        state.items.push(defaultItem({type:'Transportation',productPreset:'Transportation',name:'Transportation',startTime:'03:00',duration:'Round trip',unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'}));
-        state.items.push(defaultItem({type:'Full-Day Tour',productPreset:'MBW006 - Quest for Five Toucans Full Day',name:'MBW006 - Quest for Five Toucans Full Day',startTime:'05:00',duration:'Approximately 10 hours',unitPrice:115,note:'Arrival in Mindo and start of the full-day tour.'}));
-        state.items.push(defaultItem({type:'Night Walk',productPreset:'Night Walk',name:'Night Walk',startTime:'19:00',duration:'Approximately 2 hours',unitPrice:30,note:'Evening wildlife experience before returning to Quito.'}));
+        state.items.push(defaultItem({type:'Transportation',productPreset:'TRANS06 - Quito -> Mindo -> Quito',name:'TRANS06 - Quito -> Mindo -> Quito',startTime:'03:00',duration:'Flexible',quantity:1,unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'}));
+        state.items.push(defaultItem({type:'Birdwatching',productPreset:'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',name:'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',startTime:'05:00',duration:'Full Day',quantity:2,unitPrice:115,note:PRODUCT_DEFAULTS['MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock'].note}));
+        state.items.push(defaultItem({type:'Wildlife',productPreset:'MBW016 - Night Walk',name:'MBW016 - Night Walk',startTime:'19:00',duration:'Evening',quantity:2,unitPrice:30,note:PRODUCT_DEFAULTS['MBW016 - Night Walk'].note}));
       }
       renderEditors();
       applyDateMinimums();
