@@ -830,8 +830,11 @@ experiences waiting for you in Mindo.</textarea>
         if(/oso001|extended half-day spectacled/.test(text)) return "tour-bear-half-day";
         if(/oso002|full-day spectacled/.test(text)) return "tour-bear-full-day";
         if(/mbw016|night walk/.test(text)) return "night-walk";
+        if(/mbw015|butterfly|mariposa/.test(text)) return "activity-butterfly";
+        if(/mbw013|waterfall|cascada/.test(text)) return "activity-waterfall";
+        if(/mbw011|chocolate|cacao/.test(text)) return "activity-chocolate";
         if(/trans\d+|transport|quito.*mindo|mindo.*quito/.test(text)) return "transport-quito";
-        if(/waterfall|chocolate|activity/.test(text)) return "activities-more";
+        if(/activity|actividad/.test(text)) return "activities-more";
         return "";
       }
 
@@ -1025,6 +1028,18 @@ experiences waiting for you in Mindo.</textarea>
               primaryCta: "Ver tour",
               secondaryCta: "Ver video"
             },
+            "activity-butterfly": {
+              eyebrow: "Actividad relajada de naturaleza",
+              title: "Tour de Mariposas",
+              description: "Una visita tranquila y colorida para observar mariposas de cerca, aprender sobre su ciclo de vida y disfrutar una actividad fácil entre tours de aves, cascadas, café o chocolate.",
+              price: "$15 por persona",
+              duration: "Actividad flexible",
+              tagline: "Agrega una experiencia suave, visual y familiar a tu visita a Mindo.",
+              image: "https://mindobirdwatching.com/assets/images/pages/activities/butterly-tour/mbw_butterflies_0001.jpg",
+              url: "https://mindobirdwatching.com/es/actividades/tour-de-mariposas/",
+              primaryCta: "Ver tour",
+              secondaryCta: "Ver video"
+            },
             "activity-chocolate": {
               eyebrow: "Ideal para familias",
               title: "Tour de Chocolate",
@@ -1149,7 +1164,7 @@ experiences waiting for you in Mindo.</textarea>
         fallback.blocks.forEach(block => { if(!mergedById.has(block.id)) mergedById.set(block.id, block); });
         const desiredOrder = [
           "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
-          "night-walk", "activity-chocolate", "activity-waterfall", "activities-more",
+          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
         ];
@@ -1163,6 +1178,7 @@ experiences waiting for you in Mindo.</textarea>
           if(block.id === "tour-andean") return Object.assign({}, block, {note:fallbackById.get(block.id).note, tagline:""});
           if(block.id === "tour-full-day") return Object.assign({}, block, {note:fallbackById.get(block.id).note});
           if(block.id === "activity-waterfall") return Object.assign({}, block, {description:fallbackById.get(block.id).description});
+          if(block.id === "activity-butterfly") return Object.assign({}, block, {description:fallbackById.get(block.id).description});
           return block;
         });
         return Object.assign({}, fallback, catalog || {}, {
@@ -1521,6 +1537,23 @@ experiences waiting for you in Mindo.</textarea>
               image:"https://mindobirdwatching.com/assets/images/pages/activities/waterfall-fall-tour/mbw_waterfall_003.jpg",
               url:"https://mindobirdwatching.com/activities/waterfall-tour/",
               video:"https://youtu.be/aN1U1Jhf3VU",
+              primaryCta:"View Tour",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"activity-butterfly",
+              group:"activities",
+              type:"tour",
+              eyebrow:"Relaxed nature activity",
+              title:"Butterfly Tour",
+              description:"A calm and colorful Mindo activity where guests can observe butterflies up close, learn about their life cycle, and enjoy an easy nature stop between birding, waterfalls, coffee, or chocolate.",
+              price:"$15 per person",
+              duration:"Flexible activity",
+              tagline:"Add a gentle, visual, family-friendly experience to your Mindo visit.",
+              image:"https://mindobirdwatching.com/assets/images/pages/activities/butterly-tour/mbw_butterflies_0001.jpg",
+              url:"https://mindobirdwatching.com/activities/butterfly-tour/",
+              urlEs:"https://mindobirdwatching.com/es/actividades/tour-de-mariposas/",
+              video:"https://youtube.com/shorts/msrp_lA_5pQ",
               primaryCta:"View Tour",
               secondaryCta:"Watch Video"
             },
@@ -1942,7 +1975,7 @@ experiences waiting for you in Mindo.</textarea>
           },
           "family": {
             title: "Mindo Tour Options",
-            blocks: ["tour-andean", "tour-jewels", "birding-beyond-lodge", "included", "night-walk", "activity-waterfall", "activity-chocolate", "bird-quest", "next-steps", "social-links"],
+            blocks: ["tour-andean", "tour-jewels", "birding-beyond-lodge", "included", "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "bird-quest", "next-steps", "social-links"],
             intro: "Thank you for reaching out. I’ve selected family-friendly options that combine colorful birds, cloud forest scenery, and relaxed activities. The choices below can be adjusted around your group’s ages, pace, and available time.",
             compact: false,
             hero: true
@@ -1969,7 +2002,7 @@ experiences waiting for you in Mindo.</textarea>
           },
           "activities": {
             title: "Tour and Activity Options",
-            blocks: ["night-walk", "activity-chocolate", "activity-waterfall", "activities-more", "next-steps", "social-links"],
+            blocks: ["night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. I’ve selected several Mindo activities that work well on their own or alongside a birdwatching tour. The options below include timing, pricing, and links to help you compare them.",
             compact: false,
             hero: true
@@ -2098,7 +2131,7 @@ experiences waiting for you in Mindo.</textarea>
       function blockPriority(block){
         const canonical = [
           "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
-          "night-walk", "activity-chocolate", "activity-waterfall", "activities-more",
+          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
         ];
