@@ -1165,7 +1165,7 @@
     const all = [];
 
     for (const lang of langs) {
-      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}&v=34`, {
+      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}&v=37`, {
         cache: "no-store"
       });
       const data = await res.json();
@@ -1517,11 +1517,14 @@ function createItem(initial = {}) {
       function refreshPricingControls() {
         const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
         const flatPriced = isFlatPriced(selectedTour);
+        const mountainBiking = !!(selectedTour && selectedTour.tour_code === "ACT017");
         if (priceAdjustmentLabel) {
           priceAdjustmentLabel.textContent = flatPriced ? "Price adjustment/booking" : "Price adjustment/person";
         }
         if (pricingHelper) {
-          pricingHelper.textContent = flatPriced
+          pricingHelper.textContent = mountainBiking
+            ? "Mountain Biking is invoice-only. Enter +$10/person for the 2-hour, 4 km route ($20 final), or +$40/person for the cable-car and waterfalls route ($50 final). Add Butterfly Garden separately as MBW015."
+            : flatPriced
             ? "Enter the whole-dollar amount to add to this booking. Example: standard $180 + adjustment $10 = final invoice price $190. Leave blank for standard pricing."
             : "Enter the whole-dollar amount to add per person. Example: standard $75 + adjustment $5 = final invoice price $80/person. Leave blank for standard pricing.";
         }
@@ -1699,9 +1702,10 @@ function createItem(initial = {}) {
 
   function updateModeUI() {
     const multi = state.items.length > 1;
+    const hasInvoiceOnlyMountainBiking = state.items.some(item => item.tour_code === "ACT017");
 
     els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi;
+    els.generateLinkBtn.disabled = multi || hasInvoiceOnlyMountainBiking;
     els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight;
     els.copyBtn.disabled = !state.generatedUrl;
     els.openBtn.disabled = !state.generatedOpenUrl;
@@ -1713,6 +1717,14 @@ function createItem(initial = {}) {
         Generate Link is disabled.
         <br />
         Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
+      `;
+    } else if (hasInvoiceOnlyMountainBiking) {
+      els.actionSummary.innerHTML = `
+        Mountain Biking is invoice-only.
+        <br />
+        Enter <strong>+$10/person</strong> for the $20 route or <strong>+$40/person</strong> for the $50 route.
+        <br />
+        Add <strong>MBW015 - Butterfly Garden</strong> as a separate booking item when needed.
       `;
     } else {
       els.actionSummary.innerHTML = `
@@ -1753,6 +1765,13 @@ function createItem(initial = {}) {
 
       const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
       if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
+
+      if (item.tour_code === "ACT017") {
+        const adjustment = Number(item.price_override_per_person);
+        if (adjustment !== 10 && adjustment !== 40) {
+          errors.push(`Item ${idx + 1}: Mountain Biking requires a +$10 or +$40 per-person adjustment.`);
+        }
+      }
 
       if (hasOverridePrice(item)) {
         const overrideValue = Number(item.price_override_per_person);
@@ -1992,6 +2011,10 @@ function createItem(initial = {}) {
     const errors = [...validateSharedFields({ requireGuest: false }), ...validateItems()];
     if (state.items.length !== 1) {
       showStatus("Generate Link is only available for a single booking item.", "error");
+      return;
+    }
+    if (state.items.some(item => item.tour_code === "ACT017")) {
+      showStatus("Mountain Biking is invoice-only. Use Send Invoice with +$10/person for the $20 route or +$40/person for the $50 route. Add Butterfly Garden separately as MBW015.", "error");
       return;
     }
     if (state.items.some(item => hasOverridePrice(item))) {
