@@ -3158,3 +3158,229 @@ body[data-css-cluster="tour_collection"][data-page-type="cloud_forest_landing_pa
     transition:none;
   }
 }
+/* Pair 046 full-day tour compatibility lock - 2026-09-17
+   The source-of-truth taxonomy uses tour_detail_page, while older global
+   carousel rules were scoped only to tour_category/tour_detail. Keep the
+   complete visual dependency here so the pair does not rely on that mismatch. */
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarouselViewport {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarouselTrack {
+  display: flex;
+  width: 100%;
+  transform: translateX(0);
+  transition: transform 420ms ease;
+  will-change: transform;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwSlide {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwSlide img {
+  display: block;
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwSlide .label {
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  background: rgba(255,255,255,.55);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwNavBtn {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  color: var(--forest);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  user-select: none;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwNavBtn:focus-visible {
+  outline: 3px solid rgba(13,89,37,.35);
+  outline-offset: 2px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwNavBtn svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwNavPrev { left: 10px; }
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwNavNext { right: 10px; }
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwDots {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  z-index: 3;
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px 10px;
+  transform: translateX(-50%);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,.82);
+  pointer-events: none;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(13,89,37,.22);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwDot.is-active {
+  background: rgba(13,89,37,.68);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .videoGrid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mediaCard {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.65);
+  box-shadow: var(--shadow);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mediaCard .head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,.55);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mediaCard .head h3 {
+  margin: 0;
+  color: var(--forest);
+  font-family: var(--font-head);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mediaCard .cap {
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  background: rgba(255,255,255,.55);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .frame916 {
+  width: 100%;
+  aspect-ratio: 9/16;
+  overflow: hidden;
+  border-radius: var(--r);
+  background: rgba(255,255,255,.55);
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .frame916 iframe,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel.isTall,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel.isTall .mbwCarouselViewport,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel.isTall .mbwCarouselTrack,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel.isTall .mbwSlide {
+  width: 100%;
+  height: 100%;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .frame916 iframe {
+  display: block;
+  border: 0;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel.isTall .mbwCarouselViewport {
+  aspect-ratio: 9/16;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel.isTall .mbwSlide img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarousel.isTall .mbwSlide .label {
+  display: none;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwCarousel,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwCarouselViewport,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwCarouselTrack,
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwSlide {
+  height: 100%;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwSlide {
+  min-height: 430px;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwSlide img {
+  width: 100%;
+  height: 100%;
+  min-height: 430px;
+  object-fit: cover;
+}
+
+body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwSlide .label {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .videoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwSlide,
+  body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .birdCompareFeature .mbwSlide img {
+    min-height: 340px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-css-cluster="tour_collection"][data-page-content-group="tours"][data-page-type="tour_detail_page"] .mbwCarouselTrack {
+    transition: none;
+  }
+}
