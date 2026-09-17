@@ -1,5 +1,5 @@
 /* Mindo Bird Watching — first-party attribution collector
- * Version: 1.1.0
+ * Version: 1.4.0
  * Stores anonymous visitor/session attribution and sends it to Cloudflare D1.
  */
 (function () {
@@ -8,7 +8,7 @@
   if (window.MBWAttribution && window.MBWAttribution.version) return;
   if (window.top !== window.self) return;
 
-  var VERSION = "1.3.0";
+  var VERSION = "1.4.0";
   var ENDPOINT = "/api/attribution/session";
   var CONTACT_ENDPOINT = "/api/attribution/contact-intent";
   var STORAGE_KEY = "mbw_attribution_v1";
@@ -24,7 +24,10 @@
     "gclid",
     "gbraid",
     "wbraid",
-    "fbclid"
+    "fbclid",
+    "meta_campaign_id",
+    "meta_adset_id",
+    "meta_ad_id"
   ];
 
   if (EXCLUDED_PATHS.some(function (pattern) {
@@ -200,6 +203,11 @@
         wbraid: params.wbraid,
         fbclid: params.fbclid
       },
+      meta: {
+        meta_campaign_id: params.meta_campaign_id,
+        meta_adset_id: params.meta_adset_id,
+        meta_ad_id: params.meta_ad_id
+      },
       session_id: makeId("s"),
       session_started_at: timestamp,
       last_activity_at: timestamp,
@@ -220,6 +228,10 @@
       state.click_ids = { gclid: null, gbraid: null, wbraid: null, fbclid: null };
     }
 
+    if (!state.meta || typeof state.meta !== "object") {
+      state.meta = { meta_campaign_id: null, meta_adset_id: null, meta_ad_id: null };
+    }
+
     if (!state.session_id || !state.session_started_at) {
       isNewSession = true;
     }
@@ -235,6 +247,10 @@
 
     ["gclid", "gbraid", "wbraid", "fbclid"].forEach(function (key) {
       if (params[key]) state.click_ids[key] = params[key];
+    });
+
+    ["meta_campaign_id", "meta_adset_id", "meta_ad_id"].forEach(function (key) {
+      if (params[key]) state.meta[key] = params[key];
     });
 
     state.last_seen_at = timestamp;
@@ -279,6 +295,7 @@
         last_touch: state.last_touch,
         utm: currentUtm(state),
         click_ids: state.click_ids,
+        meta: state.meta,
         attribution_status: statusFor(state)
       }
     };
@@ -505,7 +522,10 @@
       gclid: state.click_ids && state.click_ids.gclid,
       gbraid: state.click_ids && state.click_ids.gbraid,
       wbraid: state.click_ids && state.click_ids.wbraid,
-      fbclid: state.click_ids && state.click_ids.fbclid
+      fbclid: state.click_ids && state.click_ids.fbclid,
+      meta_campaign_id: state.meta && state.meta.meta_campaign_id,
+      meta_adset_id: state.meta && state.meta.meta_adset_id,
+      meta_ad_id: state.meta && state.meta.meta_ad_id
     };
     Object.assign(fields, touchFields("first_touch", state.first_touch));
     Object.assign(fields, touchFields("last_touch", state.last_touch));
