@@ -5,10 +5,7 @@ const JSON_HEADERS = {
 };
 
 function reply(status, body) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: JSON_HEADERS,
-  });
+  return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 }
 
 function cleanString(value, maxLength = 255) {
@@ -20,6 +17,11 @@ function cleanString(value, maxLength = 255) {
 function cleanId(value) {
   const id = cleanString(value, 128);
   return id && /^[A-Za-z0-9_-]{12,128}$/.test(id) ? id : null;
+}
+
+function cleanMetaId(value) {
+  const id = cleanString(value, 32);
+  return id && /^\d{6,32}$/.test(id) ? id : null;
 }
 
 function cleanTimestamp(value, fallback) {
@@ -43,10 +45,25 @@ function cleanTouch(value) {
   };
 }
 
+function metaIdFromUrl(urlValue, key) {
+  try {
+    const value = new URL(urlValue).searchParams.get(key);
+    return cleanMetaId(value);
+  } catch {
+    return null;
+  }
+}
+
+function pickMetaId(session, meta, first, last, key) {
+  return cleanMetaId(meta[key])
+    || cleanMetaId(session[key])
+    || metaIdFromUrl(last.landing_page, key)
+    || metaIdFromUrl(first.landing_page, key);
+}
+
 function isSameOrigin(request) {
   const origin = request.headers.get("origin");
   if (!origin) return true;
-
   try {
     return new URL(origin).host === new URL(request.url).host;
   } catch {
@@ -59,7 +76,6 @@ export async function onRequestPost({ request, env }) {
     if (!env.MBW_ATTRIBUTION_DB) {
       return reply(503, { ok: false, error: "attribution_database_unavailable" });
     }
-
     if (!isSameOrigin(request)) {
       return reply(403, { ok: false, error: "origin_not_allowed" });
     }
@@ -68,9 +84,7 @@ export async function onRequestPost({ request, env }) {
     if (!contentType.toLowerCase().includes("application/json")) {
       return reply(415, { ok: false, error: "application_json_required" });
     }
-
-    const contentLength = Number(request.headers.get("content-length") || 0);
-    if (contentLength > 16384) {
+    if (Number(request.headers.get("content-length") || 0) > 16384) {
       return reply(413, { ok: false, error: "payload_too_large" });
     }
 
@@ -80,21 +94,14 @@ export async function onRequestPost({ request, env }) {
     } catch {
       return reply(400, { ok: false, error: "invalid_json" });
     }
-
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
       return reply(400, { ok: false, error: "invalid_payload" });
     }
 
-    const visitor = payload.visitor && typeof payload.visitor === "object"
-      ? payload.visitor
-      : {};
-    const session = payload.session && typeof payload.session === "object"
-      ? payload.session
-      : {};
-
+    const visitor = payload.visitor && typeof payload.visitor === "object" ? payload.visitor : {};
+    const session = payload.session && typeof payload.session === "object" ? payload.session : {};
     const visitorId = cleanId(visitor.visitor_id || visitor.id);
     const sessionId = cleanId(session.session_id || session.id);
-
     if (!visitorId || !sessionId) {
       return reply(400, { ok: false, error: "valid_visitor_and_session_ids_required" });
     }
@@ -104,19 +111,9 @@ export async function onRequestPost({ request, env }) {
     const lastSeenAt = cleanTimestamp(visitor.last_seen_at, now);
     const sessionStartedAt = cleanTimestamp(session.session_started_at || session.started_at, now);
     const lastActivityAt = cleanTimestamp(session.last_activity_at, now);
-
     const allowedConsent = new Set(["unknown", "accepted", "rejected"]);
-    const consentStatus = allowedConsent.has(visitor.consent_status)
-      ? visitor.consent_status
-      : "unknown";
-
-    const allowedStatuses = new Set([
-      "captured",
-      "partial",
-      "direct",
-      "unavailable",
-      "invalid",
-    ]);
+    const consentStatus = allowedConsent.has(visitor.consent_status) ? visitor.consent_status : "unknown";
+    const allowedStatuses = new Set(["captured", "partial", "direct", "unavailable", "invalid"]);
     const attributionStatus = allowedStatuses.has(session.attribution_status)
       ? session.attribution_status
       : "captured";
@@ -124,17 +121,15 @@ export async function onRequestPost({ request, env }) {
     const first = cleanTouch(session.first_touch);
     const last = cleanTouch(session.last_touch);
     const utm = session.utm && typeof session.utm === "object" ? session.utm : {};
-    const clickIds = session.click_ids && typeof session.click_ids === "object"
-      ? session.click_ids
-      : {};
+    const clickIds = session.click_ids && typeof session.click_ids === "object" ? session.click_ids : {};
+    const meta = session.meta && typeof session.meta === "object" ? session.meta : {};
+    const metaCampaignId = pickMetaId(session, meta, first, last, "meta_campaign_id");
+    const metaAdsetId = pickMetaId(session, meta, first, last, "meta_adset_id");
+    const metaAdId = pickMetaId(session, meta, first, last, "meta_ad_id");
 
     const visitorStatement = env.MBW_ATTRIBUTION_DB.prepare(`
-      INSERT INTO visitors (
-        visitor_id,
-        first_seen_at,
-        last_seen_at,
-        consent_status
-      ) VALUES (?, ?, ?, ?)
+      INSERT INTO visitors (visitor_id, first_seen_at, last_seen_at, consent_status)
+      VALUES (?, ?, ?, ?)
       ON CONFLICT(visitor_id) DO UPDATE SET
         last_seen_at = excluded.last_seen_at,
         consent_status = CASE
@@ -146,40 +141,21 @@ export async function onRequestPost({ request, env }) {
 
     const sessionStatement = env.MBW_ATTRIBUTION_DB.prepare(`
       INSERT INTO sessions (
-        session_id,
-        visitor_id,
-        session_started_at,
-        last_activity_at,
-        first_touch_source,
-        first_touch_medium,
-        first_touch_campaign,
-        first_touch_content,
-        first_touch_term,
-        first_touch_landing_page,
-        first_touch_referrer,
-        first_touch_date,
-        last_touch_source,
-        last_touch_medium,
-        last_touch_campaign,
-        last_touch_content,
-        last_touch_term,
-        last_touch_landing_page,
-        last_touch_referrer,
-        last_touch_date,
-        utm_source,
-        utm_medium,
-        utm_campaign,
-        utm_content,
-        utm_term,
-        gclid,
-        gbraid,
-        wbraid,
-        fbclid,
+        session_id, visitor_id, session_started_at, last_activity_at,
+        first_touch_source, first_touch_medium, first_touch_campaign,
+        first_touch_content, first_touch_term, first_touch_landing_page,
+        first_touch_referrer, first_touch_date,
+        last_touch_source, last_touch_medium, last_touch_campaign,
+        last_touch_content, last_touch_term, last_touch_landing_page,
+        last_touch_referrer, last_touch_date,
+        utm_source, utm_medium, utm_campaign, utm_content, utm_term,
+        gclid, gbraid, wbraid, fbclid,
+        meta_campaign_id, meta_adset_id, meta_ad_id,
         attribution_status
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )
       ON CONFLICT(session_id) DO UPDATE SET
         last_activity_at = excluded.last_activity_at,
@@ -191,69 +167,50 @@ export async function onRequestPost({ request, env }) {
         first_touch_landing_page = COALESCE(sessions.first_touch_landing_page, excluded.first_touch_landing_page),
         first_touch_referrer = COALESCE(sessions.first_touch_referrer, excluded.first_touch_referrer),
         first_touch_date = COALESCE(sessions.first_touch_date, excluded.first_touch_date),
-        last_touch_source = excluded.last_touch_source,
-        last_touch_medium = excluded.last_touch_medium,
-        last_touch_campaign = excluded.last_touch_campaign,
-        last_touch_content = excluded.last_touch_content,
-        last_touch_term = excluded.last_touch_term,
-        last_touch_landing_page = excluded.last_touch_landing_page,
-        last_touch_referrer = excluded.last_touch_referrer,
-        last_touch_date = excluded.last_touch_date,
-        utm_source = excluded.utm_source,
-        utm_medium = excluded.utm_medium,
-        utm_campaign = excluded.utm_campaign,
-        utm_content = excluded.utm_content,
-        utm_term = excluded.utm_term,
+        last_touch_source = COALESCE(excluded.last_touch_source, sessions.last_touch_source),
+        last_touch_medium = COALESCE(excluded.last_touch_medium, sessions.last_touch_medium),
+        last_touch_campaign = COALESCE(excluded.last_touch_campaign, sessions.last_touch_campaign),
+        last_touch_content = COALESCE(excluded.last_touch_content, sessions.last_touch_content),
+        last_touch_term = COALESCE(excluded.last_touch_term, sessions.last_touch_term),
+        last_touch_landing_page = COALESCE(excluded.last_touch_landing_page, sessions.last_touch_landing_page),
+        last_touch_referrer = COALESCE(excluded.last_touch_referrer, sessions.last_touch_referrer),
+        last_touch_date = COALESCE(excluded.last_touch_date, sessions.last_touch_date),
+        utm_source = COALESCE(excluded.utm_source, sessions.utm_source),
+        utm_medium = COALESCE(excluded.utm_medium, sessions.utm_medium),
+        utm_campaign = COALESCE(excluded.utm_campaign, sessions.utm_campaign),
+        utm_content = COALESCE(excluded.utm_content, sessions.utm_content),
+        utm_term = COALESCE(excluded.utm_term, sessions.utm_term),
         gclid = COALESCE(excluded.gclid, sessions.gclid),
         gbraid = COALESCE(excluded.gbraid, sessions.gbraid),
         wbraid = COALESCE(excluded.wbraid, sessions.wbraid),
         fbclid = COALESCE(excluded.fbclid, sessions.fbclid),
-        attribution_status = excluded.attribution_status,
+        meta_campaign_id = COALESCE(excluded.meta_campaign_id, sessions.meta_campaign_id),
+        meta_adset_id = COALESCE(excluded.meta_adset_id, sessions.meta_adset_id),
+        meta_ad_id = COALESCE(excluded.meta_ad_id, sessions.meta_ad_id),
+        attribution_status = CASE
+          WHEN sessions.attribution_status = 'captured' AND excluded.attribution_status = 'direct'
+            THEN sessions.attribution_status
+          ELSE excluded.attribution_status
+        END,
         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
     `).bind(
-      sessionId,
-      visitorId,
-      sessionStartedAt,
-      lastActivityAt,
-      first.source,
-      first.medium,
-      first.campaign,
-      first.content,
-      first.term,
-      first.landing_page,
-      first.referrer,
-      first.date,
-      last.source,
-      last.medium,
-      last.campaign,
-      last.content,
-      last.term,
-      last.landing_page,
-      last.referrer,
-      last.date,
-      cleanString(utm.source),
-      cleanString(utm.medium),
-      cleanString(utm.campaign),
-      cleanString(utm.content),
-      cleanString(utm.term),
-      cleanString(clickIds.gclid, 512),
-      cleanString(clickIds.gbraid, 512),
-      cleanString(clickIds.wbraid, 512),
-      cleanString(clickIds.fbclid, 512),
-      attributionStatus,
+      sessionId, visitorId, sessionStartedAt, lastActivityAt,
+      first.source, first.medium, first.campaign, first.content, first.term,
+      first.landing_page, first.referrer, first.date,
+      last.source, last.medium, last.campaign, last.content, last.term,
+      last.landing_page, last.referrer, last.date,
+      cleanString(utm.source), cleanString(utm.medium), cleanString(utm.campaign),
+      cleanString(utm.content), cleanString(utm.term),
+      cleanString(clickIds.gclid, 512), cleanString(clickIds.gbraid, 512),
+      cleanString(clickIds.wbraid, 512), cleanString(clickIds.fbclid, 512),
+      metaCampaignId, metaAdsetId, metaAdId, attributionStatus,
     );
 
     const eventId = `evt_${sessionId}_start`.slice(0, 128);
     const eventStatement = env.MBW_ATTRIBUTION_DB.prepare(`
       INSERT OR IGNORE INTO attribution_events (
-        event_id,
-        visitor_id,
-        session_id,
-        event_name,
-        event_source,
-        page_url,
-        event_data,
-        occurred_at
+        event_id, visitor_id, session_id, event_name, event_source,
+        page_url, event_data, occurred_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       eventId,
@@ -266,20 +223,19 @@ export async function onRequestPost({ request, env }) {
         source: first.source,
         medium: first.medium,
         campaign: first.campaign,
+        meta_campaign_id: metaCampaignId,
+        meta_adset_id: metaAdsetId,
+        meta_ad_id: metaAdId,
       }),
       sessionStartedAt,
     );
 
-    await env.MBW_ATTRIBUTION_DB.batch([
-      visitorStatement,
-      sessionStatement,
-      eventStatement,
-    ]);
-
+    await env.MBW_ATTRIBUTION_DB.batch([visitorStatement, sessionStatement, eventStatement]);
     return reply(200, {
       ok: true,
       visitor_id: visitorId,
       session_id: sessionId,
+      meta_ids_captured: Boolean(metaCampaignId || metaAdsetId || metaAdId),
     });
   } catch (error) {
     console.error("Attribution session write failed", error);
@@ -290,4 +246,3 @@ export async function onRequestPost({ request, env }) {
 export async function onRequestGet() {
   return reply(405, { ok: false, error: "method_not_allowed" });
 }
-
