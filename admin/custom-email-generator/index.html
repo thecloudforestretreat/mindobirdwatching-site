@@ -689,7 +689,7 @@ experiences waiting for you in Mindo.</textarea>
         groupOrder: ["tours", "activities", "planning", "nextSteps", "social"],
         overrides: {},
         openGroups: new Set(["tours"]),
-        reviewSummary: { rating: 5.0, count: 152, mapsUrl: "https://g.page/r/CdMlIYMGgBIvEAE/review" },
+        reviewSummary: { rating: null, count: null, mapsUrl: "https://g.page/r/CdMlIYMGgBIvEAE/review" },
         showHtml: false
       };
       const ORDER_STORAGE_KEY = "mbwEmailGeneratorSectionOrderV2";
@@ -697,6 +697,7 @@ experiences waiting for you in Mindo.</textarea>
       const GROUP_STORAGE_KEY = "mbwEmailGeneratorOpenGroupsV1";
       const WHATSAPP_STORAGE_KEY = "mbwEmailGeneratorWhatsappNumber";
       const DEFAULT_WHATSAPP_NUMBER = "593969076501";
+      const REVIEW_API_URL = "https://mindobirdwatching.com/api/reviews";
       const els = {};
 
       document.addEventListener("DOMContentLoaded", init);
@@ -732,18 +733,29 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function loadReviewSummary(){
-        fetch("/api/reviews?ts=" + Date.now(), { cache:"no-store" })
+        fetch(REVIEW_API_URL, {
+          cache:"no-cache",
+          headers:{ "Accept":"application/json" }
+        })
           .then(response => response.ok ? response.json() : Promise.reject(new Error("Review API unavailable")))
           .then(data => {
             const rating = data && data.summary && Number(data.summary.rating);
             const count = data && data.summary && Number(data.summary.review_count);
             const mapsUrl = data && data.place && clean(data.place.maps_url);
-            if(Number.isFinite(rating) && rating > 0) state.reviewSummary.rating = rating;
-            if(Number.isFinite(count) && count > 0) state.reviewSummary.count = count;
+            if(!data || data.ok !== true || !Number.isFinite(rating) || !Number.isFinite(count)) {
+              throw new Error("Invalid review summary");
+            }
+            state.reviewSummary.rating = rating;
+            state.reviewSummary.count = count;
             if(mapsUrl) state.reviewSummary.mapsUrl = mapsUrl;
             updateEmail();
           })
-          .catch(() => {});
+          .catch(error => {
+            state.reviewSummary.rating = null;
+            state.reviewSummary.count = null;
+            console.warn("Live Google review summary unavailable", error);
+            updateEmail();
+          });
       }
 
       function cacheEls(){
@@ -2344,17 +2356,21 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function renderSocial(block){
-        const rating = Number(state.reviewSummary.rating || 5).toFixed(1);
-        const reviewCount = Number(state.reviewSummary.count || 152).toLocaleString("en-US");
+        const ratingValue = Number(state.reviewSummary.rating);
+        const countValue = Number(state.reviewSummary.count);
+        const hasLiveSummary = Number.isFinite(ratingValue) && ratingValue > 0 && Number.isFinite(countValue) && countValue >= 0;
+        const rating = hasLiveSummary ? ratingValue.toFixed(1) : "";
+        const reviewCount = hasLiveSummary ? countValue.toLocaleString(getLanguage() === "es" ? "es-EC" : "en-US") : "";
         const reviewLabel = getLanguage() === "es" ? "reseñas de Google" : "Google reviews";
         const mapsUrl = state.reviewSummary.mapsUrl || (block.links[0] && block.links[0][1]) || "https://g.page/r/CdMlIYMGgBIvEAE/review";
         const links = block.links.map((link, index) => index === 0 ? [link[0], mapsUrl] : link);
+        const reviewSummaryText = hasLiveSummary ? rating + " ★★★★★ " + reviewCount + " " + reviewLabel : reviewLabel;
         return "" +
           "<tr><td style='padding:0 20px 10px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px 20px;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'><tr>" +
           "<td width='60%' valign='middle' style='padding-right:12px;'><h2 style=\"margin:0 0 7px; font-family:Georgia, 'Times New Roman', serif; font-size:23px; line-height:27px; color:#0D5925;\">" + esc(block.title) + "</h2>" +
-          "<p style='margin:0 0 9px; font-size:14px; line-height:20px; color:#071923; font-weight:800;'>" + esc(rating) + " <span style='color:#F4B400; letter-spacing:1px;'>★★★★★</span> <a href='" + attr(mapsUrl) + "' style='color:#3047B5; text-decoration:none; font-weight:800;'>" + esc(reviewCount + " " + reviewLabel) + "</a></p>" +
+          "<p style='margin:0 0 9px; font-size:14px; line-height:20px; color:#071923; font-weight:800;'><a href='" + attr(mapsUrl) + "' style='color:#3047B5; text-decoration:none; font-weight:800;'>" + esc(reviewSummaryText) + "</a></p>" +
           "<p style='margin:0; font-size:13px; line-height:20px; color:rgba(7,25,35,.76);'>" + esc(block.description) + "</p></td>" +
           "<td width='40%' valign='middle' align='center' style='text-align:center;'>" +
           links.map((link, index) => "<a href='" + attr(link[1]) + "' style='display:inline-block; width:176px; margin:0 0 8px; background:" + (index === 0 ? "#0D5925" : "rgba(13,89,37,.14)") + "; color:" + (index === 0 ? "#ffffff" : "#071923") + "; text-decoration:none; font-weight:900; font-size:13px; line-height:17px; padding:11px 0; border-radius:13px; border:1px solid rgba(13,89,37,.35); text-align:center;'>" + esc(link[0]) + "</a>").join("") +
