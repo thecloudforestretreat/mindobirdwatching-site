@@ -894,6 +894,59 @@ input[type="date"]{
   applyDateLimits();
   combineDates();
 
+  function prefillItineraryRequest(){
+    var params = new URLSearchParams(window.location.search || "");
+    if(params.get("itinerary") !== "1") return;
+
+    var start = params.get("date_start") || "";
+    var end = params.get("date_end") || "";
+    if(ds && /^\d{4}-\d{2}-\d{2}$/.test(start)) ds.value = start;
+    if(de && /^\d{4}-\d{2}-\d{2}$/.test(end)) de.value = end;
+    applyDateLimits();
+    combineDates();
+
+    var guests = document.querySelector('[name="number_of_guests"]');
+    var requestedGuests = params.get("number_of_guests") || "";
+    if(requestedGuests === "3 to 4") requestedGuests = "3 a 4";
+    if(requestedGuests === "5 to 8") requestedGuests = "5 a 8";
+    if(guests && requestedGuests){
+      Array.prototype.some.call(guests.options, function(option){
+        if(option.value === requestedGuests || option.text === requestedGuests){
+          guests.value = option.value;
+          return true;
+        }
+        return false;
+      });
+    }
+
+    var tourType = document.querySelector('[name="preferred_tour_type"]');
+    if(tourType) tourType.value = "Multi-Day";
+
+    var targets = (params.get("target_birds") || "").trim();
+    var interests = document.querySelector('[name="special_interests"]');
+    if(interests && targets) interests.value = targets;
+
+    var details = [];
+    var days = params.get("itinerary_days") || "";
+    var focus = params.get("focus") || "";
+    var pickup = params.get("pickup") || "";
+    var bear = params.get("bear_extension") || "no";
+    var notes = (params.get("planning_notes") || "").trim();
+    if(days) details.push("Itinerario solicitado: " + days + (days === "1" ? " día" : " días"));
+    if(targets) details.push("Aves objetivo o colibríes: " + targets);
+    if(focus) details.push("Enfoque principal: " + focus);
+    if(pickup) details.push("Recogida / punto de inicio: " + pickup);
+    details.push("Extensión Oso de Anteojos / Andes: " + (bear === "yes" ? "Sí" : "No"));
+    if(notes) details.push("Notas de planificación: " + notes);
+
+    var message = document.querySelector('[name="message_questions"]');
+    if(message && details.length) message.value = details.join("\n");
+
+    var source = params.get("source_page") || "";
+    if(sp && source) sp.value = source;
+  }
+  prefillItineraryRequest();
+
   var copyBtn = document.getElementById("copyEmailBtn");
   var toast = document.getElementById("copyToast");
   var email = "info@mindobirdwatching.com";
