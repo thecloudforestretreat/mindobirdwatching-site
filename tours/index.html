@@ -49,7 +49,7 @@
       "name": "Mindo Bird Watching Tours",
       "description": "Choose private or group birdwatching tours in Mindo for 2–8 guests with bilingual local guides, conversational English, flexible routes, and night walks.",
       "inLanguage": "en",
-      "dateModified": "2026-07-27",
+      "dateModified": "2026-09-18",
       "image": "https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg"
     },
     {
@@ -161,10 +161,10 @@
 <aside aria-label="Tour planning confidence" class="heroRail">
 <div class="socialProof">
 <div class="spHead">Google Reviews</div>
-<div class="spRating">
-<div aria-label="5 out of 5 stars" class="spStars">★★★★★</div>
-<div class="spScore">5.0</div>
-<div class="spCount"><a data-analytics-event="internal_link_click" data-analytics-label="152 reviews" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_collection" href="/reviews/">152 reviews</a></div>
+<div aria-live="polite" class="spRating">
+<div aria-label="Google rating" class="spStars" id="tourReviewStars">★★★★★</div>
+<div class="spScore" id="tourReviewRating">—</div>
+<div class="spCount"><a data-analytics-event="internal_link_click" data-analytics-label="Google reviews" data-analytics-location="body" data-analytics-page-language="en" data-analytics-page-type="tour_collection" href="/reviews/" id="tourReviewCount">Google reviews</a></div>
 </div>
 <div aria-label="Key benefits" class="spPills">
 <span class="spPill">Private tours</span>
@@ -636,8 +636,45 @@
         start();
       }
 
+      function loadReviewSummary(){
+        const ratingNode = document.getElementById("tourReviewRating");
+        const starsNode = document.getElementById("tourReviewStars");
+        const countLink = document.getElementById("tourReviewCount");
+        if(!ratingNode || !starsNode || !countLink) return;
+
+        fetch("/api/reviews", {
+          cache: "no-cache",
+          headers: { "Accept": "application/json" }
+        })
+          .then(function(response){
+            if(!response.ok) throw new Error("Review API unavailable");
+            return response.json();
+          })
+          .then(function(data){
+            const rating = data && data.summary ? Number(data.summary.rating) : NaN;
+            const count = data && data.summary ? Number(data.summary.review_count) : NaN;
+            if(!data || data.ok !== true || !Number.isFinite(rating) || !Number.isFinite(count)) {
+              throw new Error("Invalid review summary");
+            }
+
+            const ratingText = rating.toFixed(1);
+            const countText = count.toLocaleString("en-US") + " reviews";
+            ratingNode.textContent = ratingText;
+            starsNode.setAttribute("aria-label", ratingText + " out of 5 stars");
+            countLink.textContent = countText;
+            countLink.setAttribute("data-analytics-label", countText);
+          })
+          .catch(function(){
+            ratingNode.textContent = "—";
+            starsNode.setAttribute("aria-label", "Google rating currently unavailable");
+            countLink.textContent = "Google reviews";
+            countLink.setAttribute("data-analytics-label", "Google reviews");
+          });
+      }
+
       document.addEventListener("DOMContentLoaded", function(){
         document.querySelectorAll(".mbwCarousel").forEach(initCarousel);
+        loadReviewSummary();
       });
     })();
   </script>
