@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.09.26.2 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.09.26.3 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.09.26.2";
+  document.documentElement.dataset.recommendationsBuild = "2026.09.26.3";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -12,6 +12,54 @@
   };
 
   var seedPartners = [
+    {
+      id: "cabanas-armonia",
+      category: "accommodations",
+      type: "Cabins",
+      name: "Cabañas Armonía & Orchid Garden",
+      area: "Mindo",
+      status: "current",
+      statusText: "Rates confirmed",
+      regularPrice: "$42.00",
+      ourPrice: "$25.00",
+      savings: "Save 40%",
+      pricingBasis: "Bungalow / single occupancy",
+      rateValidTo: "December 31, 2027",
+      contact: "Tatiana Oñate",
+      phone: "+593 99 943 5098",
+      email: "cabanasarmonia@hotmail.com",
+      website: "https://www.mindocabanasarmonia.com/",
+      mapUrl: "https://www.google.com/maps?q=-0.054828999233723,-78.776379970554",
+      address: "Lluvia de Oro & Sixto Durán Ballén, Casa 2, Manzana 49, Mindo",
+      image: "https://s3-cdn.hotellinksolutions.com/hls/data/10325/gallery/thumbs/sm_large__bbp0691_1749158760.jpg",
+      imageAlt: "Cabañas Armonía and Orchid Garden in Mindo",
+      recommendation: "yes",
+      followUp: "2027-10-01",
+      followUpDue: false,
+      owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-09-26",
+      breakfast: "07:30–09:00; box breakfast available by advance request",
+      amenities: ["Breakfast included", "Early box breakfast", "Free orchid garden", "Free parking", "Wi-Fi", "Hot-water shower", "Private bathrooms", "Hummingbird viewing", "Tourist information", "24-hour taxi support"],
+      services: [
+        { name: "Orchid garden tour", price: "$4 agency" },
+        { name: "Canopy – 10 cables", price: "$16 agency" },
+        { name: "Canopy – 3 cables", price: "$8 agency" },
+        { name: "Extreme swing", price: "$7 agency" },
+        { name: "Birdwatching tour", price: "$60 up to 3; +$20 each" },
+        { name: "Additional breakfast", price: "$4" },
+        { name: "Tourist menu", price: "$10" }
+      ],
+      roomRates: [
+        { room: "Bungalow", single: "$25", double: "$38", triple: "$57", family: "$74" },
+        { room: "Deluxe room", single: "$35", double: "$45", triple: "$67.50", family: "$80" },
+        { room: "Jacuzzi suite", single: "$70", double: "$80", triple: "—", family: "—" },
+        { room: "Glamping", single: "$80", double: "$120", triple: "$150", family: "$160" }
+      ],
+      guestSummary: "Cabañas Armonía is a family-run stay in central Mindo surrounded by an orchid garden. Breakfast, Wi-Fi, parking, private bathrooms, hot-water showers, and complimentary orchid-garden access are included. Early box breakfasts can be arranged in advance for birding departures.",
+      note: "Direct partner response received September 26, 2026. Agency rates are confidential, exclude taxes, and are valid through December 31, 2027."
+    },
     {
       id: "sachatamia-lodge",
       category: "accommodations",
@@ -254,6 +302,19 @@
     }
   ];
 
+  var guestEstimateSnapshot = {
+    "cabanas-armonia": { estimated_guest_count: 8, estimated_stay_count: 4, last_guest_date: "2026-07-12" },
+    "sachatamia-lodge": { estimated_guest_count: 2, estimated_stay_count: 2, last_guest_date: "2026-08-24" },
+    "bellavista-cloud-forest": { estimated_guest_count: 1, estimated_stay_count: 1, last_guest_date: "2026-08-31" },
+    "toucan-platinum-suites": { estimated_guest_count: 1, estimated_stay_count: 1, last_guest_date: "2026-08-26" },
+    "royal-river-suites": { estimated_guest_count: 2, estimated_stay_count: 1, last_guest_date: "2026-08-06" },
+    "casa-de-vista-alta": { estimated_guest_count: 6, estimated_stay_count: 3, last_guest_date: "2026-09-15" },
+    "las-terrazas-de-dana": { estimated_guest_count: 7, estimated_stay_count: 3, last_guest_date: "2026-09-01" },
+    "terrabambu-lodge": { estimated_guest_count: 19, estimated_stay_count: 7, last_guest_date: "2026-09-24" },
+    "la-casa-de-cecilia": { estimated_guest_count: 6, estimated_stay_count: 6, last_guest_date: "2026-09-18" },
+    "secret-garden-quito": { estimated_guest_count: 1, estimated_stay_count: 1, last_guest_date: "2026-05-01" }
+  };
+
   var elements = {
     cards: document.getElementById("recommendationsCards"),
     detail: document.getElementById("recommendationsDetail"),
@@ -273,13 +334,16 @@
 
   var state = loadState();
   var partners = seedPartners.map(function (partner) {
-    return Object.assign({ preferred: false, estimateStatus: "loading", estimatedGuests: 0, estimatedStays: 0, lastGuestDate: "" }, partner, state.updates[partner.id] || {});
+    var merged = Object.assign({ preferred: false, estimateStatus: "loading", estimatedGuests: 0, estimatedStays: 0, lastGuestDate: "" }, partner, state.updates[partner.id] || {});
+    if (merged.verifiedResponse) merged.preferred = true;
+    return merged;
   }).concat((state.customPartners || []).map(function (partner) {
     return Object.assign({ preferred: false, estimateStatus: "not-matched", estimatedGuests: 0, estimatedStays: 0, lastGuestDate: "" }, partner);
   }));
   var activeCategory = "accommodations";
   var selectedId = partners.find(function (partner) { return partner.category === activeCategory; }).id;
   var currentView = "cards";
+  var expandedPartnerId = "";
   var toastTimer;
 
   function loadState() {
@@ -357,10 +421,48 @@
 
   function guestSignal(partner) {
     if (partner.estimateStatus === "loading") return '<span class="recommendationSignal recommendationSignal--pending">Loading guest estimate</span>';
-    if (partner.estimateStatus !== "ready") return '<span class="recommendationSignal recommendationSignal--pending">Guest estimate unavailable</span>';
+    if (partner.estimateStatus !== "ready" && partner.estimateStatus !== "snapshot") return '<span class="recommendationSignal recommendationSignal--pending">Guest estimate unavailable</span>';
     var guests = Math.max(0, Number(partner.estimatedGuests) || 0);
     if (!guests) return '<span class="recommendationSignal recommendationSignal--guests">No matched MBW stays</span>';
-    return '<span class="recommendationSignal recommendationSignal--guests" title="Estimate from completed tours and matched invoice pickup locations">~' + guests + ' MBW guest' + (guests === 1 ? '' : 's') + '</span>';
+    return '<span class="recommendationSignal recommendationSignal--guests" title="Estimate from completed tours and matched invoice pickup locations"><strong>~' + guests + '</strong> MBW guest' + (guests === 1 ? '' : 's') + '</span>';
+  }
+
+  function hasGuestEstimate(partner) {
+    return (partner.estimateStatus === "ready" || partner.estimateStatus === "snapshot") && Number(partner.estimatedGuests) > 0;
+  }
+
+  function preferredMarkup(partner, detail) {
+    if (partner.verifiedResponse) {
+      return '<span class="recommendationVerified' + (detail ? ' recommendationVerified--detail' : '') + '" title="The partner responded directly and these details were verified">★ <span>Verified response</span></span>';
+    }
+    var active = Boolean(partner.preferred);
+    var label = active ? "Preferred" : "Prefer";
+    var attribute = detail ? "data-detail-preferred" : "data-preferred";
+    return '<button class="' + (detail ? 'recommendationsDetailPreferred' : 'recommendationPreferred') + '" type="button" ' + attribute + ' aria-pressed="' + active + '" aria-label="' + (active ? 'Remove preferred status for ' : 'Mark as preferred: ') + escapeHtml(partner.name) + '" title="' + (active ? 'Remove preferred status' : 'Mark as preferred') + '">' + (active ? '★' : '☆') + ' <span>' + label + '</span></button>';
+  }
+
+  function amenitiesMarkup(partner) {
+    if (!Array.isArray(partner.amenities) || !partner.amenities.length) return "";
+    var serviceRows = (partner.services || []).map(function (service) {
+      return '<div class="recommendationsServiceRow"><span>' + escapeHtml(service.name) + '</span><strong>' + escapeHtml(service.price) + '</strong></div>';
+    }).join("");
+    var rateRows = (partner.roomRates || []).map(function (rate) {
+      return '<tr><th scope="row">' + escapeHtml(rate.room) + '</th><td>' + escapeHtml(rate.single) + '</td><td>' + escapeHtml(rate.double) + '</td><td>' + escapeHtml(rate.triple) + '</td><td>' + escapeHtml(rate.family) + '</td></tr>';
+    }).join("");
+    return '<section class="recommendationsEnrichment"' + (expandedPartnerId === partner.id ? '' : ' hidden') + '>' +
+      '<h3>Amenities &amp; services</h3>' +
+      '<div class="recommendationsAmenityList">' + partner.amenities.map(function (amenity) { return '<span>' + escapeHtml(amenity) + '</span>'; }).join("") + '</div>' +
+      (serviceRows ? '<h3>Services &amp; experiences</h3><div class="recommendationsServiceList">' + serviceRows + '</div>' : '') +
+      (rateRows ? '<h3>Internal agency room rates</h3><div class="recommendationsRateWrap"><table class="recommendationsRateTable"><thead><tr><th>Room</th><th>Single</th><th>Double</th><th>Triple</th><th>Family</th></tr></thead><tbody>' + rateRows + '</tbody></table></div><p class="recommendationsConfidential">Internal only. Rates exclude taxes and must not be included in guest-ready copy.</p>' : '') +
+    '</section>';
+  }
+
+  function guestSummaryText(partner) {
+    var lines = [partner.name, partner.guestSummary || ""];
+    if (partner.address) lines.push("Location: " + partner.address);
+    if (partner.mapUrl) lines.push("Google Maps: " + partner.mapUrl);
+    if (partner.website) lines.push("Website: " + partner.website);
+    return lines.filter(Boolean).join("\n\n");
   }
 
   function isFollowUpDue(dateValue) {
@@ -405,7 +507,8 @@
         (elements.signal.value === "all" ||
           (elements.signal.value === "preferred" && partner.preferred) ||
           (elements.signal.value === "boxed_breakfast" && breakfastSignal(partner) === "available") ||
-          (elements.signal.value === "guest_history" && partner.estimateStatus === "ready" && Number(partner.estimatedGuests) > 0));
+          (elements.signal.value === "verified_response" && partner.verifiedResponse) ||
+          (elements.signal.value === "guest_history" && hasGuestEstimate(partner)));
     });
   }
 
@@ -417,7 +520,7 @@
       '<article class="recommendationCard' + (partner.id === selectedId ? ' is-selected' : '') + '" data-partner-id="' + escapeHtml(partner.id) + '">' +
         '<div class="recommendationCardTop">' +
           '<div><div class="recommendationType">' + escapeHtml(partner.type) + '</div><h3>' + escapeHtml(partner.name) + '</h3><div class="recommendationLocation">⌖ ' + escapeHtml(partner.area || "Area pending") + '</div></div>' +
-          '<div><button class="recommendationPreferred" type="button" data-preferred aria-pressed="' + Boolean(partner.preferred) + '" title="' + (partner.preferred ? 'Remove preferred status' : 'Mark as preferred') + '" aria-label="' + (partner.preferred ? 'Preferred partner' : 'Mark partner as preferred') + '">★</button> <span class="recommendationBadge recommendationBadge--' + escapeHtml(partner.status) + '">' + escapeHtml(partner.statusText) + '</span></div>' +
+          '<div class="recommendationCardStatus">' + preferredMarkup(partner, false) + '<span class="recommendationBadge recommendationBadge--' + escapeHtml(partner.status) + '">' + escapeHtml(partner.statusText) + '</span></div>' +
         '</div>' +
         '<div class="recommendationSignals">' +
           (breakfast === 'available' ? '<span class="recommendationSignal recommendationSignal--breakfast">🥡 Box breakfast</span>' : breakfast === 'confirm' ? '<span class="recommendationSignal">? Confirm box breakfast</span>' : '') +
@@ -475,8 +578,9 @@
 
     elements.detail.style.display = "block";
     elements.detail.innerHTML = '' +
+      (partner.image ? '<div class="recommendationsPartnerImage"><img src="' + escapeHtml(partner.image) + '" alt="' + escapeHtml(partner.imageAlt || partner.name) + '" loading="lazy" referrerpolicy="no-referrer" /><span>Official property photo</span></div>' : '') +
       '<div class="recommendationsDetailHeader">' +
-        '<div class="recommendationsDetailHeaderTop"><div><div class="recommendationType">Selected partner profile</div><h2 tabindex="-1" id="selectedPartnerHeading">' + escapeHtml(partner.name) + '</h2></div><button class="recommendationsDetailPreferred" type="button" data-detail-preferred aria-pressed="' + Boolean(partner.preferred) + '">★ ' + (partner.preferred ? 'Preferred' : 'Mark preferred') + '</button></div>' +
+        '<div class="recommendationsDetailHeaderTop"><div><div class="recommendationType">Selected partner profile</div><h2 tabindex="-1" id="selectedPartnerHeading">' + escapeHtml(partner.name) + '</h2></div>' + preferredMarkup(partner, true) + '</div>' +
         '<p>' + escapeHtml(partner.type) + ' · ' + escapeHtml(partner.area || "Area pending") + ' · ' + escapeHtml(recommendationLabel(partner.recommendation)) + '</p>' +
       '</div>' +
       '<div class="recommendationsDetailBody">' +
@@ -484,6 +588,10 @@
           '<button class="recommendationsDetailAction recommendationsDetailAction--primary" type="button" data-detail-copy="email"' + (partner.email ? '' : ' disabled') + '>Copy email</button>' +
           '<button class="recommendationsDetailAction" type="button" data-detail-copy="phone"' + (partner.phone ? '' : ' disabled') + '>Copy WhatsApp</button>' +
           (partner.website ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.website) + '" target="_blank" rel="noopener noreferrer">Open website ↗</a>' : '') +
+          (partner.mapUrl ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.mapUrl) + '" target="_blank" rel="noopener noreferrer">Open map ↗</a>' : '') +
+          (partner.mapUrl ? '<button class="recommendationsDetailAction" type="button" data-copy-map>Copy map link</button>' : '') +
+          (partner.guestSummary ? '<button class="recommendationsDetailAction recommendationsDetailAction--share" type="button" data-copy-summary>Copy guest summary</button>' : '') +
+          (partner.amenities ? '<button class="recommendationsDetailAction" type="button" data-toggle-enrichment>' + (expandedPartnerId === partner.id ? 'Hide amenities' : 'Amenities & services') + '</button>' : '') +
         '</div>' +
         '<div class="recommendationsDetailLabel">Partner details</div>' +
         '<div class="recommendationsFacts">' +
@@ -492,13 +600,16 @@
           '<div class="recommendationsFact"><span>WhatsApp / phone</span><strong>' + escapeHtml(partner.phone || "Pending") + '</strong></div>' +
           '<div class="recommendationsFact"><span>Pricing basis</span><strong>' + escapeHtml(partner.pricingBasis) + '</strong></div>' +
           '<div class="recommendationsFact"><span>Rate validity</span><strong>' + escapeHtml(partner.rateValidTo) + '</strong></div>' +
+          (partner.address ? '<div class="recommendationsFact"><span>Address</span><strong>' + escapeHtml(partner.address) + '</strong></div>' : '') +
           '<div class="recommendationsFact"><span>Breakfast / service</span><strong>' + escapeHtml(partner.breakfast) + '</strong></div>' +
           '<div class="recommendationsFact"><span>Box breakfast</span><strong>' + (breakfastSignal(partner) === 'available' ? 'Available' : breakfastSignal(partner) === 'confirm' ? 'Needs confirmation' : 'Not recorded') + '</strong></div>' +
-          '<div class="recommendationsFact"><span>Estimated MBW guests</span><strong>' + (partner.estimateStatus === 'ready' ? '~' + Math.max(0, Number(partner.estimatedGuests) || 0) : 'Unavailable') + '</strong></div>' +
-          '<div class="recommendationsFact"><span>Estimated guest stays</span><strong>' + (partner.estimateStatus === 'ready' ? Math.max(0, Number(partner.estimatedStays) || 0) : 'Unavailable') + '</strong></div>' +
-          '<div class="recommendationsFact"><span>Last matched pickup</span><strong>' + (partner.estimateStatus === 'ready' ? escapeHtml(friendlyDate(partner.lastGuestDate)) : 'Unavailable') + '</strong></div>' +
+          '<div class="recommendationsFact"><span>Estimated MBW guests</span><strong>' + (hasGuestEstimate(partner) ? '~' + Math.max(0, Number(partner.estimatedGuests) || 0) : 'No matches') + '</strong></div>' +
+          '<div class="recommendationsFact"><span>Estimated guest stays</span><strong>' + ((partner.estimateStatus === 'ready' || partner.estimateStatus === 'snapshot') ? Math.max(0, Number(partner.estimatedStays) || 0) : 'Unavailable') + '</strong></div>' +
+          '<div class="recommendationsFact"><span>Last matched pickup</span><strong>' + ((partner.estimateStatus === 'ready' || partner.estimateStatus === 'snapshot') ? escapeHtml(friendlyDate(partner.lastGuestDate)) : 'Unavailable') + '</strong></div>' +
+          (partner.verifiedResponse ? '<div class="recommendationsFact recommendationsFact--verified"><span>Information status</span><strong>Direct response · ' + escapeHtml(friendlyDate(partner.responseVerifiedAt)) + '</strong></div>' : '') +
         '</div>' +
         '<p class="recommendationsEstimateNote">Invoice estimate only. A matched pickup location suggests the guest stayed here, but it is not a confirmed lodging record.</p>' +
+        amenitiesMarkup(partner) +
         '<div class="recommendationsDetailLabel">Attention</div>' +
         '<div class="recommendationsNotice">' + escapeHtml(partner.note || "No notes yet.") + '</div>' +
         '<div class="recommendationsDetailLabel">Follow-up tracking</div>' +
@@ -640,6 +751,7 @@
     var detailButton = event.target.closest("[data-view-detail]");
     if (detailButton) {
       selectedId = detailButton.dataset.viewDetail;
+      expandedPartnerId = "";
       renderCards();
       window.requestAnimationFrame(function () {
         var heading = document.getElementById("selectedPartnerHeading");
@@ -656,6 +768,22 @@
     if (copyButton) {
       var copyKey = copyButton.dataset.detailCopy;
       copyText(partner[copyKey], copyKey === "email" ? "Email" : "WhatsApp");
+      return;
+    }
+
+    if (event.target.closest("[data-copy-map]")) {
+      copyText(partner.mapUrl, "Google Maps link");
+      return;
+    }
+
+    if (event.target.closest("[data-copy-summary]")) {
+      copyText(guestSummaryText(partner), "Guest summary");
+      return;
+    }
+
+    if (event.target.closest("[data-toggle-enrichment]")) {
+      expandedPartnerId = expandedPartnerId === partner.id ? "" : partner.id;
+      renderDetail();
       return;
     }
 
@@ -701,8 +829,9 @@
       payload.estimates.forEach(function (estimate) { byPartner[estimate.partner_id] = estimate; });
       partners.forEach(function (partner) {
         if (partner.category !== "accommodations" || partner.custom) return;
-        var estimate = byPartner[partner.id] || {};
-        partner.estimateStatus = "ready";
+        var liveEstimate = byPartner[partner.id];
+        var estimate = liveEstimate || guestEstimateSnapshot[partner.id] || {};
+        partner.estimateStatus = liveEstimate ? "ready" : (guestEstimateSnapshot[partner.id] ? "snapshot" : "ready");
         partner.estimatedGuests = Math.max(0, Number(estimate.estimated_guest_count) || 0);
         partner.estimatedStays = Math.max(0, Number(estimate.estimated_stay_count) || 0);
         partner.lastGuestDate = estimate.last_guest_date || "";
@@ -711,10 +840,19 @@
       elements.dataMessage.textContent = payload.source_last_tour_date ? "Completed tours through " + friendlyDate(payload.source_last_tour_date) + ". Same guest and property within 14 days counts as one estimated stay." : "Completed tours are matched by pickup location; repeat tours within 14 days are deduplicated.";
     } catch (error) {
       partners.forEach(function (partner) {
-        if (partner.category === "accommodations" && !partner.custom) partner.estimateStatus = "unavailable";
+        if (partner.category !== "accommodations" || partner.custom) return;
+        var estimate = guestEstimateSnapshot[partner.id];
+        if (!estimate) {
+          partner.estimateStatus = "unavailable";
+          return;
+        }
+        partner.estimateStatus = "snapshot";
+        partner.estimatedGuests = estimate.estimated_guest_count;
+        partner.estimatedStays = estimate.estimated_stay_count;
+        partner.lastGuestDate = estimate.last_guest_date;
       });
-      elements.dataStatus.textContent = "Invoice estimates unavailable";
-      elements.dataMessage.textContent = "Activate the recommendation guest-estimates workflow to connect the accounting sheet.";
+      elements.dataStatus.textContent = "Invoice snapshot";
+      elements.dataMessage.textContent = "Showing the latest verified invoice snapshot through Sep 24, 2026. Activate the workflow for automatic refreshes.";
     }
     renderCards();
   }
