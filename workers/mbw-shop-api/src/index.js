@@ -6764,7 +6764,7 @@ async function handleGoogleMerchantFeed(
         product &&
         product.visible !== false
     )
-    .map(normalizeGoogleMerchantProduct)
+    .flatMap(normalizeGoogleMerchantOffers)
     .filter(Boolean);
 
   const items = products
@@ -6828,6 +6828,12 @@ function normalizeGoogleMerchantProduct(product) {
   );
 
   const image = getPrimaryImage(product.images);
+  const additionalImages = normalizeImages(
+    product.images
+  )
+    .map((item) => item.src)
+    .filter((src) => src && src !== image)
+    .slice(0, 10);
 
   if (
     !product.id ||
@@ -6851,6 +6857,7 @@ function normalizeGoogleMerchantProduct(product) {
       "https://mindobirdwatching.com/shop/product/?id=" +
       encodeURIComponent(String(product.id)),
     image,
+    additional_images: additionalImages,
     price: `${(priceCents / 100).toFixed(2)} USD`,
     availability: "in_stock",
     condition: "new",
@@ -6860,6 +6867,107 @@ function normalizeGoogleMerchantProduct(product) {
     gender: apparel ? "unisex" : null,
     age_group: apparel ? "adult" : null
   };
+}
+
+function normalizeGoogleMerchantOffers(product) {
+  const parentOffer = normalizeGoogleMerchantProduct(
+    product
+  );
+
+  if (!parentOffer) {
+    return [];
+  }
+
+  if (!parentOffer.apparel) {
+    return [parentOffer];
+  }
+
+  const optionLookup = buildPrintifyOptionLookup(
+    product
+  );
+  const enabledVariants = getEnabledVariants(product);
+
+  const variantOffers = enabledVariants
+    .map((variant) => {
+      const optionValues = resolveVariantOptionValues(
+        variant,
+        optionLookup
+      );
+      const priceCents = Number(variant.price);
+
+      if (
+        !variant.id ||
+        !optionValues.color ||
+        !optionValues.size ||
+        !Number.isFinite(priceCents) ||
+        priceCents < 0
+      ) {
+        return null;
+      }
+
+      const image = getGoogleMerchantVariantImage(
+        product,
+        variant.id,
+        parentOffer.image
+      );
+      const link = new URL(parentOffer.link);
+      link.searchParams.set(
+        "variant",
+        String(variant.id)
+      );
+
+      return {
+        ...parentOffer,
+        id: `${parentOffer.id}-${variant.id}`,
+        item_group_id: parentOffer.id,
+        title: cleanMerchantText(
+          `${parentOffer.title} - ${optionValues.color} / ${optionValues.size}`,
+          150
+        ),
+        link: link.toString(),
+        image,
+        additional_images: (
+          parentOffer.additional_images || []
+        ).filter((src) => src !== image),
+        price: `${(priceCents / 100).toFixed(2)} USD`,
+        color: optionValues.color,
+        size: optionValues.size
+      };
+    })
+    .filter(Boolean);
+
+  return variantOffers.length > 0
+    ? variantOffers
+    : [parentOffer];
+}
+
+function getGoogleMerchantVariantImage(
+  product,
+  variantId,
+  fallback
+) {
+  const images = Array.isArray(product.images)
+    ? product.images
+    : [];
+  const matching = images.filter((image) =>
+    Array.isArray(image && image.variant_ids)
+      ? image.variant_ids.some(
+          (id) => String(id) === String(variantId)
+        )
+      : false
+  );
+  const preferred =
+    matching.find((image) => image.is_default) ||
+    matching.find(
+      (image) =>
+        String(image.position || "").toLowerCase() ===
+        "front"
+    ) ||
+    matching[0];
+
+  return preferred && preferred.src
+    ? preferred.src
+    : fallback;
 }
 
 function buildPrintifyOptionLookup(product) {
@@ -6971,11 +7079,35 @@ function buildGoogleMerchantItemXml(product) {
     `      <g:identifier_exists>${product.identifier_exists}</g:identifier_exists>`
   ];
 
+  if (product.item_group_id) {
+    rows.push(
+      `      <g:item_group_id>${escapeXml(product.item_group_id)}</g:item_group_id>`
+    );
+  }
+
+  for (const image of product.additional_images || []) {
+    rows.push(
+      `      <g:additional_image_link>${escapeXml(image)}</g:additional_image_link>`
+    );
+  }
+
   if (product.apparel) {
     rows.push(
       `      <g:gender>${product.gender}</g:gender>`,
       `      <g:age_group>${product.age_group}</g:age_group>`
     );
+
+    if (product.color) {
+      rows.push(
+        `      <g:color>${escapeXml(product.color)}</g:color>`
+      );
+    }
+
+    if (product.size) {
+      rows.push(
+        `      <g:size>${escapeXml(product.size)}</g:size>`
+      );
+    }
   }
 
   rows.push("    </item>");
@@ -7233,6 +7365,18 @@ async function fetchPrintifyProducts(env) {
   }
 
   const shopId = String(env.PRINTIFY_SHOP_ID).trim();
+  const cachedProducts =
+    await readPrintifyProductsCache(shopId);
+
+  if (cachedProducts) {
+    return {
+      ok: true,
+      status: 200,
+      products: cachedProducts,
+      cached: true
+    };
+  }
+
   const allProducts = [];
   const seenIds = new Set();
 
@@ -7339,11 +7483,83 @@ async function fetchPrintifyProducts(env) {
     page += 1;
   }
 
+  await writePrintifyProductsCache(
+    shopId,
+    allProducts
+  );
+
   return {
     ok: true,
     status: 200,
-    products: allProducts
+    products: allProducts,
+    cached: false
   };
+}
+
+function printifyProductsCacheRequest(shopId) {
+  return new Request(
+    `https://mbw-shop-api-cache.internal/printify-products/${encodeURIComponent(shopId)}`,
+    { method: "GET" }
+  );
+}
+
+async function readPrintifyProductsCache(shopId) {
+  if (
+    typeof caches === "undefined" ||
+    !caches.default
+  ) {
+    return null;
+  }
+
+  try {
+    const response = await caches.default.match(
+      printifyProductsCacheRequest(shopId)
+    );
+
+    if (!response) {
+      return null;
+    }
+
+    const data = await response.json();
+
+    return data && Array.isArray(data.products)
+      ? data.products
+      : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function writePrintifyProductsCache(
+  shopId,
+  products
+) {
+  if (
+    typeof caches === "undefined" ||
+    !caches.default ||
+    !Array.isArray(products)
+  ) {
+    return;
+  }
+
+  try {
+    await caches.default.put(
+      printifyProductsCacheRequest(shopId),
+      new Response(
+        JSON.stringify({ products }),
+        {
+          headers: {
+            "Content-Type":
+              "application/json; charset=UTF-8",
+            "Cache-Control":
+              "public, max-age=900"
+          }
+        }
+      )
+    );
+  } catch (_) {
+    /* The storefront still works if edge caching is unavailable. */
+  }
 }
 
 function normalizeCatalogProduct(product) {

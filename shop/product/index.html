@@ -6,10 +6,10 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>MBW Shop Product | Mindo Bird Watching</title>
 <meta content="View a Mindo Bird Watching shop product with price, availability, shipping notes, and secure checkout through our print partner." name="description"/>
-<meta content="noindex, follow" name="robots"/>
-<link href="https://mindobirdwatching.com/shop/" rel="canonical"/>
-<link href="https://mindobirdwatching.com/shop/" hreflang="en" rel="alternate"/>
-<link href="https://mindobirdwatching.com/shop/" hreflang="x-default" rel="alternate"/>
+<meta content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" name="robots"/>
+<link href="https://mindobirdwatching.com/shop/product/" rel="canonical"/>
+<link href="https://mindobirdwatching.com/shop/product/" hreflang="en" rel="alternate"/>
+<link href="https://mindobirdwatching.com/shop/product/" hreflang="x-default" rel="alternate"/>
 <meta content="website" property="og:type"/>
 <meta content="MBW Shop Product | Mindo Bird Watching" property="og:title"/>
 <meta content="View a Mindo Bird Watching shop product with price, availability, shipping notes, and secure checkout through our print partner." property="og:description"/>
@@ -103,14 +103,6 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Yes. Use the contact link or WhatsApp support if you need help with product options, shipping notes, or order questions."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Why is this product page noindexed?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "This product route supports dynamic shop items and is canonicalized to the main shop page, so search engines should treat the shop hub as the primary public page."
             }
           }
         ]
@@ -293,10 +285,6 @@
 <article class="faqCard">
 <h3>Can I ask a question before ordering?</h3>
 <p>Yes. Use the contact link or WhatsApp support if you need help with product options, shipping notes, or order questions.</p>
-</article>
-<article class="faqCard">
-<h3>Why is this product page noindexed?</h3>
-<p>This product route supports dynamic shop items and is canonicalized to the main shop page, so search engines should treat the shop hub as the primary public page.</p>
 </article>
 </div>
 </section>
@@ -1158,7 +1146,7 @@
   "use strict";
 
   var API_BASE = "https://mbw-shop-api.thecloudforestretreat.workers.dev";
-  var state = { product:null, selections:{}, selectedVariant:null, images:[], imageIndex:0 };
+  var state = { product:null, selections:{}, selectedVariant:null, requestedVariantId:null, images:[], imageIndex:0 };
 
   function money(cents){ var n=Number(cents); return Number.isFinite(n) ? "$"+(n/100).toFixed(2) : "Price unavailable"; }
   function norm(v){ return String(v||"").trim().toLowerCase(); }
@@ -1521,6 +1509,21 @@
     state.selections={};
     defaultSingles();
 
+    if(state.requestedVariantId){
+      var requested=(product.variants||[]).find(function(variant){
+        return Number(variant.id)===Number(state.requestedVariantId);
+      });
+
+      if(requested){
+        (product.options||[]).forEach(function(option){
+          var selected=(option.values||[]).find(function(value){
+            return requested.options.indexOf(Number(value.id))!==-1;
+          });
+          if(selected) state.selections[option.name]=Number(selected.id);
+        });
+      }
+    }
+
     document.getElementById("productTitle").textContent=product.title;
     document.getElementById("productLead").textContent=product.option_summary ? product.option_summary+". Choose the available options below." : "Choose the available options below.";
     document.getElementById("productDescription").textContent="Made to order with Mindo-inspired bird and cloud forest artwork.";
@@ -1554,7 +1557,9 @@
   }
 
   async function load(){
-    var id=resolveId(new URLSearchParams(window.location.search).get("id")||"");
+    var params=new URLSearchParams(window.location.search);
+    var id=resolveId(params.get("id")||"");
+    state.requestedVariantId=Number(params.get("variant")||0)||null;
     if(!id){ window.location.href="/shop/"; return; }
 
     try{
