@@ -3,6 +3,7 @@
 
   var pages = [
     { id: "admin", label: "Admin Hub", href: "https://admin.mindobirdwatching.com/" },
+    { id: "media", label: "Media", href: "https://admin.mindobirdwatching.com/media/" },
     { id: "guest-crm", label: "Guest CRM", href: "https://admin.mindobirdwatching.com/guest-crm/" },
     { id: "email", label: "Email Generator", href: "https://admin.mindobirdwatching.com/custom-email-generator/" },
     { id: "staff", label: "Staff Info", href: "https://admin.mindobirdwatching.com/staff-info/" },
@@ -59,7 +60,7 @@
   }
 
   function render(host) {
-    if (host.dataset.adminNavReady === "true" || host.querySelector(".adminGlobalNav")) return;
+    if (host.dataset.adminNavReady === "true") return;
 
     var activeId = currentPageId(host);
     var nav = document.createElement("nav");
