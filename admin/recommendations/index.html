@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Recommendations</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/recommendations/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/admin.css?v=4" />
+  <link rel="stylesheet" href="../assets/css/recommendations.css?v=1" />
+</head>
+<body>
+  <div data-admin-nav data-admin-page="recommendations"></div>
+
+  <main class="recommendationsShell">
+    <section class="recommendationsHero" aria-label="Partner recommendations dashboard">
+      <header class="recommendationsHeader">
+        <div>
+          <div class="recommendationsEyebrow">Admin Hub / Recommendations</div>
+          <h1>Recommendations</h1>
+          <p>Keep trusted places and service partners ready for guest replies while tracking contacts, pricing, recommendation decisions, and follow-ups.</p>
+        </div>
+        <button class="recommendationsPrimaryAction" id="addRecommendation" type="button">+ Add partner</button>
+      </header>
+
+      <section class="recommendationsSummary" aria-label="Recommendation summary">
+        <article class="recommendationsMetric">
+          <span>Partners</span>
+          <strong id="metricPartners">0</strong>
+          <small>across every category</small>
+        </article>
+        <article class="recommendationsMetric">
+          <span>Recommended</span>
+          <strong id="metricRecommended">0</strong>
+          <small>approved for guests</small>
+        </article>
+        <article class="recommendationsMetric">
+          <span>Awaiting decision</span>
+          <strong id="metricPending">0</strong>
+          <small>needs review</small>
+        </article>
+        <article class="recommendationsMetric">
+          <span>Follow-ups due</span>
+          <strong id="metricDue">0</strong>
+          <small>pricing or contact work</small>
+        </article>
+      </section>
+
+      <section class="recommendationsCategories" aria-label="Recommendation categories">
+        <button class="recommendationsCategory" type="button" data-category="accommodations" aria-pressed="true">
+          <span class="recommendationsCategoryIcon" aria-hidden="true">▰</span>
+          <span>
+            <h2>Accommodations</h2>
+            <p>Hotels, lodges, hostels, suites, cabins, and vacation rentals</p>
+          </span>
+          <span class="recommendationsCategoryCount" data-category-count="accommodations">0</span>
+        </button>
+        <button class="recommendationsCategory" type="button" data-category="restaurants" aria-pressed="false">
+          <span class="recommendationsCategoryIcon" aria-hidden="true">♨</span>
+          <span>
+            <h2>Restaurants</h2>
+            <p>Restaurants, cafés, breakfast options, and group dining</p>
+          </span>
+          <span class="recommendationsCategoryCount" data-category-count="restaurants">0</span>
+        </button>
+        <button class="recommendationsCategory" type="button" data-category="services" aria-pressed="false">
+          <span class="recommendationsCategoryIcon" aria-hidden="true">✦</span>
+          <span>
+            <h2>Services &amp; experiences</h2>
+            <p>Transport, guides, activities, attractions, rentals, and wellness</p>
+          </span>
+          <span class="recommendationsCategoryCount" data-category-count="services">0</span>
+        </button>
+      </section>
+
+      <section class="recommendationsToolbar" aria-label="Recommendation filters">
+        <label>
+          <span class="recommendationsSearchIcon" aria-hidden="true">⌕</span>
+          <input id="recommendationsSearch" type="search" placeholder="Search partner, contact, area, or type" aria-label="Search recommendations" />
+        </label>
+        <select id="recommendationsType" aria-label="Filter by subtype">
+          <option value="all">All subtypes</option>
+        </select>
+        <select id="recommendationsDecision" aria-label="Filter by recommendation decision">
+          <option value="all">All decisions</option>
+          <option value="yes">Recommended</option>
+          <option value="pending">Pending</option>
+          <option value="no">Not recommended</option>
+        </select>
+        <div class="recommendationsViewButtons" aria-label="Layout selection">
+          <button type="button" data-view="cards" aria-label="Card view" aria-pressed="true">▦</button>
+          <button type="button" data-view="list" aria-label="List view" aria-pressed="false">☷</button>
+        </div>
+      </section>
+
+      <div class="recommendationsSectionHead">
+        <h2 id="recommendationsSectionTitle">Accommodations</h2>
+        <span id="recommendationsResultCount" aria-live="polite">0 partners shown</span>
+      </div>
+
+      <section class="recommendationsWorkspace">
+        <div>
+          <div class="recommendationsCards" id="recommendationsCards"></div>
+          <div class="recommendationsEmpty" id="recommendationsEmpty">
+            <strong>No matching partners</strong>
+            Try another filter, or add the first recommendation in this category.
+          </div>
+        </div>
+        <aside class="recommendationsDetail" id="recommendationsDetail" aria-label="Selected partner details"></aside>
+      </section>
+
+      <footer class="recommendationsSync">
+        <span><strong id="recommendationsDataStatus">Local draft</strong> · Changes currently stay in this browser.</span>
+        <span>Next integration: Google Sheet → n8n/API → this dashboard</span>
+      </footer>
+    </section>
+  </main>
+
+  <dialog class="recommendationsDialog" id="addRecommendationDialog" aria-labelledby="addRecommendationTitle">
+    <form id="addRecommendationForm">
+      <div class="recommendationsDialogHeader">
+        <div>
+          <div class="recommendationsEyebrow">New directory entry</div>
+          <h2 id="addRecommendationTitle">Add partner</h2>
+        </div>
+        <button type="button" class="recommendationsDialogClose" id="closeRecommendationDialog" aria-label="Close">×</button>
+      </div>
+      <div class="recommendationsDialogGrid">
+        <label class="recommendationsField recommendationsField--full"><span>Partner name *</span><input name="name" required /></label>
+        <label class="recommendationsField"><span>Category *</span><select name="category" required><option value="accommodations">Accommodations</option><option value="restaurants">Restaurants</option><option value="services">Services &amp; experiences</option></select></label>
+        <label class="recommendationsField"><span>Subtype *</span><input name="type" placeholder="Hotel, restaurant, transport…" required /></label>
+        <label class="recommendationsField"><span>Area</span><input name="area" placeholder="Mindo" /></label>
+        <label class="recommendationsField"><span>Contact person</span><input name="contact" /></label>
+        <label class="recommendationsField"><span>Email</span><input name="email" type="email" /></label>
+        <label class="recommendationsField"><span>WhatsApp / phone</span><input name="phone" type="tel" /></label>
+        <label class="recommendationsField recommendationsField--full"><span>Website</span><input name="website" type="url" placeholder="https://" /></label>
+      </div>
+      <div class="recommendationsDialogActions">
+        <button type="button" id="cancelRecommendationDialog">Cancel</button>
+        <button type="submit" class="recommendationsDialogSubmit">Add partner</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="recommendationsToast" id="recommendationsToast" role="status" aria-live="polite"></div>
+
+  <script defer src="../assets/js/admin-nav.js?v=5"></script>
+  <script defer src="../assets/js/recommendations.js?v=1"></script>
+</body>
+</html>
