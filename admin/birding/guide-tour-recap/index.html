@@ -1,1 +1,53 @@
-
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MBW Admin | Guide Tour Recap</title><meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/assets/css/admin.css?v=7"><link rel="stylesheet" href="/assets/css/birding.css?v=1">
+</head>
+<body data-admin-layout="birding">
+  <div data-admin-nav data-admin-page="birding"></div>
+  <main class="birdingShell">
+    <section class="birdingHero"><header class="birdingTop"><div class="birdingBrand"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching"><div><h1>Guide Tour Recap</h1><p>A quick mobile checklist for reporting birds seen or heard during a tour.</p></div></div><div class="birdingActions"><a class="birdingButton" href="/birding/">← Birding</a></div></header></section>
+    <form id="recapForm" class="recapLayout">
+      <section class="birdingPanel">
+        <div class="birdingPanelHead"><div><h2>Tour information</h2><p class="birdingLead">Required fields are marked. Use a general route name, not a sensitive nest or roost location.</p></div><span class="birdingBadge">Step 1</span></div>
+        <div class="birdingControls">
+          <div class="birdingField"><label for="tourDate">Tour date *</label><input id="tourDate" name="tour_date" type="date" required></div>
+          <div class="birdingField"><label for="tourType">Tour type *</label><select id="tourType" name="tour_type" required><option value="half_day">Half-day birding</option><option value="full_day">Full-day birding</option><option value="custom_private">Custom/private</option><option value="multi_day">Multi-day</option></select></div>
+          <div class="birdingField"><label for="guideName">Guide name *</label><input id="guideName" name="guide_name" required autocomplete="name"></div>
+          <div class="birdingField"><label for="routeName">General route *</label><input id="routeName" name="route_name" required placeholder="Mindo town, Milpe, Mashpi…"></div>
+        </div>
+        <div class="birdingField" style="margin-top:12px"><label for="generalNotes">General notes</label><textarea id="generalNotes" name="general_notes" placeholder="Weather, highlights, access notes, or anything the next guide should know."></textarea></div>
+      </section>
+      <aside class="birdingPanel">
+        <div class="birdingPanelHead"><div><h2>Add birds</h2><p class="birdingLead">Search in English, Spanish, or by species code.</p></div><span class="birdingBadge">Step 2</span></div>
+        <div class="birdingField" style="margin-top:12px"><label for="birdSearch">Search species</label><input id="birdSearch" type="search" placeholder="Start typing…" autocomplete="off"></div>
+        <div id="birdSearchResults" class="birdSearchResults hidden"></div>
+        <button type="button" class="birdingButton" id="presetButton" style="width:100%;margin-top:10px">Add common birds for this tour</button>
+        <p class="birdingStatus" id="catalogStatus">Loading the bird catalog…</p>
+      </aside>
+      <section class="birdingPanel" style="grid-column:1/-1">
+        <div class="birdingPanelHead"><div><h2>Bird checklist</h2><p class="birdingLead">Review the list, then submit the recap.</p></div><span class="birdingBadge" id="selectedCount">0 selected</span></div>
+        <div class="selectedBirds" id="selectedBirds"><div class="birdingEmpty">No birds selected yet.</div></div>
+        <div class="birdingActions" style="margin-top:14px"><button class="birdingButton birdingButton--primary" id="submitButton" type="submit">Submit tour recap</button><button class="birdingButton" id="clearButton" type="button">Clear checklist</button></div>
+        <p class="birdingStatus" id="submitStatus">Your recap will be sent to the MBW workflow and written to the sightings spreadsheet.</p>
+      </section>
+    </form>
+  </main>
+  <script defer src="/assets/js/admin-nav.js?v=7"></script>
+  <script>
+  (()=>{"use strict";
+    const ROOT="https://mindobirdwatching.com/api/admin/",selected=new Map();let birds=[];
+    const $=id=>document.getElementById(id);const esc=value=>String(value??"").replace(/[&<>\"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;"}[ch]));
+    $("tourDate").value=new Date().toISOString().slice(0,10);
+    function renderSelected(){$("selectedCount").textContent=selected.size+" selected";$("selectedBirds").innerHTML=selected.size?[...selected.values()].map(b=>`<div class="selectedBird" data-code="${esc(b.speciesCode)}"><div><strong>${esc(b.englishName)}</strong><small>${esc(b.spanishName||"")} · ${esc(b.speciesCode)}</small></div><select aria-label="Seen or heard"><option value="seen">Seen</option><option value="heard">Heard only</option><option value="seen_and_heard">Seen + heard</option></select><input type="number" min="1" max="999" value="1" aria-label="Quantity"><button class="birdingButton" type="button" data-remove="${esc(b.speciesCode)}">Remove</button></div>`).join(""):'<div class="birdingEmpty">No birds selected yet.</div>'}
+    function addBird(bird){if(!bird||selected.has(bird.speciesCode))return;selected.set(bird.speciesCode,bird);renderSelected();$("birdSearch").value="";$("birdSearchResults").classList.add("hidden")}
+    function search(){const q=$("birdSearch").value.trim().toLowerCase();if(!q){$("birdSearchResults").classList.add("hidden");return}const matches=birds.filter(b=>[b.englishName,b.spanishName,b.scientificName,b.speciesCode].join(" ").toLowerCase().includes(q)&&!selected.has(b.speciesCode)).slice(0,12);$("birdSearchResults").innerHTML=matches.map(b=>`<button type="button" class="birdSearchResult" data-add="${esc(b.speciesCode)}"><strong>${esc(b.englishName)}</strong><small>${esc(b.spanishName||"")} · ${esc(b.speciesCode)}</small></button>`).join("")||'<div class="birdingEmpty">No matching birds.</div>';$("birdSearchResults").classList.remove("hidden")}
+    async function loadCatalog(){try{const response=await fetch(ROOT+"bird-species",{cache:"no-store"});if(!response.ok)throw new Error(`Species API returned ${response.status}`);const data=await response.json();birds=Array.isArray(data.birds)?data.birds:[];$("catalogStatus").textContent=`${birds.length} birds available. Search or use the tour preset.`;$("catalogStatus").dataset.tone="success"}catch(error){$("catalogStatus").textContent=error.message+". Deploy the species API before guides use this form.";$("catalogStatus").dataset.tone="error"}}
+    function addPreset(){const type=$("tourType").value;const candidates=birds.filter(b=>b.tourFit===type||type==="full_day"&&b.tourFit==="half_day").sort((a,b)=>(b.reliability||0)-(a.reliability||0)).slice(0,type==="half_day"?20:35);candidates.forEach(b=>selected.set(b.speciesCode,b));renderSelected()}
+    async function submit(event){event.preventDefault();if(!selected.size){$("submitStatus").textContent="Select at least one bird before submitting.";$("submitStatus").dataset.tone="error";return}const species=[...$("selectedBirds").querySelectorAll(".selectedBird")].map(row=>{const bird=selected.get(row.dataset.code);return{speciesCode:row.dataset.code,englishName:bird.englishName,spanishName:bird.spanishName,seen_or_heard:row.querySelector("select").value,quantity:Number(row.querySelector("input").value)||1}});const payload={tour_date:$("tourDate").value,tour_type:$("tourType").value,guide_name:$("guideName").value.trim(),route_name:$("routeName").value.trim(),general_notes:$("generalNotes").value.trim(),species};const button=$("submitButton");button.disabled=true;$("submitStatus").textContent="Submitting recap…";$("submitStatus").dataset.tone="";try{const response=await fetch(ROOT+"guide-tour-recap",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});const data=await response.json();if(!response.ok)throw new Error(data.message||`Recap returned ${response.status}`);$("submitStatus").textContent=`Recap submitted successfully. Reference: ${data.recap_id||"received"}.`;$("submitStatus").dataset.tone="success";selected.clear();renderSelected();$("generalNotes").value=""}catch(error){$("submitStatus").textContent=error.message+". Check the n8n guide recap webhook configuration.";$("submitStatus").dataset.tone="error"}finally{button.disabled=false}}
+    $("birdSearch").addEventListener("input",search);$("birdSearchResults").addEventListener("click",event=>{const button=event.target.closest("[data-add]");if(button)addBird(birds.find(b=>b.speciesCode===button.dataset.add))});$("selectedBirds").addEventListener("click",event=>{const button=event.target.closest("[data-remove]");if(button){selected.delete(button.dataset.remove);renderSelected()}});$("presetButton").addEventListener("click",addPreset);$("clearButton").addEventListener("click",()=>{selected.clear();renderSelected()});$("recapForm").addEventListener("submit",submit);loadCatalog();
+  })();
+  </script>
+</body></html>
