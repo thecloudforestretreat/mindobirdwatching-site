@@ -791,6 +791,47 @@
     });
   }
 
+  function analyticsItems(items){
+    return (items || []).map(function(item){
+      var variantId = item.variant_id || "";
+      return {
+        item_id: String(item.id || "") + (variantId ? "-" + variantId : ""),
+        item_name: String(item.title || ""),
+        item_variant: String(item.option || ""),
+        price: parsePrice(item.price),
+        quantity: Math.max(1, Math.min(20, Number(item.qty || 1)))
+      };
+    });
+  }
+
+  function trackCommerce(name, items, extra){
+    var normalized = analyticsItems(items);
+    var payload = {
+      currency: "USD",
+      value: normalized.reduce(function(total, item){
+        return total + (Number(item.price || 0) * Number(item.quantity || 1));
+      }, 0),
+      items: normalized
+    };
+
+    Object.keys(extra || {}).forEach(function(key){
+      payload[key] = extra[key];
+    });
+
+    if(typeof window.mbwAnalyticsTrack === "function"){
+      window.mbwAnalyticsTrack(name, payload);
+      return;
+    }
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(Object.assign({
+      event: "mbw_event",
+      mbw_event_name: name
+    }, payload));
+  }
+
+  window.MBW_SHOP_TRACK = trackCommerce;
+
   function addItem(item){
     var cart = getCart();
     var key = itemKey(item);
@@ -818,6 +859,7 @@
     }
 
     saveCart(cart);
+    trackCommerce("add_to_cart", [item]);
   }
 
   window.MBW_CART = {
@@ -1317,6 +1359,8 @@
 
     var button = document.getElementById("mbwSecureCheckout");
     persistShippingForm();
+
+    trackCommerce("begin_checkout", getCart());
 
     setLoading(button, true, "Opening secure checkout...");
     setCheckoutMessage(

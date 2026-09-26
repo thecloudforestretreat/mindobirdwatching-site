@@ -176,12 +176,21 @@
         items: items
       };
 
-      if(typeof window.gtag === "function"){
+      if(typeof window.mbwAnalyticsTrack === "function"){
+        window.mbwAnalyticsTrack("purchase", payload);
+      }else if(typeof window.gtag === "function"){
         window.gtag("event", "purchase", payload);
       }else if(Array.isArray(window.dataLayer)){
         window.dataLayer.push({
-          event: "purchase",
-          ecommerce: payload
+          event: "mbw_event",
+          mbw_event_name: "purchase",
+          transaction_id: payload.transaction_id,
+          value: payload.value,
+          currency: payload.currency,
+          shipping: payload.shipping,
+          tax: payload.tax,
+          coupon: payload.coupon,
+          items: payload.items
         });
       }
 
