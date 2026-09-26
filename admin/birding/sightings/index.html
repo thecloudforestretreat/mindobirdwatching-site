@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>MBW Admin | Recent Sightings</title><meta name="robots" content="noindex,nofollow">
-  <link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/assets/css/admin.css?v=7"><link rel="stylesheet" href="/assets/css/birding.css?v=1">
+  <link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/assets/css/admin.css?v=7"><link rel="stylesheet" href="/assets/css/birding.css?v=2">
 </head>
 <body data-admin-layout="birding">
   <div data-admin-nav data-admin-page="birding"></div>
@@ -13,19 +13,9 @@
       <div class="birdingPanelHead"><div><h2>Sighting history</h2><p class="birdingLead">Search by English name, Spanish name, or eBird code. Exact private locations should never be displayed here.</p></div><span class="birdingBadge" id="countBadge">0 records</span></div>
       <div class="birdingControls"><div class="birdingField"><label for="birdSearch">Bird</label><input id="birdSearch" type="search" list="birdOptions" placeholder="Start typing a bird name…" autocomplete="off"><datalist id="birdOptions"></datalist></div><div class="birdingField"><label for="sourceFilter">Source</label><select id="sourceFilter"><option value="all">eBird + guides</option><option value="ebird">eBird only</option><option value="guide">Guide reports only</option></select></div><div class="birdingField"><label for="daysFilter">Period</label><select id="daysFilter"><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option></select></div><button class="birdingButton birdingButton--primary" id="searchButton" type="button">Find sightings</button></div>
       <p class="birdingStatus" id="status">Choose a bird or load the latest reports across all birds.</p>
-      <div class="birdingList" id="sightingsList"><div class="birdingEmpty">No sighting records loaded yet.</div></div>
+      <div class="sightingCards" id="sightingsList"><div class="birdingEmpty">No sighting records loaded yet.</div></div>
     </section>
   </main>
   <script defer src="/assets/js/admin-nav.js?v=7"></script>
-  <script>
-  (()=>{"use strict";
-    const ROOT="https://mindobirdwatching.com/api/admin/";let birds=[];
-    const $=id=>document.getElementById(id);const esc=value=>String(value??"").replace(/[&<>\"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;"}[ch]));
-    const displayDate=value=>{const date=new Date(value);return Number.isNaN(date.getTime())?String(value||"Unknown date"):date.toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"})};
-    function selectedCode(){const value=$("birdSearch").value.trim().toLowerCase();const bird=birds.find(item=>[item.speciesCode,item.englishName,item.spanishName,`${item.englishName} — ${item.spanishName}`].filter(Boolean).some(candidate=>String(candidate).toLowerCase()===value));return bird?bird.speciesCode:value.match(/\(([a-z0-9-]+)\)$/i)?.[1]||""}
-    async function loadBirds(){try{const response=await fetch(ROOT+"bird-species",{cache:"no-store"});if(!response.ok)return;const data=await response.json();birds=Array.isArray(data.birds)?data.birds:[];$("birdOptions").innerHTML=birds.map(b=>`<option value="${esc(b.englishName)} — ${esc(b.spanishName||"")} (${esc(b.speciesCode)})"></option>`).join("")}catch(ignore){}}
-    async function loadSightings(){const button=$("searchButton");button.disabled=true;$("status").textContent="Loading sightings…";$("status").dataset.tone="";const params=new URLSearchParams({source:$("sourceFilter").value,days:$("daysFilter").value,limit:"10"}),code=selectedCode();if(code)params.set("speciesCode",code);try{const response=await fetch(ROOT+"bird-sightings?"+params,{cache:"no-store"});if(!response.ok)throw new Error(`Sightings API returned ${response.status}`);const data=await response.json();const rows=Array.isArray(data.sightings)?data.sightings.slice(0,10):[];$("countBadge").textContent=rows.length+" records";$("sightingsList").innerHTML=rows.map(row=>`<article class="sightingRow"><div><strong>${esc(row.englishName||row.commonName||row.speciesCode||"Unknown bird")}</strong><small>${esc(row.spanishName||"")}</small></div><div><small>Date</small><br><span>${esc(displayDate(row.observed_at||row.observedAt))}</span></div><div><small>Source</small><br><span>${esc(row.source||"Unknown")}</span></div><div><small>General location</small><br><span>${esc(row.location_name||row.locationName||"Not provided")}</span></div></article>`).join("")||'<div class="birdingEmpty">No matching reports were found yet.</div>';$("status").textContent=rows.length?`Showing the ${rows.length} most recent matching sighting${rows.length===1?"":"s"}.`:(data.message||"No matching sightings found for the selected filters.");$("status").dataset.tone=rows.length?"success":"warning"}catch(error){$("countBadge").textContent="Unavailable";$("status").textContent=error.message+". Please refresh in a moment.";$("status").dataset.tone="error";$("sightingsList").innerHTML='<div class="birdingEmpty">Sightings could not be loaded right now.</div>'}finally{button.disabled=false}}
-    $("searchButton").addEventListener("click",loadSightings);$("refreshButton").addEventListener("click",loadSightings);$("birdSearch").addEventListener("keydown",event=>{if(event.key==="Enter")loadSightings()});loadBirds().then(loadSightings);
-  })();
-  </script>
+  <script defer src="/assets/js/sightings.js?v=2"></script>
 </body></html>

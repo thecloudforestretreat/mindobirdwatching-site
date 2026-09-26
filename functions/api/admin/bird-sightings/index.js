@@ -13,11 +13,19 @@ async function fetchEbird(env, { speciesCode, days, limit }) {
   const apiKey = env.EBIRD_API_KEY || env.EBIRD_API_TOKEN;
   if (!apiKey) return [];
   const path = speciesCode ? `/v2/data/obs/geo/recent/${encodeURIComponent(speciesCode)}` : "/v2/data/obs/geo/recent";
-  const params = new URLSearchParams({ lat: env.TARGET_BIRD_LAT || "-0.051", lng: env.TARGET_BIRD_LNG || "-78.772", dist: env.TARGET_BIRD_DIST_KM || "20", back: String(Math.min(30, days)), maxResults: String(Math.max(limit, 50)), hotspot: "true", includeProvisional: "false" });
+  const params = new URLSearchParams({ lat: env.TARGET_BIRD_LAT || "-0.051", lng: env.TARGET_BIRD_LNG || "-78.772", dist: env.TARGET_BIRD_DIST_KM || "20", back: String(Math.min(30, days)), maxResults: String(speciesCode ? 10000 : Math.max(limit, 50)), hotspot: "true", includeProvisional: "false" });
   const response = await fetch("https://api.ebird.org" + path + "?" + params, { headers: { "x-ebirdapitoken": apiKey }, signal: AbortSignal.timeout(12000) });
   if (!response.ok) throw new Error("eBird returned " + response.status);
   const rows = await response.json();
-  return (Array.isArray(rows) ? rows : []).map((row) => ({ speciesCode: row.speciesCode, englishName: row.comName, scientificName: row.sciName, observed_at: row.obsDt, quantity: row.howMany || 1, location_name: row.locName, latitude: row.lat, longitude: row.lng, source: "ebird", ebird_sub_id: row.subId || "", ebird_obs_id: row.obsId || "" })).slice(0, limit);
+  return (Array.isArray(rows) ? rows : []).map((row) => ({ speciesCode: row.speciesCode, englishName: row.comName, scientificName: row.sciName, observed_at: row.obsDt, quantity: row.howMany || 1, location_name: row.locName, latitude: row.lat, longitude: row.lng, source: "ebird", ebird_sub_id: row.subId || "", ebird_obs_id: row.obsId || "" }));
+}
+
+function liveStats(speciesCode, sightings) {
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 86400000;
+  const thirtyDaysAgo = now - 30 * 86400000;
+  const parsed = sightings.map((row) => ({ row, time: Date.parse(String(row.observed_at || "").replace(" ", "T")) })).filter((item) => Number.isFinite(item.time)).sort((a, b) => b.time - a.time);
+  return { speciesCode, last_observed_at: parsed[0]?.row?.observed_at || "", last_7_days: parsed.filter((item) => item.time >= sevenDaysAgo).length, last_30_days: parsed.filter((item) => item.time >= thirtyDaysAgo).length, refreshed_at: new Date().toISOString(), source: "ebird_live" };
 }
 
 export async function onRequestGet({ request, env }) {
@@ -28,19 +36,25 @@ export async function onRequestGet({ request, env }) {
   const source = VALID_SOURCES.has(input.get("source")) ? input.get("source") : "all";
   const days = Math.min(365, Math.max(1, Number(input.get("days")) || 30));
   const limit = Math.min(10, Math.max(1, Number(input.get("limit")) || 10));
+  const requestLiveStats = input.get("liveStats") === "1" && Boolean(speciesCode);
+  const trackDemand = input.get("trackDemand") === "1" && Boolean(speciesCode);
   try {
-    const response = await fetch(webhook, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "list_sightings", speciesCode, source, days, limit }), signal: AbortSignal.timeout(15000) });
+    const response = await fetch(webhook, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "list_sightings", speciesCode, source, days, limit, liveStats: requestLiveStats, trackDemand, requested_at: new Date().toISOString() }), signal: AbortSignal.timeout(15000) });
     const text = await response.text();
     if (!response.ok) throw new Error("Sightings workflow returned " + response.status + ": " + text.slice(0, 200));
     const data = JSON.parse(text || "{}");
+    if (requestLiveStats) {
+      const ebirdSightings = await fetchEbird(env, { speciesCode, days: 30, limit });
+      return json(request, { ok: true, count: ebirdSightings.slice(0, limit).length, sightings: ebirdSightings.slice(0, limit), stats: liveStats(speciesCode, ebirdSightings), demand_tracked: data.demand_tracked === true });
+    }
     const sightings = Array.isArray(data) ? data : Array.isArray(data.sightings) ? data.sightings : Array.isArray(data.data) ? data.data : [];
-    return json(request, { ok: true, count: sightings.slice(0, limit).length, sightings: sightings.slice(0, limit) });
+    return json(request, { ok: true, count: sightings.slice(0, limit).length, sightings: sightings.slice(0, limit), stats: data.stats || null });
   } catch (error) {
     console.error("Admin sightings workflow lookup failed", { message: error?.message });
     if (source !== "guide") {
       try {
         const sightings = await fetchEbird(env, { speciesCode, days, limit });
-        if (sightings.length) return json(request, { ok: true, count: sightings.length, sightings, fallback: "ebird" });
+        if (sightings.length) return json(request, { ok: true, count: sightings.slice(0, limit).length, sightings: sightings.slice(0, limit), stats: requestLiveStats ? liveStats(speciesCode, sightings) : null, demand_tracked: false, fallback: "ebird" });
       } catch (ebirdError) { console.error("Direct eBird fallback failed", { message: ebirdError?.message }); }
     }
     return json(request, { ok: true, count: 0, sightings: [], setup_required: true, message: "No sightings have been synced yet. Activate the MBW Birding Data workflow to load eBird and guide reports." });

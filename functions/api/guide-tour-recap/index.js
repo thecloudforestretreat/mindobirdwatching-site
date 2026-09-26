@@ -38,7 +38,7 @@ export async function onRequestPost({ request, env }) {
   const tourDate = clean(input.tour_date, 10);
   const routeName = clean(input.route_name, 160);
   const tourType = clean(input.tour_type, 30);
-  if (!/^\d{4,12}$/.test(contributorNumber)) return json(request, { ok: false, message: "Enter your valid contributor number. / Ingresa tu número válido." }, 400);
+  if (!/^\d{3}$/.test(contributorNumber)) return json(request, { ok: false, message: "Enter your valid 3-digit contributor number. / Ingresa tu número válido de 3 dígitos." }, 400);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(tourDate) || !routeName || !TOUR_TYPES.has(tourType)) return json(request, { ok: false, message: "Tour date, type, and route are required. / La fecha, el tipo y la ruta son obligatorios." }, 400);
   if (!Array.isArray(input.species) || !input.species.length || input.species.length > 300) return json(request, { ok: false, message: "Select between 1 and 300 birds. / Selecciona entre 1 y 300 aves." }, 400);
 
@@ -46,7 +46,7 @@ export async function onRequestPost({ request, env }) {
   if (species.some((bird) => !/^[a-z0-9-]{2,24}$/i.test(bird.speciesCode))) return json(request, { ok: false, message: "The checklist contains an invalid species code." }, 400);
 
   const recapId = "recap_" + crypto.randomUUID();
-  const payload = { action: "submit_contributor_recap", recap_id: recapId, submitted_at: new Date().toISOString(), contributor_number: contributorNumber, tour_date: tourDate, tour_type: tourType, route_name: routeName, general_notes: clean(input.general_notes, 3000), recap_status: "submitted", species };
+  const payload = { action: "submit_contributor_recap", recap_id: recapId, submitted_at: new Date().toISOString(), contributor_number: contributorNumber, tour_date: tourDate, tour_type: tourType, route_name: routeName, booking_reference: clean(input.booking_reference, 80), general_notes: clean(input.general_notes, 3000), recap_status: "submitted", species };
   try {
     const response = await fetch(env.N8N_GUIDE_TOUR_RECAP_WEBHOOK_URL || N8N_WEBHOOK, { method: "POST", headers: { "content-type": "application/json", "x-mbw-recap-id": recapId }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15000) });
     const text = await response.text();

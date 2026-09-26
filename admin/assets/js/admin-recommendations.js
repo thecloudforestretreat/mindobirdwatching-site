@@ -41,7 +41,7 @@
       verifiedResponse: true,
       responseVerifiedAt: "2026-09-25",
       replyTaskId: "cabanas-armonia-2026-09-25",
-      replyAcknowledged: false,
+      replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Cabañas Armonía y Jardín de Orquídeas",
       replyDraft: "Estimada Tatiana,\n\nMuchas gracias por la información y por compartir las tarifas 2026–2027. Confirmamos que recibimos el documento y los detalles sobre el desayuno, el box breakfast para salidas tempranas y las amenidades de Cabañas Armonía.\n\nNos alegra poder considerar a Cabañas Armonía como alojamiento aliado para nuestros viajeros. Incorporaremos la información en nuestro directorio interno y nos comunicaremos directamente contigo cuando tengamos una solicitud de reserva.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "07:30–09:00; box breakfast available by advance request",
@@ -89,7 +89,7 @@
       verifiedResponse: true,
       responseVerifiedAt: "2026-09-21",
       replyTaskId: "sachatamia-2026-09-21",
-      replyAcknowledged: false,
+      replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Sachatamia Lodge",
       replyDraft: "Estimada Andrea,\n\nMuchas gracias por su respuesta y por compartir los convenios 2026 y 2027. Confirmamos que recibimos ambos documentos, junto con la información del desayuno y la posibilidad de preparar box breakfast desde las 04:00 cuando se solicita la noche anterior.\n\nIncorporaremos estos datos en nuestro directorio interno de aliados y utilizaremos este correo para futuras solicitudes de reserva. Agradecemos mucho la disposición de Sachatamia Lodge para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "08:00–10:00; box breakfast from 04:00 by prior request",
@@ -121,7 +121,7 @@
       verifiedResponse: true,
       responseVerifiedAt: "2026-09-21",
       replyTaskId: "bellavista-2026-09-21",
-      replyAcknowledged: false,
+      replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Bellavista Cloud Forest Lodge",
       replyDraft: "Estimada Rosa,\n\nMuchas gracias por su respuesta y por enviarnos las tarifas de alojamiento, agencias y birding. Confirmamos que recibimos los archivos y ya estamos organizando la información para nuestro directorio interno.\n\nAntes de cerrar la revisión, ¿nos podría confirmar si las tablas que aparecen como 2026 dentro del archivo “Birding tours 2027” corresponden efectivamente a la temporada 2027?\n\nAgradecemos mucho la disposición de Bellavista Cloud Forest para colaborar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "Confirm schedule and early box breakfast",
@@ -153,7 +153,7 @@
       verifiedResponse: true,
       responseVerifiedAt: "2026-09-25",
       replyTaskId: "maria-viteri-2026-09-25",
-      replyAcknowledged: false,
+      replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Toucan Platinum Suites",
       replyDraft: "Estimada María,\n\nMuchas gracias por su respuesta y por compartir las tarifas de Toucan Platinum Suites y Royal River Suites & Spa. Confirmamos que recibimos el documento y la información sobre el desayuno de 07:00 a 10:00, el desayuno para llevar y el servicio de restaurante.\n\nPara completar nuestro registro, ¿nos podría confirmar la fecha de vigencia de las tarifas y con cuánta anticipación debemos solicitar el desayuno para llevar antes de las 07:00?\n\nAgradecemos mucho su disposición para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "07:00–10:00; takeaway breakfast available",
@@ -185,7 +185,7 @@
       verifiedResponse: true,
       responseVerifiedAt: "2026-09-25",
       replyTaskId: "maria-viteri-2026-09-25",
-      replyAcknowledged: false,
+      replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Toucan Platinum Suites",
       replyDraft: "Estimada María,\n\nMuchas gracias por su respuesta y por compartir las tarifas de Toucan Platinum Suites y Royal River Suites & Spa. Confirmamos que recibimos el documento y la información sobre el desayuno de 07:00 a 10:00, el desayuno para llevar y el servicio de restaurante.\n\nPara completar nuestro registro, ¿nos podría confirmar la fecha de vigencia de las tarifas y con cuánta anticipación debemos solicitar el desayuno para llevar antes de las 07:00?\n\nAgradecemos mucho su disposición para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "07:00–10:00; takeaway breakfast available",
@@ -217,7 +217,7 @@
       verifiedResponse: true,
       responseVerifiedAt: "2026-09-25",
       replyTaskId: "casa-vista-alta-2026-09-25",
-      replyAcknowledged: false,
+      replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Casa de Vista Alta Hotel",
       replyDraft: "Estimada Vicky,\n\nMuchas gracias por su respuesta y por el interés en trabajar con Mindo Bird Watching. Entendemos que están revisando las tarifas y quedamos atentos a la información cuando esté lista la próxima semana.\n\nCuando sea posible, nos ayudaría recibir la vigencia de las tarifas, el horario de desayuno, la opción de box breakfast para salidas tempranas y el mejor contacto para reservas.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "To confirm",
@@ -344,7 +344,7 @@
       verifiedResponse: true,
       responseVerifiedAt: "2026-09-25",
       replyTaskId: "mindo-chocolate-2026-09-25",
-      replyAcknowledged: false,
+      replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Mindo Chocolate Makers",
       replyDraft: "Estimados amigos de Mindo Chocolate Makers,\n\nMuchas gracias por su respuesta y por aclararnos que trabajan como experiencia y no como alojamiento. Nos interesa mucho poder recomendar a nuestros viajeros sus experiencias de chocolate, cacao y café.\n\nPara completar nuestro registro, ¿nos podrían compartir las tarifas para operadores o aliados locales, la duración y horarios de cada experiencia, las condiciones de reserva y cualquier material o fotografía autorizada para promoción?\n\nQuedamos atentos y agradecemos mucho su interés en colaborar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "Café and restaurant available",
@@ -476,7 +476,7 @@
     if (partner.estimateStatus !== "ready" && partner.estimateStatus !== "snapshot") return '<span class="recommendationSignal recommendationSignal--pending">Guest estimate unavailable</span>';
     var guests = Math.max(0, Number(partner.estimatedGuests) || 0);
     if (!guests) return '<span class="recommendationSignal recommendationSignal--guests">No matched MBW stays</span>';
-    return '<span class="recommendationSignal recommendationSignal--guests" title="Estimate from completed tours and matched invoice pickup locations"><strong>~' + guests + '</strong> MBW guest' + (guests === 1 ? '' : 's') + '</span>';
+    return '<span class="recommendationSignal recommendationSignal--guests" title="Unofficial estimate from completed tours and matched invoice pickup locations"><strong>~' + guests + '</strong> guest' + (guests === 1 ? '' : 's') + '</span>';
   }
 
   function hasGuestEstimate(partner) {
