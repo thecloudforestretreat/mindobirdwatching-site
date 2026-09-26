@@ -6,7 +6,15 @@
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? "").replace(/[&<>\"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
   const searchable = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  const displayDate = (value) => { const date = new Date(value); return Number.isNaN(date.getTime()) ? String(value || "Unknown date") : date.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }); };
+  const displayDate = (value) => {
+    const raw = String(value || "").trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      const [year, month, day] = raw.split("-").map(Number);
+      return new Date(year, month - 1, day, 12).toLocaleDateString("en-US", { dateStyle: "medium" });
+    }
+    const date = new Date(raw);
+    return Number.isNaN(date.getTime()) ? (raw || "Unknown date") : date.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+  };
   const birdFor = (code) => birds.find((bird) => bird.speciesCode === code) || {};
 
   function selectedBird() {
