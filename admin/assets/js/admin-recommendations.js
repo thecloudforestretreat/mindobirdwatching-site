@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.09.26.3 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.09.26.4 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.09.26.3";
+  document.documentElement.dataset.recommendationsBuild = "2026.09.26.4";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -39,7 +39,11 @@
       owner: "Juan",
       preferred: true,
       verifiedResponse: true,
-      responseVerifiedAt: "2026-09-26",
+      responseVerifiedAt: "2026-09-25",
+      replyTaskId: "cabanas-armonia-2026-09-25",
+      replyAcknowledged: false,
+      replySubject: "Colaboración local: Mindo Bird Watching + Cabañas Armonía y Jardín de Orquídeas",
+      replyDraft: "Estimada Tatiana,\n\nMuchas gracias por la información y por compartir las tarifas 2026–2027. Confirmamos que recibimos el documento y los detalles sobre el desayuno, el box breakfast para salidas tempranas y las amenidades de Cabañas Armonía.\n\nNos alegra poder considerar a Cabañas Armonía como alojamiento aliado para nuestros viajeros. Incorporaremos la información en nuestro directorio interno y nos comunicaremos directamente contigo cuando tengamos una solicitud de reserva.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "07:30–09:00; box breakfast available by advance request",
       amenities: ["Breakfast included", "Early box breakfast", "Free orchid garden", "Free parking", "Wi-Fi", "Hot-water shower", "Private bathrooms", "Hummingbird viewing", "Tourist information", "24-hour taxi support"],
       services: [
@@ -58,7 +62,7 @@
         { room: "Glamping", single: "$80", double: "$120", triple: "$150", family: "$160" }
       ],
       guestSummary: "Cabañas Armonía is a family-run stay in central Mindo surrounded by an orchid garden. Breakfast, Wi-Fi, parking, private bathrooms, hot-water showers, and complimentary orchid-garden access are included. Early box breakfasts can be arranged in advance for birding departures.",
-      note: "Direct partner response received September 26, 2026. Agency rates are confidential, exclude taxes, and are valid through December 31, 2027."
+      note: "Direct partner response received September 25, 2026. Agency rates are confidential, exclude taxes, and are valid through December 31, 2027."
     },
     {
       id: "sachatamia-lodge",
@@ -75,13 +79,21 @@
       rateValidTo: "2027",
       contact: "Andrea",
       phone: "",
-      email: "",
-      website: "",
+      email: "info@sachatamia.com",
+      website: "https://www.sachatamia.com/",
       recommendation: "pending",
       followUp: "2027-10-01",
       followUpDue: false,
       owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-09-21",
+      replyTaskId: "sachatamia-2026-09-21",
+      replyAcknowledged: false,
+      replySubject: "Colaboración local: Mindo Bird Watching + Sachatamia Lodge",
+      replyDraft: "Estimada Andrea,\n\nMuchas gracias por su respuesta y por compartir los convenios 2026 y 2027. Confirmamos que recibimos ambos documentos, junto con la información del desayuno y la posibilidad de preparar box breakfast desde las 04:00 cuando se solicita la noche anterior.\n\nIncorporaremos estos datos en nuestro directorio interno de aliados y utilizaremos este correo para futuras solicitudes de reserva. Agradecemos mucho la disposición de Sachatamia Lodge para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "08:00–10:00; box breakfast from 04:00 by prior request",
+      amenities: ["Breakfast included", "Box breakfast from 04:00", "Heated covered pool", "Whirlpool", "Meeting room", "Games and sports courts", "Wildlife observation", "Reserve walks"],
       note: "Agency pricing is confidential. Keep partner rates visible only to authorized admin users."
     },
     {
@@ -99,13 +111,21 @@
       rateValidTo: "Confirm tariff year",
       contact: "Rosa Rogel",
       phone: "+593 9 9416 5868",
-      email: "",
+      email: "info@bellavistacloudforest.com",
       website: "https://www.bellavistacloudforest.com/",
       recommendation: "pending",
       followUp: "2026-10-02",
       followUpDue: true,
       owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-09-21",
+      replyTaskId: "bellavista-2026-09-21",
+      replyAcknowledged: false,
+      replySubject: "Colaboración local: Mindo Bird Watching + Bellavista Cloud Forest Lodge",
+      replyDraft: "Estimada Rosa,\n\nMuchas gracias por su respuesta y por enviarnos las tarifas de alojamiento, agencias y birding. Confirmamos que recibimos los archivos y ya estamos organizando la información para nuestro directorio interno.\n\nAntes de cerrar la revisión, ¿nos podría confirmar si las tablas que aparecen como 2026 dentro del archivo “Birding tours 2027” corresponden efectivamente a la temporada 2027?\n\nAgradecemos mucho la disposición de Bellavista Cloud Forest para colaborar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "Confirm schedule and early box breakfast",
+      amenities: ["Private cloud-forest reserve", "Restaurant", "Guided hikes", "Birding", "Lodging", "Transfers", "Tour packages"],
       note: "The Birding Tours 2027 filename contains a 2026 tariff reference. Confirm the correct validity year before publishing."
     },
     {
@@ -122,14 +142,22 @@
       pricingBasis: "Starting price / room",
       rateValidTo: "Not supplied",
       contact: "Maria Viteri",
-      phone: "",
-      email: "",
+      phone: "+593 98 265 0335",
+      email: "toursecuadorexplorer@gmail.com",
       website: "https://www.lodgemindoecuador.com/",
       recommendation: "pending",
       followUp: "2026-10-05",
       followUpDue: false,
       owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-09-25",
+      replyTaskId: "maria-viteri-2026-09-25",
+      replyAcknowledged: false,
+      replySubject: "Colaboración local: Mindo Bird Watching + Toucan Platinum Suites",
+      replyDraft: "Estimada María,\n\nMuchas gracias por su respuesta y por compartir las tarifas de Toucan Platinum Suites y Royal River Suites & Spa. Confirmamos que recibimos el documento y la información sobre el desayuno de 07:00 a 10:00, el desayuno para llevar y el servicio de restaurante.\n\nPara completar nuestro registro, ¿nos podría confirmar la fecha de vigencia de las tarifas y con cuánta anticipación debemos solicitar el desayuno para llevar antes de las 07:00?\n\nAgradecemos mucho su disposición para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "07:00–10:00; takeaway breakfast available",
+      amenities: ["Breakfast included", "Takeaway breakfast", "Balconies", "Kitchens", "Jacuzzi rooms", "Pool", "Massage area", "Wi-Fi", "Satellite TV"],
       note: "Restaurant service is for breakfast only. No lunch or dinner. Confirm tariff validity dates."
     },
     {
@@ -146,14 +174,22 @@
       pricingBasis: "Starting price / room",
       rateValidTo: "Not supplied",
       contact: "Maria Viteri",
-      phone: "",
-      email: "",
-      website: "https://www.cloudforestecuador.com/",
+      phone: "+593 98 265 0335",
+      email: "toursecuadorexplorer@gmail.com",
+      website: "https://mindoroyalsuites.com/en/",
       recommendation: "pending",
       followUp: "2026-10-05",
       followUpDue: false,
       owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-09-25",
+      replyTaskId: "maria-viteri-2026-09-25",
+      replyAcknowledged: false,
+      replySubject: "Colaboración local: Mindo Bird Watching + Toucan Platinum Suites",
+      replyDraft: "Estimada María,\n\nMuchas gracias por su respuesta y por compartir las tarifas de Toucan Platinum Suites y Royal River Suites & Spa. Confirmamos que recibimos el documento y la información sobre el desayuno de 07:00 a 10:00, el desayuno para llevar y el servicio de restaurante.\n\nPara completar nuestro registro, ¿nos podría confirmar la fecha de vigencia de las tarifas y con cuánta anticipación debemos solicitar el desayuno para llevar antes de las 07:00?\n\nAgradecemos mucho su disposición para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "07:00–10:00; takeaway breakfast available",
+      amenities: ["Breakfast included", "Takeaway breakfast", "Jacuzzi suites", "Kitchen or kitchenette", "Balcony", "Pool", "Restaurant", "Gardens and river", "Hanging beds", "Massage room"],
       note: "Confirm tariff validity dates and final room-by-room inclusions before recommending."
     },
     {
@@ -171,12 +207,19 @@
       rateValidTo: "Pending",
       contact: "Vicky",
       phone: "",
-      email: "",
+      email: "info@casadevistaalta.com",
       website: "",
       recommendation: "pending",
       followUp: "2026-10-02",
       followUpDue: true,
       owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-09-25",
+      replyTaskId: "casa-vista-alta-2026-09-25",
+      replyAcknowledged: false,
+      replySubject: "Colaboración local: Mindo Bird Watching + Casa de Vista Alta Hotel",
+      replyDraft: "Estimada Vicky,\n\nMuchas gracias por su respuesta y por el interés en trabajar con Mindo Bird Watching. Entendemos que están revisando las tarifas y quedamos atentos a la información cuando esté lista la próxima semana.\n\nCuando sea posible, nos ayudaría recibir la vigencia de las tarifas, el horario de desayuno, la opción de box breakfast para salidas tempranas y el mejor contacto para reservas.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "To confirm",
       note: "Vicky is reviewing the tariff and expects to provide the information soon."
     },
@@ -289,15 +332,23 @@
       savings: "Pending",
       pricingBasis: "Per experience",
       rateValidTo: "Pending",
-      contact: "Sales team",
+      contact: "Experience team",
       phone: "",
-      email: "",
-      website: "",
+      email: "ecuador@mindochocolate.com",
+      website: "https://www.elquetzaldemindo.com/",
       recommendation: "pending",
       followUp: "2026-10-02",
       followUpDue: true,
       owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-09-25",
+      replyTaskId: "mindo-chocolate-2026-09-25",
+      replyAcknowledged: false,
+      replySubject: "Colaboración local: Mindo Bird Watching + Mindo Chocolate Makers",
+      replyDraft: "Estimados amigos de Mindo Chocolate Makers,\n\nMuchas gracias por su respuesta y por aclararnos que trabajan como experiencia y no como alojamiento. Nos interesa mucho poder recomendar a nuestros viajeros sus experiencias de chocolate, cacao y café.\n\nPara completar nuestro registro, ¿nos podrían compartir las tarifas para operadores o aliados locales, la duración y horarios de cada experiencia, las condiciones de reserva y cualquier material o fotografía autorizada para promoción?\n\nQuedamos atentos y agradecemos mucho su interés en colaborar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
       breakfast: "Café and restaurant available",
+      amenities: ["Chocolate tour", "Cacao legend tour", "Coffee tour", "Make-your-own chocolate bar", "Café", "Restaurant"],
       note: "Request operator pricing and booking terms for chocolate, cacao, coffee, and make-your-own-bar experiences."
     }
   ];
@@ -391,7 +442,8 @@
         followUpDue: partner.followUpDue,
         owner: partner.owner,
         note: partner.note,
-        preferred: Boolean(partner.preferred)
+        preferred: Boolean(partner.preferred),
+        replyAcknowledged: Boolean(partner.replyAcknowledged)
       };
     }
     saveState();
@@ -465,6 +517,33 @@
     return lines.filter(Boolean).join("\n\n");
   }
 
+  function replyNeeded(partner) {
+    return Boolean(partner.verifiedResponse && partner.replyDraft && !partner.replyAcknowledged);
+  }
+
+  function replyConversationCount() {
+    var tasks = {};
+    partners.filter(replyNeeded).forEach(function (partner) {
+      tasks[partner.replyTaskId || partner.id] = true;
+    });
+    return Object.keys(tasks).length;
+  }
+
+  function gmailReplyUrl(partner) {
+    return "https://mail.google.com/mail/u/0/#search/" + encodeURIComponent('subject:"' + partner.replySubject + '"');
+  }
+
+  function replyPanelMarkup(partner) {
+    if (!partner.verifiedResponse || !partner.replyDraft) return "";
+    var status = partner.replyAcknowledged ? "Reply marked sent" : "Reply needed";
+    return '<section class="recommendationsReplyPanel' + (partner.replyAcknowledged ? ' is-complete' : '') + '">' +
+      '<div class="recommendationsReplyHeader"><div><span>Partner response</span><h3>' + status + '</h3></div><span class="recommendationsReplyStatus">' + (partner.replyAcknowledged ? 'Acknowledged' : 'Action needed') + '</span></div>' +
+      '<p>Review the Spanish acknowledgment, copy it, then open the existing Gmail conversation. Sending remains a deliberate final step.</p>' +
+      '<div class="recommendationsReplyActions"><button type="button" data-copy-reply>Copy reply draft</button><a href="' + escapeHtml(gmailReplyUrl(partner)) + '" target="_blank" rel="noopener noreferrer">Open Gmail thread ↗</a><button type="button" data-mark-replied>' + (partner.replyAcknowledged ? 'Mark reply needed' : 'Mark replied') + '</button></div>' +
+      '<details><summary>Preview reply</summary><pre>' + escapeHtml(partner.replyDraft) + '</pre></details>' +
+    '</section>';
+  }
+
   function isFollowUpDue(dateValue) {
     if (!dateValue) return false;
     var followUpDate = new Date(dateValue + "T12:00:00");
@@ -480,6 +559,7 @@
     document.getElementById("metricPending").textContent = partners.filter(function (partner) { return partner.recommendation === "pending"; }).length;
     document.getElementById("metricDue").textContent = partners.filter(function (partner) { return partner.followUpDue; }).length;
     document.getElementById("metricPreferred").textContent = partners.filter(function (partner) { return partner.preferred; }).length;
+    document.getElementById("metricReplies").textContent = replyConversationCount();
     document.querySelectorAll("[data-category-count]").forEach(function (element) {
       element.textContent = categoryPartners(element.dataset.categoryCount).length;
     });
@@ -508,6 +588,7 @@
           (elements.signal.value === "preferred" && partner.preferred) ||
           (elements.signal.value === "boxed_breakfast" && breakfastSignal(partner) === "available") ||
           (elements.signal.value === "verified_response" && partner.verifiedResponse) ||
+          (elements.signal.value === "reply_needed" && replyNeeded(partner)) ||
           (elements.signal.value === "guest_history" && hasGuestEstimate(partner)));
     });
   }
@@ -524,7 +605,8 @@
         '</div>' +
         '<div class="recommendationSignals">' +
           (breakfast === 'available' ? '<span class="recommendationSignal recommendationSignal--breakfast">🥡 Box breakfast</span>' : breakfast === 'confirm' ? '<span class="recommendationSignal">? Confirm box breakfast</span>' : '') +
-          guestSignal(partner) +
+          (replyNeeded(partner) ? '<span class="recommendationSignal recommendationSignal--reply">Reply needed</span>' : partner.verifiedResponse && partner.replyAcknowledged ? '<span class="recommendationSignal recommendationSignal--replied">Replied</span>' : '') +
+          (partner.category === 'accommodations' ? guestSignal(partner) : '') +
         '</div>' +
         '<div class="recommendationPricing">' +
           '<div><span>Regular price</span><strong>' + escapeHtml(partner.regularPrice) + '</strong></div>' +
@@ -608,7 +690,8 @@
           '<div class="recommendationsFact"><span>Last matched pickup</span><strong>' + ((partner.estimateStatus === 'ready' || partner.estimateStatus === 'snapshot') ? escapeHtml(friendlyDate(partner.lastGuestDate)) : 'Unavailable') + '</strong></div>' +
           (partner.verifiedResponse ? '<div class="recommendationsFact recommendationsFact--verified"><span>Information status</span><strong>Direct response · ' + escapeHtml(friendlyDate(partner.responseVerifiedAt)) + '</strong></div>' : '') +
         '</div>' +
-        '<p class="recommendationsEstimateNote">Invoice estimate only. A matched pickup location suggests the guest stayed here, but it is not a confirmed lodging record.</p>' +
+        (partner.category === 'accommodations' ? '<p class="recommendationsEstimateNote">Invoice estimate only. A matched pickup location suggests the guest stayed here, but it is not a confirmed lodging record.</p>' : '') +
+        replyPanelMarkup(partner) +
         amenitiesMarkup(partner) +
         '<div class="recommendationsDetailLabel">Attention</div>' +
         '<div class="recommendationsNotice">' + escapeHtml(partner.note || "No notes yet.") + '</div>' +
@@ -778,6 +861,23 @@
 
     if (event.target.closest("[data-copy-summary]")) {
       copyText(guestSummaryText(partner), "Guest summary");
+      return;
+    }
+
+    if (event.target.closest("[data-copy-reply]")) {
+      copyText(partner.replyDraft, "Reply draft");
+      return;
+    }
+
+    if (event.target.closest("[data-mark-replied]")) {
+      var nextState = !partner.replyAcknowledged;
+      partners.filter(function (item) { return (item.replyTaskId || item.id) === (partner.replyTaskId || partner.id); }).forEach(function (item) {
+        item.replyAcknowledged = nextState;
+        storePartnerUpdate(item);
+      });
+      updateMetrics();
+      renderCards();
+      showToast(nextState ? "Reply marked as sent" : "Reply returned to queue");
       return;
     }
 
