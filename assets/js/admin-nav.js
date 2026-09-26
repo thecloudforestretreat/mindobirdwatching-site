@@ -1,5 +1,8 @@
+/* MBW Admin Navigation build 2026.09.25.2 */
 (function () {
   "use strict";
+
+  document.documentElement.dataset.adminNavBuild = "2026.09.25.2";
 
   var pages = [
     { id: "admin", label: "Admin Hub", href: "https://admin.mindobirdwatching.com/" },
