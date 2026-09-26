@@ -17,7 +17,7 @@ async function fetchEbird(env, { speciesCode, days, limit }) {
   const response = await fetch("https://api.ebird.org" + path + "?" + params, { headers: { "x-ebirdapitoken": apiKey }, signal: AbortSignal.timeout(12000) });
   if (!response.ok) throw new Error("eBird returned " + response.status);
   const rows = await response.json();
-  return (Array.isArray(rows) ? rows : []).map((row) => ({ speciesCode: row.speciesCode, englishName: row.comName, scientificName: row.sciName, observed_at: row.obsDt, quantity: row.howMany || 1, location_name: row.locName, latitude: row.lat, longitude: row.lng, source: "ebird", ebird_sub_id: row.subId || "", ebird_obs_id: row.obsId || "" }));
+  return (Array.isArray(rows) ? rows : []).map((row) => ({ speciesCode: row.speciesCode, englishName: row.comName, scientificName: row.sciName, observed_at: row.obsDt, quantity: row.howMany || 1, location_name: row.locName, latitude: row.lat, longitude: row.lng, source: "ebird", ebird_sub_id: row.subId || "", ebird_obs_id: row.obsId || "", notable: row.notable === true, mbw_priority: "" }));
 }
 
 function uniqueReports(sightings) {
@@ -48,7 +48,7 @@ export async function onRequestGet({ request, env }) {
   if (speciesCode && !/^[a-z0-9-]{2,24}$/i.test(speciesCode)) return json(request, { ok: false, message: "Invalid species code." }, 400);
   const source = VALID_SOURCES.has(input.get("source")) ? input.get("source") : "all";
   const days = Math.min(365, Math.max(1, Number(input.get("days")) || 30));
-  const limit = Math.min(10, Math.max(1, Number(input.get("limit")) || 10));
+  const limit = Math.min(20, Math.max(1, Number(input.get("limit")) || 20));
   const requestLiveStats = input.get("liveStats") === "1" && Boolean(speciesCode);
   const trackDemand = input.get("trackDemand") === "1" && Boolean(speciesCode);
   try {
@@ -62,7 +62,7 @@ export async function onRequestGet({ request, env }) {
       let ebirdSightings = sightingsFrom(data).filter((row) => row && row.source === "ebird" && row.speciesCode === speciesCode);
       if (!ebirdSightings.length && (env.EBIRD_API_KEY || env.EBIRD_API_TOKEN)) ebirdSightings = await fetchEbird(env, { speciesCode, days: 30, limit });
       if (!ebirdSightings.length) return json(request, { ok: false, stats_available: false, message: "Live eBird data is unavailable. No zero totals were recorded." }, 503);
-      const limited = ebirdSightings.length >= 10;
+      const limited = ebirdSightings.length >= limit;
       return json(request, { ok: true, count: Math.min(ebirdSightings.length, limit), sightings: ebirdSightings.slice(0, limit), stats: liveStats(speciesCode, ebirdSightings, limited), demand_tracked: data.demand_tracked === true });
     }
     const sightings = sightingsFrom(data);
