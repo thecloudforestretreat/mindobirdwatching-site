@@ -4,9 +4,15 @@ The public recap form sends data to `/api/guide-tour-recap`. Cloudflare verifies
 
 ## Private contributor identities
 
-Contributor codes and guide names must never be placed in public HTML, JavaScript, or repository files. Set `MBW_CONTRIBUTOR_MAP_JSON` privately on the n8n instance as a JSON object whose keys are three-digit codes and whose values are internal guide names.
+Contributor codes and guide names must never be placed in public HTML or JavaScript. The private `contributors` tab in the Sightings workbook is the source of truth, with these headers:
 
-The workflow validates the three-digit code against that private map and stores the internal contributor ID plus the resolved guide name. Add or deactivate contributors by updating the private map, not the public form.
+```text
+contributor_number\tguide_name\tactive
+```
+
+Keep `contributor_number` as a three-digit value such as `001`. Set `active` to `TRUE` for contributors who may submit and `FALSE` to revoke access without deleting their history. The workflow reads this tab on every submission, resolves the internal guide name, and rejects unknown or inactive numbers.
+
+Add or deactivate contributors only in this private tab. Never expose the registry through the public recap form or species API.
 
 ## Google Sheet destinations
 
@@ -28,4 +34,4 @@ This keeps browsing separate from demand: loading the page does not count as dem
 
 Staff can give a guide a prefilled URL such as `/guide-tour-recap/?booking=MBW-BOOKING-REFERENCE`. The report stores that reference without exposing a guest email. A later automation can join `tour_id` to the CRM, create a bilingual bird checklist, and send the thank-you/review email only after staff approval.
 
-Import both JSON workflows, set the Google Sheets credential, confirm the tab names, set the private contributor map, and activate the workflows.
+Import both JSON workflows, set the Google Sheets credential, confirm the tab names (including `contributors`), and activate the workflows.
