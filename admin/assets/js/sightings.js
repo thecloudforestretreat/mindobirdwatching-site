@@ -8,8 +8,9 @@
   const searchable = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const displayDate = (value) => {
     const raw = String(value || "").trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      const [year, month, day] = raw.split("-").map(Number);
+    const dateOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.\d{3})?Z)?$/);
+    if (dateOnly) {
+      const [, year, month, day] = dateOnly.map(Number);
       return new Date(year, month - 1, day, 12).toLocaleDateString("en-US", { dateStyle: "medium" });
     }
     const date = new Date(raw);
