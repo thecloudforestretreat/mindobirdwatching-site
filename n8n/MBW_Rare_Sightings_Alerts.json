@@ -1,0 +1,81 @@
+{
+  "name": "MBW - Rare Sightings Alerts",
+  "nodes": [
+    {
+      "parameters": {"rule": {"interval": [{"field": "minutes", "minutesInterval": 30}]}},
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-600, 0],
+      "id": "c6f3dfb4-34f3-4f5f-a6cc-cfc196197001",
+      "name": "Every 30 Minutes"
+    },
+    {
+      "parameters": {
+        "url": "https://api.ebird.org/v2/data/obs/geo/recent/notable?lat=-0.051&lng=-78.772&dist=20&back=3&maxResults=200&hotspot=true&includeProvisional=false",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {"response": {"response": {"neverError": true, "responseFormat": "json"}}}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-380, 0],
+      "id": "c6f3dfb4-34f3-4f5f-a6cc-cfc196197002",
+      "name": "HTTP • eBird Notable",
+      "credentials": {"httpHeaderAuth": {"id": "SUpxLLuYHOyQkPQw", "name": "eBird"}}
+    },
+    {
+      "parameters": {
+        "documentId": {"__rl": true, "value": "1G5zS888jH7pQMN9x1iZf4DhwnZ77wTrBencbuvmHIRk", "mode": "id"},
+        "sheetName": {"__rl": true, "value": 107360568, "mode": "list", "cachedResultName": "sightings_alerts", "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1G5zS888jH7pQMN9x1iZf4DhwnZ77wTrBencbuvmHIRk/edit#gid=107360568"},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [-160, 0],
+      "id": "c6f3dfb4-34f3-4f5f-a6cc-cfc196197003",
+      "name": "Google Sheets • Read Existing Alerts",
+      "alwaysOutputData": true,
+      "credentials": {"googleSheetsOAuth2Api": {"id": "sJdVMmql2IyZ94ti", "name": "Google Sheets - MBW"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const response=$items('HTTP • eBird Notable')[0]?.json; const raw=response?.body??response; const observations=Array.isArray(raw)?raw:[]; const existing=new Set($items('Google Sheets • Read Existing Alerts').map(i=>String(i.json.dedupe_key||'')).filter(Boolean)); const now=new Date().toISOString(); const clean=v=>String(v??'').trim(); const safe=v=>clean(v).replace(/[^a-z0-9_-]+/gi,'_').slice(0,120); return observations.map(r=>{const observationKey=clean(r.obsId)||[r.speciesCode,r.obsDt,r.locId||r.locName].map(clean).join('_'); const dedupeKey='ebird_notable_'+safe(observationKey); const sightingId='ebird_'+safe(observationKey); return {r,dedupeKey,sightingId};}).filter(x=>x.r.speciesCode&&!existing.has(x.dedupeKey)).map(({r,dedupeKey,sightingId})=>({json:{alert_id:'alert_'+safe(dedupeKey),alert_type:'rare_sighting',speciesCode:clean(r.speciesCode),source:'ebird',severity:'rare',title:'Rare sighting: '+clean(r.comName||r.speciesCode),message:(clean(r.comName||r.speciesCode)+(r.sciName?' ('+clean(r.sciName)+')':'')+' was reported in the '+clean(r.locName||'Mindo area')+' on '+clean(r.obsDt||'an unknown date')+'.'),status:'new',triggered_at:now,acknowledged_at:'',acknowledged_by:'',resolved_at:'',related_sighting_id:sightingId,related_request_id:'',dedupe_key:dedupeKey,sighting_id:sightingId,observed_at:clean(r.obsDt),location_id:clean(r.locId),location_name:clean(r.locName),latitude:r.lat??'',longitude:r.lng??'',quantity:Number(r.howMany)||1,ebird_sub_id:clean(r.subId),ebird_obs_id:clean(r.obsId),guide_id:'',tour_id:'',recap_id:'',seen_or_heard:'seen',ebird_notable:'TRUE',mbw_priority:'rare',verification_status:'ebird_notable',evidence_url:r.subId?'https://ebird.org/checklist/'+encodeURIComponent(r.subId):'',notes:'Automatically detected by the eBird notable observations endpoint.',imported_at:now,created_at:now,updated_at:now}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [60, 0],
+      "id": "c6f3dfb4-34f3-4f5f-a6cc-cfc196197004",
+      "name": "Code • New Rare Alerts"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {"__rl": true, "value": "1G5zS888jH7pQMN9x1iZf4DhwnZ77wTrBencbuvmHIRk", "mode": "id"},
+        "sheetName": {"__rl": true, "value": 107360568, "mode": "list", "cachedResultName": "sightings_alerts", "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1G5zS888jH7pQMN9x1iZf4DhwnZ77wTrBencbuvmHIRk/edit#gid=107360568"},
+        "columns": {"mappingMode": "autoMapInputData", "value": {}, "matchingColumns": [], "schema": [], "attemptToConvertTypes": false, "convertFieldsToString": false},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [280, 0],
+      "id": "c6f3dfb4-34f3-4f5f-a6cc-cfc196197005",
+      "name": "Google Sheets • Append Rare Alert",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500,
+      "credentials": {"googleSheetsOAuth2Api": {"id": "sJdVMmql2IyZ94ti", "name": "Google Sheets - MBW"}}
+    }
+  ],
+  "connections": {
+    "Every 30 Minutes": {"main": [[{"node": "HTTP • eBird Notable", "type": "main", "index": 0}]]},
+    "HTTP • eBird Notable": {"main": [[{"node": "Google Sheets • Read Existing Alerts", "type": "main", "index": 0}]]},
+    "Google Sheets • Read Existing Alerts": {"main": [[{"node": "Code • New Rare Alerts", "type": "main", "index": 0}]]},
+    "Code • New Rare Alerts": {"main": [[{"node": "Google Sheets • Append Rare Alert", "type": "main", "index": 0}]]}
+  },
+  "pinData": {},
+  "settings": {"executionOrder": "v1", "timezone": "America/Guayaquil"},
+  "active": false,
+  "versionId": "c6f3dfb4-34f3-4f5f-a6cc-cfc196197000",
+  "meta": {"templateCredsSetupCompleted": true},
+  "tags": []
+}

@@ -30,6 +30,17 @@ demand_id	speciesCode	requested_at	source_filter	period_days	request_type	create
 
 This keeps browsing separate from demand: loading the page does not count as demand; clicking the live eBird button does.
 
+## Rare sighting alerts
+
+Import and activate `MBW_Rare_Sightings_Alerts.json`. Every 30 minutes it checks eBird's notable-observations endpoint for the Mindo area, compares each result with existing `dedupe_key` values, and appends only new records to `sightings_alerts`. It does not transmit exact locations to an external messaging service.
+
+The admin sightings workflow reads both `sightings_events` (`gid=0`) and `sightings_alerts` (`gid=107360568`). A row is treated as rare when `ebird_notable` is true, `alert_type` is `rare_sighting`, or `mbw_priority` is one of the configured priority values.
+
+Keep the destinations distinct:
+
+- Guide recap sightings append to `sightings_events` (`gid=0`).
+- Automated eBird notable alerts append to `sightings_alerts` (`gid=107360568`).
+
 ## Guest follow-up path
 
 Staff can give a guide a prefilled URL such as `/guide-tour-recap/?booking=MBW-BOOKING-REFERENCE`. The report stores that reference without exposing a guest email. A later automation can join `tour_id` to the CRM, create a bilingual bird checklist, and send the thank-you/review email only after staff approval.

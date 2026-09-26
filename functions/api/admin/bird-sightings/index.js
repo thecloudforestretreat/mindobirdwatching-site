@@ -48,7 +48,7 @@ export async function onRequestGet({ request, env }) {
   if (speciesCode && !/^[a-z0-9-]{2,24}$/i.test(speciesCode)) return json(request, { ok: false, message: "Invalid species code." }, 400);
   const source = VALID_SOURCES.has(input.get("source")) ? input.get("source") : "all";
   const days = Math.min(365, Math.max(1, Number(input.get("days")) || 30));
-  const limit = Math.min(20, Math.max(1, Number(input.get("limit")) || 20));
+  const limit = Math.min(100, Math.max(1, Number(input.get("limit")) || 100));
   const requestLiveStats = input.get("liveStats") === "1" && Boolean(speciesCode);
   const trackDemand = input.get("trackDemand") === "1" && Boolean(speciesCode);
   try {

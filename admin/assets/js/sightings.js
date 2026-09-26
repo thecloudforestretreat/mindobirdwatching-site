@@ -3,6 +3,8 @@
   const ROOT = "https://mindobirdwatching.com/api/admin/";
   const FALLBACK_IMAGE = "https://mindobirdwatching.com/assets/images/birds/mbw_image_coming_soon_02.jpg";
   let birds = [];
+  let currentRows = [];
+  let currentStats = null;
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? "").replace(/[&<>\"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
   const searchable = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -67,10 +69,22 @@
   }
 
   function render(rows, stats) {
-    const groups = groupRows(rows);
-    $("countBadge").textContent = `${groups.length} bird${groups.length === 1 ? "" : "s"} · ${rows.length} reports`;
-    $("sightingsList").innerHTML = groups.map((group) => cardMarkup(group, stats)).join("") || '<div class="birdingEmpty">No matching reports were found yet.</div>';
-    return groups.length;
+    const allGroups = groupRows(rows);
+    const rareOnly = $("rareFilter").value === "rare";
+    const groups = allGroups.filter((group) => !rareOnly || group.sightings.some(isRare)).slice(0, 20).map((group) => ({ ...group, sightings: group.sightings.slice(0, 20) }));
+    const shownReports = groups.reduce((total, group) => total + group.sightings.length, 0);
+    $("countBadge").textContent = `${groups.length} bird${groups.length === 1 ? "" : "s"} · ${shownReports} reports shown`;
+    const empty = rareOnly ? "No rare or notable sightings match these filters." : "No matching reports were found yet.";
+    $("sightingsList").innerHTML = groups.map((group) => cardMarkup(group, stats)).join("") || `<div class="birdingEmpty">${empty}</div>`;
+    return { birdCount: groups.length, shownReports, reviewedReports: rows.length, rareOnly };
+  }
+
+  function applyView() {
+    const view = render(currentRows, currentStats);
+    if (!currentRows.length) return view;
+    $("status").textContent = view.birdCount ? `Showing ${view.birdCount} unique bird card${view.birdCount === 1 ? "" : "s"} from ${view.reviewedReports} recent report${view.reviewedReports === 1 ? "" : "s"}.` : "No rare or notable sightings match these filters.";
+    $("status").dataset.tone = view.birdCount ? "success" : "warning";
+    return view;
   }
 
   async function loadBirds() {
@@ -84,7 +98,7 @@
   }
 
   async function requestSightings({ speciesCode = "", liveStats = false } = {}) {
-    const params = new URLSearchParams({ source: liveStats ? "ebird" : $("sourceFilter").value, days: liveStats ? "30" : $("daysFilter").value, limit: "20" });
+    const params = new URLSearchParams({ source: liveStats ? "ebird" : $("sourceFilter").value, days: liveStats ? "30" : $("daysFilter").value, limit: "100" });
     if (speciesCode) params.set("speciesCode", speciesCode);
     if (liveStats) { params.set("liveStats", "1"); params.set("trackDemand", "1"); }
     const response = await fetch(ROOT + "bird-sightings?" + params, { cache: "no-store" });
@@ -104,10 +118,14 @@
     try {
       const match = selectedBird();
       const data = await requestSightings({ speciesCode: match?.speciesCode || "" });
-      const rows = Array.isArray(data.sightings) ? data.sightings.slice(0, 20) : [];
-      const birdCount = render(rows, data.stats);
-      $("status").textContent = rows.length ? `Showing ${rows.length} recent report${rows.length === 1 ? "" : "s"} across ${birdCount} bird${birdCount === 1 ? "" : "s"}.` : (data.message || "No matching sightings found for the selected filters.");
-      $("status").dataset.tone = rows.length ? "success" : "warning";
+      currentRows = Array.isArray(data.sightings) ? data.sightings.slice(0, 100) : [];
+      currentStats = data.stats || null;
+      if (currentRows.length) applyView();
+      else {
+        render([], currentStats);
+        $("status").textContent = data.message || "No matching sightings found for the selected filters.";
+        $("status").dataset.tone = "warning";
+      }
     } catch (error) {
       $("countBadge").textContent = "Unavailable";
       $("status").textContent = error.message + ". Please refresh in a moment.";
@@ -126,7 +144,7 @@
       card.querySelector('[data-stat="last"]').textContent = displayDate(data.stats?.last_observed_at);
       card.querySelector('[data-stat="seven"]').textContent = `${data.stats.last_7_days}${data.stats.last_7_days_limited ? "+" : ""} times`;
       card.querySelector('[data-stat="thirty"]').textContent = `${data.stats.last_30_days}${data.stats.last_30_days_limited ? "+" : ""} times`;
-      button.textContent = data.stats.last_30_days_limited ? "eBird live — at least 20 reports" : "eBird live stats refreshed";
+      button.textContent = data.stats.last_30_days_limited ? "eBird live — at least 100 reports" : "eBird live stats refreshed";
     } catch (error) { button.textContent = error.message || "Could not refresh — try again"; }
     finally { button.disabled = false; }
   }
@@ -136,9 +154,11 @@
     $("birdSearch").value = "";
     $("sourceFilter").value = "all";
     $("daysFilter").value = "30";
+    $("rareFilter").value = "all";
     loadSightings().finally(() => $("birdSearch").focus());
   });
   $("refreshButton").addEventListener("click", loadSightings);
+  $("rareFilter").addEventListener("change", applyView);
   $("birdSearch").addEventListener("keydown", (event) => { if (event.key === "Enter") loadSightings(); });
   $("sightingsList").addEventListener("click", (event) => { const button = event.target.closest("[data-live-stats]"); if (button) loadLiveStats(button); });
   loadBirds().then(loadSightings);
