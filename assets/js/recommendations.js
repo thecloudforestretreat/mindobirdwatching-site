@@ -1,5 +1,8 @@
+/* MBW Admin Recommendations Dashboard build 2026.09.25.2 */
 (function () {
   "use strict";
+
+  document.documentElement.dataset.recommendationsBuild = "2026.09.25.2";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
