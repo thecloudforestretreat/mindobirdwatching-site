@@ -1,14 +1,10 @@
-/* MBW Admin Navigation build 2026.09.25.2 */
 (function () {
   "use strict";
-
-  document.documentElement.dataset.adminNavBuild = "2026.09.25.2";
 
   var pages = [
     { id: "admin", label: "Admin Hub", href: "https://admin.mindobirdwatching.com/" },
     { id: "media", label: "Media", href: "https://admin.mindobirdwatching.com/media/" },
     { id: "guest-crm", label: "Guest CRM", href: "https://admin.mindobirdwatching.com/guest-crm/" },
-    { id: "recommendations", label: "Recommendations", href: "https://admin.mindobirdwatching.com/recommendations/" },
     { id: "email", label: "Email Generator", href: "https://admin.mindobirdwatching.com/custom-email-generator/" },
     { id: "staff", label: "Staff Info", href: "https://admin.mindobirdwatching.com/staff-info/" },
     { id: "itinerary", label: "Itinerary", href: "https://admin.mindobirdwatching.com/itinerary-generator/" },
@@ -20,7 +16,6 @@
       external: true
     },
     { id: "confirmation", label: "Tour Confirmation", href: "https://admin.mindobirdwatching.com/tour-confirmation-generator/" },
-    { id: "marketing", label: "Marketing", href: "https://admin.mindobirdwatching.com/marketing/" },
     { id: "reports", label: "Reports", href: "https://admin.mindobirdwatching.com/reports/" }
   ];
 
@@ -65,7 +60,7 @@
   }
 
   function render(host) {
-    if (host.dataset.adminNavReady === "true" || host.querySelector(".adminGlobalNav")) return;
+    if (host.dataset.adminNavReady === "true") return;
 
     var activeId = currentPageId(host);
     var nav = document.createElement("nav");
@@ -99,7 +94,8 @@
   }
 
   function init() {
-    document.querySelectorAll("[data-admin-nav]").forEach(render);
+    var hosts = document.querySelectorAll("[data-admin-nav]");
+    hosts.forEach(render);
   }
 
   if (document.readyState === "loading") {
