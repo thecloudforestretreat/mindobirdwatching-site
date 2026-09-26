@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.09.25.3 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.09.26.2 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.09.26.1";
+  document.documentElement.dataset.recommendationsBuild = "2026.09.26.2";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -264,6 +264,8 @@
     signal: document.getElementById("recommendationsSignal"),
     title: document.getElementById("recommendationsSectionTitle"),
     count: document.getElementById("recommendationsResultCount"),
+    dataStatus: document.getElementById("recommendationsDataStatus"),
+    dataMessage: document.getElementById("recommendationsDataMessage"),
     toast: document.getElementById("recommendationsToast"),
     dialog: document.getElementById("addRecommendationDialog"),
     form: document.getElementById("addRecommendationForm")
@@ -271,9 +273,9 @@
 
   var state = loadState();
   var partners = seedPartners.map(function (partner) {
-    return Object.assign({ preferred: false, guestStays: 0 }, partner, state.updates[partner.id] || {});
+    return Object.assign({ preferred: false, estimateStatus: "loading", estimatedGuests: 0, estimatedStays: 0, lastGuestDate: "" }, partner, state.updates[partner.id] || {});
   }).concat((state.customPartners || []).map(function (partner) {
-    return Object.assign({ preferred: false, guestStays: 0 }, partner);
+    return Object.assign({ preferred: false, estimateStatus: "not-matched", estimatedGuests: 0, estimatedStays: 0, lastGuestDate: "" }, partner);
   }));
   var activeCategory = "accommodations";
   var selectedId = partners.find(function (partner) { return partner.category === activeCategory; }).id;
@@ -325,8 +327,7 @@
         followUpDue: partner.followUpDue,
         owner: partner.owner,
         note: partner.note,
-        preferred: Boolean(partner.preferred),
-        guestStays: Math.max(0, Number(partner.guestStays) || 0)
+        preferred: Boolean(partner.preferred)
       };
     }
     saveState();
@@ -347,6 +348,19 @@
     if (/takeaway|box breakfast (from|available)|boxed breakfast/.test(value)) return "available";
     if (/confirm.*(box|takeaway)|box breakfast.*confirm/.test(value)) return "confirm";
     return "none";
+  }
+
+  function friendlyDate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))) return "Not available";
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(value + "T00:00:00Z"));
+  }
+
+  function guestSignal(partner) {
+    if (partner.estimateStatus === "loading") return '<span class="recommendationSignal recommendationSignal--pending">Loading guest estimate</span>';
+    if (partner.estimateStatus !== "ready") return '<span class="recommendationSignal recommendationSignal--pending">Guest estimate unavailable</span>';
+    var guests = Math.max(0, Number(partner.estimatedGuests) || 0);
+    if (!guests) return '<span class="recommendationSignal recommendationSignal--guests">No matched MBW stays</span>';
+    return '<span class="recommendationSignal recommendationSignal--guests" title="Estimate from completed tours and matched invoice pickup locations">~' + guests + ' MBW guest' + (guests === 1 ? '' : 's') + '</span>';
   }
 
   function isFollowUpDue(dateValue) {
@@ -391,7 +405,7 @@
         (elements.signal.value === "all" ||
           (elements.signal.value === "preferred" && partner.preferred) ||
           (elements.signal.value === "boxed_breakfast" && breakfastSignal(partner) === "available") ||
-          (elements.signal.value === "guest_history" && Number(partner.guestStays) > 0));
+          (elements.signal.value === "guest_history" && partner.estimateStatus === "ready" && Number(partner.estimatedGuests) > 0));
     });
   }
 
@@ -399,7 +413,6 @@
     var hasEmail = Boolean(partner.email);
     var hasPhone = Boolean(partner.phone);
     var breakfast = breakfastSignal(partner);
-    var guestStays = Math.max(0, Number(partner.guestStays) || 0);
     return '' +
       '<article class="recommendationCard' + (partner.id === selectedId ? ' is-selected' : '') + '" data-partner-id="' + escapeHtml(partner.id) + '">' +
         '<div class="recommendationCardTop">' +
@@ -408,7 +421,7 @@
         '</div>' +
         '<div class="recommendationSignals">' +
           (breakfast === 'available' ? '<span class="recommendationSignal recommendationSignal--breakfast">🥡 Box breakfast</span>' : breakfast === 'confirm' ? '<span class="recommendationSignal">? Confirm box breakfast</span>' : '') +
-          '<span class="recommendationSignal recommendationSignal--guests">👥 ' + guestStays + ' guest' + (guestStays === 1 ? '' : 's') + ' stayed</span>' +
+          guestSignal(partner) +
         '</div>' +
         '<div class="recommendationPricing">' +
           '<div><span>Regular price</span><strong>' + escapeHtml(partner.regularPrice) + '</strong></div>' +
@@ -481,15 +494,17 @@
           '<div class="recommendationsFact"><span>Rate validity</span><strong>' + escapeHtml(partner.rateValidTo) + '</strong></div>' +
           '<div class="recommendationsFact"><span>Breakfast / service</span><strong>' + escapeHtml(partner.breakfast) + '</strong></div>' +
           '<div class="recommendationsFact"><span>Box breakfast</span><strong>' + (breakfastSignal(partner) === 'available' ? 'Available' : breakfastSignal(partner) === 'confirm' ? 'Needs confirmation' : 'Not recorded') + '</strong></div>' +
-          '<div class="recommendationsFact"><span>Guests stayed</span><strong>' + Math.max(0, Number(partner.guestStays) || 0) + ' recorded</strong></div>' +
+          '<div class="recommendationsFact"><span>Estimated MBW guests</span><strong>' + (partner.estimateStatus === 'ready' ? '~' + Math.max(0, Number(partner.estimatedGuests) || 0) : 'Unavailable') + '</strong></div>' +
+          '<div class="recommendationsFact"><span>Estimated guest stays</span><strong>' + (partner.estimateStatus === 'ready' ? Math.max(0, Number(partner.estimatedStays) || 0) : 'Unavailable') + '</strong></div>' +
+          '<div class="recommendationsFact"><span>Last matched pickup</span><strong>' + (partner.estimateStatus === 'ready' ? escapeHtml(friendlyDate(partner.lastGuestDate)) : 'Unavailable') + '</strong></div>' +
         '</div>' +
+        '<p class="recommendationsEstimateNote">Invoice estimate only. A matched pickup location suggests the guest stayed here, but it is not a confirmed lodging record.</p>' +
         '<div class="recommendationsDetailLabel">Attention</div>' +
         '<div class="recommendationsNotice">' + escapeHtml(partner.note || "No notes yet.") + '</div>' +
         '<div class="recommendationsDetailLabel">Follow-up tracking</div>' +
         '<div class="recommendationsFollowUpFields">' +
           '<label class="recommendationsField"><span>Next follow-up</span><input id="detailFollowUp" type="date" value="' + escapeHtml(partner.followUp || "") + '" /></label>' +
           '<label class="recommendationsField"><span>Owner</span><input id="detailOwner" value="' + escapeHtml(partner.owner || "") + '" placeholder="Assign owner" /></label>' +
-          '<label class="recommendationsField"><span>Guests stayed (manual)</span><input id="detailGuestStays" type="number" min="0" step="1" value="' + Math.max(0, Number(partner.guestStays) || 0) + '" /></label>' +
           '<label class="recommendationsField recommendationsField--full"><span>Internal note</span><textarea id="detailNote">' + escapeHtml(partner.note || "") + '</textarea></label>' +
         '</div>' +
         '<button class="recommendationsSaveFollowUp" id="savePartnerTracking" type="button">Save tracking</button>' +
@@ -552,7 +567,10 @@
       followUpDue: false,
       owner: "",
       preferred: false,
-      guestStays: 0,
+      estimateStatus: "not-matched",
+      estimatedGuests: 0,
+      estimatedStays: 0,
+      lastGuestDate: "",
       breakfast: "To confirm",
       note: "New partner entry. Add pricing, service details, and review notes."
     };
@@ -653,7 +671,6 @@
     if (event.target.id === "savePartnerTracking") {
       partner.followUp = document.getElementById("detailFollowUp").value;
       partner.owner = document.getElementById("detailOwner").value.trim();
-      partner.guestStays = Math.max(0, Number(document.getElementById("detailGuestStays").value) || 0);
       partner.note = document.getElementById("detailNote").value.trim();
       partner.followUpDue = isFollowUpDue(partner.followUp);
       storePartnerUpdate(partner);
@@ -674,7 +691,36 @@
     addPartner(new FormData(elements.form));
   });
 
+  async function loadGuestEstimates() {
+    try {
+      var response = await fetch("/api/admin/recommendation-guest-estimates/", { headers: { accept: "application/json" }, cache: "no-store" });
+      var payload = await response.json().catch(function () { return {}; });
+      if (!response.ok || !payload.ok || !Array.isArray(payload.estimates)) throw new Error(payload.message || "Estimate request failed");
+
+      var byPartner = {};
+      payload.estimates.forEach(function (estimate) { byPartner[estimate.partner_id] = estimate; });
+      partners.forEach(function (partner) {
+        if (partner.category !== "accommodations" || partner.custom) return;
+        var estimate = byPartner[partner.id] || {};
+        partner.estimateStatus = "ready";
+        partner.estimatedGuests = Math.max(0, Number(estimate.estimated_guest_count) || 0);
+        partner.estimatedStays = Math.max(0, Number(estimate.estimated_stay_count) || 0);
+        partner.lastGuestDate = estimate.last_guest_date || "";
+      });
+      elements.dataStatus.textContent = "Invoice estimates live";
+      elements.dataMessage.textContent = payload.source_last_tour_date ? "Completed tours through " + friendlyDate(payload.source_last_tour_date) + ". Same guest and property within 14 days counts as one estimated stay." : "Completed tours are matched by pickup location; repeat tours within 14 days are deduplicated.";
+    } catch (error) {
+      partners.forEach(function (partner) {
+        if (partner.category === "accommodations" && !partner.custom) partner.estimateStatus = "unavailable";
+      });
+      elements.dataStatus.textContent = "Invoice estimates unavailable";
+      elements.dataMessage.textContent = "Activate the recommendation guest-estimates workflow to connect the accounting sheet.";
+    }
+    renderCards();
+  }
+
   updateMetrics();
   updateTypeOptions();
   renderCards();
+  loadGuestEstimates();
 })();
