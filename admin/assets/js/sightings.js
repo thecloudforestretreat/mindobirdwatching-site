@@ -72,8 +72,12 @@
     if (speciesCode) params.set("speciesCode", speciesCode);
     if (liveStats) { params.set("liveStats", "1"); params.set("trackDemand", "1"); }
     const response = await fetch(ROOT + "bird-sightings?" + params, { cache: "no-store" });
-    if (!response.ok) throw new Error(`Sightings API returned ${response.status}`);
-    return response.json();
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text || "{}"); }
+    catch { throw new Error(`Sightings API returned a web page instead of data (${response.status})`); }
+    if (!response.ok || data.ok === false) throw new Error(data.message || `Sightings API returned ${response.status}`);
+    return data;
   }
 
   async function loadSightings() {
@@ -101,12 +105,13 @@
     button.textContent = "Checking eBird…";
     try {
       const data = await requestSightings({ speciesCode: button.dataset.liveStats, liveStats: true });
+      if (!data.stats?.available) throw new Error("Live eBird data is unavailable");
       const card = button.closest(".sightingCard");
       card.querySelector('[data-stat="last"]').textContent = displayDate(data.stats?.last_observed_at);
-      card.querySelector('[data-stat="seven"]').textContent = `${data.stats?.last_7_days ?? 0} times`;
-      card.querySelector('[data-stat="thirty"]').textContent = `${data.stats?.last_30_days ?? 0} times`;
-      button.textContent = "eBird stats refreshed";
-    } catch (_) { button.textContent = "Could not refresh — try again"; }
+      card.querySelector('[data-stat="seven"]').textContent = `${data.stats.last_7_days}${data.stats.last_7_days_limited ? "+" : ""} times`;
+      card.querySelector('[data-stat="thirty"]').textContent = `${data.stats.last_30_days}${data.stats.last_30_days_limited ? "+" : ""} times`;
+      button.textContent = data.stats.last_30_days_limited ? "eBird live — at least 10 reports" : "eBird live stats refreshed";
+    } catch (error) { button.textContent = error.message || "Could not refresh — try again"; }
     finally { button.disabled = false; }
   }
 
