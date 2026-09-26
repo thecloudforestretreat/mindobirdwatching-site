@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Reporte de avistamientos de Mindo | MBW</title>
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#0d5925">
+  <link rel="canonical" href="https://mindobirdwatching.com/es/reporte-de-avistamientos/">
+  <link rel="alternate" hreflang="en" href="https://mindobirdwatching.com/guide-tour-recap/">
+  <link rel="alternate" hreflang="es" href="https://mindobirdwatching.com/es/reporte-de-avistamientos/">
+  <link rel="alternate" hreflang="x-default" href="https://mindobirdwatching.com/guide-tour-recap/">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/guide-tour-recap.css?v=2">
+  <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+</head>
+<body>
+  <main class="recapShell">
+    <header class="recapHeader">
+      <img src="/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching">
+      <div><span class="recapEyebrow">Formulario privado para colaboradores</span><h1>Reporte de avistamientos</h1><p>Registra las aves de hoy en pocos minutos.</p></div>
+      <span class="recapDraft" id="draftStatus">Borrador guardado</span>
+    </header>
+    <nav class="recapLanguage" aria-label="Idioma"><a href="/guide-tour-recap/" hreflang="en" lang="en">English</a><strong>Español</strong></nav>
+
+    <form id="recapForm" novalidate>
+      <section class="recapSection">
+        <div class="recapSectionHead"><span>1</span><div><h2>Acceso y datos del tour</h2><p>Identifícate e indica la ruta</p></div></div>
+        <div class="recapFields">
+          <label class="recapFull"><span>Número de colaborador *</span><input id="contributorNumber" type="password" inputmode="numeric" autocomplete="off" minlength="4" maxlength="12" pattern="[0-9]{4,12}" placeholder="Tu número privado" required><small>Te identifica sin mostrar una lista de guías.</small></label>
+          <label><span>Fecha *</span><input id="tourDate" type="date" required></label>
+          <label><span>Tipo de tour *</span><select id="tourType" required><option value="half_day">Medio día</option><option value="full_day">Día completo</option><option value="custom_private">Privado/personalizado</option><option value="multi_day">Varios días</option></select></label>
+          <label><span>Ruta *</span><select id="routeName" required><option value="">Elige una ruta…</option><option value="Mindo town and nearby gardens">Pueblo de Mindo y jardines cercanos</option><option value="Río Nambillo and forest trails">Río Nambillo y senderos del bosque</option><option value="Paz de las Aves area">Zona de Paz de las Aves</option><option value="San Lorenzo route">Ruta San Lorenzo</option><option value="Tandayapa and Bellavista corridor">Corredor Tandayapa y Bellavista</option><option value="Milpe and Silanche lowlands">Tierras bajas de Milpe y Silanche</option><option value="Mashpi road">Vía Mashpi</option><option value="Other">Otra</option></select></label>
+          <label id="otherRouteWrap" class="recapFull hidden"><span>Nombre de la ruta *</span><input id="otherRoute" placeholder="Escribe la ruta general"></label>
+        </div>
+      </section>
+
+      <section class="recapSection">
+        <div class="recapSectionHead"><span>2</span><div><h2>Lista de aves</h2><p>Agrega todas las aves observadas</p></div><strong id="selectedCount">0</strong></div>
+        <button class="recapPreset" id="presetButton" type="button"><strong>Cargar aves comunes</strong><small>Según el tipo de tour seleccionado</small></button>
+        <label class="recapSearch"><span>Busca por nombre en español, inglés o código</span><input id="birdSearch" type="search" placeholder="Empieza a escribir un ave…" autocomplete="off"></label>
+        <div class="recapResults hidden" id="birdSearchResults"></div>
+        <p class="recapNotice" id="catalogStatus">Cargando lista de aves…</p>
+        <div class="recapSelected" id="selectedBirds"><div class="recapEmpty">Busca un ave o carga la lista de aves comunes.</div></div>
+      </section>
+
+      <section class="recapSection">
+        <div class="recapSectionHead"><span>3</span><div><h2>Finalizar</h2><p>Revisa y envía</p></div></div>
+        <label class="recapNotes"><span>Notas rápidas</span><textarea id="generalNotes" rows="3" placeholder="Clima, momentos destacados, estado del sendero…"></textarea></label>
+        <label class="recapConfirm"><input id="confirmAccuracy" type="checkbox" required><span>Revisé la lista de aves.</span></label>
+        <div class="recapTurnstile"><div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk" data-language="es"></div></div>
+        <button class="recapSubmit" id="submitButton" type="submit">Enviar reporte</button>
+        <p class="recapNotice" id="submitStatus">Solo el personal autorizado de MBW verá tu número y reporte.</p>
+      </section>
+    </form>
+
+    <section class="recapSuccess hidden" id="successPanel" aria-live="polite">
+      <span>✓</span><h2>Reporte enviado</h2><p>Gracias por aportar al registro de avistamientos de Mindo.</p><strong id="successReference"></strong><button id="newRecapButton" type="button">Enviar otro reporte</button>
+    </section>
+  </main>
+  <script defer src="/assets/js/guide-tour-recap.js?v=2"></script>
+</body>
+</html>
