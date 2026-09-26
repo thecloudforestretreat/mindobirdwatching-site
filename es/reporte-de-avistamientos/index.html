@@ -11,7 +11,7 @@
   <link rel="alternate" hreflang="es" href="https://mindobirdwatching.com/es/reporte-de-avistamientos/">
   <link rel="alternate" hreflang="x-default" href="https://mindobirdwatching.com/guide-tour-recap/">
   <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/assets/css/guide-tour-recap.css?v=2">
+  <link rel="stylesheet" href="/assets/css/guide-tour-recap.css?v=3">
   <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 </head>
 <body>
@@ -30,18 +30,23 @@
           <label class="recapFull"><span>Número de colaborador *</span><input id="contributorNumber" type="password" inputmode="numeric" autocomplete="off" minlength="4" maxlength="12" pattern="[0-9]{4,12}" placeholder="Tu número privado" required><small>Te identifica sin mostrar una lista de guías.</small></label>
           <label><span>Fecha *</span><input id="tourDate" type="date" required></label>
           <label><span>Tipo de tour *</span><select id="tourType" required><option value="half_day">Medio día</option><option value="full_day">Día completo</option><option value="custom_private">Privado/personalizado</option><option value="multi_day">Varios días</option></select></label>
-          <label><span>Ruta *</span><select id="routeName" required><option value="">Elige una ruta…</option><option value="Mindo town and nearby gardens">Pueblo de Mindo y jardines cercanos</option><option value="Río Nambillo and forest trails">Río Nambillo y senderos del bosque</option><option value="Paz de las Aves area">Zona de Paz de las Aves</option><option value="San Lorenzo route">Ruta San Lorenzo</option><option value="Tandayapa and Bellavista corridor">Corredor Tandayapa y Bellavista</option><option value="Milpe and Silanche lowlands">Tierras bajas de Milpe y Silanche</option><option value="Mashpi road">Vía Mashpi</option><option value="Other">Otra</option></select></label>
+          <label><span>Ruta *</span><select id="routeName" required><option value="">Elige una ruta…</option><option value="mindo_town">Pueblo de Mindo y jardines cercanos</option><option value="rio_nambillo">Río Nambillo y senderos del bosque</option><option value="paz_de_las_aves">Zona de Paz de las Aves</option><option value="san_lorenzo">Ruta San Lorenzo</option><option value="tandayapa_bellavista">Corredor Tandayapa y Bellavista</option><option value="milpe_silanche">Tierras bajas de Milpe y Silanche</option><option value="mashpi_road">Vía Mashpi</option><option value="other">Otra</option></select></label>
           <label id="otherRouteWrap" class="recapFull hidden"><span>Nombre de la ruta *</span><input id="otherRoute" placeholder="Escribe la ruta general"></label>
         </div>
       </section>
 
       <section class="recapSection">
         <div class="recapSectionHead"><span>2</span><div><h2>Lista de aves</h2><p>Agrega todas las aves observadas</p></div><strong id="selectedCount">0</strong></div>
-        <button class="recapPreset" id="presetButton" type="button"><strong>Cargar aves comunes</strong><small>Según el tipo de tour seleccionado</small></button>
-        <label class="recapSearch"><span>Busca por nombre en español, inglés o código</span><input id="birdSearch" type="search" placeholder="Empieza a escribir un ave…" autocomplete="off"></label>
+        <button class="recapPreset" id="presetButton" type="button"><strong>Crear lista de la ruta</strong><small>Carga las aves más probables según la ruta y duración</small></button>
+        <div class="recapQuick hidden" id="quickChecklist">
+          <div class="recapQuickHead"><strong id="checklistVisibleCount">Aves probables</strong><span>Toca cada ave observada</span></div>
+          <div class="recapChecklistFilters" id="checklistFilters"><button type="button" data-checklist-filter="all" aria-pressed="true">Todas</button><button type="button" data-checklist-filter="signature" aria-pressed="false">Emblemáticas</button><button type="button" data-checklist-filter="likely" aria-pressed="false">Muy probables</button><button type="button" data-checklist-filter="possible" aria-pressed="false">Más</button></div>
+          <div class="recapChecklistGrid" id="checklistGrid"></div>
+        </div>
+        <label class="recapSearch"><span>¿Falta un ave? Busca en español, inglés o por código</span><input id="birdSearch" type="search" placeholder="Busca un avistamiento inusual…" autocomplete="off"></label>
         <div class="recapResults hidden" id="birdSearchResults"></div>
         <p class="recapNotice" id="catalogStatus">Cargando lista de aves…</p>
-        <div class="recapSelected" id="selectedBirds"><div class="recapEmpty">Busca un ave o carga la lista de aves comunes.</div></div>
+        <details class="recapSelectedEditor"><summary><strong id="selectedSummary">0 aves seleccionadas</strong><span>Edita vista/escuchada o cantidad</span></summary><button class="recapClear" id="clearSelectedButton" type="button">Borrar aves seleccionadas</button><div class="recapSelected" id="selectedBirds"><div class="recapEmpty">Toca las aves en la lista de la ruta o usa la búsqueda para un avistamiento inusual.</div></div></details>
       </section>
 
       <section class="recapSection">
@@ -58,6 +63,6 @@
       <span>✓</span><h2>Reporte enviado</h2><p>Gracias por aportar al registro de avistamientos de Mindo.</p><strong id="successReference"></strong><button id="newRecapButton" type="button">Enviar otro reporte</button>
     </section>
   </main>
-  <script defer src="/assets/js/guide-tour-recap.js?v=2"></script>
+  <script defer src="/assets/js/guide-tour-recap.js?v=3"></script>
 </body>
 </html>

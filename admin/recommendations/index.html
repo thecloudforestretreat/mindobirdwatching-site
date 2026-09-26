@@ -14,7 +14,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/admin.css?v=4" />
-  <link rel="stylesheet" href="/assets/css/admin-recommendations.css?v=20260925-3" />
+  <link rel="stylesheet" href="/assets/css/admin-recommendations.css?v=20260926-1" />
   <script>
     if (location.protocol.indexOf("http") === 0 && location.hostname !== "admin.mindobirdwatching.com") {
       location.replace("https://admin.mindobirdwatching.com/recommendations/");
@@ -55,6 +55,11 @@
           <span>Follow-ups due</span>
           <strong id="metricDue">0</strong>
           <small>pricing or contact work</small>
+        </article>
+        <article class="recommendationsMetric">
+          <span>Preferred</span>
+          <strong id="metricPreferred">0</strong>
+          <small>starred first-choice partners</small>
         </article>
       </section>
 
@@ -99,6 +104,12 @@
           <option value="pending">Pending</option>
           <option value="no">Not recommended</option>
         </select>
+        <select id="recommendationsSignal" aria-label="Filter by operational signal">
+          <option value="all">All partner signals</option>
+          <option value="preferred">Preferred only</option>
+          <option value="boxed_breakfast">Box breakfast</option>
+          <option value="guest_history">Has guest history</option>
+        </select>
         <div class="recommendationsViewButtons" aria-label="Layout selection">
           <button type="button" data-view="cards" aria-label="Card view" aria-pressed="true">▦</button>
           <button type="button" data-view="list" aria-label="List view" aria-pressed="false">☷</button>
@@ -122,8 +133,8 @@
       </section>
 
       <footer class="recommendationsSync">
-        <span><strong id="recommendationsDataStatus">Local draft</strong> · Changes currently stay in this browser.</span>
-        <span>Next integration: Google Sheet → n8n/API → this dashboard</span>
+        <span><strong id="recommendationsDataStatus">Local draft</strong> · Stars, guest counts, and tracking currently stay in this browser.</span>
+        <span>Next integration: calculate guest stays automatically from completed CRM lodging records.</span>
       </footer>
     </section>
   </main>
@@ -157,6 +168,6 @@
   <div class="recommendationsToast" id="recommendationsToast" role="status" aria-live="polite"></div>
 
   <script defer src="/assets/js/admin-nav.js?v=20260925-3"></script>
-  <script defer src="/assets/js/admin-recommendations.js?v=20260925-3"></script>
+  <script defer src="/assets/js/admin-recommendations.js?v=20260926-1"></script>
 </body>
 </html>

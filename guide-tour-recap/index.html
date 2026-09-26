@@ -11,7 +11,7 @@
   <link rel="alternate" hreflang="es" href="https://mindobirdwatching.com/es/reporte-de-avistamientos/">
   <link rel="alternate" hreflang="x-default" href="https://mindobirdwatching.com/guide-tour-recap/">
   <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/assets/css/guide-tour-recap.css?v=2">
+  <link rel="stylesheet" href="/assets/css/guide-tour-recap.css?v=3">
   <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
 </head>
 <body>
@@ -30,18 +30,23 @@
           <label class="recapFull"><span>Contributor number *</span><input id="contributorNumber" type="password" inputmode="numeric" autocomplete="off" minlength="4" maxlength="12" pattern="[0-9]{4,12}" placeholder="Your private number" required><small>This identifies you without showing a list of guides.</small></label>
           <label><span>Date *</span><input id="tourDate" type="date" required></label>
           <label><span>Tour type *</span><select id="tourType" required><option value="half_day">Half day</option><option value="full_day">Full day</option><option value="custom_private">Private/custom</option><option value="multi_day">Multi-day</option></select></label>
-          <label><span>Route *</span><select id="routeName" required><option value="">Choose route…</option><option>Mindo town and nearby gardens</option><option>Río Nambillo and forest trails</option><option>Paz de las Aves area</option><option>San Lorenzo route</option><option>Tandayapa and Bellavista corridor</option><option>Milpe and Silanche lowlands</option><option>Mashpi road</option><option value="Other">Other</option></select></label>
+          <label><span>Route *</span><select id="routeName" required><option value="">Choose route…</option><option value="mindo_town">Mindo town and nearby gardens</option><option value="rio_nambillo">Río Nambillo and forest trails</option><option value="paz_de_las_aves">Paz de las Aves area</option><option value="san_lorenzo">San Lorenzo route</option><option value="tandayapa_bellavista">Tandayapa and Bellavista corridor</option><option value="milpe_silanche">Milpe and Silanche lowlands</option><option value="mashpi_road">Mashpi road</option><option value="other">Other</option></select></label>
           <label id="otherRouteWrap" class="recapFull hidden"><span>Route name *</span><input id="otherRoute" placeholder="Enter the general route"></label>
         </div>
       </section>
 
       <section class="recapSection">
         <div class="recapSectionHead"><span>2</span><div><h2>Bird checklist</h2><p>Add every bird observed</p></div><strong id="selectedCount">0</strong></div>
-        <button class="recapPreset" id="presetButton" type="button"><strong>Load common birds</strong><small>Based on the selected tour type</small></button>
-        <label class="recapSearch"><span>Search English, Spanish, or species code</span><input id="birdSearch" type="search" placeholder="Start typing a bird…" autocomplete="off"></label>
+        <button class="recapPreset" id="presetButton" type="button"><strong>Build route checklist</strong><small>Loads the most likely birds for this route and tour length</small></button>
+        <div class="recapQuick hidden" id="quickChecklist">
+          <div class="recapQuickHead"><strong id="checklistVisibleCount">Likely birds</strong><span>Tap each bird observed</span></div>
+          <div class="recapChecklistFilters" id="checklistFilters"><button type="button" data-checklist-filter="all" aria-pressed="true">All</button><button type="button" data-checklist-filter="signature" aria-pressed="false">Signature</button><button type="button" data-checklist-filter="likely" aria-pressed="false">Very likely</button><button type="button" data-checklist-filter="possible" aria-pressed="false">More</button></div>
+          <div class="recapChecklistGrid" id="checklistGrid"></div>
+        </div>
+        <label class="recapSearch"><span>Missing a bird? Search English, Spanish, or species code</span><input id="birdSearch" type="search" placeholder="Search an unusual sighting…" autocomplete="off"></label>
         <div class="recapResults hidden" id="birdSearchResults"></div>
         <p class="recapNotice" id="catalogStatus">Loading bird list…</p>
-        <div class="recapSelected" id="selectedBirds"><div class="recapEmpty">Search for a bird or load a common checklist.</div></div>
+        <details class="recapSelectedEditor"><summary><strong id="selectedSummary">0 birds selected</strong><span>Edit heard/seen or quantity</span></summary><button class="recapClear" id="clearSelectedButton" type="button">Clear selected birds</button><div class="recapSelected" id="selectedBirds"><div class="recapEmpty">Tap birds in the route checklist or use search for an unusual sighting.</div></div></details>
       </section>
 
       <section class="recapSection">
@@ -58,6 +63,6 @@
       <span>✓</span><h2>Report submitted</h2><p>Thank you for contributing to Mindo’s sightings record.</p><strong id="successReference"></strong><button id="newRecapButton" type="button">Submit another report</button>
     </section>
   </main>
-  <script defer src="/assets/js/guide-tour-recap.js?v=2"></script>
+  <script defer src="/assets/js/guide-tour-recap.js?v=3"></script>
 </body>
 </html>

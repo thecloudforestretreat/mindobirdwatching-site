@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.09.25.3";
+  document.documentElement.dataset.recommendationsBuild = "2026.09.26.1";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -261,6 +261,7 @@
     search: document.getElementById("recommendationsSearch"),
     type: document.getElementById("recommendationsType"),
     decision: document.getElementById("recommendationsDecision"),
+    signal: document.getElementById("recommendationsSignal"),
     title: document.getElementById("recommendationsSectionTitle"),
     count: document.getElementById("recommendationsResultCount"),
     toast: document.getElementById("recommendationsToast"),
@@ -270,8 +271,10 @@
 
   var state = loadState();
   var partners = seedPartners.map(function (partner) {
-    return Object.assign({}, partner, state.updates[partner.id] || {});
-  }).concat(state.customPartners || []);
+    return Object.assign({ preferred: false, guestStays: 0 }, partner, state.updates[partner.id] || {});
+  }).concat((state.customPartners || []).map(function (partner) {
+    return Object.assign({ preferred: false, guestStays: 0 }, partner);
+  }));
   var activeCategory = "accommodations";
   var selectedId = partners.find(function (partner) { return partner.category === activeCategory; }).id;
   var currentView = "cards";
@@ -321,7 +324,9 @@
         followUp: partner.followUp,
         followUpDue: partner.followUpDue,
         owner: partner.owner,
-        note: partner.note
+        note: partner.note,
+        preferred: Boolean(partner.preferred),
+        guestStays: Math.max(0, Number(partner.guestStays) || 0)
       };
     }
     saveState();
@@ -335,6 +340,13 @@
     if (value === "yes") return "Recommended";
     if (value === "no") return "Not recommended";
     return "Pending decision";
+  }
+
+  function breakfastSignal(partner) {
+    var value = String(partner.breakfast || "").toLowerCase();
+    if (/takeaway|box breakfast (from|available)|boxed breakfast/.test(value)) return "available";
+    if (/confirm.*(box|takeaway)|box breakfast.*confirm/.test(value)) return "confirm";
+    return "none";
   }
 
   function isFollowUpDue(dateValue) {
@@ -351,6 +363,7 @@
     document.getElementById("metricRecommended").textContent = partners.filter(function (partner) { return partner.recommendation === "yes"; }).length;
     document.getElementById("metricPending").textContent = partners.filter(function (partner) { return partner.recommendation === "pending"; }).length;
     document.getElementById("metricDue").textContent = partners.filter(function (partner) { return partner.followUpDue; }).length;
+    document.getElementById("metricPreferred").textContent = partners.filter(function (partner) { return partner.preferred; }).length;
     document.querySelectorAll("[data-category-count]").forEach(function (element) {
       element.textContent = categoryPartners(element.dataset.categoryCount).length;
     });
@@ -374,18 +387,28 @@
       return partner.category === activeCategory &&
         (!query || searchable.indexOf(query) >= 0) &&
         (elements.type.value === "all" || partner.type === elements.type.value) &&
-        (elements.decision.value === "all" || partner.recommendation === elements.decision.value);
+        (elements.decision.value === "all" || partner.recommendation === elements.decision.value) &&
+        (elements.signal.value === "all" ||
+          (elements.signal.value === "preferred" && partner.preferred) ||
+          (elements.signal.value === "boxed_breakfast" && breakfastSignal(partner) === "available") ||
+          (elements.signal.value === "guest_history" && Number(partner.guestStays) > 0));
     });
   }
 
   function cardMarkup(partner) {
     var hasEmail = Boolean(partner.email);
     var hasPhone = Boolean(partner.phone);
+    var breakfast = breakfastSignal(partner);
+    var guestStays = Math.max(0, Number(partner.guestStays) || 0);
     return '' +
       '<article class="recommendationCard' + (partner.id === selectedId ? ' is-selected' : '') + '" data-partner-id="' + escapeHtml(partner.id) + '">' +
         '<div class="recommendationCardTop">' +
           '<div><div class="recommendationType">' + escapeHtml(partner.type) + '</div><h3>' + escapeHtml(partner.name) + '</h3><div class="recommendationLocation">⌖ ' + escapeHtml(partner.area || "Area pending") + '</div></div>' +
-          '<span class="recommendationBadge recommendationBadge--' + escapeHtml(partner.status) + '">' + escapeHtml(partner.statusText) + '</span>' +
+          '<div><button class="recommendationPreferred" type="button" data-preferred aria-pressed="' + Boolean(partner.preferred) + '" title="' + (partner.preferred ? 'Remove preferred status' : 'Mark as preferred') + '" aria-label="' + (partner.preferred ? 'Preferred partner' : 'Mark partner as preferred') + '">★</button> <span class="recommendationBadge recommendationBadge--' + escapeHtml(partner.status) + '">' + escapeHtml(partner.statusText) + '</span></div>' +
+        '</div>' +
+        '<div class="recommendationSignals">' +
+          (breakfast === 'available' ? '<span class="recommendationSignal recommendationSignal--breakfast">🥡 Box breakfast</span>' : breakfast === 'confirm' ? '<span class="recommendationSignal">? Confirm box breakfast</span>' : '') +
+          '<span class="recommendationSignal recommendationSignal--guests">👥 ' + guestStays + ' guest' + (guestStays === 1 ? '' : 's') + ' stayed</span>' +
         '</div>' +
         '<div class="recommendationPricing">' +
           '<div><span>Regular price</span><strong>' + escapeHtml(partner.regularPrice) + '</strong></div>' +
@@ -406,7 +429,7 @@
         '</div>' +
         '<div class="recommendationCardBottom">' +
           '<div class="recommendationFollowUp' + (partner.followUpDue ? ' is-due' : '') + '">Next follow-up<strong>' + escapeHtml(partner.followUp || "Not scheduled") + '</strong></div>' +
-          '<button class="recommendationDetailButton" type="button" data-view-detail="' + escapeHtml(partner.id) + '">View details →</button>' +
+          '<button class="recommendationDetailButton" type="button" data-view-detail="' + escapeHtml(partner.id) + '">Open profile →</button>' +
         '</div>' +
       '</article>';
   }
@@ -440,8 +463,7 @@
     elements.detail.style.display = "block";
     elements.detail.innerHTML = '' +
       '<div class="recommendationsDetailHeader">' +
-        '<div class="recommendationType">Selected partner</div>' +
-        '<h2>' + escapeHtml(partner.name) + '</h2>' +
+        '<div class="recommendationsDetailHeaderTop"><div><div class="recommendationType">Selected partner profile</div><h2 tabindex="-1" id="selectedPartnerHeading">' + escapeHtml(partner.name) + '</h2></div><button class="recommendationsDetailPreferred" type="button" data-detail-preferred aria-pressed="' + Boolean(partner.preferred) + '">★ ' + (partner.preferred ? 'Preferred' : 'Mark preferred') + '</button></div>' +
         '<p>' + escapeHtml(partner.type) + ' · ' + escapeHtml(partner.area || "Area pending") + ' · ' + escapeHtml(recommendationLabel(partner.recommendation)) + '</p>' +
       '</div>' +
       '<div class="recommendationsDetailBody">' +
@@ -458,6 +480,8 @@
           '<div class="recommendationsFact"><span>Pricing basis</span><strong>' + escapeHtml(partner.pricingBasis) + '</strong></div>' +
           '<div class="recommendationsFact"><span>Rate validity</span><strong>' + escapeHtml(partner.rateValidTo) + '</strong></div>' +
           '<div class="recommendationsFact"><span>Breakfast / service</span><strong>' + escapeHtml(partner.breakfast) + '</strong></div>' +
+          '<div class="recommendationsFact"><span>Box breakfast</span><strong>' + (breakfastSignal(partner) === 'available' ? 'Available' : breakfastSignal(partner) === 'confirm' ? 'Needs confirmation' : 'Not recorded') + '</strong></div>' +
+          '<div class="recommendationsFact"><span>Guests stayed</span><strong>' + Math.max(0, Number(partner.guestStays) || 0) + ' recorded</strong></div>' +
         '</div>' +
         '<div class="recommendationsDetailLabel">Attention</div>' +
         '<div class="recommendationsNotice">' + escapeHtml(partner.note || "No notes yet.") + '</div>' +
@@ -465,6 +489,7 @@
         '<div class="recommendationsFollowUpFields">' +
           '<label class="recommendationsField"><span>Next follow-up</span><input id="detailFollowUp" type="date" value="' + escapeHtml(partner.followUp || "") + '" /></label>' +
           '<label class="recommendationsField"><span>Owner</span><input id="detailOwner" value="' + escapeHtml(partner.owner || "") + '" placeholder="Assign owner" /></label>' +
+          '<label class="recommendationsField"><span>Guests stayed (manual)</span><input id="detailGuestStays" type="number" min="0" step="1" value="' + Math.max(0, Number(partner.guestStays) || 0) + '" /></label>' +
           '<label class="recommendationsField recommendationsField--full"><span>Internal note</span><textarea id="detailNote">' + escapeHtml(partner.note || "") + '</textarea></label>' +
         '</div>' +
         '<button class="recommendationsSaveFollowUp" id="savePartnerTracking" type="button">Save tracking</button>' +
@@ -526,6 +551,8 @@
       followUp: "",
       followUpDue: false,
       owner: "",
+      preferred: false,
+      guestStays: 0,
       breakfast: "To confirm",
       note: "New partner entry. Add pricing, service details, and review notes."
     };
@@ -545,7 +572,7 @@
     button.addEventListener("click", function () { switchCategory(button.dataset.category); });
   });
 
-  [elements.search, elements.type, elements.decision].forEach(function (element) {
+  [elements.search, elements.type, elements.decision, elements.signal].forEach(function (element) {
     element.addEventListener(element === elements.search ? "input" : "change", renderCards);
   });
 
@@ -582,10 +609,24 @@
       return;
     }
 
+    var preferredButton = event.target.closest("[data-preferred]");
+    if (preferredButton) {
+      partner.preferred = !partner.preferred;
+      storePartnerUpdate(partner);
+      updateMetrics();
+      renderCards();
+      showToast(partner.preferred ? "Marked as preferred" : "Preferred status removed");
+      return;
+    }
+
     var detailButton = event.target.closest("[data-view-detail]");
     if (detailButton) {
       selectedId = detailButton.dataset.viewDetail;
       renderCards();
+      window.requestAnimationFrame(function () {
+        var heading = document.getElementById("selectedPartnerHeading");
+        if (heading) { heading.focus({ preventScroll: true }); elements.detail.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      });
     }
   });
 
@@ -600,9 +641,19 @@
       return;
     }
 
+    if (event.target.closest("[data-detail-preferred]")) {
+      partner.preferred = !partner.preferred;
+      storePartnerUpdate(partner);
+      updateMetrics();
+      renderCards();
+      showToast(partner.preferred ? "Marked as preferred" : "Preferred status removed");
+      return;
+    }
+
     if (event.target.id === "savePartnerTracking") {
       partner.followUp = document.getElementById("detailFollowUp").value;
       partner.owner = document.getElementById("detailOwner").value.trim();
+      partner.guestStays = Math.max(0, Number(document.getElementById("detailGuestStays").value) || 0);
       partner.note = document.getElementById("detailNote").value.trim();
       partner.followUpDue = isFollowUpDue(partner.followUp);
       storePartnerUpdate(partner);
