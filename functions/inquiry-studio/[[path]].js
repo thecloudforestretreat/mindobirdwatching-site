@@ -19,6 +19,7 @@ export async function onRequest({request}) {
  }
  try {
   const response=await fetch(ORIGIN+url.pathname+url.search,{method:request.method,headers,body:request.method==='POST'?request.body:undefined,redirect:'manual',signal:AbortSignal.timeout(110000)});
+  if(response.headers.get('X-MBW-Inquiry-Studio')!=='1')return fail(503,'The studio connection is not configured yet.');
   if(response.status>=500)return fail(503,'The Mac mini studio is unavailable. Please try again shortly.');
   if(response.status>=300&&response.status<400)return fail(502,'Studio connection is not ready.');
   const output=new Headers(response.headers);output.set('Cache-Control','no-store');output.set('X-Frame-Options','SAMEORIGIN');output.delete('Set-Cookie');
