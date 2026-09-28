@@ -83,7 +83,7 @@
   {
     "id": "pilot",
     "label": "Inquiry Studio — Pilot",
-    "href": "http://127.0.0.1:8098/",
+    "href": "https://admin.mindobirdwatching.com/inquiry-studio/",
     "category": "guests",
     "external": true
   }
