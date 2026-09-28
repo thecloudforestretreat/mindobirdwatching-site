@@ -521,8 +521,8 @@
         </div>
         <div class="adminActions">
           <a class="btnAdmin" href="/">Admin</a>
-          <button class="btnAdmin primary" type="button" id="copyHtmlBtn">Copy HTML</button>
-          <button class="btnAdmin" type="button" id="downloadHtmlBtn">Download HTML</button>
+          <button class="btnAdmin primary" type="button" id="copyHtmlBtn" disabled aria-describedby="pricingReviewStatus">Copy HTML</button>
+          <button class="btnAdmin" type="button" id="downloadHtmlBtn" disabled aria-describedby="pricingReviewStatus">Download HTML</button>
           <button class="btnAdmin" type="button" id="resetBtn">Reset</button>
         </div>
       </div>
@@ -662,14 +662,21 @@ experiences waiting for you in Mindo.</textarea>
           <div class="adminTop" style="margin-bottom:12px;">
             <h2 class="panelTitle" style="margin:0;">Live Preview</h2>
             <div class="adminActions">
-              <button class="btnAdmin primary" type="button" id="copyRenderedBtn">Copy Rendered</button>
-              <button class="btnAdmin" type="button" id="toggleHtmlBtn">Show HTML</button>
+              <button class="btnAdmin primary" type="button" id="copyRenderedBtn" disabled aria-describedby="pricingReviewStatus">Copy Rendered</button>
+              <button class="btnAdmin" type="button" id="toggleHtmlBtn" disabled aria-describedby="pricingReviewStatus">Show HTML</button>
             </div>
+          </div>
+          <div id="pricingReviewPanel" style="margin-bottom:12px;padding:12px;border:1px solid #a9bca4;border-radius:10px;background:#f4f8f0;">
+            <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:normal;">
+              <input id="pricingReviewedInput" type="checkbox" style="width:auto;flex:none;margin-top:3px;" aria-describedby="pricingReviewStatus">
+              <span>I reviewed the prices, deposits, discounts, and payment terms in this email.</span>
+            </label>
+            <p id="pricingReviewStatus" role="status" style="margin:8px 0 0;">Review the complete preview, then confirm above to copy or download. Any email change requires a new review.</p>
           </div>
           <div class="previewWrap">
             <div class="emailPreview" id="emailPreview"></div>
           </div>
-          <textarea class="codeOutput" id="htmlOutput" spellcheck="false" hidden></textarea>
+          <textarea class="codeOutput" id="htmlOutput" readonly spellcheck="false" hidden></textarea>
         </section>
       </div>
     </main>
@@ -683,6 +690,7 @@ experiences waiting for you in Mindo.</textarea>
     (function(){
       "use strict";
 
+      let reviewedEmail = null;
       const state = {
         selected: new Set(),
         order: [],
@@ -764,11 +772,15 @@ experiences waiting for you in Mindo.</textarea>
           "emailWhatsappNumberInput",
           "introInput", "directAnswerInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "videoWeekInput", "videoFields", "videoUrlInput", "videoTitleInput", "videoIntroInput", "videoPreview",
           "selectedSummary", "blockGroups", "emailPreview", "htmlOutput", "copyHtmlBtn", "downloadHtmlBtn",
-          "copyRenderedBtn", "toggleHtmlBtn", "resetBtn", "resetOrderBtn", "toast"
+          "pricingReviewedInput", "pricingReviewStatus", "copyRenderedBtn", "toggleHtmlBtn", "resetBtn", "resetOrderBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
 
       function bindEvents(){
+        els.pricingReviewedInput.addEventListener("change", () => {
+          reviewedEmail = els.pricingReviewedInput.checked ? emailReviewSnapshot() : null;
+          syncPricingReview();
+        });
         ["emailTitleInput", "guestNameInput", "guestCountInput", "datesInput", "heroEyebrowInput", "introInput", "directAnswerInput", "nextStepsInput", "showHeroInput", "compactCardsInput", "videoUrlInput", "videoTitleInput", "videoIntroInput"].forEach(id => {
           els[id].addEventListener("input", updateEmail);
           els[id].addEventListener("change", updateEmail);
@@ -2046,6 +2058,7 @@ experiences waiting for you in Mindo.</textarea>
         const html = buildEmailHtml();
         els.emailPreview.innerHTML = html;
         els.htmlOutput.value = html;
+        syncPricingReview();
         const videoUrl = clean(els.videoUrlInput.value);
         els.videoPreview.textContent = videoUrl ? (clean(els.videoTitleInput.value) || "Video of the Week") + " — " + videoUrl : "Add a YouTube URL to include this optional section.";
         renderSelectedSummary();
@@ -2426,11 +2439,42 @@ experiences waiting for you in Mindo.</textarea>
         return "https://wa.me/" + selectedWhatsappNumber() + "?text=" + encodeURIComponent(message);
       }
 
+      function emailReviewSnapshot(){
+        return JSON.stringify([els.htmlOutput.value, els.emailPreview.innerHTML]);
+      }
+
+      function syncPricingReview(){
+        const approved = reviewedEmail !== null && reviewedEmail === emailReviewSnapshot();
+        if(!approved) reviewedEmail = null;
+        els.pricingReviewedInput.checked = approved;
+        ["copyHtmlBtn", "downloadHtmlBtn", "copyRenderedBtn", "toggleHtmlBtn"].forEach(id => {
+          els[id].disabled = !approved;
+        });
+        els.pricingReviewStatus.textContent = approved
+          ? "Pricing reviewed for this email. Copy and download are available."
+          : "Review the complete preview, then confirm above to copy or download. Any email change requires a new review.";
+        if(!approved){
+          state.showHtml = false;
+          els.htmlOutput.hidden = true;
+          els.toggleHtmlBtn.textContent = "Show HTML";
+        }
+        return approved;
+      }
+
+      function requirePricingReview(){
+        if(syncPricingReview()) return true;
+        showToast("Review the email pricing and confirm beside the preview first.");
+        els.pricingReviewedInput.focus();
+        return false;
+      }
+
       function copyHtml(){
+        if(!requirePricingReview()) return;
         copyText(els.htmlOutput.value).then(() => showToast("HTML copied"));
       }
 
       function copyRendered(){
+        if(!requirePricingReview()) return;
         const range = document.createRange();
         range.selectNodeContents(els.emailPreview);
         const selection = window.getSelection();
@@ -2446,12 +2490,14 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function toggleHtmlOutput(){
+        if(!requirePricingReview()) return;
         state.showHtml = !state.showHtml;
         els.htmlOutput.hidden = !state.showHtml;
         els.toggleHtmlBtn.textContent = state.showHtml ? "Hide HTML" : "Show HTML";
       }
 
       function downloadHtml(){
+        if(!requirePricingReview()) return;
         const guest = (els.guestNameInput.value || "guest").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
         const blob = new Blob([els.htmlOutput.value], { type:"text/html;charset=utf-8" });
         const url = URL.createObjectURL(blob);
