@@ -2,24 +2,92 @@
   "use strict";
 
   var pages = [
-    { id: "admin", label: "Admin Hub", href: "https://admin.mindobirdwatching.com/" },
-    { id: "birding", label: "Birding", href: "https://admin.mindobirdwatching.com/birding/" },
-    { id: "recommendations", label: "Recommendations", href: "https://admin.mindobirdwatching.com/recommendations/" },
-    { id: "media", label: "Media", href: "https://admin.mindobirdwatching.com/media/" },
-    { id: "guest-crm", label: "Guest CRM", href: "https://admin.mindobirdwatching.com/guest-crm/" },
-    { id: "email", label: "Email Generator", href: "https://admin.mindobirdwatching.com/custom-email-generator/" },
-    { id: "staff", label: "Staff Info", href: "https://admin.mindobirdwatching.com/staff-info/" },
-    { id: "itinerary", label: "Itinerary", href: "https://admin.mindobirdwatching.com/itinerary-generator/" },
-    { id: "zelle", label: "Zelle Invoice", href: "https://admin.mindobirdwatching.com/zelle-invoice-generator/" },
-    {
-      id: "stripe",
-      label: "Stripe Invoice",
-      href: "https://mindobirdwatching.com/book-tour/create/",
-      external: true
-    },
-    { id: "confirmation", label: "Tour Confirmation", href: "https://admin.mindobirdwatching.com/tour-confirmation-generator/" },
-    { id: "reports", label: "Reports", href: "https://admin.mindobirdwatching.com/reports/" }
-  ];
+  {
+    "id": "admin",
+    "label": "Admin Hub",
+    "href": "https://admin.mindobirdwatching.com/"
+  },
+  {
+    "id": "guest-crm",
+    "label": "Guest CRM",
+    "href": "https://admin.mindobirdwatching.com/guest-crm/",
+    "category": "guests"
+  },
+  {
+    "id": "marketing",
+    "label": "Marketing",
+    "href": "https://admin.mindobirdwatching.com/marketing/",
+    "category": "marketing"
+  },
+  {
+    "id": "reports",
+    "label": "Reports",
+    "href": "https://admin.mindobirdwatching.com/reports/",
+    "category": "reports"
+  },
+  {
+    "id": "staff",
+    "label": "Staff Info Library",
+    "href": "https://admin.mindobirdwatching.com/staff-info/",
+    "category": "staff"
+  },
+  {
+    "id": "email",
+    "label": "Custom Email Generator",
+    "href": "https://admin.mindobirdwatching.com/custom-email-generator/",
+    "category": "guests"
+  },
+  {
+    "id": "itinerary",
+    "label": "Itinerary Generator",
+    "href": "https://admin.mindobirdwatching.com/itinerary-generator/",
+    "category": "guests"
+  },
+  {
+    "id": "stripe",
+    "label": "Stripe Invoice",
+    "href": "https://mindobirdwatching.com/book-tour/create/",
+    "category": "guests",
+    "external": true
+  },
+  {
+    "id": "zelle",
+    "label": "Zelle Invoice Generator",
+    "href": "https://admin.mindobirdwatching.com/zelle-invoice-generator/",
+    "category": "guests"
+  },
+  {
+    "id": "confirmation",
+    "label": "Tour Confirmation Generator",
+    "href": "https://admin.mindobirdwatching.com/tour-confirmation-generator/",
+    "category": "guests"
+  },
+  {
+    "id": "birding",
+    "label": "Birding",
+    "href": "https://admin.mindobirdwatching.com/birding/",
+    "category": "resources"
+  },
+  {
+    "id": "recommendations",
+    "label": "Recommendations",
+    "href": "https://admin.mindobirdwatching.com/recommendations/",
+    "category": "resources"
+  },
+  {
+    "id": "media",
+    "label": "Media",
+    "href": "https://admin.mindobirdwatching.com/media/",
+    "category": "resources"
+  },
+  {
+    "id": "pilot",
+    "label": "Inquiry Studio — Pilot",
+    "href": "http://127.0.0.1:8098/",
+    "category": "guests",
+    "external": true
+  }
+];
 
   function normalizePath(pathname) {
     var path = pathname || "/";
@@ -45,6 +113,7 @@
   function makeLink(page, activeId) {
     var link = document.createElement("a");
     link.className = "adminGlobalNav__link" + (page.external ? " adminGlobalNav__external" : "");
+    if (page.category) link.dataset.category = page.category;
     link.href = page.href;
     link.textContent = page.label;
 
