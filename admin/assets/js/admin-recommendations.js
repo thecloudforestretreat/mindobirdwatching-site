@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.09.26.4 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.09.28.2 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.09.26.4";
+  document.documentElement.dataset.recommendationsBuild = "2026.09.28.2";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -325,31 +325,52 @@
       type: "Experience",
       name: "Mindo Chocolate Makers",
       area: "Mindo",
-      status: "pending",
-      statusText: "Awaiting rates",
-      regularPrice: "—",
-      ourPrice: "—",
-      savings: "Pending",
-      pricingBasis: "Per experience",
-      rateValidTo: "Pending",
-      contact: "Experience team",
-      phone: "",
+      status: "current",
+      statusText: "2026 rates current",
+      regularPrice: "Not supplied",
+      ourPrice: "$9–$33.73",
+      savings: "Operator tariff",
+      pricingBasis: "Per person / experience",
+      rateValidTo: "2026",
+      contact: "Edison",
+      phone: "+593 98 626 3805",
       email: "ecuador@mindochocolate.com",
       website: "https://www.elquetzaldemindo.com/",
+      instagram: "https://www.instagram.com/mindochocolate_ec/",
+      documentUrl: "/recommendations/files/mindo-chocolate-makers-tarifas-2026.pdf",
+      documentLabel: "Open 2026 tariff PDF",
       recommendation: "pending",
-      followUp: "2026-10-02",
+      followUp: "2026-10-05",
       followUpDue: true,
       owner: "Juan",
       preferred: true,
       verifiedResponse: true,
-      responseVerifiedAt: "2026-09-25",
+      responseVerifiedAt: "2026-09-28",
       replyTaskId: "mindo-chocolate-2026-09-25",
       replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Mindo Chocolate Makers",
       replyDraft: "Estimados amigos de Mindo Chocolate Makers,\n\nMuchas gracias por su respuesta y por aclararnos que trabajan como experiencia y no como alojamiento. Nos interesa mucho poder recomendar a nuestros viajeros sus experiencias de chocolate, cacao y café.\n\nPara completar nuestro registro, ¿nos podrían compartir las tarifas para operadores o aliados locales, la duración y horarios de cada experiencia, las condiciones de reserva y cualquier material o fotografía autorizada para promoción?\n\nQuedamos atentos y agradecemos mucho su interés en colaborar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
-      breakfast: "Café and restaurant available",
-      amenities: ["Chocolate tour", "Cacao legend tour", "Coffee tour", "Make-your-own chocolate bar", "Café", "Restaurant"],
-      note: "Request operator pricing and booking terms for chocolate, cacao, coffee, and make-your-own-bar experiences."
+      breakfast: "Café and restaurant available; restaurant reservations require at least 4 people",
+      amenities: ["Chocolate tour", "Cacao legend tour", "Coffee tour", "Ethnobotanical tour", "Make-your-own chocolate bar", "Café", "Restaurant"],
+      offerings: [
+        { name: "Mindo Chocolate Tour", price: "$9.00", details: "Daily 09:30–17:00 · about every 30 min · 1 hr · 1–15 people" },
+        { name: "Make Your Own Chocolate Bar", price: "$30.00", details: "Mon–Fri 17:00–18:30; weekends 08:00–19:00 · 1 hr · 1–5 people · reserve 2 hr ahead" },
+        { name: "Legend Tour", price: "$15.00", details: "Daily 18:00–19:30 · 1.5 hr · 2–15 people · minimum 3 participants · reserve 2 hr ahead" },
+        { name: "Coffee Tour", price: "$9.00", details: "Daily 09:30–17:00 · about every 30 min · 1 hr · 1–15 people" },
+        { name: "Ethnobotanical Tour", price: "$12.00", details: "Daily 09:30–17:00 · about every 30 min · 1 hr · 1–15 people" },
+        { name: "Chocolate Tour + Lunch", price: "$17.00", details: "$9 tour + $8 basic lunch" },
+        { name: "Combo 1", price: "$23.38", details: "$9 tour + $14.38 basic menu" },
+        { name: "Combo 2", price: "$27.98", details: "$9 tour + $18.98 two-course menu" },
+        { name: "Premium Combo", price: "$33.73", details: "$9 tour + $24.73 premium menu" }
+      ],
+      terms: [
+        "Operator rates apply only to registered travel agencies and independent guides; taxes are included.",
+        "General terms request booking at least 72 hours ahead, subject to availability. Confirmation requires a 50% deposit and proof of payment; the remaining 50% is due on the service date.",
+        "Registered national guides receive 20% off products with credentials. From 4 passengers, the guide's lunch is complimentary; from 12 passengers, lunch is complimentary for the guide and driver. Both receive a complimentary light drink during the tour.",
+        "Cancellations under 24 hours do not receive a deposit refund. Cancellations more than 24 hours ahead may be rescheduled without penalty, subject to availability. Documented exceptional events may receive a full deposit refund."
+      ],
+      sourceNotes: "Verify two conflicts before confirming a guest: the general terms require 72 hours' notice while two experiences state a 2-hour minimum; the 72-hour cancellation clause says 20% of the deposit is refunded while 10% is retained, which does not reconcile.",
+      note: "Tariff supplied directly by Edison on September 28, 2026. Public Ecuador email and WhatsApp were verified on the official contact page."
     }
   ];
 
@@ -658,6 +679,20 @@
       return;
     }
 
+    var offeringsMarkup = Array.isArray(partner.offerings) && partner.offerings.length ? '' +
+      '<div class="recommendationsDetailLabel">2026 operator pricing</div>' +
+      '<div class="recommendationsOfferings">' + partner.offerings.map(function (offering) {
+        return '<div class="recommendationsOffering"><div><strong>' + escapeHtml(offering.name) + '</strong><span>' + escapeHtml(offering.details || "") + '</span></div><b>' + escapeHtml(offering.price) + '</b></div>';
+      }).join("") + '</div>' : '';
+    var termsMarkup = Array.isArray(partner.terms) && partner.terms.length ? '' +
+      '<div class="recommendationsDetailLabel">Booking terms &amp; guide benefits</div>' +
+      '<ul class="recommendationsTerms">' + partner.terms.map(function (term) {
+        return '<li>' + escapeHtml(term) + '</li>';
+      }).join("") + '</ul>' : '';
+    var sourceNotesMarkup = partner.sourceNotes ? '' +
+      '<div class="recommendationsDetailLabel">Needs clarification</div>' +
+      '<div class="recommendationsNotice">' + escapeHtml(partner.sourceNotes) + '</div>' : '';
+
     elements.detail.style.display = "block";
     elements.detail.innerHTML = '' +
       (partner.image ? '<div class="recommendationsPartnerImage"><img src="' + escapeHtml(partner.image) + '" alt="' + escapeHtml(partner.imageAlt || partner.name) + '" loading="lazy" referrerpolicy="no-referrer" /><span>Official property photo</span></div>' : '') +
@@ -670,6 +705,8 @@
           '<button class="recommendationsDetailAction recommendationsDetailAction--primary" type="button" data-detail-copy="email"' + (partner.email ? '' : ' disabled') + '>Copy email</button>' +
           '<button class="recommendationsDetailAction" type="button" data-detail-copy="phone"' + (partner.phone ? '' : ' disabled') + '>Copy WhatsApp</button>' +
           (partner.website ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.website) + '" target="_blank" rel="noopener noreferrer">Open website ↗</a>' : '') +
+          (partner.instagram ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.instagram) + '" target="_blank" rel="noopener noreferrer">Instagram ↗</a>' : '') +
+          (partner.documentUrl ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.documentUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(partner.documentLabel || "Open source document") + ' ↗</a>' : '') +
           (partner.mapUrl ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.mapUrl) + '" target="_blank" rel="noopener noreferrer">Open map ↗</a>' : '') +
           (partner.mapUrl ? '<button class="recommendationsDetailAction" type="button" data-copy-map>Copy map link</button>' : '') +
           (partner.guestSummary ? '<button class="recommendationsDetailAction recommendationsDetailAction--share" type="button" data-copy-summary>Copy guest summary</button>' : '') +
@@ -693,6 +730,9 @@
         (partner.category === 'accommodations' ? '<p class="recommendationsEstimateNote">Invoice estimate only. A matched pickup location suggests the guest stayed here, but it is not a confirmed lodging record.</p>' : '') +
         replyPanelMarkup(partner) +
         amenitiesMarkup(partner) +
+        offeringsMarkup +
+        termsMarkup +
+        sourceNotesMarkup +
         '<div class="recommendationsDetailLabel">Attention</div>' +
         '<div class="recommendationsNotice">' + escapeHtml(partner.note || "No notes yet.") + '</div>' +
         '<div class="recommendationsDetailLabel">Follow-up tracking</div>' +
