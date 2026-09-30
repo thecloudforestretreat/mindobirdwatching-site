@@ -114,7 +114,13 @@
     var link = document.createElement("a");
     link.className = "adminGlobalNav__link" + (page.external ? " adminGlobalNav__external" : "");
     if (page.category) link.dataset.category = page.category;
-    link.href = page.href;
+    var restricted = document.body.dataset.adminRole === "birding-guide" && page.id !== "admin" && page.id !== "birding";
+    if (restricted) {
+      link.setAttribute("aria-disabled", "true");
+      link.setAttribute("title", "Your account has Birding access only.");
+    } else {
+      link.href = page.href;
+    }
     link.textContent = page.label;
 
     if (page.id === activeId) {
@@ -122,7 +128,7 @@
       link.addEventListener("click", function (event) {
         event.preventDefault();
       });
-    } else if (page.id !== "admin") {
+    } else if (!restricted && page.id !== "admin") {
       link.target = "_blank";
       link.rel = "noopener noreferrer";
     }
@@ -175,3 +181,4 @@
     init();
   }
 })();
+
