@@ -52,7 +52,7 @@ export async function onRequestGet({ request, env }) {
   const requestLiveStats = input.get("liveStats") === "1" && Boolean(speciesCode);
   const trackDemand = input.get("trackDemand") === "1" && Boolean(speciesCode);
   try {
-    const response = await fetch(webhook, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "list_sightings", speciesCode, source, days, limit, liveStats: requestLiveStats, trackDemand, requested_at: new Date().toISOString() }), signal: AbortSignal.timeout(15000) });
+    const response = await fetch(webhook, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "list_sightings", speciesCode, source, days, limit, liveStats: requestLiveStats, trackDemand, requested_at: new Date().toISOString() }), signal: AbortSignal.timeout(20000) });
     const text = await response.text();
     if (!response.ok) throw new Error("Sightings workflow returned " + response.status + ": " + text.slice(0, 200));
     let data;
@@ -66,17 +66,40 @@ export async function onRequestGet({ request, env }) {
       return json(request, { ok: true, count: Math.min(ebirdSightings.length, limit), sightings: ebirdSightings.slice(0, limit), stats: liveStats(speciesCode, ebirdSightings, limited), demand_tracked: data.demand_tracked === true });
     }
     const sightings = sightingsFrom(data);
-    return json(request, { ok: true, count: sightings.slice(0, limit).length, sightings: sightings.slice(0, limit), stats: data.stats || null });
+    return json(request, {
+      ok: true,
+      count: sightings.slice(0, limit).length,
+      sightings: sightings.slice(0, limit),
+      stats: data.stats || null,
+      ebird_available: data.ebird_available !== false,
+      degraded: Boolean(data.warning),
+      warning: clean(data.warning, 240),
+    });
   } catch (error) {
     console.error("Admin sightings workflow lookup failed", { message: error?.message });
     if (source !== "guide") {
       try {
         const sightings = await fetchEbird(env, { speciesCode, days, limit });
-        if (sightings.length) return json(request, { ok: true, count: sightings.slice(0, limit).length, sightings: sightings.slice(0, limit), stats: requestLiveStats ? liveStats(speciesCode, sightings, sightings.length >= limit) : null, demand_tracked: false, fallback: "ebird" });
+        if (sightings.length) return json(request, {
+          ok: true,
+          count: sightings.slice(0, limit).length,
+          sightings: sightings.slice(0, limit),
+          stats: requestLiveStats ? liveStats(speciesCode, sightings, sightings.length >= limit) : null,
+          demand_tracked: false,
+          fallback: "ebird",
+          degraded: source === "all",
+          warning: source === "all" ? "Guide reports are temporarily unavailable; live eBird sightings are shown." : "",
+        });
       } catch (ebirdError) { console.error("Direct eBird fallback failed", { message: ebirdError?.message }); }
     }
     if (requestLiveStats) return json(request, { ok: false, stats_available: false, message: "Live eBird data is unavailable. No zero totals were recorded." }, 503);
-    return json(request, { ok: true, count: 0, sightings: [], setup_required: true, message: "No sightings have been synced yet. Activate the MBW Birding Data workflow to load eBird and guide reports." });
+    return json(request, {
+      ok: false,
+      count: 0,
+      sightings: [],
+      degraded: true,
+      message: "The sightings service is temporarily unavailable. Existing records are safe; please try Refresh shortly.",
+    }, 503);
   }
 }
 
