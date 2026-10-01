@@ -91,4 +91,8 @@ class PilotTests(unittest.TestCase):
    data=server.snapshot();self.assertEqual(data['source']['sheet'],'crm_pipeline_review');self.assertGreater(len(data['records']),0)
    self.assertEqual(server.find(data['records'][0]['inquiry_id'])['inquiry_id'],data['records'][0]['inquiry_id'])
    with self.assertRaises(ValueError):server.find('missing')
+ def test_new_studio_source_keeps_explicit_contact_fields(self):
+  row=server.source_row({'guest_name':'Sjaak Klaassen','guest_email':'SJAAK@EXAMPLE.COM','guest_phone':'+31 6 1234 5678'})
+  self.assertEqual(row['email'],'sjaak@example.com')
+  self.assertEqual(row['phone_normalized'],'31612345678')
 if __name__=='__main__':unittest.main()
