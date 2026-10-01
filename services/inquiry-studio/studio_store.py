@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import secrets
 from datetime import datetime, timezone
 from urllib.request import Request, urlopen
@@ -77,6 +78,108 @@ def now():
 def new_id():
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     return f"IST-{stamp}-{secrets.token_hex(3).upper()}"
+
+
+def _crm_ids(studio_id):
+    parts = str(studio_id or new_id()).split("-")
+    stamp = parts[1] if len(parts) > 1 else datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    suffix = parts[-1][-6:].upper()
+    return f"INQ-{stamp}-{suffix}", f"G-{stamp}-{suffix}"
+
+
+def _name_parts(full_name):
+    parts = str(full_name or "").strip().split()
+    if not parts:
+        return "", ""
+    return parts[0], " ".join(parts[1:])
+
+
+def _iso_dates(values):
+    dates = []
+    for value in values if isinstance(values, list) else []:
+        match = re.search(r"\b20\d{2}-\d{2}-\d{2}\b", str(value))
+        if match:
+            dates.append(match.group(0))
+    return dates
+
+
+def create_crm_guest_and_inquiry(row, source, analysis, studio_id, opener=urlopen):
+    """Create the main CRM guest and inquiry for a standalone Studio intake."""
+    timestamp = now()
+    inquiry_id, guest_id = _crm_ids(studio_id)
+    full_name = str(row.get("full_name") or "").strip()
+    first_name, last_name = _name_parts(full_name)
+    email = str(row.get("email") or "").strip().lower()
+    phone = str(row.get("phone_number") or row.get("phone_normalized") or "").strip()
+    phone_normalized = "".join(character for character in phone if character.isdigit())
+    profile = analysis.get("guest_profile") if isinstance(analysis.get("guest_profile"), dict) else {}
+    party_size = profile.get("party_size") or profile.get("guest_count") or ""
+    country = profile.get("country") or profile.get("home_country") or ""
+    dates = _iso_dates(analysis.get("requested_dates"))
+    requested_text = "; ".join(str(value) for value in analysis.get("requested_dates", []) if str(value).strip())
+    targets = "; ".join(str(value) for value in analysis.get("target_species", []) if str(value).strip())
+    inquiry = {
+        "inquiry_id": inquiry_id,
+        "guest_id": guest_id,
+        "created_at": timestamp,
+        "updated_at": timestamp,
+        "source_type": "inquiry_studio",
+        "source_tab": "inquiry_studio",
+        "status": "new",
+        "stage_changed_at": timestamp,
+        "next_action": "Review Inquiry Studio draft and obtain missing details",
+        "first_name": first_name,
+        "last_name": last_name,
+        "full_name": full_name,
+        "email": email,
+        "email_normalized": email,
+        "phone_raw": phone,
+        "phone_normalized": phone_normalized,
+        "requested_date_start": dates[0] if dates else "",
+        "requested_date_end": dates[-1] if dates else "",
+        "requested_date_text": requested_text,
+        "guest_count": str(party_size),
+        "guest_count_text": str(party_size),
+        "tour_type": "Custom Tour",
+        "tour_category": "Custom Tour",
+        "transportation_needed": "Unknown",
+        "special_interests": targets,
+        "message_questions": source.get("message", ""),
+        "internal_notes": f"Created from Inquiry Studio {studio_id}; all AI output requires review.",
+        "availability_status": "pending",
+        "quote_status": "not_sent",
+        "payment_status": "unpaid",
+        "grouping_preference": "unknown",
+        "grouping_status": "unmatched",
+        "inquiry_studio_id": studio_id,
+        "inquiry_studio_status": "draft",
+        "inquiry_studio_updated_at": timestamp,
+    }
+    guest = {
+        "guest_id": guest_id,
+        "phone_number": phone_normalized or phone,
+        "phone_raw": phone,
+        "phone_normalized": phone_normalized,
+        "first_name": first_name,
+        "last_name": last_name,
+        "full_name": full_name,
+        "country": country,
+        "home_country": country,
+        "email": email,
+        "guest_email": email,
+        "notes": "Created from Inquiry Studio custom-tour intake.",
+        "status": "active",
+        "guest_type": "Inquiry Studio",
+        "total_inquiries": "1",
+        "total_confirmed_bookings": "0",
+        "created_at": timestamp,
+        "updated_at": timestamp,
+    }
+    result = request_n8n(
+        {"action": "create_guest_and_inquiry", "guest_row": guest, "inquiry_row": inquiry},
+        opener,
+    )
+    return result.get("record") or inquiry
 
 
 def _json(value):
@@ -218,4 +321,3 @@ def get(inquiry_id="", inquiry_studio_id="", opener=urlopen):
         opener,
     )
     return result.get("record") or {}
-

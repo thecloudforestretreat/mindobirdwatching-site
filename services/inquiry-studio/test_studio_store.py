@@ -59,7 +59,34 @@ class StudioStoreTests(unittest.TestCase):
         self.assertEqual([item["action"] for item in requests], ["save_inquiry_studio", "update_inquiry"])
         self.assertEqual(requests[1]["inquiry_row"]["inquiry_studio_id"], record["inquiry_studio_id"])
 
+    def test_create_new_guest_and_inquiry_from_studio(self):
+        requests = []
+
+        def opener(request, timeout):
+            payload = json.loads(request.data)
+            requests.append(payload)
+            return io.BytesIO(json.dumps({"ok": True, "record": payload["inquiry_row"]}).encode())
+
+        row = {
+            "full_name": "Sjaak Klaassen",
+            "email": "sjaak@example.com",
+            "phone_number": "+31 6 1234 5678",
+        }
+        analysis = self.analysis()
+        analysis["guest_profile"] = {"party_size": 2, "country": "The Netherlands"}
+        created = studio_store.create_crm_guest_and_inquiry(
+            row,
+            {"message": "Custom wildlife tour request"},
+            analysis,
+            "IST-20261001190000-ABC123",
+            opener,
+        )
+        self.assertEqual(created["inquiry_id"], "INQ-20261001190000-ABC123")
+        self.assertEqual(requests[0]["action"], "create_guest_and_inquiry")
+        self.assertEqual(requests[0]["guest_row"]["phone_normalized"], "31612345678")
+        self.assertEqual(requests[0]["inquiry_row"]["guest_count"], "2")
+        self.assertEqual(requests[0]["inquiry_row"]["inquiry_studio_id"], "IST-20261001190000-ABC123")
+
 
 if __name__ == "__main__":
     unittest.main()
-
