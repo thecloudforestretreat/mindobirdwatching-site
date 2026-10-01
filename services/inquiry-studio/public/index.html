@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MBW · Inquiry Studio</title>
+  <link rel="stylesheet" href="/pilot.css">
+</head>
+<body>
+  <header>
+    <div>
+      <small>MINDO BIRD WATCHING · LOCAL AI</small>
+      <h1>Inquiry Studio</h1>
+    </div>
+    <span class="badge">Review workspace · No automatic sending</span>
+  </header>
+
+  <div class="notice">
+    Prepare quick replies or turn a detailed request, itinerary image, or PDF into a guest follow-up and concise guide-pricing brief. Everything requires your review.
+  </div>
+
+  <main>
+    <aside>
+      <button id="newIntake" class="primary wide">+ New custom-tour intake</button>
+      <label>
+        Find a CRM inquiry
+        <input id="search" placeholder="Name, interest, date, or status">
+      </label>
+      <p id="source" class="muted" role="status"></p>
+      <button id="reload">Reload inquiries</button>
+      <div id="inquiries"></div>
+    </aside>
+
+    <section class="workspace">
+      <div id="empty">
+        <h2>Turn an inquiry into a useful next step.</h2>
+        <p>Select a CRM guest for a quick reply, or start a custom-tour intake with pasted text, screenshots, or PDFs.</p>
+        <ol>
+          <li>Read and structure the request</li>
+          <li>Prepare the guest’s follow-up questions</li>
+          <li>Create concise day-by-day guide pricing lines</li>
+          <li>Review and save the record to the CRM</li>
+        </ol>
+        <button id="emptyNewIntake" class="primary">Start custom-tour intake</button>
+      </div>
+
+      <div id="detail" hidden>
+        <div class="detailhead">
+          <div>
+            <small id="state"></small>
+            <h2 id="name"></h2>
+            <p id="facts"></p>
+          </div>
+          <div class="actions">
+            <button id="manual">Open manual editor</button>
+            <button id="generate">Prepare quick reply</button>
+            <button id="openStudio" class="primary">Analyze full request</button>
+          </div>
+        </div>
+
+        <div class="context">
+          <section>
+            <h3>Guest’s request</h3>
+            <p id="request"></p>
+            <p id="interests"></p>
+          </section>
+          <section>
+            <label>
+              Additional guest message
+              <span class="muted">optional · saved with the local quick-reply draft</span>
+              <textarea id="supplemental" placeholder="Paste any missing question or guest message here. Do not paste private team notes."></textarea>
+            </label>
+          </section>
+        </div>
+
+        <p id="status" role="status"></p>
+
+        <div id="review" hidden>
+          <h3>Before you send</h3>
+          <ul id="checks"></ul>
+        </div>
+
+        <div id="editorWrap" hidden>
+          <div class="editorhead">
+            <div>
+              <strong>Email draft</strong>
+              <span class="muted"> · Edit wording, prices, tours and activities below</span>
+            </div>
+            <button id="save">Save local draft</button>
+          </div>
+          <iframe title="Editable email generator" id="editor" src="about:blank"></iframe>
+        </div>
+      </div>
+
+      <section id="studio" class="studio" hidden>
+        <div class="studioHead">
+          <div>
+            <small>CUSTOM TOUR WORKSPACE</small>
+            <h2 id="studioTitle">Analyze a guest request</h2>
+          </div>
+          <button id="closeStudio">Close</button>
+        </div>
+
+        <div class="intakeGrid">
+          <label>
+            Guest name
+            <input id="studioGuestName" placeholder="Guest or group name">
+          </label>
+          <label>
+            Reply language
+            <select id="studioLanguage">
+              <option value="auto">Match the guest</option>
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+            </select>
+          </label>
+          <label class="spanTwo">
+            Email subject or short label
+            <input id="studioSubject" placeholder="Custom Ecuador wildlife tour · December 2026">
+          </label>
+          <label class="spanTwo">
+            Guest’s complete request
+            <textarea id="studioMessage" class="large" placeholder="Paste the complete email, WhatsApp message, or notes here."></textarea>
+          </label>
+          <label class="spanTwo uploadBox">
+            Images or PDFs
+            <input id="studioFiles" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple>
+            <span class="muted">Up to 5 files, 8 MB each. Files are analyzed locally and are not stored in Google Sheets.</span>
+          </label>
+        </div>
+
+        <div class="studioActions">
+          <button id="analyzeStudio" class="primary">Analyze with local AI</button>
+          <span id="studioStatus" role="status">Nothing is sent to the guest or guides.</span>
+        </div>
+
+        <div id="studioResults" hidden>
+          <div class="resultHeader">
+            <span id="complexity" class="resultBadge"></span>
+            <span id="validationStatus" class="muted"></span>
+          </div>
+
+          <div class="resultGrid">
+            <section class="resultCard">
+              <h3>Request summary</h3>
+              <p id="requestSummary"></p>
+            </section>
+            <section class="resultCard">
+              <h3>Questions and checks</h3>
+              <ul id="studioChecks"></ul>
+            </section>
+          </div>
+
+          <section class="resultCard">
+            <h3>Proposed day breakdown</h3>
+            <div id="proposedDays"></div>
+          </section>
+
+          <div class="draftGrid">
+            <section class="resultCard">
+              <div class="cardTitle">
+                <h3>Initial guest reply</h3>
+                <button id="copyGuestReply">Copy</button>
+              </div>
+              <textarea id="guestReply" class="draftArea"></textarea>
+            </section>
+            <section class="resultCard">
+              <div class="cardTitle">
+                <h3>Guide pricing brief</h3>
+                <button id="copyGuideBrief">Copy</button>
+              </div>
+              <textarea id="guideBrief" class="draftArea"></textarea>
+            </section>
+          </div>
+
+          <section class="resultCard">
+            <h3>Guide response or quote</h3>
+            <div class="guideResponseRow">
+              <input id="guideSender" placeholder="Guide name, e.g. Neicer">
+              <textarea id="guideResponse" placeholder="Paste the guide’s reply or price breakdown here."></textarea>
+              <button id="saveGuideResponse">Add to conversation</button>
+            </div>
+          </section>
+
+          <div class="saveBar">
+            <span id="saveNote">Review both drafts before saving.</span>
+            <button id="saveStudio" class="primary">Save Studio record to CRM</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

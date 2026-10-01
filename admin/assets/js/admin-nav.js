@@ -82,7 +82,7 @@
   },
   {
     "id": "pilot",
-    "label": "Inquiry Studio — Pilot",
+    "label": "Inquiry Studio",
     "href": "https://admin.mindobirdwatching.com/inquiry-studio/",
     "category": "guests",
     "external": true
@@ -181,4 +181,3 @@
     init();
   }
 })();
-
