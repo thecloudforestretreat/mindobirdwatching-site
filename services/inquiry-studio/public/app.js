@@ -307,6 +307,8 @@ function resetStudio() {
   $('studioResults').hidden = true;
   $('studioSubject').value = '';
   $('studioMessage').value = '';
+  $('studioGuestEmail').value = '';
+  $('studioGuestPhone').value = '';
   $('studioFiles').value = '';
   $('studioLanguage').value = 'auto';
   $('guideResponse').value = '';
@@ -321,6 +323,8 @@ async function openStudio(row = null) {
   $('detail').hidden = true;
   $('studio').hidden = false;
   $('studioGuestName').value = row?.full_name || '';
+  $('studioGuestEmail').value = row?.email || '';
+  $('studioGuestPhone').value = row?.phone_normalized || row?.phone_number || '';
   $('studioMessage').value = row?.message_questions || '';
   text('studioTitle', row ? 'Analyze ' + (row.full_name || 'this inquiry') : 'Analyze a new guest request');
   renderList();
@@ -395,6 +399,8 @@ $('analyzeStudio').onclick = async () => {
     const request = await api('/api/analyze', {
       inquiry_id: current?.inquiry_id || '',
       guest_name: $('studioGuestName').value,
+      guest_email: $('studioGuestEmail').value,
+      guest_phone: $('studioGuestPhone').value,
       subject: $('studioSubject').value,
       message: $('studioMessage').value,
       output_language: $('studioLanguage').value,
@@ -510,6 +516,7 @@ $('copyGuideBrief').onclick = () => copyFrom('guideBrief', 'copyGuideBrief');
 
 $('saveStudio').onclick = async () => {
   if (!studioAnalysis || busy) return;
+  const isNewGuest = !current?.inquiry_id;
   busy = true;
   $('saveStudio').disabled = true;
   text('studioStatus', 'Saving the reviewed Studio record and CRM link…');
@@ -517,6 +524,8 @@ $('saveStudio').onclick = async () => {
     const result = await api('/api/save-studio', {
       inquiry_id: current?.inquiry_id || '',
       guest_name: $('studioGuestName').value,
+      guest_email: $('studioGuestEmail').value,
+      guest_phone: $('studioGuestPhone').value,
       subject: $('studioSubject').value,
       message: $('studioMessage').value,
       source_type: studioManifest.length ? 'text_with_attachments' : 'manual_text',
@@ -525,7 +534,13 @@ $('saveStudio').onclick = async () => {
       existing: studioRecord || {},
     });
     studioRecord = result.record;
-    text('studioStatus', 'Saved to crm_inquiry_studio and linked to the CRM inquiry.');
+    if (isNewGuest && result.crm_record?.inquiry_id) current = result.crm_record;
+    text(
+      'studioStatus',
+      isNewGuest
+        ? 'New guest and inquiry created in the CRM, then linked to this Studio record.'
+        : 'Saved to crm_inquiry_studio and linked to the CRM inquiry.',
+    );
     text('saveNote', 'Saved as ' + studioRecord.inquiry_studio_id + ' · revision ' + studioRecord.revision);
   } catch (error) {
     text('studioStatus', error.message);
@@ -567,4 +582,3 @@ $('saveGuideResponse').onclick = async () => {
     text('source', error.message);
   }
 })();
-

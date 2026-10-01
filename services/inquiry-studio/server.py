@@ -200,8 +200,12 @@ def source_row(body):
  inquiry_id=str(body.get('inquiry_id') or '').strip()
  if inquiry_id:return find(inquiry_id)
  name=str(body.get('guest_name') or '').strip()
+ email=str(body.get('guest_email') or '').strip().lower()
+ phone=str(body.get('guest_phone') or '').strip()
  return {
   'inquiry_id':'','guest_id':'','full_name':name,'first_name':name.split(' ')[0] if name else '',
+  'email':email,'email_normalized':email,'phone_number':phone,'phone_raw':phone,
+  'phone_normalized':''.join(character for character in phone if character.isdigit()),
   'assigned_to':'','requested_date_start':'','requested_date_end':'','requested_date_text':'',
   'guest_count':'','guest_count_text':'','tour_type':'','tour_category':'','accommodation_needs':'',
   'transportation_needed':'','pickup_location':'','special_interests':'','message_questions':'',
@@ -285,9 +289,17 @@ class Handler(BaseHTTPRequestHandler):
     existing=body.get('existing') if isinstance(body.get('existing'),dict) else {}
     source={'subject':str(body.get('subject') or ''),'message':str(body.get('message') or ''),'source_type':str(body.get('source_type') or 'manual_text')}
     record=studio_store.build_record(row,source,analysis,body.get('attachment_manifest') or [],existing)
+    if not row.get('inquiry_id'):
+     if not row.get('full_name'):
+      raise ValueError('Enter the guest name before saving to the CRM')
+     if not row.get('email') and not row.get('phone_normalized'):
+      raise ValueError('Enter the guest email or phone number before saving a new CRM guest')
+     row=studio_store.create_crm_guest_and_inquiry(row,source,analysis,record['inquiry_studio_id'])
+     record['inquiry_id']=row['inquiry_id']
+     record['guest_id']=row['guest_id']
     studio_store.save(record)
     with SAVE_LOCK:write_private(PRIVATE/key(record['inquiry_studio_id']),{'record':record,'saved_at':datetime.now(timezone.utc).isoformat()})
-    return self.reply(200,{'ok':True,'record':record})
+    return self.reply(200,{'ok':True,'record':record,'crm_record':row})
    if path=='/api/guide-response':
     record=body.get('record')
     if not isinstance(record,dict):raise ValueError('Missing Studio record')
