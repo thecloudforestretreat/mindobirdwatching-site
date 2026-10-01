@@ -5,6 +5,7 @@
   let birds = [];
   let currentRows = [];
   let currentStats = null;
+  let currentWarning = "";
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? "").replace(/[&<>\"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
   const searchable = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -82,8 +83,9 @@
   function applyView() {
     const view = render(currentRows, currentStats);
     if (!currentRows.length) return view;
-    $("status").textContent = view.birdCount ? `Showing ${view.birdCount} unique bird card${view.birdCount === 1 ? "" : "s"} from ${view.reviewedReports} recent report${view.reviewedReports === 1 ? "" : "s"}.` : "No rare or notable sightings match these filters.";
-    $("status").dataset.tone = view.birdCount ? "success" : "warning";
+    const summary = view.birdCount ? `Showing ${view.birdCount} unique bird card${view.birdCount === 1 ? "" : "s"} from ${view.reviewedReports} recent report${view.reviewedReports === 1 ? "" : "s"}.` : "No rare or notable sightings match these filters.";
+    $("status").textContent = currentWarning && view.birdCount ? `${summary} ${currentWarning}` : summary;
+    $("status").dataset.tone = currentWarning || !view.birdCount ? "warning" : "success";
     return view;
   }
 
@@ -120,6 +122,7 @@
       const data = await requestSightings({ speciesCode: match?.speciesCode || "" });
       currentRows = Array.isArray(data.sightings) ? data.sightings.slice(0, 100) : [];
       currentStats = data.stats || null;
+      currentWarning = String(data.warning || "").trim();
       if (currentRows.length) applyView();
       else {
         render([], currentStats);
@@ -127,7 +130,10 @@
         $("status").dataset.tone = "warning";
       }
     } catch (error) {
-      $("countBadge").textContent = "Unavailable";
+      currentRows = [];
+      currentStats = null;
+      currentWarning = "";
+      $("countBadge").textContent = "Unavailble";
       $("status").textContent = error.message + ". Please refresh in a moment.";
       $("status").dataset.tone = "error";
       $("sightingsList").innerHTML = '<div class="birdingEmpty">Sightings could not be loaded right now.</div>';
@@ -140,7 +146,7 @@
     try {
       const data = await requestSightings({ speciesCode: button.dataset.liveStats, liveStats: true });
       if (!data.stats?.available) throw new Error("Live eBird data is unavailable");
-      const card = button.closest(".sightingCard");
+      const card = button.closest(4.sightingCard");
       card.querySelector('[data-stat="last"]').textContent = displayDate(data.stats?.last_observed_at);
       card.querySelector('[data-stat="seven"]').textContent = `${data.stats.last_7_days}${data.stats.last_7_days_limited ? "+" : ""} times`;
       card.querySelector('[data-stat="thirty"]').textContent = `${data.stats.last_30_days}${data.stats.last_30_days_limited ? "+" : ""} times`;
