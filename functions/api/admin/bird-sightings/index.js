@@ -41,6 +41,19 @@ function sightingsFrom(data) {
   return Array.isArray(data) ? data : Array.isArray(data?.sightings) ? data.sightings : Array.isArray(data?.data) ? data.data : [];
 }
 
+async function fetchWorkflow(webhook, payload) {
+  const response = await fetch(webhook, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(20000),
+  });
+  const text = await response.text();
+  if (!response.ok) throw new Error("Sightings workflow returned " + response.status + ": " + text.slice(0, 200));
+  try { return JSON.parse(text || "{}"); }
+  catch { throw new Error("Sightings workflow returned HTML instead of JSON."); }
+}
+
 export async function onRequestGet({ request, env }) {
   const webhook = env.N8N_ADMIN_BIRD_SIGHTINGS_WEBHOOK_URL || DEFAULT_WEBHOOK;
   const input = new URL(request.url).searchParams;
@@ -51,13 +64,9 @@ export async function onRequestGet({ request, env }) {
   const limit = Math.min(100, Math.max(1, Number(input.get("limit")) || 100));
   const requestLiveStats = input.get("liveStats") === "1" && Boolean(speciesCode);
   const trackDemand = input.get("trackDemand") === "1" && Boolean(speciesCode);
+  const payload = { action: "list_sightings", speciesCode, source, days, limit, liveStats: requestLiveStats, trackDemand, requested_at: new Date().toISOString() };
   try {
-    const response = await fetch(webhook, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "list_sightings", speciesCode, source, days, limit, liveStats: requestLiveStats, trackDemand, requested_at: new Date().toISOString() }), signal: AbortSignal.timeout(20000) });
-    const text = await response.text();
-    if (!response.ok) throw new Error("Sightings workflow returned " + response.status + ": " + text.slice(0, 200));
-    let data;
-    try { data = JSON.parse(text || "{}"); }
-    catch { throw new Error("Sightings workflow returned HTML instead of JSON."); }
+    const data = await fetchWorkflow(webhook, payload);
     if (requestLiveStats) {
       let ebirdSightings = sightingsFrom(data).filter((row) => row && row.source === "ebird" && row.speciesCode === speciesCode);
       if (!ebirdSightings.length && (env.EBIRD_API_KEY || env.EBIRD_API_TOKEN)) ebirdSightings = await fetchEbird(env, { speciesCode, days: 30, limit });
@@ -77,6 +86,27 @@ export async function onRequestGet({ request, env }) {
     });
   } catch (error) {
     console.error("Admin sightings workflow lookup failed", { message: error?.message });
+    if (source === "all") {
+      const results = await Promise.allSettled([
+        fetchWorkflow(webhook, { ...payload, source: "guide", liveStats: false, trackDemand: false }),
+        fetchWorkflow(webhook, { ...payload, source: "ebird", liveStats: false, trackDemand: false }),
+      ]);
+      const guideRows = results[0].status === "fulfilled" ? sightingsFrom(results[0].value) : [];
+      const ebirdRows = results[1].status === "fulfilled" ? sightingsFrom(results[1].value) : [];
+      const sightings = [...guideRows, ...ebirdRows].slice(0, limit);
+      if (sightings.length) return json(request, {
+        ok: true,
+        count: sightings.length,
+        sightings,
+        stats: null,
+        degraded: results.some((result) => result.status === "rejected"),
+        ebird_available: results[1].status === "fulfilled",
+        warning: results.some((result) => result.status === "rejected")
+          ? "One sightings source is temporarily unavailable; available reports are shown."
+          : "",
+        fallback: "split_workflow_sources",
+      });
+    }
     if (source !== "guide") {
       try {
         const sightings = await fetchEbird(env, { speciesCode, days, limit });
