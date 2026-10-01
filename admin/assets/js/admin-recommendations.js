@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.09.28.2 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.10.01.1 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.09.28.2";
+  document.documentElement.dataset.recommendationsBuild = "2026.10.01.1";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -198,30 +198,147 @@
       type: "Hotel",
       name: "Casa de Vista Alta",
       area: "Mindo",
-      status: "pending",
-      statusText: "Awaiting rates",
-      regularPrice: "—",
-      ourPrice: "—",
-      savings: "Pending",
-      pricingBasis: "Pending",
-      rateValidTo: "Pending",
+      status: "current",
+      statusText: "2026 rates current",
+      regularPrice: "$80–$220",
+      ourPrice: "$50–$120",
+      savings: "Save up to 38%",
+      pricingBasis: "Per room / night",
+      rateValidTo: "December 31, 2026",
       contact: "Vicky",
-      phone: "",
-      email: "info@casadevistaalta.com",
-      website: "",
+      phone: "+593 99 972 2549",
+      email: "reservas@casadevistaalta.com",
+      website: "https://www.casadevistaalta.com/",
+      documents: [
+        { url: "/recommendations/files/casa-de-vista-alta-tarifas-2026.pdf", label: "Open 2026 agreement" }
+      ],
       recommendation: "pending",
-      followUp: "2026-10-02",
-      followUpDue: true,
+      followUp: "2026-12-01",
+      followUpDue: false,
       owner: "Juan",
       preferred: true,
       verifiedResponse: true,
-      responseVerifiedAt: "2026-09-25",
+      responseVerifiedAt: "2026-10-01",
       replyTaskId: "casa-vista-alta-2026-09-25",
       replyAcknowledged: true,
       replySubject: "Colaboración local: Mindo Bird Watching + Casa de Vista Alta Hotel",
-      replyDraft: "Estimada Vicky,\n\nMuchas gracias por su respuesta y por el interés en trabajar con Mindo Bird Watching. Entendemos que están revisando las tarifas y quedamos atentos a la información cuando esté lista la próxima semana.\n\nCuando sea posible, nos ayudaría recibir la vigencia de las tarifas, el horario de desayuno, la opción de box breakfast para salidas tempranas y el mejor contacto para reservas.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
-      breakfast: "To confirm",
-      note: "Vicky is reviewing the tariff and expects to provide the information soon."
+      replyDraft: "Estimada Vicky,\n\nMuchas gracias por enviarnos el convenio y las tarifas 2026. Confirmamos que recibimos la información de alojamiento, restaurante y recorridos de observación de aves.\n\nPara completar nuestro registro, ¿nos podría confirmar cuándo aplica cada uno de los valores 100/120 que aparecen como tarifa MBW doble para la Cabaña Privada?\n\nAgradecemos mucho la disposición de Casa de Vista Alta para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
+      breakfast: "Full breakfast included; schedule not supplied",
+      amenities: ["8 rooms", "Full breakfast", "Private bathrooms", "Hot water", "Common-area Wi-Fi", "Hair dryer", "Jacuzzi or hydromassage in select rooms", "Restaurant", "Paid transfers", "Birdwatching tours"],
+      offeringsLabel: "2026 rates and add-ons",
+      offerings: [
+        { name: "Carpinteros", price: "$50 single · $80 double", details: "Rack: $80 single · $105 double" },
+        { name: "Tucanes", price: "$50 single · $80 double", details: "Rack: $85 single · $110 double" },
+        { name: "Tángaras", price: "$50 single · $80 double", details: "Rack: $85 single · $110 double" },
+        { name: "Canopy Confort", price: "$50 single · $80 double", details: "Rack: $80 single · $105 double" },
+        { name: "Cabaña Privada", price: "$70 single · $100/120 double", details: "Rack: $200 single · $220 double · confirm the two-value MBW double rate" },
+        { name: "Canopy House Suite", price: "$80 single · $110 double", details: "Rack: $115 single · $140 double" },
+        { name: "Lemon House Suite", price: "$90 single · $120 double", details: "Rack: $125 single · $150 double" },
+        { name: "Agency restaurant menu", price: "$25 / person", details: "Starter, main, dessert, and soft drink" },
+        { name: "Half-day birdwatching", price: "$80", details: "1–4 people · +$20 each additional guest" },
+        { name: "Full-day birdwatching", price: "$130", details: "1–4 people · +$30 each additional guest" }
+      ],
+      termsLabel: "Booking terms & guide benefit",
+      terms: [
+        "Agency rates are confidential, exclude 15% VAT, and are guaranteed when reserved at least 72 hours before arrival.",
+        "Guide or tour leader receives 50% off food and 50% off rack lodging.",
+        "Check-in is 14:00–23:00. Checkout is 05:00–12:00. Early check-in and late checkout through 18:00 cost half a night; after 18:00 costs a full night.",
+        "Cancellations at least 7 days ahead have no charge; later cancellations are 100%. Group cancellations are free through 30 days, then 100%."
+      ],
+      sourceNotes: "The source lists the Cabaña Privada MBW double rate as “100/120” without explaining which condition selects each amount. Confirm before quoting.",
+      note: "Signed agreement received October 1, 2026. Rates are valid through December 31, 2026."
+    },
+    {
+      id: "mindo-glambird",
+      category: "accommodations",
+      type: "Glamping",
+      name: "Mindo Glambird",
+      area: "Mindo",
+      status: "current",
+      statusText: "2026–2027 rates current",
+      regularPrice: "$70–$140",
+      ourPrice: "$60–$120",
+      savings: "Net B2B rates",
+      pricingBasis: "Per room / night",
+      rateValidTo: "December 31, 2027",
+      contact: "Dayana Fernandez",
+      phone: "+593 99 871 9842",
+      email: "mindoriverglamping@gmail.com",
+      website: "https://mindoglambird.com/",
+      instagram: "https://www.instagram.com/mindoglambird/",
+      documents: [
+        { url: "/recommendations/files/mindo-glambird-b2b-2026-2027.pdf", label: "Open lodging tariff" },
+        { url: "/recommendations/files/mindo-glambird-massages-2026-2027.pdf", label: "Open massage tariff" }
+      ],
+      recommendation: "pending",
+      followUp: "2027-10-01",
+      followUpDue: false,
+      owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-10-01",
+      replyAcknowledged: true,
+      breakfast: "Breakfast included",
+      amenities: ["Breakfast included", "Heated pool", "Outdoor hydromassage", "River and nature access", "Wi-Fi", "Parking", "Massage services", "Birding and nature experiences"],
+      offeringsLabel: "2026–2027 net B2B pricing",
+      offerings: [
+        { name: "Suite DLX Cristal Experience", price: "$100 net", details: "Rack $139 · 2 people" },
+        { name: "Burbuja Glamping con Catamarán", price: "$99 net", details: "Rack $129 · 2 people" },
+        { name: "Burbuja Glamping con Jacuzzi", price: "$99 net", details: "Rack $129 · 2 people" },
+        { name: "Habitación Premium con Jacuzzi", price: "$100 net", details: "Rack $129 · 2 people" },
+        { name: "Cabaña Familiar", price: "$120 net", details: "Rack $140 · 4 people" },
+        { name: "Habitación Familiar", price: "$90 net", details: "Rack $105 · 3 people" },
+        { name: "Matrimonial Frente al Río", price: "$65 net", details: "Rack $79 · 2 people" },
+        { name: "Standard Matrimonial", price: "$60 net", details: "Rack $70 · 2 people" },
+        { name: "Relaxing massage", price: "$39 PVP", details: "10% commission · $35.10 net to Glambird" },
+        { name: "Bamboo massage", price: "$45 PVP", details: "10% commission · $40.50 net to Glambird" },
+        { name: "Clay massage", price: "$48 PVP", details: "10% commission · $43.20 net to Glambird" },
+        { name: "Fire or candle massage", price: "$69 PVP", details: "10% commission · $62.10 net to Glambird" }
+      ],
+      termsLabel: "Commercial conditions",
+      terms: [
+        "Lodging rates are confidential net rates supplied for Experience Ecuador / MBW and cannot be combined with promotions.",
+        "Holiday, high-demand, and group dates are quoted separately. Extra guests, children, meals, and experiences follow current property policies.",
+        "Massage commission is 10% on paid services sold through Experience Ecuador / MBW and confirmed by Mindo Glambird.",
+        "Reservations and massages require availability and confirmation. Payment, cancellation, no-show, and release terms must be confirmed in the commercial agreement."
+      ],
+      note: "Dayana Fernandez supplied the lodging and massage B2B tariffs on October 1, 2026."
+    },
+    {
+      id: "reserva-roca-mia",
+      category: "accommodations",
+      type: "Reserve / lodging",
+      name: "Reserva Roca Mía",
+      area: "Mindo",
+      status: "review",
+      statusText: "Direct rates received",
+      regularPrice: "Not supplied",
+      ourPrice: "$30–$45",
+      savings: "Direct quote",
+      pricingBasis: "Per person",
+      rateValidTo: "Confirm validity",
+      contact: "Juan",
+      phone: "+593 98 309 8751",
+      email: "",
+      website: "https://rocamiamindo.com/en/",
+      instagram: "https://www.instagram.com/rocamia.reserve/",
+      recommendation: "pending",
+      followUp: "2026-12-01",
+      followUpDue: false,
+      owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-10-01",
+      replyAcknowledged: true,
+      breakfast: "Available at an additional, unconfirmed charge",
+      amenities: ["Reserve access", "Andean cock-of-the-rock option", "Breakfast available"],
+      offeringsLabel: "Direct quoted pricing",
+      offerings: [
+        { name: "Base option", price: "$30 / person", details: "Plus breakfast" },
+        { name: "Cock-of-the-rock option", price: "$45 / person", details: "Plus breakfast and Andean cock-of-the-rock access" }
+      ],
+      sourceNotes: "Breakfast cost, whether it is included in either quoted amount, and rate validity were not supplied. Confirm all three before booking.",
+      note: "Direct quote from Juan received October 1, 2026. WhatsApp: +593 98 309 8751."
     },
     {
       id: "las-terrazas-de-dana",
@@ -680,18 +797,25 @@
     }
 
     var offeringsMarkup = Array.isArray(partner.offerings) && partner.offerings.length ? '' +
-      '<div class="recommendationsDetailLabel">2026 operator pricing</div>' +
+      '<div class="recommendationsDetailLabel">' + escapeHtml(partner.offeringsLabel || "Operator pricing") + '</div>' +
       '<div class="recommendationsOfferings">' + partner.offerings.map(function (offering) {
         return '<div class="recommendationsOffering"><div><strong>' + escapeHtml(offering.name) + '</strong><span>' + escapeHtml(offering.details || "") + '</span></div><b>' + escapeHtml(offering.price) + '</b></div>';
       }).join("") + '</div>' : '';
     var termsMarkup = Array.isArray(partner.terms) && partner.terms.length ? '' +
-      '<div class="recommendationsDetailLabel">Booking terms &amp; guide benefits</div>' +
+      '<div class="recommendationsDetailLabel">' + escapeHtml(partner.termsLabel || "Booking terms & guide benefits") + '</div>' +
       '<ul class="recommendationsTerms">' + partner.terms.map(function (term) {
         return '<li>' + escapeHtml(term) + '</li>';
       }).join("") + '</ul>' : '';
     var sourceNotesMarkup = partner.sourceNotes ? '' +
       '<div class="recommendationsDetailLabel">Needs clarification</div>' +
       '<div class="recommendationsNotice">' + escapeHtml(partner.sourceNotes) + '</div>' : '';
+    var sourceDocuments = Array.isArray(partner.documents) ? partner.documents : (partner.documentUrl ? [{
+      url: partner.documentUrl,
+      label: partner.documentLabel || "Open source document"
+    }] : []);
+    var sourceDocumentLinks = sourceDocuments.map(function (document) {
+      return '<a class="recommendationsDetailAction" href="' + escapeHtml(document.url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(document.label || "Open source document") + ' ↗</a>';
+    }).join("");
 
     elements.detail.style.display = "block";
     elements.detail.innerHTML = '' +
@@ -706,7 +830,7 @@
           '<button class="recommendationsDetailAction" type="button" data-detail-copy="phone"' + (partner.phone ? '' : ' disabled') + '>Copy WhatsApp</button>' +
           (partner.website ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.website) + '" target="_blank" rel="noopener noreferrer">Open website ↗</a>' : '') +
           (partner.instagram ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.instagram) + '" target="_blank" rel="noopener noreferrer">Instagram ↗</a>' : '') +
-          (partner.documentUrl ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.documentUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(partner.documentLabel || "Open source document") + ' ↗</a>' : '') +
+          sourceDocumentLinks +
           (partner.mapUrl ? '<a class="recommendationsDetailAction" href="' + escapeHtml(partner.mapUrl) + '" target="_blank" rel="noopener noreferrer">Open map ↗</a>' : '') +
           (partner.mapUrl ? '<button class="recommendationsDetailAction" type="button" data-copy-map>Copy map link</button>' : '') +
           (partner.guestSummary ? '<button class="recommendationsDetailAction recommendationsDetailAction--share" type="button" data-copy-summary>Copy guest summary</button>' : '') +
