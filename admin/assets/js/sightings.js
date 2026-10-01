@@ -133,7 +133,7 @@
       currentRows = [];
       currentStats = null;
       currentWarning = "";
-      $("countBadge").textContent = "Unavailble";
+      $("countBadge").textContent = "Unavailable";
       $("status").textContent = error.message + ". Please refresh in a moment.";
       $("status").dataset.tone = "error";
       $("sightingsList").innerHTML = '<div class="birdingEmpty">Sightings could not be loaded right now.</div>';
@@ -146,7 +146,7 @@
     try {
       const data = await requestSightings({ speciesCode: button.dataset.liveStats, liveStats: true });
       if (!data.stats?.available) throw new Error("Live eBird data is unavailable");
-      const card = button.closest(4.sightingCard");
+      const card = button.closest(".sightingCard");
       card.querySelector('[data-stat="last"]').textContent = displayDate(data.stats?.last_observed_at);
       card.querySelector('[data-stat="seven"]').textContent = `${data.stats.last_7_days}${data.stats.last_7_days_limited ? "+" : ""} times`;
       card.querySelector('[data-stat="thirty"]').textContent = `${data.stats.last_30_days}${data.stats.last_30_days_limited ? "+" : ""} times`;
