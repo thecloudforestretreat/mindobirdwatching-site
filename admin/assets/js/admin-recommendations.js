@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.10.01.1 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.10.01.2 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.10.01.1";
+  document.documentElement.dataset.recommendationsBuild = "2026.10.01.2";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -488,6 +488,66 @@
       ],
       sourceNotes: "Verify two conflicts before confirming a guest: the general terms require 72 hours' notice while two experiences state a 2-hour minimum; the 72-hour cancellation clause says 20% of the deposit is refunded while 10% is retained, which does not reconcile.",
       note: "Tariff supplied directly by Edison on September 28, 2026. Public Ecuador email and WhatsApp were verified on the official contact page."
+    },
+    {
+      id: "mindo-green",
+      category: "services",
+      type: "Activity operator",
+      name: "Mindo Green",
+      area: "Mindo",
+      status: "current",
+      statusText: "Net rates current",
+      regularPriceLabel: "Provider cost",
+      ourPriceLabel: "Guest price",
+      regularPrice: "$5–$45",
+      ourPrice: "$10–$80",
+      savings: "Margin $2.50–$35",
+      pricingBasis: "Per person; quad per vehicle",
+      rateValidTo: "Review January 1, 2027",
+      contact: "Miriam Narváez",
+      phone: "+593 99 914 1274",
+      email: "mindogreen@gmail.com; info@mindogreen.com",
+      website: "https://www.mindogreen.com/",
+      documents: [
+        { url: "/recommendations/files/mindo-green-activity-catalog.pdf", label: "Open activity catalog" }
+      ],
+      recommendation: "yes",
+      followUp: "2027-01-01",
+      followUpDue: false,
+      owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-10-01",
+      replyAcknowledged: true,
+      breakfast: "Not applicable",
+      amenities: ["Waterfalls and tarabita", "Canopy", "Tubing", "Butterfly garden", "Hummingbirds", "Chocolate tour", "Canyoning", "Coffee tour", "Quad tour", "Paintball", "Cycle-canopy", "Forest walk and swing", "Night walk", "Frog concert", "Birdwatching"],
+      offeringsLabel: "Provider cost → MBW guest price",
+      offerings: [
+        { name: "Tarabita & Waterfalls", price: "$15 adult / $8 child → $20 guest", details: "MBW013 · minimum 2 · internal Mindo transport included · adult gross margin 25%" },
+        { name: "Canopy — 10 cables", price: "$18.50 national / $25 foreign → $35 guest", details: "MBW014 · about 1.5 hours · gross margin 47.1% national / 28.6% foreign" },
+        { name: "Mindo River Tubing", price: "$7 → $10 guest", details: "ACT-TUBING-01 · minimum 4 · internal Mindo transport included · gross margin 30%" },
+        { name: "Butterfly Garden", price: "$8.50 adult / $5 child → $15 guest", details: "MBW015 · about 1 hour · adult gross margin 43.3%" },
+        { name: "Hummingbird Observation", price: "$10 adult / $5 child → price pending", details: "Minimum 4 · internal Mindo transport included · no exact MBW guest product found" },
+        { name: "Chocolate Tour", price: "$10 adult / $8 child → $15 guest", details: "MBW011 · about 1.5 hours · adult gross margin 33.3%" },
+        { name: "Canyoning", price: "$15 → $25 guest", details: "ACT013 · minimum 2 · equipment and internal Mindo transport included · gross margin 40%" },
+        { name: "Coffee Tour", price: "$10 adult / $8 child → $15 guest", details: "MBW012 · minimum 2 · about 1.5 hours · adult gross margin 33.3%" },
+        { name: "Quad Tour", price: "$20 / quad → $30 guest", details: "ACT004 · up to 2 riders · driver's license required · gross margin 33.3%" },
+        { name: "Paintball", price: "$13 → $20 guest", details: "ACT015 · minimum 4 · 100 rounds and internal Mindo transport included · gross margin 35%" },
+        { name: "Cycle-Canopy", price: "$15 → $20 guest", details: "ACT019 · minimum 2 · internal Mindo transport included · gross margin 25%" },
+        { name: "Forest Walk, Photo Spots & Double Swing", price: "$15 → $25 guest", details: "ACT018 · minimum 2 · internal Mindo transport included · gross margin 40%" },
+        { name: "Night Walk", price: "$20 → $30 guest", details: "MBW016 · minimum 2 · 19:00 · about 2 hours · transport included · gross margin 33.3%" },
+        { name: "Frog Concert", price: "$7.50 → $10 guest", details: "ACT010 · minimum 2 · reservation required · transport excluded · gross margin 25%" },
+        { name: "Birdwatching Tour", price: "$45 → $80 guest", details: "MBW010 · minimum 2 · 06:00–10:00 · bilingual guide, telescope and binoculars · gross margin 43.8%" }
+      ],
+      termsLabel: "Operating terms",
+      terms: [
+        "Use the quoted catalog amount as MBW's provider cost. Do not add VAT to the cost or guest price.",
+        "A 50% deposit confirms the booking; the remaining balance is due before the service starts.",
+        "Activities start at the Mindo Green office. Internal Mindo transportation is included only when the activity explicitly says so; transport from other locations is charged to the guest.",
+        "Minimum group sizes are shown per activity. Mindo Green may provide a custom quote for larger groups."
+      ],
+      sourceNotes: "Set an MBW guest price for Hummingbird Observation before quoting it. The product catalog has no exact matching sell product.",
+      note: "Main provider for MBW activities. Net catalog and MBW guest prices reconciled October 1, 2026; no VAT added."
     }
   ];
 
@@ -747,8 +807,8 @@
           (partner.category === 'accommodations' ? guestSignal(partner) : '') +
         '</div>' +
         '<div class="recommendationPricing">' +
-          '<div><span>Regular price</span><strong>' + escapeHtml(partner.regularPrice) + '</strong></div>' +
-          '<div><span>Our price</span><strong>' + escapeHtml(partner.ourPrice) + '</strong></div>' +
+          '<div><span>' + escapeHtml(partner.regularPriceLabel || "Regular price") + '</span><strong>' + escapeHtml(partner.regularPrice) + '</strong></div>' +
+          '<div><span>' + escapeHtml(partner.ourPriceLabel || "Our price") + '</span><strong>' + escapeHtml(partner.ourPrice) + '</strong></div>' +
           '<div class="recommendationSavings">' + escapeHtml(partner.savings) + '</div>' +
         '</div>' +
         '<div class="recommendationContact">' +
