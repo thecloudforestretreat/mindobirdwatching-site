@@ -6,6 +6,7 @@ does not turn supplier prices into guest-facing prices or confirmed services.
 
 from __future__ import annotations
 
+import copy
 import re
 from datetime import datetime, timezone
 
@@ -104,6 +105,151 @@ def _candidate_lines(message):
     return lines
 
 
+def _review_flags(items, global_pending):
+    flags = []
+    for item in items:
+        label = item["date"] or f"Day {item['day_number']}"
+        if item["price_status"] == "pending":
+            flags.append(f"Confirm the price for {label}.")
+        if "entrance fees" in item["excluded"]:
+            flags.append(f"Confirm the excluded entrance fee for {label}.")
+        source = item["supplier_plan"].casefold()
+        if (
+            ("o si" in source or "opci" in source)
+            and item["amount_usd"] is not None
+            and not item.get("scope_confirmed")
+        ):
+            flags.append(f"Confirm which optional activity is covered by the {label} price.")
+        if item["amount_usd"] is not None and not item["included"] and not item["excluded"]:
+            flags.append(f"Confirm the inclusions for the {label} price.")
+    flags.extend(f"Confirm {value.lower()}." for value in global_pending)
+    return list(dict.fromkeys(flags))
+
+
+def _followup_segments(message, items):
+    days = sorted(
+        {
+            int(str(item.get("date") or "")[-2:])
+            for item in items
+            if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", str(item.get("date") or ""))
+        }
+    )
+    if not days:
+        return {}
+    pattern = re.compile(r"(?<![$\d])\b(" + "|".join(map(str, days)) + r")\b")
+    matches = list(pattern.finditer(str(message or "")))
+    return {
+        int(match.group(1)): str(message or "")[match.end() : matches[index + 1].start() if index + 1 < len(matches) else None]
+        for index, match in enumerate(matches)
+    }
+
+
+def merge_guide_quote_followup(previous_quote, message, proposed_days=None, sender="Guide", received_at=None):
+    """Apply concise supplier confirmations to the latest full quote."""
+    quote = copy.deepcopy(previous_quote if isinstance(previous_quote, dict) else {})
+    items = quote.get("items") if isinstance(quote.get("items"), list) else []
+    segments = _followup_segments(message, items)
+    by_day = {
+        int(str(item.get("date") or "")[-2:]): item
+        for item in items
+        if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", str(item.get("date") or ""))
+    }
+    lower = _text(message).casefold()
+
+    if re.search(r"(?:costos?|valores?).{0,30}(?:dos|2)\s+personas", lower):
+        quote["pricing_basis"] = "total_for_party"
+        quote["party_size"] = 2
+
+    day19 = by_day.get(19)
+    match19 = re.search(r"\bcosto\s+(?:del\s+)?19\b[^$]{0,50}\$\s*([0-9][0-9,.]*)", lower)
+    if day19 and match19:
+        day19["amount_usd"] = float(match19.group(1).replace(",", ""))
+        if day19["amount_usd"].is_integer():
+            day19["amount_usd"] = int(day19["amount_usd"])
+        day19["price_status"] = "quoted"
+        day19["included"] = list(dict.fromkeys([*(day19.get("included") or []), "Ecuador transport"]))
+        day19["pending"] = []
+        day19["scope_confirmed"] = True
+
+    day21 = by_day.get(21)
+    if day21 and "ibarra" in _text(segments.get(21)).casefold():
+        day21["confirmed_details"] = list(
+            dict.fromkeys([*(day21.get("confirmed_details") or []), "Price includes the transfer through Ibarra"])
+        )
+
+    reserve_confirmation = _text(segments.get(22)) + " " + _text(segments.get(23))
+    if re.search(r"(?:confirm|pendiente)", reserve_confirmation, re.IGNORECASE) or re.search(
+        r"\b22\s+y\s+23\b.{0,180}(?:confirm|ingres|valor)", lower
+    ):
+        quote["global_pending"] = [
+            value
+            for value in quote.get("global_pending", [])
+            if "bear reserve entrance" not in str(value).casefold()
+        ]
+        quote["global_pending"].append("Bear reserve entrance fee for Days 22–23")
+
+    day24 = by_day.get(24)
+    segment24 = _text(segments.get(24)).casefold()
+    if day24 and "incluye" in segment24 and "caminata nocturna" in segment24:
+        day24["included"] = list(dict.fromkeys([*(day24.get("included") or []), "night walk"]))
+        day24["scope_confirmed"] = True
+    if day24 and re.search(r"cena\s+no\s+incluye|no\s+incluye\s+(?:la\s+)?cena", segment24):
+        day24["excluded"] = list(dict.fromkeys([*(day24.get("excluded") or []), "Christmas dinner"]))
+
+    day25 = by_day.get(25)
+    segment25 = _text(segments.get(25))
+    if day25 and "incluye" in segment25.casefold():
+        additions = _categories(segment25)
+        for label, needles in [
+            ("Cock-of-the-Rock lek", ("lek", "gallo de la peña")),
+            ("butterfly tour", ("mariposa",)),
+            ("chocolate tour", ("chocolate",)),
+        ]:
+            if any(needle in segment25.casefold() for needle in needles):
+                additions.append(label)
+        day25["included"] = list(dict.fromkeys([*(day25.get("included") or []), *additions]))
+        day25["scope_confirmed"] = True
+
+    day27 = by_day.get(27)
+    segment27 = _text(segments.get(27))
+    if day27 and re.search(r"incluye|\bpor\b", segment27, re.IGNORECASE):
+        day27["included"] = list(dict.fromkeys([*(day27.get("included") or []), *_categories(segment27)]))
+        day27["confirmed_details"] = list(
+            dict.fromkeys([*(day27.get("confirmed_details") or []), "Includes transfer to Cotopaxi"])
+        )
+        day27["scope_confirmed"] = True
+
+    day28 = by_day.get(28)
+    segment28 = _text(segments.get(28))
+    if day28 and segment28:
+        priced_scope = re.split(r"cabalg", segment28, maxsplit=1, flags=re.IGNORECASE)[0]
+        day28["included"] = list(dict.fromkeys([*(day28.get("included") or []), *_categories(priced_scope)]))
+        day28["excluded"] = list(dict.fromkeys([*(day28.get("excluded") or []), "horse riding"]))
+        day28["pending"] = list(dict.fromkeys([*(day28.get("pending") or []), "horse riding price"]))
+        day28["scope_confirmed"] = True
+        if not any("horseback riding" in str(value).casefold() for value in quote.get("global_pending", [])):
+            quote.setdefault("global_pending", []).append("Horseback riding price for Day 28")
+
+    quote["global_pending"] = [
+        value for value in quote.get("global_pending", []) if "arrival airport transfer" not in str(value).casefold()
+    ]
+    quote["source_type"] = "guide_followup"
+    quote["sender"] = _text(sender)[:120] or "Guide"
+    quote["received_at"] = received_at or _now()
+    quote["followup_source_text"] = str(message or "").strip()
+    quote["known_supplier_subtotal_usd"] = sum(
+        item.get("amount_usd") or 0 for item in items if item.get("amount_usd") is not None
+    )
+    quote["review_flags"] = _review_flags(items, quote.get("global_pending", []))
+    quote_by_date = {item.get("date"): item for item in items if item.get("date")}
+    quote["merged_days"] = [
+        {**day, "guide_quote": quote_by_date.get(str(day.get("date") or ""))}
+        for day in proposed_days if isinstance(day, dict)
+    ]
+    quote["items"] = items
+    return quote
+
+
 def parse_guide_quote(message, proposed_days=None, sender="Guide", received_at=None):
     """Return a normalized, review-required supplier quote."""
     proposed_days = proposed_days if isinstance(proposed_days, list) else []
@@ -157,20 +303,7 @@ def parse_guide_quote(message, proposed_days=None, sender="Guide", received_at=N
     if re.search(r"arriv|arribo|llegada", lower) and re.search(r"costo pendiente", lower):
         global_pending.append("Arrival airport transfer price")
 
-    flags = []
-    for item in items:
-        label = item["date"] or f"Day {item['day_number']}"
-        if item["price_status"] == "pending":
-            flags.append(f"Confirm the price for {label}.")
-        if "entrance fees" in item["excluded"]:
-            flags.append(f"Confirm the excluded entrance fee for {label}.")
-        source = item["supplier_plan"].casefold()
-        if ("o si" in source or "opci" in source) and item["amount_usd"] is not None:
-            flags.append(f"Confirm which optional activity is covered by the {label} price.")
-        if item["amount_usd"] is not None and not item["included"] and not item["excluded"]:
-            flags.append(f"Confirm the inclusions for the {label} price.")
-    flags.extend(f"Confirm {value.lower()}." for value in global_pending)
-    flags = list(dict.fromkeys(flags))
+    flags = _review_flags(items, global_pending)
     subtotal = sum(item["amount_usd"] for item in items if item["amount_usd"] is not None)
 
     merged_days = []

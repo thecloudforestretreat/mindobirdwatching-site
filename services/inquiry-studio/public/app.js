@@ -470,7 +470,10 @@ function renderGuideQuote(record) {
     return;
   }
   $('guideQuoteReview').hidden = false;
-  text('guideQuoteSubtotal', 'Known supplier subtotal: $' + Number(quote.known_supplier_subtotal_usd || 0).toLocaleString('en-US'));
+  const basis = quote.pricing_basis === 'total_for_party' && quote.party_size
+    ? ' · total for ' + quote.party_size + ' guests'
+    : '';
+  text('guideQuoteSubtotal', 'Known supplier subtotal: $' + Number(quote.known_supplier_subtotal_usd || 0).toLocaleString('en-US') + basis);
   $('guideQuoteDays').replaceChildren(
     ...(quote.items || []).map(item => {
       const article = document.createElement('article');

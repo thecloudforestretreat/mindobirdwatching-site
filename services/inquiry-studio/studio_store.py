@@ -8,7 +8,7 @@ import secrets
 from datetime import datetime, timezone
 from urllib.request import Request, urlopen
 
-from guide_quotes import parse_guide_quote
+from guide_quotes import merge_guide_quote_followup, parse_guide_quote
 
 N8N_URL = "http://127.0.0.1:5681/webhook/mbw-crm-admin-api"
 
@@ -285,8 +285,10 @@ def add_guide_response(record, response_text, sender="Guide"):
     else:
         received_at = str(messages[duplicate_index].get("received_at") or received_at)
     proposed_days = _parse(record.get("proposed_days_json"), [])
-    parsed_quote = parse_guide_quote(text, proposed_days, guide_name, received_at)
     quotes = _parse(record.get("guide_quotes_json"), [])
+    parsed_quote = parse_guide_quote(text, proposed_days, guide_name, received_at)
+    if quotes and len(parsed_quote.get("items", [])) < max(2, len(quotes[-1].get("items", [])) // 2):
+        parsed_quote = merge_guide_quote_followup(quotes[-1], text, proposed_days, guide_name, received_at)
     if duplicate_index is None or duplicate_index >= len(quotes):
         quotes.append(parsed_quote)
     else:

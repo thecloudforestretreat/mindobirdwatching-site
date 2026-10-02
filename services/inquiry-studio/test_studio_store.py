@@ -119,6 +119,51 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         self.assertEqual([item["action"] for item in requests], ["save_inquiry_studio", "update_inquiry"])
         self.assertEqual(requests[1]["inquiry_row"]["inquiry_studio_id"], record["inquiry_studio_id"])
 
+    def test_followup_amends_existing_quote_and_preserves_full_itinerary(self):
+        analysis = self.analysis()
+        analysis["proposed_days"] = [
+            {
+                "day_number": number,
+                "date": f"2026-12-{18 + number:02d}",
+                "location": "Ecuador",
+                "activity": "Guest request",
+                "pricing_needed": ["guide"],
+            }
+            for number in range(1, 13)
+        ]
+        record = studio_store.build_record(
+            {"inquiry_id": "INQ-1", "guest_id": "G-1"},
+            {"message": "Request"},
+            analysis,
+            [],
+        )
+        original = """1. Arribo a Quito costo pendiente
+2. Antisana $270 incluye ingresos transporte guía
+3. Cayambe-Coca $250 incluye transporte guía ingresos
+4. Sigsipamba costo guía transporte $190 no incluye ingreso
+23 Sigsipamba $190 incluye guía transporte no incluye ingreso
+24 Mindo o caminata nocturna $220 incluye transporte guía caminata nocturna
+25 aves y reservas $150
+26 Bellavista $240 incluido ingresos desayuno guía transporte
+27 Mashpi y Cotopaxi $300 incluye transporte guía ingresos
+28 Cotopaxi $160 no incluye cabalgata
+29 Quito $200 incluye transporte guía ingreso
+30 aeropuerto $70"""
+        quoted = studio_store.add_guide_response(record, original, "Neicer")
+        followup = """Buenos días, los costos son por las dos personas. El costo del 19 es $70. El 21 ese valor es hasta Ibarra. 22 y 23 ya le confirmo los ingresos o el valor dentro de la reserva. 24 los $220 incluye caminata nocturna, la cena no incluye. 25 incluye lek del gallo de la peña, guía, ingresos, transporte, tour de las mariposas y tour del chocolate. 27 los $300 es por transporte, guía, ingresos a Mashpi Amagusa y traslado a Cotopaxi. 28 los $160 es solo por guía, transporte e ingreso al Parque Nacional Cotopaxi; la cabalgata por confirmar. Hospedaje y alimentación aparte."""
+        updated = studio_store.add_guide_response(quoted, followup, "Neicer")
+        quote = json.loads(updated["guide_quotes_json"])[-1]
+        self.assertEqual(len(quote["items"]), 12)
+        self.assertEqual(quote["known_supplier_subtotal_usd"], 2310)
+        self.assertEqual(quote["pricing_basis"], "total_for_party")
+        self.assertEqual(quote["party_size"], 2)
+        self.assertEqual(quote["items"][0]["amount_usd"], 70)
+        self.assertIn("Christmas dinner", quote["items"][5]["excluded"])
+        self.assertIn("butterfly tour", quote["items"][6]["included"])
+        self.assertIn("entrance fees", quote["items"][9]["included"])
+        self.assertIn("horse riding price", quote["items"][9]["pending"])
+        self.assertNotIn("Arrival airport transfer price", quote["global_pending"])
+
     def test_create_new_guest_and_inquiry_from_studio(self):
         requests = []
 
