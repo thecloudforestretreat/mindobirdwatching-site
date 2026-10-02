@@ -372,7 +372,9 @@ def merge_guide_quote_followup(previous_quote, message, proposed_days=None, send
             )
             quote["reusable_facts"] = reusable_facts
 
-    if "hotel" in lower and "ibarra" in lower and re.search(r"(?:una|1)\s+hora\s+(?:y\s+)?media", lower):
+    if "hotel" in lower and "ibarra" in lower and re.search(
+        r"(?:una|1)\s+hora\s+(?:(?:y|i)\s*)?media", lower
+    ):
         quote["lodging_plan"] = {
             "base": "Ibarra",
             "applies_to": "Bear-reserve segment",

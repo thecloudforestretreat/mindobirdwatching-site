@@ -180,7 +180,7 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         self.assertEqual(plan["reusable_facts"][0]["service_key"], "tambopaxi_horseback_riding")
 
         reserve = """Juan Pablo el costo de ingreso a la reserva de los Osos es de $35 por persona eso hay que tomar en cuenta que se va a visitar dos días sería $70 por persona.
-El hotel sería en Ibarra Juan Pablo ya que de Ibarra a la reserva queda a una hora y media."""
+El hotel sería en Ibarra Juan Pablo ya que de Ibarra a la reserva queda a una hora imedia."""
         completed = studio_store.add_guide_response(with_riding, reserve, "Neicer Arias Mindo")
         self.assertEqual(len(json.loads(completed["guide_quotes_json"])), 1)
         quote = json.loads(completed["guide_quotes_json"])[-1]
