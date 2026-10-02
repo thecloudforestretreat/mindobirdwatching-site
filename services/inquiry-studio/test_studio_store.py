@@ -139,6 +139,20 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         self.assertEqual(requests[0]["inquiry_row"]["guest_count"], "2")
         self.assertEqual(requests[0]["inquiry_row"]["inquiry_studio_id"], "IST-20261001190000-ABC123")
 
+    def test_create_accepts_legacy_crm_response_without_ok_envelope(self):
+        def opener(request, timeout):
+            payload = json.loads(request.data)
+            return io.BytesIO(json.dumps(payload["inquiry_row"]).encode())
+
+        created = studio_store.create_crm_guest_and_inquiry(
+            {"full_name": "Sjaak Klaassen", "email": "sjaak@example.com"},
+            {"message": "Custom wildlife tour request"},
+            self.analysis(),
+            "IST-20261001190000-ABC123",
+            opener,
+        )
+        self.assertEqual(created["inquiry_id"], "INQ-20261001190000-ABC123")
+
 
 if __name__ == "__main__":
     unittest.main()

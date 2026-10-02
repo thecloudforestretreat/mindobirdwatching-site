@@ -310,7 +310,10 @@ def request_n8n(payload, opener=urlopen):
     )
     with opener(request, timeout=90) as response:
         result = json.load(response)
-    if not result.get("ok"):
+    # Legacy CRM actions return the row directly and omit the newer `ok`
+    # envelope. Only an explicit rejection is a failure; accepting a missing
+    # `ok` keeps Inquiry Studio compatible with the existing Guest CRM API.
+    if result.get("ok") is False:
         raise ValueError(result.get("error") or "The CRM storage workflow rejected the request")
     return result
 
