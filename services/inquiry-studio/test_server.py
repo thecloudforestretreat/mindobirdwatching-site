@@ -95,4 +95,10 @@ class PilotTests(unittest.TestCase):
   row=server.source_row({'guest_name':'Sjaak Klaassen','guest_email':'SJAAK@EXAMPLE.COM','guest_phone':'+31 6 1234 5678'})
   self.assertEqual(row['email'],'sjaak@example.com')
   self.assertEqual(row['phone_normalized'],'31612345678')
+ def test_analysis_failure_log_excludes_traceback_and_sets_permissions(self):
+  with tempfile.TemporaryDirectory() as td,patch.object(server,'PRIVATE',Path(td)):
+   server.log_analysis_failure(RuntimeError('model timed out\nrequest details omitted'))
+   path=Path(td)/'analysis-errors.log'
+   self.assertIn('RuntimeError: model timed out request details omitted',path.read_text())
+   self.assertEqual(path.stat().st_mode & 0o777,0o600)
 if __name__=='__main__':unittest.main()

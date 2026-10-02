@@ -173,6 +173,14 @@ def write_private(path,value):
  with open(temp,'w',encoding='utf8') as f:json.dump(value,f,ensure_ascii=False,indent=2)
  os.chmod(temp,0o600);os.replace(temp,path)
 
+def log_analysis_failure(error):
+ PRIVATE.mkdir(mode=0o700,exist_ok=True)
+ message=re.sub(r'[\r\n\t]+',' ',str(error))[:500]
+ path=PRIVATE/'analysis-errors.log'
+ with open(path,'a',encoding='utf8') as handle:
+  handle.write(datetime.now(timezone.utc).isoformat()+' '+type(error).__name__+': '+message+'\n')
+ os.chmod(path,0o600)
+
 def prune_jobs():
  cutoff=datetime.now(timezone.utc).timestamp()-3600
  for identifier,value in list(JOBS.items()):
@@ -193,8 +201,10 @@ def run_analysis(identifier,row,body):
   with JOB_LOCK:JOBS[identifier].update({'status':'complete','result':result,'attachment_manifest':prepared['manifest']})
  except ValueError as error:
   with JOB_LOCK:JOBS[identifier].update({'status':'error','error':str(error)})
- except Exception:
-  with JOB_LOCK:JOBS[identifier].update({'status':'error','error':'Local analysis failed. No CRM record was changed. Review the source and try again.'})
+ except Exception as error:
+  try:log_analysis_failure(error)
+  except Exception:pass
+  with JOB_LOCK:JOBS[identifier].update({'status':'error','error':'The local model could not finish this analysis. No CRM record was changed. Retry once; if it repeats, remove unnecessary attachments or shorten the source.'})
 
 def source_row(body):
  inquiry_id=str(body.get('inquiry_id') or '').strip()

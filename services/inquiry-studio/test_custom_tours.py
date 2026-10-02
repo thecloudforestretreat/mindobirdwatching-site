@@ -39,6 +39,11 @@ class CustomTourTests(unittest.TestCase):
     def test_valid_analysis(self):
         result = custom_tours.validate_analysis(self.sample())
         self.assertEqual(result["proposed_days"][0]["date"], "2026-12-20")
+        self.assertEqual(
+            result["guide_brief_draft"],
+            "2026-12-20 – Antisana · Full-day wildlife search; price guide, transport, entrance fees.",
+        )
+        self.assertEqual(result["proposed_days"][0]["targets"], [])
 
     def test_unapproved_price_is_rejected(self):
         value = self.sample()
@@ -65,18 +70,45 @@ class CustomTourTests(unittest.TestCase):
         self.assertNotIn("secret", prompt)
 
     def test_model_response_is_structured(self):
+        captured = {}
+
+        def opener(request, **kwargs):
+            captured["payload"] = json.loads(request.data)
+            captured["timeout"] = kwargs["timeout"]
+            return response
+
         response = io.BytesIO(
             json.dumps({"message": {"content": json.dumps(self.sample())}}).encode()
         )
         result = custom_tours.analyze_request(
             {"inquiry_id": "INQ-1"},
             message="Plan a custom trip",
-            opener=lambda *args, **kwargs: response,
+            opener=opener,
         )
         self.assertEqual(result["ai_model"], "qwen3.5:27b")
         self.assertEqual(result["validation_status"], "needs_review")
+        self.assertEqual(
+            captured["payload"]["options"]["num_predict"],
+            custom_tours.MAX_OUTPUT_TOKENS,
+        )
+        self.assertEqual(captured["timeout"], custom_tours.MODEL_TIMEOUT_SECONDS)
+
+    def test_unsupported_permit_claim_is_removed(self):
+        value = self.sample()
+        value["validation_flags"] = [
+            "Special permits are required.",
+            "Lodging still needs confirmation.",
+        ]
+        response = io.BytesIO(
+            json.dumps({"message": {"content": json.dumps(value)}}).encode()
+        )
+        result = custom_tours.analyze_request(
+            {"inquiry_id": "INQ-1"},
+            message="Plan a custom wildlife trip.",
+            opener=lambda *args, **kwargs: response,
+        )
+        self.assertEqual(result["validation_flags"], ["Lodging still needs confirmation."])
 
 
 if __name__ == "__main__":
     unittest.main()
-
