@@ -111,7 +111,7 @@ def _review_flags(items, global_pending):
         label = item["date"] or f"Day {item['day_number']}"
         if item["price_status"] == "pending":
             flags.append(f"Confirm the price for {label}.")
-        if "entrance fees" in item["excluded"]:
+        if "entrance fees" in item["excluded"] and "entrance fees" not in item.get("resolved_exclusions", []):
             flags.append(f"Confirm the excluded entrance fee for {label}.")
         source = item["supplier_plan"].casefold()
         if (
@@ -299,6 +299,100 @@ def merge_guide_quote_followup(previous_quote, message, proposed_days=None, send
             }
         )
         quote["reusable_facts"] = reusable_facts
+
+    if "reserva" in lower and "oso" in lower and "por persona" in lower:
+        amounts = [float(value.replace(",", "")) for value in re.findall(r"\$\s*([0-9][0-9,.]*)", lower)]
+        per_visit = next((value for value in amounts if value == 35), amounts[0] if amounts else None)
+        visit_count = 2 if re.search(r"(?:dos|2)\s+d[ií]as", lower) else 1
+        per_person_total = next(
+            (value for value in amounts if value == per_visit * visit_count and value != per_visit),
+            per_visit * visit_count if per_visit is not None else None,
+        )
+        if per_visit is not None:
+            per_visit = int(per_visit) if per_visit.is_integer() else per_visit
+            per_person_total = int(per_person_total) if per_person_total.is_integer() else per_person_total
+            party_size = int(quote.get("party_size") or 0) or None
+            additional_charge = {
+                "dates": [value.get("date") for value in (by_day.get(22), by_day.get(23)) if value],
+                "label": "Bear reserve entrance fees",
+                "location": "San José de Sigsipamba bear reserve",
+                "amount_usd_per_person_per_visit": per_visit,
+                "visit_count": visit_count,
+                "amount_usd_per_person": per_person_total,
+                "party_size": party_size,
+                "party_total_usd": per_person_total * party_size if party_size else None,
+                "status": "quoted_required",
+                "source_text": str(message or "").strip(),
+            }
+            additional_charges = [
+                value
+                for value in quote.get("additional_charges", [])
+                if str(value.get("label") or "").casefold() != "bear reserve entrance fees"
+            ]
+            additional_charges.append(additional_charge)
+            quote["additional_charges"] = additional_charges
+            for day_number in (22, 23):
+                item = by_day.get(day_number)
+                if not item:
+                    continue
+                item["resolved_exclusions"] = list(
+                    dict.fromkeys([*(item.get("resolved_exclusions") or []), "entrance fees"])
+                )
+                item["confirmed_details"] = list(
+                    dict.fromkeys(
+                        [
+                            *(item.get("confirmed_details") or []),
+                            f"Reserve entry priced separately at ${per_visit} per person",
+                        ]
+                    )
+                )
+            quote["global_pending"] = [
+                value
+                for value in quote.get("global_pending", [])
+                if "bear reserve entrance" not in str(value).casefold()
+            ]
+            reusable_facts = [
+                value
+                for value in quote.get("reusable_facts", [])
+                if str(value.get("service_key") or "") != "sigsipamba_bear_reserve_entrance"
+            ]
+            reusable_facts.append(
+                {
+                    "fact_type": "supplier_rate",
+                    "service_key": "sigsipamba_bear_reserve_entrance",
+                    "service_name": "Bear reserve entrance",
+                    "location": "San José de Sigsipamba",
+                    "currency": "USD",
+                    "amount": per_visit,
+                    "unit": "per_person_per_visit",
+                    "supplier": _text(sender)[:120] or "Guide",
+                    "verified_at": received_at or _now(),
+                    "reuse_status": "verify_before_reuse",
+                }
+            )
+            quote["reusable_facts"] = reusable_facts
+
+    if "hotel" in lower and "ibarra" in lower and re.search(r"(?:una|1)\s+hora\s+(?:y\s+)?media", lower):
+        quote["lodging_plan"] = {
+            "base": "Ibarra",
+            "applies_to": "Bear-reserve segment",
+            "travel_time_to_reserve_minutes": 90,
+            "hotel_selection_status": "pending",
+            "source_text": str(message or "").strip(),
+        }
+        operational_notes = [
+            value
+            for value in quote.get("operational_notes", [])
+            if str(value.get("fact_key") or "") != "ibarra_to_bear_reserve"
+        ]
+        operational_notes.append(
+            {
+                "fact_key": "ibarra_to_bear_reserve",
+                "text": "Use Ibarra as the hotel base; the bear reserve is approximately 90 minutes away.",
+                "reuse_status": "verify_before_reuse",
+            }
+        )
+        quote["operational_notes"] = operational_notes
 
     quote["global_pending"] = [
         value for value in quote.get("global_pending", []) if "arrival airport transfer" not in str(value).casefold()

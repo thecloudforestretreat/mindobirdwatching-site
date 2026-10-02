@@ -296,7 +296,7 @@ def add_guide_response(record, response_text, sender="Guide"):
         # The raw message history already preserves every supplier response.
         # Replace the latest structured snapshot instead of duplicating the
         # entire itinerary for each concise clarification in one Sheets cell.
-        quotes[-1] = parsed_quote
+        quotes = [parsed_quote]
     elif duplicate_index is None or duplicate_index >= len(quotes):
         quotes.append(parsed_quote)
     else:
@@ -313,7 +313,10 @@ def add_guide_response(record, response_text, sender="Guide"):
         "global_pending": parsed_quote["global_pending"],
         "review_flags": parsed_quote["review_flags"],
         "optional_charges": parsed_quote.get("optional_charges", []),
+        "additional_charges": parsed_quote.get("additional_charges", []),
         "reusable_facts": parsed_quote.get("reusable_facts", []),
+        "lodging_plan": parsed_quote.get("lodging_plan", {}),
+        "operational_notes": parsed_quote.get("operational_notes", []),
         "pricing_basis": parsed_quote.get("pricing_basis", ""),
         "party_size": parsed_quote.get("party_size"),
         "days": parsed_quote["merged_days"],

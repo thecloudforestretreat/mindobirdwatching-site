@@ -488,25 +488,37 @@ function renderGuideQuote(record) {
       scope.textContent = [
         (item.included || []).length ? 'Includes: ' + item.included.join(', ') : '',
         (item.excluded || []).length ? 'Excludes: ' + item.excluded.join(', ') : '',
+        (item.confirmed_details || []).length ? 'Confirmed: ' + item.confirmed_details.join('; ') : '',
       ].filter(Boolean).join(' · ');
       article.append(title, plan, amount, scope);
       return article;
     }),
-    ...(quote.optional_charges || []).map(item => {
+    ...[...(quote.additional_charges || []), ...(quote.optional_charges || [])].map(item => {
       const article = document.createElement('article');
       article.className = 'dayRow quoteDay optionalCharge';
       const title = document.createElement('strong');
-      title.textContent = [item.date, item.label].filter(Boolean).join(' · ');
+      title.textContent = [item.date || (item.dates || []).join(' and '), item.label].filter(Boolean).join(' · ');
       const amount = document.createElement('b');
       amount.textContent = '$' + Number(item.amount_usd_per_person || 0).toLocaleString('en-US') + ' per person';
       const scope = document.createElement('small');
       scope.textContent = [
+        item.amount_usd_per_person_per_visit ? '$' + Number(item.amount_usd_per_person_per_visit).toLocaleString('en-US') + ' per person per visit × ' + item.visit_count + ' visits' : '',
         item.party_total_usd ? '$' + Number(item.party_total_usd).toLocaleString('en-US') + ' for ' + item.party_size + ' guests' : '',
         item.duration_minutes ? 'approximately ' + item.duration_minutes / 60 + ' hours' : '',
         item.location || '',
-        'optional; verify before reuse',
+        item.status === 'quoted_required' ? 'required; verify before reuse' : 'optional; verify before reuse',
       ].filter(Boolean).join(' · ');
       article.append(title, amount, scope);
+      return article;
+    }),
+    ...(quote.operational_notes || []).map(item => {
+      const article = document.createElement('article');
+      article.className = 'dayRow quoteDay operationalNote';
+      const title = document.createElement('strong');
+      title.textContent = 'Operational note';
+      const plan = document.createElement('p');
+      plan.textContent = item.text || '';
+      article.append(title, plan);
       return article;
     }),
   );

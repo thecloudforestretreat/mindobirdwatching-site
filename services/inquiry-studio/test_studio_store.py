@@ -179,6 +179,24 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         self.assertEqual(plan["optional_charges"][0]["party_total_usd"], 60)
         self.assertEqual(plan["reusable_facts"][0]["service_key"], "tambopaxi_horseback_riding")
 
+        reserve = """Juan Pablo el costo de ingreso a la reserva de los Osos es de $35 por persona eso hay que tomar en cuenta que se va a visitar dos días sería $70 por persona.
+El hotel sería en Ibarra Juan Pablo ya que de Ibarra a la reserva queda a una hora y media."""
+        completed = studio_store.add_guide_response(with_riding, reserve, "Neicer Arias Mindo")
+        self.assertEqual(len(json.loads(completed["guide_quotes_json"])), 1)
+        quote = json.loads(completed["guide_quotes_json"])[-1]
+        charge = quote["additional_charges"][0]
+        self.assertEqual(charge["amount_usd_per_person_per_visit"], 35)
+        self.assertEqual(charge["amount_usd_per_person"], 70)
+        self.assertEqual(charge["party_total_usd"], 140)
+        self.assertEqual(quote["lodging_plan"]["base"], "Ibarra")
+        self.assertEqual(quote["lodging_plan"]["travel_time_to_reserve_minutes"], 90)
+        self.assertNotIn("Bear reserve entrance fee for Days 22–23", quote["global_pending"])
+        self.assertFalse(any("entrance fee for 2026-12-22" in value for value in quote["review_flags"]))
+        self.assertEqual(
+            next(value for value in quote["reusable_facts"] if value["service_key"] == "sigsipamba_bear_reserve_entrance")["amount"],
+            35,
+        )
+
     def test_create_new_guest_and_inquiry_from_studio(self):
         requests = []
 
