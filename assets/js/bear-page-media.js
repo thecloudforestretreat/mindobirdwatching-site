@@ -1,47 +1,55 @@
 (function () {
   'use strict';
 
-  function track(eventName, details) {
-    var payload = Object.assign({ event: eventName }, details || {});
+  var tracked = new Set();
+
+  function trackVideo(iframe) {
+    var videoId = iframe.dataset.videoId || '';
+    var placement = iframe.dataset.videoPlacement || 'bear_page';
+    var key = videoId + ':' + placement;
+    if (tracked.has(key)) return;
+    tracked.add(key);
+
+    var details = {
+      video_provider: 'youtube',
+      video_id: videoId,
+      video_title: iframe.dataset.videoTitle || iframe.title || '',
+      video_placement: placement,
+      page_language: document.documentElement.lang || ''
+    };
+
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(payload);
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', eventName, details || {});
-    }
+    window.dataLayer.push(Object.assign({ event: 'video_play' }, details));
+    if (typeof window.gtag === 'function') window.gtag('event', 'video_play', details);
   }
 
-  document.querySelectorAll('[data-youtube-lite]').forEach(function (button) {
-    button.addEventListener('click', function () {
-      var videoId = button.getAttribute('data-video-id');
-      var title = button.getAttribute('data-video-title') || 'Mindo Bird Watching video';
-      var placement = button.getAttribute('data-video-placement') || 'bear_page';
-      if (!videoId) return;
+  var frames = Array.from(document.querySelectorAll('iframe[data-video-track]'));
+  if (!frames.length) return;
 
-      var iframe = document.createElement('iframe');
-      iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0&modestbranding=1';
-      iframe.title = title;
-      iframe.loading = 'lazy';
-      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-      iframe.allowFullscreen = true;
-      button.replaceWith(iframe);
-
-      track('video_play', {
-        video_provider: 'youtube',
-        video_id: videoId,
-        video_title: title,
-        video_placement: placement,
-        page_language: document.documentElement.lang || ''
-      });
+  var priorReady = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = function () {
+    if (typeof priorReady === 'function') priorReady();
+    frames.forEach(function (iframe) {
+      try {
+        new window.YT.Player(iframe, {
+          events: {
+            onStateChange: function (event) {
+              if (event.data === window.YT.PlayerState.PLAYING) trackVideo(iframe);
+            }
+          }
+        });
+      } catch (error) {
+        /* Playback remains functional if analytics initialization is unavailable. */
+      }
     });
-  });
+  };
 
-  document.querySelectorAll('[data-bear-media-cta]').forEach(function (link) {
-    link.addEventListener('click', function () {
-      track(link.getAttribute('data-analytics-event'), {
-        link_label: link.getAttribute('data-analytics-label') || link.textContent.trim(),
-        link_url: link.href || '',
-        page_language: document.documentElement.lang || ''
-      });
-    });
-  });
+  if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+    var api = document.createElement('script');
+    api.src = 'https://www.youtube.com/iframe_api';
+    api.async = true;
+    document.head.appendChild(api);
+  } else if (window.YT && window.YT.Player) {
+    window.onYouTubeIframeAPIReady();
+  }
 })();
