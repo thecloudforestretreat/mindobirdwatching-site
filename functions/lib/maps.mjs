@@ -1,8 +1,10 @@
 const names = new Intl.DisplayNames(['en'], { type: 'region' });
 const aliases = new Map();
+// Intl also recognizes retired codes; avoid letting DD claim Germany before DE.
+const retired=new Set('AN BU CS DD DY FX HV NH NT QU RH SU TP UK VD YD YU ZR'.split(' '));
 for (let a = 65; a <= 90; a++) for (let b = 65; b <= 90; b++) {
   const code = String.fromCharCode(a, b), name = names.of(code);
-  if (name !== code) { if(!aliases.has(name.toLowerCase()))aliases.set(name.toLowerCase(), code); aliases.set(code.toLowerCase(), code); }
+  if (name !== code && !retired.has(code)) { if(!aliases.has(name.toLowerCase()))aliases.set(name.toLowerCase(), code); aliases.set(code.toLowerCase(), code); }
 }
 Object.entries({usa:'US',us:'US','united states of america':'US',uk:'GB','united kingdom':'GB',england:'GB',scotland:'GB',wales:'GB','great britain':'GB','czech republic':'CZ','south korea':'KR','north korea':'KP',russia:'RU',taiwan:'TW',vietnam:'VN',turkey:'TR','the netherlands':'NL','ivory coast':'CI','congo - kinshasa':'CD','congo - brazzaville':'CG'}).forEach(([name,code])=>aliases.set(name,code));
 Object.entries({'hong kong':'HK',macao:'MO',macau:'MO',palestine:'PS','cape verde':'CV','swaziland':'SZ','east timor':'TL','republic of the congo':'CG','democratic republic of the congo':'CD','the bahamas':'BS'}).forEach(([name,code])=>aliases.set(name,code));
@@ -44,7 +46,7 @@ export function guestStage(row,today) {
   return 'current';
 }
 export function aggregateGuests(records,{stage='confirmed',start='',end='',today}) {
-  const groups=new Map(),seen=new Set(); let excluded=0,duplicates=0,missingDates=0,missingGuestCounts=0;
+  const groups=new Map(),seen=new Set(); let excluded=0,duplicates=0,missingDates=0,missingGuestCounts=0,missingTrendDates=0;
   const stages={completed:0,current:0,upcoming:0,overdue:0,undated:0,prospects:0};
   for (const row of records) {
     const id=row.inquiry_id||row.booking_id||row.source_record_id||(row.source_tab&&row.source_row ? row.source_tab+':'+row.source_row : '');
@@ -56,14 +58,15 @@ export function aggregateGuests(records,{stage='confirmed',start='',end='',today
     if (start && !date){missingDates++;continue;}
     if (start && (date<start||date>end)) continue;
     const loc=country(row.country||row.home_country||row.country_of_residence);
-    const key=loc.code||loc.country;const group=groups.get(key)||{...loc,records:0,guests:0,missingGuestCounts:0};
+    const key=loc.code||loc.country;const group=groups.get(key)||{...loc,records:0,guests:0,missingGuestCounts:0,series:[]};
     group.records++;
     const value=String(row.guest_count||row.guest_count_text||'').trim();
     if(/^\d+$/.test(value)&&Number(value)>0&&Number(value)<=10000)group.guests+=Number(value);
     else {group.missingGuestCounts++;missingGuestCounts++;}
+    if(date){let point=group.series.find(p=>p.date===date);if(!point){point={date,records:0,guests:0};group.series.push(point);}point.records++;if(/^\d+$/.test(value)&&Number(value)>0&&Number(value)<=10000)point.guests+=Number(value);}else missingTrendDates++;
     groups.set(key,group);
   }
-  return {rows:[...groups.values()],stages,excluded,duplicates,missingDates,missingGuestCounts,countryBasis:'Booking contact country as recorded in CRM; not independently verified residence or each traveler’s country.'};
+  return {rows:[...groups.values()],stages,excluded,duplicates,missingDates,missingGuestCounts,missingTrendDates,countryBasis:'Booking contact country as recorded in CRM; not independently verified residence or each traveler’s country.'};
 }
 export function normalizeGA(payload,start,end) {
   if (!payload?.ok||payload.start!==start||payload.end!==end||!Array.isArray(payload.reports?.countries?.rows)) throw new Error('GA4 did not return the requested country report.');
