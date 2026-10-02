@@ -152,6 +152,7 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         quoted = studio_store.add_guide_response(record, original, "Neicer")
         followup = """Buenos días, los costos son por las dos personas. El costo del 19 es $70. El 21 ese valor es hasta Ibarra. 22 y 23 ya le confirmo los ingresos o el valor dentro de la reserva. 24 los $220 incluye caminata nocturna, la cena no incluye. 25 incluye lek del gallo de la peña, guía, ingresos, transporte, tour de las mariposas y tour del chocolate. 27 los $300 es por transporte, guía, ingresos a Mashpi Amagusa y traslado a Cotopaxi. 28 los $160 es solo por guía, transporte e ingreso al Parque Nacional Cotopaxi; la cabalgata por confirmar. Hospedaje y alimentación aparte."""
         updated = studio_store.add_guide_response(quoted, followup, "Neicer")
+        self.assertEqual(len(json.loads(updated["guide_quotes_json"])), 1)
         quote = json.loads(updated["guide_quotes_json"])[-1]
         self.assertEqual(len(quote["items"]), 12)
         self.assertEqual(quote["known_supplier_subtotal_usd"], 2310)
@@ -166,6 +167,7 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
 
         riding = "Juan Pablo el costo de la cabalgata es de $30 por persona por alrededor de dos horas en el Tambopaxi"
         with_riding = studio_store.add_guide_response(updated, riding, "Neicer Arias Mindo")
+        self.assertEqual(len(json.loads(with_riding["guide_quotes_json"])), 1)
         quote = json.loads(with_riding["guide_quotes_json"])[-1]
         self.assertEqual(quote["known_supplier_subtotal_usd"], 2310)
         self.assertEqual(quote["optional_charges"][0]["amount_usd_per_person"], 30)
@@ -173,6 +175,9 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         self.assertEqual(quote["optional_charges"][0]["duration_minutes"], 120)
         self.assertEqual(quote["reusable_facts"][0]["reuse_status"], "verify_before_reuse")
         self.assertNotIn("Horseback riding price for Day 28", quote["global_pending"])
+        plan = json.loads(with_riding["final_plan_json"])
+        self.assertEqual(plan["optional_charges"][0]["party_total_usd"], 60)
+        self.assertEqual(plan["reusable_facts"][0]["service_key"], "tambopaxi_horseback_riding")
 
     def test_create_new_guest_and_inquiry_from_studio(self):
         requests = []

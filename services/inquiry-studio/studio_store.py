@@ -287,9 +287,17 @@ def add_guide_response(record, response_text, sender="Guide"):
     proposed_days = _parse(record.get("proposed_days_json"), [])
     quotes = _parse(record.get("guide_quotes_json"), [])
     parsed_quote = parse_guide_quote(text, proposed_days, guide_name, received_at)
-    if quotes and len(parsed_quote.get("items", [])) < max(2, len(quotes[-1].get("items", [])) // 2):
+    is_followup = bool(
+        quotes and len(parsed_quote.get("items", [])) < max(2, len(quotes[-1].get("items", [])) // 2)
+    )
+    if is_followup:
         parsed_quote = merge_guide_quote_followup(quotes[-1], text, proposed_days, guide_name, received_at)
-    if duplicate_index is None or duplicate_index >= len(quotes):
+    if is_followup:
+        # The raw message history already preserves every supplier response.
+        # Replace the latest structured snapshot instead of duplicating the
+        # entire itinerary for each concise clarification in one Sheets cell.
+        quotes[-1] = parsed_quote
+    elif duplicate_index is None or duplicate_index >= len(quotes):
         quotes.append(parsed_quote)
     else:
         quotes[duplicate_index] = parsed_quote
@@ -304,6 +312,10 @@ def add_guide_response(record, response_text, sender="Guide"):
         "global_excluded": parsed_quote["global_excluded"],
         "global_pending": parsed_quote["global_pending"],
         "review_flags": parsed_quote["review_flags"],
+        "optional_charges": parsed_quote.get("optional_charges", []),
+        "reusable_facts": parsed_quote.get("reusable_facts", []),
+        "pricing_basis": parsed_quote.get("pricing_basis", ""),
+        "party_size": parsed_quote.get("party_size"),
         "days": parsed_quote["merged_days"],
     }
     updated["updated_at"] = now()
