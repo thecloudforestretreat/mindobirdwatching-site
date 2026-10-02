@@ -492,6 +492,23 @@ function renderGuideQuote(record) {
       article.append(title, plan, amount, scope);
       return article;
     }),
+    ...(quote.optional_charges || []).map(item => {
+      const article = document.createElement('article');
+      article.className = 'dayRow quoteDay optionalCharge';
+      const title = document.createElement('strong');
+      title.textContent = [item.date, item.label].filter(Boolean).join(' · ');
+      const amount = document.createElement('b');
+      amount.textContent = '$' + Number(item.amount_usd_per_person || 0).toLocaleString('en-US') + ' per person';
+      const scope = document.createElement('small');
+      scope.textContent = [
+        item.party_total_usd ? '$' + Number(item.party_total_usd).toLocaleString('en-US') + ' for ' + item.party_size + ' guests' : '',
+        item.duration_minutes ? 'approximately ' + item.duration_minutes / 60 + ' hours' : '',
+        item.location || '',
+        'optional; verify before reuse',
+      ].filter(Boolean).join(' · ');
+      article.append(title, amount, scope);
+      return article;
+    }),
   );
   const flags = [
     ...(quote.global_excluded || []).length ? ['Generally excluded: ' + quote.global_excluded.join(', ')] : [],

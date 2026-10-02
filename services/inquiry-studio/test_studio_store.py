@@ -164,6 +164,16 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         self.assertIn("horse riding price", quote["items"][9]["pending"])
         self.assertNotIn("Arrival airport transfer price", quote["global_pending"])
 
+        riding = "Juan Pablo el costo de la cabalgata es de $30 por persona por alrededor de dos horas en el Tambopaxi"
+        with_riding = studio_store.add_guide_response(updated, riding, "Neicer Arias Mindo")
+        quote = json.loads(with_riding["guide_quotes_json"])[-1]
+        self.assertEqual(quote["known_supplier_subtotal_usd"], 2310)
+        self.assertEqual(quote["optional_charges"][0]["amount_usd_per_person"], 30)
+        self.assertEqual(quote["optional_charges"][0]["party_total_usd"], 60)
+        self.assertEqual(quote["optional_charges"][0]["duration_minutes"], 120)
+        self.assertEqual(quote["reusable_facts"][0]["reuse_status"], "verify_before_reuse")
+        self.assertNotIn("Horseback riding price for Day 28", quote["global_pending"])
+
     def test_create_new_guest_and_inquiry_from_studio(self):
         requests = []
 

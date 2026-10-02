@@ -230,6 +230,76 @@ def merge_guide_quote_followup(previous_quote, message, proposed_days=None, send
         if not any("horseback riding" in str(value).casefold() for value in quote.get("global_pending", [])):
             quote.setdefault("global_pending", []).append("Horseback riding price for Day 28")
 
+    # Guides often confirm a single pending add-on in a later WhatsApp message
+    # without repeating the itinerary date. Keep it separate from the base-day
+    # price so an optional activity does not silently inflate the core quote.
+    riding_rate = re.search(
+        r"(?:cabalgata[^$]{0,100}\$\s*([0-9][0-9,.]*)[^.]{0,80}por\s+persona|"
+        r"\$\s*([0-9][0-9,.]*)[^.]{0,80}por\s+persona[^.]{0,100}cabalgata)",
+        lower,
+    )
+    if riding_rate:
+        amount = float(next(value for value in riding_rate.groups() if value).replace(",", ""))
+        if amount.is_integer():
+            amount = int(amount)
+        party_size = int(quote.get("party_size") or 0) or None
+        total = amount * party_size if party_size else None
+        duration_match = re.search(r"(?:alrededor\s+de\s+)?(dos|2)\s+horas?", lower)
+        optional_charge = {
+            "date": day28.get("date") if day28 else "",
+            "label": "Horseback riding at Tambopaxi",
+            "location": "Tambopaxi" if "tambopaxi" in lower else "",
+            "amount_usd_per_person": amount,
+            "party_size": party_size,
+            "party_total_usd": total,
+            "duration_minutes": 120 if duration_match else None,
+            "status": "quoted_optional",
+            "source_text": str(message or "").strip(),
+        }
+        optional_charges = [
+            value
+            for value in quote.get("optional_charges", [])
+            if str(value.get("label") or "").casefold() != "horseback riding at tambopaxi"
+        ]
+        optional_charges.append(optional_charge)
+        quote["optional_charges"] = optional_charges
+        if day28:
+            day28["pending"] = [
+                value for value in day28.get("pending", []) if "horse riding" not in str(value).casefold()
+            ]
+            day28["confirmed_details"] = list(
+                dict.fromkeys(
+                    [
+                        *(day28.get("confirmed_details") or []),
+                        "$30 per person for approximately two hours at Tambopaxi",
+                    ]
+                )
+            )
+        quote["global_pending"] = [
+            value for value in quote.get("global_pending", []) if "horseback riding" not in str(value).casefold()
+        ]
+        reusable_facts = [
+            value
+            for value in quote.get("reusable_facts", [])
+            if str(value.get("service_key") or "") != "tambopaxi_horseback_riding"
+        ]
+        reusable_facts.append(
+            {
+                "fact_type": "supplier_rate",
+                "service_key": "tambopaxi_horseback_riding",
+                "service_name": "Horseback riding",
+                "location": "Tambopaxi",
+                "currency": "USD",
+                "amount": amount,
+                "unit": "per_person",
+                "duration_minutes": 120 if duration_match else None,
+                "supplier": _text(sender)[:120] or "Guide",
+                "verified_at": received_at or _now(),
+                "reuse_status": "verify_before_reuse",
+            }
+        )
+        quote["reusable_facts"] = reusable_facts
+
     quote["global_pending"] = [
         value for value in quote.get("global_pending", []) if "arrival airport transfer" not in str(value).casefold()
     ]
