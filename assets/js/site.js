@@ -52,6 +52,7 @@
   window.__mbwConsentStatus = savedChoice ? savedChoice.choice : "unknown";
 
   function loadGTM() {
+    if (!/^(www\.)?mindobirdwatching\.com$/i.test(window.location.hostname)) return;
     // Recognize both the current loader and a cached legacy head.js loader.
     if (document.querySelector('script[data-mbw-gtm="true"]') ||
         document.querySelector('script[src*="googletagmanager.com/gtm.js?id=' + GTM_ID + '"]')) return;
@@ -375,6 +376,7 @@
   }
 
   function ensureGtag() {
+    if (!/^(www\.)?mindobirdwatching\.com$/i.test(window.location.hostname)) return;
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
 
@@ -451,7 +453,7 @@
   }
 
   function sendEvent(name, payload) {
-    if (!name) return;
+    if (!name || !/^(www\.)?mindobirdwatching\.com$/i.test(window.location.hostname)) return;
     window.dataLayer = window.dataLayer || [];
     var eventPayload = basePayload(payload || {});
     var gtmPayload = {
@@ -473,6 +475,29 @@
     queueDirectFallbackEvent(name, eventPayload);
   }
 
+  // Record the visible page when a visitor returns after an idle interval.
+  // No timer creates page views; only a real return or interaction does.
+  var lastPageActivity = Date.now();
+  var RETURN_PAGE_VIEW_IDLE_MS = 30 * 60 * 1000;
+  function notePageActivity() {
+    if (document.visibilityState === "hidden") return;
+    var now = Date.now();
+    if (now - lastPageActivity >= RETURN_PAGE_VIEW_IDLE_MS) {
+      sendEvent("page_view", {page_view_reason:"return_after_inactivity"});
+    }
+    lastPageActivity = now;
+  }
+  document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") notePageActivity();
+  });
+  window.addEventListener("pointerdown", notePageActivity, true);
+  window.addEventListener("keydown", notePageActivity, true);
+  window.addEventListener("scroll", notePageActivity, {passive:true});
+  window.addEventListener("pageshow", function(event) {
+    if (!event.persisted || !/^(www\.)?mindobirdwatching\.com$/i.test(window.location.hostname)) return;
+    lastPageActivity = Date.now();
+    sendEvent("page_view", {page_view_reason:"browser_history_restore"});
+  });
   window.mbwAnalyticsTrack = sendEvent;
   window.mbwAnalyticsContext = getPageContext;
 

@@ -39,3 +39,6 @@ export function briefing(rows,{source,metric='sessions',start,end,stage,minimum=
  const eligible=rows.filter(row=>row.code&&(row[source==='website'?'sessions':'records']||0)>=minimum),total=sum(rows,metric);
  return {source,period:start?start+' through '+end:'All recorded tour dates',stage,total,metric,markets:rank(eligible,metric).slice(0,5),minimum,coverage:total?sum(rows.filter(row=>row.code),metric)/total:null,unqualified:rows.length-eligible.length};
 }
+
+export function averageSeries(points,window=7){return points.map((p,i)=>({...p,value:i+1<window?null:points.slice(i-window+1,i+1).reduce((n,row)=>n+row.value,0)/window}));}
+export function chartGeometry(points,max,{left=50,right=950,top=40,bottom=180}={}){const dates=points.map(p=>Date.parse(p.date.length===7?p.date+'-01':p.date)),first=Math.min(...dates),last=Math.max(...dates);return points.map((p,i)=>({...p,x:first===last?(left+right)/2:left+(dates[i]-first)/(last-first)*(right-left),y:p.value===null?null:bottom-p.value/Math.max(1,max)*(bottom-top)}));}

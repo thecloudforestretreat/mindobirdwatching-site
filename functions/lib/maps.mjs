@@ -16,10 +16,12 @@ export function country(value) {
 export function validDate(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value || '') && !Number.isNaN(Date.parse(value)) && new Date(value+'T00:00:00Z').toISOString().slice(0,10) === value;
 }
-export function previousPeriod(start,end) {
+export function previousPeriod(start,end,comparison="previous") {
   if (!validDate(start) || !validDate(end) || start > end) throw new Error('Choose a valid date range.');
   const days=(Date.parse(end)-Date.parse(start))/86400000+1;
   if (days>366) throw new Error('Choose a date range of 366 days or fewer.');
+  if(!['previous','year'].includes(comparison))throw new Error('Choose a valid comparison.');
+  if(comparison==='year'){const [y,m,d]=end.split('-').map(Number),lastDay=new Date(Date.UTC(y-1,m,0)).getUTCDate(),priorEnd=new Date(Date.UTC(y-1,m-1,Math.min(d,lastDay))).toISOString().slice(0,10);return {start:new Date(Date.parse(priorEnd)-(days-1)*86400000).toISOString().slice(0,10),end:priorEnd};}
   return {start:new Date(Date.parse(start)-days*86400000).toISOString().slice(0,10), end:new Date(Date.parse(start)-86400000).toISOString().slice(0,10)};
 }
 export function extractRecords(payload) {

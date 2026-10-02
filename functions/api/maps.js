@@ -16,13 +16,13 @@ export async function onRequestGet({request}) {
   const source=url.searchParams.get('source'),stage=url.searchParams.get('stage')||'confirmed',start=url.searchParams.get('start')||'',end=url.searchParams.get('end')||'';
   if(!['website','guests'].includes(source))return reply(400,{ok:false,error:'Choose a reporting source.'});
   if(!['confirmed','completed','current','upcoming','overdue','undated','prospects'].includes(stage))return reply(400,{ok:false,error:'Choose a valid guest stage.'});
-  let previous;
-  try{if(source==='website'||start||end)previous=previousPeriod(start,end);}catch(error){return reply(400,{ok:false,error:error.message});}
+  const comparison=url.searchParams.get('comparison')||'previous';let previous;
+  try{if(source==='website'||start||end)previous=previousPeriod(start,end,comparison);}catch(error){return reply(400,{ok:false,error:error.message});}
   if(source==='website'&&end>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()))return reply(400,{ok:false,error:'Website reporting cannot include future dates.'});
   try {
     if(source==='website') {
       const [current,prior,demand,currentDaily,priorDaily]=await Promise.all([read(GA+'?'+new URLSearchParams({start,end,view:'markets'})),read(GA+'?'+new URLSearchParams({...previous,view:'markets'})),read(CRM,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'list_inquiries',filters:{}})}).then(payload=>aggregateDemand(extractRecords(payload),{start,end,today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())})).catch(()=>({status:'unavailable',rows:[],reason:'CRM comparison unavailable; website reports remain available.'})),read(GA+'?'+new URLSearchParams({start,end,view:'country_daily'})).catch(()=>null),read(GA+'?'+new URLSearchParams({...previous,view:'country_daily'})).catch(()=>null)]);
-      return reply(200,{ok:true,source,start,end,previous,demand,exclusions:current.exclusions||[],...normalizeGA(current,start,end),details:{...normalizeDetails(current,start,end),country_daily:normalizeCountryDaily(currentDaily,start,end)},prior:{...normalizeGA(prior,previous.start,previous.end),details:{...normalizeDetails(prior,previous.start,previous.end),country_daily:normalizeCountryDaily(priorDaily,previous.start,previous.end)}}});
+      return reply(200,{ok:true,source,start,end,previous,comparison,demand,exclusions:current.exclusions||[],...normalizeGA(current,start,end),details:{...normalizeDetails(current,start,end),country_daily:normalizeCountryDaily(currentDaily,start,end)},prior:{...normalizeGA(prior,previous.start,previous.end),details:{...normalizeDetails(prior,previous.start,previous.end),country_daily:normalizeCountryDaily(priorDaily,previous.start,previous.end)}}});
     }
     const payload=await read(CRM,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'list_inquiries',filters:{}})});
     const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());

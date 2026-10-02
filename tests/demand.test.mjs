@@ -5,3 +5,5 @@ test('missing dates and free-text needs are disclosed, never interpreted as requ
 test('duplicate records cannot inflate confirmed or repeat-contact counts',()=>{const row={inquiry_id:'a',created_at:'2026-09-02',status:'confirmed',email:'a@example.com'};const d=aggregateDemand([row,row],options);assert.equal(d.rows[0].confirmed,1);assert.equal(d.rows[0].repeatContactBookings,0);assert.equal(d.duplicates,1);});
 
 test('timestamp cohorts use the Ecuador reporting day',()=>{const d=aggregateDemand([{inquiry_id:'a',status:'quoted',created_at:'2026-10-01T01:00:00Z'}],options);assert.equal(d.rows[0].inquiries,1);});
+
+test('booking timeline uses inquiry-created dates and separates completed-tour dates',()=>{const d=aggregateDemand([{inquiry_id:'a',country:'Spain',created_at:'2026-09-02',status:'completed',completed_date:'2026-09-15',guest_count:'2'}],options);assert.equal(d.timeline.find(r=>r.date==='2026-09-02').confirmed,1);assert.equal(d.timeline.find(r=>r.date==='2026-09-15').completedTours,1);assert.doesNotMatch(JSON.stringify(d.timeline),/inquiry_id|guest_count/);});

@@ -7,14 +7,19 @@ const assert=require('node:assert/strict');
   await page.goto('http://127.0.0.1:8797/analytics/maps/');await page.locator('#report').waitFor({state:'visible'});await page.waitForFunction(()=>document.querySelectorAll('#countries path').length>150);
   assert.equal(await page.locator('#table-body tr').count(),5);
   assert.match(await page.locator('#table-body tr').last().innerText(),/Unknown/);
-  assert.match(await page.locator('.trend-legend').innerText(),/Selected period:.*Previous period:/s);
-  await page.locator('#trend circle').last().focus();assert.match(await page.locator('#trend-value').innerText(),/prior/);
+  assert.match(await page.locator('#trend .trend-legend').innerText(),/Selected period:.*Previous period:/s);
+  await page.locator('#trend circle').last().focus();assert.match(await page.locator('#trend-value').innerText(),/comparison/);
   for(const field of ['country','sessions','inquiries','confirmed','completedTours']){const button=page.locator('[data-sort="'+field+'"]');await button.click();assert.notEqual(await button.locator('..').getAttribute('aria-sort'),'none');assert.match(await page.locator('#outcome-table tbody tr').last().innerText(),/Unknown/);await button.click();assert.match(await page.locator('#outcome-table tbody tr').last().innerText(),/Unknown/);}
 
   assert.match(await page.locator('#table-body').innerText(),/prior only/);
   assert.equal(await page.locator('#city-body tr').count(),5);assert.equal(await page.locator('#demand-panel').isVisible(),true);assert.match(await page.locator('#demand-metrics').innerText(),/Inquiries opened/);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Horizontal overflow at '+width);
-  await page.locator('#table-body button').filter({hasText:'United States'}).click();assert.match(await page.locator('#selection').innerText(),/140/);
+  await page.locator('#table-body button').filter({hasText:'United States'}).click();assert.match(await page.locator('#selection').innerText(),/140/);assert.match(await page.locator('#selection').innerText(),/Booked guests/);assert.equal(await page.locator('#booking-trend-panel').isVisible(),true);
+  await page.selectOption('#trend-style','average');assert.equal(await page.locator('#trend circle').count(),22);assert.match(await page.locator('#trend').innerText(),/Trailing seven-day/);await page.selectOption('#trend-style','daily');assert.equal(await page.locator('#trend circle').count(),28);
+  const dots=await page.locator('#trend circle').evaluateAll(els=>els.map(el=>({v:+el.dataset.value,y:+el.getAttribute('cy')})));const ymax=Math.max(...dots.map(d=>d.v));assert.ok(dots.every(d=>d.y>=40&&d.y<=180));assert.equal(dots.at(-1).v,140);
+  await page.selectOption('#map-mode','bookings');assert.match(await page.locator('#map-title').innerText(),/recorded bookings/);assert.match(await page.locator('#legend-max').innerText(),/Bookings/);await page.selectOption('#map-mode','volume');
+  await page.selectOption('#comparison','year');await page.waitForFunction(()=>!document.querySelector('#report').hidden);assert.match(await page.locator('#trend .trend-legend').innerText(),/2025/);await page.selectOption('#comparison','previous');await page.waitForFunction(()=>!document.querySelector('#report').hidden);
+
   await page.selectOption('#measure','engagedSessions');assert.match(await page.locator('#legend-max').innerText(),/Engaged sessions/);
   await page.selectOption('#scale','linear');await page.click('#zoom-in');assert.notEqual(await page.locator('#map').getAttribute('viewBox'),'0 0 900 405');await page.click('#reset');
   await page.click('#clear-scope');await page.fill('#search','Canada');assert.equal(await page.locator('#table-body tr').count(),1);await page.fill('#search','');
