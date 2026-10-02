@@ -270,11 +270,27 @@ def add_guide_response(record, response_text, sender="Guide"):
     received_at = now()
     guide_name = str(sender or "Guide")[:120]
     messages = _parse(record.get("guide_responses_json"), [])
-    messages.append({"received_at": received_at, "sender": guide_name, "message": text})
+    duplicate_index = next(
+        (
+            index
+            for index, message in enumerate(messages)
+            if isinstance(message, dict)
+            and str(message.get("sender") or "") == guide_name
+            and str(message.get("message") or "") == text
+        ),
+        None,
+    )
+    if duplicate_index is None:
+        messages.append({"received_at": received_at, "sender": guide_name, "message": text})
+    else:
+        received_at = str(messages[duplicate_index].get("received_at") or received_at)
     proposed_days = _parse(record.get("proposed_days_json"), [])
     parsed_quote = parse_guide_quote(text, proposed_days, guide_name, received_at)
     quotes = _parse(record.get("guide_quotes_json"), [])
-    quotes.append(parsed_quote)
+    if duplicate_index is None or duplicate_index >= len(quotes):
+        quotes.append(parsed_quote)
+    else:
+        quotes[duplicate_index] = parsed_quote
     updated = dict(record)
     updated["guide_responses_json"] = messages
     updated["guide_quotes_json"] = quotes

@@ -71,16 +71,28 @@ def _date_lookup(proposed_days):
 
 def _split_scope(value):
     lowered = value.casefold()
-    include_at = re.search(r"\bincluye\b", lowered)
-    exclude_at = re.search(r"\bno incluye\b", lowered)
+    scope_word = r"(?:incluye|incluid[oa]s?)"
+    include_at = re.search(rf"(?<!no )\b{scope_word}\b", lowered)
+    exclude_at = re.search(rf"\bno\s+{scope_word}\b", lowered)
     included = []
     excluded = []
     if include_at:
         end = exclude_at.start() if exclude_at and exclude_at.start() > include_at.start() else len(value)
         included = _categories(value[include_at.end() : end])
+    # Some guides write the priced scope before the amount, for example
+    # "costo guia transporte $190 no incluye ingreso". Treat only the words
+    # between "costo" and the amount as inclusions; activity words elsewhere
+    # in the sentence remain descriptive rather than priced.
+    cost_scope = re.search(
+        r"\bcostos?(?:\s+total)?\b(.*?)(?:(?:US\$|USD|\$)\s*[0-9])",
+        value,
+        re.IGNORECASE,
+    )
+    if cost_scope:
+        included.extend(_categories(cost_scope.group(1)))
     if exclude_at:
         excluded = _categories(value[exclude_at.end() :])
-    return included, excluded
+    return list(dict.fromkeys(included)), list(dict.fromkeys(excluded))
 
 
 def _candidate_lines(message):

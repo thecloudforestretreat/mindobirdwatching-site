@@ -88,11 +88,19 @@ Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alim
         self.assertEqual(quote["items"][0]["price_status"], "pending")
         self.assertEqual(quote["items"][1]["amount_usd"], 270)
         self.assertEqual(quote["items"][4]["date"], "2026-12-23")
+        self.assertEqual(quote["items"][3]["included"], ["guide", "Ecuador transport"])
         self.assertIn("entrance fees", quote["items"][3]["excluded"])
+        self.assertIn("breakfast", quote["items"][7]["included"])
+        self.assertNotIn("horse riding", quote["items"][9]["included"])
+        self.assertIn("horse riding", quote["items"][9]["excluded"])
         self.assertEqual(quote["global_excluded"], ["meals", "lodging"])
         self.assertIn("Bear reserve entrance fee", quote["global_pending"])
         self.assertFalse(plan["guest_facing_price_approved"])
         self.assertEqual(plan["days"][1]["guide_quote"]["amount_usd"], 270)
+
+        reparsed = studio_store.add_guide_response(updated, response, "Neicer")
+        self.assertEqual(len(json.loads(reparsed["guide_responses_json"])), 1)
+        self.assertEqual(len(json.loads(reparsed["guide_quotes_json"])), 1)
 
     def test_save_links_existing_inquiry(self):
         record = studio_store.build_record(
