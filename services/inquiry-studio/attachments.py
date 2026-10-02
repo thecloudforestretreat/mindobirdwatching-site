@@ -94,9 +94,16 @@ def prepare_attachments(items):
                 "sha256": item["sha256"],
             }
             if item["content_type"].startswith("image/"):
-                entry["extraction"] = "vision"
-                if len(image_bytes) < MAX_IMAGES:
-                    image_bytes.append(base64.b64encode(item["path"].read_bytes()).decode())
+                extracted = _extract(item["path"], root / f"image-{len(manifest) + 1}")
+                text = str(extracted.get("text") or "").strip()
+                if len(text) >= 80:
+                    text_parts.append(f"Attachment: {item['name']}\n{text[:30000]}")
+                    entry["extraction"] = "image_ocr"
+                    entry["extracted_characters"] = len(text)
+                else:
+                    entry["extraction"] = "vision_fallback"
+                    if len(image_bytes) < MAX_IMAGES:
+                        image_bytes.append(base64.b64encode(item["path"].read_bytes()).decode())
             else:
                 extracted = _extract(item["path"], root / f"pdf-{len(manifest) + 1}")
                 text = str(extracted.get("text") or "").strip()
@@ -118,4 +125,3 @@ def prepare_attachments(items):
         "text": "\n\n".join(text_parts),
         "images": image_bytes,
     }
-

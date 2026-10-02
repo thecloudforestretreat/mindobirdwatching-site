@@ -13,12 +13,16 @@ class StudioStoreTests(unittest.TestCase):
             "output_language": "en",
             "request_summary": "Custom request",
             "guest_profile": {"party_size": 2},
+            "trip_profile": {"budget": ""},
             "requested_dates": ["2026-12-20"],
             "target_species": ["Spectacled Bear"],
             "requirements": ["Guide"],
             "unknowns": [],
             "assumptions": [],
             "validation_flags": [],
+            "recommendations": ["Keep the bear-search days flexible."],
+            "knowledge_profile_ids": ["bears-birding-cotopaxi"],
+            "knowledge_version": "test-v1",
             "proposed_days": [],
             "guest_reply_draft": "Draft",
             "guide_brief_draft": "Dec 20 – Quote guide.",
@@ -38,6 +42,8 @@ class StudioStoreTests(unittest.TestCase):
         )
         self.assertTrue(record["inquiry_studio_id"].startswith("IST-"))
         self.assertEqual(record["revision"], 1)
+        extracted = json.loads(record["extracted_request_json"])
+        self.assertEqual(extracted["knowledge_profile_ids"], ["bears-birding-cotopaxi"])
         updated = studio_store.add_guide_response(record, "Guide and transport: 200", "Neicer")
         self.assertEqual(updated["revision"], 2)
         self.assertEqual(json.loads(updated["guide_responses_json"])[0]["sender"], "Neicer")

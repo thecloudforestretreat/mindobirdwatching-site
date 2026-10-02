@@ -203,11 +203,15 @@ def build_record(row, source, analysis, attachment_manifest, existing=None):
     extracted = {
         "summary": analysis.get("request_summary", ""),
         "guest_profile": analysis.get("guest_profile", {}),
+        "trip_profile": analysis.get("trip_profile", {}),
         "requested_dates": analysis.get("requested_dates", []),
         "target_species": analysis.get("target_species", []),
         "requirements": analysis.get("requirements", []),
         "unknowns": analysis.get("unknowns", []),
         "assumptions": analysis.get("assumptions", []),
+        "recommendations": analysis.get("recommendations", []),
+        "knowledge_profile_ids": analysis.get("knowledge_profile_ids", []),
+        "knowledge_version": analysis.get("knowledge_version", ""),
         "proposed_days": analysis.get("proposed_days", []),
     }
     record = {

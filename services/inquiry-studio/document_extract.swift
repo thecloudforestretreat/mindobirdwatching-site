@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import PDFKit
+import Vision
 
 struct Extraction: Codable {
     let text: String
@@ -13,18 +14,54 @@ func fail(_ message: String) -> Never {
 }
 
 guard CommandLine.arguments.count == 3 else {
-    fail("Usage: document_extract input.pdf output-directory")
+    fail("Usage: document_extract input-file output-directory")
 }
 
 let input = URL(fileURLWithPath: CommandLine.arguments[1])
 let output = URL(fileURLWithPath: CommandLine.arguments[2], isDirectory: true)
 
-guard input.pathExtension.lowercased() == "pdf" else {
-    fail("Only PDF extraction is supported")
+func recognizeText(_ image: CGImage) -> String {
+    let request = VNRecognizeTextRequest()
+    request.recognitionLevel = .accurate
+    request.usesLanguageCorrection = true
+    request.recognitionLanguages = ["en-US", "es-EC"]
+
+    do {
+        try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+    } catch {
+        return ""
+    }
+
+    let observations = (request.results ?? []).sorted { left, right in
+        let verticalDifference = abs(left.boundingBox.maxY - right.boundingBox.maxY)
+        if verticalDifference > 0.012 {
+            return left.boundingBox.maxY > right.boundingBox.maxY
+        }
+        return left.boundingBox.minX < right.boundingBox.minX
+    }
+    return observations.compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
 }
 
-guard let document = PDFDocument(url: input) else {
-    fail("The PDF could not be opened")
+let imageExtensions = ["jpg", "jpeg", "png", "webp"]
+if imageExtensions.contains(input.pathExtension.lowercased()) {
+    guard let image = NSImage(contentsOf: input),
+          let data = image.tiffRepresentation,
+          let bitmap = NSBitmapImageRep(data: data),
+          let cgImage = bitmap.cgImage else {
+        fail("The image could not be opened")
+    }
+    let result = Extraction(text: recognizeText(cgImage), images: [])
+    let encoder = JSONEncoder()
+    guard let encoded = try? encoder.encode(result) else {
+        fail("Could not encode image extraction results")
+    }
+    FileHandle.standardOutput.write(encoded)
+    exit(0)
+}
+
+guard input.pathExtension.lowercased() == "pdf",
+      let document = PDFDocument(url: input) else {
+    fail("The document could not be opened")
 }
 
 let pageLimit = min(document.pageCount, 12)
@@ -76,4 +113,3 @@ guard let encoded = try? encoder.encode(result) else {
 }
 
 FileHandle.standardOutput.write(encoded)
-

@@ -1,6 +1,6 @@
 # MBW Inquiry Studio
 
-Inquiry Studio is a protected Mac mini application for preparing unsent guest replies and custom-tour planning records. It uses the local `qwen3.5:27b` Ollama model and never sends email or WhatsApp messages.
+Inquiry Studio is a protected Mac mini application for preparing unsent guest replies and custom-tour planning records. It uses local Ollama models and never sends email or WhatsApp messages. Custom-tour extraction uses `qwen3.5:9b`; the existing focused quick-reply path uses `qwen3.5:27b`.
 
 ## Capabilities
 
@@ -24,7 +24,7 @@ Inquiry Studio is a protected Mac mini application for preparing unsent guest re
 
 ## Local requirements
 
-- Ollama on `127.0.0.1:11434` with `qwen3.5:27b`.
+- Ollama on `127.0.0.1:11434` with `qwen3.5:9b` and `qwen3.5:27b`.
 - The AI-OS Python environment used by the existing launch agents.
 - macOS PDFKit for PDF text extraction and page rendering.
 - The MBW n8n instance on `127.0.0.1:5681` with the Inquiry Studio CRM actions installed.
@@ -51,4 +51,3 @@ node test_editor.cjs
 5. Restart `com.mbw.inquiry-studio` and `com.mbw.inquiry-crm-sync`.
 6. Test a new custom intake without a CRM link.
 7. Test an existing inquiry and verify both sheets update while no message is sent.
-

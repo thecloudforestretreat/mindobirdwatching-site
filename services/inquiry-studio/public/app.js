@@ -406,7 +406,7 @@ $('analyzeStudio').onclick = async () => {
       output_language: $('studioLanguage').value,
       attachments,
     });
-    text('studioStatus', 'qwen3.5:27b is structuring the request on the Mac mini…');
+    text('studioStatus', 'Local extraction and planning are structuring the request on the Mac mini…');
     const job = await waitForJob(request.job_id);
     studioManifest = job.attachment_manifest || [];
     studioRecord = null;
@@ -430,18 +430,23 @@ function parseJson(value, fallback) {
 }
 
 function analysisFromRecord(record) {
+  const extracted = parseJson(record.extracted_request_json, {});
   return {
     inquiry_complexity: record.inquiry_complexity || 'custom_tour',
     input_language: record.input_language || '',
     output_language: record.output_language || 'en',
     request_summary: record.request_summary || '',
     guest_profile: parseJson(record.guest_profile_json, {}),
+    trip_profile: extracted.trip_profile || {},
     requested_dates: parseJson(record.requested_dates_json, []),
     target_species: parseJson(record.target_species_json, []),
     requirements: parseJson(record.requirements_json, []),
     unknowns: parseJson(record.unknowns_json, []),
     assumptions: parseJson(record.assumptions_json, []),
     validation_flags: parseJson(record.validation_flags_json, []),
+    recommendations: extracted.recommendations || [],
+    knowledge_profile_ids: extracted.knowledge_profile_ids || [],
+    knowledge_version: extracted.knowledge_version || '',
     proposed_days: parseJson(record.proposed_days_json, []),
     guest_reply_draft: record.guest_reply_draft || '',
     guide_brief_draft: record.guide_brief_draft || '',
@@ -459,6 +464,27 @@ function renderStudio(analysis) {
   text('complexity', (analysis.inquiry_complexity || '').replaceAll('_', ' '));
   text('validationStatus', analysis.validation_status || 'needs review');
   text('requestSummary', analysis.request_summary);
+  const profileLabels = {
+    travel_window: 'Travel window',
+    arrival_details: 'Arrival',
+    departure_details: 'Departure',
+    lodging_preferences: 'Lodging',
+    room_configuration: 'Room setup',
+    walking_ability: 'Walking ability',
+    altitude_experience: 'Altitude experience',
+    transport_requirements: 'Transport',
+    budget: 'Budget',
+  };
+  const profileItems = Object.entries(analysis.trip_profile || {})
+    .filter(([, value]) => value)
+    .map(([key, value]) => (profileLabels[key] || key.replaceAll('_', ' ')) + ': ' + value);
+  $('tripProfile').replaceChildren(
+    ...(profileItems.length ? profileItems : ['No verified trip-profile details extracted.']).map(value => {
+      const item = document.createElement('li');
+      item.textContent = value;
+      return item;
+    }),
+  );
   const checks = [
     ...(analysis.unknowns || []).map(value => 'Missing: ' + value),
     ...(analysis.validation_flags || []).map(value => 'Check: ' + value),
@@ -466,6 +492,14 @@ function renderStudio(analysis) {
   ];
   $('studioChecks').replaceChildren(
     ...(checks.length ? checks : ['No missing details were identified.']).map(value => {
+      const item = document.createElement('li');
+      item.textContent = value;
+      return item;
+    }),
+  );
+  const recommendations = analysis.recommendations || [];
+  $('knowledgeRecommendations').replaceChildren(
+    ...(recommendations.length ? recommendations : ['No knowledge-base profile matched this request.']).map(value => {
       const item = document.createElement('li');
       item.textContent = value;
       return item;
