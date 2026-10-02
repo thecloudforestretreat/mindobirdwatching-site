@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Markets & Guest Origins | MBW Admin</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="theme-color" content="#0D5925">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/maps.css">
+  <script defer src="/assets/js/admin-nav.js"></script>
+  <script defer src="/assets/js/maps.js"></script>
+</head>
+<body>
+<div data-admin-nav data-admin-page="maps"></div>
+<main class="maps-shell">
+  <header class="panel hero">
+    <div class="eyebrow">Analytics · Mindo Bird Watching</div>
+    <h1>Markets & Guest Origins</h1>
+    <p>See where interest is growing and where your guests come from.</p>
+    <nav class="context-links" aria-label="Related reports"><a href="/marketing/">Marketing</a><a href="/reports/">Reports</a><a href="/guest-crm/">Guest CRM</a></nav>
+    <div class="tabs" role="group" aria-label="Map source"><button id="website" aria-pressed="true">Website interest</button><button id="guests" aria-pressed="false">Guest origins</button></div>
+    <form id="controls" class="controls">
+      <label>Period<select id="period"><option value="7">Last 7 complete days</option><option value="28" selected>Last 28 complete days</option><option value="90">Last 90 complete days</option><option value="custom">Custom dates</option><option value="all" hidden>All recorded tour dates</option></select></label>
+      <label>From<input id="start" type="date" required></label><label>Through<input id="end" type="date" required></label>
+      <label id="stage-field" hidden>Guest stage<select id="stage"><option value="confirmed">All confirmed bookings</option><option value="completed">Completed tours</option><option value="current">Tours in progress</option><option value="upcoming">Upcoming bookings</option><option value="overdue">Past dates · completion unverified</option><option value="undated">Confirmed · date missing</option><option value="prospects">Prospective inquiries</option></select></label>
+      <button class="primary" type="submit">Apply dates</button><button id="refresh" type="button">Refresh now</button>
+    </form>
+    <p id="status" role="status" aria-live="polite">Preparing map…</p>
+  </header>
+  <section id="report" hidden>
+    <div id="metrics" class="metrics"></div>
+    <div id="warning" class="notice" hidden></div>
+    <section class="panel map-panel">
+      <div class="panel-heading"><div><h2 id="map-title">Where interest comes from</h2><p id="map-subtitle"></p></div>
+      <div class="map-tools"><label>Shade by<select id="measure"></select></label><label>Color scale<select id="scale"><option value="log">Balanced · reveal smaller markets</option><option value="linear">Linear · show absolute volume</option></select></label><button id="zoom-in" type="button" aria-label="Zoom in">+</button><button id="zoom-out" type="button" aria-label="Zoom out">−</button><button id="reset" type="button">Reset map</button></div></div>
+      <div class="map-wrap"><svg id="map" viewBox="0 0 900 405" role="group" aria-label="Country heat map. Select a country or use the country table below."><g id="countries"></g></svg></div>
+      <div class="legend"><span>No matching reported rows</span><i class="no-data"></i><span>0</span><i class="gradient"></i><span id="legend-max"></span></div>
+      <p id="scale-note" class="muted"></p><p class="muted">Country boundaries: Natural Earth, public domain. Small countries remain available in the country list.</p>
+      <aside id="selection" class="selection" aria-live="polite">Select a country to inspect its results.</aside>
+    </section>
+    <div class="lower-grid">
+      <section class="panel"><div class="panel-heading"><h2>Country ranking</h2><button id="export" type="button">Export country CSV</button></div>
+        <div class="table-controls"><label>Find a country<input id="search" type="search" placeholder="Country name"></label><label>Region<select id="continent"><option value="">All regions</option><option>Africa</option><option>Asia</option><option>Europe</option><option>North America</option><option>South America</option><option>Oceania</option></select></label></div>
+        <p id="table-note" class="muted"></p><div class="table-wrap"><table><thead id="table-head"></thead><tbody id="table-body"></tbody></table></div>
+      </section>
+      <aside class="panel"><h2>Market signals</h2><div id="insights"></div><h3>How to read this report</h3><p id="definition"></p><p class="muted">Website activity and CRM bookings are separate datasets. A country comparison does not establish that a particular visit generated a booking.</p><p class="muted">No guest names, contact details or individual locations are shown or exported. No reporting data is saved in browser storage.</p></aside>
+    </div>
+  </section>
+  <section id="error" class="panel" hidden role="alert"><h2>Report unavailable</h2><p id="error-message"></p><p>Try Refresh now. Other reports remain accessible through the navigation.</p></section>
+</main>
+</body></html>

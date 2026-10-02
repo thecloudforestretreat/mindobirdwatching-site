@@ -3,6 +3,12 @@
 
   var pages = [
   {
+    "id": "maps",
+    "label": "Markets & Guest Origins",
+    "href": "https://admin.mindobirdwatching.com/analytics/maps/",
+    "category": "reports"
+  },
+  {
     "id": "admin",
     "label": "Admin Hub",
     "href": "https://admin.mindobirdwatching.com/"
