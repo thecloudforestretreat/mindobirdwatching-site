@@ -87,7 +87,8 @@ function renderMap(){
   $('city-markers').replaceChildren();$('map-defs').replaceChildren();
   let note=isGrowth()?'Orange shows declines, neutral shows no change, teal shows gains. Color measures absolute change, not percentage.':$('scale').value==='log'?'Balanced shading reveals smaller markets. Read exact values in the rankings.':'Linear shading follows reported volume.';
   const gradient=document.querySelector('.gradient');gradient.style.background='linear-gradient(90deg,'+(isGrowth()?GROWTH_COLORS:colors).join(',')+')';
-  $('legend-max').textContent=isGrowth()?'+/− '+number(max)+' '+labels[metricKey]:number(Math.max(0,...rows.map(row=>row[metricKey]||0)))+' '+labels[metricKey];
+  $('legend-min').textContent=isGrowth()?'−'+number(max):'0';
+  $('legend-max').textContent=isGrowth()?'+'+number(max)+' '+labels[metricKey]:number(Math.max(0,...rows.map(row=>row[metricKey]||0)))+' '+labels[metricKey];
   if(cityView&&web()){
     const report=state.data.details?.cities;
     if(report?.status!=='connected')note='City reporting is unavailable. Connect the extended GA4 report; country reporting remains available.';
@@ -103,7 +104,7 @@ function renderMap(){
       const plotted=sum(located.filter(row=>row.reported!==false),'sessions'),all=sum(eligible.filter(row=>row.reported!==false),'sessions');
       note=(isGrowth()?'Bubble area shows absolute change; color shows gain or decline.':'Bubble area shows '+labels[metricKey].toLowerCase()+'; color shows engagement rate from pale to dark.')+' '+$('city-markers').children.length+' city centers plotted (maximum 200), covering '+(all?percent(plotted/all):'—')+' of named-city sessions in this scope. Unmatched cities stay in the Top 10 and report tables.';
       if($('city-style').value==='glow')note+=' Glow marks approximate city centers; it does not estimate activity between them.';
-      if(!isGrowth())$('legend-max').textContent='Darkest shade = 100% engagement';
+      if(isGrowth()){$('legend-min').textContent='−'+number(maxCity);$('legend-max').textContent='+'+number(maxCity)+' '+labels[metricKey];}else{$('legend-min').textContent='0% engagement';$('legend-max').textContent='100% engagement';}
     }
   }
   $('scale-note').textContent=note+' Select a country or city before zooming to center it.';
@@ -204,7 +205,7 @@ function downloadBrief(){
   download('mbw-demand-briefing-'+(state.data.end||today())+'.html',html,'text/html;charset=utf-8');
 }
 $('website').onclick=()=>switchSource('website');$('guests').onclick=()=>switchSource('guests');$('period').onchange=()=>{range();load();};$('stage').onchange=()=>load();[$('start'),$('end')].forEach(input=>input.onchange=()=>{$('period').value='custom';});$('controls').onsubmit=event=>{event.preventDefault();load();};$('refresh').onclick=()=>load(true);
-$('measure').onchange=render;$('palette').onchange=render;$('scale').onchange=renderMap;$('map-mode').onchange=renderMap;$('geography').onchange=renderMap;$('city-style').onchange=renderMap;$('search').oninput=()=>{if(state.data)renderTable();};$('country-rank').onchange=()=>{if(state.data)renderTable();};$('city-rank').onchange=()=>{if(state.data)renderCities();};$('city-min').onchange=()=>{if(state.data)renderCities();};
+$('measure').onchange=render;$('palette').onchange=render;$('scale').onchange=renderMap;$('map-mode').onchange=render;$('geography').onchange=renderMap;$('city-style').onchange=renderMap;$('search').oninput=()=>{if(state.data)renderTable();};$('country-rank').onchange=()=>{if(state.data)renderTable();};$('city-rank').onchange=()=>{if(state.data)renderCities();};$('city-min').onchange=()=>{if(state.data)renderCities();};
 $('country').onchange=()=>{if(!state.data)return;state.country=$('country').value;state.city='';render();};$('continent').onchange=()=>{if(!state.data)return;state.city='';populateCountries();render();};$('clear-scope').onclick=clearScope;$('clear-city').onclick=()=>{state.city='';render();};$('zoom-in').onclick=()=>zoom(.5);$('zoom-out').onclick=()=>zoom(-.5);$('reset').onclick=clearScope;
 $('export').onclick=exportCSV;$('presentation').onclick=()=>setPresentation(!state.presentation);$('download-brief').onclick=downloadBrief;$('print').onclick=()=>{if(state.data){setPresentation(true);window.print();}};
 fetch('/assets/maps/world.json').then(response=>{if(!response.ok)throw new Error();return response.json();}).then(features=>{state.features=features;features.forEach(feature=>{const path=document.createElementNS(NS,'path'),title=document.createElementNS(NS,'title');path.setAttribute('d',feature.path);path.dataset.code=feature.id;path.dataset.name=feature.name;path.setAttribute('fill','#cbd6d9');path.setAttribute('tabindex','0');path.setAttribute('role','button');path.append(title);path.onclick=()=>{if(state.data)selectCountry(feature.id);};path.onkeydown=event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();if(state.data)selectCountry(feature.id);}};$('countries').append(path);});if(state.data){populateCountries();render();}}).catch(()=>{$('scale-note').textContent='Map boundaries could not load. Rankings remain available.';});

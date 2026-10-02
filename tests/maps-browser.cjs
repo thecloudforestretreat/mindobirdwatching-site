@@ -13,7 +13,7 @@ const assert=require('node:assert/strict');
   await page.selectOption('#measure','engagedSessions');assert.match(await page.locator('#legend-max').innerText(),/Engaged sessions/);
   await page.selectOption('#scale','linear');await page.click('#zoom-in');assert.notEqual(await page.locator('#map').getAttribute('viewBox'),'0 0 900 405');await page.click('#reset');
   await page.click('#clear-scope');await page.fill('#search','Canada');assert.equal(await page.locator('#table-body tr').count(),1);await page.fill('#search','');
-  await page.selectOption('#palette','blue');
+  await page.selectOption('#map-mode','growth');assert.match(await page.locator('#legend-min').innerText(),/−/);assert.match(await page.locator('#map-title').innerText(),/Growth/);await page.selectOption('#map-mode','volume');await page.selectOption('#palette','blue');
   await page.selectOption('#geography','cities');assert.ok(await page.locator('#city-markers circle').count()>=4);
   await page.selectOption('#city-style','glow');assert.ok(await page.locator('#map-defs radialGradient').count()>=4);
   await page.selectOption('#country','US');assert.equal(await page.locator('#city-body tr').count(),2);
