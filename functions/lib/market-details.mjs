@@ -51,3 +51,9 @@ export function normalizeDetails(payload,start,end) {
   }
   return results;
 }
+
+export function normalizeCountryDaily(payload,start,end){
+ const report=payload?.reports?.country_daily;
+ if(!payload?.ok||payload.start!==start||payload.end!==end||!Array.isArray(report?.rows)||report.truncated)return {status:'unavailable',reason:'Country daily reporting unavailable or incomplete.',rows:[]};
+ try{const seen=new Set(),rows=report.rows.map(row=>{const loc=country(row.country),raw=String(row.date||''),date=/^\d{8}$/.test(raw)?raw.slice(0,4)+'-'+raw.slice(4,6)+'-'+raw.slice(6):raw;if(!Object.hasOwn(row,'country')||!validDate(date)||date<start||date>end)throw Error();const out={...loc,date};for(const key of metrics){if(row[key]===null||row[key]===undefined||!Number.isFinite(Number(row[key]))||Number(row[key])<0)throw Error();out[key]=Number(row[key]);}const id=(loc.code||loc.country)+'|'+date;if(seen.has(id))throw Error();seen.add(id);return out;});return {status:'connected',rows,limited:Boolean(report.metadata?.subjectToThresholding||report.metadata?.dataLossFromOtherRow||report.metadata?.samplingMetadatas?.length)};}catch{return {status:'unavailable',reason:'Country daily validation failed.',rows:[]};}
+}

@@ -18,7 +18,7 @@ export function scoped(rows,{country='',continent='',features=[],city=''}={}){
 export function rank(rows,metric,mode='volume',minimum=0){
   const eligible=rows.filter(row=>(mode==='loss'?Math.max(row.sessions??row.records??0,row.prior?.sessions??row.prior?.records??0):row.sessions??row.records??0)>=minimum);
   const value=row=>mode==='engagement'?(row.engagementRate??-1):mode==='gain'?compare(row[metric]||0,row.prior?.[metric]||0).delta:mode==='loss'?-compare(row[metric]||0,row.prior?.[metric]||0).delta:row[metric]||0;
-  return [...eligible].sort((a,b)=>value(b)-value(a)||String(a.city||a.country).localeCompare(String(b.city||b.country)));
+  return [...eligible].sort((a,b)=>Number(!a.code)-Number(!b.code)||value(b)-value(a)||String(a.city||a.country).localeCompare(String(b.city||b.country)));
 }
 export function rollup(rows,field){const groups=new Map();for(const row of rows){const label=row[field]||'Unknown';const out=groups.get(label)||{label,sessions:0,engagedSessions:0};out.sessions+=row.sessions||0;out.engagedSessions+=row.engagedSessions||0;groups.set(label,out);}return [...groups.values()].map(row=>({...row,engagementRate:row.sessions?row.engagedSessions/row.sessions:null})).sort((a,b)=>b.sessions-a.sessions);}
 export function dailySeries(rows,start,end,metric='sessions'){

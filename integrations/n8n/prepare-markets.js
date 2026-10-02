@@ -3,8 +3,9 @@ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'
 const start=String(q.start||'2026-09-01'),end=String(q.end||today);
 const valid=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(Date.parse(s))&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;
 if(!valid(start)||!valid(end)||start>end||end>today||(Date.parse(end)-Date.parse(start))/86400000>=366)throw new Error('Invalid date range');
-const markets=q.view==='markets';
+const markets=q.view==='markets',trends=q.view==='country_daily';
+const dimensionFilter={notExpression:{andGroup:{expressions:[{filter:{fieldName:'country',stringFilter:{matchType:'EXACT',value:'United States',caseSensitive:false}}},{filter:{fieldName:'city',stringFilter:{matchType:'EXACT',value:'Cutler Bay',caseSensitive:false}}}]}}};
 const metrics=['totalUsers','sessions','engagedSessions','engagementRate'].map(name=>({name}));
-const labels=markets?['countries','cities','daily','sources','landing_pages']:['summary','acquisition','countries','devices','landing_pages'];
-const dimensions=markets?[['country'],['country','region','city','cityId'],['country','region','city','cityId','date'],['country','region','city','cityId','sessionSourceMedium','sessionCampaignName'],['country','region','city','cityId','landingPage']]:[[],['sessionSourceMedium','sessionCampaignName'],['country'],['deviceCategory'],['landingPage']];
-return [{json:{start,end,labels,schema_version:markets?2:1,body:{requests:dimensions.map(d=>({dateRanges:[{startDate:start,endDate:end}],dimensions:d.map(name=>({name})),metrics,limit:markets?'100000':'10000',orderBys:[{metric:{metricName:'sessions'},desc:true}]}))}}}];
+const labels=trends?['country_daily']:markets?['countries','cities','daily','sources','landing_pages']:['summary','acquisition','countries','devices','landing_pages'];
+const dimensions=trends?[['country','date']]:markets?[['country'],['country','region','city','cityId'],['country','region','city','cityId','date'],['country','region','city','cityId','sessionSourceMedium','sessionCampaignName'],['country','region','city','cityId','landingPage']]:[[],['sessionSourceMedium','sessionCampaignName'],['country'],['deviceCategory'],['landingPage']];
+return [{json:{start,end,labels,schema_version:markets||trends?2:1,exclusions:['Cutler Bay, United States'],body:{requests:dimensions.map(d=>({dateRanges:[{startDate:start,endDate:end}],dimensions:d.map(name=>({name})),dimensionFilter,metrics,limit:markets||trends?'100000':'10000',orderBys:[{metric:{metricName:'sessions'},desc:true}]}))}}}];
