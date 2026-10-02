@@ -11,7 +11,8 @@ Inquiry Studio is a protected Mac mini application for preparing unsent guest re
 - Produce a structured request, missing questions, proposed days, a guest follow-up, and concise guide-pricing lines.
 - Save a reviewed 40-column Studio record to `crm_inquiry_studio` through the MBW n8n CRM API.
 - Link the saved Studio ID, status, and update time back to `crm_inquiries`.
-- Append guide replies to `guide_responses_json` for a persistent conversation history.
+- Append the original guide reply to `guide_responses_json`, structure dated supplier costs in `guide_quotes_json`, and merge them into a review-only `final_plan_json`.
+- Keep supplier costs private until inclusions, exclusions, pending items, and owner markup have been reviewed.
 
 ## Safety boundaries
 

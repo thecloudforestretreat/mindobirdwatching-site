@@ -48,6 +48,52 @@ class StudioStoreTests(unittest.TestCase):
         self.assertEqual(updated["revision"], 2)
         self.assertEqual(json.loads(updated["guide_responses_json"])[0]["sender"], "Neicer")
 
+    def test_guide_response_is_structured_and_merged_by_date(self):
+        analysis = self.analysis()
+        analysis["proposed_days"] = [
+            {
+                "day_number": number,
+                "date": f"2026-12-{18 + number:02d}",
+                "location": "Ecuador",
+                "activity": "Guest request",
+                "pricing_needed": ["guide"],
+            }
+            for number in range(1, 13)
+        ]
+        record = studio_store.build_record(
+            {"inquiry_id": "INQ-1", "guest_id": "G-1"},
+            {"message": "Request"},
+            analysis,
+            [],
+        )
+        response = """Itinerario 19-30 Diciembre
+1. Arribo a Quito traslado al hotel 23 horas costo pendiente
+2. Full day Antisana costo total $270 incluye ingresos transporte guía
+3. Cayambe-Coca y Papallacta costo total $250 incluye transporte guía ingresos
+4. Mirador del Oso Andino costo $190 incluye guía transporte no incluye ingreso a la reserva
+23 reserva Sigsipamba costo $190 incluye guía transporte no incluye ingresos a la reserva
+24 Retorno a Mindo o caminata nocturna costo $220 incluye transporte guía caminata nocturna
+25 aves, mariposario y chocolate costo $150
+26 Bellavista y Frutitour costo $240 incluye ingresos desayuno guía transporte
+27 Mashpi Amagusa y traslado a Cotopaxi costo $300 incluye transporte guía ingresos
+28 Cotopaxi con opción de cabalgata costo $160 no incluye cabalgata
+29 Quito, Mitad del Mundo y Centro Histórico $200 incluye transporte guía ingreso
+30 traslado al aeropuerto costo $70
+Queda pendiente averiguar el costo del ingreso a la reserva de los osos. La alimentación y el hospedaje es adicional y no se incluye."""
+        updated = studio_store.add_guide_response(record, response, "Neicer")
+        quote = json.loads(updated["guide_quotes_json"])[0]
+        plan = json.loads(updated["final_plan_json"])
+        self.assertEqual(len(quote["items"]), 12)
+        self.assertEqual(quote["known_supplier_subtotal_usd"], 2240)
+        self.assertEqual(quote["items"][0]["price_status"], "pending")
+        self.assertEqual(quote["items"][1]["amount_usd"], 270)
+        self.assertEqual(quote["items"][4]["date"], "2026-12-23")
+        self.assertIn("entrance fees", quote["items"][3]["excluded"])
+        self.assertEqual(quote["global_excluded"], ["meals", "lodging"])
+        self.assertIn("Bear reserve entrance fee", quote["global_pending"])
+        self.assertFalse(plan["guest_facing_price_approved"])
+        self.assertEqual(plan["days"][1]["guide_quote"]["amount_usd"], 270)
+
     def test_save_links_existing_inquiry(self):
         record = studio_store.build_record(
             {"inquiry_id": "INQ-1", "guest_id": "G-1"},

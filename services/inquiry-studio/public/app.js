@@ -313,6 +313,10 @@ function resetStudio() {
   $('studioLanguage').value = 'auto';
   $('guideResponse').value = '';
   $('guideSender').value = '';
+  $('guideQuoteReview').hidden = true;
+  $('guideQuoteDays').replaceChildren();
+  $('guideQuoteFlags').replaceChildren();
+  text('guideQuoteSubtotal', '');
   text('studioStatus', 'Nothing is sent to the guest or guides.');
 }
 
@@ -458,6 +462,47 @@ function analysisFromRecord(record) {
   };
 }
 
+function renderGuideQuote(record) {
+  const quotes = parseJson(record?.guide_quotes_json, []);
+  const quote = quotes.length ? quotes[quotes.length - 1] : null;
+  if (!quote) {
+    $('guideQuoteReview').hidden = true;
+    return;
+  }
+  $('guideQuoteReview').hidden = false;
+  text('guideQuoteSubtotal', 'Known supplier subtotal: $' + Number(quote.known_supplier_subtotal_usd || 0).toLocaleString('en-US'));
+  $('guideQuoteDays').replaceChildren(
+    ...(quote.items || []).map(item => {
+      const article = document.createElement('article');
+      article.className = 'dayRow quoteDay';
+      const title = document.createElement('strong');
+      title.textContent = [item.date || 'Day ' + item.day_number, item.location].filter(Boolean).join(' · ');
+      const plan = document.createElement('p');
+      plan.textContent = item.supplier_plan || '';
+      const amount = document.createElement('b');
+      amount.textContent = item.amount_usd == null ? 'Price pending' : '$' + Number(item.amount_usd).toLocaleString('en-US');
+      const scope = document.createElement('small');
+      scope.textContent = [
+        (item.included || []).length ? 'Includes: ' + item.included.join(', ') : '',
+        (item.excluded || []).length ? 'Excludes: ' + item.excluded.join(', ') : '',
+      ].filter(Boolean).join(' · ');
+      article.append(title, plan, amount, scope);
+      return article;
+    }),
+  );
+  const flags = [
+    ...(quote.global_excluded || []).length ? ['Generally excluded: ' + quote.global_excluded.join(', ')] : [],
+    ...(quote.review_flags || []),
+  ];
+  $('guideQuoteFlags').replaceChildren(
+    ...(flags.length ? flags : ['No additional quote checks detected.']).map(value => {
+      const item = document.createElement('li');
+      item.textContent = value;
+      return item;
+    }),
+  );
+}
+
 function renderStudio(analysis) {
   studioAnalysis = analysis;
   $('studioResults').hidden = false;
@@ -524,6 +569,7 @@ function renderStudio(analysis) {
   $('guestReply').value = analysis.guest_reply_draft || '';
   $('guideBrief').value = analysis.guide_brief_draft || '';
   $('guideResponse').value = '';
+  renderGuideQuote(studioRecord);
   text('saveNote', studioRecord ? 'Loaded revision ' + studioRecord.revision + '. Saving creates a new revision.' : 'Review both drafts before saving.');
 }
 
@@ -597,7 +643,8 @@ $('saveGuideResponse').onclick = async () => {
     });
     studioRecord = result.record;
     $('guideResponse').value = '';
-    text('studioStatus', 'Guide response added to the saved conversation JSON.');
+    renderGuideQuote(studioRecord);
+    text('studioStatus', 'Guide response saved, structured by day, and merged into the review plan.');
     text('saveNote', 'Saved as ' + studioRecord.inquiry_studio_id + ' · revision ' + studioRecord.revision);
   } catch (error) {
     text('studioStatus', error.message);

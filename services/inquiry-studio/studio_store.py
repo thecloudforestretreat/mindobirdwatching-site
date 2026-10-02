@@ -8,6 +8,8 @@ import secrets
 from datetime import datetime, timezone
 from urllib.request import Request, urlopen
 
+from guide_quotes import parse_guide_quote
+
 N8N_URL = "http://127.0.0.1:5681/webhook/mbw-crm-admin-api"
 
 FIELDS = [
@@ -265,10 +267,27 @@ def add_guide_response(record, response_text, sender="Guide"):
         raise ValueError("Guide response is empty")
     if len(text) > 20000:
         raise ValueError("Guide response is too long")
+    received_at = now()
+    guide_name = str(sender or "Guide")[:120]
     messages = _parse(record.get("guide_responses_json"), [])
-    messages.append({"received_at": now(), "sender": str(sender or "Guide")[:120], "message": text})
+    messages.append({"received_at": received_at, "sender": guide_name, "message": text})
+    proposed_days = _parse(record.get("proposed_days_json"), [])
+    parsed_quote = parse_guide_quote(text, proposed_days, guide_name, received_at)
+    quotes = _parse(record.get("guide_quotes_json"), [])
+    quotes.append(parsed_quote)
     updated = dict(record)
     updated["guide_responses_json"] = messages
+    updated["guide_quotes_json"] = quotes
+    updated["final_plan_json"] = {
+        "status": "supplier_quote_received",
+        "review_required": True,
+        "guest_facing_price_approved": False,
+        "known_supplier_subtotal_usd": parsed_quote["known_supplier_subtotal_usd"],
+        "global_excluded": parsed_quote["global_excluded"],
+        "global_pending": parsed_quote["global_pending"],
+        "review_flags": parsed_quote["review_flags"],
+        "days": parsed_quote["merged_days"],
+    }
     updated["updated_at"] = now()
     updated["revision"] = int(record.get("revision") or 0) + 1
     updated["status"] = "guide_response_received"
