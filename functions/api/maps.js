@@ -1,5 +1,6 @@
 import { verifyIdentity } from '../_middleware.js';
 import { validDate, previousPeriod, extractRecords, aggregateGuests, normalizeGA } from '../lib/maps.mjs';
+import { aggregateDemand } from '../lib/demand.mjs';
 import { normalizeDetails } from '../lib/market-details.mjs';
 const GA='https://n8n.mindobirdwatching.com/webhook/mbw-ga4-acquisition';
 const CRM='https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api';
@@ -20,8 +21,8 @@ export async function onRequestGet({request}) {
   if(source==='website'&&end>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()))return reply(400,{ok:false,error:'Website reporting cannot include future dates.'});
   try {
     if(source==='website') {
-      const [current,prior]=await Promise.all([read(GA+'?'+new URLSearchParams({start,end,view:'markets'})),read(GA+'?'+new URLSearchParams({...previous,view:'markets'}))]);
-      return reply(200,{ok:true,source,start,end,previous,...normalizeGA(current,start,end),details:normalizeDetails(current,start,end),prior:{...normalizeGA(prior,previous.start,previous.end),details:normalizeDetails(prior,previous.start,previous.end)}});
+      const [current,prior,demand]=await Promise.all([read(GA+'?'+new URLSearchParams({start,end,view:'markets'})),read(GA+'?'+new URLSearchParams({...previous,view:'markets'})),read(CRM,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'list_inquiries',filters:{}})}).then(payload=>aggregateDemand(extractRecords(payload),{start,end,today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())})).catch(()=>({status:'unavailable',rows:[],reason:'CRM comparison unavailable; website reports remain available.'}))]);
+      return reply(200,{ok:true,source,start,end,previous,demand,...normalizeGA(current,start,end),details:normalizeDetails(current,start,end),prior:{...normalizeGA(prior,previous.start,previous.end),details:normalizeDetails(prior,previous.start,previous.end)}});
     }
     const payload=await read(CRM,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'list_inquiries',filters:{}})});
     const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
