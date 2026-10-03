@@ -56,7 +56,7 @@ export function aggregateGuests(records,{stage='confirmed',start='',end='',today
     const actual=guestStage(row,today);if(actual==='excluded'){excluded++;continue;}
     stages[actual]++;
     if (stage==='confirmed'?actual==='prospects':actual!==stage) continue;
-    const date=dateOnly(row.confirmed_date||row.requested_date_start||row.requested_date||(actual==='completed'?row.completed_date:''));
+    const date=dateOnly(actual==='completed'?(row.completed_date||row.confirmed_date||row.requested_date_start||row.requested_date):(row.confirmed_date||row.requested_date_start||row.requested_date));
     if (start && !date){missingDates++;continue;}
     if (start && (date<start||date>end)) continue;
     const loc=country(row.country||row.home_country||row.country_of_residence);

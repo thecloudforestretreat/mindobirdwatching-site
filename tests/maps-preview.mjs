@@ -4,6 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {onRequestGet} from '../functions/api/maps.js';
+import {aggregateGuests} from '../functions/lib/maps.mjs';
+import {aggregateDemand} from '../functions/lib/demand.mjs';
+import {reconcileBookings,reconciledDemand} from '../functions/lib/reconcile.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../admin');
 globalThis.fetch=async (url,options)=>{
   if(String(url).includes('mbw-ga4-acquisition')){
@@ -16,7 +19,7 @@ globalThis.fetch=async (url,options)=>{
     return Response.json({ok:true,schema_version:2,start,end,exclusions:['Cutler Bay, United States'],updated_at:'2026-10-02T12:00:00Z',reports:{countries:report(cities.map(({city,region,cityId,...rest})=>rest).filter(r=>r.country!=='United States').concat({country:'United States',sessions:prior?80:140,totalUsers:100,engagedSessions:85})),cities:report(cities),daily:report(cities.map(row=>({...row,date:end.replaceAll('-','')}))),sources:report(cities.map(row=>({...row,sessionSourceMedium:row.cityId==='l'?'partner / referral':'google / organic',sessionCampaignName:row.cityId==='l'?'lodging-network':'(organic)'}))),landing_pages:report(cities.map(row=>({...row,landingPage:row.cityId==='l'?'/lodging/':'/birding-tours/'})))}});
 
   }
-  if(String(url).includes('mbw-crm-admin-api'))return Response.json({ok:true,count:5,records:[{inquiry_id:'a',created_at:'2026-09-15',completed_date:'2026-09-20',accommodation_needs:'yes',status:'completed',country:'US',guest_count:'2'},{inquiry_id:'b',status:'booked',requested_date:'2099-01-01',country:'Canada',guest_count:'4'},{inquiry_id:'c',status:'booked',requested_date:'2020-01-01',country:'Germany',guest_count:'3'},{inquiry_id:'d',status:'quoted',country:'France',guest_count:'2'},{inquiry_id:'e',status:'completed',guest_count:''}]});
+  if(String(url).includes('mbw-recorded-outcomes')){const params={...JSON.parse(options.body),today:'2026-10-03'};const crm=[{inquiry_id:'a',created_at:'2026-09-15',completed_date:'2026-09-20',accommodation_needs:'yes',status:'completed',country:'US',guest_count:'2'},{inquiry_id:'b',status:'booked',requested_date:'2099-01-01',country:'Canada',guest_count:'4'},{inquiry_id:'c',status:'booked',requested_date:'2020-01-01',country:'Germany',guest_count:'3'},{inquiry_id:'d',status:'quoted',country:'France',guest_count:'2'},{inquiry_id:'e',status:'completed',guest_count:''}];const reconciled=reconcileBookings(crm,[],params);return Response.json({ok:true,...params,reconciliation:reconciled.stats,...(params.source==='website'?{demand:reconciledDemand(crm,reconciled,aggregateDemand,params)}:aggregateGuests(reconciled.records,params))});}
   throw new Error('Unexpected external request in QA');
 };
 http.createServer(async(req,res)=>{
