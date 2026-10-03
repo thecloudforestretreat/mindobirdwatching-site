@@ -9,6 +9,12 @@ assert.match(html, /Create Another Booking for This Guest/);
 assert.match(html, /list_bookings/);
 assert.match(html, /list_payments/);
 assert.match(html, /function renderPaymentLedger/);
+assert.match(html, /Unsaved booking draft for/);
+assert.match(html, /Discard Draft/);
+assert.match(html, /Return to Existing Booking/);
+assert.match(html, /function discardReturningBookingDraft/);
+assert.match(html, /Cancel \/ Archive This Booking/);
+assert.match(html, /Paid bookings cannot be deleted/);
 for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
   if (match[1].trim()) new Function(match[1]);
 }
