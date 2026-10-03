@@ -144,7 +144,15 @@ function reconcileBookings(crm,invoices,{today}) {
   if(g.rows.some(r=>country(r.home_country).code!==g.country.code)){stats.countryConflicts++;g.country=country('');}
   if(g.sizes.length>1)stats.guestCountConflicts++;
   const strong=clean.filter(r=>(text(r.booking_id)&&g.ids.has(text(r.booking_id)))||(text(r.inquiry_id)&&g.inquiryIds.has(text(r.inquiry_id)))||(text(r.invoice_no)===g.no&&email(r.email_normalized||r.email)===g.email&&g.email));
-  g.candidates=strong.length?strong:clean.filter(r=>{if(!g.email||email(r.email_normalized||r.email)!==g.email)return false;const first=date(r.confirmed_date||r.requested_date_start||r.requested_date||r.completed_date),last=date(r.requested_date_end)||first;return first&&last>=first&&g.dates.some(d=>d>=first&&d<=last);});
+  // Email can change or be missing. A recorded invoice reference plus matching
+  // tour date and country identifies the same booking without guessing a contact.
+  const invoiceRefs=clean.filter(r=>{
+   if(text(r.invoice_no)!==g.no||!g.dates.length||!g.country.code||country(r.country||r.home_country).code!==g.country.code)return false;
+   const first=date(r.confirmed_date||r.requested_date_start||r.requested_date||r.completed_date),last=date(r.requested_date_end)||first;
+   return first&&last>=first&&g.dates.some(d=>d>=first&&d<=last);
+  });
+  const identified=[...new Set([...strong,...invoiceRefs])];
+  g.candidates=identified.length?identified:clean.filter(r=>{if(!g.email||email(r.email_normalized||r.email)!==g.email)return false;const first=date(r.confirmed_date||r.requested_date_start||r.requested_date||r.completed_date),last=date(r.requested_date_end)||first;return first&&last>=first&&g.dates.some(d=>d>=first&&d<=last);});
   for(const r of g.candidates)matches.get(r).push(g);
  }
  const consumed=new Set(),uncertain=new Set(),records=[];
@@ -155,7 +163,7 @@ function reconcileBookings(crm,invoices,{today}) {
   if(match){consumed.add(match);stats.matchedInvoiceBookings++;}else if(!ambiguous)stats.historicalInvoiceBookings++;
   // Invoice completion is authoritative for matched trips, including an explicit No.
   const first=g.dates[0]||'',last=g.dates.at(-1)||'';
-  records.push({...match,source_record_id:'accounting:'+g.key,inquiry_id:'',booking_id:'',country:g.country.country,home_country:g.country.country,email:g.email,guest_count:g.sizes.length===1?g.sizes[0]:'',status:g.complete?'completed':'booked',tour_completed:g.complete?'Yes':'No',completed_date:g.completedDate,confirmed_date:first,requested_date_start:first,requested_date:first,requested_date_end:last,created_at:match?.created_at||'',completed_tour_days:g.complete?g.dates.length:0,invoice_history:true});
+  records.push({...match,source_record_id:'accounting:'+g.key,inquiry_id:'',booking_id:'',country:g.country.country,home_country:g.country.country,email:g.email,guest_count:g.sizes.length===1?g.sizes[0]:'',guest_count_text:'',status:g.complete?'completed':'booked',tour_completed:g.complete?'Yes':'No',completed_date:g.completedDate,confirmed_date:first,requested_date_start:first,requested_date:first,requested_date_end:last,created_at:match?.created_at||'',completed_tour_days:g.complete?g.dates.length:0,invoice_history:true});
  }
  for(const r of clean){if(consumed.has(r)||uncertain.has(r))continue;records.push(r);if(guestStage(r,today)==='completed')stats.crmOnlyCompleted++;}
  stats.invoiceBookings=groups.size;
