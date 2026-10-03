@@ -2359,7 +2359,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v38-reliable-webhooks-2026-09-18", 200);
+      return text("MBW Stripe Worker is running. version=v39-multi-invoice-ledger-2026-10-03", 200);
     }
 
     if (path === "/api/tours" && request.method === "GET") {
@@ -2509,7 +2509,7 @@ export default {
     if (path === "/debug" && request.method === "GET") {
       return json({
         ok: true,
-        worker_version: "mbw-stripe-v38-reliable-webhooks",
+        worker_version: "mbw-stripe-v39-multi-invoice-ledger",
         stripe_mode_default: env.STRIPE_SECRET_KEY_TEST ? "sandbox" : env.STRIPE_SECRET_KEY ? "live" : "not_configured",
         agent_activity_webapp_configured: !!env.AGENT_ACTIVITY_WEBAPP_URL,
         agent_activity_token_configured: !!env.AGENT_ACTIVITY_WEBAPP_TOKEN,
