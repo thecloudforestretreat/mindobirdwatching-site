@@ -12,8 +12,8 @@ export function joinPeriods(current,prior=[],id=key){
   const old=new Map(prior.map(row=>[id(row),row])),now=new Map(current.map(row=>[id(row),row]));
   return [...new Set([...now.keys(),...old.keys()])].map(k=>{const row=now.get(k),before=old.get(k);return {...(row||before),...(!row?{sessions:0,totalUsers:0,engagedSessions:0,engagementRate:null}:{}),reported:Boolean(row),prior:before||null};});
 }
-export function scoped(rows,{country='',continent='',features=[],city=''}={}){
-  return rows.filter(row=>(!country||key(row)===country)&&(!continent||features.find(f=>f.id===row.code)?.continent===continent)&&(!city||row.cityKey===city||row.id===city));
+export function scoped(rows,{country='',continent='',features=[],city='',audience='all'}={}){
+  return rows.filter(row=>(!country||key(row)===country)&&(!continent||features.find(f=>f.id===row.code)?.continent===continent)&&(!city||row.cityKey===city||row.id===city)&&(audience==='all'||(audience==='domestic'?row.code==='EC':!!row.code&&row.code!=='EC')));
 }
 export function rank(rows,metric,mode='volume',minimum=0){
   const eligible=rows.filter(row=>(mode==='loss'?Math.max(row.sessions??row.records??0,row.prior?.sessions??row.prior?.records??0):row.sessions??row.records??0)>=minimum);
