@@ -16,7 +16,7 @@ export function monthlyEvidence(current,prior,currentTours=[],priorTours=[],{sta
  const months=new Set([...sessions.keys(),...tours.keys()]);if(start&&end){for(let d=start.slice(0,7)+'-01';d<=end;){months.add(d.slice(0,7));const next=new Date(d+'T00:00:00Z');next.setUTCMonth(next.getUTCMonth()+1);d=next.toISOString().slice(0,10);}}
  return [...months].sort().map(month=>{const comparison=String(Number(month.slice(0,4))-1)+month.slice(4);return {month,comparison,sessions:sessions.get(month)||0,priorSessions:old.get(comparison)??(priorStart&&comparison>=priorStart.slice(0,7)&&comparison<=priorEnd.slice(0,7)?0:null),completed:tours.get(month)||0,priorCompleted:oldTours.get(comparison)??(priorStart&&comparison>=priorStart.slice(0,7)&&comparison<=priorEnd.slice(0,7)?0:null)};});
 }
-const dateInZone=value=>{if(!value)return '';const d=new Date(value);return Number.isFinite(+d)?new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(d):'';};
+const dateInZone=value=>{const raw=String(value||''),date=raw.slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)return '';if(!raw.includes('T'))return date;const d=new Date(raw);return Number.isFinite(+d)?new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(d):'';};
 export function reviewFilter(params){
  if(params.get('review')!=='lodging')return null;
  const start=params.get('start')||'',end=params.get('end')||'',market=params.get('market')||'',audience=params.get('audience')||'all',countries=(params.get('countries')||'').split(',').filter(Boolean);
