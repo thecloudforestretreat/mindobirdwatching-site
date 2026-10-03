@@ -203,6 +203,14 @@
                 <option value="es">Español</option>
               </select>
             </div>
+            <div class="field">
+              <label for="heroImage">Hero image</label>
+              <select id="heroImage">
+                <option value="cock-of-the-rock">Andean Cock-of-the-Rock</option>
+                <option value="spectacled-bear">Spectacled Bear</option>
+              </select>
+              <p class="hint">Switches the hero in the live preview, copied email, and downloaded itinerary.</p>
+            </div>
             <div class="two">
               <div class="field">
                 <label for="startDate">Start date</label>
@@ -323,7 +331,12 @@
     (() => {
       'use strict';
 
-      const HEADER_IMAGE = 'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg';
+      const HERO_IMAGES = Object.freeze({
+        'cock-of-the-rock':'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg',
+        'spectacled-bear':'https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_hero_01.jpg'
+      });
+      const DEFAULT_HERO_IMAGE = 'cock-of-the-rock';
+      function heroImageUrl(value){ return HERO_IMAGES[value] || HERO_IMAGES[DEFAULT_HERO_IMAGE]; }
       const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
       const ZELLE_INVOICE_URL = 'https://admin.mindobirdwatching.com/zelle-invoice-generator/';
       const ZELLE_HANDOFF_KEY = 'mbwZelleInvoiceDraft';
@@ -907,6 +920,7 @@
           guestEmail:$('guestEmail').value.trim(),
           tripTitle:$('tripTitle').value.trim(),
           language:$('language').value || 'en',
+          heroImage:HERO_IMAGES[$('heroImage').value] ? $('heroImage').value : DEFAULT_HERO_IMAGE,
           startDate:$('startDate').value,
           endDate:$('endDate').value,
           guestCount:Number($('guestCount').value || 1),
@@ -986,7 +1000,7 @@
             <div><div class="brandName">Mindo Bird Watching</div><div class="brandTagline">${escapeHtml(c.brandTagline)}</div></div>
           </header>
           <section class="guestHeroCard">
-            <img class="guestHeroImage" src="${HEADER_IMAGE}" alt="Mindo cloud forest birdwatching tour" />
+            <img class="guestHeroImage" src="${heroImageUrl(data.heroImage)}" alt="Mindo cloud forest birdwatching tour" />
             <div class="heroCopy">
               <div class="heroEyebrow">${escapeHtml(c.eyebrow)}</div>
               <div class="heroMeta">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
@@ -1048,7 +1062,7 @@
 
         rows.push(row(
           `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;overflow:hidden;">
-            <tr><td><img src="${HEADER_IMAGE}" width="600" alt="Mindo cloud forest birdwatching tour" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
+            <tr><td><img src="${heroImageUrl(data.heroImage)}" width="600" alt="Mindo cloud forest birdwatching tour" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
             <tr><td style="padding:24px 26px;">
               <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900;">${escapeHtml(c.eyebrow)}</div>
               <div style="margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900;">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
@@ -1209,6 +1223,7 @@
           ['guestName','guestEmail','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositLink','zelleEmail','invoiceLink'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
+          $('heroImage').value = HERO_IMAGES[data.heroImage] ? data.heroImage : DEFAULT_HERO_IMAGE;
           $('showDeposit').checked = true;
           $('offerZelle').checked = data.offerZelle === true;
           $('zelleEmailField').hidden = !$('offerZelle').checked;
@@ -1255,6 +1270,7 @@
         $('guestEmail').value = draft.guestEmail || state.crmRecord?.email || state.crmRecord?.guest_email || '';
         $('tripTitle').value = draft.tripTitle || COPY.en.defaultTitle;
         $('language').value = draft.language === 'es' ? 'es' : 'en';
+        $('heroImage').value = HERO_IMAGES[draft.heroImage] ? draft.heroImage : DEFAULT_HERO_IMAGE;
         $('startDate').value = draft.startDate || '';
         $('endDate').value = draft.endDate || draft.startDate || '';
         $('guestCount').value = Number(draft.guestCount || 1);
@@ -1523,6 +1539,7 @@
         $('guestName').value='';
         $('guestEmail').value='';
         $('language').value='en';
+        $('heroImage').value=DEFAULT_HERO_IMAGE;
         $('tripTitle').value=COPY.en.defaultTitle;
         $('startDate').value='';
         $('endDate').value='';
