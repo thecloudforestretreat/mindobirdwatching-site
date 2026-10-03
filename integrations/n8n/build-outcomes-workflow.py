@@ -18,7 +18,10 @@ code='\n'.join(parts)+"\nconst options=$('Authorize Administrator').first().json
 # Preserve each module's helper scope when bundling for the n8n Code node.
 s=(root/'functions/lib/reconcile.mjs').read_text();s=re.sub(r'^import .*?;\n','',s,flags=re.M).replace('export ','')
 parts[-1]='const {reconcileBookings,reconciledDemand}=(()=>{\n'+s+'\nreturn {reconcileBookings,reconciledDemand};})();'
+follow=(root/'admin/assets/js/inquiry-followup.mjs').read_text();follow=re.sub(r'^import .*?;\n','',follow,flags=re.M).replace('export ','')
+parts.append('const {aggregateFollowup}=(()=>{\n'+follow+'\nreturn {aggregateFollowup};})();')
 code='\n'.join(parts)+code[code.index('\nconst options='):]
+code=code.replace('{demand:reconciledDemand(crm,reconciled,aggregateDemand,options)}','{demand:{...reconciledDemand(crm,reconciled,aggregateDemand,options),pipeline:aggregateFollowup(crm,options)}}')
 (root/'integrations/n8n/aggregate-outcomes.js').write_text(code)
 nodes.extend([node('Aggregate Reconciled Outcomes','code',{'jsCode':code},1200),node('Return Aggregate Outcomes','respondToWebhook',{'respondWith':'json','responseBody':'={{$json}}','options':{'responseHeaders':{'entries':[{'name':'Cache-Control','value':'private, no-store'}]}}},1440)])
 connections={a['name']:{'main':[[{'node':b['name'],'type':'main','index':0}]]} for a,b in zip(nodes,nodes[1:])}
