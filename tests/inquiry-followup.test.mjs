@@ -34,3 +34,14 @@ test('health separates stale, unavailable and verified zero without optimistic d
  assert.equal(c.find(c=>c.title==='Website source freshness').status,'review');assert.equal(c.find(c=>c.title==='Comparison source freshness').status,'good');assert.equal(c.find(c=>c.title==='CRM / accounting source freshness').status,'unavailable');assert.equal(c.find(c=>c.title==='Reporting connections').status,'unavailable');assert.equal(c.find(c=>c.title==='Invoice reconciliation').status,'review');assert.equal(c.find(c=>c.title==='Entry-page identification').status,'review');
  assert.equal(reportHealth({updated_at:'2099-01-01'}, {now,website:false})[0].status,'unavailable');
 });
+
+test('overdue sales and guest queues partition the legacy queue without double counting',()=>{
+ const rows=['quoted','booked','confirmed','deposit_paid','completed','cancelled'].map((status,i)=>({...base,inquiry_id:String(i),status,followup_date:'2026-10-01'}));
+ const p=aggregateFollowup(rows,options),g=p.rows[0];assert.equal(g.overdue,4);assert.equal(g.prospectOverdue,1);assert.equal(g.guestOverdue,3);assert.equal(g.overdue,g.prospectOverdue+g.guestOverdue);
+ for(const review of ['overdue','prospectOverdue','guestOverdue'])assert.equal(rows.filter(followupFilter(new URLSearchParams({review,start:options.start,end:options.end,asOf:options.today}))).length,g[review]);
+});
+test('historical date review retains geographic scope, excludes duplicates and never invents dates',()=>{
+ const rows=[{...base,inquiry_id:'a',created_at:'',requested_date:'2026-09-25',updated_at:'2026-09-25',invoice_date:'2026-09-25'}, {...base,inquiry_id:'a',created_at:''},{...base,inquiry_id:'b',created_at:'2026-09-25 13:10:00'},{...base,inquiry_id:'c',created_at:'2026-02-30 13:10:00'}, {...base,inquiry_id:'d',created_at:'2026-09-25 29:10:00'}, {...base,inquiry_id:'e',country:'Ecuador',created_at:''}, {...base,inquiry_id:'f',status:'duplicate',created_at:''}];
+ const p=aggregateFollowup(rows,options);assert.equal(p.missingCreatedDates,4);assert.equal(p.recoveredCreatedDates,1);assert.equal(p.rows.find(r=>r.code==='US').cohort,1);assert.equal(p.rows.find(r=>r.code==='US').missingDate,3);
+ const filter=followupFilter(new URLSearchParams({review:'missingDate',start:'2020-01-01',end:'2020-01-31',asOf:options.today,market:'USA'}));assert.deepEqual(rows.filter(filter).map(r=>r.inquiry_id),['a','a','c','d']);assert.equal(inquiryFlags(rows[0],options.today).created,'');
+});
