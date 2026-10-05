@@ -29,3 +29,13 @@ Staff replies and automated acknowledgments have separate timings; only accepted
 - response_metrics: first_inbound_at, first_automation_at, first_staff_reply_at, evidence_source, coverage
 
 No analytics report should treat a simulated reply, opening a chat, generating a draft or an automated acknowledgment as a human first response.
+
+## Guest context and CRM lookup · October 5, 2026
+
+The workspace has an authenticated, read-only CRM search at `/api/whatsapp/crm`. It uses the existing CRM `list_inquiries` action, returns at most ten projected records, and supports exact inquiry-ID lookup. It does not create, update or merge guests. Returned summaries omit email, phone, internal notes and historical message text.
+
+Staff explicitly select an inquiry. A fictional conversation's association is labeled a local test association, never an automatic phone match. Only the inquiry ID persists with the sample; retrieved CRM details stay in memory and require refresh after reload. Dates and statuses of multiple recorded tour items remain separate. Booking status and payment status are displayed independently.
+
+Open Guest CRM passes only the inquiry ID and opens the exact existing record after live refresh. Existing CRM actions handle itinerary/invoice carryover. WhatsApp drafts and internal notes are not transferred. Production creation/enrichment, normalized-phone matching, shared storage, individual staff identity and live messaging remain pending. CRM data is not included in AI prompts.
+
+Composer shortcuts open saved replies, tour information and AI drafting; mobile pane navigation preserves drafts. Layout/interaction checks cover 360, 390, 768, 1024 and 1440 pixels. Browser integration tests mock external services and do not prove production authentication or connectivity.

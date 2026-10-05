@@ -2,7 +2,7 @@ import {verifyIdentity} from '../../_middleware.js';
 import {normalizeKnowledge} from '../../../admin/assets/js/whatsapp-model.mjs';
 const STAFF_SOURCE='https://script.google.com/macros/s/AKfycbzPORSX9WyGwLkBs3BIrkSmdHSPpmPTSQg1CtpGw-8Ak2q9vBEbx8qQ9UdRBCSyrDg/exec';
 const reply=(status,body)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','X-Robots-Tag':'noindex, nofollow'}});
-async function authorize(request){
+export async function authorize(request){
  const u=new URL(request.url);if(u.hostname!=='admin.mindobirdwatching.com'&&!['localhost','127.0.0.1'].includes(u.hostname))return reply(403,{ok:false,error:'Open through MBW Admin.'});
  if(!['localhost','127.0.0.1'].includes(u.hostname)){try{const identity=await verifyIdentity(request.headers.get('Cf-Access-Jwt-Assertion'));if(identity==='faustoandrade635@gmail.com')return reply(403,{ok:false,error:'Staff workspace access required.'});}catch{return reply(401,{ok:false,error:'Sign in through MBW Admin.'});}}
 }

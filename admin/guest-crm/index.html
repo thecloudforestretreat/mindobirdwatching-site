@@ -501,6 +501,7 @@
       "use strict";
       const CRM_API_DEFAULT = "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
       const els = {};
+      let requestedInquiryId=new URLSearchParams(location.search).get('inquiry_id')||'';
       const state = { records: [], selectedId: "", view: "calendar", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", calendarDisplay: localStorage.getItem("mbwCalendarDisplay")==="list"?"list":"month", calendarLegendFilter:null, tourItems: [], interactions:[], assignments:[], allAssignments:[], providers:[], workspaceLoading:false };
       let refreshInFlight=false;
       let refreshRetryTimer=0;
@@ -1079,6 +1080,7 @@
           localStorage.setItem("mbwCrmLastRefresh",state.lastRefresh);
           if(!state.selectedId&&state.records[0]) state.selectedId=state.records[0].inquiry_id;
           saveLocalRecords();
+          if(requestedInquiryId){const target=state.records.find(r=>r.inquiry_id===requestedInquiryId);if(target){requestedInquiryId='';selectRecord(target.inquiry_id);}else{showToast('Requested inquiry was not found in CRM.');}}
           fillForm(getSelected());
           render();
           clearTimeout(refreshRetryTimer);
