@@ -321,7 +321,7 @@
               <div class="actionGroup"><span class="actionGroupTitle">Record actions</span><button id="detailWhatsAppBtn" type="button">Open WhatsApp</button><button id="markContactedBtn" type="button">Mark Contacted Now</button><button id="detailMarkDuplicateBtn" class="dangerBtn" type="button">Mark Duplicate</button><button id="detailTopSaveBtn" class="primary" type="button">Save Record</button></div>
               <div class="actionGroup"><span class="actionGroupTitle">Guest documents</span><button id="detailEmailToolBtn" type="button">Generate Email</button><button id="generateItineraryBtn" type="button">Generate Itinerary</button><button id="editSavedItineraryBtn" type="button" disabled>Edit Saved Itinerary</button></div>
               <div class="actionGroup"><span class="actionGroupTitle">Payments and confirmation</span><button id="detailZelleToolBtn" type="button">Create Zelle Invoice</button><button id="detailStripeToolBtn" type="button">Create Stripe Invoice</button><button id="detailCopyDepositLinkBtn" type="button">Copy $100 Deposit Link</button><button id="detailConfirmationToolBtn" type="button">Create Tour Confirmation</button></div>
-              <div class="actionGroup"><span class="actionGroupTitle">Copy and share</span><button id="detailCopyInvoiceTsvBtn" type="button">Copy Invoice TSV</button><button id="detailCopyInvoiceBackendTsvBtn" type="button">Copy Invoice Backend TSV</button><button id="copyGuideMessageBtn" type="button">Copy Guide Message</button><button id="copyStatusMessageBtn" type="button">Copy Booked Follow-up</button><button id="copyReviewWhatsAppBtn" type="button">Copy Review WhatsApp</button><button id="copyReviewEmailBtn" type="button">Copy Review Email</button><button id="zelleToAcctBtn" class="primary" type="button" disabled>Zelle to Acct</button></div>
+              <div class="actionGroup"><span class="actionGroupTitle">Copy and share</span><button id="detailCopyInvoiceTsvBtn" type="button">Copy Invoice TSV</button><button id="detailCopyInvoiceBackendTsvBtn" type="button">Copy Invoice Backend TSV</button><button id="copyGuideMessageBtn" type="button">Copy Guide Message</button><button id="copyStatusMessageBtn" type="button">Copy Booked Follow-up</button><button id="copyReviewWhatsAppBtn" type="button">Copy Review WhatsApp</button><button id="copyReviewEmailBtn" type="button">Copy Review Email</button><button id="zelleToAcctBtn" type="button" disabled>Zelle to Acct</button></div>
             </div>
             <div class="queueNav" id="queueNav">
               <div class="queueNavInfo">
@@ -1779,6 +1779,18 @@
       function toggleReviewActions(r){ const enabled=["booked","completed"].includes(normalizeStatus(r.status)); [els.copyReviewWhatsAppBtn,els.copyReviewEmailBtn].forEach(btn=>{ if(btn){ btn.style.display="inline-flex"; btn.disabled=!enabled; } }); }
       function toggleInvoiceActions(r){ const record=r||{}; const enabled=canCopyInvoiceTsv(record); const hasInquiry=Boolean(clean(record.inquiry_id)); [els.copyInvoiceTsvBtn,els.detailCopyInvoiceTsvBtn,els.copyInvoiceBackendTsvBtn,els.detailCopyInvoiceBackendTsvBtn].forEach(btn=>{ if(btn) btn.disabled=!enabled; }); [els.copyDepositLinkBtn,els.detailCopyDepositLinkBtn].forEach(btn=>{ if(btn) btn.disabled=!hasInquiry; }); if(els.zelleToAcctBtn) els.zelleToAcctBtn.disabled=!(hasInquiry&&normalizePayment(record.payment_status)==="paid"&&clean(record.payment_method).toLowerCase()==="zelle"&&clean(record.invoice_no)&&toDateValue(record.date_paid)); }
       function accountingNumber(value){ const number=Number(String(value==null?"":value).replace(/[$,\s]/g,"")); return Number.isFinite(number)?number:0; }
+      function quotePriceForAccountingItem(record,item,party){
+        const code=productCodeFromValue(item.product_selected||item.tour);
+        const name=clean(productTitle(item.product_selected)||item.tour).toLowerCase();
+        const quote=parseQuoteOptions(record&&record.quote_options_json).find(entry=>{
+          const quoteCode=productCodeFromValue(entry.code||entry.product_selected||entry.name);
+          const quoteName=clean(entry.name).toLowerCase();
+          return (code&&quoteCode===code)||(name&&quoteName===name);
+        });
+        if(!quote) return 0;
+        const price=accountingNumber(quote.price);
+        return clean(quote.basis).toLowerCase()==="total"&&party>0?price/party:price;
+      }
       function assignmentForAccountingItem(record,item){ const date=toDateValue(item.date||item.tour_date); const code=productCodeFromValue(item.product_selected||item.tour); const rows=currentAssignmentRows(record).filter(row=>toDateValue(row.service_date)===date); const exact=rows.find(row=>productCodeFromValue(row.product_selected)===code); if(exact) return exact; const service=clean(item.service_type||deriveServiceType(item.product_selected||item.tour)).toLowerCase(); const serviceMatches=rows.filter(row=>{ const candidate=clean(row.service_type).toLowerCase(); return candidate===service||(service==="activity"&&candidate==="night walk")||(service==="night walk"&&candidate==="activity"); }); if(serviceMatches.length===1) return serviceMatches[0]; return rows.length===1?rows[0]:null; }
       function buildZelleAccountingRows(record){
         const items=normalizeTourItems(record).filter(item=>clean(item.product_selected)&&toDateValue(item.date||item.tour_date));
@@ -1788,7 +1800,7 @@
         const rows=items.map((item,index)=>{
           const date=toDateValue(item.date||item.tour_date);
           const party=Math.max(1,Number(String(item.guests||record.guest_count||1).match(/\d+/)?.[0]||1));
-          const unitPrice=accountingNumber(item.price)||(items.length===1&&quotedTotal?quotedTotal/party:0);
+          const unitPrice=accountingNumber(item.price)||quotePriceForAccountingItem(record,item,party)||(items.length===1&&quotedTotal?quotedTotal/party:0);
           if(!(unitPrice>0)) throw new Error(`Add the price per person for ${productTitle(item.product_selected)||item.tour||"service"}`);
           const assignment=assignmentForAccountingItem(record,item);
           if(!assignment) throw new Error(`Add one provider assignment for ${date} before posting to accounting`);
