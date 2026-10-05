@@ -73,7 +73,7 @@ function sourceOptions(selected=''){
  $('saved-source').innerHTML='<option value="">No linked reference</option>'+knowledge.filter(r=>r.language===language).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.title)+'</option>').join('');
  $('saved-source').value=selected;
 }
-function openSaved(reply){editingReply=reply?.id||'';$('saved-form').hidden=false;$('saved-form-title').textContent=editingReply?'Edit saved reply':'New saved reply';$('saved-title').value=reply?.title||'';$('saved-language').value=reply?.language||current().language;$('saved-category').value=reply?.category||'General';$('saved-text').value=reply?.text||'';$('saved-variant').value=reply?.sourceVariant||'short';sourceOptions(reply?.sourceId||'');setPane('context');$('saved-section').open=true;$('saved-title').focus();}
+function openSaved(reply){$('saved-error').hidden=true;$('saved-error').textContent='';editingReply=reply?.id||'';$('saved-form').hidden=false;$('saved-form-title').textContent=editingReply?'Edit saved reply':'New saved reply';$('saved-title').value=reply?.title||'';$('saved-language').value=reply?.language||current().language;$('saved-category').value=reply?.category||'General';$('saved-text').value=reply?.text||'';$('saved-variant').value=reply?.sourceVariant||'short';sourceOptions(reply?.sourceId||'');setPane('context');$('saved-section').open=true;$('saved-title').focus();}
 function persistReplies(){localStorage.setItem(REPLIES_KEY,JSON.stringify({version:1,replies:savedReplies}));}
 $('new-saved').onclick=()=>openSaved();
 $('save-current-draft').onclick=()=>openSaved({text:current().draft});
@@ -85,8 +85,8 @@ $('saved-form').onsubmit=event=>{event.preventDefault();try{
  if(!editingReply&&savedReplies.length>=200)throw new Error('The local library supports up to 200 replies.');
  const reply={...validateSavedReply({id:editingReply,title:$('saved-title').value,category:$('saved-category').value,language:$('saved-language').value,text:$('saved-text').value,sourceId:$('saved-source').value,sourceVariant:$('saved-variant').value}),updatedBy:agent(),updatedAt:new Date().toISOString()};
  const previous=savedReplies;savedReplies=editingReply?savedReplies.map(r=>r.id===editingReply?reply:r):[...savedReplies,reply];try{persistReplies();}catch{savedReplies=previous;throw new Error('Browser storage is unavailable; this reply was not saved.');}
- $('saved-form').hidden=true;editingReply='';renderSaved();notice('Saved reply stored on this browser. Review before sending.');
- }catch(error){notice(error.message);}};
+ $('saved-form').hidden=true;editingReply='';$('saved-search').value='';renderSaved();$('saved-status').textContent='Saved: '+reply.title+' · on this browser only.';$('saved-status').scrollIntoView({block:'center'});notice('Saved reply stored on this browser. Review before sending.');
+ }catch(error){$('saved-error').textContent=error.message;$('saved-error').hidden=false;$('saved-error').focus();$('saved-error').scrollIntoView({block:'center'});notice(error.message);}};
 $('saved-list').onclick=event=>{const b=event.target.closest('button');if(!b)return;const id=b.dataset.savedInsert||b.dataset.savedEdit||b.dataset.savedDelete,reply=savedReplies.find(r=>r.id===id);if(!reply)return;
  try{if(b.dataset.savedInsert){insertDraft(expandSavedReply(reply,knowledge,current().name));notice('Saved reply inserted into draft; nothing sent. Review before use.');}
  if(b.dataset.savedEdit)openSaved(reply);
