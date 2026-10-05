@@ -974,8 +974,9 @@
         const cost = String(item.cost || "").trim();
         const sourceUrl = String(item.source_url || "").trim();
         const imageUrl = String(item.image_url || "").trim();
-        const whatsappReady = String(item.whatsapp_ready || "").trim();
-        const botResponse = String(item.bot_response || "").trim();
+        const isTourReference = item.subject === "Tours" || ["en-0043","es-0043","en-act021","es-act021"].includes(item.content_id || item.id);
+        const whatsappReady = isTourReference ? shortText : String(item.whatsapp_ready || "").trim();
+        const botResponse = isTourReference ? longText : String(item.bot_response || "").trim();
         const staffNotes = String(item.staff_notes || "").trim();
 
         const imageBlock = imageUrl ? `

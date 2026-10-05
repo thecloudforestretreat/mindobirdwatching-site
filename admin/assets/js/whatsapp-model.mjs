@@ -42,7 +42,17 @@ export function mutateSample(thread,action,actor,now=Date.now()){
 }
 export function normalizeKnowledge(payload){
  const rows=Array.isArray(payload?.items)?payload.items:Object.entries(payload?.languages||{}).flatMap(([language,subjects])=>Object.entries(subjects).flatMap(([subject,items])=>Array.isArray(items)?items.map(r=>({...r,language,subject})):[]));
- return rows.filter(r=>!['no','false','0'].includes(String(r.is_active??'').toLowerCase())).map((r,i)=>({id:String(r.content_id||r.id||i).slice(0,100),language:r.language==='es'?'es':'en',subject:String(r.subject||'General').slice(0,100),title:String(r.title||r.topic||'Information').slice(0,200),price:String(r.cost||'').slice(0,200),text:String(r.whatsapp_ready||r.message_short||r.message_long||'').slice(0,4000),updated:String(r.last_updated||'').slice(0,50)})).filter(r=>r.text);
+ return rows.filter(r=>!['no','false','0'].includes(String(r.is_active??'').trim().toLowerCase())).map((r,i)=>{
+  const shortText=String(r.message_short||r.whatsapp_ready||r.message_long||'').slice(0,4000),longText=String(r.message_long||'').slice(0,4000);
+  return {id:String(r.content_id||r.id||i).slice(0,100),language:r.language==='es'?'es':'en',subject:String(r.subject||'General').slice(0,100),title:String(r.title||r.topic||'Information').slice(0,200),price:String(r.cost||'').slice(0,200),text:shortText,shortText,longText,updated:String(r.last_updated||'').slice(0,50)};
+ }).filter(r=>r.text);
+}
+export function referenceText(source,variant='short'){
+ if(variant==='long'){
+  if(!source.longText)throw new Error('Detailed reply is unavailable for this reference.');
+  return source.longText;
+ }
+ return source.shortText||source.text||'';
 }
 export function restoreSamples(value){
  if(!value||value.version!==1||!Array.isArray(value.threads)||value.threads.length!==4)return null;
@@ -53,7 +63,8 @@ export function restoreSamples(value){
 }
 
 export function validateSavedReply(input){
- const reply={id:String(input.id||crypto.randomUUID()),title:String(input.title||'').trim(),category:String(input.category||'General').trim(),language:input.language,text:String(input.text||'').trim(),sourceId:String(input.sourceId||'')};
+ const reply={id:String(input.id||crypto.randomUUID()),title:String(input.title||'').trim(),category:String(input.category||'General').trim(),language:input.language,text:String(input.text||'').trim(),sourceId:String(input.sourceId||''),sourceVariant:input.sourceVariant||'short'};
+ if(!['short','long'].includes(reply.sourceVariant))throw new Error('Choose a short or detailed reference.');
  if(!reply.title||reply.title.length>100||!reply.category||reply.category.length>60||!['en','es'].includes(reply.language)||!reply.text||reply.text.length>4000)throw new Error('Enter a title, category, language and reply of up to 4,000 characters.');
  if(/(?:\$|USD\s*)\s*\d|\d\s*(?:USD|dollars|dólares)/i.test(reply.text))throw new Error('Use a live reference for prices instead of saving a fixed amount.');
  if(reply.sourceId&&!reply.text.includes('{{reference}}'))throw new Error('Add {{reference}} where the current source information should appear.');
@@ -63,7 +74,7 @@ export function validateSavedReply(input){
 export function expandSavedReply(reply,knowledge,guestName){
  const valid=validateSavedReply(reply),source=valid.sourceId?knowledge.find(r=>r.id===valid.sourceId&&r.language===valid.language):null;
  if(valid.sourceId&&!source)throw new Error('The linked reference is unavailable. Review the source before using this reply.');
- const text=valid.text.replaceAll('{{guest_name}}',guestName.replace(/ · sample guest$/,'')).replaceAll('{{reference}}',source?.text||'');
+ const text=valid.text.replaceAll('{{guest_name}}',guestName.replace(/ · sample guest$/,'')).replaceAll('{{reference}}',source?referenceText(source,valid.sourceVariant):'');
  if(text.length>4000)throw new Error('This reply exceeds 4,000 characters after adding the reference.');
  return text;
 }

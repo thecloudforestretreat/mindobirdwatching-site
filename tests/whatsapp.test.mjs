@@ -60,3 +60,12 @@ test('saved pricing replies resolve the latest provided reference and reject mis
  assert.throws(()=>expandSavedReply(r,[],'Alex'));assert.throws(()=>validateSavedReply({...r,text:'Jewels $60/person'}));assert.throws(()=>validateSavedReply({...r,sourceId:''}));assert.throws(()=>expandSavedReply(r,[{id:'jewels',language:'es',text:'Español'}],'Alex'));
  assert.equal(restoreSavedReplies({version:1,replies:[r,r,{title:'Invalid'}]}).length,1);
 });
+
+test('short and detailed variants prefer canonical fields and saved replies retain version choice',async()=>{
+ const {normalizeKnowledge,expandSavedReply,validateSavedReply}=await import('../admin/assets/js/whatsapp-model.mjs');
+ const rows=normalizeKnowledge({items:[{content_id:'tour',language:'en',message_short:'Short $60',message_long:'Detailed $60 with inclusions',whatsapp_ready:'Wrong image link',staff_notes:'Private'}]});
+ assert.equal(rows[0].text,'Short $60');assert.equal(rows[0].longText,'Detailed $60 with inclusions');assert.doesNotMatch(JSON.stringify(rows),/Private|Wrong image/);
+ const r=validateSavedReply({title:'Details',language:'en',text:'{{reference}}',sourceId:'tour',sourceVariant:'long'});
+ assert.equal(expandSavedReply(r,rows,'Alex'),'Detailed $60 with inclusions');assert.equal(expandSavedReply({...r,sourceVariant:'short'},rows,'Alex'),'Short $60');
+ assert.throws(()=>expandSavedReply(r,[{id:'tour',language:'en',text:'Only short'}],'Alex'));
+});
