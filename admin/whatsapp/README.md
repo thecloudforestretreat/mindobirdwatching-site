@@ -39,3 +39,11 @@ Staff explicitly select an inquiry. A fictional conversation's association is la
 Open Guest CRM passes only the inquiry ID and opens the exact existing record after live refresh. Existing CRM actions handle itinerary/invoice carryover. WhatsApp drafts and internal notes are not transferred. Production creation/enrichment, normalized-phone matching, shared storage, individual staff identity and live messaging remain pending. CRM data is not included in AI prompts.
 
 Composer shortcuts open saved replies, tour information and AI drafting; mobile pane navigation preserves drafts. Layout/interaction checks cover 360, 390, 768, 1024 and 1440 pixels. Browser integration tests mock external services and do not prove production authentication or connectivity.
+
+## Incoming campaign context · October 5, 2026
+
+`whatsapp-source.mjs` extracts explicit Page/Reference fields from inbound messages. It accepts only MBW website URLs without embedded credentials, displays campaign/source/medium/content/term and Meta IDs, and keeps click IDs out of the summary. A paid UTM or ad ID is tracking evidence, not verified ad delivery. A Facebook click ID alone is not treated as paid traffic. Duplicate query parameters and multiple references trigger review notes. The latest source-bearing inbound message remains visible across ordinary replies.
+
+The protected read-only `/api/whatsapp/reference` endpoint reuses CRM `lookup_reference`. Its response projects website attribution only; guest identities, visitor/session IDs and click tokens are not returned. A matched website contact intent does not automatically match a guest, create an inquiry or confirm a booking. URL/saved-source conflicts are surfaced for review.
+
+A sample intake form allows manual testing with a pasted incoming message. This is local sample data, not a Meta webhook. Existing drafts are preserved. Page/ref metadata is collapsed in conversation bubbles and removed from AI message text. Meta webhook receipt, message-ID deduplication, phone matching, live CRM creation/enrichment and campaign-to-booking reporting remain pending.

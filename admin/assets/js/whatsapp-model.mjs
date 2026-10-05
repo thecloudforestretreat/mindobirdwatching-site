@@ -22,7 +22,8 @@ export function mutateSample(thread,action,actor,now=Date.now()){
  if(!thread.id.startsWith('sample-'))throw new Error('Only sample conversations can be changed.');
  if(!AGENTS.includes(actor))throw new Error('Choose a sample staff member.');
  const t=structuredClone(thread),at=new Date(now).toISOString(),text=String(action.text||'').trim();
- if(action.type==='reply'){if(!text||text.length>4000)throw new Error('Reply must contain 1–4,000 characters.');t.messages.push({id:'sample-message-'+crypto.randomUUID(),direction:'out',kind:'human',text,at,actor,delivery:'sample'});t.draft='';t.status='open';}
+ if(action.type==='incoming'){if(!text||text.length>4000)throw new Error('Message must contain 1–4,000 characters.');t.messages.push({id:'sample-incoming-'+crypto.randomUUID(),direction:'in',kind:'guest',text,at,delivery:'sample'});t.status='needs_staff';}
+ else if(action.type==='reply'){if(!text||text.length>4000)throw new Error('Reply must contain 1–4,000 characters.');t.messages.push({id:'sample-message-'+crypto.randomUUID(),direction:'out',kind:'human',text,at,actor,delivery:'sample'});t.draft='';t.status='open';}
  else if(action.type==='note'){if(!text||text.length>2000)throw new Error('Note must contain 1–2,000 characters.');t.notes.push({id:crypto.randomUUID(),text,actor,at});t.noteDraft='';}
  else if(['edit_note','delete_note'].includes(action.type)){
   const index=t.notes.findIndex(n=>n.id===action.id);
