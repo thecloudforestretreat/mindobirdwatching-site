@@ -19,7 +19,7 @@
     "href": "https://admin.mindobirdwatching.com/guest-crm/",
     "category": "guests"
   },
-  {"id":"whatsapp","label":"WhatsApp Workspace","href":"https://admin.mindobirdwatching.com/whatsapp/","category":"guests"},
+  {"id":"whatsapp","label":"WhatsApp","href":"https://admin.mindobirdwatching.com/whatsapp/","category":"guests"},
   {
     "id": "marketing",
     "label": "Marketing",
