@@ -53,7 +53,7 @@ async function callWorker(path, payload) {
  const fakeFetch=async(url,init={})=>{
   const pathname=new URL(url).pathname;
   const form=new URLSearchParams(init.body||'');
-  calls.push({pathname,form});
+  calls.push({pathname,form,authorization:init.headers?.Authorization});
   let data;
   if(pathname==='/v1/customers')data={id:'cus_test'};
   else if(pathname==='/v1/invoiceitems')data={id:'ii_test'};
@@ -67,7 +67,7 @@ async function callWorker(path, payload) {
  const ctx=vm.createContext({fetch:fakeFetch,Request,Response,URL,URLSearchParams,console,crypto:globalThis.crypto});
  vm.runInContext(worker.replace('export default {','const workerExport = {')+'\nthis.handler=workerExport;',ctx);
  const req=new Request(`https://example.test/stripe/api/${path}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
- const response=await ctx.handler.fetch(req,{STRIPE_SECRET_KEY:'fake_local_test_key'},{});
+ const response=await ctx.handler.fetch(req,{STRIPE_SECRET_KEY:'fake_local_live_key',STRIPE_SECRET_KEY_TEST:'fake_local_sandbox_key'},{});
  return {status:response.status,result:await response.json(),calls};
 }
 const basePayload={language:'en',stripe_environment:'live',tour_code:'MBW005',number_of_people:2,main_contact_name:'Test Guest',main_contact_email:'guest@example.test',main_contact_phone:'+15555550100',whatsapp_number:'+15555550100',pickup_location_label:'Hotel',pickup_address_or_hotel:'Test Hotel',tour_date:'2026-11-10'};
@@ -150,4 +150,18 @@ test('test and live Stripe keys never fall back to the other environment',()=>{
  assert.equal(ctx.getKey({STRIPE_SECRET_KEY_TEST:'test-key'},false),null);
  assert.equal(ctx.getKey({STRIPE_SECRET_KEY:'live-key',STRIPE_SECRET_KEY_TEST:'test-key'},true),'test-key');
  assert.equal(ctx.getKey({STRIPE_SECRET_KEY:'live-key',STRIPE_SECRET_KEY_TEST:'test-key'},false),'live-key');
+});
+
+
+test('Jewels and Night Walk sandbox mappings use the test key and supplied product IDs',async()=>{
+ for(const [code,product,price]of [['MBW004','prod_V91VuFFaZBoRJp','6000'],['MBW016','prod_V91VUCZ3Hf9ygY','3500']])for(const language of ['en','es']){
+  const r=await callWorker('create-invoice',{...basePayload,stripe_environment:'sandbox',tour_code:code,language});
+  assert.equal(r.status,200,JSON.stringify(r.result));
+  const line=r.calls.find(c=>c.pathname==='/v1/invoiceitems');
+  assert.equal(line.form.get('price_data[product]'),product);
+  assert.equal(line.form.get('price_data[unit_amount]'),price);
+  assert.equal(line.authorization,'Bearer fake_local_sandbox_key');
+  assert(!r.calls.some(c=>c.pathname.endsWith('/send')));
+  assert(!r.calls.some(c=>c.pathname==='/v1/products'));
+ }
 });

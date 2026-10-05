@@ -1,5 +1,5 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v42
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v43
  *
  * v39 updates:
  * - Creates or updates one CRM booking ledger row per inquiry/booking.
@@ -116,7 +116,7 @@ const TOURS = [
     "pricing_model": "per_person",
     "product_id_live": "prod_U3loQ08bCP8CXq",
     "price_id_live": "price_1T5eHI0wAAlYwqaVRkLFrsjW",
-    "product_id_test": null,
+    "product_id_test": "prod_V91VuFFaZBoRJp",
     "price_id_test": null,
     "currency": "USD",
     "amount_display": "$60.00",
@@ -141,7 +141,7 @@ const TOURS = [
     "pricing_model": "per_person",
     "product_id_live": "prod_U3lo0zterNy2fn",
     "price_id_live": "price_1T5eHG0wAAlYwqaVOTk4QH1f",
-    "product_id_test": null,
+    "product_id_test": "prod_V91VuFFaZBoRJp",
     "price_id_test": null,
     "currency": "USD",
     "amount_display": "$60.00",
@@ -714,7 +714,7 @@ const TOURS = [
     "pricing_model": "per_person",
     "product_id_live": "prod_U6EFlYwN9Zn4fy",
     "price_id_live": "price_1T81ml0wAAlYwqaVlv4UBHg1",
-    "product_id_test": null,
+    "product_id_test": "prod_V91VUCZ3Hf9ygY",
     "price_id_test": null,
     "currency": "USD",
     "amount_display": "$35.00",
@@ -739,7 +739,7 @@ const TOURS = [
     "pricing_model": "per_person",
     "product_id_live": "prod_U6EFlYwN9Zn4fy",
     "price_id_live": "price_1T81ml0wAAlYwqaVlv4UBHg1",
-    "product_id_test": null,
+    "product_id_test": "prod_V91VUCZ3Hf9ygY",
     "price_id_test": null,
     "currency": "USD",
     "amount_display": "$35.00",
@@ -2868,7 +2868,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v42-isolated-stripe-environments-2026-10-05", 200);
+      return text("MBW Stripe Worker is running. version=v43-jewels-nightwalk-sandbox-2026-10-05", 200);
     }
 
     if (path === "/api/tours" && request.method === "GET") {
