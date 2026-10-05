@@ -23,8 +23,18 @@ export function mutateSample(thread,action,actor,now=Date.now()){
  if(!AGENTS.includes(actor))throw new Error('Choose a sample staff member.');
  const t=structuredClone(thread),at=new Date(now).toISOString(),text=String(action.text||'').trim();
  if(action.type==='reply'){if(!text||text.length>4000)throw new Error('Reply must contain 1–4,000 characters.');t.messages.push({id:'sample-message-'+crypto.randomUUID(),direction:'out',kind:'human',text,at,actor,delivery:'sample'});t.draft='';t.status='open';}
- else if(action.type==='note'){if(!text||text.length>2000)throw new Error('Note must contain 1–2,000 characters.');t.notes.push({text,actor,at});t.noteDraft='';}
- else if(action.type==='assign'){if(action.owner!==''&&!AGENTS.includes(action.owner))throw new Error('Unknown staff member.');t.owner=action.owner;t.notes.push({text:action.owner?'Assigned to '+action.owner:'Returned to unassigned',actor,at});}
+ else if(action.type==='note'){if(!text||text.length>2000)throw new Error('Note must contain 1–2,000 characters.');t.notes.push({id:crypto.randomUUID(),text,actor,at});t.noteDraft='';}
+ else if(['edit_note','delete_note'].includes(action.type)){
+  const index=t.notes.findIndex(n=>n.id===action.id);
+  if(index<0)throw new Error('This note is no longer available.');
+  const note=t.notes[index];
+  if(action.type==='edit_note'){
+   if(!text||text.length>2000)throw new Error('Note must contain 1–2,000 characters.');
+   (note.history||=[]).push({text:note.text,actor:note.updatedBy||note.actor,at:note.updatedAt||note.at});
+   note.text=text;note.updatedBy=actor;note.updatedAt=at;
+  }else{(t.noteEvents||=[]).push({type:'deleted',note:structuredClone(note),actor,at});t.notes.splice(index,1);}
+ }
+ else if(action.type==='assign'){if(action.owner!==''&&!AGENTS.includes(action.owner))throw new Error('Unknown staff member.');t.owner=action.owner;t.notes.push({id:crypto.randomUUID(),text:action.owner?'Assigned to '+action.owner:'Returned to unassigned',actor,at});}
  else if(action.type==='status'){if(!STATUSES.includes(action.status))throw new Error('Unknown status.');t.status=action.status;}
  else if(action.type==='next'){if(text.length>300)throw new Error('Next action is too long.');t.nextAction=text;}
  else if(action.type==='link'){if(text&&!/^[A-Za-z0-9_-]{1,100}$/.test(text))throw new Error('Use a valid inquiry ID.');t.inquiryId=text;}
@@ -39,5 +49,25 @@ export function restoreSamples(value){
  const ids=new Set();for(const t of value.threads){if(!/^sample-[1-4]$/.test(t.id)||ids.has(t.id)||!Array.isArray(t.messages)||!Array.isArray(t.notes)||!STATUSES.includes(t.status)||!(t.owner===''||AGENTS.includes(t.owner))||typeof t.name!=='string'||typeof t.draft!=='string')return null;ids.add(t.id);
  if(t.messages.some(m=>typeof m.text!=='string'||m.text.length>4000||!Number.isFinite(Date.parse(m.at))||m.delivery!=='sample'||!['in','out'].includes(m.direction)))return null;
  if(t.notes.some(n=>typeof n.text!=='string'||!AGENTS.includes(n.actor)))return null;
- }return value.threads;
+ }return value.threads.map(t=>({...t,notes:t.notes.map(n=>({...n,id:n.id||crypto.randomUUID()}))}));
+}
+
+export function validateSavedReply(input){
+ const reply={id:String(input.id||crypto.randomUUID()),title:String(input.title||'').trim(),category:String(input.category||'General').trim(),language:input.language,text:String(input.text||'').trim(),sourceId:String(input.sourceId||'')};
+ if(!reply.title||reply.title.length>100||!reply.category||reply.category.length>60||!['en','es'].includes(reply.language)||!reply.text||reply.text.length>4000)throw new Error('Enter a title, category, language and reply of up to 4,000 characters.');
+ if(/(?:\$|USD\s*)\s*\d|\d\s*(?:USD|dollars|dólares)/i.test(reply.text))throw new Error('Use a live reference for prices instead of saving a fixed amount.');
+ if(reply.sourceId&&!reply.text.includes('{{reference}}'))throw new Error('Add {{reference}} where the current source information should appear.');
+ if(reply.text.includes('{{reference}}')&&!reply.sourceId)throw new Error('Select a live reference for {{reference}}.');
+ return reply;
+}
+export function expandSavedReply(reply,knowledge,guestName){
+ const valid=validateSavedReply(reply),source=valid.sourceId?knowledge.find(r=>r.id===valid.sourceId&&r.language===valid.language):null;
+ if(valid.sourceId&&!source)throw new Error('The linked reference is unavailable. Review the source before using this reply.');
+ const text=valid.text.replaceAll('{{guest_name}}',guestName.replace(/ · sample guest$/,'')).replaceAll('{{reference}}',source?.text||'');
+ if(text.length>4000)throw new Error('This reply exceeds 4,000 characters after adding the reference.');
+ return text;
+}
+export function restoreSavedReplies(value){
+ if(!value||value.version!==1||!Array.isArray(value.replies)||value.replies.length>200)return [];
+ const ids=new Set();return value.replies.filter(r=>{try{validateSavedReply(r);if(!r.id||ids.has(r.id))return false;ids.add(r.id);return true;}catch{return false;}});
 }

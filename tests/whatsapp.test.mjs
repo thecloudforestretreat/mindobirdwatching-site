@@ -45,3 +45,18 @@ test('live reference connection does not imply WhatsApp or CRM connection; failu
  globalThis.fetch=async()=>{throw new Error('Offline');};const unavailable=await (await onRequestGet({request:new Request('http://localhost/api/whatsapp')})).json();assert.equal(unavailable.knowledge.status,'unavailable');assert.deepEqual(unavailable.knowledge.items,[]);
  }finally{globalThis.fetch=original;}
 });
+
+test('note editing retains authorship and history; deletion never changes guest messages',()=>{
+ const original=sampleThreads(now)[0];const added=mutateSample(original,{type:'note',text:'Pickup pending'},'Juan',now);
+ const id=added.notes[0].id;const edited=mutateSample(added,{type:'edit_note',id,text:'Pickup confirmed'},'Susana',now+60000);
+ assert.equal(edited.notes[0].actor,'Juan');assert.equal(edited.notes[0].updatedBy,'Susana');assert.equal(edited.notes[0].history[0].text,'Pickup pending');assert.equal(added.notes[0].text,'Pickup pending');
+ const deleted=mutateSample(edited,{type:'delete_note',id},'Juan',now+120000);assert.equal(deleted.notes.length,0);assert.deepEqual(deleted.messages,original.messages);assert.equal(deleted.noteEvents[0].note.text,'Pickup confirmed');assert.throws(()=>mutateSample(deleted,{type:'edit_note',id,text:'Missing'},'Juan'));
+});
+test('saved pricing replies resolve the latest provided reference and reject missing sources or fixed prices',async()=>{
+ const {validateSavedReply,expandSavedReply,restoreSavedReplies}=await import('../admin/assets/js/whatsapp-model.mjs');
+ const r=validateSavedReply({title:'Jewels',language:'en',category:'Tours',text:'Hello {{guest_name}}!\n{{reference}}',sourceId:'jewels'});
+ assert.match(expandSavedReply(r,[{id:'jewels',language:'en',text:'Jewels $60/person'}],'Alex · sample guest'),/Hello Alex!\nJewels \$60/);
+ assert.match(expandSavedReply(r,[{id:'jewels',language:'en',text:'Jewels $65/person'}],'Alex'),/\$65/);
+ assert.throws(()=>expandSavedReply(r,[],'Alex'));assert.throws(()=>validateSavedReply({...r,text:'Jewels $60/person'}));assert.throws(()=>validateSavedReply({...r,sourceId:''}));assert.throws(()=>expandSavedReply(r,[{id:'jewels',language:'es',text:'Español'}],'Alex'));
+ assert.equal(restoreSavedReplies({version:1,replies:[r,r,{title:'Invalid'}]}).length,1);
+});
