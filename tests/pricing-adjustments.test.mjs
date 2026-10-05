@@ -131,3 +131,14 @@ test('unmapped new products fail before creating duplicate Stripe products',asyn
  assert.match(r.result.error,/product mapping is required/);
  assert.equal(r.calls.length,0);
 });
+
+test('biking route plus Butterfly Garden bills $30 per person with no old surcharge',async()=>{
+ const r=await callWorker('create-invoice-multi',{...basePayload,items:[{tour_code:'ACT017',language:'en',quantity:2,tour_date:'2026-11-10'},{tour_code:'ACT017-BF',language:'en',quantity:2,tour_date:'2026-11-10'}]});
+ assert.equal(r.status,200,JSON.stringify(r.result));
+ const lines=r.calls.filter(c=>c.pathname==='/v1/invoiceitems').map(c=>c.form);
+ assert.equal(lines[0].get('price_data[unit_amount]'),'2000');
+ assert.equal(lines[1].get('price_data[unit_amount]'),'1000');
+ assert.equal(r.result.amount_before_deposit,60);
+ assert.equal(lines[0].get('metadata[pricing_mode]'),'standard');
+ assert.equal(lines[1].get('metadata[pricing_mode]'),'standard');
+});
