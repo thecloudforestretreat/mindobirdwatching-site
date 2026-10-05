@@ -1,3 +1,4 @@
+import whatsapp_suggest
 """Protected local Inquiry Studio. Drafting and CRM saves only; no sender."""
 import hashlib, json, mimetypes, os, re, secrets, threading
 import drafting
@@ -262,6 +263,12 @@ class Handler(BaseHTTPRequestHandler):
    if not 0<length<34*1024*1024:raise ValueError('Request too large or empty')
    body=json.loads(self.rfile.read(length));path=self.app_path()
    if path in ['/api/draft','/api/save']:row=find(body.get('inquiry_id',''))
+   if path=='/api/whatsapp-suggest':
+    if length>30000:raise ValueError('WhatsApp draft request is too large')
+    if not LOCK.acquire(blocking=False):return self.reply(409,{'error':'Local model is busy; try again shortly'})
+    try:d=whatsapp_suggest.generate(body,MODEL)
+    finally:LOCK.release()
+    return self.reply(200,d)
    if path=='/api/draft':
     if not LOCK.acquire(blocking=False):return self.reply(409,{'error':'Local model is busy; wait for the current draft'})
     try:d=generate(row,str(body.get('supplemental','')))
