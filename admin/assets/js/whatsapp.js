@@ -108,14 +108,14 @@ $('suggest-reply').onclick=async()=>{
  let reference='';try{if(source)reference=referenceText(source,$('suggest-variant').value);}catch(error){$('suggest-status').textContent=error.message;return;}
  const controller=new AbortController();suggestController=controller;const timeout=setTimeout(()=>controller.abort(),105000);$('suggest-reply').disabled=true;$('suggest-status').textContent='Preparing a suggestion on the Mac mini… You can continue editing your draft.';
  try{
-  const session=await fetch('/inquiry-studio/api/session',{cache:'no-store',signal:controller.signal});if(!session.ok)throw new Error('Mac mini connection unavailable. You can still reply manually.');const data=await session.json();if(!data.token)throw new Error('Inquiry Studio session unavailable.');
+  const session=await fetch('/inquiry-studio/api/session',{cache:'no-store',signal:controller.signal});if(!session.ok)throw new Error('Mac mini connection unavailable (HTTP '+session.status+'). Open Inquiry Studio to check access, then retry.');const data=await session.json();if(!data.token)throw new Error('Inquiry Studio session unavailable.');
   const response=await fetch('/inquiry-studio/api/whatsapp-suggest',{method:'POST',headers:{'Content-Type':'application/json','X-Pilot-Token':data.token},signal:controller.signal,body:JSON.stringify({language:$('suggest-language').value,variant:$('suggest-variant').value,messages:current().messages.filter(m=>m.kind!=='automation').slice(-12).map(m=>({direction:m.direction,text:m.text.slice(0,2000)})),reference})});
   if(response.status===404)throw new Error('The Mac mini needs the WhatsApp drafting update. Manual replies remain available.');
   const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.error||'Suggestion unavailable.');
   if(current().id!==threadId||suggestController!==controller)return;
   if(typeof result.reply!=='string'||!result.reply.trim()||result.reply.length>4000)throw new Error('Invalid suggestion received.');
   suggestionThread=threadId;$('suggest-text').value=result.reply;$('suggest-preview').hidden=false;$('suggest-status').textContent='Local AI draft · review facts, language and tone. Nothing sent.';
- }catch(error){if(suggestController===controller)$('suggest-status').textContent=error.name==='AbortError'?'Suggestion timed out or was cancelled. Try again or reply manually.':error.message;}
+ }catch(error){if(suggestController===controller){const message=error.name==='AbortError'?'Suggestion timed out or was cancelled. Try again or reply manually.':error.message;$('suggest-status').textContent=message;notice('AI suggestion: '+message);}}
  finally{clearTimeout(timeout);if(suggestController===controller){suggestController=null;$('suggest-reply').disabled=false;}}
 };
 $('use-suggestion').onclick=()=>{if(suggestionThread!==current().id){clearSuggestion();return;}try{insertDraft($('suggest-text').value);clearSuggestion();notice('Suggestion inserted into editable draft. Nothing sent.');}catch(error){$('suggest-status').textContent=error.message;}};

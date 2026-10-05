@@ -14,6 +14,11 @@ class SuggestTests(unittest.TestCase):
  def test_invalid_inputs_and_no_guest_message(self):
   for changes in [{'language':'fr'},{'variant':'bad'},{'messages':[]},{'messages':[{'direction':'out','text':'Only staff'}]},{'reference':'x'*4001}]:
    with self.assertRaises(ValueError):w.prepare(dict(self.body(),**changes))
+ def test_model_context(self):
+  def call(payload):
+   context=json.loads(payload['messages'][1]['content']);self.assertNotIn('verified_reference',context);self.assertTrue(context['verified_reference_available']);self.assertIn('reviewed_reply_rules',context)
+   return {'message':{'content':json.dumps({'reply':'Hello!\n{{reference}}'})}}
+  self.assertIn('$60',w.generate(self.body(),'test',call)['reply'])
  def test_optional_reference_appended_once(self):
   r=w.generate(self.body(),'test',self.call('Please tell us your dates.'));self.assertEqual(r['reply'].count('Jewels:'),1)
 if __name__=='__main__':unittest.main()
