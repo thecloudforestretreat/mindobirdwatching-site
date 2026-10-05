@@ -82,6 +82,11 @@ $('saved-language').onchange=()=>sourceOptions();
 $('saved-source').onchange=()=>{if($('saved-source').value&&!$('saved-text').value.includes('{{reference}}'))$('saved-text').value=[$('saved-text').value,'{{reference}}'].filter(Boolean).join('\n\n');};
 $('saved-search').oninput=renderSaved;
 $('saved-form').onsubmit=event=>{event.preventDefault();try{
+ if($('saved-source').value&&!$('saved-text').value.includes('{{reference}}')){
+  const combined=[$('saved-text').value.trim(),'{{reference}}'].filter(Boolean).join('\n\n');
+  if(combined.length>4000)throw new Error('Leave room for the selected tour reference, or choose No linked reference.');
+  $('saved-text').value=combined;
+ }
  if(!editingReply&&savedReplies.length>=200)throw new Error('The local library supports up to 200 replies.');
  const reply={...validateSavedReply({id:editingReply,title:$('saved-title').value,category:$('saved-category').value,language:$('saved-language').value,text:$('saved-text').value,sourceId:$('saved-source').value,sourceVariant:$('saved-variant').value}),updatedBy:agent(),updatedAt:new Date().toISOString()};
  const previous=savedReplies;savedReplies=editingReply?savedReplies.map(r=>r.id===editingReply?reply:r):[...savedReplies,reply];try{persistReplies();}catch{savedReplies=previous;throw new Error('Browser storage is unavailable; this reply was not saved.');}
