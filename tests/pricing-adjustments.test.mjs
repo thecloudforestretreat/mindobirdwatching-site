@@ -102,7 +102,7 @@ test('multi-item invoice charges quads and flat transport with accurate guest me
  assert.equal(r.result.amount_before_deposit,230);
 });
 test('invalid price mismatch and missing quad count fail before any Stripe write',async()=>{
- for(const payload of [{...basePayload,price_override_per_person:80,price_adjustment_per_person:5,pricing_reason:'manual_adjustment'},{...basePayload,tour_code:'ACT004',number_of_people:4},{...basePayload,tour_code:'ACT016',number_of_people:4}]){
+ for(const payload of [{...basePayload,price_override_per_person:80.5,price_adjustment_per_person:-4.5,pricing_reason:'manual_adjustment'},{...basePayload,price_override_per_person:80,price_adjustment_per_person:5,pricing_reason:'manual_adjustment'},{...basePayload,tour_code:'ACT004',number_of_people:4},{...basePayload,tour_code:'ACT016',number_of_people:4}]){
   const r=await callWorker('create-invoice',payload);
   assert.equal(r.status,400);
   assert.equal(r.calls.length,0,JSON.stringify(r.result));

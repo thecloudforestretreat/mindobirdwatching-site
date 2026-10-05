@@ -1,5 +1,5 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v39
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v41
  *
  * v39 updates:
  * - Creates or updates one CRM booking ledger row per inquiry/booking.
@@ -2870,7 +2870,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v40-approved-pricing-2026-10-05", 200);
+      return text("MBW Stripe Worker is running. version=v41-whole-dollar-pricing-2026-10-05", 200);
     }
 
     if (path === "/api/tours" && request.method === "GET") {
