@@ -858,7 +858,7 @@
           "MBW013": "Activity",
           "MBW014": "Activity",
           "MBW015": "Activity",
-          "MBW016": "Activity",
+          "MBW016": "Wildlife",
           "MBW017": "Tour Upgrade",
           "TRANS01": "Transportation",
           "TRANS02": "Transportation",
@@ -937,7 +937,7 @@
       function serviceItemLabel(item){ const visual=serviceVisual({tour_type:item.tour,service_type:item.service_type||item.tour,product_selected:item.product_selected}); return {icon:visual.icon,label:item.tour||productTitle(item.product_selected)||visual.label||"Service"}; }
       function requestAllocation(tour){
         const value=clean(tour).toLowerCase();
-        if(value==="night walk") return {tour:"Night Walk",service_type:"Activity",product_selected:"MBW016 - Night Walk",duration:"Evening activity"};
+        if(value==="night walk") return {tour:"Night Walk",service_type:"Wildlife",product_selected:"MBW016 - Night Walk",duration:"Evening activity"};
         if(value==="chocolate tour") return {tour:"Chocolate Tour",service_type:"Activity",product_selected:"MBW011 - Chocolate Tour"};
         if(value==="orchid garden tour") return {tour:"Orchid Garden Tour",service_type:"Activity",product_selected:"ACT009 - Orchid Garden Tour"};
         if(value==="coffee tour") return {tour:"Coffee Tour",service_type:"Activity",product_selected:"MBW012 - Coffee Tour"};
@@ -958,7 +958,7 @@
         if(!matches.length) return [Object.assign({},normalized,{tour:"Other Activity or Tour",notes:normalized.notes?normalized.notes+" · Guest request: "+text:"Guest request: "+text})];
         return matches.map((allocation,index)=>normalizeTourItem(Object.assign({},normalized,allocation,{id:normalized.id+"-"+(index+1),notes:[normalized.notes,"Guest request: "+text].filter(Boolean).join(" · ")})));
       }
-      function legacyAddOnItems(record){const raw=pick(record,"tour_add_ons","optional_additions","add_ons");if(!raw)return[];return raw.split(/\s*\|\s*/).filter(Boolean).flatMap((value,index)=>{const lower=clean(value).toLowerCase();if(lower.startsWith("tour format:"))return[];if(lower==="night walk")return[{id:"addon-"+(index+1),tour:"Night Walk",service_type:"Activity",product_selected:"MBW016",duration:"Evening activity",status:"new",notes:"Requested on website"}];if(lower==="additional birding day")return[{id:"addon-"+(index+1),tour:"Additional Birding Day",service_type:"Birdwatching",status:"new",notes:"Requested on website"}];if(lower==="transportation")return[{id:"addon-"+(index+1),tour:"Transportation Requested",service_type:"Transportation",status:"new",notes:"Requested on website"}];if(lower==="accommodation assistance")return[{id:"addon-"+(index+1),tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01",status:"new",notes:"Requested on website"}];const detail=lower.startsWith("other:")?value.slice(value.indexOf(":")+1).trim():value;return[{id:"addon-"+(index+1),tour:detail||"Other Activity or Tour",service_type:"Custom",product_selected:"Other",status:"new",notes:"Requested on website"}];});}
+      function legacyAddOnItems(record){const raw=pick(record,"tour_add_ons","optional_additions","add_ons");if(!raw)return[];return raw.split(/\s*\|\s*/).filter(Boolean).flatMap((value,index)=>{const lower=clean(value).toLowerCase();if(lower.startsWith("tour format:"))return[];if(lower==="night walk")return[{id:"addon-"+(index+1),tour:"Night Walk",service_type:"Wildlife",product_selected:"MBW016",duration:"Evening activity",status:"new",notes:"Requested on website"}];if(lower==="additional birding day")return[{id:"addon-"+(index+1),tour:"Additional Birding Day",service_type:"Birdwatching",status:"new",notes:"Requested on website"}];if(lower==="transportation")return[{id:"addon-"+(index+1),tour:"Transportation Requested",service_type:"Transportation",status:"new",notes:"Requested on website"}];if(lower==="accommodation assistance")return[{id:"addon-"+(index+1),tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01",status:"new",notes:"Requested on website"}];const detail=lower.startsWith("other:")?value.slice(value.indexOf(":")+1).trim():value;return[{id:"addon-"+(index+1),tour:detail||"Other Activity or Tour",service_type:"Custom",product_selected:"Other",status:"new",notes:"Requested on website"}];});}
       function normalizeTourItems(record){ if(!record) return []; let source=record.tour_items_json||record.tour_items||""; if(Array.isArray(source)) return source.map(normalizeTourItem).filter(validTourItem); if(typeof source==="string"&&source.trim()){ try{ const parsed=JSON.parse(source); if(Array.isArray(parsed)) return parsed.map(normalizeTourItem).filter(validTourItem); }catch(e){ return source.split(/\\s*\\|\\s*/).map(chunk=>{ const parts=chunk.split("::"); return normalizeTourItem({date:parts[0],tour:parts[1],guests:parts[2],product:parts[3],status:parts[4],pickup_location:parts[5],price:parts[6],notes:parts[7]}); }).filter(validTourItem); } } return legacyAddOnItems(record).map(normalizeTourItem).filter(validTourItem); }
       function normalizeTourItem(item){ item=item||{}; const tour=clean(item.tour||item.tour_type||item.name||item.product_selected); const date=toDateValue(item.date||item.tour_date||item.requested_date); const guests=clean(item.guests||item.guest_count||item.party_size); const product=clean(item.product_selected||item.product||deriveProductCode(tour)); const price=clean(item.price||item.quoted_amount||item.unit_price||item.price_per_person||item.per_person||item.amount); const serviceType=clean(item.service_type)||deriveServiceType(product||tour); return {id:clean(item.id)||"TI-"+stamp()+"-"+Math.random().toString(16).slice(2,6),tour:tour,service_type:serviceType,date:date,tour_date:date,guests:guests,product_selected:product,duration:clean(item.duration||item.duration_preference),status:normalizeStatus(item.status||"booked"),pickup_location:clean(item.pickup_location||item.pickup||""),price:price,notes:clean(item.notes||"")}; }
       function validTourItem(item){ return Boolean(clean(item.tour)||clean(item.product_selected)||clean(item.notes)||clean(item.price)); }
@@ -1840,7 +1840,7 @@
         try{
           const result=await api("post_zelle_accounting",{record,accounting_rows:rows});
           const count=Number(result.posted_count||rows.length);
-          showToast(`${count} Zelle accounting row${count===1?"":"s"} posted. Invoice and guide expense will sync automatically.`);
+          showToast(`${count} Zelle accounting row${count===1?"":"s"} posted. Allow up to 10 minutes for invoices and expenses to finish syncing.`);
         }catch(error){ showToast("Zelle accounting post failed: "+error.message); }
         finally{ button.textContent=original; toggleInvoiceActions(formRecord()); }
       }
