@@ -1,5 +1,5 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v41
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v42
  *
  * v39 updates:
  * - Creates or updates one CRM booking ledger row per inquiry/booking.
@@ -2042,9 +2042,7 @@ function calculatedLineTotalCents(tour, unitAmountCents, numberOfPeople, quadCou
 }
 
 function getStripeKey(env, isTest) {
-  if (isTest && env.STRIPE_SECRET_KEY_TEST) return env.STRIPE_SECRET_KEY_TEST;
-  if (!isTest && env.STRIPE_SECRET_KEY) return env.STRIPE_SECRET_KEY;
-  return env.STRIPE_SECRET_KEY_TEST || env.STRIPE_SECRET_KEY || null;
+  return (isTest ? env.STRIPE_SECRET_KEY_TEST : env.STRIPE_SECRET_KEY) || null;
 }
 
 function parseAmountDisplayToCents(amountDisplay) {
@@ -2870,7 +2868,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v41-whole-dollar-pricing-2026-10-05", 200);
+      return text("MBW Stripe Worker is running. version=v42-isolated-stripe-environments-2026-10-05", 200);
     }
 
     if (path === "/api/tours" && request.method === "GET") {

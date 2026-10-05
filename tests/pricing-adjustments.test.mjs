@@ -142,3 +142,12 @@ test('biking route plus Butterfly Garden bills $30 per person with no old surcha
  assert.equal(lines[0].get('metadata[pricing_mode]'),'standard');
  assert.equal(lines[1].get('metadata[pricing_mode]'),'standard');
 });
+
+test('test and live Stripe keys never fall back to the other environment',()=>{
+ const ctx=vm.createContext({});
+ vm.runInContext(worker.replace('export default {','const workerExport = {')+'\nthis.getKey=getStripeKey;',ctx);
+ assert.equal(ctx.getKey({STRIPE_SECRET_KEY:'live-key'},true),null);
+ assert.equal(ctx.getKey({STRIPE_SECRET_KEY_TEST:'test-key'},false),null);
+ assert.equal(ctx.getKey({STRIPE_SECRET_KEY:'live-key',STRIPE_SECRET_KEY_TEST:'test-key'},true),'test-key');
+ assert.equal(ctx.getKey({STRIPE_SECRET_KEY:'live-key',STRIPE_SECRET_KEY_TEST:'test-key'},false),'live-key');
+});
