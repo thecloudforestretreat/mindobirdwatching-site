@@ -3,7 +3,7 @@ import {sampleThreads,filterThreads,mutateSample,firstResponse,normalizeKnowledg
 import {onRequestGet,onRequestPost} from '../functions/api/whatsapp/index.js';
 const now=Date.parse('2026-10-04T15:00:00Z');
 test('staff response does not count an automated acknowledgment, pending or failed send',()=>{
- const t=sampleThreads(now)[0];assert.equal(firstResponse(t),null);assert.equal(firstResponse(t,'automation').minutes,1);
+ const t=sampleThreads(now)[0];assert.equal(firstResponse(t),null);t.messages.push({id:'auto-test',direction:'out',kind:'automation',delivery:'sample',at:new Date(now-94*60000).toISOString()});assert.equal(firstResponse(t,'automation').minutes,1);
  t.messages.push({id:'bad',direction:'out',kind:'human',delivery:'pending',at:new Date(now).toISOString()});assert.equal(firstResponse(t),null);
  t.messages.at(-1).delivery='failed';assert.equal(firstResponse(t),null);
  t.messages.at(-1).delivery='accepted';assert.equal(firstResponse(t).minutes,95);
