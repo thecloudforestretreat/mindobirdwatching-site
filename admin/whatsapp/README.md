@@ -1,0 +1,31 @@
+# WhatsApp workspace — number connection last
+
+## Delivered stage
+
+`/whatsapp/` is a protected responsive admin workspace. It provides four fictional conversations, queue/search filters, Juan/Susana sample views, assignments with an internal handoff trail, next actions, private notes, sample inquiry linkage, reply drafts and simulated staff replies. English/Spanish source content comes from the existing Staff Info Library through `/api/whatsapp`; its allowlist excludes staff_notes and contact fields. Reference prices are never auto-approved. Source failure returns unavailable with no stale catalog fallback (the Studio and older static catalogs contain differing prices).
+
+Sample work lives in sessionStorage in the current tab and is resettable. It is not a shared inbox, does not edit the CRM, and cannot send WhatsApp messages. The API explicitly rejects all POST requests with 409 while disconnected. Number onboarding is not exposed in the UI. Existing Cloudflare Access origin verification and guide restrictions apply. No tokens, phone registration, provider subscription, disk mounting or infrastructure installation is performed.
+
+Staff replies and automated acknowledgments have separate timings; only accepted/delivered/read evidence (or explicitly labeled sample evidence) qualifies. Pending/failed sends and internal notes never count. Samples show elapsed time from the first inbound message, not later follow-up response time. The sample staff selector is not authentication or a production authorization control.
+
+## Next implementation stages before the number is connected
+
+1. Provision a dedicated shared message store on the Mac mini or managed database, with a stable conversation ID and separate inquiry links. Phone/chat IDs identify a conversation, not a booking. Multiple matching inquiries require staff review. Persist event IDs under a unique constraint, original provider timestamps, reception timestamps, direction, source and automation provenance. Encrypt backups and define retention.
+2. Bind each staff action to the verified Access identity server-side. Add optimistic concurrency, server-side assignments, audit trails, drafts, unread cursors and handoff notifications. Browser sample data must never migrate automatically into production. Enforce same-origin writes and per-user access; never expose Meta secrets to the client.
+3. Add a provider adapter and durable outbox. Require an idempotency key, enforce allowed reply window/template rules, authenticate incoming webhook signatures, replay-safe event ingestion and acknowledge only after durable persistence. Track provider acceptance/delivery/read/failure separately. Do not mark delivered on HTTP send success. Reconcile out-of-order ACKs, retries and echo events without duplicate messages.
+4. Connect the existing Inquiry Studio as an optional draft assistant. Approved knowledge must have revision, language, effective date, approver and guest-safe text. Guest messages and attachments are untrusted data. Low-confidence or unsupported requests go to staff. AI cannot confirm availability, change bookings, approve custom prices or send unreviewed messages in the initial phase. AI failure must leave the human inbox usable.
+5. Catalog approved media on the 8TB archive: asset ID, relative archive path, hash, permissions, captions, language and derivatives. Never serve arbitrary drive paths or expose the archive publicly. Maintain a second backup, generate bounded delivery copies, scan uploads and use the provider's media upload interface. A missing/offline drive must not block text messages.
+6. Verify the specific Ecuador number's coexistence/onboarding eligibility, primary-phone access, linked-device requirements, app-message echo coverage, historical sync behavior, billing and template approval. Native app replies need reliable echo evidence to appear in API response-time reporting; unknown staff identity must remain unknown.
+7. Test with a Meta test number and sample data before onboarding the business number. Validate mobile notifications, desktop/mobile concurrent edits, staff identity, opt-out/human handoff, failed sends, rate limits, disconnect recovery, media limits and backup restore. Only then connect the real number and gradually update website/Google Business Profile entry points.
+
+## Suggested production records
+
+- conversation: id, provider_chat_id, owner_identity, state, language, next_action, version
+- message: id, provider_message_id, conversation_id, direction, source, actor_identity, automation_id, original_at, received_at, text/media_ref, delivery_state
+- inquiry_link: conversation_id, inquiry_id, confirmed_by, confirmed_at
+- internal_note: conversation_id, author_identity, created_at, text
+- outbox: idempotency_key, conversation_id, requested_by, content_revision, status, provider_id, attempt_count
+- knowledge: revision, source_id, language, category, guest_text, price_reference, approved_for_automation, approved_by, effective_at
+- response_metrics: first_inbound_at, first_automation_at, first_staff_reply_at, evidence_source, coverage
+
+No analytics report should treat a simulated reply, opening a chat, generating a draft or an automated acknowledgment as a human first response.
