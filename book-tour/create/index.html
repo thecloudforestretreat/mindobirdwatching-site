@@ -781,10 +781,16 @@
       </div>
     </div>
 
+    <div class="field" data-quad-field hidden>
+      <label>Number of quads</label>
+      <input data-field="quad_count" type="number" min="1" step="1" value="1" />
+      <div class="hint">Billed per quad. Keep the number of guests in the people field.</div>
+    </div>
+
     <div class="grid-2 pricing-grid">
       <div class="field">
         <label data-price-adjustment-label>Price adjustment/person</label>
-        <input data-field="price_override_per_person" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional" />
+        <input data-field="price_override_per_person" type="number" step="1" inputmode="numeric" placeholder="Optional: +10 or -5" />
       </div>
 
       <div class="field pricing-extra" data-pricing-extra hidden>
@@ -798,7 +804,7 @@
       </div>
 
       <div class="hint pricing-helper-row" data-pricing-helper>
-        Enter the whole-dollar amount to add per person. Example: standard $75 + adjustment $5 = final invoice price $80/person. Leave blank for standard pricing.
+        Enter an increase or discount per person. Example: standard $85 - $5 = $80/person. Use whole dollars only. Leave blank for standard pricing.
       </div>
 
       <div class="field pricing-extra pricing-notes-field" data-pricing-extra hidden>
@@ -1077,7 +1083,7 @@
   }
 
   function formatCurrencyDisplay(v) {
-    return v || "-";
+    return String(v || "-").replace(/\.00(?=\s|$)/g, "");
   }
 
   function formatOverrideDisplay(value) {
@@ -1088,20 +1094,20 @@
 
   function formatAdjustmentDisplay(value) {
     const n = Number(value);
-    if (!Number.isFinite(n) || n <= 0) return "";
-    return `+$${Math.round(n)} USD`;
+    if (!Number.isFinite(n) || n === 0) return "";
+    return `${n < 0 ? "-" : "+"}$${Math.abs(n).toFixed(0)} USD`;
   }
 
   function getFinalAdjustedPrice(item, tour) {
     const standardAmount = parseTourAmount(tour);
     const adjustmentAmount = Number(item && item.price_override_per_person || 0);
-    if (!Number.isFinite(adjustmentAmount) || adjustmentAmount <= 0) return standardAmount;
-    return standardAmount + Math.round(adjustmentAmount);
+    if (!Number.isFinite(adjustmentAmount)) return standardAmount;
+    return Math.round((standardAmount + adjustmentAmount) * 100) / 100;
   }
 
   function hasOverridePrice(item) {
     const n = Number(item && item.price_override_per_person);
-    return Number.isFinite(n) && n > 0;
+    return Number.isFinite(n) && n !== 0;
   }
 
   function parseTourAmount(tour) {
@@ -1111,10 +1117,11 @@
   }
 
   function isFlatPriced(tour) {
-    return String(tour && tour.pricing_model || "per_person").toLowerCase() === "flat";
+    return ["flat", "flat_amount"].includes(String(tour && tour.pricing_model || "per_person").toLowerCase());
   }
 
-  function billingQuantity(tour, people) {
+  function billingQuantity(tour, people, quadCount) {
+    if (tour && tour.pricing_model === "per_quad") return Number(quadCount || 0);
     return isFlatPriced(tour) ? 1 : Number(people || 0);
   }
 
@@ -1190,6 +1197,7 @@ function createItem(initial = {}) {
     tour_code: initial.tour_code || "",
     tour_date: initial.tour_date || getDefaultTomorrowISO(),
     quantity: initial.quantity || 1,
+    quad_count: initial.quad_count || 1,
     language: initial.language || els.defaultLanguage.value || "en",
     item_notes: initial.item_notes || "",
     price_override_per_person: initial.price_override_per_person || "",
@@ -1466,6 +1474,10 @@ function createItem(initial = {}) {
       const tourSelect = node.querySelector('[data-field="tour_code"]');
       const dateInput = node.querySelector('[data-field="tour_date"]');
       const qtyInput = node.querySelector('[data-field="quantity"]');
+      const quadInput = node.querySelector('[data-field="quad_count"]');
+      const quadField = node.querySelector("[data-quad-field]");
+      quadInput.value = item.quad_count;
+      quadInput.addEventListener("input", e => updateItem(item.id, "quad_count", e.target.value));
       const langSelect = node.querySelector('[data-field="language"]');
       const notesInput = node.querySelector('[data-field="item_notes"]');
       const priceOverrideInput = node.querySelector('[data-field="price_override_per_person"]');
@@ -1504,7 +1516,7 @@ function createItem(initial = {}) {
           metaText.textContent = "Select a tour to preview the price and details.";
           return;
         }
-        const priceScope = isFlatPriced(selectedTour) ? "per booking" : "per person";
+        const priceScope = isFlatPriced(selectedTour) ? "per booking" : selectedTour.pricing_model === "per_quad" ? "per quad" : selectedTour.tour_code === "ACT021" ? "per person per session" : "per person";
         metaText.innerHTML = `
           <strong>Selected price:</strong> ${formatCurrencyDisplay(selectedTour.amount_display)} ${priceScope}
           <br />
@@ -1517,16 +1529,19 @@ function createItem(initial = {}) {
       function refreshPricingControls() {
         const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
         const flatPriced = isFlatPriced(selectedTour);
-        const mountainBiking = !!(selectedTour && selectedTour.tour_code === "ACT017");
+        const perQuad = !!(selectedTour && selectedTour.pricing_model === "per_quad");
+        quadField.hidden = !perQuad;
         if (priceAdjustmentLabel) {
-          priceAdjustmentLabel.textContent = flatPriced ? "Price adjustment/booking" : "Price adjustment/person";
+          priceAdjustmentLabel.textContent = flatPriced ? "Price adjustment/booking" : perQuad ? "Price adjustment/quad" : "Price adjustment/person";
         }
         if (pricingHelper) {
-          pricingHelper.textContent = mountainBiking
-            ? "Mountain Biking is invoice-only. Enter +$10/person for the 2-hour, 4 km route ($20 final), or +$40/person for the cable-car and waterfalls route ($50 final). Add Butterfly Garden separately as MBW015."
+          pricingHelper.textContent = selectedTour && selectedTour.tour_code === "ACT021"
+            ? "Standard price is $110 per person per private session. Add one booking item for each session; Number of people is the participant count for that session."
+            : perQuad
+            ? "Standard price is $30 per quad. Adjustments apply per quad. Use Send Invoice to include the explicit quad count."
             : flatPriced
-            ? "Enter the whole-dollar amount to add to this booking. Example: standard $180 + adjustment $10 = final invoice price $190. Leave blank for standard pricing."
-            : "Enter the whole-dollar amount to add per person. Example: standard $75 + adjustment $5 = final invoice price $80/person. Leave blank for standard pricing.";
+            ? "Enter an increase or discount for this booking. Example: $180 - $10 = $170. Use whole dollars only. Leave blank for standard pricing."
+            : "Enter an increase or discount per person. Example: $85 - $5 = $80/person. Use whole dollars only. Leave blank for standard pricing.";
         }
         const hasOverride = hasOverridePrice(item);
         pricingExtraFields.forEach(field => {
@@ -1585,9 +1600,7 @@ function createItem(initial = {}) {
 
       priceOverrideInput.addEventListener("input", e => {
         const raw = e.target.value;
-        const cleaned = raw === "" ? "" : String(Math.max(0, Math.floor(Number(raw) || 0)));
-        e.target.value = cleaned;
-        updateItem(item.id, "price_override_per_person", cleaned);
+        updateItem(item.id, "price_override_per_person", raw);
         refreshPricingControls();
       });
 
@@ -1629,10 +1642,10 @@ function createItem(initial = {}) {
       const quantity = Number(item.quantity || 0);
       const standardAmount = parseTourAmount(tour);
       const flatPriced = isFlatPriced(tour);
-      const chargedQuantity = billingQuantity(tour, quantity);
+      const chargedQuantity = billingQuantity(tour, quantity, item.quad_count);
       const adjustmentAmount = Number(item.price_override_per_person || 0);
       const standardPriceLine = tour
-        ? flatPriced ? `${tour.amount_display} per booking` : `${tour.amount_display} x ${quantity}`
+        ? flatPriced ? `${tour.amount_display} per booking` : `${tour.amount_display} x ${chargedQuantity}${tour.pricing_model === "per_quad" ? " quads" : " people"}`
         : "Select a tour";
 
       const adjustmentDisplay = formatAdjustmentDisplay(item.price_override_per_person);
@@ -1644,11 +1657,11 @@ function createItem(initial = {}) {
         : 0;
       const priceLine = adjustmentDisplay
         ? flatPriced
-          ? `$${finalAdjustedTotal.toFixed(2)} USD per booking (adjusted)`
-          : `$${finalPricePerPerson.toFixed(2)} USD x ${quantity} = $${finalAdjustedTotal.toFixed(2)} USD (adjusted)`
+          ? `$${finalAdjustedTotal.toFixed(0)} USD per booking (adjusted)`
+          : `$${finalPricePerPerson.toFixed(0)} USD x ${chargedQuantity} = $${finalAdjustedTotal.toFixed(0)} USD (adjusted)`
         : standardPriceLine;
       const internalPricingLine = adjustmentDisplay
-        ? `<br />Internal pricing: standard $${standardAmount.toFixed(2)} ${flatPriced ? "per booking" : "per person"}, adjustment ${adjustmentDisplay}, final $${finalPricePerPerson.toFixed(2)} ${flatPriced ? "per booking" : "per person"}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
+        ? `<br />Internal pricing: standard $${standardAmount.toFixed(0)} ${flatPriced ? "per booking" : tour && tour.pricing_model === "per_quad" ? "per quad" : "per person"}, adjustment ${adjustmentDisplay}, final $${finalPricePerPerson.toFixed(0)} ${flatPriced ? "per booking" : tour && tour.pricing_model === "per_quad" ? "per quad" : "per person"}${reasonDisplay ? `, ${reasonDisplay}` : ""}${item.pricing_notes ? `, ${item.pricing_notes}` : ""}`
         : "";
 
       if (tour) {
@@ -1702,10 +1715,10 @@ function createItem(initial = {}) {
 
   function updateModeUI() {
     const multi = state.items.length > 1;
-    const hasInvoiceOnlyMountainBiking = state.items.some(item => item.tour_code === "ACT017");
+    const hasQuadRental = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.pricing_model === "per_quad");
 
     els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi || hasInvoiceOnlyMountainBiking;
+    els.generateLinkBtn.disabled = multi || hasQuadRental;
     els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight;
     els.copyBtn.disabled = !state.generatedUrl;
     els.openBtn.disabled = !state.generatedOpenUrl;
@@ -1718,14 +1731,8 @@ function createItem(initial = {}) {
         <br />
         Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
       `;
-    } else if (hasInvoiceOnlyMountainBiking) {
-      els.actionSummary.innerHTML = `
-        Mountain Biking is invoice-only.
-        <br />
-        Enter <strong>+$10/person</strong> for the $20 route or <strong>+$40/person</strong> for the $50 route.
-        <br />
-        Add <strong>MBW015 - Butterfly Garden</strong> as a separate booking item when needed.
-      `;
+    } else if (hasQuadRental) {
+      els.actionSummary.textContent = "Quad rentals use Send Invoice so the number of quads is included separately from guest count.";
     } else {
       els.actionSummary.innerHTML = `
         Single item mode is active.
@@ -1766,16 +1773,19 @@ function createItem(initial = {}) {
       const tour = getTourByCodeAndLanguage(item.tour_code, item.language);
       if (!tour && item.tour_code) errors.push(`Item ${idx + 1}: Selected tour is not available for the chosen language.`);
 
-      if (item.tour_code === "ACT017") {
-        const adjustment = Number(item.price_override_per_person);
-        if (adjustment !== 10 && adjustment !== 40) {
-          errors.push(`Item ${idx + 1}: Mountain Biking requires a +$10 or +$40 per-person adjustment.`);
-        }
+      if (item.price_override_per_person !== "" && !Number.isFinite(Number(item.price_override_per_person))) {
+        errors.push(`Item ${idx + 1}: Enter a valid price adjustment.`);
       }
+
+      if (tour && tour.pricing_model === "per_quad" && (!Number.isInteger(Number(item.quad_count)) || Number(item.quad_count) < 1)) errors.push(`Item ${idx + 1}: Enter a positive whole number of quads.`);
+      if (tour && Number(tour.max_guests_per_quad) > 0 && Number(item.quantity) > Number(item.quad_count) * Number(tour.max_guests_per_quad)) errors.push(`Item ${idx + 1}: Guest count exceeds quad capacity.`);
+      if (!Number.isInteger(Number(item.quantity))) errors.push(`Item ${idx + 1}: Number of people must be a whole number.`);
+      if (tour && Number(tour.max_person) > 0 && Number(item.quantity) > Number(tour.max_person)) errors.push(`Item ${idx + 1}: Maximum ${tour.max_person} people allowed.`);
 
       if (hasOverridePrice(item)) {
         const overrideValue = Number(item.price_override_per_person);
-        if (!Number.isInteger(overrideValue)) errors.push(`Item ${idx + 1}: Price adjustment must be a whole dollar amount.`);
+        if (!Number.isInteger(overrideValue)) errors.push(`Item ${idx + 1}: Price adjustment must be a whole-dollar amount.`);
+        if (tour && getFinalAdjustedPrice(item, tour) <= 0) errors.push(`Item ${idx + 1}: Final price must be greater than zero.`);
         if (!item.pricing_reason) errors.push(`Item ${idx + 1}: Pricing reason is required when using a price adjustment.`);
         // backend ready for next implementation step
       }
@@ -1797,6 +1807,7 @@ function createItem(initial = {}) {
       stripe_environment: els.stripeEnvironment.value,
       tour_code: item.tour_code,
       number_of_people: Number(item.quantity),
+      quad_count: getTourByCodeAndLanguage(item.tour_code, item.language)?.pricing_model === "per_quad" ? Number(item.quad_count) : null,
       main_contact_name: buildFullName(),
       main_contact_email: els.mainEmail.value.trim(),
       main_contact_phone: els.mainPhone.value.trim(),
@@ -1859,6 +1870,7 @@ function createItem(initial = {}) {
         return {
           tour_code: item.tour_code,
           quantity: Number(item.quantity),
+          quad_count: tour?.pricing_model === "per_quad" ? Number(item.quad_count) : null,
           tour_date: item.tour_date,
           language: item.language,
           item_notes: item.item_notes || "",
@@ -1921,7 +1933,7 @@ function createItem(initial = {}) {
     const amountDisplay = tour && tour.amount_display ? String(tour.amount_display) : "";
     const amountNumber = Number(amountDisplay.replace(/[^0-9.]/g, ""));
     const amountCents = Number.isFinite(amountNumber)
-      ? Math.round(amountNumber * 100) * billingQuantity(tour, item.quantity)
+      ? Math.round(amountNumber * 100) * billingQuantity(tour, item.quantity, item.quad_count)
       : 0;
 
     return {
@@ -2013,8 +2025,8 @@ function createItem(initial = {}) {
       showStatus("Generate Link is only available for a single booking item.", "error");
       return;
     }
-    if (state.items.some(item => item.tour_code === "ACT017")) {
-      showStatus("Mountain Biking is invoice-only. Use Send Invoice with +$10/person for the $20 route or +$40/person for the $50 route. Add Butterfly Garden separately as MBW015.", "error");
+    if (state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.pricing_model === "per_quad")) {
+      showStatus("Use Send Invoice for quad rentals to include the quad count.", "error");
       return;
     }
     if (state.items.some(item => hasOverridePrice(item))) {

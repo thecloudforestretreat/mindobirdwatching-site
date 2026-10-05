@@ -119,7 +119,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$50.00",
+    "amount_display": "$60.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -129,7 +129,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-10-MBW004_HDT_Image_En.jpg",
     "tour_page_url": "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/",
-    "description_one_liner": "Half-day guided birdwatching experience in the cloud forest of Mindo.Explore lush forest trails in search of toucans, tanagers, and hummingbirds during peak morning activity. Includes certified guide, equipment, and transportation."
+    "description_one_liner": "Half-day guided birdwatching experience in the cloud forest of Mindo.Explore lush forest trails in search of toucans, tanagers, and hummingbirds during peak morning activity. Includes certified guide, equipment, and transportation.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW004",
@@ -143,7 +144,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$50.00",
+    "amount_display": "$60.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -153,7 +154,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-12-MBW004_HDT_Image_Es.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/tours/joyas-del-bosque-matutino/",
-    "description_one_liner": "Experiencia guiada de observación de aves de medio día en el bosque nublado de Mindo.Recorre senderos naturales en busca de tucanes, tángaras y colibríes durante la actividad matutina. Incluye guía certificado, equipo y transporte."
+    "description_one_liner": "Experiencia guiada de observación de aves de medio día en el bosque nublado de Mindo.Recorre senderos naturales en busca de tucanes, tángaras y colibríes durante la actividad matutina. Incluye guía certificado, equipo y transporte.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW005",
@@ -167,7 +169,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$75.00",
+    "amount_display": "$85.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -177,7 +179,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-6-MBW005_HDT_Image_En.jpg",
     "tour_page_url": "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/",
-    "description_one_liner": "Half-day guided birdwatching experience beginning at dawn in the cloud forest of Mindo.Starting at 5:00 AM, this immersive tour focuses on observing the spectacular Andean Cock-of-the-rock at its lek, followed by a forest hike in search of toucans, tanagers, and hummingbirds. Includes certified guide, transportation, and use of binoculars."
+    "description_one_liner": "Half-day guided birdwatching experience beginning at dawn in the cloud forest of Mindo.Starting at 5:00 AM, this immersive tour focuses on observing the spectacular Andean Cock-of-the-rock at its lek, followed by a forest hike in search of toucans, tanagers, and hummingbirds. Includes certified guide, transportation, and use of binoculars.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW005",
@@ -191,7 +194,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$75.00",
+    "amount_display": "$85.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -201,7 +204,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-8-MBW005_HDT_Image_Es.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/tours/gallo-de-la-pena-andino-al-amanecer/",
-    "description_one_liner": "Experiencia guiada de observacion de aves de medio dia en el bosque nublado de Mindo, comenzando al amanecer.El enfoque principal es ver el gallo de pena andino en su lek, seguido de una caminata por el bosque para buscar tucanes y encuentros con varias especies de tangaras y colibries. Incluye transporte y uso de binoculares."
+    "description_one_liner": "Experiencia guiada de observacion de aves de medio dia en el bosque nublado de Mindo, comenzando al amanecer.El enfoque principal es ver el gallo de pena andino en su lek, seguido de una caminata por el bosque para buscar tucanes y encuentros con varias especies de tangaras y colibries. Incluye transporte y uso de binoculares.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW006",
@@ -215,7 +219,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$99.00",
+    "amount_display": "$115.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Full Day",
@@ -225,7 +229,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-2-MBW006_FDT_Image_En.jpg",
     "tour_page_url": "https://mindobirdwatching.com/tours/quest-five-toucans-guide/",
-    "description_one_liner": "Full-day guided birdwatching expedition in the cloud forest of Mindo, starting at dawn. The tour begins with early-morning observation of the Andean Cock-of-the-rock at its lek, followed by an extended forest hike in search of five toucan species, including the Plate-billed Mountain Toucan, Yellow-throated Toucan, Choco Toucan, Pale-mandibled Aracari, and Cr"
+    "description_one_liner": "Full-day guided birdwatching expedition in the cloud forest of Mindo, starting at dawn. The tour begins with early-morning observation of the Andean Cock-of-the-rock at its lek, followed by an extended forest hike in search of five toucan species, including the Plate-billed Mountain Toucan, Yellow-throated Toucan, Choco Toucan, Pale-mandibled Aracari, and Cr",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW006",
@@ -239,7 +244,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$99.00",
+    "amount_display": "$115.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Full Day",
@@ -249,7 +254,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW_Tour_Options-4-MBW006_FDT_Image_Es.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/",
-    "description_one_liner": "Expedición guiada de observación de aves de día completo en el bosque nublado de Mindo, comenzando al amanecer. El tour inicia con la observación del gallo de pena andino en su lek, seguido de una caminata extendida en busca de cinco especies de tucanes, incluyendo el tucán andino piquigrueso, tucán garganta amarilla, tucán del Chocó, arasarí de pico pálido "
+    "description_one_liner": "Expedición guiada de observación de aves de día completo en el bosque nublado de Mindo, comenzando al amanecer. El tour inicia con la observación del gallo de pena andino en su lek, seguido de una caminata extendida en busca de cinco especies de tucanes, incluyendo el tucán andino piquigrueso, tucán garganta amarilla, tucán del Chocó, arasarí de pico pálido ",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW007",
@@ -263,7 +269,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$90.00",
+    "amount_display": "$125.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -273,7 +279,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW007_CHDT_Image_Es.jpg",
     "tour_page_url": "https://mindobirdwatching.com/tours/custom-private-tour/",
-    "description_one_liner": "This custom half-day tour in the cloud forest of Mindo is designed around your specific birding or nature interests. Led by an experienced local guide, the route and pace are adapted in real time for a personalized and relaxed experience."
+    "description_one_liner": "This custom half-day tour in the cloud forest of Mindo is designed around your specific birding or nature interests. Led by an experienced local guide, the route and pace are adapted in real time for a personalized and relaxed experience.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW007",
@@ -287,7 +294,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$90.00",
+    "amount_display": "$125.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -297,7 +304,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW007_CHDT_Image_En.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/tours/tour-personalizado-privado/",
-    "description_one_liner": "Este tour personalizado de medio día en el bosque nublado de Mindo se adapta a tus intereses específicos de observación de aves o naturaleza. Con un guía local experto, el recorrido se ajusta al ritmo del grupo y a las especies objetivo, ofreciendo una experiencia íntima y flexible."
+    "description_one_liner": "Este tour personalizado de medio día en el bosque nublado de Mindo se adapta a tus intereses específicos de observación de aves o naturaleza. Con un guía local experto, el recorrido se ajusta al ritmo del grupo y a las especies objetivo, ofreciendo una experiencia íntima y flexible.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW008",
@@ -311,7 +319,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$135.00",
+    "amount_display": "$175.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Full Day",
@@ -321,7 +329,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW008_CFDT_Image_En.jpg",
     "tour_page_url": "https://mindobirdwatching.com/tours/custom-private-tour/",
-    "description_one_liner": "This custom full-day tour offers an in-depth exploration of the Mindo cloud forest. Guided by a local expert, the itinerary is tailored to your target species, preferred pace, and field conditions for a complete and immersive day."
+    "description_one_liner": "This custom full-day tour offers an in-depth exploration of the Mindo cloud forest. Guided by a local expert, the itinerary is tailored to your target species, preferred pace, and field conditions for a complete and immersive day.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW008",
@@ -335,7 +344,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$135.00",
+    "amount_display": "$175.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Full Day",
@@ -345,7 +354,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW008_CFDT_Image_Es.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/tours/tour-personalizado-privado/",
-    "description_one_liner": "Este tour personalizado de día entero permite una exploración profunda del bosque nublado de Mindo. Acompañado por un guía local experto, el día se organiza según tus intereses, especies objetivo y condiciones del entorno."
+    "description_one_liner": "Este tour personalizado de día entero permite una exploración profunda del bosque nublado de Mindo. Acompañado por un guía local experto, el día se organiza según tus intereses, especies objetivo y condiciones del entorno.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW009",
@@ -359,7 +369,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$30.00",
+    "amount_display": "$50.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -369,7 +379,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW009_HDT_Image_En.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "This flora excursion highlights the exceptional plant diversity of the Mindo cloud forest. Led by a knowledgeable guide, the tour focuses on orchids, bromeliads, and native species in a relaxed and educational setting."
+    "description_one_liner": "Half-day Flora Excursion. Base price $50 per person; final quote depends on duration confirmed by staff.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW009",
@@ -383,7 +394,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$30.00",
+    "amount_display": "$50.00",
     "min_person": 2,
     "max_person": "unlimited",
     "duration_label": "Half Day",
@@ -393,7 +404,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW009_HDT_Image_Es.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Esta excursión botánica explora la rica flora del bosque nublado de Mindo, incluyendo orquídeas, bromelias y plantas endémicas. Con un guía experto, es una experiencia educativa y tranquila ideal para amantes de la naturaleza y la fotografía."
+    "description_one_liner": "Half-day Flora Excursion. Base price $50 per person; final quote depends on duration confirmed by staff.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW010",
@@ -407,7 +419,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$70.00",
+    "amount_display": "$99.00",
     "min_person": 1,
     "max_person": "1",
     "duration_label": "Half Day",
@@ -417,7 +429,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW010_HDT_Image_En.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "This solo birdwatching experience is designed for individual birders seeking focused guidance. Accompanied by a specialized guide, the outing targets specific species and adapts to your pace and observation goals."
+    "description_one_liner": "This solo birdwatching experience is designed for individual birders seeking focused guidance. Accompanied by a specialized guide, the outing targets specific species and adapts to your pace and observation goals.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW010",
@@ -431,7 +444,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$70.00",
+    "amount_display": "$99.00",
     "min_person": 1,
     "max_person": "1",
     "duration_label": "Half Day",
@@ -441,7 +454,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/tour-promos/MBW010_HDT_Image_Es.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Esta experiencia individual de avistamiento de aves está pensada para observadores que buscan atención personalizada. Con un guía especializado, la salida se enfoca en especies objetivo y técnicas de observación adaptadas al participante."
+    "description_one_liner": "Esta experiencia individual de avistamiento de aves está pensada para observadores que buscan atención personalizada. Con un guía especializado, la salida se enfoca en especies objetivo y técnicas de observación adaptadas al participante.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW011",
@@ -465,7 +479,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting"
+    "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW011",
@@ -489,7 +504,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting"
+    "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW012",
@@ -513,7 +529,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-14-CoffeTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Experience the journey of Ecuadorian coffee during this interactive coffee tour in Mindo. Learn how coffee plants grow in the cloud forest and follow the full process from freshly harvested beans to a brewed cup of coffee. During the experience you will see traditional roasting and grinding methods and enjoy a tasting of locally produced coffee while learnin"
+    "description_one_liner": "Experience the journey of Ecuadorian coffee during this interactive coffee tour in Mindo. Learn how coffee plants grow in the cloud forest and follow the full process from freshly harvested beans to a brewed cup of coffee. During the experience you will see traditional roasting and grinding methods and enjoy a tasting of locally produced coffee while learnin",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW012",
@@ -537,12 +554,13 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-14-CoffeTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Experience the journey of Ecuadorian coffee during this interactive coffee tour in Mindo. Learn how coffee plants grow in the cloud forest and follow the full process from freshly harvested beans to a brewed cup of coffee. During the experience you will see traditional roasting and grinding methods and enjoy a tasting of locally produced coffee while learnin"
+    "description_one_liner": "Experience the journey of Ecuadorian coffee during this interactive coffee tour in Mindo. Learn how coffee plants grow in the cloud forest and follow the full process from freshly harvested beans to a brewed cup of coffee. During the experience you will see traditional roasting and grinding methods and enjoy a tasting of locally produced coffee while learnin",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW013",
     "language": "en",
-    "status": "active",
+    "status": "inactive",
     "tour_title": "Waterfall Hike",
     "service_type": "Nature Excursion",
     "pricing_model": "per_person",
@@ -566,7 +584,7 @@ const TOURS = [
   {
     "tour_code": "MBW013",
     "language": "es",
-    "status": "active",
+    "status": "inactive",
     "tour_title": "Waterfall Hike",
     "service_type": "Nature Excursion",
     "pricing_model": "per_person",
@@ -599,7 +617,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$35.00",
+    "amount_display": "$30.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -609,7 +627,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Experience the thrill of flying above the cloud forest on this exciting canopy ziplining adventure near Mindo. Glide across multiple cables suspended high above the forest and enjoy breathtaking views of the surrounding mountains and jungle. Professional guides provide safety equipment and instructions, making this a fun and accessible adventure for both fir"
+    "description_one_liner": "Experience the thrill of flying above the cloud forest on this exciting canopy ziplining adventure near Mindo. Glide across multiple cables suspended high above the forest and enjoy breathtaking views of the surrounding mountains and jungle. Professional guides provide safety equipment and instructions, making this a fun and accessible adventure for both fir",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW014",
@@ -623,7 +642,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$35.00",
+    "amount_display": "$30.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -633,7 +652,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-18-ZipLining.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Experience the thrill of flying above the cloud forest on this exciting canopy ziplining adventure near Mindo. Glide across multiple cables suspended high above the forest and enjoy breathtaking views of the surrounding mountains and jungle. Professional guides provide safety equipment and instructions, making this a fun and accessible adventure for both fir"
+    "description_one_liner": "Experience the thrill of flying above the cloud forest on this exciting canopy ziplining adventure near Mindo. Glide across multiple cables suspended high above the forest and enjoy breathtaking views of the surrounding mountains and jungle. Professional guides provide safety equipment and instructions, making this a fun and accessible adventure for both fir",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW015",
@@ -647,7 +667,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$15.00",
+    "amount_display": "$10.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -657,7 +677,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-5-ButterflyTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Visit one of Mindo’s beautiful butterfly gardens and observe dozens of colorful species up close. Walk through a peaceful sanctuary where butterflies fly freely while learning about their fascinating life cycle from egg to caterpillar to chrysalis and finally butterfly. This relaxing nature experience offers a wonderful opportunity for photography and a deep"
+    "description_one_liner": "Visit one of Mindo’s beautiful butterfly gardens and observe dozens of colorful species up close. Walk through a peaceful sanctuary where butterflies fly freely while learning about their fascinating life cycle from egg to caterpillar to chrysalis and finally butterfly. This relaxing nature experience offers a wonderful opportunity for photography and a deep",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW015",
@@ -671,7 +692,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$15.00",
+    "amount_display": "$10.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -681,7 +702,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-5-ButterflyTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Visit one of Mindo’s beautiful butterfly gardens and observe dozens of colorful species up close. Walk through a peaceful sanctuary where butterflies fly freely while learning about their fascinating life cycle from egg to caterpillar to chrysalis and finally butterfly. This relaxing nature experience offers a wonderful opportunity for photography and a deep"
+    "description_one_liner": "Visit one of Mindo’s beautiful butterfly gardens and observe dozens of colorful species up close. Walk through a peaceful sanctuary where butterflies fly freely while learning about their fascinating life cycle from egg to caterpillar to chrysalis and finally butterfly. This relaxing nature experience offers a wonderful opportunity for photography and a deep",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW016",
@@ -695,7 +717,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$25.00",
+    "amount_display": "$35.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -705,7 +727,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Discover the cloud forest after dark on this guided night walk in Mindo. As the forest changes at night, many fascinating creatures become active. Walk along forest trails with an experienced guide while searching for frogs, insects, spiders, and other nocturnal wildlife. This experience reveals a completely different side of the cloud forest and its incredi"
+    "description_one_liner": "Discover the cloud forest after dark on this guided night walk in Mindo. As the forest changes at night, many fascinating creatures become active. Walk along forest trails with an experienced guide while searching for frogs, insects, spiders, and other nocturnal wildlife. This experience reveals a completely different side of the cloud forest and its incredi",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW016",
@@ -719,7 +742,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$25.00",
+    "amount_display": "$35.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -729,7 +752,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Discover the cloud forest after dark on this guided night walk in Mindo. As the forest changes at night, many fascinating creatures become active. Walk along forest trails with an experienced guide while searching for frogs, insects, spiders, and other nocturnal wildlife. This experience reveals a completely different side of the cloud forest and its incredi"
+    "description_one_liner": "Discover the cloud forest after dark on this guided night walk in Mindo. As the forest changes at night, many fascinating creatures become active. Walk along forest trails with an experienced guide while searching for frogs, insects, spiders, and other nocturnal wildlife. This experience reveals a completely different side of the cloud forest and its incredi",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW017",
@@ -737,13 +761,13 @@ const TOURS = [
     "status": "active",
     "tour_title": "Half-Day to Full-Day Extension",
     "service_type": "time_extension",
-    "pricing_model": "flat",
+    "pricing_model": "per_person",
     "product_id_live": "prod_UeIg3TO5lJZm2W",
     "price_id_live": "price_1Tw58F0wAAlYwqaV6ShEenfL",
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$25.00",
+    "amount_display": "$50.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -753,7 +777,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Upgrade a qualifying half-day tour by extending the scheduled experience. The final itinerary and additional time are coordinated with the guest."
+    "description_one_liner": "Upgrade a qualifying half-day tour by extending the scheduled experience. The final itinerary and additional time are coordinated with the guest.",
+    "use_inline_price": true
   },
   {
     "tour_code": "MBW017",
@@ -761,13 +786,13 @@ const TOURS = [
     "status": "active",
     "tour_title": "Extensión de Medio Día a Día Completo",
     "service_type": "Tour Upgrade",
-    "pricing_model": "flat",
+    "pricing_model": "per_person",
     "product_id_live": "prod_UeIg3TO5lJZm2W",
     "price_id_live": "price_1Tw58F0wAAlYwqaV6ShEenfL",
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$25.00",
+    "amount_display": "$50.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -777,7 +802,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Mejore un tour de medio día extendiendo la experiencia programada. El itinerario final y el tiempo adicional se coordinan con el pasajero."
+    "description_one_liner": "Mejore un tour de medio día extendiendo la experiencia programada. El itinerario final y el tiempo adicional se coordinan con el pasajero.",
+    "use_inline_price": true
   },
   {
     "tour_code": "TRANS01",
@@ -801,7 +827,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Private one-way transportation from Quito to Mindo. Pickup time and location are coordinated with the guest."
+    "description_one_liner": "Private one-way transportation from Quito to Mindo. Pickup time and location are coordinated with the guest.",
+    "use_inline_price": true
   },
   {
     "tour_code": "TRANS01",
@@ -825,7 +852,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Transporte privado de ida desde Quito hasta Mindo. La hora y el lugar de recogida se coordinan con el pasajero."
+    "description_one_liner": "Transporte privado de ida desde Quito hasta Mindo. La hora y el lugar de recogida se coordinan con el pasajero.",
+    "use_inline_price": true
   },
   {
     "tour_code": "TRANS02",
@@ -849,7 +877,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Private one-way transportation from Mindo to Quito. Pickup time and location are coordinated with the guest."
+    "description_one_liner": "Private one-way transportation from Mindo to Quito. Pickup time and location are coordinated with the guest.",
+    "use_inline_price": true
   },
   {
     "tour_code": "TRANS02",
@@ -873,7 +902,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Transporte privado de ida desde Mindo hasta Quito. La hora y el lugar de recogida se coordinan con el pasajero."
+    "description_one_liner": "Transporte privado de ida desde Mindo hasta Quito. La hora y el lugar de recogida se coordinan con el pasajero.",
+    "use_inline_price": true
   },
   {
     "tour_code": "TRANS06",
@@ -897,7 +927,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Private same-day round-trip transportation from Quito to Mindo and back to Quito. Pickup and return times are coordinated with the guest."
+    "description_one_liner": "Private same-day round-trip transportation from Quito to Mindo and back to Quito. Pickup and return times are coordinated with the guest.",
+    "use_inline_price": true
   },
   {
     "tour_code": "TRANS06",
@@ -921,7 +952,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Transporte privado de ida y vuelta el mismo día desde Quito hasta Mindo y regreso a Quito. Los horarios se coordinan con el pasajero."
+    "description_one_liner": "Transporte privado de ida y vuelta el mismo día desde Quito hasta Mindo y regreso a Quito. Los horarios se coordinan con el pasajero.",
+    "use_inline_price": true
   },
   {
     "tour_code": "DEP001",
@@ -985,7 +1017,7 @@ const TOURS = [
     "currency": "USD",
     "amount_display": "$30.00",
     "min_person": 1,
-    "max_person": "2",
+    "max_person": "unlimited",
     "duration_label": "1 hour 15 minutes",
     "pickup_time_local": "flexible",
     "dropoff_time_local": "flexible",
@@ -993,7 +1025,9 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-8-QuadTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/quad-tour/",
-    "description_one_liner": "Guided quad experience in Mindo with forest roads, scenic sections, and a route designed for a quick adventure block before or after birding. Price is per quad, not per person, and up to two guests may ride on one quad when conditions allow."
+    "description_one_liner": "Guided quad experience in Mindo with forest roads, scenic sections, and a route designed for a quick adventure block before or after birding. Price is per quad, not per person, and up to two guests may ride on one quad when conditions allow.",
+    "use_inline_price": true,
+    "max_guests_per_quad": 2
   },
   {
     "tour_code": "ACT004",
@@ -1009,7 +1043,7 @@ const TOURS = [
     "currency": "USD",
     "amount_display": "$30.00",
     "min_person": 1,
-    "max_person": "2",
+    "max_person": "unlimited",
     "duration_label": "1 hour 15 minutes",
     "pickup_time_local": "flexible",
     "dropoff_time_local": "flexible",
@@ -1017,7 +1051,9 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-8-QuadTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/actividades/tour-en-quad/",
-    "description_one_liner": "Experiencia guiada en cuadrones en Mindo con caminos de bosque, secciones escenicas y una ruta ideal para sumar aventura antes o despues de observar aves. El precio es por cuadron, no por persona, y pueden ir hasta dos personas en un cuadron cuando las condiciones lo permiten."
+    "description_one_liner": "Experiencia guiada en cuadrones en Mindo con caminos de bosque, secciones escenicas y una ruta ideal para sumar aventura antes o despues de observar aves. El precio es por cuadron, no por persona, y pueden ir hasta dos personas en un cuadron cuando las condiciones lo permiten.",
+    "use_inline_price": true,
+    "max_guests_per_quad": 2
   },
   {
     "tour_code": "ACT009",
@@ -1041,7 +1077,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-7-OrchidGardenTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/orchid-garden-tour/",
-    "description_one_liner": "Easy Mindo orchid garden visit focused on native orchids, seasonal blooms, conservation, and relaxed close-up nature observation. A simple add-on for guests who want a calm activity between birding, waterfalls, coffee, chocolate, or butterfly stops."
+    "description_one_liner": "Easy Mindo orchid garden visit focused on native orchids, seasonal blooms, conservation, and relaxed close-up nature observation. A simple add-on for guests who want a calm activity between birding, waterfalls, coffee, chocolate, or butterfly stops.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT009",
@@ -1065,7 +1102,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-7-OrchidGardenTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/actividades/jardin-de-orquideas/",
-    "description_one_liner": "Visita facil a un jardin de orquideas en Mindo enfocada en orquideas nativas, floracion de temporada, conservacion y observacion tranquila de naturaleza. Buena actividad para combinar con aves, cascadas, cafe, chocolate o mariposas."
+    "description_one_liner": "Visita facil a un jardin de orquideas en Mindo enfocada en orquideas nativas, floracion de temporada, conservacion y observacion tranquila de naturaleza. Buena actividad para combinar con aves, cascadas, cafe, chocolate o mariposas.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT010",
@@ -1089,7 +1127,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "Experience the “frog concert” in Mindo’s cloud forest at night!  This 2-hour guided tour reveals frogs, insects, and maybe even sleeping birds — all accompanied by the magical symphony of the forest."
+    "description_one_liner": "Experience the “frog concert” in Mindo’s cloud forest at night!  This 2-hour guided tour reveals frogs, insects, and maybe even sleeping birds — all accompanied by the magical symphony of the forest.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT010",
@@ -1113,7 +1152,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
-    "description_one_liner": "¡Vive el “concierto de ranas” en el bosque nublado de Mindo por la noche!  Este recorrido guiado de 2 horas revela ranas, insectos y hasta aves dormidas, todo acompañado por la mágica sinfonía del bosque."
+    "description_one_liner": "¡Vive el “concierto de ranas” en el bosque nublado de Mindo por la noche!  Este recorrido guiado de 2 horas revela ranas, insectos y hasta aves dormidas, todo acompañado por la mágica sinfonía del bosque.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT011",
@@ -1121,13 +1161,13 @@ const TOURS = [
     "status": "active",
     "tour_title": "Mindo River Tubing",
     "service_type": "guided_activity",
-    "pricing_model": "group_minimum",
+    "pricing_model": "per_person",
     "product_id_live": "prod_V4F8G5SR9ZVpT0",
     "price_id_live": "price_1U46e40wAAlYwqaV60gnPlyY",
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$40.00",
+    "amount_display": "$10.00",
     "min_person": 4,
     "max_person": "12",
     "duration_label": "30 min",
@@ -1137,7 +1177,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-19-Tubing.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/tubing/",
-    "description_one_liner": "Guided tubing descent on the Mindo River with specialized local guides and safety support. This is an active water activity and a good adventure add-on when river and weather conditions are appropriate. Group minimum pricing applies."
+    "description_one_liner": "Guided tubing descent on the Mindo River with specialized local guides and safety support. This is an active water activity and a good adventure add-on when river and weather conditions are appropriate. Group minimum pricing applies.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT011",
@@ -1145,13 +1186,13 @@ const TOURS = [
     "status": "active",
     "tour_title": "Tubing en el Rio Mindo",
     "service_type": "actividad_guiada",
-    "pricing_model": "group_minimum",
+    "pricing_model": "per_person",
     "product_id_live": "prod_V4F8G5SR9ZVpT0",
     "price_id_live": "price_1U46e40wAAlYwqaV60gnPlyY",
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$40.00",
+    "amount_display": "$10.00",
     "min_person": 4,
     "max_person": "12",
     "duration_label": "30 min",
@@ -1161,7 +1202,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-19-Tubing.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/actividades/tubing/",
-    "description_one_liner": "Descenso guiado en tubing por el Rio Mindo con guias locales especializados y apoyo de seguridad. Es una actividad activa de agua y una buena opcion de aventura cuando las condiciones del rio y clima lo permiten. Aplica precio minimo de grupo."
+    "description_one_liner": "Descenso guiado en tubing por el Rio Mindo con guias locales especializados y apoyo de seguridad. Es una actividad activa de agua y una buena opcion de aventura cuando las condiciones del rio y clima lo permiten. Aplica precio minimo de grupo.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT013",
@@ -1185,7 +1227,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-16-Canyoning.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/canyoning/",
-    "description_one_liner": "Guided canyoning adventure near Mindo with waterfall descent, specialized guides, safety equipment, and local coordination. Best for active guests who want a stronger adventure block around the cloud forest."
+    "description_one_liner": "Guided canyoning adventure near Mindo with waterfall descent, specialized guides, safety equipment, and local coordination. Best for active guests who want a stronger adventure block around the cloud forest.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT013",
@@ -1209,7 +1252,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-16-Canyoning.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/actividades/canyoning/",
-    "description_one_liner": "Aventura guiada de canyoning cerca de Mindo con descenso de cascada, guias especializados, equipo de seguridad y coordinacion local. Ideal para visitantes activos que buscan una experiencia de aventura mas fuerte en el bosque nublado."
+    "description_one_liner": "Aventura guiada de canyoning cerca de Mindo con descenso de cascada, guias especializados, equipo de seguridad y coordinacion local. Ideal para visitantes activos que buscan una experiencia de aventura mas fuerte en el bosque nublado.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT015",
@@ -1233,7 +1277,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-10-PaintBall.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/paintball/",
-    "description_one_liner": "Forest paintball activity in Mindo for friends, families, and groups who want a playful adventure add-on. Includes standard equipment and local coordination; best as a social activity after birding or on a flexible activity day."
+    "description_one_liner": "Forest paintball activity in Mindo for friends, families, and groups who want a playful adventure add-on. Includes standard equipment and local coordination; best as a social activity after birding or on a flexible activity day.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT015",
@@ -1257,7 +1302,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-10-PaintBall.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/actividades/paintball/",
-    "description_one_liner": "Actividad de paintball en bosque en Mindo para amigos, familias y grupos que buscan una opcion divertida de aventura. Incluye equipo estandar y coordinacion local; ideal despues de aves o en un dia flexible de actividades."
+    "description_one_liner": "Actividad de paintball en bosque en Mindo para amigos, familias y grupos que buscan una opcion divertida de aventura. Incluye equipo estandar y coordinacion local; ideal despues de aves o en un dia flexible de actividades.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT016",
@@ -1273,7 +1319,7 @@ const TOURS = [
     "currency": "USD",
     "amount_display": "$25.00",
     "min_person": 1,
-    "max_person": "unlimited",
+    "max_person": 3,
     "duration_label": "1 hour base",
     "pickup_time_local": "flexible",
     "dropoff_time_local": "flexible",
@@ -1281,13 +1327,14 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-11-HorsebackRiding.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/horseback-riding/",
-    "description_one_liner": "Guided one-hour horseback ride through Mindo's cloud forest, priced per person. Longer rides require a confirmed price adjustment."
+    "description_one_liner": "Guided one-hour horseback ride through Mindo's cloud forest, priced per person. Longer rides require a confirmed price adjustment.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT017",
     "language": "en",
     "status": "active",
-    "tour_title": "Mountain Biking",
+    "tour_title": "Mountain Biking - 2-hour Route",
     "service_type": "guided_activity",
     "pricing_model": "per_person",
     "product_id_live": "prod_VHISKIAPc1ibr9",
@@ -1295,7 +1342,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$10.00",
+    "amount_display": "$20.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Route dependent",
@@ -1305,7 +1352,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mountain-biking/act_mountain_biking_01.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/mountain-biking/",
-    "description_one_liner": "Invoice only. Add $10 per person for the 2-hour, 4 km route ($20 final), or add $40 per person for the 10 km cable-car and waterfalls route ($50 final). Butterfly Garden must be added separately as MBW015."
+    "description_one_liner": "2-hour guided route, approximately 4 km. $20 per person. Optional Butterfly Garden admission is a separate $10.00 per-person add-on.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT021",
@@ -1313,7 +1361,7 @@ const TOURS = [
     "status": "active",
     "tour_title": "Private Insect & Macro Wildlife Search",
     "service_type": "private_macro_wildlife_search",
-    "pricing_model": "per_private_session",
+    "pricing_model": "per_person",
     "product_id_live": "prod_V4D9GtgfNCW644",
     "price_id_live": "price_1U44jU0wAAlYwqaV6L448Guc",
     "product_id_test": null,
@@ -1329,7 +1377,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-21-Insect-Macro-Wildlife-green.png",
     "tour_page_url": "https://mindobirdwatching.com/activities/private-insect-macro-wildlife-search/",
-    "description_one_liner": "Private custom wildlife experience in Mindo focused on insects and macro wildlife such as beetles, moths, mantids, butterflies, katydids, spiders, and other small forest life. Timing and locations are selected around the guest target species, season, recent activity, weather, access, and field conditions. Includes expert guide, transportation from Mindo, res"
+    "description_one_liner": "Private insect and macro wildlife search. $110 per person per private session. Confirm session count, timing and target species with staff. Sightings are not guaranteed.",
+    "use_inline_price": true
   },
   {
     "tour_code": "ACT021",
@@ -1337,7 +1386,7 @@ const TOURS = [
     "status": "active",
     "tour_title": "Busqueda Privada de Insectos y Macrofauna",
     "service_type": "busqueda_privada_macrofauna",
-    "pricing_model": "per_private_session",
+    "pricing_model": "per_person",
     "product_id_live": "prod_V4D9GtgfNCW644",
     "price_id_live": "price_1U44jU0wAAlYwqaV6L448Guc",
     "product_id_test": null,
@@ -1353,7 +1402,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-21-Insect-Macro-Wildlife-green.png",
     "tour_page_url": "https://mindobirdwatching.com/es/actividades/busqueda-privada-insectos-macrofauna/",
-    "description_one_liner": "Experiencia privada y personalizada de fauna en Mindo enfocada en insectos y macrofauna como escarabajos, polillas, mantis, mariposas, grillos, aranas y otra vida pequena del bosque. El horario y los lugares se eligen segun las especies objetivo, temporada, actividad reciente, clima, acceso y condiciones de campo. Incluye guia experto, transporte desde Mindo"
+    "description_one_liner": "Private insect and macro wildlife search. $110 per person per private session. Confirm session count, timing and target species with staff. Sightings are not guaranteed.",
+    "use_inline_price": true
   },
   {
     "tour_code": "OSO001",
@@ -1367,7 +1417,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$125.00",
+    "amount_display": "$150.00",
     "min_person": 2,
     "max_person": "8",
     "duration_label": "Extended Half Day",
@@ -1377,7 +1427,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_img_03.jpg",
     "tour_page_url": "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/",
-    "description_one_liner": "Private morning wildlife tour focused on searching for spectacled bears in Antisana or Cayambe-Coca. The route is selected according to recent wildlife activity, weather, access, and field conditions. Includes private guide, transportation, binoculars, and spotting scope."
+    "description_one_liner": "Private morning wildlife tour focused on searching for spectacled bears in Antisana or Cayambe-Coca. The route is selected according to recent wildlife activity, weather, access, and field conditions. Includes private guide, transportation, binoculars, and spotting scope.",
+    "use_inline_price": true
   },
   {
     "tour_code": "OSO001",
@@ -1391,7 +1442,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$125.00",
+    "amount_display": "$150.00",
     "min_person": 2,
     "max_person": "8",
     "duration_label": "Extended Half Day",
@@ -1401,7 +1452,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_img_03.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/tours/tour-oso-de-anteojos-ecuador/",
-    "description_one_liner": "Tour privado matutino enfocado en la búsqueda del oso de anteojos en Antisana o Cayambe-Coca. La ruta se selecciona según la actividad reciente de la fauna, el clima, el acceso y las condiciones de campo. Incluye guía privado, transporte, binoculares y telescopio."
+    "description_one_liner": "Tour privado matutino enfocado en la búsqueda del oso de anteojos en Antisana o Cayambe-Coca. La ruta se selecciona según la actividad reciente de la fauna, el clima, el acceso y las condiciones de campo. Incluye guía privado, transporte, binoculares y telescopio.",
+    "use_inline_price": true
   },
   {
     "tour_code": "OSO002",
@@ -1415,7 +1467,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$175.00",
+    "amount_display": "$200.00",
     "min_person": 2,
     "max_person": "8",
     "duration_label": "Full Day",
@@ -1425,7 +1477,8 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_hero_01.jpg",
     "tour_page_url": "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/",
-    "description_one_liner": "Full-day private Spectacled Bear expedition through Ecuador's high Andes. Starting at 6:00 AM, the guide selects the most promising route between Antisana and Cayambe-Coca using recent wildlife reports and current conditions. Along the way, guests may observe Spectacled Bears, Andean Condors, hummingbirds, deer, and other mountain wildlife. Includes certifie"
+    "description_one_liner": "Full-day private Spectacled Bear expedition through Ecuador's high Andes. Starting at 6:00 AM, the guide selects the most promising route between Antisana and Cayambe-Coca using recent wildlife reports and current conditions. Along the way, guests may observe Spectacled Bears, Andean Condors, hummingbirds, deer, and other mountain wildlife. Includes certifie",
+    "use_inline_price": true
   },
   {
     "tour_code": "OSO002",
@@ -1439,7 +1492,7 @@ const TOURS = [
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$175.00",
+    "amount_display": "$200.00",
     "min_person": 2,
     "max_person": "8",
     "duration_label": "Full Day",
@@ -1449,7 +1502,458 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/tours/osos/mbw_osos_hero_01.jpg",
     "tour_page_url": "https://mindobirdwatching.com/es/tours/tour-oso-de-anteojos-ecuador/",
-    "description_one_liner": "Expedición privada de día completo para observar el Oso de Anteojos en los Andes del Ecuador. Desde las 6:00 AM, el guía selecciona la ruta más prometedora entre Antisana y Cayambe-Coca según reportes recientes y condiciones actuales. Durante el recorrido es posible observar osos de anteojos, cóndores andinos, colibríes, venados y otra fauna de montaña. Incl"
+    "description_one_liner": "Expedición privada de día completo para observar el Oso de Anteojos en los Andes del Ecuador. Desde las 6:00 AM, el guía selecciona la ruta más prometedora entre Antisana y Cayambe-Coca según reportes recientes y condiciones actuales. Durante el recorrido es posible observar osos de anteojos, cóndores andinos, colibríes, venados y otra fauna de montaña. Incl",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "MBW002",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Cloud Forest Icons Tour",
+    "service_type": "Birdwatching",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$70.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/tours/",
+    "description_one_liner": "Cloud Forest Icons Tour. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "MBW002",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Cloud Forest Icons Tour",
+    "service_type": "Birdwatching",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$70.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/tours/",
+    "description_one_liner": "Cloud Forest Icons Tour. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT003",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Nambillo Waterfall",
+    "service_type": "Nature Excursion",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_U6E6B7qgd4L77T",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$10.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Nambillo Waterfall: $10 per person, admission and transportation included.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT003",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Cascada Nambillo",
+    "service_type": "Nature Excursion",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_U6E6B7qgd4L77T",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$10.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Nambillo Waterfall: $10 per person, admission and transportation included.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT016",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Paseo a Caballo",
+    "service_type": "guided_activity",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VCSiUn8BZ8z2yu",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$25.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Paseo a Caballo. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT017",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Ciclismo",
+    "service_type": "guided_activity",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VHISKIAPc1ibr9",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$20.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Ciclismo. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT018",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Double Extreme Swing",
+    "service_type": "Adventure",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$25.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Double Extreme Swing. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT018",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Columpio Extremo Doble",
+    "service_type": "Adventure",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$25.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Columpio Extremo Doble. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT019",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Extreme Bike – Sky Bike",
+    "service_type": "Adventure",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$20.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Extreme Bike – Sky Bike. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT019",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Bicicleta Extrema - Sky Bike",
+    "service_type": "Adventure",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$20.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Bicicleta Extrema - Sky Bike. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT020",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Sky Ride",
+    "service_type": "Adventure",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$15.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Sky Ride. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT020",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Sky Ride",
+    "service_type": "Adventure",
+    "pricing_model": "per_person",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$15.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Sky Ride. Confirm availability and final itinerary with staff.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "TRANS05",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Custom",
+    "service_type": "Transportation",
+    "pricing_model": "flat",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/tours/",
+    "description_one_liner": "Custom transportation: $50 base per booking. Staff must confirm route and final quote before payment.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "TRANS05",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Custom",
+    "service_type": "Transportation",
+    "pricing_model": "flat",
+    "product_id_live": null,
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/tours/",
+    "description_one_liner": "Custom transportation: $50 base per booking. Staff must confirm route and final quote before payment.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT017-R2",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Mountain Biking - Cable Car and Waterfalls Route",
+    "service_type": "guided_activity",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VHISKIAPc1ibr9",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Mountain Biking cable car and waterfalls route: $50 per person; 10 km round trip, cable car and two waterfalls included.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT017-R2",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Ciclismo - Ruta del Teleférico y Cascadas",
+    "service_type": "guided_activity",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VHISKIAPc1ibr9",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Mountain Biking cable car and waterfalls route: $50 per person; 10 km round trip, cable car and two waterfalls included.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT017-BF",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Mountain Biking - Optional Butterfly Garden Admission",
+    "service_type": "guided_activity",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_U6EC5jW6ndT675",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$10.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Optional Butterfly Garden admission with the $20 Mountain Biking route: $10.00 per person.",
+    "use_inline_price": true
+  },
+  {
+    "tour_code": "ACT017-BF",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Ciclismo - Entrada Opcional al Mariposario",
+    "service_type": "guided_activity",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_U6EC5jW6ndT675",
+    "price_id_live": null,
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$10.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Staff confirmed itinerary",
+    "pickup_time_local": "",
+    "dropoff_time_local": "",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "https://mindobirdwatching.com/activities/",
+    "description_one_liner": "Optional Butterfly Garden admission with the $20 Mountain Biking route: $10.00 per person.",
+    "use_inline_price": true
   }
 ];
 
@@ -1519,15 +2023,22 @@ function findTour(tour_code, language) {
 }
 
 function isFlatPriced(tour) {
-  return String(tour && tour.pricing_model || "per_person").toLowerCase() === "flat";
+  return ["flat", "flat_amount"].includes(String(tour && tour.pricing_model || "per_person").toLowerCase());
 }
 
-function stripeLineQuantity(tour, numberOfPeople) {
+function stripeLineQuantity(tour, numberOfPeople, quadCount) {
+  if (tour && tour.pricing_model === "per_quad") return requiredInt(quadCount, "quad_count");
   return isFlatPriced(tour) ? 1 : numberOfPeople;
 }
 
-function calculatedLineTotalCents(tour, unitAmountCents, numberOfPeople) {
-  return unitAmountCents * stripeLineQuantity(tour, numberOfPeople);
+function validatedQuadCount(tour, guests, rawCount) {
+  const count = requiredInt(rawCount, "quad_count");
+  if (Number(tour.max_guests_per_quad) > 0 && guests > count * Number(tour.max_guests_per_quad)) throw new Error("Guest count exceeds the capacity of the selected quads.");
+  return count;
+}
+
+function calculatedLineTotalCents(tour, unitAmountCents, numberOfPeople, quadCount) {
+  return unitAmountCents * stripeLineQuantity(tour, numberOfPeople, quadCount);
 }
 
 function getStripeKey(env, isTest) {
@@ -1542,12 +2053,12 @@ function parseAmountDisplayToCents(amountDisplay) {
   return Math.round(n * 100);
 }
 
-function optionalWholeDollarAmount(v) {
+function optionalWholeDollarAmount(v, allowSigned = false) {
   if (v === undefined || v === null || v === "") return null;
 
   const n = Number(v);
-  if (!Number.isFinite(n) || !Number.isInteger(n) || n <= 0) {
-    throw new Error("Invalid price_override_per_person. Use a whole-dollar amount greater than 0.");
+  if (!Number.isFinite(n) || !Number.isInteger(n) || (!allowSigned && n <= 0)) {
+    throw new Error(allowSigned ? "Invalid price adjustment. Use a whole-dollar amount." : "Invalid final price. Use a whole-dollar amount greater than 0.");
   }
 
   return n;
@@ -2359,7 +2870,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v39-multi-invoice-ledger-2026-10-03", 200);
+      return text("MBW Stripe Worker is running. version=v40-approved-pricing-2026-10-05", 200);
     }
 
     if (path === "/api/tours" && request.method === "GET") {
@@ -2380,6 +2891,7 @@ export default {
         description_one_liner: t.description_one_liner,
         min_person: t.min_person,
         max_person: t.max_person,
+        max_guests_per_quad: t.max_guests_per_quad || null,
       }));
       return new Response(JSON.stringify({ ok: true, tours }, null, 2), {
         status: 200,
@@ -2625,12 +3137,12 @@ export default {
         const isTest = stripeEnv !== "live";
         const tour = findTour(tour_code, language);
         if (!tour) throw new Error("Tour not found for selected language");
-        if (tour.tour_code === "ACT017") {
-          throw new Error("Mountain Biking requires Send Invoice with a +$10 or +$40 per-person price adjustment. Butterfly Garden must be added as a separate MBW015 item.");
-        }
+        const quad_count = tour.pricing_model === "per_quad" ? validatedQuadCount(tour, number_of_people, body.quad_count) : null;
+        if (Number(tour.max_person) > 0 && number_of_people > Number(tour.max_person)) throw new Error(`Maximum ${tour.max_person} people allowed`);
 
         const ids = resolveTourIdsStrict(tour, isTest);
-        if (!ids.price_id) throw new Error("Tour price_id is not configured for this environment");
+        if (!ids.product_id) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
+        if (!tour.use_inline_price && !ids.price_id) throw new Error("Tour price_id is not configured for this environment");
         if (!ids.product_id) throw new Error("Tour product_id is not configured for this environment");
         if (tour.min_person && number_of_people < Number(tour.min_person)) throw new Error(`Minimum ${tour.min_person} people required`);
 
@@ -2656,8 +3168,14 @@ export default {
         form.set("mode", "payment");
         form.set("success_url", successUrl);
         form.set("cancel_url", cancelUrl);
-        form.set("line_items[0][price]", ids.price_id);
-        form.set("line_items[0][quantity]", String(stripeLineQuantity(tour, number_of_people)));
+        if (tour.use_inline_price) {
+          form.set("line_items[0][price_data][currency]", String(tour.currency || "USD").toLowerCase());
+          form.set("line_items[0][price_data][product]", ids.product_id);
+          form.set("line_items[0][price_data][unit_amount]", String(parseAmountDisplayToCents(tour.amount_display)));
+        } else {
+          form.set("line_items[0][price]", ids.price_id);
+        }
+        form.set("line_items[0][quantity]", String(stripeLineQuantity(tour, number_of_people, quad_count)));
         form.set("customer_email", main_email);
         form.set("payment_intent_data[receipt_email]", main_email);
         form.set("client_reference_id", `${tour_code}-${tour_date}-${main_email}`);
@@ -2669,8 +3187,9 @@ export default {
           service_type: tour.service_type || "",
           pricing_model: tour.pricing_model || "per_person",
           product_id: ids.product_id,
-          price_id: ids.price_id,
+          price_id: tour.use_inline_price ? "" : ids.price_id,
           number_of_people: String(number_of_people),
+          quad_count: quad_count === null ? "" : String(quad_count),
           main_contact_name: main_name,
           main_contact_email: main_email,
           main_contact_phone: main_phone,
@@ -2735,7 +3254,7 @@ export default {
             tour_date,
             language,
             quantity: String(number_of_people),
-            amount_cents: calculatedLineTotalCents(tour, parseAmountDisplayToCents(tour.amount_display), number_of_people),
+            amount_cents: calculatedLineTotalCents(tour, parseAmountDisplayToCents(tour.amount_display), number_of_people, quad_count),
             currency: tour.currency || "USD",
             service_type: tour.service_type || "",
           }]);
@@ -2796,7 +3315,7 @@ export default {
         const dueDaysRaw = body.invoice_due_days != null ? Number(body.invoice_due_days) : 1;
         const invoice_due_days = Number.isFinite(dueDaysRaw) && dueDaysRaw > 0 ? Math.floor(dueDaysRaw) : 1;
         const price_override_per_person = optionalWholeDollarAmount(body.price_override_per_person);
-        const price_adjustment_per_person = optionalWholeDollarAmount(body.price_adjustment_per_person);
+        const price_adjustment_per_person = optionalWholeDollarAmount(body.price_adjustment_per_person, true);
         const pricing_reason = optionalString(body.pricing_reason);
         const pricing_notes = optionalString(body.pricing_notes);
         const inquiry_id = validInternalId(body.inquiry_id, "INQ");
@@ -2815,12 +3334,12 @@ export default {
         const isTest = stripeEnv !== "live";
         const tour = findTour(tour_code, language);
         if (!tour) throw new Error("Tour not found for selected language");
-        if (tour.tour_code === "ACT017" && price_override_per_person !== 20 && price_override_per_person !== 50) {
-          throw new Error("Mountain Biking requires a final per-person invoice price of $20 or $50. Butterfly Garden must be billed separately as MBW015.");
-        }
+        const quad_count = tour.pricing_model === "per_quad" ? validatedQuadCount(tour, number_of_people, body.quad_count) : null;
+        if (Number(tour.max_person) > 0 && number_of_people > Number(tour.max_person)) throw new Error(`Maximum ${tour.max_person} people allowed`);
         const deposit = await validateDepositForInvoice(env, isTest, deposit_payment_intent_id, inquiry_id, tour.currency || "USD");
 
         const ids = resolveTourIdsStrict(tour, isTest);
+        if (!ids.product_id) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
         const minimumPartySize = Number(tour.min_person || 0);
         const isBelowMinimum = Boolean(minimumPartySize && number_of_people < minimumPartySize);
         if (isBelowMinimum && !minimum_party_override) {
@@ -2836,14 +3355,15 @@ export default {
           : null;
         const invoiceUnitAmountCents = overridePriceCents !== null ? overridePriceCents : standardPriceCents;
         const priceAdjustmentCents = overridePriceCents !== null
-          ? Math.max(0, overridePriceCents - standardPriceCents)
+          ? overridePriceCents - standardPriceCents
           : 0;
         const providedAdjustmentCents = price_adjustment_per_person !== null
           ? Math.round(price_adjustment_per_person * 100)
           : priceAdjustmentCents;
+        if (providedAdjustmentCents !== priceAdjustmentCents) throw new Error("Price adjustment does not match the standard and final price.");
 
         if (!invoiceUnitAmountCents) throw new Error("Unable to resolve invoice unit amount.");
-        const expectedInvoiceCents = calculatedLineTotalCents(tour, invoiceUnitAmountCents, number_of_people);
+        const expectedInvoiceCents = calculatedLineTotalCents(tour, invoiceUnitAmountCents, number_of_people, quad_count);
         if (deposit && Number(deposit.amount_received || deposit.amount || 0) > expectedInvoiceCents) {
           throw new Error("Deposit exceeds the invoice amount. Review this booking manually.");
         }
@@ -2855,8 +3375,9 @@ export default {
           service_type: tour.service_type || "",
           pricing_model: tour.pricing_model || "per_person",
           product_id: ids.product_id,
-          price_id: ids.price_id,
+          price_id: tour.use_inline_price ? "" : ids.price_id,
           number_of_people: String(number_of_people),
+          quad_count: quad_count === null ? "" : String(quad_count),
           main_contact_name: main_name,
           main_contact_email: main_email,
           main_contact_phone: main_phone,
@@ -2914,12 +3435,12 @@ export default {
 
         const itemForm = new URLSearchParams();
         itemForm.set("customer", customer.id);
-        if (overridePriceCents !== null || !ids.price_id) {
+        if (tour.use_inline_price || overridePriceCents !== null || !ids.price_id) {
           await setInvoiceItemPriceData(env, isTest, itemForm, { tour, tour_code, ids }, invoiceUnitAmountCents);
         } else {
           itemForm.set("pricing[price]", ids.price_id);
         }
-        itemForm.set("quantity", String(stripeLineQuantity(tour, number_of_people)));
+        itemForm.set("quantity", String(stripeLineQuantity(tour, number_of_people, quad_count)));
         itemForm.set("description", `${tour_code} ${tour.tour_title} (${number_of_people} pax) ${tour_date}`);
         Object.keys(md).forEach((k) => {
           const v = md[k];
@@ -3092,7 +3613,7 @@ export default {
           const tour_date = requiredString(raw.tour_date, `items[${index}].tour_date`);
           const item_notes = optionalString(raw.item_notes);
           const price_override_per_person = optionalWholeDollarAmount(raw.price_override_per_person);
-          const price_adjustment_per_person = optionalWholeDollarAmount(raw.price_adjustment_per_person);
+          const price_adjustment_per_person = optionalWholeDollarAmount(raw.price_adjustment_per_person, true);
           const pricing_reason = optionalString(raw.pricing_reason);
           const pricing_notes = optionalString(raw.pricing_notes);
           if (price_override_per_person !== null && !pricing_reason) {
@@ -3101,11 +3622,11 @@ export default {
 
           const tour = findTour(tour_code, language);
           if (!tour) throw new Error(`Tour not found for item ${index + 1}`);
-          if (tour.tour_code === "ACT017" && price_override_per_person !== 20 && price_override_per_person !== 50) {
-            throw new Error(`Item ${index + 1}: Mountain Biking requires a final per-person invoice price of $20 or $50. Butterfly Garden must be a separate MBW015 item.`);
-          }
 
           const ids = resolveTourIdsStrict(tour, isTest);
+        if (!ids.product_id) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
+          const quad_count = tour.pricing_model === "per_quad" ? validatedQuadCount(tour, quantity, raw.quad_count) : null;
+          if (Number(tour.max_person) > 0 && quantity > Number(tour.max_person)) throw new Error(`Item ${index + 1}: maximum ${tour.max_person} people allowed`);
           const minimumPartySize = Number(tour.min_person || 0);
           const isBelowMinimum = Boolean(minimumPartySize && quantity < minimumPartySize);
           if (isBelowMinimum && !minimum_party_override) {
@@ -3121,11 +3642,12 @@ export default {
             : null;
           const unitAmountCents = overridePriceCents !== null ? overridePriceCents : standardPriceCents;
           const priceAdjustmentCents = overridePriceCents !== null
-            ? Math.max(0, overridePriceCents - standardPriceCents)
+            ? overridePriceCents - standardPriceCents
             : 0;
           const providedAdjustmentCents = price_adjustment_per_person !== null
             ? Math.round(price_adjustment_per_person * 100)
             : priceAdjustmentCents;
+          if (providedAdjustmentCents !== priceAdjustmentCents) throw new Error(`Item ${index + 1}: price adjustment does not match the standard and final price.`);
 
           if (!unitAmountCents) throw new Error(`Item ${index + 1}: unable to resolve invoice unit amount.`);
 
@@ -3134,6 +3656,7 @@ export default {
             language,
             tour_code,
             quantity,
+            quad_count,
             tour_date,
             item_notes,
             tour,
@@ -3161,7 +3684,7 @@ export default {
         }
         const deposit = await validateDepositForInvoice(env, isTest, deposit_payment_intent_id, inquiry_id, invoiceCurrency);
         const expectedInvoiceCents = normalizedItems.reduce(
-          (sum, item) => sum + calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity),
+          (sum, item) => sum + calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
           0,
         );
         if (deposit && Number(deposit.amount_received || deposit.amount || 0) > expectedInvoiceCents) {
@@ -3222,8 +3745,9 @@ export default {
             service_type: item.tour.service_type || "",
             pricing_model: item.tour.pricing_model || "per_person",
             product_id: item.ids.product_id,
-            price_id: item.ids.price_id,
+            price_id: item.tour.use_inline_price ? "" : item.ids.price_id,
             number_of_people: String(item.quantity),
+            quad_count: item.quad_count === null ? "" : String(item.quad_count),
             main_contact_name: main_name,
             main_contact_email: main_email,
             main_contact_phone: main_phone,
@@ -3256,12 +3780,12 @@ export default {
 
           const itemForm = new URLSearchParams();
           itemForm.set("customer", customer.id);
-          if (item.overridePriceCents !== null || !item.ids.price_id) {
+          if (item.tour.use_inline_price || item.overridePriceCents !== null || !item.ids.price_id) {
             await setInvoiceItemPriceData(env, isTest, itemForm, item, item.unitAmountCents);
           } else {
             itemForm.set("pricing[price]", item.ids.price_id);
           }
-          itemForm.set("quantity", String(stripeLineQuantity(item.tour, item.quantity)));
+          itemForm.set("quantity", String(stripeLineQuantity(item.tour, item.quantity, item.quad_count)));
           const descriptionBase = `${item.tour_code} ${item.tour.tour_title} (${item.quantity} pax) ${item.tour_date}`;
           itemForm.set("description", item.item_notes ? `${descriptionBase} | Notes: ${item.item_notes}` : descriptionBase);
           Object.keys(lineMd).forEach((k) => {
@@ -3358,7 +3882,7 @@ export default {
             tour_date: item.tour_date,
             language: item.language,
             quantity: String(item.quantity),
-            amount_cents: calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity),
+            amount_cents: calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
             currency: item.tour.currency || "USD",
             service_type: item.tour.service_type || "",
           })));
@@ -3852,7 +4376,7 @@ export default {
                   const lineMd = line.metadata || {};
                   const linePriceId = lineMd.price_id || (line.price && line.price.id ? line.price.id : line.pricing && line.pricing.price_details && line.pricing.price_details.price ? line.pricing.price_details.price : "");
                   const lineProductId = lineMd.product_id || (line.price && line.price.product ? line.price.product : line.pricing && line.pricing.price_details && line.pricing.price_details.product ? line.pricing.price_details.product : "");
-                  const lineQty = line.quantity != null ? String(line.quantity) : lineMd.number_of_people || "";
+                  const lineQty = lineMd.number_of_people || (line.quantity != null ? String(line.quantity) : "");
                   const lineAmountCents = Number(line.amount || 0);
                   const feeCents = feeSplitsCents[i] || 0;
                   const itemIndex = lineMd.item_index || String(i + 1);
