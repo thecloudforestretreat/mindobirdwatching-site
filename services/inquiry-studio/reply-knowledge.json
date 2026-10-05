@@ -1,11 +1,16 @@
 {
-  "version": 1,
+  "version": 2,
   "reviewed_at": "2026-10-05",
   "source_review": {
     "crm_records": 130,
     "records_with_question_text": 74,
     "method": "Overlapping keyword categories, not demand totals. No guest identifiers or text retained.",
-    "sent_mail": "Mindo mailbox not connected; prior REPLY-STYLE.md is provisional."
+    "sent_mail": {
+      "method": "Owner-supplied labeled Gmail Takeout reviewed for tone and response structure only. Quoted histories and repeated content are not independent examples.",
+      "messages": 89,
+      "messages_from_mindo_mailbox": 22,
+      "retained": "Anonymized editorial patterns only; no raw messages, guest details, attachments, historical prices or booking promises."
+    }
   },
   "topic_counts": {
     "tour_selection": 61,
@@ -25,7 +30,132 @@
     "For photography, ask about photographic interests if missing; do not promise species or conditions.",
     "Use live Staff Info references for prices, inclusions and policies, never historical quotes.",
     "Booking details require a linked CRM record; conversation claims are not verified booking data.",
-    "Ask one useful follow-up question only when needed. Never assert availability or confirmation."
+    "Ask one useful follow-up question only when needed. Never assert availability or confirmation.",
+    "Short WhatsApp replies should answer directly in one to three concise sentences; detailed replies may add brief relevant bullets. Do not reproduce the email footer or all tour cards.",
+    "Preserve the practical, personal tone of the reviewed replies; correct spelling and avoid canned sales language.",
+    "A fixed-schedule tour does not require a preferred start-time question. Ask for the tour date only when missing.",
+    "For custom birding, prioritize target species and photography interests over a generic list of reserves. Route planning still requires staff review.",
+    "Never generalize historical pickup times, driver waiting arrangements, hiking difficulty, payment deadlines or group availability.",
+    "If asked about an unverified booking or payment, offer staff review rather than claim it has already been checked."
   ],
-  "automatic_sending": false
+  "automatic_sending": false,
+  "patterns": [
+    {
+      "id": "tour_selection",
+      "keywords": [
+        "tour",
+        "birding",
+        "birdwatching",
+        "opciones",
+        "excursión"
+      ],
+      "guidance": "Acknowledge the guest’s available time and interests; use the selected live reference. Ask only for missing trip details.",
+      "example_en": "Thanks for reaching out. I can help you compare the options for your visit.",
+      "example_es": "Gracias por escribirnos. Te puedo ayudar a comparar las opciones para tu visita."
+    },
+    {
+      "id": "transportation",
+      "keywords": [
+        "transport",
+        "pickup",
+        "pick-up",
+        "quito",
+        "airport",
+        "transporte",
+        "recogida"
+      ],
+      "guidance": "Clarify missing exact pickup and drop-off locations and, when relevant, luggage. Never promise a departure time, vehicle or extra waiting.",
+      "example_en": "Could you share your pickup and drop-off locations so we can review the transport arrangements?",
+      "example_es": "¿Nos compartes los lugares de recogida y llegada para revisar el transporte?"
+    },
+    {
+      "id": "solo_private",
+      "keywords": [
+        "solo",
+        "private",
+        "group",
+        "alone",
+        "privado",
+        "grupo"
+      ],
+      "guidance": "Clarify the guest’s preference; do not promise a group match or invent a private surcharge.",
+      "example_en": "Would you prefer a private guide, or would you like us to check options for joining a group?",
+      "example_es": "¿Prefieres un guía privado o quieres que revisemos opciones para unirte a un grupo?"
+    },
+    {
+      "id": "photography_targets",
+      "keywords": [
+        "photo",
+        "target",
+        "species",
+        "foto",
+        "especies"
+      ],
+      "guidance": "Ask about target birds or photographic interests if absent. No species sightings or route guarantees.",
+      "example_en": "Do you have any target birds or photography interests you would like us to consider?",
+      "example_es": "¿Tienes aves objetivo o intereses de fotografía que quieras que tomemos en cuenta?"
+    },
+    {
+      "id": "family_accessibility",
+      "keywords": [
+        "child",
+        "kid",
+        "family",
+        "hike",
+        "walk",
+        "strenuous",
+        "mobility",
+        "niño",
+        "familia",
+        "caminata"
+      ],
+      "guidance": "Adapt to ages and mobility needs; hiking difficulty depends on the selected route and needs staff confirmation.",
+      "example_en": "Let us know about any walking or mobility needs so we can review a suitable route.",
+      "example_es": "Cuéntanos si hay necesidades de caminata o movilidad para revisar una ruta adecuada."
+    },
+    {
+      "id": "custom_addons",
+      "keywords": [
+        "custom",
+        "itinerary",
+        "waterfall",
+        "butterfly",
+        "chocolate",
+        "itinerario",
+        "cascada",
+        "mariposa"
+      ],
+      "guidance": "Clarify which participants want the activity and available time. Staff must review timing, routing and transportation.",
+      "example_en": "Which activities interest you most, and how much time would you like to spend in Mindo?",
+      "example_es": "¿Qué actividades te interesan más y cuánto tiempo quieres pasar en Mindo?"
+    },
+    {
+      "id": "payment_confirmation",
+      "keywords": [
+        "pay",
+        "invoice",
+        "confirm",
+        "stripe",
+        "zelle",
+        "pago",
+        "factura",
+        "confirmar"
+      ],
+      "guidance": "Stripe and Zelle are the owner-approved primary methods. Venmo is accepted, PayPal is a last resort, Square is not offered. Do not generate payment links or confirm payment/booking without verified records.",
+      "example_en": "Would you prefer Stripe or Zelle for your invoice?",
+      "example_es": "¿Prefieres Stripe o Zelle para tu factura?"
+    },
+    {
+      "id": "followup",
+      "keywords": [
+        "follow up",
+        "following up",
+        "checking in",
+        "seguimiento"
+      ],
+      "guidance": "Use a gentle offer to help; do not add urgency, invented deadlines or assume the guest has decided.",
+      "example_en": "Let me know if you have any questions or would like help choosing an option.",
+      "example_es": "Avísame si tienes preguntas o quieres ayuda para elegir una opción."
+    }
+  ]
 }

@@ -16,3 +16,11 @@ Updated September 28, 2026 from owner feedback and the actual sent reply “Mind
 The structured template now combines the pickup/drop-off question, uses natural location prepositions, and combines Quito/Tababela rate context. Spanish customer copy uses informal tú/tu/te. The interest paragraph avoids repeated tour names, sales filler, predicted emotions, and sighting promises; known bad tone patterns are withheld with a private review note. Tour selection, pricing controls, and the approved WhatsApp closing are unchanged.
 
 Validation: six fresh local generations plus a focused Kathy rerun after the final tone adjustment. The initial polishing run exposed sales filler; the final Kathy rerun used neutral birding language. 34 automated tests and the editor pricing-review/export checks pass. Raw tests are private; existing customer drafts were not replaced.
+
+## WhatsApp email review · October 5, 2026
+
+The owner supplied a labeled Gmail Takeout archive containing 89 messages, including 22 sent directly from the Mindo mailbox. Quoted histories and repeated messages are not independent examples. `reply-knowledge.json` now contains eight editorial patterns in English and Spanish, selected by the latest inbound question. Spanish examples are editorial adaptations, not claims of observed Spanish correspondence.
+
+The reusable material retains tone, question selection and response structure only. Raw correspondence, guest identities, attachments, historical prices, guide assignments and booking arrangements are excluded. Topic keyword counts come from the separate CRM review and are not booking or demand metrics.
+
+Keep WhatsApp replies concise and practical. Answer the current question, use supplied details rather than ask again, and offer one useful next step. Longer replies may add relevant bullets; do not reproduce the email cards or footer. Current prices, inclusions and policies come from the selected live reference. Route difficulty, departure times, driver waiting, availability and confirmation require case-specific verification. Automatic sending remains disabled.

@@ -22,7 +22,11 @@ def generate(body,model,call=None):
  # Exact approved facts are inserted after model output validation.
  model_context=dict(context,verified_reference_available=bool(context['verified_reference']))
  model_context.pop('verified_reference')
- model_context['reviewed_reply_rules']=json.loads(Path(__file__).with_name('reply-knowledge.json').read_text())['reply_rules']
+ knowledge=json.loads(Path(__file__).with_name('reply-knowledge.json').read_text())
+ model_context['reviewed_reply_rules']=knowledge['reply_rules']
+ latest_guest=next(m['text'].lower() for m in reversed(context['messages']) if m['direction']=='in' and m['text'].strip())
+ model_context['editorial_patterns']=[{'topic':p['id'],'guidance':p['guidance'],'example':p['example_'+context['language']]} for p in knowledge.get('patterns',[]) if any(re.search(r'(?<!\w)'+re.escape(word)+r'(?!\w)',latest_guest) for word in p['keywords'])][:4]
+ model_context['pattern_usage']='Editorial examples are optional style guidance, not facts or promises; do not repeat a question already answered.'
  payload={'model':model,'stream':False,'think':False,'format':{'type':'object','properties':{'reply':{'type':'string'}},'required':['reply']},'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps(model_context,ensure_ascii=False)}],'options':{'temperature':0.2,'num_predict':700}}
  if call:raw=call(payload)
  else:

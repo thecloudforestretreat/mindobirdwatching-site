@@ -19,6 +19,15 @@ class SuggestTests(unittest.TestCase):
    context=json.loads(payload['messages'][1]['content']);self.assertNotIn('verified_reference',context);self.assertTrue(context['verified_reference_available']);self.assertIn('reviewed_reply_rules',context)
    return {'message':{'content':json.dumps({'reply':'Hello!\n{{reference}}'})}}
   self.assertIn('$60',w.generate(self.body(),'test',call)['reply'])
+ def test_relevant_patterns_follow_requested_language(self):
+  body=self.body();body.update(language='es',messages=[{'direction':'in','text':'Necesito transporte desde Quito.'}])
+  def call(payload):
+   context=json.loads(payload['messages'][1]['content']);patterns=context['editorial_patterns']
+   self.assertEqual([p['topic'] for p in patterns],['transportation'])
+   self.assertTrue(patterns[0]['example'].startswith('¿Nos compartes'))
+   self.assertNotIn('sent_mail',context);self.assertNotIn('topic_counts',context)
+   return {'message':{'content':json.dumps({'reply':'Gracias. {{reference}}'})}}
+  self.assertTrue(w.generate(body,'test',call)['ok'])
  def test_optional_reference_appended_once(self):
   r=w.generate(self.body(),'test',self.call('Please tell us your dates.'));self.assertEqual(r['reply'].count('Jewels:'),1)
 if __name__=='__main__':unittest.main()
