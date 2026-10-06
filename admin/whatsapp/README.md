@@ -57,7 +57,7 @@ Automatic reference selection is the default for manual suggestions. Staff may s
 
 ## Shared testing foundation · October 5, 2026
 
-Open **Shared test inbox** explicitly to use the signed-in Access email as the staff identity. Each staff member must sign in separately; a shared Google login represents one identity. Staff appear in the directory after their first visit. Guide-only access is denied. The existing `MBW_ATTRIBUTION_DB` binding is required. Missing binding produces a visible error and leaves local sample mode available. Tables are created idempotently in isolated `wa_test_*` namespaces; no attribution or CRM records are modified. Production binding and separate staff logins still need deployment verification.
+Open **Shared test inbox** explicitly to use the selected Juan/Susana profile as the working identity. Cloudflare Access authenticates the shared account; the profile is self-selected and remembered on each device. Both profiles are available in the directory. Guide-only access is denied. The existing `MBW_ATTRIBUTION_DB` binding is required. Missing binding produces a visible error and leaves local sample mode available. Tables are created idempotently in isolated `wa_test_*` namespaces; no attribution or CRM records are modified. Production binding and separate staff logins still need deployment verification.
 
 Shared threads, notes, assignments, drafts, suggestions and saved replies persist in D1. Takeover/return-to-queue and author attribution support handoff. Thread revision checks reject stale saves; shared drafts/replies require ownership. Polling every 15 seconds shows recent viewing/editing presence. Rejected saves preserve local unsaved text for review. This is a test inbox, not a Meta message store or webhook.
 
@@ -70,3 +70,7 @@ Reviewed improvements retain original suggestion, edited draft, reason, author a
 **Download backup** exports current threads, notes, saved replies, staff, event audit and all guidance versions as private JSON. It is a manual backup; automated offsite backup and restore drills are not configured. Keep exports private. Samples cannot be reset from one staff device.
 
 Tests use SQLite and isolated browser fixtures to exercise two staff identities, shared drafts, takeover, stale revisions, booking readiness, mobile/desktop rendering, learning versions and sending-disabled behavior. They do not prove the production D1 binding or Cloudflare staff policy. Meta connection, real incoming message deduplication, automatic CRM creation/enrichment, WhatsApp sending, templates and reminder delivery remain disabled/pending.
+
+## Selected staff profiles · October 6, 2026
+
+Juan and Susana may share Cloudflare Access. The remembered device profile, sent as an allowlisted X-MBW-Staff-Profile header, controls shared ownership and author attribution. This is a self-selected working identity, not authentication. Access verification still protects the workspace; thread audit retains the verified Access account separately. Green (#C6DBAD) and purple (#7C3AED) dots match CRM. Historical authors are not relabeled. Legacy email-owned test conversations require explicit takeover by a selected profile. Unfinished drafts must be saved or refreshed before switching.
