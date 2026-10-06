@@ -74,3 +74,13 @@ Tests use SQLite and isolated browser fixtures to exercise two staff identities,
 ## Selected staff profiles · October 6, 2026
 
 Juan and Susana may share Cloudflare Access. The remembered device profile, sent as an allowlisted X-MBW-Staff-Profile header, controls shared ownership and author attribution. This is a self-selected working identity, not authentication. Access verification still protects the workspace; thread audit retains the verified Access account separately. Green (#C6DBAD) and purple (#7C3AED) dots match CRM. Historical authors are not relabeled. Legacy email-owned test conversations require explicit takeover by a selected profile. Unfinished drafts must be saved or refreshed before switching.
+
+## Inline CRM editor · October 6, 2026
+
+Guest details beneath the WhatsApp composer load the exact linked inquiry and edit guest/contact fields, source, CRM rep, follow-up, planning and recorded financial information. The Guest details shortcut jumps to this section on mobile. Conversation ownership does not reassign CRM. Current CRM tour/date/guest count supply the readiness panel when no test override exists. Phone country is not assumed to be residence.
+
+The protected same-origin /api/whatsapp/crm-edit endpoint allowlists editable fields and requires a selected staff profile plus explicit save. Quote/payment changes require financial confirmation. Only update_inquiry is used; no sample guest is created. IDs, unknown fields, attribution and internal notes are preserved. Planning edits update a selected existing tour; other tours remain intact. Actor/time/changed fields are appended to internal audit notes. Shared guest-table propagation follows the existing n8n workflow and still needs production verification.
+
+A hash of the loaded record is compared with a new CRM read before saving. Changed records return conflict without a write. Readback must match edited fields before the interface claims Saved. Failure/unverified states retain edits. The payload includes expected_updated_at, but atomic compare-and-update support in n8n is unverified: a change between preflight and write remains possible. This is not an atomic lock against full CRM edits.
+
+Tests use fictional records for mobile/desktop saves, preservation, separate rep/ownership, conflicts and failures. No production guest was edited by tests. Live number intake, automatic guest creation, phone matching and automated backups remain separate work.
