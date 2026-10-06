@@ -33,6 +33,10 @@ class SuggestTests(unittest.TestCase):
   self.assertEqual(w.prepare(b)['staff_reviewed_guidance'],b['reviewedGuidance'])
   b['reviewedGuidance']=[{'scope':'unknown','guidance':'Bad scope'}]
   with self.assertRaises(ValueError):w.prepare(b)
+ def test_transportation_intent_is_preserved_with_missing_date(self):
+  b=self.body();b.update(language='es',reference='',messages=[{'direction':'in','text':'Transporte desde Quito para tres personas, aún sin fecha.'}],bookingMissing=['tour','date'])
+  self.assertEqual(w.prepare(b)['inquiry_topic'],'transportation')
+  self.assertIn('date',w.prepare(b)['booking_missing'])
  def test_optional_reference_appended_once(self):
   r=w.generate(self.body(),'test',self.call('Please tell us your dates.'));self.assertEqual(r['reply'].count('Jewels:'),1)
 if __name__=='__main__':unittest.main()
