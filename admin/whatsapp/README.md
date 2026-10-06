@@ -94,3 +94,12 @@ Automatic preparation is enabled by default (staff may pause it in Draft setting
 Tests cover mobile/tablet/desktop visibility, automatic preparation, message cache reuse, new-message regeneration and preservation of manual text; CRM and shared handoff tests use mocked/isolated services. Model prompts prioritize missing dates and guest counts before pickup details.
 
 Selected profile/owner/CRM rep dropdowns now carry CRM-matched color dots while retaining native keyboard/mobile selection. A narrow reviewed transportation rule respects explicitly undecided dates, asks for an approximate date without pickup pressure, and repeats only an unambiguous supplied party count. Pricing/reference or cancellation questions continue through the reviewed model flow. Draft-policy revision invalidates older cached suggestions.
+
+
+Continuity testing (2026-10-06): Handoff opens a compact review of owner, tour/date/people, latest guest request, latest human reply, latest note and next action. Message-derived fields are labeled as suggestions. Exact phone matching removes punctuation only and never guesses a country prefix; exact email matching ignores case. Multiple inquiries for the same contact remain separate and linking stays manual.
+
+Each simulated staff reply retains the matched original suggestion and final text in the conversation, with actor/time and a conversation-only status. Staff can inspect these corrections and approve a separate reusable lesson. A stale suggestion is never assigned to a newer guest message.
+
+Shared backup exports read all tables in one D1 transaction. The browser wraps the snapshot with a SHA-256 integrity digest and encrypts it with AES-256-GCM using a passphrase-derived PBKDF2-SHA256 key (250,000 iterations, fresh salt and IV). Passphrases are not stored or sent to the server. Downloaded files can be decrypted and validated in an isolated recovery preview; this does not restore or overwrite shared records. Audit events and all learning versions are included. Store files separately from the database and keep the passphrase separately. Scheduled offsite backups and an operator-controlled database restore are still required before live use.
+
+Still disconnected: number onboarding, Meta incoming/echo webhooks, delivery status synchronization, historical message import and automatic new-contact CRM creation. These are not inferred from the functioning shared test inbox.
