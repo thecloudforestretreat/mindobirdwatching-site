@@ -44,3 +44,15 @@ class SuggestTests(unittest.TestCase):
  def test_optional_reference_appended_once(self):
   r=w.generate(self.body(),'test',self.call('Please tell us your dates.'));self.assertEqual(r['reply'].count('Jewels:'),1)
 if __name__=='__main__':unittest.main()
+
+class CrmContextTests(unittest.TestCase):
+ def test_fresh_allowlist_context_excludes_known_missing_fields(self):
+  from datetime import datetime,timezone
+  from whatsapp_suggest import prepare
+  b={'messages':[{'direction':'in','text':'What do I need for my tour?'}],'bookingMissing':['tour','date','guests'],'crmContext':{'source':'linked_crm','checkedAt':datetime.now(timezone.utc).isoformat(),'tour':'Night Walk','date':'2026-11-01','guests':'2'}}
+  result=prepare(b);self.assertEqual(result['booking_missing'],[]);self.assertEqual(result['linked_crm_context']['guests'],'2')
+  b['crmContext']['email']='private@example.test'
+  with self.assertRaises(ValueError):prepare(b)
+ def test_stale_context_is_rejected(self):
+  from whatsapp_suggest import prepare
+  with self.assertRaises(ValueError):prepare({'messages':[{'direction':'in','text':'Hello'}],'crmContext':{'source':'linked_crm','checkedAt':'2020-01-01T00:00:00Z'}})
