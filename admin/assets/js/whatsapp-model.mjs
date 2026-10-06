@@ -18,9 +18,9 @@ export function sampleThreads(now=Date.now()){
 export function filterThreads(threads,{search='',queue='all',agent='Juan'}={}){
  const q=search.trim().toLowerCase();return threads.filter(t=>(!q||[t.name,t.topic,t.nextAction,...t.messages.map(m=>m.text)].join(' ').toLowerCase().includes(q))&&(queue==='all'||queue==='mine'&&t.owner===agent&&t.status!=='resolved'||queue==='unassigned'&&!t.owner&&t.status!=='resolved'||queue==='needs_staff'&&t.status==='needs_staff'||queue==='resolved'&&t.status==='resolved'));
 }
-export function mutateSample(thread,action,actor,now=Date.now()){
+export function mutateSample(thread,action,actor,now=Date.now(),allowedActors=AGENTS){
  if(!thread.id.startsWith('sample-'))throw new Error('Only sample conversations can be changed.');
- if(!AGENTS.includes(actor))throw new Error('Choose a sample staff member.');
+ if(!allowedActors.includes(actor))throw new Error('Choose a sample staff member.');
  const t=structuredClone(thread),at=new Date(now).toISOString(),text=String(action.text||'').trim();
  if(action.type==='incoming'){if(!text||text.length>4000)throw new Error('Message must contain 1–4,000 characters.');t.messages.push({id:'sample-incoming-'+crypto.randomUUID(),direction:'in',kind:'guest',text,at,delivery:'sample'});t.status='needs_staff';}
  else if(action.type==='reply'){if(!text||text.length>4000)throw new Error('Reply must contain 1–4,000 characters.');t.messages.push({id:'sample-message-'+crypto.randomUUID(),direction:'out',kind:'human',text,at,actor,delivery:'sample'});t.draft='';t.status='open';}
@@ -35,7 +35,7 @@ export function mutateSample(thread,action,actor,now=Date.now()){
    note.text=text;note.updatedBy=actor;note.updatedAt=at;
   }else{(t.noteEvents||=[]).push({type:'deleted',note:structuredClone(note),actor,at});t.notes.splice(index,1);}
  }
- else if(action.type==='assign'){if(action.owner!==''&&!AGENTS.includes(action.owner))throw new Error('Unknown staff member.');t.owner=action.owner;t.notes.push({id:crypto.randomUUID(),text:action.owner?'Assigned to '+action.owner:'Returned to unassigned',actor,at});}
+ else if(action.type==='assign'){if(action.owner!==''&&!allowedActors.includes(action.owner))throw new Error('Unknown staff member.');t.owner=action.owner;t.notes.push({id:crypto.randomUUID(),text:action.owner?'Assigned to '+action.owner:'Returned to unassigned',actor,at});}
  else if(action.type==='status'){if(!STATUSES.includes(action.status))throw new Error('Unknown status.');t.status=action.status;}
  else if(action.type==='next'){if(text.length>300)throw new Error('Next action is too long.');t.nextAction=text;}
  else if(action.type==='link'){if(text&&!/^[A-Za-z0-9_-]{1,100}$/.test(text))throw new Error('Use a valid inquiry ID.');t.inquiryId=text;}

@@ -36,7 +36,7 @@ The workspace has an authenticated, read-only CRM search at `/api/whatsapp/crm`.
 
 Staff explicitly select an inquiry. A fictional conversation's association is labeled a local test association, never an automatic phone match. Only the inquiry ID persists with the sample; retrieved CRM details stay in memory and require refresh after reload. Dates and statuses of multiple recorded tour items remain separate. Booking status and payment status are displayed independently.
 
-Open Guest CRM passes only the inquiry ID and opens the exact existing record after live refresh. Existing CRM actions handle itinerary/invoice carryover. WhatsApp drafts and internal notes are not transferred. Production creation/enrichment, normalized-phone matching, shared storage, individual staff identity and live messaging remain pending. CRM data is not included in AI prompts.
+Open Guest CRM passes only the inquiry ID and opens the exact existing record after live refresh. Existing CRM actions handle itinerary/invoice carryover. WhatsApp drafts and internal notes are not transferred. Production creation/enrichment, normalized-phone matching, live messaging remain pending. Shared fictional storage and individual staff identity are implemented below. CRM data is not included in AI prompts.
 
 Composer shortcuts open saved replies, tour information and AI drafting; mobile pane navigation preserves drafts. Layout/interaction checks cover 360, 390, 768, 1024 and 1440 pixels. Browser integration tests mock external services and do not prove production authentication or connectivity.
 
@@ -50,6 +50,23 @@ A sample intake form allows manual testing with a pasted incoming message. This 
 
 ## Reviewed automatic draft preparation · October 5, 2026
 
-`whatsapp-routing.mjs` is a pure reusable preparation function for explicit initial full-day birding questions. It retrieves active language-matched Quest and Custom Full Day references from the live staff library. Both references are required. The approved answer-first copy names the combined Quest/Cock-of-the-Rock product correctly and asks only for conservatively detected missing date, party size and target birds. Tracking URL numbers are excluded from detail detection. Half-day comparisons, bear tours, price/payment/cancellation and availability questions bypass this narrow pattern.
+`whatsapp-routing.mjs` is a pure reusable preparation function for explicit initial full-day birding questions. It retrieves active language-matched Quest and Custom Full Day references from the live staff library. Both references are required. The approved answer-first copy names the combined Quest/Cock-of-the-Rock product correctly and asks only for conservatively detected missing date and party size; target birds are optional. Tracking URL numbers are excluded from detail detection. Half-day comparisons, bear tours, price/payment/cancellation and availability questions bypass this narrow pattern.
 
 Automatic reference selection is the default for manual suggestions. Staff may select a specific source or a clarification-only mode. The opt-in browser-local automatic drafting checkbox runs the same suggestion flow when a sample inbound message is added. Approved full-day replies are composed immediately without a model call; other requests use local AI. Preparation never changes the staff draft or sends a message. The old fixed sample acknowledgment has been removed, including its exact legacy sample record. Real Meta receipt and automatic delivery remain unconnected and sending is disabled.
+
+
+## Shared testing foundation · October 5, 2026
+
+Open **Shared test inbox** explicitly to use the signed-in Access email as the staff identity. Each staff member must sign in separately; a shared Google login represents one identity. Staff appear in the directory after their first visit. Guide-only access is denied. The existing `MBW_ATTRIBUTION_DB` binding is required. Missing binding produces a visible error and leaves local sample mode available. Tables are created idempotently in isolated `wa_test_*` namespaces; no attribution or CRM records are modified. Production binding and separate staff logins still need deployment verification.
+
+Shared threads, notes, assignments, drafts, suggestions and saved replies persist in D1. Takeover/return-to-queue and author attribution support handoff. Thread revision checks reject stale saves; shared drafts/replies require ownership. Polling every 15 seconds shows recent viewing/editing presence. Rejected saves preserve local unsaved text for review. This is a test inbox, not a Meta message store or webhook.
+
+Tour/date/party suggestions are derived conservatively from inbound text, excluding campaign URLs. A category such as full-day birding does not select a product. Staff confirm the details. Ambiguous dates/tours/counts need clarification. The read-only day lookup preserves multi-tour dates and statuses, distinguishes confirmed bookings from inquiries, excludes private bookings from joining candidates, and never infers capacity, guide availability or guest consent. Confirm compatibility before offering a group.
+
+The simulated 24-hour countdown uses the last inbound timestamp, not the last staff reply. Expiry does not remove messages. It is neither a billing estimate nor proof of production messaging eligibility.
+
+Reviewed improvements retain original suggestion, edited draft, reason, author and scope. Reusable approval is explicit; withdrawal creates another version. Only approved guidance is sent as editorial context to local AI. Prices, URLs and contact details cannot be put in general guidance. Current pricing and booking facts still require their verified sources. This is retrieved knowledge, not model-weight training.
+
+**Download backup** exports current threads, notes, saved replies, staff, event audit and all guidance versions as private JSON. It is a manual backup; automated offsite backup and restore drills are not configured. Keep exports private. Samples cannot be reset from one staff device.
+
+Tests use SQLite and isolated browser fixtures to exercise two staff identities, shared drafts, takeover, stale revisions, booking readiness, mobile/desktop rendering, learning versions and sending-disabled behavior. They do not prove the production D1 binding or Cloudflare staff policy. Meta connection, real incoming message deduplication, automatic CRM creation/enrichment, WhatsApp sending, templates and reminder delivery remain disabled/pending.

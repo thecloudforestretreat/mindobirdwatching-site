@@ -28,6 +28,11 @@ class SuggestTests(unittest.TestCase):
    self.assertNotIn('sent_mail',context);self.assertNotIn('topic_counts',context)
    return {'message':{'content':json.dumps({'reply':'Gracias. {{reference}}'})}}
   self.assertTrue(w.generate(body,'test',call)['ok'])
+ def test_reviewed_guidance_is_preserved_as_editorial_context(self):
+  b=self.body();b['reviewedGuidance']=[{'scope':'tour_selection','guidance':'Answer first, then ask for missing booking details.'}]
+  self.assertEqual(w.prepare(b)['staff_reviewed_guidance'],b['reviewedGuidance'])
+  b['reviewedGuidance']=[{'scope':'unknown','guidance':'Bad scope'}]
+  with self.assertRaises(ValueError):w.prepare(b)
  def test_optional_reference_appended_once(self):
   r=w.generate(self.body(),'test',self.call('Please tell us your dates.'));self.assertEqual(r['reply'].count('Jewels:'),1)
 if __name__=='__main__':unittest.main()
