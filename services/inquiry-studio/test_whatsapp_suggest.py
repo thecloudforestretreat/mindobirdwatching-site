@@ -56,3 +56,11 @@ class CrmContextTests(unittest.TestCase):
  def test_stale_context_is_rejected(self):
   from whatsapp_suggest import prepare
   with self.assertRaises(ValueError):prepare({'messages':[{'direction':'in','text':'Hello'}],'crmContext':{'source':'linked_crm','checkedAt':'2020-01-01T00:00:00Z'}})
+
+class WebsiteContextTests(unittest.TestCase):
+ def test_website_context_is_bounded_and_rejects_unexpected_url_fields(self):
+  from whatsapp_suggest import prepare
+  body={'messages':[{'direction':'in','text':'Can we visit Milpe?'}],'websiteContext':[{'title':'Milpe Reserve','summary':'Published visitor guide','category':'Reserves','headings':['Planning your visit']}]}
+  self.assertEqual(prepare(body)['website_context'][0]['title'],'Milpe Reserve')
+  body['websiteContext'][0]['url']='https://unapproved.example/'
+  with self.assertRaises(ValueError):prepare(body)

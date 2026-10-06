@@ -1,5 +1,6 @@
 """Build the resource index. Public metadata only; no prices, CRM or LLM calls."""
 import argparse, json, re, sys, xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor,as_completed
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -24,16 +25,21 @@ def parse_sitemap(text):
     if link.attrib.get('hreflang') in ['en','es'] and safe_url(alternate):urls.setdefault(alternate,fields.get('lastmod') or '')
  return urls,children
 class Metadata(HTMLParser):
- def __init__(self):super().__init__();self.in_title=False;self.title='';self.description=''
+ def __init__(self):super().__init__();self.in_title=False;self.title='';self.description='';self.heading=False;self.headings=[];self.heading_text=''
  def handle_starttag(self,tag,attrs):
   a=dict(attrs)
   if tag=='title':self.in_title=True
+  if tag in ['h1','h2']:self.heading=True;self.heading_text=''
   if tag=='meta' and a.get('name','').lower()=='description':self.description=a.get('content','')[:350]
  def handle_endtag(self,tag):
   if tag=='title':self.in_title=False
+  if tag in ['h1','h2'] and self.heading:
+   self.heading=False
+   if len(self.headings)<8:self.headings.append(re.sub(r'\s+',' ',self.heading_text).strip()[:180])
  def handle_data(self,text):
   if self.in_title:self.title+=text
- def result(self):return {'title':re.sub(r'\s+',' ',self.title).strip()[:200],'description':self.description}
+  if self.heading:self.heading_text+=text
+ def result(self):return {'title':re.sub(r'\s+',' ',self.title).strip()[:200],'description':self.description,'headings':self.headings}
 class SafeRedirect(HTTPRedirectHandler):
  def redirect_request(self,request,fp,code,msg,headers,newurl):
   if not safe_url(newurl):raise ValueError('Unexpected redirect')
@@ -47,16 +53,28 @@ def fetch(url):
   return data.decode('utf-8','replace')
 def build(urls,catalog,root=ROOT,live=False,fetcher=fetch):
  now=datetime.now(timezone.utc).isoformat();curated={r['url']:r for r in catalog['resources']};items=[]
+ remote={}
+ if live:
+  def check(url):
+   try:
+    parser=Metadata();parser.feed(fetcher(url));result=parser.result()
+    if not result['title'] or re.search(r'404|page not found|pagina no encontrada|currently unavailable|actualmente no disponible',result['title'],re.I):raise ValueError('Unavailable page')
+    return result
+   except Exception:return None
+  targets=[url for url in curated if url in urls and safe_url(url)]
+  with ThreadPoolExecutor(max_workers=8) as pool:
+   futures={pool.submit(check,url):url for url in targets}
+   for future in as_completed(futures):remote[futures[future]]=future.result()
  for url in sorted(set(urls)|set(curated)):
   if not safe_url(url):continue
   path=urlparse(url).path;config=curated.get(url);meta={};available=url in urls;verified='sitemap_only'
   local=root/path.strip('/')/'index.html' if path!='/' else root/'index.html'
   if local.is_file():parser=Metadata();parser.feed(local.read_text(errors='replace'));meta=parser.result()
   if config and live and available:
-   try:parser=Metadata();parser.feed(fetcher(url));meta=parser.result();verified='http_checked'
-   except Exception:available=False;verified='http_unavailable'
+   if remote.get(url):meta=remote[url];verified='http_checked'
+   else:available=False;verified='http_unavailable'
   title=(config or {}).get('title') or meta.get('title') or path.strip('/').split('/')[-1].replace('-',' ').title() or 'Mindo Bird Watching'
-  items.append({'id':(config or {}).get('id',path),'type':'page','url':url,'title':title,'description':meta.get('description',''),'purpose':(config or {}).get('purpose',''),'language':(config or {}).get('language','es' if path.startswith('/es/') else 'en'),'topics':(config or {}).get('topics',[]),'approved':bool(config and config.get('approved')),'available':available,'verification':verified,'lastModified':urls.get(url,''),'checkedAt':now})
+  items.append({'id':(config or {}).get('id',path),'type':'page','url':url,'title':title,'description':meta.get('description',''),'purpose':(config or {}).get('purpose',''),'language':(config or {}).get('language','es' if path.startswith('/es/') else 'en'),'topics':(config or {}).get('topics',[]),'keywords':(config or {}).get('keywords',[]),'groupId':(config or {}).get('groupId',url),'category':(config or {}).get('category','Tour planning' if config else 'Discovered'),'headings':meta.get('headings',[]),'usage':(config or {}).get('usage',''),'approved':bool(config and config.get('approved')),'available':available,'verification':verified,'lastModified':urls.get(url,''),'checkedAt':now})
  return {'version':1,'source':'https://mindobirdwatching.com/sitemap.xml','checkedAt':now,'scanMode':'live' if live else 'repository','futureSources':catalog['futureSources'],'items':items}
 def main():
  parser=argparse.ArgumentParser();parser.add_argument('--live',action='store_true');args=parser.parse_args();urls={}
