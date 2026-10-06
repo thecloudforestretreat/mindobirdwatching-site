@@ -79,6 +79,16 @@
     @media(max-width:760px){.actionGroup{grid-template-columns:1fr 1fr;padding:8px}.actionGroupTitle{font-size:9px}.statusWorkflowRow{grid-template-columns:1fr}.repBadge{width:12px;height:12px}.toolbar{grid-template-columns:1fr}}
     .formSection{margin-top:20px;padding-top:18px;border-top:1px solid rgba(13,89,37,.2)}.formSection:first-of-type{margin-top:6px;padding-top:0;border-top:0}.formSectionTitle{display:flex;align-items:center;gap:9px;margin:0 0 13px;color:var(--green);font:700 18px/1.2 Georgia,"Times New Roman",serif}.formSectionTitle::before{content:"";width:4px;height:20px;border-radius:999px;background:var(--green)}.formSection .tourItemsPanel{margin-bottom:0}.popularProductMark{color:#7A4B00;font-weight:900}
   .referenceIdentityRow{display:grid;grid-template-columns:1.05fr 1.15fr 1.1fr 1fr;gap:12px;align-items:start}.referenceIdentityRow .field{min-width:0}.referenceIdentityRow input,.referenceIdentityRow select{width:100%;min-width:0;font-size:12px}#referenceStatus{display:block;font-size:11px;line-height:1.4;margin-top:5px;color:#52645a}@media(max-width:1000px){.referenceIdentityRow{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.referenceIdentityRow{grid-template-columns:1fr}}
+
+.formSection[aria-labelledby="guestInquiryTitle"] .field{align-content:start;min-width:0}
+.formSection[aria-labelledby="guestInquiryTitle"] label,.formSection[aria-labelledby="guestInquiryTitle"] .followupFieldHeader{min-height:22px}
+.formSection[aria-labelledby="guestInquiryTitle"] input,.formSection[aria-labelledby="guestInquiryTitle"] select{height:44px;min-height:44px}
+.formSection[aria-labelledby="guestInquiryTitle"] .referenceIdentityRow,.formSection[aria-labelledby="guestInquiryTitle"] .statusWorkflowRow{grid-template-columns:repeat(4,minmax(0,1fr))}
+.nextActionField{grid-column:span 2}.followupShortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.followupShortcuts button{height:44px;min-height:44px;padding:8px 5px;font-size:12px;white-space:nowrap}
+@media(max-width:1180px){.formSection[aria-labelledby="guestInquiryTitle"] .statusWorkflowRow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1000px){.formSection[aria-labelledby="guestInquiryTitle"] .referenceIdentityRow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.nextActionField{grid-column:auto}.nextActionRow{grid-template-columns:1fr}.formSection[aria-labelledby="guestInquiryTitle"] .statusWorkflowRow{grid-template-columns:1fr}.formSection[aria-labelledby="guestInquiryTitle"] input,.formSection[aria-labelledby="guestInquiryTitle"] select,.followupShortcuts button{height:48px;min-height:48px}}
+@media(max-width:600px){.formSection[aria-labelledby="guestInquiryTitle"] .referenceIdentityRow{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -350,8 +360,12 @@
               <div class="field"><label for="assignedToInput">Assigned Rep</label><select id="assignedToInput"><option value="">Unassigned</option><option value="JPG">Juan</option><option value="SS">Susana</option></select></div>
               <div class="field followupField"><div class="followupFieldHeader"><label for="followupInput">Follow-up</label><div class="followupFieldState" id="followupFieldState"></div></div><input id="followupInput" type="date" /></div>
             </div>
+            <div class="three nextActionRow">
+              <div class="field nextActionField"><label for="nextActionInput">Next action</label><input id="nextActionInput" list="nextActionOptions" placeholder="What needs to happen next?"><datalist id="nextActionOptions"><option value="Review inquiry and reply"><option value="Follow up on quote"><option value="Collect deposit"><option value="Collect remaining payment"><option value="Confirm pickup and guide"><option value="Check availability"></datalist></div>
+              <div class="field"><label>Follow-up shortcuts</label><div class="followupShortcuts"><button type="button" data-followup-days="1">Tomorrow</button><button type="button" data-followup-days="3">+3 days</button><button type="button" data-followup-days="7">+7 days</button></div></div>
+            </div>
             <div class="three">
-              <div class="field"><label for="nextActionInput">Next action</label><input id="nextActionInput" list="nextActionOptions" placeholder="What needs to happen next?"><datalist id="nextActionOptions"><option value="Review inquiry and reply"><option value="Follow up on quote"><option value="Collect deposit"><option value="Collect remaining payment"><option value="Confirm pickup and guide"><option value="Check availability"></datalist><div class="workspaceActions"><button type="button" data-followup-days="1">Tomorrow</button><button type="button" data-followup-days="3">+3 days</button><button type="button" data-followup-days="7">+7 days</button></div><small>Date shortcuts are saved with Save Record.</small></div><div class="field"><label for="firstNameInput">First Name</label><input id="firstNameInput" /></div>
+              <div class="field"><label for="firstNameInput">First Name</label><input id="firstNameInput" /></div>
               <div class="field"><label for="lastNameInput">Last Name</label><input id="lastNameInput" /></div>
               <div class="field"><label for="fullNameInput">Full Name</label><input id="fullNameInput" /></div>
             </div>
