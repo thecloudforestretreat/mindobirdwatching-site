@@ -37,6 +37,10 @@ class SuggestTests(unittest.TestCase):
   b=self.body();b.update(language='es',reference='',messages=[{'direction':'in','text':'Transporte desde Quito para tres personas, aún sin fecha.'}],bookingMissing=['tour','date'])
   self.assertEqual(w.prepare(b)['inquiry_topic'],'transportation')
   self.assertIn('date',w.prepare(b)['booking_missing'])
+ def test_undecided_transport_uses_approved_reply_without_pickup_or_exact_date(self):
+  b=self.body();b.update(language='es',reference='',messages=[{'direction':'in','text':'Transporte desde Quito'},{'direction':'in','text':'Somos tres personas. Aún estamos decidiendo la fecha.'}])
+  r=w.generate(b,'test',lambda payload:self.fail('Approved rule should not need a model call'))
+  self.assertIn('3 personas',r['reply']);self.assertIn('aproximada',r['reply']);self.assertNotIn('recogida',r['reply']);self.assertNotIn('exacta',r['reply']);self.assertFalse(r['sendingEnabled'])
  def test_optional_reference_appended_once(self):
   r=w.generate(self.body(),'test',self.call('Please tell us your dates.'));self.assertEqual(r['reply'].count('Jewels:'),1)
 if __name__=='__main__':unittest.main()
