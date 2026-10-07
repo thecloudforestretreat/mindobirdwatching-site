@@ -2,7 +2,7 @@
   "name": "MBW - Portfolio Reporting",
   "nodes": [
     {
-      "id": "f4eff411-e241-4f5f-8516-4cdcbc0858aa",
+      "id": "c3804f28-8fa2-418a-af7f-4ec38fba5240",
       "name": "Portfolio Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -16,10 +16,10 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "webhookId": "797d88fe-68c1-45a6-881d-0f147a2d78e9"
+      "webhookId": "5224fb62-5a2a-437d-ae75-5d1a9cc0d8b8"
     },
     {
-      "id": "756bdf18-cba3-488d-b174-3da33a28a4be",
+      "id": "c2107277-2e9f-4726-a4ce-df32eae9023a",
       "name": "Authorize Administrator",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -32,7 +32,7 @@
       }
     },
     {
-      "id": "f44cdeca-d4f2-49eb-806e-54926353d7f2",
+      "id": "f57ad1db-499b-42ed-8dd5-c89b57c38dc9",
       "name": "Administrator Authorized",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -66,80 +66,7 @@
       }
     },
     {
-      "id": "7fb8fec8-3e37-45d4-aaa5-846d47adae6e",
-      "name": "Discover GA4 properties",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        690,
-        0
-      ],
-      "parameters": {
-        "url": "https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=200",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleOAuth2Api",
-        "options": {
-          "timeout": 20000,
-          "response": {
-            "response": {
-              "responseFormat": "json",
-              "neverError": true
-            }
-          }
-        }
-      },
-      "credentials": {
-        "googleOAuth2Api": {
-          "id": "Dko74TIkZJ8IBHNK",
-          "name": "Google OAuth2 API - GA4 MBW"
-        }
-      }
-    },
-    {
-      "id": "3f6806aa-f889-477a-8520-558297fa2f32",
-      "name": "Property stream requests",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        920,
-        0
-      ],
-      "parameters": {
-        "jsCode": "const a=$json.accountSummaries||[];const props=a.flatMap(s=>s.propertySummaries||[]);if(!props.length)return [{json:{property:null,url:'https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=1'}}];return props.map(p=>({json:{property:p.property,url:'https://analyticsadmin.googleapis.com/v1beta/'+p.property+'/dataStreams?pageSize=200'}}));"
-      }
-    },
-    {
-      "id": "5f32ccf8-ebe2-4d70-a95b-0c06d5aeff06",
-      "name": "Read public stream identities",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1150,
-        0
-      ],
-      "parameters": {
-        "url": "={{$json.url}}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleOAuth2Api",
-        "options": {
-          "timeout": 20000,
-          "response": {
-            "response": {
-              "responseFormat": "json",
-              "neverError": true
-            }
-          }
-        }
-      },
-      "credentials": {
-        "googleOAuth2Api": {
-          "id": "Dko74TIkZJ8IBHNK",
-          "name": "Google OAuth2 API - GA4 MBW"
-        }
-      }
-    },
-    {
-      "id": "67bef7aa-c43a-4047-ac53-72b7734449c5",
+      "id": "18c44f7b-9418-412b-af3f-40d28ca49ec2",
       "name": "Build report requests",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -148,11 +75,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const domains=[\"mindobirdwatching.com\", \"thecloudforestretreat.com\", \"experienceecuador.com\", \"mindotours.com\", \"chocoandinotours.com\", \"experiencetheamazon.com\", \"businessbuyingandselling.com\", \"eyesondanang.com\"];const q=$('Authorize Administrator').first().json;const props={};for(const [i,item] of $input.all().entries()){const property=$('Property stream requests').all()[i]?.json.property;for(const stream of item.json.dataStreams||[]){try{const host=new URL(stream.webStreamData?.defaultUri).hostname.replace(/^www\\./,'');if(domains.includes(host)){if(props[host]&&props[host]!==property)props[host]=false;else if(props[host]!==false)props[host]=property;}}catch{}}}const out=[];for(const domain of domains)for(const prior of [false,true]){const startDate=prior?q.priorStart:q.start,endDate=prior?q.priorEnd:q.end;if(props[domain])out.push({json:{domain,prior,source:'ga',url:'https://analyticsdata.googleapis.com/v1beta/'+props[domain]+':runReport',body:{dateRanges:[{startDate,endDate}],metrics:[{name:'sessions'}],dimensionFilter:{filter:{fieldName:'hostName',inListFilter:{values:[domain,'www.'+domain],caseSensitive:false}}}}}});out.push({json:{domain,prior,source:'search',url:'https://www.googleapis.com/webmasters/v3/sites/'+encodeURIComponent('sc-domain:'+domain)+'/searchAnalytics/query',body:{startDate,endDate,type:'web',dataState:'final'}}})}return out;"
+        "jsCode": "const domains=[\"mindobirdwatching.com\", \"thecloudforestretreat.com\", \"experienceecuador.com\", \"mindotours.com\", \"chocoandinotours.com\", \"experiencetheamazon.com\", \"businessbuyingandselling.com\", \"eyesondanang.com\"];const q=$('Authorize Administrator').first().json;const props={\"mindobirdwatching.com\": \"properties/474681565\", \"thecloudforestretreat.com\": \"properties/449392042\", \"experienceecuador.com\": \"properties/516211767\", \"mindotours.com\": \"properties/555190853\", \"chocoandinotours.com\": \"properties/555387617\", \"experiencetheamazon.com\": \"properties/557349745\", \"businessbuyingandselling.com\": \"properties/525388203\", \"eyesondanang.com\": \"properties/557171133\"};const out=[];for(const domain of domains)for(const prior of [false,true]){const startDate=prior?q.priorStart:q.start,endDate=prior?q.priorEnd:q.end;if(props[domain])out.push({json:{domain,prior,source:'ga',url:'https://analyticsdata.googleapis.com/v1beta/'+props[domain]+':runReport',body:{dateRanges:[{startDate,endDate}],metrics:[{name:'sessions'}],dimensionFilter:{filter:{fieldName:'hostName',inListFilter:{values:[domain,'www.'+domain],caseSensitive:false}}}}}});out.push({json:{domain,prior,source:'search',url:'https://www.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(domain==='experienceecuador.com'?'https://experienceecuador.com/':'sc-domain:'+domain)+'/searchAnalytics/query',body:{startDate,endDate,type:'web',dataState:'final'}}})}return out;"
       }
     },
     {
-      "id": "45b5368a-9fd6-4293-b597-d48dd0314e55",
+      "id": "11869bf0-1494-4702-9747-f388c8824fc1",
       "name": "Read portfolio reports",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -186,7 +113,7 @@
       }
     },
     {
-      "id": "ab66a3b6-b7b7-49af-8bee-5c07878bb733",
+      "id": "d176c96f-b063-4ba8-aa98-0ee074213d8a",
       "name": "Format portfolio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -199,7 +126,7 @@
       }
     },
     {
-      "id": "94ae81f3-8834-4f77-95fb-4b3c565b6e85",
+      "id": "3075ef4c-6253-4949-87f5-b987fa686134",
       "name": "Return Portfolio",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
@@ -223,7 +150,7 @@
       }
     },
     {
-      "id": "97dbd1db-0c3b-43ee-9302-e86ff6802f2c",
+      "id": "212bd0b8-f0c1-4a79-8af6-f533f169b634",
       "name": "Reject Unauthorized",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
@@ -275,7 +202,7 @@
       "main": [
         [
           {
-            "node": "Discover GA4 properties",
+            "node": "Build report requests",
             "type": "main",
             "index": 0
           }
@@ -283,39 +210,6 @@
         [
           {
             "node": "Reject Unauthorized",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Discover GA4 properties": {
-      "main": [
-        [
-          {
-            "node": "Property stream requests",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Property stream requests": {
-      "main": [
-        [
-          {
-            "node": "Read public stream identities",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read public stream identities": {
-      "main": [
-        [
-          {
-            "node": "Build report requests",
             "type": "main",
             "index": 0
           }
