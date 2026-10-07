@@ -2,6 +2,7 @@
   "use strict";
 
   var pages = [
+  {"id":"portfolio","label":"Portfolio","href":"https://admin.mindobirdwatching.com/portfolio/","category":"reports"},
   {
     "id": "maps",
     "label": "Markets & Guest Origins",

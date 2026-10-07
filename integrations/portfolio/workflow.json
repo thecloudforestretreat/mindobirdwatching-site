@@ -1,0 +1,368 @@
+{
+  "name": "MBW - Portfolio Reporting",
+  "nodes": [
+    {
+      "id": "f4eff411-e241-4f5f-8516-4cdcbc0858aa",
+      "name": "Portfolio Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mbw-portfolio-report",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "797d88fe-68c1-45a6-881d-0f147a2d78e9"
+    },
+    {
+      "id": "756bdf18-cba3-488d-b174-3da33a28a4be",
+      "name": "Authorize Administrator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        230,
+        0
+      ],
+      "parameters": {
+        "jsCode": "let authorizationStage='runtime';\ntry {\n// Reuse MBW Admin's existing Access identity. Never trust a header without its signature.\nauthorizationStage='claims';\nconst input=$json,token=input.headers?.['cf-access-jwt-assertion'];\nif(typeof token!=='string'||token.length>16384)throw new Error('Administrator sign-in required');\nconst parts=token.split('.');if(parts.length!==3)throw new Error('Invalid identity');\nconst decode=s=>Buffer.from(s,'base64url');\nconst header=JSON.parse(decode(parts[0]).toString()),claims=JSON.parse(decode(parts[1]).toString()),now=Math.floor(Date.now()/1000);\nconst issuer='https://tcfr-mbw.cloudflareaccess.com',audience='62ad79ee3af18f90b4827d5a84be038d4df901a56cbc21abda1ac5991ea89060';\nif(header.alg!=='RS256'||typeof header.kid!=='string'||claims.iss!==issuer||!Array.isArray(claims.aud)||!claims.aud.includes(audience)||!Number.isFinite(claims.exp)||claims.exp<=now||(claims.nbf!==undefined&&(!Number.isFinite(claims.nbf)||claims.nbf>now))||typeof claims.email!=='string'||!claims.email.trim())throw new Error('Invalid identity');\nauthorizationStage='identity_service';\n// Cloudflare's existing origin verifier checks the signature using Web Crypto.\n// Send the same application token as the Access cookie so the edge authenticates too.\nconst identity=await this.helpers.httpRequest({url:'https://admin.mindobirdwatching.com/api/outcomes-identity',headers:{Cookie:'CF_Authorization='+token,'Cf-Access-Jwt-Assertion':token},json:true,timeout:10000});\nif(identity?.authorized!==true)throw new Error('Invalid identity');\nif(claims.email.trim().toLowerCase()==='faustoandrade635@gmail.com')throw new Error('Administrator access required');\nauthorizationStage='report';\nconst q=input.body||{};const valid=v=>/^\\d{4}-\\d{2}-\\d{2}$/.test(v)&&!isNaN(Date.parse(v))&&new Date(v+'T00:00:00Z').toISOString().slice(0,10)===v;if(![q.start,q.end,q.priorStart,q.priorEnd].every(valid)||q.start>q.end||q.priorEnd>=q.start)throw Error('Invalid report');return [{json:{authorized:true,...q}}];}catch{return [{json:{authorized:false,ok:false,error:'Administrator authorization failed.'}}];}"
+      }
+    },
+    {
+      "id": "f44cdeca-d4f2-49eb-806e-54926353d7f2",
+      "name": "Administrator Authorized",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "authorized",
+              "leftValue": "={{$json.authorized}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "7fb8fec8-3e37-45d4-aaa5-846d47adae6e",
+      "name": "Discover GA4 properties",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        690,
+        0
+      ],
+      "parameters": {
+        "url": "https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=200",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googleOAuth2Api": {
+          "id": "Dko74TIkZJ8IBHNK",
+          "name": "Google OAuth2 API - GA4 MBW"
+        }
+      }
+    },
+    {
+      "id": "3f6806aa-f889-477a-8520-558297fa2f32",
+      "name": "Property stream requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        920,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const a=$json.accountSummaries||[];const props=a.flatMap(s=>s.propertySummaries||[]);if(!props.length)return [{json:{property:null,url:'https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=1'}}];return props.map(p=>({json:{property:p.property,url:'https://analyticsadmin.googleapis.com/v1beta/'+p.property+'/dataStreams?pageSize=200'}}));"
+      }
+    },
+    {
+      "id": "5f32ccf8-ebe2-4d70-a95b-0c06d5aeff06",
+      "name": "Read public stream identities",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1150,
+        0
+      ],
+      "parameters": {
+        "url": "={{$json.url}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googleOAuth2Api": {
+          "id": "Dko74TIkZJ8IBHNK",
+          "name": "Google OAuth2 API - GA4 MBW"
+        }
+      }
+    },
+    {
+      "id": "67bef7aa-c43a-4047-ac53-72b7734449c5",
+      "name": "Build report requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const domains=[\"mindobirdwatching.com\", \"thecloudforestretreat.com\", \"experienceecuador.com\", \"mindotours.com\", \"chocoandinotours.com\", \"experiencetheamazon.com\", \"businessbuyingandselling.com\", \"eyesondanang.com\"];const q=$('Authorize Administrator').first().json;const props={};for(const [i,item] of $input.all().entries()){const property=$('Property stream requests').all()[i]?.json.property;for(const stream of item.json.dataStreams||[]){try{const host=new URL(stream.webStreamData?.defaultUri).hostname.replace(/^www\\./,'');if(domains.includes(host)){if(props[host]&&props[host]!==property)props[host]=false;else if(props[host]!==false)props[host]=property;}}catch{}}}const out=[];for(const domain of domains)for(const prior of [false,true]){const startDate=prior?q.priorStart:q.start,endDate=prior?q.priorEnd:q.end;if(props[domain])out.push({json:{domain,prior,source:'ga',url:'https://analyticsdata.googleapis.com/v1beta/'+props[domain]+':runReport',body:{dateRanges:[{startDate,endDate}],metrics:[{name:'sessions'}],dimensionFilter:{filter:{fieldName:'hostName',inListFilter:{values:[domain,'www.'+domain],caseSensitive:false}}}}}});out.push({json:{domain,prior,source:'search',url:'https://www.googleapis.com/webmasters/v3/sites/'+encodeURIComponent('sc-domain:'+domain)+'/searchAnalytics/query',body:{startDate,endDate,type:'web',dataState:'final'}}})}return out;"
+      }
+    },
+    {
+      "id": "45b5368a-9fd6-4293-b597-d48dd0314e55",
+      "name": "Read portfolio reports",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1610,
+        0
+      ],
+      "parameters": {
+        "url": "={{$json.url}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "neverError": true
+            }
+          }
+        },
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json.body}}"
+      },
+      "credentials": {
+        "googleOAuth2Api": {
+          "id": "Dko74TIkZJ8IBHNK",
+          "name": "Google OAuth2 API - GA4 MBW"
+        }
+      }
+    },
+    {
+      "id": "ab66a3b6-b7b7-49af-8bee-5c07878bb733",
+      "name": "Format portfolio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const domains=[\"mindobirdwatching.com\", \"thecloudforestretreat.com\", \"experienceecuador.com\", \"mindotours.com\", \"chocoandinotours.com\", \"experiencetheamazon.com\", \"businessbuyingandselling.com\", \"eyesondanang.com\"];const sites=domains.map(domain=>({domain,sessions:null,priorSessions:null,search:null,priorSearch:null}));for(const [i,item] of $input.all().entries()){const context=$('Build report requests').all()[i].json,p=item.json,s=sites.find(v=>v.domain===context.domain);if(p.error)continue;if(context.source==='ga'){if(!Array.isArray(p.metricHeaders))continue;const v=p.rows?.[0]?.metricValues?.[0]?.value;if(v===undefined&&p.rowCount)continue;s[context.prior?'priorSessions':'sessions']=Number(v||0);}else{const row=p.rows?.[0];if(row&&(!Number.isFinite(row.impressions)||!Number.isFinite(row.clicks)))continue;s[context.prior?'priorSearch':'search']={impressions:row?.impressions||0,clicks:row?.clicks||0};}}const q=$('Authorize Administrator').first().json;return [{json:{ok:true,start:q.start,end:q.end,priorStart:q.priorStart,priorEnd:q.priorEnd,updatedAt:new Date().toISOString(),sites}}];"
+      }
+    },
+    {
+      "id": "94ae81f3-8834-4f77-95fb-4b3c565b6e85",
+      "name": "Return Portfolio",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2070,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "private, no-store"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "97dbd1db-0c3b-43ee-9302-e86ff6802f2c",
+      "name": "Reject Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2300,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseCode": 401,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "private, no-store"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Portfolio Webhook": {
+      "main": [
+        [
+          {
+            "node": "Authorize Administrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize Administrator": {
+      "main": [
+        [
+          {
+            "node": "Administrator Authorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Administrator Authorized": {
+      "main": [
+        [
+          {
+            "node": "Discover GA4 properties",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discover GA4 properties": {
+      "main": [
+        [
+          {
+            "node": "Property stream requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Property stream requests": {
+      "main": [
+        [
+          {
+            "node": "Read public stream identities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read public stream identities": {
+      "main": [
+        [
+          {
+            "node": "Build report requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build report requests": {
+      "main": [
+        [
+          {
+            "node": "Read portfolio reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read portfolio reports": {
+      "main": [
+        [
+          {
+            "node": "Format portfolio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format portfolio": {
+      "main": [
+        [
+          {
+            "node": "Return Portfolio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false,
+    "timezone": "America/Guayaquil"
+  },
+  "active": false
+}
