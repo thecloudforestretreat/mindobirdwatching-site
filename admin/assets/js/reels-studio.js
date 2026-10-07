@@ -11,6 +11,9 @@
   function esc(value) { return clean(value).replace(/[&<>'"]/g, function (char) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]; }); }
   function truthy(value) { return value === true || ["true", "1", "yes", "on"].includes(clean(value).toLowerCase()); }
   function has(value) { return clean(value) !== ""; }
+  // Empty future schedule slots are not actionable reels. Published platform
+  // URLs are intentionally not required because real drafts do not have them yet.
+  function isActionableReel(row) { return Boolean(row && has(row.video_url)); }
   function field(row) { for (var i = 1; i < arguments.length; i += 1) if (has(row[arguments[i]])) return row[arguments[i]]; return ""; }
   function rowId(row) { return clean(field(row, "reel_id", "post_id", "row_number")); }
   function youtubeUrl(row) { var direct = clean(row.youtube_url); var id = clean(row.youtube_post_id); return direct || (id ? "https://www.youtube.com/watch?v=" + encodeURIComponent(id) : ""); }
@@ -83,7 +86,8 @@
     $("refreshQueue").disabled = true;
     try {
       var data = await request("list_reels");
-      state.rows = Array.isArray(data.reels) ? data.reels : Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
+      var incoming = Array.isArray(data.reels) ? data.reels : Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
+      state.rows = incoming.filter(isActionableReel);
       render();
       setQueueStatus((demoMode ? "Preview data loaded" : "Live queue updated") + " · " + state.rows.length + " reel" + (state.rows.length === 1 ? "" : "s"), "success");
     } catch (error) {
