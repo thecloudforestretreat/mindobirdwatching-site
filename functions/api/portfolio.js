@@ -11,5 +11,11 @@ export async function onRequestGet({request}){
  const token=request.headers.get('Cf-Access-Jwt-Assertion');
  try{if(await verifyIdentity(token)==='faustoandrade635@gmail.com')return reply(403,{ok:false,error:'Administrator access required.'});}catch{return reply(401,{ok:false,error:'Sign in through MBW Admin.'});}
  let period;try{period=ranges(Number(new URL(request.url).searchParams.get('days')||28));}catch{return reply(400,{ok:false,error:'Choose 7, 28 or 90 days.'});}
- try{const r=await fetch('https://n8n.mindobirdwatching.com/webhook/mbw-portfolio-report',{method:'POST',headers:{'Content-Type':'application/json','Cf-Access-Jwt-Assertion':token},body:JSON.stringify(period),signal:AbortSignal.timeout(55000)});if(!r.ok)throw Error();const p=await r.json();if(!p.ok||p.start!==period.start||p.end!==period.end||!Array.isArray(p.sites))throw Error();return reply(200,p);}catch{return reply(503,{ok:false,error:'Portfolio reporting feed is unavailable. No snapshot or estimated totals are displayed.'});}
+ const headers={'Content-Type':'application/json','Cf-Access-Jwt-Assertion':token};
+ const business=fetch('https://n8n.mindobirdwatching.com/webhook/mbw-recorded-outcomes',{method:'POST',headers,body:JSON.stringify({source:'website',stage:'confirmed',start:period.start,end:period.end}),signal:AbortSignal.timeout(40000)}).then(async r=>{
+  if(!r.ok)throw Error();const p=await r.json();if(!p.ok||p.start!==period.start||p.end!==period.end||p.demand?.status!=='connected'||!Array.isArray(p.demand.rows))throw Error();
+  const sum=k=>p.demand.rows.reduce((n,r)=>n+(Number.isFinite(r[k])?r[k]:0),0);
+  return {status:'connected',inquiries:sum('inquiries'),confirmed:sum('confirmed'),completedTours:sum('completedTours'),missingCreatedDates:p.demand.missingCreatedDates,missingCompletedDates:p.demand.missingCompletedDates,definitions:p.demand.definitions,updatedAt:p.updated_at};
+ }).catch(()=>({status:'unavailable'}));
+ try{const r=await fetch('https://n8n.mindobirdwatching.com/webhook/mbw-portfolio-report',{method:'POST',headers,body:JSON.stringify(period),signal:AbortSignal.timeout(55000)});if(!r.ok)throw Error();const p=await r.json();if(!p.ok||p.start!==period.start||p.end!==period.end||!Array.isArray(p.sites))throw Error();p.business=await business;return reply(200,p);}catch{return reply(503,{ok:false,error:'Portfolio reporting feed is unavailable. No snapshot or estimated totals are displayed.'});}
 }

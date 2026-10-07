@@ -43,6 +43,9 @@ for n in nodes:
   tail=n['parameters']['jsCode'].split('const out=[];',1)[1]
   tail=tail.replace("encodeURIComponent('sc-domain:'+domain)","encodeURIComponent(domain==='experienceecuador.com'?'https://experienceecuador.com/':'sc-domain:'+domain)")
   n['parameters']['jsCode']='const domains='+json.dumps(domains)+";const q=$('Authorize Administrator').first().json;const props="+json.dumps({k:'properties/'+v for k,v in properties.items()})+';const out=[];'+tail
+for n in nodes:
+ if n['name']=='Build report requests':n['parameters']['jsCode']=(root/'requests.js').read_text()
+ if n['name']=='Format portfolio':n['parameters']['jsCode']=(root/'format.js').read_text()
 flow={'name':'MBW - Portfolio Reporting','nodes':nodes,'connections':connections,'settings':old['settings'],'active':False}
 (root/'workflow.json').write_text(json.dumps(flow,indent=2))
 print('Generated private portfolio workflow using existing Google credential reference; no secrets included.')
