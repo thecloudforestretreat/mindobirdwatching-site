@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const source=fs.readFileSync('functions/api/portfolio.js','utf8').replace("import {verifyIdentity} from '../_middleware.js';","const verifyIdentity=async token=>{if(token==='guide')return 'faustoandrade635@gmail.com';if(token!=='valid')throw Error();return 'admin';};");
+const {ranges,onRequestGet}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+assert.deepEqual(ranges(7,new Date('2026-01-01T02:00:00Z')),{start:'2025-12-22',end:'2025-12-28',priorStart:'2025-12-15',priorEnd:'2025-12-21'});
+assert.throws(()=>ranges(30));
+const request=(host='admin.mindobirdwatching.com',token='valid',days='28')=>({request:new Request('https://'+host+'/api/portfolio?days='+days,{headers:{'Cf-Access-Jwt-Assertion':token}})});
+let calls=0;globalThis.fetch=async()=>{calls++;throw Error()};
+assert.equal((await onRequestGet(request('mindobirdwatching.com'))).status,403);assert.equal((await onRequestGet(request(undefined,'guide'))).status,403);assert.equal((await onRequestGet(request(undefined,'invalid'))).status,401);assert.equal((await onRequestGet(request(undefined,'valid','30'))).status,400);assert.equal(calls,0);
+globalThis.fetch=async(url,options)=>{calls++;assert.equal(options.headers['Cf-Access-Jwt-Assertion'],'valid');const p=JSON.parse(options.body);return new Response(JSON.stringify(url.includes('recorded-outcomes')?{ok:true,start:p.start,end:p.end,demand:{status:'connected',rows:[{inquiries:3,confirmed:2,completedTours:1,email:'must-not-return@example.test'},{inquiries:1,confirmed:0,completedTours:1}],definitions:{cohort:'cohort'},missingCreatedDates:0,missingCompletedDates:0}}:{ok:true,...p,sites:[]}));};
+const data=await (await onRequestGet(request())).json();assert.equal(data.business.inquiries,4);assert.equal(data.business.confirmed,2);assert.equal(data.business.completedTours,2);assert(!JSON.stringify(data).includes('must-not-return'));
+globalThis.fetch=async(url,options)=>{if(url.includes('recorded-outcomes'))throw Error();return new Response(JSON.stringify({ok:true,...JSON.parse(options.body),sites:[]}));};assert.equal((await (await onRequestGet(request())).json()).business.status,'unavailable');
+console.log('PASS: timezone boundaries, access guards before upstream reads, invalid range, aggregate business counts without personal rows, business-source isolation');
