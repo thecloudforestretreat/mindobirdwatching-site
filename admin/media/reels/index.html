@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Reels Studio</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/media/reels/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/admin.css?v=5" />
+  <link rel="stylesheet" href="/assets/css/reels-studio.css?v=1" />
+</head>
+<body data-admin-layout="media" data-admin-page="media">
+  <div data-admin-nav data-admin-page="media"></div>
+
+  <main class="reelsShell">
+    <header class="studioHero">
+      <div class="studioBrand">
+        <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
+        <div>
+          <p class="eyebrow">Media workspace</p>
+          <h1>Reels Studio</h1>
+          <p>Prepare several reels at once, review generated copy, and follow every post from draft to its live platform links.</p>
+        </div>
+      </div>
+      <div class="heroActions">
+        <a class="button buttonGhost" href="/media/">← Media</a>
+        <button class="button buttonPrimary" id="openComposer" type="button">+ Add reels</button>
+      </div>
+    </header>
+
+    <section class="studioStats" aria-label="Reels summary">
+      <article><span id="statReview">0</span><small>Needs review</small></article>
+      <article><span id="statUpcoming">0</span><small>Upcoming</small></article>
+      <article><span id="statPublished">0</span><small>Published</small></article>
+      <article><span id="statAttention">0</span><small>Needs attention</small></article>
+    </section>
+
+    <section class="workspacePanel" aria-labelledby="queueHeading">
+      <div class="queueToolbar">
+        <div>
+          <p class="eyebrow">Publishing queue</p>
+          <h2 id="queueHeading">Your reels</h2>
+        </div>
+        <div class="queueControls">
+          <label class="searchBox">
+            <span class="srOnly">Search reels</span>
+            <input id="searchInput" type="search" placeholder="Search descriptions, birds, or IDs" autocomplete="off" />
+          </label>
+          <button class="iconButton" id="refreshQueue" type="button" aria-label="Refresh reels" title="Refresh">↻</button>
+        </div>
+      </div>
+
+      <div class="tabRow" role="tablist" aria-label="Reel status">
+        <button class="statusTab isActive" type="button" role="tab" aria-selected="true" data-status="upcoming">Upcoming <span id="countUpcoming">0</span></button>
+        <button class="statusTab" type="button" role="tab" aria-selected="false" data-status="review">Needs review <span id="countReview">0</span></button>
+        <button class="statusTab" type="button" role="tab" aria-selected="false" data-status="published">Published <span id="countPublished">0</span></button>
+        <button class="statusTab" type="button" role="tab" aria-selected="false" data-status="failed">Failed / partial <span id="countFailed">0</span></button>
+        <button class="statusTab" type="button" role="tab" aria-selected="false" data-status="all">All <span id="countAll">0</span></button>
+      </div>
+
+      <div class="queueStatus" id="queueStatus" role="status" aria-live="polite">Loading reels…</div>
+      <div class="reelsGrid" id="reelsGrid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div class="modalBackdrop" id="composerBackdrop" hidden>
+    <section class="studioModal composerModal" role="dialog" aria-modal="true" aria-labelledby="composerTitle">
+      <header class="modalHeader">
+        <div><p class="eyebrow">Batch intake</p><h2 id="composerTitle">Add reels</h2></div>
+        <button class="iconButton" type="button" data-close-modal aria-label="Close">×</button>
+      </header>
+
+      <form id="batchForm">
+        <section class="batchDefaults" aria-label="Batch defaults">
+          <label><span>Starting date</span><input id="batchStartDate" type="date" required /></label>
+          <label><span>Default time</span><input id="batchTime" type="time" value="07:00" required /></label>
+          <label><span>Time zone</span>
+            <select id="batchTimezone">
+              <option value="America/Guayaquil">Mindo time (GMT-5)</option>
+              <option value="America/New_York">Eastern time</option>
+            </select>
+          </label>
+          <label><span>Schedule pattern</span>
+            <select id="batchPattern">
+              <option value="daily">One per day</option>
+              <option value="weekdays">Weekdays only</option>
+              <option value="same">Same date</option>
+            </select>
+          </label>
+          <label><span>Publishing mode</span>
+            <select id="batchMode">
+              <option value="review">Review before scheduling</option>
+              <option value="auto">Auto-schedule when validation passes</option>
+            </select>
+          </label>
+        </section>
+
+        <fieldset class="platformDefaults">
+          <legend>Destinations</legend>
+          <label><input type="checkbox" name="platform" value="instagram" checked /> Instagram</label>
+          <label><input type="checkbox" name="platform" value="facebook" checked /> Facebook</label>
+          <label><input type="checkbox" name="platform" value="youtube" checked /> YouTube</label>
+          <label><input type="checkbox" name="platform" value="tiktok" checked /> TikTok</label>
+        </fieldset>
+
+        <div class="batchItems" id="batchItems"></div>
+        <button class="button buttonGhost addRowButton" id="addReelRow" type="button">+ Add another reel</button>
+
+        <footer class="modalFooter">
+          <p id="batchStatus" role="status" aria-live="polite"></p>
+          <div>
+            <button class="button buttonGhost" type="button" data-close-modal>Cancel</button>
+            <button class="button buttonPrimary" id="submitBatch" type="submit">Generate reel drafts</button>
+          </div>
+        </footer>
+      </form>
+    </section>
+  </div>
+
+  <div class="drawerBackdrop" id="reviewBackdrop" hidden>
+    <aside class="reviewDrawer" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+      <header class="modalHeader">
+        <div><p class="eyebrow">Copy and publishing details</p><h2 id="reviewTitle">Review reel</h2></div>
+        <button class="iconButton" type="button" data-close-review aria-label="Close">×</button>
+      </header>
+      <div id="reviewContent" class="reviewContent"></div>
+      <footer class="drawerFooter" id="reviewActions"></footer>
+    </aside>
+  </div>
+
+  <template id="batchItemTemplate">
+    <article class="batchItem">
+      <div class="batchItemHeader"><strong>Reel <span data-row-number></span></strong><button class="textButton dangerText" type="button" data-remove-row>Remove</button></div>
+      <div class="batchItemFields">
+        <label class="wide"><span>Cloudinary video URL</span><input type="url" data-field="video_url" placeholder="https://res.cloudinary.com/…/video/upload/…mp4" required /></label>
+        <label class="wide"><span>Short factual description</span><textarea data-field="reel_description" rows="3" maxlength="1200" placeholder="What happens in the reel? Include known birds, activity, or details you want the copy to use." required></textarea></label>
+        <label><span>Scheduled date</span><input type="date" data-field="scheduled_date" required /></label>
+        <label><span>Scheduled time</span><input type="time" data-field="scheduled_time" required /></label>
+      </div>
+    </article>
+  </template>
+
+  <script defer src="/assets/js/admin-nav.js?v=6"></script>
+  <script defer src="/assets/js/reels-studio.js?v=1"></script>
+</body>
+</html>
