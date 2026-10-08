@@ -1110,30 +1110,23 @@ a {
   }
 }
 
-/* Public lodging hub: let an odd final card use the full row. */
+/* Public lodging hub: equal-height paired cards with aligned actions. */
 @media (min-width: 760px){
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide{
-    grid-column:1 / -1;
-    display:grid;
-    grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recGrid3Featured{
     align-items:stretch;
+    grid-auto-rows:1fr;
   }
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recMedia,
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recCarousel{
-    aspect-ratio:auto;
-    width:100%;
-    height:100%;
-    min-height:360px;
-    max-height:none;
-  }
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recViewport,
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recTrack,
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recSlide,
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recSlide img{
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recGrid3Featured > .recCard{
+    display:flex;
+    flex-direction:column;
     height:100%;
   }
-  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recBody{
-    align-content:center;
-    padding:24px;
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recGrid3Featured > .recCard .recBody{
+    display:flex;
+    flex:1;
+    flex-direction:column;
+  }
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recGrid3Featured > .recCard .recBtns{
+    margin-top:auto;
   }
 }
