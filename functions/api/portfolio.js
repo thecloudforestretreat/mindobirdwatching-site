@@ -8,6 +8,12 @@ export function ranges(days,now=new Date(),comparison="previous"){
  if(comparison==='year'){const yearAgo=d=>{const [y,m,day]=d.split('-').map(Number);const last=new Date(Date.UTC(y-1,m,0)).getUTCDate();return new Date(Date.UTC(y-1,m-1,Math.min(day,last))).toISOString().slice(0,10)};period.priorStart=yearAgo(period.start);period.priorEnd=yearAgo(period.end)}
  return period;
 }
+export function spikeRange(start,end,reportEnd){
+ const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')&&Number.isFinite(Date.parse(d))&&new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;
+ const first=new Date(Date.parse(reportEnd+'T00:00:00Z')-89*86400000).toISOString().slice(0,10),length=(Date.parse(end)-Date.parse(start))/86400000+1;
+ if(!valid(start)||!valid(end)||start<first||end>reportEnd||start>end||length>7)throw Error('Choose one day or a week within the current 90-day chart.');
+ const prior=d=>new Date(Date.parse(d+'T00:00:00Z')-length*86400000).toISOString().slice(0,10);return {start,end,priorStart:prior(start),priorEnd:prior(end)};
+}
 export async function onRequestGet({request}){
  if(new URL(request.url).hostname!=='admin.mindobirdwatching.com')return reply(403,{ok:false,error:'Open through MBW Admin.'});
  const token=request.headers.get('Cf-Access-Jwt-Assertion');
@@ -15,6 +21,7 @@ export async function onRequestGet({request}){
  const params=new URL(request.url).searchParams;const domain=params.get('site')||null;const allowed=['mindobirdwatching.com','thecloudforestretreat.com','experienceecuador.com','mindotours.com','chocoandinotours.com','experiencetheamazon.com','businessbuyingandselling.com','eyesondanang.com','arguellodentistry.com'];if(domain&&!allowed.includes(domain))return reply(400,{ok:false,error:'Choose a portfolio website.'});
  const comparison=params.get('compare')||'previous';if(!['previous','year'].includes(comparison))return reply(400,{ok:false,error:'Choose previous period or last year.'});
  let period;try{period=ranges(Number(params.get('days')||28),new Date(),comparison);}catch{return reply(400,{ok:false,error:'Choose 7, 28 or 90 days.'});}
+ const spike=params.get('spike')==='1',spikeMetric=params.get('metric')||'sessions';if(spike){try{if(!domain||params.has('inspect')||!['sessions','impressions'].includes(spikeMetric))throw Error();period=spikeRange(params.get('from'),params.get('to'),period.end);}catch{return reply(400,{ok:false,error:'Choose a website and a day or week within the 90-day chart.'});}}
  const headers={'Content-Type':'application/json','Cf-Access-Jwt-Assertion':token};
  const readBusiness=async(start,end)=>{try{
   const r=await fetch('https://n8n.mindobirdwatching.com/webhook/mbw-recorded-outcomes',{method:'POST',headers,body:JSON.stringify({source:'website',stage:'confirmed',start,end}),signal:AbortSignal.timeout(40000)});if(!r.ok)throw Error();const p=await r.json();if(!p.ok||p.start!==start||p.end!==end||p.demand?.status!=='connected'||!Array.isArray(p.demand.rows))throw Error();
@@ -25,5 +32,5 @@ export async function onRequestGet({request}){
  }catch{return {status:'unavailable'}}};
  const inspection=params.get('inspect')==='1';let pages=[];if(inspection){if(!domain)return reply(400,{ok:false,error:'Choose a website.'});try{pages=JSON.parse(params.get('pages')||'[]');if(!Array.isArray(pages)||pages.length<1||pages.length>3)throw Error();pages=pages.map(value=>{const u=new URL(value);if(u.protocol!=='https:'||![domain,'www.'+domain].includes(u.hostname)||u.username||u.password||u.port||u.search||u.hash||u.pathname.length>300||/^\/(?:[a-z]{2}\/)?(?:testing[0-9]*|admin|preview|staging|qa)(?:\/|$)/i.test(u.pathname))throw Error();return u.href;});}catch{return reply(400,{ok:false,error:'Choose up to three public pages on this website.'});}}
  const business=domain?Promise.resolve(null):Promise.all([readBusiness(period.start,period.end),readBusiness(period.priorStart,period.priorEnd)]).then(([current,prior])=>({...current,prior}));
- try{const r=await fetch('https://n8n.mindobirdwatching.com/webhook/mbw-portfolio-report',{method:'POST',headers,body:JSON.stringify({...period,domain,includeTests:params.get('tests')==='include',mode:inspection?'inspection':undefined,pages:inspection?pages:undefined}),signal:AbortSignal.timeout(55000)});if(!r.ok)throw Error();const p=await r.json();if(!p.ok||p.start!==period.start||p.end!==period.end||!Array.isArray(p.sites))throw Error();if(!domain)p.business=await business;p.comparison=comparison;return reply(200,p);}catch{return reply(503,{ok:false,error:'Portfolio reporting feed is unavailable. No snapshot or estimated totals are displayed.'});}
+ try{const r=await fetch('https://n8n.mindobirdwatching.com/webhook/mbw-portfolio-report',{method:'POST',headers,body:JSON.stringify({...period,domain:spike&&spikeMetric==='impressions'?null:domain,includeTests:params.get('tests')==='include',mode:inspection?'inspection':undefined,pages:inspection?pages:undefined}),signal:AbortSignal.timeout(55000)});if(!r.ok)throw Error();const p=await r.json();if(!p.ok||p.start!==period.start||p.end!==period.end||!Array.isArray(p.sites))throw Error();if(!domain)p.business=await business;p.comparison=spike?'previous':comparison;if(spike){p.spike=true;p.metric=spikeMetric;p.sites=p.sites.filter(s=>s.domain===domain);}return reply(200,p);}catch{return reply(503,{ok:false,error:'Portfolio reporting feed is unavailable. No snapshot or estimated totals are displayed.'});}
 }

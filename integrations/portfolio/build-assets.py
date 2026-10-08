@@ -1,10 +1,10 @@
-"""Version the portfolio's three script assets to prevent mixed cached releases."""
+"""Version the portfolio's script assets to prevent mixed cached releases."""
 from pathlib import Path
 import hashlib
 import re
 root = Path(__file__).resolve().parents[2] / 'admin' / 'portfolio'
 index = (root / 'index.html').read_text()
-for name in ('dashboard', 'improvements', 'micro'):
+for name in ('dashboard', 'improvements', 'micro', 'charts'):
     source = (root / f'{name}.js').read_bytes()
     asset = f'{name}-{hashlib.sha256(source).hexdigest()[:12]}.js'
     for old in root.glob(f'{name}-*.js'):
