@@ -3,7 +3,7 @@
 
   // Keep reads and writes on the Access-protected admin origin.
   var API = "/api/admin/reels";
-  var state = { rows: [], activeStatus: "upcoming", query: "", selected: null, loading: false };
+  var state = { rows: [], activeStatus: "upcoming", query: "", selected: null, loading: false, generationPoll: null };
   var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && new URLSearchParams(window.location.search).get("demo") === "1";
 
   function $(id) { return document.getElementById(id); }
@@ -18,6 +18,29 @@
   function rowId(row) { return clean(field(row, "reel_id", "post_id", "row_number")); }
   function youtubeUrl(row) { var direct = clean(row.youtube_url); var id = clean(row.youtube_post_id); return direct || (id ? "https://www.youtube.com/watch?v=" + encodeURIComponent(id) : ""); }
   function scheduledValue(row) { return [clean(row.scheduled_date), clean(row.scheduled_time)].filter(Boolean).join(" · "); }
+  function isoDate(value) {
+    var text = clean(value);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+    var match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    return match ? match[3] + "-" + match[1].padStart(2, "0") + "-" + match[2].padStart(2, "0") : "";
+  }
+  function time24(value) {
+    var text = clean(value);
+    if (/^\d{2}:\d{2}$/.test(text)) return text;
+    var match = text.match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+    if (!match) return "";
+    var hour = Number(match[1]) % 12 + (match[3].toUpperCase() === "PM" ? 12 : 0);
+    return String(hour).padStart(2, "0") + ":" + match[2];
+  }
+  function easternNow() {
+    var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+    var values = {}; parts.forEach(function (part) { values[part.type] = part.value; });
+    return { date: values.year + "-" + values.month + "-" + values.day, time: values.hour + ":" + values.minute };
+  }
+  function scheduleIsPast(date, time) {
+    var now = easternNow();
+    return isoDate(date) + "T" + time24(time) <= now.date + "T" + now.time;
+  }
   function platformSelected(row, platform) {
     var key = platform === "youtube" ? "post_on_youtube" : platform === "tiktok" ? "post_on_tiktok" : "post_to_" + platform;
     return truthy(row[key]);
@@ -27,6 +50,18 @@
   function failedPlatforms(row) {
     var value = clean(row.failed_platforms || row.publish_failed_platforms).toLowerCase();
     return ["instagram", "facebook", "youtube", "tiktok"].filter(function (platform) { return value.includes(platform); });
+  }
+  function copyIsGenerated(row) {
+    if (!has(row.instagram_caption_final)) return false;
+    if (platformSelected(row, "youtube") && !has(row.youtube_title)) return false;
+    if (platformSelected(row, "tiktok") && (!has(row.tiktok_caption) || !has(row.tiktok_hashtags))) return false;
+    return true;
+  }
+  function copyIsApproved(row) {
+    return clean(row.approval_status).toUpperCase() === "APPROVED" && Number(row.quality_score || 0) >= 85 && copyIsGenerated(row);
+  }
+  function copyIsGenerating(row) {
+    return clean(row.status).toLowerCase() === "testing" && !copyIsGenerated(row);
   }
   function bucket(row) {
     var status = clean(row.status).toLowerCase();
@@ -44,6 +79,8 @@
     if (group === "published") return { label: "Published", tone: "live" };
     if (group === "failed") return { label: clean(row.status) || "Partial", tone: "error" };
     if (group === "upcoming") return { label: clean(row.status) || "Scheduled", tone: "scheduled" };
+    if (copyIsGenerating(row)) return { label: "Generating copy", tone: "pending" };
+    if (copyIsApproved(row)) return { label: "Copy ready", tone: "scheduled" };
     return { label: clean(row.status) === "Draft" ? "Draft" : "Needs review", tone: "pending" };
   }
   function formatQuality(row) { var score = Number(row.quality_score); return Number.isFinite(score) && score > 0 ? "Quality " + score : "Not scored"; }
@@ -130,7 +167,7 @@
     var info = statusLabel(row);
     var group = bucket(row);
     var id = rowId(row);
-    var primaryAction = group === "review" ? "Review copy" : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
+    var primaryAction = group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
     var youtube = youtubeUrl(row);
     return '<article class="reelCard" data-reel-id="' + esc(id) + '">' +
       '<div class="videoShell"><video src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls aria-label="Preview ' + esc(id) + '"></video><div class="videoMeta"><span>REEL</span><span>' + esc(clean(row.location) || "Mindo") + "</span></div></div>" +
@@ -147,7 +184,7 @@
 
   function openComposer() { $("composerBackdrop").hidden = false; document.body.style.overflow = "hidden"; if (!$("batchItems").children.length) addBatchRow(); }
   function closeComposer() { $("composerBackdrop").hidden = true; document.body.style.overflow = ""; }
-  function todayInMindo() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+  function todayInEastern() { return easternNow().date; }
   function addDays(dateString, offset, weekdaysOnly) {
     var date = new Date(dateString + "T12:00:00Z");
     var remaining = offset;
@@ -155,7 +192,7 @@
     return date.toISOString().slice(0, 10);
   }
   function refreshBatchDates() {
-    var start = $("batchStartDate").value || todayInMindo();
+    var start = $("batchStartDate").value || todayInEastern();
     var time = $("batchTime").value || "07:00";
     var pattern = $("batchPattern").value;
     Array.from($("batchItems").children).forEach(function (item, index) {
@@ -182,24 +219,82 @@
     });
     return { mode: $("batchMode").value, timezone: timezone, reels: rows };
   }
+  function scheduleConflicts(reels, excludeId) {
+    var conflicts = [];
+    reels.forEach(function (candidate, index) {
+      var date = isoDate(candidate.scheduled_date);
+      if (!date) return;
+      reels.slice(0, index).forEach(function (other) { if (isoDate(other.scheduled_date) === date) conflicts.push(date + " (twice in this batch)"); });
+      state.rows.forEach(function (row) {
+        if (rowId(row) !== clean(excludeId) && isoDate(row.scheduled_date) === date) conflicts.push(date + " (already used by #" + rowId(row) + ")");
+      });
+    });
+    return Array.from(new Set(conflicts));
+  }
+  function confirmSchedule(reels, excludeId) {
+    var invalid = reels.find(function (row) { return !isoDate(row.scheduled_date) || !time24(row.scheduled_time) || scheduleIsPast(row.scheduled_date, row.scheduled_time); });
+    if (invalid) { window.alert("Choose a future Eastern date and time. Past publishing times cannot be saved."); return false; }
+    var conflicts = scheduleConflicts(reels, excludeId);
+    return !conflicts.length || window.confirm("Another reel is already scheduled on this date:\n\n" + conflicts.join("\n") + "\n\nSchedule more than one reel that day anyway?");
+  }
   async function submitBatch(event) {
     event.preventDefault();
     var payload = batchPayload();
     var duplicate = payload.reels.some(function (row, index) { return payload.reels.findIndex(function (candidate) { return candidate.video_url === row.video_url; }) !== index; });
     if (duplicate) { setBatchStatus("Each video URL in the batch must be unique.", "error"); return; }
     if (!Object.values(selectedDefaults()).some(Boolean)) { setBatchStatus("Select at least one destination.", "error"); return; }
+    if (!confirmSchedule(payload.reels, "")) return;
     $("submitBatch").disabled = true; setBatchStatus("Sending " + payload.reels.length + " reel" + (payload.reels.length === 1 ? "" : "s") + " for generation…", "");
     try {
       var data = await request("create_batch", payload);
-      setBatchStatus((data.count || payload.reels.length) + " reel drafts created successfully.", "success");
-      window.setTimeout(function () { closeComposer(); $("batchItems").innerHTML = ""; addBatchRow(); state.activeStatus = payload.mode === "auto" ? "upcoming" : "review"; syncTabs(); loadRows(); }, 650);
+      var createdIds = (Array.isArray(data.created) ? data.created : []).map(rowId).filter(Boolean);
+      setBatchStatus((data.count || payload.reels.length) + " reel" + ((data.count || payload.reels.length) === 1 ? "" : "s") + " saved. The Mac mini is generating copy now.", "success");
+      window.setTimeout(function () {
+        closeComposer();
+        $("batchItems").innerHTML = "";
+        addBatchRow();
+        state.activeStatus = "review";
+        syncTabs();
+        startGenerationPolling(createdIds, payload.mode);
+      }, 650);
     } catch (error) { setBatchStatus(error.message, "error"); }
     finally { $("submitBatch").disabled = false; }
+  }
+
+  function startGenerationPolling(reelIds, mode) {
+    if (state.generationPoll) window.clearTimeout(state.generationPoll);
+    var attempts = 0;
+    async function poll() {
+      attempts += 1;
+      await loadRows();
+      var tracked = reelIds.map(function (id) { return state.rows.find(function (row) { return rowId(row) === id; }); }).filter(Boolean);
+      var complete = reelIds.length ? tracked.length === reelIds.length && tracked.every(function (row) { return copyIsGenerated(row) || bucket(row) === "failed"; }) : state.rows.some(copyIsGenerated);
+      if (complete) {
+        if (mode === "auto") { state.activeStatus = "upcoming"; syncTabs(); renderCards(); }
+        setQueueStatus(mode === "auto" ? "Copy generated and validated. The reel is waiting for its scheduled publish time." : "Copy generated and ready to open. Publishing still requires your approval.", "success");
+        state.generationPoll = null;
+        return;
+      }
+      if (attempts >= 24) {
+        setQueueStatus("Copy generation is still running on the Mac mini. Use refresh to check again; the scheduled publish time does not control generation.", "");
+        state.generationPoll = null;
+        return;
+      }
+      setQueueStatus("Mac mini is generating captions, titles, and hashtags now…", "");
+      state.generationPoll = window.setTimeout(poll, 5000);
+    }
+    poll();
   }
 
   function copyField(label, key, value, multiline) {
     var control = multiline ? '<textarea data-review-field="' + esc(key) + '">' + esc(value) + '</textarea>' : '<input data-review-field="' + esc(key) + '" value="' + esc(value) + '" />';
     return '<label class="copyField"><span class="copyFieldHeader"><strong>' + esc(label) + '</strong><button class="textButton" type="button" data-copy-field="' + esc(key) + '">Copy</button></span>' + control + "</label>";
+  }
+  function scheduleEditor(row) {
+    return '<section class="scheduleEditor"><div class="scheduleEditorHeader"><strong>Publishing schedule</strong><span>Eastern time (EST/EDT)</span></div><div class="scheduleEditorFields">' +
+      '<label><span>Date</span><input type="date" min="' + esc(todayInEastern()) + '" data-review-field="scheduled_date" value="' + esc(isoDate(row.scheduled_date)) + '" required /></label>' +
+      '<label><span>Time</span><input type="time" data-review-field="scheduled_time" value="' + esc(time24(row.scheduled_time)) + '" required /></label>' +
+      '</div><small>Publishing uses New York Eastern time and automatically follows daylight saving time.</small></section>';
   }
   function openReview(id) {
     var row = state.rows.find(function (candidate) { return rowId(candidate) === clean(id); });
@@ -211,6 +306,7 @@
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
       (clean(row.error_message || row.supervision_notes) ? '<div class="warningBox">' + esc(row.error_message || row.supervision_notes) + "</div>" : "") +
+      scheduleEditor(row) +
       copyField("Original description", "reel_description", row.reel_description, true) +
       copyField("Instagram / Facebook caption", "instagram_caption_final", row.instagram_caption_final, true) +
       copyField("Instagram hashtags", "instagram_hashtags", row.instagram_hashtags, false) +
@@ -228,13 +324,35 @@
     $("reviewBackdrop").hidden = false; document.body.style.overflow = "hidden";
   }
   function closeReview() { $("reviewBackdrop").hidden = true; document.body.style.overflow = ""; state.selected = null; }
-  function reviewEdits() { var edits = {}; document.querySelectorAll("[data-review-field]").forEach(function (input) { edits[input.dataset.reviewField] = clean(input.value); }); return edits; }
+  function reviewEdits() {
+    var edits = {}; document.querySelectorAll("[data-review-field]").forEach(function (input) { edits[input.dataset.reviewField] = clean(input.value); });
+    if (has(edits.instagram_hashtags)) {
+      var captionBody = clean(edits.instagram_caption_final).split(/\n\s*\n(?=#)/)[0];
+      edits.instagram_caption_final = captionBody + "\n\n" + edits.instagram_hashtags;
+    }
+    edits.timezone = "America/New_York";
+    return edits;
+  }
+  function validateReviewEdits(edits) {
+    if (!confirmSchedule([{ scheduled_date: edits.scheduled_date, scheduled_time: edits.scheduled_time }], rowId(state.selected))) return false;
+    if (platformSelected(state.selected, "instagram")) {
+      var tags = clean(edits.instagram_hashtags).split(/\s+/).filter(Boolean);
+      if (tags.length !== 5 || tags.some(function (tag) { return !/^#[A-Za-z0-9_]+$/.test(tag); })) {
+        window.alert("Instagram requires exactly five hashtags. Replace hashtags as needed, but keep five valid #hashtags.");
+        return false;
+      }
+    }
+    return true;
+  }
   async function reviewAction(action) {
     if (!state.selected) return;
+    var edits = reviewEdits();
+    if (["save", "approve"].includes(action) && !validateReviewEdits(edits)) return;
     var buttons = Array.from($("reviewActions").querySelectorAll("button")); buttons.forEach(function (button) { button.disabled = true; });
     try {
       var payload = { reel_id: rowId(state.selected), post_id: state.selected.post_id };
-      if (action === "save") payload.edits = reviewEdits();
+      if (action === "save") payload.edits = edits;
+      if (action === "approve") await request("update_reel", { reel_id: payload.reel_id, post_id: payload.post_id, edits: edits });
       await request(action === "save" ? "update_reel" : action + "_reel", payload);
       if (demoMode) {
         Object.assign(state.selected, payload.edits || {});
@@ -266,7 +384,8 @@
   }
 
   function init() {
-    $("batchStartDate").value = todayInMindo();
+    $("batchStartDate").min = todayInEastern();
+    $("batchStartDate").value = todayInEastern();
     bindEvents(); addBatchRow(); loadRows();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
