@@ -10,7 +10,7 @@ for(const [domain,property] of Object.entries(props)){
  if(q.mode==='inspection'){
   const site=['experienceecuador.com','arguellodentistry.com'].includes(domain)?'https://'+domain+'/':'sc-domain:'+domain;
   if(!Array.isArray(q.pages)||q.pages.length<1||q.pages.length>3)throw Error('Invalid pages');
-  for(const page of q.pages){const u=new URL(page);if(u.protocol!=='https:'||![domain,'www.'+domain].includes(u.hostname)||u.search||u.hash||u.username||u.password||u.port)throw Error('Invalid page');out.push({json:{domain,source:'inspection',page:u.href,url:'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect',body:{inspectionUrl:u.href,siteUrl:site,languageCode:'en-US'}}});}continue;
+  for(const page of q.pages){const match=String(page).match(/^https:\/\/([^/?#]+)(\/[^?#]*)$/);if(!match||![domain,'www.'+domain].includes(match[1]))throw Error('Invalid page');out.push({json:{domain,source:'inspection',page,url:'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect',body:{inspectionUrl:page,siteUrl:site,languageCode:'en-US'}}});}continue;
  }
  const host={filter:{fieldName:'hostName',inListFilter:{values:[domain,'www.'+domain],caseSensitive:false}}};
  const filter=q.includeTests?host:{andGroup:{expressions:[host,{notExpression:{filter:{fieldName:'pagePath',stringFilter:{matchType:'FULL_REGEXP',value:excludedPath,caseSensitive:false}}}}]}};
