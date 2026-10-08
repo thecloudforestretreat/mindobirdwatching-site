@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.10.08.1 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.10.08.2 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.10.08.1";
+  document.documentElement.dataset.recommendationsBuild = "2026.10.08.2";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -442,13 +442,13 @@
       type: "Lodge",
       name: "El Séptimo Paraíso",
       area: "Mindo",
-      status: "review",
-      statusText: "2026 files received",
-      regularPriceLabel: "Rate year",
-      ourPriceLabel: "Agency rates",
-      regularPrice: "2026",
-      ourPrice: "Pending import",
-      savings: "2027 update due",
+      status: "current",
+      statusText: "2026 rates current",
+      regularPriceLabel: "Rack incl. tax",
+      ourPriceLabel: "Agency benefit",
+      regularPrice: "$123.75–$337.50",
+      ourPrice: "15% commission",
+      savings: "Breakfast included",
       pricingBasis: "Per room / night",
       rateValidTo: "December 31, 2026",
       contact: "Reservations",
@@ -456,6 +456,10 @@
       email: "info@septimoparaiso.com",
       website: "https://www.septimoparaiso.com/",
       instagram: "https://www.instagram.com/elseptimoparaiso/",
+      documents: [
+        { url: "/recommendations/files/el-septimo-paraiso-tarifas-2026.pdf", label: "Open 2026 agency tariff" },
+        { url: "/recommendations/files/el-septimo-paraiso-menu-2026.pdf", label: "Open 2026 restaurant menu" }
+      ],
       address: "2 km from the Y de Mindo, toward Mindo town, Mindo 170751, Ecuador",
       mapUrl: "https://www.google.com/maps/search/?api=1&query=El%20S%C3%A9ptimo%20Para%C3%ADso%20Mindo%20Ecuador",
       recommendation: "pending",
@@ -469,24 +473,42 @@
       replyAcknowledged: false,
       replySubject: "Tarifas 2026 y menú digital — El Séptimo Paraíso",
       replyDraft: "Buenas tardes,\n\nMuchas gracias por su mensaje y por compartirnos las tarifas 2026 y el menú digital de El Séptimo Paraíso. Tomamos nota de que al inicio de 2027 se realizarán los ajustes correspondientes para el nuevo año.\n\nRevisaremos la información para incorporarla a nuestro directorio interno de aliados y quedaremos atentos a la actualización de tarifas 2027. Agradecemos mucho su disposición para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
-      breakfast: "Breakfast available; confirm inclusion, schedule, and early box-breakfast options in the tariff",
-      amenities: ["30 rooms", "Private bathrooms", "Spring-fed hot water", "Free Wi-Fi", "Free private parking", "Restaurant", "Breakfast available", "Spring-fed pool", "Covered heated pool", "Jacuzzi", "Solarium", "Laundry", "Gift shop", "24-hour reception", "Birdwatching", "Hiking trails", "No pets"],
-      offeringsLabel: "Files and rate status",
+      breakfast: "Included with room rates; confirm serving hours and early box-breakfast options",
+      amenities: ["30 rooms", "Breakfast included", "Private bathrooms", "Spring-fed hot water", "Free Wi-Fi", "Free private parking", "Restaurant", "Spring-fed pool", "Covered heated pool", "Jacuzzi", "Solarium", "Laundry", "Gift shop", "24-hour reception", "Birdwatching", "Hiking trails", "No pets"],
+      offeringsLabel: "2026 room, meal-plan, and restaurant rates",
       offerings: [
-        { name: "2026 lodging tariff", price: "Received", details: "Room-by-room prices still need to be imported from the attached file" },
-        { name: "Digital restaurant menu", price: "Received", details: "Menu file or direct URL still needs to be added to this profile" },
-        { name: "2027 lodging tariff", price: "Due January 2027", details: "Partner advised that rates will be adjusted at the start of the year" }
+        { name: "Simple · 1 pax", price: "$123.75 incl. tax", details: "$99 base · breakfast included" },
+        { name: "Matrimonial Mini · 2 pax", price: "$153.75 incl. tax", details: "$123 base · breakfast included" },
+        { name: "Matrimonial · 2 pax", price: "$160 incl. tax", details: "$128 base · breakfast included" },
+        { name: "Junior Suite · 2–3 pax", price: "$205–$211.25 incl. tax", details: "$164–$169 base · room-dependent" },
+        { name: "Triple · 3 pax", price: "$223.75 incl. tax", details: "$179 base · room 22 is an exception at $160 incl. tax" },
+        { name: "Doble Superior · 4 pax", price: "$250 incl. tax", details: "$200 base · breakfast included" },
+        { name: "Family Suite · 4–5 pax", price: "$257.50 incl. tax", details: "$206 base · breakfast included" },
+        { name: "Family Suite TV · 4 pax", price: "$262.50 incl. tax", details: "$210 base · breakfast included" },
+        { name: "Master King TV · 2 pax", price: "$287.50 incl. tax", details: "$230 base · breakfast included" },
+        { name: "Master Suite Family · 5 pax", price: "$301.25 incl. tax", details: "$241 base · breakfast included" },
+        { name: "Xoco Suite cabin · 3 pax", price: "$337.50 incl. tax", details: "$270 base · breakfast included" },
+        { name: "Additional bed", price: "$27 + tax", details: "$33.75 incl. listed 25% · breakfast included" },
+        { name: "FAP · 3 meals", price: "$139 shared · $168 single", details: "Net per person/night incl. tax · superior $199 shared / $230 single" },
+        { name: "MAP · 2 meals", price: "$120 shared · $150 single", details: "Net per person/night incl. tax · superior $166 shared / $204 single" },
+        { name: "Guide or driver", price: "$59 incl. tax", details: "Per night on FAP or MAP · net, no commission" },
+        { name: "Tourist breakfast", price: "$15 + tax", details: "$18.75 incl. listed 25% · net" },
+        { name: "Tourist lunch or dinner", price: "$28 + tax", details: "$35 incl. listed 25% · net · extra drinks excluded" },
+        { name: "Group menu · 10+", price: "$24.50 + tax", details: "Lunch or dinner · no drinks · guide and driver free" },
+        { name: "Group menu · 1–7", price: "$27 + tax", details: "Lunch or dinner · no drinks · guide and driver 50%" },
+        { name: "À la carte restaurant menu", price: "$1.20–$25 + tax", details: "Full 2026 menu attached · all listed prices add 25%" }
       ],
-      termsLabel: "Confirmed information",
+      termsLabel: "Commercial terms and inclusions",
       terms: [
-        "The partner supplied a 2026 tariff and advised that prices will be adjusted at the beginning of 2027.",
-        "The official site lists eight room categories, a restaurant, breakfast availability, free parking, Wi-Fi, pools, a jacuzzi, and nature experiences.",
-        "Do not quote an agency room rate until the 2026 tariff attachment is imported and reviewed.",
-        "Pets are not allowed."
+        "Rack room rates include accommodation and breakfast. The table adds 15% tax and 10% service for a 25% total; the agency receives 15% commission.",
+        "FAP and MAP prices are net agency packages per person/night and already include tax. FAP includes breakfast, lunch, and dinner; MAP includes breakfast plus lunch or dinner.",
+        "Guide or driver pricing is $59 including tax per night on FAP or MAP, net without commission. An additional guide or tour leader pays 50% of the applicable rate.",
+        "À la carte and tourist-menu prices add 25% taxes/service unless the line explicitly says tax is included.",
+        "Rates are for 2026. The partner advised that revised 2027 prices will be issued at the start of the year."
       ],
-      sourceNotes: "The email references a 2026 tariff attachment and digital menu, but neither file was included in this chat. Add both files and replace the pending pricing fields before quoting guests.",
-      guestSummary: "El Séptimo Paraíso is a 30-room cloud-forest lodge about 2 km before Mindo, with a restaurant, pools, jacuzzi, birdwatching, forest trails, free parking, and Wi-Fi. Confirm the selected room rate and breakfast inclusion before sending a guest quote.",
-      note: "Direct partner response received October 8, 2026. Official website contact and property details were verified the same day. Main lines: +593 99 368 4417, +593 99 368 4418, and +593 99 368 4420."
+      sourceNotes: "Confirm breakfast serving hours, whether an early box breakfast is available, and why room 22 has a lower triple rate than the other triple rooms before quoting that room. Request the updated 2027 tariff in early January.",
+      guestSummary: "El Séptimo Paraíso is a 30-room cloud-forest lodge about 2 km before Mindo. Its 2026 room rates include breakfast and range from $123.75 to $337.50 including the listed taxes/service. The property has a restaurant, pools, jacuzzi, birdwatching, forest trails, free parking, and Wi-Fi.",
+      note: "Direct partner response, 2026 agency tariff, and restaurant menu received October 8, 2026. Main lines: +593 99 368 4417, +593 99 368 4418, and +593 99 368 4420."
     },
     {
       id: "mindo-chocolate-makers",
