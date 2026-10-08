@@ -3,7 +3,7 @@
 
   // Keep reads and writes on the Access-protected admin origin.
   var API = "/api/admin/reels";
-  var state = { rows: [], activeStatus: "upcoming", query: "", selected: null, loading: false };
+  var state = { rows: [], activeStatus: "upcoming", query: "", selected: null, loading: false, generationPoll: null };
   var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && new URLSearchParams(window.location.search).get("demo") === "1";
 
   function $(id) { return document.getElementById(id); }
@@ -28,6 +28,18 @@
     var value = clean(row.failed_platforms || row.publish_failed_platforms).toLowerCase();
     return ["instagram", "facebook", "youtube", "tiktok"].filter(function (platform) { return value.includes(platform); });
   }
+  function copyIsGenerated(row) {
+    if (!has(row.instagram_caption_final)) return false;
+    if (platformSelected(row, "youtube") && !has(row.youtube_title)) return false;
+    if (platformSelected(row, "tiktok") && (!has(row.tiktok_caption) || !has(row.tiktok_hashtags))) return false;
+    return true;
+  }
+  function copyIsApproved(row) {
+    return clean(row.approval_status).toUpperCase() === "APPROVED" && Number(row.quality_score || 0) >= 85 && copyIsGenerated(row);
+  }
+  function copyIsGenerating(row) {
+    return clean(row.status).toLowerCase() === "testing" && !copyIsGenerated(row);
+  }
   function bucket(row) {
     var status = clean(row.status).toLowerCase();
     var approval = clean(row.approval_status).toUpperCase();
@@ -44,6 +56,8 @@
     if (group === "published") return { label: "Published", tone: "live" };
     if (group === "failed") return { label: clean(row.status) || "Partial", tone: "error" };
     if (group === "upcoming") return { label: clean(row.status) || "Scheduled", tone: "scheduled" };
+    if (copyIsGenerating(row)) return { label: "Generating copy", tone: "pending" };
+    if (copyIsApproved(row)) return { label: "Copy ready", tone: "scheduled" };
     return { label: clean(row.status) === "Draft" ? "Draft" : "Needs review", tone: "pending" };
   }
   function formatQuality(row) { var score = Number(row.quality_score); return Number.isFinite(score) && score > 0 ? "Quality " + score : "Not scored"; }
@@ -130,7 +144,7 @@
     var info = statusLabel(row);
     var group = bucket(row);
     var id = rowId(row);
-    var primaryAction = group === "review" ? "Review copy" : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
+    var primaryAction = group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
     var youtube = youtubeUrl(row);
     return '<article class="reelCard" data-reel-id="' + esc(id) + '">' +
       '<div class="videoShell"><video src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls aria-label="Preview ' + esc(id) + '"></video><div class="videoMeta"><span>REEL</span><span>' + esc(clean(row.location) || "Mindo") + "</span></div></div>" +
@@ -191,10 +205,43 @@
     $("submitBatch").disabled = true; setBatchStatus("Sending " + payload.reels.length + " reel" + (payload.reels.length === 1 ? "" : "s") + " for generation…", "");
     try {
       var data = await request("create_batch", payload);
-      setBatchStatus((data.count || payload.reels.length) + " reel drafts created successfully.", "success");
-      window.setTimeout(function () { closeComposer(); $("batchItems").innerHTML = ""; addBatchRow(); state.activeStatus = payload.mode === "auto" ? "upcoming" : "review"; syncTabs(); loadRows(); }, 650);
+      var createdIds = (Array.isArray(data.created) ? data.created : []).map(rowId).filter(Boolean);
+      setBatchStatus((data.count || payload.reels.length) + " reel" + ((data.count || payload.reels.length) === 1 ? "" : "s") + " saved. The Mac mini is generating copy now.", "success");
+      window.setTimeout(function () {
+        closeComposer();
+        $("batchItems").innerHTML = "";
+        addBatchRow();
+        state.activeStatus = "review";
+        syncTabs();
+        startGenerationPolling(createdIds, payload.mode);
+      }, 650);
     } catch (error) { setBatchStatus(error.message, "error"); }
     finally { $("submitBatch").disabled = false; }
+  }
+
+  function startGenerationPolling(reelIds, mode) {
+    if (state.generationPoll) window.clearTimeout(state.generationPoll);
+    var attempts = 0;
+    async function poll() {
+      attempts += 1;
+      await loadRows();
+      var tracked = reelIds.map(function (id) { return state.rows.find(function (row) { return rowId(row) === id; }); }).filter(Boolean);
+      var complete = reelIds.length ? tracked.length === reelIds.length && tracked.every(function (row) { return copyIsGenerated(row) || bucket(row) === "failed"; }) : state.rows.some(copyIsGenerated);
+      if (complete) {
+        if (mode === "auto") { state.activeStatus = "upcoming"; syncTabs(); renderCards(); }
+        setQueueStatus(mode === "auto" ? "Copy generated and validated. The reel is waiting for its scheduled publish time." : "Copy generated and ready to open. Publishing still requires your approval.", "success");
+        state.generationPoll = null;
+        return;
+      }
+      if (attempts >= 24) {
+        setQueueStatus("Copy generation is still running on the Mac mini. Use refresh to check again; the scheduled publish time does not control generation.", "");
+        state.generationPoll = null;
+        return;
+      }
+      setQueueStatus("Mac mini is generating captions, titles, and hashtags now…", "");
+      state.generationPoll = window.setTimeout(poll, 5000);
+    }
+    poll();
   }
 
   function copyField(label, key, value, multiline) {
