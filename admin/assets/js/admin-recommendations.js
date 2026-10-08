@@ -1,8 +1,8 @@
-/* MBW Admin Recommendations Dashboard build 2026.10.01.2 - protected admin asset */
+/* MBW Admin Recommendations Dashboard build 2026.10.08.1 - protected admin asset */
 (function () {
   "use strict";
 
-  document.documentElement.dataset.recommendationsBuild = "2026.10.01.2";
+  document.documentElement.dataset.recommendationsBuild = "2026.10.08.1";
 
   var STORAGE_KEY = "mbw-recommendations-dashboard-v1";
   var CATEGORY_LABELS = {
@@ -435,6 +435,58 @@
       owner: "",
       breakfast: "To confirm",
       note: "Public contact verified September 19, 2026."
+    },
+    {
+      id: "el-septimo-paraiso",
+      category: "accommodations",
+      type: "Lodge",
+      name: "El Séptimo Paraíso",
+      area: "Mindo",
+      status: "review",
+      statusText: "2026 files received",
+      regularPriceLabel: "Rate year",
+      ourPriceLabel: "Agency rates",
+      regularPrice: "2026",
+      ourPrice: "Pending import",
+      savings: "2027 update due",
+      pricingBasis: "Per room / night",
+      rateValidTo: "December 31, 2026",
+      contact: "Reservations",
+      phone: "+593 99 368 4419",
+      email: "info@septimoparaiso.com",
+      website: "https://www.septimoparaiso.com/",
+      instagram: "https://www.instagram.com/elseptimoparaiso/",
+      address: "2 km from the Y de Mindo, toward Mindo town, Mindo 170751, Ecuador",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=El%20S%C3%A9ptimo%20Para%C3%ADso%20Mindo%20Ecuador",
+      recommendation: "pending",
+      followUp: "2027-01-05",
+      followUpDue: false,
+      owner: "Juan",
+      preferred: true,
+      verifiedResponse: true,
+      responseVerifiedAt: "2026-10-08",
+      replyTaskId: "septimo-paraiso-2026-10-08",
+      replyAcknowledged: false,
+      replySubject: "Tarifas 2026 y menú digital — El Séptimo Paraíso",
+      replyDraft: "Buenas tardes,\n\nMuchas gracias por su mensaje y por compartirnos las tarifas 2026 y el menú digital de El Séptimo Paraíso. Tomamos nota de que al inicio de 2027 se realizarán los ajustes correspondientes para el nuevo año.\n\nRevisaremos la información para incorporarla a nuestro directorio interno de aliados y quedaremos atentos a la actualización de tarifas 2027. Agradecemos mucho su disposición para trabajar con Mindo Bird Watching.\n\nSaludos cordiales,\nJuan\nMindo Bird Watching",
+      breakfast: "Breakfast available; confirm inclusion, schedule, and early box-breakfast options in the tariff",
+      amenities: ["30 rooms", "Private bathrooms", "Spring-fed hot water", "Free Wi-Fi", "Free private parking", "Restaurant", "Breakfast available", "Spring-fed pool", "Covered heated pool", "Jacuzzi", "Solarium", "Laundry", "Gift shop", "24-hour reception", "Birdwatching", "Hiking trails", "No pets"],
+      offeringsLabel: "Files and rate status",
+      offerings: [
+        { name: "2026 lodging tariff", price: "Received", details: "Room-by-room prices still need to be imported from the attached file" },
+        { name: "Digital restaurant menu", price: "Received", details: "Menu file or direct URL still needs to be added to this profile" },
+        { name: "2027 lodging tariff", price: "Due January 2027", details: "Partner advised that rates will be adjusted at the start of the year" }
+      ],
+      termsLabel: "Confirmed information",
+      terms: [
+        "The partner supplied a 2026 tariff and advised that prices will be adjusted at the beginning of 2027.",
+        "The official site lists eight room categories, a restaurant, breakfast availability, free parking, Wi-Fi, pools, a jacuzzi, and nature experiences.",
+        "Do not quote an agency room rate until the 2026 tariff attachment is imported and reviewed.",
+        "Pets are not allowed."
+      ],
+      sourceNotes: "The email references a 2026 tariff attachment and digital menu, but neither file was included in this chat. Add both files and replace the pending pricing fields before quoting guests.",
+      guestSummary: "El Séptimo Paraíso is a 30-room cloud-forest lodge about 2 km before Mindo, with a restaurant, pools, jacuzzi, birdwatching, forest trails, free parking, and Wi-Fi. Confirm the selected room rate and breakfast inclusion before sending a guest quote.",
+      note: "Direct partner response received October 8, 2026. Official website contact and property details were verified the same day. Main lines: +593 99 368 4417, +593 99 368 4418, and +593 99 368 4420."
     },
     {
       id: "mindo-chocolate-makers",
