@@ -1109,3 +1109,31 @@ a {
     box-shadow: none;
   }
 }
+
+/* Public lodging hub: let an odd final card use the full row. */
+@media (min-width: 760px){
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide{
+    grid-column:1 / -1;
+    display:grid;
+    grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);
+    align-items:stretch;
+  }
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recMedia,
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recCarousel{
+    aspect-ratio:auto;
+    width:100%;
+    height:100%;
+    min-height:360px;
+    max-height:none;
+  }
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recViewport,
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recTrack,
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recSlide,
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recSlide img{
+    height:100%;
+  }
+  body[data-page-content-group="recommendations"][data-page-type="recommendations_hub_page"] .recCard--wide .recBody{
+    align-content:center;
+    padding:24px;
+  }
+}
