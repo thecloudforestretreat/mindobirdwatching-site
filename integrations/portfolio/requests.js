@@ -17,6 +17,17 @@ for(const [domain,property] of Object.entries(props)){
  const report=(dimensions,metrics,dateRanges=dates,extra={})=>({dimensions:dimensions.map(name=>({name})),metrics:metrics.map(name=>({name})),dateRanges,dimensionFilter:filter,...extra});
  const descending=name=>[{metric:{metricName:name},desc:true}];
  const limited={orderBys:descending('sessions'),limit:'20'};
+ if(q.mode==='conversions'){
+  const dates90=[{startDate:trendStart,endDate:q.end}],events=['form_submit_success','generate_lead','booking_success','lead_submit','contact_success','appointment_request_success','phone_click','call_click','email_click','click_email','whatsapp_click','click_whatsapp'];
+  const eventFilter={andGroup:{expressions:[filter,{filter:{fieldName:'eventName',inListFilter:{values:events}}}]}};
+  out.push({json:{domain,source:'conversions',url:'https://analyticsdata.googleapis.com/v1beta/properties/'+property+':batchRunReports',body:{requests:[report(['date','eventName'],['eventCount'],dates90,{dimensionFilter:eventFilter,limit:'2000',orderBys:[{dimension:{dimensionName:'date'}}]})]}}});continue;
+ }
+ if(q.mode==='query'){
+  if(typeof q.query!=='string'||!q.query.trim()||q.query.length>250||/[\u0000-\u001f]/.test(q.query))throw Error('Invalid query');
+  const site=['experienceecuador.com','arguellodentistry.com'].includes(domain)?'https://'+domain+'/':'sc-domain:'+domain,url='https://www.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(site)+'/searchAnalytics/query';
+  const filtered={type:'web',dataState:'final',dimensionFilterGroups:[{groupType:'and',filters:[{dimension:'query',operator:'equals',expression:q.query}]}]};
+  for(const [source,startDate,endDate,dimensions] of [['queryTotals',q.start,q.end,[]],['priorQueryTotals',q.priorStart,q.priorEnd,[]],['queryPages',q.start,q.end,['page']],['queryTrend',trendStart,q.end,['date']]])out.push({json:{domain,source,url,body:{...filtered,startDate,endDate,dimensions,rowLimit:dimensions[0]==='date'?90:1000}}});continue;
+ }
  const reports=q.domain?[
   report(['landingPage'],['sessions','engagedSessions'],dates,limited),
   report(['sessionSourceMedium'],['sessions','engagedSessions'],dates,limited),
