@@ -27,3 +27,13 @@ Live browser verification: 1,247 sessions, 103,812 impressions, 1,072 clicks; al
 Added Arguello Dentistry: verified GA4 property 358273543 and URL-prefix Search Console property https://arguellodentistry.com/. Summary requests now cover nine sites (54 requests). Expanding a site loads one five-report GA4 batch plus six Search Console reports, including landing pages, source/medium, campaigns, countries, devices and prior query/page rows. Movement compares rows present in both periods; an omitted query is never assumed to have zero traffic. Tables display ten rows from the fetched sample.
 
 Known testing/admin/preview/staging/QA page paths are excluded from GA4 by default; an explicit checkbox includes them. This filter does not identify every internal visit or test inquiry, and GSC is unaffected. Event counts now include prior-period comparisons. Mindo business aggregates show current/prior counts and current recorded booking status as a fraction of the created inquiry cohort. Revenue remains unavailable pending reconciliation. No paid service was added.
+
+## Operational dashboard additions
+
+The Needs attention panel selects up to three transparent review suggestions, using connection failures, substantial absolute/percentage losses, low-CTR visibility and unobserved success-event delivery. Absolute period changes supplement percentages in site rows. These are review prompts, not causal conclusions.
+
+Accepted-submission events are mapped for all nine sites after source inspection. Dedicated inquiry measurement separates starts, attempts, accepted submissions, errors and contact clicks. No patient/contact form contents are read or displayed. No real or test inquiries were submitted for this update.
+
+On-demand indexing uses the existing Google OAuth credential and Google URL Inspection API for at most three validated public HTTPS pages on the selected domain: homepage plus two leading GSC pages. Results are Google's stored index state, not a live crawl or complete site coverage. Individual API errors stay unavailable. Credentials/access remain unchanged.
+
+The protected /api/portfolio-log endpoint stores operational changes in a dedicated portfolio_changes table using the existing MBW_ATTRIBUTION_DB binding. It requires administrator identity; writes require same origin, validate dates/types/domain/description length, and expose only operational entries. A single factual October 7 dashboard update is seeded. Log entries filter by site and annotate 90-day charts when within their dates. An unavailable database shows a clear error; nothing is silently saved locally.

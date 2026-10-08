@@ -7,6 +7,11 @@ const excludedPath='^/(?:[a-z]{2}/)?(?:testing[0-9]*|admin|preview|staging|qa)(?
 const out=[];
 for(const [domain,property] of Object.entries(props)){
  if(q.domain&&q.domain!==domain)continue;
+ if(q.mode==='inspection'){
+  const site=['experienceecuador.com','arguellodentistry.com'].includes(domain)?'https://'+domain+'/':'sc-domain:'+domain;
+  if(!Array.isArray(q.pages)||q.pages.length<1||q.pages.length>3)throw Error('Invalid pages');
+  for(const page of q.pages){const u=new URL(page);if(u.protocol!=='https:'||![domain,'www.'+domain].includes(u.hostname)||u.search||u.hash||u.username||u.password||u.port)throw Error('Invalid page');out.push({json:{domain,source:'inspection',page:u.href,url:'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect',body:{inspectionUrl:u.href,siteUrl:site,languageCode:'en-US'}}});}continue;
+ }
  const host={filter:{fieldName:'hostName',inListFilter:{values:[domain,'www.'+domain],caseSensitive:false}}};
  const filter=q.includeTests?host:{andGroup:{expressions:[host,{notExpression:{filter:{fieldName:'pagePath',stringFilter:{matchType:'FULL_REGEXP',value:excludedPath,caseSensitive:false}}}}]}};
  const report=(dimensions,metrics,dateRanges=dates,extra={})=>({dimensions:dimensions.map(name=>({name})),metrics:metrics.map(name=>({name})),dateRanges,dimensionFilter:filter,...extra});
