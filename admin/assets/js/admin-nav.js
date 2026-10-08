@@ -1,191 +1,61 @@
 (function () {
   "use strict";
-
+  var hub = "https://admin.mindobirdwatching.com/";
   var pages = [
-  {"id":"portfolio","label":"Portfolio","href":"https://admin.mindobirdwatching.com/portfolio/","category":"reports"},
-  {
-    "id": "maps",
-    "label": "Markets & Guest Origins",
-    "href": "https://admin.mindobirdwatching.com/analytics/maps/",
-    "category": "reports"
-  },
-  {
-    "id": "admin",
-    "label": "Admin Hub",
-    "href": "https://admin.mindobirdwatching.com/"
-  },
-  {
-    "id": "guest-crm",
-    "label": "Guest CRM",
-    "href": "https://admin.mindobirdwatching.com/guest-crm/",
-    "category": "guests"
-  },
-  {"id":"whatsapp","label":"WhatsApp","href":"https://admin.mindobirdwatching.com/whatsapp/","category":"guests"},
-  {
-    "id": "marketing",
-    "label": "Marketing",
-    "href": "https://admin.mindobirdwatching.com/marketing/",
-    "category": "marketing"
-  },
-  {
-    "id": "reports",
-    "label": "Reports",
-    "href": "https://admin.mindobirdwatching.com/reports/",
-    "category": "reports"
-  },
-  {
-    "id": "staff",
-    "label": "Staff Info Library",
-    "href": "https://admin.mindobirdwatching.com/staff-info/",
-    "category": "staff"
-  },
-  {
-    "id": "email",
-    "label": "Custom Email Generator",
-    "href": "https://admin.mindobirdwatching.com/custom-email-generator/",
-    "category": "guests"
-  },
-  {
-    "id": "itinerary",
-    "label": "Itinerary Generator",
-    "href": "https://admin.mindobirdwatching.com/itinerary-generator/",
-    "category": "guests"
-  },
-  {
-    "id": "stripe",
-    "label": "Stripe Invoice",
-    "href": "https://mindobirdwatching.com/book-tour/create/",
-    "category": "guests",
-    "external": true
-  },
-  {
-    "id": "zelle",
-    "label": "Zelle Invoice Generator",
-    "href": "https://admin.mindobirdwatching.com/zelle-invoice-generator/",
-    "category": "guests"
-  },
-  {
-    "id": "confirmation",
-    "label": "Tour Confirmation Generator",
-    "href": "https://admin.mindobirdwatching.com/tour-confirmation-generator/",
-    "category": "guests"
-  },
-  {
-    "id": "birding",
-    "label": "Birding",
-    "href": "https://admin.mindobirdwatching.com/birding/",
-    "category": "resources"
-  },
-  {
-    "id": "recommendations",
-    "label": "Recommendations",
-    "href": "https://admin.mindobirdwatching.com/recommendations/",
-    "category": "resources"
-  },
-  {
-    "id": "media",
-    "label": "Media",
-    "href": "https://admin.mindobirdwatching.com/media/",
-    "category": "resources"
-  },
-  {
-    "id": "pilot",
-    "label": "Inquiry Studio",
-    "href": "https://admin.mindobirdwatching.com/inquiry-studio/",
-    "category": "guests",
-    "external": true
-  }
-];
-
-  function normalizePath(pathname) {
-    var path = pathname || "/";
-    if (!path.endsWith("/")) path += "/";
-    return path;
-  }
-
-  function currentPageId(host) {
+    { id:"guest-crm", label:"Guest CRM", href:hub+"guest-crm/", group:"Guests & Sales" },
+    { id:"whatsapp", label:"WhatsApp", href:hub+"whatsapp/", group:"Guests & Sales" },
+    { id:"pilot", label:"Inquiry Studio", href:hub+"inquiry-studio/", group:"Guests & Sales" },
+    { id:"email", label:"Email Generator", href:hub+"custom-email-generator/", group:"Guest Documents" },
+    { id:"itinerary", label:"Itinerary Generator", href:hub+"itinerary-generator/", group:"Guest Documents" },
+    { id:"confirmation", label:"Tour Confirmation", href:hub+"tour-confirmation-generator/", group:"Guest Documents" },
+    { id:"stripe", label:"Stripe Invoice", href:"https://mindobirdwatching.com/book-tour/create/", group:"Payments", external:true },
+    { id:"zelle", label:"Zelle Invoice", href:hub+"zelle-invoice-generator/", group:"Payments" },
+    { id:"staff", label:"Staff Info", href:hub+"staff-info/", group:"Operations" },
+    { id:"recommendations", label:"Recommendations", href:hub+"recommendations/", group:"Operations" },
+    { id:"birding", label:"Birding", href:hub+"birding/", group:"Operations" },
+    { id:"marketing", label:"Marketing", href:hub+"marketing/", group:"Growth & Content" },
+    { id:"media", label:"Media", href:hub+"media/", group:"Growth & Content" },
+    { id:"portfolio", label:"Website Growth", href:hub+"portfolio/", group:"Growth & Content" },
+    { id:"maps", label:"Markets & Origins", href:hub+"analytics/maps/", group:"Growth & Content" },
+    { id:"reports", label:"Reports", href:hub+"reports/", group:"Growth & Content" }
+  ];
+  var quickIds = ["guest-crm", "whatsapp", "marketing", "reports"];
+  function currentId(host) {
     if (host.dataset.adminPage) return host.dataset.adminPage;
-
-    var path = normalizePath(window.location.pathname);
+    var path = window.location.pathname.replace(/\/?$/, "/");
     if (path === "/") return "admin";
-
-    for (var i = 0; i < pages.length; i += 1) {
-      if (!pages[i].external && normalizePath(new URL(pages[i].href).pathname) === path) {
-        return pages[i].id;
-      }
-    }
-
+    for (var i=0;i<pages.length;i+=1) if (!pages[i].external && new URL(pages[i].href).pathname === path) return pages[i].id;
     return "";
   }
-
-  function makeLink(page, activeId) {
-    var link = document.createElement("a");
-    link.className = "adminGlobalNav__link" + (page.external ? " adminGlobalNav__external" : "");
-    if (page.category) link.dataset.category = page.category;
-    var restricted = document.body.dataset.adminRole === "birding-guide" && page.id !== "admin" && page.id !== "birding";
-    if (restricted) {
-      link.setAttribute("aria-disabled", "true");
-      link.setAttribute("title", "Your account has Birding access only.");
-    } else {
-      link.href = page.href;
-    }
-    link.textContent = page.label;
-
-    if (page.id === activeId) {
-      link.setAttribute("aria-current", "page");
-      link.addEventListener("click", function (event) {
-        event.preventDefault();
-      });
-    } else if (!restricted && page.id !== "admin") {
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-    }
-
-    return link;
+  function isRestricted(page) { return document.body.dataset.adminRole === "birding-guide" && page.id !== "birding"; }
+  function toolLink(page, className) {
+    var link=document.createElement("a");
+    link.className=className||"adminGlobalNav__link";
+    link.textContent=page.label;
+    if (isRestricted(page)) { link.setAttribute("aria-disabled","true"); link.title="Your account has Birding access only."; return link; }
+    link.href=page.href; link.target="_blank"; link.rel="noopener noreferrer"; return link;
   }
-
   function render(host) {
-    if (host.dataset.adminNavReady === "true") return;
-
-    var activeId = currentPageId(host);
-    var nav = document.createElement("nav");
-    var inner = document.createElement("div");
-    var label = document.createElement("span");
-    var logo = document.createElement("img");
-    var brandText = document.createElement("span");
-    var links = document.createElement("div");
-
-    nav.className = "adminGlobalNav";
-    nav.setAttribute("aria-label", "Admin pages");
-    inner.className = "adminGlobalNav__inner";
-    label.className = "adminGlobalNav__label";
-    logo.className = "adminGlobalNav__logo";
-    logo.src = "https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png";
-    logo.alt = "";
-    brandText.textContent = "MBW Admin";
-    label.appendChild(logo);
-    label.appendChild(brandText);
-    links.className = "adminGlobalNav__links";
-
-    pages.forEach(function (page) {
-      links.appendChild(makeLink(page, activeId));
+    var activeId=currentId(host);
+    var active=pages.find(function(page){return page.id===activeId;});
+    var nav=document.createElement("nav"); nav.className="adminGlobalNav adminGlobalNav--compact"; nav.setAttribute("aria-label","Admin navigation");
+    var inner=document.createElement("div"); inner.className="adminGlobalNav__inner";
+    var brand=document.createElement("a"); brand.className="adminGlobalNav__label"; brand.href=hub;
+    brand.innerHTML='<img class="adminGlobalNav__logo" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt=""><span>'+(activeId==="admin"?"MBW Admin":"← Admin Hub")+"</span>";
+    inner.appendChild(brand);
+    if (active && activeId!=="admin") { var current=document.createElement("span"); current.className="adminGlobalNav__current"; current.textContent=active.label; inner.appendChild(current); }
+    var links=document.createElement("div"); links.className="adminGlobalNav__links";
+    quickIds.forEach(function(id){var page=pages.find(function(item){return item.id===id;}); if(page&&page.id!==activeId) links.appendChild(toolLink(page));});
+    var more=document.createElement("details"); more.className="adminGlobalNav__more";
+    var summary=document.createElement("summary"); summary.className="adminGlobalNav__link"; summary.textContent="All tools"; more.appendChild(summary);
+    var menu=document.createElement("div"); menu.className="adminGlobalNav__menu";
+    ["Guests & Sales","Guest Documents","Payments","Operations","Growth & Content"].forEach(function(group){
+      var section=document.createElement("section"); var heading=document.createElement("strong"); heading.textContent=group; section.appendChild(heading);
+      pages.filter(function(page){return page.group===group;}).forEach(function(page){section.appendChild(toolLink(page,"adminGlobalNav__menuLink"));}); menu.appendChild(section);
     });
-
-    inner.appendChild(label);
-    inner.appendChild(links);
-    nav.appendChild(inner);
-    host.appendChild(nav);
-    host.dataset.adminNavReady = "true";
+    more.appendChild(menu); links.appendChild(more); inner.appendChild(links); nav.appendChild(inner);
+    host.replaceChildren(nav); host.dataset.adminNavReady="true";
   }
-
-  function init() {
-    var hosts = document.querySelectorAll("[data-admin-nav]");
-    hosts.forEach(render);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  function init(){document.querySelectorAll("[data-admin-nav]").forEach(render);}
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else init();
 })();
