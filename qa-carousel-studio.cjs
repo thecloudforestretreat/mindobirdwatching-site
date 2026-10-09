@@ -39,6 +39,9 @@ function compileWorkflow(path) {
   assert(ui.includes("data-drag-handle") && ui.includes("ondrop"), "Drag-to-reorder support is missing");
   assert(ui.includes("crop_gravity") && ui.includes("data-gravity"), "Per-slide crop focus is missing");
   assert(html.includes('id="replaceImageFile"') && ui.includes('data-replace-image') && ui.includes('update_carousel_images'), "Unpublished slide replacement is missing");
+  const replacementFlow = ui.match(/async function replaceImage[\s\S]*?function currentEdits/)[0];
+  assert(!replacementFlow.includes('api("regenerate_carousel"'), "Replacing an image must not regenerate or erase approved copy");
+  assert(replacementFlow.includes("quality score, approval, date, and time were kept unchanged"), "Image replacement must explain that copy and scheduling were preserved");
   assert(ui.includes("startReviewPolling") && ui.includes("refreshSelected") && ui.includes("AI review in progress"), "Live review status refresh is missing");
   assert(ui.includes("HUMAN_EDITED"), "Human-edited review state is missing");
   assert(ui.includes("quality_score||0)<92") && ui.includes("Regenerate copy"), "Legacy sub-92 copy must be routed to regeneration, not approval");
@@ -61,6 +64,8 @@ function compileWorkflow(path) {
   assert(allMainText.includes("editorial score below 92") && allMainText.includes("HUMAN_EDITED"), "Quality threshold or validated human-edit path is missing");
   assert(allMainText.includes("PUBLISH BLOCKED: approved copy must pass both local reviews or contain validated human edits"), "Approval publishing gate is missing");
   assert(allMainText.includes("={{ $json.instagram_permalink }}") && allMainText.includes("={{ $json.facebook_permalink }}"), "Published post permalinks must be saved");
+  const instagramParent = main.nodes.find((node) => node.name === "[IG] Create Parent Carousel");
+  assert(instagramParent && !JSON.stringify(instagramParent).includes("location_id"), "Instagram parent payload must not send an unverified location Page ID");
   assert(allMainText.includes("between two and ten image URLs"), "2–10 URL validation is missing");
   const transformText = allMainText + JSON.stringify(intake) + read("functions/api/admin/carousels/index.js");
   assert(transformText.includes("c_pad,b_rgb:f7f4e8"), "Fit/pad transform is missing");
@@ -111,6 +116,8 @@ function compileWorkflow(path) {
   assert.strictEqual(response.status, 200, "Valid replacement image manifest must pass the API");
   assert.strictEqual(gatewayPayload.action, "update_carousel_images", "Replacement must use the dedicated safe action");
   assert(gatewayPayload.images[0].delivery_url.includes("c_fill,g_auto,h_1350,w_1080"), "Replacement cover must receive the exact 4:5 crop");
+  const gatewayPlanner = gateway.nodes.find((node) => node.name === "Plan Carousel Action").parameters.jsCode;
+  assert(!gatewayPlanner.includes("IMAGE_REPLACED_REVIEW_REQUIRED"), "Gateway must preserve existing copy and approval state during image replacement");
 
   console.log(JSON.stringify({
     ok: true,

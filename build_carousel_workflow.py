@@ -9,7 +9,6 @@ SHEET_NAME = "ai_carousels"
 IG_USER_ID = "17841471335674238"
 FB_PAGE_ID = "753092067877601"
 GRAPH_VERSION = "v23.0"
-IG_LOCATION_ID = "217339241"  # Verified Instagram place: Mindo, Ecuador
 IG_COLLABORATORS = ["mindo.chicho", "mindo.tours", "chocoandino.tours"]
 
 GS_CRED = {"googleSheetsOAuth2Api": {"id": "sJdVMmql2IyZ94ti", "name": "Google Sheets - MBW"}}
@@ -390,15 +389,11 @@ PREP_IG_PAYLOAD_JS = r"""
 function clean(v){ return String(v ?? '').trim(); }
 const r={...$json};
 const caption=clean(r.caption), hashtags=clean(r.instagram_hashtags);
-const locationId='217339241';
 const collaborators=['mindo.chicho','mindo.tours','chocoandino.tours'];
 if (!caption) throw new Error('PUBLISH BLOCKED: Instagram caption is blank immediately before container creation.');
 if (!hashtags || !hashtags.includes('#')) throw new Error('PUBLISH BLOCKED: Instagram hashtags are blank or invalid immediately before container creation.');
-if (!/^\d+$/.test(locationId)) throw new Error('PUBLISH BLOCKED: Instagram location ID is invalid.');
 if (collaborators.length > 3 || collaborators.some(v=>!/^[-._a-z0-9]+$/.test(v))) throw new Error('PUBLISH BLOCKED: Instagram collaborators are invalid.');
 r._instagram_publish_caption=`${caption}\n\n${hashtags}`.trim();
-r._instagram_location_id=locationId;
-r._instagram_location_name='Mindo, Ecuador';
 r._instagram_collaborators=collaborators;
 if (r._instagram_publish_caption.length < 40) throw new Error('PUBLISH BLOCKED: Instagram publish caption is unexpectedly short.');
 return [{json:r}];
@@ -594,7 +589,6 @@ nodes.append(node("[IG] Create Parent Carousel", "n8n-nodes-base.facebookGraphAp
         {"name": "media_type", "value": "CAROUSEL"},
         {"name": "children", "value": "={{ $json.instagram_child_ids.join(',') }}"},
         {"name": "caption", "value": "={{ $json._instagram_publish_caption }}"},
-        {"name": "location_id", "value": IG_LOCATION_ID},
         {"name": "collaborators", "value": "={{ JSON.stringify($json._instagram_collaborators) }}"}
     ]}}
 }, IG_CRED, retryOnFail=True, waitBetweenTries=5000))

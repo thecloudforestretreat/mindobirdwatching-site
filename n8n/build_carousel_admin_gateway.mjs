@@ -128,7 +128,6 @@ if (action === 'update_carousel_images') {
   if (urls.some(url=>!url) || new Set(urls).size!==urls.length) return response(false,'Every carousel image must have one unique delivery URL.');
   row.images_json=JSON.stringify(images);
   for (let i=0;i<10;i++) row['image_'+(i+1)+'_url']=urls[i]||'';
-  Object.assign(row,{status:'Needs Review',input_status:'READY',copy_review_status:'PENDING_LOCAL_REVIEW',caption_generation_status:'IMAGE_REPLACED_REVIEW_REQUIRED',approval_status:'NEEDS_REVIEW',quality_score:0,publishing_lock:'',error_message:''});
   return [{json:{...row,_route:'update_only'}}];
 }
 
