@@ -76,7 +76,6 @@
     var existing = hasStylesheetContaining("/assets/css/header.css");
 
     if (existing) {
-      existing.setAttribute("href", url);
       return existing;
     }
 

@@ -880,6 +880,9 @@
 
   function initHeader(topbar) {
     if (!topbar) return;
+    // The modern shared header is controlled by includes.js.
+    // Avoid attaching a second toggle to statically rendered homepages.
+    if (topbar.hasAttribute("data-mbw-header")) return;
 
     var btn = findBtn(topbar);
     var panel = findPanel(topbar);
