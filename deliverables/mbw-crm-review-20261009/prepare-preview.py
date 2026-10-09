@@ -1,6 +1,6 @@
 from pathlib import Path
 import shutil,json
-repo=Path('/tmp/mbw-crm-readonly-review');dest=Path('/tmp/mbw-crm-review-preview');shutil.copytree(repo/'admin',dest,dirs_exist_ok=True)
+repo=Path(__file__).resolve().parents[2];dest=Path('/tmp/mbw-crm-review-preview');shutil.copytree(repo/'admin',dest,dirs_exist_ok=True)
 s=(dest/'guest-crm/index.html').read_text()
 records=[]
 def make(id,name,status,date,product,service='Birdwatching',**extras):
@@ -18,8 +18,6 @@ mock='''
  const previewRecords=RECORDS, previewAssignments=ASSIGNMENTS;
  api=async function(action,data){if(action==='list_inquiries')return {ok:true,records:previewRecords};if(action==='list_assignments')return {ok:true,records:previewAssignments};if(action==='list_interactions'||action==='list_providers')return {ok:true,records:[]};throw new Error('Read-only preview: changes are disabled.');};
 '''.replace('RECORDS',json.dumps(records)).replace('ASSIGNMENTS',json.dumps(assignments))
-s=s.replace('<h1>', '<h1>')
-s=s.replace('<main', '<main',1)
 s=s.replace('<h1', '<p class="reviewAlert">Synthetic test records · Read-only preview · Live CRM unchanged · WhatsApp sending disabled</p><h1',1)
 s=s.replace('    })();',mock+'    })();');s=s.replace('  <script>','  <script>window.MBW_CRM_READ_ONLY_PREVIEW=true;</script>\n  <script>',1)
 (dest/'guest-crm/index.html').write_text(s)
