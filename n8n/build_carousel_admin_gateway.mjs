@@ -72,7 +72,7 @@ const find = () => rows.find(row => clean(row.carousel_id) === clean(body.carous
 
 if (action === 'list_carousels') {
   const query=clean(body.query).toLowerCase();
-  let filtered=rows.filter(row => clean(row.carousel_id) && Array.from({length:10},(_,i)=>clean(row['image_'+(i+1)+'_url'])).some(Boolean));
+  let filtered=rows.filter(row => /^CAR-/i.test(clean(row.carousel_id)) && Array.from({length:10},(_,i)=>clean(row['image_'+(i+1)+'_url'])).some(Boolean));
   if (query) filtered=filtered.filter(row => [row.carousel_id,row.featured_birds,row.scientific_name,row.carousel_title,row.carousel_description,row.caption,row.reddit_title,row.status].join(' ').toLowerCase().includes(query));
   const limit=Math.min(250,Math.max(1,Number(body.limit)||150));
   filtered.sort((a,b)=>Number(b.row_number||0)-Number(a.row_number||0));
