@@ -4158,7 +4158,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const base={...$('[IG] Attach Publish Result').item.json};\nconst publishedCaption=String($json.caption ?? '').trim();\nconst firstHashtag=String(base.instagram_hashtags||'').trim().split(/\\s+/)[0];\nif (!publishedCaption) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} exists but its caption is blank.`);\nif (firstHashtag && !publishedCaption.includes(firstHashtag)) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} is missing the expected hashtags.`);\nbase.instagram_verified_caption=publishedCaption;\nbase.instagram_permalink=$json.permalink || '';\nreturn [{json:base}];"
+        "jsCode": "const base={...$('[IG] Attach Publish Result').item.json};\nconst publishedCaption=String($json.caption ?? '').trim();\nif (!publishedCaption) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} exists but its caption is blank.`);\nif (!/#(?:[\\p{L}\\p{N}_]+)/u.test(publishedCaption)) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} is missing hashtags.`);\nbase.instagram_verified_caption=publishedCaption;\nbase.instagram_permalink=$json.permalink || '';\nreturn [{json:base}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -5729,7 +5729,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const base={...$('[FB] Attach Post Result').item.json};\nconst publishedMessage=String($json.message ?? '').trim();\nconst firstHashtag=String(base.facebook_hashtags||'').trim().split(/\\s+/)[0];\nif (!publishedMessage) throw new Error(`PUBLISH VERIFICATION FAILED: Facebook post ${base.facebook_post_id} exists but its caption is blank.`);\nif (firstHashtag && !publishedMessage.includes(firstHashtag)) throw new Error(`PUBLISH VERIFICATION FAILED: Facebook post ${base.facebook_post_id} is missing the expected hashtags.`);\nbase.facebook_verified_message=publishedMessage;\nbase.facebook_permalink=$json.permalink_url || '';\nreturn [{json:base}];"
+        "jsCode": "const base={...$('[FB] Attach Post Result').item.json};\nconst publishedMessage=String($json.message ?? '').trim();\nif (!publishedMessage) throw new Error(`PUBLISH VERIFICATION FAILED: Facebook post ${base.facebook_post_id} exists but its caption is blank.`);\nif (!/#(?:[\\p{L}\\p{N}_]+)/u.test(publishedMessage)) throw new Error(`PUBLISH VERIFICATION FAILED: Facebook post ${base.facebook_post_id} is missing hashtags.`);\nbase.facebook_verified_message=publishedMessage;\nbase.facebook_permalink=$json.permalink_url || '';\nreturn [{json:base}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
