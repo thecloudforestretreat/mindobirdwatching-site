@@ -13,3 +13,6 @@ Rollback: keep ?crmReview=0/default; remove additive UI/module if necessary. Sou
 
 ## Clarity QA
 Shortened reminder cards, collapsed secondary booking facts, formatted dates, and made provider actions explicit. All 36 focused tests pass. Mobile 390px has no horizontal overflow; preview writes remain disabled. Source backup: /tmp/mbw-review-qa-backup. Live-data validation remains required before production.
+
+## Remaining-service QA
+Checklist/provider checks and review draft exclude past booked services. Full itinerary labels them Earlier service. Default confirmation behavior outside review remains unchanged. Sent-itinerary identity preserved. All 40 tests pass. Live snapshot: 11 bookings, 8 complete, 3 need attention, source unchanged. Synthetic browser scenario confirms past Night Walk appears in itinerary but not draft.

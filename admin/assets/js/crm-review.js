@@ -24,13 +24,13 @@
       const needsProvider=transport||['Birdwatching','Specialty Wildlife','Night Walk'].includes(type)||code==='MBW016';
       const matching=assignments.filter(a=>a.inquiry_id===record.inquiry_id&&day(a.service_date)===day(service.date)&&!['cancelled','completed'].includes(clean(a.assignment_status).toLowerCase())&&(clean(a.service_item_id)===service.id||clean(a.internal_note).split('\n')[0]==='Service reference: '+service.id||(clean(a.product_selected).split(' ')[0]===code&&code)));
       const assigned=matching.filter(a=>clean(a.provider_name==='Other'?a.provider_name_other:a.provider_name)&&['confirmed','booked','assigned'].includes(clean(a.assignment_status).toLowerCase()));
-      if(needsProvider){
+      if(needsProvider&&(!day(service.date)||day(service.date)>=today)){
         if(!operationsLoaded)issues.push('Provider data has not been verified; refresh CRM');
         else if(!assigned.length)issues.push(transport?'Confirm driver assignment':'Confirm guide assignment');
         else if(!assigned.some(a=>clean(a.provider_informed).toLowerCase()==='yes'))issues.push('Notify provider');
       }
       for(const issue of issues)missing.push(label+': '+issue);
-      return {label,date:day(service.date),start:clean(service.start_time),guests:clean(service.guests),issues};
+      return {label,past:!!day(service.date)&&day(service.date)<today,date:day(service.date),start:clean(service.start_time),guests:clean(service.guests),issues};
     });
     if(!operationsLoaded&&!missing.includes('Communication and assignment data has not been verified; refresh CRM'))missing.push('Communication and assignment data has not been verified; refresh CRM');
     if(!clean(record.assigned_to))missing.push('Assigned rep');
