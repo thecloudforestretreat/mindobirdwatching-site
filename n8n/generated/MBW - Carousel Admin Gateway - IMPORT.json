@@ -8,7 +8,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "5f2c6797-ee92-45d8-ae45-e9c5f912c22d",
+      "id": "12de53b7-ee20-4769-b69a-c79950eaac62",
       "name": "Admin Carousels Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,7 +32,7 @@
         },
         "options": {}
       },
-      "id": "39baab4d-1bd7-4428-9c0a-28decb0d9418",
+      "id": "e4ac2504-497b-401b-bc73-3f06c03cd011",
       "name": "Load AI Carousels",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.6,
@@ -51,7 +51,7 @@
       "parameters": {
         "jsCode": "const body = $('Admin Carousels Webhook').first().json.body || {};\nconst rows = $input.all().map(item => ({...item.json}));\nconst action = String(body.action || '').trim();\nconst clean = value => String(value ?? '').trim();\nconst truthy = value => value === true || ['true','1','yes','on'].includes(clean(value).toLowerCase());\nconst words = value => clean(value).split(/\\s+/).filter(Boolean).length;\nconst response = (ok,message,extra={}) => [{json:{_route:'respond',ok,message,...extra}}];\nconst toSheetDate = value => {\n  const text=clean(value);\n  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(text)) return DateTime.fromISO(text,{zone:'America/New_York'}).toFormat('M/d/yyyy');\n  return text;\n};\nconst toSheetTime = value => {\n  const text=clean(value);\n  if (/^\\d{2}:\\d{2}$/.test(text)) return DateTime.fromFormat(text,'HH:mm',{zone:'America/New_York'}).toFormat('h:mm a');\n  return text;\n};\nconst fields=[\"carousel_id\",\"image_1_url\",\"image_2_url\",\"image_3_url\",\"image_4_url\",\"image_5_url\",\"image_6_url\",\"image_7_url\",\"image_8_url\",\"image_9_url\",\"image_10_url\",\"images_json\",\"carousel_description\",\"slide_notes\",\"featured_birds\",\"scientific_name\",\"activity_name\",\"location\",\"verified_details\",\"input_status\",\"scheduled_date\",\"scheduled_time\",\"status\",\"media_type\",\"post_to_instagram\",\"post_to_facebook\",\"local_brief\",\"copy_review_status\",\"caption_generation_status\",\"carousel_title\",\"caption\",\"instagram_hashtags\",\"facebook_caption\",\"facebook_hashtags\",\"reddit_title\",\"reddit_caption\",\"reddit_hashtags\",\"copy_generated_at\",\"ai_model\",\"gemini_input_tokens\",\"gemini_output_tokens\",\"gemini_total_tokens\",\"posting_defaults_applied_at\",\"publishing_lock\",\"instagram_container_id\",\"instagram_published_date\",\"instagram_post_id\",\"instagram_permalink\",\"facebook_photo_ids\",\"facebook_published_date\",\"facebook_post_id\",\"facebook_permalink\",\"error_message\",\"telegram_sent_date\",\"approval_status\",\"quality_score\",\"submitted_at\",\"source\",\"timezone\",\"admin_mode\"];\nconst normalized = source => Object.fromEntries(fields.map(field => [field, source[field] ?? '']));\nconst find = () => rows.find(row => clean(row.carousel_id) === clean(body.carousel_id));\n\nif (action === 'list_carousels') {\n  const query=clean(body.query).toLowerCase();\n  let filtered=rows.filter(row => /^CAR-/i.test(clean(row.carousel_id)) && Array.from({length:10},(_,i)=>clean(row['image_'+(i+1)+'_url'])).some(Boolean));\n  if (query) filtered=filtered.filter(row => [row.carousel_id,row.featured_birds,row.scientific_name,row.carousel_title,row.carousel_description,row.caption,row.reddit_title,row.status].join(' ').toLowerCase().includes(query));\n  const limit=Math.min(250,Math.max(1,Number(body.limit)||150));\n  filtered.sort((a,b)=>Number(b.row_number||0)-Number(a.row_number||0));\n  return response(true,'',{carousels:filtered.slice(0,limit),count:Math.min(filtered.length,limit)});\n}\n\nif (action === 'create_carousel') {\n  const c=body.carousel && typeof body.carousel === 'object' ? body.carousel : {};\n  const images=Array.isArray(c.images)?c.images:[];\n  if (images.length<2 || images.length>10) return response(false,'A carousel requires 2–10 images.');\n  const urls=images.map(image=>clean(image.delivery_url||image.original_url));\n  if (urls.some(url=>!url) || new Set(urls).size!==urls.length) return response(false,'Every carousel image must have one unique delivery URL.');\n  const duplicate=rows.some(row=>urls.some(url=>Array.from({length:10},(_,i)=>clean(row['image_'+(i+1)+'_url'])).includes(url)));\n  if (duplicate) return response(false,'One or more images already exist in ai_carousels.');\n  const auto=clean(body.mode).toLowerCase()==='auto';\n  const row=normalized({\n    carousel_id:clean(c.carousel_id)||('CAR-'+crypto.randomUUID()),\n    images_json:JSON.stringify(images), carousel_description:clean(c.carousel_description),\n    featured_birds:clean(c.featured_birds), scientific_name:clean(c.scientific_name),\n    location:clean(c.location)||'Mindo, Ecuador', input_status:auto?'VERIFIED':'READY',\n    scheduled_date:toSheetDate(c.scheduled_date), scheduled_time:toSheetTime(c.scheduled_time),\n    status:'Testing', media_type:'CAROUSEL', post_to_instagram:truthy(c.post_to_instagram),\n    post_to_facebook:truthy(c.post_to_facebook), copy_review_status:'PENDING_LOCAL_REVIEW',\n    caption_generation_status:'NOT_STARTED', approval_status:'NEEDS_REVIEW', quality_score:0,\n    submitted_at:clean(c.submitted_at)||new Date().toISOString(), source:clean(c.source)||'admin_carousel_studio',\n    timezone:clean(body.timezone)||'America/New_York', admin_mode:auto?'auto':'review', error_message:'',\n  });\n  urls.forEach((url,index)=>{row['image_'+(index+1)+'_url']=url;});\n  return [{json:{...row,_route:'append_trigger'}}];\n}\n\nconst existing=find();\nif (!existing) return response(false,'The requested carousel was not found.');\nconst row=normalized(existing);\n\nif (action === 'update_carousel') {\n  const allowed=new Set(['carousel_title','caption','instagram_hashtags','facebook_caption','facebook_hashtags','reddit_title','reddit_caption','reddit_hashtags','scheduled_date','scheduled_time','post_to_instagram','post_to_facebook']);\n  for (const [key,value] of Object.entries(body.edits||{})) if (allowed.has(key)) row[key]=key==='scheduled_date'?toSheetDate(value):key==='scheduled_time'?toSheetTime(value):key==='post_to_instagram'||key==='post_to_facebook'?truthy(value):clean(value);\n  return [{json:{...row,_route:'update_only'}}];\n}\n\nif (action === 'approve_carousel') {\n  const errors=[];\n  const count=Array.from({length:10},(_,i)=>clean(row['image_'+(i+1)+'_url'])).filter(Boolean).length;\n  if (count<2 || count>10) errors.push('Carousel must have 2–10 images.');\n  const captionWords=words(row.caption);\n  if (captionWords<50 || captionWords>120) errors.push('Caption must contain 50–120 words.');\n  const tags=clean(row.instagram_hashtags).split(/\\s+/).filter(Boolean);\n  if (tags.length!==5 || tags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Instagram requires exactly five valid hashtags.');\n  if (!clean(row.carousel_title)) errors.push('Carousel title is required.');\n  const facebookWords=words(row.facebook_caption), facebookTags=clean(row.facebook_hashtags).split(/\\s+/).filter(Boolean);\n  if (facebookWords<50 || facebookWords>140 || facebookTags.length!==3 || facebookTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Facebook requires a 50–140 word caption and exactly three valid hashtags.');\n  const redditWords=words(row.reddit_caption), redditTags=clean(row.reddit_hashtags).split(/\\s+/).filter(Boolean);\n  if (!clean(row.reddit_title) || clean(row.reddit_title).length>120 || redditWords<35 || redditWords>120 || redditTags.length!==3 || redditTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Reddit requires a title, a 35–120 word body, and exactly three valid hashtags.');\n  if (!truthy(row.post_to_instagram) && !truthy(row.post_to_facebook)) errors.push('Select Instagram or Facebook.');\n  if (clean(row.copy_review_status).toUpperCase()!=='PASS') errors.push('Both local copy passes must complete successfully.');\n  if (errors.length) return response(false,errors.join(' '));\n  Object.assign(row,{status:'Scheduled',input_status:'VERIFIED',approval_status:'APPROVED',quality_score:100,error_message:''});\n  return [{json:{...row,_route:'update_only'}}];\n}\n\nif (action === 'regenerate_carousel') {\n  if ([row.instagram_post_id,row.facebook_post_id].some(value=>clean(value))) return response(false,'Published or partially published carousels cannot be regenerated.');\n  for (const field of ['local_brief','copy_review_status','caption_generation_status','carousel_title','caption','instagram_hashtags','facebook_caption','facebook_hashtags','reddit_title','reddit_caption','reddit_hashtags','copy_generated_at','ai_model','posting_defaults_applied_at']) row[field]='';\n  Object.assign(row,{status:'Testing',input_status:clean(row.admin_mode).toLowerCase()==='auto'?'VERIFIED':'READY',approval_status:'NEEDS_REVIEW',quality_score:0,error_message:'',publishing_lock:''});\n  return [{json:{...row,_route:'update_trigger'}}];\n}\n\nif (action === 'retry_carousel') {\n  if (clean(row.approval_status).toUpperCase()!=='APPROVED' || Number(row.quality_score||0)<85) return response(false,'Copy must be approved before retrying publication.');\n  const ig=truthy(row.post_to_instagram)&&!clean(row.instagram_post_id);\n  const fb=truthy(row.post_to_facebook)&&!clean(row.facebook_post_id);\n  if (!ig&&!fb) return response(false,'No missing selected platform is available to retry.');\n  Object.assign(row,{status:'Scheduled',post_to_instagram:ig,post_to_facebook:fb,error_message:'',publishing_lock:'',instagram_container_id:ig?'':row.instagram_container_id,facebook_photo_ids:fb?'':row.facebook_photo_ids});\n  return [{json:{...row,_route:'update_trigger'}}];\n}\nreturn response(false,'Unsupported gateway action.');"
       },
-      "id": "f146a07d-ff59-4c9d-a422-cbae6e7d8031",
+      "id": "04803954-8c1d-4991-a847-bfb86e31e261",
       "name": "Plan Carousel Action",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -158,7 +158,7 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "faf75a98-d980-4a40-bcf4-796018867d48",
+      "id": "7f6d2077-2901-4f72-b3b6-ef6fdd71ce1e",
       "name": "Route Carousel Action",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
@@ -802,7 +802,7 @@
         },
         "options": {}
       },
-      "id": "58c5d07f-0e44-41b0-b3cb-d9b6caa786f5",
+      "id": "9030805a-1620-4ac3-bcba-90f5b6a517a1",
       "name": "Append Carousel",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.6,
@@ -1515,7 +1515,7 @@
         },
         "options": {}
       },
-      "id": "58b77dd4-b4ab-409b-a1f6-8fe94a250220",
+      "id": "fce743cb-2cda-4e46-a3ae-fe8d8b2ee7ee",
       "name": "Update Carousel Only",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.6,
@@ -2228,7 +2228,7 @@
         },
         "options": {}
       },
-      "id": "7bb35d23-a4ce-4b20-ad35-1c8bf3c71364",
+      "id": "55838e6e-3b42-416d-a036-9e02c887b19b",
       "name": "Update Carousel and Trigger",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.6,
@@ -2263,7 +2263,7 @@
           "timeout": 10000
         }
       },
-      "id": "78060d1c-1a57-4ee1-9b2b-76c642652aeb",
+      "id": "29ff4c96-6a5d-4aca-ab4b-f4eeea696574",
       "name": "Trigger Carousel Processing",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2276,7 +2276,7 @@
       "parameters": {
         "jsCode": "const body=$('Admin Carousels Webhook').first().json.body||{};\nconst planned=$('Plan Carousel Action').all().map(item=>item.json);\nconst cleanRow=row=>Object.fromEntries(Object.entries(row).filter(([key])=>!key.startsWith('_')));\nreturn [{json:{ok:true,action:body.action,carousel:planned[0]?cleanRow(planned[0]):null}}];"
       },
-      "id": "20286a6b-0a7b-4982-adbc-cf593ea2381d",
+      "id": "7dfe0242-153c-4981-b1e4-5d973673c8b1",
       "name": "Build Carousel Success",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2291,7 +2291,7 @@
         "responseBody": "={{ $json }}",
         "options": {}
       },
-      "id": "11991d5a-d4d9-4b3c-bd99-0c3d8742e5c6",
+      "id": "ac3207f7-1f60-44c2-8338-f55a86369c21",
       "name": "Respond Carousel Direct",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -2306,7 +2306,7 @@
         "responseBody": "={{ $json }}",
         "options": {}
       },
-      "id": "a2fb5056-2e24-423c-9565-898783d2c11b",
+      "id": "4f5715dc-ca7d-40fc-99b6-27c71a69eb80",
       "name": "Respond Carousel Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -2444,7 +2444,7 @@
     "executionOrder": "v1",
     "timezone": "America/New_York"
   },
-  "versionId": "530458c2-3d9b-49c3-98cd-a23f406df421",
+  "versionId": "a8c217cc-a709-47cd-b67b-9def2bc01595",
   "meta": {
     "templateCredsSetupCompleted": true
   },
