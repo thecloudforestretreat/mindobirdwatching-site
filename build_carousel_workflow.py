@@ -3,6 +3,7 @@ import uuid
 from pathlib import Path
 
 OUT = Path("MBW - AI Carousels - IMPORT.json")
+ADMIN_OUT = Path("n8n/generated/MBW - AI Carousels - Admin Trigger - IMPORT.json")
 
 DOC_URL = "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing"
 SHEET_NAME = "ai_carousels"
@@ -789,5 +790,14 @@ workflow = {
 }
 
 OUT.write_text(json.dumps(workflow, indent=2) + "\n")
+existing_admin = json.loads(ADMIN_OUT.read_text())
+admin_trigger = next(node for node in existing_admin["nodes"] if node["name"] == "[ADMIN] Trigger Carousel Processing")
+admin_workflow = json.loads(json.dumps(workflow))
+admin_workflow["nodes"].append(admin_trigger)
+admin_workflow["connections"][admin_trigger["name"]] = {
+    "main": [[{"node": "[CORE] Load ai_carousels", "type": "main", "index": 0}]]
+}
+ADMIN_OUT.write_text(json.dumps(admin_workflow, indent=2) + "\n")
 print(OUT.resolve())
-print(f"nodes={len(nodes)} headers={len(HEADERS)}")
+print(ADMIN_OUT.resolve())
+print(f"nodes={len(nodes)} admin_nodes={len(admin_workflow['nodes'])} headers={len(HEADERS)}")

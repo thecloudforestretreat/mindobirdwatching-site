@@ -57,6 +57,7 @@ function compileWorkflow(path) {
   assert(intake.nodes.some((node) => node.name === "[INTAKE] Validate and Split Images"), "Legacy intake must support variable slide counts");
   assert(gateway.nodes.some((node) => node.name === "Plan Carousel Action"), "Admin gateway planner is missing");
   assert(adminMain.nodes.some((node) => node.name === "[ADMIN] Trigger Carousel Processing"), "Admin processing webhook is missing");
+  assert(JSON.stringify(adminMain).includes("Beyond the Portrait") && JSON.stringify(adminMain).includes("Which view captures your interest most"), "Admin-trigger workflow must use the same subject-led copy as the canonical workflow");
   const allMainText = JSON.stringify(main);
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");
   assert(allMainText.includes("gpt-oss:20b local writer + independent repair editor | en-US v6"), "Two-pass local editor identity is missing");
