@@ -1011,7 +1011,8 @@
             "caption": "={{ $json.caption }}",
             "instagram_hashtags": "={{ $json.instagram_hashtags }}",
             "facebook_caption": "={{ $json.facebook_caption }}",
-            "telegram_sent_date": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm:ss\") }}"
+            "telegram_sent_date": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm:ss\") }}",
+            "status": "={{ String($json.admin_mode || '').toLowerCase() === 'auto' ? $json.status : 'Needs Review' }}"
           },
           "matchingColumns": [
             "carousel_id"

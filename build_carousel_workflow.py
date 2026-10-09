@@ -481,7 +481,8 @@ nodes.append(code_node("[TG] Attach Preview Row", [2040, -120], "return [{json:{
 nodes.append(gs_update("[TG] Mark Preview Sent", [2260, -120], {
     "carousel_id": "={{ $json.carousel_id }}", "caption": "={{ $json.caption }}",
     "instagram_hashtags": "={{ $json.instagram_hashtags }}", "facebook_caption": "={{ $json.facebook_caption }}",
-    "telegram_sent_date": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm:ss\") }}"
+    "telegram_sent_date": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm:ss\") }}",
+    "status": "={{ String($json.admin_mode || '').toLowerCase() === 'auto' ? $json.status : 'Needs Review' }}"
 }))
 nodes.append(code_node("[CORE] Validate and Lock", [1600, 160], LOCK_JS))
 nodes.append(gs_update("[CORE] Lock Row", [1820, 160], {

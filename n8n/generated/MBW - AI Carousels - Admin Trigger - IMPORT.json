@@ -1011,7 +1011,8 @@
             "caption": "={{ $json.caption }}",
             "instagram_hashtags": "={{ $json.instagram_hashtags }}",
             "facebook_caption": "={{ $json.facebook_caption }}",
-            "telegram_sent_date": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm:ss\") }}"
+            "telegram_sent_date": "={{ $now.toFormat(\"yyyy-MM-dd HH:mm:ss\") }}",
+            "status": "={{ String($json.admin_mode || '').toLowerCase() === 'auto' ? $json.status : 'Needs Review' }}"
           },
           "matchingColumns": [
             "carousel_id"
@@ -6719,7 +6720,7 @@
         "responseMode": "onReceived",
         "options": {}
       },
-      "id": "585112af-0f74-4e4f-8877-10ad13742921",
+      "id": "20aba578-3624-4c98-b0c8-a176d5d6f743",
       "name": "[ADMIN] Trigger Carousel Processing",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
