@@ -122,6 +122,10 @@
     @media(max-width:760px){.formSection[aria-labelledby="guestInquiryTitle"] .bookingWorkflowRow,.bookingIntakeRow,.followupWorkspace,.planningServiceRow,.planningDetailsRow,.planningTimingRow{grid-template-columns:1fr;max-width:none}.followupWorkspace .followupShortcuts{grid-column:auto}.planningTimingRow input,.planningTimingRow select,.planningTimingRow button,.planningDetailsRow input,.planningDetailsRow select,.planningServiceRow select{height:48px;min-height:48px}.timingReset label{display:none}.additionalTimeRow{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 #primaryTransportRoute[hidden]{display:none!important}
+
+    #reviewTab[hidden],#guestReviewPanel[hidden]{display:none!important}.guestReviewPanel,.reviewCard{border:1px solid var(--line);border-radius:14px;padding:16px;background:#F8FBF5;margin-bottom:16px}.guestReviewPanel h3,.reviewCard h3{margin:0;color:var(--green)}.guestReviewPanel h3 small{font:600 11px Arial;color:var(--muted);margin-left:10px}.reviewFacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}.reviewFacts span{overflow-wrap:anywhere;font-size:13px}.reviewFacts b{display:block;font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}.reviewServices,.reviewCard ul,.guestReviewPanel ul{padding-left:20px;font-size:13px;line-height:1.7}.reviewCard details,.guestReviewPanel details{margin:12px 0;font-size:13px}.reviewCard summary,.guestReviewPanel summary{cursor:pointer;font-weight:800;color:var(--green)}.reviewCard p,.guestReviewPanel p{font-size:13px;line-height:1.5}.reviewCard textarea{width:100%;min-height:220px;margin-top:12px}.reviewCardHeading{display:flex;justify-content:space-between;gap:12px;align-items:center}.reviewState{font-size:11px;border:1px solid var(--line);border-radius:20px;padding:6px 10px;white-space:nowrap}.reviewAlert{padding:12px;border:1px solid #E6C76E;background:#FFF7DB;border-radius:12px}
+    @media(max-width:760px){.reviewFacts{grid-template-columns:repeat(2,minmax(0,1fr))}.reviewCardHeading{align-items:flex-start;flex-direction:column}.reviewCard button{min-height:48px}}
+
 </style>
 </head>
 <body>
@@ -167,6 +171,7 @@
         <button class="tab active" data-view="calendar" type="button">Calendar</button>
         <button class="tab" data-view="reports" type="button">Reports</button>
         <button class="tab" data-view="intake" type="button">Create / Edit</button>
+        <button id="reviewTab" class="tab" data-view="review" type="button" hidden>Reminder preparation</button>
         <button class="tab" data-view="settings" type="button">Settings</button>
       </nav>
       <div class="grid">
@@ -379,6 +384,7 @@
             <div class="duplicateNotice" id="duplicateNotice" hidden></div>
             <section class="guestHistory" id="guestHistory" hidden aria-live="polite"></section>
             <details class="attributionPanel" id="attributionPanel"><summary><span>Marketing Attribution</span><small id="attributionSummary">No attribution available</small></summary><div class="attributionPanelBody" id="attributionPanelBody"></div></details>
+<section id="guestReviewPanel" class="guestReviewPanel" hidden></section>
             <section class="formSection" aria-labelledby="guestInquiryTitle">
             <h3 class="formSectionTitle" id="guestInquiryTitle">Guest &amp; Booking</h3>
             <details class="recordDetails"><summary>Record details</summary>            <div class="referenceIdentityRow">
@@ -508,8 +514,9 @@
             <div class="field"><label for="internalInput">Internal Notes</label><textarea id="internalInput"></textarea></div>
             <div class="saveBar"><button id="bottomSaveBtn" class="primary" type="button">Save Record</button></div>
           </div>
+          <div class="view" id="reviewView"></div>
           <div class="view" id="settingsView">
-            <h2 class="panelTitle">n8n CRM API Settings</h2>
+            <h2 class="panelTitle">n8n CRM API Settings</h2><p class="hint">Staff review preview: <a href="?crmReview=1">Enable review features</a> · <a href="?crmReview=0">Disable review features</a>. These links only change this browser view.</p>
             <div class="field"><label for="apiUrlInput">CRM API Webhook URL</label><input id="apiUrlInput" type="url" placeholder="https://.../webhook/mbw-crm-admin-api" /></div>
             <p class="hint">Use the Production URL from the n8n workflow. <strong>Refresh CRM</strong> reads the live Google Sheet through n8n, and <strong>Save Record</strong> writes back to that same sheet. CSV import is only a fallback for offline review or troubleshooting.</p>
             <div class="recordActions"><button id="saveSettingsBtn" class="primary" type="button">Save Settings</button><button id="importCsvBtn" type="button">Import CRM CSV</button><button id="loadDemoBtn" type="button">Load Demo Records</button><button id="clearLocalBtn" type="button">Clear Local Records</button></div>
@@ -524,9 +531,33 @@
     </section>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../assets/js/crm-review.js"></script>
   <script>
     (function(){
       "use strict";
+      let reviewOperationsVerified=false;
+      function reviewEnabled(){return new URLSearchParams(location.search).get("crmReview")==="1";}
+      function reviewModel(record){
+        const interactions=(state.allInteractions||[]).filter(row=>row.inquiry_id===record.inquiry_id&&clean(row.is_deleted).toLowerCase()!=="yes"&&["guest_message","staff_reply","quote_sent","follow_up","confirmation_sent"].includes(row.interaction_type));
+        const latest=interactions.map(row=>row.occurred_at).filter(Boolean).sort().at(-1)||record.last_contacted_at||"";
+        return MbwCrmReview.build({record,services:bookingServices(record).map(item=>({...item,label:productTitle(item.product_selected)||item.tour})),confirmation:confirmationModel(record),reminder:preTourReminder(record),delivery:reminderDeliveryState(record),assignments:state.allAssignments||[],operationsLoaded:reviewOperationsVerified,today:ecuadorDate(),lastContact:latest});
+      }
+      function reviewRepLabel(value){return normalizeRep(value)==="JPG"?"Juan":normalizeRep(value)==="SS"?"Susana":"Unassigned";}
+      function reviewSummaryHtml(model){
+        return `<div class="reviewFacts"><span><b>Initial interest</b>${esc(model.interest||"Not recorded")}</span><span><b>Initial date / guests</b>${esc(model.initialDate||"Not set")} · ${esc(model.guestCount||"Not set")} guests</span><span><b>Status</b>${esc(labelStatus(model.status))}</span><span><b>Rep</b>${esc(reviewRepLabel(model.rep))}</span><span><b>Quote</b>${esc(labelStatus(model.quote))}</span><span><b>Payment</b>${esc(labelStatus(model.payment))}</span><span><b>Invoice</b>${esc(model.invoice||"Not recorded")}</span><span><b>Follow-up</b>${esc(model.followupDate||"Not set")}</span></div><ul class="reviewServices">${model.services.map(service=>`<li>${esc(service.label)} · ${esc(service.date||"Date needed")} · ${esc(service.guests||"Guests needed")} guests</li>`).join("")||"<li>No booked services</li>"}</ul>${model.suggestion?`<p><b>Suggested follow-up:</b> ${esc(model.suggestion.date)}. ${esc(model.suggestion.reason)}</p>`:""}<details><summary>Readiness · ${esc(model.reviewState)}${model.missing.length?" · "+model.missing.length+" checks":""}</summary>${model.missing.length?`<ul>${model.missing.map(issue=>`<li>${esc(issue)}</li>`).join("")}</ul>`:"<p>Booking details and provider assignments are ready for staff review.</p>"}</details>`;
+      }
+      function freezeReviewPreview(){if(!window.MBW_CRM_READ_ONLY_PREVIEW)return;document.querySelectorAll("#saveBtn,#bottomSaveBtn,#detailTopSaveBtn,#saveInteractionBtn,#saveAssignmentBtn,#markQuotesSentBtn,#markContactedBtn,#markDuplicateBtn,#detailMarkDuplicateBtn,#whatsAppBtn,#detailWhatsAppBtn,#addNewBtn,#clearLocalBtn,#importCsvBtn,[data-reminder-outcome]").forEach(button=>button.disabled=true);}
+      function renderReview(){freezeReviewPreview();try{renderReviewContent();}catch(error){console.warn("CRM review unavailable",error);const panel=document.getElementById("guestReviewPanel"),view=document.getElementById("reviewView");if(panel)panel.hidden=true;if(view)view.innerHTML="<p class=\"reviewAlert\">Review is unavailable. Your existing CRM views remain available.</p>";}}
+      function renderReviewContent(){
+        const enabled=reviewEnabled(),tab=document.getElementById("reviewTab"),section=document.getElementById("guestReviewPanel"),view=document.getElementById("reviewView");
+        if(!tab||!section||!view||typeof MbwCrmReview==="undefined")return;
+        tab.hidden=!enabled;section.hidden=!enabled||!getSelected();
+        if(!enabled){view.innerHTML="";return;}
+        const record=getSelected();if(record)section.innerHTML='<h3>Guest summary <small>Saved record · Read-only preview</small></h3>'+reviewSummaryHtml(reviewModel(record));
+        const rows=MbwCrmReview.queue(state.records.filter(record=>!isArchivedStatus(record)).map(record=>({record,model:reviewModel(record)})));
+        view.innerHTML=`<h2 class="panelTitle">Reminder preparation</h2><p class="hint">Read-only staff preview. Based on saved records. Follow-up dates stay unchanged. WhatsApp sending is disabled.</p>${reviewOperationsVerified?"":"<p class=\"reviewAlert\">Communication and assignment data has not been verified. Refresh CRM before assessing readiness.</p>"}<p>${rows.length} upcoming bookings · ${rows.filter(row=>row.model.ready).length} ready · ${rows.filter(row=>!row.model.ready).length} need review</p><div class="reviewQueue">${rows.map(({record,model})=>`<article class="reviewCard"><div class="reviewCardHeading"><h3>${esc(model.guest)}</h3><span class="reviewState">${esc(model.reviewState)}</span></div><p>${esc(reviewRepLabel(model.rep))} · First booked service ${esc(model.tourDate)} · Reminder ${esc(model.reminderDate)}</p>${reviewSummaryHtml(model)}<details><summary>Confirmation preview</summary><textarea readonly aria-label="Confirmation preview for ${esc(model.guest)}">${esc(model.message)}</textarea><p>Draft for staff review. No message has been sent.</p></details><button type="button" data-review-record="${esc(record.inquiry_id)}">Review booking</button></article>`).join("")||"<p>No unsent upcoming booked reminders in the saved records.</p>"}</div>`;
+      }
+
       const CRM_API_DEFAULT = "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
       const els = {};
       let requestedInquiryId=new URLSearchParams(location.search).get('inquiry_id')||'';
@@ -966,7 +997,7 @@
         ["dateInput","guestCountInput","pickupLocationInput"].forEach(id=>els[id].addEventListener("change",syncInheritedServices));
         document.getElementById("quoteAcceptedAtInput").addEventListener("input",event=>event.target.dataset.dirty="true");els.quoteStatusInput.addEventListener("change",()=>{if(els.quoteStatusInput.value==="accepted"&&!document.getElementById("quoteAcceptedAtInput").value){document.getElementById("quoteAcceptedAtInput").value=ecuadorDate();document.getElementById("quoteAcceptedAtInput").dataset.dirty="true";}});
         document.getElementById("assignmentBookedService").addEventListener("change",()=>{clearAssignmentForm();});
-        document.addEventListener("click",event=>{if(event.target.closest("#copyGuestConfirmationBtn")){const model=confirmationModel(Object.assign({},getSelected()||{},formRecord()));if(!model.ready){showToast("Complete the listed confirmation details first");return;}navigator.clipboard.writeText(model.message).then(()=>showToast("Confirmation preview copied; no message sent")).catch(()=>showToast("Could not copy. Select the preview text to copy."));}});
+        document.addEventListener("click",event=>{const reviewButton=event.target.closest("[data-review-record]");if(reviewButton){selectRecord(reviewButton.dataset.reviewRecord);return;}if(event.target.closest("#copyGuestConfirmationBtn")){const model=confirmationModel(Object.assign({},getSelected()||{},formRecord()));if(!model.ready){showToast("Complete the listed confirmation details first");return;}navigator.clipboard.writeText(model.message).then(()=>showToast("Confirmation preview copied; no message sent")).catch(()=>showToast("Could not copy. Select the preview text to copy."));}});
       }
       function primaryTourItemFromForm(){ const product=clean(els.productSelectedInput.value); const tour=productTitle(product)||clean(els.tourInput.value); return normalizeTourItem({...primaryTourItemFromRecord(getSelected()),id:"primary",priority_mode:els.priorityInput.value==="auto"?"auto":"manual",tour:tour,date:toDateValue(els.dateInput.value),guests:clean(els.guestCountInput.value),product_selected:product||deriveProductCode(tour),duration:clean(els.durationInput.value),status:normalizeStatus(els.recordStatusInput.value||"booked"),pickup_location:clean(els.pickupLocationInput.value),price:"",notes:"Primary tour",service_type:clean(els.serviceTypeInput.value),...primaryScheduleFromForm()}); }
       function primaryTourItemFromRecord(record){
@@ -1089,6 +1120,7 @@
       async function api(action,data){
         const url=clean(els.apiUrlInput.value)||localStorage.getItem("mbwCrmApiUrl")||CRM_API_DEFAULT;
         if(!url) throw new Error("Add CRM API webhook URL in Settings");
+        if(window.MBW_CRM_READ_ONLY_PREVIEW&&!action.startsWith("list_"))throw new Error("Read-only preview: changes and sending are disabled. Use the live CRM to edit records.");
         const payload={action,...data};
         const isRead=action.startsWith("list_");
         const attempts=isRead?4:1;
@@ -1176,6 +1208,7 @@
         }finally{ refreshInFlight=false; }
       }
       async function loadGlobalOperationsData(){
+        reviewOperationsVerified=false;
         if(!(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)) return;
         try{
           const [assignmentResult,providerResult,interactionResult]=await Promise.all([
@@ -1184,7 +1217,7 @@
             api("list_interactions",{})
           ]);
           state.allAssignments=extractRecords(assignmentResult);
-          state.providers=extractRecords(providerResult);state.allInteractions=extractRecords(interactionResult);
+          state.providers=extractRecords(providerResult);state.allInteractions=extractRecords(interactionResult);reviewOperationsVerified=true;
         }catch(error){
           console.warn("Global CRM operations data unavailable",error);
         }
@@ -1341,7 +1374,7 @@
       function parseDateRange(value){ const text=clean(value); const matches=[...text.matchAll(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/g)].map(m=>m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0")); if(matches.length) return {start:matches[0],end:matches[1]||matches[0]}; const us=[...text.matchAll(/(\d{1,2})\/(\d{1,2})\/(\d{4})/g)].map(m=>m[3]+"-"+m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0")); return {start:us[0]||"",end:us[1]||us[0]||""}; }
       function importCsvFile(event){ const file=event.target.files&&event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ const rows=parseCsv(String(reader.result||"")); state.records=applyDuplicateFamilyArchives(dedupeRecords(rows.filter(hasMeaningfulCrmData).map(normalizeCrmRecord))); state.selectedId=state.records[0]?state.records[0].inquiry_id:""; saveLocalRecords(); fillForm(getSelected()); render(); showToast("Imported "+state.records.length+" CRM records"); event.target.value=""; }; reader.readAsText(file); }
       function parseCsv(text){ const rows=[]; let row=[],cell="",quote=false; for(let i=0;i<text.length;i++){ const ch=text[i],next=text[i+1]; if(ch==='"'&&quote&&next==='"'){ cell+='"'; i++; } else if(ch==='"'){ quote=!quote; } else if(ch===","&&!quote){ row.push(cell); cell=""; } else if((ch==="\n"||ch==="\r")&&!quote){ if(ch==="\r"&&next==="\n") i++; row.push(cell); if(row.some(v=>v!=="")) rows.push(row); row=[]; cell=""; } else { cell+=ch; } } row.push(cell); if(row.some(v=>v!=="")) rows.push(row); const headers=(rows.shift()||[]).map(h=>h.trim().replace(/^\ufeff/,"")); return rows.map(values=>Object.fromEntries(headers.map((h,i)=>[h,values[i]||""]))); }
-      function render(){ const filtered=getFiltered(); renderGuestHistory(); renderAttribution(); renderFollowupFieldState(); renderStats(); renderFollowupSummary(); renderQueueState(); renderRecords(els.priorityRecords, getPriorityRecords(filtered).slice(0,6)); renderRecords(els.recordList, filtered); renderQueueNavigator(filtered); renderCalendar(); renderReports(); renderDetail(); renderWorkspaces(); updateItineraryActions(getSelected()); renderPayload(); }
+      function render(){ renderReview(); const filtered=getFiltered(); renderGuestHistory(); renderAttribution(); renderFollowupFieldState(); renderStats(); renderFollowupSummary(); renderQueueState(); renderRecords(els.priorityRecords, getPriorityRecords(filtered).slice(0,6)); renderRecords(els.recordList, filtered); renderQueueNavigator(filtered); renderCalendar(); renderReports(); renderDetail(); renderWorkspaces(); updateItineraryActions(getSelected()); renderPayload();freezeReviewPreview(); }
       function getFiltered(){const q=(clean(els.searchInput.value)||clean(els.inlineSearchInput.value)).toLowerCase(),vf=els.viewFilter.value;let arr=state.records.slice();if(q)arr=arr.filter(r=>JSON.stringify(r).toLowerCase().includes(q));const status=clean(els.statusFilter.value)||clean(els.inlineStatusFilter.value),rep=clean(els.repFilter.value)||clean(els.inlineRepFilter.value);if(status)arr=arr.filter(r=>normalizeStatus(r.status)===status);if(rep)arr=arr.filter(r=>rep==="unassigned"?!clean(r.assigned_to):normalizeRep(r.assigned_to)===rep);if(els.quoteFilter.value)arr=arr.filter(r=>r.quote_status===els.quoteFilter.value);if(els.paymentFilter.value)arr=arr.filter(r=>normalizePayment(r.payment_status)===els.paymentFilter.value);const direct={new:"new",contacted:"contacted",planning:"planning",qualified:"qualified",followUp:"follow_up",paymentPending:"payment_pending",completed:"completed",cancelled:"cancelled",didNotBook:"did_not_book",duplicate:"duplicate"};if(direct[vf])arr=arr.filter(r=>normalizeStatus(r.status)===direct[vf]);if(vf==="upcoming7")arr=arr.filter(r=>!isClosedStatus(r.status)&&isUpcoming7(r));if(["followups","salesFollowups","tripFollowups"].includes(vf))arr=arr.filter(r=>followupEligible(r)&&isFollowupDue(r)&&(vf==="followups"||(vf==="tripFollowups")==isTripFollowup(r)));if(vf==="preTourReminders")arr=arr.filter(r=>{const reminder=preTourReminder(r);return reminder&&reminder.kind!=="past"&&reminderDeliveryState(r).status!=="sent";});if(vf==="bookingReview")arr=arr.filter(r=>bookingReviewIssues(r).length);if(vf==="missingNextStep")arr=arr.filter(r=>followupEligible(r)&&(!clean(r.followup_date)||!clean(r.assigned_to)));if(vf==="urgent")arr=arr.filter(r=>!isClosedStatus(r.status)&&normalizePriority(r.priority||autoPriority(r.requested_date))==="urgent");if(vf==="activePipeline")arr=arr.filter(r=>["contacted","planning","qualified","follow_up"].includes(normalizeStatus(r.status)));if(vf==="quoted")arr=arr.filter(r=>!isClosedStatus(r.status)&&(r.quote_status==="sent"||normalizeStatus(r.status)==="quoted"));if(vf==="depositPending")arr=arr.filter(r=>!isClosedStatus(r.status)&&(normalizePayment(r.payment_status)==="deposit_pending"||normalizeStatus(r.status)==="deposit_pending"));if(vf==="depositPaid")arr=arr.filter(r=>!isClosedStatus(r.status)&&(normalizePayment(r.payment_status)==="deposit_paid"||normalizeStatus(r.status)==="deposit_paid"));if(vf==="booked")arr=arr.filter(r=>normalizeStatus(r.status)==="booked");if(["upcoming7","followups","urgent","new","contacted","planning","qualified","followUp","activePipeline","quoted","depositPending","depositPaid","paymentPending","booked"].includes(vf))arr=arr.filter(r=>!isPastTourRecord(r));if(!q&&vf!=="duplicate"&&status!=="duplicate")arr=arr.filter(r=>!isArchivedStatus(r));const sort=els.sortInput.value||"created_at",dir=els.sortDirectionInput.value==="asc"?1:-1;arr.sort((a,b)=>vf==="preTourReminders"?compareReminderDates(a,b):compareRecords(a,b,sort,dir));return arr;}
       const getFilteredBase=getFiltered;
       getFiltered=function(){ let arr=getFilteredBase(); const filter=clean(els.followupFilter&&els.followupFilter.value); if(filter) arr=arr.filter(record=>followupState(record).kind===filter); if((els.viewFilter.value||state.activeQueue)==="followups") arr.sort(compareFollowups); return arr; };
@@ -1716,7 +1749,7 @@
       }
       async function copyOperationsMessage(){if(!clean(els.operationsMessage.value))generateOperationsMessage();try{await navigator.clipboard.writeText(els.operationsMessage.value);showToast("Operations message copied");}catch(error){prompt("Copy operations message:",els.operationsMessage.value);} }
       function renderTable(target,row,cols){ target.innerHTML=cols.map(c=>`<tr><th>${esc(c)}</th><td>${esc(row[c]||"")}</td></tr>`).join(""); }
-      function renderPayload(){renderPreTourReminder();renderInvoiceState(); if(els.payloadOutput) els.payloadOutput.textContent=JSON.stringify({selected:getSelected(),save_payload:buildSavePayload(),api_url_set:Boolean(clean(els.apiUrlInput.value))},null,2); }
+      function renderPayload(){renderPreTourReminder();renderInvoiceState();renderReview(); if(els.payloadOutput) els.payloadOutput.textContent=JSON.stringify({selected:getSelected(),save_payload:buildSavePayload(),api_url_set:Boolean(clean(els.apiUrlInput.value))},null,2); }
       function applyQueue(queue){ state.activeQueue=queue||"all"; els.viewFilter.value=queue==="all"?"all":queue; if(["followups","salesFollowups","tripFollowups","preTourReminders","missingNextStep","bookingReview"].includes(queue)){["searchInput","inlineSearchInput","statusFilter","inlineStatusFilter","repFilter","inlineRepFilter","quoteFilter","paymentFilter","followupFilter"].forEach(id=>els[id].value="");els.sortInput.value="followup_date";els.sortDirectionInput.value="asc";} setView("records"); window.scrollTo({top:0,behavior:"smooth"}); showToast(queue==="all"?"Showing all records":"Filtered queue: "+queue); }
       function shouldAutoContact(selected,status){const oldStatus=normalizeStatus(selected.status||""),contactStatuses=["contacted","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked"];if(!contactStatuses.includes(status))return false;if(els.modeInput.value==="create")return true;return oldStatus&&oldStatus!==status;}
       function markContactedNow(){ if(!state.selectedId&&els.modeInput.value==="update"){ showToast("Select a record first"); return; } state.forceContactedAt=true; saveRecord(); }
