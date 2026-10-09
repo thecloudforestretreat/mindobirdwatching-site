@@ -3188,7 +3188,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function clean(v){ return String(v ?? '').trim(); }\nconst r={...$json};\nconst caption=clean(r.caption), hashtags=clean(r.instagram_hashtags);\nconst locationId='217339241';\nconst collaborators=['mindo.chicho','mindo.tours','chocoandino.tours'];\nif (!caption) throw new Error('PUBLISH BLOCKED: Instagram caption is blank immediately before container creation.');\nif (!hashtags || !hashtags.includes('#')) throw new Error('PUBLISH BLOCKED: Instagram hashtags are blank or invalid immediately before container creation.');\nif (!/^\\d+$/.test(locationId)) throw new Error('PUBLISH BLOCKED: Instagram location ID is invalid.');\nif (collaborators.length > 3 || collaborators.some(v=>!/^[-._a-z0-9]+$/.test(v))) throw new Error('PUBLISH BLOCKED: Instagram collaborators are invalid.');\nr._instagram_publish_caption=`${caption}\\n\\n${hashtags}`.trim();\nr._instagram_location_id=locationId;\nr._instagram_location_name='Mindo, Ecuador';\nr._instagram_collaborators=collaborators;\nif (r._instagram_publish_caption.length < 40) throw new Error('PUBLISH BLOCKED: Instagram publish caption is unexpectedly short.');\nreturn [{json:r}];"
+        "jsCode": "function clean(v){ return String(v ?? '').trim(); }\nconst r={...$json};\nconst caption=clean(r.caption), hashtags=clean(r.instagram_hashtags);\nconst collaborators=['mindo.chicho','mindo.tours','chocoandino.tours'];\nif (!caption) throw new Error('PUBLISH BLOCKED: Instagram caption is blank immediately before container creation.');\nif (!hashtags || !hashtags.includes('#')) throw new Error('PUBLISH BLOCKED: Instagram hashtags are blank or invalid immediately before container creation.');\nif (collaborators.length > 3 || collaborators.some(v=>!/^[-._a-z0-9]+$/.test(v))) throw new Error('PUBLISH BLOCKED: Instagram collaborators are invalid.');\nr._instagram_publish_caption=`${caption}\\n\\n${hashtags}`.trim();\nr._instagram_collaborators=collaborators;\nif (r._instagram_publish_caption.length < 40) throw new Error('PUBLISH BLOCKED: Instagram publish caption is unexpectedly short.');\nreturn [{json:r}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3219,10 +3219,6 @@
               {
                 "name": "caption",
                 "value": "={{ $json._instagram_publish_caption }}"
-              },
-              {
-                "name": "location_id",
-                "value": "217339241"
               },
               {
                 "name": "collaborators",
@@ -7869,7 +7865,7 @@
         "responseMode": "onReceived",
         "options": {}
       },
-      "id": "45692ac2-0b4a-41ee-b7fa-14ade7b86255",
+      "id": "511e266d-f517-47f1-b4fc-c32db2bae6df",
       "name": "[ADMIN] Trigger Carousel Processing",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
