@@ -36,13 +36,15 @@
     if(!clean(record.assigned_to))missing.push('Assigned rep');
     serviceChecks.sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||(a.start||'99:99').localeCompare(b.start||'99:99'));
     const outstanding=[...new Set(missing)];
-    const eligible=record.status==='booked'&&reminder&&!['past','missing'].includes(reminder.kind)&&!closed(record.status)&&!/^(yes|true)$/i.test(clean(record.is_archived));
+    const remainingDates=serviceChecks.map(s=>s.date).filter(date=>date&&date>=today).sort();
+    const effectiveReminder=reminder?.kind==='past'&&remainingDates.length?{...reminder,tourDate:remainingDates[0],date:plus(remainingDates[0],-2),kind:'ready'}:reminder;
+    const eligible=record.status==='booked'&&effectiveReminder&&!['past','missing'].includes(effectiveReminder.kind)&&!closed(record.status)&&!/^(yes|true)$/i.test(clean(record.is_archived));
     const sent=operationsLoaded&&delivery.status==='sent';
     return {
       guest:clean(record.full_name)||'Unnamed guest',rep:clean(record.assigned_to)||'Unassigned',status:clean(record.status)||'new',quote:clean(record.quote_status)||'Not recorded',payment:clean(record.payment_status)||'Not recorded',invoice:clean(record.invoice_no),guestCount:clean(record.guest_count),interest:clean(record.tour_type||record.tour_category),initialDate:day(record.requested_date||record.requested_date_start),services:serviceChecks,
       ready:eligible&&outstanding.length===0,missing:outstanding,eligible:!!eligible,sent,
-      reminderDate:reminder?.date||'',tourDate:reminder?.tourDate||'',message:confirmation.message||'',
-      lastContact:day(lastContact),lastContactChannel:clean(lastContactChannel),followupUrgency:!day(record.followup_date)?'missing':day(record.followup_date)<today?'overdue':day(record.followup_date)===today?'today':'future',followupDate:day(record.followup_date),suggestion:suggestion(record,today,reminder,lastContact),
+      reminderDate:effectiveReminder?.date||'',tourDate:effectiveReminder?.tourDate||'',message:confirmation.message||'',
+      lastContact:day(lastContact),lastContactChannel:clean(lastContactChannel),followupUrgency:!day(record.followup_date)?'missing':day(record.followup_date)<today?'overdue':day(record.followup_date)===today?'today':'future',followupDate:day(record.followup_date),suggestion:suggestion(record,today,effectiveReminder,lastContact),
       reviewState:!eligible?'Not scheduled':!operationsLoaded?'Data not verified':sent?'Already recorded sent':outstanding.length?'Needs details':'Details complete'
     };
   }
