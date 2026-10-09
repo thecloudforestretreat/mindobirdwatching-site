@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Carousel Studio</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/media/carousels/" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/admin.css?v=5" />
+  <link rel="stylesheet" href="/assets/css/reels-studio.css?v=1" />
+  <link rel="stylesheet" href="/assets/css/carousel-studio.css?v=1" />
+</head>
+<body data-admin-layout="media" data-admin-page="media">
+  <div data-admin-nav data-admin-page="media"></div>
+  <main class="reelsShell carouselShell">
+    <header class="studioHero">
+      <div class="studioBrand"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" /><div><p class="eyebrow">Media workspace</p><h1>Carousel Studio</h1><p>Build visual stories from 2–10 slides, review local AI copy, and follow each carousel from draft to its live post.</p></div></div>
+      <div class="heroActions"><a class="button buttonGhost" href="/media/">← Media</a><button class="button buttonPrimary" id="openComposer" type="button">+ Add carousel</button></div>
+    </header>
+    <section class="studioStats" aria-label="Carousel summary"><article><span id="statReview">0</span><small>Needs review</small></article><article><span id="statUpcoming">0</span><small>Upcoming</small></article><article><span id="statPublished">0</span><small>Published</small></article><article><span id="statAttention">0</span><small>Needs attention</small></article></section>
+    <section class="workspacePanel" aria-labelledby="queueHeading">
+      <div class="queueToolbar"><div><p class="eyebrow">Publishing queue</p><h2 id="queueHeading">Your carousels</h2></div><div class="queueControls"><label class="searchBox"><span class="srOnly">Search carousels</span><input id="searchInput" type="search" placeholder="Search birds, descriptions, or IDs" /></label><button class="iconButton" id="refreshQueue" type="button" aria-label="Refresh">↻</button></div></div>
+      <div class="tabRow" role="tablist"><button class="statusTab isActive" data-status="upcoming">Upcoming <span id="countUpcoming">0</span></button><button class="statusTab" data-status="review">Needs review <span id="countReview">0</span></button><button class="statusTab" data-status="published">Published <span id="countPublished">0</span></button><button class="statusTab" data-status="failed">Failed / partial <span id="countFailed">0</span></button><button class="statusTab" data-status="all">All <span id="countAll">0</span></button></div>
+      <div class="queueStatus" id="queueStatus" role="status" aria-live="polite">Loading carousels…</div><div class="reelsGrid carouselGrid" id="carouselGrid"></div>
+    </section>
+  </main>
+  <div class="modalBackdrop" id="composerBackdrop" hidden><section class="studioModal carouselComposer" role="dialog" aria-modal="true" aria-labelledby="composerTitle">
+    <header class="modalHeader"><div><p class="eyebrow">Visual intake</p><h2 id="composerTitle">Add carousel</h2></div><button class="iconButton" type="button" data-close-composer aria-label="Close">×</button></header>
+    <form id="carouselForm" enctype="multipart/form-data">
+      <section class="carouselFields">
+        <label><span>Bird name</span><input id="birdName" maxlength="160" placeholder="Rufous Motmot" required /></label>
+        <label><span>Scientific name (optional)</span><input id="scientificName" maxlength="180" placeholder="Baryphthengus martii" /></label>
+        <label class="wide"><span>Short factual description</span><textarea id="description" rows="3" maxlength="1600" placeholder="What connects these slides? Only include facts you can confirm." required></textarea></label>
+        <label><span>Location</span><input id="location" value="Mindo, Ecuador" maxlength="120" /></label>
+        <label><span>Scheduled date</span><input id="scheduledDate" type="date" required /></label>
+        <label><span>Eastern time</span><input id="scheduledTime" type="time" value="07:00" required /></label>
+        <label><span>Publishing mode</span><select id="mode"><option value="review">Review before scheduling</option><option value="auto">Auto-schedule after validation</option></select></label>
+      </section>
+      <fieldset class="platformDefaults"><legend>Destinations</legend><label><input id="postInstagram" type="checkbox" checked /> Instagram</label><label><input id="postFacebook" type="checkbox" /> Facebook</label></fieldset>
+      <section class="uploadPanel"><div><strong>Slides</strong><p>Upload 2–10 JPG, PNG, or WebP files. Every published slide is normalized to 1080 × 1350 (4:5).</p></div><label class="uploadButton"><input id="imageFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden />Choose images</label></section>
+      <div class="dimensionNote" id="dimensionNote">Photographs default to subject-aware fill. Text graphics default to fit with padding so nothing is cropped.</div>
+      <div class="slideEditor" id="slideEditor" aria-live="polite"></div>
+      <footer class="modalFooter"><p id="composerStatus" role="status"></p><div><button class="button buttonGhost" type="button" data-close-composer>Cancel</button><button class="button buttonPrimary" id="submitCarousel" type="submit">Create carousel draft</button></div></footer>
+    </form>
+  </section></div>
+  <div class="drawerBackdrop" id="reviewBackdrop" hidden><aside class="reviewDrawer" role="dialog" aria-modal="true" aria-labelledby="reviewTitle"><header class="modalHeader"><div><p class="eyebrow">Copy and publishing details</p><h2 id="reviewTitle">Review carousel</h2></div><button class="iconButton" type="button" data-close-review>×</button></header><div class="reviewContent" id="reviewContent"></div><footer class="drawerFooter" id="reviewActions"></footer></aside></div>
+  <script defer src="/assets/js/admin-nav.js?v=6"></script><script defer src="/assets/js/carousel-studio.js?v=1"></script>
+</body></html>
