@@ -72,6 +72,7 @@
   }
 
   function injectHeaderCss() {
+    if (document.getElementById("mbwHeaderCSS")) return;
     var url = "/assets/css/header.css?v=" + encodeURIComponent(VERSION);
     var existing = hasStylesheetContaining("/assets/css/header.css");
 
@@ -83,6 +84,7 @@
   }
 
   function injectFontAssets() {
+    if (document.getElementById("mbwFonts")) return;
     addLink("preconnect", "https://fonts.googleapis.com");
     addLink("preconnect", "https://fonts.gstatic.com", { crossorigin: "" });
 

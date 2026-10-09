@@ -15,3 +15,13 @@ The two homepages now use assets/css/homepage.css (about 64 KB) instead of the 7
 Computed-style comparisons (main, header and footer elements) against the full stylesheet found zero differences at 390px and 1440px for EN and ES after correction of negated selector handling. The interaction checks still cover mobile menus, desktop/mobile WhatsApp, booking and contact pages. This extraction is specific to the current homepage inventory; new components require regeneration and visual checks.
 
 Final local audits: mobile performance 91, LCP 3.2s, FCP 2.0s, CLS 0.039; desktop performance 95. Mobile baseline before either optimization was 54. These remain local lab results, not a production guarantee.
+
+## Mobile font and critical-style delivery
+
+EN/ES homepages inline their generated homepage CSS, shared header CSS and font-face definitions. scripts/build-homepage-css.cjs regenerates these marked blocks. The head helper recognizes the inline blocks and avoids requesting duplicate header styles or Google Fonts. Other pages retain the existing font loader.
+
+The same Google Fonts WOFF2 assets are stored in assets/fonts with their original font licenses. Primary Latin Open Sans and Playfair Display files are preloaded; other subsets remain available on demand. Font filenames contain upstream version hashes, with one-year immutable cache headers; use new filenames for future font updates. Brand typography and requested weights remain the same.
+
+Floating WhatsApp artwork uses WebP: mobile 96 KB → 19 KB; desktop 131 KB → 24 KB. The widget's logic remains unchanged.
+
+Verification: zero computed-style differences versus the full stylesheet at 390px/1440px for EN/ES. Navigation, WhatsApp, form availability and overflow checks pass. No real submissions/payments made. Production Lighthouse measurement follows deployment.
