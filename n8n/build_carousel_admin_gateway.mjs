@@ -73,7 +73,7 @@ const find = () => rows.find(row => clean(row.carousel_id) === clean(body.carous
 if (action === 'list_carousels') {
   const query=clean(body.query).toLowerCase();
   let filtered=rows.filter(row => clean(row.carousel_id) && Array.from({length:10},(_,i)=>clean(row['image_'+(i+1)+'_url'])).some(Boolean));
-  if (query) filtered=filtered.filter(row => [row.carousel_id,row.featured_birds,row.scientific_name,row.carousel_description,row.caption,row.status].join(' ').toLowerCase().includes(query));
+  if (query) filtered=filtered.filter(row => [row.carousel_id,row.featured_birds,row.scientific_name,row.carousel_title,row.carousel_description,row.caption,row.reddit_title,row.status].join(' ').toLowerCase().includes(query));
   const limit=Math.min(250,Math.max(1,Number(body.limit)||150));
   filtered.sort((a,b)=>Number(b.row_number||0)-Number(a.row_number||0));
   return response(true,'',{carousels:filtered.slice(0,limit),count:Math.min(filtered.length,limit)});
@@ -109,8 +109,8 @@ if (!existing) return response(false,'The requested carousel was not found.');
 const row=normalized(existing);
 
 if (action === 'update_carousel') {
-  const allowed=new Set(['caption','instagram_hashtags','facebook_caption','scheduled_date','scheduled_time']);
-  for (const [key,value] of Object.entries(body.edits||{})) if (allowed.has(key)) row[key]=key==='scheduled_date'?toSheetDate(value):key==='scheduled_time'?toSheetTime(value):clean(value);
+  const allowed=new Set(['carousel_title','caption','instagram_hashtags','facebook_caption','facebook_hashtags','reddit_title','reddit_caption','reddit_hashtags','scheduled_date','scheduled_time','post_to_instagram','post_to_facebook']);
+  for (const [key,value] of Object.entries(body.edits||{})) if (allowed.has(key)) row[key]=key==='scheduled_date'?toSheetDate(value):key==='scheduled_time'?toSheetTime(value):key==='post_to_instagram'||key==='post_to_facebook'?truthy(value):clean(value);
   return [{json:{...row,_route:'update_only'}}];
 }
 
@@ -122,6 +122,11 @@ if (action === 'approve_carousel') {
   if (captionWords<50 || captionWords>120) errors.push('Caption must contain 50–120 words.');
   const tags=clean(row.instagram_hashtags).split(/\s+/).filter(Boolean);
   if (tags.length!==5 || tags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Instagram requires exactly five valid hashtags.');
+  if (!clean(row.carousel_title)) errors.push('Carousel title is required.');
+  const facebookWords=words(row.facebook_caption), facebookTags=clean(row.facebook_hashtags).split(/\s+/).filter(Boolean);
+  if (facebookWords<50 || facebookWords>140 || facebookTags.length!==3 || facebookTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Facebook requires a 50–140 word caption and exactly three valid hashtags.');
+  const redditWords=words(row.reddit_caption), redditTags=clean(row.reddit_hashtags).split(/\s+/).filter(Boolean);
+  if (!clean(row.reddit_title) || clean(row.reddit_title).length>120 || redditWords<35 || redditWords>120 || redditTags.length!==3 || redditTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Reddit requires a title, a 35–120 word body, and exactly three valid hashtags.');
   if (!truthy(row.post_to_instagram) && !truthy(row.post_to_facebook)) errors.push('Select Instagram or Facebook.');
   if (clean(row.copy_review_status).toUpperCase()!=='PASS') errors.push('Both local copy passes must complete successfully.');
   if (errors.length) return response(false,errors.join(' '));
@@ -131,7 +136,7 @@ if (action === 'approve_carousel') {
 
 if (action === 'regenerate_carousel') {
   if ([row.instagram_post_id,row.facebook_post_id].some(value=>clean(value))) return response(false,'Published or partially published carousels cannot be regenerated.');
-  for (const field of ['local_brief','copy_review_status','caption_generation_status','caption','instagram_hashtags','facebook_caption','copy_generated_at','ai_model','posting_defaults_applied_at']) row[field]='';
+  for (const field of ['local_brief','copy_review_status','caption_generation_status','carousel_title','caption','instagram_hashtags','facebook_caption','facebook_hashtags','reddit_title','reddit_caption','reddit_hashtags','copy_generated_at','ai_model','posting_defaults_applied_at']) row[field]='';
   Object.assign(row,{status:'Testing',input_status:clean(row.admin_mode).toLowerCase()==='auto'?'VERIFIED':'READY',approval_status:'NEEDS_REVIEW',quality_score:0,error_message:'',publishing_lock:''});
   return [{json:{...row,_route:'update_trigger'}}];
 }
