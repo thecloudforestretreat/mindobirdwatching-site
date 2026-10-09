@@ -65,7 +65,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function has(v) { return v !== null && v !== undefined && String(v).trim() !== ''; }\nfunction bool(v, defaultValue = false) {\n  if (!has(v)) return defaultValue;\n  if (typeof v === 'boolean') return v;\n  return ['true','1','yes','y','on'].includes(String(v).trim().toLowerCase());\n}\nfunction scheduledTimePassed(r) {\n  const d = String(r.scheduled_date || '').trim();\n  const t = String(r.scheduled_time || '').trim();\n  if (!d || !t) return false;\n  let dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy h:mm a', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy H:mm', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromISO(d + 'T' + t, { zone: 'America/New_York' });\n  return dt.isValid && dt.toMillis() <= DateTime.now().setZone('America/New_York').toMillis();\n}\nreturn $input.all().map(item => {\n  const r = { ...item.json };\n  const urls = Array.from({length: 10}, (_, i) => String(r[`image_${i + 1}_url`] || '').trim()).filter(Boolean);\n  const inputStatus = String(r.input_status || '').trim().toUpperCase();\n  const status = String(r.status || '').trim().toLowerCase();\n  const testing = status === 'testing';\n  const approved = ['READY','VERIFIED'].includes(inputStatus);\n  const due = testing || (status === 'scheduled' && scheduledTimePassed(r));\n  const valid = has(r.carousel_id) && urls.length >= 2 && urls.length <= 10 && new Set(urls).size === urls.length && has(r.featured_birds) && approved;\n  r.media_type = 'CAROUSEL';\n  r.post_to_instagram = bool(r.post_to_instagram, true);\n  r.post_to_facebook = bool(r.post_to_facebook, true);\n  r._needs_generation = !has(r.carousel_title) || !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !has(r.facebook_hashtags) || !has(r.reddit_title) || !has(r.reddit_caption) || !has(r.reddit_hashtags) || !String(r.ai_model || '').includes('en-US v6');\n  r._process = valid && due;\n  r._is_testing = testing;\n  r._validation_error = !has(r.carousel_id) ? 'Missing carousel_id' :\n    (urls.length < 2 || urls.length > 10) ? 'Between two and ten image URLs are required' :\n    new Set(urls).size !== urls.length ? 'All carousel image URLs must be unique' :\n    !has(r.featured_birds) ? 'Missing featured_birds' :\n    !approved ? 'input_status must be READY or VERIFIED' : '';\n  return { json: r };\n});"
+        "jsCode": "function has(v) { return v !== null && v !== undefined && String(v).trim() !== ''; }\nfunction bool(v, defaultValue = false) {\n  if (!has(v)) return defaultValue;\n  if (typeof v === 'boolean') return v;\n  return ['true','1','yes','y','on'].includes(String(v).trim().toLowerCase());\n}\nfunction scheduledTimePassed(r) {\n  const d = String(r.scheduled_date || '').trim();\n  const t = String(r.scheduled_time || '').trim();\n  if (!d || !t) return false;\n  let dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy h:mm a', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy H:mm', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromISO(d + 'T' + t, { zone: 'America/New_York' });\n  return dt.isValid && dt.toMillis() <= DateTime.now().setZone('America/New_York').toMillis();\n}\nreturn $input.all().map(item => {\n  const r = { ...item.json };\n  const urls = Array.from({length: 10}, (_, i) => String(r[`image_${i + 1}_url`] || '').trim()).filter(Boolean);\n  const inputStatus = String(r.input_status || '').trim().toUpperCase();\n  const status = String(r.status || '').trim().toLowerCase();\n  const queued = status === 'queued';\n  const approved = ['READY','VERIFIED'].includes(inputStatus);\n  const due = queued || (status === 'scheduled' && scheduledTimePassed(r));\n  const valid = has(r.carousel_id) && urls.length >= 2 && urls.length <= 10 && new Set(urls).size === urls.length && has(r.featured_birds) && approved;\n  r.media_type = 'CAROUSEL';\n  r.post_to_instagram = bool(r.post_to_instagram, true);\n  r.post_to_facebook = bool(r.post_to_facebook, true);\n  r._needs_generation = !has(r.carousel_title) || !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !has(r.facebook_hashtags) || !has(r.reddit_title) || !has(r.reddit_caption) || !has(r.reddit_hashtags) || !String(r.ai_model || '').includes('en-US v6');\n  r._process = valid && due;\n  r._is_testing = queued;\n  r._validation_error = !has(r.carousel_id) ? 'Missing carousel_id' :\n    (urls.length < 2 || urls.length > 10) ? 'Between two and ten image URLs are required' :\n    new Set(urls).size !== urls.length ? 'All carousel image URLs must be unique' :\n    !has(r.featured_birds) ? 'Missing featured_birds' :\n    !approved ? 'input_status must be READY or VERIFIED' : '';\n  return { json: r };\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -143,6 +143,664 @@
       ],
       "id": "36164864-bdb2-5e44-b3f5-f3e7580ec718",
       "name": "[GEN] If: Copy Missing"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ai_carousels",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "carousel_id": "={{ $json.carousel_id }}",
+            "status": "Generating",
+            "caption_generation_status": "PENDING_LOCAL_REVIEW",
+            "error_message": ""
+          },
+          "matchingColumns": [
+            "carousel_id"
+          ],
+          "schema": [
+            {
+              "id": "carousel_id",
+              "displayName": "carousel_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_1_url",
+              "displayName": "image_1_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_2_url",
+              "displayName": "image_2_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_3_url",
+              "displayName": "image_3_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_4_url",
+              "displayName": "image_4_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_5_url",
+              "displayName": "image_5_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_6_url",
+              "displayName": "image_6_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_7_url",
+              "displayName": "image_7_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_8_url",
+              "displayName": "image_8_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_9_url",
+              "displayName": "image_9_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_10_url",
+              "displayName": "image_10_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "images_json",
+              "displayName": "images_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "carousel_description",
+              "displayName": "carousel_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "slide_notes",
+              "displayName": "slide_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "featured_birds",
+              "displayName": "featured_birds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scientific_name",
+              "displayName": "scientific_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "activity_name",
+              "displayName": "activity_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "verified_details",
+              "displayName": "verified_details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "input_status",
+              "displayName": "input_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scheduled_date",
+              "displayName": "scheduled_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scheduled_time",
+              "displayName": "scheduled_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "media_type",
+              "displayName": "media_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_to_instagram",
+              "displayName": "post_to_instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_to_facebook",
+              "displayName": "post_to_facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "local_brief",
+              "displayName": "local_brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "copy_review_status",
+              "displayName": "copy_review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption_generation_status",
+              "displayName": "caption_generation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_hashtags",
+              "displayName": "instagram_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_caption",
+              "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "copy_generated_at",
+              "displayName": "copy_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_model",
+              "displayName": "ai_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gemini_input_tokens",
+              "displayName": "gemini_input_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gemini_output_tokens",
+              "displayName": "gemini_output_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gemini_total_tokens",
+              "displayName": "gemini_total_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "posting_defaults_applied_at",
+              "displayName": "posting_defaults_applied_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publishing_lock",
+              "displayName": "publishing_lock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_container_id",
+              "displayName": "instagram_container_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_published_date",
+              "displayName": "instagram_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_post_id",
+              "displayName": "instagram_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_permalink",
+              "displayName": "instagram_permalink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_photo_ids",
+              "displayName": "facebook_photo_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_published_date",
+              "displayName": "facebook_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_post_id",
+              "displayName": "facebook_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_permalink",
+              "displayName": "facebook_permalink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "telegram_sent_date",
+              "displayName": "telegram_sent_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quality_score",
+              "displayName": "quality_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "admin_mode",
+              "displayName": "admin_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -270,
+        -80
+      ],
+      "id": "48bbb690-d769-5a78-9039-bcf414c59a29",
+      "name": "[GEN] Mark Generation Started",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      },
+      "retryOnFail": true
     },
     {
       "parameters": {
@@ -7211,7 +7869,7 @@
         "responseMode": "onReceived",
         "options": {}
       },
-      "id": "02d5864e-8d47-4e04-a058-c757fac390bf",
+      "id": "f138ca1c-881c-47b6-ba6b-17dbdff14e58",
       "name": "[ADMIN] Trigger Carousel Processing",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -7283,7 +7941,7 @@
       "main": [
         [
           {
-            "node": "[GEN] Local Grounding (Ollama)",
+            "node": "[GEN] Mark Generation Started",
             "type": "main",
             "index": 0
           }
@@ -7291,6 +7949,17 @@
         [
           {
             "node": "[CORE] Merge Prepared Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[GEN] Mark Generation Started": {
+      "main": [
+        [
+          {
+            "node": "[GEN] Local Grounding (Ollama)",
             "type": "main",
             "index": 0
           }
