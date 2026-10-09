@@ -163,8 +163,8 @@
           '</h2>' +
           '<p class="mbwConsent__text">' +
             (spanish
-              ? 'Usamos analítica opcional para mejorar el sitio y medir nuestros anuncios. El sitio, WhatsApp y los formularios funcionan aunque rechaces. <a href="/es/politica-de-privacidad/">Más información</a>.'
-              : 'We use optional analytics to improve the site and measure our ads. The site, WhatsApp, and forms still work if you decline. <a href="/privacy-policy/">Learn more</a>.') +
+              ? 'Usamos analítica opcional para mejorar el sitio y medir nuestros anuncios. El sitio, WhatsApp y los formularios funcionan aunque rechaces. <a href="/es/politica-de-privacidad/">Política de privacidad</a>.'
+              : 'We use optional analytics to improve the site and measure our ads. The site, WhatsApp, and forms still work if you decline. <a href="/privacy-policy/">Privacy policy</a>.') +
           '</p>' +
         '</div>' +
         '<div class="mbwConsent__actions">' +
@@ -725,6 +725,12 @@
       var form = e.target;
       if (!form || form.tagName !== "FORM") return;
 
+      // Each genuine submission can produce one new confirmed event.
+      // Hide/show polling still deduplicates repeated observations.
+      var submittedName = getFormName(form);
+      Object.keys(visibleFormStates).forEach(function (key) {
+        if (key.indexOf("success:" + submittedName + ":") === 0 || key.indexOf("error:" + submittedName + ":") === 0) delete visibleFormStates[key];
+      });
       var explicit = form.getAttribute("data-analytics-event");
       if (explicit) {
         sendEvent(explicit, payloadFromElement(form));
