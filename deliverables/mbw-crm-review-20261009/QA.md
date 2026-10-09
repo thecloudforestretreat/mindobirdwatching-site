@@ -10,3 +10,6 @@ Browser QA synthetic scenarios: single paid bird tour Ready; multi-day bird/tran
 
 Release gate: live authenticated read-only data validation and Juan/Susana review remain before any production enablement. API backup must succeed before enabling data-writing features. Follow-up suggestions need workflow acceptance. WhatsApp integration needs its own delivery/retry/idempotency end-to-end checks; no sending feature added here.
 Rollback: keep ?crmReview=0/default; remove additive UI/module if necessary. Source changes are isolated and do not modify existing storage schema, report fields, or messaging automation.
+
+## Clarity QA
+Shortened reminder cards, collapsed secondary booking facts, formatted dates, and made provider actions explicit. All 36 focused tests pass. Mobile 390px has no horizontal overflow; preview writes remain disabled. Source backup: /tmp/mbw-review-qa-backup. Live-data validation remains required before production.

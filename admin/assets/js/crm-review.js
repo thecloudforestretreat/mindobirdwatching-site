@@ -6,12 +6,12 @@
   const plus=(date,count)=>new Date(Date.parse(date+'T12:00:00Z')+count*86400000).toISOString().slice(0,10);
   function suggestion(record,today,reminder,lastContact){
     if(closed(record.status)||/^(yes|true)$/i.test(clean(record.is_archived)))return null;
-    if(clean(record.status).toLowerCase()==='booked')return reminder&& !['past','missing'].includes(reminder.kind)?{date:reminder.date<today?today:reminder.date,reason:'Review pre-tour details two days before the first booked service. Existing follow-up stays unchanged.'}:null;
+    if(clean(record.status).toLowerCase()==='booked')return reminder&& !['past','missing'].includes(reminder.kind)?{date:reminder.date<today?today:reminder.date,reason:'Review tour details two days before departure.'}:null;
     const tourDate=day(record.requested_date||record.requested_date_start);
     if(tourDate&&tourDate<today)return null;
     const reference=[day(lastContact),day(record.quote_sent_at),day(record.created_at)].filter(Boolean).sort().at(-1)||today;
     const quoted=record.quote_status==='sent'||record.status==='quoted';
-    return {date:plus(reference,quoted?3:1)<today?today:plus(reference,quoted?3:1),reason:quoted?'Allow three days to respond to the quote, then review the latest conversation.':'Review this inquiry tomorrow; adjust after reading the latest conversation.'};
+    return {date:plus(reference,quoted?3:1)<today?today:plus(reference,quoted?3:1),reason:quoted?'Follow up three days after the latest contact or quote.':'Follow up one day after the latest contact.'};
   }
   function build(input){
     const {record,services=[],confirmation={missing:[],message:''},reminder,delivery={status:'pending'},assignments=[],operationsLoaded=false,today,lastContact=''}=input;
@@ -26,8 +26,8 @@
       const assigned=matching.filter(a=>clean(a.provider_name==='Other'?a.provider_name_other:a.provider_name)&&['confirmed','booked','assigned'].includes(clean(a.assignment_status).toLowerCase()));
       if(needsProvider){
         if(!operationsLoaded)issues.push('Provider data has not been verified; refresh CRM');
-        else if(!assigned.length)issues.push(transport?'Confirmed driver assignment':'Confirmed guide assignment');
-        else if(!assigned.some(a=>clean(a.provider_informed).toLowerCase()==='yes'))issues.push('Provider informed');
+        else if(!assigned.length)issues.push(transport?'Confirm driver assignment':'Confirm guide assignment');
+        else if(!assigned.some(a=>clean(a.provider_informed).toLowerCase()==='yes'))issues.push('Notify provider');
       }
       for(const issue of issues)missing.push(label+': '+issue);
       return {label,date:day(service.date),guests:clean(service.guests),issues};
