@@ -31,6 +31,7 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
+  assert(html.includes("carousel-studio.css?v=5") && html.includes("carousel-studio.js?v=5"), "Carousel asset cache keys must expose the latest replacement and regeneration controls");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
   assert(ui.includes("x[-_ ]?ray") && ui.includes("sticky|graphic|infographic|notes"), "UI must identify educational graphics for fit/pad treatment");
