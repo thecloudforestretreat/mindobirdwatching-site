@@ -1,0 +1,1170 @@
+{
+  "id": "wjq5Bgy5a6hIOnay",
+  "name": "MBW - Carousel Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "formTitle": "MBW Carousel Intake",
+        "formDescription": "Upload 2\u201310 images. The Mac mini will prepare a review-only draft; nothing is published automatically.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload 2 to 10 carousel images",
+              "fieldName": "carousel_images",
+              "fieldType": "file",
+              "multipleFiles": true,
+              "acceptFileTypes": ".jpg,.jpeg,.png,.webp",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Overall carousel description",
+              "fieldName": "carousel_description",
+              "fieldType": "textarea",
+              "placeholder": "What do these images show? Keep this factual.",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Known species (optional)",
+              "fieldName": "known_species",
+              "fieldType": "text",
+              "placeholder": "Separate confirmed names with |",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Activity or tour",
+              "fieldName": "activity_name",
+              "fieldType": "text",
+              "placeholder": "Birdwatching tour | Night walk",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Location",
+              "fieldName": "location",
+              "fieldType": "text",
+              "defaultValue": "Mindo, Ecuador",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Verified details (optional)",
+              "fieldName": "verified_details",
+              "fieldType": "textarea",
+              "placeholder": "Only facts you personally confirm may be entered here.",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Guest image permission confirmed",
+              "fieldName": "guest_permission_confirmed",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes \u2014 permission is confirmed for recognizable guests"
+                  }
+                ]
+              },
+              "limitSelection": "unlimited",
+              "requiredField": false
+            }
+          ]
+        },
+        "responseMode": "onReceived",
+        "options": {
+          "path": "mbw-carousel-intake",
+          "buttonLabel": "Create review draft",
+          "ignoreBots": true,
+          "useWorkflowTimezone": true,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Upload received. Local analysis may take several minutes; Telegram will notify you when the review draft is ready."
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -1320,
+        120
+      ],
+      "id": "4e43a147-d2bb-527d-8b6f-6e9f5896f226",
+      "name": "[INTAKE] Upload Carousel Images",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "16JJ05oTOEDzL2Ll",
+          "name": "MBW Carousel Intake - Basic Auth"
+        }
+      },
+      "webhookId": "ebe5b355-fcbf-5959-8d55-2365a0fedd16"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nif (items.length !== 1) throw new Error('Expected one form submission.');\nconst src = items[0];\nconst binaryEntries = Object.entries(src.binary || {});\nif (binaryEntries.length < 2 || binaryEntries.length > 10) throw new Error(`Between 2 and 10 images are required; received ${binaryEntries.length}.`);\n\nconst allowed = new Set(['image/jpeg','image/png','image/webp']);\nconst seen = new Set();\nconst output = [];\nfor (let i = 0; i < binaryEntries.length; i++) {\n  const [key, file] = binaryEntries[i];\n  if (!allowed.has(String(file.mimeType || '').toLowerCase())) {\n    throw new Error(`Image ${i + 1} has unsupported type ${file.mimeType || 'unknown'}.`);\n  }\n  const buffer = await this.helpers.getBinaryDataBuffer(0, key);\n  if (!buffer.length) throw new Error(`Image ${i + 1} is empty.`);\n  if (buffer.length > 20 * 1024 * 1024) throw new Error(`Image ${i + 1} exceeds 20 MB.`);\n  let hash = 2166136261;\n  for (const byte of buffer) { hash ^= byte; hash = Math.imul(hash, 16777619); }\n  const fingerprint = `${buffer.length}:${hash >>> 0}`;\n  if (seen.has(fingerprint)) throw new Error(`Image ${i + 1} duplicates another uploaded image.`);\n  seen.add(fingerprint);\n  output.push({\n    json: {\n      image_index: i + 1,\n      image_base64: buffer.toString('base64'),\n      file_name: file.fileName || `image-${i + 1}`,\n      mime_type: file.mimeType,\n      file_size: buffer.length,\n      carousel_description: String(src.json.carousel_description || '').trim(),\n      known_species: String(src.json.known_species || '').trim(),\n      activity_name: String(src.json.activity_name || '').trim(),\n      location: String(src.json.location || 'Mindo, Ecuador').trim(),\n      verified_details: String(src.json.verified_details || '').trim(),\n      guest_permission_confirmed: Array.isArray(src.json.guest_permission_confirmed)\n        ? src.json.guest_permission_confirmed.length > 0\n        : Boolean(src.json.guest_permission_confirmed),\n    },\n    binary: { data: file },\n  });\n}\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1080,
+        120
+      ],
+      "id": "8f222b94-0482-5adc-82fe-ac12cbb031b6",
+      "name": "[INTAKE] Validate and Split Images"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:11434/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: 'qwen3.5:27b',\n  prompt: `Analyze image ${$json.image_index} for a Mindo Bird Watching carousel intake.\nUser-supplied context: ${$json.carousel_description}\nKnown species supplied by user: ${$json.known_species || 'None'}\nReturn JSON only with: content_type (bird|wildlife|guest|landscape|activity|promotional|infographic|xray|other), neutral_visual_description, possible_species (array), species_confidence (low|medium|high), people_visible (boolean), promotional_asset (boolean), suggested_position (1-10), verification_flags (array).\nDo not infer location, tour participation, ownership, guest status, permission, rarity, or guaranteed sightings. Treat species names as suggestions unless supplied by the user.`,\n  images: [$json.image_base64], stream: false, think: false, format: 'json', keep_alive: '5m',\n  options: { temperature: 0.1, num_predict: 350 }\n} }}",
+        "options": {
+          "timeout": 300000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -840,
+        120
+      ],
+      "id": "df8909a9-fb2c-57b4-a907-02c98d4e799e",
+      "name": "[VISION] Analyze Each Image Locally",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -600,
+        120
+      ],
+      "id": "ca146ffd-c4bb-581f-bd96-2d5d239f9658",
+      "name": "[VISION] Merge Image and Analysis"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const base = item.json;\n  let parsed = {};\n  try { parsed = JSON.parse(String(base.response || '{}').replace(/^```json\\s*|\\s*```$/g, '')); } catch (_) {}\n  const allowed = new Set(['bird','wildlife','guest','landscape','activity','promotional','infographic','xray','other']);\n  return { json: {\n    ...base,\n    vision_content_type: allowed.has(parsed.content_type) ? parsed.content_type : 'other',\n    vision_description: String(parsed.neutral_visual_description || `Image ${base.image_index}`).trim(),\n    possible_species: Array.isArray(parsed.possible_species) ? parsed.possible_species.map(String).slice(0,5) : [],\n    species_confidence: ['low','medium','high'].includes(parsed.species_confidence) ? parsed.species_confidence : 'low',\n    people_visible: parsed.people_visible === true,\n    promotional_asset: parsed.promotional_asset === true,\n    suggested_position: Number(parsed.suggested_position) || base.image_index,\n    verification_flags: Array.isArray(parsed.verification_flags) ? parsed.verification_flags.map(String).slice(0,8) : ['vision_json_parse_failed'],\n  }, binary: item.binary };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        120
+      ],
+      "id": "c0042f38-d318-5d34-ac79-7f6b3deb0f22",
+      "name": "[VISION] Parse Safe Metadata"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee672117-7ea2-500d-9748-0a30c656f6e1",
+              "name": "cloudinary_cloud_name",
+              "value": "dd25hpdx3",
+              "type": "string"
+            },
+            {
+              "id": "c1717e3b-55da-546e-8649-8faea7bcaa4b",
+              "name": "cloudinary_upload_preset",
+              "value": "mbw_carousel_intake",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -120,
+        120
+      ],
+      "id": "5732aa32-642f-5092-842e-3916992b7c1e",
+      "name": "[SETUP] Cloudinary Upload Configuration"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  if (!$json.cloudinary_upload_preset || String($json.cloudinary_upload_preset).startsWith('REPLACE_')) {\n    throw new Error('SETUP REQUIRED: replace the Cloudinary unsigned upload preset in [SETUP] Validate Cloudinary Configuration before testing.');\n  }\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        120
+      ],
+      "id": "a614f82c-6da0-5ccd-a44f-0a96c943242b",
+      "name": "[SETUP] Validate Cloudinary Configuration"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.cloudinary.com/v1_1/' + $json.cloudinary_cloud_name + '/image/upload' }}",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "upload_preset",
+              "value": "={{ $json.cloudinary_upload_preset }}"
+            },
+            {
+              "name": "folder",
+              "value": "mbw/carousel-intake"
+            },
+            {
+              "name": "context",
+              "value": "={{ 'carousel_intake_index=' + $json.image_index }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 180000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        360,
+        120
+      ],
+      "id": "9062cb14-2208-54db-a6be-2ff265bf349d",
+      "name": "[UPLOAD] Send Images to Cloudinary",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((item,i)=>({json:{...item.json,_intake:$('[VISION] Parse Safe Metadata').all()[i].json}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        120
+      ],
+      "id": "1169476d-d6a4-5d30-93bd-2eb37e143e6d",
+      "name": "[UPLOAD] Attach Intake Metadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploaded = $input.all();\nif (uploaded.length < 2 || uploaded.length > 10) throw new Error(`Expected 2\u201310 completed uploads; received ${uploaded.length}.`);\nconst rows = uploaded.map((item, i) => {\n  const r = item.json;\n  const original = r._intake || {};\n  const secure = String(r.secure_url || '');\n  if (!/^https:\\/\\//.test(secure)) throw new Error(`Cloudinary upload ${i + 1} did not return secure_url.`);\n  return {\n    index: Number(original.image_index || i + 1),\n    url: secure.replace('/upload/', `/upload/${['promotional','infographic','xray'].includes(original.vision_content_type) ? 'c_pad,b_rgb:f7f4e8' : 'c_fill,g_auto'},h_1350,w_1080,q_auto,f_auto/`),\n    original_url: secure,\n    content_type: original.vision_content_type,\n    description: original.vision_description,\n    possible_species: original.possible_species || [],\n    species_confidence: original.species_confidence || 'low',\n    people_visible: original.people_visible === true,\n    promotional_asset: original.promotional_asset === true,\n    suggested_position: original.suggested_position,\n    flags: original.verification_flags || [],\n    context: original,\n  };\n}).sort((a,b) => a.index - b.index);\nconst first = rows[0].context;\nreturn [{ json: {\n  submitted_order: rows,\n  carousel_description: first.carousel_description,\n  known_species: first.known_species,\n  activity_name: first.activity_name,\n  location: first.location,\n  verified_details: first.verified_details,\n  guest_permission_confirmed: first.guest_permission_confirmed,\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        120
+      ],
+      "id": "f4e658e4-a038-5123-ba1b-d9991246bd29",
+      "name": "Aggregate Uploaded Images"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:11434/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: 'qwen3.5:27b', think: false, stream: false, format: 'json', keep_alive: 0,\n  prompt: `Prepare a REVIEW-ONLY carousel intake record from this JSON:\\n${JSON.stringify($json)}\\n\nReturn JSON only with: proposed_order (array containing every supplied image index exactly once), carousel_description, slide_notes (one numbered sentence for each image in proposed order), suggested_featured_birds (array), review_flags (array), ordering_reason.\nRules: preserve user facts; visual species are suggestions only; do not invent locations, tours, guest identities, emotions, permission, dates, rarity, abundance, or sightings. Flag every recognizable person if permission was not confirmed. Keep promotional images clearly labeled.`,\n  options: { temperature: 0.1, num_predict: 900 }\n} }}",
+        "options": {
+          "timeout": 300000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        120
+      ],
+      "id": "05515c5c-0eed-53cb-993d-af73ec74e529",
+      "name": "[EDITOR] Propose Order and Notes Locally",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $('Aggregate Uploaded Images').first().json;\nlet edit = {};\ntry { edit = JSON.parse(String($json.response || '{}').replace(/^```json\\s*|\\s*```$/g, '')); } catch (_) {}\nconst expected = source.submitted_order.map(v => Number(v.index));\nconst proposed = Array.isArray(edit.proposed_order) ? edit.proposed_order.map(Number) : [];\nconst validOrder = proposed.length === expected.length && new Set(proposed).size === expected.length &&\n  proposed.every(v => expected.includes(v));\nconst order = validOrder ? proposed : expected;\nconst byIndex = new Map(source.submitted_order.map(v => [v.index, v]));\nconst arranged = order.map(v => byIndex.get(v));\nconst now = DateTime.now().setZone('America/New_York');\nconst carouselId = `CAR-${now.toFormat('yyyyLLdd-HHmmss')}`;\nconst peopleNeedPermission = arranged.some(v => v.people_visible) && !source.guest_permission_confirmed;\nconst modelFlags = Array.isArray(edit.review_flags) ? edit.review_flags.map(String) : [];\nif (peopleNeedPermission) modelFlags.unshift('BLOCK: recognizable people detected; guest permission not confirmed');\nif (!validOrder) modelFlags.push('AI order invalid; submitted order preserved');\nconst species = source.known_species\n  ? source.known_species\n  : (Array.isArray(edit.suggested_featured_birds) ? edit.suggested_featured_birds.join(' | ') : '');\nconst row = {\n  carousel_id: carouselId,\n  carousel_description: String(source.carousel_description || edit.carousel_description || '').trim(),\n  slide_notes: String(edit.slide_notes || arranged.map((v,i) => `${i+1}: ${v.description}`).join('\\n')).trim(),\n  featured_birds: species,\n  activity_name: source.activity_name,\n  location: source.location || 'Mindo, Ecuador',\n  verified_details: source.verified_details,\n  input_status: 'REVIEW', scheduled_date: '', scheduled_time: '', status: 'Draft', media_type: 'CAROUSEL',\n  post_to_instagram: true, post_to_facebook: true,\n  local_brief: JSON.stringify({ submitted_order: source.submitted_order.map(v => ({index:v.index,description:v.description,possible_species:v.possible_species,species_confidence:v.species_confidence,content_type:v.content_type,people_visible:v.people_visible,promotional_asset:v.promotional_asset,flags:v.flags})), proposed_order: order, ordering_reason: edit.ordering_reason || '', review_flags: modelFlags }),\n  copy_review_status: peopleNeedPermission ? 'BLOCKED_PERMISSION_REVIEW' : 'PENDING_HUMAN_REVIEW',\n  caption_generation_status: 'NOT_STARTED', caption: '', instagram_hashtags: '', facebook_caption: '',\n  copy_generated_at: '', ai_model: 'qwen3.5:27b local vision intake',\n  gemini_input_tokens: 0, gemini_output_tokens: 0, gemini_total_tokens: 0,\n  error_message: modelFlags.join(' | '), telegram_sent_date: '',\n};\narranged.forEach((v,i) => { row[`image_${i+1}_url`] = v.url; });\nfor (let i = arranged.length; i < 10; i++) row[`image_${i+1}_url`] = '';\nrow.images_json = JSON.stringify(arranged.map((v,i) => ({order:i+1,delivery_url:v.url,original_url:v.original_url,content_type:v.content_type,fit_mode:['promotional','infographic','xray'].includes(v.content_type)?'fit':'fill'})));\nrow._review_flags = modelFlags;\nrow._order = order;\nrow._people_need_permission = peopleNeedPermission;\nreturn [{json: row}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        120
+      ],
+      "id": "c9165197-1219-5211-a93d-15aab83faa8f",
+      "name": "[SHEET] Build Review-Only Row"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ai_carousels",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "carousel_id": "={{ $json.carousel_id }}",
+            "image_1_url": "={{ $json.image_1_url }}",
+            "image_2_url": "={{ $json.image_2_url }}",
+            "image_3_url": "={{ $json.image_3_url }}",
+            "image_4_url": "={{ $json.image_4_url }}",
+            "image_5_url": "={{ $json.image_5_url }}",
+            "image_6_url": "={{ $json.image_6_url }}",
+            "image_7_url": "={{ $json.image_7_url }}",
+            "image_8_url": "={{ $json.image_8_url }}",
+            "image_9_url": "={{ $json.image_9_url }}",
+            "image_10_url": "={{ $json.image_10_url }}",
+            "images_json": "={{ $json.images_json }}",
+            "carousel_description": "={{ $json.carousel_description }}",
+            "slide_notes": "={{ $json.slide_notes }}",
+            "featured_birds": "={{ $json.featured_birds }}",
+            "scientific_name": "={{ $json.scientific_name }}",
+            "activity_name": "={{ $json.activity_name }}",
+            "location": "={{ $json.location }}",
+            "verified_details": "={{ $json.verified_details }}",
+            "input_status": "={{ $json.input_status }}",
+            "scheduled_date": "={{ $json.scheduled_date }}",
+            "scheduled_time": "={{ $json.scheduled_time }}",
+            "status": "={{ $json.status }}",
+            "media_type": "={{ $json.media_type }}",
+            "post_to_instagram": "={{ $json.post_to_instagram }}",
+            "post_to_facebook": "={{ $json.post_to_facebook }}",
+            "local_brief": "={{ $json.local_brief }}",
+            "copy_review_status": "={{ $json.copy_review_status }}",
+            "caption_generation_status": "={{ $json.caption_generation_status }}",
+            "caption": "={{ $json.caption }}",
+            "instagram_hashtags": "={{ $json.instagram_hashtags }}",
+            "facebook_caption": "={{ $json.facebook_caption }}",
+            "copy_generated_at": "={{ $json.copy_generated_at }}",
+            "ai_model": "={{ $json.ai_model }}",
+            "gemini_input_tokens": "={{ $json.gemini_input_tokens }}",
+            "gemini_output_tokens": "={{ $json.gemini_output_tokens }}",
+            "gemini_total_tokens": "={{ $json.gemini_total_tokens }}",
+            "posting_defaults_applied_at": "={{ $json.posting_defaults_applied_at }}",
+            "publishing_lock": "={{ $json.publishing_lock }}",
+            "instagram_container_id": "={{ $json.instagram_container_id }}",
+            "instagram_published_date": "={{ $json.instagram_published_date }}",
+            "instagram_post_id": "={{ $json.instagram_post_id }}",
+            "instagram_permalink": "={{ $json.instagram_permalink }}",
+            "facebook_photo_ids": "={{ $json.facebook_photo_ids }}",
+            "facebook_published_date": "={{ $json.facebook_published_date }}",
+            "facebook_post_id": "={{ $json.facebook_post_id }}",
+            "facebook_permalink": "={{ $json.facebook_permalink }}",
+            "error_message": "={{ $json.error_message }}",
+            "telegram_sent_date": "={{ $json.telegram_sent_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "carousel_id",
+              "displayName": "carousel_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_1_url",
+              "displayName": "image_1_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_2_url",
+              "displayName": "image_2_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_3_url",
+              "displayName": "image_3_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_4_url",
+              "displayName": "image_4_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_5_url",
+              "displayName": "image_5_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_6_url",
+              "displayName": "image_6_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_7_url",
+              "displayName": "image_7_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_8_url",
+              "displayName": "image_8_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_9_url",
+              "displayName": "image_9_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_10_url",
+              "displayName": "image_10_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "images_json",
+              "displayName": "images_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "carousel_description",
+              "displayName": "carousel_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "slide_notes",
+              "displayName": "slide_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "featured_birds",
+              "displayName": "featured_birds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scientific_name",
+              "displayName": "scientific_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "activity_name",
+              "displayName": "activity_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "verified_details",
+              "displayName": "verified_details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "input_status",
+              "displayName": "input_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scheduled_date",
+              "displayName": "scheduled_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scheduled_time",
+              "displayName": "scheduled_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "media_type",
+              "displayName": "media_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_to_instagram",
+              "displayName": "post_to_instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_to_facebook",
+              "displayName": "post_to_facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "local_brief",
+              "displayName": "local_brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "copy_review_status",
+              "displayName": "copy_review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption_generation_status",
+              "displayName": "caption_generation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_hashtags",
+              "displayName": "instagram_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_caption",
+              "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "copy_generated_at",
+              "displayName": "copy_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_model",
+              "displayName": "ai_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gemini_input_tokens",
+              "displayName": "gemini_input_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gemini_output_tokens",
+              "displayName": "gemini_output_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gemini_total_tokens",
+              "displayName": "gemini_total_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "posting_defaults_applied_at",
+              "displayName": "posting_defaults_applied_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publishing_lock",
+              "displayName": "publishing_lock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_container_id",
+              "displayName": "instagram_container_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_published_date",
+              "displayName": "instagram_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_post_id",
+              "displayName": "instagram_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_permalink",
+              "displayName": "instagram_permalink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_photo_ids",
+              "displayName": "facebook_photo_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_published_date",
+              "displayName": "facebook_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_post_id",
+              "displayName": "facebook_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_permalink",
+              "displayName": "facebook_permalink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "telegram_sent_date",
+              "displayName": "telegram_sent_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1560,
+        120
+      ],
+      "id": "46632792-a8fe-5bf8-af12-87b034028b40",
+      "name": "[SHEET] Append Draft to ai_carousels",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nconst r={...$('[SHEET] Build Review-Only Row').item.json};\nconst images=Array.from({length:10},(_,i)=>r[`image_${i+1}_url`]).filter(Boolean);\nconst links=images.map((url,i)=>`${i+1}. <a href=\"${esc(url)}\">Open image</a>`).join('\\n');\nconst flags=(r._review_flags||[]).length ? (r._review_flags||[]).map(v=>`\u2022 ${esc(v)}`).join('\\n') : 'None detected \u2014 human review still required.';\nr.telegram_text=`<b>Carousel Intake Ready for Review</b>\\n\\n<b>ID:</b> ${esc(r.carousel_id)}\\n<b>Status:</b> Draft / REVIEW\\n<b>Proposed order:</b> ${esc((r._order||[]).join(' \u2192 '))}\\n\\n${links}\\n\\n<b>Description:</b>\\n${esc(r.carousel_description)}\\n\\n<b>Slide notes:</b>\\n<pre>${esc(r.slide_notes)}</pre>\\n\\n<b>Suggested birds:</b> ${esc(r.featured_birds||'None')}\\n<b>Review flags:</b>\\n${flags}\\n\\nReview the row in <b>ai_carousels</b>. Confirm species, facts, image order, and guest permission. Then set input_status to VERIFIED and status to Testing. Nothing has been scheduled or published.`;\nreturn [{json:r}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        120
+      ],
+      "id": "6c7e90b7-7e9f-55bf-8154-3822b00839be",
+      "name": "[TG] Build Review Message"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003067570080",
+        "text": "={{ $json.telegram_text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML",
+          "disable_web_page_preview": true
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2040,
+        120
+      ],
+      "id": "83bb97a9-7f8b-5ac7-b16d-35b1876e3340",
+      "name": "[TG] Send Intake Review",
+      "credentials": {
+        "telegramApi": {
+          "id": "fvhEZEI6Ksxrj9DD",
+          "name": "MBW - Notifications"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "content": "## MBW Carousel Intake \u2014 INACTIVE BY DESIGN\n\n1. Create a dedicated unsigned Cloudinary upload preset restricted to images, folder `mbw/carousel-intake`, and appropriate size limits. Replace the placeholder in `[SETUP] Cloudinary Upload Configuration`.\n2. Protect the form with Cloudflare Access or select Basic Auth with a new dedicated credential before activation. Never expose an unauthenticated upload form publicly.\n3. Refresh Google Sheets columns after import.\n4. Test with 2\u201310 disposable image copies first.\n5. Output is always `Draft` + `REVIEW`; this workflow cannot schedule or publish.\n6. Species, factual context, guest permission, and promotional classification require human review.\n7. Cloudinary receives copies; originals are never deleted or modified.\n8. The publisher remains a separate workflow and requires `VERIFIED` plus `Testing` or `Scheduled`.",
+        "height": 430,
+        "width": 660,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1320,
+        -360
+      ],
+      "id": "45a59328-bf03-5b66-8f6d-bca159e2a824",
+      "name": "[README] Setup, Security, and Review Gate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "[INTAKE] Upload Carousel Images": {
+      "main": [
+        [
+          {
+            "node": "[INTAKE] Validate and Split Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[INTAKE] Validate and Split Images": {
+      "main": [
+        [
+          {
+            "node": "[VISION] Analyze Each Image Locally",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[VISION] Merge Image and Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[VISION] Analyze Each Image Locally": {
+      "main": [
+        [
+          {
+            "node": "[VISION] Merge Image and Analysis",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "[VISION] Merge Image and Analysis": {
+      "main": [
+        [
+          {
+            "node": "[VISION] Parse Safe Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[VISION] Parse Safe Metadata": {
+      "main": [
+        [
+          {
+            "node": "[SETUP] Cloudinary Upload Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[SETUP] Cloudinary Upload Configuration": {
+      "main": [
+        [
+          {
+            "node": "[SETUP] Validate Cloudinary Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[SETUP] Validate Cloudinary Configuration": {
+      "main": [
+        [
+          {
+            "node": "[UPLOAD] Send Images to Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[UPLOAD] Send Images to Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "[UPLOAD] Attach Intake Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[UPLOAD] Attach Intake Metadata": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Uploaded Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Uploaded Images": {
+      "main": [
+        [
+          {
+            "node": "[EDITOR] Propose Order and Notes Locally",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[EDITOR] Propose Order and Notes Locally": {
+      "main": [
+        [
+          {
+            "node": "[SHEET] Build Review-Only Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[SHEET] Build Review-Only Row": {
+      "main": [
+        [
+          {
+            "node": "[SHEET] Append Draft to ai_carousels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[SHEET] Append Draft to ai_carousels": {
+      "main": [
+        [
+          {
+            "node": "[TG] Build Review Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[TG] Build Review Message": {
+      "main": [
+        [
+          {
+            "node": "[TG] Send Intake Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/New_York",
+    "saveDataErrorExecution": "all"
+  },
+  "versionId": "ad5d9c28-4658-5d87-8ce6-167e4d49facd",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
