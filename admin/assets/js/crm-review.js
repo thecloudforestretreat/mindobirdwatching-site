@@ -14,7 +14,7 @@
     return {date:plus(reference,quoted?3:1)<today?today:plus(reference,quoted?3:1),reason:quoted?'Follow up three days after the latest contact or quote.':'Follow up one day after the latest contact.'};
   }
   function build(input){
-    const {record,services=[],confirmation={missing:[],message:''},reminder,delivery={status:'pending'},assignments=[],operationsLoaded=false,today,lastContact=''}=input;
+    const {record,services=[],confirmation={missing:[],message:''},reminder,delivery={status:'pending'},assignments=[],operationsLoaded=false,today,lastContact='',lastContactChannel=''}=input;
     const missing=[...confirmation.missing];
     const serviceChecks=services.filter(s=>s.status==='booked').map(service=>{
       const label=service.label||service.product_selected||service.tour||'Service';
@@ -30,10 +30,11 @@
         else if(!assigned.some(a=>clean(a.provider_informed).toLowerCase()==='yes'))issues.push('Notify provider');
       }
       for(const issue of issues)missing.push(label+': '+issue);
-      return {label,date:day(service.date),guests:clean(service.guests),issues};
+      return {label,date:day(service.date),start:clean(service.start_time),guests:clean(service.guests),issues};
     });
     if(!operationsLoaded&&!missing.includes('Communication and assignment data has not been verified; refresh CRM'))missing.push('Communication and assignment data has not been verified; refresh CRM');
     if(!clean(record.assigned_to))missing.push('Assigned rep');
+    serviceChecks.sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||(a.start||'99:99').localeCompare(b.start||'99:99'));
     const outstanding=[...new Set(missing)];
     const eligible=record.status==='booked'&&reminder&&!['past','missing'].includes(reminder.kind)&&!closed(record.status)&&!/^(yes|true)$/i.test(clean(record.is_archived));
     const sent=operationsLoaded&&delivery.status==='sent';
@@ -41,8 +42,8 @@
       guest:clean(record.full_name)||'Unnamed guest',rep:clean(record.assigned_to)||'Unassigned',status:clean(record.status)||'new',quote:clean(record.quote_status)||'Not recorded',payment:clean(record.payment_status)||'Not recorded',invoice:clean(record.invoice_no),guestCount:clean(record.guest_count),interest:clean(record.tour_type||record.tour_category),initialDate:day(record.requested_date||record.requested_date_start),services:serviceChecks,
       ready:eligible&&outstanding.length===0,missing:outstanding,eligible:!!eligible,sent,
       reminderDate:reminder?.date||'',tourDate:reminder?.tourDate||'',message:confirmation.message||'',
-      lastContact:day(lastContact),followupDate:day(record.followup_date),suggestion:suggestion(record,today,reminder,lastContact),
-      reviewState:!eligible?'Not scheduled':!operationsLoaded?'Data not verified':sent?'Already recorded sent':outstanding.length?'Needs details':'Ready'
+      lastContact:day(lastContact),lastContactChannel:clean(lastContactChannel),followupUrgency:!day(record.followup_date)?'missing':day(record.followup_date)<today?'overdue':day(record.followup_date)===today?'today':'future',followupDate:day(record.followup_date),suggestion:suggestion(record,today,reminder,lastContact),
+      reviewState:!eligible?'Not scheduled':!operationsLoaded?'Data not verified':sent?'Already recorded sent':outstanding.length?'Needs details':'Details complete'
     };
   }
   function queue(items){return items.filter(item=>item.model.eligible&&!item.model.sent).sort((a,b)=>a.model.reminderDate.localeCompare(b.model.reminderDate)||a.model.guest.localeCompare(b.model.guest));}
