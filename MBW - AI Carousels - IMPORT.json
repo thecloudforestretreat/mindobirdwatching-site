@@ -65,7 +65,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function has(v) { return v !== null && v !== undefined && String(v).trim() !== ''; }\nfunction bool(v, defaultValue = false) {\n  if (!has(v)) return defaultValue;\n  if (typeof v === 'boolean') return v;\n  return ['true','1','yes','y','on'].includes(String(v).trim().toLowerCase());\n}\nfunction scheduledTimePassed(r) {\n  const d = String(r.scheduled_date || '').trim();\n  const t = String(r.scheduled_time || '').trim();\n  if (!d || !t) return false;\n  let dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy h:mm a', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy H:mm', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromISO(d + 'T' + t, { zone: 'America/New_York' });\n  return dt.isValid && dt.toMillis() <= DateTime.now().setZone('America/New_York').toMillis();\n}\nreturn $input.all().map(item => {\n  const r = { ...item.json };\n  const urls = Array.from({length: 10}, (_, i) => String(r[`image_${i + 1}_url`] || '').trim()).filter(Boolean);\n  const inputStatus = String(r.input_status || '').trim().toUpperCase();\n  const status = String(r.status || '').trim().toLowerCase();\n  const testing = status === 'testing';\n  const approved = ['READY','VERIFIED'].includes(inputStatus);\n  const due = testing || (status === 'scheduled' && scheduledTimePassed(r));\n  const valid = has(r.carousel_id) && urls.length >= 2 && urls.length <= 10 && new Set(urls).size === urls.length && has(r.carousel_description) && approved;\n  r.media_type = 'CAROUSEL';\n  r.post_to_instagram = bool(r.post_to_instagram, true);\n  r.post_to_facebook = bool(r.post_to_facebook, true);\n  r._needs_generation = !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !String(r.ai_model || '').includes('en-US v4');\n  r._process = valid && due;\n  r._is_testing = testing;\n  r._validation_error = !has(r.carousel_id) ? 'Missing carousel_id' :\n    (urls.length < 2 || urls.length > 10) ? 'Between two and ten image URLs are required' :\n    new Set(urls).size !== urls.length ? 'All carousel image URLs must be unique' :\n    !has(r.carousel_description) ? 'Missing carousel_description' :\n    !approved ? 'input_status must be READY or VERIFIED' : '';\n  return { json: r };\n});"
+        "jsCode": "function has(v) { return v !== null && v !== undefined && String(v).trim() !== ''; }\nfunction bool(v, defaultValue = false) {\n  if (!has(v)) return defaultValue;\n  if (typeof v === 'boolean') return v;\n  return ['true','1','yes','y','on'].includes(String(v).trim().toLowerCase());\n}\nfunction scheduledTimePassed(r) {\n  const d = String(r.scheduled_date || '').trim();\n  const t = String(r.scheduled_time || '').trim();\n  if (!d || !t) return false;\n  let dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy h:mm a', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromFormat(d + ' ' + t, 'M/d/yyyy H:mm', { zone: 'America/New_York' });\n  if (!dt.isValid) dt = DateTime.fromISO(d + 'T' + t, { zone: 'America/New_York' });\n  return dt.isValid && dt.toMillis() <= DateTime.now().setZone('America/New_York').toMillis();\n}\nreturn $input.all().map(item => {\n  const r = { ...item.json };\n  const urls = Array.from({length: 10}, (_, i) => String(r[`image_${i + 1}_url`] || '').trim()).filter(Boolean);\n  const inputStatus = String(r.input_status || '').trim().toUpperCase();\n  const status = String(r.status || '').trim().toLowerCase();\n  const testing = status === 'testing';\n  const approved = ['READY','VERIFIED'].includes(inputStatus);\n  const due = testing || (status === 'scheduled' && scheduledTimePassed(r));\n  const valid = has(r.carousel_id) && urls.length >= 2 && urls.length <= 10 && new Set(urls).size === urls.length && has(r.featured_birds) && approved;\n  r.media_type = 'CAROUSEL';\n  r.post_to_instagram = bool(r.post_to_instagram, true);\n  r.post_to_facebook = bool(r.post_to_facebook, true);\n  r._needs_generation = !has(r.carousel_title) || !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !has(r.facebook_hashtags) || !has(r.reddit_title) || !has(r.reddit_caption) || !has(r.reddit_hashtags) || !String(r.ai_model || '').includes('en-US v5');\n  r._process = valid && due;\n  r._is_testing = testing;\n  r._validation_error = !has(r.carousel_id) ? 'Missing carousel_id' :\n    (urls.length < 2 || urls.length > 10) ? 'Between two and ten image URLs are required' :\n    new Set(urls).size !== urls.length ? 'All carousel image URLs must be unique' :\n    !has(r.featured_birds) ? 'Missing featured_birds' :\n    !approved ? 'input_status must be READY or VERIFIED' : '';\n  return { json: r };\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -188,7 +188,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ {\n  model: 'gpt-oss:20b',\n  messages: [\n    { role: 'system', content: 'Act as a strict independent factual editor. Return JSON only. Preserve supplied facts and species names. Reject any claim that is not explicitly supported by the supplied text.' },\n    { role: 'user', content: `Write and independently edit grounded social copy for this carousel. Use only the local brief and original inputs. Correct spelling, grammar, capitalization, repetitive phrasing, and generic activity names. Never add ecology, diet, behavior, habitat, breeding, clutch size, conservation status, rarity, abundance, sightings, reactions, or guarantees unless that exact information is explicitly stated below. A note that an educational slide covers a topic does not supply the underlying facts.\\n\\nLocal brief: ${$json.message?.content || ''}\\nOriginal description: ${$('Classify Carousel').item.json.carousel_description || ''}\\nSlide notes: ${$('Classify Carousel').item.json.slide_notes || ''}\\nFeatured birds: ${$('Classify Carousel').item.json.featured_birds || ''}\\nScientific name: ${$('Classify Carousel').item.json.scientific_name || ''}\\nLocation: ${$('Classify Carousel').item.json.location || ''}\\nVerified details: ${$('Classify Carousel').item.json.verified_details || ''}\\n\\nReturn JSON: {\"caption\":\"50-120 words in 2-3 short paragraphs with one CTA and no hashtags\",\"instagram_hashtags\":[\"#mindobirdwatching\",\"#mindo\",\"#ecuador\",\"#ActualSpeciesName\",\"#ActualRelevantTopic\"],\"facebook_caption\":\"grounded prose without hashtags\",\"review_verdict\":\"PASS or REVISE\",\"review_notes\":[\"...\"]}. Use real subject-specific hashtags; placeholder words such as ContextTag, Hashtag1, Tag1, Example, or Placeholder are forbidden. PASS only when every sentence is supported by the supplied text and every field is clean.` }\n  ],\n  stream: false, think: 'low', format: 'json', keep_alive: '30m',\n  options: { temperature: 0.18, num_predict: 1400, seed: Number($('Classify Carousel').item.json.row_number || 1) + 200003 }\n} }}",
+        "jsonBody": "={{ {\n  model: 'gpt-oss:20b',\n  messages: [\n    { role: 'system', content: 'Act as a strict independent factual editor. Return JSON only. Preserve supplied facts and species names. Reject any claim that is not explicitly supported by the supplied text.' },\n    { role: 'user', content: `Create distinct, captivating but factual copy for Instagram, Facebook, and Reddit. Use only the local brief and original inputs. A bird name alone supports naming the bird and presenting the submitted images, but does not support claims about colors, anatomy, ecology, diet, behavior, habitat, breeding, conservation, rarity, abundance, sightings, or reactions. Never invent those details. Correct spelling, grammar, capitalization, repetitive phrasing, and generic activity names.\\n\\nLocal brief: ${$json.message?.content || ''}\\nOriginal description: ${$('Classify Carousel').item.json.carousel_description || ''}\\nSlide notes: ${$('Classify Carousel').item.json.slide_notes || ''}\\nFeatured birds: ${$('Classify Carousel').item.json.featured_birds || ''}\\nScientific name: ${$('Classify Carousel').item.json.scientific_name || ''}\\nLocation: ${$('Classify Carousel').item.json.location || ''}\\nVerified details: ${$('Classify Carousel').item.json.verified_details || ''}\\n\\nReturn JSON: {\"carousel_title\":\"short engaging title under 80 characters\",\"caption\":\"Instagram caption, 50-120 words, 2-3 short paragraphs, one CTA, no hashtags\",\"instagram_hashtags\":[\"#mindobirdwatching\",\"#mindo\",\"#ecuador\",\"#ActualSpeciesName\",\"#ActualRelevantTopic\"],\"facebook_caption\":\"Facebook caption, 50-140 words, friendly and grounded, no hashtags\",\"facebook_hashtags\":[\"#mindobirdwatching\",\"#ActualSpeciesName\",\"#EcuadorBirds\"],\"reddit_title\":\"natural non-promotional Reddit title under 120 characters\",\"reddit_caption\":\"Reddit body, 35-120 words, conversational and factual, no sales language or hashtags\",\"reddit_hashtags\":[\"#ActualSpeciesName\",\"#BirdPhotography\",\"#Ecuador\"],\"review_verdict\":\"PASS or REVISE\",\"review_notes\":[\"...\"]}. Use real subject-specific hashtags; placeholder words such as ContextTag, Hashtag1, Tag1, Example, or Placeholder are forbidden. PASS only when every sentence is supported by the supplied text and every field is clean.` }\n  ],\n  stream: false, think: 'low', format: 'json', keep_alive: '30m',\n  options: { temperature: 0.28, num_predict: 2100, seed: Number($('Classify Carousel').item.json.row_number || 1) + 200003 }\n} }}",
         "options": {
           "response": {
             "response": {
@@ -210,7 +210,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function clean(v) { return String(v ?? '').trim(); }\nfunction safeTag(v) {\n  const s = clean(v).normalize('NFD').replace(/\\p{Diacritic}/gu, '').replace(/^#+/, '').replace(/[^A-Za-z0-9]/g, '');\n  return s ? '#' + s : '';\n}\nconst base = { ...$('Classify Carousel').item.json };\nlet local = {};\ntry { local = JSON.parse($('[GEN] Local Grounding (Ollama)').item.json.message?.content || '{}'); } catch (_) {}\nlet parsed = {};\ntry {\n  const raw = $json.message?.content || $json.response || '';\n  parsed = JSON.parse(raw);\n} catch (_) {}\nconst fallbackBrief = [base.carousel_description, base.featured_birds, base.activity_name, base.location, base.verified_details].filter(Boolean).join('. ');\nconst imageCount = Array.from({length:10},(_,i)=>clean(base[`image_${i+1}_url`])).filter(Boolean).length;\nconst bird = clean(base.featured_birds) || 'featured bird';\nconst scientific = clean(base.scientific_name) ? ` (${clean(base.scientific_name)})` : '';\nconst location = clean(base.location) || 'Mindo, Ecuador';\nconst descriptionWords = clean(base.carousel_description).split(/\\s+/).filter(Boolean).slice(0,45).join(' ');\nconst description = descriptionWords ? descriptionWords.replace(/[.!?]+$/,'') + '.' : '';\nconst fallbackCaption = `Meet the ${bird}${scientific} through this ${imageCount || 'multi'}-slide visual story from ${location}. ${description} The carousel brings the submitted images together while preserving the photographed details and keeping text-based graphics readable. Swipe through the full set, compare the photographic and educational views, and save it for future reference. Follow Mindo Bird Watching for more bird-focused stories from Ecuador.`.replace(/\\s+/g,' ').trim();\nconst contextSeeds = [base.featured_birds, base.activity_name, 'BirdingEcuador'].flatMap(v => clean(v).split(/[|,]/)).map(safeTag).filter(Boolean);\nconst tags = ['#mindobirdwatching','#mindo','#ecuador', ...contextSeeds];\nconst uniqueTags = [...new Map(tags.map(t => [t.toLowerCase(), t])).values()].slice(0, 5);\nwhile (uniqueTags.length < 5) uniqueTags.push(['#CloudForest','#Birdwatching'][uniqueTags.length - 3] || '#NatureEcuador');\nconst placeholderTag = tag => /(?:contexttag|placeholder|hashtag\\d*|example|sampletag|tag\\d+)$/i.test(tag.replace(/^#/,''));\nconst proposed = (Array.isArray(parsed.instagram_hashtags) ? parsed.instagram_hashtags : clean(parsed.instagram_hashtags).split(/\\s+/)).map(safeTag).filter(tag => tag && !placeholderTag(tag));\nconst fixedTagKeys = new Set(['#mindobirdwatching','#mindo','#ecuador']);\nconst contextual = [...contextSeeds, ...proposed.filter(tag => !fixedTagKeys.has(tag.toLowerCase()))];\nconst finalTags = [...new Map(['#mindobirdwatching','#mindo','#ecuador',...contextual].map(t => [t.toLowerCase(),t])).values()].slice(0,5);\nwhile (finalTags.length < 5) finalTags.push(uniqueTags[finalTags.length]);\nconst stripTrailingHashtags = v => clean(v).replace(/\\s*(?:#[\\p{L}\\p{N}_-]+\\s*)+$/gu, '').trim();\nconst restrictedAdminSource = clean(base.source) === 'admin_carousel_studio' && !clean(base.slide_notes) && !clean(base.verified_details);\nconst caption = restrictedAdminSource ? fallbackCaption : (stripTrailingHashtags(parsed.caption) || fallbackCaption);\nconst facebook = restrictedAdminSource ? caption : (stripTrailingHashtags(parsed.facebook_caption) || caption);\nconst forbidden = /guaranteed?|always see|will see|\\brare\\b|abundant|natural habitat|expert guides?|won't miss|will not miss|elusive/i;\nif (forbidden.test(caption + ' ' + facebook)) throw new Error('COPY BLOCKED: unsupported or exaggerated wording. Nothing was published.');\nif (!restrictedAdminSource && clean(parsed.review_verdict).toUpperCase() !== 'PASS') throw new Error('COPY BLOCKED: independent local editor did not return PASS.');\nif (!/^[\"'\u201c\u2018(]*[A-Z0-9]/.test(caption) || !/^[\"'\u201c\u2018(]*[A-Z0-9]/.test(facebook)) throw new Error('COPY BLOCKED: caption must begin with a capital letter.');\nif (/\\b(seening|seing|recieve|thier|alot)\\b/i.test(caption + ' ' + facebook)) throw new Error('COPY BLOCKED: obvious spelling error detected.');\nif ((caption.match(/\\S+/g)||[]).length < 50 || (caption.match(/\\S+/g)||[]).length > 120) throw new Error('COPY BLOCKED: Instagram caption must contain 50\u2013120 words.');\nbase.local_brief = clean(local.brief) || fallbackBrief;\nbase.copy_review_status = 'PASS';\nbase.caption_generation_status = clean(parsed.caption) ? 'GENERATED' : 'SAFE_FALLBACK';\nbase.caption = caption;\nbase.instagram_hashtags = finalTags.join(' ');\nbase.facebook_caption = facebook;\nbase.copy_generated_at = DateTime.now().setZone('America/New_York').toISO();\nbase.ai_model = 'gpt-oss:20b local grounding + independent editor | en-US v4';\nconst autoMode = clean(base.admin_mode).toLowerCase() === 'auto';\nbase.approval_status = autoMode ? 'APPROVED' : 'NEEDS_REVIEW';\nbase.quality_score = autoMode ? 100 : 85;\nif (autoMode) {\n  base.input_status = 'VERIFIED';\n  base.status = 'Scheduled';\n}\nbase.gemini_input_tokens = 0;\nbase.gemini_output_tokens = 0;\nbase.gemini_total_tokens = 0;\nreturn [{ json: base }];"
+        "jsCode": "function clean(v) { return String(v ?? '').trim(); }\nfunction safeTag(v) {\n  const s = clean(v).normalize('NFD').replace(/\\p{Diacritic}/gu, '').replace(/^#+/, '').replace(/[^A-Za-z0-9]/g, '');\n  return s ? '#' + s : '';\n}\nconst base = { ...$('Classify Carousel').item.json };\nlet local = {};\ntry { local = JSON.parse($('[GEN] Local Grounding (Ollama)').item.json.message?.content || '{}'); } catch (_) {}\nlet parsed = {};\ntry {\n  const raw = $json.message?.content || $json.response || '';\n  parsed = JSON.parse(raw);\n} catch (_) {}\nconst fallbackBrief = [base.carousel_description, base.featured_birds, base.activity_name, base.location, base.verified_details].filter(Boolean).join('. ');\nconst imageCount = Array.from({length:10},(_,i)=>clean(base[`image_${i+1}_url`])).filter(Boolean).length;\nconst bird = clean(base.featured_birds) || 'featured bird';\nconst scientific = clean(base.scientific_name) ? ` (${clean(base.scientific_name)})` : '';\nconst location = clean(base.location) || 'Mindo, Ecuador';\nconst descriptionWords = clean(base.carousel_description).split(/\\s+/).filter(Boolean).slice(0,45).join(' ');\nconst description = descriptionWords ? descriptionWords.replace(/[.!?]+$/,'') + '.' : '';\nconst fallbackTitle = `${bird}: A Closer Look`;\nconst fallbackCaption = `Meet the ${bird}${scientific} through this ${imageCount || 'multi'}-slide visual story from ${location}. ${description} Each image offers another way to look closely at the featured bird while keeping the submitted visual details at the center of the story. Swipe through the complete carousel, choose the frame that stands out to you, and save the post for another look. Follow Mindo Bird Watching for more bird-focused visual stories from Ecuador.`.replace(/\\s+/g,' ').trim();\nconst fallbackFacebook = `A closer look at the ${bird}${scientific} through ${imageCount || 'multiple'} submitted images from ${location}. ${description} This carousel keeps the focus on the photographs and educational artwork provided for the post. Browse the complete set, tell us which slide caught your attention, and follow Mindo Bird Watching for more visual stories featuring birds from Ecuador.`.replace(/\\s+/g,' ').trim();\nconst fallbackRedditTitle = `${bird} from ${location} \u2014 ${imageCount || 'multiple'} images`;\nconst fallbackReddit = `Sharing a ${imageCount || 'multi'}-image carousel featuring the ${bird}${scientific} from ${location}. ${description} The set brings the submitted photographs and educational visuals together without adding details that were not supplied with the images. Which slide stands out most to you?`.replace(/\\s+/g,' ').trim();\nconst contextSeeds = [base.featured_birds, base.activity_name, 'BirdingEcuador'].flatMap(v => clean(v).split(/[|,]/)).map(safeTag).filter(Boolean);\nconst tags = ['#mindobirdwatching','#mindo','#ecuador', ...contextSeeds];\nconst uniqueTags = [...new Map(tags.map(t => [t.toLowerCase(), t])).values()].slice(0, 5);\nwhile (uniqueTags.length < 5) uniqueTags.push(['#CloudForest','#Birdwatching'][uniqueTags.length - 3] || '#NatureEcuador');\nconst placeholderTag = tag => /(?:contexttag|placeholder|hashtag\\d*|example|sampletag|tag\\d+)$/i.test(tag.replace(/^#/,''));\nconst proposed = (Array.isArray(parsed.instagram_hashtags) ? parsed.instagram_hashtags : clean(parsed.instagram_hashtags).split(/\\s+/)).map(safeTag).filter(tag => tag && !placeholderTag(tag));\nconst fixedTagKeys = new Set(['#mindobirdwatching','#mindo','#ecuador']);\nconst contextual = [...contextSeeds, ...proposed.filter(tag => !fixedTagKeys.has(tag.toLowerCase()))];\nconst finalTags = [...new Map(['#mindobirdwatching','#mindo','#ecuador',...contextual].map(t => [t.toLowerCase(),t])).values()].slice(0,5);\nwhile (finalTags.length < 5) finalTags.push(uniqueTags[finalTags.length]);\nconst tagsFrom = (value, fallback, limit) => {\n  const proposedTags = (Array.isArray(value) ? value : clean(value).split(/\\s+/)).map(safeTag).filter(tag => tag && !placeholderTag(tag));\n  return [...new Map([...proposedTags,...fallback].map(tag => [tag.toLowerCase(),tag])).values()].slice(0,limit).join(' ');\n};\nconst stripTrailingHashtags = v => clean(v).replace(/\\s*(?:#[\\p{L}\\p{N}_-]+\\s*)+$/gu, '').trim();\nconst caption = stripTrailingHashtags(parsed.caption) || fallbackCaption;\nconst title = clean(parsed.carousel_title) || fallbackTitle;\nconst facebook = stripTrailingHashtags(parsed.facebook_caption) || fallbackFacebook;\nconst facebookTags = tagsFrom(parsed.facebook_hashtags,[finalTags[0],finalTags[3], '#EcuadorBirds'],3);\nconst redditTitle = clean(parsed.reddit_title) || fallbackRedditTitle;\nconst reddit = stripTrailingHashtags(parsed.reddit_caption) || fallbackReddit;\nconst redditTags = tagsFrom(parsed.reddit_hashtags,[finalTags[3], '#BirdPhotography', '#Ecuador'],3);\nconst forbidden = /guaranteed?|always see|will see|\\brare\\b|abundant|natural habitat|expert guides?|won't miss|will not miss|elusive/i;\nif (forbidden.test([title,caption,facebook,redditTitle,reddit].join(' '))) throw new Error('COPY BLOCKED: unsupported or exaggerated wording. Nothing was published.');\nif (clean(parsed.review_verdict).toUpperCase() !== 'PASS') throw new Error('COPY BLOCKED: independent local editor did not return PASS.');\nif (![title,caption,facebook,redditTitle,reddit].every(value => /^[\"'\u201c\u2018(]*[A-Z0-9]/.test(value))) throw new Error('COPY BLOCKED: generated copy must begin with a capital letter.');\nif (/\\b(seening|seing|recieve|thier|alot)\\b/i.test([title,caption,facebook,redditTitle,reddit].join(' '))) throw new Error('COPY BLOCKED: obvious spelling error detected.');\nif ((caption.match(/\\S+/g)||[]).length < 50 || (caption.match(/\\S+/g)||[]).length > 120) throw new Error('COPY BLOCKED: Instagram caption must contain 50\u2013120 words.');\nif ((facebook.match(/\\S+/g)||[]).length < 50 || (facebook.match(/\\S+/g)||[]).length > 140) throw new Error('COPY BLOCKED: Facebook caption must contain 50\u2013140 words.');\nif ((reddit.match(/\\S+/g)||[]).length < 35 || (reddit.match(/\\S+/g)||[]).length > 120) throw new Error('COPY BLOCKED: Reddit body must contain 35\u2013120 words.');\nif (title.length > 80 || redditTitle.length > 120) throw new Error('COPY BLOCKED: a generated title is too long.');\nif (finalTags.length !== 5 || facebookTags.split(/\\s+/).length !== 3 || redditTags.split(/\\s+/).length !== 3) throw new Error('COPY BLOCKED: platform hashtag counts are invalid.');\nbase.local_brief = clean(local.brief) || fallbackBrief;\nbase.copy_review_status = 'PASS';\nbase.caption_generation_status = clean(parsed.caption) ? 'GENERATED' : 'SAFE_FALLBACK';\nbase.carousel_title = title.slice(0,120);\nbase.caption = caption;\nbase.instagram_hashtags = finalTags.join(' ');\nbase.facebook_caption = facebook;\nbase.facebook_hashtags = facebookTags;\nbase.reddit_title = redditTitle.slice(0,160);\nbase.reddit_caption = reddit;\nbase.reddit_hashtags = redditTags;\nbase.copy_generated_at = DateTime.now().setZone('America/New_York').toISO();\nbase.ai_model = 'gpt-oss:20b local grounding + independent editor | en-US v5';\nconst autoMode = clean(base.admin_mode).toLowerCase() === 'auto';\nbase.approval_status = autoMode ? 'APPROVED' : 'NEEDS_REVIEW';\nbase.quality_score = autoMode ? 100 : 85;\nif (autoMode) {\n  base.input_status = 'VERIFIED';\n  base.status = 'Scheduled';\n}\nbase.gemini_input_tokens = 0;\nbase.gemini_output_tokens = 0;\nbase.gemini_total_tokens = 0;\nreturn [{ json: base }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -243,9 +243,14 @@
             "local_brief": "={{ $json.local_brief }}",
             "copy_review_status": "={{ $json.copy_review_status }}",
             "caption_generation_status": "={{ $json.caption_generation_status }}",
+            "carousel_title": "={{ $json.carousel_title }}",
             "caption": "={{ $json.caption }}",
             "instagram_hashtags": "={{ $json.instagram_hashtags }}",
             "facebook_caption": "={{ $json.facebook_caption }}",
+            "facebook_hashtags": "={{ $json.facebook_hashtags }}",
+            "reddit_title": "={{ $json.reddit_title }}",
+            "reddit_caption": "={{ $json.reddit_caption }}",
+            "reddit_hashtags": "={{ $json.reddit_hashtags }}",
             "copy_generated_at": "={{ $json.copy_generated_at }}",
             "ai_model": "={{ $json.ai_model }}",
             "gemini_input_tokens": "={{ $json.gemini_input_tokens }}",
@@ -551,6 +556,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -573,6 +588,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -943,7 +998,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nconst r={...$json};\nconst title=String(r.status||'').toLowerCase()==='testing'?'Carousel Preview Ready':'Carousel Publishing Complete';\nconst count=Array.from({length:10},(_,i)=>r[`image_${i+1}_url`]).filter(Boolean).length;\nr.telegram_text=`<b>${title}</b>\\n\\n<b>Carousel:</b> ${esc(r.carousel_id)}\\n<b>Status:</b> ${esc(r.status)}\\n<b>Scheduled:</b> ${esc(r.scheduled_date)} ${esc(r.scheduled_time)}\\n<b>Images:</b> ${count}\\n<b>First image:</b> <a href=\"${esc(r.image_1_url)}\">Open image</a>\\n\\n<b>Caption:</b>\\n<pre>${esc(r.caption)}</pre>\\n\\n<b>Instagram hashtags:</b>\\n<pre>${esc(r.instagram_hashtags)}</pre>\\n\\n<b>Instagram post ID:</b> ${esc(r.instagram_post_id||'Not published')}\\n<b>Facebook post ID:</b> ${esc(r.facebook_post_id||'Not published')}\\n\\n<b>Copy model:</b> ${esc(r.ai_model||'local double pass')}`;\nreturn [{json:r}];"
+        "jsCode": "function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nconst r={...$json};\nconst published=Boolean(String(r.instagram_post_id||'').trim() || String(r.facebook_post_id||'').trim());\nconst title=published?'Carousel Publishing Complete':'Carousel Copy Ready';\nconst count=Array.from({length:10},(_,i)=>r[`image_${i+1}_url`]).filter(Boolean).length;\nr.telegram_text=`<b>${title}</b>\\n\\n<b>Title:</b> ${esc(r.carousel_title)}\\n<b>Carousel:</b> ${esc(r.carousel_id)}\\n<b>Status:</b> ${esc(r.status)}\\n<b>Scheduled:</b> ${esc(r.scheduled_date)} ${esc(r.scheduled_time)} ET\\n<b>Images:</b> ${count}\\n<b>First image:</b> <a href=\"${esc(r.image_1_url)}\">Open image</a>\\n\\n<b>Instagram caption:</b>\\n<pre>${esc(r.caption)}</pre>\\n<b>Instagram hashtags:</b>\\n<pre>${esc(r.instagram_hashtags)}</pre>\\n\\n<b>Facebook caption:</b>\\n<pre>${esc(r.facebook_caption)}</pre>\\n<b>Facebook hashtags:</b>\\n<pre>${esc(r.facebook_hashtags)}</pre>\\n\\n<b>Reddit title:</b>\\n<pre>${esc(r.reddit_title)}</pre>\\n<b>Reddit body:</b>\\n<pre>${esc(r.reddit_caption)}</pre>\\n<b>Reddit hashtags:</b>\\n<pre>${esc(r.reddit_hashtags)}</pre>\\n\\n<b>Instagram:</b> ${r.instagram_permalink?`<a href=\"${esc(r.instagram_permalink)}\">Open post</a>`:esc(r.instagram_post_id||'Not published')}\\n<b>Facebook:</b> ${r.facebook_permalink?`<a href=\"${esc(r.facebook_permalink)}\">Open post</a>`:esc(r.facebook_post_id||'Not published')}\\n<b>Reddit:</b> Copy package ready in Carousel Studio\\n\\n<b>Copy model:</b> ${esc(r.ai_model||'local double pass')}`;\nreturn [{json:r}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1309,6 +1364,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -1331,6 +1396,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -1934,6 +2039,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -1956,6 +2071,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2729,6 +2884,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -2751,6 +2916,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -3263,7 +3468,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const base={...$('[IG] Attach Publish Result').item.json};\nconst publishedCaption=String($json.caption ?? '').trim();\nconst firstHashtag=String(base.instagram_hashtags||'').trim().split(/\\s+/)[0];\nif (!publishedCaption) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} exists but its caption is blank.`);\nif (firstHashtag && !publishedCaption.includes(firstHashtag)) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} is missing the expected hashtags.`);\nbase.instagram_verified_caption=publishedCaption;\nbase.instagram_permalink=$json.permalink || '';\nreturn [{json:base}];"
+        "jsCode": "const base={...$('[IG] Attach Publish Result').item.json};\nconst publishedCaption=String($json.caption ?? '').trim();\nconst firstHashtag=String(base.facebook_hashtags||base.instagram_hashtags||'').trim().split(/\\s+/)[0];\nif (!publishedCaption) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} exists but its caption is blank.`);\nif (firstHashtag && !publishedCaption.includes(firstHashtag)) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} is missing the expected hashtags.`);\nbase.instagram_verified_caption=publishedCaption;\nbase.instagram_permalink=$json.permalink || '';\nreturn [{json:base}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3593,6 +3798,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -3615,6 +3830,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -4326,6 +4581,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -4348,6 +4613,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -4633,7 +4938,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function clean(v){ return String(v ?? '').trim(); }\nconst r={...$json};\nconst caption=clean(r.facebook_caption || r.caption), hashtags=clean(r.instagram_hashtags);\nif (!caption) throw new Error('PUBLISH BLOCKED: Facebook caption is blank immediately before publication.');\nif (!hashtags || !hashtags.includes('#')) throw new Error('PUBLISH BLOCKED: Facebook hashtags are blank or invalid immediately before publication.');\nlet ids=[];\ntry { ids=JSON.parse(r.facebook_photo_ids || '[]'); } catch {}\nconst expected=Array.isArray(r._image_urls)?r._image_urls.length:Array.from({length:10},(_,i)=>String(r[`image_${i+1}_url`]||'').trim()).filter(Boolean).length;\nif (!Array.isArray(ids) || ids.length!==expected || ids.length<2 || ids.length>10 || ids.some(id=>!clean(id))) throw new Error('PUBLISH BLOCKED: Facebook photo count does not match the 2\u201310 slide carousel.');\nr._facebook_publish_message=`${caption}\\n\\n${hashtags}`.trim();\nr._facebook_attached_media=ids.map(id=>({media_fbid:id}));\nif (r._facebook_publish_message.length < 40) throw new Error('PUBLISH BLOCKED: Facebook publish message is unexpectedly short.');\nreturn [{json:r}];"
+        "jsCode": "function clean(v){ return String(v ?? '').trim(); }\nconst r={...$json};\nconst caption=clean(r.facebook_caption || r.caption), hashtags=clean(r.facebook_hashtags || r.instagram_hashtags);\nif (!caption) throw new Error('PUBLISH BLOCKED: Facebook caption is blank immediately before publication.');\nif (!hashtags || !hashtags.includes('#')) throw new Error('PUBLISH BLOCKED: Facebook hashtags are blank or invalid immediately before publication.');\nlet ids=[];\ntry { ids=JSON.parse(r.facebook_photo_ids || '[]'); } catch {}\nconst expected=Array.isArray(r._image_urls)?r._image_urls.length:Array.from({length:10},(_,i)=>String(r[`image_${i+1}_url`]||'').trim()).filter(Boolean).length;\nif (!Array.isArray(ids) || ids.length!==expected || ids.length<2 || ids.length>10 || ids.some(id=>!clean(id))) throw new Error('PUBLISH BLOCKED: Facebook photo count does not match the 2\u201310 slide carousel.');\nr._facebook_publish_message=`${caption}\\n\\n${hashtags}`.trim();\nr._facebook_attached_media=ids.map(id=>({media_fbid:id}));\nif (r._facebook_publish_message.length < 40) throw new Error('PUBLISH BLOCKED: Facebook publish message is unexpectedly short.');\nreturn [{json:r}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -5064,6 +5369,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -5086,6 +5401,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -5736,6 +6091,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -5758,6 +6123,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -6043,7 +6448,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nconst r={...$json};\nconst title=String(r.status||'').toLowerCase()==='testing'?'Carousel Preview Ready':'Carousel Publishing Complete';\nconst count=Array.from({length:10},(_,i)=>r[`image_${i+1}_url`]).filter(Boolean).length;\nr.telegram_text=`<b>${title}</b>\\n\\n<b>Carousel:</b> ${esc(r.carousel_id)}\\n<b>Status:</b> ${esc(r.status)}\\n<b>Scheduled:</b> ${esc(r.scheduled_date)} ${esc(r.scheduled_time)}\\n<b>Images:</b> ${count}\\n<b>First image:</b> <a href=\"${esc(r.image_1_url)}\">Open image</a>\\n\\n<b>Caption:</b>\\n<pre>${esc(r.caption)}</pre>\\n\\n<b>Instagram hashtags:</b>\\n<pre>${esc(r.instagram_hashtags)}</pre>\\n\\n<b>Instagram post ID:</b> ${esc(r.instagram_post_id||'Not published')}\\n<b>Facebook post ID:</b> ${esc(r.facebook_post_id||'Not published')}\\n\\n<b>Copy model:</b> ${esc(r.ai_model||'local double pass')}`;\nreturn [{json:r}];"
+        "jsCode": "function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nconst r={...$json};\nconst published=Boolean(String(r.instagram_post_id||'').trim() || String(r.facebook_post_id||'').trim());\nconst title=published?'Carousel Publishing Complete':'Carousel Copy Ready';\nconst count=Array.from({length:10},(_,i)=>r[`image_${i+1}_url`]).filter(Boolean).length;\nr.telegram_text=`<b>${title}</b>\\n\\n<b>Title:</b> ${esc(r.carousel_title)}\\n<b>Carousel:</b> ${esc(r.carousel_id)}\\n<b>Status:</b> ${esc(r.status)}\\n<b>Scheduled:</b> ${esc(r.scheduled_date)} ${esc(r.scheduled_time)} ET\\n<b>Images:</b> ${count}\\n<b>First image:</b> <a href=\"${esc(r.image_1_url)}\">Open image</a>\\n\\n<b>Instagram caption:</b>\\n<pre>${esc(r.caption)}</pre>\\n<b>Instagram hashtags:</b>\\n<pre>${esc(r.instagram_hashtags)}</pre>\\n\\n<b>Facebook caption:</b>\\n<pre>${esc(r.facebook_caption)}</pre>\\n<b>Facebook hashtags:</b>\\n<pre>${esc(r.facebook_hashtags)}</pre>\\n\\n<b>Reddit title:</b>\\n<pre>${esc(r.reddit_title)}</pre>\\n<b>Reddit body:</b>\\n<pre>${esc(r.reddit_caption)}</pre>\\n<b>Reddit hashtags:</b>\\n<pre>${esc(r.reddit_hashtags)}</pre>\\n\\n<b>Instagram:</b> ${r.instagram_permalink?`<a href=\"${esc(r.instagram_permalink)}\">Open post</a>`:esc(r.instagram_post_id||'Not published')}\\n<b>Facebook:</b> ${r.facebook_permalink?`<a href=\"${esc(r.facebook_permalink)}\">Open post</a>`:esc(r.facebook_post_id||'Not published')}\\n<b>Reddit:</b> Copy package ready in Carousel Studio\\n\\n<b>Copy model:</b> ${esc(r.ai_model||'local double pass')}`;\nreturn [{json:r}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -6405,6 +6810,16 @@
               "removed": false
             },
             {
+              "id": "carousel_title",
+              "displayName": "carousel_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
               "id": "caption",
               "displayName": "caption",
               "required": false,
@@ -6427,6 +6842,46 @@
             {
               "id": "facebook_caption",
               "displayName": "facebook_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_hashtags",
+              "displayName": "facebook_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_title",
+              "displayName": "reddit_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_caption",
+              "displayName": "reddit_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_hashtags",
+              "displayName": "reddit_hashtags",
               "required": false,
               "defaultMatch": false,
               "display": true,
