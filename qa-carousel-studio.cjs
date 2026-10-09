@@ -38,6 +38,10 @@ function compileWorkflow(path) {
   assert(html.includes('id="showSafeGuide"') && html.includes('id="showProfileGuide"'), "Preview guide controls are missing");
   assert(ui.includes("data-drag-handle") && ui.includes("ondrop"), "Drag-to-reorder support is missing");
   assert(ui.includes("crop_gravity") && ui.includes("data-gravity"), "Per-slide crop focus is missing");
+  assert(html.includes('id="replaceImageFile"') && ui.includes('data-replace-image') && ui.includes('update_carousel_images'), "Unpublished slide replacement is missing");
+  assert(ui.includes("startReviewPolling") && ui.includes("refreshSelected") && ui.includes("AI review in progress"), "Live review status refresh is missing");
+  assert(ui.includes("HUMAN_EDITED"), "Human-edited review state is missing");
+  assert(ui.includes("quality_score||0)<92") && ui.includes("Regenerate copy"), "Legacy sub-92 copy must be routed to regeneration, not approval");
   assert(!ui.includes('value="manual"'), "New carousel slides must not bypass 4:5 normalization");
   assert(css.includes("editorialSafeGuide") && css.includes("profileCropGuide"), "Safe-area and profile-crop overlays are missing");
 
@@ -45,14 +49,16 @@ function compileWorkflow(path) {
   const intake = compileWorkflow("MBW - Carousel Intake - IMPORT.json");
   const gateway = compileWorkflow("n8n/generated/MBW - Carousel Admin Gateway - IMPORT.json");
   const adminMain = compileWorkflow("n8n/generated/MBW - AI Carousels - Admin Trigger - IMPORT.json");
-  assert(main.nodes.length === 65, "Unexpected main workflow node count");
+  assert(main.nodes.length === 66, "Unexpected main workflow node count");
   assert(intake.nodes.some((node) => node.name === "[INTAKE] Validate and Split Images"), "Legacy intake must support variable slide counts");
   assert(gateway.nodes.some((node) => node.name === "Plan Carousel Action"), "Admin gateway planner is missing");
   assert(adminMain.nodes.some((node) => node.name === "[ADMIN] Trigger Carousel Processing"), "Admin processing webhook is missing");
   const allMainText = JSON.stringify(main);
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");
-  assert(allMainText.includes("gpt-oss:20b local grounding + independent editor"), "Independent local editor is missing");
-  assert(allMainText.includes("PUBLISH BLOCKED: copy approval is required"), "Approval publishing gate is missing");
+  assert(allMainText.includes("gpt-oss:20b local writer + independent repair editor | en-US v6"), "Two-pass local editor identity is missing");
+  assert(main.nodes.some((node) => node.name === "[GEN] Final Local Repair Editor"), "Final local repair editor is missing");
+  assert(allMainText.includes("editorial score below 92") && allMainText.includes("HUMAN_EDITED"), "Quality threshold or validated human-edit path is missing");
+  assert(allMainText.includes("PUBLISH BLOCKED: approved copy must pass both local reviews or contain validated human edits"), "Approval publishing gate is missing");
   assert(allMainText.includes("={{ $json.instagram_permalink }}") && allMainText.includes("={{ $json.facebook_permalink }}"), "Published post permalinks must be saved");
   assert(allMainText.includes("between two and ten image URLs"), "2–10 URL validation is missing");
   const transformText = allMainText + JSON.stringify(intake) + read("functions/api/admin/carousels/index.js");
@@ -90,12 +96,20 @@ function compileWorkflow(path) {
       { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/v1/notes.jpg", fit_mode: "fit", content_type: "infographic", width: 928, height: 1152 },
     ],
   }}, { N8N_ADMIN_CAROUSELS_WEBHOOK_URL: "https://n8n.example.test/webhook/carousels" });
-  global.fetch = originalFetch;
   assert.strictEqual(response.status, 200, "Valid three-slide carousel must pass the API");
   assert(gatewayPayload.carousel.images[0].delivery_url.includes("c_fill,g_north,h_1350,w_1080"), "Photo must honor its selected crop focus");
   assert.strictEqual(gatewayPayload.carousel.images[0].crop_gravity, "north", "Crop focus must be preserved in the image manifest");
   assert(gatewayPayload.carousel.images[1].delivery_url.includes("c_pad,b_rgb:f7f4e8,h_1350,w_1080"), "X-ray must receive fit/pad treatment");
   assert(gatewayPayload.carousel.images[2].delivery_url.includes("c_pad,b_rgb:f7f4e8,h_1350,w_1080"), "Infographic must receive fit/pad treatment");
+
+  response = await call({ action: "update_carousel_images", carousel_id: "CAR-QA-REPLACE", images: [
+    { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/v2/replacement.jpg", fit_mode: "fill", crop_gravity: "auto", content_type: "photo", width: 2400, height: 3000 },
+    { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/v1/xray.jpg", fit_mode: "fit", crop_gravity: "center", content_type: "xray", width: 928, height: 1152 },
+  ]}, { N8N_ADMIN_CAROUSELS_WEBHOOK_URL: "https://n8n.example.test/webhook/carousels" });
+  global.fetch = originalFetch;
+  assert.strictEqual(response.status, 200, "Valid replacement image manifest must pass the API");
+  assert.strictEqual(gatewayPayload.action, "update_carousel_images", "Replacement must use the dedicated safe action");
+  assert(gatewayPayload.images[0].delivery_url.includes("c_fill,g_auto,h_1350,w_1080"), "Replacement cover must receive the exact 4:5 crop");
 
   console.log(JSON.stringify({
     ok: true,

@@ -157,7 +157,7 @@ return $input.all().map(item => {
   r.media_type = 'CAROUSEL';
   r.post_to_instagram = bool(r.post_to_instagram, true);
   r.post_to_facebook = bool(r.post_to_facebook, true);
-  r._needs_generation = !has(r.carousel_title) || !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !has(r.facebook_hashtags) || !has(r.reddit_title) || !has(r.reddit_caption) || !has(r.reddit_hashtags) || !String(r.ai_model || '').includes('en-US v5');
+  r._needs_generation = !has(r.carousel_title) || !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !has(r.facebook_hashtags) || !has(r.reddit_title) || !has(r.reddit_caption) || !has(r.reddit_hashtags) || !String(r.ai_model || '').includes('en-US v6');
   r._process = valid && due;
   r._is_testing = testing;
   r._validation_error = !has(r.carousel_id) ? 'Missing carousel_id' :
@@ -185,11 +185,21 @@ OLLAMA_BODY = r"""={{ {
 EDITOR_BODY = r"""={{ {
   model: 'gpt-oss:20b',
   messages: [
-    { role: 'system', content: 'Act as a strict independent factual editor. Return JSON only. Preserve supplied facts and species names. Reject any claim that is not explicitly supported by the supplied text.' },
-    { role: 'user', content: `Create distinct, captivating but factual copy for Instagram, Facebook, and Reddit. Use only the local brief and original inputs. A bird name alone supports naming the bird and presenting the submitted images, but does not support claims about colors, anatomy, ecology, diet, behavior, habitat, breeding, conservation, rarity, abundance, sightings, or reactions. Never invent those details. Correct spelling, grammar, capitalization, repetitive phrasing, and generic activity names.\n\nLocal brief: ${$json.message?.content || ''}\nOriginal description: ${$('Classify Carousel').item.json.carousel_description || ''}\nSlide notes: ${$('Classify Carousel').item.json.slide_notes || ''}\nFeatured birds: ${$('Classify Carousel').item.json.featured_birds || ''}\nScientific name: ${$('Classify Carousel').item.json.scientific_name || ''}\nLocation: ${$('Classify Carousel').item.json.location || ''}\nVerified details: ${$('Classify Carousel').item.json.verified_details || ''}\n\nReturn JSON: {"carousel_title":"short engaging title under 80 characters","caption":"Instagram caption, 50-120 words, 2-3 short paragraphs, one CTA, no hashtags","instagram_hashtags":["#mindobirdwatching","#mindo","#ecuador","#ActualSpeciesName","#ActualRelevantTopic"],"facebook_caption":"Facebook caption, 50-140 words, friendly and grounded, no hashtags","facebook_hashtags":["#mindobirdwatching","#ActualSpeciesName","#EcuadorBirds"],"reddit_title":"natural non-promotional Reddit title under 120 characters","reddit_caption":"Reddit body, 35-120 words, conversational and factual, no sales language or hashtags","reddit_hashtags":["#ActualSpeciesName","#BirdPhotography","#Ecuador"],"review_verdict":"PASS or REVISE","review_notes":["..."]}. Use real subject-specific hashtags; placeholder words such as ContextTag, Hashtag1, Tag1, Example, or Placeholder are forbidden. PASS only when every sentence is supported by the supplied text and every field is clean.` }
+    { role: 'system', content: 'You are the first-pass social copywriter for Mindo Bird Watching. Write vivid, natural copy without inventing facts. Return valid JSON only.' },
+    { role: 'user', content: `Draft distinct, captivating, factual copy for Instagram, Facebook, and Reddit. Use only the grounded brief, original text, and visual inventory. A bird name alone supports naming the bird and presenting the images, but not claims about ecology, diet, behavior, habitat, breeding, conservation, rarity, abundance, sightings, or guest reactions. Visual inventory labels such as photo, xray, and infographic support describing those formats, but not unseen details inside them. Avoid generic internal phrases including "submitted images", "submitted visual details", "featured bird", "visual story", and "complete carousel". Build a hook, a clear slide-to-slide narrative, and one natural question or CTA.\n\nGrounded brief: ${$json.message?.content || ''}\nOriginal description: ${$('Classify Carousel').item.json.carousel_description || ''}\nSlide notes: ${$('Classify Carousel').item.json.slide_notes || ''}\nVisual inventory: ${$('Classify Carousel').item.json.images_json || ''}\nFeatured birds: ${$('Classify Carousel').item.json.featured_birds || ''}\nScientific name: ${$('Classify Carousel').item.json.scientific_name || ''}\nLocation: ${$('Classify Carousel').item.json.location || ''}\nVerified details: ${$('Classify Carousel').item.json.verified_details || ''}\n\nReturn JSON: {"carousel_title":"engaging title under 80 characters","caption":"Instagram caption, 50-120 words, 2-3 short paragraphs, one CTA, no hashtags","instagram_hashtags":["#mindobirdwatching","#mindo","#ecuador","#ActualSpeciesName","#ActualRelevantTopic"],"facebook_caption":"Facebook caption, 50-140 words, friendly and grounded, no hashtags","facebook_hashtags":["#mindobirdwatching","#ActualSpeciesName","#EcuadorBirds"],"reddit_title":"natural non-promotional Reddit title under 120 characters","reddit_caption":"Reddit body, 35-120 words, conversational and factual, no sales language or hashtags","reddit_hashtags":["#ActualSpeciesName","#BirdPhotography","#Ecuador"]}. Use real subject-specific hashtags; placeholders are forbidden.` }
   ],
   stream: false, think: 'low', format: 'json', keep_alive: '30m',
-  options: { temperature: 0.28, num_predict: 2100, seed: Number($('Classify Carousel').item.json.row_number || 1) + 200003 }
+  options: { temperature: 0.42, num_predict: 2100, seed: Number($('Classify Carousel').item.json.row_number || 1) + 200003 }
+} }}"""
+
+FINAL_EDITOR_BODY = r"""={{ {
+  model: 'gpt-oss:20b',
+  messages: [
+    { role: 'system', content: 'You are the independent senior editor and factual reviewer for Mindo Bird Watching. Rewrite weak copy instead of merely rejecting it. Return valid JSON only.' },
+    { role: 'user', content: `Review and, when necessary, rewrite the first-pass draft below. Your final copy must be factual, specific to the supplied carousel formats, engaging, free of repetition, and ready for a human to approve. Use only the grounded brief, original text, and visual inventory. Do not add biological or experiential claims that are absent from those sources. Remove generic internal language such as "submitted images", "submitted visual details", "featured bird", "visual story", "complete carousel", and generic "follow for more" endings.\n\nFirst-pass draft: ${$json.message?.content || ''}\nGrounded brief: ${$('[GEN] Local Grounding (Ollama)').item.json.message?.content || ''}\nOriginal description: ${$('Classify Carousel').item.json.carousel_description || ''}\nSlide notes: ${$('Classify Carousel').item.json.slide_notes || ''}\nVisual inventory: ${$('Classify Carousel').item.json.images_json || ''}\nFeatured birds: ${$('Classify Carousel').item.json.featured_birds || ''}\nScientific name: ${$('Classify Carousel').item.json.scientific_name || ''}\nLocation: ${$('Classify Carousel').item.json.location || ''}\nVerified details: ${$('Classify Carousel').item.json.verified_details || ''}\n\nReturn the complete rewritten package, not comments alone: {"carousel_title":"under 80 characters","caption":"Instagram caption, 50-120 words, 2-3 short paragraphs, one CTA, no hashtags","instagram_hashtags":["exactly 5"],"facebook_caption":"50-140 words, no hashtags","facebook_hashtags":["exactly 3"],"reddit_title":"under 120 characters","reddit_caption":"35-120 words, no hashtags","reddit_hashtags":["exactly 3"],"grounding_verdict":"PASS or FAIL","editorial_score":0-100,"review_verdict":"PASS or REVISE","review_notes":["specific remaining issue, or READY"]}. Score 92 or higher only when the copy has a strong hook, natural progression, clean platform adaptation, no generic filler, and no unsupported claims. If the draft is weak, rewrite it before scoring.` }
+  ],
+  stream: false, think: 'medium', format: 'json', keep_alive: '30m',
+  options: { temperature: 0.24, num_predict: 2400, seed: Number($('Classify Carousel').item.json.row_number || 1) + 400009 }
 } }}"""
 
 PARSE_COPY_JS = r"""
@@ -206,6 +216,9 @@ try {
   const raw = $json.message?.content || $json.response || '';
   parsed = JSON.parse(raw);
 } catch (_) {}
+let firstPass = {};
+try { firstPass = JSON.parse($('[GEN] Independent Local Copy Editor').item.json.message?.content || '{}'); } catch (_) {}
+if (!Object.keys(parsed).length) parsed = firstPass;
 const fallbackBrief = [base.carousel_description, base.featured_birds, base.activity_name, base.location, base.verified_details].filter(Boolean).join('. ');
 const imageCount = Array.from({length:10},(_,i)=>clean(base[`image_${i+1}_url`])).filter(Boolean).length;
 const bird = clean(base.featured_birds) || 'featured bird';
@@ -213,11 +226,18 @@ const scientific = clean(base.scientific_name) ? ` (${clean(base.scientific_name
 const location = clean(base.location) || 'Mindo, Ecuador';
 const descriptionWords = clean(base.carousel_description).split(/\s+/).filter(Boolean).slice(0,45).join(' ');
 const description = descriptionWords ? descriptionWords.replace(/[.!?]+$/,'') + '.' : '';
-const fallbackTitle = `${bird}: A Closer Look`;
-const fallbackCaption = `Meet the ${bird}${scientific} through this ${imageCount || 'multi'}-slide visual story from ${location}. ${description} Each image offers another way to look closely at the featured bird while keeping the submitted visual details at the center of the story. Swipe through the complete carousel, choose the frame that stands out to you, and save the post for another look. Follow Mindo Bird Watching for more bird-focused visual stories from Ecuador.`.replace(/\s+/g,' ').trim();
-const fallbackFacebook = `A closer look at the ${bird}${scientific} through ${imageCount || 'multiple'} submitted images from ${location}. ${description} This carousel keeps the focus on the photographs and educational artwork provided for the post. Browse the complete set, tell us which slide caught your attention, and follow Mindo Bird Watching for more visual stories featuring birds from Ecuador.`.replace(/\s+/g,' ').trim();
+let manifest = [];
+try { manifest = JSON.parse(base.images_json || '[]'); } catch (_) {}
+const types = new Set(manifest.map(image => clean(image.content_type).toLowerCase()));
+const hasPhoto = types.has('photo'), hasXray = types.has('xray'), hasGraphic = types.has('infographic');
+const sequence = hasPhoto && hasXray && hasGraphic
+  ? `Begin with a field portrait, continue with an X-ray anatomy study, and finish with an illustrated reference.`
+  : `Move through the ${imageCount || 'several'} frames one at a time and notice how each presentation changes the way the subject is seen.`;
+const fallbackTitle = `${bird}: Portrait, Structure & Story`;
+const fallbackCaption = `One bird, ${imageCount || 'several'} ways to look closer. ${sequence} ${description} Together, the images move from first impression to a more considered view of the ${bird}${scientific}, while keeping every statement grounded in the material provided. Swipe through, pause on the details that catch your attention, and tell us which frame you would return to first. Save the carousel as inspiration for your next birding experience in ${location}.`.replace(/\s+/g,' ').trim();
+const fallbackFacebook = `Take a closer look at the ${bird}${scientific} from ${location}. ${sequence} ${description} The sequence brings photography and educational presentation together without adding claims beyond the material supplied for the post. Browse all ${imageCount || 'the'} frames, then tell us which approach helped you see the subject differently. Save the set for later or share it with someone who enjoys learning about birds through both images and visual reference material.`.replace(/\s+/g,' ').trim();
 const fallbackRedditTitle = `${bird} from ${location} — ${imageCount || 'multiple'} images`;
-const fallbackReddit = `Sharing a ${imageCount || 'multi'}-image carousel featuring the ${bird}${scientific} from ${location}. ${description} The set brings the submitted photographs and educational visuals together without adding details that were not supplied with the images. Which slide stands out most to you?`.replace(/\s+/g,' ').trim();
+const fallbackReddit = `Sharing a ${imageCount || 'multi'}-image set focused on the ${bird}${scientific} from ${location}. ${sequence} ${description} The aim is to compare several ways of presenting the same subject without adding claims beyond the available material. Which frame communicates the subject most clearly to you, and why?`.replace(/\s+/g,' ').trim();
 const contextSeeds = [base.featured_birds, base.activity_name, 'BirdingEcuador'].flatMap(v => clean(v).split(/[|,]/)).map(safeTag).filter(Boolean);
 const tags = ['#mindobirdwatching','#mindo','#ecuador', ...contextSeeds];
 const uniqueTags = [...new Map(tags.map(t => [t.toLowerCase(), t])).values()].slice(0, 5);
@@ -238,7 +258,7 @@ const parsedTitle = clean(parsed.carousel_title);
 const parsedFacebook = stripTrailingHashtags(parsed.facebook_caption);
 const parsedRedditTitle = clean(parsed.reddit_title);
 const parsedReddit = stripTrailingHashtags(parsed.reddit_caption);
-const sourceText = [base.carousel_description,base.slide_notes,base.verified_details].map(clean).join(' ').toLowerCase();
+const sourceText = [base.carousel_description,base.slide_notes,base.verified_details,base.images_json].map(clean).join(' ').toLowerCase();
 const candidateText = [parsedTitle,parsedCaption,parsedFacebook,parsedRedditTitle,parsedReddit].join(' ').toLowerCase();
 const guardedTerms = ['ecosystem','plumage','colorful','forest','perch','tail','beak','diet','habitat','behavior','breeding','conservation','endemic','nocturnal','migratory','rare','abundant'];
 const unsupportedTerms = guardedTerms.filter(term => candidateText.includes(term) && !sourceText.includes(term));
@@ -251,18 +271,30 @@ const redditTitle = useFallback ? fallbackRedditTitle : (parsedRedditTitle || fa
 const reddit = useFallback ? fallbackReddit : (parsedReddit || fallbackReddit);
 const redditTags = tagsFrom(parsed.reddit_hashtags,[finalTags[3], '#BirdPhotography', '#Ecuador'],3);
 const forbidden = /guaranteed?|always see|will see|\brare\b|abundant|natural habitat|expert guides?|won't miss|will not miss|elusive/i;
-if (forbidden.test([title,caption,facebook,redditTitle,reddit].join(' '))) throw new Error('COPY BLOCKED: unsupported or exaggerated wording. Nothing was published.');
-if (clean(parsed.review_verdict).toUpperCase() !== 'PASS') throw new Error('COPY BLOCKED: independent local editor did not return PASS.');
-if (![title,caption,facebook,redditTitle,reddit].every(value => /^["'“‘(]*[A-Z0-9]/.test(value))) throw new Error('COPY BLOCKED: generated copy must begin with a capital letter.');
-if (/\b(seening|seing|recieve|thier|alot)\b/i.test([title,caption,facebook,redditTitle,reddit].join(' '))) throw new Error('COPY BLOCKED: obvious spelling error detected.');
-if ((caption.match(/\S+/g)||[]).length < 50 || (caption.match(/\S+/g)||[]).length > 120) throw new Error('COPY BLOCKED: Instagram caption must contain 50–120 words.');
-if ((facebook.match(/\S+/g)||[]).length < 50 || (facebook.match(/\S+/g)||[]).length > 140) throw new Error('COPY BLOCKED: Facebook caption must contain 50–140 words.');
-if ((reddit.match(/\S+/g)||[]).length < 35 || (reddit.match(/\S+/g)||[]).length > 120) throw new Error('COPY BLOCKED: Reddit body must contain 35–120 words.');
-if (title.length > 80 || redditTitle.length > 120) throw new Error('COPY BLOCKED: a generated title is too long.');
-if (finalTags.length !== 5 || facebookTags.split(/\s+/).length !== 3 || redditTags.split(/\s+/).length !== 3) throw new Error('COPY BLOCKED: platform hashtag counts are invalid.');
+const issues = [];
+const finalText = [title,caption,facebook,redditTitle,reddit].join(' ');
+if (forbidden.test(finalText)) issues.push('unsupported or exaggerated wording');
+if (clean(parsed.grounding_verdict).toUpperCase() !== 'PASS') issues.push('grounding reviewer did not pass');
+if (clean(parsed.review_verdict).toUpperCase() !== 'PASS') issues.push('editorial reviewer requested revision');
+if (unsupportedTerms.length) issues.push(`unsupported terms: ${unsupportedTerms.join(', ')}`);
+if (![title,caption,facebook,redditTitle,reddit].every(value => /^["'“‘(]*[A-Z0-9]/.test(value))) issues.push('copy must begin with a capital letter');
+if (/\b(seening|seing|recieve|thier|alot)\b/i.test(finalText)) issues.push('obvious spelling error');
+const instagramWords=(caption.match(/\S+/g)||[]).length, facebookWords=(facebook.match(/\S+/g)||[]).length, redditWords=(reddit.match(/\S+/g)||[]).length;
+if (instagramWords < 50 || instagramWords > 120) issues.push('Instagram caption outside 50–120 words');
+if (facebookWords < 50 || facebookWords > 140) issues.push('Facebook caption outside 50–140 words');
+if (redditWords < 35 || redditWords > 120) issues.push('Reddit body outside 35–120 words');
+if (title.length > 80 || redditTitle.length > 120) issues.push('generated title too long');
+if (finalTags.length !== 5 || facebookTags.split(/\s+/).length !== 3 || redditTags.split(/\s+/).length !== 3) issues.push('platform hashtag counts invalid');
+const genericPattern = /submitted (?:images|visual details)|featured bird|visual story|complete carousel|follow (?:us|mindo bird watching) for more/i;
+if (genericPattern.test(finalText)) issues.push('generic internal or filler language');
+const reviewerNotes = Array.isArray(parsed.review_notes) ? parsed.review_notes.map(clean).filter(Boolean) : [];
+let editorialScore = Math.max(0,Math.min(100,Number(parsed.editorial_score)||70));
+if (useFallback) editorialScore = Math.min(editorialScore,78);
+if (issues.length) editorialScore = Math.min(editorialScore,89);
+const ready = !issues.length && editorialScore >= 92;
 base.local_brief = clean(local.brief) || fallbackBrief;
-base.copy_review_status = 'PASS';
-base.caption_generation_status = useFallback ? (unsupportedTerms.length ? `SAFE_FALLBACK_UNSUPPORTED:${unsupportedTerms.join(',')}` : 'SAFE_FALLBACK') : 'GENERATED';
+base.copy_review_status = ready ? 'PASS' : 'REVISE';
+base.caption_generation_status = ready ? 'GENERATED_DOUBLE_PASS' : (useFallback ? 'SAFE_DRAFT_NEEDS_REVIEW' : 'NEEDS_EDITORIAL_REVIEW');
 base.carousel_title = title.slice(0,120);
 base.caption = caption;
 base.instagram_hashtags = finalTags.join(' ');
@@ -272,13 +304,16 @@ base.reddit_title = redditTitle.slice(0,160);
 base.reddit_caption = reddit;
 base.reddit_hashtags = redditTags;
 base.copy_generated_at = DateTime.now().setZone('America/New_York').toISO();
-base.ai_model = 'gpt-oss:20b local grounding + independent editor | en-US v5';
+base.ai_model = 'gpt-oss:20b local writer + independent repair editor | en-US v6';
 const autoMode = clean(base.admin_mode).toLowerCase() === 'auto';
-base.approval_status = autoMode ? 'APPROVED' : 'NEEDS_REVIEW';
-base.quality_score = autoMode ? 100 : 85;
-if (autoMode) {
+base.approval_status = autoMode && ready ? 'APPROVED' : 'NEEDS_REVIEW';
+base.quality_score = editorialScore;
+base.error_message = ready ? '' : `COPY REVIEW REQUIRED: ${[...issues,...reviewerNotes].filter(Boolean).slice(0,5).join(' | ') || 'editorial score below 92'}`;
+if (autoMode && ready) {
   base.input_status = 'VERIFIED';
   base.status = 'Scheduled';
+} else {
+  base.status = ready ? 'Testing' : 'Needs Review';
 }
 base.gemini_input_tokens = 0;
 base.gemini_output_tokens = 0;
@@ -304,7 +339,7 @@ return $input.all().map(item => {
   r.post_to_instagram=bool(r.post_to_instagram,true);
   r.post_to_facebook=bool(r.post_to_facebook,true);
   const status=String(r.status||'').trim().toLowerCase();
-  r._is_testing=status==='testing' || (status==='scheduled' && !scheduledTimePassed(r));
+  r._is_testing=status==='testing' || String(r.copy_review_status||'').trim().toUpperCase()!=='PASS' || (status==='scheduled' && !scheduledTimePassed(r));
   return {json:r};
 });
 """.strip()
@@ -319,8 +354,8 @@ if (new Set(urls).size !== urls.length) throw new Error('PUBLISH BLOCKED: all ca
 r._image_urls=urls;
 if (!has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption)) throw new Error('PUBLISH BLOCKED: caption fields are incomplete.');
 if (String(r.input_status||'').trim().toUpperCase() !== 'VERIFIED') throw new Error('PUBLISH BLOCKED: carousel is not verified.');
-if (String(r.approval_status||'').trim().toUpperCase() !== 'APPROVED' || Number(r.quality_score||0) < 85) throw new Error('PUBLISH BLOCKED: copy approval is required.');
-if (String(r.copy_review_status||'').trim().toUpperCase() !== 'PASS') throw new Error('PUBLISH BLOCKED: local copy review did not pass.');
+const reviewStatus=String(r.copy_review_status||'').trim().toUpperCase();
+if (String(r.approval_status||'').trim().toUpperCase() !== 'APPROVED' || !['PASS','HUMAN_EDITED'].includes(reviewStatus) || (reviewStatus==='PASS' && Number(r.quality_score||0) < 92)) throw new Error('PUBLISH BLOCKED: approved copy must pass both local reviews or contain validated human edits.');
 r.post_to_instagram=bool(r.post_to_instagram,true);
 r.post_to_facebook=bool(r.post_to_facebook,true);
 if (!r.post_to_instagram && !r.post_to_facebook) throw new Error('PUBLISH BLOCKED: no platform is selected.');
@@ -465,9 +500,10 @@ TG_MESSAGE_JS = r"""
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 const r={...$json};
 const published=Boolean(String(r.instagram_post_id||'').trim() || String(r.facebook_post_id||'').trim());
-const title=published?'Carousel Publishing Complete':'Carousel Copy Ready';
+const reviewReady=String(r.copy_review_status||'').trim().toUpperCase()==='PASS';
+const title=published?'Carousel Publishing Complete':reviewReady?'Carousel Copy Ready':'Carousel Copy Needs Review';
 const count=Array.from({length:10},(_,i)=>r[`image_${i+1}_url`]).filter(Boolean).length;
-r.telegram_text=`<b>${title}</b>\n\n<b>Title:</b> ${esc(r.carousel_title)}\n<b>Carousel:</b> ${esc(r.carousel_id)}\n<b>Status:</b> ${esc(r.status)}\n<b>Scheduled:</b> ${esc(r.scheduled_date)} ${esc(r.scheduled_time)} ET\n<b>Images:</b> ${count}\n<b>First image:</b> <a href="${esc(r.image_1_url)}">Open image</a>\n\n<b>Instagram caption:</b>\n<pre>${esc(r.caption)}</pre>\n<b>Instagram hashtags:</b>\n<pre>${esc(r.instagram_hashtags)}</pre>\n\n<b>Facebook caption:</b>\n<pre>${esc(r.facebook_caption)}</pre>\n<b>Facebook hashtags:</b>\n<pre>${esc(r.facebook_hashtags)}</pre>\n\n<b>Reddit title:</b>\n<pre>${esc(r.reddit_title)}</pre>\n<b>Reddit body:</b>\n<pre>${esc(r.reddit_caption)}</pre>\n<b>Reddit hashtags:</b>\n<pre>${esc(r.reddit_hashtags)}</pre>\n\n<b>Instagram:</b> ${r.instagram_permalink?`<a href="${esc(r.instagram_permalink)}">Open post</a>`:esc(r.instagram_post_id||'Not published')}\n<b>Facebook:</b> ${r.facebook_permalink?`<a href="${esc(r.facebook_permalink)}">Open post</a>`:esc(r.facebook_post_id||'Not published')}\n<b>Reddit:</b> Copy package ready in Carousel Studio\n\n<b>Copy model:</b> ${esc(r.ai_model||'local double pass')}`;
+r.telegram_text=`<b>${title}</b>\n\n<b>Title:</b> ${esc(r.carousel_title)}\n<b>Carousel:</b> ${esc(r.carousel_id)}\n<b>Status:</b> ${esc(r.status)}\n<b>Editorial score:</b> ${esc(r.quality_score||'Not scored')}\n<b>Review:</b> ${esc(r.copy_review_status||'Pending')}\n${r.error_message?`<b>Reviewer notes:</b> ${esc(r.error_message)}\n`:''}<b>Scheduled:</b> ${esc(r.scheduled_date)} ${esc(r.scheduled_time)} ET\n<b>Images:</b> ${count}\n<b>First image:</b> <a href="${esc(r.image_1_url)}">Open image</a>\n\n<b>Instagram caption:</b>\n<pre>${esc(r.caption)}</pre>\n<b>Instagram hashtags:</b>\n<pre>${esc(r.instagram_hashtags)}</pre>\n\n<b>Facebook caption:</b>\n<pre>${esc(r.facebook_caption)}</pre>\n<b>Facebook hashtags:</b>\n<pre>${esc(r.facebook_hashtags)}</pre>\n\n<b>Reddit title:</b>\n<pre>${esc(r.reddit_title)}</pre>\n<b>Reddit body:</b>\n<pre>${esc(r.reddit_caption)}</pre>\n<b>Reddit hashtags:</b>\n<pre>${esc(r.reddit_hashtags)}</pre>\n\n<b>Instagram:</b> ${r.instagram_permalink?`<a href="${esc(r.instagram_permalink)}">Open post</a>`:esc(r.instagram_post_id||'Not published')}\n<b>Facebook:</b> ${r.facebook_permalink?`<a href="${esc(r.facebook_permalink)}">Open post</a>`:esc(r.facebook_post_id||'Not published')}\n<b>Reddit:</b> Copy package ready in Carousel Studio\n\n<b>Copy model:</b> ${esc(r.ai_model||'local double pass')}`;
 return [{json:r}];
 """.strip()
 
@@ -489,6 +525,12 @@ nodes.append(node("[GEN] Independent Local Copy Editor", "n8n-nodes-base.httpReq
     "sendBody": True, "specifyBody": "json", "jsonBody": EDITOR_BODY,
     "options": {"response": {"response": {"responseFormat": "json"}}}
 }, retryOnFail=True, waitBetweenTries=5000))
+nodes.append(node("[GEN] Final Local Repair Editor", "n8n-nodes-base.httpRequest", 4.2, [280, -220], {
+    "method": "POST", "url": "http://127.0.0.1:11434/api/chat", "sendHeaders": True,
+    "headerParameters": {"parameters": [{"name": "Content-Type", "value": "application/json"}]},
+    "sendBody": True, "specifyBody": "json", "jsonBody": FINAL_EDITOR_BODY,
+    "options": {"response": {"response": {"responseFormat": "json"}}}
+}, retryOnFail=True, waitBetweenTries=5000))
 nodes.append(code_node("[GEN] Parse and Validate Copy", [280, -80], PARSE_COPY_JS))
 nodes.append(gs_update("[GEN] Write Copy to Sheet", [500, -80], {
     "carousel_id": "={{ $json.carousel_id }}", "post_to_instagram": "={{ $json.post_to_instagram }}",
@@ -502,7 +544,8 @@ nodes.append(gs_update("[GEN] Write Copy to Sheet", [500, -80], {
     "ai_model": "={{ $json.ai_model }}", "gemini_input_tokens": "={{ $json.gemini_input_tokens }}",
     "gemini_output_tokens": "={{ $json.gemini_output_tokens }}", "gemini_total_tokens": "={{ $json.gemini_total_tokens }}",
     "approval_status": "={{ $json.approval_status }}", "quality_score": "={{ $json.quality_score }}",
-    "input_status": "={{ $json.input_status }}", "status": "={{ $json.status }}"
+    "input_status": "={{ $json.input_status }}", "status": "={{ $json.status }}",
+    "error_message": "={{ $json.error_message }}"
 }))
 nodes.append(gs_read("[GEN] Reload Generated Row", [720, -80], [{"lookupColumn": "carousel_id", "lookupValue": "={{ $json.carousel_id }}"}]))
 nodes.append(node("[CORE] Merge Prepared Row", "n8n-nodes-base.merge", 3.2, [940, 40], {"mode": "append"}))
@@ -665,7 +708,8 @@ connect("Classify Carousel", "[CORE] If: Due or Testing")
 connect("[CORE] If: Due or Testing", "[GEN] If: Copy Missing", 0)
 connect("[GEN] If: Copy Missing", "[GEN] Local Grounding (Ollama)", 0)
 connect("[GEN] Local Grounding (Ollama)", "[GEN] Independent Local Copy Editor")
-connect("[GEN] Independent Local Copy Editor", "[GEN] Parse and Validate Copy")
+connect("[GEN] Independent Local Copy Editor", "[GEN] Final Local Repair Editor")
+connect("[GEN] Final Local Repair Editor", "[GEN] Parse and Validate Copy")
 connect("[GEN] Parse and Validate Copy", "[GEN] Write Copy to Sheet")
 connect("[GEN] Write Copy to Sheet", "[GEN] Reload Generated Row")
 connect("[GEN] Reload Generated Row", "[CORE] Merge Prepared Row", 0, 1)

@@ -110,7 +110,25 @@ const row=normalized(existing);
 
 if (action === 'update_carousel') {
   const allowed=new Set(['carousel_title','caption','instagram_hashtags','facebook_caption','facebook_hashtags','reddit_title','reddit_caption','reddit_hashtags','scheduled_date','scheduled_time','post_to_instagram','post_to_facebook']);
-  for (const [key,value] of Object.entries(body.edits||{})) if (allowed.has(key)) row[key]=key==='scheduled_date'?toSheetDate(value):key==='scheduled_time'?toSheetTime(value):key==='post_to_instagram'||key==='post_to_facebook'?truthy(value):clean(value);
+  const copyFields=new Set(['carousel_title','caption','instagram_hashtags','facebook_caption','facebook_hashtags','reddit_title','reddit_caption','reddit_hashtags']);
+  let humanEdited=false;
+  for (const [key,value] of Object.entries(body.edits||{})) if (allowed.has(key)) {
+    row[key]=key==='scheduled_date'?toSheetDate(value):key==='scheduled_time'?toSheetTime(value):key==='post_to_instagram'||key==='post_to_facebook'?truthy(value):clean(value);
+    if (copyFields.has(key) && clean(value)!==clean(existing[key])) humanEdited=true;
+  }
+  if (humanEdited) Object.assign(row,{copy_review_status:'HUMAN_EDITED',caption_generation_status:'HUMAN_EDITED',approval_status:'NEEDS_REVIEW',status:'Needs Review',error_message:''});
+  return [{json:{...row,_route:'update_only'}}];
+}
+
+if (action === 'update_carousel_images') {
+  if ([row.instagram_post_id,row.facebook_post_id].some(value=>clean(value))) return response(false,'Published or partially published carousels cannot have their images changed.');
+  const images=Array.isArray(body.images)?body.images:[];
+  if (images.length<2 || images.length>10) return response(false,'A carousel requires 2–10 images.');
+  const urls=images.map(image=>clean(image.delivery_url||image.original_url));
+  if (urls.some(url=>!url) || new Set(urls).size!==urls.length) return response(false,'Every carousel image must have one unique delivery URL.');
+  row.images_json=JSON.stringify(images);
+  for (let i=0;i<10;i++) row['image_'+(i+1)+'_url']=urls[i]||'';
+  Object.assign(row,{status:'Needs Review',input_status:'READY',copy_review_status:'PENDING_LOCAL_REVIEW',caption_generation_status:'IMAGE_REPLACED_REVIEW_REQUIRED',approval_status:'NEEDS_REVIEW',quality_score:0,publishing_lock:'',error_message:''});
   return [{json:{...row,_route:'update_only'}}];
 }
 
@@ -128,9 +146,10 @@ if (action === 'approve_carousel') {
   const redditWords=words(row.reddit_caption), redditTags=clean(row.reddit_hashtags).split(/\s+/).filter(Boolean);
   if (!clean(row.reddit_title) || clean(row.reddit_title).length>120 || redditWords<35 || redditWords>120 || redditTags.length!==3 || redditTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Reddit requires a title, a 35–120 word body, and exactly three valid hashtags.');
   if (!truthy(row.post_to_instagram) && !truthy(row.post_to_facebook)) errors.push('Select Instagram or Facebook.');
-  if (clean(row.copy_review_status).toUpperCase()!=='PASS') errors.push('Both local copy passes must complete successfully.');
+  const reviewStatus=clean(row.copy_review_status).toUpperCase();
+  if (!['PASS','HUMAN_EDITED'].includes(reviewStatus) || (reviewStatus==='PASS' && Number(row.quality_score||0)<92)) errors.push('Local copy must score at least 92 through both reviews, or be edited by a human, before approval.');
   if (errors.length) return response(false,errors.join(' '));
-  Object.assign(row,{status:'Scheduled',input_status:'VERIFIED',approval_status:'APPROVED',quality_score:100,error_message:''});
+  Object.assign(row,{status:'Scheduled',input_status:'VERIFIED',approval_status:'APPROVED',error_message:''});
   return [{json:{...row,_route:'update_only'}}];
 }
 
@@ -142,7 +161,8 @@ if (action === 'regenerate_carousel') {
 }
 
 if (action === 'retry_carousel') {
-  if (clean(row.approval_status).toUpperCase()!=='APPROVED' || Number(row.quality_score||0)<85) return response(false,'Copy must be approved before retrying publication.');
+  const reviewStatus=clean(row.copy_review_status).toUpperCase();
+  if (clean(row.approval_status).toUpperCase()!=='APPROVED' || !['PASS','HUMAN_EDITED'].includes(reviewStatus) || (reviewStatus==='PASS' && Number(row.quality_score||0)<92)) return response(false,'Copy must pass both local reviews or contain approved human edits before retrying publication.');
   const ig=truthy(row.post_to_instagram)&&!clean(row.instagram_post_id);
   const fb=truthy(row.post_to_facebook)&&!clean(row.facebook_post_id);
   if (!ig&&!fb) return response(false,'No missing selected platform is available to retry.');
