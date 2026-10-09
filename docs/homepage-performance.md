@@ -25,3 +25,7 @@ The same Google Fonts WOFF2 assets are stored in assets/fonts with their origina
 Floating WhatsApp artwork uses WebP: mobile 96 KB → 19 KB; desktop 131 KB → 24 KB. The widget's logic remains unchanged.
 
 Verification: zero computed-style differences versus the full stylesheet at 390px/1440px for EN/ES. Navigation, WhatsApp, form availability and overflow checks pass. No real submissions/payments made. Production Lighthouse measurement follows deployment.
+
+## Revenue pages
+
+The English and Spanish half-day, full-day, private tour, booking and contact pages use the same local fonts and header snapshot. Run `npm run build:revenue` from scripts after shared CSS, JS or page changes. The paired-page manifest is scripts/revenue-pages.json. Original photographs remain available; page assets use sized WebP copies. Tour videos load only after activation. Confirmed form messages require the active same-origin response frame; success/error markers feed analytics once per submission.
