@@ -49,7 +49,7 @@ function compileWorkflow(path) {
   const intake = compileWorkflow("MBW - Carousel Intake - IMPORT.json");
   const gateway = compileWorkflow("n8n/generated/MBW - Carousel Admin Gateway - IMPORT.json");
   const adminMain = compileWorkflow("n8n/generated/MBW - AI Carousels - Admin Trigger - IMPORT.json");
-  assert(main.nodes.length === 66, "Unexpected main workflow node count");
+  assert(main.nodes.length === 67, "Unexpected main workflow node count");
   assert(intake.nodes.some((node) => node.name === "[INTAKE] Validate and Split Images"), "Legacy intake must support variable slide counts");
   assert(gateway.nodes.some((node) => node.name === "Plan Carousel Action"), "Admin gateway planner is missing");
   assert(adminMain.nodes.some((node) => node.name === "[ADMIN] Trigger Carousel Processing"), "Admin processing webhook is missing");
@@ -57,6 +57,7 @@ function compileWorkflow(path) {
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");
   assert(allMainText.includes("gpt-oss:20b local writer + independent repair editor | en-US v6"), "Two-pass local editor identity is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Final Local Repair Editor"), "Final local repair editor is missing");
+  assert(main.nodes.some((node) => node.name === "[GEN] Mark Generation Started"), "Generation concurrency lock is missing");
   assert(allMainText.includes("editorial score below 92") && allMainText.includes("HUMAN_EDITED"), "Quality threshold or validated human-edit path is missing");
   assert(allMainText.includes("PUBLISH BLOCKED: approved copy must pass both local reviews or contain validated human edits"), "Approval publishing gate is missing");
   assert(allMainText.includes("={{ $json.instagram_permalink }}") && allMainText.includes("={{ $json.facebook_permalink }}"), "Published post permalinks must be saved");

@@ -94,7 +94,7 @@ if (action === 'create_carousel') {
     featured_birds:clean(c.featured_birds), scientific_name:clean(c.scientific_name),
     location:clean(c.location)||'Mindo, Ecuador', input_status:auto?'VERIFIED':'READY',
     scheduled_date:toSheetDate(c.scheduled_date), scheduled_time:toSheetTime(c.scheduled_time),
-    status:'Testing', media_type:'CAROUSEL', post_to_instagram:truthy(c.post_to_instagram),
+    status:'Queued', media_type:'CAROUSEL', post_to_instagram:truthy(c.post_to_instagram),
     post_to_facebook:truthy(c.post_to_facebook), copy_review_status:'PENDING_LOCAL_REVIEW',
     caption_generation_status:'NOT_STARTED', approval_status:'NEEDS_REVIEW', quality_score:0,
     submitted_at:clean(c.submitted_at)||new Date().toISOString(), source:clean(c.source)||'admin_carousel_studio',
@@ -155,8 +155,9 @@ if (action === 'approve_carousel') {
 
 if (action === 'regenerate_carousel') {
   if ([row.instagram_post_id,row.facebook_post_id].some(value=>clean(value))) return response(false,'Published or partially published carousels cannot be regenerated.');
+  if (['QUEUED','GENERATING'].includes(clean(row.status).toUpperCase())) return response(false,'Copy generation is already running for this carousel.');
   for (const field of ['local_brief','copy_review_status','caption_generation_status','carousel_title','caption','instagram_hashtags','facebook_caption','facebook_hashtags','reddit_title','reddit_caption','reddit_hashtags','copy_generated_at','ai_model','posting_defaults_applied_at']) row[field]='';
-  Object.assign(row,{status:'Testing',input_status:clean(row.admin_mode).toLowerCase()==='auto'?'VERIFIED':'READY',approval_status:'NEEDS_REVIEW',quality_score:0,error_message:'',publishing_lock:''});
+  Object.assign(row,{status:'Queued',input_status:clean(row.admin_mode).toLowerCase()==='auto'?'VERIFIED':'READY',caption_generation_status:'QUEUED',approval_status:'NEEDS_REVIEW',quality_score:0,error_message:'',publishing_lock:''});
   return [{json:{...row,_route:'update_trigger'}}];
 }
 

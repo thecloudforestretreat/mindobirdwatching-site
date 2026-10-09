@@ -150,16 +150,16 @@ return $input.all().map(item => {
   const urls = Array.from({length: 10}, (_, i) => String(r[`image_${i + 1}_url`] || '').trim()).filter(Boolean);
   const inputStatus = String(r.input_status || '').trim().toUpperCase();
   const status = String(r.status || '').trim().toLowerCase();
-  const testing = status === 'testing';
+  const queued = status === 'queued';
   const approved = ['READY','VERIFIED'].includes(inputStatus);
-  const due = testing || (status === 'scheduled' && scheduledTimePassed(r));
+  const due = queued || (status === 'scheduled' && scheduledTimePassed(r));
   const valid = has(r.carousel_id) && urls.length >= 2 && urls.length <= 10 && new Set(urls).size === urls.length && has(r.featured_birds) && approved;
   r.media_type = 'CAROUSEL';
   r.post_to_instagram = bool(r.post_to_instagram, true);
   r.post_to_facebook = bool(r.post_to_facebook, true);
   r._needs_generation = !has(r.carousel_title) || !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !has(r.facebook_hashtags) || !has(r.reddit_title) || !has(r.reddit_caption) || !has(r.reddit_hashtags) || !String(r.ai_model || '').includes('en-US v6');
   r._process = valid && due;
-  r._is_testing = testing;
+  r._is_testing = queued;
   r._validation_error = !has(r.carousel_id) ? 'Missing carousel_id' :
     (urls.length < 2 || urls.length > 10) ? 'Between two and ten image URLs are required' :
     new Set(urls).size !== urls.length ? 'All carousel image URLs must be unique' :
@@ -514,6 +514,10 @@ nodes.append(gs_read("[CORE] Load ai_carousels", [-1040, 40]))
 nodes.append(code_node("Classify Carousel", [-820, 40], CLASSIFY_JS))
 nodes.append(if_node("[CORE] If: Due or Testing", [-600, 40], "={{ $json._process }}"))
 nodes.append(if_node("[GEN] If: Copy Missing", [-380, 40], "={{ $json._needs_generation }}"))
+nodes.append(gs_update("[GEN] Mark Generation Started", [-270, -80], {
+    "carousel_id": "={{ $json.carousel_id }}", "status": "Generating",
+    "caption_generation_status": "PENDING_LOCAL_REVIEW", "error_message": ""
+}))
 nodes.append(node("[GEN] Local Grounding (Ollama)", "n8n-nodes-base.httpRequest", 4.2, [-160, -80], {
     "method": "POST", "url": "http://127.0.0.1:11434/api/chat", "sendHeaders": True,
     "headerParameters": {"parameters": [{"name": "Content-Type", "value": "application/json"}]},
@@ -706,7 +710,8 @@ connect("[CORE] Scheduled Trigger", "[CORE] Load ai_carousels")
 connect("[CORE] Load ai_carousels", "Classify Carousel")
 connect("Classify Carousel", "[CORE] If: Due or Testing")
 connect("[CORE] If: Due or Testing", "[GEN] If: Copy Missing", 0)
-connect("[GEN] If: Copy Missing", "[GEN] Local Grounding (Ollama)", 0)
+connect("[GEN] If: Copy Missing", "[GEN] Mark Generation Started", 0)
+connect("[GEN] Mark Generation Started", "[GEN] Local Grounding (Ollama)")
 connect("[GEN] Local Grounding (Ollama)", "[GEN] Independent Local Copy Editor")
 connect("[GEN] Independent Local Copy Editor", "[GEN] Final Local Repair Editor")
 connect("[GEN] Final Local Repair Editor", "[GEN] Parse and Validate Copy")
