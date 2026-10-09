@@ -156,7 +156,7 @@ return $input.all().map(item => {
   r.media_type = 'CAROUSEL';
   r.post_to_instagram = bool(r.post_to_instagram, true);
   r.post_to_facebook = bool(r.post_to_facebook, true);
-  r._needs_generation = !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !String(r.ai_model || '').includes('en-US v3');
+  r._needs_generation = !has(r.caption) || !has(r.instagram_hashtags) || !has(r.facebook_caption) || !String(r.ai_model || '').includes('en-US v4');
   r._process = valid && due;
   r._is_testing = testing;
   r._validation_error = !has(r.carousel_id) ? 'Missing carousel_id' :
@@ -171,7 +171,7 @@ return $input.all().map(item => {
 OLLAMA_BODY = r"""={{ {
   model: 'gpt-oss:20b',
   messages: [
-    { role: 'system', content: 'You are a factual grounding assistant for Mindo Bird Watching. Use only supplied facts. Do not claim that a species is rare, guaranteed, abundant, or observed unless the input says so. Return valid JSON only.' },
+    { role: 'system', content: 'You are a factual grounding assistant for Mindo Bird Watching. Use only facts explicitly stated in the supplied text. Never infer ecology, diet, behavior, habitat, breeding, clutch size, conservation status, sightings, rarity, or abundance from a bird name, scientific name, filename, image type, or general knowledge. If a detail is not written in the inputs, omit it. Return valid JSON only.' },
     { role: 'user', content: `Create one concise factual brief for a 2–10 slide carousel.\nDescription: ${$json.carousel_description || ''}\nSlide notes: ${$json.slide_notes || ''}\nFeatured birds: ${$json.featured_birds || ''}\nScientific name: ${$json.scientific_name || ''}\nActivity: ${$json.activity_name || ''}\nLocation: ${$json.location || ''}\nVerified details: ${$json.verified_details || ''}\nReturn JSON: {"brief":"...","facts_used":["..."]}` }
   ],
   stream: false,
@@ -184,8 +184,8 @@ OLLAMA_BODY = r"""={{ {
 EDITOR_BODY = r"""={{ {
   model: 'gpt-oss:20b',
   messages: [
-    { role: 'system', content: 'Act as a strict independent editor. Return JSON only. Preserve supplied facts and species names.' },
-    { role: 'user', content: `Write and independently edit grounded social copy for this carousel. Use only the local brief and original inputs. Correct spelling, grammar, capitalization, repetitive phrasing, and generic activity names. Never invent behavior, habitat, rarity, abundance, sightings, reactions, or guarantees.\n\nLocal brief: ${$json.message?.content || ''}\nOriginal description: ${$('Classify Carousel').item.json.carousel_description || ''}\nFeatured birds: ${$('Classify Carousel').item.json.featured_birds || ''}\nScientific name: ${$('Classify Carousel').item.json.scientific_name || ''}\nLocation: ${$('Classify Carousel').item.json.location || ''}\nVerified details: ${$('Classify Carousel').item.json.verified_details || ''}\n\nReturn JSON: {"caption":"50-120 words in 2-3 short paragraphs with one CTA and no hashtags","instagram_hashtags":["#mindobirdwatching","#mindo","#ecuador","#ContextTag1","#ContextTag2"],"facebook_caption":"grounded prose without hashtags","review_verdict":"PASS or REVISE","review_notes":["..."]}. PASS only when every field is clean and factual.` }
+    { role: 'system', content: 'Act as a strict independent factual editor. Return JSON only. Preserve supplied facts and species names. Reject any claim that is not explicitly supported by the supplied text.' },
+    { role: 'user', content: `Write and independently edit grounded social copy for this carousel. Use only the local brief and original inputs. Correct spelling, grammar, capitalization, repetitive phrasing, and generic activity names. Never add ecology, diet, behavior, habitat, breeding, clutch size, conservation status, rarity, abundance, sightings, reactions, or guarantees unless that exact information is explicitly stated below. A note that an educational slide covers a topic does not supply the underlying facts.\n\nLocal brief: ${$json.message?.content || ''}\nOriginal description: ${$('Classify Carousel').item.json.carousel_description || ''}\nSlide notes: ${$('Classify Carousel').item.json.slide_notes || ''}\nFeatured birds: ${$('Classify Carousel').item.json.featured_birds || ''}\nScientific name: ${$('Classify Carousel').item.json.scientific_name || ''}\nLocation: ${$('Classify Carousel').item.json.location || ''}\nVerified details: ${$('Classify Carousel').item.json.verified_details || ''}\n\nReturn JSON: {"caption":"50-120 words in 2-3 short paragraphs with one CTA and no hashtags","instagram_hashtags":["#mindobirdwatching","#mindo","#ecuador","#ActualSpeciesName","#ActualRelevantTopic"],"facebook_caption":"grounded prose without hashtags","review_verdict":"PASS or REVISE","review_notes":["..."]}. Use real subject-specific hashtags; placeholder words such as ContextTag, Hashtag1, Tag1, Example, or Placeholder are forbidden. PASS only when every sentence is supported by the supplied text and every field is clean.` }
   ],
   stream: false, think: 'low', format: 'json', keep_alive: '30m',
   options: { temperature: 0.18, num_predict: 1400, seed: Number($('Classify Carousel').item.json.row_number || 1) + 200003 }
@@ -206,20 +206,30 @@ try {
   parsed = JSON.parse(raw);
 } catch (_) {}
 const fallbackBrief = [base.carousel_description, base.featured_birds, base.activity_name, base.location, base.verified_details].filter(Boolean).join('. ');
-const fallbackCaption = `${clean(base.carousel_description)}${base.location ? ` in ${clean(base.location)}` : ''}. ${base.featured_birds ? `Featured: ${clean(base.featured_birds)}.` : ''} Explore more moments from Mindo Bird Watching.`.replace(/\s+/g, ' ').trim();
+const imageCount = Array.from({length:10},(_,i)=>clean(base[`image_${i+1}_url`])).filter(Boolean).length;
+const bird = clean(base.featured_birds) || 'featured bird';
+const scientific = clean(base.scientific_name) ? ` (${clean(base.scientific_name)})` : '';
+const location = clean(base.location) || 'Mindo, Ecuador';
+const descriptionWords = clean(base.carousel_description).split(/\s+/).filter(Boolean).slice(0,45).join(' ');
+const description = descriptionWords ? descriptionWords.replace(/[.!?]+$/,'') + '.' : '';
+const fallbackCaption = `Meet the ${bird}${scientific} through this ${imageCount || 'multi'}-slide visual story from ${location}. ${description} The carousel brings the submitted images together while preserving the photographed details and keeping text-based graphics readable. Swipe through the full set, compare the photographic and educational views, and save it for future reference. Follow Mindo Bird Watching for more bird-focused stories from Ecuador.`.replace(/\s+/g,' ').trim();
 const contextSeeds = [base.featured_birds, base.activity_name, 'BirdingEcuador'].flatMap(v => clean(v).split(/[|,]/)).map(safeTag).filter(Boolean);
 const tags = ['#mindobirdwatching','#mindo','#ecuador', ...contextSeeds];
 const uniqueTags = [...new Map(tags.map(t => [t.toLowerCase(), t])).values()].slice(0, 5);
 while (uniqueTags.length < 5) uniqueTags.push(['#CloudForest','#Birdwatching'][uniqueTags.length - 3] || '#NatureEcuador');
-const proposed = Array.isArray(parsed.instagram_hashtags) ? parsed.instagram_hashtags.map(safeTag).filter(Boolean) : clean(parsed.instagram_hashtags).split(/\s+/).map(safeTag).filter(Boolean);
-const finalTags = [...new Map(['#mindobirdwatching','#mindo','#ecuador',...proposed.slice(3),...contextSeeds].map(t => [t.toLowerCase(),t])).values()].slice(0,5);
+const placeholderTag = tag => /(?:contexttag|placeholder|hashtag\d*|example|sampletag|tag\d+)$/i.test(tag.replace(/^#/,''));
+const proposed = (Array.isArray(parsed.instagram_hashtags) ? parsed.instagram_hashtags : clean(parsed.instagram_hashtags).split(/\s+/)).map(safeTag).filter(tag => tag && !placeholderTag(tag));
+const fixedTagKeys = new Set(['#mindobirdwatching','#mindo','#ecuador']);
+const contextual = [...contextSeeds, ...proposed.filter(tag => !fixedTagKeys.has(tag.toLowerCase()))];
+const finalTags = [...new Map(['#mindobirdwatching','#mindo','#ecuador',...contextual].map(t => [t.toLowerCase(),t])).values()].slice(0,5);
 while (finalTags.length < 5) finalTags.push(uniqueTags[finalTags.length]);
 const stripTrailingHashtags = v => clean(v).replace(/\s*(?:#[\p{L}\p{N}_-]+\s*)+$/gu, '').trim();
-const caption = stripTrailingHashtags(parsed.caption) || fallbackCaption;
-const facebook = stripTrailingHashtags(parsed.facebook_caption) || caption;
+const restrictedAdminSource = clean(base.source) === 'admin_carousel_studio' && !clean(base.slide_notes) && !clean(base.verified_details);
+const caption = restrictedAdminSource ? fallbackCaption : (stripTrailingHashtags(parsed.caption) || fallbackCaption);
+const facebook = restrictedAdminSource ? caption : (stripTrailingHashtags(parsed.facebook_caption) || caption);
 const forbidden = /guaranteed?|always see|will see|\brare\b|abundant|natural habitat|expert guides?|won't miss|will not miss|elusive/i;
 if (forbidden.test(caption + ' ' + facebook)) throw new Error('COPY BLOCKED: unsupported or exaggerated wording. Nothing was published.');
-if (clean(parsed.review_verdict).toUpperCase() !== 'PASS') throw new Error('COPY BLOCKED: independent local editor did not return PASS.');
+if (!restrictedAdminSource && clean(parsed.review_verdict).toUpperCase() !== 'PASS') throw new Error('COPY BLOCKED: independent local editor did not return PASS.');
 if (!/^["'“‘(]*[A-Z0-9]/.test(caption) || !/^["'“‘(]*[A-Z0-9]/.test(facebook)) throw new Error('COPY BLOCKED: caption must begin with a capital letter.');
 if (/\b(seening|seing|recieve|thier|alot)\b/i.test(caption + ' ' + facebook)) throw new Error('COPY BLOCKED: obvious spelling error detected.');
 if ((caption.match(/\S+/g)||[]).length < 50 || (caption.match(/\S+/g)||[]).length > 120) throw new Error('COPY BLOCKED: Instagram caption must contain 50–120 words.');
@@ -230,7 +240,7 @@ base.caption = caption;
 base.instagram_hashtags = finalTags.join(' ');
 base.facebook_caption = facebook;
 base.copy_generated_at = DateTime.now().setZone('America/New_York').toISO();
-base.ai_model = 'gpt-oss:20b local grounding + independent editor | en-US v3';
+base.ai_model = 'gpt-oss:20b local grounding + independent editor | en-US v4';
 const autoMode = clean(base.admin_mode).toLowerCase() === 'auto';
 base.approval_status = autoMode ? 'APPROVED' : 'NEEDS_REVIEW';
 base.quality_score = autoMode ? 100 : 85;
@@ -454,7 +464,9 @@ nodes.append(gs_update("[GEN] Write Copy to Sheet", [500, -80], {
     "caption": "={{ $json.caption }}", "instagram_hashtags": "={{ $json.instagram_hashtags }}",
     "facebook_caption": "={{ $json.facebook_caption }}", "copy_generated_at": "={{ $json.copy_generated_at }}",
     "ai_model": "={{ $json.ai_model }}", "gemini_input_tokens": "={{ $json.gemini_input_tokens }}",
-    "gemini_output_tokens": "={{ $json.gemini_output_tokens }}", "gemini_total_tokens": "={{ $json.gemini_total_tokens }}"
+    "gemini_output_tokens": "={{ $json.gemini_output_tokens }}", "gemini_total_tokens": "={{ $json.gemini_total_tokens }}",
+    "approval_status": "={{ $json.approval_status }}", "quality_score": "={{ $json.quality_score }}",
+    "input_status": "={{ $json.input_status }}", "status": "={{ $json.status }}"
 }))
 nodes.append(gs_read("[GEN] Reload Generated Row", [720, -80], [{"lookupColumn": "carousel_id", "lookupValue": "={{ $json.carousel_id }}"}]))
 nodes.append(node("[CORE] Merge Prepared Row", "n8n-nodes-base.merge", 3.2, [940, 40], {"mode": "append"}))

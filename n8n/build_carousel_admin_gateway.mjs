@@ -12,7 +12,14 @@ if (!loadTemplate || !writeTemplate) throw new Error("Carousel workflow Sheet te
 
 const uuid = () => crypto.randomUUID();
 const gatewayPath = "mbw-admin-carousels-gateway";
-const triggerPath = `mbw-carousels-process-${uuid()}`;
+const metaPath = `${outputDir}/carousel-gateway-meta.json`;
+let previousTriggerPath = "";
+try {
+  previousTriggerPath = JSON.parse(fs.readFileSync(metaPath, "utf8")).triggerPath || "";
+} catch {}
+const triggerPath = /^mbw-carousels-process-[a-f0-9-]+$/.test(previousTriggerPath)
+  ? previousTriggerPath
+  : `mbw-carousels-process-${uuid()}`;
 const sheetFields = writeTemplate.parameters.columns.schema
   .filter((field) => field.id !== "row_number")
   .map((field) => field.id);
