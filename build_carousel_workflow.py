@@ -462,7 +462,7 @@ return [{json:base}];
 VERIFY_IG_POST_JS = r"""
 const base={...$('[IG] Attach Publish Result').item.json};
 const publishedCaption=String($json.caption ?? '').trim();
-const firstHashtag=String(base.facebook_hashtags||base.instagram_hashtags||'').trim().split(/\s+/)[0];
+const firstHashtag=String(base.instagram_hashtags||'').trim().split(/\s+/)[0];
 if (!publishedCaption) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} exists but its caption is blank.`);
 if (firstHashtag && !publishedCaption.includes(firstHashtag)) throw new Error(`PUBLISH VERIFICATION FAILED: Instagram post ${base.instagram_post_id} is missing the expected hashtags.`);
 base.instagram_verified_caption=publishedCaption;
@@ -473,7 +473,7 @@ return [{json:base}];
 VERIFY_FB_POST_JS = r"""
 const base={...$('[FB] Attach Post Result').item.json};
 const publishedMessage=String($json.message ?? '').trim();
-const firstHashtag=String(base.instagram_hashtags||'').trim().split(/\s+/)[0];
+const firstHashtag=String(base.facebook_hashtags||'').trim().split(/\s+/)[0];
 if (!publishedMessage) throw new Error(`PUBLISH VERIFICATION FAILED: Facebook post ${base.facebook_post_id} exists but its caption is blank.`);
 if (firstHashtag && !publishedMessage.includes(firstHashtag)) throw new Error(`PUBLISH VERIFICATION FAILED: Facebook post ${base.facebook_post_id} is missing the expected hashtags.`);
 base.facebook_verified_message=publishedMessage;

@@ -66,6 +66,10 @@ function compileWorkflow(path) {
   assert(allMainText.includes("={{ $json.instagram_permalink }}") && allMainText.includes("={{ $json.facebook_permalink }}"), "Published post permalinks must be saved");
   const instagramParent = main.nodes.find((node) => node.name === "[IG] Create Parent Carousel");
   assert(instagramParent && !JSON.stringify(instagramParent).includes("location_id"), "Instagram parent payload must not send an unverified location Page ID");
+  const instagramVerifier = main.nodes.find((node) => node.name === "[IG] Verify Published Caption");
+  const facebookVerifier = main.nodes.find((node) => node.name === "[FB] Verify Published Caption");
+  assert(instagramVerifier.parameters.jsCode.includes("base.instagram_hashtags||''") && !instagramVerifier.parameters.jsCode.includes("base.facebook_hashtags||base.instagram_hashtags"), "Instagram verification must use Instagram hashtags");
+  assert(facebookVerifier.parameters.jsCode.includes("base.facebook_hashtags||''") && !facebookVerifier.parameters.jsCode.includes("base.instagram_hashtags||''"), "Facebook verification must use Facebook hashtags");
   assert(allMainText.includes("between two and ten image URLs"), "2–10 URL validation is missing");
   const transformText = allMainText + JSON.stringify(intake) + read("functions/api/admin/carousels/index.js");
   assert(transformText.includes("c_pad,b_rgb:f7f4e8"), "Fit/pad transform is missing");
