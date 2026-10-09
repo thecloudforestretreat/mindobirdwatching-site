@@ -35,6 +35,11 @@ function compileWorkflow(path) {
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
   assert(ui.includes("x[-_ ]?ray") && ui.includes("sticky|graphic|infographic|notes"), "UI must identify educational graphics for fit/pad treatment");
   assert(/aspect-ratio\s*:\s*4\s*\/\s*5/.test(css), "Previews must use the Instagram 4:5 aspect ratio");
+  assert(html.includes('id="showSafeGuide"') && html.includes('id="showProfileGuide"'), "Preview guide controls are missing");
+  assert(ui.includes("data-drag-handle") && ui.includes("ondrop"), "Drag-to-reorder support is missing");
+  assert(ui.includes("crop_gravity") && ui.includes("data-gravity"), "Per-slide crop focus is missing");
+  assert(!ui.includes('value="manual"'), "New carousel slides must not bypass 4:5 normalization");
+  assert(css.includes("editorialSafeGuide") && css.includes("profileCropGuide"), "Safe-area and profile-crop overlays are missing");
 
   const main = compileWorkflow("MBW - AI Carousels - IMPORT.json");
   const intake = compileWorkflow("MBW - Carousel Intake - IMPORT.json");
@@ -80,21 +85,22 @@ function compileWorkflow(path) {
     featured_birds: "Rufous Motmot", scientific_name: "Baryphthengus martii", carousel_description: "A factual three-slide Rufous Motmot feature.",
     scheduled_date: "2099-10-10", scheduled_time: "07:00", post_to_instagram: true, post_to_facebook: false,
     images: [
-      { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/v1/photo.jpg", fit_mode: "fill", content_type: "photo", width: 4284, height: 5712 },
+      { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/v1/photo.jpg", fit_mode: "fill", crop_gravity: "north", content_type: "photo", width: 4284, height: 5712 },
       { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/v1/xray.jpg", fit_mode: "fit", content_type: "xray", width: 928, height: 1152 },
       { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/v1/notes.jpg", fit_mode: "fit", content_type: "infographic", width: 928, height: 1152 },
     ],
   }}, { N8N_ADMIN_CAROUSELS_WEBHOOK_URL: "https://n8n.example.test/webhook/carousels" });
   global.fetch = originalFetch;
   assert.strictEqual(response.status, 200, "Valid three-slide carousel must pass the API");
-  assert(gatewayPayload.carousel.images[0].delivery_url.includes("c_fill,g_auto,h_1350,w_1080"), "Photo must receive subject-aware fill crop");
+  assert(gatewayPayload.carousel.images[0].delivery_url.includes("c_fill,g_north,h_1350,w_1080"), "Photo must honor its selected crop focus");
+  assert.strictEqual(gatewayPayload.carousel.images[0].crop_gravity, "north", "Crop focus must be preserved in the image manifest");
   assert(gatewayPayload.carousel.images[1].delivery_url.includes("c_pad,b_rgb:f7f4e8,h_1350,w_1080"), "X-ray must receive fit/pad treatment");
   assert(gatewayPayload.carousel.images[2].delivery_url.includes("c_pad,b_rgb:f7f4e8,h_1350,w_1080"), "Infographic must receive fit/pad treatment");
 
   console.log(JSON.stringify({
     ok: true,
-    ui: "DOM references, timezone, schedule warning, and 4:5 previews verified",
-    api: "validation plus fill/pad Cloudinary delivery transforms verified",
+    ui: "DOM references, timezone, scheduling, guides, reordering, crop focus, and 4:5 previews verified",
+    api: "validation plus crop-focus-aware fill/pad Cloudinary delivery transforms verified",
     workflows: { mainNodes: main.nodes.length, intakeNodes: intake.nodes.length, gatewayNodes: gateway.nodes.length, adminMainNodes: adminMain.nodes.length },
     samplePolicy: ["photo: fill", "x-ray: fit", "sticky-notes: fit"],
   }, null, 2));
