@@ -63,6 +63,8 @@ function compileWorkflow(path) {
   assert(main.nodes.some((node) => node.name === "[GEN] Final Local Repair Editor"), "Final local repair editor is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Mark Generation Started"), "Generation concurrency lock is missing");
   assert(allMainText.includes("editorial score below 92") && allMainText.includes("HUMAN_EDITED"), "Quality threshold or validated human-edit path is missing");
+  assert(allMainText.includes("Beyond the Portrait") && allMainText.includes("Which view captures your interest most"), "Subject-led curated fallback copy is missing");
+  assert(allMainText.includes("shift perspectives|distinct visual formats|different kind of attention|designed for slower looking"), "Mechanical carousel language must be rejected during local review");
   assert(allMainText.includes("PUBLISH BLOCKED: approved copy must pass both local reviews or contain validated human edits"), "Approval publishing gate is missing");
   assert(allMainText.includes("={{ $json.instagram_permalink }}") && allMainText.includes("={{ $json.facebook_permalink }}"), "Published post permalinks must be saved");
   const instagramParent = main.nodes.find((node) => node.name === "[IG] Create Parent Carousel");
