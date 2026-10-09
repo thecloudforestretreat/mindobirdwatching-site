@@ -1,0 +1,6 @@
+export function validateSummary(value,ids){
+ if(!value||typeof value.summary!=='string'||typeof value.suggested_reply!=='string'||!Array.isArray(value.missing_details)||!Array.isArray(value.source_ids))throw Error('Invalid summary response');
+ if(value.summary.length>2400||value.suggested_reply.length>2400||value.missing_details.length>12||value.missing_details.some(x=>typeof x!=='string'||x.length>300)||value.source_ids.some(x=>!ids.includes(x)))throw Error('Invalid summary response');
+ return {summary:value.summary,missing_details:value.missing_details,suggested_reply:value.suggested_reply,source_ids:value.source_ids};
+}
+export function conversationContext(rows,id){return rows.filter(r=>r.inquiry_id===id&&String(r.is_deleted).toLowerCase()!=='yes'&&!String(r.note||'').startsWith('[MBW_')&&['guest_message','staff_reply','quote_sent','follow_up','confirmation_sent'].includes(r.interaction_type)).sort((a,b)=>String(a.occurred_at).localeCompare(String(b.occurred_at))).slice(-20).map((r,i)=>({id:String(r.interaction_id||'entry-'+i),date:String(r.occurred_at||''),direction:String(r.direction||''),text:String(r.note||'').replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[email]').replace(/\+?\d[\d ()-]{7,}\d/g,'[phone]').slice(0,1800)}));}
