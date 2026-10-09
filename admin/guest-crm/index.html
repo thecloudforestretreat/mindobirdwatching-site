@@ -517,7 +517,7 @@
           </div>
           <div class="view" id="reviewView"></div>
           <div class="view" id="settingsView">
-            <h2 class="panelTitle">n8n CRM API Settings</h2><p class="hint">Staff review preview: <a href="?crmReview=1">Enable review features</a> · <a href="?crmReview=0">Disable review features</a>. These links only change this browser view.</p>
+            <h2 class="panelTitle">n8n CRM API Settings</h2><p class="hint">Booking review: <a href="?crmReview=1">Enable review features</a> · <a href="?crmReview=0">Disable review features</a>. These links only change this browser view.</p>
             <div class="field"><label for="apiUrlInput">CRM API Webhook URL</label><input id="apiUrlInput" type="url" placeholder="https://.../webhook/mbw-crm-admin-api" /></div>
             <p class="hint">Use the Production URL from the n8n workflow. <strong>Refresh CRM</strong> reads the live Google Sheet through n8n, and <strong>Save Record</strong> writes back to that same sheet. CSV import is only a fallback for offline review or troubleshooting.</p>
             <div class="recordActions"><button id="saveSettingsBtn" class="primary" type="button">Save Settings</button><button id="importCsvBtn" type="button">Import CRM CSV</button><button id="loadDemoBtn" type="button">Load Demo Records</button><button id="clearLocalBtn" type="button">Clear Local Records</button></div>
@@ -537,7 +537,7 @@
     (function(){
       "use strict";
       let reviewOperationsVerified=false;
-      function reviewEnabled(){return new URLSearchParams(location.search).get("crmReview")==="1";}
+      function reviewEnabled(){return new URLSearchParams(location.search).get("crmReview")!=="0";}
       function reviewModel(record){
         const interactions=(state.allInteractions||[]).filter(row=>row.inquiry_id===record.inquiry_id&&clean(row.is_deleted).toLowerCase()!=="yes"&&["guest_message","staff_reply","quote_sent","follow_up","confirmation_sent"].includes(row.interaction_type));
         const contact=interactions.filter(row=>row.occurred_at).sort((a,b)=>Date.parse(b.occurred_at)-Date.parse(a.occurred_at))[0];
@@ -556,7 +556,7 @@
         if(!tab||!section||!view||typeof MbwCrmReview==="undefined")return;
         tab.hidden=!enabled;section.hidden=!enabled||!getSelected();
         if(!enabled){view.innerHTML="";return;}
-        const record=getSelected();if(record)section.innerHTML='<h3>Guest summary <small>Saved record · Read-only preview</small></h3>'+reviewSummaryHtml(reviewModel(record));
+        const record=getSelected();if(record)section.innerHTML='<h3>Guest summary <small>Saved record · Read-only summary</small></h3>'+reviewSummaryHtml(reviewModel(record));
         const rows=MbwCrmReview.queue(state.records.filter(record=>!isArchivedStatus(record)).map(record=>({record,model:reviewModel(record)})));
         view.innerHTML=`<h2 class="panelTitle">Reminder preparation</h2><p class="hint">Saved records only · Follow-up dates unchanged · WhatsApp sending disabled.</p>${reviewOperationsVerified?"":"<p class=\"reviewAlert\">Communication and assignment data has not been verified. Refresh CRM before assessing readiness.</p>"}<p>${rows.length} upcoming bookings · ${rows.filter(row=>row.model.ready).length} complete · ${rows.filter(row=>!row.model.ready).length} need review</p><div class="reviewQueue">${rows.map(({record,model})=>`<article class="reviewCard"><div class="reviewCardHeading"><h3>${esc(model.guest)}</h3><span class="reviewState ${model.missing.length?"reviewDanger":model.ready?"reviewSuccess":""}">${esc(model.reviewState)}${model.missing.length?" · "+model.missing.length:""}</span></div><p>${esc(reviewRepLabel(model.rep))} · <span class="reviewFollowup ${model.followupUrgency==="overdue"||model.followupUrgency==="missing"?"reviewDanger":model.followupUrgency==="today"?"reviewToday":""}">Follow-up ${esc(model.followupDate?formatPipelineDate(model.followupDate):"not set")}${model.followupUrgency==="overdue"?" · Overdue":model.followupUrgency==="today"?" · Today":""}</span> · Pre-tour reminder ${esc(formatPipelineDate(model.reminderDate))}</p><p>Last contact: ${esc(reviewOperationsVerified?(model.lastContact?formatPipelineDate(model.lastContact):"Not recorded"):"Not verified")}${model.lastContactChannel?" · "+esc(labelStatus(model.lastContactChannel)):""}</p>${reviewSummaryHtml(model,true)}<details><summary>WhatsApp draft</summary><textarea readonly aria-label="Confirmation preview for ${esc(model.guest)}">${esc(model.message)}</textarea><p>Preview only · Not sent.</p></details><button type="button" data-review-record="${esc(record.inquiry_id)}">Review booking</button></article>`).join("")||"<p>No unsent upcoming booked reminders in the saved records.</p>"}</div>`;
       }
