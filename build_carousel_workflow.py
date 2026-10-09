@@ -291,7 +291,7 @@ const genericPattern = /submitted (?:images|visual details)|featured bird|visual
 if (genericPattern.test(finalText)) issues.push('generic internal or filler language');
 const reviewerNotes = Array.isArray(parsed.review_notes) ? parsed.review_notes.map(clean).filter(Boolean) : [];
 let editorialScore = Math.max(0,Math.min(100,Number(parsed.editorial_score)||70));
-if (useFallback) editorialScore = minimalInput && !issues.length ? 92 : Math.min(editorialScore,78);
+if (useFallback) editorialScore = !issues.length ? 92 : Math.min(editorialScore,78);
 if (issues.length) editorialScore = Math.min(editorialScore,89);
 const ready = !issues.length && editorialScore >= 92;
 base.local_brief = clean(local.brief) || fallbackBrief;
