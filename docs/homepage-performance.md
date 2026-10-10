@@ -29,3 +29,12 @@ Verification: zero computed-style differences versus the full stylesheet at 390p
 ## Revenue pages
 
 The English and Spanish half-day, full-day, private tour, booking and contact pages use the same local fonts and header snapshot. Run `npm run build:revenue` from scripts after shared CSS, JS or page changes. The paired-page manifest is scripts/revenue-pages.json. Original photographs remain available; page assets use sized WebP copies. Tour videos load only after activation. Confirmed form messages require the active same-origin response frame; success/error markers feed analytics once per submission.
+
+
+## Native video hero (October 10, 2026)
+
+English and Spanish homepages share the approved video-preview hero, while retaining normal site.js analytics, canonical URLs and indexable metadata. The independent preview routes remain noindex and analytics-free. The original mobileHero still photo block is replaced by a responsive WebP poster, one selected H.264 source, and an accessible native pause/play button.
+
+The original quality-02 exports are preserved at 1920×1080 desktop and 720×1280 mobile without re-encoding. Video loading waits for window load and an idle opportunity; explicit Play can start immediately. Reduced-motion, Save-Data and 2G connections initially use the poster. Offscreen/hidden-tab playback pauses; manual pause is retained. Mobile floating WhatsApp hides only while the hero is visible and returns below it.
+
+assets/css/video-hero.css is the source for the separate mbwVideoHeroCSS inline block on both homepages and preview pages. Keep these blocks synchronized when editing. The homepage CSS generator maintains the other blocks independently.
