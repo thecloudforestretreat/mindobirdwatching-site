@@ -7,7 +7,13 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let manualPause = false, visible = true, started = false, automaticReady = false, userRequested = false;
   video.muted = true;
-  const update = () => { button.textContent = labels[video.paused ? 0 : 1]; };
+  const update = () => {
+    const label = labels[video.paused ? 0 : 1];
+    button.setAttribute('aria-label', label);
+    button.setAttribute('title', label);
+    button.dataset.state = video.paused ? 'paused' : 'playing';
+  };
+  update();
   const start = () => {
     if (!started) {
       video.src = matchMedia('(max-width:767px)').matches ? '/assets/video/hero-mobile-02.mp4' : '/assets/video/hero-desktop-02.mp4';
