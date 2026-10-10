@@ -1,8 +1,9 @@
 (function () {
   "use strict";
 
-  // Keep reads and writes on the Access-protected admin origin.
-  var API = "/api/admin/reels";
+  // The admin Pages project is static; its API is deployed with the main site
+  // and explicitly allows requests from the protected admin origin.
+  var API = "https://mindobirdwatching.com/api/admin/reels";
   var state = { rows: [], activeStatus: "upcoming", query: "", selected: null, loading: false, generationPoll: null };
   var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && new URLSearchParams(window.location.search).get("demo") === "1";
 
