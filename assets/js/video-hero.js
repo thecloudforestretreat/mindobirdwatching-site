@@ -10,7 +10,7 @@
   const update = () => { button.textContent = labels[video.paused ? 0 : 1]; };
   const start = () => {
     if (!started) {
-      video.src = matchMedia('(max-width:767px)').matches ? '/assets/video/hero-mobile.mp4' : '/assets/video/hero-desktop.mp4';
+      video.src = matchMedia('(max-width:767px)').matches ? '/assets/video/hero-mobile-02.mp4' : '/assets/video/hero-desktop-02.mp4';
       started = true;
     }
     video.play().catch(update);
