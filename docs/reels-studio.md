@@ -1,9 +1,16 @@
 # Reels Studio integration
 
 The repository UI lives at `/admin/media/reels/` and is served as `/media/reels/` on
-the Access-protected admin hostname. It calls the same-origin Pages Function at
-`/api/admin/reels`, so the existing Cloudflare Access middleware validates the user
-before any read or write. Browser code never receives the n8n webhook URL.
+the Access-protected admin hostname. The admin project is static, so the UI calls the
+Pages Function deployed with the main site at
+`https://mindobirdwatching.com/api/admin/reels`. That Function allows only the
+protected admin origin and keeps the n8n webhook URL out of browser code.
+
+The production Reels writer and its publishing guard are backed up in
+`n8n/reels-v9/`. Deterministic fallback copy is review-only, approved copy requires a
+score of at least 92, and the final publishing gate independently rejects copied
+intake wording, ellipses, repeated locations, generic titles, unnatural activity
+grammar, and known filler templates.
 
 ## Cloudflare configuration
 
@@ -50,12 +57,13 @@ row and preserve platform publication IDs and dates.
 ### `approve_reel`
 
 Re-run deterministic validation against saved edits. Set `status=Scheduled` only when
-`approval_status=APPROVED`, `quality_score>=85`, and at least one destination is enabled.
+`approval_status=APPROVED`, `quality_score>=92`, and at least one destination is enabled.
 
 ### `regenerate_reel`
 
 Run the local LLM and deterministic recovery immediately. Preserve the schedule,
-destination flags, and all platform publication IDs.
+destination flags, and all platform publication IDs. The action remains available for
+scheduled reels, so copy can be regenerated without first removing the schedule.
 
 ### `retry_reel`
 
