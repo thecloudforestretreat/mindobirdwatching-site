@@ -59,7 +59,7 @@
     return true;
   }
   function copyIsApproved(row) {
-    return clean(row.approval_status).toUpperCase() === "APPROVED" && Number(row.quality_score || 0) >= 85 && copyIsGenerated(row);
+    return clean(row.approval_status).toUpperCase() === "APPROVED" && Number(row.quality_score || 0) >= 92 && copyIsGenerated(row);
   }
   function copyIsGenerating(row) {
     return clean(row.status).toLowerCase() === "testing" && !copyIsGenerated(row);
@@ -302,11 +302,12 @@
     if (!row) return;
     state.selected = row;
     var youtube = youtubeUrl(row);
+    var reviewNotice = copyIsApproved(row) ? "" : clean(row.error_message || row.supervision_notes);
     var links = [row.instagram_url && ["Instagram", row.instagram_url], row.facebook_url && ["Facebook", row.facebook_url], youtube && ["Watch on YouTube", youtube], row.tiktok_url && ["TikTok", row.tiktok_url]].filter(Boolean);
     $("reviewTitle").textContent = clean(row.activity_name) || "Review reel " + rowId(row);
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
-      (clean(row.error_message || row.supervision_notes) ? '<div class="warningBox">' + esc(row.error_message || row.supervision_notes) + "</div>" : "") +
+      (reviewNotice ? '<div class="warningBox">' + esc(reviewNotice) + "</div>" : "") +
       scheduleEditor(row) +
       copyField("Original description", "reel_description", row.reel_description, true) +
       copyField("Instagram / Facebook caption", "instagram_caption_final", row.instagram_caption_final, true) +
@@ -319,7 +320,8 @@
     var group = bucket(row);
     $("reviewContent").querySelectorAll("[data-review-field]").forEach(function (control) { control.disabled = group === "published"; });
     $("reviewActions").innerHTML = (group === "published" ? "" : '<button class="button buttonGhost" type="button" data-action="save">Save edits</button>') +
-      (group === "review" ? '<button class="button buttonGhost" type="button" data-action="regenerate">Regenerate</button><button class="button buttonPrimary" type="button" data-action="approve">Approve & schedule</button>' : "") +
+      (group === "review" || group === "upcoming" ? '<button class="button buttonGhost" type="button" data-action="regenerate">Regenerate</button>' : "") +
+      (group === "review" ? '<button class="button buttonPrimary" type="button" data-action="approve">Approve & schedule</button>' : "") +
       (group === "failed" ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
       (youtube ? '<button class="button buttonGhost" type="button" data-copy-youtube>Copy YouTube URL</button>' : "");
     $("reviewBackdrop").hidden = false; document.body.style.overflow = "hidden";
@@ -357,7 +359,7 @@
       await request(action === "save" ? "update_reel" : action + "_reel", payload);
       if (demoMode) {
         Object.assign(state.selected, payload.edits || {});
-        if (action === "approve") { state.selected.status = "Scheduled"; state.selected.approval_status = "APPROVED"; state.selected.quality_score = Math.max(85, Number(state.selected.quality_score) || 100); }
+        if (action === "approve") { state.selected.status = "Scheduled"; state.selected.approval_status = "APPROVED"; state.selected.quality_score = Math.max(92, Number(state.selected.quality_score) || 100); }
         if (action === "retry") { state.selected.status = "Scheduled"; state.selected.failed_platforms = ""; state.selected.error_message = "Retry queued for missing platforms only."; }
       }
       closeReview(); render(); if (!demoMode) await loadRows();
