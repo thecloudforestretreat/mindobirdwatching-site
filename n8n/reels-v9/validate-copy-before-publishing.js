@@ -28,6 +28,10 @@ const unsupported = [
   /\bstunning\b/i, /\belusive\b/i, /\bamazing\b/i, /breathtaking/i,
   /reliable highlight/i, /quiet magic/i, /this reel shows/i, /the video shows/i,
   /can bring several distinct moments together/i,
+  /can unfold in unexpected ways/i,
+  /three distinct moments/i,
+  /each offering something different to notice/i,
+  /which (?:one|moment) would have caught your eye(?: first)?/i,
   /those (?:are|supplied) (?:the )?details that made this experience(?: in [^.]+)? worth sharing/i,
   /every outing develops from the moments that are actually present/i,
   /this was the clear focus here/i, /supplied details are the focus/i,
@@ -54,6 +58,13 @@ if (bool(row.post_on_tiktok) && !has(row.tiktok_caption)) missing.push('tiktok_c
 if (bool(row.post_on_tiktok) && !has(row.tiktok_hashtags)) missing.push('tiktok_hashtags');
 if (bool(row.post_on_tiktok) && !has(row.tiktok_additional_hashtags)) missing.push('tiktok_additional_hashtags');
 if (missing.length) throw new Error(`PUBLISH BLOCKED — missing required copy: ${missing.join(', ')}. No social post was sent.`);
+
+const alreadyPublished = [];
+if (bool(row.post_to_instagram) && (has(row.instagram_post_id) || has(row.instagram_published_date))) alreadyPublished.push('Instagram');
+if (bool(row.post_to_facebook) && (has(row.facebook_post_id) || has(row.facebook_published_date))) alreadyPublished.push('Facebook');
+if (bool(row.post_on_youtube) && (has(row.youtube_post_id) || has(row.youtube_published_date) || has(row.youtube_url))) alreadyPublished.push('YouTube');
+if (bool(row.post_on_tiktok) && (has(row.tiktok_post_id) || has(row.tiktok_published_date))) alreadyPublished.push('TikTok');
+if (alreadyPublished.length) throw new Error(`PUBLISH BLOCKED — existing publication data found for ${alreadyPublished.join(', ')}. Automatic reposting is disabled.`);
 
 const instagramTags = String(row.instagram_hashtags || '').split(/\s+/).filter(Boolean);
 if (instagramTags.length !== 5) throw new Error(`PUBLISH BLOCKED — Instagram requires exactly five hashtags; received ${instagramTags.length}.`);

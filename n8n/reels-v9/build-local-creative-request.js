@@ -58,12 +58,15 @@ Grounding rules:
 
 Editorial rules:
 - Write like a knowledgeable local guide, not a travel brochure or AI assistant.
+- Open with a concrete person, bird, place, or action from the intake. Never open with a broad claim about how birding "can unfold" or what an outing "can bring".
+- Prefer one vivid, factual scene over an abstract recap. Do not label the content as "three distinct moments" or explain that each moment "offers something different to notice".
+- Do not use rhetorical engagement questions such as "Which one caught your eye?" The CTA should be direct and useful.
 - Lead with the most concrete subject or moment. Never begin with "One birdwatching", "Each birdwatching", or another article followed by the activity name.
 - Paraphrase the quick description naturally; do not paste it as a complete sentence into the caption.
 - Use the full location no more than once per platform field.
 - Remove trailing ellipses and incomplete fragments.
 - Name the birds in the title when birds are supplied; a one-word generic title such as "birdwatching", "birding", "tour", "nature", or "reel" is forbidden.
-- Avoid generic filler including "can bring several distinct moments together", "those are the details that made this experience worth sharing", "every outing develops from the moments that are actually present", "this was the clear focus here", "supplied details are the focus", and "the account stays with the moment as described".
+- Avoid generic filler including "can bring several distinct moments together", "can unfold in unexpected ways", "three distinct moments", "each offering something different to notice", "which one would have caught your eye", "those are the details that made this experience worth sharing", "every outing develops from the moments that are actually present", "this was the clear focus here", "supplied details are the focus", and "the account stays with the moment as described".
 - Avoid clickbait or decorative filler such as "showdown", "adding a splash of color", or "turn this into a memorable adventure". Do not imply that two birds interacted unless the intake explicitly says they did.
 - Do not reuse openings, sentence patterns, CTA wording, or framing from recent copy.
 - Do not claim rarity, guarantees, emotions, behavior, habitat, weather, or sightings that were not supplied.
