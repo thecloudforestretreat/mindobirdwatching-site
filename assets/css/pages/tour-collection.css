@@ -721,6 +721,43 @@ body[data-css-cluster="tour_collection"][data-page-type="booking_page"] .tourGri
   }
 }
 
+/* Tour hub media cards: the global carousel shell reserves 420px while these
+   cards previously rendered 280px images, leaving a large blank band. Keep
+   this correction scoped to the two tour hubs and let the image occupy the
+   complete carousel with navigation and indicators overlaid. */
+body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel{
+  display:block;
+  height:clamp(350px,36vw,410px);
+  min-height:0;
+}
+
+body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel .mbwCarouselViewport,
+body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel .mbwCarouselTrack,
+body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel .mbwSlide{
+  height:100%;
+  min-height:0;
+}
+
+body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel .mbwSlide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel .mbwSlide .label:empty{
+  display:none;
+}
+
+body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel .mbwDots{
+  bottom:14px;
+}
+
+@media (max-width:900px){
+  body[data-page-content-group="tours"][data-page-type="tour_collection"] .cards > .tourCard > .mbwCarousel{
+    height:clamp(300px,65vw,420px);
+  }
+}
+
 /* Booking page layout guard - 2026-07-16
    Keep this at the end of the tour_collection module. It is intentionally
    scoped to booking pages so image containment and proof-card alignment do
