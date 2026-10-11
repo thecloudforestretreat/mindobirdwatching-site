@@ -8,6 +8,7 @@ const intake = fs.readFileSync('n8n/reels-v9/intake-defaults.js', 'utf8');
 
 const badCaption = 'One birdwatching in Mindo, Ecuador can bring several distinct moments together. A young kid playing by the river, plus two yellow-throated toucans on a tree and a hummingbird battling the rain... Those are the details that made this experience in Mindo, Ecuador worth sharing. Every outing develops from the moments that are actually present, and this was the clear focus here.';
 const secondBadCaption = 'Birding in Mindo can unfold in unexpected ways. Three distinct moments shared the same outing, each offering something different to notice. Which one would have caught your eye first?';
+const thirdBadCaption = 'The tour offers guided observation of these species in wet conditions. Experience the thrill of spotting these birds in the rain. Book your spot today.';
 
 assert(parser.includes("const grammar = /\\b(?:one|a|an|each)\\s+(?:birdwatching|birding)\\b/i"), 'Parser must reject unnatural activity grammar');
 assert(parser.includes('deterministic_fallback_requires_review'), 'Fallback copy must require review');
@@ -23,6 +24,7 @@ assert(guard.includes('fallback or draft copy requires review'), 'Publishing gua
 assert(guard.includes('existing publication data found'), 'Publishing guard must block an already-posted destination');
 assert(prompt.includes('Never open with a broad claim about how birding "can unfold"'), 'Writer must lead with a concrete subject or action');
 assert(intake.includes('Number(row.quality_score || 0) >= 92'), 'Existing copy must meet the strong quality threshold');
+assert(parser.includes("'trail'"), 'Generated settings such as a trail must be grounded in the intake');
 
 const rejectionPatterns = [
   /can bring several distinct moments together/i,
@@ -58,9 +60,28 @@ assert.throws(
   'A stored platform ID must block an automatic repost',
 );
 assert.throws(
+  () => runGuard({ ...validRow, instagram_caption_raw: thirdBadCaption, instagram_caption_final: `${thirdBadCaption}\n\n${validRow.instagram_hashtags}` }),
+  /unsupported, generic, or unnatural template wording/,
+  'Stock AI sales language must be blocked even when rain and thrill are valid facts',
+);
+assert.throws(
+  () => runGuard({ ...validRow, tiktok_caption: 'Rainy Mindo brings the birds to the trail.', instagram_caption_final: validRow.instagram_caption_final }),
+  /invents a trail/,
+  'A trail must not be invented when the intake did not supply one',
+);
+assert.doesNotThrow(
+  () => runGuard({
+    ...validRow,
+    reel_description: 'Birding outdoors in nature in the rain is part of the thrill.',
+    instagram_caption_raw: 'It was a rainy birdwatching day in Mindo, with an Andean Cock-of-the-Rock, a hummingbird, and a Pale-mandibled Aracari all making an appearance. Being outside in nature means taking the weather as it comes, and that is part of the thrill. Message us to plan a guided birdwatching experience in Mindo.',
+    instagram_caption_final: 'It was a rainy birdwatching day in Mindo, with an Andean Cock-of-the-Rock, a hummingbird, and a Pale-mandibled Aracari all making an appearance. Being outside in nature means taking the weather as it comes, and that is part of the thrill. Message us to plan a guided birdwatching experience in Mindo.\n\n#mindobirdwatching #mindo #ecuador #AndeanCockOfTheRock #MindoBirding',
+  }),
+  'Natural use of explicitly supplied rain, nature, and thrill must remain allowed',
+);
+assert.throws(
   () => runGuard({ ...validRow, instagram_caption_raw: secondBadCaption, instagram_caption_final: `${secondBadCaption}\n\n${validRow.instagram_hashtags}` }),
   /unsupported, generic, or unnatural template wording/,
   'The reported generic caption must be blocked at publish time',
 );
 
-console.log(JSON.stringify({ ok: true, rejectedRegressionCaption: true, rejectedSecondCaption: true, duplicateGuardExecuted: true, checks: rejectionPatterns.length + secondRejectionPatterns.length + 2 }, null, 2));
+console.log(JSON.stringify({ ok: true, rejectedRegressionCaption: true, rejectedSecondCaption: true, rejectedStockSalesCopy: true, preservesSuppliedFeeling: true, duplicateGuardExecuted: true, checks: rejectionPatterns.length + secondRejectionPatterns.length + 5 }, null, 2));

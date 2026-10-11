@@ -49,6 +49,7 @@ Extract the facts and create finished platform copy.
 
 Grounding rules:
 - Use only facts explicitly supplied above.
+- Treat explicitly supplied weather, setting, and feelings as valid facts. Preserve them naturally instead of stripping the personality from the story.
 - Correct obvious spelling and capitalization errors in bird names, but never invent a species.
 - Copy correctly spelled bird names exactly as supplied. Never substitute or change a correct bird name.
 - If no different location is explicitly stated, use exactly "Mindo, Ecuador".
@@ -61,12 +62,13 @@ Editorial rules:
 - Open with a concrete person, bird, place, or action from the intake. Never open with a broad claim about how birding "can unfold" or what an outing "can bring".
 - Prefer one vivid, factual scene over an abstract recap. Do not label the content as "three distinct moments" or explain that each moment "offers something different to notice".
 - Do not use rhetorical engagement questions such as "Which one caught your eye?" The CTA should be direct and useful.
+- A supplied feeling such as excitement or thrill may be used in an observational sentence. Do not turn it into a stock command such as "Experience the thrill of...".
 - Lead with the most concrete subject or moment. Never begin with "One birdwatching", "Each birdwatching", or another article followed by the activity name.
 - Paraphrase the quick description naturally; do not paste it as a complete sentence into the caption.
 - Use the full location no more than once per platform field.
 - Remove trailing ellipses and incomplete fragments.
 - Name the birds in the title when birds are supplied; a one-word generic title such as "birdwatching", "birding", "tour", "nature", or "reel" is forbidden.
-- Avoid generic filler including "can bring several distinct moments together", "can unfold in unexpected ways", "three distinct moments", "each offering something different to notice", "which one would have caught your eye", "those are the details that made this experience worth sharing", "every outing develops from the moments that are actually present", "this was the clear focus here", "supplied details are the focus", and "the account stays with the moment as described".
+- Avoid generic filler including "can bring several distinct moments together", "can unfold in unexpected ways", "three distinct moments", "each offering something different to notice", "which one would have caught your eye", "those are the details that made this experience worth sharing", "every outing develops from the moments that are actually present", "this was the clear focus here", "supplied details are the focus", "the account stays with the moment as described", "the tour offers guided observation", "experience the thrill of", and "book your spot today".
 - Avoid clickbait or decorative filler such as "showdown", "adding a splash of color", or "turn this into a memorable adventure". Do not imply that two birds interacted unless the intake explicitly says they did.
 - Do not reuse openings, sentence patterns, CTA wording, or framing from recent copy.
 - Do not claim rarity, guarantees, emotions, behavior, habitat, weather, or sightings that were not supplied.

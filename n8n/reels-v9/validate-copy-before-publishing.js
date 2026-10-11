@@ -36,11 +36,16 @@ const unsupported = [
   /every outing develops from the moments that are actually present/i,
   /this was the clear focus here/i, /supplied details are the focus/i,
   /the account stays with the moment as described/i,
+  /the tour offers guided observation/i,
+  /experience the thrill of/i,
+  /book your spot today/i,
   /adding a splash of color/i, /turn(?:s|ing)? (?:a|the|this) [^.]+ into a memorable adventure/i,
   /\bshowdown\b/i,
   /\b(?:one|a|an|each)\s+(?:birdwatching|birding)\b/i,
 ];
 if (unsupported.some(pattern => pattern.test(copyText))) throw new Error('PUBLISH BLOCKED — copy contains unsupported, generic, or unnatural template wording. No social post was sent.');
+const sourceAuthority = norm([row.reel_description, row.featured_birds, row.activity_name, row.location, row.verified_details].join(' '));
+if (/\btrail\b/i.test(copyText) && !sourceAuthority.includes('trail')) throw new Error('PUBLISH BLOCKED — copy invents a trail that was not supplied. No social post was sent.');
 if (/^(?:birdwatching|birding|tour|nature|reel|mindo)$/i.test(String(row.youtube_title || '').trim())) throw new Error('PUBLISH BLOCKED — the YouTube title is too generic. No social post was sent.');
 
 const location = String(row.location || 'Mindo, Ecuador').trim();
