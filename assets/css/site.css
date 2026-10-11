@@ -483,7 +483,6 @@ html, body{ overflow-x: visible; }
   .container{ padding: 18px; }
 }
 
-
 /* ============================
    Raw EN/ES language switch
    Required directly below #siteHeader on bilingual pages.
@@ -23988,4 +23987,28 @@ body[data-page-type="tour_detail_page"] .hero > *{min-width:0;}
 body[data-page-type="tour_detail_page"] .routeNote{min-width:0;overflow-wrap:anywhere;}
 @media(max-width:760px){
  body[data-page-type="tour_detail_page"] .hero{grid-template-columns:minmax(0,1fr);}
+}
+
+/* Compact vertical Shorts: fit the card to each video and use the portrait
+   height to balance its neighboring hero copy without empty side wells. */
+body[data-tour-variant="jewels_morning_forest_original_v5"]{--tour-shorts-width:374px;}
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"]{--tour-shorts-width:456px;}
+body[data-tour-variant="quest_five_toucans_video_fill_v1"]{--tour-shorts-width:446px;}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoCard,
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoOnly,
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoFill,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoCard,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoFill,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoCard,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoFill{
+  justify-self:center;
+  width:min(100%, calc(var(--tour-shorts-width) + 24px));
+  min-height:0;
+}
+
+body[data-tour-variant="jewels_morning_forest_original_v5"] .jewelsHeroVideoFrame,
+body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoFrame,
+body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoFrame{
+  width:min(100%, var(--tour-shorts-width));
 }
