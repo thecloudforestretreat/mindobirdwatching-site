@@ -807,6 +807,7 @@
                 <label for="lengthInput">Length</label>
                 <select id="lengthInput">
                   <option>2 hrs</option>
+                  <option>3 hrs</option>
                   <option>Half Day</option>
                   <option selected>Full Day</option>
                   <option>Multi Day</option>
@@ -1240,6 +1241,7 @@
           "Waterfall Hike",
           "Canopy/Ziplining",
           "Butterfly Garden",
+          "Hummingbird Tour",
           "Night Walk",
           "Night Walk $30 legacy price",
           "Half-Day to Full-Day Extension",
@@ -1266,6 +1268,12 @@
           "Extended Tour Upgrade"
 ];
         const tours = state.tours.length ? state.tours.slice() : fallbackTours.slice();
+        const hummingbirdIndex = tours.findIndex(name => /hummingbird|colibr/i.test(String(name || "")));
+        if(hummingbirdIndex >= 0) tours[hummingbirdIndex] = "Hummingbird Tour";
+        else {
+          const nightWalkIndex = tours.findIndex(name => /night\s*walk/i.test(String(name || "")));
+          tours.splice(nightWalkIndex >= 0 ? nightWalkIndex : tours.length, 0, "Hummingbird Tour");
+        }
         if(!tours.some(name => /night\s*walk/i.test(String(name || "")))) tours.push("Night Walk");
         if(!tours.some(name => /insect|macro/i.test(String(name || "")))) tours.push("Private Insect & Macro Wildlife Search");
         tourSelects.forEach((select, idx) => {
@@ -1447,6 +1455,7 @@
         if(normalized.includes("oso001")) return "Extended Half-Day Spectacled Bear Tour";
         if(normalized.includes("oso002")) return "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour";
         if(normalized.includes("insect") || normalized.includes("macro")) return "Private Insect & Macro Wildlife Search";
+        if(normalized.includes("mbw019") || normalized.includes("hummingbird") || normalized.includes("colibri")) return "Hummingbird Tour";
         if(normalized.includes("night walk")) return "Night Walk";
         if(normalized.includes("jewels") || normalized.includes("morning forest")) return "Jewels of the Morning Forest";
         if(normalized.includes("five") || normalized.includes("toucan") || normalized.includes("quest") || normalized.includes("full day")) return "Quest for Five Toucans & the Andean Cock-of-the-Rock";
@@ -1459,6 +1468,7 @@
       function lengthFromCrm(tourText, durationText){
         const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
         if(text.includes("insect") || text.includes("macro")) return "Flexible";
+        if(text.includes("mbw019") || text.includes("hummingbird") || text.includes("colibri")) return "3 hrs";
         if(text.includes("night walk")) return "Night Walk";
         if(text.includes("half")) return "Half Day";
         if(text.includes("full")) return "Full Day";
@@ -1467,6 +1477,7 @@
 
       function pickupTimeFromCrm(tourText, durationText){
         const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
+        if(text.includes("mbw019") || text.includes("hummingbird") || text.includes("colibri")) return "11:00 AM";
         if(text.includes("night walk")) return "7:00 PM";
         if(text.includes("full") || text.includes("quest") || text.includes("toucan")) return "5:00 AM";
         if(text.includes("andean") || text.includes("cock")) return "5:00 AM";

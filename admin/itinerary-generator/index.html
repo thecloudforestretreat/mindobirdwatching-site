@@ -367,6 +367,7 @@
         "MBW013 - Waterfall Hike",
         "MBW014 - Canopy/Ziplining",
         "MBW015 - Butterfly Garden",
+        "MBW019 - Hummingbird Tour",
         "MBW016 - Night Walk",
         "MBW017 - Half-Day to Full-Day Extension",
         "TRANS01 - Quito -> Mindo",
@@ -403,6 +404,7 @@
         "MBW013 - Waterfall Hike": {"type": "Nature Excursion", "duration": "Half Day", "unitPrice": 20, "note": "Cross with the world famous yellow cable car to the other side of the cloud forest and hike to scenic waterfalls near Mindo. Walk along scenic forest trails that lead to some of the region’s most picturesque waterfalls. Along the way your guide will introduce "},
         "MBW014 - Canopy/Ziplining": {"type": "Adventure", "duration": "Flexible", "unitPrice": 35, "note": "Experience the thrill of flying above the cloud forest on this exciting canopy ziplining adventure near Mindo. Glide across multiple cables suspended high above the forest and enjoy breathtaking views of the surrounding mountains and jungle. Professional guide"},
         "MBW015 - Butterfly Garden": {"type": "Nature", "duration": "Flexible", "unitPrice": 15, "note": "Visit one of Mindo’s beautiful butterfly gardens and observe dozens of colorful species up close. Walk through a peaceful sanctuary where butterflies fly freely while learning about their fascinating life cycle from egg to caterpillar to chrysalis and finally "},
+        "MBW019 - Hummingbird Tour": {"type": "Birdwatching", "duration": "3 Hours", "startTime": "11:00", "unitPrice": 60, "note": "Three-hour hummingbird-focused birdwatching tour in Mindo from 11:00 AM to 2:00 PM. Includes a local bird guide, transportation from Mindo, and entrance fees. The standard rate is $60 per guest with a usual minimum of 2 guests; the solo rate is $75."},
         "MBW016 - Night Walk": {"type": "Wildlife", "duration": "Flexible", "unitPrice": 30, "note": "Discover the cloud forest after dark on this guided night walk in Mindo. As the forest changes at night, many fascinating creatures become active. Walk along forest trails with an experienced guide while searching for frogs, insects, spiders, and other nocturn"},
         "MBW017 - Half-Day to Full-Day Extension": {"type": "Tour Upgrade", "duration": "Flexible", "unitPrice": 25, "note": "Upgrade a qualifying half-day tour by extending the scheduled experience. The final itinerary and additional time are coordinated with the guest."},
         "TRANS01 - Quito -> Mindo": {"type": "Transportation", "duration": "Flexible", "unitPrice": 99, "note": "Private one-way transportation from Quito to Mindo. Pickup time and location are coordinated with the guest."},
@@ -444,6 +446,7 @@
         "MBW013": {model:"per_person", price:20, minGuests:1},
         "MBW014": {model:"per_person", price:35, minGuests:1},
         "MBW015": {model:"per_person", price:15, minGuests:1},
+        "MBW019": {model:"per_person", price:60, minGuests:2},
         "MBW016": {model:"per_person", price:30, minGuests:1},
         "MBW017": {model:"flat", price:25, minGuests:0},
         "TRANS01": {model:"flat", price:99, minGuests:0},
@@ -480,6 +483,7 @@
         "MBW013 - Waterfall Hike": "MBW013 - Waterfall Hike",
         "MBW014 - Canopy/Ziplining": "MBW014 - Canopy/Ziplining",
         "MBW015 - Butterfly Garden": "MBW015 - Butterfly Garden",
+        "MBW019 - Hummingbird Tour": "MBW019 - Tour de Colibríes en Mindo",
         "MBW016 - Night Walk": "MBW016 - Night Walk",
         "TRANS01 - Quito -> Mindo": "TRANS01 - Quito -> Mindo",
         "TRANS02 - Mindo -> Quito": "TRANS02 - Mindo -> Quito",
@@ -627,6 +631,10 @@
           'Night Walk Tour':'MBW016 - Night Walk',
           'Tour de caminata nocturna':'MBW016 - Night Walk',
           'Night Walk':'MBW016 - Night Walk',
+          'Mindo Hummingbird Tour':'MBW019 - Hummingbird Tour',
+          'Hummingbird Tour':'MBW019 - Hummingbird Tour',
+          'Tour de Colibríes en Mindo':'MBW019 - Hummingbird Tour',
+          'MBW019':'MBW019 - Hummingbird Tour',
           'Frog Concert':'ACT010 - Frog Concert',
           'Concierto de ranas':'ACT010 - Frog Concert',
           'Private Insect & Macro Wildlife Search':'ACT021 - Private Insect & Macro Wildlife Search',
@@ -715,6 +723,7 @@
       }
       function normalizeDurationChoice(value,type=''){
         const text = String(value || '').trim().toLowerCase();
+        if(text === '3 hours' || text.includes('3 hour')) return '3 Hours';
         if(text === 'half day' || text.includes('half')) return 'Half Day';
         if(text === 'full day' || text.includes('full') || text.includes('10 hour')) return 'Full Day';
         if(text === 'evening' || text.includes('evening') || text.includes('night') || (text.includes('2 hour') && String(type).toLowerCase().includes('night'))) return 'Evening';
@@ -813,6 +822,13 @@
             const rule = PRODUCT_PRICING_RULES[productCodeFromPreset(value)] || {model:'custom',price:defaults.unitPrice,minGuests:0};
             item.type = defaults.type;
             item.duration = defaults.duration;
+            if(defaults.startTime){
+              item.startTime = defaults.startTime;
+              const startParts = timeParts(defaults.startTime);
+              item.startHour = startParts.hour;
+              item.startMinute = startParts.minute;
+              item.startMeridiem = startParts.meridiem;
+            }
             item.unitPrice = rule.price;
             item.catalogUnitPrice = rule.price;
             item.pricingModel = rule.model;
@@ -892,7 +908,7 @@
               </div>
               <div class="field">
                 <label>Duration</label>
-                <select data-field="duration">${['Half Day','Full Day','Flexible','Evening'].map(duration=>`<option value="${duration}" ${item.duration===duration?'selected':''}>${duration}</option>`).join('')}</select>
+                <select data-field="duration">${['3 Hours','Half Day','Full Day','Flexible','Evening'].map(duration=>`<option value="${duration}" ${item.duration===duration?'selected':''}>${duration}</option>`).join('')}</select>
               </div>
             </div>
             <div class="field">

@@ -854,6 +854,7 @@ experiences waiting for you in Mindo.</textarea>
         if(/mbw004|jewels of the morning/.test(text)) return "tour-jewels";
         if(/mbw005|andean cock|cock-of-the-rock dawn/.test(text)) return "tour-andean";
         if(/mbw006|five toucans|quest for five/.test(text)) return "tour-full-day";
+        if(/mbw019|hummingbird|colibr/.test(text)) return "tour-hummingbird";
         if(/oso001|extended half-day spectacled/.test(text)) return "tour-bear-half-day";
         if(/oso002|full-day spectacled/.test(text)) return "tour-bear-full-day";
         if(/mbw016|night walk/.test(text)) return "night-walk";
@@ -999,6 +1000,17 @@ experiences waiting for you in Mindo.</textarea>
               note: "El desayuno está disponible en la primera reserva por aproximadamente $5 por persona y se paga directamente con la reserva. Avisarnos con anticipación ayudará con la disponibilidad.",
               image: "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_FDT_mbw006_es.jpg",
               primaryCta: "Ver tour",
+              secondaryCta: "Ver video"
+            },
+            "tour-hummingbird": {
+              eyebrow: "Aviturismo enfocado en colibríes",
+              title: "Tour de Colibríes en Mindo",
+              description: "Una salida enfocada de tres horas para observar varias especies de colibríes en Mindo con un guía local de aves. Incluye transporte desde Mindo y entradas.",
+              price: "$60 por persona",
+              privatePrice: "$75 para un huésped",
+              duration: "11:00 AM - 2:00 PM",
+              minimum: "Mínimo habitual de 2 participantes",
+              primaryCta: "Ver tour de colibríes",
               secondaryCta: "Ver video"
             },
 
@@ -1190,7 +1202,7 @@ experiences waiting for you in Mindo.</textarea>
         const mergedById = new Map(loadedBlocks.map(block => [block.id, Object.assign({}, fallbackById.get(block.id) || {}, block)]));
         fallback.blocks.forEach(block => { if(!mergedById.has(block.id)) mergedById.set(block.id, block); });
         const desiredOrder = [
-          "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
+          "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
           "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
@@ -1483,6 +1495,23 @@ experiences waiting for you in Mindo.</textarea>
               url:"https://mindobirdwatching.com/tours/quest-five-toucans-guide/",
               video:"https://youtube.com/shorts/MAXizZKXI_8",
               primaryCta:"View Tour",
+              secondaryCta:"Watch Video"
+            },
+            {
+              id:"tour-hummingbird",
+              group:"tours",
+              type:"tour",
+              eyebrow:"Hummingbird-focused birding",
+              title:"Mindo Hummingbird Tour",
+              description:"A focused three-hour outing to observe several hummingbird species in Mindo with a local bird guide. Transportation from Mindo and entrance fees are included.",
+              price:"$60 per person",
+              privatePrice:"$75 for one guest",
+              duration:"11:00 AM - 2:00 PM",
+              minimum:"Usual minimum 2 participants",
+              image:"https://mindobirdwatching.com/assets/images/pages/tours/hummingbird-tour/mbw-hummingbird-tour-003.jpeg",
+              url:"https://mindobirdwatching.com/tours/mindo-hummingbird-tour/",
+              video:"https://youtube.com/shorts/djUE-qF6zAY",
+              primaryCta:"View Hummingbird Tour",
               secondaryCta:"Watch Video"
             },
 
@@ -2157,7 +2186,7 @@ experiences waiting for you in Mindo.</textarea>
 
       function blockPriority(block){
         const canonical = [
-          "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
+          "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
           "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
