@@ -28,3 +28,8 @@ published in n8n; the legacy `Production Sheet Finalized v12.1` workflow must st
 unpublished. Existing copy must score at least 92 before it can skip regeneration. The
 writer and both validators reject generic recap language such as
 "can unfold in unexpected ways", "three distinct moments", and engagement-bait questions.
+
+The v11 voice guard preserves explicitly supplied weather, natural setting, and emotion.
+It blocks stock AI sales phrases such as "Experience the thrill of" without banning the
+word "thrill" when that feeling is part of the user's story. Generated settings such as a
+trail must be present in the intake before they can appear in platform copy.
