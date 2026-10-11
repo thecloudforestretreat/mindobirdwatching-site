@@ -24012,3 +24012,36 @@ body[data-tour-variant="andean_cock_dawn_video_fill_v1"] .dawnHeroVideoFrame,
 body[data-tour-variant="quest_five_toucans_video_fill_v1"] .toucanHeroVideoFrame{
   width:min(100%, var(--tour-shorts-width));
 }
+
+/* Full-day category hero: keep the itinerary and vertical promo together.
+   Without explicit areas, the third hero item auto-flows beneath the copy and
+   leaves an empty right-hand column. */
+@media (min-width:901px){
+  body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="full_day"] .hero{
+    grid-template-areas:
+      "copy promo"
+      "note note";
+    grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);
+    align-items:start;
+  }
+  body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="full_day"] .hero > .copy{
+    grid-area:copy;
+  }
+  body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="full_day"] .hero > .routeNote{
+    grid-area:note;
+    margin-top:0;
+  }
+  body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="full_day"] .hero > aside.promo{
+    grid-area:promo;
+    height:auto;
+  }
+}
+@media (max-width:900px){
+  body[data-page-content-group="tours"][data-page-type="tour_category"][data-tour-category="full_day"] .hero{
+    grid-template-areas:
+      "copy"
+      "note"
+      "promo";
+    grid-template-columns:minmax(0,1fr);
+  }
+}
