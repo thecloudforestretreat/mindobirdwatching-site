@@ -823,11 +823,8 @@
             </div>
             <div class="totalsEditor">
               <div class="field">
-                <label for="adjustmentType">Adjustment Type</label>
-                <select id="adjustmentType">
-                  <option value="price_adjustment" selected>Discount / price adjustment</option>
-                  <option value="prior_payment">Prior payment already received</option>
-                </select>
+                <label for="priorPaymentAmount">Prior Payment Already Received</label>
+                <input id="priorPaymentAmount" type="number" step="0.01" min="0" value="0" />
               </div>
               <div class="field">
                 <label for="accountingPaymentMethod">Payment Method</label>
@@ -840,12 +837,19 @@
                 </select>
               </div>
             </div>
-            <div class="field">
-              <label for="paymentReference">Payment Reference / Note</label>
-              <input id="paymentReference" type="text" placeholder="Optional confirmation, transfer, or reconciliation note" />
+            <input id="adjustmentType" type="hidden" value="price_adjustment" />
+            <div class="totalsEditor">
+              <div class="field">
+                <label for="paymentDate">Payment Date</label>
+                <input id="paymentDate" type="date" />
+              </div>
+              <div class="field">
+                <label for="paymentReference">Payment Reference / Note</label>
+                <input id="paymentReference" type="text" placeholder="Optional confirmation, transfer, or reconciliation note" />
+              </div>
             </div>
             <div class="paymentSummary" id="paymentSummary">Payment request will update after items are added.</div>
-            <p class="hint">Use a negative adjustment, for example <strong>-95</strong>. Choose “Prior payment already received” when it represents money collected earlier; otherwise it is recorded as a discount or price adjustment.</p>
+            <p class="hint">Use a negative price adjustment only for a true discount. Enter money collected earlier as a positive prior payment; it reduces the amount due without reducing booking revenue.</p>
             <div class="attributionCard" id="attributionCard">
               <p class="attributionStatus" id="attributionStatus" data-state="unlinked">Load this invoice from the CRM to connect it to marketing attribution.</p>
               <div class="attributionIds" id="attributionIds"></div>
@@ -956,7 +960,7 @@
       function cacheEls(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "accountingPaymentMethod", "paymentReference", "paymentSummary", "itemsEditor",
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "priorPaymentAmount", "accountingPaymentMethod", "paymentDate", "paymentReference", "paymentSummary", "itemsEditor",
           "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "bottomEmailHtmlBtn", "bottomCopyEmailHtmlBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "recordBtn", "attributionStatus", "attributionIds", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
@@ -964,7 +968,7 @@
       function bindEvents(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "accountingPaymentMethod", "paymentReference"
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "priorPaymentAmount", "accountingPaymentMethod", "paymentDate", "paymentReference"
         ].forEach(id => {
           els[id].addEventListener("input", handleGlobalInput);
           els[id].addEventListener("change", handleGlobalInput);
@@ -995,6 +999,9 @@
       }
 
       function handleGlobalInput(){
+        if(Number(els.priorPaymentAmount.value) > 0 && els.accountingPaymentMethod.value === "Zelle"){
+          els.accountingPaymentMethod.value = "Zelle + Bank Transfer";
+        }
         if(state.attribution.status === "linked" && attributionFingerprint() !== state.attribution.fingerprint){
           setAttributionStatus("changed", "Invoice details changed. Record the Zelle invoice again before sending it.");
         }
@@ -1035,9 +1042,17 @@
         if(Number.isFinite(adjustmentAmount)) els.adjustmentAmount.value = adjustmentAmount;
         if(record.adjustment_label || record.adjustmentLabel) els.adjustmentLabel.value = record.adjustment_label || record.adjustmentLabel;
         const adjustmentType = clean(record.adjustment_type || record.adjustmentType);
-        if(["price_adjustment","prior_payment"].includes(adjustmentType)) els.adjustmentType.value = adjustmentType;
+        if(adjustmentType === "prior_payment" && adjustmentAmount < 0){
+          els.priorPaymentAmount.value = Math.abs(adjustmentAmount);
+          els.adjustmentAmount.value = 0;
+        }
+        const priorPaymentAmount = Number(record.prior_payment_amount || record.priorPaymentAmount || 0);
+        if(Number.isFinite(priorPaymentAmount) && priorPaymentAmount >= 0) els.priorPaymentAmount.value = priorPaymentAmount;
         const accountingPaymentMethod = clean(record.accounting_payment_method || record.payment_method || record.paymentMethod);
         if(Array.from(els.accountingPaymentMethod.options).some(option => option.value === accountingPaymentMethod)) els.accountingPaymentMethod.value = accountingPaymentMethod;
+        if(els.priorPaymentAmount.value !== "0" && els.accountingPaymentMethod.value === "Zelle") els.accountingPaymentMethod.value = "Zelle + Bank Transfer";
+        const paymentDate = clean(record.payment_date || record.date_paid || record.paymentDate);
+        if(/^\d{4}-\d{2}-\d{2}$/.test(paymentDate)) els.paymentDate.value = paymentDate;
         if(record.payment_reference || record.paymentReference) els.paymentReference.value = record.payment_reference || record.paymentReference;
         const handoffItems = buildItemsFromRecord(record, guests, pickup);
         if(handoffItems.length){
@@ -1260,6 +1275,7 @@
         const todayValue = toDateInput(today);
         els.invoiceDate.value = todayValue;
         els.dueDate.value = addDays(todayValue, 2);
+        els.paymentDate.value = todayValue;
       }
 
       function renderItems(){
@@ -1333,6 +1349,7 @@
         els.adjustmentLabel.value = "Adjustments";
         els.adjustmentAmount.value = "0";
         els.adjustmentType.value = "price_adjustment";
+        els.priorPaymentAmount.value = "0";
         els.accountingPaymentMethod.value = "Zelle";
         els.paymentReference.value = "";
         delete els.dueDate.dataset.manuallyChanged;
@@ -1351,10 +1368,10 @@
         const totals = getInvoiceTotals();
         const subtotal = totals.subtotal;
         const adjustment = totals.adjustment;
-        const total = totals.total;
-        const plan = getPaymentPlan(total);
-        els.paymentSummary.innerHTML = "<strong>" + esc(plan.modeLabel) + ":</strong> requesting " + esc(formatMoney(plan.requested)) + " now" + (plan.remaining > 0 ? ", with " + esc(formatMoney(plan.remaining)) + " remaining." : ".");
-        els.invoicePreview.innerHTML = buildInvoiceHtml(subtotal, adjustment, total, plan);
+        const plan = getPaymentPlan(totals.amountDue);
+        const priorText = totals.priorPayment > 0 ? " after " + formatMoney(totals.priorPayment) + " received earlier" : "";
+        els.paymentSummary.innerHTML = "<strong>" + esc(plan.modeLabel) + ":</strong> requesting " + esc(formatMoney(plan.requested)) + " now" + esc(priorText) + (plan.remaining > 0 ? ", with " + esc(formatMoney(plan.remaining)) + " remaining." : ".");
+        els.invoicePreview.innerHTML = buildInvoiceHtml(subtotal, adjustment, totals.bookingTotal, totals.priorPayment, plan);
       }
 
       function getPaymentPlan(total){
@@ -1373,14 +1390,19 @@
       function getInvoiceTotals(){
         const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
         const adjustment = Number(els.adjustmentAmount.value) || 0;
+        const priorPayment = Math.max(0, Number(els.priorPaymentAmount.value) || 0);
+        const bookingTotal = subtotal + adjustment;
         return {
           subtotal,
           adjustment,
-          total:subtotal + adjustment
+          priorPayment,
+          bookingTotal,
+          amountDue:Math.max(0, bookingTotal - priorPayment),
+          total:bookingTotal
         };
       }
 
-      function buildInvoiceHtml(subtotal, adjustment, total, plan){
+      function buildInvoiceHtml(subtotal, adjustment, total, priorPayment, plan){
         const contact = getContact();
         const invoiceNumber = clean(els.invoiceNumber.value) || "Draft";
         const invoiceDate = formatDate(els.invoiceDate.value);
@@ -1427,6 +1449,7 @@
               "<tr><td>Subtotal</td><td><strong>" + esc(formatMoney(subtotal)) + "</strong></td></tr>" +
               "<tr><td>" + esc(adjustmentLabel) + "</td><td>" + esc(formatMoney(adjustment)) + "</td></tr>" +
               "<tr><td>Booking Total</td><td><strong>" + esc(formatMoney(total)) + "</strong></td></tr>" +
+              (priorPayment > 0 ? "<tr><td>Prior Payment Received</td><td>-" + esc(formatMoney(priorPayment)) + "</td></tr>" : "") +
               "<tr><td>" + esc(plan.modeLabel) + "</td><td><strong>" + esc(formatMoney(plan.requested)) + "</strong></td></tr>" +
               (plan.remaining > 0 ? "<tr><td>Remaining Balance</td><td>" + esc(formatMoney(plan.remaining)) + "</td></tr>" : "") +
               "<tr class='grand'><td></td><td>" + esc(formatMoney(plan.requested)) + "</td></tr>" +
@@ -1745,7 +1768,7 @@
         const extraGuests = clean(els.invoiceNotes.value);
         const pickup = clean(els.pickupLocation.value);
         const totals = getInvoiceTotals();
-        const plan = getPaymentPlan(totals.total);
+        const plan = getPaymentPlan(totals.amountDue);
         const tourLines = state.items.map(item => {
           const noteText = cleanItemNote(item.note || "");
           const note = noteText ? " (" + noteText + ")" : "";
@@ -1775,7 +1798,7 @@
       function buildEmailHtml(){
         const contact = getContact();
         const totals = getInvoiceTotals();
-        const plan = getPaymentPlan(totals.total);
+        const plan = getPaymentPlan(totals.amountDue);
         const guestName = clean(els.guestName.value) || "Guest";
         const guestFirst = guestName.split(/\s+/)[0] || "there";
         const pickup = clean(els.pickupLocation.value);
@@ -1851,6 +1874,7 @@
           ["Booking total", formatMoney(totals.total)],
           [plan.mode === "deposit" ? "Deposit requested" : "Amount requested", formatMoney(plan.requested)]
         ];
+        if(totals.priorPayment > 0) rows.splice(1, 0, ["Prior payment received", "-" + formatMoney(totals.priorPayment)]);
         if(plan.remaining > 0) rows.push(["Remaining balance", formatMoney(plan.remaining)]);
         return rows.map((row, index) => {
           const isPrimary = index === 1;
@@ -1972,7 +1996,8 @@
           guest:clean(els.guestName.value), email:clean(els.guestEmail.value), phone:clean(els.guestPhone.value),
           pickup:clean(els.pickupLocation.value), notes:clean(els.invoiceNotes.value),
           adjustmentLabel:clean(els.adjustmentLabel.value), adjustmentAmount:Number(els.adjustmentAmount.value)||0,
-          adjustmentType:els.adjustmentType.value, accountingPaymentMethod:els.accountingPaymentMethod.value,
+          adjustmentType:els.adjustmentType.value, priorPaymentAmount:Number(els.priorPaymentAmount.value)||0,
+          accountingPaymentMethod:els.accountingPaymentMethod.value, paymentDate:els.paymentDate.value,
           paymentReference:clean(els.paymentReference.value),
           items:state.items.map(item=>({description:clean(item.description),qty:Number(item.qty)||0,price:Number(item.price)||0,note:clean(item.note)}))
         });
@@ -1984,6 +2009,8 @@
         if(!clean(els.guestName.value)) return "Enter the guest name before recording attribution.";
         if(!clean(els.guestEmail.value)) return "Enter the guest email before recording attribution.";
         if(getInvoiceTotals().total <= 0) return "The invoice total must be greater than zero.";
+        if(getInvoiceTotals().priorPayment > getInvoiceTotals().bookingTotal) return "The prior payment cannot exceed the booking total.";
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(els.paymentDate.value)) return "Enter the date the payment was received.";
         return "";
       }
 
@@ -2036,7 +2063,9 @@
               adjustment_label:clean(els.adjustmentLabel.value),
               adjustment_amount:Number(els.adjustmentAmount.value)||0,
               adjustment_type:els.adjustmentType.value,
+              prior_payment_amount:Number(els.priorPaymentAmount.value)||0,
               payment_method:els.accountingPaymentMethod.value,
+              payment_date:els.paymentDate.value,
               payment_reference:clean(els.paymentReference.value),
               items:state.items.map(item=>({description:clean(item.description),qty:Number(item.qty)||1,price:Number(item.price)||0,note:clean(item.note)})),
               inquiry_id:state.ids.inquiry_id,
@@ -2049,11 +2078,11 @@
           });
           const result = await response.json().catch(() => ({ ok:false, error:"invalid_server_response" }));
           if(!response.ok || !result.ok){
-            const progress = result.rows_recorded || result.rows_skipped ? ` (${Number(result.rows_recorded)||0} recorded, ${Number(result.rows_skipped)||0} already present)` : "";
+            const progress = result.rows_recorded || result.rows_updated || result.rows_skipped ? ` (${Number(result.rows_recorded)||0} recorded, ${Number(result.rows_updated)||0} corrected, ${Number(result.rows_skipped)||0} already present)` : "";
             throw new Error((result.error || "accounting_write_failed") + progress);
           }
           state.attribution.fingerprint = attributionFingerprint();
-          const rowSummary = `${result.rows_total} accounting row${Number(result.rows_total)===1?"":"s"}`;
+          const rowSummary = `${result.rows_total} accounting row${Number(result.rows_total)===1?"":"s"} (${Number(result.rows_recorded)||0} new, ${Number(result.rows_updated)||0} corrected)`;
           const syncSummary = result.invoices_sync_eta_minutes ? ` The Invoices tab syncs within about ${result.invoices_sync_eta_minutes} minutes.` : "";
           const attributionSummary = result.attribution_linked ? " Attribution linked." : " Accounting saved; attribution link needs retry.";
           setAttributionStatus("linked", `Invoice ${result.invoice_no} recorded · ${rowSummary}.${syncSummary}${attributionSummary}`, result.attribution_link_id);
