@@ -1,8 +1,16 @@
 .carouselComposer form{padding:18px 20px 0}
-.reviewSlideCard{display:grid;align-content:start;gap:7px;scroll-snap-align:start}
+.reviewSlideCard{display:grid;align-content:start;gap:7px;scroll-snap-align:start;transition:opacity .15s,transform .15s,box-shadow .15s}
+.reviewSlideCard.isDragging{opacity:.45}
+.reviewSlideCard.isDropTarget{transform:translateY(-3px);box-shadow:0 0 0 3px rgba(13,89,37,.2)}
 .reviewSlideFrame{scroll-snap-align:none}
 .replaceImageButton{min-height:34px;border:1px solid #a7c596;border-radius:9px;color:var(--rs-green);background:#f7fbf4;font-size:11px;font-weight:900;cursor:pointer}
 .replaceImageButton:hover{background:#eaf6e2}
+.reviewSlideControls{display:grid;grid-template-columns:1fr 42px 42px;gap:6px}
+.reviewSlideControls button{min-height:34px;border:1px solid #a7c596;border-radius:9px;color:var(--rs-green);background:#fff;font-size:11px;font-weight:900;cursor:pointer}
+.reviewSlideControls button:hover:not(:disabled){background:#eef8e8}
+.reviewSlideControls button:disabled{cursor:not-allowed;opacity:.38}
+.reviewSlideControls .reviewDragHandle{cursor:grab;touch-action:none}
+.reviewSlideControls .reviewDragHandle:active{cursor:grabbing}
 .generationBanner{display:grid;gap:4px;padding:12px 14px;border:1px solid #bfd7ae;border-radius:12px;background:#f1f8ec}
 .generationBanner strong{color:var(--rs-green);font-size:13px}
 .generationBanner span,.generationBanner small{color:#41623d;font-size:11px;line-height:1.4}

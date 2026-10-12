@@ -31,7 +31,7 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
-  assert(html.includes("carousel-studio.css?v=5") && html.includes("carousel-studio.js?v=6"), "Carousel asset cache keys must expose the adaptive-content release");
+  assert(html.includes("carousel-studio.css?v=6") && html.includes("carousel-studio.js?v=7"), "Carousel asset cache keys must expose review-screen reordering");
   assert(html.includes("Carousel subject") && html.includes("recent night walks") && !html.includes("Bird name</span>"), "Intake must accept birds, trips, tours, and open-ended subjects");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
@@ -39,6 +39,11 @@ function compileWorkflow(path) {
   assert(/aspect-ratio\s*:\s*4\s*\/\s*5/.test(css), "Previews must use the Instagram 4:5 aspect ratio");
   assert(html.includes('id="showSafeGuide"') && html.includes('id="showProfileGuide"'), "Preview guide controls are missing");
   assert(ui.includes("data-drag-handle") && ui.includes("ondrop"), "Drag-to-reorder support is missing");
+  assert(ui.includes("data-review-drag") && ui.includes("data-review-move") && ui.includes("reorderReview"), "Existing carousel review must support drag and arrow reordering");
+  const reorderFlow = ui.match(/async function reorderReview[\s\S]*?async function replaceImage/)[0];
+  assert(reorderFlow.includes('api("update_carousel_images"') && !reorderFlow.includes('api("regenerate_carousel"'), "Review reordering must save the image manifest without regenerating copy");
+  assert(reorderFlow.includes("title, captions, hashtags, quality score, approval, date, and time were kept unchanged"), "Review reordering must explain that copy, approval, and scheduling are preserved");
+  assert(css.includes("reviewSlideControls") && css.includes("reviewDragHandle"), "Review reorder controls are not styled");
   assert(ui.includes("crop_gravity") && ui.includes("data-gravity"), "Per-slide crop focus is missing");
   assert(html.includes('id="replaceImageFile"') && ui.includes('data-replace-image') && ui.includes('update_carousel_images'), "Unpublished slide replacement is missing");
   const replacementFlow = ui.match(/async function replaceImage[\s\S]*?function currentEdits/)[0];
