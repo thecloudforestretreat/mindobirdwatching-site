@@ -61,7 +61,7 @@ function compileWorkflow(path) {
   assert(JSON.stringify(adminMain).includes("Beyond the Portrait") && JSON.stringify(adminMain).includes("contentMode === 'experience'"), "Admin-trigger workflow must contain both bird and experience copy modes");
   const allMainText = JSON.stringify(main);
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");
-  assert(allMainText.includes("gpt-oss:20b adaptive carousel writer + independent repair editor | en-US v8"), "Adaptive two-pass local editor identity is missing");
+  assert(allMainText.includes("gpt-oss:20b adaptive carousel writer + independent repair editor | en-US v9"), "Adaptive two-pass local editor identity is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Final Local Repair Editor"), "Final local repair editor is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Mark Generation Started"), "Generation concurrency lock is missing");
   assert(allMainText.includes("editorial score below 92") && allMainText.includes("HUMAN_EDITED"), "Quality threshold or validated human-edit path is missing");
@@ -102,6 +102,19 @@ function compileWorkflow(path) {
   assert(/night walks/i.test(experienceCopy.carousel_title) && experienceCopy.instagram_hashtags.includes("#MindoNightWalk"), "Experience copy must retain the submitted subject and receive contextual hashtags");
   assert.strictEqual(experienceCopy.quality_score, 92, "Minimal-input experience copy must use the validated safe fallback rather than inherit an inflated model score");
   assert(/After Dark in Mindo/.test(experienceCopy.carousel_title) && /recent evenings out/.test(experienceCopy.caption), "Night-walk fallback must sound like an experience, not a mechanical image inventory");
+
+  const quitoTripCopy = await runParser({
+    ...imageUrls,
+    featured_birds: "In Quito, enjoy a day trip to witness the magic of Mindo",
+    location: "Mindo, Ecuador",
+    images_json: JSON.stringify(Array.from({ length: 10 }, (_, index) => ({ order: index + 1, content_type: index < 2 ? "guest" : "photo" }))),
+    admin_mode: "review",
+  });
+  const quitoTripText = [quitoTripCopy.carousel_title, quitoTripCopy.caption, quitoTripCopy.facebook_caption, quitoTripCopy.reddit_title, quitoTripCopy.reddit_caption].join(" ");
+  assert.strictEqual(quitoTripCopy.copy_review_status, "PASS", "A sentence-style Quito-to-Mindo trip prompt should produce validated copy");
+  assert.strictEqual(quitoTripCopy.carousel_title, "From Quito to Mindo: A Day Trip in 10 Photos", "Sentence-style trip prompts must be normalized into a natural title");
+  assert(!/\b(?:from in|Mindo(?:,\s*Ecuador)?\s+in\s+Mindo)\b/i.test(quitoTripText), "Trip copy must reject broken prepositions and repeated locations");
+  assert(!quitoTripText.includes("In Quito, enjoy a day trip to witness the magic of Mindo in Mindo"), "Raw sentence-style prompts must not be pasted into copy templates");
 
   const birdCopy = await runParser({
     image_1_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/bird.jpg",
