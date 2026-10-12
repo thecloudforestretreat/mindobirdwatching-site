@@ -288,9 +288,9 @@ export async function onRequestPost({ request, env }) {
         retry_safe: true,
       });
     }
-    const recorded = Number(accountingResult.rows_appended) || 0;
-    const updated = Number(accountingResult.rows_updated) || 0;
-    const skipped = Number(accountingResult.rows_skipped) || 0;
+    const recorded = Number(accountingResult.rows_appended ?? accountingResult.appended_count) || 0;
+    const updated = Number(accountingResult.rows_updated ?? accountingResult.updated_existing_count) || 0;
+    const skipped = Number(accountingResult.rows_skipped ?? accountingResult.skipped_duplicate_count) || 0;
 
     let attribution = { ok: false, error: "not_attempted" };
     try {
