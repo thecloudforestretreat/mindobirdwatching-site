@@ -1,6 +1,9 @@
 const ADMIN_ORIGIN = "https://admin.mindobirdwatching.com";
 const VALID_SOURCES = new Set(["all", "ebird", "guide"]);
 const DEFAULT_WEBHOOK = "https://n8n.mindobirdwatching.com/webhook/mbw-admin-bird-sightings";
+const CACHE_FRESH_MS = 60 * 1000;
+const CACHE_RETENTION_SECONDS = 6 * 60 * 60;
+const pendingWorkflowRequests = new Map();
 
 function headers(request) {
   const origin = request.headers.get("origin") || "";
@@ -41,20 +44,67 @@ function sightingsFrom(data) {
   return Array.isArray(data) ? data : Array.isArray(data?.sightings) ? data.sightings : Array.isArray(data?.data) ? data.data : [];
 }
 
-async function fetchWorkflow(webhook, payload) {
-  const response = await fetch(webhook, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(20000),
-  });
-  const text = await response.text();
-  if (!response.ok) throw new Error("Sightings workflow returned " + response.status + ": " + text.slice(0, 200));
-  try { return JSON.parse(text || "{}"); }
-  catch { throw new Error("Sightings workflow returned HTML instead of JSON."); }
+function cacheRequest(request, { speciesCode, source, days }) {
+  const url = new URL(request.url);
+  url.search = "";
+  url.searchParams.set("speciesCode", speciesCode);
+  url.searchParams.set("source", source);
+  url.searchParams.set("days", String(days));
+  return new Request(url.toString(), { method: "GET" });
 }
 
-export async function onRequestGet({ request, env }) {
+async function readCachedSightings(request, params) {
+  const cache = globalThis.caches?.default;
+  if (!cache) return null;
+  try {
+    const response = await cache.match(cacheRequest(request, params));
+    if (!response) return null;
+    const entry = await response.json();
+    if (!entry || !entry.storedAt || !entry.body) return null;
+    return { ...entry, ageMs: Math.max(0, Date.now() - Date.parse(entry.storedAt)) };
+  } catch (error) {
+    console.error("Admin sightings cache read failed", { message: error?.message });
+    return null;
+  }
+}
+
+async function writeCachedSightings(request, params, body) {
+  const cache = globalThis.caches?.default;
+  if (!cache) return;
+  const response = new Response(JSON.stringify({ storedAt: new Date().toISOString(), body }), {
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": `max-age=${CACHE_RETENTION_SECONDS}` },
+  });
+  await cache.put(cacheRequest(request, params), response).catch((error) => {
+    console.error("Admin sightings cache write failed", { message: error?.message });
+  });
+}
+
+function workflowRequestKey(webhook, payload) {
+  return JSON.stringify([webhook, payload.speciesCode, payload.source, payload.days, payload.limit, Boolean(payload.liveStats), Boolean(payload.trackDemand)]);
+}
+
+async function fetchWorkflow(webhook, payload) {
+  const key = workflowRequestKey(webhook, payload);
+  if (pendingWorkflowRequests.has(key)) return pendingWorkflowRequests.get(key);
+  const operation = (async () => {
+    const response = await fetch(webhook, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(20000),
+    });
+    const text = await response.text();
+    if (!response.ok) throw new Error("Sightings workflow returned " + response.status + ": " + text.slice(0, 200));
+    try { return JSON.parse(text || "{}"); }
+    catch { throw new Error("Sightings workflow returned HTML instead of JSON."); }
+  })();
+  pendingWorkflowRequests.set(key, operation);
+  try { return await operation; }
+  finally { pendingWorkflowRequests.delete(key); }
+}
+
+export async function onRequestGet(context) {
+  const { request, env } = context;
   const webhook = env.N8N_ADMIN_BIRD_SIGHTINGS_WEBHOOK_URL || DEFAULT_WEBHOOK;
   const input = new URL(request.url).searchParams;
   const speciesCode = clean(input.get("speciesCode"), 24);
@@ -64,6 +114,13 @@ export async function onRequestGet({ request, env }) {
   const limit = Math.min(100, Math.max(1, Number(input.get("limit")) || 100));
   const requestLiveStats = input.get("liveStats") === "1" && Boolean(speciesCode);
   const trackDemand = input.get("trackDemand") === "1" && Boolean(speciesCode);
+  const cacheParams = { speciesCode, source, days };
+  const canUseCache = !requestLiveStats && !trackDemand;
+  const cached = canUseCache ? await readCachedSightings(request, cacheParams) : null;
+  if (cached && cached.ageMs <= CACHE_FRESH_MS) {
+    const sightings = sightingsFrom(cached.body).slice(0, limit);
+    return json(request, { ...cached.body, count: sightings.length, sightings, cache: "hit", cache_age_seconds: Math.round(cached.ageMs / 1000) });
+  }
   const payload = { action: "list_sightings", speciesCode, source, days, limit, liveStats: requestLiveStats, trackDemand, requested_at: new Date().toISOString() };
   try {
     const data = await fetchWorkflow(webhook, payload);
@@ -74,52 +131,52 @@ export async function onRequestGet({ request, env }) {
       const limited = ebirdSightings.length >= limit;
       return json(request, { ok: true, count: Math.min(ebirdSightings.length, limit), sightings: ebirdSightings.slice(0, limit), stats: liveStats(speciesCode, ebirdSightings, limited), demand_tracked: data.demand_tracked === true });
     }
-    const sightings = sightingsFrom(data);
-    return json(request, {
+    const sightings = sightingsFrom(data).slice(0, limit);
+    const body = {
       ok: true,
-      count: sightings.slice(0, limit).length,
-      sightings: sightings.slice(0, limit),
+      count: sightings.length,
+      sightings,
       stats: data.stats || null,
       ebird_available: data.ebird_available !== false,
       degraded: Boolean(data.warning),
       warning: clean(data.warning, 240),
-    });
+      cache: "miss",
+    };
+    if (canUseCache) await writeCachedSightings(request, cacheParams, body);
+    return json(request, body);
   } catch (error) {
     console.error("Admin sightings workflow lookup failed", { message: error?.message });
-    if (source === "all") {
-      const results = await Promise.allSettled([
-        fetchWorkflow(webhook, { ...payload, source: "guide", liveStats: false, trackDemand: false }),
-        fetchWorkflow(webhook, { ...payload, source: "ebird", liveStats: false, trackDemand: false }),
-      ]);
-      const guideRows = results[0].status === "fulfilled" ? sightingsFrom(results[0].value) : [];
-      const ebirdRows = results[1].status === "fulfilled" ? sightingsFrom(results[1].value) : [];
-      const sightings = [...guideRows, ...ebirdRows].slice(0, limit);
-      if (sightings.length) return json(request, {
+    if (cached) {
+      const sightings = sightingsFrom(cached.body).slice(0, limit);
+      return json(request, {
+        ...cached.body,
         ok: true,
         count: sightings.length,
         sightings,
-        stats: null,
-        degraded: results.some((result) => result.status === "rejected"),
-        ebird_available: results[1].status === "fulfilled",
-        warning: results.some((result) => result.status === "rejected")
-          ? "One sightings source is temporarily unavailable; available reports are shown."
-          : "",
-        fallback: "split_workflow_sources",
+        degraded: true,
+        warning: "Live refresh is temporarily unavailable; cached sightings are shown.",
+        cache: "stale",
+        cache_age_seconds: Math.round(cached.ageMs / 1000),
       });
     }
     if (source !== "guide") {
       try {
         const sightings = await fetchEbird(env, { speciesCode, days, limit });
-        if (sightings.length) return json(request, {
-          ok: true,
-          count: sightings.slice(0, limit).length,
-          sightings: sightings.slice(0, limit),
-          stats: requestLiveStats ? liveStats(speciesCode, sightings, sightings.length >= limit) : null,
-          demand_tracked: false,
-          fallback: "ebird",
-          degraded: source === "all",
-          warning: source === "all" ? "Guide reports are temporarily unavailable; live eBird sightings are shown." : "",
-        });
+        if (sightings.length) {
+          const body = {
+            ok: true,
+            count: sightings.slice(0, limit).length,
+            sightings: sightings.slice(0, limit),
+            stats: requestLiveStats ? liveStats(speciesCode, sightings, sightings.length >= limit) : null,
+            demand_tracked: false,
+            fallback: "ebird",
+            degraded: source === "all",
+            warning: source === "all" ? "Guide reports are temporarily unavailable; live eBird sightings are shown." : "",
+            cache: "miss",
+          };
+          if (canUseCache) await writeCachedSightings(request, cacheParams, body);
+          return json(request, body);
+        }
       } catch (ebirdError) { console.error("Direct eBird fallback failed", { message: ebirdError?.message }); }
     }
     if (requestLiveStats) return json(request, { ok: false, stats_available: false, message: "Live eBird data is unavailable. No zero totals were recorded." }, 503);
