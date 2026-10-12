@@ -266,7 +266,7 @@ export async function onRequestPost({ request, env }) {
         deposit_applied_amount: index === 0 && invoice.priorPaymentCents ? dollars(invoice.priorPaymentCents) : "",
         deposit_payment_method: index === 0 && invoice.priorPaymentCents ? "Bank Transfer" : "",
         amount_remaining: index === 0 ? "0.00" : "",
-        record_type: "zelle_invoice",
+        record_type: "service",
         record_status: "active",
       };
     });
