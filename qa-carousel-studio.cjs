@@ -61,7 +61,7 @@ function compileWorkflow(path) {
   assert(JSON.stringify(adminMain).includes("Beyond the Portrait") && JSON.stringify(adminMain).includes("contentMode === 'experience'"), "Admin-trigger workflow must contain both bird and experience copy modes");
   const allMainText = JSON.stringify(main);
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");
-  assert(allMainText.includes("gpt-oss:20b adaptive carousel writer + independent repair editor | en-US v9"), "Adaptive two-pass local editor identity is missing");
+  assert(allMainText.includes("gpt-oss:20b intent engine + independent repair editor | en-US v10"), "Intent-aware two-pass local editor identity is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Final Local Repair Editor"), "Final local repair editor is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Mark Generation Started"), "Generation concurrency lock is missing");
   assert(allMainText.includes("editorial score below 92") && allMainText.includes("HUMAN_EDITED"), "Quality threshold or validated human-edit path is missing");
@@ -83,6 +83,10 @@ function compileWorkflow(path) {
 
   const copyParser = main.nodes.find((node) => node.name === "[GEN] Parse and Validate Copy");
   assert(copyParser, "Final carousel copy parser is missing");
+  const canonicalParser = read("n8n/carousel-copy-parser.js").trim();
+  assert.strictEqual(copyParser.parameters.jsCode.trim(), canonicalParser, "Main workflow parser must match the canonical source");
+  assert.strictEqual(adminMain.nodes.find((node) => node.name === "[GEN] Parse and Validate Copy").parameters.jsCode.trim(), canonicalParser, "Admin-trigger parser must match the canonical source");
+  assert(allMainText.includes("community or family invitation") && allMainText.includes("bird_profile|trip_recap|tour_experience|community|wildlife_encounter|educational|general"), "Local prompts must recognize community and family content as a first-class mode");
   const runParser = async (row) => {
     const select = (name) => ({ item: { json: name === "Classify Carousel" ? row : { message: { content: "{}" } } } });
     const fakeDateTime = { now: () => ({ setZone: () => ({ toISO: () => "2026-10-12T12:00:00.000-04:00" }) }) };
@@ -115,6 +119,24 @@ function compileWorkflow(path) {
   assert.strictEqual(quitoTripCopy.carousel_title, "From Quito to Mindo: A Day Trip in 10 Photos", "Sentence-style trip prompts must be normalized into a natural title");
   assert(!/\b(?:from in|Mindo(?:,\s*Ecuador)?\s+in\s+Mindo)\b/i.test(quitoTripText), "Trip copy must reject broken prepositions and repeated locations");
   assert(!quitoTripText.includes("In Quito, enjoy a day trip to witness the magic of Mindo in Mindo"), "Raw sentence-style prompts must not be pasted into copy templates");
+
+  const familyCopy = await runParser({
+    image_1_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/family-walk.jpg",
+    image_2_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/family-scope.jpg",
+    image_3_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/bird.jpg",
+    featured_birds: "Join the Mindo Bird Watching family",
+    location: "Mindo, Ecuador",
+    images_json: JSON.stringify([{ content_type: "guest" }, { content_type: "guest" }, { content_type: "photo" }]),
+    admin_mode: "review",
+  });
+  const familyText = [familyCopy.carousel_title, familyCopy.caption, familyCopy.facebook_caption, familyCopy.reddit_title, familyCopy.reddit_caption].join(" ");
+  assert.strictEqual(familyCopy.content_mode, "community", "Join/family prompts must use the community content mode");
+  assert.strictEqual(familyCopy.copy_review_status, "PASS", "Grounded community copy should pass deterministic validation");
+  assert.strictEqual(familyCopy.carousel_title, "Birdwatching Is Better Together in Mindo", "Community copy must use a people-centered title");
+  assert(/\b(family|together|shared|people|guests)\b/i.test(familyText), "Community copy must remain aligned with people and belonging");
+  assert(familyCopy.instagram_hashtags.includes("#FamilyBirding") && !/visual journey|subtle shifts|invites contemplation|natural beauty/i.test(familyText), "Community copy must use contextual hashtags and reject generic AI filler");
+  assert.strictEqual(familyCopy.error_message, "", "Passing community copy must not retain misleading review errors");
+  assert(canonicalParser.includes("!/^ready$/i") && canonicalParser.includes("editorial score below 92"), "Review errors must exclude READY notes and explain sub-threshold scores");
 
   const birdCopy = await runParser({
     image_1_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/bird.jpg",
