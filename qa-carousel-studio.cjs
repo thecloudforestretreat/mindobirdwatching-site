@@ -31,7 +31,8 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
-  assert(html.includes("carousel-studio.css?v=5") && html.includes("carousel-studio.js?v=5"), "Carousel asset cache keys must expose the latest replacement and regeneration controls");
+  assert(html.includes("carousel-studio.css?v=5") && html.includes("carousel-studio.js?v=6"), "Carousel asset cache keys must expose the adaptive-content release");
+  assert(html.includes("Carousel subject") && html.includes("recent night walks") && !html.includes("Bird name</span>"), "Intake must accept birds, trips, tours, and open-ended subjects");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
   assert(ui.includes("x[-_ ]?ray") && ui.includes("sticky|graphic|infographic|notes"), "UI must identify educational graphics for fit/pad treatment");
@@ -57,14 +58,14 @@ function compileWorkflow(path) {
   assert(intake.nodes.some((node) => node.name === "[INTAKE] Validate and Split Images"), "Legacy intake must support variable slide counts");
   assert(gateway.nodes.some((node) => node.name === "Plan Carousel Action"), "Admin gateway planner is missing");
   assert(adminMain.nodes.some((node) => node.name === "[ADMIN] Trigger Carousel Processing"), "Admin processing webhook is missing");
-  assert(JSON.stringify(adminMain).includes("Beyond the Portrait") && JSON.stringify(adminMain).includes("Which view captures your interest most"), "Admin-trigger workflow must use the same subject-led copy as the canonical workflow");
+  assert(JSON.stringify(adminMain).includes("Beyond the Portrait") && JSON.stringify(adminMain).includes("contentMode === 'experience'"), "Admin-trigger workflow must contain both bird and experience copy modes");
   const allMainText = JSON.stringify(main);
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");
-  assert(allMainText.includes("gpt-oss:20b local writer + independent repair editor | en-US v6"), "Two-pass local editor identity is missing");
+  assert(allMainText.includes("gpt-oss:20b adaptive carousel writer + independent repair editor | en-US v7"), "Adaptive two-pass local editor identity is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Final Local Repair Editor"), "Final local repair editor is missing");
   assert(main.nodes.some((node) => node.name === "[GEN] Mark Generation Started"), "Generation concurrency lock is missing");
   assert(allMainText.includes("editorial score below 92") && allMainText.includes("HUMAN_EDITED"), "Quality threshold or validated human-edit path is missing");
-  assert(allMainText.includes("Beyond the Portrait") && allMainText.includes("Which view captures your interest most"), "Subject-led curated fallback copy is missing");
+  assert(allMainText.includes("Beyond the Portrait") && allMainText.includes("contentMode === 'experience'") && allMainText.includes("Never treat an activity phrase as a species"), "Adaptive bird, experience, and general copy routing is missing");
   assert(allMainText.includes("shift perspectives|distinct visual formats|different kind of attention|designed for slower looking"), "Mechanical carousel language must be rejected during local review");
   assert(allMainText.includes("PUBLISH BLOCKED: approved copy must pass both local reviews or contain validated human edits"), "Approval publishing gate is missing");
   assert(allMainText.includes("={{ $json.instagram_permalink }}") && allMainText.includes("={{ $json.facebook_permalink }}"), "Published post permalinks must be saved");
@@ -79,6 +80,39 @@ function compileWorkflow(path) {
   assert(transformText.includes("c_pad,b_rgb:f7f4e8"), "Fit/pad transform is missing");
   assert(transformText.includes("c_fill,g_auto"), "Photo crop transform is missing");
   assert(!JSON.stringify(intake).match(/Exactly 9|exactly nine|length !== 9/), "Legacy nine-image enforcement remains");
+
+  const copyParser = main.nodes.find((node) => node.name === "[GEN] Parse and Validate Copy");
+  assert(copyParser, "Final carousel copy parser is missing");
+  const runParser = async (row) => {
+    const select = (name) => ({ item: { json: name === "Classify Carousel" ? row : { message: { content: "{}" } } } });
+    const fakeDateTime = { now: () => ({ setZone: () => ({ toISO: () => "2026-10-12T12:00:00.000-04:00" }) }) };
+    const fn = new AsyncFunction("$", "$json", "DateTime", copyParser.parameters.jsCode);
+    return (await fn(select, { message: { content: "{}" } }, fakeDateTime))[0].json;
+  };
+  const imageUrls = Object.fromEntries(Array.from({ length: 10 }, (_, index) => [`image_${index + 1}_url`, `https://res.cloudinary.com/dd25hpdx3/image/upload/night-${index + 1}.jpg`]));
+  const experienceCopy = await runParser({
+    ...imageUrls,
+    featured_birds: "Some recent night walks",
+    location: "Mindo, Ecuador",
+    images_json: JSON.stringify(Array.from({ length: 10 }, (_, index) => ({ order: index + 1, content_type: index < 2 ? "guest" : "photo" }))),
+    admin_mode: "review",
+  });
+  assert.strictEqual(experienceCopy.copy_review_status, "PASS", "A grounded trip/night-walk fallback should pass local validation");
+  assert(!/\b(bird|species|portrait|x-ray)\b/i.test([experienceCopy.carousel_title, experienceCopy.caption, experienceCopy.facebook_caption, experienceCopy.reddit_title, experienceCopy.reddit_caption].join(" ")), "Experience copy must never be forced into a bird-profile template");
+  assert(/night walks/i.test(experienceCopy.carousel_title) && experienceCopy.instagram_hashtags.includes("#MindoNightWalk"), "Experience copy must retain the submitted subject and receive contextual hashtags");
+
+  const birdCopy = await runParser({
+    image_1_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/bird.jpg",
+    image_2_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/xray.jpg",
+    image_3_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/guide.jpg",
+    featured_birds: "Rufous Motmot",
+    scientific_name: "Baryphthengus martii",
+    location: "Mindo, Ecuador",
+    images_json: JSON.stringify([{ content_type: "photo" }, { content_type: "xray" }, { content_type: "infographic" }]),
+    admin_mode: "review",
+  });
+  assert.strictEqual(birdCopy.copy_review_status, "PASS", "Bird-profile fallback should continue to pass local validation");
+  assert(/Rufous Motmot/.test(birdCopy.carousel_title) && /X-ray study/.test(birdCopy.caption), "Bird-profile mode must retain educational carousel support");
 
   const moduleUrl = pathToFileURL(`${root}/functions/api/admin/carousels/index.js`).href + `?qa=${Date.now()}`;
   const api = await import(moduleUrl);

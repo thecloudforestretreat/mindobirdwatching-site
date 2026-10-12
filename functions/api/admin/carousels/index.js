@@ -53,7 +53,7 @@ export async function onRequestPost({request,env}){
   if(action==="create_carousel"){
     const c=input.carousel||{},normalized=normalizeImages(c.images);
     if(normalized.error)return normalized.error;
-    if(!clean(c.featured_birds,300))return out(request,{ok:false,message:"Bird name is required."},400);
+    if(!clean(c.featured_birds,300))return out(request,{ok:false,message:"Carousel subject is required."},400);
     if(!date(clean(c.scheduled_date,10))||!time(clean(c.scheduled_time,5)))return out(request,{ok:false,message:"A valid date and time are required."},400);
     if(clean(c.scheduled_date,10)<nyToday())return out(request,{ok:false,message:"Choose today or a future date."},400);
     if(!bool(c.post_to_instagram)&&!bool(c.post_to_facebook))return out(request,{ok:false,message:"Select Instagram or Facebook."},400);
