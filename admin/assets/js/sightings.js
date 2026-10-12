@@ -2,6 +2,8 @@
   "use strict";
   const ROOT = "https://mindobirdwatching.com/api/admin/";
   const FALLBACK_IMAGE = "https://mindobirdwatching.com/assets/images/birds/mbw_image_coming_soon_02.jpg";
+  const BROWSER_CACHE_PREFIX = "mbw:sightings:v1:";
+  const BROWSER_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
   let birds = [];
   let currentRows = [];
   let currentStats = null;
@@ -33,6 +35,29 @@
     const query = searchable(raw);
     if (!query) return null;
     return birds.find((bird) => [bird.speciesCode, bird.englishName, bird.spanishName].some((value) => searchable(value) === query)) || null;
+  }
+
+  function browserCacheKey(params) {
+    return BROWSER_CACHE_PREFIX + [params.get("speciesCode") || "all", params.get("source") || "all", params.get("days") || "30"].join(":");
+  }
+
+  function readBrowserCache(params) {
+    try {
+      const raw = localStorage.getItem(browserCacheKey(params));
+      if (!raw) return null;
+      const entry = JSON.parse(raw);
+      const ageMs = Date.now() - Number(entry?.storedAt || 0);
+      if (!entry?.data || !Number.isFinite(ageMs) || ageMs < 0 || ageMs > BROWSER_CACHE_MAX_AGE_MS) {
+        localStorage.removeItem(browserCacheKey(params));
+        return null;
+      }
+      return { ...entry, ageMs };
+    } catch (_) { return null; }
+  }
+
+  function writeBrowserCache(params, data) {
+    try { localStorage.setItem(browserCacheKey(params), JSON.stringify({ storedAt: Date.now(), data })); }
+    catch (_) {}
   }
 
   function groupRows(rows) {
@@ -103,13 +128,21 @@
     const params = new URLSearchParams({ source: liveStats ? "ebird" : $("sourceFilter").value, days: liveStats ? "30" : $("daysFilter").value, limit: "100" });
     if (speciesCode) params.set("speciesCode", speciesCode);
     if (liveStats) { params.set("liveStats", "1"); params.set("trackDemand", "1"); }
-    const response = await fetch(ROOT + "bird-sightings?" + params, { cache: "no-store" });
-    const text = await response.text();
-    let data;
-    try { data = JSON.parse(text || "{}"); }
-    catch { throw new Error(`Sightings API returned a web page instead of data (${response.status})`); }
-    if (!response.ok || data.ok === false) throw new Error(data.message || `Sightings API returned ${response.status}`);
-    return data;
+    try {
+      const response = await fetch(ROOT + "bird-sightings?" + params, { cache: "no-store" });
+      const text = await response.text();
+      let data;
+      try { data = JSON.parse(text || "{}"); }
+      catch { throw new Error(`Sightings API returned a web page instead of data (${response.status})`); }
+      if (!response.ok || data.ok === false) throw new Error(data.message || `Sightings API returned ${response.status}`);
+      if (!liveStats) writeBrowserCache(params, data);
+      return data;
+    } catch (error) {
+      const cached = liveStats ? null : readBrowserCache(params);
+      if (!cached) throw error;
+      const savedAt = new Date(Date.now() - cached.ageMs).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+      return { ...cached.data, degraded: true, warning: `Live refresh is temporarily unavailable; showing this browser's last saved data from ${savedAt}.`, browser_cache: "stale" };
+    }
   }
 
   async function loadSightings() {
