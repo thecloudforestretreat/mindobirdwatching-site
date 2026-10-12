@@ -277,7 +277,7 @@ export async function onRequestPost({ request, env }) {
         rows,
         upsert_existing: true,
         invoice_id: invoiceId,
-      });
+      }, 1);
     } catch (error) {
       return reply(502, {
         ok: false,
