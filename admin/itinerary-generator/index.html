@@ -625,8 +625,24 @@
         ]
       };
 
+      function stripSubjectDates(value){
+        return String(value || '').trim().replace(/\s+-\s+\d{1,2}\/\d{1,2}\/\d{2,4}(?:\s+-\s+\d{1,2}\/\d{1,2}\/\d{2,4})?\s*$/,'').trim();
+      }
+      function formatSubjectDate(value){
+        const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if(!match) return '';
+        return `${Number(match[2])}/${Number(match[3])}/${match[1].slice(-2)}`;
+      }
+      function itineraryTitleWithDates(value,startDate,endDate){
+        const title = stripSubjectDates(value);
+        const start = formatSubjectDate(startDate);
+        const end = formatSubjectDate(endDate);
+        if(!title || (!start && !end)) return title;
+        if(start && end && start !== end) return `${title} - ${start} - ${end}`;
+        return `${title} - ${start || end}`;
+      }
       function isKnownDefaultText(kind,value){
-        const normalized = String(value || '').trim();
+        const normalized = kind === 'title' ? stripSubjectDates(value) : String(value || '').trim();
         return !normalized || (DEFAULT_TEXT_VARIANTS[kind] || []).includes(normalized);
       }
 
@@ -647,6 +663,7 @@
         if(forceKnownDefaults && isKnownDefaultText('closing',$('closingText').value)){
           $('closingText').value = next.closing;
         }
+        $('tripTitle').value = itineraryTitleWithDates($('tripTitle').value,$('startDate').value,$('endDate').value);
         updateStageControls();
       }
 
@@ -1009,6 +1026,7 @@
           guestName:$('guestName').value.trim(),
           guestEmail:$('guestEmail').value.trim(),
           tripTitle:$('tripTitle').value.trim(),
+          emailSubject:$('tripTitle').value.trim(),
           language:$('language').value || 'en',
           heroImage:HERO_IMAGES[$('heroImage').value] ? $('heroImage').value : DEFAULT_HERO_IMAGE,
           startDate:$('startDate').value,
