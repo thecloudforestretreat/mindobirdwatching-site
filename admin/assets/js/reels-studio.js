@@ -47,6 +47,12 @@
     return truthy(row[key]);
   }
   function platformId(row, platform) { return clean(row[platform + "_post_id"]); }
+  function platformState(row, platform) { return clean(row[platform + "_publish_state"]).toUpperCase(); }
+  function needsReconciliation(row, platform) {
+    if (!platformSelected(row, platform) || platformId(row, platform)) return false;
+    return Boolean(clean(row[platform + "_publish_claim_id"])) || ["CLAIMED", "PUBLISHING", "UNKNOWN", "RECONCILE"].includes(platformState(row, platform));
+  }
+  function reconciliationPlatforms(row) { return ["instagram", "facebook", "youtube", "tiktok"].filter(function (platform) { return needsReconciliation(row, platform); }); }
   function selectedPlatforms(row) { return ["instagram", "facebook", "youtube", "tiktok"].filter(function (platform) { return platformSelected(row, platform); }); }
   function failedPlatforms(row) {
     var value = clean(row.failed_platforms || row.publish_failed_platforms).toLowerCase();
@@ -76,14 +82,15 @@
     var posted = selected.filter(function (platform) { return platformId(row, platform); });
     var failed = failedPlatforms(row);
     if (status === "published" || (selected.length && posted.length === selected.length)) return "published";
-    if (isStaleGeneration(row) || ["failed", "partial", "error", "recovery_required"].includes(status) || failed.length || (posted.length && posted.length < selected.length)) return "failed";
-    if (["scheduled", "publishing", "ready"].includes(status) && approval === "APPROVED") return "upcoming";
+    if (isStaleGeneration(row) || reconciliationPlatforms(row).length || ["failed", "partial", "error", "recovery_required", "needs attention"].includes(status) || failed.length || (posted.length && posted.length < selected.length)) return "failed";
+    if (["scheduled", "ready"].includes(status) && approval === "APPROVED") return "upcoming";
     return "review";
   }
   function statusLabel(row) {
     var group = bucket(row);
     if (group === "published") return { label: "Published", tone: "live" };
     if (isStaleGeneration(row)) return { label: "Generation timed out", tone: "error" };
+    if (reconciliationPlatforms(row).length) return { label: "Reconciliation required", tone: "error" };
     if (group === "failed") return { label: clean(row.status) || "Partial", tone: "error" };
     if (group === "upcoming") return { label: clean(row.status) || "Scheduled", tone: "scheduled" };
     if (copyIsGenerating(row)) return { label: "Generating copy", tone: "pending" };
@@ -98,7 +105,7 @@
       Object.assign({}, common, { reel_id: "REEL-20261012-01", post_id: 18, video_url: "https://res.cloudinary.com/dd25hpdx3/video/upload/v1791332944/1080X1920_7_hgirtw.mp4", reel_description: "Hummingbirds join us for breakfast with a view over Mindo.", scheduled_date: "10/12/2026", scheduled_time: "7:00 AM", status: "Scheduled", approval_status: "APPROVED", quality_score: 100, instagram_caption_final: "Breakfast in Mindo sometimes comes with a few special guests. Hummingbirds moved through the garden while the morning view opened over the cloud forest. Join us for a guided birding experience in Mindo.\n\n#mindobirdwatching #mindo #ecuador #Hummingbirds #MindoBirding", instagram_hashtags: "#mindobirdwatching #mindo #ecuador #Hummingbirds #MindoBirding", tiktok_caption: "Breakfast views in Mindo came with hummingbirds this morning.", tiktok_hashtags: "#mindobirdwatching #mindo #ecuador", tiktok_additional_hashtags: "#Hummingbirds #CloudForest #BirdingTour #EcuadorWildlife #NatureTravel", youtube_title: "Hummingbirds at Breakfast in Mindo, Ecuador" }),
       Object.assign({}, common, { reel_id: "REEL-20261013-02", post_id: 19, video_url: "https://res.cloudinary.com/dd25hpdx3/video/upload/v1791243592/1080X1920_6_c8wb6a.mp4", reel_description: "Several hummingbirds encountered during a recent tour.", scheduled_date: "10/13/2026", scheduled_time: "7:00 AM", status: "Draft", approval_status: "NEEDS_REVIEW", quality_score: 70, error_message: "TikTok caption needs review before scheduling.", instagram_caption_final: "A recent birdwatching tour in Mindo brought several hummingbird encounters.", instagram_hashtags: "#mindobirdwatching #mindo #ecuador #Hummingbirds #BirdingTour", youtube_title: "Hummingbirds on a Birdwatching Tour in Mindo" }),
       Object.assign({}, common, { reel_id: "REEL-20261007-14", post_id: 14, video_url: "https://res.cloudinary.com/dd25hpdx3/video/upload/v1791332944/1080X1920_7_hgirtw.mp4", reel_description: "Most of the times these views come with special guests. Hummingbirds join us for breakfast.", scheduled_date: "10/7/2026", scheduled_time: "7:00 AM", status: "Published", approval_status: "APPROVED", quality_score: 100, instagram_post_id: "17900000000000014", facebook_post_id: "1067000000000014", youtube_post_id: "dQw4w9WgXcQ", youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", instagram_published_date: "10/7/2026 7:06 AM", facebook_published_date: "10/7/2026 7:05 AM", youtube_published_date: "10/7/2026 7:09 AM", instagram_caption_final: "Breakfast views in Mindo came with hummingbirds this morning.\n\n#mindobirdwatching #mindo #ecuador #Hummingbirds #MindoBirding", instagram_hashtags: "#mindobirdwatching #mindo #ecuador #Hummingbirds #MindoBirding", tiktok_caption: "Hummingbirds joined breakfast in Mindo.", tiktok_hashtags: "#mindobirdwatching #mindo #ecuador", tiktok_additional_hashtags: "#Hummingbirds #CloudForest #EcuadorWildlife", youtube_title: "Hummingbirds Join Breakfast in Mindo, Ecuador" }),
-      Object.assign({}, common, { reel_id: "REEL-20261008-15", post_id: 15, video_url: "https://res.cloudinary.com/dd25hpdx3/video/upload/v1791159813/1080X1920_5_gsfyjj.mp4", reel_description: "Birdwatching highlights featuring toucans and barbets.", scheduled_date: "10/8/2026", scheduled_time: "7:00 AM", status: "Partial", approval_status: "APPROVED", quality_score: 100, instagram_post_id: "17900000000000015", facebook_post_id: "1067000000000015", failed_platforms: "youtube", error_message: "YouTube upload timed out. Instagram and Facebook were not retried." })
+      Object.assign({}, common, { reel_id: "REEL-20261008-15", post_id: 15, video_url: "https://res.cloudinary.com/dd25hpdx3/video/upload/v1791159813/1080X1920_5_gsfyjj.mp4", reel_description: "Birdwatching highlights featuring toucans and barbets.", scheduled_date: "10/8/2026", scheduled_time: "7:00 AM", status: "Needs Attention", approval_status: "APPROVED", quality_score: 100, instagram_post_id: "17900000000000015", facebook_post_id: "1067000000000015", youtube_publish_state: "RECONCILE", youtube_publish_claim_id: "demo:youtube:claim", error_message: "YouTube outcome is uncertain. Verify the channel before any retry." })
     ];
   }
 
@@ -166,7 +173,7 @@
     var labels = { instagram: "Instagram", facebook: "Facebook", youtube: "YouTube", tiktok: "TikTok" };
     return selectedPlatforms(row).map(function (platform) {
       var live = Boolean(platformId(row, platform));
-      var broken = failed.includes(platform);
+      var broken = failed.includes(platform) || needsReconciliation(row, platform);
       return '<span class="platformPill' + (live ? " isLive" : broken ? " isError" : "") + '">' + esc(labels[platform]) + (live ? " ✓" : broken ? " !" : "") + "</span>";
     }).join("") || '<span class="platformPill isError">No destinations</span>';
   }
@@ -174,7 +181,7 @@
     var info = statusLabel(row);
     var group = bucket(row);
     var id = rowId(row);
-    var primaryAction = group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : isStaleGeneration(row) ? "Review & regenerate" : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
+    var primaryAction = group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : isStaleGeneration(row) ? "Review & regenerate" : reconciliationPlatforms(row).length ? "Inspect status" : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
     var youtube = youtubeUrl(row);
     return '<article class="reelCard" data-reel-id="' + esc(id) + '">' +
       '<div class="videoShell"><video src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls aria-label="Preview ' + esc(id) + '"></video><div class="videoMeta"><span>REEL</span><span>' + esc(clean(row.location) || "Mindo") + "</span></div></div>" +
@@ -308,9 +315,11 @@
     if (!row) return;
     state.selected = row;
     var youtube = youtubeUrl(row);
-    var reviewNotice = isStaleGeneration(row)
-      ? "Copy generation timed out before it finished. The reel was not approved or published. Regenerate it to start one protected attempt."
-      : copyIsApproved(row) ? "" : clean(row.error_message || row.supervision_notes);
+    var reviewNotice = reconciliationPlatforms(row).length
+      ? "Do not retry yet. The previous run may already have posted to " + reconciliationPlatforms(row).join(", ") + ". Verify the live platform first; automatic retry is disabled to prevent duplicates."
+      : isStaleGeneration(row)
+        ? "Copy generation timed out before it finished. The reel was not approved or published. Regenerate it to start one protected attempt."
+        : copyIsApproved(row) ? "" : clean(row.error_message || row.supervision_notes);
     var links = [row.instagram_url && ["Instagram", row.instagram_url], row.facebook_url && ["Facebook", row.facebook_url], youtube && ["Watch on YouTube", youtube], row.tiktok_url && ["TikTok", row.tiktok_url]].filter(Boolean);
     $("reviewTitle").textContent = clean(row.activity_name) || "Review reel " + rowId(row);
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
@@ -330,7 +339,7 @@
     $("reviewActions").innerHTML = (group === "published" ? "" : '<button class="button buttonGhost" type="button" data-action="save">Save edits</button>') +
       (group === "review" || group === "upcoming" ? '<button class="button buttonGhost" type="button" data-action="regenerate">Regenerate</button>' : "") +
       (group === "review" ? '<button class="button buttonPrimary" type="button" data-action="approve">Approve & schedule</button>' : "") +
-      (isStaleGeneration(row) ? '<button class="button buttonPrimary" type="button" data-action="regenerate">Regenerate copy</button>' : group === "failed" ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
+      (isStaleGeneration(row) ? '<button class="button buttonPrimary" type="button" data-action="regenerate">Regenerate copy</button>' : group === "failed" && !reconciliationPlatforms(row).length ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
       (youtube ? '<button class="button buttonGhost" type="button" data-copy-youtube>Copy YouTube URL</button>' : "");
     $("reviewBackdrop").hidden = false; document.body.style.overflow = "hidden";
   }
