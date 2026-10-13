@@ -74,6 +74,13 @@
     .summaryBox{border:1px solid rgba(13,89,37,.2);border-radius:15px;background:rgba(199,218,172,.22);padding:12px;margin-top:10px}
     .summaryRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 0;font-weight:850}
     .summaryRow.total{margin-top:5px;padding-top:10px;border-top:1px solid rgba(13,89,37,.2);color:var(--green);font-size:18px;font-weight:950}
+    .stageSection{background:linear-gradient(135deg,#edf7e6,#f8fbf5);border:1px solid rgba(13,89,37,.28)}
+    .stageSelect{font-size:16px;font-weight:900;color:var(--green);border-color:rgba(13,89,37,.35);background:#fff}
+    .stageHint{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.45;font-weight:750}
+    .stageBadge{display:inline-flex;align-items:center;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:#fff;color:var(--green);border:1px solid rgba(13,89,37,.25);font-size:10px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
+    .guestNote.paidInFullNote{background:#e5f5e8;border-color:#72b486;color:#0D5925;font-size:17px;font-weight:950;text-align:center;letter-spacing:.04em}
+    .depositBox.paidInFullBox{background:linear-gradient(135deg,#075b29,#0d7a39)}
+    .balancePaid{display:inline-flex;margin:2px 0 15px;padding:8px 13px;border-radius:999px;background:#fff;color:#0D5925;font-size:14px;font-weight:950}
     .checkRow{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.72);margin-bottom:9px}
     .checkRow input{width:18px;height:18px;flex:0 0 auto;margin-top:1px;accent-color:var(--green)}
     .checkRow span{font-size:12.5px;line-height:1.35;font-weight:800;color:var(--muted)}
@@ -182,6 +189,21 @@
 
       <div class="appGrid">
         <section class="panel editorPanel" aria-label="Itinerary editor">
+          <div class="section stageSection">
+            <span class="stageBadge">Guest document status</span>
+            <h2 class="panelTitle">Itinerary Stage</h2>
+            <div class="field">
+              <label for="itineraryStage">Choose the message this itinerary should communicate</label>
+              <select id="itineraryStage" class="stageSelect">
+                <option value="preliminary">Preliminary Itinerary</option>
+                <option value="approved_pending">Approved Itinerary — Payment Pending</option>
+                <option value="deposit_received">Deposit Received</option>
+                <option value="paid_in_full">Paid in Full</option>
+              </select>
+              <p id="itineraryStageHint" class="stageHint">Proposal language only. Payment buttons are hidden until the itinerary is approved.</p>
+            </div>
+          </div>
+
           <div class="section">
             <h2 class="panelTitle">Guest and Trip</h2>
             <div class="field">
@@ -279,7 +301,7 @@
               <label for="closingText">Closing message</label>
               <textarea id="closingText">Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.</textarea>
             </div>
-            <label class="checkRow"><input id="showDeposit" type="checkbox" checked disabled /><span>Stripe tour deposit is included on every itinerary.</span></label>
+            <input id="showDeposit" type="checkbox" hidden />
             <div class="field"><label for="depositLink">Deposit payment URL</label><input id="depositLink" type="url" value="https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05" placeholder="https://…" /><p class="hint">The deposit button appears only when this is a valid HTTPS URL.</p></div>
             <label class="checkRow"><input id="offerZelle" type="checkbox" /><span>Also offer Zelle for this U.S. guest.</span></label>
             <div class="field" id="zelleEmailField" hidden>
@@ -292,10 +314,7 @@
             </div>
             <label class="checkRow"><input id="showInvoice" type="checkbox" /><span>Show a Pay Invoice button.</span></label>
             <div class="field"><label for="invoiceLink">Invoice payment URL</label><input id="invoiceLink" type="url" placeholder="https://invoice-payment-link…" /><p class="hint">Paste the unique invoice URL for this guest.</p></div>
-            <label class="checkRow">
-              <input id="depositPaid" type="checkbox" />
-              <span>The guest has paid the $100 deposit. Show the deposit-received WhatsApp message instead.</span>
-            </label>
+            <input id="depositPaid" type="checkbox" hidden />
             <label class="checkRow">
               <input id="showItemPrices" type="checkbox" checked />
               <span>Show individual service prices beside timeline items.</span>
@@ -554,20 +573,41 @@
           locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura en su totalidad, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', zelleOption:'Los viajeros de Estados Unidos también pueden enviar el depósito de $100 por Zelle a', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que conversamos.', defaultPricing:'Los precios mostrados reflejan el tour y la tarifa que ya conversamos. Los detalles finales de cada servicio se resumen a continuación.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
         }
       };
+      const ITINERARY_STAGES = ['preliminary','approved_pending','deposit_received','paid_in_full'];
+      const STAGE_COPY = {
+        en: {
+          preliminary:{title:'Your Mindo Tour Itinerary',eyebrow:'Preliminary Mindo tour itinerary',opening:'Please review the proposed itinerary below and let me know whether this matches what we discussed.',pricing:'The prices shown reflect the tour and rate arrangement currently proposed.',closing:'Let me know if you have any questions or would like any changes.',paymentTitle:'Preliminary Itinerary',paymentText:'This itinerary is provided for review. No payment is requested from this document.',finalLine:'Let me know if this looks good or if you would like any changes.',hint:'Proposal language only. Payment buttons are hidden until the itinerary is approved.'},
+          approved_pending:{title:'Your Approved Mindo Tour Itinerary',eyebrow:'Approved Mindo tour itinerary',opening:'Thank you for approving your Mindo tour itinerary. The services and dates are summarized below.',pricing:'The prices shown reflect the approved tour arrangement.',closing:'Your itinerary is approved. Please complete the requested payment to secure the reservation.',paymentTitle:'Payment Pending',paymentText:'Complete the requested payment to secure your approved itinerary.',finalLine:'Your itinerary is approved. Please complete the requested payment to secure the reservation.',hint:'Approved language with deposit, invoice, and applicable Zelle payment options.'},
+          deposit_received:{title:'Your Confirmed Mindo Tour Itinerary',eyebrow:'Confirmed Mindo tour itinerary',opening:'Thank you for choosing Mindo Bird Watching. Your deposit has been received and your itinerary is confirmed.',pricing:'DEPOSIT RECEIVED',closing:'Thank you. Your reservation is confirmed, and we look forward to welcoming you. See you soon!',paymentTitle:'Deposit Received',paymentText:'Your deposit has been received. Use the invoice link, when provided, to pay the remaining balance.',finalLine:'Your deposit has been received and your reservation is confirmed. See you soon!',hint:'Confirms receipt of the deposit, hides the deposit button, and keeps the balance-payment option available.'},
+          paid_in_full:{title:'Your Mindo Tour Itinerary — Paid in Full',eyebrow:'Confirmed & paid Mindo tour itinerary',opening:'Thank you for choosing Mindo Bird Watching. Your itinerary is confirmed and payment has been received in full.',pricing:'TOUR PAID IN FULL',closing:'Thank you for choosing Mindo Bird Watching. We look forward to welcoming you. See you soon!',paymentTitle:'Payment Confirmed',paymentText:'Your tour has been paid in full. No additional payment is required.',finalLine:'Your tour is confirmed and paid in full. No additional payment is required. Thank you, and see you soon!',hint:'Confirms full payment, shows a $0.00 balance, and removes every payment button.'}
+        },
+        es: {
+          preliminary:{title:'Su itinerario de tour en Mindo',eyebrow:'Itinerario preliminar para su tour en Mindo',opening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que conversamos.',pricing:'Los precios mostrados reflejan el tour y la tarifa propuestos actualmente.',closing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio.',paymentTitle:'Itinerario preliminar',paymentText:'Este itinerario se proporciona para su revisión. Este documento no solicita ningún pago.',finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.',hint:'Solo lenguaje de propuesta. Los botones de pago permanecen ocultos hasta aprobar el itinerario.'},
+          approved_pending:{title:'Su itinerario aprobado para Mindo',eyebrow:'Itinerario aprobado para su tour en Mindo',opening:'Gracias por aprobar su itinerario para Mindo. Los servicios y las fechas se resumen a continuación.',pricing:'Los precios mostrados reflejan el tour aprobado.',closing:'Su itinerario está aprobado. Complete el pago solicitado para asegurar la reservación.',paymentTitle:'Pago pendiente',paymentText:'Complete el pago solicitado para asegurar su itinerario aprobado.',finalLine:'Su itinerario está aprobado. Complete el pago solicitado para asegurar la reservación.',hint:'Lenguaje de aprobación con opciones de depósito, factura y Zelle cuando corresponda.'},
+          deposit_received:{title:'Su itinerario confirmado para Mindo',eyebrow:'Itinerario confirmado para su tour en Mindo',opening:'Gracias por elegir Mindo Bird Watching. Hemos recibido su depósito y su itinerario está confirmado.',pricing:'DEPÓSITO RECIBIDO',closing:'Gracias. Su reservación está confirmada y esperamos recibirle pronto. ¡Nos vemos!',paymentTitle:'Depósito recibido',paymentText:'Hemos recibido su depósito. Utilice el enlace de la factura, cuando esté disponible, para pagar el saldo restante.',finalLine:'Hemos recibido su depósito y su reservación está confirmada. ¡Nos vemos pronto!',hint:'Confirma el depósito, oculta su botón y mantiene disponible la opción para pagar el saldo.'},
+          paid_in_full:{title:'Su itinerario para Mindo — Pagado en su totalidad',eyebrow:'Itinerario confirmado y pagado para Mindo',opening:'Gracias por elegir Mindo Bird Watching. Su itinerario está confirmado y hemos recibido el pago completo.',pricing:'TOUR PAGADO EN SU TOTALIDAD',closing:'Gracias por elegir Mindo Bird Watching. Esperamos recibirle pronto. ¡Nos vemos!',paymentTitle:'Pago confirmado',paymentText:'Su tour está pagado en su totalidad. No se requiere ningún pago adicional.',finalLine:'Su tour está confirmado y pagado en su totalidad. No se requiere ningún pago adicional. Gracias y ¡nos vemos pronto!',hint:'Confirma el pago completo, muestra saldo de $0.00 y elimina todos los botones de pago.'}
+        }
+      };
       const DEFAULT_TEXT_VARIANTS = {
         title: [
           COPY.en.defaultTitle,
-          COPY.es.defaultTitle
+          COPY.es.defaultTitle,
+          ...Object.values(STAGE_COPY.en).map(stage => stage.title),
+          ...Object.values(STAGE_COPY.es).map(stage => stage.title)
         ],
         opening: [
           COPY.en.defaultOpening,
           COPY.es.defaultOpening,
+          ...Object.values(STAGE_COPY.en).map(stage => stage.opening),
+          ...Object.values(STAGE_COPY.es).map(stage => stage.opening),
           'Please review the proposed itinerary below and let me know whether this matches what you have in mind.',
           'Revise el itinerario propuesto a continuación y dígame si coincide con lo que tiene en mente.'
         ],
         pricing: [
           COPY.en.defaultPricing,
           COPY.es.defaultPricing,
+          ...Object.values(STAGE_COPY.en).map(stage => stage.pricing),
+          ...Object.values(STAGE_COPY.es).map(stage => stage.pricing),
           'Tours are priced at a minimum of 2 people. Solo travelers can either join an existing group when space is available or cover the 2-person minimum for a private departure.',
           'Los tours tienen un precio mínimo equivalente a 2 personas. Los viajeros solos pueden unirse a un grupo existente cuando haya espacio o cubrir el mínimo de 2 personas para una salida privada.',
           'Tours are priced at a minimum of 2 people. Availability and final pickup or drop-off details can be confirmed before the tour.',
@@ -576,6 +616,8 @@
         closing: [
           COPY.en.defaultClosing,
           COPY.es.defaultClosing,
+          ...Object.values(STAGE_COPY.en).map(stage => stage.closing),
+          ...Object.values(STAGE_COPY.es).map(stage => stage.closing),
           'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de USD 100 que aparece a continuación.',
           'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the USD 100 deposit below.'
         ]
@@ -588,20 +630,48 @@
 
       function applyLanguageDefaults(language,{forceKnownDefaults=true}={}){
         const lang = language === 'es' ? 'es' : 'en';
-        const next = COPY[lang];
+        const stage = ITINERARY_STAGES.includes($('itineraryStage')?.value) ? $('itineraryStage').value : 'preliminary';
+        const next = STAGE_COPY[lang][stage];
 
         if(forceKnownDefaults && isKnownDefaultText('title',$('tripTitle').value)){
-          $('tripTitle').value = next.defaultTitle;
+          $('tripTitle').value = next.title;
         }
         if(forceKnownDefaults && isKnownDefaultText('opening',$('openingText').value)){
-          $('openingText').value = next.defaultOpening;
+          $('openingText').value = next.opening;
         }
         if(forceKnownDefaults && isKnownDefaultText('pricing',$('pricingNote').value)){
-          $('pricingNote').value = next.defaultPricing;
+          $('pricingNote').value = next.pricing;
         }
         if(forceKnownDefaults && isKnownDefaultText('closing',$('closingText').value)){
-          $('closingText').value = next.defaultClosing;
+          $('closingText').value = next.closing;
         }
+        updateStageControls();
+      }
+
+      function itineraryStage(data){
+        const value = String(data?.itineraryStage || $('itineraryStage')?.value || 'preliminary');
+        return ITINERARY_STAGES.includes(value) ? value : 'preliminary';
+      }
+      function stageCopyFor(data){
+        const lang = data?.language === 'es' ? 'es' : 'en';
+        return STAGE_COPY[lang][itineraryStage(data)];
+      }
+      function updateStageControls(){
+        if(!$('itineraryStage')) return;
+        const stage = itineraryStage();
+        const copy = STAGE_COPY[$('language')?.value === 'es' ? 'es' : 'en'][stage];
+        $('itineraryStageHint').textContent = copy.hint;
+        const approved = stage === 'approved_pending';
+        const deposit = stage === 'deposit_received';
+        const paid = stage === 'paid_in_full';
+        $('showDeposit').checked = approved;
+        $('depositPaid').checked = deposit || paid;
+        $('depositLink').disabled = !approved;
+        $('offerZelle').disabled = !approved;
+        $('showInvoice').disabled = paid || stage === 'preliminary';
+        if(paid || stage === 'preliminary') $('showInvoice').checked = false;
+        $('invoiceLink').disabled = paid || stage === 'preliminary';
+        $('zelleEmailField').hidden = !approved || !$('offerZelle').checked;
       }
 
       function copyFor(data){ return COPY[data && data.language === 'es' ? 'es' : 'en']; }
@@ -931,7 +1001,9 @@
 
       function getFormData(){
         applyLanguageDefaults($('language').value,true);
+        const selectedStage = itineraryStage();
         return {
+          itineraryStage:selectedStage,
           guestName:$('guestName').value.trim(),
           guestEmail:$('guestEmail').value.trim(),
           tripTitle:$('tripTitle').value.trim(),
@@ -947,12 +1019,14 @@
           adjustmentReason:$('adjustmentReason').value.trim(),
           closingText:$('closingText').value.trim(),
           discount:Number($('discount').value || 0),
-          showDeposit:true,
-          depositPaid:$('depositPaid').checked,
+          showDeposit:selectedStage === 'approved_pending',
+          depositPaid:['deposit_received','paid_in_full'].includes(selectedStage),
+          paidInFull:selectedStage === 'paid_in_full',
+          paymentStatus:selectedStage === 'paid_in_full' ? 'paid' : selectedStage === 'deposit_received' ? 'deposit_paid' : selectedStage === 'approved_pending' ? 'payment_pending' : 'unpaid',
           depositLink:validHttpsUrl($('depositLink').value) || DEPOSIT_LINK,
-          offerZelle:$('offerZelle').checked,
+          offerZelle:selectedStage === 'approved_pending' && $('offerZelle').checked,
           zelleEmail:$('zelleEmail').value,
-          showInvoice:$('showInvoice').checked,
+          showInvoice:['approved_pending','deposit_received'].includes(selectedStage) && $('showInvoice').checked,
           invoiceLink:$('invoiceLink').value.trim(),
           showItemPrices:$('showItemPrices').checked,
           items:state.items.map(item => ({...item}))
@@ -978,6 +1052,8 @@
 
       function itineraryContent(data,{standalone=false}={}){
         const c = copyFor(data);
+        const stageCopy = stageCopyFor(data);
+        const stage = itineraryStage(data);
         const sum = totals(data);
         const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
         const dayMarkup = groupedItems(validItems).map(([date,items]) => `
@@ -1018,7 +1094,7 @@
           <section class="guestHeroCard">
             <img class="guestHeroImage" src="${heroImageUrl(data.heroImage)}" alt="Mindo cloud forest birdwatching tour" />
             <div class="heroCopy">
-              <div class="heroEyebrow">${escapeHtml(c.eyebrow)}</div>
+              <div class="heroEyebrow">${escapeHtml(stageCopy.eyebrow)}</div>
               <div class="heroMeta">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
               <h1 class="heroTitle">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
               <p class="heroIntro">${escapeHtml(c.hi)} ${escapeHtml(guestFirstName(data.guestName) || c.guest)}, ${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p>
@@ -1031,9 +1107,9 @@
           </div></section>
           ${dayMarkup || `<div class="contentCard"><div class="emptyPreview">${escapeHtml(c.empty)}</div></div>`}
           ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
-          ${data.pricingNote ? `<section class="guestNote">${escapeHtml(data.pricingNote)}</section>` : ''}
+          ${data.pricingNote ? `<section class="guestNote${stage === 'paid_in_full' ? ' paidInFullNote' : ''}">${stage === 'paid_in_full' ? `<strong>${escapeHtml(data.pricingNote)}</strong>` : escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${data.showDeposit || (data.showInvoice && validHttpsUrl(data.invoiceLink)) ? `<section class="depositBox"><h3>${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h3><p>${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p><div class="ctaButtons">${data.depositPaid || !validHttpsUrl(data.depositLink) ? '' : `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>`}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div>${data.offerZelle && !data.depositPaid ? `<p style="margin:14px auto 0;max-width:470px;font-size:15px;line-height:22px"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}</section>` : ''}
+          ${stage !== 'preliminary' ? `<section class="depositBox${stage === 'paid_in_full' ? ' paidInFullBox' : ''}"><h3>${escapeHtml(stageCopy.paymentTitle)}</h3><p>${escapeHtml(stageCopy.paymentText)}</p>${stage === 'paid_in_full' ? `<div class="balancePaid">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</div>` : ''}<div class="ctaButtons">${stage === 'approved_pending' && validHttpsUrl(data.depositLink) ? `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div>${data.offerZelle && stage === 'approved_pending' ? `<p style="margin:14px auto 0;max-width:470px;font-size:15px;line-height:22px"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}</section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -1052,6 +1128,8 @@
 
       function buildEmailSafeHtml(data){
         const c = copyFor(data);
+        const stageCopy = stageCopyFor(data);
+        const stage = itineraryStage(data);
         const sum = totals(data);
         const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
@@ -1080,7 +1158,7 @@
           `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;overflow:hidden;">
             <tr><td><img src="${heroImageUrl(data.heroImage)}" width="600" alt="Mindo cloud forest birdwatching tour" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
             <tr><td style="padding:24px 26px;">
-              <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900;">${escapeHtml(c.eyebrow)}</div>
+              <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900;">${escapeHtml(stageCopy.eyebrow)}</div>
               <div style="margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900;">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
               <h1 style="margin:6px 0 9px;font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:42px;color:#ffffff;font-weight:700;letter-spacing:-.02em;">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
               <p style="margin:0;font-size:15px;line-height:23px;color:#F4FAEF;">${escapeHtml(c.hi)} ${escapeHtml(guestName)}, ${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p>
@@ -1144,20 +1222,21 @@
         }
 
         if(data.pricingNote){
-          rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #d9e2d5;border-radius:18px;"><tr><td style="padding:18px 20px;color:#536067;font-size:14px;line-height:22px;">${escapeHtml(data.pricingNote)}</td></tr></table>`));
+          rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:${stage === 'paid_in_full' ? '#e5f5e8' : '#F6FAF0'};border:1px solid ${stage === 'paid_in_full' ? '#72b486' : '#d9e2d5'};border-radius:18px;"><tr><td align="${stage === 'paid_in_full' ? 'center' : 'left'}" style="padding:18px 20px;color:${stage === 'paid_in_full' ? '#0D5925' : '#536067'};font-size:${stage === 'paid_in_full' ? '17px' : '14px'};line-height:22px;font-weight:${stage === 'paid_in_full' ? '900' : '400'};">${stage === 'paid_in_full' ? `<strong>${escapeHtml(data.pricingNote)}</strong>` : escapeHtml(data.pricingNote)}</td></tr></table>`));
         }
 
         rows.push(row(`<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:18px;"><tr><td style="padding:20px 22px;"><h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:28px;color:#0D5925;">${escapeHtml(c.nextSteps)}</h2><p style="margin:0;color:#536067;font-size:14px;line-height:22px;">${escapeHtml(data.closingText || c.defaultClosing)}</p></td></tr></table>`));
 
-        if(data.showDeposit || (data.showInvoice && validHttpsUrl(data.invoiceLink))){
+        if(stage !== 'preliminary'){
           rows.push(row(
-            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;">
+            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:${stage === 'paid_in_full' ? '#087335' : '#0D5925'};border-radius:18px;">
               <tr><td align="center" style="padding:22px 20px;">
-                <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(data.depositPaid ? c.depositPaidTitle : c.ready)}</h2>
-                <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(data.depositPaid ? c.depositPaidText : c.depositText)}</p>
-                ${data.depositPaid || !validHttpsUrl(data.depositLink) ? '' : `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>`}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
+                <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(stageCopy.paymentTitle)}</h2>
+                <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(stageCopy.paymentText)}</p>
+                ${stage === 'paid_in_full' ? `<span style="display:inline-block;margin:0 4px 14px;padding:8px 14px;border-radius:999px;background:#ffffff;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</span><br>` : ''}
+                ${stage === 'approved_pending' && validHttpsUrl(data.depositLink) ? `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
                 <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
-                ${data.offerZelle && !data.depositPaid ? `<p style="margin:14px auto 0;max-width:470px;color:#ffffff;font-size:15px;line-height:22px;"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}
+                ${data.offerZelle && stage === 'approved_pending' ? `<p style="margin:14px auto 0;max-width:470px;color:#ffffff;font-size:15px;line-height:22px;"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}
               </td></tr>
             </table>`
           ));
@@ -1202,6 +1281,8 @@
 
       function buildWhatsAppMessage(data){
         const c = copyFor(data);
+        const stageCopy = stageCopyFor(data);
+        const stage = itineraryStage(data);
         const sum = totals(data);
         const lines = [`${c.hi} ${guestFirstName(data.guestName) || (data.language === 'es' ? 'allí' : 'there')},`,'',`${c.here} ${formatShortDate(data.startDate || data.endDate,data.language)}:`,''];
         groupedItems(data.items.filter(item => item.name || item.type)).forEach(([date,items],groupIndex) => {
@@ -1221,10 +1302,12 @@
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
-        if(data.showDeposit) lines.push(data.depositPaid ? c.depositPaidText : c.depositLead,...(data.depositPaid || !validHttpsUrl(data.depositLink) ? [] : [getDepositLink()]),'');
-        if(data.offerZelle && !data.depositPaid) lines.push(`${c.zelleOption} ${data.zelleEmail}`,'');
+        if(stage === 'approved_pending') lines.push(stageCopy.paymentText,...(!validHttpsUrl(data.depositLink) ? [] : [getDepositLink()]),'');
+        if(stage === 'deposit_received') lines.push(stageCopy.paymentText,'');
+        if(stage === 'paid_in_full') lines.push(`*${stageCopy.pricing}*`,stageCopy.paymentText,data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00','');
+        if(data.offerZelle && stage === 'approved_pending') lines.push(`${c.zelleOption} ${data.zelleEmail}`,'');
         if(data.showInvoice && validHttpsUrl(data.invoiceLink)) lines.push(c.invoiceText,validHttpsUrl(data.invoiceLink),'');
-        lines.push(c.finalLine);
+        lines.push(stageCopy.finalLine);
         return lines.join('\n');
       }
 
@@ -1236,14 +1319,15 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           if(!raw) return false;
           const data = JSON.parse(raw);
-          ['guestName','guestEmail','tripTitle','language','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositLink','zelleEmail','invoiceLink'].forEach(key => {
+          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositLink','zelleEmail','invoiceLink'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('heroImage').value = HERO_IMAGES[data.heroImage] ? data.heroImage : DEFAULT_HERO_IMAGE;
-          $('showDeposit').checked = true;
+          if(!ITINERARY_STAGES.includes($('itineraryStage').value)) $('itineraryStage').value = data.paidInFull ? 'paid_in_full' : data.depositPaid ? 'deposit_received' : 'preliminary';
+          $('showDeposit').checked = $('itineraryStage').value === 'approved_pending';
           $('offerZelle').checked = data.offerZelle === true;
           $('zelleEmailField').hidden = !$('offerZelle').checked;
-          $('depositPaid').checked = data.depositPaid === true;
+          $('depositPaid').checked = ['deposit_received','paid_in_full'].includes($('itineraryStage').value);
           $('showInvoice').checked = data.showInvoice === true;
           $('showItemPrices').checked = data.showItemPrices !== false;
           state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
@@ -1296,15 +1380,18 @@
         if(draft.adjustmentReason) $('adjustmentReason').value = draft.adjustmentReason;
         if(draft.closingText) $('closingText').value = draft.closingText;
         const paymentStatus = String(draft.paymentStatus || draft.payment_status || state.crmRecord?.payment_status || '').toLowerCase();
-        $('showDeposit').checked = true;
+        const savedStage = ITINERARY_STAGES.includes(draft.itineraryStage) ? draft.itineraryStage : '';
+        $('itineraryStage').value = paymentStatus === 'paid' ? 'paid_in_full' : paymentStatus === 'deposit_paid' ? 'deposit_received' : ['payment_pending','deposit_pending'].includes(paymentStatus) ? 'approved_pending' : savedStage || 'preliminary';
+        $('showDeposit').checked = $('itineraryStage').value === 'approved_pending';
         $('offerZelle').checked = draft.offerZelle === true;
         $('zelleEmail').value = draft.zelleEmail || 'mindobirdwatching@gmail.com';
         $('zelleEmailField').hidden = !$('offerZelle').checked;
-        $('depositPaid').checked = draft.depositPaid === true || ['deposit_paid','paid'].includes(paymentStatus);
+        $('depositPaid').checked = ['deposit_received','paid_in_full'].includes($('itineraryStage').value);
         $('depositLink').value = draft.depositLink || DEPOSIT_LINK;
         $('showInvoice').checked = draft.showInvoice === true;
         $('invoiceLink').value = draft.invoiceLink || draft.invoice_url || '';
         $('showItemPrices').checked = draft.showItemPrices !== false;
+        applyLanguageDefaults($('language').value,true);
         state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
           const requestedProduct = String(raw.productPreset || raw.name || 'Other');
           const knownProduct = PRODUCT_OPTIONS.includes(requestedProduct);
@@ -1555,6 +1642,7 @@
         $('guestName').value='';
         $('guestEmail').value='';
         $('language').value='en';
+        $('itineraryStage').value='preliminary';
         $('heroImage').value=DEFAULT_HERO_IMAGE;
         $('tripTitle').value=COPY.en.defaultTitle;
         $('startDate').value='';
@@ -1575,6 +1663,7 @@
         $('showInvoice').checked=false;
         $('invoiceLink').value='';
         $('showItemPrices').checked=true;
+        updateStageControls();
         state.items=[];
         addItem({type:'Transportation',productPreset:'TRANS06 - Quito -> Mindo -> Quito',name:'TRANS06 - Quito -> Mindo -> Quito',startTime:'03:00',duration:'Flexible',quantity:1,unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});
         addItem({type:'Birdwatching',productPreset:'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',name:'MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock',startTime:'05:00',duration:'Full Day',quantity:2,unitPrice:115,note:PRODUCT_DEFAULTS['MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock'].note});
