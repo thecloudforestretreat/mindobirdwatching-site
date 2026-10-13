@@ -62,7 +62,12 @@
     return clean(row.approval_status).toUpperCase() === "APPROVED" && Number(row.quality_score || 0) >= 92 && copyIsGenerated(row);
   }
   function copyIsGenerating(row) {
-    return clean(row.status).toLowerCase() === "testing" && !copyIsGenerated(row);
+    return ["testing", "generating"].includes(clean(row.status).toLowerCase()) && !copyIsGenerated(row);
+  }
+  function isStaleGeneration(row) {
+    if (clean(row.status).toLowerCase() !== "generating") return false;
+    var started = Date.parse(clean(row.draft_generated_at));
+    return Number.isFinite(started) && started <= Date.now() - (15 * 60 * 1000);
   }
   function bucket(row) {
     var status = clean(row.status).toLowerCase();
@@ -71,13 +76,14 @@
     var posted = selected.filter(function (platform) { return platformId(row, platform); });
     var failed = failedPlatforms(row);
     if (status === "published" || (selected.length && posted.length === selected.length)) return "published";
-    if (["failed", "partial", "error", "recovery_required"].includes(status) || failed.length || (posted.length && posted.length < selected.length)) return "failed";
+    if (isStaleGeneration(row) || ["failed", "partial", "error", "recovery_required"].includes(status) || failed.length || (posted.length && posted.length < selected.length)) return "failed";
     if (["scheduled", "publishing", "ready"].includes(status) && approval === "APPROVED") return "upcoming";
     return "review";
   }
   function statusLabel(row) {
     var group = bucket(row);
     if (group === "published") return { label: "Published", tone: "live" };
+    if (isStaleGeneration(row)) return { label: "Generation timed out", tone: "error" };
     if (group === "failed") return { label: clean(row.status) || "Partial", tone: "error" };
     if (group === "upcoming") return { label: clean(row.status) || "Scheduled", tone: "scheduled" };
     if (copyIsGenerating(row)) return { label: "Generating copy", tone: "pending" };
@@ -168,7 +174,7 @@
     var info = statusLabel(row);
     var group = bucket(row);
     var id = rowId(row);
-    var primaryAction = group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
+    var primaryAction = group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : isStaleGeneration(row) ? "Review & regenerate" : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
     var youtube = youtubeUrl(row);
     return '<article class="reelCard" data-reel-id="' + esc(id) + '">' +
       '<div class="videoShell"><video src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls aria-label="Preview ' + esc(id) + '"></video><div class="videoMeta"><span>REEL</span><span>' + esc(clean(row.location) || "Mindo") + "</span></div></div>" +
@@ -302,7 +308,9 @@
     if (!row) return;
     state.selected = row;
     var youtube = youtubeUrl(row);
-    var reviewNotice = copyIsApproved(row) ? "" : clean(row.error_message || row.supervision_notes);
+    var reviewNotice = isStaleGeneration(row)
+      ? "Copy generation timed out before it finished. The reel was not approved or published. Regenerate it to start one protected attempt."
+      : copyIsApproved(row) ? "" : clean(row.error_message || row.supervision_notes);
     var links = [row.instagram_url && ["Instagram", row.instagram_url], row.facebook_url && ["Facebook", row.facebook_url], youtube && ["Watch on YouTube", youtube], row.tiktok_url && ["TikTok", row.tiktok_url]].filter(Boolean);
     $("reviewTitle").textContent = clean(row.activity_name) || "Review reel " + rowId(row);
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
@@ -322,7 +330,7 @@
     $("reviewActions").innerHTML = (group === "published" ? "" : '<button class="button buttonGhost" type="button" data-action="save">Save edits</button>') +
       (group === "review" || group === "upcoming" ? '<button class="button buttonGhost" type="button" data-action="regenerate">Regenerate</button>' : "") +
       (group === "review" ? '<button class="button buttonPrimary" type="button" data-action="approve">Approve & schedule</button>' : "") +
-      (group === "failed" ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
+      (isStaleGeneration(row) ? '<button class="button buttonPrimary" type="button" data-action="regenerate">Regenerate copy</button>' : group === "failed" ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
       (youtube ? '<button class="button buttonGhost" type="button" data-copy-youtube>Copy YouTube URL</button>' : "");
     $("reviewBackdrop").hidden = false; document.body.style.overflow = "hidden";
   }
