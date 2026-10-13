@@ -74,7 +74,7 @@
     .summaryBox{border:1px solid rgba(13,89,37,.2);border-radius:15px;background:rgba(199,218,172,.22);padding:12px;margin-top:10px}
     .summaryRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 0;font-weight:850}
     .summaryRow.total{margin-top:5px;padding-top:10px;border-top:1px solid rgba(13,89,37,.2);color:var(--green);font-size:18px;font-weight:950}
-    .stageSection{background:linear-gradient(135deg,#edf7e6,#f8fbf5);border:1px solid rgba(13,89,37,.28)}
+    .section.stageSection{padding:14px;margin:0 0 14px;border:1px solid rgba(13,89,37,.28);border-radius:16px;background:linear-gradient(135deg,#edf7e6,#f8fbf5)}
     .stageSelect{font-size:16px;font-weight:900;color:var(--green);border-color:rgba(13,89,37,.35);background:#fff}
     .stageHint{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.45;font-weight:750}
     .stageBadge{display:inline-flex;align-items:center;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:#fff;color:var(--green);border:1px solid rgba(13,89,37,.25);font-size:10px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
@@ -99,7 +99,9 @@
     .heroEyebrow{font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900}
     .heroMeta{margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900}
     .heroTitle{margin:6px 0 9px;font-family:Georgia,"Times New Roman",serif;font-size:38px;line-height:42px;color:#fff;font-weight:700;letter-spacing:-.02em}
-    .heroIntro{margin:0;font-size:15px;line-height:23px;color:#F4FAEF;white-space:pre-wrap}
+    .heroIntro{font-size:15px;line-height:23px;color:#F4FAEF;white-space:pre-wrap}
+    .heroIntro p{margin:0}
+    .heroIntro p+p{margin-top:12px}
     .contentCard{margin:0 20px 10px;padding:18px 20px;background:#fff;border:1px solid rgba(7,25,35,.14)}
     .greeting{margin:0 0 12px;font-size:14px;line-height:21px;color:#071923}
     .tripMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -1097,7 +1099,7 @@
               <div class="heroEyebrow">${escapeHtml(stageCopy.eyebrow)}</div>
               <div class="heroMeta">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
               <h1 class="heroTitle">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
-              <p class="heroIntro">${escapeHtml(c.hi)} ${escapeHtml(guestFirstName(data.guestName) || c.guest)}, ${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p>
+              <div class="heroIntro"><p>${escapeHtml(c.hi)} ${escapeHtml(guestFirstName(data.guestName) || c.guest)},</p><p>${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p></div>
             </div>
           </section>
           <section class="contentCard"><div class="tripMeta">
@@ -1161,7 +1163,8 @@
               <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900;">${escapeHtml(stageCopy.eyebrow)}</div>
               <div style="margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900;">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
               <h1 style="margin:6px 0 9px;font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:42px;color:#ffffff;font-weight:700;letter-spacing:-.02em;">${escapeHtml(data.tripTitle || c.defaultTitle)}</h1>
-              <p style="margin:0;font-size:15px;line-height:23px;color:#F4FAEF;">${escapeHtml(c.hi)} ${escapeHtml(guestName)}, ${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p>
+              <p style="margin:0;font-size:15px;line-height:23px;color:#F4FAEF;">${escapeHtml(c.hi)} ${escapeHtml(guestName)},</p>
+              <p style="margin:12px 0 0;font-size:15px;line-height:23px;color:#F4FAEF;">${escapeHtml(openingWithoutGreeting(data.openingText) || c.defaultOpening)}</p>
             </td></tr>
           </table>`
         ));
