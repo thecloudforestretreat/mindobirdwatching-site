@@ -1,4 +1,4 @@
-/* MBW SHOP API V25 - MERCHANT FEED CLEANUP + PRINTIFY PUBLISH SYNC */
+/* MBW SHOP API V26 - TOUR DEPOSIT EMAILS + PRINTIFY BYPASS */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -1771,16 +1771,20 @@ async function saveStripeOrderToD1(
             160
           ),
           cleanText(
-            metadata.ship_first_name,
+            metadata.ship_first_name ||
+            metadata.guest_first_name ||
+            metadata.main_contact_name,
             80
           ),
           cleanText(
-            metadata.ship_last_name,
+            metadata.ship_last_name ||
+            metadata.guest_last_name,
             80
           ),
           cleanText(
             customerDetails.phone ||
-            metadata.ship_phone,
+            metadata.ship_phone ||
+            metadata.main_contact_phone,
             40
           ),
           cleanText(
@@ -2247,18 +2251,6 @@ async function createPrintifyOrderIfEnabled(
     };
   }
 
-  if (
-    !env.PRINTIFY_API_TOKEN ||
-    !env.PRINTIFY_SHOP_ID
-  ) {
-    return {
-      ok: false,
-      status: "failed",
-      error:
-        "Printify configuration is incomplete"
-    };
-  }
-
   await ensurePrintifyOrderColumns(env);
 
   const order =
@@ -2283,7 +2275,8 @@ async function createPrintifyOrderIfEnabled(
            shipping_method_code,
            printify_order_id,
            printify_status,
-           fulfillment_status
+           fulfillment_status,
+           raw_stripe_session_json
          FROM orders
          WHERE stripe_session_id = ?
          LIMIT 1`
@@ -2306,6 +2299,47 @@ async function createPrintifyOrderIfEnabled(
       status: "failed",
       error:
         "Printify order creation requires a paid Stripe order"
+    };
+  }
+
+  const paymentContext =
+    getOrderPaymentContext(order);
+
+  if (paymentContext.isTourDeposit) {
+    const now =
+      new Date().toISOString();
+
+    await env.DB
+      .prepare(
+        `UPDATE orders
+         SET
+           printify_status = 'not_applicable',
+           fulfillment_status = 'tour_deposit_received',
+           printify_order_error = NULL,
+           updated_at = ?
+         WHERE id = ?`
+      )
+      .bind(now, order.id)
+      .run();
+
+    return {
+      ok: true,
+      status: "not_applicable",
+      skipped: true,
+      fulfillment_status:
+        "tour_deposit_received"
+    };
+  }
+
+  if (
+    !env.PRINTIFY_API_TOKEN ||
+    !env.PRINTIFY_SHOP_ID
+  ) {
+    return {
+      ok: false,
+      status: "failed",
+      error:
+        "Printify configuration is incomplete"
     };
   }
 
@@ -3961,6 +3995,102 @@ function buildAdminShippingEmailText(
 }
 
 
+function parseStoredStripeSession(order) {
+  if (
+    !order ||
+    !order.raw_stripe_session_json
+  ) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(
+      order.raw_stripe_session_json
+    );
+
+    return parsed && typeof parsed === "object"
+      ? parsed
+      : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function getOrderPaymentContext(
+  order,
+  items = []
+) {
+  const session =
+    parseStoredStripeSession(order);
+  const metadata =
+    session.metadata &&
+    typeof session.metadata === "object"
+      ? session.metadata
+      : {};
+
+  const tourCode =
+    cleanText(metadata.tour_code, 40)
+      .trim()
+      .toUpperCase();
+  const serviceType =
+    cleanText(metadata.service_type, 80)
+      .trim()
+      .toLowerCase();
+  const firstItemTitle =
+    cleanText(
+      items && items[0]
+        ? items[0].product_title
+        : "",
+      300
+    )
+      .trim()
+      .toLowerCase();
+
+  const isTourDeposit =
+    tourCode === "DEP001" ||
+    serviceType === "reservation_deposit" ||
+    (
+      !tourCode &&
+      firstItemTitle ===
+        "tour reservation deposit"
+    );
+
+  return {
+    kind:
+      isTourDeposit
+        ? "tour_deposit"
+        : "shop_order",
+    isTourDeposit,
+    tourCode,
+    serviceType,
+    tourTitle:
+      cleanText(
+        metadata.tour_title ||
+        (items && items[0]
+          ? items[0].product_title
+          : "Tour Reservation Deposit"),
+        300
+      ),
+    language:
+      cleanText(metadata.language, 10)
+        .trim()
+        .toLowerCase() || "en",
+    tourDate:
+      cleanText(metadata.tour_date, 40),
+    numberOfPeople:
+      cleanText(
+        metadata.number_of_people,
+        20
+      ),
+    pickupLocation:
+      cleanText(
+        metadata.pickup_location_label ||
+        metadata.pickup_address_or_hotel,
+        300
+      )
+  };
+}
+
 async function sendCustomerOrderConfirmation(
   env,
   stripeSessionId
@@ -4005,6 +4135,7 @@ async function sendCustomerOrderConfirmation(
            shipping_country,
            shipping_method_name,
            shipping_method_code,
+           raw_stripe_session_json,
            confirmation_email_status,
            updated_at
          FROM orders
@@ -4148,20 +4279,40 @@ async function sendCustomerOrderConfirmation(
       ? items.results
       : [];
 
+  const paymentContext =
+    getOrderPaymentContext(
+      order,
+      orderItems
+    );
+
   const subject =
-    `Your Mindo Bird Watching order is confirmed - ${order.mbw_order_id}`;
+    paymentContext.isTourDeposit
+      ? `Your Mindo Bird Watching tour deposit was received - ${order.mbw_order_id}`
+      : `Your Mindo Bird Watching order is confirmed - ${order.mbw_order_id}`;
 
   const html =
-    buildCustomerOrderEmailHtml(
-      order,
-      orderItems
-    );
+    paymentContext.isTourDeposit
+      ? buildCustomerTourDepositEmailHtml(
+          order,
+          orderItems,
+          paymentContext
+        )
+      : buildCustomerOrderEmailHtml(
+          order,
+          orderItems
+        );
 
   const text =
-    buildCustomerOrderEmailText(
-      order,
-      orderItems
-    );
+    paymentContext.isTourDeposit
+      ? buildCustomerTourDepositEmailText(
+          order,
+          orderItems,
+          paymentContext
+        )
+      : buildCustomerOrderEmailText(
+          order,
+          orderItems
+        );
 
   let response;
   let data;
@@ -4299,6 +4450,255 @@ async function markCustomerEmailFailed(
       orderId
     )
     .run();
+}
+
+function buildTourDepositDetailRows(
+  context
+) {
+  const details = [
+    ["Tour", context.tourTitle],
+    ["Tour date", context.tourDate],
+    ["Guests", context.numberOfPeople],
+    ["Pickup", context.pickupLocation]
+  ].filter(([, value]) => Boolean(value));
+
+  return details
+    .map(([label, value]) => `
+      <tr>
+        <td style="padding:5px 12px 5px 0;font-size:13px;line-height:19px;color:#667085;vertical-align:top;white-space:nowrap;">${escapeEmailHtml(label)}</td>
+        <td style="padding:5px 0;font-size:13px;line-height:19px;color:#173A24;font-weight:700;vertical-align:top;">${escapeEmailHtml(value)}</td>
+      </tr>`)
+    .join("");
+}
+
+function buildTourDepositEmailHtml(
+  order,
+  items,
+  context,
+  audience
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+  const isAdmin =
+    audience === "admin";
+  const firstName =
+    cleanText(
+      order.customer_first_name ||
+      "there",
+      80
+    );
+  const item =
+    items && items[0]
+      ? items[0]
+      : {};
+  const depositTitle =
+    context.tourTitle ||
+    item.product_title ||
+    "Tour Reservation Deposit";
+  const customerName =
+    [
+      order.customer_first_name,
+      order.customer_last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    "Not provided";
+  const detailRows =
+    buildTourDepositDetailRows(context);
+  const introduction =
+    isAdmin
+      ? "Stripe has verified the payment and saved it to the MBW payment record."
+      : `Hi ${escapeEmailHtml(firstName)}, we received your deposit for your Mindo Bird Watching reservation.`;
+  const nextStep =
+    isAdmin
+      ? "Review the guest record in Guest CRM, confirm that the deposit is applied to the booking balance, and verify the remaining tour arrangements."
+      : "This deposit will be credited toward the total booking cost. Our team will confirm your tour arrangements and remaining balance separately.";
+
+  return `<!doctype html>
+<html>
+<body style="margin:0;padding:0;background:#F3F7F1;font-family:Arial,Helvetica,sans-serif;color:#173A24;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F3F7F1;">
+    <tr>
+      <td align="center" style="padding:28px 14px;">
+        <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:620px;background:#FFFFFF;border:1px solid #DDE7DE;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="padding:24px 26px;background:#0D5925;color:#FFFFFF;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td valign="middle" style="padding-right:12px;">
+                    <img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" width="46" height="46" alt="Mindo Bird Watching" style="display:block;width:46px;height:46px;border-radius:50%;background:#FFFFFF;">
+                  </td>
+                  <td valign="middle">
+                    <div style="font-size:12px;line-height:18px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Mindo Bird Watching Tours</div>
+                    <div style="font-size:25px;line-height:31px;font-weight:800;margin-top:2px;">Tour deposit received</div>
+                  </td>
+                </tr>
+              </table>
+              <div style="font-size:13px;line-height:20px;margin-top:12px;opacity:.92;">${introduction}</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 26px;">
+              <div style="padding:13px 15px;border-radius:12px;background:#F5F9F4;border:1px solid #DDE7DE;">
+                <div style="font-size:11px;line-height:17px;color:#667085;text-transform:uppercase;letter-spacing:.06em;font-weight:800;">Inquiry / payment ID</div>
+                <div style="font-size:13px;line-height:20px;font-weight:800;color:#0D5925;word-break:break-all;margin-top:3px;">${escapeEmailHtml(order.mbw_order_id)}</div>
+              </div>
+
+              <div style="height:22px;"></div>
+
+              <div style="font-size:17px;line-height:24px;font-weight:800;color:#173A24;">Deposit details</div>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:8px;">
+                <tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #E7ECE8;font-size:14px;line-height:20px;font-weight:800;color:#173A24;">${escapeEmailHtml(depositTitle)}</td>
+                  <td align="right" style="padding:12px 0 12px 16px;border-bottom:1px solid #E7ECE8;font-size:14px;line-height:20px;font-weight:800;color:#173A24;white-space:nowrap;">${formatEmailMoney(order.total_cents, currency)}</td>
+                </tr>
+                ${detailRows}
+                <tr>
+                  <td style="padding:14px 0 0;border-top:1px solid #DDE7DE;font-size:15px;font-weight:800;color:#173A24;">Deposit received</td>
+                  <td align="right" style="padding:14px 0 0;border-top:1px solid #DDE7DE;font-size:17px;font-weight:800;color:#0D5925;">${formatEmailMoney(order.total_cents, currency)}</td>
+                </tr>
+              </table>
+
+              ${isAdmin ? `
+              <div style="height:24px;"></div>
+              <div style="font-size:15px;line-height:22px;font-weight:800;color:#173A24;">Guest</div>
+              <div style="font-size:13px;line-height:20px;color:#475467;margin-top:8px;">
+                ${escapeEmailHtml(customerName)}<br>
+                ${escapeEmailHtml(order.customer_email || "Email not provided")}<br>
+                ${escapeEmailHtml(order.customer_phone || "Phone not provided")}
+              </div>` : ""}
+
+              <div style="margin-top:24px;padding:14px 16px;border-radius:12px;background:#FFF8DD;border:1px solid #F2C94C;font-size:13px;line-height:20px;color:#5B4600;">
+                <strong>${isAdmin ? "Next step:" : "What happens next:"}</strong>
+                ${escapeEmailHtml(nextStep)}
+              </div>
+            </td>
+          </tr>
+
+          ${buildTransactionalEmailFooterHtml()}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildCustomerTourDepositEmailHtml(
+  order,
+  items,
+  context
+) {
+  return buildTourDepositEmailHtml(
+    order,
+    items,
+    context,
+    "customer"
+  );
+}
+
+function buildAdminTourDepositEmailHtml(
+  order,
+  items,
+  context
+) {
+  return buildTourDepositEmailHtml(
+    order,
+    items,
+    context,
+    "admin"
+  );
+}
+
+function buildTourDepositEmailText(
+  order,
+  context,
+  audience
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+  const isAdmin =
+    audience === "admin";
+  const lines = [
+    "MINDO BIRD WATCHING TOURS",
+    "Tour deposit received",
+    "",
+    isAdmin
+      ? "Stripe has verified the payment and saved it to the MBW payment record."
+      : "We received your deposit for your Mindo Bird Watching reservation.",
+    "",
+    `Inquiry / payment ID: ${order.mbw_order_id}`,
+    `Tour: ${context.tourTitle || "Tour Reservation Deposit"}`,
+    context.tourDate
+      ? `Tour date: ${context.tourDate}`
+      : "",
+    context.numberOfPeople
+      ? `Guests: ${context.numberOfPeople}`
+      : "",
+    context.pickupLocation
+      ? `Pickup: ${context.pickupLocation}`
+      : "",
+    `DEPOSIT RECEIVED: ${formatEmailMoney(order.total_cents, currency)}`,
+    ""
+  ];
+
+  if (isAdmin) {
+    lines.push(
+      `Guest: ${[order.customer_first_name, order.customer_last_name].filter(Boolean).join(" ") || "Not provided"}`,
+      `Email: ${order.customer_email || "Not provided"}`,
+      `Phone: ${order.customer_phone || "Not provided"}`,
+      "",
+      "NEXT STEP:",
+      "Review the guest record in Guest CRM, confirm that the deposit is applied to the booking balance, and verify the remaining tour arrangements."
+    );
+  } else {
+    lines.push(
+      "WHAT HAPPENS NEXT:",
+      "This deposit will be credited toward the total booking cost. Our team will confirm your tour arrangements and remaining balance separately."
+    );
+  }
+
+  return lines
+    .filter((line, index, array) => {
+      if (line !== "") {
+        return true;
+      }
+
+      return index === 0 ||
+        array[index - 1] !== "";
+    })
+    .join("\n");
+}
+
+function buildCustomerTourDepositEmailText(
+  order,
+  items,
+  context
+) {
+  void items;
+
+  return buildTourDepositEmailText(
+    order,
+    context,
+    "customer"
+  );
+}
+
+function buildAdminTourDepositEmailText(
+  order,
+  items,
+  context
+) {
+  void items;
+
+  return buildTourDepositEmailText(
+    order,
+    context,
+    "admin"
+  );
 }
 
 function buildCustomerOrderEmailHtml(
@@ -4571,6 +4971,7 @@ async function sendAdminOrderConfirmation(
            shipping_country,
            shipping_method_name,
            shipping_method_code,
+           raw_stripe_session_json,
            admin_confirmation_email_status,
            admin_confirmation_email_sent_at,
            updated_at
@@ -4702,20 +5103,40 @@ async function sendAdminOrderConfirmation(
       ? items.results
       : [];
 
+  const paymentContext =
+    getOrderPaymentContext(
+      order,
+      orderItems
+    );
+
   const subject =
-    `[MBW Shop] New paid order ${order.mbw_order_id}`;
+    paymentContext.isTourDeposit
+      ? `[MBW Tour Deposit] Deposit received ${order.mbw_order_id}`
+      : `[MBW Shop] New paid order ${order.mbw_order_id}`;
 
   const html =
-    buildAdminOrderEmailHtml(
-      order,
-      orderItems
-    );
+    paymentContext.isTourDeposit
+      ? buildAdminTourDepositEmailHtml(
+          order,
+          orderItems,
+          paymentContext
+        )
+      : buildAdminOrderEmailHtml(
+          order,
+          orderItems
+        );
 
   const text =
-    buildAdminOrderEmailText(
-      order,
-      orderItems
-    );
+    paymentContext.isTourDeposit
+      ? buildAdminTourDepositEmailText(
+          order,
+          orderItems,
+          paymentContext
+        )
+      : buildAdminOrderEmailText(
+          order,
+          orderItems
+        );
 
   let response;
   let data;
