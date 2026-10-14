@@ -94,6 +94,11 @@ local writing pass, approval is removed and publishing fails closed. If the admi
 cannot reach n8n, it returns HTTP 503 and explains that the Mac mini service is offline;
 queued rows remain untouched.
 
+The production Reels and Carousel queues are checked once per hour, at minute `:00`.
+Rows stay eligible after their scheduled time, so an outage does not discard them. A
+row scheduled between hourly checks can publish at the next check; the normal 7:00 AM
+schedule aligns exactly with the 7:00 AM check.
+
 An independent external monitor is still needed for proactive outage notifications. A
 computer that is powered off cannot run its own alerting workflow.
 

@@ -46,3 +46,7 @@ recorded as `mac_mini_writer_unavailable`, remove approval, and fail closed befo
 social publishing call. The admin API returns HTTP 503 with an explicit Mac mini outage
 message when it cannot reach the workflow. An independent external uptime monitor is
 still required to notify operators while the Mac mini itself is powered off.
+
+The production Reels and Carousel schedule triggers run once per hour at minute `:00`.
+Due rows remain eligible on later runs, so the hourly cadence reduces unnecessary Mac
+mini work without abandoning a post after a temporary outage.
