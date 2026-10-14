@@ -57,7 +57,8 @@ row and preserve platform publication IDs and dates.
 ### `approve_reel`
 
 Re-run deterministic validation against saved edits. Set `status=Scheduled` only when
-`approval_status=APPROVED`, `quality_score>=92`, and at least one destination is enabled.
+`approval_status=APPROVED`, `quality_score>=92`, and at least one automated destination
+(Instagram, Facebook, or YouTube) is enabled. TikTok is copy-only.
 
 ### `regenerate_reel`
 
@@ -70,12 +71,37 @@ scheduled reels, so copy can be regenerated without first removing the schedule.
 Retry only selected platforms whose publication ID is blank. Never resend a platform
 that already has a saved post ID.
 
+Retries are also blocked when a platform has a durable publication claim but no saved
+post ID. That state is intentionally ambiguous: the platform request may have succeeded
+while the following Sheet update failed. Reconcile the platform first; do not clear a
+claim merely to make the workflow run again.
+
+## Publication safety model
+
+Instagram, Facebook, and YouTube are claimed in `ai_reels` before any external API call.
+The row remains `Scheduled` while routing is evaluated.
+
+- A successful platform write saves its external ID and sets its state to `PUBLISHED`.
+- A complete run becomes `Published` only after every automated destination has proof.
+- A timeout after a claim becomes `RECONCILE`; automatic retry is disabled.
+- TikTok captions and hashtags are generated for copying, but TikTok is not published.
+- Stale generation locks become reviewable after 15 minutes instead of remaining stuck.
+
+## Mac mini dependency
+
+The Mac mini is the production runtime for n8n and Ollama. If Ollama does not complete a
+local writing pass, approval is removed and publishing fails closed. If the admin API
+cannot reach n8n, it returns HTTP 503 and explains that the Mac mini service is offline;
+queued rows remain untouched.
+
+An independent external monitor is still needed for proactive outage notifications. A
+computer that is powered off cannot run its own alerting workflow.
+
 ## Time zones
 
-New submissions send an explicit IANA zone. The default is `America/Guayaquil` (Mindo
-time). `America/New_York` is also available. The gateway should convert the supplied
-local date and time to one instant before comparisons and retain the submitted zone for
-display.
+New submissions use `America/New_York` and the UI labels the schedule as Eastern time
+(EST/EDT). The gateway should convert the supplied local date and time to one instant
+before comparisons and retain the submitted zone for display.
 
 ## Local visual QA
 

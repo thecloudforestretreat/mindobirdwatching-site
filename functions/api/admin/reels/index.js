@@ -111,7 +111,11 @@ async function callWorkflow(request, env, payload) {
     return { response: data, error: null };
   } catch (error) {
     console.error("Admin Reels workflow failed", { action: payload.action, requestId: payload.request_id, message: error?.message });
-    return { response: null, error: json(request, { ok: false, message: "The Reels workflow is temporarily unavailable." }, 502) };
+    return { response: null, error: json(request, {
+      ok: false,
+      code: "MAC_MINI_WORKFLOW_UNAVAILABLE",
+      message: "The Mac mini publishing service is offline or unreachable. Reels remain safely queued and will not publish until n8n and Ollama are available again."
+    }, 503) };
   }
 }
 
@@ -150,7 +154,7 @@ export async function onRequestPost({ request, env }) {
     try { reels = input.reels.map((row) => normalizeReel(row, timezone)); }
     catch (error) { return json(request, { ok: false, message: error.message }, 400); }
     if (new Set(reels.map((row) => row.video_url)).size !== reels.length) return json(request, { ok: false, message: "Video URLs must be unique within a batch." }, 400);
-    if (reels.some((row) => !row.post_to_instagram && !row.post_to_facebook && !row.post_on_youtube && !row.post_on_tiktok)) return json(request, { ok: false, message: "Each reel needs at least one destination." }, 400);
+    if (reels.some((row) => !row.post_to_instagram && !row.post_to_facebook && !row.post_on_youtube)) return json(request, { ok: false, message: "Each reel needs Instagram, Facebook, or YouTube for automated publishing. TikTok is copy-only." }, 400);
     payload = { action, request_id: requestId, mode, timezone, reels };
   } else {
     const id = identifier(input);

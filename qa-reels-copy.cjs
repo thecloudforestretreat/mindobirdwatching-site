@@ -5,6 +5,8 @@ const prompt = fs.readFileSync('n8n/reels-v9/build-local-creative-request.js', '
 const parser = fs.readFileSync('n8n/reels-v9/parse-validate-local-draft.js', 'utf8');
 const guard = fs.readFileSync('n8n/reels-v9/validate-copy-before-publishing.js', 'utf8');
 const intake = fs.readFileSync('n8n/reels-v9/intake-defaults.js', 'utf8');
+const claim = fs.readFileSync('n8n/reels-v9/publish-claim.js', 'utf8');
+const finalizer = fs.readFileSync('n8n/reels-v9/finalize-publish.js', 'utf8');
 
 const badCaption = 'One birdwatching in Mindo, Ecuador can bring several distinct moments together. A young kid playing by the river, plus two yellow-throated toucans on a tree and a hummingbird battling the rain... Those are the details that made this experience in Mindo, Ecuador worth sharing. Every outing develops from the moments that are actually present, and this was the clear focus here.';
 const secondBadCaption = 'Birding in Mindo can unfold in unexpected ways. Three distinct moments shared the same outing, each offering something different to notice. Which one would have caught your eye first?';
@@ -25,6 +27,13 @@ assert(guard.includes('existing publication data found'), 'Publishing guard must
 assert(prompt.includes('Never open with a broad claim about how birding "can unfold"'), 'Writer must lead with a concrete subject or action');
 assert(intake.includes('Number(row.quality_score || 0) >= 92'), 'Existing copy must meet the strong quality threshold');
 assert(parser.includes("'trail'"), 'Generated settings such as a trail must be grounded in the intake');
+assert(parser.includes('mac_mini_writer_unavailable'), 'Ollama transport failures must be identified as Mac mini outages');
+assert(intake.includes("status === 'generating'"), 'Stale Mac mini generation locks must be recoverable');
+assert(!claim.includes("platform: 'tiktok'"), 'TikTok must never receive an automated publication claim');
+assert(claim.includes("row.status = 'Needs Attention'"), 'Ambiguous claims must fail closed for reconciliation');
+assert(claim.includes('return { json: row }'), 'Per-item claim node must return one n8n item object');
+assert(finalizer.includes('Legacy claims must not keep'), 'Finalizer must clear obsolete TikTok claims');
+assert(finalizer.includes('return { json: row }'), 'Per-item finalizer must return one n8n item object');
 
 const rejectionPatterns = [
   /can bring several distinct moments together/i,

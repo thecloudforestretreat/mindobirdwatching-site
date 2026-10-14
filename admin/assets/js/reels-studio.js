@@ -48,15 +48,18 @@
   }
   function platformId(row, platform) { return clean(row[platform + "_post_id"]); }
   function platformState(row, platform) { return clean(row[platform + "_publish_state"]).toUpperCase(); }
+  var AUTOMATED_PLATFORMS = ["instagram", "facebook", "youtube"];
+  var COPY_ONLY_PLATFORMS = ["tiktok"];
+  function selectedPlatforms(row) { return AUTOMATED_PLATFORMS.concat(COPY_ONLY_PLATFORMS).filter(function (platform) { return platformSelected(row, platform); }); }
+  function automatedPlatforms(row) { return AUTOMATED_PLATFORMS.filter(function (platform) { return platformSelected(row, platform); }); }
   function needsReconciliation(row, platform) {
-    if (!platformSelected(row, platform) || platformId(row, platform)) return false;
+    if (!AUTOMATED_PLATFORMS.includes(platform) || !platformSelected(row, platform) || platformId(row, platform)) return false;
     return Boolean(clean(row[platform + "_publish_claim_id"])) || ["CLAIMED", "PUBLISHING", "UNKNOWN", "RECONCILE"].includes(platformState(row, platform));
   }
-  function reconciliationPlatforms(row) { return ["instagram", "facebook", "youtube", "tiktok"].filter(function (platform) { return needsReconciliation(row, platform); }); }
-  function selectedPlatforms(row) { return ["instagram", "facebook", "youtube", "tiktok"].filter(function (platform) { return platformSelected(row, platform); }); }
+  function reconciliationPlatforms(row) { return AUTOMATED_PLATFORMS.filter(function (platform) { return needsReconciliation(row, platform); }); }
   function failedPlatforms(row) {
     var value = clean(row.failed_platforms || row.publish_failed_platforms).toLowerCase();
-    return ["instagram", "facebook", "youtube", "tiktok"].filter(function (platform) { return value.includes(platform); });
+    return AUTOMATED_PLATFORMS.filter(function (platform) { return value.includes(platform); });
   }
   function copyIsGenerated(row) {
     if (!has(row.instagram_caption_final)) return false;
@@ -78,12 +81,12 @@
   function bucket(row) {
     var status = clean(row.status).toLowerCase();
     var approval = clean(row.approval_status).toUpperCase();
-    var selected = selectedPlatforms(row);
+    var selected = automatedPlatforms(row);
     var posted = selected.filter(function (platform) { return platformId(row, platform); });
     var failed = failedPlatforms(row);
     if (status === "published" || (selected.length && posted.length === selected.length)) return "published";
     if (isStaleGeneration(row) || reconciliationPlatforms(row).length || ["failed", "partial", "error", "recovery_required", "needs attention"].includes(status) || failed.length || (posted.length && posted.length < selected.length)) return "failed";
-    if (["scheduled", "ready"].includes(status) && approval === "APPROVED") return "upcoming";
+    if (["scheduled", "publishing", "ready"].includes(status) && approval === "APPROVED") return "upcoming";
     return "review";
   }
   function statusLabel(row) {
@@ -170,11 +173,12 @@
   }
   function platformMarkup(row) {
     var failed = failedPlatforms(row);
-    var labels = { instagram: "Instagram", facebook: "Facebook", youtube: "YouTube", tiktok: "TikTok" };
+    var labels = { instagram: "Instagram", facebook: "Facebook", youtube: "YouTube", tiktok: "TikTok copy" };
     return selectedPlatforms(row).map(function (platform) {
+      var copyOnly = COPY_ONLY_PLATFORMS.includes(platform);
       var live = Boolean(platformId(row, platform));
       var broken = failed.includes(platform) || needsReconciliation(row, platform);
-      return '<span class="platformPill' + (live ? " isLive" : broken ? " isError" : "") + '">' + esc(labels[platform]) + (live ? " ✓" : broken ? " !" : "") + "</span>";
+      return '<span class="platformPill' + (copyOnly ? " isCopy" : live ? " isLive" : broken ? " isError" : "") + '">' + esc(labels[platform]) + (copyOnly ? "" : live ? " ✓" : broken ? " !" : "") + "</span>";
     }).join("") || '<span class="platformPill isError">No destinations</span>';
   }
   function cardMarkup(row) {
@@ -256,7 +260,8 @@
     var payload = batchPayload();
     var duplicate = payload.reels.some(function (row, index) { return payload.reels.findIndex(function (candidate) { return candidate.video_url === row.video_url; }) !== index; });
     if (duplicate) { setBatchStatus("Each video URL in the batch must be unique.", "error"); return; }
-    if (!Object.values(selectedDefaults()).some(Boolean)) { setBatchStatus("Select at least one destination.", "error"); return; }
+    var destinations = selectedDefaults();
+    if (!destinations.instagram && !destinations.facebook && !destinations.youtube) { setBatchStatus("Select Instagram, Facebook, or YouTube for automated publishing. TikTok currently generates copy only.", "error"); return; }
     if (!confirmSchedule(payload.reels, "")) return;
     $("submitBatch").disabled = true; setBatchStatus("Sending " + payload.reels.length + " reel" + (payload.reels.length === 1 ? "" : "s") + " for generation…", "");
     try {
@@ -325,6 +330,8 @@
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
       (reviewNotice ? '<div class="warningBox">' + esc(reviewNotice) + "</div>" : "") +
+      (reconciliationPlatforms(row).length ? '<div class="warningBox"><strong>Do not retry yet.</strong> The previous run may already have posted to ' + esc(reconciliationPlatforms(row).join(", ")) + '. Verify the live platform first; automatic retry is disabled to prevent duplicates.</div>' : "") +
+      (platformSelected(row, "tiktok") ? '<div class="infoBox"><strong>TikTok copy only.</strong> The caption and hashtags are prepared here, but this workflow does not publish to TikTok.</div>' : "") +
       scheduleEditor(row) +
       copyField("Original description", "reel_description", row.reel_description, true) +
       copyField("Instagram / Facebook caption", "instagram_caption_final", row.instagram_caption_final, true) +

@@ -12,12 +12,22 @@ const compact = value => norm(value).replace(/[^a-z0-9]/g, '').replace(/s$/, '')
 let draft = {};
 let parseError = '';
 let rawText = '';
+const transportMessage = clean(
+  $json?.error?.message
+  || $json?.error
+  || $json?.message?.error
+  || $json?.cause?.message
+  || ''
+).slice(0, 180);
 try {
   const raw = $json?.message?.content ?? $json?.response ?? $json?.content ?? '';
+  if (!raw && transportMessage) throw new Error(transportMessage);
   rawText = typeof raw === 'string' ? raw : JSON.stringify(raw);
   draft = typeof raw === 'object' && raw !== null ? raw : JSON.parse(rawText);
 } catch (error) {
-  parseError = `local_json_parse_failed:${error.message}`;
+  parseError = transportMessage
+    ? `mac_mini_writer_unavailable:${transportMessage}`
+    : `local_json_parse_failed:${error.message}`;
 }
 
 const birds = uniq((Array.isArray(draft.featured_birds) ? draft.featured_birds : clean(base.featured_birds).split(/[|,;]/)).map(clean).filter(Boolean));
@@ -107,5 +117,9 @@ return { json: {
   blurb, instagram_caption_raw: ig, instagram_caption_final: `${ig}\n\n${instagramHashtags}`, instagram_hashtags: instagramHashtags,
   youtube_title: yt, tiktok_caption: tt, tiktok_hashtags: tiktokHashtags, tiktok_additional_hashtags: additional.slice(0, 10).join(' '),
   x_caption: xx, x_hashtags: xTags, x_post_final: [xx, xTags].filter(Boolean).join('\n\n'),
-  error_message: approved ? '' : `COPY REVIEW REQUIRED: ${flags.join(' | ')}`,
+  error_message: approved
+    ? ''
+    : flags.some(flag => flag.startsWith('mac_mini_writer_unavailable:'))
+      ? 'MAC MINI UNAVAILABLE — Ollama did not complete the local writing pass. Copy was not approved or published. Keep the Mac mini awake, confirm Ollama is running, and regenerate.'
+      : `COPY REVIEW REQUIRED: ${flags.join(' | ')}`,
 } };
