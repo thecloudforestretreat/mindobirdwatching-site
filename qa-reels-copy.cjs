@@ -11,6 +11,7 @@ const finalizer = fs.readFileSync('n8n/reels-v9/finalize-publish.js', 'utf8');
 const badCaption = 'One birdwatching in Mindo, Ecuador can bring several distinct moments together. A young kid playing by the river, plus two yellow-throated toucans on a tree and a hummingbird battling the rain... Those are the details that made this experience in Mindo, Ecuador worth sharing. Every outing develops from the moments that are actually present, and this was the clear focus here.';
 const secondBadCaption = 'Birding in Mindo can unfold in unexpected ways. Three distinct moments shared the same outing, each offering something different to notice. Which one would have caught your eye first?';
 const thirdBadCaption = 'The tour offers guided observation of these species in wet conditions. Experience the thrill of spotting these birds in the rain. Book your spot today.';
+const fourthBadCaption = 'Join us on a tour through several habitats. Experience an unforgettable surprise and book your adventure today.';
 
 assert(parser.includes("const grammar = /\\b(?:one|a|an|each)\\s+(?:birdwatching|birding)\\b/i"), 'Parser must reject unnatural activity grammar');
 assert(parser.includes('deterministic_fallback_requires_review'), 'Fallback copy must require review');
@@ -25,9 +26,12 @@ assert(guard.includes('qualityScore < 92'), 'Publishing guard must require a str
 assert(guard.includes('fallback or draft copy requires review'), 'Publishing guard must block fallback copy');
 assert(guard.includes('existing publication data found'), 'Publishing guard must block an already-posted destination');
 assert(prompt.includes('Never open with a broad claim about how birding "can unfold"'), 'Writer must lead with a concrete subject or action');
+assert(prompt.includes('locations are not automatically habitats'), 'Writer must preserve the factual distinction between locations and habitats');
+assert(prompt.includes('Mindo, Ecuador is in the Andean Chocó cloud forest'), 'Writer must retain the verified Mindo destination fact pack');
 assert(intake.includes('Number(row.quality_score || 0) >= 92'), 'Existing copy must meet the strong quality threshold');
 assert(parser.includes("'trail'"), 'Generated settings such as a trail must be grounded in the intake');
 assert(parser.includes('mac_mini_writer_unavailable'), 'Ollama transport failures must be identified as Mac mini outages');
+assert(parser.includes('unsupported_current_weather'), 'Stable Mindo context must not become unsupported current-weather claims');
 assert(intake.includes("status === 'generating'"), 'Stale Mac mini generation locks must be recoverable');
 assert(!claim.includes("platform: 'tiktok'"), 'TikTok must never receive an automated publication claim');
 assert(claim.includes("row.status = 'Needs Attention'"), 'Ambiguous claims must fail closed for reconciliation');
@@ -74,6 +78,11 @@ assert.throws(
   'Stock AI sales language must be blocked even when rain and thrill are valid facts',
 );
 assert.throws(
+  () => runGuard({ ...validRow, reel_description: 'We visit several locations and sometimes find a big surprise.', instagram_caption_raw: fourthBadCaption, instagram_caption_final: `${fourthBadCaption}\n\n${validRow.instagram_hashtags}` }),
+  /unsupported, generic, or unnatural template wording/,
+  'Unforgettable adventure boilerplate must be blocked before publishing',
+);
+assert.throws(
   () => runGuard({ ...validRow, post_on_tiktok: true, tiktok_caption: 'Rainy Mindo brings the birds to the trail.', tiktok_hashtags: '#mindobirdwatching #mindo #ecuador #MindoBirding #CloudForest', tiktok_additional_hashtags: '#Birdwatching #EcuadorBirds #NatureTravel #Toucan #Hummingbird', instagram_caption_final: validRow.instagram_caption_final }),
   /invents a trail/,
   'A trail must not be invented when the intake did not supply one',
@@ -102,4 +111,4 @@ assert.throws(
   'X copy must still be validated when X is an enabled destination',
 );
 
-console.log(JSON.stringify({ ok: true, rejectedRegressionCaption: true, rejectedSecondCaption: true, rejectedStockSalesCopy: true, preservesSuppliedFeeling: true, ignoresUnusedXCopy: true, duplicateGuardExecuted: true, checks: rejectionPatterns.length + secondRejectionPatterns.length + 7 }, null, 2));
+console.log(JSON.stringify({ ok: true, rejectedRegressionCaption: true, rejectedSecondCaption: true, rejectedStockSalesCopy: true, rejectedAdventureBoilerplate: true, preservesSuppliedFeeling: true, ignoresUnusedXCopy: true, duplicateGuardExecuted: true, checks: rejectionPatterns.length + secondRejectionPatterns.length + 8 }, null, 2));

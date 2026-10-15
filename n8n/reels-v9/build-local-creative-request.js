@@ -1,5 +1,9 @@
 const clean = value => String(value ?? '').replace(/\s+/g, ' ').trim();
 const row = { ...$json };
+const location = clean(row.location) || 'Mindo, Ecuador';
+const destinationContext = /\bmindo\b/i.test(location)
+  ? 'Mindo, Ecuador is in the Andean Chocó cloud forest. Cloud forest, mist, humidity, and frequent rain are established characteristics of the destination. These stable destination facts may be used naturally, but do not claim that rain or mist occurred during this specific outing unless the intake says so.'
+  : 'No destination fact pack is available. Use only the supplied location and intake facts.';
 const recent = Array.isArray(row._recent_captions)
   ? row._recent_captions.slice(-20).map((caption, index) => `${index + 1}. ${clean(caption).slice(0, 240)}`)
   : [];
@@ -38,9 +42,12 @@ USER'S QUICK DESCRIPTION (factual authority):
 OPTIONAL EXISTING FIELDS (also factual when present):
 Featured birds: ${clean(row.featured_birds)}
 Activity: ${clean(row.activity_name)}
-Location: ${clean(row.location) || 'Mindo, Ecuador'}
+Location: ${location}
 Verified details: ${clean(row.verified_details)}
 Post type: ${clean(row.post_type)}
+
+VERIFIED DESTINATION CONTEXT:
+${destinationContext}
 
 RECENT INSTAGRAM COPY TO AVOID REPEATING:
 ${recent.length ? recent.join('\n') : 'No recent copy supplied.'}
@@ -48,14 +55,16 @@ ${recent.length ? recent.join('\n') : 'No recent copy supplied.'}
 Extract the facts and create finished platform copy.
 
 Grounding rules:
-- Use only facts explicitly supplied above.
+- Use the supplied facts and the verified destination context above.
 - Treat explicitly supplied weather, setting, and feelings as valid facts. Preserve them naturally instead of stripping the personality from the story.
 - Correct obvious spelling and capitalization errors in bird names, but never invent a species.
 - Copy correctly spelled bird names exactly as supplied. Never substitute or change a correct bird name.
 - If no different location is explicitly stated, use exactly "Mindo, Ecuador".
 - featured_birds must contain clean common names only, in the order mentioned.
 - verified_details must briefly restate only supplied facts.
+- Stable destination facts may add useful local context. Do not turn a regional characteristic into a claim about the exact weather or conditions during this specific outing.
 - Do not add sensory staging, scenery, habitat, appearance, behavior, weather, or atmosphere that is not literally supplied.
+- Preserve the user's nouns precisely: locations are not automatically habitats, and a surprise is not automatically a sighting.
 
 Editorial rules:
 - Write like a knowledgeable local guide, not a travel brochure or AI assistant.
@@ -68,7 +77,7 @@ Editorial rules:
 - Use the full location no more than once per platform field.
 - Remove trailing ellipses and incomplete fragments.
 - Name the birds in the title when birds are supplied; a one-word generic title such as "birdwatching", "birding", "tour", "nature", or "reel" is forbidden.
-- Avoid generic filler including "can bring several distinct moments together", "can unfold in unexpected ways", "three distinct moments", "each offering something different to notice", "which one would have caught your eye", "those are the details that made this experience worth sharing", "every outing develops from the moments that are actually present", "this was the clear focus here", "supplied details are the focus", "the account stays with the moment as described", "the tour offers guided observation", "experience the thrill of", and "book your spot today".
+- Avoid generic filler including "can bring several distinct moments together", "can unfold in unexpected ways", "three distinct moments", "each offering something different to notice", "which one would have caught your eye", "those are the details that made this experience worth sharing", "every outing develops from the moments that are actually present", "this was the clear focus here", "supplied details are the focus", "the account stays with the moment as described", "the tour offers guided observation", "experience the thrill of", "unforgettable", "book your adventure today", and "book your spot today".
 - Avoid clickbait or decorative filler such as "showdown", "adding a splash of color", or "turn this into a memorable adventure". Do not imply that two birds interacted unless the intake explicitly says they did.
 - Do not reuse openings, sentence patterns, CTA wording, or framing from recent copy.
 - Do not claim rarity, guarantees, emotions, behavior, habitat, weather, or sightings that were not supplied.
