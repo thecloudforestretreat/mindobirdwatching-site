@@ -57,6 +57,13 @@
     return Boolean(clean(row[platform + "_publish_claim_id"])) || ["CLAIMED", "PUBLISHING", "UNKNOWN", "RECONCILE"].includes(platformState(row, platform));
   }
   function reconciliationPlatforms(row) { return AUTOMATED_PLATFORMS.filter(function (platform) { return needsReconciliation(row, platform); }); }
+  function mediaCanBeReplaced(row) {
+    if (!row || bucket(row) === "published") return false;
+    if (AUTOMATED_PLATFORMS.some(function (platform) { return platformId(row, platform); })) return false;
+    return !AUTOMATED_PLATFORMS.some(function (platform) {
+      return clean(row[platform + "_publish_claim_id"]) || ["CLAIMED", "PUBLISHING", "UNKNOWN", "RECONCILE"].includes(platformState(row, platform));
+    });
+  }
   function failedPlatforms(row) {
     var value = clean(row.failed_platforms || row.publish_failed_platforms).toLowerCase();
     return AUTOMATED_PLATFORMS.filter(function (platform) { return value.includes(platform); });
@@ -315,6 +322,13 @@
       '<label><span>Time</span><input type="time" data-review-field="scheduled_time" value="' + esc(time24(row.scheduled_time)) + '" required /></label>' +
       '</div><small>Publishing uses New York Eastern time and automatically follows daylight saving time.</small></section>';
   }
+  function mediaEditor(row) {
+    if (!mediaCanBeReplaced(row)) return '<section class="mediaEditor isLocked"><div class="mediaEditorHeader"><strong>Video source</strong><span>Locked after publishing begins</span></div><p>The media URL cannot be replaced because this reel has a platform post or an unresolved publishing claim.</p></section>';
+    return '<section class="mediaEditor"><div class="mediaEditorHeader"><strong>Replace video only</strong><span>Copy stays unchanged</span></div>' +
+      '<label><span>Cloudinary video URL</span><input type="url" data-replacement-video-url value="' + esc(row.video_url) + '" placeholder="https://res.cloudinary.com/…/video/upload/…mp4" /></label>' +
+      '<div class="mediaEditorFooter"><small>This changes only the video file. Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are.</small><button class="button buttonGhost" type="button" data-action="replace-media">Replace video</button></div>' +
+      '<p class="mediaEditorStatus" data-media-status role="status" aria-live="polite"></p></section>';
+  }
   function openReview(id) {
     var row = state.rows.find(function (candidate) { return rowId(candidate) === clean(id); });
     if (!row) return;
@@ -322,12 +336,14 @@
     var youtube = youtubeUrl(row);
     var reviewNotice = reconciliationPlatforms(row).length
       ? "Do not retry yet. The previous run may already have posted to " + reconciliationPlatforms(row).join(", ") + ". Verify the live platform first; automatic retry is disabled to prevent duplicates."
+      : copyIsApproved(row) ? ""
       : isStaleGeneration(row)
         ? "Copy generation timed out before it finished. The reel was not approved or published. Regenerate it to start one protected attempt."
-        : copyIsApproved(row) ? "" : clean(row.error_message || row.supervision_notes);
+        : clean(row.error_message || row.supervision_notes);
     var links = [row.instagram_url && ["Instagram", row.instagram_url], row.facebook_url && ["Facebook", row.facebook_url], youtube && ["Watch on YouTube", youtube], row.tiktok_url && ["TikTok", row.tiktok_url]].filter(Boolean);
     $("reviewTitle").textContent = clean(row.activity_name) || "Review reel " + rowId(row);
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
+      mediaEditor(row) +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
       (reviewNotice ? '<div class="warningBox">' + esc(reviewNotice) + "</div>" : "") +
       (reconciliationPlatforms(row).length ? '<div class="warningBox"><strong>Do not retry yet.</strong> The previous run may already have posted to ' + esc(reconciliationPlatforms(row).join(", ")) + '. Verify the live platform first; automatic retry is disabled to prevent duplicates.</div>' : "") +
@@ -373,6 +389,32 @@
   }
   async function reviewAction(action) {
     if (!state.selected) return;
+    if (action === "replace-media") {
+      var mediaInput = $("reviewContent").querySelector("[data-replacement-video-url]");
+      var mediaStatus = $("reviewContent").querySelector("[data-media-status]");
+      var replacementUrl = clean(mediaInput && mediaInput.value);
+      if (!mediaCanBeReplaced(state.selected)) { if (mediaStatus) mediaStatus.textContent = "This reel is locked because publishing has already started."; return; }
+      if (!/^https:\/\/res\.cloudinary\.com\/[^/]+\/video\/upload\/.+\.(?:mp4|mov|m4v)(?:[?#].*)?$/i.test(replacementUrl)) { if (mediaStatus) mediaStatus.textContent = "Enter a valid Cloudinary video URL ending in MP4, MOV, or M4V."; return; }
+      if (replacementUrl === clean(state.selected.video_url)) { if (mediaStatus) mediaStatus.textContent = "Paste the adjusted video's new Cloudinary URL first."; return; }
+      var replaceButton = $("reviewActions").querySelector('[data-action="replace-media"]') || $("reviewContent").querySelector('[data-action="replace-media"]');
+      if (replaceButton) replaceButton.disabled = true;
+      if (mediaInput) mediaInput.disabled = true;
+      if (mediaStatus) mediaStatus.textContent = "Replacing the video URL without changing copy…";
+      try {
+        await request("replace_media", { reel_id: rowId(state.selected), post_id: state.selected.post_id, video_url: replacementUrl });
+        state.selected.video_url = replacementUrl;
+        var preview = $("reviewContent").querySelector(".reviewVideo");
+        if (preview) { preview.src = replacementUrl; preview.load(); }
+        if (mediaStatus) mediaStatus.textContent = "Video replaced. Copy, hashtags, schedule, and approval were preserved.";
+        if (!demoMode) await loadRows();
+      } catch (error) {
+        if (mediaStatus) mediaStatus.textContent = error.message;
+      } finally {
+        if (replaceButton) replaceButton.disabled = false;
+        if (mediaInput) mediaInput.disabled = false;
+      }
+      return;
+    }
     var edits = reviewEdits();
     if (["save", "approve"].includes(action) && !validateReviewEdits(edits)) return;
     var buttons = Array.from($("reviewActions").querySelectorAll("button")); buttons.forEach(function (button) { button.disabled = true; });
@@ -405,7 +447,14 @@
     $("searchInput").addEventListener("input", function (event) { state.query = clean(event.target.value); renderCards(); });
     document.querySelectorAll(".statusTab").forEach(function (button) { button.addEventListener("click", function () { state.activeStatus = button.dataset.status; syncTabs(); renderCards(); }); });
     $("reelsGrid").addEventListener("click", function (event) { var button = event.target.closest("[data-review-id]"); if (button) openReview(button.dataset.reviewId); });
-    $("reviewContent").addEventListener("click", async function (event) { var button = event.target.closest("[data-copy-field]"); if (!button) return; var input = document.querySelector('[data-review-field="' + button.dataset.copyField + '"]'); if (input) { await navigator.clipboard.writeText(input.value); button.textContent = "Copied"; window.setTimeout(function () { button.textContent = "Copy"; }, 900); } });
+    $("reviewContent").addEventListener("click", async function (event) {
+      var action = event.target.closest("[data-action]");
+      if (action) { await reviewAction(action.dataset.action); return; }
+      var button = event.target.closest("[data-copy-field]");
+      if (!button) return;
+      var input = document.querySelector('[data-review-field="' + button.dataset.copyField + '"]');
+      if (input) { await navigator.clipboard.writeText(input.value); button.textContent = "Copied"; window.setTimeout(function () { button.textContent = "Copy"; }, 900); }
+    });
     $("reviewActions").addEventListener("click", async function (event) { var action = event.target.closest("[data-action]"); if (action) await reviewAction(action.dataset.action); var copy = event.target.closest("[data-copy-youtube]"); if (copy && state.selected) { await navigator.clipboard.writeText(youtubeUrl(state.selected)); copy.textContent = "Copied"; } });
     document.addEventListener("keydown", function (event) { if (event.key === "Escape") { if (!$("reviewBackdrop").hidden) closeReview(); else if (!$("composerBackdrop").hidden) closeComposer(); } });
   }

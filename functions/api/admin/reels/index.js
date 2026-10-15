@@ -1,5 +1,5 @@
 const ADMIN_ORIGIN = "https://admin.mindobirdwatching.com";
-const ALLOWED_ACTIONS = new Set(["create_batch", "update_reel", "approve_reel", "regenerate_reel", "retry_reel"]);
+const ALLOWED_ACTIONS = new Set(["create_batch", "update_reel", "replace_media", "approve_reel", "regenerate_reel", "retry_reel"]);
 const ALLOWED_MODES = new Set(["review", "auto"]);
 const ALLOWED_TIMEZONES = new Set(["America/Guayaquil", "America/New_York"]);
 const ALLOWED_VIDEO_HOSTS = new Set(["res.cloudinary.com"]);
@@ -172,6 +172,10 @@ export async function onRequestPost({ request, env }) {
       if (edits.scheduled_time && !validTime(edits.scheduled_time)) return json(request, { ok: false, message: "Invalid scheduled time." }, 400);
       if (edits.timezone && !ALLOWED_TIMEZONES.has(edits.timezone)) return json(request, { ok: false, message: "Unsupported time zone." }, 400);
       payload.edits = edits;
+    } else if (action === "replace_media") {
+      const videoUrl = clean(input.video_url, 1000);
+      if (!validVideoUrl(videoUrl)) return json(request, { ok: false, message: "Enter a Cloudinary HTTPS video URL ending in MP4, MOV, or M4V." }, 400);
+      payload.video_url = videoUrl;
     }
   }
 
