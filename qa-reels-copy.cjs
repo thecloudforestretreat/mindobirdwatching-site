@@ -74,7 +74,7 @@ assert.throws(
   'Stock AI sales language must be blocked even when rain and thrill are valid facts',
 );
 assert.throws(
-  () => runGuard({ ...validRow, tiktok_caption: 'Rainy Mindo brings the birds to the trail.', instagram_caption_final: validRow.instagram_caption_final }),
+  () => runGuard({ ...validRow, post_on_tiktok: true, tiktok_caption: 'Rainy Mindo brings the birds to the trail.', tiktok_hashtags: '#mindobirdwatching #mindo #ecuador #MindoBirding #CloudForest', tiktok_additional_hashtags: '#Birdwatching #EcuadorBirds #NatureTravel #Toucan #Hummingbird', instagram_caption_final: validRow.instagram_caption_final }),
   /invents a trail/,
   'A trail must not be invented when the intake did not supply one',
 );
@@ -92,5 +92,14 @@ assert.throws(
   /unsupported, generic, or unnatural template wording/,
   'The reported generic caption must be blocked at publish time',
 );
+assert.doesNotThrow(
+  () => runGuard({ ...validRow, post_to_x: false, x_caption: 'Discover the magic of this unforgettable experience on a stunning trail.' }),
+  'Unused hidden X copy must not block selected publishing destinations',
+);
+assert.throws(
+  () => runGuard({ ...validRow, post_to_x: true, x_caption: 'Discover the magic of this unforgettable experience on a stunning trail.' }),
+  /unsupported, generic, or unnatural template wording/,
+  'X copy must still be validated when X is an enabled destination',
+);
 
-console.log(JSON.stringify({ ok: true, rejectedRegressionCaption: true, rejectedSecondCaption: true, rejectedStockSalesCopy: true, preservesSuppliedFeeling: true, duplicateGuardExecuted: true, checks: rejectionPatterns.length + secondRejectionPatterns.length + 5 }, null, 2));
+console.log(JSON.stringify({ ok: true, rejectedRegressionCaption: true, rejectedSecondCaption: true, rejectedStockSalesCopy: true, preservesSuppliedFeeling: true, ignoresUnusedXCopy: true, duplicateGuardExecuted: true, checks: rejectionPatterns.length + secondRejectionPatterns.length + 7 }, null, 2));

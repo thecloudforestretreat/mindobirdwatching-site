@@ -15,8 +15,22 @@ if (!['READY', 'VERIFIED'].includes(inputStatus)) throw new Error('PUBLISH BLOCK
 if (approvalStatus !== 'APPROVED' || qualityScore < 92) throw new Error(`PUBLISH BLOCKED — copy approval is ${approvalStatus || 'missing'} with quality score ${qualityScore}. No social post was sent.`);
 if (/DETERMINISTIC_RECOVERY|DRAFT_ONLY/i.test(String(row.final_copy_source || ''))) throw new Error('PUBLISH BLOCKED — fallback or draft copy requires review. No social post was sent.');
 
-const copyText = [row.instagram_caption_final, row.youtube_title, row.tiktok_caption, row.x_caption].filter(Boolean).join(' ');
-const captionBodies = [row.instagram_caption_raw, row.tiktok_caption, row.x_caption, row.youtube_title].filter(Boolean).join(' ');
+const instagramSelected = bool(row.post_to_instagram) || bool(row.post_to_facebook);
+const youtubeSelected = bool(row.post_on_youtube);
+const tiktokSelected = bool(row.post_on_tiktok);
+const xSelected = bool(row.post_to_x);
+const copyText = [
+  instagramSelected ? row.instagram_caption_final : '',
+  youtubeSelected ? row.youtube_title : '',
+  tiktokSelected ? row.tiktok_caption : '',
+  xSelected ? row.x_caption : '',
+].filter(Boolean).join(' ');
+const captionBodies = [
+  instagramSelected ? row.instagram_caption_raw : '',
+  tiktokSelected ? row.tiktok_caption : '',
+  xSelected ? row.x_caption : '',
+  youtubeSelected ? row.youtube_title : '',
+].filter(Boolean).join(' ');
 if (/(^|\s)#[A-Za-z0-9_]+\b/.test(captionBodies)) throw new Error('PUBLISH BLOCKED — a caption or title contains inline hashtags. No social post was sent.');
 if (/[\p{Extended_Pictographic}\uFE0F]/u.test(captionBodies)) throw new Error('PUBLISH BLOCKED — a caption or title contains emojis. No social post was sent.');
 if (/(?:\.{3,}|…)/.test(captionBodies)) throw new Error('PUBLISH BLOCKED — copy contains an ellipsis or incomplete sentence. No social post was sent.');
@@ -46,14 +60,14 @@ const unsupported = [
 if (unsupported.some(pattern => pattern.test(copyText))) throw new Error('PUBLISH BLOCKED — copy contains unsupported, generic, or unnatural template wording. No social post was sent.');
 const sourceAuthority = norm([row.reel_description, row.featured_birds, row.activity_name, row.location, row.verified_details].join(' '));
 if (/\btrail\b/i.test(copyText) && !sourceAuthority.includes('trail')) throw new Error('PUBLISH BLOCKED — copy invents a trail that was not supplied. No social post was sent.');
-if (/^(?:birdwatching|birding|tour|nature|reel|mindo)$/i.test(String(row.youtube_title || '').trim())) throw new Error('PUBLISH BLOCKED — the YouTube title is too generic. No social post was sent.');
+if (youtubeSelected && /^(?:birdwatching|birding|tour|nature|reel|mindo)$/i.test(String(row.youtube_title || '').trim())) throw new Error('PUBLISH BLOCKED — the YouTube title is too generic. No social post was sent.');
 
 const location = String(row.location || 'Mindo, Ecuador').trim();
-for (const value of [row.instagram_caption_raw, row.tiktok_caption, row.x_caption]) {
+for (const value of [instagramSelected ? row.instagram_caption_raw : '', tiktokSelected ? row.tiktok_caption : '', xSelected ? row.x_caption : '']) {
   if (has(value) && countPhrase(value, location) > 1) throw new Error('PUBLISH BLOCKED — a platform caption repeats the full location. No social post was sent.');
 }
 const source = norm(String(row.reel_description || '').replace(/(?:\.{3,}|…)+/g, '.'));
-if (source.split(/\s+/).length >= 12 && norm(row.instagram_caption_raw).includes(source)) throw new Error('PUBLISH BLOCKED — the Instagram caption copies the intake description verbatim. No social post was sent.');
+if (instagramSelected && source.split(/\s+/).length >= 12 && norm(row.instagram_caption_raw).includes(source)) throw new Error('PUBLISH BLOCKED — the Instagram caption copies the intake description verbatim. No social post was sent.');
 
 const missing = [];
 if ((bool(row.post_to_instagram) || bool(row.post_to_facebook)) && !has(row.instagram_caption_final)) missing.push('instagram_caption_final');
@@ -71,8 +85,10 @@ if (bool(row.post_on_youtube) && (has(row.youtube_post_id) || has(row.youtube_pu
 if (bool(row.post_on_tiktok) && (has(row.tiktok_post_id) || has(row.tiktok_published_date))) alreadyPublished.push('TikTok');
 if (alreadyPublished.length) throw new Error(`PUBLISH BLOCKED — existing publication data found for ${alreadyPublished.join(', ')}. Automatic reposting is disabled.`);
 
-const instagramTags = String(row.instagram_hashtags || '').split(/\s+/).filter(Boolean);
-if (instagramTags.length !== 5) throw new Error(`PUBLISH BLOCKED — Instagram requires exactly five hashtags; received ${instagramTags.length}.`);
+if (instagramSelected) {
+  const instagramTags = String(row.instagram_hashtags || '').split(/\s+/).filter(Boolean);
+  if (instagramTags.length !== 5) throw new Error(`PUBLISH BLOCKED — Instagram requires exactly five hashtags; received ${instagramTags.length}.`);
+}
 
 row._copy_validated_for_publish = true;
 return [{ json: row }];
