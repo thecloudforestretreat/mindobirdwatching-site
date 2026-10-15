@@ -85,6 +85,7 @@ button { cursor: pointer; }
 .platformPill { padding: 5px 7px; border: 1px solid var(--rs-line); border-radius: 8px; color: var(--rs-muted); background: #f8faf5; font-size: 10px; font-weight: 900; }
 .platformPill.isLive { color: var(--rs-green); border-color: #91cca0; background: #e5f5e8; }
 .platformPill.isError { color: #9b2c20; border-color: #e5a197; background: #fde8e5; }
+.platformPill.isCopy { color: #245b86; border-color: #a9c8e1; background: #eaf2fb; }
 .reelFooter { display: flex; justify-content: space-between; align-items: center; gap: 9px; padding-top: 10px; border-top: 1px solid rgba(7,25,35,.09); }
 .qualityScore { color: var(--rs-muted); font-size: 11px; font-weight: 850; }
 .cardActions { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
@@ -108,6 +109,7 @@ textarea { resize: vertical; line-height: 1.45; }
 .platformDefaults legend { padding: 0 5px; }
 .platformDefaults label { display: inline-flex; grid: none; align-items: center; gap: 7px; color: var(--rs-ink); text-transform: none; }
 .platformDefaults input { width: 17px; min-height: 17px; accent-color: var(--rs-green); }
+.platformHelp { flex-basis: 100%; color: var(--rs-muted); font-size: 11px; font-weight: 750; }
 .batchItems { display: grid; gap: 10px; }
 .batchItem { padding: 13px; border: 1px solid var(--rs-line); border-radius: 14px; background: white; }
 .batchItemHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: var(--rs-green); }
@@ -124,6 +126,14 @@ textarea { resize: vertical; line-height: 1.45; }
 .reviewDrawer { width: min(680px, 100%); height: 100%; overflow: auto; background: var(--rs-paper); box-shadow: -25px 0 70px rgba(0,0,0,.26); }
 .reviewContent { display: grid; gap: 14px; padding: 18px; }
 .reviewVideo { width: 100%; max-height: 360px; border-radius: 14px; background: #071923; object-fit: contain; }
+.mediaEditor { display: grid; gap: 10px; padding: 13px; border: 1px solid rgba(13,89,37,.28); border-radius: 12px; background: #f2f9ea; }
+.mediaEditor.isLocked { border-color: var(--rs-line); background: #f4f5f2; }
+.mediaEditorHeader, .mediaEditorFooter { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.mediaEditorHeader strong { color: var(--rs-green); font-size: 13px; }
+.mediaEditorHeader span { color: var(--rs-muted); font-size: 11px; font-weight: 850; }
+.mediaEditorFooter small, .mediaEditor > p { margin: 0; color: var(--rs-muted); font-size: 11px; font-weight: 750; line-height: 1.45; }
+.mediaEditorFooter small { max-width: 430px; }
+.mediaEditorStatus { min-height: 16px; color: var(--rs-green) !important; }
 .reviewMeta { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
 .reviewMeta article { padding: 11px; border: 1px solid var(--rs-line); border-radius: 11px; background: white; }
 .reviewMeta small { display: block; margin-bottom: 4px; color: var(--rs-muted); font-weight: 800; }
@@ -143,6 +153,7 @@ textarea { resize: vertical; line-height: 1.45; }
 .copyLinkRow { display: flex; gap: 8px; flex-wrap: wrap; }
 .externalLink { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 7px 10px; border: 1px solid var(--rs-line); border-radius: 9px; color: var(--rs-green); background: white; font-size: 11px; font-weight: 900; text-decoration: none; }
 .warningBox { padding: 11px 12px; border: 1px solid #e7c45a; border-radius: 11px; color: #6f4b00; background: #fff7df; font-size: 12px; font-weight: 760; line-height: 1.45; }
+.infoBox { padding: 11px 12px; border: 1px solid #a9c8e1; border-radius: 11px; color: #245b86; background: #eaf2fb; font-size: 12px; font-weight: 760; line-height: 1.45; }
 .drawerFooter { position: sticky; bottom: 0; justify-content: flex-end; padding: 14px 18px; border-top: 1px solid var(--rs-line); background: rgba(248,251,243,.96); backdrop-filter: blur(12px); }
 
 @media (max-width: 1040px) {
@@ -180,6 +191,7 @@ textarea { resize: vertical; line-height: 1.45; }
   .modalFooter > div { width: 100%; }
   .modalFooter .button { flex: 1; }
   .reviewMeta { grid-template-columns: 1fr; }
+  .mediaEditorHeader, .mediaEditorFooter { align-items: stretch; flex-direction: column; }
 }
 
 @media (max-width: 520px) {

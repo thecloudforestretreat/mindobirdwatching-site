@@ -25,7 +25,11 @@ return $input.all().map(item => {
   const row = { ...item.json };
   const when = scheduledAt(row);
   const status = clean(row.status).toLowerCase();
-  const testing = status === 'testing';
+  const lockTime = DateTime.fromISO(clean(row.draft_generated_at), { zone: 'America/New_York' });
+  const staleGeneration = status === 'generating'
+    && lockTime.isValid
+    && lockTime.toMillis() <= DateTime.now().setZone('America/New_York').minus({ minutes: 15 }).toMillis();
+  const testing = status === 'testing' || staleGeneration;
   const baseReady = has(row.post_id)
     && has(row.video_url)
     && has(row.reel_description)
@@ -47,8 +51,7 @@ return $input.all().map(item => {
   row.generate_for_x = has(row.generate_for_x) ? truthy(row.generate_for_x) : true;
   row.post_to_x = has(row.post_to_x) ? truthy(row.post_to_x) : false;
 
-  const prepared = [
-    row.featured_birds,
+  const completePlatformCopy = [
     row.activity_name,
     row.post_type,
     row.blurb,
@@ -60,12 +63,16 @@ return $input.all().map(item => {
     row.tiktok_additional_hashtags,
   ].every(has);
 
-  const publishApproved = prepared
+  const publishApproved = completePlatformCopy
     && clean(row.approval_status).toUpperCase() === 'APPROVED'
+    && clean(row.copy_review_status).toUpperCase() === 'FINAL'
     && Number(row.quality_score || 0) >= 92;
-  row.should_generate = eligible && !publishApproved;
+  const prepared = publishApproved || (completePlatformCopy && has(row.featured_birds));
+  row.should_generate = eligible && !prepared;
   row.should_publish = due;
   row.is_testing = testing;
+  row._source_status = staleGeneration ? 'Testing' : row.status;
+  row._stale_generation_recovered = staleGeneration;
   row._recent_captions = recentCaptions;
   row._validation_error = baseReady
     ? ''

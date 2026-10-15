@@ -63,6 +63,9 @@ function compileWorkflow(path) {
   assert(intake.nodes.some((node) => node.name === "[INTAKE] Validate and Split Images"), "Legacy intake must support variable slide counts");
   assert(gateway.nodes.some((node) => node.name === "Plan Carousel Action"), "Admin gateway planner is missing");
   assert(adminMain.nodes.some((node) => node.name === "[ADMIN] Trigger Carousel Processing"), "Admin processing webhook is missing");
+  const schedule = adminMain.nodes.find((node) => node.name === "[CORE] Scheduled Trigger");
+  assert(schedule, "Carousel schedule trigger is missing");
+  assert.deepStrictEqual(schedule.parameters.rule.interval, [{ field: "hours", hoursInterval: 1, triggerAtMinute: 0 }], "Carousel production queue must run hourly at minute 00");
   assert(JSON.stringify(adminMain).includes("Beyond the Portrait") && JSON.stringify(adminMain).includes("contentMode === 'experience'"), "Admin-trigger workflow must contain both bird and experience copy modes");
   const allMainText = JSON.stringify(main);
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");

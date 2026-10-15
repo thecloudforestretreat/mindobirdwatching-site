@@ -10,18 +10,30 @@ assert(
   "Reels Studio must use the main-site Pages Function, not the static admin host"
 );
 assert(!ui.includes('var API = "/api/admin/reels";'), "Relative Reels API URL would resolve to the static admin host");
-assert(html.includes('reels-studio.js?v=6'), "Reels Studio asset cache key must expose the copy-quality gate");
+assert(html.includes('reels-studio.js?v=8'), "Reels Studio asset cache key must expose media-only replacement");
+assert(html.includes('reels-studio.css?v=4'), "Reels Studio CSS cache key must expose media-only replacement styles");
 assert(ui.includes('Number(row.quality_score || 0) >= 92'), "Reels Studio must not present copy below quality 92 as approved");
 assert(ui.includes('group === "review" || group === "upcoming"'), "Scheduled reels must remain eligible for explicit copy regeneration");
-assert(ui.includes('var reviewNotice = copyIsApproved(row) ? ""'), "Approved reels must not show stale generation warnings");
+assert(ui.includes(': copyIsApproved(row) ? ""'), "Approved reels must not show stale generation warnings");
 assert(api.includes("export async function onRequestGet"), "Reels API GET handler is missing");
 assert(api.includes("export async function onRequestPost"), "Reels API POST handler is missing");
 assert(api.includes('"access-control-allow-origin"'), "Reels API CORS header is missing");
 assert(api.includes("ADMIN_ORIGIN"), "Reels API must explicitly allow the protected admin origin");
+assert(ui.includes('var AUTOMATED_PLATFORMS = ["instagram", "facebook", "youtube"]'), "Only implemented uploaders may count as automated destinations");
+assert(ui.includes('var COPY_ONLY_PLATFORMS = ["tiktok"]'), "TikTok must be represented as copy-only");
+assert(ui.includes('reconciliationPlatforms(row).length'), "Ambiguous publication claims must appear as reconciliation work");
+assert(!ui.includes('group === "failed" ? \'<button class="button buttonPrimary" type="button" data-action="retry">'), "Reconciliation rows must not expose an automatic retry");
+assert(api.includes('code: "MAC_MINI_WORKFLOW_UNAVAILABLE"'), "Mac mini outages need a stable API error code");
+assert(api.includes('}, 503)'), "Mac mini outages must return HTTP 503");
+assert(api.includes('"replace_media"'), "Reels API must expose a dedicated media-only replacement action");
+assert(api.includes("payload.video_url = videoUrl"), "Reels API must forward only the validated replacement URL");
+assert(ui.includes('request("replace_media"'), "Reels Studio must call the media-only replacement action");
+assert(ui.includes("Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are."), "The replacement UI must clearly describe preserved fields");
+assert(ui.includes("mediaCanBeReplaced"), "Reels Studio must lock media replacement after publishing starts");
 
 console.log(JSON.stringify({
   ok: true,
   api: "https://mindobirdwatching.com/api/admin/reels",
-  cacheKey: "v6",
+  cacheKey: "v8",
   handlers: ["GET", "POST", "OPTIONS"]
 }, null, 2));
