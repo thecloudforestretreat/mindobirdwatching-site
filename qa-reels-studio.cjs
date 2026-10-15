@@ -10,7 +10,7 @@ assert(
   "Reels Studio must use the main-site Pages Function, not the static admin host"
 );
 assert(!ui.includes('var API = "/api/admin/reels";'), "Relative Reels API URL would resolve to the static admin host");
-assert(html.includes('reels-studio.js?v=8'), "Reels Studio asset cache key must expose media-only replacement");
+assert(html.includes('reels-studio.js?v=9'), "Reels Studio asset cache key must expose the approval-first queue");
 assert(html.includes('reels-studio.css?v=4'), "Reels Studio CSS cache key must expose media-only replacement styles");
 assert(ui.includes('Number(row.quality_score || 0) >= 92'), "Reels Studio must not present copy below quality 92 as approved");
 assert(ui.includes('group === "review" || group === "upcoming"'), "Scheduled reels must remain eligible for explicit copy regeneration");
@@ -30,10 +30,15 @@ assert(api.includes("payload.video_url = videoUrl"), "Reels API must forward onl
 assert(ui.includes('request("replace_media"'), "Reels Studio must call the media-only replacement action");
 assert(ui.includes("Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are."), "The replacement UI must clearly describe preserved fields");
 assert(ui.includes("mediaCanBeReplaced"), "Reels Studio must lock media replacement after publishing starts");
+assert(ui.includes('activeStatus: "review"'), "Reels Studio must open on the actionable approval queue");
+assert(html.indexOf('data-status="review"') < html.indexOf('data-status="upcoming"'), "Needs approval must appear before Upcoming");
+assert(html.includes('data-status="review">Needs approval'), "The review queue must use action-oriented wording");
+assert(html.includes('data-status="failed">Needs attention'), "Publishing failures must use the same Needs attention wording as the summary");
+assert(ui.includes('It is currently '), "Past-time guidance must show the current Eastern time");
 
 console.log(JSON.stringify({
   ok: true,
   api: "https://mindobirdwatching.com/api/admin/reels",
-  cacheKey: "v8",
+  cacheKey: "v9",
   handlers: ["GET", "POST", "OPTIONS"]
 }, null, 2));

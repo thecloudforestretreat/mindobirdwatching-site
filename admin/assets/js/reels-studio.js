@@ -4,7 +4,7 @@
   // The admin Pages project is static; its API is deployed with the main site
   // and explicitly allows requests from the protected admin origin.
   var API = "https://mindobirdwatching.com/api/admin/reels";
-  var state = { rows: [], activeStatus: "upcoming", query: "", selected: null, loading: false, generationPoll: null };
+  var state = { rows: [], activeStatus: "review", query: "", selected: null, loading: false, generationPoll: null };
   var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && new URLSearchParams(window.location.search).get("demo") === "1";
 
   function $(id) { return document.getElementById(id); }
@@ -258,7 +258,11 @@
   }
   function confirmSchedule(reels, excludeId) {
     var invalid = reels.find(function (row) { return !isoDate(row.scheduled_date) || !time24(row.scheduled_time) || scheduleIsPast(row.scheduled_date, row.scheduled_time); });
-    if (invalid) { window.alert("Choose a future Eastern date and time. Past publishing times cannot be saved."); return false; }
+    if (invalid) {
+      var now = easternNow();
+      window.alert("Choose a future Eastern date and time. It is currently " + now.date + " at " + now.time + " ET, and the selected publishing time has already passed.");
+      return false;
+    }
     var conflicts = scheduleConflicts(reels, excludeId);
     return !conflicts.length || window.confirm("Another reel is already scheduled on this date:\n\n" + conflicts.join("\n") + "\n\nSchedule more than one reel that day anyway?");
   }

@@ -52,6 +52,8 @@ const unsupported = [
   /the account stays with the moment as described/i,
   /the tour offers guided observation/i,
   /experience the thrill of/i,
+  /\bunforgettable\b/i,
+  /book your adventure today/i,
   /book your spot today/i,
   /adding a splash of color/i, /turn(?:s|ing)? (?:a|the|this) [^.]+ into a memorable adventure/i,
   /\bshowdown\b/i,

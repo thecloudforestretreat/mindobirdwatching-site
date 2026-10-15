@@ -36,9 +36,13 @@ const activity = clean(draft.activity_name) || clean(base.activity_name) || 'Bir
 const postType = clean(draft.post_type) || clean(base.post_type) || 'Tour';
 const source = caption(base.reel_description).replace(/(?:\.{3,}|…)+/g, '.').replace(/\s+([,.;!?])/g, '$1');
 const birdText = birds.length < 2 ? (birds[0] || 'the birds') : `${birds.slice(0, -1).join(', ')}, and ${birds.at(-1)}`;
-const sourceAuthority = norm([base.reel_description, base.featured_birds, base.activity_name, base.location, base.verified_details].join(' '));
+const intakeAuthority = norm([base.reel_description, base.featured_birds, base.activity_name, base.location, base.verified_details].join(' '));
+const destinationAuthority = /\bmindo\b/i.test(location)
+  ? norm('Mindo Ecuador Andean Choco cloud forest mist misty humidity humid rain rainfall rainy weather')
+  : '';
+const sourceAuthority = [intakeAuthority, destinationAuthority].filter(Boolean).join(' ');
 const banned = /\b(this reel shows|the video shows|imagine|step into|hidden paradise|nature['’]s symphony|mist-kissed|living tapestry|feathered wonders|where time slows down|showdown)\b/i;
-const filler = /\b(can (?:bring several distinct moments together|unfold in unexpected ways)|three distinct moments|each offering something different to notice|which (?:one|moment) would have caught your eye(?: first)?|those (?:are|supplied) (?:the )?details that made this experience(?: in [^.]+)? worth sharing|every outing develops from the moments that are actually present|this was the clear focus here|supplied details are the focus|the account stays with the moment as described|the tour offers guided observation|experience the thrill of|book your spot today|adding a splash of color|turn(?:s|ing)? (?:a|the|this) [^.]+ into a memorable adventure)\b/i;
+const filler = /\b(can (?:bring several distinct moments together|unfold in unexpected ways)|three distinct moments|each offering something different to notice|which (?:one|moment) would have caught your eye(?: first)?|those (?:are|supplied) (?:the )?details that made this experience(?: in [^.]+)? worth sharing|every outing develops from the moments that are actually present|this was the clear focus here|supplied details are the focus|the account stays with the moment as described|the tour offers guided observation|experience the thrill of|unforgettable|book your adventure today|book your spot today|adding a splash of color|turn(?:s|ing)? (?:a|the|this) [^.]+ into a memorable adventure)\b/i;
 const grammar = /\b(?:one|a|an|each)\s+(?:birdwatching|birding)\b/i;
 const genericTitle = /^(?:birdwatching|birding|tour|nature|reel|mindo)$/i;
 const unsupportedTerms = ['moonlit','moonlight','lantern','canopy','plumage','elusive','rare','mist','misty','rain','rainfall','weather','habitat','nest','feeding','river','rapids','current','trail','dawn','sunrise','glow','rainforest','cloud forest'];
@@ -89,6 +93,9 @@ if (/(?:\.{3,}|…)/.test(finalCopy)) flags.push('ellipsis_or_incomplete_copy');
 if (genericTitle.test(yt)) flags.push('generic_title');
 const unsupportedFinal = unsupported(finalCopy);
 if (unsupportedFinal.length) flags.push(`unsupported_details:${unsupportedFinal.join('|')}`);
+const generatedSpecificWeather = /\b(?:it (?:was|is) raining|rain (?:fell|started|continued)|during (?:the )?rain|in (?:the )?rain|rainy (?:morning|afternoon|evening|day|tour|outing)|misty (?:morning|afternoon|evening|day|tour|outing))\b/i.test(finalCopy);
+const intakeHasSpecificWeather = /\b(?:rain|raining|rainy|rainfall|mist|misty|weather)\b/i.test(intakeAuthority);
+if (generatedSpecificWeather && !intakeHasSpecificWeather) flags.push('unsupported_current_weather');
 const missingFinal = missingBirds([ig, yt, tt, xx].join(' '));
 if (missingFinal.length) flags.push(`missing_featured_birds:${missingFinal.join('|')}`);
 if (words(source) >= 12 && norm(ig).includes(norm(source))) flags.push('intake_description_copied_verbatim');
