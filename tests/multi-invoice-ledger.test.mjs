@@ -29,6 +29,11 @@ for (const name of ["Read CRM Bookings","Process CRM Bookings","Write CRM Bookin
 const paymentWrite = workflow.nodes.find(node => node.name === "Write CRM Payment");
 assert.equal(paymentWrite.parameters.sheetName.value, "crm_payments");
 assert(paymentWrite.parameters.columns.schema.some(column => column.id === "invoice_no"));
+assert.match(String(paymentWrite.parameters.documentId.value), /1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/);
+assert.match(String(workflow.nodes.find(node => node.name === "Read CRM Payments").parameters.documentId.value), /1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/);
+assert.match(String(workflow.nodes.find(node => node.name === "Read CRM Bookings").parameters.documentId.value), /1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/);
+assert.match(String(workflow.nodes.find(node => node.name === "Write CRM Booking").parameters.documentId.value), /1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/);
+assert.match(workflow.nodes.find(node => node.name === "Process CRM Bookings").parameters.jsCode, /record\.booking_status==='confirmed'\) record\.booking_status='booked'/);
 
 const paymentProcessor = workflow.nodes.find(node => node.name === "Process CRM Payments").parameters.jsCode;
 const executePayment = (request, rows=[]) => new Function("$", "$input", paymentProcessor)(

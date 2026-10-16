@@ -7927,7 +7927,7 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg/edit",
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
           "mode": "url"
         },
         "sheetName": {
@@ -7955,7 +7955,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst request=$('Normalize Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nif(action==='list_bookings'){\n  const guest=clean(request.guest_id),inquiry=clean(request.inquiry_id),booking=clean(request.booking_id);\n  const records=rows.filter(row=>(!guest||clean(row.guest_id)===guest)&&(!inquiry||clean(row.inquiry_id)===inquiry)&&(!booking||clean(row.booking_id)===booking)&&clean(row.is_archived).toLowerCase()!=='yes').sort((a,b)=>clean(b.tour_date_start||b.created_at).localeCompare(clean(a.tour_date_start||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.booking||request.record||{})};\nif(!clean(incoming.inquiry_id)||!clean(incoming.guest_id)) throw new Error('Booking requires inquiry_id and guest_id.');\nincoming.booking_id=clean(incoming.booking_id)||('B-'+clean(incoming.inquiry_id).replace(/^INQ-/,''));\nconst existing=rows.find(row=>clean(row.booking_id)===incoming.booking_id)||{};\nconst record={...existing,...incoming,booking_id:incoming.booking_id,created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};\nrecord.booking_status=clean(record.booking_status||'pending').toLowerCase();\nrecord.quoted_currency=clean(record.quoted_currency||'USD').toUpperCase();\nrecord.is_archived=['yes','true','1'].includes(clean(record.is_archived).toLowerCase())?'Yes':'No';\nreturn [{json:{...record,_route:'write'}}];"
+        "jsCode": "\nconst request=$('Normalize Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nif(action==='list_bookings'){\n  const guest=clean(request.guest_id),inquiry=clean(request.inquiry_id),booking=clean(request.booking_id);\n  const records=rows.filter(row=>(!guest||clean(row.guest_id)===guest)&&(!inquiry||clean(row.inquiry_id)===inquiry)&&(!booking||clean(row.booking_id)===booking)&&clean(row.is_archived).toLowerCase()!=='yes').sort((a,b)=>clean(b.tour_date_start||b.created_at).localeCompare(clean(a.tour_date_start||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.booking||request.record||{})};\nif(!clean(incoming.inquiry_id)||!clean(incoming.guest_id)) throw new Error('Booking requires inquiry_id and guest_id.');\nincoming.booking_id=clean(incoming.booking_id)||('B-'+clean(incoming.inquiry_id).replace(/^INQ-/,''));\nconst existing=rows.find(row=>clean(row.booking_id)===incoming.booking_id)||{};\nconst record={...existing,...incoming,booking_id:incoming.booking_id,created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};\nrecord.booking_status=clean(record.booking_status||'pending').toLowerCase();\nif(record.booking_status==='confirmed') record.booking_status='booked';\nrecord.quoted_currency=clean(record.quoted_currency||'USD').toUpperCase();\nrecord.is_archived=['yes','true','1'].includes(clean(record.is_archived).toLowerCase())?'Yes':'No';\nreturn [{json:{...record,_route:'write'}}];"
       },
       "id": "8acaf9dc-0000-4000-8000-a967feca840f",
       "name": "Process CRM Bookings",
@@ -8010,7 +8010,7 @@
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg/edit",
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
           "mode": "url"
         },
         "sheetName": {
@@ -8372,7 +8372,7 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg/edit",
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
           "mode": "url"
         },
         "sheetName": {
@@ -8455,7 +8455,7 @@
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg/edit",
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
           "mode": "url"
         },
         "sheetName": {

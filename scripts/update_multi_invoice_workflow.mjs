@@ -10,7 +10,7 @@ const workflow = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
 const node = name => workflow.nodes.find(item => item.name === name);
 const clone = value => JSON.parse(JSON.stringify(value));
 const makeId = value => crypto.createHash("sha1").update(value).digest("hex").slice(0, 8) + "-0000-4000-8000-" + crypto.createHash("sha1").update(value).digest("hex").slice(8, 20);
-const sheetUrl = "https://docs.google.com/spreadsheets/d/1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg/edit";
+const sheetUrl = "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit";
 
 const resources = [
   {
@@ -37,6 +37,7 @@ incoming.booking_id=clean(incoming.booking_id)||('B-'+clean(incoming.inquiry_id)
 const existing=rows.find(row=>clean(row.booking_id)===incoming.booking_id)||{};
 const record={...existing,...incoming,booking_id:incoming.booking_id,created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};
 record.booking_status=clean(record.booking_status||'pending').toLowerCase();
+if(record.booking_status==='confirmed') record.booking_status='booked';
 record.quoted_currency=clean(record.quoted_currency||'USD').toUpperCase();
 record.is_archived=['yes','true','1'].includes(clean(record.is_archived).toLowerCase())?'Yes':'No';
 return [{json:{...record,_route:'write'}}];`
