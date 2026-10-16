@@ -81,6 +81,9 @@ return [{json:{...record,_route:'write'}}];`
 const switchNode = node("Switch - Action");
 const switchConnections = workflow.connections["Switch - Action"].main;
 const fallback = switchConnections.pop();
+const existingActions = switchNode.parameters.rules.values
+  .map(rule => rule?.conditions?.conditions?.[0]?.rightValue)
+  .filter(Boolean);
 
 for (const [resourceIndex, resource] of resources.entries()) {
   const readName = `Read CRM ${resource.plural}`;
@@ -129,9 +132,13 @@ for (const [resourceIndex, resource] of resources.entries()) {
 switchConnections.push(fallback);
 
 const unsupported = node("Unsupported Action");
+const allowedActions = [...new Set([
+  ...existingActions,
+  ...resources.flatMap(resource => resource.actions)
+])];
 unsupported.parameters.jsCode = unsupported.parameters.jsCode.replace(
   /allowed_actions:\s*\[[^\]]*\]/,
-  `allowed_actions: ["list_inquiries","create_guest_and_inquiry","create_returning_inquiry","update_inquiry","list_interactions","create_interaction","update_interaction","delete_interaction","list_assignments","create_assignment","update_assignment","delete_assignment","list_providers","invite_assignment_provider","save_inquiry_studio","get_inquiry_studio","list_bookings","upsert_booking","list_payments","upsert_payment"]`
+  `allowed_actions: ${JSON.stringify(allowedActions)}`
 );
 
 fs.writeFileSync(outputPath, JSON.stringify(workflow,null,2)+"\n");
