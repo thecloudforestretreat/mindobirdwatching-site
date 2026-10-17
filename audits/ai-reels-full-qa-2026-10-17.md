@@ -41,6 +41,13 @@ Reviewed the complete Reels path from Admin Studio intake through the Cloudflare
 - Copy source: `HUMAN_QA_REVIEWED`.
 - No platform publication IDs or active publication claims were present during the queue audit.
 
+## Expected dispatch timing
+
+The publisher polls once per hour at minute `:07`, as requested. A reel scheduled
+for 7:00 AM therefore becomes eligible at 7:00 AM and should be picked up by the
+7:07 AM Eastern run. More generally, an eligible item can wait up to 59 minutes
+for the next poll; the stored schedule remains the requested publish-after time.
+
 ## Remaining operational risk
 
 The Mac mini is still a single point of availability. The workflow is protected against posting while it is unavailable, but it cannot generate copy or publish until the Mac is awake, online, and running n8n/Ollama. An independent uptime monitor or always-on host would remove that availability risk; it is separate from the duplicate-post and copy-quality defects fixed here.
