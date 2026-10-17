@@ -57,6 +57,26 @@ function validVideoUrl(value) {
   }
 }
 
+function easternNowParts() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return { date: `${values.year}-${values.month}-${values.day}`, time: `${values.hour}:${values.minute}` };
+}
+
+function futureEastern(date, time) {
+  if (!validDate(date) || !validTime(time)) return false;
+  const now = easternNowParts();
+  return `${date}T${time}` > `${now.date}T${now.time}`;
+}
+
 function identifier(input) {
   const reelId = clean(input.reel_id, 100);
   const postId = clean(input.post_id, 40);
@@ -75,6 +95,7 @@ function normalizeReel(input, timezone) {
   if (!validVideoUrl(videoUrl)) throw new Error("Each reel needs a Cloudinary HTTPS video URL ending in MP4, MOV, or M4V.");
   if (description.length < 8) throw new Error("Each reel needs a factual description of at least 8 characters.");
   if (!validDate(scheduledDate) || !validTime(scheduledTime)) throw new Error("Each reel needs a valid scheduled date and time.");
+  if (!futureEastern(scheduledDate, scheduledTime)) throw new Error("Choose a future Eastern date and time.");
   return {
     reel_id: "reel_" + crypto.randomUUID(),
     submitted_at: new Date().toISOString(),
@@ -160,17 +181,20 @@ export async function onRequestPost({ request, env }) {
     const id = identifier(input);
     if (!id) return json(request, { ok: false, message: "A valid reel_id or post_id is required." }, 400);
     payload = { action, request_id: requestId, ...id };
-    if (action === "update_reel") {
+    if (action === "update_reel" || action === "approve_reel") {
       const source = input.edits && typeof input.edits === "object" ? input.edits : {};
       const edits = {};
       for (const [key, value] of Object.entries(source)) {
         if (!EDITABLE_FIELDS.has(key)) continue;
         edits[key] = clean(value, key.includes("caption") || key.includes("description") ? 5000 : 1000);
       }
-      if (!Object.keys(edits).length) return json(request, { ok: false, message: "No editable fields were supplied." }, 400);
+      if (action === "update_reel" && !Object.keys(edits).length) return json(request, { ok: false, message: "No editable fields were supplied." }, 400);
       if (edits.scheduled_date && !validDate(edits.scheduled_date)) return json(request, { ok: false, message: "Invalid scheduled date." }, 400);
       if (edits.scheduled_time && !validTime(edits.scheduled_time)) return json(request, { ok: false, message: "Invalid scheduled time." }, 400);
       if (edits.timezone && !ALLOWED_TIMEZONES.has(edits.timezone)) return json(request, { ok: false, message: "Unsupported time zone." }, 400);
+      const scheduledDate = edits.scheduled_date || clean(input.scheduled_date, 10);
+      const scheduledTime = edits.scheduled_time || clean(input.scheduled_time, 5);
+      if ((scheduledDate || scheduledTime) && !futureEastern(scheduledDate, scheduledTime)) return json(request, { ok: false, message: "Choose a future Eastern date and time." }, 400);
       payload.edits = edits;
     } else if (action === "replace_media") {
       const videoUrl = clean(input.video_url, 1000);

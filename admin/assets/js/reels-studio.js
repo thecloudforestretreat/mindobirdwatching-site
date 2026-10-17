@@ -424,8 +424,11 @@
     var buttons = Array.from($("reviewActions").querySelectorAll("button")); buttons.forEach(function (button) { button.disabled = true; });
     try {
       var payload = { reel_id: rowId(state.selected), post_id: state.selected.post_id };
-      if (action === "save") payload.edits = edits;
-      if (action === "approve") await request("update_reel", { reel_id: payload.reel_id, post_id: payload.post_id, edits: edits });
+      if (action === "save" || action === "approve") {
+        payload.edits = edits;
+        payload.scheduled_date = edits.scheduled_date;
+        payload.scheduled_time = edits.scheduled_time;
+      }
       await request(action === "save" ? "update_reel" : action + "_reel", payload);
       if (demoMode) {
         Object.assign(state.selected, payload.edits || {});
