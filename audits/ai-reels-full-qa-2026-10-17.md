@@ -20,7 +20,11 @@ Reviewed the complete Reels path from Admin Studio intake through the Cloudflare
 ## Verification completed
 
 - Main n8n workflow published as `MBW - AI Reels v2 - Local First v17 - Approval Parity`.
-- Admin Gateway published as `v17 atomic approval and duplicate prevention`.
+- Admin Gateway published as `v17 hardened gateway — verified` after an exact
+  13,943-character source round-trip check confirmed that JavaScript escape
+  sequences were preserved.
+- The live Reels Studio then completed a read-only request through the new
+  gateway and returned all 25 queue records (1 upcoming, 24 published).
 - Reels Studio production asset updated to `reels-studio.js?v=10`.
 - Production API rejected an intentionally invalid past Eastern schedule before queueing anything.
 - Admin UI syntax, Cloudflare API syntax, atomic approval contract, replacement flow, Eastern scheduling, and cache version checks passed.
