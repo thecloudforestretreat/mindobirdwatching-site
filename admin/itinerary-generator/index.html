@@ -970,7 +970,7 @@
             <div class="two">
               <div class="field">
                 <label>Date</label>
-                <input type="date" data-field="date" min="${todayIso()}" value="${escapeHtml(item.date)}" />
+                <input type="date" data-field="date" value="${escapeHtml(item.date)}" />
               </div>
               <div class="field">
                 <label>Service type</label>
@@ -1577,10 +1577,10 @@
         updateAll(false);
       });
       function applyDateMinimums(){
-        const today = todayIso();
-        $('startDate').min = today;
-        $('endDate').min = $('startDate').value || today;
-        document.querySelectorAll('#itemsEditor input[type="date"]').forEach(input => { input.min = today; });
+        $('startDate').removeAttribute('min');
+        if($('startDate').value) $('endDate').min = $('startDate').value;
+        else $('endDate').removeAttribute('min');
+        document.querySelectorAll('#itemsEditor input[type="date"]').forEach(input => { input.removeAttribute('min'); });
         if($('startDate').value && $('endDate').value && $('endDate').value < $('startDate').value){
           $('endDate').value = $('startDate').value;
         }
