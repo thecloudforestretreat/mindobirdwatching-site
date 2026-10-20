@@ -1,6 +1,6 @@
-import { api } from "./modules/api.mjs?v=services-20261020-v5";
+import { api } from "./modules/api.mjs?v=services-20261020-v6";
 import { loadSnapshot, saveSnapshot, clearSnapshot } from "./modules/cache.mjs";
-import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v5";
+import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v6";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -55,7 +55,7 @@ function deskCard(record, action = null) {
   const tourDate = first ? (last && last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
   const count = services.count ? `${services.count} service${services.count === 1 ? "" : "s"}` : "Service pending";
   return `<button class="actionCard ${statusClass(status)}" data-guest="${esc(record.inquiryId)}" data-task="${esc(action?.type || "")}" type="button">
-    <div class="cardTop"><strong>${identityMarkup(record, action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.band)}</span></div>
+    <div class="cardTop"><strong>${identityMarkup(record, action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.label)}</span></div>
     <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} ${Number(record.partySize) === 1 ? "guest" : "guests"} · ${esc(count)}</span></div>
     <div class="cardFacts"><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>Follow-up</b> ${esc(followup.label)}</span></div>
     ${bookingConflict ? `<div class="actionReason actionReason--warn">Booking ledger says ${esc(shortDate(bookingConflict.startDate))}; itinerary says ${esc(shortDate(first))}. Review before invoicing.</div>` : action?.reason ? `<div class="actionReason">${esc(action.reason)} · ${esc(record.assignedTo || action.owner || "Unassigned")}</div>` : ""}
@@ -275,5 +275,5 @@ $("#guestSearch").addEventListener("input", event => { if (!event.currentTarget.
 $("#guestStatusFilter").addEventListener("change", event => { state.guestStatusFilter = event.currentTarget.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuests(); });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=10", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=11", { scope: "/app/" }).catch(() => {});
 start();

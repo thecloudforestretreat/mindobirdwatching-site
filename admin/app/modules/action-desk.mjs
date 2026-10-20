@@ -89,6 +89,42 @@ export function followupUrgency(today, followupDate) {
   return { tone: "neutral", label: isoDate(followupDate) };
 }
 
+function compactDate(value) {
+  const date = isoDate(value);
+  if (!date) return "";
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`)).toUpperCase();
+}
+
+function followupCue(days, date) {
+  if (days === null) return "SET F/U";
+  if (days < 0) return `F/U ${Math.abs(days)}D LATE`;
+  if (days === 0) return "F/U TODAY";
+  if (days === 1) return "F/U TOMORROW";
+  return `F/U ${compactDate(date)}`;
+}
+
+function priorityCue({ action, followDays, tourDays, future, followupDate, status }) {
+  const reason = String(action?.reason || "").toLowerCase();
+  if (action?.type === "reconciliation") return "CHECK DATA";
+  if (action?.type === "operations") {
+    const driver = /transport|transfer|driver|airport/.test(reason);
+    if (/no assignment/.test(reason)) return driver ? "ASSIGN DRIVER" : "ASSIGN GUIDE";
+    return driver ? "CONFIRM DRIVER" : "CONFIRM GUIDE";
+  }
+  if (action?.type === "first-response") return "1ST REPLY";
+  if (["follow-up", "interaction-follow-up"].includes(action?.type)) return followupCue(followDays, followupDate);
+  if (action?.type === "confirmation") return "CONFIRM";
+  if (action?.type === "payment") return "$ NEEDED";
+  if (tourDays === 0) return "TOUR TODAY";
+  if (tourDays === 1) return "TOUR TOMORROW";
+  if (followDays !== null && followDays <= 1) return followupCue(followDays, followupDate);
+  if (["payment_pending", "deposit_pending"].includes(status)) return "$ NEEDED";
+  if (tourDays !== null && tourDays <= 7) return `TOUR IN ${tourDays}D`;
+  if (followDays !== null) return followupCue(followDays, followupDate);
+  if (future) return `TOUR ${compactDate(future)}`;
+  return "SET F/U";
+}
+
 export function priorityFor(record, bookings, today, action = null) {
   const dates = recordDates(record, bookings);
   const future = dates.find(value => value >= today) || dates.at(-1) || "";
@@ -114,7 +150,8 @@ export function priorityFor(record, bookings, today, action = null) {
   if (status === "booked" && tourDays !== null && tourDays <= 7) score += 12;
   if (status === "quoted") score += 5;
   const band = score >= 80 ? "now" : score >= 60 ? "today" : score >= 40 ? "soon" : "nurture";
-  return { score, band, tourDate: future };
+  const label = priorityCue({ action, followDays, tourDays, future, followupDate: record.followupDate, status });
+  return { score, band, label, tourDate: future };
 }
 
 export function weekDates(start) {

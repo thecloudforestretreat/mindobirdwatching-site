@@ -64,6 +64,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.screenshot({ path: "/tmp/mbw-loader-mobile-qa.png", fullPage: false });
     const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
     assert.match(await card.innerText(), /Test Testerer/); assert.match(await card.innerText(), /MT/); assert.match(await card.innerText(), /🇺🇸/);
+    assert.match(await card.innerText(), /F\/U TOMORROW/); assert.doesNotMatch(await card.innerText(), /\bSOON\b|\bNURTURE\b/);
     assert.equal(await page.locator("[data-summary-filter]").count(), 3); await page.locator('[data-summary-filter="followups"]').click(); assert.equal(await page.locator(".actionCard").count(), 1);
     await page.locator('#bottomNav [data-route="guests"]').click();
     assert.equal(await page.locator(".guestCard").count(), 1, "closed guests should stay out of the default list");

@@ -22,7 +22,12 @@ test("verified itinerary dates override a conflicting invoice booking date", () 
 test("priority moderates an overdue follow-up when the tour is distant", () => {
   const distant = { ...record, requestedDate: "2027-07-04", requestedDateEnd: "2027-07-04", tours: [{ tour: "Birding", date: "2027-07-04" }] };
   assert.equal(priorityFor(distant, [], "2026-10-20").band, "nurture");
+  assert.equal(priorityFor(distant, [], "2026-10-20").label, "F/U 1D LATE");
   assert.equal(priorityFor(record, [], "2026-10-20").band, "now");
+  assert.equal(priorityFor(record, [], "2026-10-20").label, "TOUR TOMORROW");
+  assert.equal(priorityFor({ ...record, status: "payment_pending", effectiveStatus: "payment_pending", requestedDate: "2026-11-10", tours: [] }, [], "2026-10-20").label, "F/U 1D LATE");
+  assert.equal(priorityFor({ ...record, status: "payment_pending", effectiveStatus: "payment_pending", requestedDate: "2026-11-10", followupDate: "2026-11-01", tours: [] }, [], "2026-10-20").label, "$ NEEDED");
+  assert.equal(priorityFor(record, [], "2026-10-20", { type: "operations", reason: "Transportation has no assignment" }).label, "ASSIGN DRIVER");
 });
 
 test("follow-up urgency and service icons retain visible meaning", () => {
