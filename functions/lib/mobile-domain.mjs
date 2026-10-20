@@ -391,12 +391,14 @@ function serviceAssignments(inquiry, tour, assignments) {
 
 function assignmentItineraryMatch(inquiry, assignment) {
   const assignmentCode = productCode(assignment.product);
-  const assignmentKeys = new Set([key(assignment.serviceType), key(assignment.product)].filter(Boolean));
-  return (inquiry.tours || []).find(tour => {
-    const tourCode = productCode(tour.product || tour.tour);
-    if (assignmentCode && tourCode && assignmentCode === tourCode) return true;
-    return [key(tour.serviceType), key(tour.tour), key(tour.product)].filter(Boolean).some(value => assignmentKeys.has(value));
-  });
+  const assignmentService = key(assignment.serviceType);
+  const tours = inquiry.tours || [];
+  const serviceMatch = tours.find(tour => [key(tour.serviceType), key(tour.tour)].filter(Boolean).includes(assignmentService));
+  if (serviceMatch) return serviceMatch;
+  // Do not let an incorrectly copied bird-tour product code make a Night Walk
+  // or transportation assignment inherit the bird-tour date.
+  if (assignmentService && !["activity", "tour", "other", "service"].includes(assignmentService)) return null;
+  return assignmentCode ? tours.find(tour => productCode(tour.product || tour.tour) === assignmentCode) : null;
 }
 
 export function operationsSchedule(inquiries, assignments, bookings = [], payments = [], now = new Date(), days = 7) {

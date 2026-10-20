@@ -100,6 +100,23 @@ test("assignment dates recover operational services when stored itinerary dates 
   assert.equal(upcoming.length, 3);
 });
 
+test("assignment conflict matching prefers the service identity over a copied product code", () => {
+  const record = normalizeInquiry({
+    inquiry_id: "INQ-SERVICE-MATCH", full_name: "Service Match", status: "booked",
+    tour_items_json: JSON.stringify([
+      { id: "bird", tour: "Birding", product_selected: "MBW006", service_type: "Birdwatching", date: "2026-10-19", status: "booked" },
+      { id: "night", tour: "Night Walk", product_selected: "MBW016", service_type: "Activity", date: "2026-10-21", status: "quoted" },
+    ]),
+  });
+  const assignments = [
+    normalizeAssignment({ assignment_id: "A-NIGHT-WRONG-CODE", inquiry_id: record.inquiryId, service_date: "2026-10-20", service_type: "Night Walk", product_selected: "MBW006", assignment_status: "confirmed", provider_informed: "Yes" }),
+    normalizeAssignment({ assignment_id: "A-TRANSFER-WRONG-CODE", inquiry_id: record.inquiryId, service_date: "2026-10-20", service_type: "Transportation", product_selected: "MBW006", assignment_status: "confirmed", provider_informed: "Yes" }),
+  ];
+  const schedule = todaySchedule([record], assignments, [], [], new Date("2026-10-20T16:00:00Z"));
+  assert.match(schedule.find(item => item.tour === "Night Walk").risk, /2026-10-21/);
+  assert.equal(schedule.find(item => item.tour === "Transportation").risk, "");
+});
+
 test("same-day operational risk overrides lower-stage follow-up and payment work", () => {
   const record = { ...inquiry, status: "contacted", paymentStatus: "unpaid", quoteStatus: "accepted", followupDate: "2026-10-18", requestedDate: "2026-10-25" };
   const actions = actionDesk([record], [], [], [], [], now);
