@@ -16,7 +16,7 @@ test("bootstrap returns the complete sanitized desk dataset for filters and cale
     globalThis.fetch = async (_url, options) => {
       const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
       if (body.action === "list_inquiries") return Response.json({ ok: true, records: [
-        { inquiry_id: "I-1", guest_id: "G-1", full_name: "Booked Guest", email: "private@example.test", phone_raw: "123", status: "booked", requested_date: "2026-10-21", guest_count: "2" },
+        { inquiry_id: "I-1", guest_id: "G-1", full_name: "Booked Guest", email: "private@example.test", phone_raw: "123", status: "booked", requested_date: "2026-10-21", guest_count: "2", country: "United States", brand_source: "Mindo Tours" },
         { inquiry_id: "I-2", guest_id: "G-2", full_name: "Quoted Guest", email: "private2@example.test", status: "quoted", requested_date: "2027-07-04" },
       ] });
       return Response.json({ ok: true, records: [] });
@@ -28,6 +28,8 @@ test("bootstrap returns the complete sanitized desk dataset for filters and cale
     assert.deepEqual(body.inquiries.map(item => item.effectiveStatus), ["booked", "quoted"]);
     assert.equal(body.inquiries[0].email, undefined);
     assert.equal(body.inquiries[0].phone, undefined);
+    assert.equal(body.inquiries[0].countryCode, "US");
+    assert.equal(body.inquiries[0].brand, "MT");
     assert.deepEqual(body.bookings, []);
   } finally {
     globalThis.fetch = savedFetch;

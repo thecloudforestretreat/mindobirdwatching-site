@@ -1,3 +1,5 @@
+import { country } from "./maps.mjs";
+
 const CLOSED = new Set(["completed", "cancelled", "did_not_book", "duplicate", "archived"]);
 const INACTIVE = new Set(["cancelled", "did_not_book", "duplicate", "archived"]);
 const BOOKED = new Set(["deposit_pending", "deposit_paid", "payment_pending", "booked", "completed"]);
@@ -18,6 +20,18 @@ const amount = value => {
 
 function isAuditDuplicate(record) {
   return /(?:^|\n)\s*marked duplicate(?:\s+on\b|[.:])/im.test(record.internalNotes || "");
+}
+
+export function brandSource(record) {
+  const explicit = text(record.brand_source || record.lead_brand_code || record.source_brand || record.lead_brand || record.site_context || record.source_site).toLowerCase();
+  const sourcePage = text(record.source_page || record.first_touch_landing_page || record.last_touch_landing_page).toLowerCase();
+  const product = text(record.product_selected).toUpperCase();
+  const tour = [record.tour_type, record.tour_category, record.interest_category, record.service_type].map(value => text(value).toLowerCase()).join(" ");
+  const signal = [explicit, sourcePage, tour].join(" ");
+  if (/\bcat\b|chocoandinotours|choc[oó]\s*andino/.test(signal) || product.startsWith("CAT-")) return "CAT";
+  if (/\bmt\b|mindo\s*tours/.test(signal) || product.startsWith("MT-")) return "MT";
+  if (/\bmbw\b|mindobirdwatching|mindo bird watching/.test(signal) || product.startsWith("MBW")) return "MBW";
+  return "";
 }
 
 export function todayInEcuador(now = new Date()) {
@@ -61,11 +75,15 @@ export function tourItems(record) {
 }
 
 export function normalizeInquiry(record) {
+  const location = country(record.country || record.home_country || record.country_of_residence);
   return {
     inquiryId: text(record.inquiry_id, 128),
     guestId: text(record.guest_id, 128),
     bookingId: text(record.booking_id, 128),
     name: text(record.full_name || [record.first_name, record.last_name].filter(Boolean).join(" "), 180),
+    country: location.country === "Unknown country" ? "" : location.country,
+    countryCode: location.code,
+    brand: brandSource(record),
     phone: text(record.phone_number || record.phone_normalized || record.phone_raw, 40),
     email: text(record.email, 254),
     partySize: text(record.guest_count, 20),

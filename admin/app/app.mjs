@@ -26,6 +26,26 @@ function deskRecords() { return state.data?.inquiries || state.data?.recentGuest
 function relatedBookings(record) { return (state.data?.bookings || []).filter(item => item.inquiryId === record.inquiryId && !item.archived); }
 function actionFor(record) { return (state.data?.actions || []).find(item => item.inquiryId === record.inquiryId) || null; }
 function recordById(id) { return deskRecords().find(item => item.inquiryId === id); }
+function countryFlag(code) { const value = String(code || "").toUpperCase(); return /^[A-Z]{2}$/.test(value) ? String.fromCodePoint(...[...value].map(letter => 127397 + letter.charCodeAt(0))) : ""; }
+function brandBadge(record) { const labels = { MT: "Mindo Tours", CAT: "Chocó Andino Tours" }, code = record?.brand; return labels[code] ? `<span class="brandBadge brandBadge--${code.toLowerCase()}" title="Originating brand: ${esc(labels[code])}">${esc(code)}</span>` : ""; }
+function identityMarkup(record, fallback = "Guest") { const flag = countryFlag(record?.countryCode); return `<span class="identityLine"><span class="guestName">${esc(record?.name || fallback)}</span>${flag ? `<span class="countryFlag" title="${esc(record.country || record.countryCode)}" aria-label="${esc(record.country || record.countryCode)}">${flag}</span>` : ""}${brandBadge(record)}</span>`; }
+function toolUrl(base, guest) {
+  const primary = guest.tours?.[0] || {};
+  const params = new URLSearchParams({ inquiry_id: guest.inquiryId || "", guest_id: guest.guestId || "", guest: guest.name || "", full_name: guest.name || "", email: guest.email || "", guest_email: guest.email || "", phone: guest.phone || "", guest_phone: guest.phone || "", guests: guest.partySize || "", guest_count: guest.partySize || "", date: guest.requestedDate || "", tour_date: guest.requestedDate || "", tour_date_end: guest.requestedDateEnd || "", tour: primary.tour || "", tour_type: primary.tour || "", product_selected: primary.product || "", status: guest.effectiveStatus || guest.status || "", payment_status: guest.paymentStatus || "", invoice_no: guest.invoiceNo || "", country: guest.country || "", tour_items_json: JSON.stringify(guest.tours || []) });
+  return `${base}${base.includes("?") ? "&" : "?"}${params.toString()}`;
+}
+function pipelineActionsMarkup(guest) {
+  const status = guest.effectiveStatus || guest.status, whatsapp = phoneDigits(guest.phone), actions = [];
+  if (whatsapp) actions.push([`https://wa.me/${whatsapp}`, "WhatsApp", false]);
+  if (guest.email) actions.push([toolUrl("/custom-email-generator/", guest), "Compose email", true]);
+  if (["new","contacted","planning","qualified","follow_up"].includes(status)) actions.push([toolUrl("/itinerary-generator/", guest), "Build itinerary / quote", true]);
+  if (["quoted","deposit_pending","deposit_paid","payment_pending"].includes(status)) {
+    actions.push([toolUrl("https://mindobirdwatching.com/book-tour/create/", guest), "Create Stripe invoice", true]);
+    actions.push([toolUrl("/zelle-invoice-generator/", guest), "Create Zelle invoice", true]);
+  }
+  if (["deposit_paid","payment_pending","booked"].includes(status)) actions.push([toolUrl("/tour-confirmation-generator/", guest), "Create confirmation", true]);
+  return `<section class="detailSection pipelineSection"><div class="detailTitle"><h3>Next action</h3><span class="badge">${esc(pretty(status))}</span></div><div class="pipelineActions">${actions.map(([href,label], index) => `<a class="pipelineAction ${index === 0 ? "primaryAction" : ""}" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join("")}</div></section>`;
+}
 
 function deskCard(record, action = null) {
   const bookings = relatedBookings(record), today = todayIso(), status = record.effectiveStatus || record.status;
@@ -34,7 +54,7 @@ function deskCard(record, action = null) {
   const tourDate = first ? (last && last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
   const count = services.count ? `${services.count} service${services.count === 1 ? "" : "s"}` : "Service pending";
   return `<button class="actionCard ${statusClass(status)}" data-guest="${esc(record.inquiryId)}" data-task="${esc(action?.type || "")}" type="button">
-    <div class="cardTop"><strong>${esc(record.name || action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.band)}</span></div>
+    <div class="cardTop"><strong>${identityMarkup(record, action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.band)}</span></div>
     <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} ${Number(record.partySize) === 1 ? "guest" : "guests"} · ${esc(count)}</span></div>
     <div class="cardFacts"><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>Follow-up</b> ${esc(followup.label)}</span></div>
     ${action?.reason ? `<div class="actionReason">${esc(action.reason)} · ${esc(record.assignedTo || action.owner || "Unassigned")}</div>` : ""}
@@ -78,7 +98,7 @@ function renderActions() {
 }
 
 function guestCard(item) {
-  return `<button class="guestCard" data-guest="${esc(item.inquiryId)}" type="button"><div class="cardTop"><strong>${esc(item.name || "Guest")}</strong><span class="badge">${esc(pretty(item.effectiveStatus || item.status))}</span></div><p>${esc(item.tours?.[0]?.tour || "Tour not selected")}</p><div class="cardMeta"><span>${esc(item.assignedTo || "Unassigned")}</span><span>${esc(item.requestedDate ? date(item.requestedDate) : item.inquiryId)}</span></div></button>`;
+  return `<button class="guestCard" data-guest="${esc(item.inquiryId)}" type="button"><div class="cardTop"><strong>${identityMarkup(item)}</strong><span class="badge">${esc(pretty(item.effectiveStatus || item.status))}</span></div><p>${esc(item.tours?.[0]?.tour || "Tour not selected")}</p><div class="cardMeta"><span>${esc(item.assignedTo || "Unassigned")}</span><span>${esc(item.requestedDate ? date(item.requestedDate) : item.inquiryId)}</span></div></button>`;
 }
 
 function renderGuests(records = state.data?.recentGuests || []) { $("#guestList").innerHTML = records.length ? records.map(guestCard).join("") : empty("No matching guests were found."); }
@@ -100,6 +120,7 @@ function route(name) {
   state.route = ["actions", "guests", "today", "more"].includes(name) ? name : "actions";
   document.querySelectorAll(".view").forEach(view => { view.hidden = view.dataset.view !== state.route; });
   document.querySelectorAll("#bottomNav button").forEach(button => button.classList.toggle("active", button.dataset.route === state.route));
+  document.querySelectorAll(".dialogNav button").forEach(button => button.classList.toggle("active", button.dataset.dialogRoute === state.route));
   window.history.replaceState({}, "", state.route === "actions" ? "/app/" : `/app/?view=${state.route}`);
   $("#appMain").focus({ preventScroll: true }); window.scrollTo(0, 0);
 }
@@ -110,19 +131,22 @@ function assignmentMarkup(records, canWrite) { return records.length ? records.m
 function interactionMarkup(records) { return records.length ? records.slice().sort((a,b) => String(b.occurredAt).localeCompare(String(a.occurredAt))).slice(0, 20).map(item => `<div class="recordItem"><strong>${esc(pretty(item.channel))} · ${esc(pretty(item.direction))}</strong><p>${esc(item.note)}</p><small>${esc(item.occurredAt ? new Date(item.occurredAt).toLocaleString() : "Date unavailable")} · ${esc(item.createdBy || "Staff")}</small></div>`).join("") : `<div class="recordItem"><p>No communications logged.</p></div>`; }
 
 async function openGuest(id, task = "") {
-  const dialog = $("#guestDialog"), body = $("#guestDetail");
-  $("#guestDialogTitle").textContent = "Loading…"; body.innerHTML = `<section class="stateCard"><div class="spinner"></div><p>Loading the current guest record.</p></section>`; if (!dialog.open) dialog.showModal();
+  const dialog = $("#guestDialog"), body = $("#guestDetail"), preview = recordById(id) || state.data?.recentGuests?.find(item => item.inquiryId === id);
+  $("#guestDialogTitle").textContent = preview?.name || "Loading…";
+  body.innerHTML = preview ? `<section class="detailHero"><h2>${identityMarkup(preview)}</h2><p class="countryLabel">${esc(preview.country || "Country not recorded")} · ${esc(pretty(preview.effectiveStatus || preview.status))}</p></section><div class="detailLoading" aria-label="Loading current guest workspace"><i></i><i></i></div>` : `<section class="stateCard"><div class="spinner"></div><p>Loading the current guest record.</p></section>`;
+  if (!dialog.open) dialog.showModal();
   try {
     const result = await api.guest(id); state.guest = result; const guest = result.record; const canWrite = Boolean(state.session?.capabilities?.write);
     const selectedStatus = STATUS_OPTIONS.includes(guest.effectiveStatus) ? guest.effectiveStatus : guest.status;
     $("#guestDialogTitle").textContent = guest.name || "Guest";
     const whatsapp = phoneDigits(guest.phone);
-    body.innerHTML = `<section class="detailHero"><h2>${esc(guest.name || "Guest")}</h2><p>${esc(guest.email || "Email not recorded")}</p><p>${esc(guest.phone || "Phone not recorded")}</p><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="mailto:${encodeURIComponent(guest.email)}">Email</a>` : ""}</div></section>
+    body.innerHTML = `<section class="detailHero"><h2>${identityMarkup(guest)}</h2><p class="countryLabel">${esc(guest.country || "Country not recorded")}</p><p>${esc(guest.email || "Email not recorded")}</p><p>${esc(guest.phone || "Phone not recorded")}</p><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="${esc(toolUrl("/custom-email-generator/", guest))}" target="_blank" rel="noopener noreferrer">Email draft</a>` : ""}</div></section>
       <section class="detailSection"><div class="detailTitle"><h3>Guest Journey</h3><span class="badge">${esc(pretty(guest.effectiveStatus || guest.status))}</span></div>${guest.needsReconciliation ? `<p class="formNote formNote--warn">Legacy booking or payment records need reconciliation before this inquiry is treated as current.</p>` : ""}${journeyMarkup(result.journey)}</section>
+      ${pipelineActionsMarkup(guest)}
       <section class="detailSection" data-section="status"><h3>Inquiry status</h3><form id="statusForm"><label class="field"><span>Saved CRM status</span><select name="status" ${canWrite ? "" : "disabled"}>${STATUS_OPTIONS.map(value => `<option value="${value}" ${selectedStatus === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save status</button></div>${guest.status !== selectedStatus ? `<p class="formNote">The operational status is derived as ${esc(pretty(selectedStatus))}. Saving makes that status canonical in the CRM.</p>` : ""}${canWrite ? "" : `<p class="formNote formNote--warn">Changes are disabled until the production write configuration is complete.</p>`}</form></section>
       <section class="detailSection" data-section="follow-up"><h3>Next follow-up</h3><form id="followupForm"><label class="field"><span>Date</span><input type="date" name="followup_date" value="${esc(guest.followupDate)}" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save follow-up</button></div>${canWrite ? "" : `<p class="formNote formNote--warn">Changes are disabled until the production write configuration is complete.</p>`}</form></section>
-      <section class="detailSection" data-section="payments"><h3>Payments</h3><div class="recordList">${paymentMarkup(result.data.payments)}</div><div class="toolLinks"><a href="/zelle-invoice-generator/?inquiry_id=${encodeURIComponent(guest.inquiryId)}" target="_blank" rel="noopener noreferrer">Zelle invoice</a><a href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer">Stripe invoice</a></div></section>
-      <section class="detailSection" data-section="confirmation"><h3>Confirmation</h3><p>Open the existing generator with this inquiry reference, then verify the guest details before sending.</p><div class="toolLinks"><a href="/tour-confirmation-generator/?inquiry_id=${encodeURIComponent(guest.inquiryId)}" target="_blank" rel="noopener noreferrer">Open confirmation generator</a></div></section>
+      <section class="detailSection" data-section="payments"><h3>Payments</h3><p class="paymentHint">Suggested: ${guest.countryCode === "US" ? "Zelle or Stripe" : "Stripe"}. Review the guest and amount before creating or sending an invoice.</p><div class="recordList">${paymentMarkup(result.data.payments)}</div><div class="toolLinks"><a href="${esc(toolUrl("/zelle-invoice-generator/", guest))}" target="_blank" rel="noopener noreferrer">Zelle invoice</a><a href="${esc(toolUrl("https://mindobirdwatching.com/book-tour/create/", guest))}" target="_blank" rel="noopener noreferrer">Stripe invoice</a></div></section>
+      <section class="detailSection" data-section="confirmation"><h3>Confirmation</h3><p>Open the existing generator with this guest and tour information, then verify the details before sending.</p><div class="toolLinks"><a href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Open confirmation generator</a></div></section>
       <section class="detailSection" data-section="operations"><h3>Operations</h3><div class="recordList">${assignmentMarkup(result.data.assignments, canWrite)}</div></section>
       <section class="detailSection" data-section="communication"><h3>Communication</h3><form id="interactionForm"><label class="field"><span>Channel</span><select name="channel" ${canWrite ? "" : "disabled"}><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="in_person">In person</option><option value="other">Other</option></select></label><label class="field"><span>Direction</span><select name="direction" ${canWrite ? "" : "disabled"}><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option><option value="internal">Internal note</option></select></label><label class="field"><span>Note</span><textarea name="note" maxlength="4000" required ${canWrite ? "" : "disabled"}></textarea></label><label class="field"><span>Follow-up date (optional)</span><input type="date" name="followupAt" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Log communication</button></div></form><div class="recordList">${interactionMarkup(result.data.interactions)}</div></section>`;
     $("#statusForm")?.addEventListener("submit", saveStatus); $("#followupForm")?.addEventListener("submit", saveFollowup); $("#interactionForm")?.addEventListener("submit", saveInteraction); body.querySelectorAll(".assignmentForm").forEach(form => form.addEventListener("submit", saveAssignment));
@@ -169,7 +193,8 @@ async function start() {
   } catch (error) { loadingStages.forEach(clearTimeout); $("#loadingState").hidden = true; $("#errorState").hidden = false; $("#errorMessage").textContent = error.message; connection("error", "Unavailable"); }
 }
 
-$("#bottomNav").addEventListener("click", event => { const button = event.target.closest("button[data-route]"); if (button) route(button.dataset.route); });
+$("#bottomNav").addEventListener("click", event => { const button = event.target.closest("button[data-route]"); if (button) { if ($("#guestDialog").open) $("#guestDialog").close(); route(button.dataset.route); } });
+$(".dialogNav").addEventListener("click", event => { const button = event.target.closest("button[data-dialog-route]"); if (button) { $("#guestDialog").close(); route(button.dataset.dialogRoute); } });
 document.addEventListener("click", event => { const button = event.target.closest("[data-guest]"); if (button) openGuest(button.dataset.guest, button.dataset.task || ""); });
 $("#closeGuest").addEventListener("click", () => $("#guestDialog").close());
 $("#guestDialog").addEventListener("click", event => { if (event.target === event.currentTarget) event.currentTarget.close(); });

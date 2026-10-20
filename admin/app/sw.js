@@ -1,5 +1,5 @@
-const CACHE = "mbw-mobile-shell-v3";
-const SHELL = ["/app/", "/app/app.css?v=phase1-status-20261020", "/app/app.mjs?v=phase1-status-20261020", "/app/modules/api.mjs", "/app/modules/cache.mjs", "/apple-touch-icon.png", "/favicon.ico"];
+const CACHE = "mbw-mobile-shell-v4";
+const SHELL = ["/app/", "/app/app.css?v=pipeline-tools-20261020", "/app/app.mjs?v=pipeline-tools-20261020", "/app/modules/api.mjs", "/app/modules/cache.mjs", "/app/modules/action-desk.mjs", "/apple-touch-icon.png", "/favicon.ico"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
 self.addEventListener("fetch", event => {

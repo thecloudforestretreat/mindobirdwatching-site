@@ -1,11 +1,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actionDesk, guestJourney, inquiryEvidence, normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeInteraction, normalizePayment, todaySchedule } from "../functions/lib/mobile-domain.mjs";
+import { actionDesk, brandSource, guestJourney, inquiryEvidence, normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeInteraction, normalizePayment, todaySchedule } from "../functions/lib/mobile-domain.mjs";
 
 const now = new Date("2026-10-19T16:00:00Z");
 const inquiry = normalizeInquiry({ inquiry_id: "INQ-1", guest_id: "G-1", full_name: "Test Guest", status: "booked", quote_status: "accepted", payment_status: "paid", requested_date: "2026-10-19", tour_type: "Birdwatching", guest_count: "2", itinerary_status: "ready", updated_at: "2026-10-18T12:00:00Z" });
 const assignment = normalizeAssignment({ assignment_id: "ASN-1", inquiry_id: "INQ-1", service_date: "2026-10-19", provider_name: "Test Guide", assignment_status: "confirmed", provider_informed: "Yes", start_time: "06:00" });
 const payment = normalizePayment({ payment_id: "PAY-1", inquiry_id: "INQ-1", payment_status: "paid", total_amount_paid: "100", balance_remaining: "0", is_fully_paid: "Yes" });
+
+test("mobile records retain country and non-MBW brand attribution", () => {
+  const mindoTours = normalizeInquiry({ inquiry_id: "I-MT", full_name: "Test Testerer", country: "United States", brand_source: "Mindo Tours", product_selected: "MT-TEST" });
+  const choco = normalizeInquiry({ inquiry_id: "I-CAT", full_name: "Choco Guest", home_country: "Canada", source_page: "https://chocoandinotours.com/contact" });
+  const mbw = normalizeInquiry({ inquiry_id: "I-MBW", full_name: "Bird Guest", country: "GB", product_selected: "MBW004" });
+  assert.deepEqual({ country: mindoTours.country, code: mindoTours.countryCode, brand: mindoTours.brand }, { country: "United States", code: "US", brand: "MT" });
+  assert.equal(choco.countryCode, "CA");
+  assert.equal(choco.brand, "CAT");
+  assert.equal(mbw.brand, "MBW");
+  assert.equal(brandSource({ tour_type: "ordinary custom request" }), "");
+});
 
 test("journey only marks confirmation complete from explicit confirmation evidence", () => {
   const before = guestJourney(inquiry, [], [assignment], [payment]);
