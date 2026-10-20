@@ -72,6 +72,39 @@ test("audit-only duplicate imports never create operational actions", () => {
   assert.equal(guestJourney(duplicate, [], [], [], [], now).some(step => step.state === "attention"), false);
 });
 
+test("archived inquiries stay closed even when an upstream import resets their status and notes", () => {
+  const archived = normalizeInquiry({
+    inquiry_id: "INQ-ARCHIVED",
+    guest_id: "G-ARCHIVED",
+    full_name: "Archived Guest",
+    status: "new",
+    is_archived: "Yes",
+    archive_reason: "duplicate",
+    requested_date: "2026-08-16",
+    updated_at: "2026-10-20",
+    internal_notes: "Imported from raw source.",
+  });
+  const evidence = inquiryEvidence(archived, [], [], now);
+  assert.equal(evidence.status, "duplicate");
+  assert.equal(evidence.source, "archive");
+  assert.deepEqual(actionDesk([archived], [], [], [], [], now), []);
+  assert.deepEqual(todaySchedule([archived], [], [], [], now), []);
+  assert.equal(guestJourney(archived, [], [], [], [], now).some(step => step.state === "attention"), false);
+});
+
+test("superseded inquiries stay closed even without an archive flag", () => {
+  const superseded = normalizeInquiry({
+    inquiry_id: "INQ-SUPERSEDED",
+    guest_id: "G-SUPERSEDED",
+    full_name: "Superseded Guest",
+    status: "follow_up",
+    superseded_by_inquiry_id: "INQ-CANONICAL",
+    requested_date: "2026-08-16",
+  });
+  assert.equal(inquiryEvidence(superseded, [], [], now).status, "duplicate");
+  assert.deepEqual(actionDesk([superseded], [], [], [], [], now), []);
+});
+
 test("ordinary notes mentioning duplicate do not close a live inquiry", () => {
   const active = normalizeInquiry({
     inquiry_id: "INQ-ACTIVE",

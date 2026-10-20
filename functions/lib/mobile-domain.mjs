@@ -86,6 +86,10 @@ export function normalizeInquiry(record) {
     updatedAt: text(record.updated_at, 80),
     notes: text(record.notes, 2000),
     internalNotes: text(record.internal_notes, 2000),
+    archived: yes(record.is_archived),
+    archivedAt: text(record.archived_at, 80),
+    archiveReason: key(record.archive_reason),
+    supersededByInquiryId: text(record.superseded_by_inquiry_id, 128),
     tours: tourItems(record),
   };
 }
@@ -202,6 +206,10 @@ function strongestBookingStatus(bookings) {
 }
 
 export function inquiryEvidence(record, bookings = [], payments = [], now = new Date()) {
+  if (record.archived || record.supersededByInquiryId) {
+    const archivedStatus = record.archiveReason === "duplicate" || record.supersededByInquiryId ? "duplicate" : "archived";
+    return { status: archivedStatus, source: "archive", needsReconciliation: false, bookings: [], payments: [] };
+  }
   if (CLOSED.has(record.status)) return { status: record.status, source: "inquiry", needsReconciliation: false, bookings: [], payments: [] };
   if (isAuditDuplicate(record)) return { status: "duplicate", source: "internal_notes", needsReconciliation: false, bookings: [], payments: [] };
   const matched = bookings.map(booking => ({ booking, match: bookingMatch(record, booking) }));
