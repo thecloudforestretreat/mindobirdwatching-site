@@ -1,0 +1,26 @@
+import { mobileIdentity } from "../../lib/mobile-auth.mjs";
+import { loadMobileData } from "../../lib/mobile-data.mjs";
+import { json, errorResponse, methodNotAllowed, writesEnabled } from "../../lib/mobile-http.mjs";
+
+export async function onRequestGet({ request, env }) {
+  try {
+    const identity = await mobileIdentity(request, env);
+    const data = await loadMobileData(env);
+    const guests = data.inquiries
+      .slice()
+      .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
+      .slice(0, 100)
+      .map(({ internalNotes, notes, email, phone, ...guest }) => guest);
+    return json(200, {
+      ok: true,
+      identity: { name: identity.name, role: identity.role },
+      writeEnabled: writesEnabled(env),
+      checkedAt: new Date().toISOString(),
+      actions: data.actions,
+      today: data.today,
+      recentGuests: guests,
+    });
+  } catch (error) { return errorResponse(error, "Mobile data is unavailable."); }
+}
+
+export function onRequestPost() { return methodNotAllowed(["GET"]); }

@@ -2,6 +2,7 @@
   "use strict";
   var hub = "https://admin.mindobirdwatching.com/";
   var pages = [
+    { id:"app", label:"Action Desk", href:hub+"app/", group:"Guests & Sales" },
     { id:"guest-crm", label:"Guest CRM", href:hub+"guest-crm/", group:"Guests & Sales" },
     { id:"whatsapp", label:"WhatsApp", href:hub+"whatsapp/", group:"Guests & Sales" },
     { id:"pilot", label:"Inquiry Studio", href:hub+"inquiry-studio/", group:"Guests & Sales" },
@@ -19,7 +20,7 @@
     { id:"maps", label:"Markets & Origins", href:hub+"analytics/maps/", group:"Growth & Content" },
     { id:"reports", label:"Reports", href:hub+"reports/", group:"Growth & Content" }
   ];
-  var quickIds = ["guest-crm", "whatsapp", "marketing", "reports"];
+  var quickIds = ["app", "guest-crm", "whatsapp", "reports"];
   function currentId(host) {
     if (host.dataset.adminPage) return host.dataset.adminPage;
     var path = window.location.pathname.replace(/\/?$/, "/");

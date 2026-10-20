@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0D5925">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>MBW Action Desk</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/app/app.css?v=phase1-20261020">
+</head>
+<body>
+  <div class="appShell">
+    <header class="appHeader">
+      <a class="brand" href="/app/" aria-label="MBW Action Desk home">
+        <img src="/apple-touch-icon.png" alt="">
+        <span><strong>MBW</strong><small>Action Desk</small></span>
+      </a>
+      <div class="connection" id="connectionState" data-state="loading"><span></span><b>Connecting</b></div>
+    </header>
+
+    <main id="appMain" tabindex="-1">
+      <section class="stateCard" id="loadingState">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>Opening your Action Desk</h1>
+        <p>Checking your MBW Admin access and loading current CRM records.</p>
+      </section>
+
+      <section class="stateCard stateCard--error" id="errorState" hidden>
+        <span class="stateIcon" aria-hidden="true">!</span>
+        <h1>Action Desk unavailable</h1>
+        <p id="errorMessage">The app could not load.</p>
+        <button class="primary" id="retryButton" type="button">Try again</button>
+      </section>
+
+      <div id="workspace" hidden>
+        <section class="view" id="actionsView" data-view="actions">
+          <div class="viewHeading"><div><p class="eyebrow">What needs action now</p><h1>Action Desk</h1></div><button class="iconButton" id="refreshButton" type="button" aria-label="Refresh">↻</button></div>
+          <div class="cachedNotice" id="cachedNotice" hidden>Showing a saved snapshot. Verify current data before acting.</div>
+          <div class="summaryStrip" id="actionSummary"></div>
+          <div class="cardList" id="actionList"></div>
+        </section>
+
+        <section class="view" id="guestsView" data-view="guests" hidden>
+          <div class="viewHeading"><div><p class="eyebrow">Search and continue work</p><h1>Guests</h1></div></div>
+          <form class="searchBar" id="guestSearchForm"><label class="srOnly" for="guestSearch">Search guests</label><input id="guestSearch" type="search" placeholder="Name, phone, email or inquiry ID" autocomplete="off"><button type="submit">Search</button></form>
+          <div class="cardList" id="guestList"></div>
+        </section>
+
+        <section class="view" id="todayView" data-view="today" hidden>
+          <div class="viewHeading"><div><p class="eyebrow">Tours and pickups</p><h1>Today</h1></div></div>
+          <div class="cardList" id="todayList"></div>
+        </section>
+
+        <section class="view" id="moreView" data-view="more" hidden>
+          <div class="viewHeading"><div><p class="eyebrow">Account and tools</p><h1>More</h1></div></div>
+          <div class="settingsCard">
+            <dl><div><dt>Signed in</dt><dd id="identityName">—</dd></div><div><dt>Role</dt><dd id="identityRole">—</dd></div><div><dt>Last checked</dt><dd id="lastChecked">—</dd></div><div><dt>Changes</dt><dd id="writeState">—</dd></div></dl>
+            <a class="toolButton" href="/guest-crm/" target="_blank" rel="noopener noreferrer">Open desktop Guest CRM</a>
+            <a class="toolButton" href="/" target="_blank" rel="noopener noreferrer">Open Admin Hub</a>
+            <button class="toolButton dangerText" id="clearCacheButton" type="button">Clear saved snapshot</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <nav class="bottomNav" id="bottomNav" aria-label="Mobile app" hidden>
+      <button class="active" data-route="actions" type="button"><span>●</span>Actions</button>
+      <button data-route="guests" type="button"><span>⌕</span>Guests</button>
+      <button data-route="today" type="button"><span>◷</span>Today</button>
+      <button data-route="more" type="button"><span>•••</span>More</button>
+    </nav>
+  </div>
+
+  <dialog class="guestDialog" id="guestDialog">
+    <div class="dialogHeader"><button class="backButton" id="closeGuest" type="button" aria-label="Close guest">←</button><div><small>Guest Journey</small><strong id="guestDialogTitle">Guest</strong></div></div>
+    <div class="dialogBody" id="guestDetail"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="/app/app.mjs?v=phase1-20261020"></script>
+</body>
+</html>
