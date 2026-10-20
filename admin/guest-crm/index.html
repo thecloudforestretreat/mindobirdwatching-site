@@ -1494,7 +1494,10 @@
       function dateSortValue(value){ if(!value) return Number.POSITIVE_INFINITY; const d=parseDateOnly(value); return d?d.getTime():Number.POSITIVE_INFINITY; }
       function statusRank(record){const priorityRanks={urgent:0,high:1,normal:2},status=normalizeStatus(record.status),statusRanks={new:0,contacted:1,follow_up:2,planning:3,qualified:4,quoted:5,deposit_pending:6,deposit_paid:7,payment_pending:8,booked:9,completed:10,cancelled:11,did_not_book:12,duplicate:13},priority=isClosedStatus(status)?"":normalizePriority(record.priority||autoPriority(record.requested_date));return(priorityRanks[priority]??2)*20+(statusRanks[status]??50);}
       function isPastTourRecord(record){
-        const dates=calendarEntriesForRecord(record).map(entry=>toDateValue(entry.requested_date||entry.requested_date_start)).filter(Boolean);
+        const assignments=currentAssignmentRows(record);
+        const hasUnfinishedAssignment=assignments.some(item=>normalizeStatus(item.assignment_status)!=="completed");
+        if(normalizeStatus(record.status)==="booked"&&hasUnfinishedAssignment) return false;
+        const dates=calendarEntriesForRecord(record).map(entry=>toDateValue(entry.requested_date||entry.requested_date_start)).concat(assignments.map(item=>toDateValue(item.service_date))).filter(Boolean);
         if(!dates.length) return false;
         const today=toDateValue(datePlusDays(0));
         return dates.every(date=>date<today);
