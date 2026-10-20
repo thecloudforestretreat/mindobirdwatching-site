@@ -67,6 +67,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
   try {
     await page.goto(`http://127.0.0.1:${port}/app/`);
     await page.locator(".loadingBird").waitFor({ state: "visible" });
+    assert.equal(await page.locator(".loadingReveal img").isVisible(), true);
     assert.match(await page.locator(".appHeader .brand img").getAttribute("src"), /mbw-header-logo-160\.png/);
     await page.screenshot({ path: "/tmp/mbw-loader-mobile-qa.png", fullPage: false });
     const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
@@ -87,10 +88,10 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.equal(await page.locator("#profileForm").count(), 1);
     await page.locator("#closeGuest").click();
     const guestBox = await page.locator(".guestCard").first().boundingBox(); assert.ok(guestBox && guestBox.x + guestBox.width <= 390);
-    await page.locator("#guestStatusFilter").selectOption("completed");
+    await page.locator("#guestMoreStatusFilter").selectOption("completed");
     assert.equal(await page.locator(".guestCard").count(), 1); assert.match(await page.locator(".guestCard").innerText(), /Completed Guest/);
     await page.screenshot({ path: "/tmp/mbw-guests-mobile-qa.png", fullPage: false });
-    await page.locator("#guestStatusFilter").selectOption("active");
+    await page.locator('[data-guest-status-filter="active"]').click();
     await page.locator('#bottomNav [data-route="today"]').click();
     assert.equal(await page.locator("#todayList .todayCard").count(), 2, "completed services should be hidden from operations");
     const todayText = await page.locator("#todayList").innerText(); assert.match(todayText, /Oct 22, 2026/); assert.match(todayText, /Oct 23, 2026/); assert.doesNotMatch(todayText, /Completed Tour/);
@@ -105,18 +106,32 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.equal(await page.getByText("Add another tour, activity, or transfer", { exact: true }).isVisible(), true);
     assert.equal(await page.getByText("Add guide, driver, or provider", { exact: true }).isVisible(), true);
     assert.equal(await page.locator(".dialogNav").isVisible(), true);
+    const journeySection = page.locator("details", { hasText: "Guest Journey" });
+    assert.equal(await journeySection.getAttribute("open"), "");
+    await journeySection.locator("summary").click(); assert.equal(await journeySection.getAttribute("open"), null);
+    await journeySection.locator("summary").click(); assert.equal(await journeySection.getAttribute("open"), "");
+    await page.screenshot({ path: "/tmp/mbw-guest-journey-actions-qa.png", fullPage: false });
     await page.locator('.serviceStatusForm select[name="status"]').first().selectOption("completed");
     await page.locator(".serviceStatusForm button").first().click();
     await page.getByText("Service status saved and verified.", { exact: true }).waitFor({ state: "visible" });
     assert.equal(await page.locator('.serviceStatusForm select[name="status"]').first().evaluate(element => element.value), "completed");
-    for (const label of ["Compose email", "Create Stripe invoice", "Create Zelle invoice", "Create confirmation"]) assert.equal(await page.getByText(label, { exact: true }).isVisible(), true);
+    for (const label of ["WhatsApp", "Generate Email", "Create Stripe Invoice", "Create Zelle Invoice"]) assert.equal(await page.locator(".pipelineSection").getByText(label, { exact: true }).isVisible(), true);
     const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('#followupForm input[name="followup_date"]').boundingBox();
     assert.ok(sectionBox && dateBox && dateBox.x >= sectionBox.x && dateBox.x + dateBox.width <= sectionBox.x + sectionBox.width + 1);
-    const stripe = await page.getByText("Create Stripe invoice", { exact: true }).getAttribute("href");
+    const stripe = await page.locator(".pipelineSection").getByText("Create Stripe Invoice", { exact: true }).getAttribute("href");
     assert.match(stripe, /inquiry_id=I-MT-1/); assert.match(stripe, /guest=Test\+Testerer/);
+    const emailHref = await page.locator(".pipelineSection").getByText("Generate Email", { exact: true }).getAttribute("href");
+    const itineraryHref = await page.getByText("Generate Itinerary", { exact: true }).getAttribute("href");
+    const confirmationHref = await page.getByText("Create Confirmation", { exact: true }).getAttribute("href");
+    for (const href of [emailHref, itineraryHref, confirmationHref]) { const params = new URL(href, page.url()).searchParams; assert.equal(params.get("inquiry_id"), "I-MT-1"); assert.equal(params.get("guest"), "Test Testerer"); assert.equal(JSON.parse(params.get("tour_items_json")).length, 1); }
+    assert.equal(new URL(itineraryHref, page.url()).searchParams.get("source"), "guest_crm");
+    const itineraryPage = await context.newPage(); await itineraryPage.goto(new URL(itineraryHref, page.url()).href); await itineraryPage.locator("#guestName").waitFor({ state: "visible" });
+    assert.equal(await itineraryPage.locator("#guestName").inputValue(), "Test Testerer"); assert.equal(await itineraryPage.locator("#guestEmail").inputValue(), "test@example.test"); assert.equal(await itineraryPage.locator("#startDate").inputValue(), "2026-10-22"); assert.ok(await itineraryPage.locator(".itemEditor").count() > 0); await itineraryPage.close();
     await page.getByText("Add guide, driver, or provider", { exact: true }).click();
     const startBox = await page.locator('input[name="start_time"]').boundingBox(), endBox = await page.locator('input[name="end_time"]').boundingBox();
-    assert.ok(startBox && endBox && endBox.x - (startBox.x + startBox.width) >= 8, "Start and end time inputs need a visible gap");
+    assert.ok(startBox && endBox && endBox.y - (startBox.y + startBox.height) >= 8, "Start and end time inputs need separate mobile rows");
+    await page.locator('input[name="start_time"]').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: "/tmp/mbw-assignment-times-qa.png", fullPage: false });
     await page.getByText("Add another tour, activity, or transfer", { exact: true }).click();
     await page.locator('#serviceCreateForm input[name="tour"]').fill("Night Walk");
     await page.locator('#serviceCreateForm input[name="product_selected"]').fill("MBW016 - Night Walk");

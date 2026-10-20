@@ -9,7 +9,7 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/app/mbw-app-gold-transparent-180.png?v=transparent-20261020">
   <link rel="manifest" href="/site.webmanifest?v=transparent-20261020">
-  <link rel="stylesheet" href="/app/app.css?v=services-20261020-v7">
+  <link rel="stylesheet" href="/app/app.css?v=services-20261020-v8">
 </head>
 <body>
   <div class="appShell">
@@ -30,7 +30,7 @@
         </div>
         <h1>Opening your Action Desk</h1>
         <p id="loadingMessage">Verifying your private staff access.</p>
-        <div class="loadingSkeleton" aria-hidden="true"><i></i><i></i></div>
+        <div class="loadingReveal" aria-hidden="true"><span><img src="/assets/images/app/mbw-header-logo-160.png?v=header-20261020" alt=""></span><small>Loading current guest records</small></div>
       </section>
 
       <section class="stateCard stateCard--error" id="errorState" hidden>
@@ -60,7 +60,7 @@
         <section class="view" id="guestsView" data-view="guests" hidden>
           <div class="viewHeading"><div><p class="eyebrow">Search and continue work</p><h1>Guests</h1></div><button class="primary compactButton" id="newGuestButton" type="button">+ New</button></div>
           <form class="searchBar" id="guestSearchForm"><label class="srOnly" for="guestSearch">Search guests</label><input id="guestSearch" type="search" placeholder="Name, phone, email or inquiry ID" autocomplete="off"><button type="submit">Search</button></form>
-          <label class="guestFilter"><span>Showing</span><select id="guestStatusFilter"><option value="active">Active guests</option><option value="booked">Booked</option><option value="payment_pending">Payment pending</option><option value="quoted">Quoted</option><option value="completed">Completed</option><option value="did_not_book">Did not book</option><option value="archived">Archived</option><option value="all">All records</option></select></label>
+          <div class="statusFilters guestStatusFilters" id="guestStatusFilters" aria-label="Filter guests by current status"></div>
           <div class="cardList" id="guestList"></div>
         </section>
 
@@ -150,6 +150,6 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-  <script type="module" src="/app/app.mjs?v=services-20261020-v7"></script>
+  <script type="module" src="/app/app.mjs?v=services-20261020-v8"></script>
 </body>
 </html>

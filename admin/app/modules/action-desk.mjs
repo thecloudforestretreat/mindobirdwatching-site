@@ -1,8 +1,8 @@
 const CLOSED = new Set(["completed", "cancelled", "canceled", "did_not_book", "duplicate", "archived"]);
 const DAY = 86400000;
 
-export const STATUS_FILTERS = ["all", "booked", "payment_pending"];
-export const STATUS_MORE_FILTERS = ["quoted", "new", "contacted", "planning", "qualified", "follow_up", "deposit_pending", "deposit_paid"];
+export const STATUS_FILTERS = ["all", "new", "booked"];
+export const STATUS_MORE_FILTERS = ["contacted", "planning", "qualified", "follow_up", "quoted", "deposit_pending", "deposit_paid", "payment_pending"];
 
 export function isoDate(value) {
   const match = String(value || "").match(/^\d{4}-\d{2}-\d{2}/);
@@ -131,6 +131,7 @@ export function priorityFor(record, bookings, today, action = null) {
   const tourDays = daysFrom(today, future);
   const followDays = daysFrom(today, record.followupDate);
   const status = record.effectiveStatus || record.status;
+  const actionable = action?.type === "operations" && status !== "booked" ? null : action;
   let score = 5;
   if (tourDays !== null) {
     if (tourDays <= 0) score += 90;
@@ -144,13 +145,13 @@ export function priorityFor(record, bookings, today, action = null) {
     const weight = tourDays !== null && tourDays > 60 ? 9 : Math.min(28, 12 + Math.abs(Math.min(followDays, 0)));
     score += weight;
   }
-  if (action?.type === "operations") score += 35;
-  if (action?.type === "first-response") score += 22;
+  if (actionable?.type === "operations") score += 35;
+  if (actionable?.type === "first-response") score += 22;
   if (status === "payment_pending" && (tourDays === null || tourDays <= 30)) score += 18;
   if (status === "booked" && tourDays !== null && tourDays <= 7) score += 12;
   if (status === "quoted") score += 5;
   const band = score >= 80 ? "now" : score >= 60 ? "today" : score >= 40 ? "soon" : "nurture";
-  const label = priorityCue({ action, followDays, tourDays, future, followupDate: record.followupDate, status });
+  const label = priorityCue({ action: actionable, followDays, tourDays, future, followupDate: record.followupDate, status });
   return { score, band, label, tourDate: future };
 }
 

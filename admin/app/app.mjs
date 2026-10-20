@@ -1,6 +1,6 @@
-import { api } from "./modules/api.mjs?v=services-20261020-v7";
+import { api } from "./modules/api.mjs?v=services-20261020-v8";
 import { loadSnapshot, saveSnapshot, clearSnapshot } from "./modules/cache.mjs";
-import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v7";
+import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v8";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -10,6 +10,7 @@ const date = value => value ? new Intl.DateTimeFormat("en-US", { dateStyle: "med
 const time = value => value ? String(value).slice(0, 5) : "Time not set";
 const phoneDigits = value => String(value || "").replace(/\D/g, "");
 const STATUS_OPTIONS = ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"];
+const GUEST_MORE_FILTERS = ["contacted", "planning", "qualified", "follow_up", "quoted", "deposit_pending", "deposit_paid", "payment_pending", "completed", "cancelled", "did_not_book", "archived", "all"];
 const state = { session: null, data: null, route: "actions", cached: false, guest: null, deskView: "list", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "", guestStatusFilter: "active", guestSearchResults: null };
 
 function connection(mode, label) { const node = $("#connectionState"); node.dataset.state = mode; node.querySelector("b").textContent = label; }
@@ -31,25 +32,27 @@ function brandBadge(record) { const labels = { MT: "Mindo Tours", CAT: "Chocó A
 function identityMarkup(record, fallback = "Guest") { const flag = countryFlag(record?.countryCode); return `<span class="identityLine"><span class="guestName">${esc(record?.name || fallback)}</span>${flag ? `<span class="countryFlag" title="${esc(record.country || record.countryCode)}" aria-label="${esc(record.country || record.countryCode)}">${flag}</span>` : ""}${brandBadge(record)}</span>`; }
 function toolUrl(base, guest) {
   const primary = guest.tours?.[0] || {};
-  const params = new URLSearchParams({ inquiry_id: guest.inquiryId || "", guest_id: guest.guestId || "", guest: guest.name || "", full_name: guest.name || "", email: guest.email || "", guest_email: guest.email || "", phone: guest.phone || "", guest_phone: guest.phone || "", guests: guest.partySize || "", guest_count: guest.partySize || "", date: guest.requestedDate || "", tour_date: guest.requestedDate || "", tour_date_end: guest.requestedDateEnd || "", tour: primary.tour || "", tour_type: primary.tour || "", product_selected: primary.product || "", status: guest.effectiveStatus || guest.status || "", payment_status: guest.paymentStatus || "", invoice_no: guest.invoiceNo || "", country: guest.country || "", tour_items_json: JSON.stringify(guest.tours || []) });
+  const params = new URLSearchParams({ source: "guest_crm", inquiry_id: guest.inquiryId || "", guest_id: guest.guestId || "", booking_id: guest.bookingId || "", guest: guest.name || "", full_name: guest.name || "", email: guest.email || "", guest_email: guest.email || "", phone: guest.phone || "", guest_phone: guest.phone || "", guests: guest.partySize || "", guest_count: guest.partySize || "", date: guest.requestedDate || primary.date || "", start_date: guest.requestedDate || primary.date || "", end_date: guest.requestedDateEnd || guest.requestedDate || primary.date || "", tour_date: guest.requestedDate || primary.date || "", tour_date_end: guest.requestedDateEnd || "", tour: primary.tour || "", tour_type: primary.tour || "", service_type: primary.serviceType || "", product_selected: primary.product || "", pickup: primary.pickup || guest.pickup || "", pickup_location: primary.pickup || guest.pickup || "", status: guest.effectiveStatus || guest.status || "", payment_status: guest.paymentStatus || "", invoice_no: guest.invoiceNo || "", country: guest.country || "", quoted_amount: primary.price || "", tour_items_json: JSON.stringify(guest.tours || []) });
   return `${base}${base.includes("?") ? "&" : "?"}${params.toString()}`;
 }
 function pipelineActionsMarkup(guest) {
-  const status = guest.effectiveStatus || guest.status, whatsapp = phoneDigits(guest.phone), actions = [];
-  if (whatsapp) actions.push([`https://wa.me/${whatsapp}`, "WhatsApp", false]);
-  if (guest.email) actions.push([toolUrl("/custom-email-generator/", guest), "Compose email", true]);
-  if (["new","contacted","planning","qualified","follow_up"].includes(status)) actions.push([toolUrl("/itinerary-generator/", guest), "Build itinerary / quote", true]);
-  if (["quoted","deposit_pending","deposit_paid","payment_pending"].includes(status)) {
-    actions.push([toolUrl("https://mindobirdwatching.com/book-tour/create/", guest), "Create Stripe invoice", true]);
-    actions.push([toolUrl("/zelle-invoice-generator/", guest), "Create Zelle invoice", true]);
-  }
-  if (["deposit_paid","payment_pending","booked"].includes(status)) actions.push([toolUrl("/tour-confirmation-generator/", guest), "Create confirmation", true]);
-  return `<section class="detailSection pipelineSection"><div class="detailTitle"><h3>Next action</h3><span class="badge">${esc(pretty(status))}</span></div><div class="pipelineActions">${actions.map(([href,label], index) => `<a class="pipelineAction ${index === 0 ? "primaryAction" : ""}" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join("")}</div></section>`;
+  const status = guest.effectiveStatus || guest.status, whatsapp = phoneDigits(guest.phone);
+  const actions = [
+    [whatsapp ? `https://wa.me/${whatsapp}` : "", "WhatsApp"],
+    [guest.email ? toolUrl("/custom-email-generator/", guest) : "", "Generate Email"],
+    [toolUrl("https://mindobirdwatching.com/book-tour/create/", guest), "Create Stripe Invoice"],
+    [toolUrl("/zelle-invoice-generator/", guest), "Create Zelle Invoice"]
+  ];
+  return `<details class="detailSection pipelineSection collapsibleSection" open><summary class="detailTitle"><h3>Next action</h3><span class="badge">${esc(pretty(status))}</span></summary><div class="pipelineActions">${actions.map(([href,label], index) => href ? `<a class="pipelineAction ${index === 0 ? "primaryAction" : ""}" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>` : `<span class="pipelineAction disabledAction" aria-disabled="true">${esc(label)}</span>`).join("")}</div></details>`;
+}
+function guestDocumentsMarkup(guest) {
+  return `<details class="detailSection collapsibleSection"><summary class="detailTitle"><h3>Guest documents</h3><span class="badge">CRM linked</span></summary><div class="pipelineActions"><a class="pipelineAction" href="${esc(toolUrl("/itinerary-generator/", guest))}" target="_blank" rel="noopener noreferrer">Generate Itinerary</a><a class="pipelineAction" href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Create Confirmation</a></div></details>`;
 }
 
 function deskCard(record, action = null) {
   const bookings = relatedBookings(record), today = todayIso(), status = record.effectiveStatus || record.status;
-  const priority = priorityFor(record, bookings, today, action), followup = followupUrgency(today, record.followupDate), services = serviceSummary(record, bookings);
+  const displayAction = action?.type === "operations" && status !== "booked" ? null : action;
+  const priority = priorityFor(record, bookings, today, displayAction), followup = followupUrgency(today, record.followupDate), services = serviceSummary(record, bookings);
   const dates = recordDates(record, bookings), first = dates[0] || priority.tourDate, last = dates.at(-1) || first;
   const bookingConflict = dates.length && bookings.find(item => item.startDate && !dates.includes(item.startDate));
   const tourDate = first ? (last && last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
@@ -58,13 +61,18 @@ function deskCard(record, action = null) {
     <div class="cardTop"><strong>${identityMarkup(record, action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.label)}</span></div>
     <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} ${Number(record.partySize) === 1 ? "guest" : "guests"} · ${esc(count)}</span></div>
     <div class="cardFacts"><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>Follow-up</b> ${esc(followup.label)}</span></div>
-    ${bookingConflict ? `<div class="actionReason actionReason--warn">Booking ledger says ${esc(shortDate(bookingConflict.startDate))}; itinerary says ${esc(shortDate(first))}. Review before invoicing.</div>` : action?.reason ? `<div class="actionReason">${esc(action.reason)} · ${esc(record.assignedTo || action.owner || "Unassigned")}</div>` : ""}
+    ${bookingConflict ? `<div class="actionReason actionReason--warn">Booking ledger says ${esc(shortDate(bookingConflict.startDate))}; itinerary says ${esc(shortDate(first))}. Review before invoicing.</div>` : displayAction?.reason ? `<div class="actionReason">${esc(displayAction.reason)} · ${esc(record.assignedTo || displayAction.owner || "Unassigned")}</div>` : ""}
   </button>`;
 }
 
 function renderStatusFilters() {
   const moreSelected = STATUS_MORE_FILTERS.includes(state.statusFilter);
-  $("#statusFilters").innerHTML = `${STATUS_FILTERS.map(value => `<button type="button" data-status-filter="${value}" class="${state.statusFilter === value ? "active" : ""}">${esc(value === "all" ? "All active" : value === "payment_pending" ? "Payment" : pretty(value))}</button>`).join("")}<label class="statusMore ${moreSelected ? "active" : ""}"><span class="srOnly">More statuses</span><select id="moreStatusFilter"><option value="">More</option>${STATUS_MORE_FILTERS.map(value => `<option value="${value}" ${state.statusFilter === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select></label>`;
+  $("#statusFilters").innerHTML = `${STATUS_FILTERS.map(value => `<button type="button" data-status-filter="${value}" class="${state.statusFilter === value ? "active" : ""}">${esc(value === "all" ? "All active" : pretty(value))}</button>`).join("")}<label class="statusMore ${moreSelected ? "active" : ""}"><span class="statusMoreLabel">More</span><select id="moreStatusFilter" aria-label="More statuses"><option value="">More</option>${STATUS_MORE_FILTERS.map(value => `<option value="${value}" ${state.statusFilter === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select></label>`;
+}
+
+function renderGuestStatusFilters() {
+  const top = ["active", "new", "booked"], moreSelected = GUEST_MORE_FILTERS.includes(state.guestStatusFilter);
+  $("#guestStatusFilters").innerHTML = `${top.map(value => `<button type="button" data-guest-status-filter="${value}" class="${state.guestStatusFilter === value ? "active" : ""}">${value === "active" ? "All active" : pretty(value)}</button>`).join("")}<label class="statusMore ${moreSelected ? "active" : ""}"><span class="statusMoreLabel">More</span><select id="guestMoreStatusFilter" aria-label="More guest statuses"><option value="">More</option>${GUEST_MORE_FILTERS.map(value => `<option value="${value}" ${state.guestStatusFilter === value ? "selected" : ""}>${value === "all" ? "All records" : pretty(value)}</option>`).join("")}</select></label>`;
 }
 
 function renderCalendar() {
@@ -101,8 +109,9 @@ function renderActions() {
 }
 
 function guestCard(item) {
-  const status = item.effectiveStatus || item.status;
-  return `<button class="guestCard ${statusClass(status)}" data-guest="${esc(item.inquiryId)}" type="button"><div class="cardTop"><strong>${identityMarkup(item)}</strong><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span></div><p>${esc(item.tours?.[0]?.tour || "Tour not selected")}</p><div class="cardMeta"><span>${esc(item.assignedTo || "Unassigned")}</span><span>${esc(item.requestedDate ? date(item.requestedDate) : item.inquiryId)}</span></div></button>`;
+  const status = item.effectiveStatus || item.status, bookings = relatedBookings(item), services = serviceSummary(item, bookings), followup = followupUrgency(todayIso(), item.followupDate), dates = recordDates(item, bookings), first = dates[0], last = dates.at(-1) || first;
+  const tourDate = first ? (last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
+  return `<button class="guestCard ${statusClass(status)}" data-guest="${esc(item.inquiryId)}" type="button"><div class="cardTop"><strong>${identityMarkup(item)}</strong><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span></div><div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"} · ${services.count} service${services.count === 1 ? "" : "s"}</span></div><div class="cardFacts"><span class="assignedRep">${esc(item.assignedTo || "Unassigned")}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>F/U</b> ${esc(followup.label)}</span></div></button>`;
 }
 
 function guestStatus(item) { return item.effectiveStatus || item.status || "new"; }
@@ -133,7 +142,7 @@ function renderMore() {
   $("#newGuestButton").disabled = !state.session?.capabilities?.write;
 }
 
-function render() { renderActions(); renderGuests(); renderToday(); renderMore(); $("#cachedNotice").hidden = !state.cached; }
+function render() { renderActions(); renderGuestStatusFilters(); renderGuests(); renderToday(); renderMore(); $("#cachedNotice").hidden = !state.cached; }
 function route(name) {
   state.route = ["actions", "guests", "today", "more"].includes(name) ? name : "actions";
   document.querySelectorAll(".view").forEach(view => { view.hidden = view.dataset.view !== state.route; });
@@ -143,7 +152,7 @@ function route(name) {
   $("#appMain").focus({ preventScroll: true }); window.scrollTo(0, 0);
 }
 
-function journeyMarkup(journey) { return `<div class="journey">${journey.map(item => `<div class="journeyStep" data-state="${esc(item.state)}"><i></i><div><strong>${esc(item.label)}</strong><small>${esc(item.evidence)}</small></div></div>`).join("")}</div>`; }
+function journeyMarkup(journey) { return `<div class="journey">${journey.map(item => `<div class="journeyStep journey-${String(item.label || "step").toLowerCase().replace(/[^a-z0-9]+/g, "-")}" data-state="${esc(item.state)}"><i></i><div><strong>${esc(item.label)}</strong><small>${esc(item.evidence)}</small></div></div>`).join("")}</div>`; }
 function profileMarkup(guest, canWrite) {
   return `<details class="profileEditor"><summary>Edit guest details</summary><form id="profileForm"><label class="field"><span>Full name</span><input name="full_name" maxlength="160" value="${esc(guest.name)}" required ${canWrite ? "" : "disabled"}></label><div class="fieldGrid"><label class="field"><span>Phone</span><input name="phone_number" maxlength="60" value="${esc(guest.phone)}" inputmode="tel" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Email</span><input type="email" name="email" maxlength="254" value="${esc(guest.email)}" ${canWrite ? "" : "disabled"}></label></div><div class="fieldGrid"><label class="field"><span>Country</span><input name="country" maxlength="120" value="${esc(guest.country)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guests</span><input type="number" name="guest_count" min="1" max="99" value="${esc(guest.partySize || "1")}" ${canWrite ? "" : "disabled"}></label></div><label class="field"><span>Assigned rep</span><input name="assigned_to" maxlength="30" value="${esc(guest.assignedTo)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Pickup</span><input name="pickup_location" maxlength="500" value="${esc(guest.pickup)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guest notes</span><textarea name="notes" maxlength="3000" ${canWrite ? "" : "disabled"}>${esc(guest.notes)}</textarea></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save details</button></div></form></details>`;
 }
@@ -172,8 +181,9 @@ async function openGuest(id, task = "") {
     body.innerHTML = `<section class="detailHero"><h2>${identityMarkup(guest)}</h2><p class="countryLabel">${esc(guest.country || "Country not recorded")}</p><p>${esc(guest.email || "Email not recorded")}</p><p>${esc(guest.phone || "Phone not recorded")}</p><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="${esc(toolUrl("/custom-email-generator/", guest))}" target="_blank" rel="noopener noreferrer">Email draft</a>` : ""}</div></section>
       <section class="detailSection" data-section="profile"><h3>Guest details</h3>${profileMarkup(guest, canWrite)}</section>
       <section class="detailSection"><div class="detailTitle"><h3>Services</h3><span class="badge">${guest.tours?.length || 0}</span></div>${serviceMarkup(guest, canWrite)}${serviceCreateMarkup(guest, canWrite)}</section>
-      <section class="detailSection"><div class="detailTitle"><h3>Guest Journey</h3><span class="badge">${esc(pretty(guest.effectiveStatus || guest.status))}</span></div>${guest.needsReconciliation ? `<p class="formNote formNote--warn">Legacy booking or payment records need reconciliation before this inquiry is treated as current.</p>` : ""}${journeyMarkup(result.journey)}</section>
+      <details class="detailSection collapsibleSection ${statusClass(guest.effectiveStatus || guest.status)}" open><summary class="detailTitle"><h3>Guest Journey</h3><span class="badge">${esc(pretty(guest.effectiveStatus || guest.status))}</span></summary>${guest.needsReconciliation ? `<p class="formNote formNote--warn">Legacy booking or payment records need reconciliation before this inquiry is treated as current.</p>` : ""}${journeyMarkup(result.journey)}</details>
       ${pipelineActionsMarkup(guest)}
+      ${guestDocumentsMarkup(guest)}
       <section class="detailSection" data-section="status"><h3>Inquiry status</h3><form id="statusForm"><label class="field"><span>Saved CRM status</span><select name="status" ${canWrite ? "" : "disabled"}>${STATUS_OPTIONS.map(value => `<option value="${value}" ${selectedStatus === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save status</button></div>${guest.status !== selectedStatus ? `<p class="formNote">The operational status is derived as ${esc(pretty(selectedStatus))}. Saving makes that status canonical in the CRM.</p>` : ""}${canWrite ? "" : `<p class="formNote formNote--warn">Changes are disabled until the production write configuration is complete.</p>`}</form></section>
       <section class="detailSection" data-section="follow-up"><h3>Next follow-up</h3><form id="followupForm"><label class="field"><span>Date</span><input type="date" name="followup_date" value="${esc(guest.followupDate)}" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save follow-up</button></div>${canWrite ? "" : `<p class="formNote formNote--warn">Changes are disabled until the production write configuration is complete.</p>`}</form></section>
       <section class="detailSection" data-section="payments"><h3>Payments</h3><p class="paymentHint">Suggested: ${guest.countryCode === "US" ? "Zelle or Stripe" : "Stripe"}. Review the guest and amount before creating or sending an invoice.</p><div class="recordList">${paymentMarkup(result.data.payments)}</div><div class="toolLinks"><a href="${esc(toolUrl("/zelle-invoice-generator/", guest))}" target="_blank" rel="noopener noreferrer">Zelle invoice</a><a href="${esc(toolUrl("https://mindobirdwatching.com/book-tour/create/", guest))}" target="_blank" rel="noopener noreferrer">Stripe invoice</a></div></section>
@@ -302,8 +312,9 @@ $("#previousWeek").addEventListener("click", () => { state.weekStart = addIsoDay
 $("#nextWeek").addEventListener("click", () => { state.weekStart = addIsoDays(state.weekStart || todayIso(), 7); state.selectedDate = state.weekStart; renderActions(); });
 $("#guestSearchForm").addEventListener("submit", async event => { event.preventDefault(); const query = $("#guestSearch").value.trim(); if (query.length < 2) return toast("Enter at least two characters."); $("#guestList").innerHTML = empty("Searching…"); try { const result = await api.search(query); state.guestSearchResults = result.records; renderGuests(result.records, true); } catch (error) { $("#guestList").innerHTML = empty(error.message); } });
 $("#guestSearch").addEventListener("input", event => { if (!event.currentTarget.value.trim()) { state.guestSearchResults = null; renderGuests(); } });
-$("#guestStatusFilter").addEventListener("change", event => { state.guestStatusFilter = event.currentTarget.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuests(); });
+$("#guestsView").addEventListener("click", event => { const button = event.target.closest("[data-guest-status-filter]"); if (!button) return; state.guestStatusFilter = button.dataset.guestStatusFilter; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuestStatusFilters(); renderGuests(); });
+$("#guestsView").addEventListener("change", event => { if (event.target.id !== "guestMoreStatusFilter" || !event.target.value) return; state.guestStatusFilter = event.target.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuestStatusFilters(); renderGuests(); });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=12", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=13", { scope: "/app/" }).catch(() => {});
 start();

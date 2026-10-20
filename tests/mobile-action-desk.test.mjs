@@ -27,7 +27,8 @@ test("priority moderates an overdue follow-up when the tour is distant", () => {
   assert.equal(priorityFor(record, [], "2026-10-20").label, "TOUR TOMORROW");
   assert.equal(priorityFor({ ...record, status: "payment_pending", effectiveStatus: "payment_pending", requestedDate: "2026-11-10", tours: [] }, [], "2026-10-20").label, "F/U 1D LATE");
   assert.equal(priorityFor({ ...record, status: "payment_pending", effectiveStatus: "payment_pending", requestedDate: "2026-11-10", followupDate: "2026-11-01", tours: [] }, [], "2026-10-20").label, "$ NEEDED");
-  assert.equal(priorityFor(record, [], "2026-10-20", { type: "operations", reason: "Transportation has no assignment" }).label, "ASSIGN DRIVER");
+  assert.equal(priorityFor(record, [], "2026-10-20", { type: "operations", reason: "Transportation has no assignment" }).label, "TOUR TOMORROW");
+  assert.equal(priorityFor({ ...record, status: "booked", effectiveStatus: "booked" }, [], "2026-10-20", { type: "operations", reason: "Transportation has no assignment" }).label, "ASSIGN DRIVER");
 });
 
 test("follow-up urgency and service icons retain visible meaning", () => {

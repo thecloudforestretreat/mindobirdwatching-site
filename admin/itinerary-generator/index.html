@@ -1367,6 +1367,31 @@
           const draft = JSON.parse(localStorage.getItem('mbwItineraryGeneratorDraft') || 'null');
           if(draft && draft.source === 'guest_crm') return draft;
         }catch(error){}
+        let inboundItems=[];
+        try{
+          const parsed=JSON.parse(params.get('tour_items_json') || params.get('tour_items') || '[]');
+          inboundItems=Array.isArray(parsed)?parsed.map(item=>{
+            const product=String(item.productPreset||item.product_selected||item.product||'').trim();
+            const code=(product.match(/[A-Z]+\d+/)||[])[0]||'';
+            const known=PRODUCT_OPTIONS.find(option=>option===product||(code&&option.startsWith(code+' ')))||'';
+            const type=String(item.type||item.serviceType||item.service_type||'Custom');
+            return {
+              date:item.date||item.tour_date||params.get('start_date')||params.get('date')||'',
+              startTime:item.startTime||item.start_time||'',
+              duration:item.duration||item.duration_preference||'',
+              type:SERVICE_TYPES.includes(type)?type:'Custom',
+              productPreset:known||'Other',
+              name:known||item.tour||item.tour_type||product||'Custom service',
+              note:item.note||item.notes||'',
+              quantity:Number(item.quantity||item.guests||params.get('guests')||1),
+              unitPrice:Number(item.unitPrice||item.price||item.price_per_person||0)
+            };
+          }):[];
+        }catch(error){ inboundItems=[]; }
+        const fallbackProduct=String(params.get('product_selected')||'').trim();
+        const fallbackCode=(fallbackProduct.match(/[A-Z]+\d+/)||[])[0]||'';
+        const fallbackKnown=PRODUCT_OPTIONS.find(option=>option===fallbackProduct||(fallbackCode&&option.startsWith(fallbackCode+' ')))||'';
+        if(!inboundItems.length&&(params.get('tour')||fallbackProduct)) inboundItems.push({date:params.get('start_date')||params.get('date')||'',type:params.get('service_type')||'Custom',productPreset:fallbackKnown||'Other',name:fallbackKnown||params.get('tour')||fallbackProduct,quantity:Number(params.get('guests')||1),unitPrice:Number(params.get('quoted_amount')||0)});
         return {
           source:'guest_crm',
           inquiryId:params.get('inquiry_id') || '',
@@ -1374,9 +1399,10 @@
           guestEmail:params.get('email') || '',
           whatsappNumber:params.get('phone') || '',
           guestCount:Number(params.get('guests') || 1),
-          startDate:params.get('start_date') || '',
-          endDate:params.get('end_date') || params.get('start_date') || '',
-          items:[]
+          startDate:params.get('start_date') || params.get('date') || '',
+          endDate:params.get('end_date') || params.get('start_date') || params.get('date') || '',
+          paymentStatus:params.get('payment_status') || '',
+          items:inboundItems
         };
       }
       function applyCrmItineraryDraft(draft){
