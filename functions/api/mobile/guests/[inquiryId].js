@@ -11,12 +11,11 @@ async function loadGuest(env, inquiryId) {
   const raw = inquiryRows.find(item => String(item.inquiry_id) === inquiryId);
   if (!raw) throw Object.assign(new Error("Guest inquiry not found."), { status: 404 });
   const record = normalizeInquiry(raw);
-  const [interactionRows, assignmentRows, bookingRows, paymentRows] = await Promise.all([
-    listRecords(env, "list_interactions", { guest_id: record.guestId, inquiry_id: "" }),
-    listRecords(env, "list_assignments", { guest_id: record.guestId, inquiry_id: "" }),
-    listRecords(env, "list_bookings", { guest_id: record.guestId, inquiry_id: "" }),
-    listRecords(env, "list_payments", { guest_id: record.guestId, inquiry_id: "" }),
-  ]);
+  const scope = { guest_id: record.guestId, inquiry_id: "" };
+  const interactionRows = await listRecords(env, "list_interactions", scope);
+  const assignmentRows = await listRecords(env, "list_assignments", scope);
+  const bookingRows = await listRecords(env, "list_bookings", scope);
+  const paymentRows = await listRecords(env, "list_payments", scope);
   const interactions = interactionRows.map(normalizeInteraction);
   const assignments = assignmentRows.map(normalizeAssignment);
   const payments = paymentRows.map(normalizePayment);

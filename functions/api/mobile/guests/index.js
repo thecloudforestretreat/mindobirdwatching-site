@@ -9,11 +9,9 @@ export async function onRequestGet({ request, env }) {
     const query = new URL(request.url).searchParams.get("q")?.trim().toLowerCase() || "";
     if (query.length < 2 || query.length > 100) return json(400, { ok: false, error: "Enter 2 to 100 characters." });
     const digits = query.replace(/\D/g, "");
-    const [inquiryRows, bookingRows, paymentRows] = await Promise.all([
-      listRecords(env, "list_inquiries", { filters: {} }),
-      listRecords(env, "list_bookings"),
-      listRecords(env, "list_payments"),
-    ]);
+    const inquiryRows = await listRecords(env, "list_inquiries", { filters: {} });
+    const bookingRows = await listRecords(env, "list_bookings");
+    const paymentRows = await listRecords(env, "list_payments");
     const bookings = bookingRows.map(normalizeBooking);
     const payments = paymentRows.map(normalizePayment);
     const records = inquiryRows
