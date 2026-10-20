@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { onRequestPatch as patchGuest } from "../functions/api/mobile/guests/[inquiryId].js";
+import { onRequestPost as createGuest } from "../functions/api/mobile/guests/index.js";
 import { onRequestPatch as patchAssignment } from "../functions/api/mobile/assignments/[assignmentId].js";
 import { onRequestPost as createAssignment } from "../functions/api/mobile/assignments/index.js";
 import { onRequestPost as createService } from "../functions/api/mobile/guests/[inquiryId]/services.js";
@@ -16,6 +17,40 @@ const env = {
 const request = (path, body) => new Request(`http://localhost${path}`, { method: "PATCH", headers: { Origin: "http://localhost", "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" }, body: JSON.stringify(body) });
 const postRequest = (path, body) => new Request(`http://localhost${path}`, { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" }, body: JSON.stringify(body) });
 const payload = options => JSON.parse(new URLSearchParams(options.body).get("payload"));
+
+test("mobile app creates a new guest and verifies the canonical CRM inquiry", async () => {
+  const savedFetch = globalThis.fetch; let row = null; const actions = [];
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options); actions.push(body.action);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: row ? [row] : [] });
+      if (body.action === "create_guest_and_inquiry") { row = body.record; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const response = await createGuest({ request: postRequest("/api/mobile/guests", { guest: { full_name: "New Guest", phone_number: "+1 305 555 0101", email: "new@example.test", country: "United States", tour: "Night Walk", requested_date: "2026-11-10", guest_count: "2" } }), env });
+    const result = await response.json();
+    assert.equal(response.status, 201); assert.equal(result.verified, true); assert.equal(result.returningGuest, false);
+    assert.equal(row.source_type, "manual_app"); assert.equal(row.status, "new"); assert.equal(JSON.parse(row.tour_items_json)[0].tour, "Night Walk");
+    assert.deepEqual(actions, ["list_inquiries", "create_guest_and_inquiry", "list_inquiries"]);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("mobile guest creation reuses a returning guest and rejects the same trip", async () => {
+  const savedFetch = globalThis.fetch; const existing = { inquiry_id: "OLD-1", guest_id: "G-RETURN", full_name: "Returning Guest", email: "return@example.test", requested_date: "2026-11-01", status: "completed" }; let created = null;
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: created ? [existing, created] : [existing] });
+      if (body.action === "create_returning_inquiry") { created = body.record; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    let response = await createGuest({ request: postRequest("/api/mobile/guests", { guest: { full_name: "Returning Guest", email: "return@example.test", requested_date: "2026-12-01", guest_count: "1" } }), env });
+    let result = await response.json(); assert.equal(response.status, 201); assert.equal(result.returningGuest, true); assert.equal(created.guest_id, "G-RETURN");
+    created = null; existing.status = "quoted";
+    response = await createGuest({ request: postRequest("/api/mobile/guests", { guest: { full_name: "Returning Guest", email: "return@example.test", requested_date: "2026-11-01", guest_count: "1" } }), env });
+    result = await response.json(); assert.equal(response.status, 409); assert.equal(result.inquiryId, "OLD-1");
+  } finally { globalThis.fetch = savedFetch; }
+});
 
 test("guest mutation uses server identity, optimistic concurrency, and verified readback", async () => {
   const savedFetch = globalThis.fetch; let row = { inquiry_id: "INQ-1", guest_id: "G-1", full_name: "Test Guest", status: "contacted", followup_date: "2026-10-20", updated_at: "v1" }; const actions = [];
@@ -42,6 +77,21 @@ test("status mutation persists and verifies the canonical CRM status", async () 
     assert.equal(result.verified, true);
     assert.equal(result.record.status, "completed");
     assert.match(row.internal_notes, /fields: status/);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("mobile profile editing preserves CRM identity helpers", async () => {
+  const savedFetch = globalThis.fetch; let row = { inquiry_id: "INQ-PROFILE", guest_id: "G-PROFILE", full_name: "Old Name", phone_number: "123", email: "old@example.test", status: "planning", updated_at: "p1" };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: [row] });
+      if (["list_interactions", "list_assignments", "list_bookings", "list_payments"].includes(body.action)) return Response.json({ ok: true, records: [] });
+      if (body.action === "update_inquiry") { row = { ...body.record, updated_at: "p2" }; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const response = await patchGuest({ request: request("/api/mobile/guests/INQ-PROFILE", { expectedUpdatedAt: "p1", patch: { full_name: "Updated Guest", phone_number: "+1 305 555 0199", email: "updated@example.test", country: "United States", guest_count: "3" } }), env, params: { inquiryId: "INQ-PROFILE" } });
+    assert.equal(response.status, 200); assert.equal((await response.json()).verified, true); assert.equal(row.first_name, "Updated"); assert.equal(row.last_name, "Guest"); assert.equal(row.phone_normalized, "13055550199"); assert.equal(row.email_normalized, "updated@example.test"); assert.equal(row.home_country, "United States");
   } finally { globalThis.fetch = savedFetch; }
 });
 

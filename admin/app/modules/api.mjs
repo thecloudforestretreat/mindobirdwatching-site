@@ -15,6 +15,7 @@ export const api = {
   session: () => request("/api/mobile/session"),
   bootstrap: () => request("/api/mobile/bootstrap"),
   search: query => request(`/api/mobile/guests?q=${encodeURIComponent(query)}`),
+  createGuest: payload => request("/api/mobile/guests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   guest: id => request(`/api/mobile/guests/${encodeURIComponent(id)}`),
   patchGuest: (id, payload) => request(`/api/mobile/guests/${encodeURIComponent(id)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   addService: (id, payload) => request(`/api/mobile/guests/${encodeURIComponent(id)}/services`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),

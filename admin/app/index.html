@@ -9,7 +9,7 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/app/mbw-app-gold-transparent-180.png?v=transparent-20261020">
   <link rel="manifest" href="/site.webmanifest?v=transparent-20261020">
-  <link rel="stylesheet" href="/app/app.css?v=services-20261020-v6">
+  <link rel="stylesheet" href="/app/app.css?v=services-20261020-v7">
 </head>
 <body>
   <div class="appShell">
@@ -58,7 +58,7 @@
         </section>
 
         <section class="view" id="guestsView" data-view="guests" hidden>
-          <div class="viewHeading"><div><p class="eyebrow">Search and continue work</p><h1>Guests</h1></div></div>
+          <div class="viewHeading"><div><p class="eyebrow">Search and continue work</p><h1>Guests</h1></div><button class="primary compactButton" id="newGuestButton" type="button">+ New</button></div>
           <form class="searchBar" id="guestSearchForm"><label class="srOnly" for="guestSearch">Search guests</label><input id="guestSearch" type="search" placeholder="Name, phone, email or inquiry ID" autocomplete="off"><button type="submit">Search</button></form>
           <label class="guestFilter"><span>Showing</span><select id="guestStatusFilter"><option value="active">Active guests</option><option value="booked">Booked</option><option value="payment_pending">Payment pending</option><option value="quoted">Quoted</option><option value="completed">Completed</option><option value="did_not_book">Did not book</option><option value="archived">Archived</option><option value="all">All records</option></select></label>
           <div class="cardList" id="guestList"></div>
@@ -77,6 +77,33 @@
             <a class="toolButton" href="/" target="_blank" rel="noopener noreferrer">Open Admin Hub</a>
             <button class="toolButton dangerText" id="clearCacheButton" type="button">Clear saved snapshot</button>
           </div>
+          <section class="toolLauncher" aria-labelledby="toolsHeading">
+            <div class="sectionHeading"><div><p class="eyebrow">Mobile Admin Hub</p><h2 id="toolsHeading">Tools</h2></div></div>
+            <div class="toolGroup"><h3>Guests and sales</h3><div class="toolGrid">
+              <a href="/guest-crm/?mobile=1"><span>👥</span><strong>Guest CRM</strong><small>Complete records</small></a>
+              <a href="/guest-intake/"><span>＋</span><strong>Guest Intake</strong><small>New submissions</small></a>
+              <a href="/whatsapp/"><span>💬</span><strong>WhatsApp</strong><small>Reply workspace</small></a>
+              <a href="/inquiry-studio/"><span>✦</span><strong>Inquiry Studio</strong><small>Plan inquiries</small></a>
+              <a href="/custom-email-generator/"><span>✉</span><strong>Email</strong><small>Guest-ready drafts</small></a>
+              <a href="/itinerary-generator/"><span>🗺</span><strong>Itinerary</strong><small>Quotes and plans</small></a>
+              <a href="/tour-confirmation-generator/"><span>✓</span><strong>Confirmation</strong><small>Booking details</small></a>
+              <a href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer"><span>$</span><strong>Stripe</strong><small>Card invoices</small></a>
+              <a href="/zelle-invoice-generator/"><span>$</span><strong>Zelle</strong><small>Payment invoices</small></a>
+            </div></div>
+            <div class="toolGroup"><h3>Operations</h3><div class="toolGrid">
+              <a href="/staff-info/"><span>ⓘ</span><strong>Staff Info</strong><small>Operating answers</small></a>
+              <a href="/recommendations/"><span>★</span><strong>Partners</strong><small>Rates and referrals</small></a>
+              <a href="/birding/"><span>🐦</span><strong>Birding</strong><small>Species and sightings</small></a>
+            </div></div>
+            <div class="toolGroup ownerTools" data-owner-only><h3>Owner tools</h3><div class="toolGrid">
+              <a href="/reports/"><span>▥</span><strong>Reports</strong><small>Business KPIs</small></a>
+              <a href="/marketing/"><span>↗</span><strong>Marketing</strong><small>Attribution</small></a>
+              <a href="/media/"><span>▣</span><strong>Media</strong><small>Reels and carousels</small></a>
+              <a href="/portfolio/"><span>⌁</span><strong>Growth</strong><small>Website portfolio</small></a>
+              <a href="/analytics/maps/"><span>◎</span><strong>Markets</strong><small>Guest origins</small></a>
+              <a href="/"><span>⚙</span><strong>Admin Hub</strong><small>All workflows</small></a>
+            </div></div>
+          </section>
         </section>
       </div>
     </main>
@@ -100,7 +127,29 @@
     </nav>
   </dialog>
 
+  <dialog class="guestDialog createGuestDialog" id="newGuestDialog">
+    <div class="dialogHeader"><button class="backButton" id="closeNewGuest" type="button" aria-label="Close new guest">←</button><div><small>Guest CRM</small><strong>Add guest</strong></div></div>
+    <div class="dialogBody">
+      <form id="newGuestForm" class="newGuestForm">
+        <section class="detailSection"><h3>Contact</h3>
+          <label class="field"><span>Full name *</span><input name="full_name" maxlength="160" autocomplete="name" required></label>
+          <div class="fieldGrid"><label class="field"><span>Phone</span><input name="phone_number" maxlength="60" inputmode="tel" autocomplete="tel"></label><label class="field"><span>Email</span><input type="email" name="email" maxlength="254" autocomplete="email"></label></div>
+          <label class="field"><span>Country</span><input name="country" maxlength="120" autocomplete="country-name"></label>
+          <p class="formNote">A phone number or email is required. Existing contact details create a new inquiry under the returning guest instead of a duplicate guest.</p>
+        </section>
+        <section class="detailSection"><h3>Initial request</h3>
+          <label class="field"><span>Tour or activity</span><input name="tour" maxlength="300" placeholder="Birding day, Night Walk, airport transfer…"></label>
+          <div class="fieldGrid"><label class="field"><span>Service type</span><select name="service_type"><option>Birdwatching</option><option>Activity</option><option>Transportation</option><option>Accommodation</option><option>Other</option></select></label><label class="field"><span>Guests</span><input type="number" name="guest_count" min="1" max="99" value="1" required></label></div>
+          <div class="fieldGrid"><label class="field"><span>Tour date</span><input type="date" name="requested_date"></label><label class="field"><span>F/U date</span><input type="date" name="followup_date"></label></div>
+          <label class="field"><span>Pickup</span><input name="pickup_location" maxlength="500"></label>
+          <label class="field"><span>Notes</span><textarea name="notes" maxlength="3000"></textarea></label>
+        </section>
+        <div class="stickyFormAction"><button type="submit" class="primary">Create guest</button></div>
+      </form>
+    </div>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-  <script type="module" src="/app/app.mjs?v=services-20261020-v6"></script>
+  <script type="module" src="/app/app.mjs?v=services-20261020-v7"></script>
 </body>
 </html>

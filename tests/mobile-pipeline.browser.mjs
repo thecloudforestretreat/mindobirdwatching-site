@@ -13,6 +13,7 @@ let record = {
   tours: [{ id: "T-1", tour: "Mindo Tours Test", product: "MT-TEST", date: "2026-10-22", guests: "2", status: "payment_pending" }],
 };
 const completedRecord = { ...record, inquiryId: "I-CLOSED-1", guestId: "G-CLOSED-1", name: "Completed Guest", status: "completed", effectiveStatus: "completed", requestedDate: "2026-10-19", tours: [{ id: "C-1", tour: "Completed Tour", date: "2026-10-19", guests: "2", status: "completed" }] };
+let createdRecord = null;
 const schedule = [
   { inquiryId: record.inquiryId, guest: record.name, date: "2026-10-22", startTime: "05:00", tour: "Quoted Birding", partySize: "2", pickup: "Mindo", source: "itinerary", status: "quoted", risk: "No assignment" },
   { inquiryId: record.inquiryId, guest: record.name, date: "2026-10-23", startTime: "19:00", tour: "Confirmed Night Walk", partySize: "2", pickup: "Mindo", source: "assignment", status: "confirmed", risk: "" },
@@ -41,6 +42,11 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
       await new Promise(resolve => setTimeout(resolve, 700));
       return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: schedule, providers: [{ name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }], recentGuests: [record, completedRecord], inquiries: [record, completedRecord], bookings: [] } });
     }
+    if (path.endsWith("/guests") && route.request().method() === "POST") {
+      const payload = route.request().postDataJSON().guest;
+      createdRecord = { inquiryId: "I-MANUAL-1", guestId: "G-MANUAL-1", name: payload.full_name, phone: payload.phone_number || "", email: payload.email || "", country: payload.country || "", partySize: payload.guest_count, status: "new", effectiveStatus: "new", followupDate: payload.followup_date, requestedDate: payload.requested_date, updatedAt: "manual1", tours: payload.tour ? [{ id: "M-1", tour: payload.tour, date: payload.requested_date, guests: payload.guest_count, status: "planning" }] : [] };
+      return route.fulfill({ status: 201, json: { ok: true, verified: true, returningGuest: false, record: createdRecord } });
+    }
     if (path.endsWith(`/guests/${record.inquiryId}/services`) && route.request().method() === "POST") {
       const payload = route.request().postDataJSON(), service = { id: "T-2", tour: payload.service.tour, product: payload.service.product_selected, serviceType: payload.service.service_type, date: payload.service.date, guests: payload.service.guests, status: payload.service.status, pickup: payload.service.pickup_location };
       record = { ...record, tours: [...record.tours, service], updatedAt: "2026-10-20T15:02:00Z" };
@@ -55,6 +61,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
       await new Promise(resolve => setTimeout(resolve, 600));
       return route.fulfill({ json: { ok: true, record, journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
     }
+    if (createdRecord && path.endsWith(`/guests/${createdRecord.inquiryId}`)) return route.fulfill({ json: { ok: true, record: createdRecord, journey: [{ id: "contact", label: "Contact", state: "attention", evidence: "Response not logged" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
     return route.fulfill({ status: 404, json: { ok: false, error: "Not found" } });
   });
   try {
@@ -68,6 +75,17 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.equal(await page.locator("[data-summary-filter]").count(), 3); await page.locator('[data-summary-filter="followups"]').click(); assert.equal(await page.locator(".actionCard").count(), 1);
     await page.locator('#bottomNav [data-route="guests"]').click();
     assert.equal(await page.locator(".guestCard").count(), 1, "closed guests should stay out of the default list");
+    await page.locator("#newGuestButton").click();
+    await page.screenshot({ path: "/tmp/mbw-new-guest-mobile-qa.png", fullPage: false });
+    await page.locator('#newGuestForm input[name="full_name"]').fill("Manual Guest");
+    await page.locator('#newGuestForm input[name="email"]').fill("manual@example.test");
+    await page.locator('#newGuestForm input[name="tour"]').fill("Night Walk");
+    await page.locator('#newGuestForm input[name="requested_date"]').fill("2026-11-12");
+    await page.locator('#newGuestForm button[type="submit"]').click();
+    await page.getByText("Guest created and verified.", { exact: true }).waitFor({ state: "visible" });
+    await page.getByText("Manual Guest", { exact: true }).first().waitFor({ state: "visible" });
+    assert.equal(await page.locator("#profileForm").count(), 1);
+    await page.locator("#closeGuest").click();
     const guestBox = await page.locator(".guestCard").first().boundingBox(); assert.ok(guestBox && guestBox.x + guestBox.width <= 390);
     await page.locator("#guestStatusFilter").selectOption("completed");
     assert.equal(await page.locator(".guestCard").count(), 1); assert.match(await page.locator(".guestCard").innerText(), /Completed Guest/);
@@ -92,7 +110,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.getByText("Service status saved and verified.", { exact: true }).waitFor({ state: "visible" });
     assert.equal(await page.locator('.serviceStatusForm select[name="status"]').first().evaluate(element => element.value), "completed");
     for (const label of ["Compose email", "Create Stripe invoice", "Create Zelle invoice", "Create confirmation"]) assert.equal(await page.getByText(label, { exact: true }).isVisible(), true);
-    const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('input[name="followup_date"]').boundingBox();
+    const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('#followupForm input[name="followup_date"]').boundingBox();
     assert.ok(sectionBox && dateBox && dateBox.x >= sectionBox.x && dateBox.x + dateBox.width <= sectionBox.x + sectionBox.width + 1);
     const stripe = await page.getByText("Create Stripe invoice", { exact: true }).getAttribute("href");
     assert.match(stripe, /inquiry_id=I-MT-1/); assert.match(stripe, /guest=Test\+Testerer/);
@@ -116,6 +134,11 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.locator("#closeGuest").click();
     assert.equal(await page.locator("#moreStatusFilter option").count(), 9);
     assert.equal(await page.locator("#moreStatusFilter").isVisible(), true);
+    await page.locator('#bottomNav [data-route="more"]').click();
+    assert.ok(await page.locator(".toolGrid a").count() >= 15, "mobile tool launcher should expose the Admin Hub workflows");
+    assert.equal(await page.locator("[data-owner-only]").isVisible(), true);
+    await page.screenshot({ path: "/tmp/mbw-mobile-tools-qa.png", fullPage: true });
+    await page.locator('#bottomNav [data-route="actions"]').click();
     await page.screenshot({ path: "/tmp/mbw-mobile-pipeline-qa.png", fullPage: true });
     await page.goto(`http://127.0.0.1:${port}/guest-crm/?mobile=1`, { waitUntil: "domcontentloaded" });
     const crmWidth = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));

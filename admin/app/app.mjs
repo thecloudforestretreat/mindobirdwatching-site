@@ -1,6 +1,6 @@
-import { api } from "./modules/api.mjs?v=services-20261020-v6";
+import { api } from "./modules/api.mjs?v=services-20261020-v7";
 import { loadSnapshot, saveSnapshot, clearSnapshot } from "./modules/cache.mjs";
-import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v6";
+import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v7";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -129,6 +129,8 @@ function renderMore() {
   $("#identityRole").textContent = pretty(identity.role);
   $("#lastChecked").textContent = state.data?.checkedAt ? new Date(state.data.checkedAt).toLocaleString() : "—";
   $("#writeState").textContent = state.session?.capabilities?.write ? "Enabled" : "Read only";
+  document.querySelectorAll("[data-owner-only]").forEach(node => { node.hidden = identity.role !== "owner"; });
+  $("#newGuestButton").disabled = !state.session?.capabilities?.write;
 }
 
 function render() { renderActions(); renderGuests(); renderToday(); renderMore(); $("#cachedNotice").hidden = !state.cached; }
@@ -142,6 +144,9 @@ function route(name) {
 }
 
 function journeyMarkup(journey) { return `<div class="journey">${journey.map(item => `<div class="journeyStep" data-state="${esc(item.state)}"><i></i><div><strong>${esc(item.label)}</strong><small>${esc(item.evidence)}</small></div></div>`).join("")}</div>`; }
+function profileMarkup(guest, canWrite) {
+  return `<details class="profileEditor"><summary>Edit guest details</summary><form id="profileForm"><label class="field"><span>Full name</span><input name="full_name" maxlength="160" value="${esc(guest.name)}" required ${canWrite ? "" : "disabled"}></label><div class="fieldGrid"><label class="field"><span>Phone</span><input name="phone_number" maxlength="60" value="${esc(guest.phone)}" inputmode="tel" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Email</span><input type="email" name="email" maxlength="254" value="${esc(guest.email)}" ${canWrite ? "" : "disabled"}></label></div><div class="fieldGrid"><label class="field"><span>Country</span><input name="country" maxlength="120" value="${esc(guest.country)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guests</span><input type="number" name="guest_count" min="1" max="99" value="${esc(guest.partySize || "1")}" ${canWrite ? "" : "disabled"}></label></div><label class="field"><span>Assigned rep</span><input name="assigned_to" maxlength="30" value="${esc(guest.assignedTo)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Pickup</span><input name="pickup_location" maxlength="500" value="${esc(guest.pickup)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guest notes</span><textarea name="notes" maxlength="3000" ${canWrite ? "" : "disabled"}>${esc(guest.notes)}</textarea></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save details</button></div></form></details>`;
+}
 function serviceMarkup(guest, canWrite) { return `<div class="serviceRecords">${(guest.tours || []).map(item => `<form class="serviceRecord serviceStatusForm ${statusClass(item.status)}" data-service="${esc(item.id)}"><div><strong>${esc(item.tour || item.product || "Service")}</strong><small>${esc(date(item.date))} · ${esc(item.guests || guest.partySize || "?")} ${Number(item.guests || guest.partySize) === 1 ? "guest" : "guests"}</small></div><div class="serviceStatusControls"><select name="status" aria-label="Status for ${esc(item.tour || item.product || "service")}" ${canWrite ? "" : "disabled"}>${["planning","quoted","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled"].map(value => `<option value="${value}" ${item.status === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select><button type="submit" ${canWrite ? "" : "disabled"}>Save</button></div></form>`).join("") || `<div class="recordItem"><p>No itinerary services recorded.</p></div>`}</div>`; }
 function serviceCreateMarkup(guest, canWrite) {
   return `<details class="serviceCreate"><summary>Add another tour, activity, or transfer</summary><form id="serviceCreateForm"><label class="field"><span>Service type</span><select name="service_type" ${canWrite ? "" : "disabled"}>${["Birdwatching","Activity","Transportation","Accommodation","Other"].map(value => `<option value="${value}">${value}</option>`).join("")}</select></label><label class="field"><span>Tour or activity</span><input name="tour" maxlength="300" required placeholder="Night Walk, birding day, airport transfer…" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Product code / service</span><input name="product_selected" maxlength="240" placeholder="Optional, for example MBW016 - Night Walk" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Date</span><input type="date" name="date" required ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guests</span><input type="number" name="guests" min="1" max="99" value="${esc(guest.partySize || "1")}" required ${canWrite ? "" : "disabled"}></label><label class="field"><span>Status</span><select name="status" ${canWrite ? "" : "disabled"}>${["planning","quoted","deposit_pending","deposit_paid","payment_pending","booked"].map(value => `<option value="${value}">${esc(pretty(value))}</option>`).join("")}</select></label><label class="field"><span>Price per person (optional)</span><input type="number" name="price_per_person" min="0" step="0.01" inputmode="decimal" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Pickup (optional)</span><input name="pickup_location" maxlength="500" value="${esc(guest.pickup || "")}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Notes (optional)</span><textarea name="notes" maxlength="1000" ${canWrite ? "" : "disabled"}></textarea></label><div class="serviceCreateActions"><button type="submit" data-intent="save" ${canWrite ? "" : "disabled"}>Save service</button><button type="submit" data-intent="invoice" class="secondaryAction" ${canWrite ? "" : "disabled"}>Save & open Stripe</button></div></form></details>`;
@@ -165,6 +170,7 @@ async function openGuest(id, task = "") {
     $("#guestDialogTitle").textContent = guest.name || "Guest";
     const whatsapp = phoneDigits(guest.phone);
     body.innerHTML = `<section class="detailHero"><h2>${identityMarkup(guest)}</h2><p class="countryLabel">${esc(guest.country || "Country not recorded")}</p><p>${esc(guest.email || "Email not recorded")}</p><p>${esc(guest.phone || "Phone not recorded")}</p><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="${esc(toolUrl("/custom-email-generator/", guest))}" target="_blank" rel="noopener noreferrer">Email draft</a>` : ""}</div></section>
+      <section class="detailSection" data-section="profile"><h3>Guest details</h3>${profileMarkup(guest, canWrite)}</section>
       <section class="detailSection"><div class="detailTitle"><h3>Services</h3><span class="badge">${guest.tours?.length || 0}</span></div>${serviceMarkup(guest, canWrite)}${serviceCreateMarkup(guest, canWrite)}</section>
       <section class="detailSection"><div class="detailTitle"><h3>Guest Journey</h3><span class="badge">${esc(pretty(guest.effectiveStatus || guest.status))}</span></div>${guest.needsReconciliation ? `<p class="formNote formNote--warn">Legacy booking or payment records need reconciliation before this inquiry is treated as current.</p>` : ""}${journeyMarkup(result.journey)}</section>
       ${pipelineActionsMarkup(guest)}
@@ -174,9 +180,29 @@ async function openGuest(id, task = "") {
       <section class="detailSection" data-section="confirmation"><h3>Confirmation</h3><p>Open the existing generator with this guest and tour information, then verify the details before sending.</p><div class="toolLinks"><a href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Open confirmation generator</a></div></section>
       <section class="detailSection" data-section="operations"><h3>Operations</h3>${assignmentCreateMarkup(guest, canWrite)}<div class="recordList">${assignmentMarkup(result.data.assignments, canWrite)}</div></section>
       <section class="detailSection" data-section="communication"><h3>Communication</h3><form id="interactionForm"><label class="field"><span>Channel</span><select name="channel" ${canWrite ? "" : "disabled"}><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="in_person">In person</option><option value="other">Other</option></select></label><label class="field"><span>Direction</span><select name="direction" ${canWrite ? "" : "disabled"}><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option><option value="internal">Internal note</option></select></label><label class="field"><span>Note</span><textarea name="note" maxlength="4000" required ${canWrite ? "" : "disabled"}></textarea></label><label class="field"><span>Follow-up date (optional)</span><input type="date" name="followupAt" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Log communication</button></div></form><div class="recordList">${interactionMarkup(result.data.interactions)}</div></section>`;
-    $("#statusForm")?.addEventListener("submit", saveStatus); $("#followupForm")?.addEventListener("submit", saveFollowup); $("#interactionForm")?.addEventListener("submit", saveInteraction); $("#serviceCreateForm")?.addEventListener("submit", createService); $("#assignmentCreateForm")?.addEventListener("submit", createAssignment); $("#assignmentCreateForm select[name=service_index]")?.addEventListener("change", syncAssignmentService); body.querySelectorAll(".serviceStatusForm").forEach(form => form.addEventListener("submit", saveServiceStatus)); body.querySelectorAll(".assignmentForm").forEach(form => form.addEventListener("submit", saveAssignment));
+    $("#profileForm")?.addEventListener("submit", saveProfile); $("#statusForm")?.addEventListener("submit", saveStatus); $("#followupForm")?.addEventListener("submit", saveFollowup); $("#interactionForm")?.addEventListener("submit", saveInteraction); $("#serviceCreateForm")?.addEventListener("submit", createService); $("#assignmentCreateForm")?.addEventListener("submit", createAssignment); $("#assignmentCreateForm select[name=service_index]")?.addEventListener("change", syncAssignmentService); body.querySelectorAll(".serviceStatusForm").forEach(form => form.addEventListener("submit", saveServiceStatus)); body.querySelectorAll(".assignmentForm").forEach(form => form.addEventListener("submit", saveAssignment));
     if (task) setTimeout(() => body.querySelector(`[data-section="${CSS.escape(task === "interaction-follow-up" ? "communication" : task)}"]`)?.scrollIntoView({ behavior: "smooth" }), 80);
   } catch (error) { body.innerHTML = `<div class="emptyCard">${esc(error.message)}</div>`; }
+}
+
+async function saveProfile(event) {
+  event.preventDefault(); const form = event.currentTarget, guest = state.guest.record, patch = Object.fromEntries(new FormData(form)), button = form.querySelector("button"); button.disabled = true;
+  try { await api.patchGuest(guest.inquiryId, { expectedUpdatedAt: guest.updatedAt, patch }); toast("Guest details saved and verified."); await openGuest(guest.inquiryId, "profile"); await refresh(false); } catch (error) { toast(error.message); button.disabled = false; }
+}
+
+function openNewGuest() {
+  if (!state.session?.capabilities?.write) return toast("Guest creation is read only for this account.");
+  const dialog = $("#newGuestDialog"), form = $("#newGuestForm"); form.reset(); form.elements.guest_count.value = "1"; form.elements.followup_date.value = addIsoDays(todayIso(), 3); dialog.showModal(); setTimeout(() => form.elements.full_name.focus(), 50);
+}
+
+async function createGuest(event) {
+  event.preventDefault(); const form = event.currentTarget, button = form.querySelector("button[type=submit]"), guest = Object.fromEntries(new FormData(form)); button.disabled = true;
+  try {
+    const result = await api.createGuest({ guest }); $("#newGuestDialog").close(); toast(result.returningGuest ? "Returning guest inquiry created." : "Guest created and verified."); await refresh(false); route("guests"); await openGuest(result.record.inquiryId);
+  } catch (error) {
+    if (error.body?.inquiryId) { $("#newGuestDialog").close(); toast(error.message); await openGuest(error.body.inquiryId); }
+    else { toast(error.message); button.disabled = false; }
+  }
 }
 
 async function saveStatus(event) {
@@ -255,6 +281,10 @@ $(".dialogNav").addEventListener("click", event => { const button = event.target
 document.addEventListener("click", event => { const button = event.target.closest("[data-guest]"); if (button) openGuest(button.dataset.guest, button.dataset.task || ""); });
 $("#closeGuest").addEventListener("click", () => $("#guestDialog").close());
 $("#guestDialog").addEventListener("click", event => { if (event.target === event.currentTarget) event.currentTarget.close(); });
+$("#newGuestButton").addEventListener("click", openNewGuest);
+$("#closeNewGuest").addEventListener("click", () => $("#newGuestDialog").close());
+$("#newGuestDialog").addEventListener("click", event => { if (event.target === event.currentTarget) event.currentTarget.close(); });
+$("#newGuestForm").addEventListener("submit", createGuest);
 $("#retryButton").addEventListener("click", () => location.reload());
 $("#refreshButton").addEventListener("click", () => refresh());
 $("#actionsView").addEventListener("click", event => {
@@ -275,5 +305,5 @@ $("#guestSearch").addEventListener("input", event => { if (!event.currentTarget.
 $("#guestStatusFilter").addEventListener("change", event => { state.guestStatusFilter = event.currentTarget.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuests(); });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=11", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=12", { scope: "/app/" }).catch(() => {});
 start();
