@@ -1,0 +1,56 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { readFile, stat } from "node:fs/promises";
+import { extname, join, normalize } from "node:path";
+import { chromium } from "playwright";
+
+const root = join(process.cwd(), "admin");
+const record = {
+  inquiryId: "I-MT-1", guestId: "G-MT-1", name: "Test Testerer", country: "United States", countryCode: "US", brand: "MT",
+  phone: "+13055550123", email: "test@example.test", partySize: "2", status: "payment_pending", effectiveStatus: "payment_pending",
+  paymentStatus: "payment_pending", requestedDate: "2026-10-22", requestedDateEnd: "2026-10-22", followupDate: "2026-10-21", updatedAt: "2026-10-20T14:00:00Z",
+  tours: [{ id: "T-1", tour: "Mindo Tours Test", product: "MT-TEST", date: "2026-10-22", guests: "2", status: "payment_pending" }],
+};
+
+const mime = path => ({ ".html": "text/html", ".css": "text/css", ".mjs": "text/javascript", ".js": "text/javascript", ".png": "image/png", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json" })[extname(path)] || "application/octet-stream";
+
+test("mobile pipeline keeps context, navigation and payment tools usable", async () => {
+  const server = createServer(async (request, response) => {
+    try {
+      const url = new URL(request.url, "http://127.0.0.1");
+      let path = normalize(join(root, decodeURIComponent(url.pathname)));
+      if (url.pathname.endsWith("/")) path = join(path, "index.html");
+      if (!path.startsWith(root) || !(await stat(path)).isFile()) throw new Error("missing");
+      response.writeHead(200, { "content-type": mime(path) }); response.end(await readFile(path));
+    } catch { response.writeHead(404); response.end("Not found"); }
+  });
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  const port = server.address().port, browser = await chromium.launch({ headless: true, executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" }), context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" }), page = await context.newPage();
+  await page.route(`http://127.0.0.1:${port}/api/mobile/**`, async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/session")) return route.fulfill({ json: { ok: true, identity: { email: "owner@example.test", name: "Juan", role: "owner" }, capabilities: { write: true } } });
+    if (path.endsWith("/bootstrap")) return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "payment", priority: 0, reason: "Payment pending", owner: "JPG" }], today: [], recentGuests: [record], inquiries: [record], bookings: [] } });
+    if (path.endsWith(`/guests/${record.inquiryId}`)) {
+      await new Promise(resolve => setTimeout(resolve, 600));
+      return route.fulfill({ json: { ok: true, record, journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
+    }
+    return route.fulfill({ status: 404, json: { ok: false, error: "Not found" } });
+  });
+  try {
+    await page.goto(`http://127.0.0.1:${port}/app/`);
+    const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
+    assert.match(await card.innerText(), /Test Testerer/); assert.match(await card.innerText(), /MT/); assert.match(await card.innerText(), /🇺🇸/);
+    await card.click();
+    await page.locator(".detailLoading").waitFor({ state: "visible" });
+    assert.match(await page.locator(".detailHero").innerText(), /United States/);
+    await page.getByText("Next action").waitFor({ state: "visible" });
+    assert.equal(await page.locator(".dialogNav").isVisible(), true);
+    for (const label of ["Compose email", "Create Stripe invoice", "Create Zelle invoice", "Create confirmation"]) assert.equal(await page.getByText(label, { exact: true }).isVisible(), true);
+    const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('input[name="followup_date"]').boundingBox();
+    assert.ok(sectionBox && dateBox && dateBox.x >= sectionBox.x && dateBox.x + dateBox.width <= sectionBox.x + sectionBox.width + 1);
+    const stripe = await page.getByText("Create Stripe invoice", { exact: true }).getAttribute("href");
+    assert.match(stripe, /inquiry_id=I-MT-1/); assert.match(stripe, /guest=Test\+Testerer/);
+    await page.screenshot({ path: "/tmp/mbw-mobile-pipeline-qa.png", fullPage: true });
+  } finally { await context.close(); await browser.close(); await new Promise(resolve => server.close(resolve)); }
+});
