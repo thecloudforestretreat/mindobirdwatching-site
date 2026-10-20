@@ -425,7 +425,7 @@ export function operationsSchedule(inquiries, assignments, bookings = [], paymen
     const pending = group.assignments.some(item => item.status === "pending" || !item.providerInformed);
     records.push({
       id: `assignment-${first.assignmentId}`, inquiryId: group.inquiry.inquiryId, guest: group.inquiry.name,
-      partySize: group.inquiry.partySize, phone: group.inquiry.phone, tour: first.product || first.serviceType || first.providerRole || "Assigned service",
+      partySize: group.inquiry.partySize, phone: group.inquiry.phone, tour: first.serviceType || first.product || first.providerRole || "Assigned service",
       product: first.product, date: first.serviceDate, status: completed ? "completed" : pending ? "pending" : "confirmed",
       startTime: first.startTime, pickup: first.pickup || group.inquiry.pickup, assignments: group.assignments,
       risk: completed ? "" : pending ? "Provider confirmation incomplete" : "",
