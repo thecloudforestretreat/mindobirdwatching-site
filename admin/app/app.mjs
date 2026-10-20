@@ -1,6 +1,6 @@
-import { api } from "./modules/api.mjs?v=services-20261020-v4";
+import { api } from "./modules/api.mjs?v=services-20261020-v5";
 import { loadSnapshot, saveSnapshot, clearSnapshot } from "./modules/cache.mjs";
-import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v4";
+import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v5";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -10,7 +10,7 @@ const date = value => value ? new Intl.DateTimeFormat("en-US", { dateStyle: "med
 const time = value => value ? String(value).slice(0, 5) : "Time not set";
 const phoneDigits = value => String(value || "").replace(/\D/g, "");
 const STATUS_OPTIONS = ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"];
-const state = { session: null, data: null, route: "actions", cached: false, guest: null, deskView: "list", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "" };
+const state = { session: null, data: null, route: "actions", cached: false, guest: null, deskView: "list", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "", guestStatusFilter: "active", guestSearchResults: null };
 
 function connection(mode, label) { const node = $("#connectionState"); node.dataset.state = mode; node.querySelector("b").textContent = label; }
 function empty(message) { return `<div class="emptyCard">${esc(message)}</div>`; }
@@ -101,13 +101,25 @@ function renderActions() {
 }
 
 function guestCard(item) {
-  return `<button class="guestCard" data-guest="${esc(item.inquiryId)}" type="button"><div class="cardTop"><strong>${identityMarkup(item)}</strong><span class="badge">${esc(pretty(item.effectiveStatus || item.status))}</span></div><p>${esc(item.tours?.[0]?.tour || "Tour not selected")}</p><div class="cardMeta"><span>${esc(item.assignedTo || "Unassigned")}</span><span>${esc(item.requestedDate ? date(item.requestedDate) : item.inquiryId)}</span></div></button>`;
+  const status = item.effectiveStatus || item.status;
+  return `<button class="guestCard ${statusClass(status)}" data-guest="${esc(item.inquiryId)}" type="button"><div class="cardTop"><strong>${identityMarkup(item)}</strong><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span></div><p>${esc(item.tours?.[0]?.tour || "Tour not selected")}</p><div class="cardMeta"><span>${esc(item.assignedTo || "Unassigned")}</span><span>${esc(item.requestedDate ? date(item.requestedDate) : item.inquiryId)}</span></div></button>`;
 }
 
-function renderGuests(records = state.data?.recentGuests || []) { $("#guestList").innerHTML = records.length ? records.map(guestCard).join("") : empty("No matching guests were found."); }
+function guestStatus(item) { return item.effectiveStatus || item.status || "new"; }
+function guestVisible(item, filter) {
+  const status = guestStatus(item), archived = item.archived || ["duplicate", "archived"].includes(status);
+  if (filter === "all") return true;
+  if (filter === "archived") return archived;
+  if (filter === "active") return !archived && !["completed", "cancelled", "canceled", "did_not_book"].includes(status);
+  return !archived && status === filter;
+}
+function renderGuests(records = state.guestSearchResults || state.data?.recentGuests || [], explicitSearch = state.guestSearchResults !== null) {
+  const visible = explicitSearch ? records : records.filter(item => guestVisible(item, state.guestStatusFilter));
+  $("#guestList").innerHTML = visible.length ? visible.map(guestCard).join("") : empty(explicitSearch ? "No matching guests were found." : "No guests match this status.");
+}
 function renderToday() {
-  const today = todayIso(), records = state.data?.upcoming || state.data?.today || [], todayRecords = records.filter(item => item.date === today), later = records.filter(item => item.date > today);
-  const cards = rows => rows.map(item => `<button class="todayCard" data-guest="${esc(item.inquiryId)}" data-task="operations" type="button"><div class="cardTop"><strong>${esc(item.startTime ? time(item.startTime) : "Time pending")} · ${esc(item.guest)}</strong>${item.status === "completed" ? `<span class="badge">Completed</span>` : item.risk ? `<span class="badge badge--urgent">Attention</span>` : `<span class="badge">Ready</span>`}</div><p>${esc(item.tour || "Tour")} · ${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"}</p><div class="todayMeta"><span>${esc(item.pickup || "Pickup not set")}</span><span>${item.source === "assignment" ? "Assignment schedule" : "Itinerary"} · ${esc(pretty(item.status))}</span></div>${item.risk ? `<p><strong>${esc(item.risk)}</strong></p>` : ""}</button>`).join("");
+  const today = todayIso(), end = addIsoDays(today, 7), closed = new Set(["completed", "cancelled", "canceled", "did_not_book", "duplicate", "archived"]), records = (state.data?.upcoming || state.data?.today || []).filter(item => !closed.has(item.status)), todayRecords = records.filter(item => item.date === today), later = records.filter(item => item.date > today && item.date <= end);
+  const cards = rows => rows.map(item => `<button class="todayCard ${statusClass(item.status)}" data-guest="${esc(item.inquiryId)}" data-task="operations" type="button"><div class="cardTop"><strong>${esc(item.startTime ? time(item.startTime) : "Time pending")} · ${esc(item.guest)}</strong><span class="operationsBadge ${item.risk ? "operationsBadge--attention" : "operationsBadge--ready"}">${item.risk ? "Attention" : "Ready"}</span></div><p>${esc(item.tour || "Tour")} · ${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"}</p><div class="todayFacts"><span class="statusBadge ${statusClass(item.status)}">${esc(pretty(item.status))}</span><span class="serviceDate"><b>${esc(shortDate(item.date))}</b></span></div><div class="todayMeta"><span>${esc(item.pickup || "Pickup not set")}</span><span>${item.source === "assignment" ? "Assignment schedule" : "Itinerary"}</span></div>${item.risk ? `<p><strong>${esc(item.risk)}</strong></p>` : ""}</button>`).join("");
   $("#todayList").innerHTML = `<section class="scheduleGroup"><h2>Today <span>${todayRecords.length} service${todayRecords.length === 1 ? "" : "s"}</span></h2>${todayRecords.length ? cards(todayRecords) : empty("No services are recorded for today in Ecuador.")}</section><section class="scheduleGroup"><h2>Next 7 days <span>${later.length} service${later.length === 1 ? "" : "s"}</span></h2>${later.length ? cards(later) : empty("No additional services are recorded for the next seven days.")}</section>`;
 }
 
@@ -258,8 +270,10 @@ $("#actionsView").addEventListener("click", event => {
 $("#actionsView").addEventListener("change", event => { if (event.target.id === "moreStatusFilter" && event.target.value) { state.statusFilter = event.target.value; renderActions(); } });
 $("#previousWeek").addEventListener("click", () => { state.weekStart = addIsoDays(state.weekStart || todayIso(), -7); state.selectedDate = state.weekStart; renderActions(); });
 $("#nextWeek").addEventListener("click", () => { state.weekStart = addIsoDays(state.weekStart || todayIso(), 7); state.selectedDate = state.weekStart; renderActions(); });
-$("#guestSearchForm").addEventListener("submit", async event => { event.preventDefault(); const query = $("#guestSearch").value.trim(); if (query.length < 2) return toast("Enter at least two characters."); $("#guestList").innerHTML = empty("Searching…"); try { const result = await api.search(query); renderGuests(result.records); } catch (error) { $("#guestList").innerHTML = empty(error.message); } });
+$("#guestSearchForm").addEventListener("submit", async event => { event.preventDefault(); const query = $("#guestSearch").value.trim(); if (query.length < 2) return toast("Enter at least two characters."); $("#guestList").innerHTML = empty("Searching…"); try { const result = await api.search(query); state.guestSearchResults = result.records; renderGuests(result.records, true); } catch (error) { $("#guestList").innerHTML = empty(error.message); } });
+$("#guestSearch").addEventListener("input", event => { if (!event.currentTarget.value.trim()) { state.guestSearchResults = null; renderGuests(); } });
+$("#guestStatusFilter").addEventListener("change", event => { state.guestStatusFilter = event.currentTarget.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuests(); });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=10", { scope: "/app/" }).catch(() => {});
 start();

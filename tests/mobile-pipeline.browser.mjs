@@ -12,6 +12,12 @@ let record = {
   paymentStatus: "payment_pending", requestedDate: "2026-10-22", requestedDateEnd: "2026-10-22", followupDate: "2026-10-21", updatedAt: "2026-10-20T14:00:00Z",
   tours: [{ id: "T-1", tour: "Mindo Tours Test", product: "MT-TEST", date: "2026-10-22", guests: "2", status: "payment_pending" }],
 };
+const completedRecord = { ...record, inquiryId: "I-CLOSED-1", guestId: "G-CLOSED-1", name: "Completed Guest", status: "completed", effectiveStatus: "completed", requestedDate: "2026-10-19", tours: [{ id: "C-1", tour: "Completed Tour", date: "2026-10-19", guests: "2", status: "completed" }] };
+const schedule = [
+  { inquiryId: record.inquiryId, guest: record.name, date: "2026-10-22", startTime: "05:00", tour: "Quoted Birding", partySize: "2", pickup: "Mindo", source: "itinerary", status: "quoted", risk: "No assignment" },
+  { inquiryId: record.inquiryId, guest: record.name, date: "2026-10-23", startTime: "19:00", tour: "Confirmed Night Walk", partySize: "2", pickup: "Mindo", source: "assignment", status: "confirmed", risk: "" },
+  { inquiryId: completedRecord.inquiryId, guest: completedRecord.name, date: "2026-10-24", startTime: "08:00", tour: "Completed Tour", partySize: "2", pickup: "Mindo", source: "assignment", status: "completed", risk: "" },
+];
 
 const mime = path => ({ ".html": "text/html", ".css": "text/css", ".mjs": "text/javascript", ".js": "text/javascript", ".png": "image/png", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json" })[extname(path)] || "application/octet-stream";
 
@@ -31,7 +37,10 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
   await page.route(`http://127.0.0.1:${port}/api/mobile/**`, async route => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/session")) return route.fulfill({ json: { ok: true, identity: { email: "owner@example.test", name: "Juan", role: "owner" }, capabilities: { write: true } } });
-    if (path.endsWith("/bootstrap")) return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: [], providers: [{ name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }], recentGuests: [record], inquiries: [record], bookings: [] } });
+    if (path.endsWith("/bootstrap")) {
+      await new Promise(resolve => setTimeout(resolve, 700));
+      return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: schedule, providers: [{ name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }], recentGuests: [record, completedRecord], inquiries: [record, completedRecord], bookings: [] } });
+    }
     if (path.endsWith(`/guests/${record.inquiryId}/services`) && route.request().method() === "POST") {
       const payload = route.request().postDataJSON(), service = { id: "T-2", tour: payload.service.tour, product: payload.service.product_selected, serviceType: payload.service.service_type, date: payload.service.date, guests: payload.service.guests, status: payload.service.status, pickup: payload.service.pickup_location };
       record = { ...record, tours: [...record.tours, service], updatedAt: "2026-10-20T15:02:00Z" };
@@ -50,10 +59,24 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
   });
   try {
     await page.goto(`http://127.0.0.1:${port}/app/`);
+    await page.locator(".loadingBird").waitFor({ state: "visible" });
+    assert.match(await page.locator(".appHeader .brand img").getAttribute("src"), /mbw-header-logo-160\.png/);
+    await page.screenshot({ path: "/tmp/mbw-loader-mobile-qa.png", fullPage: false });
     const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
     assert.match(await card.innerText(), /Test Testerer/); assert.match(await card.innerText(), /MT/); assert.match(await card.innerText(), /🇺🇸/);
     assert.equal(await page.locator("[data-summary-filter]").count(), 3); await page.locator('[data-summary-filter="followups"]').click(); assert.equal(await page.locator(".actionCard").count(), 1);
-    await page.locator('#bottomNav [data-route="guests"]').click(); const guestBox = await page.locator(".guestCard").first().boundingBox(); assert.ok(guestBox && guestBox.x + guestBox.width <= 390);
+    await page.locator('#bottomNav [data-route="guests"]').click();
+    assert.equal(await page.locator(".guestCard").count(), 1, "closed guests should stay out of the default list");
+    const guestBox = await page.locator(".guestCard").first().boundingBox(); assert.ok(guestBox && guestBox.x + guestBox.width <= 390);
+    await page.locator("#guestStatusFilter").selectOption("completed");
+    assert.equal(await page.locator(".guestCard").count(), 1); assert.match(await page.locator(".guestCard").innerText(), /Completed Guest/);
+    await page.screenshot({ path: "/tmp/mbw-guests-mobile-qa.png", fullPage: false });
+    await page.locator("#guestStatusFilter").selectOption("active");
+    await page.locator('#bottomNav [data-route="today"]').click();
+    assert.equal(await page.locator("#todayList .todayCard").count(), 2, "completed services should be hidden from operations");
+    const todayText = await page.locator("#todayList").innerText(); assert.match(todayText, /Oct 22, 2026/); assert.match(todayText, /Oct 23, 2026/); assert.doesNotMatch(todayText, /Completed Tour/);
+    assert.equal(await page.locator("#todayList .statusBadge.status-quoted").count(), 1); assert.equal(await page.locator("#todayList .statusBadge.status-confirmed").count(), 1);
+    await page.screenshot({ path: "/tmp/mbw-today-mobile-qa.png", fullPage: true });
     await page.locator('#bottomNav [data-route="actions"]').click();
     await card.click();
     await page.locator(".detailLoading").waitFor({ state: "visible" });

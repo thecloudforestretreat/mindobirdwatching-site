@@ -9,13 +9,13 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/app/mbw-app-gold-transparent-180.png?v=transparent-20261020">
   <link rel="manifest" href="/site.webmanifest?v=transparent-20261020">
-  <link rel="stylesheet" href="/app/app.css?v=services-20261020-v4">
+  <link rel="stylesheet" href="/app/app.css?v=services-20261020-v5">
 </head>
 <body>
   <div class="appShell">
     <header class="appHeader">
       <a class="brand" href="/app/" aria-label="MBW Action Desk home">
-        <img src="/apple-touch-icon.png" alt="">
+        <img src="/assets/images/app/mbw-header-logo-160.png?v=header-20261020" alt="">
         <span><strong>MBW</strong><small>Action Desk</small></span>
       </a>
       <div class="connection" id="connectionState" data-state="loading"><span></span><b>Connecting</b></div>
@@ -23,7 +23,11 @@
 
     <main id="appMain" tabindex="-1">
       <section class="stateCard" id="loadingState">
-        <div class="loadingScene" aria-hidden="true"><span class="loadingBird">🐦</span><span class="loadingCanopy"></span><div class="spinner"></div></div>
+        <div class="loadingScene" aria-hidden="true">
+          <span class="flightTrail flightTrail--one"></span><span class="flightTrail flightTrail--two"></span><span class="flightTrail flightTrail--three"></span>
+          <svg class="loadingBird" viewBox="0 0 120 72" role="presentation"><path class="birdWing birdWing--back" d="M54 37C35 14 17 17 7 30c18-4 31 2 43 15Z"/><path class="birdBody" d="M42 43c8-22 34-30 51-16 8 7 12 16 20 18-12 8-26 10-39 5-11 12-27 13-40 3Z"/><path class="birdWing birdWing--front" d="M59 38c2-26 19-36 35-35-7 9-9 22-4 36-11 7-21 8-31-1Z"/><path class="birdBeak" d="M105 31l15 6-15 6Z"/><circle class="birdEye" cx="99" cy="29" r="2.5"/></svg>
+          <span class="loadingHorizon"></span>
+        </div>
         <h1>Opening your Action Desk</h1>
         <p id="loadingMessage">Verifying your private staff access.</p>
         <div class="loadingSkeleton" aria-hidden="true"><i></i><i></i></div>
@@ -56,6 +60,7 @@
         <section class="view" id="guestsView" data-view="guests" hidden>
           <div class="viewHeading"><div><p class="eyebrow">Search and continue work</p><h1>Guests</h1></div></div>
           <form class="searchBar" id="guestSearchForm"><label class="srOnly" for="guestSearch">Search guests</label><input id="guestSearch" type="search" placeholder="Name, phone, email or inquiry ID" autocomplete="off"><button type="submit">Search</button></form>
+          <label class="guestFilter"><span>Showing</span><select id="guestStatusFilter"><option value="active">Active guests</option><option value="booked">Booked</option><option value="payment_pending">Payment pending</option><option value="quoted">Quoted</option><option value="completed">Completed</option><option value="did_not_book">Did not book</option><option value="archived">Archived</option><option value="all">All records</option></select></label>
           <div class="cardList" id="guestList"></div>
         </section>
 
@@ -96,6 +101,6 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-  <script type="module" src="/app/app.mjs?v=services-20261020-v4"></script>
+  <script type="module" src="/app/app.mjs?v=services-20261020-v5"></script>
 </body>
 </html>

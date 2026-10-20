@@ -17,8 +17,10 @@ test("the installable Action Desk uses the dedicated gold MBW home-screen icon",
     "/assets/images/app/mbw-app-gold-transparent-512.png",
   ]);
   assert.match(index, /apple-touch-icon[^>]+mbw-app-gold-transparent-180\.png/);
-  assert.match(index, /<img src="\/apple-touch-icon\.png" alt="">/);
-  assert.match(worker, /mbw-mobile-shell-v9/);
+  assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
+  assert.match(worker, /mbw-mobile-shell-v10/);
+  const headerIcon = path.join(root, "admin/assets/images/app/mbw-header-logo-160.png"), headerBytes = fs.readFileSync(headerIcon);
+  assert.equal(headerBytes.readUInt8(25), 6, "header logo should preserve transparent pixels");
   for (const file of ["mbw-app-gold-transparent-180.png", "mbw-app-gold-transparent-192.png", "mbw-app-gold-transparent-512.png"]) {
     const iconPath = path.join(root, "admin/assets/images/app", file), bytes = fs.readFileSync(iconPath);
     assert.ok(fs.statSync(iconPath).size > 10_000, `${file} should be a real icon asset`);
