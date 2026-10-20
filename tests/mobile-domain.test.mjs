@@ -43,6 +43,36 @@ test("completed booking evidence overrides stale new inquiry status", () => {
   assert.deepEqual(actionDesk([stale], [], [], [], [booking], now), []);
 });
 
+test("audit-only duplicate imports never create operational actions", () => {
+  const duplicate = normalizeInquiry({
+    inquiry_id: "INQ-DUPLICATE",
+    guest_id: "G-DUPLICATE",
+    full_name: "Legacy Guest",
+    status: "new",
+    requested_date: "2026-08-16",
+    updated_at: "2026-07-29 03:30:21",
+    internal_notes: "Imported from raw whatsapp_inquiries row 83.\nMarked duplicate on 2026-07-28. Kept for audit trail.",
+  });
+  const evidence = inquiryEvidence(duplicate, [], [], now);
+  assert.equal(evidence.status, "duplicate");
+  assert.equal(evidence.source, "internal_notes");
+  assert.deepEqual(actionDesk([duplicate], [], [], [], [], now), []);
+});
+
+test("ordinary notes mentioning duplicate do not close a live inquiry", () => {
+  const active = normalizeInquiry({
+    inquiry_id: "INQ-ACTIVE",
+    guest_id: "G-ACTIVE",
+    full_name: "Active Guest",
+    status: "new",
+    requested_date: "2026-12-01",
+    updated_at: "2026-10-19",
+    internal_notes: "Checked the duplicate-room request; this inquiry is still active.",
+  });
+  assert.equal(inquiryEvidence(active, [], [], now).status, "new");
+  assert.equal(actionDesk([active], [], [], [], [], now)[0].type, "first-response");
+});
+
 test("legacy guest-only evidence becomes one reconciliation task", () => {
   const legacy = normalizeInquiry({ inquiry_id: "INQ-3", guest_id: "G-3", full_name: "Legacy Guest", status: "new", requested_date: "2026-07-01", followup_date: "2026-07-02", updated_at: "2026-07-03" });
   const otherBooking = normalizeBooking({ booking_id: "BKG-3", inquiry_id: "INQ-OTHER", guest_id: "G-3", booking_status: "completed", tour_date_start: "2026-07-10" });

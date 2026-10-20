@@ -15,6 +15,10 @@ const amount = value => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+function isAuditDuplicate(record) {
+  return /(?:^|\n)\s*marked duplicate(?:\s+on\b|[.:])/im.test(record.internalNotes || "");
+}
+
 export function todayInEcuador(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit",
@@ -198,6 +202,7 @@ function strongestBookingStatus(bookings) {
 
 export function inquiryEvidence(record, bookings = [], payments = [], now = new Date()) {
   if (CLOSED.has(record.status)) return { status: record.status, source: "inquiry", needsReconciliation: false, bookings: [], payments: [] };
+  if (isAuditDuplicate(record)) return { status: "duplicate", source: "internal_notes", needsReconciliation: false, bookings: [], payments: [] };
   const matched = bookings.map(booking => ({ booking, match: bookingMatch(record, booking) }));
   const strongBookings = matched.filter(item => ["exact", "corroborated"].includes(item.match)).map(item => item.booking);
   const relatedPayments = payments.filter(payment => paymentMatches(record, payment, strongBookings));
