@@ -22,6 +22,25 @@ test("guest mutation uses server identity, optimistic concurrency, and verified 
   } finally { globalThis.fetch = savedFetch; }
 });
 
+test("status mutation persists and verifies the canonical CRM status", async () => {
+  const savedFetch = globalThis.fetch; let row = { inquiry_id: "INQ-STATUS", guest_id: "G-STATUS", full_name: "Status Guest", status: "new", updated_at: "s1" };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: [row] });
+      if (["list_interactions", "list_assignments", "list_bookings", "list_payments"].includes(body.action)) return Response.json({ ok: true, records: [] });
+      if (body.action === "update_inquiry") { row = { ...body.record, updated_at: "s2" }; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const response = await patchGuest({ request: request("/api/mobile/guests/INQ-STATUS", { expectedUpdatedAt: "s1", patch: { status: "completed" } }), env, params: { inquiryId: "INQ-STATUS" } });
+    const result = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(result.verified, true);
+    assert.equal(result.record.status, "completed");
+    assert.match(row.internal_notes, /fields: status/);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
 test("stale guest mutation returns 409 without writing", async () => {
   const savedFetch = globalThis.fetch; let writes = 0;
   try {

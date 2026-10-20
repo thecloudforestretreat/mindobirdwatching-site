@@ -23,6 +23,6 @@ export async function loadMobileData(env) {
     inquiries: enrichedInquiries, interactions, assignments, payments,
     providers: providerRows, bookings,
     actions: actionDesk(inquiries, interactions, assignments, payments, bookings),
-    today: todaySchedule(inquiries, assignments),
+    today: todaySchedule(inquiries, assignments, bookings, payments),
   };
 }

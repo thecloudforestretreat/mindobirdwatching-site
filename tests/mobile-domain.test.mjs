@@ -22,10 +22,22 @@ test("action desk derives operational risks and never invents confirmation readi
 });
 
 test("today schedule reports confirmed assignments and exposes no risk", () => {
-  const records = todaySchedule([inquiry], [assignment], now);
+  const records = todaySchedule([inquiry], [assignment], [], [], now);
   assert.equal(records.length, 1);
   assert.equal(records[0].startTime, "06:00");
   assert.equal(records[0].risk, "");
+});
+
+test("today schedule excludes tours whose parent inquiry is closed", () => {
+  const closed = normalizeInquiry({
+    inquiry_id: "INQ-CLOSED-TODAY",
+    guest_id: "G-CLOSED-TODAY",
+    full_name: "Closed Guest",
+    status: "did_not_book",
+    requested_date: "2026-10-19",
+    tour_items_json: JSON.stringify([{ id: "TOUR-PLANNING", tour: "Half-Day Birdwatching", date: "2026-10-19", status: "planning" }]),
+  });
+  assert.deepEqual(todaySchedule([closed], [], [], [], now), []);
 });
 
 test("same-day operational risk overrides lower-stage follow-up and payment work", () => {
@@ -57,6 +69,7 @@ test("audit-only duplicate imports never create operational actions", () => {
   assert.equal(evidence.status, "duplicate");
   assert.equal(evidence.source, "internal_notes");
   assert.deepEqual(actionDesk([duplicate], [], [], [], [], now), []);
+  assert.equal(guestJourney(duplicate, [], [], [], [], now).some(step => step.state === "attention"), false);
 });
 
 test("ordinary notes mentioning duplicate do not close a live inquiry", () => {

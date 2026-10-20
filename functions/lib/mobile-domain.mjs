@@ -1,4 +1,5 @@
 const CLOSED = new Set(["completed", "cancelled", "did_not_book", "duplicate", "archived"]);
+const INACTIVE = new Set(["cancelled", "did_not_book", "duplicate", "archived"]);
 const BOOKED = new Set(["deposit_pending", "deposit_paid", "payment_pending", "booked", "completed"]);
 const BOOKING_PROGRESS = new Set(["deposit_pending", "deposit_paid", "booked", "completed", "cancelled"]);
 const PREBOOKING = new Set(["new", "contacted", "planning", "qualified", "quoted", "follow_up"]);
@@ -242,6 +243,12 @@ function confirmationSent(record, interactions) {
 export function guestJourney(record, interactions, assignments, payments, bookings = [], now = new Date()) {
   const evidence = inquiryEvidence(record, bookings, payments, now);
   const effectiveStatus = evidence.status;
+  if (INACTIVE.has(effectiveStatus)) {
+    const closedEvidence = effectiveStatus === "duplicate" ? "Audit-only duplicate" : effectiveStatus === "did_not_book" ? "Closed without booking" : effectiveStatus === "cancelled" ? "Booking cancelled" : "Inquiry archived";
+    return ["Contact", "Planning", "Booking", "Payment", "Confirmation", "Tour"].map(label => ({
+      id: label.toLowerCase(), label, state: "muted", evidence: closedEvidence,
+    }));
+  }
   const relatedInteractions = interactions.filter(item => item.inquiryId === record.inquiryId || (!item.inquiryId && item.guestId === record.guestId));
   const relatedAssignments = assignments.filter(item => item.inquiryId === record.inquiryId);
   const relatedPayments = payments.filter(item => paymentMatches(record, item, evidence.bookings));
@@ -312,10 +319,11 @@ export function actionDesk(inquiries, interactions, assignments, payments, booki
   return actions.sort((a, b) => a.priority - b.priority || String(a.due).localeCompare(String(b.due)) || a.guest.localeCompare(b.guest));
 }
 
-export function todaySchedule(inquiries, assignments, now = new Date()) {
+export function todaySchedule(inquiries, assignments, bookings = [], payments = [], now = new Date()) {
   const today = todayInEcuador(now);
   const records = [];
   for (const inquiry of inquiries) {
+    if (CLOSED.has(inquiryEvidence(inquiry, bookings, payments, now).status)) continue;
     for (const tour of inquiry.tours.filter(item => item.date === today && !CLOSED.has(item.status))) {
       const related = assignments.filter(item => item.inquiryId === inquiry.inquiryId && item.serviceDate === today);
       records.push({
