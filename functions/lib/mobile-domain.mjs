@@ -1,6 +1,6 @@
 import { country } from "./maps.mjs";
 
-export const MOBILE_DOMAIN_VERSION = "2026-10-20-operations-v2";
+export const MOBILE_DOMAIN_VERSION = "2026-10-20-services-v3";
 
 const CLOSED = new Set(["completed", "cancelled", "did_not_book", "duplicate", "archived"]);
 const INACTIVE = new Set(["cancelled", "did_not_book", "duplicate", "archived"]);
@@ -389,6 +389,16 @@ function serviceAssignments(inquiry, tour, assignments) {
   return dated.length === 1 ? dated : [];
 }
 
+function assignmentItineraryMatch(inquiry, assignment) {
+  const assignmentCode = productCode(assignment.product);
+  const assignmentKeys = new Set([key(assignment.serviceType), key(assignment.product)].filter(Boolean));
+  return (inquiry.tours || []).find(tour => {
+    const tourCode = productCode(tour.product || tour.tour);
+    if (assignmentCode && tourCode && assignmentCode === tourCode) return true;
+    return [key(tour.serviceType), key(tour.tour), key(tour.product)].filter(Boolean).some(value => assignmentKeys.has(value));
+  });
+}
+
 export function operationsSchedule(inquiries, assignments, bookings = [], payments = [], now = new Date(), days = 7) {
   const today = todayInEcuador(now), end = addDays(today, Math.max(0, Math.min(Number(days) || 0, 31)));
   const records = [], inquiryById = new Map(inquiries.map(inquiry => [inquiry.inquiryId, inquiry]));
@@ -403,6 +413,7 @@ export function operationsSchedule(inquiries, assignments, bookings = [], paymen
         phone: inquiry.phone, tour: tour.tour, product: tour.product, date: tour.date, status: tour.status || effective,
         startTime: tour.startTime || related[0]?.startTime || "",
         pickup: tour.pickup || inquiry.pickup, assignments: related,
+        source: "itinerary",
         risk: completed ? "" : !related.length ? "No assignment" : related.some(item => !item.providerInformed || item.status === "pending") ? "Provider confirmation incomplete" : "",
       });
     }
@@ -423,12 +434,17 @@ export function operationsSchedule(inquiries, assignments, bookings = [], paymen
   for (const group of assignmentServices.values()) {
     const first = group.assignments[0], completed = group.assignments.every(item => item.status === "completed");
     const pending = group.assignments.some(item => item.status === "pending" || !item.providerInformed);
+    const itinerary = assignmentItineraryMatch(group.inquiry, first);
+    const dateConflict = itinerary?.date && itinerary.date !== first.serviceDate
+      ? `Assignment date conflicts with itinerary (${itinerary.date})`
+      : "";
     records.push({
       id: `assignment-${first.assignmentId}`, inquiryId: group.inquiry.inquiryId, guest: group.inquiry.name,
       partySize: group.inquiry.partySize, phone: group.inquiry.phone, tour: first.serviceType || first.product || first.providerRole || "Assigned service",
       product: first.product, date: first.serviceDate, status: completed ? "completed" : pending ? "pending" : "confirmed",
       startTime: first.startTime, pickup: first.pickup || group.inquiry.pickup, assignments: group.assignments,
-      risk: completed ? "" : pending ? "Provider confirmation incomplete" : "",
+      source: "assignment",
+      risk: completed ? "" : dateConflict || (pending ? "Provider confirmation incomplete" : ""),
     });
   }
   return records.sort((a, b) => a.date.localeCompare(b.date) || (a.startTime || "99:99").localeCompare(b.startTime || "99:99") || a.guest.localeCompare(b.guest));

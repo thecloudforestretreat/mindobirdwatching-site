@@ -6,7 +6,7 @@ import { extname, join, normalize } from "node:path";
 import { chromium } from "playwright";
 
 const root = join(process.cwd(), "admin");
-const record = {
+let record = {
   inquiryId: "I-MT-1", guestId: "G-MT-1", name: "Test Testerer", country: "United States", countryCode: "US", brand: "MT",
   phone: "+13055550123", email: "test@example.test", partySize: "2", status: "payment_pending", effectiveStatus: "payment_pending",
   paymentStatus: "payment_pending", requestedDate: "2026-10-22", requestedDateEnd: "2026-10-22", followupDate: "2026-10-21", updatedAt: "2026-10-20T14:00:00Z",
@@ -27,10 +27,16 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
   });
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   const port = server.address().port, browser = await chromium.launch({ headless: true, executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" }), context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" }), page = await context.newPage();
+  await context.route("https://mindobirdwatching.com/book-tour/create/**", route => route.fulfill({ contentType: "text/html", body: "<title>Mock Stripe invoice builder</title>" }));
   await page.route(`http://127.0.0.1:${port}/api/mobile/**`, async route => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/session")) return route.fulfill({ json: { ok: true, identity: { email: "owner@example.test", name: "Juan", role: "owner" }, capabilities: { write: true } } });
     if (path.endsWith("/bootstrap")) return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: [], providers: [{ name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }], recentGuests: [record], inquiries: [record], bookings: [] } });
+    if (path.endsWith(`/guests/${record.inquiryId}/services`) && route.request().method() === "POST") {
+      const payload = route.request().postDataJSON(), service = { id: "T-2", tour: payload.service.tour, product: payload.service.product_selected, serviceType: payload.service.service_type, date: payload.service.date, guests: payload.service.guests, status: payload.service.status, pickup: payload.service.pickup_location };
+      record = { ...record, tours: [...record.tours, service], updatedAt: "2026-10-20T15:02:00Z" };
+      return route.fulfill({ json: { ok: true, verified: true, record, service } });
+    }
     if (path.endsWith(`/guests/${record.inquiryId}`)) {
       await new Promise(resolve => setTimeout(resolve, 600));
       return route.fulfill({ json: { ok: true, record, journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
@@ -49,6 +55,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.match(await page.locator(".detailHero").innerText(), /United States/);
     await page.getByText("Next action").waitFor({ state: "visible" });
     assert.equal(await page.getByText("Services", { exact: true }).isVisible(), true);
+    assert.equal(await page.getByText("Add another tour, activity, or transfer", { exact: true }).isVisible(), true);
     assert.equal(await page.getByText("Add guide, driver, or provider", { exact: true }).isVisible(), true);
     assert.equal(await page.locator(".dialogNav").isVisible(), true);
     for (const label of ["Compose email", "Create Stripe invoice", "Create Zelle invoice", "Create confirmation"]) assert.equal(await page.getByText(label, { exact: true }).isVisible(), true);
@@ -56,6 +63,26 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.ok(sectionBox && dateBox && dateBox.x >= sectionBox.x && dateBox.x + dateBox.width <= sectionBox.x + sectionBox.width + 1);
     const stripe = await page.getByText("Create Stripe invoice", { exact: true }).getAttribute("href");
     assert.match(stripe, /inquiry_id=I-MT-1/); assert.match(stripe, /guest=Test\+Testerer/);
+    await page.getByText("Add guide, driver, or provider", { exact: true }).click();
+    const startBox = await page.locator('input[name="start_time"]').boundingBox(), endBox = await page.locator('input[name="end_time"]').boundingBox();
+    assert.ok(startBox && endBox && endBox.x - (startBox.x + startBox.width) >= 8, "Start and end time inputs need a visible gap");
+    await page.getByText("Add another tour, activity, or transfer", { exact: true }).click();
+    await page.locator('#serviceCreateForm input[name="tour"]').fill("Night Walk");
+    await page.locator('#serviceCreateForm input[name="product_selected"]').fill("MBW016 - Night Walk");
+    await page.locator('#serviceCreateForm input[name="date"]').fill("2026-10-23");
+    await page.locator('#serviceCreateForm select[name="service_type"]').selectOption("Activity");
+    const popupPromise = context.waitForEvent("page");
+    await page.locator('#serviceCreateForm button[data-intent="invoice"]').click();
+    const invoicePage = await popupPromise;
+    await page.getByText("Service added and verified.", { exact: true }).waitFor({ state: "visible" });
+    await page.locator(".serviceRecord").nth(1).waitFor({ state: "visible" });
+    assert.equal(await page.locator(".serviceRecord").count(), 2);
+    await invoicePage.waitForURL(/mindobirdwatching\.com\/book-tour\/create/);
+    const invoiceParams = new URL(invoicePage.url()).searchParams, invoiceTours = JSON.parse(invoiceParams.get("tour_items_json"));
+    assert.equal(invoiceTours.length, 1); assert.equal(invoiceTours[0].tour, "Night Walk"); assert.equal(invoiceParams.get("tour_date"), "2026-10-23");
+    await page.locator("#closeGuest").click();
+    assert.equal(await page.locator("#moreStatusFilter option").count(), 9);
+    assert.equal(await page.locator("#moreStatusFilter").isVisible(), true);
     await page.screenshot({ path: "/tmp/mbw-mobile-pipeline-qa.png", fullPage: true });
     await page.goto(`http://127.0.0.1:${port}/guest-crm/?mobile=1`, { waitUntil: "domcontentloaded" });
     const crmWidth = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));

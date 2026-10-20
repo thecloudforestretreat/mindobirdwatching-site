@@ -12,6 +12,13 @@ test("date filters include active quoted and booked records across service range
   assert.deepEqual(filterRecords([record, booked], [], { status: "booked" }).map(item => item.inquiryId), ["I-2"]);
 });
 
+test("verified itinerary dates override a conflicting invoice booking date", () => {
+  const staleInvoiceBooking = [{ inquiryId: "I-1", startDate: "2026-09-21", endDate: "2026-09-21", archived: false }];
+  assert.deepEqual(recordDates(record, staleInvoiceBooking), ["2026-10-21", "2026-10-22", "2026-10-23"]);
+  const bookingOnly = { inquiryId: "I-4", status: "booked", effectiveStatus: "booked", tours: [] };
+  assert.deepEqual(recordDates(bookingOnly, [{ inquiryId: "I-4", startDate: "2026-10-24", endDate: "2026-10-25", archived: false }]), ["2026-10-24", "2026-10-25"]);
+});
+
 test("priority moderates an overdue follow-up when the tour is distant", () => {
   const distant = { ...record, requestedDate: "2027-07-04", requestedDateEnd: "2027-07-04", tours: [{ tour: "Birding", date: "2027-07-04" }] };
   assert.equal(priorityFor(distant, [], "2026-10-20").band, "nurture");

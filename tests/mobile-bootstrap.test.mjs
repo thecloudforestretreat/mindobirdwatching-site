@@ -25,7 +25,7 @@ test("bootstrap returns the complete sanitized desk dataset for filters and cale
     const response = await onRequestGet({ request: new Request("http://localhost/api/mobile/bootstrap"), env });
     const body = await response.json();
     assert.equal(response.status, 200);
-    assert.equal(body.dataVersion, "2026-10-20-operations-v2");
+    assert.equal(body.dataVersion, "2026-10-20-services-v3");
     assert.equal(body.inquiries.length, 2);
     assert.deepEqual(body.inquiries.map(item => item.effectiveStatus), ["booked", "quoted"]);
     assert.equal(body.inquiries[0].email, undefined);

@@ -94,6 +94,8 @@ test("assignment dates recover operational services when stored itinerary dates 
   const today = todaySchedule([staleItinerary], recovered, [], [], new Date("2026-10-20T16:00:00Z"));
   const upcoming = operationsSchedule([staleItinerary], recovered, [], [], new Date("2026-10-20T16:00:00Z"), 7);
   assert.deepEqual(today.map(item => item.assignments[0].serviceType), ["Birdwatching", "Night Walk"]);
+  assert.equal(today.find(item => item.tour === "Night Walk").source, "assignment");
+  assert.match(today.find(item => item.tour === "Night Walk").risk, /conflicts with itinerary/);
   assert.equal(upcoming.find(item => item.tour === "Transportation").risk, "Provider confirmation incomplete");
   assert.equal(upcoming.length, 3);
 });

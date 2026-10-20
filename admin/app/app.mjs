@@ -1,6 +1,6 @@
 import { api } from "./modules/api.mjs";
 import { loadSnapshot, saveSnapshot, clearSnapshot } from "./modules/cache.mjs";
-import { STATUS_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs";
+import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -51,18 +51,20 @@ function deskCard(record, action = null) {
   const bookings = relatedBookings(record), today = todayIso(), status = record.effectiveStatus || record.status;
   const priority = priorityFor(record, bookings, today, action), followup = followupUrgency(today, record.followupDate), services = serviceSummary(record, bookings);
   const dates = recordDates(record, bookings), first = dates[0] || priority.tourDate, last = dates.at(-1) || first;
+  const bookingConflict = dates.length && bookings.find(item => item.startDate && !dates.includes(item.startDate));
   const tourDate = first ? (last && last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
   const count = services.count ? `${services.count} service${services.count === 1 ? "" : "s"}` : "Service pending";
   return `<button class="actionCard ${statusClass(status)}" data-guest="${esc(record.inquiryId)}" data-task="${esc(action?.type || "")}" type="button">
     <div class="cardTop"><strong>${identityMarkup(record, action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.band)}</span></div>
     <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} ${Number(record.partySize) === 1 ? "guest" : "guests"} · ${esc(count)}</span></div>
     <div class="cardFacts"><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>Follow-up</b> ${esc(followup.label)}</span></div>
-    ${action?.reason ? `<div class="actionReason">${esc(action.reason)} · ${esc(record.assignedTo || action.owner || "Unassigned")}</div>` : ""}
+    ${bookingConflict ? `<div class="actionReason actionReason--warn">Booking ledger says ${esc(shortDate(bookingConflict.startDate))}; itinerary says ${esc(shortDate(first))}. Review before invoicing.</div>` : action?.reason ? `<div class="actionReason">${esc(action.reason)} · ${esc(record.assignedTo || action.owner || "Unassigned")}</div>` : ""}
   </button>`;
 }
 
 function renderStatusFilters() {
-  $("#statusFilters").innerHTML = STATUS_FILTERS.map(value => `<button type="button" data-status-filter="${value}" class="${state.statusFilter === value ? "active" : ""}">${esc(value === "all" ? "All active" : pretty(value))}</button>`).join("");
+  const moreSelected = STATUS_MORE_FILTERS.includes(state.statusFilter);
+  $("#statusFilters").innerHTML = `${STATUS_FILTERS.map(value => `<button type="button" data-status-filter="${value}" class="${state.statusFilter === value ? "active" : ""}">${esc(value === "all" ? "All active" : value === "payment_pending" ? "Payment" : pretty(value))}</button>`).join("")}<label class="statusMore ${moreSelected ? "active" : ""}"><span class="srOnly">More statuses</span><select id="moreStatusFilter"><option value="">More</option>${STATUS_MORE_FILTERS.map(value => `<option value="${value}" ${state.statusFilter === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select></label>`;
 }
 
 function renderCalendar() {
@@ -105,7 +107,7 @@ function guestCard(item) {
 function renderGuests(records = state.data?.recentGuests || []) { $("#guestList").innerHTML = records.length ? records.map(guestCard).join("") : empty("No matching guests were found."); }
 function renderToday() {
   const today = todayIso(), records = state.data?.upcoming || state.data?.today || [], todayRecords = records.filter(item => item.date === today), later = records.filter(item => item.date > today);
-  const cards = rows => rows.map(item => `<button class="todayCard" data-guest="${esc(item.inquiryId)}" data-task="operations" type="button"><div class="cardTop"><strong>${esc(item.startTime ? time(item.startTime) : "Time pending")} · ${esc(item.guest)}</strong>${item.status === "completed" ? `<span class="badge">Completed</span>` : item.risk ? `<span class="badge badge--urgent">Attention</span>` : `<span class="badge">Ready</span>`}</div><p>${esc(item.tour || "Tour")} · ${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"}</p><div class="todayMeta"><span>${esc(item.pickup || "Pickup not set")}</span><span>${esc(pretty(item.status))}</span></div>${item.risk ? `<p><strong>${esc(item.risk)}</strong></p>` : ""}</button>`).join("");
+  const cards = rows => rows.map(item => `<button class="todayCard" data-guest="${esc(item.inquiryId)}" data-task="operations" type="button"><div class="cardTop"><strong>${esc(item.startTime ? time(item.startTime) : "Time pending")} · ${esc(item.guest)}</strong>${item.status === "completed" ? `<span class="badge">Completed</span>` : item.risk ? `<span class="badge badge--urgent">Attention</span>` : `<span class="badge">Ready</span>`}</div><p>${esc(item.tour || "Tour")} · ${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"}</p><div class="todayMeta"><span>${esc(item.pickup || "Pickup not set")}</span><span>${item.source === "assignment" ? "Assignment schedule" : "Itinerary"} · ${esc(pretty(item.status))}</span></div>${item.risk ? `<p><strong>${esc(item.risk)}</strong></p>` : ""}</button>`).join("");
   $("#todayList").innerHTML = `<section class="scheduleGroup"><h2>Today <span>${todayRecords.length} service${todayRecords.length === 1 ? "" : "s"}</span></h2>${todayRecords.length ? cards(todayRecords) : empty("No services are recorded for today in Ecuador.")}</section><section class="scheduleGroup"><h2>Next 7 days <span>${later.length} service${later.length === 1 ? "" : "s"}</span></h2>${later.length ? cards(later) : empty("No additional services are recorded for the next seven days.")}</section>`;
 }
 
@@ -129,6 +131,9 @@ function route(name) {
 
 function journeyMarkup(journey) { return `<div class="journey">${journey.map(item => `<div class="journeyStep" data-state="${esc(item.state)}"><i></i><div><strong>${esc(item.label)}</strong><small>${esc(item.evidence)}</small></div></div>`).join("")}</div>`; }
 function serviceMarkup(guest) { return `<div class="serviceRecords">${(guest.tours || []).map(item => `<article class="serviceRecord ${statusClass(item.status)}"><div><strong>${esc(item.tour || item.product || "Service")}</strong><small>${esc(date(item.date))} · ${esc(item.guests || guest.partySize || "?")} ${Number(item.guests || guest.partySize) === 1 ? "guest" : "guests"}</small></div><span class="statusBadge ${statusClass(item.status)}">${esc(pretty(item.status || guest.effectiveStatus || guest.status))}</span></article>`).join("") || `<div class="recordItem"><p>No itinerary services recorded.</p></div>`}</div>`; }
+function serviceCreateMarkup(guest, canWrite) {
+  return `<details class="serviceCreate"><summary>Add another tour, activity, or transfer</summary><form id="serviceCreateForm"><label class="field"><span>Service type</span><select name="service_type" ${canWrite ? "" : "disabled"}>${["Birdwatching","Activity","Transportation","Accommodation","Other"].map(value => `<option value="${value}">${value}</option>`).join("")}</select></label><label class="field"><span>Tour or activity</span><input name="tour" maxlength="300" required placeholder="Night Walk, birding day, airport transfer…" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Product code / service</span><input name="product_selected" maxlength="240" placeholder="Optional, for example MBW016 - Night Walk" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Date</span><input type="date" name="date" required ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guests</span><input type="number" name="guests" min="1" max="99" value="${esc(guest.partySize || "1")}" required ${canWrite ? "" : "disabled"}></label><label class="field"><span>Status</span><select name="status" ${canWrite ? "" : "disabled"}>${["planning","quoted","deposit_pending","deposit_paid","payment_pending","booked"].map(value => `<option value="${value}">${esc(pretty(value))}</option>`).join("")}</select></label><label class="field"><span>Price per person (optional)</span><input type="number" name="price_per_person" min="0" step="0.01" inputmode="decimal" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Pickup (optional)</span><input name="pickup_location" maxlength="500" value="${esc(guest.pickup || "")}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Notes (optional)</span><textarea name="notes" maxlength="1000" ${canWrite ? "" : "disabled"}></textarea></label><div class="serviceCreateActions"><button type="submit" data-intent="save" ${canWrite ? "" : "disabled"}>Save service</button><button type="submit" data-intent="invoice" class="secondaryAction" ${canWrite ? "" : "disabled"}>Save & open Stripe</button></div></form></details>`;
+}
 function paymentMarkup(records) { return records.length ? records.map(item => `<div class="recordItem"><strong>${esc(item.invoiceNo || "Payment")}</strong><p>${esc(pretty(item.status))} · ${esc(money(item.totalPaid, item.currency))} paid</p><small>${item.balance ? `${esc(money(item.balance, item.currency))} balance` : "No recorded balance"}</small></div>`).join("") : `<div class="recordItem"><p>No payment ledger entries.</p></div>`; }
 function assignmentMarkup(records, canWrite) { return records.length ? records.map(item => `<form class="recordItem assignmentForm" data-assignment="${esc(item.assignmentId)}" data-updated="${esc(item.updatedAt)}"><strong>${esc(item.providerName || pretty(item.providerRole))}</strong><p>${esc(item.serviceType || item.product || "Assignment")} · ${esc(date(item.serviceDate))}</p><label class="field"><span>Status</span><select name="assignment_status" ${canWrite ? "" : "disabled"}>${["pending","confirmed","completed","cancelled"].map(value => `<option value="${value}" ${item.status === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select></label><label class="field"><span>Provider informed</span><select name="provider_informed" ${canWrite ? "" : "disabled"}><option value="No" ${item.providerInformed ? "" : "selected"}>No</option><option value="Yes" ${item.providerInformed ? "selected" : ""}>Yes</option></select></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save assignment</button></div></form>`).join("") : `<div class="recordItem"><p>No provider assignments.</p></div>`; }
 function assignmentCreateMarkup(guest, canWrite) {
@@ -148,7 +153,7 @@ async function openGuest(id, task = "") {
     $("#guestDialogTitle").textContent = guest.name || "Guest";
     const whatsapp = phoneDigits(guest.phone);
     body.innerHTML = `<section class="detailHero"><h2>${identityMarkup(guest)}</h2><p class="countryLabel">${esc(guest.country || "Country not recorded")}</p><p>${esc(guest.email || "Email not recorded")}</p><p>${esc(guest.phone || "Phone not recorded")}</p><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="${esc(toolUrl("/custom-email-generator/", guest))}" target="_blank" rel="noopener noreferrer">Email draft</a>` : ""}</div></section>
-      <section class="detailSection"><div class="detailTitle"><h3>Services</h3><span class="badge">${guest.tours?.length || 0}</span></div>${serviceMarkup(guest)}</section>
+      <section class="detailSection"><div class="detailTitle"><h3>Services</h3><span class="badge">${guest.tours?.length || 0}</span></div>${serviceMarkup(guest)}${serviceCreateMarkup(guest, canWrite)}</section>
       <section class="detailSection"><div class="detailTitle"><h3>Guest Journey</h3><span class="badge">${esc(pretty(guest.effectiveStatus || guest.status))}</span></div>${guest.needsReconciliation ? `<p class="formNote formNote--warn">Legacy booking or payment records need reconciliation before this inquiry is treated as current.</p>` : ""}${journeyMarkup(result.journey)}</section>
       ${pipelineActionsMarkup(guest)}
       <section class="detailSection" data-section="status"><h3>Inquiry status</h3><form id="statusForm"><label class="field"><span>Saved CRM status</span><select name="status" ${canWrite ? "" : "disabled"}>${STATUS_OPTIONS.map(value => `<option value="${value}" ${selectedStatus === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save status</button></div>${guest.status !== selectedStatus ? `<p class="formNote">The operational status is derived as ${esc(pretty(selectedStatus))}. Saving makes that status canonical in the CRM.</p>` : ""}${canWrite ? "" : `<p class="formNote formNote--warn">Changes are disabled until the production write configuration is complete.</p>`}</form></section>
@@ -157,7 +162,7 @@ async function openGuest(id, task = "") {
       <section class="detailSection" data-section="confirmation"><h3>Confirmation</h3><p>Open the existing generator with this guest and tour information, then verify the details before sending.</p><div class="toolLinks"><a href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Open confirmation generator</a></div></section>
       <section class="detailSection" data-section="operations"><h3>Operations</h3>${assignmentCreateMarkup(guest, canWrite)}<div class="recordList">${assignmentMarkup(result.data.assignments, canWrite)}</div></section>
       <section class="detailSection" data-section="communication"><h3>Communication</h3><form id="interactionForm"><label class="field"><span>Channel</span><select name="channel" ${canWrite ? "" : "disabled"}><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="in_person">In person</option><option value="other">Other</option></select></label><label class="field"><span>Direction</span><select name="direction" ${canWrite ? "" : "disabled"}><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option><option value="internal">Internal note</option></select></label><label class="field"><span>Note</span><textarea name="note" maxlength="4000" required ${canWrite ? "" : "disabled"}></textarea></label><label class="field"><span>Follow-up date (optional)</span><input type="date" name="followupAt" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Log communication</button></div></form><div class="recordList">${interactionMarkup(result.data.interactions)}</div></section>`;
-    $("#statusForm")?.addEventListener("submit", saveStatus); $("#followupForm")?.addEventListener("submit", saveFollowup); $("#interactionForm")?.addEventListener("submit", saveInteraction); $("#assignmentCreateForm")?.addEventListener("submit", createAssignment); $("#assignmentCreateForm select[name=service_index]")?.addEventListener("change", syncAssignmentService); body.querySelectorAll(".assignmentForm").forEach(form => form.addEventListener("submit", saveAssignment));
+    $("#statusForm")?.addEventListener("submit", saveStatus); $("#followupForm")?.addEventListener("submit", saveFollowup); $("#interactionForm")?.addEventListener("submit", saveInteraction); $("#serviceCreateForm")?.addEventListener("submit", createService); $("#assignmentCreateForm")?.addEventListener("submit", createAssignment); $("#assignmentCreateForm select[name=service_index]")?.addEventListener("change", syncAssignmentService); body.querySelectorAll(".assignmentForm").forEach(form => form.addEventListener("submit", saveAssignment));
     if (task) setTimeout(() => body.querySelector(`[data-section="${CSS.escape(task === "interaction-follow-up" ? "communication" : task)}"]`)?.scrollIntoView({ behavior: "smooth" }), 80);
   } catch (error) { body.innerHTML = `<div class="emptyCard">${esc(error.message)}</div>`; }
 }
@@ -174,6 +179,24 @@ async function saveFollowup(event) {
 async function saveInteraction(event) {
   event.preventDefault(); const guest = state.guest.record, data = Object.fromEntries(new FormData(event.currentTarget)); const button = event.currentTarget.querySelector("button"); button.disabled = true;
   try { await api.addInteraction(guest.inquiryId, { ...data, type: data.direction === "internal" ? "internal_note" : data.direction === "incoming" ? "guest_message" : "staff_reply" }); toast("Communication logged."); await openGuest(guest.inquiryId, "communication"); await refresh(false); } catch (error) { toast(error.message); button.disabled = false; }
+}
+async function createService(event) {
+  event.preventDefault();
+  const form = event.currentTarget, guest = state.guest.record, data = Object.fromEntries(new FormData(form));
+  const intent = event.submitter?.dataset.intent || "save", buttons = [...form.querySelectorAll("button")];
+  const invoiceWindow = intent === "invoice" ? window.open("about:blank", "_blank") : null;
+  buttons.forEach(button => { button.disabled = true; });
+  try {
+    const result = await api.addService(guest.inquiryId, { expectedUpdatedAt: guest.updatedAt, service: data });
+    toast("Service added and verified.");
+    if (invoiceWindow) {
+      const invoiceGuest = { ...result.record, tours: [result.service], requestedDate: result.service.date, requestedDateEnd: result.service.date, partySize: result.service.guests || result.record.partySize };
+      invoiceWindow.location.href = toolUrl("https://mindobirdwatching.com/book-tour/create/", invoiceGuest);
+    }
+    await openGuest(guest.inquiryId); await refresh(false);
+  } catch (error) {
+    if (invoiceWindow) invoiceWindow.close(); toast(error.message); buttons.forEach(button => { button.disabled = false; });
+  }
 }
 async function saveAssignment(event) {
   event.preventDefault(); const form = event.currentTarget, data = Object.fromEntries(new FormData(form)), button = form.querySelector("button"); button.disabled = true;
@@ -228,6 +251,7 @@ $("#actionsView").addEventListener("click", event => {
   const day = event.target.closest("[data-calendar-date]");
   if (day) { state.selectedDate = day.dataset.calendarDate; renderActions(); }
 });
+$("#actionsView").addEventListener("change", event => { if (event.target.id === "moreStatusFilter" && event.target.value) { state.statusFilter = event.target.value; renderActions(); } });
 $("#previousWeek").addEventListener("click", () => { state.weekStart = addIsoDays(state.weekStart || todayIso(), -7); state.selectedDate = state.weekStart; renderActions(); });
 $("#nextWeek").addEventListener("click", () => { state.weekStart = addIsoDays(state.weekStart || todayIso(), 7); state.selectedDate = state.weekStart; renderActions(); });
 $("#guestSearchForm").addEventListener("submit", async event => { event.preventDefault(); const query = $("#guestSearch").value.trim(); if (query.length < 2) return toast("Enter at least two characters."); $("#guestList").innerHTML = empty("Searching…"); try { const result = await api.search(query); renderGuests(result.records); } catch (error) { $("#guestList").innerHTML = empty(error.message); } });

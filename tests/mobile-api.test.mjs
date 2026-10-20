@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { onRequestPatch as patchGuest } from "../functions/api/mobile/guests/[inquiryId].js";
 import { onRequestPatch as patchAssignment } from "../functions/api/mobile/assignments/[assignmentId].js";
 import { onRequestPost as createAssignment } from "../functions/api/mobile/assignments/index.js";
+import { onRequestPost as createService } from "../functions/api/mobile/guests/[inquiryId]/services.js";
 
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
@@ -67,5 +68,27 @@ test("mobile app creates and verifies a provider assignment", async () => {
     globalThis.fetch = async (_url, options) => { const body = payload(options); if (body.action === "create_assignment") { assignment = { ...body.assignment, assignment_id: "ASN-NEW", provider_name: "Test Guide", updated_at: "new1" }; return Response.json({ ok: true }); } if (body.action === "list_assignments") return Response.json({ ok: true, records: assignment ? [assignment] : [] }); throw new Error(`Unexpected ${body.action}`); };
     const response = await createAssignment({ request: postRequest("/api/mobile/assignments", { inquiryId: "INQ-1", guestId: "G-1", guestName: "Test Guest", guestPhone: "+15550000000", guestCount: "2", assignment: { service_date: "2026-10-21", start_time: "06:00", service_type: "Birdwatching", product_selected: "MBW004", provider_role: "guide", provider_name: "Test Guide", assignment_status: "confirmed", provider_informed: "Yes" } }), env });
     const result = await response.json(); assert.equal(response.status, 201); assert.equal(result.verified, true); assert.equal(result.record.providerName, "Test Guide"); assert.equal(assignment.created_by, "JPG");
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("mobile app appends and verifies an itinerary service without replacing existing tours", async () => {
+  const savedFetch = globalThis.fetch;
+  let row = { inquiry_id: "INQ-SERVICE", guest_id: "G-SERVICE", full_name: "Service Guest", status: "quoted", guest_count: "2", requested_date: "2026-11-01", updated_at: "svc1", tour_items_json: JSON.stringify([{ id: "primary", tour: "Birding", product_selected: "MBW004", service_type: "Birdwatching", date: "2026-11-01", guests: "2", status: "quoted" }]) };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: [row] });
+      if (body.action === "update_inquiry") { row = { ...body.record, updated_at: "svc2" }; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const response = await createService({ request: postRequest("/api/mobile/guests/INQ-SERVICE/services", { expectedUpdatedAt: "svc1", service: { service_type: "Activity", tour: "Night Walk", product_selected: "MBW016 - Night Walk", date: "2026-11-02", guests: "2", status: "quoted", price_per_person: "35", pickup_location: "Mindo hotel", notes: "Added by guest" } }), env, params: { inquiryId: "INQ-SERVICE" } });
+    const result = await response.json(), items = JSON.parse(row.tour_items_json);
+    assert.equal(response.status, 200);
+    assert.equal(result.verified, true);
+    assert.equal(items.length, 2);
+    assert.equal(items[0].id, "primary");
+    assert.equal(items[1].tour, "Night Walk");
+    assert.equal(items[1].price_per_person, "35");
+    assert.match(row.internal_notes, /Mobile service added by JPG/);
   } finally { globalThis.fetch = savedFetch; }
 });

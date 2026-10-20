@@ -1,7 +1,8 @@
 const CLOSED = new Set(["completed", "cancelled", "canceled", "did_not_book", "duplicate", "archived"]);
 const DAY = 86400000;
 
-export const STATUS_FILTERS = ["all", "booked", "payment_pending", "quoted"];
+export const STATUS_FILTERS = ["all", "booked", "payment_pending"];
+export const STATUS_MORE_FILTERS = ["quoted", "new", "contacted", "planning", "qualified", "follow_up", "deposit_pending", "deposit_paid"];
 
 export function isoDate(value) {
   const match = String(value || "").match(/^\d{4}-\d{2}-\d{2}/);
@@ -33,6 +34,10 @@ export function recordDates(record, bookings = []) {
   const dates = new Set();
   for (const value of expandRange(record.requestedDate, record.requestedDateEnd)) dates.add(value);
   for (const tour of record.tours || []) if (isoDate(tour.date)) dates.add(isoDate(tour.date));
+  // The itinerary is the operational source of truth. Booking rows can be
+  // created by an invoice and occasionally retain an older quoted date. Only
+  // use a booking date when the inquiry has no itinerary date of its own.
+  if (dates.size) return [...dates].sort();
   for (const booking of bookings) {
     if (booking.inquiryId !== record.inquiryId || booking.archived) continue;
     for (const value of expandRange(booking.startDate, booking.endDate)) dates.add(value);
