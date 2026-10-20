@@ -10,7 +10,7 @@ test("the installable Action Desk uses the dedicated gold MBW home-screen icon",
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "admin/site.webmanifest"), "utf8"));
   const index = fs.readFileSync(path.join(root, "admin/app/index.html"), "utf8");
   const worker = fs.readFileSync(path.join(root, "admin/app/sw.js"), "utf8");
-  assert.equal(manifest.start_url, "/app/");
+  assert.equal(manifest.start_url, "/app/?installed=gold-v2");
   assert.equal(manifest.scope, "/app/");
   assert.deepEqual(manifest.icons.map(icon => icon.src), [
     "/assets/images/app/mbw-app-gold-transparent-192.png",
@@ -18,7 +18,7 @@ test("the installable Action Desk uses the dedicated gold MBW home-screen icon",
   ]);
   assert.match(index, /apple-touch-icon[^>]+mbw-app-gold-transparent-180\.png/);
   assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
-  assert.match(worker, /mbw-mobile-shell-v14/);
+  assert.match(worker, /mbw-mobile-shell-v15/);
   const headerIcon = path.join(root, "admin/assets/images/app/mbw-header-logo-160.png"), headerBytes = fs.readFileSync(headerIcon);
   assert.equal(headerBytes.readUInt8(25), 6, "header logo should preserve transparent pixels");
   for (const file of ["mbw-app-gold-transparent-180.png", "mbw-app-gold-transparent-192.png", "mbw-app-gold-transparent-512.png"]) {
