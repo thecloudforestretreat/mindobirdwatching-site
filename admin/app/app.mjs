@@ -35,7 +35,7 @@ function deskCard(record, action = null) {
   const count = services.count ? `${services.count} service${services.count === 1 ? "" : "s"}` : "Service pending";
   return `<button class="actionCard ${statusClass(status)}" data-guest="${esc(record.inquiryId)}" data-task="${esc(action?.type || "")}" type="button">
     <div class="cardTop"><strong>${esc(record.name || action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.band)}</span></div>
-    <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} guests · ${esc(count)}</span></div>
+    <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} ${Number(record.partySize) === 1 ? "guest" : "guests"} · ${esc(count)}</span></div>
     <div class="cardFacts"><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>Follow-up</b> ${esc(followup.label)}</span></div>
     ${action?.reason ? `<div class="actionReason">${esc(action.reason)} · ${esc(record.assignedTo || action.owner || "Unassigned")}</div>` : ""}
   </button>`;
