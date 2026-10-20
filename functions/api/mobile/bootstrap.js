@@ -1,5 +1,6 @@
 import { mobileIdentity } from "../../lib/mobile-auth.mjs";
 import { loadMobileData } from "../../lib/mobile-data.mjs";
+import { MOBILE_DOMAIN_VERSION } from "../../lib/mobile-domain.mjs";
 import { json, errorResponse, methodNotAllowed, writesEnabled } from "../../lib/mobile-http.mjs";
 
 export async function onRequestGet({ request, env }) {
@@ -14,6 +15,7 @@ export async function onRequestGet({ request, env }) {
     const inquiries = data.inquiries.map(({ internalNotes, notes, email, phone, ...guest }) => guest);
     return json(200, {
       ok: true,
+      dataVersion: MOBILE_DOMAIN_VERSION,
       identity: { name: identity.name, role: identity.role },
       writeEnabled: writesEnabled(env),
       checkedAt: new Date().toISOString(),

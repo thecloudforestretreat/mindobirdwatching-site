@@ -1,6 +1,6 @@
 import { mobileIdentity } from "../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../lib/mobile-crm.mjs";
-import { normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizePayment, normalizeBooking, enrichInquiry, guestJourney } from "../../../lib/mobile-domain.mjs";
+import { MOBILE_DOMAIN_VERSION, normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizePayment, normalizeBooking, enrichInquiry, guestJourney } from "../../../lib/mobile-domain.mjs";
 import { json, errorResponse, methodNotAllowed, assertSameOrigin, assertMobileWriteReady, readJson, validId } from "../../../lib/mobile-http.mjs";
 
 const STATUSES = new Set(["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"]);
@@ -34,6 +34,7 @@ export async function onRequestGet({ request, env, params }) {
     const data = await loadGuest(env, inquiryId);
     return json(200, {
       ok: true,
+      dataVersion: MOBILE_DOMAIN_VERSION,
       record: data.record,
       journey: data.journey,
       data: { interactions: data.interactions, assignments: data.assignments, bookings: data.bookings, payments: data.payments },

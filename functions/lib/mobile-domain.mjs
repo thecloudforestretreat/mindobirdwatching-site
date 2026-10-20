@@ -1,5 +1,7 @@
 import { country } from "./maps.mjs";
 
+export const MOBILE_DOMAIN_VERSION = "2026-10-20-operations-v2";
+
 const CLOSED = new Set(["completed", "cancelled", "did_not_book", "duplicate", "archived"]);
 const INACTIVE = new Set(["cancelled", "did_not_book", "duplicate", "archived"]);
 const BOOKED = new Set(["deposit_pending", "deposit_paid", "payment_pending", "booked", "completed"]);
