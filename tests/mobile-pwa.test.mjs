@@ -18,7 +18,7 @@ test("the installable Action Desk uses the dedicated gold MBW home-screen icon",
     "/assets/images/app/mbw-app-gold-512.png",
   ]);
   assert.match(index, /apple-touch-icon[^>]+mbw-app-gold-180\.png/);
-  assert.match(worker, /mbw-mobile-shell-v7/);
+  assert.match(worker, /mbw-mobile-shell-v8/);
   for (const file of ["mbw-app-gold-180.png", "mbw-app-gold-192.png", "mbw-app-gold-512.png"]) {
     assert.ok(fs.statSync(path.join(root, "admin/assets/images/app", file)).size > 10_000, `${file} should be a real icon asset`);
   }

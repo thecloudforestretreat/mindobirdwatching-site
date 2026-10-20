@@ -4,6 +4,7 @@ import { onRequestPatch as patchGuest } from "../functions/api/mobile/guests/[in
 import { onRequestPatch as patchAssignment } from "../functions/api/mobile/assignments/[assignmentId].js";
 import { onRequestPost as createAssignment } from "../functions/api/mobile/assignments/index.js";
 import { onRequestPost as createService } from "../functions/api/mobile/guests/[inquiryId]/services.js";
+import { onRequestPatch as patchService } from "../functions/api/mobile/guests/[inquiryId]/services/[serviceId].js";
 
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
@@ -90,5 +91,25 @@ test("mobile app appends and verifies an itinerary service without replacing exi
     assert.equal(items[1].tour, "Night Walk");
     assert.equal(items[1].price_per_person, "35");
     assert.match(row.internal_notes, /Mobile service added by JPG/);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("mobile app updates one itinerary service status without changing the other services", async () => {
+  const savedFetch = globalThis.fetch;
+  let row = { inquiry_id: "INQ-MULTI", guest_id: "G-MULTI", full_name: "Multi Service Guest", status: "booked", updated_at: "multi1", tour_items_json: JSON.stringify([{ id: "T-PAST", tour: "Birding", date: "2026-10-20", status: "booked" }, { id: "T-FUTURE", tour: "Night Walk", date: "2026-10-21", status: "booked" }]) };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: [row] });
+      if (body.action === "update_inquiry") { row = { ...body.record, updated_at: "multi2" }; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const response = await patchService({ request: request("/api/mobile/guests/INQ-MULTI/services/T-PAST", { expectedUpdatedAt: "multi1", status: "completed" }), env, params: { inquiryId: "INQ-MULTI", serviceId: "T-PAST" } });
+    const result = await response.json(), items = JSON.parse(row.tour_items_json);
+    assert.equal(response.status, 200);
+    assert.equal(result.verified, true);
+    assert.equal(items[0].status, "completed");
+    assert.equal(items[1].status, "booked");
+    assert.match(row.internal_notes, /Mobile service status by JPG/);
   } finally { globalThis.fetch = savedFetch; }
 });

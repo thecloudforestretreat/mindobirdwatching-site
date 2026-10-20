@@ -37,6 +37,11 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
       record = { ...record, tours: [...record.tours, service], updatedAt: "2026-10-20T15:02:00Z" };
       return route.fulfill({ json: { ok: true, verified: true, record, service } });
     }
+    if (path.endsWith(`/guests/${record.inquiryId}/services/T-1`) && route.request().method() === "PATCH") {
+      const payload = route.request().postDataJSON();
+      record = { ...record, tours: record.tours.map(item => item.id === "T-1" ? { ...item, status: payload.status } : item), updatedAt: "2026-10-20T15:01:00Z" };
+      return route.fulfill({ json: { ok: true, verified: true, record, service: record.tours[0] } });
+    }
     if (path.endsWith(`/guests/${record.inquiryId}`)) {
       await new Promise(resolve => setTimeout(resolve, 600));
       return route.fulfill({ json: { ok: true, record, journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
@@ -58,6 +63,10 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.equal(await page.getByText("Add another tour, activity, or transfer", { exact: true }).isVisible(), true);
     assert.equal(await page.getByText("Add guide, driver, or provider", { exact: true }).isVisible(), true);
     assert.equal(await page.locator(".dialogNav").isVisible(), true);
+    await page.locator('.serviceStatusForm select[name="status"]').first().selectOption("completed");
+    await page.locator(".serviceStatusForm button").first().click();
+    await page.getByText("Service status saved and verified.", { exact: true }).waitFor({ state: "visible" });
+    assert.equal(await page.locator('.serviceStatusForm select[name="status"]').first().evaluate(element => element.value), "completed");
     for (const label of ["Compose email", "Create Stripe invoice", "Create Zelle invoice", "Create confirmation"]) assert.equal(await page.getByText(label, { exact: true }).isVisible(), true);
     const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('input[name="followup_date"]').boundingBox();
     assert.ok(sectionBox && dateBox && dateBox.x >= sectionBox.x && dateBox.x + dateBox.width <= sectionBox.x + sectionBox.width + 1);
