@@ -10,6 +10,7 @@ const date = value => value ? new Intl.DateTimeFormat("en-US", { dateStyle: "med
 const time = value => value ? String(value).slice(0, 5) : "Time not set";
 const phoneDigits = value => String(value || "").replace(/\D/g, "");
 const STATUS_OPTIONS = ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"];
+const REP_OPTIONS = ["", "SS", "JPG"];
 const GUEST_MORE_FILTERS = ["contacted", "planning", "qualified", "follow_up", "quoted", "deposit_pending", "deposit_paid", "payment_pending", "completed", "cancelled", "did_not_book", "archived", "all"];
 const state = { session: null, data: null, route: "actions", cached: false, guest: null, deskView: "list", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "", guestStatusFilter: "active", guestSearchResults: null };
 
@@ -153,6 +154,19 @@ function route(name) {
 }
 
 function journeyMarkup(journey) { return `<div class="journey">${journey.map(item => `<div class="journeyStep journey-${String(item.label || "step").toLowerCase().replace(/[^a-z0-9]+/g, "-")}" data-state="${esc(item.state)}"><i></i><div><strong>${esc(item.label)}</strong><small>${esc(item.evidence)}</small></div></div>`).join("")}</div>`; }
+function hydrateAssignedRep(guest, canWrite) {
+  const input = $("#profileForm input[name=assigned_to]"); if (!input) return;
+  const current = String(guest.assignedTo || "").toUpperCase(), values = REP_OPTIONS.includes(current) ? REP_OPTIONS : [...REP_OPTIONS, current];
+  const select = document.createElement("select"); select.name = "assigned_to"; select.disabled = !canWrite;
+  values.forEach(value => { const option = document.createElement("option"); option.value = value; option.textContent = value || "Unassigned"; option.selected = current === value; select.append(option); });
+  input.replaceWith(select);
+}
+function enhanceServiceCreate() {
+  const form = $("#serviceCreateForm"), actions = form?.querySelector(".serviceCreateActions"); if (!form || !actions) return;
+  const cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "cancelAction"; cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => { form.reset(); const details = form.closest("details"); if (details) details.open = false; });
+  actions.append(cancel);
+}
 function profileMarkup(guest, canWrite) {
   const fallback = String(guest.name || "").trim().split(/\s+/), firstName = guest.firstName || fallback[0] || "", lastName = guest.lastName || fallback.slice(1).join(" ");
   return `<details class="profileEditor"><summary>Edit guest details</summary><form id="profileForm"><div class="fieldGrid"><label class="field"><span>First name</span><input name="first_name" maxlength="80" value="${esc(firstName)}" autocomplete="given-name" required ${canWrite ? "" : "disabled"}></label><label class="field"><span>Last name</span><input name="last_name" maxlength="80" value="${esc(lastName)}" autocomplete="family-name" ${canWrite ? "" : "disabled"}></label></div><div class="fieldGrid"><label class="field"><span>Phone</span><input name="phone_number" maxlength="60" value="${esc(guest.phone)}" inputmode="tel" autocomplete="tel" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Country</span><input name="country" maxlength="120" value="${esc(guest.country)}" autocomplete="country-name" ${canWrite ? "" : "disabled"}></label></div><label class="field"><span>Email</span><input type="email" name="email" maxlength="254" value="${esc(guest.email)}" autocomplete="email" ${canWrite ? "" : "disabled"}></label><div class="fieldGrid"><label class="field"><span>Assigned rep</span><input name="assigned_to" maxlength="30" value="${esc(guest.assignedTo)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guests</span><input type="number" name="guest_count" min="1" max="99" value="${esc(guest.partySize || "1")}" ${canWrite ? "" : "disabled"}></label></div><label class="field"><span>Pickup</span><input name="pickup_location" maxlength="500" value="${esc(guest.pickup)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guest notes</span><textarea name="notes" maxlength="3000" ${canWrite ? "" : "disabled"}>${esc(guest.notes)}</textarea></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save details</button></div></form></details>`;
@@ -201,6 +215,7 @@ async function openGuest(id, task = "") {
       <section class="detailSection" data-section="confirmation"><h3>Confirmation</h3><p>Open the existing generator with this guest and tour information, then verify the details before sending.</p><div class="toolLinks"><a href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Open confirmation generator</a></div></section>
       <section class="detailSection" data-section="operations"><h3>Operations</h3>${assignmentCreateMarkup(guest, canWrite)}<div class="recordList">${assignmentMarkup(result.data.assignments, canWrite)}</div></section>
       <section class="detailSection" data-section="communication"><h3>Communication</h3><form id="interactionForm"><label class="field"><span>Channel</span><select name="channel" ${canWrite ? "" : "disabled"}><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="in_person">In person</option><option value="other">Other</option></select></label><label class="field"><span>Direction</span><select name="direction" ${canWrite ? "" : "disabled"}><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option><option value="internal">Internal note</option></select></label><label class="field"><span>Note</span><textarea name="note" maxlength="4000" required ${canWrite ? "" : "disabled"}></textarea></label><label class="field"><span>Follow-up date (optional)</span><input type="date" name="followupAt" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Log communication</button></div></form><div class="recordList">${interactionMarkup(result.data.interactions)}</div></section>`;
+    hydrateAssignedRep(guest, canWrite); enhanceServiceCreate();
     $("#profileForm")?.addEventListener("submit", saveProfile); $("#statusForm")?.addEventListener("submit", saveStatus); $("#followupForm")?.addEventListener("submit", saveFollowup); $("#interactionForm")?.addEventListener("submit", saveInteraction); $("#serviceCreateForm")?.addEventListener("submit", createService); $("#assignmentCreateForm")?.addEventListener("submit", createAssignment); $("#assignmentCreateForm select[name=service_index]")?.addEventListener("change", syncAssignmentService); body.querySelectorAll(".serviceStatusForm").forEach(form => form.addEventListener("submit", saveServiceStatus)); body.querySelectorAll(".assignmentForm").forEach(form => form.addEventListener("submit", saveAssignment));
     if (task) setTimeout(() => body.querySelector(`[data-section="${CSS.escape(task === "interaction-follow-up" ? "communication" : task)}"]`)?.scrollIntoView({ behavior: "smooth" }), 80);
   } catch (error) { body.innerHTML = `<div class="emptyCard">${esc(error.message)}</div>`; }
@@ -340,5 +355,5 @@ $("#guestsView").addEventListener("click", event => { const button = event.targe
 $("#guestsView").addEventListener("change", event => { if (event.target.id !== "guestMoreStatusFilter" || !event.target.value) return; state.guestStatusFilter = event.target.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuestStatusFilters(); renderGuests(); });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=17", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=18", { scope: "/app/" }).catch(() => {});
 start();

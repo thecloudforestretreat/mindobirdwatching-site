@@ -30,7 +30,7 @@ test("mobile app creates a new guest and verifies the canonical CRM inquiry", as
     const response = await createGuest({ request: postRequest("/api/mobile/guests", { guest: { full_name: "New Guest", phone_number: "+1 305 555 0101", email: "new@example.test", country: "United States", tour: "Night Walk", requested_date: "2026-11-10", guest_count: "2" } }), env });
     const result = await response.json();
     assert.equal(response.status, 201); assert.equal(result.verified, true); assert.equal(result.returningGuest, false);
-    assert.equal(row.source_type, "manual_app"); assert.equal(row.status, "new"); assert.equal(JSON.parse(row.tour_items_json)[0].tour, "Night Walk");
+    assert.equal(row.source_type, "manual_app"); assert.equal(row.status, "new"); assert.equal(row.assigned_to, ""); assert.equal(JSON.parse(row.tour_items_json)[0].tour, "Night Walk");
     assert.deepEqual(actions, ["list_inquiries", "create_guest_and_inquiry", "list_inquiries"]);
   } finally { globalThis.fetch = savedFetch; }
 });

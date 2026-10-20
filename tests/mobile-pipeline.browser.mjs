@@ -8,7 +8,7 @@ import { chromium } from "playwright";
 const root = join(process.cwd(), "admin");
 let record = {
   inquiryId: "I-MT-1", guestId: "G-MT-1", name: "Test Testerer", country: "United States", countryCode: "US", brand: "MT",
-  phone: "+13055550123", email: "test@example.test", partySize: "2", status: "payment_pending", effectiveStatus: "payment_pending",
+  phone: "+13055550123", email: "test@example.test", partySize: "2", assignedTo: "JPG", status: "payment_pending", effectiveStatus: "payment_pending",
   paymentStatus: "payment_pending", requestedDate: "2026-10-22", requestedDateEnd: "2026-10-22", followupDate: "2026-10-21", updatedAt: "2026-10-20T14:00:00Z",
   tours: [{ id: "T-1", tour: "Mindo Tours Test", product: "MT-TEST", date: "2026-10-22", guests: "2", status: "payment_pending" }],
 };
@@ -86,6 +86,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.locator('#bottomNav [data-route="guests"]').click();
     assert.equal(await page.locator(".guestCard").count(), 1, "closed guests should stay out of the default list");
     await page.locator("#newGuestButton").click();
+    assert.equal(await page.locator('#newGuestForm select[name="assigned_to"]').inputValue(), "", "new leads should default to Unassigned");
     await page.screenshot({ path: "/tmp/mbw-new-guest-mobile-qa.png", fullPage: false });
     await page.locator('#newGuestForm input[name="full_name"]').fill("Manual Guest");
     await page.locator('#newGuestForm input[name="email"]').fill("manual@example.test");
@@ -115,6 +116,8 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.getByText("Edit guest details", { exact: true }).click();
     assert.equal(await page.locator('#profileForm input[name="first_name"]').inputValue(), "Test");
     assert.equal(await page.locator('#profileForm input[name="last_name"]').inputValue(), "Testerer");
+    assert.deepEqual(await page.locator('#profileForm select[name="assigned_to"] option').allTextContents(), ["Unassigned", "SS", "JPG"]);
+    assert.equal(await page.locator('#profileForm select[name="assigned_to"]').inputValue(), "JPG");
     const emailWidth = (await page.locator('#profileForm input[name="email"]').boundingBox()).width, phoneWidth = (await page.locator('#profileForm input[name="phone_number"]').boundingBox()).width;
     assert.ok(emailWidth > phoneWidth * 1.7, "email should use the full form width");
     for (const pair of [["first_name","last_name"],["phone_number","country"],["assigned_to","guest_count"]]) { const left = await page.locator(`#profileForm [name="${pair[0]}"]`).boundingBox(), right = await page.locator(`#profileForm [name="${pair[1]}"]`).boundingBox(); assert.equal(left.y, right.y, `${pair.join(" / ")} should share a row`); }
@@ -155,6 +158,14 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.ok(startBox && endBox && endBox.y - (startBox.y + startBox.height) >= 8, "Start and end time inputs need separate mobile rows");
     await page.locator('input[name="start_time"]').scrollIntoViewIfNeeded();
     await page.screenshot({ path: "/tmp/mbw-assignment-times-qa.png", fullPage: false });
+    await page.getByText("Add another tour, activity, or transfer", { exact: true }).click();
+    assert.equal(await page.locator('#serviceCreateForm .cancelAction').isVisible(), true);
+    await page.locator(".serviceCreateActions").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: "/tmp/mbw-service-create-actions-qa.png", fullPage: false });
+    await page.locator('#serviceCreateForm input[name="tour"]').fill("Do not save");
+    await page.locator('#serviceCreateForm .cancelAction').click();
+    assert.equal(await page.locator(".serviceCreate").getAttribute("open"), null);
+    assert.equal(await page.locator('#serviceCreateForm input[name="tour"]').inputValue(), "");
     await page.getByText("Add another tour, activity, or transfer", { exact: true }).click();
     await page.locator('#serviceCreateForm input[name="tour"]').fill("Night Walk");
     await page.locator('#serviceCreateForm input[name="product_selected"]').fill("MBW016 - Night Walk");

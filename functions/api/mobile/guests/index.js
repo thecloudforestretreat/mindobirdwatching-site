@@ -51,9 +51,10 @@ export async function onRequestPost({ request, env }) {
     if (!name) return json(400, { ok: false, error: "Enter the guest's name." });
     if (!phoneKey && !email) return json(400, { ok: false, error: "Enter a phone number or email address." });
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { ok: false, error: "Enter a valid email address." });
-    const requestedDate = isoDate(guest.requested_date), followupDate = isoDate(guest.followup_date) || ecuadorDate(3);
+    const requestedDate = isoDate(guest.requested_date), followupDate = isoDate(guest.followup_date) || ecuadorDate(3), assignedTo = value(guest.assigned_to, 30).toUpperCase();
     if (guest.requested_date && !requestedDate) return json(400, { ok: false, error: "Choose a valid tour date." });
     if (guest.followup_date && !isoDate(guest.followup_date)) return json(400, { ok: false, error: "Choose a valid follow-up date." });
+    if (assignedTo && !["SS", "JPG"].includes(assignedTo)) return json(400, { ok: false, error: "Choose SS, JPG, or Unassigned." });
     const partySize = value(guest.guest_count || "1", 3);
     if (!/^\d{1,2}$/.test(partySize) || Number(partySize) < 1 || Number(partySize) > 99) return json(400, { ok: false, error: "Guests must be between 1 and 99." });
     const rows = await listRecords(env, "list_inquiries", { filters: {} });
@@ -67,7 +68,7 @@ export async function onRequestPost({ request, env }) {
       inquiry_id: inquiryId, guest_id: guestId, first_name: names[0] || name, last_name: names.slice(1).join(" "), full_name: name,
       phone_number: phone, phone_raw: phone, phone_normalized: phoneKey, email, email_normalized: email,
       country: value(guest.country, 120), home_country: value(guest.country, 120), source_type: "manual_app", source_tab: "manual_app",
-      assigned_to: identity.staffCode || "", status: "new", quote_status: "not_sent", payment_status: "unpaid", priority: "auto",
+      assigned_to: assignedTo, status: "new", quote_status: "not_sent", payment_status: "unpaid", priority: "auto",
       tour_type: tour, tour_category: tour, interest_category: tour, service_type: serviceType, product_selected: product,
       guest_count: partySize, guest_count_text: partySize, requested_date: requestedDate, requested_date_start: requestedDate, requested_date_end: requestedDate,
       followup_date: followupDate, pickup_location: value(guest.pickup_location, 500), transportation_needed: "Unknown",
