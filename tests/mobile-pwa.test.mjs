@@ -13,13 +13,15 @@ test("the installable Action Desk uses the dedicated gold MBW home-screen icon",
   assert.equal(manifest.start_url, "/app/");
   assert.equal(manifest.scope, "/app/");
   assert.deepEqual(manifest.icons.map(icon => icon.src), [
-    "/assets/images/app/mbw-app-gold-192.png",
-    "/assets/images/app/mbw-app-gold-512.png",
-    "/assets/images/app/mbw-app-gold-512.png",
+    "/assets/images/app/mbw-app-gold-transparent-192.png",
+    "/assets/images/app/mbw-app-gold-transparent-512.png",
   ]);
-  assert.match(index, /apple-touch-icon[^>]+mbw-app-gold-180\.png/);
-  assert.match(worker, /mbw-mobile-shell-v8/);
-  for (const file of ["mbw-app-gold-180.png", "mbw-app-gold-192.png", "mbw-app-gold-512.png"]) {
-    assert.ok(fs.statSync(path.join(root, "admin/assets/images/app", file)).size > 10_000, `${file} should be a real icon asset`);
+  assert.match(index, /apple-touch-icon[^>]+mbw-app-gold-transparent-180\.png/);
+  assert.match(index, /<img src="\/apple-touch-icon\.png" alt="">/);
+  assert.match(worker, /mbw-mobile-shell-v9/);
+  for (const file of ["mbw-app-gold-transparent-180.png", "mbw-app-gold-transparent-192.png", "mbw-app-gold-transparent-512.png"]) {
+    const iconPath = path.join(root, "admin/assets/images/app", file), bytes = fs.readFileSync(iconPath);
+    assert.ok(fs.statSync(iconPath).size > 10_000, `${file} should be a real icon asset`);
+    assert.equal(bytes.readUInt8(25), 6, `${file} should preserve RGBA transparency`);
   }
 });
