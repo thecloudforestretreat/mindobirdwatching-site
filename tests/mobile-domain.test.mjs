@@ -16,6 +16,9 @@ test("mobile records retain country and non-MBW brand attribution", () => {
   assert.equal(choco.brand, "CAT");
   assert.equal(mbw.brand, "MBW");
   assert.equal(brandSource({ tour_type: "ordinary custom request" }), "");
+  const combinedCountry = normalizeInquiry({ inquiry_id: "I-COMBINED", full_name: "Combined Country", country: "United States / Canada" });
+  assert.equal(combinedCountry.country, "United States / Canada");
+  assert.equal(combinedCountry.countryCode, "US");
 });
 
 test("journey only marks confirmation complete from explicit confirmation evidence", () => {
@@ -73,6 +76,26 @@ test("same-day assignments are matched to their exact service product", () => {
   const records = todaySchedule([multi], [birdGuide], [], [], now);
   assert.equal(records.find(item => item.id === "bird").risk, "");
   assert.equal(records.find(item => item.id === "night").risk, "No assignment");
+});
+
+test("assignment dates recover operational services when stored itinerary dates are stale", () => {
+  const staleItinerary = normalizeInquiry({
+    inquiry_id: "INQ-STALE-TOURS", full_name: "Tiffany Example", status: "booked", guest_count: "1",
+    tour_items_json: JSON.stringify([
+      { id: "bird", tour: "Birding", product_selected: "MBW006", date: "2026-10-19", status: "new" },
+      { id: "night", tour: "Night Walk", product_selected: "MBW016", date: "2026-10-19", status: "new" },
+    ]),
+  });
+  const recovered = [
+    normalizeAssignment({ assignment_id: "A-NIGHT", inquiry_id: "INQ-STALE-TOURS", service_date: "2026-10-20", service_type: "Night Walk", provider_name: "Night Guide", assignment_status: "confirmed", provider_informed: "Yes", start_time: "19:00" }),
+    normalizeAssignment({ assignment_id: "A-BIRD", inquiry_id: "INQ-STALE-TOURS", service_date: "2026-10-20", service_type: "Birdwatching", provider_name: "Bird Guide", assignment_status: "confirmed", provider_informed: "Yes", start_time: "05:00" }),
+    normalizeAssignment({ assignment_id: "A-TRANSFER", inquiry_id: "INQ-STALE-TOURS", service_date: "2026-10-23", service_type: "Transportation", provider_name: "Driver", assignment_status: "pending", provider_informed: "No" }),
+  ];
+  const today = todaySchedule([staleItinerary], recovered, [], [], new Date("2026-10-20T16:00:00Z"));
+  const upcoming = operationsSchedule([staleItinerary], recovered, [], [], new Date("2026-10-20T16:00:00Z"), 7);
+  assert.deepEqual(today.map(item => item.tour), ["Birdwatching", "Night Walk"]);
+  assert.equal(upcoming.find(item => item.tour === "Transportation").risk, "Provider confirmation incomplete");
+  assert.equal(upcoming.length, 3);
 });
 
 test("same-day operational risk overrides lower-stage follow-up and payment work", () => {

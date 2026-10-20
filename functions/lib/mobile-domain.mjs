@@ -77,13 +77,18 @@ export function tourItems(record) {
 }
 
 export function normalizeInquiry(record) {
-  const location = country(record.country || record.home_country || record.country_of_residence);
+  const recordedCountry = text(record.country || record.home_country || record.country_of_residence, 120);
+  let location = country(recordedCountry);
+  if (!location.code && recordedCountry) {
+    const mappedPart = recordedCountry.split(/[\/;,|]/).map(value => country(value.trim())).find(value => value.code);
+    if (mappedPart) location = mappedPart;
+  }
   return {
     inquiryId: text(record.inquiry_id, 128),
     guestId: text(record.guest_id, 128),
     bookingId: text(record.booking_id, 128),
     name: text(record.full_name || [record.first_name, record.last_name].filter(Boolean).join(" "), 180),
-    country: location.country === "Unknown country" ? "" : location.country,
+    country: location.code ? recordedCountry || location.country : "",
     countryCode: location.code,
     brand: brandSource(record),
     phone: text(record.phone_number || record.phone_normalized || record.phone_raw, 40),
@@ -379,7 +384,7 @@ function serviceAssignments(inquiry, tour, assignments) {
 
 export function operationsSchedule(inquiries, assignments, bookings = [], payments = [], now = new Date(), days = 7) {
   const today = todayInEcuador(now), end = addDays(today, Math.max(0, Math.min(Number(days) || 0, 31)));
-  const records = [];
+  const records = [], inquiryById = new Map(inquiries.map(inquiry => [inquiry.inquiryId, inquiry]));
   for (const inquiry of inquiries) {
     const effective = inquiryEvidence(inquiry, bookings, payments, now).status;
     if (INACTIVE.has(effective)) continue;
@@ -394,6 +399,30 @@ export function operationsSchedule(inquiries, assignments, bookings = [], paymen
         risk: completed ? "" : !related.length ? "No assignment" : related.some(item => !item.providerInformed || item.status === "pending") ? "Provider confirmation incomplete" : "",
       });
     }
+  }
+  const representedAssignments = new Set(records.flatMap(record => record.assignments.map(item => item.assignmentId)));
+  const assignmentServices = new Map();
+  for (const assignment of assignments) {
+    if (representedAssignments.has(assignment.assignmentId) || assignment.status === "cancelled" || assignment.serviceDate < today || assignment.serviceDate > end) continue;
+    const inquiry = inquiryById.get(assignment.inquiryId);
+    if (!inquiry || INACTIVE.has(inquiryEvidence(inquiry, bookings, payments, now).status)) continue;
+    if (assignment.status === "completed" && assignment.serviceDate !== today) continue;
+    const serviceKey = productCode(assignment.product) || key(assignment.serviceType) || assignment.assignmentId;
+    const groupKey = `${assignment.inquiryId}|${assignment.serviceDate}|${serviceKey}`;
+    const group = assignmentServices.get(groupKey) || { inquiry, assignments: [] };
+    group.assignments.push(assignment);
+    assignmentServices.set(groupKey, group);
+  }
+  for (const group of assignmentServices.values()) {
+    const first = group.assignments[0], completed = group.assignments.every(item => item.status === "completed");
+    const pending = group.assignments.some(item => item.status === "pending" || !item.providerInformed);
+    records.push({
+      id: `assignment-${first.assignmentId}`, inquiryId: group.inquiry.inquiryId, guest: group.inquiry.name,
+      partySize: group.inquiry.partySize, phone: group.inquiry.phone, tour: first.product || first.serviceType || first.providerRole || "Assigned service",
+      product: first.product, date: first.serviceDate, status: completed ? "completed" : pending ? "pending" : "confirmed",
+      startTime: first.startTime, pickup: first.pickup || group.inquiry.pickup, assignments: group.assignments,
+      risk: completed ? "" : pending ? "Provider confirmation incomplete" : "",
+    });
   }
   return records.sort((a, b) => a.date.localeCompare(b.date) || (a.startTime || "99:99").localeCompare(b.startTime || "99:99") || a.guest.localeCompare(b.guest));
 }
