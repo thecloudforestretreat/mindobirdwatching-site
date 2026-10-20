@@ -1,6 +1,6 @@
 import { mobileIdentity } from "../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../lib/mobile-crm.mjs";
-import { normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizePayment, guestJourney } from "../../../lib/mobile-domain.mjs";
+import { normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizePayment, normalizeBooking, enrichInquiry, guestJourney } from "../../../lib/mobile-domain.mjs";
 import { json, errorResponse, methodNotAllowed, assertSameOrigin, assertMobileWriteReady, readJson, validId } from "../../../lib/mobile-http.mjs";
 
 const STATUSES = new Set(["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"]);
@@ -20,10 +20,11 @@ async function loadGuest(env, inquiryId) {
   const interactions = interactionRows.map(normalizeInteraction);
   const assignments = assignmentRows.map(normalizeAssignment);
   const payments = paymentRows.map(normalizePayment);
+  const bookings = bookingRows.map(normalizeBooking);
+  const enriched = enrichInquiry(record, bookings, payments);
   return {
-    raw, record, interactions, assignments, payments,
-    bookings: bookingRows,
-    journey: guestJourney(record, interactions, assignments, payments),
+    raw, record: enriched, interactions, assignments, payments, bookings,
+    journey: guestJourney(record, interactions, assignments, payments, bookings),
   };
 }
 
