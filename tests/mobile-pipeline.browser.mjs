@@ -19,6 +19,13 @@ const schedule = [
   { inquiryId: record.inquiryId, guest: record.name, date: "2026-10-23", startTime: "19:00", tour: "Confirmed Night Walk", partySize: "2", pickup: "Mindo", source: "assignment", status: "confirmed", risk: "" },
   { inquiryId: completedRecord.inquiryId, guest: completedRecord.name, date: "2026-10-24", startTime: "08:00", tour: "Completed Tour", partySize: "2", pickup: "Mindo", source: "assignment", status: "completed", risk: "" },
 ];
+const readiness = () => record.tours.map(item => ({
+  serviceId: item.id, status: item.status, ready: false, readyCount: 1, totalCount: item.status === "booked" ? 5 : 2,
+  nextAction: item.status === "booked" ? "$ needed" : item.status === "payment_pending" ? "$ needed" : "After quote", nextSection: "payments",
+  checks: item.status === "booked"
+    ? [{ id: "date", label: "Date", state: "complete", evidence: "Set" }, { id: "payment", label: "Payment", state: "attention", evidence: "$ needed" }, { id: "provider", label: "Provider", state: "attention", evidence: "Assign" }, { id: "time", label: "Time", state: "attention", evidence: "Set time" }, { id: "confirmation", label: "Confirmation", state: "attention", evidence: "Send" }]
+    : [{ id: "date", label: "Date", state: "complete", evidence: "Set" }, { id: "payment", label: "Payment", state: "attention", evidence: "$ needed" }],
+}));
 
 const mime = path => ({ ".html": "text/html", ".css": "text/css", ".mjs": "text/javascript", ".js": "text/javascript", ".png": "image/png", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json" })[extname(path)] || "application/octet-stream";
 
@@ -59,7 +66,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     }
     if (path.endsWith(`/guests/${record.inquiryId}`)) {
       await new Promise(resolve => setTimeout(resolve, 600));
-      return route.fulfill({ json: { ok: true, record, journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
+      return route.fulfill({ json: { ok: true, record, readiness: readiness(), journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
     }
     if (createdRecord && path.endsWith(`/guests/${createdRecord.inquiryId}`)) return route.fulfill({ json: { ok: true, record: createdRecord, journey: [{ id: "contact", label: "Contact", state: "attention", evidence: "Response not logged" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
     return route.fulfill({ status: 404, json: { ok: false, error: "Not found" } });
@@ -105,16 +112,18 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.locator(".detailContactMeta").waitFor({ state: "visible" });
     assert.match(await page.locator(".detailHero").innerText(), /United States/);
     for (const value of ["Payment Pending", "Mindo Tours Test", "2 guests · 1 service", "Tour Oct 22, 2026", "F/U"]) assert.match(await page.locator(".detailHero").innerText(), new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    await page.getByText("Edit guest details", { exact: true }).click();
     assert.equal(await page.locator('#profileForm input[name="first_name"]').inputValue(), "Test");
     assert.equal(await page.locator('#profileForm input[name="last_name"]').inputValue(), "Testerer");
     const emailWidth = (await page.locator('#profileForm input[name="email"]').boundingBox()).width, phoneWidth = (await page.locator('#profileForm input[name="phone_number"]').boundingBox()).width;
     assert.ok(emailWidth > phoneWidth * 1.7, "email should use the full form width");
-    for (const pair of [["first_name","last_name"],["phone_number","country"],["assigned_to","guest_count"]]) { const left = await page.locator(`#profileForm [name="${pair[0]}"]`).boundingBox(), right = await page.locator(`#profileForm [name="${pair[1]}"]`).boundingBox(); assert.equal(left.y, right.y); }
-    await page.getByText("Edit guest details", { exact: true }).click();
+    for (const pair of [["first_name","last_name"],["phone_number","country"],["assigned_to","guest_count"]]) { const left = await page.locator(`#profileForm [name="${pair[0]}"]`).boundingBox(), right = await page.locator(`#profileForm [name="${pair[1]}"]`).boundingBox(); assert.equal(left.y, right.y, `${pair.join(" / ")} should share a row`); }
     await page.locator('#profileForm input[name="email"]').scrollIntoViewIfNeeded();
     await page.screenshot({ path: "/tmp/mbw-guest-profile-qa.png", fullPage: false });
     await page.getByText("Next action").waitFor({ state: "visible" });
-    assert.equal(await page.getByText("Services", { exact: true }).isVisible(), true);
+    assert.equal(await page.getByText("Services & readiness", { exact: true }).isVisible(), true);
+    assert.equal(await page.locator(".serviceReadiness").count(), 1);
+    assert.match(await page.locator(".serviceReadiness").innerText(), /Payment.*\$ needed/s);
     assert.equal(await page.getByText("Add another tour, activity, or transfer", { exact: true }).isVisible(), true);
     assert.equal(await page.getByText("Add guide, driver, or provider", { exact: true }).count(), 0, "provider assignment should stay locked until a service is booked");
     assert.equal(await page.getByText("Provider assignments become available when a service is Booked.", { exact: true }).isVisible(), true);
@@ -128,6 +137,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.locator(".serviceStatusForm button").first().click();
     await page.getByText("Service status saved and verified.", { exact: true }).waitFor({ state: "visible" });
     assert.equal(await page.locator('.serviceStatusForm select[name="status"]').first().evaluate(element => element.value), "booked");
+    assert.match(await page.locator(".serviceReadiness").first().innerText(), /Provider.*Assign/s);
     for (const label of ["WhatsApp", "Generate Email", "Create Stripe Invoice", "Create Zelle Invoice"]) assert.equal(await page.locator(".pipelineSection").getByText(label, { exact: true }).isVisible(), true);
     const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('#followupForm input[name="followup_date"]').boundingBox();
     assert.ok(sectionBox && dateBox && dateBox.x >= sectionBox.x && dateBox.x + dateBox.width <= sectionBox.x + sectionBox.width + 1);

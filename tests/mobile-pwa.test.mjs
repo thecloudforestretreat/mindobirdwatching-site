@@ -18,7 +18,7 @@ test("the installable Action Desk uses the dedicated gold MBW home-screen icon",
   ]);
   assert.match(index, /apple-touch-icon[^>]+mbw-app-gold-transparent-180\.png/);
   assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
-  assert.match(worker, /mbw-mobile-shell-v16/);
+  assert.match(worker, /mbw-mobile-shell-v17/);
   const headerIcon = path.join(root, "admin/assets/images/app/mbw-header-logo-160.png"), headerBytes = fs.readFileSync(headerIcon);
   assert.equal(headerBytes.readUInt8(25), 6, "header logo should preserve transparent pixels");
   for (const file of ["mbw-app-gold-transparent-180.png", "mbw-app-gold-transparent-192.png", "mbw-app-gold-transparent-512.png"]) {

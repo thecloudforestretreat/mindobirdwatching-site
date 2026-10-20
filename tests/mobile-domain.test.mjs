@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actionDesk, brandSource, guestJourney, inquiryEvidence, normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeInteraction, normalizePayment, operationsSchedule, todaySchedule } from "../functions/lib/mobile-domain.mjs";
+import { actionDesk, brandSource, guestJourney, inquiryEvidence, normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeInteraction, normalizePayment, operationsSchedule, serviceReadiness, todaySchedule } from "../functions/lib/mobile-domain.mjs";
 
 const now = new Date("2026-10-19T16:00:00Z");
 const inquiry = normalizeInquiry({ inquiry_id: "INQ-1", guest_id: "G-1", full_name: "Test Guest", status: "booked", quote_status: "accepted", payment_status: "paid", requested_date: "2026-10-19", tour_type: "Birdwatching", guest_count: "2", itinerary_status: "ready", updated_at: "2026-10-18T12:00:00Z" });
@@ -27,6 +27,32 @@ test("journey only marks confirmation complete from explicit confirmation eviden
   const interaction = normalizeInteraction({ interaction_id: "INT-1", inquiry_id: "INQ-1", direction: "outgoing", interaction_type: "confirmation_sent", note: "Sent", occurred_at: "2026-10-18T13:00:00Z" });
   const after = guestJourney(inquiry, [interaction], [assignment], [payment]);
   assert.equal(after.find(step => step.id === "confirmation").state, "complete");
+});
+
+test("service readiness evaluates every service independently", () => {
+  const record = normalizeInquiry({
+    inquiry_id: "INQ-READY", guest_id: "G-READY", full_name: "Multi Service Guest", status: "booked", payment_status: "deposit_paid", pickup_location: "Mindo Lodge",
+    tour_items_json: JSON.stringify([
+      { id: "done", tour: "Earlier Birding", product_selected: "MBW004", service_type: "Birdwatching", date: "2026-10-18", status: "completed" },
+      { id: "night", tour: "Night Walk", product_selected: "MBW016", service_type: "Activity", date: "2026-10-20", status: "booked" },
+      { id: "quote", tour: "Extra Birding Day", product_selected: "MBW006", service_type: "Birdwatching", date: "2026-10-21", status: "quoted" },
+    ]),
+  });
+  const nightAssignment = normalizeAssignment({ assignment_id: "A-NIGHT", inquiry_id: "INQ-READY", service_date: "2026-10-20", product_selected: "MBW016", service_type: "Activity", provider_name: "Night Guide", assignment_status: "confirmed", provider_informed: "Yes" });
+  const models = serviceReadiness(record, [nightAssignment], [], [], [], new Date("2026-10-20T16:00:00Z"));
+  assert.equal(models.find(item => item.serviceId === "done").ready, true);
+  assert.equal(models.find(item => item.serviceId === "night").ready, false);
+  assert.equal(models.find(item => item.serviceId === "night").checks.find(item => item.id === "provider").state, "complete");
+  assert.equal(models.find(item => item.serviceId === "night").checks.find(item => item.id === "time").evidence, "Set time");
+  assert.equal(models.find(item => item.serviceId === "quote").checks.find(item => item.id === "provider").state, "muted");
+});
+
+test("service readiness becomes ready only from explicit operational evidence", () => {
+  const interaction = normalizeInteraction({ interaction_id: "INT-CONF", inquiry_id: inquiry.inquiryId, direction: "outgoing", interaction_type: "confirmation_sent", note: "Sent" });
+  const readyInquiry = { ...inquiry, pickup: "Mindo Lodge", tours: inquiry.tours.map(item => ({ ...item, pickup: "Mindo Lodge" })) };
+  const models = serviceReadiness(readyInquiry, [assignment], [payment], [], [interaction], now);
+  assert.equal(models[0].ready, true);
+  assert.equal(models[0].checks.find(item => item.id === "confirmation").evidence, "Sent");
 });
 
 test("action desk derives operational risks and never invents confirmation readiness", () => {

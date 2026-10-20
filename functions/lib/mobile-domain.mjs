@@ -1,6 +1,6 @@
 import { country } from "./maps.mjs";
 
-export const MOBILE_DOMAIN_VERSION = "2026-10-20-services-v3";
+export const MOBILE_DOMAIN_VERSION = "2026-10-20-readiness-v4";
 
 const CLOSED = new Set(["completed", "cancelled", "did_not_book", "duplicate", "archived"]);
 const INACTIVE = new Set(["cancelled", "did_not_book", "duplicate", "archived"]);
@@ -285,6 +285,62 @@ function confirmationSent(record, interactions) {
   return interactions.some(item => item.inquiryId === record.inquiryId && item.direction === "outgoing" && (
     item.type === "confirmation_sent" || /(?:tour|booking) confirmation (?:sent|enviad)/i.test(item.note)
   ));
+}
+
+function serviceNeedsPickup(tour) {
+  const description = key(`${tour.serviceType} ${tour.tour} ${tour.product}`);
+  return !/(accommodation|lodging|hotel)/.test(description);
+}
+
+function serviceNeedsTime(tour) {
+  const description = key(`${tour.serviceType} ${tour.tour} ${tour.product}`);
+  return !/(accommodation|lodging|hotel|flexible)/.test(description);
+}
+
+function readinessCheck(id, label, state, evidence, section = "") {
+  return { id, label, state, evidence, section };
+}
+
+export function serviceReadiness(record, assignments, payments, bookings = [], interactions = [], now = new Date()) {
+  const evidence = inquiryEvidence(record, bookings, payments, now);
+  const relatedPayments = payments.filter(item => paymentMatches(record, item, evidence.bookings));
+  const fullyPaid = record.paymentStatus === "paid" || record.paymentStatus === "no_payment_required" || relatedPayments.some(item => item.fullyPaid || item.status === "paid");
+  const partialPayment = !fullyPaid && (record.paymentStatus === "deposit_paid" || relatedPayments.some(item => item.totalPaid > 0));
+  const confirmationReady = confirmationSent(record, interactions);
+  return (record.tours || []).map(tour => {
+    const status = tour.status || record.status || "planning", closed = ["completed", "cancelled"].includes(status), booked = status === "booked";
+    const relatedAssignments = serviceAssignments(record, tour, assignments);
+    const confirmedAssignments = relatedAssignments.filter(item => ["confirmed", "completed"].includes(item.status));
+    const providerReady = confirmedAssignments.length > 0 && confirmedAssignments.every(item => item.providerInformed);
+    const startTime = tour.startTime || confirmedAssignments.find(item => item.startTime)?.startTime || "";
+    const pickup = tour.pickup || confirmedAssignments.find(item => item.pickup)?.pickup || record.pickup || "";
+    const checks = [];
+    checks.push(readinessCheck("date", "Date", tour.date ? "complete" : "attention", tour.date ? "Set" : "Missing", "service"));
+    if (status === "completed") {
+      checks.push(readinessCheck("payment", "Payment", "complete", "Complete", "payments"));
+      checks.push(readinessCheck("provider", "Provider", "complete", "Complete", "operations"));
+      checks.push(readinessCheck("time", "Time", "complete", startTime || "Complete", "operations"));
+      checks.push(readinessCheck("pickup", "Pickup", "complete", pickup || "Complete", "operations"));
+      checks.push(readinessCheck("confirmation", "Confirmation", "complete", "Complete", "confirmation"));
+    } else if (status === "cancelled") {
+      checks.push(readinessCheck("closed", "Service", "muted", "Cancelled", "service"));
+    } else {
+      const paymentState = fullyPaid ? "complete" : partialPayment || status === "deposit_paid" ? "pending" : ["deposit_pending", "payment_pending", "booked"].includes(status) ? "attention" : "muted";
+      const paymentEvidence = fullyPaid ? (record.paymentStatus === "no_payment_required" ? "Not required" : "Paid") : partialPayment || status === "deposit_paid" ? "Deposit paid" : ["deposit_pending", "payment_pending", "booked"].includes(status) ? "$ needed" : "After quote";
+      checks.push(readinessCheck("payment", "Payment", paymentState, paymentEvidence, "payments"));
+      checks.push(readinessCheck("provider", "Provider", booked ? (providerReady ? "complete" : "attention") : "muted", booked ? (providerReady ? confirmedAssignments.map(item => item.providerName).filter(Boolean).join(", ") || "Confirmed" : relatedAssignments.length ? "Confirm + inform" : "Assign") : "After booking", "operations"));
+      if (serviceNeedsTime(tour)) checks.push(readinessCheck("time", "Time", booked ? (startTime ? "complete" : "attention") : "muted", booked ? (startTime || "Set time") : "After booking", "operations"));
+      if (serviceNeedsPickup(tour)) checks.push(readinessCheck("pickup", "Pickup", booked ? (pickup ? "complete" : "attention") : "muted", booked ? (pickup || "Set pickup") : "After booking", "operations"));
+      checks.push(readinessCheck("confirmation", "Confirmation", booked ? (confirmationReady ? "complete" : "attention") : "muted", booked ? (confirmationReady ? "Sent" : "Send") : "After booking", "confirmation"));
+    }
+    const applicable = checks.filter(item => item.state !== "muted"), readyCount = applicable.filter(item => item.state === "complete").length;
+    const next = checks.find(item => item.state === "attention") || checks.find(item => item.state === "pending") || null;
+    return {
+      serviceId: tour.id, status, ready: closed || (applicable.length > 0 && readyCount === applicable.length),
+      readyCount, totalCount: applicable.length, nextAction: next ? next.evidence : "Ready", nextSection: next?.section || "",
+      checks,
+    };
+  });
 }
 
 export function guestJourney(record, interactions, assignments, payments, bookings = [], now = new Date()) {

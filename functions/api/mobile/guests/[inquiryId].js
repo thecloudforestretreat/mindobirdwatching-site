@@ -1,6 +1,6 @@
 import { mobileIdentity } from "../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../lib/mobile-crm.mjs";
-import { MOBILE_DOMAIN_VERSION, normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizePayment, normalizeBooking, enrichInquiry, guestJourney } from "../../../lib/mobile-domain.mjs";
+import { MOBILE_DOMAIN_VERSION, normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizePayment, normalizeBooking, enrichInquiry, guestJourney, serviceReadiness } from "../../../lib/mobile-domain.mjs";
 import { json, errorResponse, methodNotAllowed, assertSameOrigin, assertMobileWriteReady, readJson, validId } from "../../../lib/mobile-http.mjs";
 
 const STATUSES = new Set(["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"]);
@@ -24,6 +24,7 @@ async function loadGuest(env, inquiryId) {
   return {
     raw, record: enriched, interactions, assignments, payments, bookings,
     journey: guestJourney(record, interactions, assignments, payments, bookings),
+    readiness: serviceReadiness(record, assignments, payments, bookings, interactions),
   };
 }
 
@@ -37,6 +38,7 @@ export async function onRequestGet({ request, env, params }) {
       dataVersion: MOBILE_DOMAIN_VERSION,
       record: data.record,
       journey: data.journey,
+      readiness: data.readiness,
       data: { interactions: data.interactions, assignments: data.assignments, bookings: data.bookings, payments: data.payments },
       checkedAt: new Date().toISOString(),
     });
