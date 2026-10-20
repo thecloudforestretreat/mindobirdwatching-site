@@ -1,5 +1,6 @@
 import { api } from "./modules/api.mjs";
 import { loadSnapshot, saveSnapshot, clearSnapshot } from "./modules/cache.mjs";
+import { STATUS_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -9,19 +10,71 @@ const date = value => value ? new Intl.DateTimeFormat("en-US", { dateStyle: "med
 const time = value => value ? String(value).slice(0, 5) : "Time not set";
 const phoneDigits = value => String(value || "").replace(/\D/g, "");
 const STATUS_OPTIONS = ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"];
-const state = { session: null, data: null, route: "actions", cached: false, guest: null };
+const state = { session: null, data: null, route: "actions", cached: false, guest: null, deskView: "list", statusFilter: "all", selectedDate: "", weekStart: "" };
 
 function connection(mode, label) { const node = $("#connectionState"); node.dataset.state = mode; node.querySelector("b").textContent = label; }
 function empty(message) { return `<div class="emptyCard">${esc(message)}</div>`; }
 function toast(message) { const node = $("#toast"); node.textContent = message; node.hidden = false; clearTimeout(toast.timer); toast.timer = setTimeout(() => { node.hidden = true; }, 3200); }
-function actionClass(priority) { return priority === 0 ? "badge badge--urgent" : priority === 1 ? "badge badge--warn" : "badge"; }
+function todayIso() {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(state.data?.checkedAt || Date.now()));
+  const value = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+function shortDate(value) { return value ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`)) : "Date not set"; }
+function statusClass(value) { return `status-${String(value || "new").replace(/_/g, "-")}`; }
+function deskRecords() { return state.data?.inquiries || state.data?.recentGuests || []; }
+function relatedBookings(record) { return (state.data?.bookings || []).filter(item => item.inquiryId === record.inquiryId && !item.archived); }
+function actionFor(record) { return (state.data?.actions || []).find(item => item.inquiryId === record.inquiryId) || null; }
+function recordById(id) { return deskRecords().find(item => item.inquiryId === id); }
+
+function deskCard(record, action = null) {
+  const bookings = relatedBookings(record), today = todayIso(), status = record.effectiveStatus || record.status;
+  const priority = priorityFor(record, bookings, today, action), followup = followupUrgency(today, record.followupDate), services = serviceSummary(record, bookings);
+  const dates = recordDates(record, bookings), first = dates[0] || priority.tourDate, last = dates.at(-1) || first;
+  const tourDate = first ? (last && last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
+  const count = services.count ? `${services.count} service${services.count === 1 ? "" : "s"}` : "Service pending";
+  return `<button class="actionCard ${statusClass(status)}" data-guest="${esc(record.inquiryId)}" data-task="${esc(action?.type || "")}" type="button">
+    <div class="cardTop"><strong>${esc(record.name || action?.guest || "Guest")}</strong><span class="priorityBadge priority-${priority.band}">${esc(priority.band)}</span></div>
+    <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} guests · ${esc(count)}</span></div>
+    <div class="cardFacts"><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>Follow-up</b> ${esc(followup.label)}</span></div>
+    ${action?.reason ? `<div class="actionReason">${esc(action.reason)} · ${esc(record.assignedTo || action.owner || "Unassigned")}</div>` : ""}
+  </button>`;
+}
+
+function renderStatusFilters() {
+  $("#statusFilters").innerHTML = STATUS_FILTERS.map(value => `<button type="button" data-status-filter="${value}" class="${state.statusFilter === value ? "active" : ""}">${esc(value === "all" ? "All active" : pretty(value))}</button>`).join("");
+}
+
+function renderCalendar() {
+  const today = todayIso();
+  if (!state.weekStart) state.weekStart = today;
+  if (!state.selectedDate) state.selectedDate = today;
+  const dates = weekDates(state.weekStart), all = filterRecords(deskRecords(), state.data?.bookings || [], { status: state.statusFilter });
+  $("#calendarRange").textContent = `${shortDate(dates[0])} – ${shortDate(dates.at(-1))}`;
+  $("#weekStrip").innerHTML = dates.map(value => {
+    const count = all.filter(record => recordDates(record, relatedBookings(record)).includes(value)).length;
+    const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+    return `<button type="button" data-calendar-date="${value}" class="${state.selectedDate === value ? "selected" : ""}"><small>${weekday}</small><strong>${Number(value.slice(-2))}</strong><span>${count ? `${count}` : ""}</span></button>`;
+  }).join("");
+  $("#calendarSelection").textContent = `${shortDate(state.selectedDate)} · ${state.statusFilter === "all" ? "all active statuses" : pretty(state.statusFilter)}`;
+}
 
 function renderActions() {
   const actions = state.data?.actions || [];
   const urgent = actions.filter(item => item.priority === 0).length;
   const due = actions.filter(item => ["follow-up", "interaction-follow-up"].includes(item.type)).length;
   $("#actionSummary").innerHTML = `<div class="summaryItem"><strong>${actions.length}</strong><span>Open</span></div><div class="summaryItem"><strong>${urgent}</strong><span>Urgent</span></div><div class="summaryItem"><strong>${due}</strong><span>Follow-ups</span></div>`;
-  $("#actionList").innerHTML = actions.length ? actions.map(item => `<button class="actionCard" data-guest="${esc(item.inquiryId)}" data-task="${esc(item.type)}" type="button"><div class="cardTop"><strong>${esc(item.guest)}</strong><span class="${actionClass(item.priority)}">${esc(pretty(item.type))}</span></div><p>${esc(item.reason)}</p><div class="cardMeta"><span>${esc(item.owner)}</span><span>${esc(item.due || "Now")}</span></div></button>`).join("") : empty("Nothing needs immediate action from the current CRM records.");
+  renderStatusFilters();
+  document.querySelectorAll("[data-desk-view]").forEach(button => button.classList.toggle("active", button.dataset.deskView === state.deskView));
+  $("#calendarPanel").hidden = state.deskView !== "calendar";
+  if (state.deskView === "calendar") renderCalendar();
+  const filteredMode = state.statusFilter !== "all" || state.deskView === "calendar";
+  let records = filteredMode
+    ? filterRecords(deskRecords(), state.data?.bookings || [], { status: state.statusFilter, selectedDate: state.deskView === "calendar" ? state.selectedDate : "" })
+    : actions.map(item => recordById(item.inquiryId)).filter(Boolean);
+  records = [...new Map(records.map(record => [record.inquiryId, record])).values()];
+  records.sort((left, right) => priorityFor(right, relatedBookings(right), todayIso(), actionFor(right)).score - priorityFor(left, relatedBookings(left), todayIso(), actionFor(left)).score || (left.name || "").localeCompare(right.name || ""));
+  $("#actionList").innerHTML = records.length ? records.map(record => deskCard(record, actionFor(record))).join("") : empty(filteredMode ? "No active records match this date and status." : "Nothing needs immediate action from the current CRM records.");
 }
 
 function guestCard(item) {
@@ -102,13 +155,18 @@ async function refresh(showLoading = true) {
 }
 
 async function start() {
+  const loadingMessage = $("#loadingMessage");
+  const loadingStages = [
+    setTimeout(() => { if (loadingMessage) loadingMessage.textContent = "Reconciling bookings, payments, and guest status."; }, 900),
+    setTimeout(() => { if (loadingMessage) loadingMessage.textContent = "Prioritizing tours, transportation, and follow-ups."; }, 2600),
+  ];
   try {
     state.session = await api.session();
     try { await refresh(false); }
     catch (networkError) { const saved = await loadSnapshot(state.session.identity.email); if (!saved) throw networkError; state.data = saved.data; state.cached = true; connection("cached", "Saved"); render(); }
-    $("#loadingState").hidden = true; $("#workspace").hidden = false; $("#bottomNav").hidden = false;
+    loadingStages.forEach(clearTimeout); $("#loadingState").hidden = true; $("#workspace").hidden = false; $("#bottomNav").hidden = false;
     const params = new URLSearchParams(location.search); route(params.get("view") || "actions"); if (params.get("guest")) openGuest(params.get("guest"), params.get("task") || "");
-  } catch (error) { $("#loadingState").hidden = true; $("#errorState").hidden = false; $("#errorMessage").textContent = error.message; connection("error", "Unavailable"); }
+  } catch (error) { loadingStages.forEach(clearTimeout); $("#loadingState").hidden = true; $("#errorState").hidden = false; $("#errorMessage").textContent = error.message; connection("error", "Unavailable"); }
 }
 
 $("#bottomNav").addEventListener("click", event => { const button = event.target.closest("button[data-route]"); if (button) route(button.dataset.route); });
@@ -117,6 +175,16 @@ $("#closeGuest").addEventListener("click", () => $("#guestDialog").close());
 $("#guestDialog").addEventListener("click", event => { if (event.target === event.currentTarget) event.currentTarget.close(); });
 $("#retryButton").addEventListener("click", () => location.reload());
 $("#refreshButton").addEventListener("click", () => refresh());
+$("#actionsView").addEventListener("click", event => {
+  const view = event.target.closest("[data-desk-view]");
+  if (view) { state.deskView = view.dataset.deskView; if (state.deskView === "calendar" && !state.selectedDate) state.selectedDate = todayIso(); renderActions(); return; }
+  const status = event.target.closest("[data-status-filter]");
+  if (status) { state.statusFilter = status.dataset.statusFilter; renderActions(); return; }
+  const day = event.target.closest("[data-calendar-date]");
+  if (day) { state.selectedDate = day.dataset.calendarDate; renderActions(); }
+});
+$("#previousWeek").addEventListener("click", () => { state.weekStart = addIsoDays(state.weekStart || todayIso(), -7); state.selectedDate = state.weekStart; renderActions(); });
+$("#nextWeek").addEventListener("click", () => { state.weekStart = addIsoDays(state.weekStart || todayIso(), 7); state.selectedDate = state.weekStart; renderActions(); });
 $("#guestSearchForm").addEventListener("submit", async event => { event.preventDefault(); const query = $("#guestSearch").value.trim(); if (query.length < 2) return toast("Enter at least two characters."); $("#guestList").innerHTML = empty("Searching…"); try { const result = await api.search(query); renderGuests(result.records); } catch (error) { $("#guestList").innerHTML = empty(error.message); } });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));

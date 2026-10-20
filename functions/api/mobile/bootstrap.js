@@ -11,6 +11,7 @@ export async function onRequestGet({ request, env }) {
       .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
       .slice(0, 100)
       .map(({ internalNotes, notes, email, phone, ...guest }) => guest);
+    const inquiries = data.inquiries.map(({ internalNotes, notes, email, phone, ...guest }) => guest);
     return json(200, {
       ok: true,
       identity: { name: identity.name, role: identity.role },
@@ -19,6 +20,8 @@ export async function onRequestGet({ request, env }) {
       actions: data.actions,
       today: data.today,
       recentGuests: guests,
+      inquiries,
+      bookings: data.bookings,
     });
   } catch (error) { return errorResponse(error, "Mobile data is unavailable."); }
 }

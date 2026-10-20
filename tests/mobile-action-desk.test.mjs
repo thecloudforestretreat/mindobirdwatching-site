@@ -1,0 +1,26 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { filterRecords, followupUrgency, priorityFor, recordDates, serviceIcon } from "../admin/app/modules/action-desk.mjs";
+
+const record = { inquiryId: "I-1", status: "quoted", effectiveStatus: "quoted", requestedDate: "2026-10-21", requestedDateEnd: "2026-10-23", followupDate: "2026-10-19", tours: [{ tour: "Birding", date: "2026-10-21" }] };
+
+test("date filters include active quoted and booked records across service ranges", () => {
+  const booked = { ...record, inquiryId: "I-2", status: "booked", effectiveStatus: "booked" };
+  const closed = { ...record, inquiryId: "I-3", status: "completed", effectiveStatus: "completed" };
+  assert.deepEqual(recordDates(record, []), ["2026-10-21", "2026-10-22", "2026-10-23"]);
+  assert.deepEqual(filterRecords([record, booked, closed], [], { selectedDate: "2026-10-22" }).map(item => item.inquiryId), ["I-1", "I-2"]);
+  assert.deepEqual(filterRecords([record, booked], [], { status: "booked" }).map(item => item.inquiryId), ["I-2"]);
+});
+
+test("priority moderates an overdue follow-up when the tour is distant", () => {
+  const distant = { ...record, requestedDate: "2027-07-04", requestedDateEnd: "2027-07-04", tours: [{ tour: "Birding", date: "2027-07-04" }] };
+  assert.equal(priorityFor(distant, [], "2026-10-20").band, "nurture");
+  assert.equal(priorityFor(record, [], "2026-10-20").band, "now");
+});
+
+test("follow-up urgency and service icons retain visible meaning", () => {
+  assert.deepEqual(followupUrgency("2026-10-20", "2026-10-19"), { tone: "danger", label: "1d overdue" });
+  assert.equal(followupUrgency("2026-10-20", "2026-10-22").tone, "warn");
+  assert.equal(serviceIcon({ serviceType: "Transportation" }), "🚐");
+  assert.equal(serviceIcon({ tour: "Night Walk" }), "🌙");
+});

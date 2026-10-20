@@ -9,7 +9,7 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/app/app.css?v=phase1-status-20261020">
+  <link rel="stylesheet" href="/app/app.css?v=priority-calendar-20261020">
 </head>
 <body>
   <div class="appShell">
@@ -23,9 +23,10 @@
 
     <main id="appMain" tabindex="-1">
       <section class="stateCard" id="loadingState">
-        <div class="spinner" aria-hidden="true"></div>
+        <div class="loadingScene" aria-hidden="true"><span class="loadingBird">🐦</span><span class="loadingCanopy"></span><div class="spinner"></div></div>
         <h1>Opening your Action Desk</h1>
-        <p>Checking your MBW Admin access and loading current CRM records.</p>
+        <p id="loadingMessage">Verifying your private staff access.</p>
+        <div class="loadingSkeleton" aria-hidden="true"><i></i><i></i></div>
       </section>
 
       <section class="stateCard stateCard--error" id="errorState" hidden>
@@ -40,6 +41,15 @@
           <div class="viewHeading"><div><p class="eyebrow">What needs action now</p><h1>Action Desk</h1></div><button class="iconButton" id="refreshButton" type="button" aria-label="Refresh">↻</button></div>
           <div class="cachedNotice" id="cachedNotice" hidden>Showing a saved snapshot. Verify current data before acting.</div>
           <div class="summaryStrip" id="actionSummary"></div>
+          <div class="deskToolbar" aria-label="Action Desk controls">
+            <div class="viewSwitch" role="group" aria-label="Display"><button class="active" type="button" data-desk-view="list">List</button><button type="button" data-desk-view="calendar">Calendar</button></div>
+            <div class="statusFilters" id="statusFilters" aria-label="Filter by current status"></div>
+          </div>
+          <section class="calendarPanel" id="calendarPanel" hidden>
+            <div class="calendarHeader"><button type="button" id="previousWeek" aria-label="Previous week">‹</button><strong id="calendarRange"></strong><button type="button" id="nextWeek" aria-label="Next week">›</button></div>
+            <div class="weekStrip" id="weekStrip"></div>
+            <p class="calendarSelection" id="calendarSelection"></p>
+          </section>
           <div class="cardList" id="actionList"></div>
         </section>
 
@@ -80,6 +90,6 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-  <script type="module" src="/app/app.mjs?v=phase1-status-20261020"></script>
+  <script type="module" src="/app/app.mjs?v=priority-calendar-20261020"></script>
 </body>
 </html>
