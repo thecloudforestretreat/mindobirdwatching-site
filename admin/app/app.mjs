@@ -1,6 +1,6 @@
-import { api } from "./modules/api.mjs";
+import { api } from "./modules/api.mjs?v=services-20261020-v3";
 import { loadSnapshot, saveSnapshot, clearSnapshot } from "./modules/cache.mjs";
-import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs";
+import { STATUS_FILTERS, STATUS_MORE_FILTERS, addIsoDays, filterRecords, followupUrgency, priorityFor, recordDates, serviceSummary, weekDates } from "./modules/action-desk.mjs?v=services-20261020-v3";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
