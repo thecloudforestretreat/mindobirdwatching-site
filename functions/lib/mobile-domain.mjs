@@ -377,7 +377,12 @@ function productCode(value) {
 function serviceAssignments(inquiry, tour, assignments) {
   const dated = assignments.filter(item => item.inquiryId === inquiry.inquiryId && item.serviceDate === tour.date && item.status !== "cancelled");
   const code = productCode(tour.product || tour.tour);
+  const serviceKeys = new Set([key(tour.serviceType), key(tour.tour)].filter(Boolean));
   const exact = code ? dated.filter(item => productCode(item.product) === code) : [];
+  const exactService = serviceKeys.size ? exact.filter(item => serviceKeys.has(key(item.serviceType))) : [];
+  if (exactService.length) return exactService;
+  const service = serviceKeys.size ? dated.filter(item => serviceKeys.has(key(item.serviceType))) : [];
+  if (service.length) return service;
   if (exact.length) return exact;
   const assignmentCodes = dated.map(item => productCode(item.product)).filter(Boolean);
   if (code && assignmentCodes.length) return [];
@@ -409,7 +414,7 @@ export function operationsSchedule(inquiries, assignments, bookings = [], paymen
     const inquiry = inquiryById.get(assignment.inquiryId);
     if (!inquiry || INACTIVE.has(inquiryEvidence(inquiry, bookings, payments, now).status)) continue;
     if (assignment.status === "completed" && assignment.serviceDate !== today) continue;
-    const serviceKey = productCode(assignment.product) || key(assignment.serviceType) || assignment.assignmentId;
+    const serviceKey = [productCode(assignment.product), key(assignment.serviceType)].filter(Boolean).join("|") || assignment.assignmentId;
     const groupKey = `${assignment.inquiryId}|${assignment.serviceDate}|${serviceKey}`;
     const group = assignmentServices.get(groupKey) || { inquiry, assignments: [] };
     group.assignments.push(assignment);
