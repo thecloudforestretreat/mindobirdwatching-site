@@ -30,7 +30,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
   await page.route(`http://127.0.0.1:${port}/api/mobile/**`, async route => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/session")) return route.fulfill({ json: { ok: true, identity: { email: "owner@example.test", name: "Juan", role: "owner" }, capabilities: { write: true } } });
-    if (path.endsWith("/bootstrap")) return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "payment", priority: 0, reason: "Payment pending", owner: "JPG" }], today: [], recentGuests: [record], inquiries: [record], bookings: [] } });
+    if (path.endsWith("/bootstrap")) return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: [], providers: [{ name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }], recentGuests: [record], inquiries: [record], bookings: [] } });
     if (path.endsWith(`/guests/${record.inquiryId}`)) {
       await new Promise(resolve => setTimeout(resolve, 600));
       return route.fulfill({ json: { ok: true, record, journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
@@ -41,10 +41,15 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.goto(`http://127.0.0.1:${port}/app/`);
     const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
     assert.match(await card.innerText(), /Test Testerer/); assert.match(await card.innerText(), /MT/); assert.match(await card.innerText(), /🇺🇸/);
+    assert.equal(await page.locator("[data-summary-filter]").count(), 3); await page.locator('[data-summary-filter="followups"]').click(); assert.equal(await page.locator(".actionCard").count(), 1);
+    await page.locator('#bottomNav [data-route="guests"]').click(); const guestBox = await page.locator(".guestCard").first().boundingBox(); assert.ok(guestBox && guestBox.x + guestBox.width <= 390);
+    await page.locator('#bottomNav [data-route="actions"]').click();
     await card.click();
     await page.locator(".detailLoading").waitFor({ state: "visible" });
     assert.match(await page.locator(".detailHero").innerText(), /United States/);
     await page.getByText("Next action").waitFor({ state: "visible" });
+    assert.equal(await page.getByText("Services", { exact: true }).isVisible(), true);
+    assert.equal(await page.getByText("Add guide, driver, or provider", { exact: true }).isVisible(), true);
     assert.equal(await page.locator(".dialogNav").isVisible(), true);
     for (const label of ["Compose email", "Create Stripe invoice", "Create Zelle invoice", "Create confirmation"]) assert.equal(await page.getByText(label, { exact: true }).isVisible(), true);
     const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('input[name="followup_date"]').boundingBox();
@@ -52,5 +57,9 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     const stripe = await page.getByText("Create Stripe invoice", { exact: true }).getAttribute("href");
     assert.match(stripe, /inquiry_id=I-MT-1/); assert.match(stripe, /guest=Test\+Testerer/);
     await page.screenshot({ path: "/tmp/mbw-mobile-pipeline-qa.png", fullPage: true });
+    await page.goto(`http://127.0.0.1:${port}/guest-crm/?mobile=1`, { waitUntil: "domcontentloaded" });
+    const crmWidth = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
+    assert.ok(crmWidth.scroll <= crmWidth.client + 1, `Guest CRM overflows mobile viewport: ${crmWidth.scroll}px > ${crmWidth.client}px`);
+    await page.screenshot({ path: "/tmp/mbw-guest-crm-mobile-qa.png", fullPage: false });
   } finally { await context.close(); await browser.close(); await new Promise(resolve => server.close(resolve)); }
 });

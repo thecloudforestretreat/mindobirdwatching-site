@@ -18,5 +18,6 @@ export const api = {
   guest: id => request(`/api/mobile/guests/${encodeURIComponent(id)}`),
   patchGuest: (id, payload) => request(`/api/mobile/guests/${encodeURIComponent(id)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   addInteraction: (id, payload) => request(`/api/mobile/guests/${encodeURIComponent(id)}/interactions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
+  createAssignment: payload => request("/api/mobile/assignments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   patchAssignment: (id, payload) => request(`/api/mobile/assignments/${encodeURIComponent(id)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
 };

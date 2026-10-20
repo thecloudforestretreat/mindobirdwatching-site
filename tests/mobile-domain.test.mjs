@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actionDesk, brandSource, guestJourney, inquiryEvidence, normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeInteraction, normalizePayment, todaySchedule } from "../functions/lib/mobile-domain.mjs";
+import { actionDesk, brandSource, guestJourney, inquiryEvidence, normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeInteraction, normalizePayment, operationsSchedule, todaySchedule } from "../functions/lib/mobile-domain.mjs";
 
 const now = new Date("2026-10-19T16:00:00Z");
 const inquiry = normalizeInquiry({ inquiry_id: "INQ-1", guest_id: "G-1", full_name: "Test Guest", status: "booked", quote_status: "accepted", payment_status: "paid", requested_date: "2026-10-19", tour_type: "Birdwatching", guest_count: "2", itinerary_status: "ready", updated_at: "2026-10-18T12:00:00Z" });
@@ -28,7 +28,7 @@ test("journey only marks confirmation complete from explicit confirmation eviden
 
 test("action desk derives operational risks and never invents confirmation readiness", () => {
   const actions = actionDesk([inquiry], [], [], [payment], [], now);
-  assert.ok(actions.some(item => item.type === "operations" && item.reason === "Upcoming tour has no assignments"));
+  assert.ok(actions.some(item => item.type === "operations" && item.reason === "Birdwatching has no assignment"));
   assert.equal(actions.some(item => item.type === "confirmation"), false);
 });
 
@@ -49,6 +49,30 @@ test("today schedule excludes tours whose parent inquiry is closed", () => {
     tour_items_json: JSON.stringify([{ id: "TOUR-PLANNING", tour: "Half-Day Birdwatching", date: "2026-10-19", status: "planning" }]),
   });
   assert.deepEqual(todaySchedule([closed], [], [], [], now), []);
+});
+
+test("mixed itineraries keep future services visible after earlier services complete", () => {
+  const mixed = normalizeInquiry({
+    inquiry_id: "INQ-MIXED", guest_id: "G-MIXED", full_name: "Tiffany Example", status: "completed", guest_count: "1",
+    tour_items_json: JSON.stringify([
+      { id: "past", tour: "Morning Birding", product_selected: "MBW004", date: "2026-10-19", status: "completed" },
+      { id: "next", tour: "Night Walk", product_selected: "MBW016", date: "2026-10-20", status: "booked" },
+      { id: "later", tour: "Second Birding Day", product_selected: "MBW006", date: "2026-10-21", status: "quoted" },
+    ]),
+  });
+  const today = todaySchedule([mixed], [], [], [], new Date("2026-10-20T16:00:00Z"));
+  const upcoming = operationsSchedule([mixed], [], [], [], new Date("2026-10-20T16:00:00Z"), 7);
+  assert.deepEqual(today.map(item => item.id), ["next"]);
+  assert.deepEqual(upcoming.map(item => item.id), ["next", "later"]);
+  assert.equal(actionDesk([mixed], [], [], [], [], new Date("2026-10-20T16:00:00Z"))[0].type, "operations");
+});
+
+test("same-day assignments are matched to their exact service product", () => {
+  const multi = normalizeInquiry({ inquiry_id: "INQ-MULTI", full_name: "Multi Guest", status: "booked", tour_items_json: JSON.stringify([{ id: "bird", tour: "Birding", product_selected: "MBW004", date: "2026-10-19", status: "booked" }, { id: "night", tour: "Night Walk", product_selected: "MBW016", date: "2026-10-19", status: "booked" }]) });
+  const birdGuide = normalizeAssignment({ assignment_id: "A-BIRD", inquiry_id: "INQ-MULTI", service_date: "2026-10-19", product_selected: "MBW004", provider_name: "Bird Guide", assignment_status: "confirmed", provider_informed: "Yes" });
+  const records = todaySchedule([multi], [birdGuide], [], [], now);
+  assert.equal(records.find(item => item.id === "bird").risk, "");
+  assert.equal(records.find(item => item.id === "night").risk, "No assignment");
 });
 
 test("same-day operational risk overrides lower-stage follow-up and payment work", () => {

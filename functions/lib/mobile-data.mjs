@@ -1,7 +1,7 @@
 import { listRecords } from "./mobile-crm.mjs";
 import {
-  normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizePayment, normalizeBooking, enrichInquiry,
-  actionDesk, todaySchedule,
+  normalizeInquiry, normalizeInteraction, normalizeAssignment, normalizeProvider, normalizePayment, normalizeBooking, enrichInquiry,
+  actionDesk, todaySchedule, operationsSchedule,
 } from "./mobile-domain.mjs";
 
 export async function loadMobileData(env) {
@@ -17,13 +17,15 @@ export async function loadMobileData(env) {
   const inquiries = inquiryRows.map(normalizeInquiry).filter(item => item.inquiryId);
   const interactions = interactionRows.map(normalizeInteraction).filter(item => item.interactionId);
   const assignments = assignmentRows.map(normalizeAssignment).filter(item => item.assignmentId);
+  const providers = providerRows.map(normalizeProvider).filter(item => item.name && item.active);
   const payments = paymentRows.map(normalizePayment).filter(item => item.paymentId || item.invoiceNo);
   const bookings = bookingRows.map(normalizeBooking).filter(item => item.bookingId);
   const enrichedInquiries = inquiries.map(item => enrichInquiry(item, bookings, payments));
   return {
     inquiries: enrichedInquiries, interactions, assignments, payments,
-    providers: providerRows, bookings,
+    providers, bookings,
     actions: actionDesk(inquiries, interactions, assignments, payments, bookings),
     today: todaySchedule(inquiries, assignments, bookings, payments),
+    upcoming: operationsSchedule(inquiries, assignments, bookings, payments, new Date(), 7),
   };
 }

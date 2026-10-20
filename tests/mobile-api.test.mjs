@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { onRequestPatch as patchGuest } from "../functions/api/mobile/guests/[inquiryId].js";
 import { onRequestPatch as patchAssignment } from "../functions/api/mobile/assignments/[assignmentId].js";
+import { onRequestPost as createAssignment } from "../functions/api/mobile/assignments/index.js";
 
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
@@ -11,6 +12,7 @@ const env = {
   N8N_CRM_ADMIN_URL: "https://n8n.example.test/webhook/mobile",
 };
 const request = (path, body) => new Request(`http://localhost${path}`, { method: "PATCH", headers: { Origin: "http://localhost", "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" }, body: JSON.stringify(body) });
+const postRequest = (path, body) => new Request(`http://localhost${path}`, { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" }, body: JSON.stringify(body) });
 const payload = options => JSON.parse(new URLSearchParams(options.body).get("payload"));
 
 test("guest mutation uses server identity, optimistic concurrency, and verified readback", async () => {
@@ -56,5 +58,14 @@ test("assignment mutation verifies the CRM result before reporting success", asy
     globalThis.fetch = async (_url, options) => { const body = payload(options); if (body.action === "list_assignments") return Response.json({ ok: true, records: [assignment] }); if (body.action === "update_assignment") { assignment = { ...body.assignment, updated_at: "a2" }; return Response.json({ ok: true }); } throw new Error(`Unexpected ${body.action}`); };
     const response = await patchAssignment({ request: request("/api/mobile/assignments/ASN-1", { expectedUpdatedAt: "a1", patch: { assignment_status: "confirmed", provider_informed: "Yes" } }), env, params: { assignmentId: "ASN-1" } });
     const result = await response.json(); assert.equal(response.status, 200); assert.equal(result.verified, true); assert.equal(result.record.providerInformed, true);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("mobile app creates and verifies a provider assignment", async () => {
+  const savedFetch = globalThis.fetch; let assignment = null;
+  try {
+    globalThis.fetch = async (_url, options) => { const body = payload(options); if (body.action === "create_assignment") { assignment = { ...body.assignment, assignment_id: "ASN-NEW", provider_name: "Test Guide", updated_at: "new1" }; return Response.json({ ok: true }); } if (body.action === "list_assignments") return Response.json({ ok: true, records: assignment ? [assignment] : [] }); throw new Error(`Unexpected ${body.action}`); };
+    const response = await createAssignment({ request: postRequest("/api/mobile/assignments", { inquiryId: "INQ-1", guestId: "G-1", guestName: "Test Guest", guestPhone: "+15550000000", guestCount: "2", assignment: { service_date: "2026-10-21", start_time: "06:00", service_type: "Birdwatching", product_selected: "MBW004", provider_role: "guide", provider_name: "Test Guide", assignment_status: "confirmed", provider_informed: "Yes" } }), env });
+    const result = await response.json(); assert.equal(response.status, 201); assert.equal(result.verified, true); assert.equal(result.record.providerName, "Test Guide"); assert.equal(assignment.created_by, "JPG");
   } finally { globalThis.fetch = savedFetch; }
 });

@@ -66,10 +66,12 @@ export function tourItems(record) {
     id: text(item.id || `${record.inquiry_id || "tour"}-${index}`, 128),
     tour: text(item.tour || item.product_selected || record.tour_type, 300),
     product: text(item.product_selected || record.product_selected, 120),
+    serviceType: text(item.service_type || record.service_type, 120),
     date: dateOnly(item.date || item.tour_date || record.requested_date || record.requested_date_start),
     guests: text(item.guests || record.guest_count, 20),
     status: key(item.status || record.status),
     pickup: text(item.pickup_location || record.pickup_location, 500),
+    dropoff: text(item.dropoff_location, 500),
     startTime: text(item.start_time || item.startTime, 30),
   }));
 }
@@ -149,6 +151,16 @@ export function normalizeAssignment(row) {
     calendarUrl: text(row.calendar_event_url, 1000),
     note: text(row.internal_note, 2000),
     updatedAt: text(row.updated_at, 80),
+  };
+}
+
+export function normalizeProvider(row) {
+  return {
+    name: text(row.provider_name === "Other" ? row.provider_name_other : row.provider_name, 160),
+    role: key(row.provider_role || "other"),
+    serviceType: text(row.service_type, 120),
+    isDefault: yes(row.is_default),
+    active: !["no", "false", "0", "inactive"].includes(key(row.active ?? row.is_active ?? "yes")),
   };
 }
 
@@ -312,7 +324,8 @@ export function actionDesk(inquiries, interactions, assignments, payments, booki
     if (!record.inquiryId) continue;
     const evidence = inquiryEvidence(record, bookings, payments, now);
     const effectiveStatus = evidence.status;
-    if (CLOSED.has(effectiveStatus)) continue;
+    const operationalTours = record.tours.filter(item => item.date >= today && !INACTIVE.has(item.status) && item.status !== "completed");
+    if (INACTIVE.has(effectiveStatus) || (effectiveStatus === "completed" && !operationalTours.length)) continue;
     if (evidence.needsReconciliation) {
       actions.push(action(record, "reconciliation", "Booking or payment evidence conflicts with this inquiry", record.requestedDate || today, 0));
       continue;
@@ -332,11 +345,12 @@ export function actionDesk(inquiries, interactions, assignments, payments, booki
     if (confirmation?.state === "attention") candidates.push(action(record, "confirmation", confirmation.evidence, record.requestedDate, 1, `/app/?guest=${encodeURIComponent(record.inquiryId)}&task=confirmation`));
     const pay = journey.find(item => item.id === "payment");
     if (pay?.state === "attention") candidates.push(action(record, "payment", pay.evidence, record.requestedDate, 2, `/app/?guest=${encodeURIComponent(record.inquiryId)}&task=payments`));
-    const dates = record.tours.map(item => item.date).filter(Boolean);
-    if (dates.some(date => date === today || date === tomorrow)) {
-      const relatedAssignments = assignments.filter(item => item.inquiryId === record.inquiryId);
-      if (!relatedAssignments.length) candidates.push(action(record, "operations", "Upcoming tour has no assignments", dates.find(date => date === today || date === tomorrow), 0, `/app/?guest=${encodeURIComponent(record.inquiryId)}&task=operations`));
-      else if (relatedAssignments.some(item => !item.providerInformed || item.status === "pending")) candidates.push(action(record, "operations", "Provider confirmation incomplete", dates.find(date => date === today || date === tomorrow), 0, `/app/?guest=${encodeURIComponent(record.inquiryId)}&task=operations`));
+    const imminent = operationalTours.filter(item => item.date === today || item.date === tomorrow);
+    if (imminent.length) {
+      const missing = imminent.find(item => !serviceAssignments(record, item, assignments).length);
+      const incomplete = imminent.find(item => serviceAssignments(record, item, assignments).some(assignment => !assignment.providerInformed || assignment.status === "pending"));
+      if (missing) candidates.push(action(record, "operations", `${missing.tour || "Upcoming service"} has no assignment`, missing.date, 0, `/app/?guest=${encodeURIComponent(record.inquiryId)}&task=operations`));
+      else if (incomplete) candidates.push(action(record, "operations", `${incomplete.tour || "Upcoming service"} provider confirmation is incomplete`, incomplete.date, 0, `/app/?guest=${encodeURIComponent(record.inquiryId)}&task=operations`));
     }
     const typeRank = { operations: 0, "first-response": 1, "interaction-follow-up": 2, "follow-up": 3, confirmation: 4, payment: 5 };
     candidates.sort((a, b) => a.priority - b.priority || (typeRank[a.type] ?? 99) - (typeRank[b.type] ?? 99) || String(a.due).localeCompare(String(b.due)));
@@ -346,19 +360,40 @@ export function actionDesk(inquiries, interactions, assignments, payments, booki
 }
 
 export function todaySchedule(inquiries, assignments, bookings = [], payments = [], now = new Date()) {
-  const today = todayInEcuador(now);
+  return operationsSchedule(inquiries, assignments, bookings, payments, now, 0);
+}
+
+function productCode(value) {
+  return text(value, 240).toUpperCase().match(/\b(?:MBW|MT|CAT|ACT|TRANS)\s*-?\s*\d+\b/)?.[0]?.replace(/\s+/g, "") || "";
+}
+
+function serviceAssignments(inquiry, tour, assignments) {
+  const dated = assignments.filter(item => item.inquiryId === inquiry.inquiryId && item.serviceDate === tour.date && item.status !== "cancelled");
+  const code = productCode(tour.product || tour.tour);
+  const exact = code ? dated.filter(item => productCode(item.product) === code) : [];
+  if (exact.length) return exact;
+  const assignmentCodes = dated.map(item => productCode(item.product)).filter(Boolean);
+  if (code && assignmentCodes.length) return [];
+  return dated.length === 1 ? dated : [];
+}
+
+export function operationsSchedule(inquiries, assignments, bookings = [], payments = [], now = new Date(), days = 7) {
+  const today = todayInEcuador(now), end = addDays(today, Math.max(0, Math.min(Number(days) || 0, 31)));
   const records = [];
   for (const inquiry of inquiries) {
-    if (CLOSED.has(inquiryEvidence(inquiry, bookings, payments, now).status)) continue;
-    for (const tour of inquiry.tours.filter(item => item.date === today && !CLOSED.has(item.status))) {
-      const related = assignments.filter(item => item.inquiryId === inquiry.inquiryId && item.serviceDate === today);
+    const effective = inquiryEvidence(inquiry, bookings, payments, now).status;
+    if (INACTIVE.has(effective)) continue;
+    for (const tour of inquiry.tours.filter(item => item.date >= today && item.date <= end && !INACTIVE.has(item.status) && (item.date === today || item.status !== "completed"))) {
+      const related = serviceAssignments(inquiry, tour, assignments);
+      const completed = tour.status === "completed";
       records.push({
         id: tour.id, inquiryId: inquiry.inquiryId, guest: inquiry.name, partySize: tour.guests || inquiry.partySize,
-        phone: inquiry.phone, tour: tour.tour, date: today, startTime: tour.startTime || related[0]?.startTime || "",
+        phone: inquiry.phone, tour: tour.tour, product: tour.product, date: tour.date, status: tour.status || effective,
+        startTime: tour.startTime || related[0]?.startTime || "",
         pickup: tour.pickup || inquiry.pickup, assignments: related,
-        risk: !related.length ? "No assignment" : related.some(item => !item.providerInformed || item.status === "pending") ? "Provider confirmation incomplete" : "",
+        risk: completed ? "" : !related.length ? "No assignment" : related.some(item => !item.providerInformed || item.status === "pending") ? "Provider confirmation incomplete" : "",
       });
     }
   }
-  return records.sort((a, b) => (a.startTime || "99:99").localeCompare(b.startTime || "99:99") || a.guest.localeCompare(b.guest));
+  return records.sort((a, b) => a.date.localeCompare(b.date) || (a.startTime || "99:99").localeCompare(b.startTime || "99:99") || a.guest.localeCompare(b.guest));
 }

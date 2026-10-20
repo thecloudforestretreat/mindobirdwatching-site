@@ -22,6 +22,8 @@ export async function onRequestGet({ request, env }) {
       recentGuests: guests,
       inquiries,
       bookings: data.bookings,
+      providers: data.providers,
+      upcoming: data.upcoming,
     });
   } catch (error) { return errorResponse(error, "Mobile data is unavailable."); }
 }
