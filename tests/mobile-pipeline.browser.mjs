@@ -68,6 +68,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.goto(`http://127.0.0.1:${port}/app/`);
     await page.locator(".loadingReveal").waitFor({ state: "visible" });
     assert.equal(await page.locator(".loadingBird").count(), 0);
+    assert.match(await page.locator(".loadingReveal img").evaluate(element => getComputedStyle(element).clipPath), /^inset\(0px 0px /, "gold logo should reveal from top to bottom");
     assert.equal(await page.locator(".loadingReveal img").isVisible(), true);
     assert.match(await page.locator(".appHeader .brand img").getAttribute("src"), /mbw-header-logo-160\.png/);
     await page.screenshot({ path: "/tmp/mbw-loader-mobile-qa.png", fullPage: false });
@@ -101,7 +102,17 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.locator('#bottomNav [data-route="actions"]').click();
     await card.click();
     await page.locator(".detailLoading").waitFor({ state: "visible" });
+    await page.locator(".detailContactMeta").waitFor({ state: "visible" });
     assert.match(await page.locator(".detailHero").innerText(), /United States/);
+    for (const value of ["Payment Pending", "Mindo Tours Test", "2 guests · 1 service", "Tour Oct 22, 2026", "F/U"]) assert.match(await page.locator(".detailHero").innerText(), new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.equal(await page.locator('#profileForm input[name="first_name"]').inputValue(), "Test");
+    assert.equal(await page.locator('#profileForm input[name="last_name"]').inputValue(), "Testerer");
+    const emailWidth = (await page.locator('#profileForm input[name="email"]').boundingBox()).width, phoneWidth = (await page.locator('#profileForm input[name="phone_number"]').boundingBox()).width;
+    assert.ok(emailWidth > phoneWidth * 1.7, "email should use the full form width");
+    for (const pair of [["first_name","last_name"],["phone_number","country"],["assigned_to","guest_count"]]) { const left = await page.locator(`#profileForm [name="${pair[0]}"]`).boundingBox(), right = await page.locator(`#profileForm [name="${pair[1]}"]`).boundingBox(); assert.equal(left.y, right.y); }
+    await page.getByText("Edit guest details", { exact: true }).click();
+    await page.locator('#profileForm input[name="email"]').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: "/tmp/mbw-guest-profile-qa.png", fullPage: false });
     await page.getByText("Next action").waitFor({ state: "visible" });
     assert.equal(await page.getByText("Services", { exact: true }).isVisible(), true);
     assert.equal(await page.getByText("Add another tour, activity, or transfer", { exact: true }).isVisible(), true);

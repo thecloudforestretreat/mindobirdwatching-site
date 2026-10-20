@@ -54,7 +54,7 @@ export async function onRequestPatch({ request, env, params }) {
     if (body.expectedUpdatedAt && String(body.expectedUpdatedAt) !== current.record.updatedAt) {
       return json(409, { ok: false, error: "This record changed since it was loaded. Refresh and review before saving." });
     }
-    const limits = new Map([["followup_date", 10], ["status", 40], ["priority", 20], ["assigned_to", 30], ["full_name", 160], ["phone_number", 60], ["email", 254], ["country", 120], ["guest_count", 3], ["requested_date", 10], ["pickup_location", 500], ["notes", 3000]]);
+    const limits = new Map([["followup_date", 10], ["status", 40], ["priority", 20], ["assigned_to", 30], ["first_name", 80], ["last_name", 80], ["full_name", 160], ["phone_number", 60], ["email", 254], ["country", 120], ["guest_count", 3], ["requested_date", 10], ["pickup_location", 500], ["notes", 3000]]);
     const patch = body.patch;
     if (!patch || typeof patch !== "object" || Array.isArray(patch) || !Object.keys(patch).length) return json(400, { ok: false, error: "No supported changes were supplied." });
     for (const [field, value] of Object.entries(patch)) {
@@ -64,12 +64,16 @@ export async function onRequestPatch({ request, env, params }) {
     if (patch.status !== undefined && !STATUSES.has(patch.status)) return json(400, { ok: false, error: "Invalid inquiry status." });
     if (patch.priority !== undefined && !PRIORITIES.has(patch.priority)) return json(400, { ok: false, error: "Invalid inquiry priority." });
     if (patch.assigned_to !== undefined && !/^[A-Za-z0-9 _-]{0,30}$/.test(patch.assigned_to)) return json(400, { ok: false, error: "Invalid assignee." });
+    if (patch.first_name !== undefined && !patch.first_name.trim()) return json(400, { ok: false, error: "First name is required." });
     if (patch.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email)) return json(400, { ok: false, error: "Enter a valid email address." });
     if (patch.guest_count && (!/^\d{1,2}$/.test(patch.guest_count) || Number(patch.guest_count) < 1 || Number(patch.guest_count) > 99)) return json(400, { ok: false, error: "Guests must be between 1 and 99." });
     if (patch.requested_date && !/^\d{4}-\d{2}-\d{2}$/.test(patch.requested_date)) return json(400, { ok: false, error: "Use a valid tour date." });
     const updated = { ...current.raw, ...patch, updated_at: new Date().toISOString() };
     if (patch.full_name !== undefined) {
       const names = patch.full_name.trim().split(/\s+/); updated.first_name = names[0] || ""; updated.last_name = names.slice(1).join(" ");
+    }
+    if (patch.first_name !== undefined || patch.last_name !== undefined) {
+      updated.first_name = String(updated.first_name || "").trim(); updated.last_name = String(updated.last_name || "").trim(); updated.full_name = [updated.first_name, updated.last_name].filter(Boolean).join(" ");
     }
     if (patch.phone_number !== undefined) { updated.phone_raw = patch.phone_number; updated.phone_normalized = patch.phone_number.replace(/\D/g, ""); }
     if (patch.email !== undefined) updated.email_normalized = patch.email.trim().toLowerCase();

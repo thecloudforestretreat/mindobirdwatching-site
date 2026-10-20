@@ -81,7 +81,7 @@ test("status mutation persists and verifies the canonical CRM status", async () 
 });
 
 test("mobile profile editing preserves CRM identity helpers", async () => {
-  const savedFetch = globalThis.fetch; let row = { inquiry_id: "INQ-PROFILE", guest_id: "G-PROFILE", full_name: "Old Name", phone_number: "123", email: "old@example.test", status: "planning", updated_at: "p1" };
+  const savedFetch = globalThis.fetch; let row = { inquiry_id: "INQ-PROFILE", guest_id: "G-PROFILE", first_name: "Old", last_name: "Name", full_name: "Old Name", phone_number: "123", email: "old@example.test", status: "planning", updated_at: "p1" };
   try {
     globalThis.fetch = async (_url, options) => {
       const body = payload(options);
@@ -90,8 +90,8 @@ test("mobile profile editing preserves CRM identity helpers", async () => {
       if (body.action === "update_inquiry") { row = { ...body.record, updated_at: "p2" }; return Response.json({ ok: true }); }
       throw new Error(`Unexpected ${body.action}`);
     };
-    const response = await patchGuest({ request: request("/api/mobile/guests/INQ-PROFILE", { expectedUpdatedAt: "p1", patch: { full_name: "Updated Guest", phone_number: "+1 305 555 0199", email: "updated@example.test", country: "United States", guest_count: "3" } }), env, params: { inquiryId: "INQ-PROFILE" } });
-    assert.equal(response.status, 200); assert.equal((await response.json()).verified, true); assert.equal(row.first_name, "Updated"); assert.equal(row.last_name, "Guest"); assert.equal(row.phone_normalized, "13055550199"); assert.equal(row.email_normalized, "updated@example.test"); assert.equal(row.home_country, "United States");
+    const response = await patchGuest({ request: request("/api/mobile/guests/INQ-PROFILE", { expectedUpdatedAt: "p1", patch: { first_name: "Updated", last_name: "Guest", phone_number: "+1 305 555 0199", email: "updated@example.test", country: "United States", guest_count: "3" } }), env, params: { inquiryId: "INQ-PROFILE" } });
+    assert.equal(response.status, 200); assert.equal((await response.json()).verified, true); assert.equal(row.first_name, "Updated"); assert.equal(row.last_name, "Guest"); assert.equal(row.full_name, "Updated Guest"); assert.equal(row.phone_normalized, "13055550199"); assert.equal(row.email_normalized, "updated@example.test"); assert.equal(row.home_country, "United States");
   } finally { globalThis.fetch = savedFetch; }
 });
 

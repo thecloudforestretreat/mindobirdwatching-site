@@ -49,18 +49,19 @@ function guestDocumentsMarkup(guest) {
   return `<details class="detailSection collapsibleSection"><summary class="detailTitle"><h3>Guest documents</h3><span class="badge">CRM linked</span></summary><div class="pipelineActions"><a class="pipelineAction" href="${esc(toolUrl("/itinerary-generator/", guest))}" target="_blank" rel="noopener noreferrer">Generate Itinerary</a><a class="pipelineAction" href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Create Confirmation</a></div></details>`;
 }
 
+function guestSummaryMarkup(item, fallback = "Guest", assignee = "") {
+  const status = item.effectiveStatus || item.status, bookings = relatedBookings(item), services = serviceSummary(item, bookings), followup = followupUrgency(todayIso(), item.followupDate), dates = recordDates(item, bookings), first = dates[0], last = dates.at(-1) || first;
+  const tourDate = first ? (last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
+  return `<div class="cardTop"><strong>${identityMarkup(item, fallback)}</strong><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span></div><div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"} · ${services.count} service${services.count === 1 ? "" : "s"}</span></div><div class="cardFacts"><span class="assignedRep">${esc(item.assignedTo || assignee || "Unassigned")}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>F/U</b> ${esc(followup.label)}</span></div>`;
+}
+
 function deskCard(record, action = null) {
   const bookings = relatedBookings(record), today = todayIso(), status = record.effectiveStatus || record.status;
   const displayAction = action?.type === "operations" && status !== "booked" ? null : action;
-  const priority = priorityFor(record, bookings, today, displayAction), followup = followupUrgency(today, record.followupDate), services = serviceSummary(record, bookings);
-  const dates = recordDates(record, bookings), first = dates[0] || priority.tourDate, last = dates.at(-1) || first;
+  const priority = priorityFor(record, bookings, today, displayAction), dates = recordDates(record, bookings), first = dates[0] || priority.tourDate;
   const bookingConflict = dates.length && bookings.find(item => item.startDate && !dates.includes(item.startDate));
-  const tourDate = first ? (last && last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
-  const count = services.count ? `${services.count} service${services.count === 1 ? "" : "s"}` : "Service pending";
   return `<button class="actionCard ${statusClass(status)}" data-guest="${esc(record.inquiryId)}" data-task="${esc(action?.type || "")}" type="button">
-    <div class="cardTop"><strong>${identityMarkup(record, action?.guest || "Guest")}</strong><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span></div>
-    <div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(record.partySize || "?")} ${Number(record.partySize) === 1 ? "guest" : "guests"} · ${esc(count)}</span></div>
-    <div class="cardFacts"><span class="assignedRep">${esc(record.assignedTo || displayAction?.owner || "Unassigned")}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>F/U</b> ${esc(followup.label)}</span></div>
+    ${guestSummaryMarkup(record, action?.guest || "Guest", displayAction?.owner)}
     ${bookingConflict ? `<div class="actionCue actionReason--warn"><span>Booking ledger says ${esc(shortDate(bookingConflict.startDate))}; itinerary says ${esc(shortDate(first))}. Review.</span><span class="priorityBadge priority-${priority.band}">${esc(priority.label)}</span></div>` : displayAction?.reason && !["follow-up","interaction-follow-up"].includes(displayAction.type) ? `<div class="actionCue"><span>${esc(displayAction.reason)}</span><span class="priorityBadge priority-${priority.band}">${esc(priority.label)}</span></div>` : ""}
   </button>`;
 }
@@ -109,9 +110,8 @@ function renderActions() {
 }
 
 function guestCard(item) {
-  const status = item.effectiveStatus || item.status, bookings = relatedBookings(item), services = serviceSummary(item, bookings), followup = followupUrgency(todayIso(), item.followupDate), dates = recordDates(item, bookings), first = dates[0], last = dates.at(-1) || first;
-  const tourDate = first ? (last !== first ? `${shortDate(first)}–${shortDate(last)}` : shortDate(first)) : "Not set";
-  return `<button class="guestCard ${statusClass(status)}" data-guest="${esc(item.inquiryId)}" type="button"><div class="cardTop"><strong>${identityMarkup(item)}</strong><span class="statusBadge ${statusClass(status)}">${esc(pretty(status))}</span></div><div class="serviceLine"><span class="serviceIcons" aria-hidden="true">${esc(services.icons)}</span><span class="serviceName">${esc(services.primary)}</span><span class="serviceCount">${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"} · ${services.count} service${services.count === 1 ? "" : "s"}</span></div><div class="cardFacts"><span class="assignedRep">${esc(item.assignedTo || "Unassigned")}</span><span class="tourDate"><b>Tour</b> ${esc(tourDate)}</span><span class="followupDate followup-${followup.tone}"><b>F/U</b> ${esc(followup.label)}</span></div></button>`;
+  const status = item.effectiveStatus || item.status;
+  return `<button class="guestCard ${statusClass(status)}" data-guest="${esc(item.inquiryId)}" type="button">${guestSummaryMarkup(item)}</button>`;
 }
 
 function guestStatus(item) { return item.effectiveStatus || item.status || "new"; }
@@ -154,7 +154,8 @@ function route(name) {
 
 function journeyMarkup(journey) { return `<div class="journey">${journey.map(item => `<div class="journeyStep journey-${String(item.label || "step").toLowerCase().replace(/[^a-z0-9]+/g, "-")}" data-state="${esc(item.state)}"><i></i><div><strong>${esc(item.label)}</strong><small>${esc(item.evidence)}</small></div></div>`).join("")}</div>`; }
 function profileMarkup(guest, canWrite) {
-  return `<details class="profileEditor"><summary>Edit guest details</summary><form id="profileForm"><label class="field"><span>Full name</span><input name="full_name" maxlength="160" value="${esc(guest.name)}" required ${canWrite ? "" : "disabled"}></label><div class="fieldGrid"><label class="field"><span>Phone</span><input name="phone_number" maxlength="60" value="${esc(guest.phone)}" inputmode="tel" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Email</span><input type="email" name="email" maxlength="254" value="${esc(guest.email)}" ${canWrite ? "" : "disabled"}></label></div><div class="fieldGrid"><label class="field"><span>Country</span><input name="country" maxlength="120" value="${esc(guest.country)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guests</span><input type="number" name="guest_count" min="1" max="99" value="${esc(guest.partySize || "1")}" ${canWrite ? "" : "disabled"}></label></div><label class="field"><span>Assigned rep</span><input name="assigned_to" maxlength="30" value="${esc(guest.assignedTo)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Pickup</span><input name="pickup_location" maxlength="500" value="${esc(guest.pickup)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guest notes</span><textarea name="notes" maxlength="3000" ${canWrite ? "" : "disabled"}>${esc(guest.notes)}</textarea></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save details</button></div></form></details>`;
+  const fallback = String(guest.name || "").trim().split(/\s+/), firstName = guest.firstName || fallback[0] || "", lastName = guest.lastName || fallback.slice(1).join(" ");
+  return `<details class="profileEditor"><summary>Edit guest details</summary><form id="profileForm"><div class="fieldGrid"><label class="field"><span>First name</span><input name="first_name" maxlength="80" value="${esc(firstName)}" autocomplete="given-name" required ${canWrite ? "" : "disabled"}></label><label class="field"><span>Last name</span><input name="last_name" maxlength="80" value="${esc(lastName)}" autocomplete="family-name" ${canWrite ? "" : "disabled"}></label></div><div class="fieldGrid"><label class="field"><span>Phone</span><input name="phone_number" maxlength="60" value="${esc(guest.phone)}" inputmode="tel" autocomplete="tel" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Country</span><input name="country" maxlength="120" value="${esc(guest.country)}" autocomplete="country-name" ${canWrite ? "" : "disabled"}></label></div><label class="field"><span>Email</span><input type="email" name="email" maxlength="254" value="${esc(guest.email)}" autocomplete="email" ${canWrite ? "" : "disabled"}></label><div class="fieldGrid"><label class="field"><span>Assigned rep</span><input name="assigned_to" maxlength="30" value="${esc(guest.assignedTo)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guests</span><input type="number" name="guest_count" min="1" max="99" value="${esc(guest.partySize || "1")}" ${canWrite ? "" : "disabled"}></label></div><label class="field"><span>Pickup</span><input name="pickup_location" maxlength="500" value="${esc(guest.pickup)}" ${canWrite ? "" : "disabled"}></label><label class="field"><span>Guest notes</span><textarea name="notes" maxlength="3000" ${canWrite ? "" : "disabled"}>${esc(guest.notes)}</textarea></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Save details</button></div></form></details>`;
 }
 function serviceMarkup(guest, canWrite) { return `<div class="serviceRecords">${(guest.tours || []).map(item => `<form class="serviceRecord serviceStatusForm ${statusClass(item.status)}" data-service="${esc(item.id)}"><div><strong>${esc(item.tour || item.product || "Service")}</strong><small>${esc(date(item.date))} · ${esc(item.guests || guest.partySize || "?")} ${Number(item.guests || guest.partySize) === 1 ? "guest" : "guests"}</small></div><div class="serviceStatusControls"><select name="status" aria-label="Status for ${esc(item.tour || item.product || "service")}" ${canWrite ? "" : "disabled"}>${["planning","quoted","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled"].map(value => `<option value="${value}" ${item.status === value ? "selected" : ""}>${esc(pretty(value))}</option>`).join("")}</select><button type="submit" ${canWrite ? "" : "disabled"}>Save</button></div></form>`).join("") || `<div class="recordItem"><p>No itinerary services recorded.</p></div>`}</div>`; }
 function serviceCreateMarkup(guest, canWrite) {
@@ -173,14 +174,14 @@ function interactionMarkup(records) { return records.length ? records.slice().so
 async function openGuest(id, task = "") {
   const dialog = $("#guestDialog"), body = $("#guestDetail"), preview = recordById(id) || state.data?.recentGuests?.find(item => item.inquiryId === id);
   $("#guestDialogTitle").textContent = preview?.name || "Loading…";
-  body.innerHTML = preview ? `<section class="detailHero"><h2>${identityMarkup(preview)}</h2><p class="countryLabel">${esc(preview.country || "Country not recorded")} · ${esc(pretty(preview.effectiveStatus || preview.status))}</p></section><div class="detailLoading" aria-label="Loading current guest workspace"><i></i><i></i></div>` : `<section class="stateCard"><div class="spinner"></div><p>Loading the current guest record.</p></section>`;
+  body.innerHTML = preview ? `<section class="detailHero detailHero--record ${statusClass(preview.effectiveStatus || preview.status)}">${guestSummaryMarkup(preview)}</section><div class="detailLoading" aria-label="Loading current guest workspace"><i></i><i></i></div>` : `<section class="stateCard"><div class="spinner"></div><p>Loading the current guest record.</p></section>`;
   if (!dialog.open) dialog.showModal();
   try {
     const result = await api.guest(id); state.guest = result; const guest = result.record; const canWrite = Boolean(state.session?.capabilities?.write);
     const selectedStatus = STATUS_OPTIONS.includes(guest.effectiveStatus) ? guest.effectiveStatus : guest.status;
     $("#guestDialogTitle").textContent = guest.name || "Guest";
     const whatsapp = phoneDigits(guest.phone);
-    body.innerHTML = `<section class="detailHero"><h2>${identityMarkup(guest)}</h2><p class="countryLabel">${esc(guest.country || "Country not recorded")}</p><p>${esc(guest.email || "Email not recorded")}</p><p>${esc(guest.phone || "Phone not recorded")}</p><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="${esc(toolUrl("/custom-email-generator/", guest))}" target="_blank" rel="noopener noreferrer">Email draft</a>` : ""}</div></section>
+    body.innerHTML = `<section class="detailHero detailHero--record ${statusClass(guest.effectiveStatus || guest.status)}">${guestSummaryMarkup(guest)}<div class="detailContactMeta"><span>${esc(guest.country || "Country not recorded")}</span><span>${esc(guest.email || "Email not recorded")}</span><span>${esc(guest.phone || "Phone not recorded")}</span></div><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="${esc(toolUrl("/custom-email-generator/", guest))}" target="_blank" rel="noopener noreferrer">Email draft</a>` : ""}</div></section>
       <section class="detailSection" data-section="profile"><h3>Guest details</h3>${profileMarkup(guest, canWrite)}</section>
       <section class="detailSection"><div class="detailTitle"><h3>Services</h3><span class="badge">${guest.tours?.length || 0}</span></div>${serviceMarkup(guest, canWrite)}${serviceCreateMarkup(guest, canWrite)}</section>
       <details class="detailSection collapsibleSection ${statusClass(guest.effectiveStatus || guest.status)}" open><summary class="detailTitle"><h3>Guest Journey</h3><span class="badge">${esc(pretty(guest.effectiveStatus || guest.status))}</span></summary>${guest.needsReconciliation ? `<p class="formNote formNote--warn">Legacy booking or payment records need reconciliation before this inquiry is treated as current.</p>` : ""}${journeyMarkup(result.journey)}</details>
@@ -289,7 +290,11 @@ async function start() {
     state.session = await api.session();
     setLoadingStage(38, "Loading current CRM records.");
     try { await refresh(false); }
-    catch (networkError) { const saved = await loadSnapshot(state.session.identity.email); if (!saved) throw networkError; state.data = saved.data; state.cached = true; connection("cached", "Saved"); render(); }
+    catch (networkError) {
+      const saved = await loadSnapshot(state.session.identity.email); if (!saved) throw networkError;
+      state.data = saved.data; state.cached = true; connection("cached", "Saved"); render();
+      [4000, 15000].forEach(delay => setTimeout(() => { if (state.cached && navigator.onLine) refresh(false); }, delay));
+    }
     setLoadingStage(100, "Action Desk ready.");
     await new Promise(resolve => setTimeout(resolve, 180));
     loadingStages.forEach(clearTimeout); $("#loadingState").hidden = true; $("#workspace").hidden = false; $("#bottomNav").hidden = false;
@@ -327,5 +332,5 @@ $("#guestsView").addEventListener("click", event => { const button = event.targe
 $("#guestsView").addEventListener("change", event => { if (event.target.id !== "guestMoreStatusFilter" || !event.target.value) return; state.guestStatusFilter = event.target.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuestStatusFilters(); renderGuests(); });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=15", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=16", { scope: "/app/" }).catch(() => {});
 start();

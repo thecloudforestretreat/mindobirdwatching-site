@@ -89,6 +89,8 @@ export function normalizeInquiry(record) {
     inquiryId: text(record.inquiry_id, 128),
     guestId: text(record.guest_id, 128),
     bookingId: text(record.booking_id, 128),
+    firstName: text(record.first_name, 80),
+    lastName: text(record.last_name, 80),
     name: text(record.full_name || [record.first_name, record.last_name].filter(Boolean).join(" "), 180),
     country: location.code ? recordedCountry || location.country : "",
     countryCode: location.code,
