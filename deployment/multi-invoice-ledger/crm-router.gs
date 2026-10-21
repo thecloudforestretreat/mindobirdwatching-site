@@ -4157,6 +4157,7 @@ function previewDailyFollowupDigest() {
   const digest = buildDailyFollowupDigest_(ss, queue.rows || []);
   const result = { dryRun: true, dueCount: digest.count, openTasks: queue.openTasks,
     closedTasks: queue.closedTasks, recipient: INTERNAL_NOTIFY_EMAIL,
+    subject: digest.message ? digest.message.subject : "",
     bodyCharacters: digest.message ? digest.message.body.length : 0,
     htmlCharacters: digest.message ? digest.message.htmlBody.length : 0,
     durationMs: Date.now() - startedAt };
@@ -4365,7 +4366,8 @@ function formatDigestDate_(dateIso, includeWeekday) {
   const normalized = normalizeDateForSheet_(dateIso);
   if (!normalized) return "";
   const pattern = includeWeekday ? "EEEE, MMMM d, yyyy" : "MMMM d";
-  return Utilities.formatDate(parseIsoDate_(normalized), CRM_TIMEZONE, pattern);
+  // A calendar date must not shift to the previous day in the script host timezone.
+  return Utilities.formatDate(new Date(normalized + "T12:00:00Z"), CRM_TIMEZONE, pattern);
 }
 
 function escapeHtml_(value) {
