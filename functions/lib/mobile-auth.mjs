@@ -15,7 +15,7 @@ function parseRoleMap(raw) {
 
 function roleEntry(roleMap, email) {
   const configured = roleMap[email];
-  if (typeof configured === "string") return { role: configured, staffCode: "", providerName: "", providerId: "" };
+  if (typeof configured === "string") return { role: configured, staffCode: "", providerName: "", providerId: "", contributorNumber: "" };
   if (configured && typeof configured === "object") {
     return {
       role: String(configured.role || "").toLowerCase(),
@@ -23,6 +23,9 @@ function roleEntry(roleMap, email) {
       name: String(configured.name || "").slice(0, 80),
       providerName: String(configured.providerName || configured.provider_name || "").trim().slice(0, 160),
       providerId: String(configured.providerId || configured.provider_id || "").trim().slice(0, 128),
+      contributorNumber: String(configured.contributorNumber || configured.contributor_number || "").trim()
+        ? String(configured.contributorNumber || configured.contributor_number).trim().replace(/\.0+$/, "").padStart(3, "0")
+        : "",
     };
   }
   return null;
@@ -59,6 +62,9 @@ export async function guideIdentity(request, env) {
   if (entry.role === "guide" && !entry.providerName) {
     throw Object.assign(new Error("This guide account is not linked to a provider record."), { status: 503 });
   }
+  if (entry.contributorNumber && !/^\d{3}$/.test(entry.contributorNumber)) {
+    throw Object.assign(new Error("The configured contributor number is invalid."), { status: 503 });
+  }
   return {
     email,
     role: entry.role,
@@ -66,5 +72,6 @@ export async function guideIdentity(request, env) {
     name: entry.name || entry.providerName || email.split("@")[0],
     providerName: entry.providerName,
     providerId: entry.providerId,
+    contributorNumber: entry.contributorNumber,
   };
 }

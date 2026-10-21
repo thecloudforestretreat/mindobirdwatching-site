@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mobileIdentity } from "../functions/lib/mobile-auth.mjs";
+import { guideMayRequest } from "../functions/_middleware.js";
 import { crmCall } from "../functions/lib/mobile-crm.mjs";
 import { assertMobileWriteReady, assertSameOrigin, mobileWriteReady, readJson, writesEnabled } from "../functions/lib/mobile-http.mjs";
 
@@ -11,6 +12,13 @@ test("role map authorizes only explicit owner and agent entries", async () => {
   assert.deepEqual(await mobileIdentity(request(), env), { email: "owner@example.com", role: "owner", staffCode: "JPG", name: "Juan" });
   await assert.rejects(() => mobileIdentity(request(), { ...env, LOCAL_TEST_IDENTITY: "other@example.com" }), /not enabled/);
   await assert.rejects(() => mobileIdentity(request(), { ...env, MBW_MOBILE_ROLE_MAP: "not-json" }), /configuration is invalid/);
+});
+
+test("restricted guide navigation includes only Guide Nest and its read endpoints", () => {
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guide/")), true);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/guide/reports")), true);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guest-crm/")), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/mobile/guests")), false);
 });
 
 test("writes fail closed unless flag, n8n token, and staff code all exist", () => {
