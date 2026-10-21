@@ -85,6 +85,7 @@ test("a guide cannot switch to another provider with a query parameter", async (
 test("Guide Nest static shell includes the required restricted workflows", () => {
   const html = fs.readFileSync(new URL("../admin/guide/index.html", import.meta.url), "utf8");
   const js = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../admin/guide/guide.css", import.meta.url), "utf8");
   assert.match(html, /My Tours/);
   assert.match(html, /Calendar/);
   assert.match(html, /Sightings/);
@@ -93,4 +94,9 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(js, /Google review/);
   assert.match(js, /Tripadvisor/);
   assert.match(js, /MBW Shop/);
+  assert.match(js, /assets\/images\/icons\/mbw_gr\.png/);
+  assert.match(js, /assets\/images\/icons\/mbw_icons_trip_advisor\.png/);
+  assert.match(js, /assets\/images\/icons\/mbw_(ig|fb|yt|shop)\.png/);
+  assert.match(css, /--green:#0d5925/);
+  assert.match(css, /linear-gradient\(180deg,#e3edd8 0,#f8faf5 210px\)/);
 });

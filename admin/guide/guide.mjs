@@ -5,9 +5,10 @@ let toastTimer;
 
 function empty(message) { return `<div class="empty">${esc(message)}</div>`; }
 function countLabel(value) { return value ? `${esc(value)} guest${String(value) === "1" ? "" : "s"}` : "Guest count not set"; }
+const icon = name => `<span class="buttonIcon buttonIcon--${name}" aria-hidden="true"></span>`;
 function tourCard(tour) {
-  const phone = tour.phone ? `<a class="whatsapp" href="${esc(tour.whatsappUrl)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : `<button type="button" disabled>Phone unavailable</button>`;
-  return `<article class="tourCard"><div class="tourHead"><h2>${esc(tour.guestName)}</h2><span>Booked</span></div><div class="tourInfo"><div><small>Date &amp; time</small><strong>${esc(tour.dateLabel)}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>Service</small><strong>${esc(tour.service)}</strong></div><div class="wide"><small>Pickup</small><strong>${esc(tour.pickup || "Pickup not set")}</strong></div><div><small>Guests</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>Phone</small><strong>${esc(tour.phone || "Not available")}</strong></div></div><div class="tourActions">${phone}<button type="button" data-copy="${encodeURIComponent(tour.guestMessage)}">Copy guest message</button><a href="/guide-tour-recap/?booking=${encodeURIComponent(tour.bookingId || tour.assignmentId)}">Sightings report</a>${tour.calendarUrl ? `<a href="${esc(tour.calendarUrl)}" target="_blank" rel="noopener noreferrer">Open calendar</a>` : ""}</div></article>`;
+  const phone = tour.phone ? `<a class="whatsapp" href="${esc(tour.whatsappUrl)}" target="_blank" rel="noopener noreferrer">${icon("whatsapp")}WhatsApp</a>` : `<button type="button" disabled>Phone unavailable</button>`;
+  return `<article class="tourCard"><div class="tourHead"><h2>${esc(tour.guestName)}</h2><span>Booked</span></div><div class="tourInfo"><div><small>Date &amp; time</small><strong>${esc(tour.dateLabel)}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>Service</small><strong>${esc(tour.service)}</strong></div><div class="wide"><small>Pickup</small><strong>${esc(tour.pickup || "Pickup not set")}</strong></div><div><small>Guests</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>Phone</small><strong>${esc(tour.phone || "Not available")}</strong></div></div><div class="tourActions">${phone}<button type="button" data-copy="${encodeURIComponent(tour.guestMessage)}">${icon("copy")}Copy guest message</button><a href="/guide-tour-recap/?booking=${encodeURIComponent(tour.bookingId || tour.assignmentId)}">${icon("bird")}Sightings report</a>${tour.calendarUrl ? `<a href="${esc(tour.calendarUrl)}" target="_blank" rel="noopener noreferrer">${icon("calendar")}Open calendar</a>` : ""}</div></article>`;
 }
 
 function renderTours() {
@@ -32,14 +33,14 @@ function shareMessage(kind, url) {
 
 function renderShare() {
   const items = [
-    ["google", "★", "Google review", "Request a Google review", data.links.google],
-    ["tripadvisor", "◉", "Tripadvisor", "Request a Tripadvisor review", data.links.tripadvisor],
-    ["social", "◎", "Instagram", "Share birding updates", data.links.instagram],
-    ["facebook", "f", "Facebook", "Share the MBW page", data.links.facebook],
-    ["youtube", "▶", "YouTube", "Share the MBW channel", data.links.youtube],
-    ["shop", "▣", "MBW Shop", "Share the official shop", data.links.shop],
+    ["google", "https://mindobirdwatching.com/assets/images/icons/mbw_gr.png", "Google review", "Request a Google review", data.links.google],
+    ["tripadvisor", "https://mindobirdwatching.com/assets/images/icons/mbw_icons_trip_advisor.png", "Tripadvisor", "Request a Tripadvisor review", data.links.tripadvisor],
+    ["social", "https://mindobirdwatching.com/assets/images/icons/mbw_ig.png", "Instagram", "Share birding updates", data.links.instagram],
+    ["facebook", "https://mindobirdwatching.com/assets/images/icons/mbw_fb.png", "Facebook", "Share the MBW page", data.links.facebook],
+    ["youtube", "https://mindobirdwatching.com/assets/images/icons/mbw_yt.png", "YouTube", "Share the MBW channel", data.links.youtube],
+    ["shop", "https://mindobirdwatching.com/assets/images/icons/mbw_shop.png", "MBW Shop", "Share the official shop", data.links.shop],
   ];
-  $("#shareList").innerHTML = items.map(([kind, icon, title, subtitle, url]) => `<article class="shareCard"><span>${icon}</span><div><strong>${esc(title)}</strong><small>${esc(subtitle)}</small></div><button class="copyButton" type="button" data-copy="${encodeURIComponent(shareMessage(kind, url))}">Copy</button></article>`).join("");
+  $("#shareList").innerHTML = items.map(([kind, image, title, subtitle, url]) => `<article class="shareCard shareCard--${kind}"><span><img src="${esc(image)}" alt=""></span><div><strong>${esc(title)}</strong><small>${esc(subtitle)}</small></div><button class="copyButton" type="button" data-copy="${encodeURIComponent(shareMessage(kind, url))}">${icon("copy")}Copy</button></article>`).join("");
 }
 
 function renderPreview() {
