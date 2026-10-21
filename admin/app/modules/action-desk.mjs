@@ -4,6 +4,21 @@ const DAY = 86400000;
 export const STATUS_FILTERS = ["all", "new", "booked"];
 export const STATUS_MORE_FILTERS = ["contacted", "planning", "qualified", "follow_up", "quoted", "deposit_pending", "deposit_paid", "payment_pending"];
 
+export function normalizeRep(value) {
+  const rep = String(value || "").trim().toUpperCase();
+  if (["J", "JUAN", "JPG"].includes(rep)) return "JPG";
+  if (["S", "SUSANA", "SS"].includes(rep)) return "SS";
+  return "";
+}
+
+export function filterByRep(records, rep = "all") {
+  const selected = String(rep || "all").trim().toLowerCase();
+  if (selected === "all") return records.slice();
+  if (selected === "unassigned") return records.filter(record => !normalizeRep(record.assignedTo || record.assigned_to));
+  const canonical = normalizeRep(selected);
+  return records.filter(record => normalizeRep(record.assignedTo || record.assigned_to) === canonical);
+}
+
 export function isoDate(value) {
   const match = String(value || "").match(/^\d{4}-\d{2}-\d{2}/);
   return match ? match[0] : "";

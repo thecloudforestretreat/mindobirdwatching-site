@@ -89,11 +89,13 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.equal(await page.locator(".appHeader .brand small").innerText(), "NEST");
     await page.screenshot({ path: "/tmp/mbw-loader-mobile-qa.png", fullPage: false });
     const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
+    assert.deepEqual(await page.locator("#actionRepFilter option").allTextContents(), ["Rep: All", "Unassigned", "JPG", "SS"]);
     assert.match(await page.locator("#connectionState").innerText(), /Synced now/);
     assert.match(await card.innerText(), /Test Testerer/); assert.match(await card.innerText(), /MT/); assert.match(await card.innerText(), /🇺🇸/);
     assert.match(await card.innerText(), /F\/U\s+Tomorrow/i); assert.doesNotMatch(await card.innerText(), /\bSOON\b|\bNURTURE\b/);
     assert.equal(await page.locator("[data-summary-filter]").count(), 3); await page.locator('[data-summary-filter="followups"]').click(); assert.equal(await page.locator(".actionCard").count(), 1);
     await page.locator('#bottomNav [data-route="guests"]').click();
+    assert.deepEqual(await page.locator("#guestRepFilter option").allTextContents(), ["Rep: All", "Unassigned", "JPG", "SS"]);
     assert.equal(await page.locator(".guestCard").count(), 1, "closed guests should stay out of the default list");
     await page.locator("#newGuestButton").click();
     assert.equal(await page.locator('#newGuestForm select[name="assigned_to"]').inputValue(), "", "new leads should default to Unassigned");
@@ -111,7 +113,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.locator("#guestMoreStatusFilter").selectOption("completed");
     assert.equal(await page.locator(".guestCard").count(), 1); assert.match(await page.locator(".guestCard").innerText(), /Completed Guest/);
     await page.screenshot({ path: "/tmp/mbw-guests-mobile-qa.png", fullPage: false });
-    await page.locator('[data-guest-status-filter="active"]').click();
+    await page.locator("#guestRepFilter").selectOption("all");
     await page.locator('#bottomNav [data-route="today"]').click();
     assert.equal(await page.locator("#todayList .todayCard").count(), 2, "completed services should be hidden from operations");
     const todayText = await page.locator("#todayList").innerText(); assert.match(todayText, /Oct 22, 2026/); assert.match(todayText, /Oct 23, 2026/); assert.doesNotMatch(todayText, /Completed Tour/);
@@ -119,6 +121,9 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.screenshot({ path: "/tmp/mbw-today-mobile-qa.png", fullPage: true });
     await page.locator('#bottomNav [data-route="actions"]').click();
     await card.click();
+    assert.equal(await page.locator("#guestQueuePosition").innerText(), "1 of 1");
+    assert.equal(await page.locator("#previousGuest").isDisabled(), true);
+    assert.equal(await page.locator("#nextGuest").isDisabled(), true);
     await page.locator(".detailLoading").waitFor({ state: "visible" });
     await page.locator(".detailContactMeta").waitFor({ state: "visible" });
     assert.match(await page.locator(".detailHero").innerText(), /United States/);

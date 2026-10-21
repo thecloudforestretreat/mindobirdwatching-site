@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { filterRecords, followupUrgency, priorityFor, recordDates, serviceIcon } from "../admin/app/modules/action-desk.mjs";
+import { filterByRep, filterRecords, followupUrgency, priorityFor, recordDates, serviceIcon } from "../admin/app/modules/action-desk.mjs";
 
 const record = { inquiryId: "I-1", status: "quoted", effectiveStatus: "quoted", requestedDate: "2026-10-21", requestedDateEnd: "2026-10-23", followupDate: "2026-10-19", tours: [{ tour: "Birding", date: "2026-10-21" }] };
 
@@ -36,4 +36,18 @@ test("follow-up urgency and service icons retain visible meaning", () => {
   assert.equal(followupUrgency("2026-10-20", "2026-10-22").tone, "warn");
   assert.equal(serviceIcon({ serviceType: "Transportation" }), "🚐");
   assert.equal(serviceIcon({ tour: "Night Walk" }), "🌙");
+});
+
+test("rep queues support all active, unassigned, JPG, and SS aliases", () => {
+  const records = [
+    { inquiryId: "I-1", assignedTo: "JPG" },
+    { inquiryId: "I-2", assignedTo: "Juan" },
+    { inquiryId: "I-3", assignedTo: "SS" },
+    { inquiryId: "I-4", assignedTo: "Susana" },
+    { inquiryId: "I-5", assignedTo: "" },
+  ];
+  assert.deepEqual(filterByRep(records, "all").map(item => item.inquiryId), ["I-1", "I-2", "I-3", "I-4", "I-5"]);
+  assert.deepEqual(filterByRep(records, "unassigned").map(item => item.inquiryId), ["I-5"]);
+  assert.deepEqual(filterByRep(records, "jpg").map(item => item.inquiryId), ["I-1", "I-2"]);
+  assert.deepEqual(filterByRep(records, "ss").map(item => item.inquiryId), ["I-3", "I-4"]);
 });
