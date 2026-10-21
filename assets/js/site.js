@@ -250,7 +250,7 @@
   }
 
   var script = document.createElement("script");
-  script.src = "/assets/js/mbw-attribution.js?v=20261021-1";
+  script.src = "/assets/js/mbw-attribution.js?v=20261021-2";
   script.async = true;
   script.setAttribute("data-mbw-attribution", "true");
   window.MBWAttributionReady = new Promise(function (resolve, reject) {
@@ -1292,14 +1292,58 @@
     }
 
     function prepareAttributedWhatsAppLink(link, label, location) {
+      var config = window.MBW_SITE_CONFIG || {};
+      if (typeof config.prepareAttributedWhatsAppUrl === "function") {
+        return config.prepareAttributedWhatsAppUrl(link, {
+          label: label || "WhatsApp smart CTA",
+          location: location || "floating_whatsapp"
+        });
+      }
+
       var attribution = window.MBWAttribution;
-      if (!attribution || typeof attribution.prepareContactUrl !== "function") return "";
+      if (!attribution || typeof attribution.prepareContactUrl !== "function") {
+        return Promise.reject(new Error("MBW attribution collector is unavailable"));
+      }
 
       var prepared = attribution.prepareContactUrl(link, {
         label: label || "WhatsApp smart CTA",
         location: location || "floating_whatsapp"
       });
-      return prepared && prepared.url ? prepared.url : link;
+      return prepared && prepared.url && prepared.contact_intent_id
+        ? Promise.resolve(prepared)
+        : Promise.reject(new Error("WhatsApp reference could not be created"));
+    }
+
+    function reportAttributionFailure(error, label, location) {
+      var config = window.MBW_SITE_CONFIG || {};
+      if (typeof config.reportAttributionFailure === "function") {
+        config.reportAttributionFailure(error, {
+          label: label || "WhatsApp smart CTA",
+          location: location || "floating_whatsapp"
+        });
+      }
+    }
+
+    function openAttributedWhatsApp(link, label, location, useNewWindow) {
+      var pendingWindow = useNewWindow ? window.open("", "_blank") : null;
+      if (pendingWindow) pendingWindow.opener = null;
+
+      prepareAttributedWhatsAppLink(link, label, location).then(function (prepared) {
+        var destination = prepared && prepared.url ? prepared.url : link;
+        trackWhatsApp(label || "WhatsApp smart CTA", location || "floating_whatsapp", destination);
+        if (pendingWindow && !pendingWindow.closed) {
+          pendingWindow.location.replace(destination);
+          return;
+        }
+        window.location.href = destination;
+      }).catch(function (error) {
+        reportAttributionFailure(error, label, location);
+        if (pendingWindow && !pendingWindow.closed) {
+          pendingWindow.location.replace(link);
+          return;
+        }
+        window.location.href = link;
+      });
     }
 
     function openPanel() {
@@ -1336,20 +1380,7 @@
     function goWhatsApp(template, label, location) {
       var link = buildLink(template);
       if (!link) return;
-      link = prepareAttributedWhatsAppLink(link, label, location);
-      if (!link) {
-        var loader = (window.MBW_SITE_CONFIG && window.MBW_SITE_CONFIG.loadAttribution) || window.MBWLoadAttribution;
-        if (typeof loader === "function") {
-          loader().then(function () {
-            goWhatsApp(template, label, location);
-          }).catch(function () {
-            window.alert("WhatsApp is still loading. Please try again so your inquiry reference is included.");
-          });
-        }
-        return;
-      }
-      trackWhatsApp(label || "WhatsApp smart CTA", location || "floating_whatsapp", link);
-      window.location.href = link;
+      openAttributedWhatsApp(link, label, location, false);
     }
 
     function onBtnClick(e) {
@@ -1394,21 +1425,8 @@
         if (!link) return;
 
         var actionLabel = cleanText(a.textContent) || "WhatsApp smart CTA option";
-        link = prepareAttributedWhatsAppLink(link, actionLabel, "floating_whatsapp_panel");
-        if (!link) {
-          var loader = (window.MBW_SITE_CONFIG && window.MBW_SITE_CONFIG.loadAttribution) || window.MBWLoadAttribution;
-          if (typeof loader === "function") {
-            loader().then(function () {
-              a.click();
-            }).catch(function () {
-              window.alert("WhatsApp is still loading. Please try again so your inquiry reference is included.");
-            });
-          }
-          return;
-        }
-        trackWhatsApp(actionLabel, "floating_whatsapp_panel", link);
         closePanel();
-        window.open(link, "_blank", "noopener,noreferrer");
+        openAttributedWhatsApp(link, actionLabel, "floating_whatsapp_panel", true);
       }, { passive: false });
     });
   }
