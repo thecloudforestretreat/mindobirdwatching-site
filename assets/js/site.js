@@ -250,7 +250,7 @@
   }
 
   var script = document.createElement("script");
-  script.src = "/assets/js/mbw-attribution.js?v=20261021-2";
+  script.src = "/assets/js/mbw-attribution.js?v=20261021-3";
   script.async = true;
   script.setAttribute("data-mbw-attribution", "true");
   window.MBWAttributionReady = new Promise(function (resolve, reject) {

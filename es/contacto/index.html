@@ -2370,6 +2370,26 @@ input[type="date"]{
               if(pendingNotice) pendingNotice.hidden = false;
         }
       }, 12000);
+          // A direct acknowledgement avoids relying on a hidden-frame message.
+          if(typeof window.fetch === "function"){
+            ev.preventDefault();
+            window.fetch(form.action, {
+              method: "POST", credentials: "same-origin",
+              headers: { "accept": "application/json" },
+              body: new URLSearchParams(new FormData(form))
+            }).then(function(response){
+              if(!response.ok) throw new Error("unconfirmed_http_response");
+              return response.json();
+            }).then(function(result){
+              if(result && result.status === "ok") completeOk();
+              else if(result && result.status === "error") completeError(result.message);
+              else throw new Error("unconfirmed_response");
+            }).catch(function(){
+              // Delivery may already have succeeded; do not invite duplicate requests.
+              var notice = document.getElementById("formPendingMsg");
+              if(notice) notice.hidden = false;
+            });
+          }
     });
   }
   if(iframe){

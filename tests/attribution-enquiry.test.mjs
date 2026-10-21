@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import test from 'node:test';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const load=async p=>import('data:text/javascript;base64,'+Buffer.from(read(p)).toString('base64'));
+const intent=await load('functions/api/attribution/contact-intent.js');
+const crm=await load('functions/api/attribution/crm-contact.js');
+const visitor='v_testvisitor12345',session='s_testsession12345',id='ci_testintent12345';
+function database(snapshot){return {event:snapshot?{attribution_snapshot:snapshot}:null,intent:{contact_intent_id:id,visitor_id:visitor,session_id:session,channel:'email_form',attribution_quality:'verified'},session:{visitor_id:visitor,session_id:session,attribution_status:'captured',utm_content:'later_conversion'},prepare(sql){const db=this;return {sql,values:[],bind(...values){this.values=values;return this;},async first(){if(sql.includes('FROM contact_intents'))return db.intent;if(sql.includes('FROM sessions'))return db.session;if(sql.includes('FROM attribution_events'))return db.event?{event_data:JSON.stringify(db.event)}:null;throw Error(sql);}};},async batch(statements){for(const s of statements)if(s.sql.includes('INSERT OR IGNORE INTO attribution_events')&&s.sql.includes('page_url'))this.event=JSON.parse(s.values[7]);}};}
+function request(payload,secret=false){return new Request('https://example.test/api/attribution/test',{method:'POST',headers:{'content-type':'application/json',...(secret?{authorization:'Bearer test-only'}:{})},body:JSON.stringify(payload)});}
+test('per-enquiry snapshot survives later session campaign changes',async()=>{
+ const db=database();const r=await intent.onRequestPost({request:request({contact_intent_id:id,visitor_id:visitor,session_id:session,channel:'email_form',page_url:'https://example.test/book-tour/',attribution:{visitor:{visitor_id:visitor},session:{session_id:session,attribution_status:'captured',utm:{source:'qa_internal',content:'first_conversion'},first_touch:{source:'direct'},last_touch:{source:'qa_internal',content:'first_conversion'}}}}),env:{MBW_ATTRIBUTION_DB:db}});assert.equal(r.status,200);assert.equal(db.event.attribution_snapshot.utm_content,'first_conversion');
+ const result=await crm.onRequestPost({request:request({inquiry_id:'INQ-test',contact_intent_id:id},true),env:{MBW_ATTRIBUTION_DB:db,CF_SHARED_SECRET:'test-only'}});const body=await result.json();assert.equal(body.attribution.utm_content,'first_conversion');assert.equal(body.attribution.last_touch_content,'first_conversion');assert.equal(body.attribution.website_session_id,session);
+});
+test('legacy email enquiry campaigns are never overwritten from mutable sessions',async()=>{const result=await crm.onRequestPost({request:request({inquiry_id:'INQ-test',contact_intent_id:id},true),env:{MBW_ATTRIBUTION_DB:database(),CF_SHARED_SECRET:'test-only'}});const body=await result.json();assert.equal(body.attribution.utm_content,undefined);assert.equal(body.attribution.website_visitor_id,visitor);});
+test('raw contact and booking transport fields survive CRM mapping',()=>{const context={};vm.createContext(context);vm.runInContext(read('deployment/multi-invoice-ledger/crm-router.gs'),context);for(const mapper of ['mapContactRow_','mapBookTourRow_']){const row=context[mapper]({transportation_needed:'Yes'},123);assert.equal(row.transportationNeeded,'Yes');assert.equal(context.normalizeInput_(row).transportationNeeded,'Yes');}});

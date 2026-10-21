@@ -17,7 +17,7 @@
 
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
-  var ATTRIBUTION_SCRIPT_URL = "/assets/js/mbw-attribution.js?v=20261021-2";
+  var ATTRIBUTION_SCRIPT_URL = "/assets/js/mbw-attribution.js?v=20261021-3";
   var ATTRIBUTION_FAILURE_ENDPOINT = "/api/attribution/client-error";
   var ATTRIBUTION_WAIT_MS = 1800;
 

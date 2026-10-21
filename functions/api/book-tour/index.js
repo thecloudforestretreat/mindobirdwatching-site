@@ -12,6 +12,9 @@ export async function onRequestPost({ request, env }) {
   const sharedSecret = env.CF_SHARED_SECRET;
 
   function iframeReply(status, message) {
+    if ((request.headers.get("accept") || "").includes("application/json")) {
+      return Response.json({ status, message: message || "" }, { headers: { "cache-control":"no-store" } });
+    }
     const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>
 <script>
 (function(){

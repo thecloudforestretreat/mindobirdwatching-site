@@ -114,7 +114,16 @@ export async function onRequestPost({ request, env }) {
     if (!session) return reply(409,{ok:false,error:"reference_session_not_found"});
     const attribution = {contact_intent_id:contactIntentId,website_visitor_id:contactIntent.visitor_id,website_session_id:contactIntent.session_id,attribution_status:session.attribution_status||"unavailable",attribution_quality:session.attribution_status==="captured"?"verified":"partial"};
     ["first_touch_source","first_touch_medium","first_touch_campaign","first_touch_content","first_touch_term","first_touch_landing_page","first_touch_referrer","first_touch_date","last_touch_source","last_touch_medium","last_touch_campaign","last_touch_content","last_touch_term","last_touch_landing_page","last_touch_referrer","last_touch_date","utm_source","utm_medium","utm_campaign","utm_content","utm_term","gclid","gbraid","wbraid","fbclid","meta_campaign_id","meta_adset_id","meta_ad_id"].forEach(key=>{attribution[key]=session[key]||"";});
-    for(const page of [session.last_touch_landing_page,session.first_touch_landing_page]){
+    const event = await env.MBW_ATTRIBUTION_DB.prepare("SELECT event_data FROM attribution_events WHERE contact_intent_id = ? AND event_name = 'contact_intent_created' ORDER BY occurred_at ASC LIMIT 1").bind(contactIntentId).first();
+    let snapshot;
+    try { snapshot = JSON.parse(event && event.event_data || "{}").attribution_snapshot; } catch (_) {}
+    const hasSnapshot = snapshot && snapshot.version === 1;
+    if (hasSnapshot) {
+      Object.keys(attribution).forEach(key => {
+        if (key !== "contact_intent_id" && key !== "website_visitor_id" && key !== "website_session_id" && key !== "attribution_quality") attribution[key] = String(snapshot[key] || "");
+      });
+    }
+    for(const page of [attribution.last_touch_landing_page,attribution.first_touch_landing_page]){
       try{const params=new URL(page).searchParams;["meta_campaign_id","meta_adset_id","meta_ad_id"].forEach(key=>{const value=params.get(key);if(!attribution[key]&&value&&/^\d+$/.test(value))attribution[key]=value;});}catch(_){}
     }
     if(payload.action==="lookup_reference")return reply(200,{ok:true,attribution,match_status:"found"});
@@ -222,7 +231,11 @@ export async function onRequestPost({ request, env }) {
       inquiry_id: inquiryId,
       guest_id: guestId,
       match_status: "matched",
-      attribution,
+      attribution: hasSnapshot || contactIntent.channel !== "email_form" ? attribution : {
+        contact_intent_id:contactIntentId,
+        website_visitor_id:contactIntent.visitor_id,
+        website_session_id:contactIntent.session_id
+      },
     });
   } catch (error) {
     console.error("CRM-contact attribution write failed", error);
