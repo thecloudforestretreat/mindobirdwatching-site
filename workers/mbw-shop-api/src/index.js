@@ -7257,15 +7257,14 @@ function normalizeGoogleMerchantProduct(product) {
       )
   );
 
-  const title = cleanMerchantText(
+  const title = cleanCustomerProductTitle(
     product.title ||
-      "Mindo Bird Watching product",
-    150
+      "Mindo Bird Watching product"
   );
 
-  const description = cleanMerchantDescription(
-    product.description ||
-      `${title} from Mindo Bird Watching.`
+  const description = cleanCustomerProductDescription(
+    product.description,
+    title
   );
 
   const image = getPrimaryImage(product.images);
@@ -7567,6 +7566,35 @@ function cleanMerchantDescription(value) {
     .trim();
 
   return cleanMerchantText(text, 5000);
+}
+
+function cleanCustomerProductTitle(value) {
+  return cleanMerchantText(value || "Mindo Bird Watching product", 150)
+    .replace(/\bVIbes\b/g, "Vibes")
+    .replace(/\bBIrd\b/g, "Bird")
+    .replace(/WoodnymphHummingbird/g, "Woodnymph Hummingbird")
+    .replace(/\(Option 2\)/gi, "(Design 2)")
+    .replace(
+      /\s+(?:Ecuador(?:ian)?\s+(?:Mask\s+)?)?Vibes Tee\b/i,
+      " T-Shirt"
+    )
+    .replace(
+      /\s*[|—-]\s*Mindo(?: Cloud Forest| Ecuador)? Wildlife Graphic Shirt\s*\|\s*Tri-Blend Adventure Shirt/i,
+      " — Mindo, Ecuador"
+    )
+    .replace(/\s*\|\s*Mindo Bird Watching$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanCustomerProductDescription(value, title) {
+  const fallback = `${title} is made to order through the Mindo Bird Watching print fulfillment partner.`;
+
+  return cleanMerchantDescription(value || fallback)
+    .replace(/\bAndeand\b/gi, "Andean")
+    .replace(/\bVIbes\b/g, "Vibes")
+    .replace(/\bBIrd\b/g, "Bird")
+    .trim();
 }
 
 function decodeMerchantHtmlEntities(value) {
@@ -8029,9 +8057,7 @@ function normalizeCatalogProduct(product) {
   return {
     id: product.id,
     slug: createSlug(product.title),
-    title:
-      product.title ||
-      "Mindo Bird Watching product",
+    title: cleanCustomerProductTitle(product.title),
     image: getPrimaryImage(product.images),
     min_price: minPrice,
     max_price: maxPrice,
@@ -8082,12 +8108,16 @@ function normalizeDetailedProduct(product) {
         price >= 0
     );
 
+  const title = cleanCustomerProductTitle(product.title);
+
   return {
     id: product.id,
     slug: createSlug(product.title),
-    title:
-      product.title ||
-      "Mindo Bird Watching product",
+    title,
+    description: cleanCustomerProductDescription(
+      product.description,
+      title
+    ),
 
     image:
       images.length > 0

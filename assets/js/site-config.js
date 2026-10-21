@@ -77,6 +77,9 @@
     book_tour_en: "Hi Mindo Bird Watching, I would like to send a tour request for Mindo. Can you help me check availability and next steps?\n\nPage: {url}",
     book_tour_es: "Hola Mindo Bird Watching, quiero enviar una solicitud de tour en Mindo. ¿Me pueden ayudar a confirmar disponibilidad y próximos pasos?\n\nPágina: {url}",
 
+    shop_product_en: "Hi Mindo Bird Watching, I have a question about this shop product, its options, shipping, or sizing. Can you help me?\n\nProduct: {url}",
+    shop_product_es: "Hola Mindo Bird Watching, tengo una pregunta sobre este producto, sus opciones, el envío o las tallas. ¿Me pueden ayudar?\n\nProducto: {url}",
+
     chocolate_tour_en: "Hi Mindo Bird Watching, I am interested in a chocolate tour experience in Mindo. Can you help me check availability, timing, price, and next steps?\n\nPage: {url}",
     chocolate_tour_es: "Hola Mindo Bird Watching, me interesa una experiencia de tour de chocolate en Mindo. ¿Me pueden ayudar a confirmar disponibilidad, horario, precio y próximos pasos?\n\nPágina: {url}",
 

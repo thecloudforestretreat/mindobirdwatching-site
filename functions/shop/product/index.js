@@ -41,6 +41,7 @@ export async function onRequestGet(context) {
     .join(" / ");
   const pageTitle = `${product.title}${titleSuffix ? ` - ${titleSuffix}` : ""} | Mindo Bird Watching`;
   const description = buildDescription(product, titleSuffix);
+  const metaDescription = buildMetaDescription(product, titleSuffix);
   const visiblePrice = money(priceCents);
   const priceRange =
     !selectedVariant &&
@@ -52,7 +53,7 @@ export async function onRequestGet(context) {
   let html = await assetResponse.text();
 
   html = replaceTag(html, "title", escapeHtml(pageTitle));
-  html = replaceMeta(html, "name", "description", description);
+  html = replaceMeta(html, "name", "description", metaDescription);
   html = replaceMeta(
     html,
     "name",
@@ -64,7 +65,7 @@ export async function onRequestGet(context) {
   html = replaceLink(html, "alternate", canonicalUrl, "x-default");
   html = replaceMeta(html, "property", "og:type", "product");
   html = replaceMeta(html, "property", "og:title", pageTitle);
-  html = replaceMeta(html, "property", "og:description", description);
+  html = replaceMeta(html, "property", "og:description", metaDescription);
   html = replaceMeta(html, "property", "og:url", canonicalUrl);
   html = replaceMeta(html, "property", "og:image", product.image);
   html = replaceMeta(
@@ -74,7 +75,7 @@ export async function onRequestGet(context) {
     `${product.title} product image`
   );
   html = replaceMeta(html, "name", "twitter:title", pageTitle);
-  html = replaceMeta(html, "name", "twitter:description", description);
+  html = replaceMeta(html, "name", "twitter:description", metaDescription);
   html = replaceMeta(html, "name", "twitter:image", product.image);
 
   html = html
@@ -84,7 +85,7 @@ export async function onRequestGet(context) {
     )
     .replace(
       /<p id="productLead">[\s\S]*?<\/p>/i,
-      `<p id="productLead">${escapeHtml(description)}</p>`
+      `<p id="productLead">${escapeHtml(buildProductLead(product))}</p>`
     )
     .replace(
       /<p class="mbwPurchasePrice" id="mbwPurchasePrice">[\s\S]*?<\/p>/i,
@@ -169,9 +170,22 @@ function buildCanonicalUrl(productId, variant) {
 }
 
 function buildDescription(product, optionText) {
+  if (product.description) return String(product.description).trim();
+
   const options = optionText ? ` in ${optionText}` : "";
   const summary = product.option_summary ? ` Available options: ${product.option_summary}.` : "";
   return `${product.title}${options}, a made-to-order Mindo Bird Watching design inspired by the birds and cloud forest of Mindo, Ecuador.${summary}`;
+}
+
+function buildProductLead(product) {
+  return product.option_summary
+    ? `${product.option_summary}. Choose the available options below.`
+    : "Choose the available options below.";
+}
+
+function buildMetaDescription(product, optionText) {
+  const text = buildDescription(product, optionText).replace(/\s+/g, " ").trim();
+  return text.length > 300 ? `${text.slice(0, 297).trim()}...` : text;
 }
 
 function buildProductSchema({

@@ -182,6 +182,7 @@
 <div class="mbwPurchaseActions">
 <button class="mbwAddBtn" disabled="" id="mbwAddToCart" type="button">Add to Cart</button>
 <button class="mbwBuyBtn" disabled="" id="mbwBuyNow" type="button">Buy Now</button>
+<a class="mbwContinueShoppingBtn mbwProductQuestionBtn js-whatsapp-link" data-analytics-event="contact_whatsapp_click" data-analytics-label="Ask about shop product" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="shop_product_purchase_box" data-analytics-message-key="shop_product_en" data-analytics-page-language="en" data-analytics-page-type="shop_product_page" data-analytics-source-page="shop_product" data-whatsapp-message-key="shop_product_en" data-whatsapp-source-page="shop_product" href="/contact/">Ask a Product Question</a>
 <a class="mbwContinueShoppingBtn" href="/shop/">Continue Shopping</a>
 </div>
 <div aria-label="Purchase assurances" class="mbwPurchaseTrust">
@@ -295,7 +296,7 @@
 <p>Send us the product name or return to the shop to compare the current Mindo Bird Watching items.</p>
 <div class="ctaRow">
 <a class="btn primary" data-analytics-event="primary_cta_click" data-analytics-label="Back to shop" data-analytics-location="shop_product_final_cta" data-analytics-page-language="en" data-analytics-page-type="shop_product_page" href="/shop/">Back to shop</a>
-<a class="btn secondary js-whatsapp-link" data-analytics-event="contact_whatsapp_click" data-analytics-label="Ask about shop product" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="shop_product_final_cta" data-analytics-message-key="default_en" data-analytics-page-language="en" data-analytics-page-type="shop_product_page" data-analytics-source-page="shop_product" data-whatsapp-message-key="default_en" data-whatsapp-source-page="shop_product" href="/contact/">Ask about this product</a>
+<a class="btn secondary js-whatsapp-link" data-analytics-event="contact_whatsapp_click" data-analytics-label="Ask about shop product" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="shop_product_final_cta" data-analytics-message-key="shop_product_en" data-analytics-page-language="en" data-analytics-page-type="shop_product_page" data-analytics-source-page="shop_product" data-whatsapp-message-key="shop_product_en" data-whatsapp-source-page="shop_product" href="/contact/">Ask about this product</a>
 </div>
 </div>
 <div class="nextSteps">
@@ -1445,8 +1446,12 @@
     renderGallery(state.baseImages);
   }
 
-  function galleryLabel(position){
+  function galleryLabel(position,src){
     var value=String(position||"").toLowerCase();
+    var source=String(src||"").toLowerCase();
+
+    if(source.indexOf("size-chart")!==-1) return "Size chart";
+    if(source.indexOf("context-")!==-1) return "Lifestyle";
 
     if(value==="front" || value.indexOf("front-")===0){
       return "Front";
@@ -1487,24 +1492,15 @@
 
     thumbs.classList.remove("isHidden");
 
-    var visibleLimit=count>6?6:count;
-    var visibleImages=state.images.slice(0,visibleLimit);
-    var extra=Math.max(0,count-visibleLimit);
-
-    thumbs.innerHTML=visibleImages.map(function(image,i){
-      var extraBadge=(i===visibleImages.length-1&&extra>0)
-        ? '<span class="mbwThumbMore">+'+extra+' more</span>'
-        : '';
-
+    thumbs.innerHTML=state.images.map(function(image,i){
       var viewBadge=
         '<span class="mbwThumbPosition">'+
-          esc(galleryLabel(image.position))+
+          esc(galleryLabel(image.position,image.src))+
         '</span>';
 
-      return '<button type="button" class="mbwProductThumb'+(i===0?' isActive':'')+'" data-gallery-index="'+i+'" aria-label="Show '+escAttr(galleryLabel(image.position))+' product image">'+
+      return '<button type="button" class="mbwProductThumb'+(i===0?' isActive':'')+'" data-gallery-index="'+i+'" aria-label="Show '+escAttr(galleryLabel(image.position,image.src))+' product image">'+
         '<img src="'+escAttr(image.src)+'" alt="">'+
         viewBadge+
-        extraBadge+
       '</button>';
     }).join("");
 
@@ -1570,7 +1566,7 @@
 
     document.getElementById("productTitle").textContent=product.title;
     document.getElementById("productLead").textContent=product.option_summary ? product.option_summary+". Choose the available options below." : "Choose the available options below.";
-    document.getElementById("productDescription").textContent="Made to order with Mindo-inspired bird and cloud forest artwork.";
+    document.getElementById("productDescription").textContent=product.description||"Made to order with Mindo-inspired bird and cloud forest artwork.";
     document.title=product.title+" | Mindo Bird Watching";
 
     state.baseImages=(product.images&&product.images.length)

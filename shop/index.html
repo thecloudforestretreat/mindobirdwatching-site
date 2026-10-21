@@ -569,6 +569,28 @@
       return "/shop/product/?id=" + encodeURIComponent(id);
     }
 
+    function catalogItem(product, index) {
+      return {
+        item_id: String(product.id || ""),
+        item_name: String(product.title || ""),
+        item_category: categoryFor(product),
+        item_list_id: activeCategory === "all" ? "shop_collection" : "shop_" + activeCategory,
+        item_list_name: activeCategory === "all" ? "Shop collection" : activeCategory,
+        index: Number(index || 0),
+        price: Number(product.min_price || 0) / 100,
+        quantity: 1
+      };
+    }
+
+    function trackCatalogEvent(name, payload) {
+      window.dataLayer = window.dataLayer || [];
+      if (typeof window.gtag === "function") {
+        window.gtag("event", name, payload);
+      } else {
+        window.dataLayer.push({ event: name, ecommerce: payload });
+      }
+    }
+
     function cardMarkup(product) {
       var category = categoryFor(product);
       var variantCopy = product.option_summary || (
@@ -577,7 +599,7 @@
           : Number(product.variant_count || 0) + " options"
       );
       return [
-        '<article class="productCard storeProductCard" data-category="' + category + '">',
+        '<article class="productCard storeProductCard" data-category="' + category + '" data-product-id="' + escapeHtml(product.id) + '">',
           '<a class="storeProductMedia" href="' + productHref(product) + '" aria-label="View ' + escapeHtml(product.title) + '">',
             '<img src="' + escapeHtml(product.image || "/MBW-Assets-OG-Image.jpg") + '" alt="' + escapeHtml(product.title) + '" loading="lazy" decoding="async">',
             '<span class="storeProductBadge">Made to order</span>',
@@ -628,6 +650,14 @@
       grid.innerHTML = shownProducts.map(cardMarkup).join("");
       grid.setAttribute("aria-busy", "false");
       empty.hidden = products.length !== 0;
+
+      if (shownProducts.length) {
+        trackCatalogEvent("view_item_list", {
+          item_list_id: activeCategory === "all" ? "shop_collection" : "shop_" + activeCategory,
+          item_list_name: activeCategory === "all" ? "Shop collection" : activeCategory,
+          items: shownProducts.map(catalogItem)
+        });
+      }
 
       if (products.length === catalog.length) {
         summary.textContent =
@@ -711,6 +741,21 @@
     });
 
     document.getElementById("catalogRetry").addEventListener("click", loadCatalog);
+
+    document.getElementById("dynamicProductGrid").addEventListener("click", function (event) {
+      var link = event.target.closest("a");
+      var card = event.target.closest("[data-product-id]");
+      if (!link || !card) return;
+      var product = catalog.find(function (item) {
+        return String(item.id) === String(card.getAttribute("data-product-id"));
+      });
+      if (!product) return;
+      trackCatalogEvent("select_item", {
+        item_list_id: activeCategory === "all" ? "shop_collection" : "shop_" + activeCategory,
+        item_list_name: activeCategory === "all" ? "Shop collection" : activeCategory,
+        items: [catalogItem(product, getVisibleProducts().indexOf(product))]
+      });
+    });
 
     loadCatalog();
   })();
