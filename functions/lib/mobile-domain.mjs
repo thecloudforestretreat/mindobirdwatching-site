@@ -150,6 +150,7 @@ export function normalizeAssignment(row) {
     endTime: text(row.end_time, 30),
     serviceType: text(row.service_type, 120),
     product: text(row.product_selected, 240),
+    providerId: text(row.provider_id, 128),
     providerRole: key(row.provider_role || "other"),
     providerName: text(row.provider_name === "Other" ? row.provider_name_other : row.provider_name, 160),
     pickup: text(row.pickup_location, 500),
@@ -165,6 +166,7 @@ export function normalizeAssignment(row) {
 
 export function normalizeProvider(row) {
   return {
+    providerId: text(row.provider_id, 128),
     name: text(row.provider_name === "Other" ? row.provider_name_other : row.provider_name, 160),
     role: key(row.provider_role || "other"),
     serviceType: text(row.service_type, 120),

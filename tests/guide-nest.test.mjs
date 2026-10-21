@@ -9,7 +9,7 @@ const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
   MBW_MOBILE_ROLE_MAP: JSON.stringify({
     "owner@example.test": { role: "owner", staffCode: "JPG", name: "Juan" },
-    "guide@example.test": { role: "guide", name: "Neycer", providerName: "Neycer · Night Walk Guide", contributorNumber: "7" },
+    "guide@example.test": { role: "guide", name: "Neycer", providerId: "PROV-007", providerName: "Neycer · Night Walk Guide", contributorNumber: "7" },
   }),
   N8N_CRM_ADMIN_TOKEN: "test-token",
   N8N_CRM_ADMIN_URL: "https://n8n.example.test/webhook/mobile",
@@ -20,6 +20,7 @@ test("guide identity is available only to Guide Nest and is provider-bound", asy
   const identity = await guideIdentity(request, { ...env, LOCAL_TEST_IDENTITY: "guide@example.test" });
   assert.equal(identity.role, "guide");
   assert.equal(identity.providerName, "Neycer · Night Walk Guide");
+  assert.equal(identity.providerId, "PROV-007");
   assert.equal(identity.contributorNumber, "007");
   await assert.rejects(() => mobileIdentity(request, { ...env, LOCAL_TEST_IDENTITY: "guide@example.test" }), /not enabled/);
   await assert.rejects(() => guideIdentity(request, { ...env, LOCAL_TEST_IDENTITY: "missing@example.test" }), /not enabled/);
@@ -51,7 +52,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
       const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
       const records = {
         list_assignments: [
-          { assignment_id: "A-1", inquiry_id: "I-1", service_date: "2026-10-23", start_time: "05:00", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", product_selected: "Five Toucans", pickup_location: "Mindo Lodge", assignment_status: "confirmed", internal_note: "PRIVATE NOTE" },
+          { assignment_id: "A-1", inquiry_id: "I-1", service_date: "2026-10-23", start_time: "05:00", provider_id: "PROV-007", provider_name: "Neycer renamed", service_type: "Birdwatching", product_selected: "Five Toucans", pickup_location: "Mindo Lodge", assignment_status: "confirmed", internal_note: "PRIVATE NOTE" },
           { assignment_id: "A-2", inquiry_id: "I-2", service_date: "2026-10-24", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "pending" },
           { assignment_id: "A-3", inquiry_id: "I-3", service_date: "2026-10-24", provider_name: "Other Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
           { assignment_id: "A-OLD", inquiry_id: "I-1", service_date: "2026-09-01", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
@@ -62,7 +63,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
           { inquiry_id: "I-3", guest_id: "G-3", full_name: "Other Guest", phone_raw: "+1 555 111 0000", status: "booked" },
         ],
         list_bookings: [],
-        list_providers: [{ provider_name: "Neycer · Night Walk Guide", provider_role: "guide", active: "yes" }, { provider_name: "Other Guide", provider_role: "guide", active: "yes" }],
+        list_providers: [{ provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", provider_role: "guide", active: "yes" }, { provider_id: "PROV-008", provider_name: "Other Guide", provider_role: "guide", active: "yes" }],
       };
       return Response.json({ ok: true, records: records[body.action] || [] });
     };
@@ -70,6 +71,8 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     const body = await response.json();
     assert.equal(response.status, 200);
     assert.equal(body.tours.length, 1);
+    assert.equal(body.providerId, "PROV-007");
+    assert.equal(body.providerOptions[0].providerId, "PROV-007");
     assert.equal(body.tours[0].guestName, "Booked Guest");
     assert.equal(body.tours[0].phone, "+1 (555) 123-4567");
     assert.equal(body.tours[0].whatsappUrl, "https://wa.me/15551234567");
@@ -85,7 +88,7 @@ test("a guide cannot switch to another provider with a query parameter", async (
     globalThis.fetch = async (_url, options) => {
       const action = JSON.parse(new URLSearchParams(options.body).get("payload")).action;
       if (action === "list_assignments") return Response.json({ ok: true, records: [
-        { assignment_id: "A-1", inquiry_id: "I-1", provider_name: "Neycer · Night Walk Guide", service_date: "2026-10-23" },
+        { assignment_id: "A-1", inquiry_id: "I-1", provider_id: "PROV-007", provider_name: "Neycer renamed", service_date: "2026-10-23" },
         { assignment_id: "A-2", inquiry_id: "I-2", provider_name: "Other Guide", service_date: "2026-10-23" },
       ] });
       if (action === "list_inquiries") return Response.json({ ok: true, records: [
