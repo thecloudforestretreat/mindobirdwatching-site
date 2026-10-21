@@ -17,8 +17,10 @@ function bookingIsBooked(booking) {
   return booking && !booking.archived && BOOKED.has(booking.status);
 }
 
-function assignmentMatchesProvider(assignment, providerName) {
-  return !providerName || lower(assignment.providerName) === lower(providerName);
+function assignmentMatchesProvider(assignment, provider) {
+  if (!provider?.name && !provider?.providerId) return false;
+  if (provider.providerId && assignment.providerId) return assignment.providerId === provider.providerId;
+  return lower(assignment.providerName) === lower(provider.name);
 }
 
 function messageFor(tour, guideName) {
@@ -45,11 +47,18 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
   const inquiryById = new Map(inquiries.map(item => [item.inquiryId, item]));
   const bookingByInquiry = new Map();
   for (const booking of bookings) if (booking.inquiryId && bookingIsBooked(booking)) bookingByInquiry.set(booking.inquiryId, booking);
-  const providers = providerRows.map(normalizeProvider).filter(item => item.active && item.role === "guide").map(item => item.name);
-  const providerName = identity.role === "guide" ? identity.providerName : requestedProvider || providers[0] || "";
+  const providerRecords = providerRows.map(normalizeProvider).filter(item => item.active && item.role === "guide" && item.name);
+  const selectedProvider = identity.role === "guide"
+    ? { providerId: identity.providerId, name: identity.providerName }
+    : providerRecords.find(item => item.providerId && item.providerId === requestedProvider)
+      || providerRecords.find(item => lower(item.name) === lower(requestedProvider))
+      || providerRecords[0]
+      || { providerId: "", name: "" };
+  const providerName = selectedProvider.name || "";
+  const providerId = selectedProvider.providerId || "";
   const cutoff = recentCutoff();
   const tours = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
-    assignment.assignmentId && assignmentMatchesProvider(assignment, providerName) && !CLOSED_ASSIGNMENTS.has(assignment.status) &&
+    assignment.assignmentId && assignmentMatchesProvider(assignment, selectedProvider) && !CLOSED_ASSIGNMENTS.has(assignment.status) &&
     (!assignment.serviceDate || assignment.serviceDate >= cutoff)
   ).map(({ row, assignment }) => {
     const inquiry = inquiryById.get(assignment.inquiryId);
@@ -79,5 +88,6 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
     tour.guestMessage = messageFor(tour, identity.role === "guide" ? identity.name : providerName);
     return tour;
   }).filter(Boolean).sort((a, b) => `${a.serviceDate} ${a.startTime}`.localeCompare(`${b.serviceDate} ${b.startTime}`));
-  return { providerName, providers: [...new Set(providers)].sort(), tours };
+  const providerOptions = providerRecords.map(item => ({ providerId: item.providerId, name: item.name })).sort((a, b) => a.name.localeCompare(b.name));
+  return { providerId, providerName, providers: providerOptions.map(item => item.name), providerOptions, tours };
 }

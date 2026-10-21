@@ -19,7 +19,7 @@ test("bootstrap returns the complete sanitized desk dataset for filters and cale
         { inquiry_id: "I-1", guest_id: "G-1", full_name: "Booked Guest", email: "private@example.test", phone_raw: "123", status: "booked", requested_date: "2026-10-21", guest_count: "2", country: "United States", brand_source: "Mindo Tours" },
         { inquiry_id: "I-2", guest_id: "G-2", full_name: "Quoted Guest", email: "private2@example.test", status: "quoted", requested_date: "2027-07-04" },
       ] });
-      if (body.action === "list_providers") return Response.json({ ok: true, records: [{ provider_name: "Test Guide", provider_role: "guide", service_type: "Birdwatching", is_default: "Yes" }] });
+      if (body.action === "list_providers") return Response.json({ ok: true, records: [{ provider_id: "PROV-TEST", provider_name: "Test Guide", provider_role: "guide", service_type: "Birdwatching", is_default: "Yes" }] });
       return Response.json({ ok: true, records: [] });
     };
     const response = await onRequestGet({ request: new Request("http://localhost/api/mobile/bootstrap"), env });
@@ -33,7 +33,7 @@ test("bootstrap returns the complete sanitized desk dataset for filters and cale
     assert.equal(body.inquiries[0].countryCode, "US");
     assert.equal(body.inquiries[0].brand, "MT");
     assert.deepEqual(body.bookings, []);
-    assert.deepEqual(body.providers, [{ name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }]);
+    assert.deepEqual(body.providers, [{ providerId: "PROV-TEST", name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }]);
     assert.ok(Array.isArray(body.upcoming));
   } finally {
     globalThis.fetch = savedFetch;

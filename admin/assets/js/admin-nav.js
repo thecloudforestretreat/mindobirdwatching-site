@@ -2,7 +2,8 @@
   "use strict";
   var hub = "https://admin.mindobirdwatching.com/";
   var pages = [
-    { id:"app", label:"Action Desk", href:hub+"app/", group:"Guests & Sales" },
+    { id:"app", label:"MBW Nest", href:hub+"app/", group:"Guests & Sales" },
+    { id:"guide", label:"Guide Nest Preview", href:hub+"guide/", group:"Guests & Sales" },
     { id:"guest-crm", label:"Guest CRM", href:hub+"guest-crm/", group:"Guests & Sales" },
     { id:"whatsapp", label:"WhatsApp", href:hub+"whatsapp/", group:"Guests & Sales" },
     { id:"pilot", label:"Inquiry Studio", href:hub+"inquiry-studio/", group:"Guests & Sales" },

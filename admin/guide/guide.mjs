@@ -146,7 +146,7 @@ async function loadReports() {
   reportsLoading = true; renderHistory();
   try {
     const url = new URL("/api/guide/reports", location.origin);
-    if (data?.providerName) url.searchParams.set("provider", data.providerName);
+    if (data?.providerId || data?.providerName) url.searchParams.set("provider", data.providerId || data.providerName);
     const response = await fetch(url, { cache: "no-store", credentials: "same-origin" });
     const body = await response.json();
     if (!response.ok) throw new Error(body.error || t("historyUnavailable"));
@@ -160,7 +160,8 @@ function renderPreview() {
   const panel = $("#adminPreview");
   panel.hidden = !data.preview;
   if (!data.preview) return;
-  $("#providerSelect").innerHTML = data.providers.length ? data.providers.map(name => `<option value="${esc(name)}" ${name === data.providerName ? "selected" : ""}>${esc(name)}</option>`).join("") : `<option value="">${language === "es" ? "No hay guías" : "No guide records found"}</option>`;
+  const options = data.providerOptions?.length ? data.providerOptions : (data.providers || []).map(name => ({ providerId: "", name }));
+  $("#providerSelect").innerHTML = options.length ? options.map(item => `<option value="${esc(item.providerId || item.name)}" ${(item.providerId && item.providerId === data.providerId) || (!item.providerId && item.name === data.providerName) ? "selected" : ""}>${esc(item.name)}</option>`).join("") : `<option value="">${language === "es" ? "No hay guías" : "No guide records found"}</option>`;
 }
 
 function applyLanguage() {
@@ -202,7 +203,7 @@ document.addEventListener("click", event => {
 });
 $("#providerSelect").addEventListener("change", event => load(event.target.value));
 $("#reportTour").addEventListener("change", updateReportLink);
-$("#refresh").addEventListener("click", () => load(data?.providerName || ""));
+$("#refresh").addEventListener("click", () => load(data?.providerId || data?.providerName || ""));
 $("#retry").addEventListener("click", () => load());
 applyLanguage();
 load().then(() => route(new URLSearchParams(location.search).get("view") || "today"));

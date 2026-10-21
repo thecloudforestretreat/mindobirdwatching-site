@@ -38,6 +38,7 @@ export async function onRequestPost({ request, env }) {
       end_time: time(assignment.end_time),
       service_type: text(assignment.service_type || "Other", 120),
       product_selected: text(assignment.product_selected, 240),
+      provider_id: text(assignment.provider_id, 128),
       provider_role: text(assignment.provider_role || "other", 60).toLowerCase(),
       provider_name: providerName === "Other" ? "Other" : providerName,
       provider_name_other: providerName === "Other" ? text(assignment.provider_name_other, 160) : "",
