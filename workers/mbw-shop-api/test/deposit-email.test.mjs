@@ -175,7 +175,7 @@ assert.match(
   /prepare it for fulfillment/i
 );
 
-function createDb(order) {
+function createDb(order, orderItems = []) {
   const updates = [];
   const columns = [
     "printify_order_id",
@@ -197,6 +197,12 @@ function createDb(order) {
               return order;
             },
             async all() {
+              if (/FROM order_items/i.test(sql)) {
+                return {
+                  results: orderItems
+                };
+              }
+
               return {
                 results:
                   columns.map((name) => ({
@@ -244,7 +250,7 @@ function createDb(order) {
 }
 
 const depositDb =
-  createDb(depositOrder);
+  createDb(depositOrder, depositItems);
 const depositPrintifyResult =
   await worker.createPrintifyOrderIfEnabled(
     {
@@ -271,6 +277,37 @@ assert.match(
   /printify_status = 'not_applicable'/
 );
 
+const legacyDepositOrder = {
+  ...depositOrder,
+  raw_stripe_session_json:
+    JSON.stringify({
+      metadata: {}
+    })
+};
+const legacyDepositDb =
+  createDb(
+    legacyDepositOrder,
+    depositItems
+  );
+const legacyDepositPrintifyResult =
+  await worker.createPrintifyOrderIfEnabled(
+    {
+      DB: legacyDepositDb,
+      PRINTIFY_ORDER_CREATION_ENABLED:
+        "true"
+    },
+    "cs_legacy_deposit"
+  );
+
+assert.equal(
+  legacyDepositPrintifyResult.status,
+  "not_applicable"
+);
+assert.equal(
+  legacyDepositPrintifyResult.fulfillment_status,
+  "tour_deposit_received"
+);
+
 const merchandiseDb =
   createDb(merchandiseOrder);
 const merchandisePrintifyResult =
@@ -294,4 +331,9 @@ assert.equal(
 
 console.log(
   "Deposit email and fulfillment QA passed."
+);
+
+assert.match(
+  source,
+  /requires_fulfillment_review:\s*true[\s\S]*?\},\s*200,\s*request\s*\);/
 );

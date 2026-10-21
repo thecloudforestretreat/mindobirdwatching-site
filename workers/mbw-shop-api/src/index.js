@@ -1233,7 +1233,7 @@ async function handleStripeWebhook(
   if (!printifyOrderResult.ok) {
     return jsonResponse(
       {
-        ok: false,
+        ok: true,
         received: true,
         order_saved: true,
         duplicate: saveResult.duplicate,
@@ -1248,11 +1248,13 @@ async function handleStripeWebhook(
         printify_order_status:
           printifyOrderResult.status ||
           "failed",
+        fulfillment_ok: false,
+        requires_fulfillment_review: true,
         error:
           printifyOrderResult.error ||
           "Printify order could not be created"
       },
-      500,
+      200,
       request
     );
   }
@@ -2302,8 +2304,26 @@ async function createPrintifyOrderIfEnabled(
     };
   }
 
+  const itemsResult =
+    await env.DB
+      .prepare(
+        `SELECT
+           product_title
+         FROM order_items
+         WHERE order_id = ?
+         ORDER BY id ASC`
+      )
+      .bind(order.id)
+      .all();
+
+  const items =
+    itemsResult &&
+    Array.isArray(itemsResult.results)
+      ? itemsResult.results
+      : [];
+
   const paymentContext =
-    getOrderPaymentContext(order);
+    getOrderPaymentContext(order, items);
 
   if (paymentContext.isTourDeposit) {
     const now =
