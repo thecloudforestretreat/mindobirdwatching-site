@@ -78,8 +78,10 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.match(await page.locator(".loadingReveal img").evaluate(element => getComputedStyle(element).clipPath), /^inset\(0px 0px /, "gold logo should reveal from top to bottom");
     assert.equal(await page.locator(".loadingReveal img").isVisible(), true);
     assert.match(await page.locator(".appHeader .brand img").getAttribute("src"), /mbw-header-logo-160\.png/);
+    assert.equal(await page.locator(".appHeader .brand small").innerText(), "NEST");
     await page.screenshot({ path: "/tmp/mbw-loader-mobile-qa.png", fullPage: false });
     const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
+    assert.match(await page.locator("#connectionState").innerText(), /Synced now/);
     assert.match(await card.innerText(), /Test Testerer/); assert.match(await card.innerText(), /MT/); assert.match(await card.innerText(), /🇺🇸/);
     assert.match(await card.innerText(), /F\/U\s+Tomorrow/i); assert.doesNotMatch(await card.innerText(), /\bSOON\b|\bNURTURE\b/);
     assert.equal(await page.locator("[data-summary-filter]").count(), 3); await page.locator('[data-summary-filter="followups"]').click(); assert.equal(await page.locator(".actionCard").count(), 1);

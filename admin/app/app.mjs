@@ -12,9 +12,31 @@ const phoneDigits = value => String(value || "").replace(/\D/g, "");
 const STATUS_OPTIONS = ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"];
 const REP_OPTIONS = ["", "SS", "JPG"];
 const GUEST_MORE_FILTERS = ["contacted", "planning", "qualified", "follow_up", "quoted", "deposit_pending", "deposit_paid", "payment_pending", "completed", "cancelled", "did_not_book", "archived", "all"];
-const state = { session: null, data: null, route: "actions", cached: false, guest: null, deskView: "list", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "", guestStatusFilter: "active", guestSearchResults: null };
+const AUTO_SYNC_INTERVAL_MS = 10 * 60 * 1000;
+const FOREGROUND_SYNC_MIN_AGE_MS = 5 * 60 * 1000;
+const RECONNECT_SYNC_MIN_AGE_MS = 60 * 1000;
+const AUTO_RETRY_COOLDOWN_MS = 60 * 1000;
+const state = { session: null, data: null, route: "actions", cached: false, guest: null, deskView: "list", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "", guestStatusFilter: "active", guestSearchResults: null, lastSyncedAt: 0, snapshotSavedAt: 0, connectionMode: "loading" };
+let refreshPromise = null, lastAutomaticAttemptAt = 0;
 
-function connection(mode, label) { const node = $("#connectionState"); node.dataset.state = mode; node.querySelector("b").textContent = label; }
+function elapsedLabel(timestamp) {
+  const elapsed = Math.max(0, Date.now() - Number(timestamp || 0));
+  if (elapsed < 45 * 1000) return "now";
+  if (elapsed < 60 * 60 * 1000) return `${Math.max(1, Math.floor(elapsed / 60000))}m ago`;
+  if (elapsed < 24 * 60 * 60 * 1000) return `${Math.floor(elapsed / 3600000)}h ago`;
+  return `${Math.floor(elapsed / 86400000)}d ago`;
+}
+function connection(mode, label = "") {
+  const node = $("#connectionState");
+  state.connectionMode = mode;
+  node.dataset.state = mode;
+  const timestamp = mode === "online" ? state.lastSyncedAt : state.snapshotSavedAt || state.lastSyncedAt;
+  node.querySelector("b").textContent = label || (mode === "online" && timestamp ? `Synced ${elapsedLabel(timestamp)}` : mode === "cached" && timestamp ? `Saved ${elapsedLabel(timestamp)}` : pretty(mode));
+  node.title = timestamp ? new Date(timestamp).toLocaleString() : "";
+}
+function updateConnectionAge() {
+  if (["online", "cached"].includes(state.connectionMode)) connection(state.connectionMode);
+}
 function empty(message) { return `<div class="emptyCard">${esc(message)}</div>`; }
 function toast(message) { const node = $("#toast"); node.textContent = message; node.hidden = false; clearTimeout(toast.timer); toast.timer = setTimeout(() => { node.hidden = true; }, 3200); }
 function todayIso() {
@@ -137,7 +159,8 @@ function renderMore() {
   const identity = state.session?.identity || {};
   $("#identityName").textContent = identity.name || identity.email || "—";
   $("#identityRole").textContent = pretty(identity.role);
-  $("#lastChecked").textContent = state.data?.checkedAt ? new Date(state.data.checkedAt).toLocaleString() : "—";
+  const lastSync = state.lastSyncedAt || state.snapshotSavedAt;
+  $("#lastChecked").textContent = lastSync ? new Date(lastSync).toLocaleString() : "—";
   $("#writeState").textContent = state.session?.capabilities?.write ? "Enabled" : "Read only";
   document.querySelectorAll("[data-owner-only]").forEach(node => { node.hidden = identity.role !== "owner"; });
   $("#newGuestButton").disabled = !state.session?.capabilities?.write;
@@ -291,10 +314,33 @@ async function createAssignment(event) {
   try { await api.createAssignment({ inquiryId: guest.inquiryId, guestId: guest.guestId, bookingId: guest.bookingId, guestName: guest.name, guestPhone: guest.phone, guestCount: tour.guests || guest.partySize, assignment: { service_date: data.service_date || tour.date, start_time: data.start_time, end_time: data.end_time, service_type: tour.serviceType || "Other", product_selected: tour.product, provider_role: provider?.role || data.provider_role, provider_name: providerName, provider_name_other: providerOther, pickup_location: data.pickup_location, dropoff_location: data.dropoff_location, assignment_status: data.assignment_status, provider_informed: data.provider_informed } }); toast("Assignment added and verified."); await openGuest(guest.inquiryId, "operations"); await refresh(false); } catch (error) { toast(error.message); button.disabled = false; }
 }
 
-async function refresh(showLoading = true) {
+async function refresh(showLoading = true, { quiet = false } = {}) {
+  if (refreshPromise) return refreshPromise;
   if (showLoading) connection("loading", "Refreshing");
-  try { const result = await api.bootstrap(); state.data = result; state.cached = false; await saveSnapshot(state.session.identity.email, result); connection("online", "Live"); render(); }
-  catch (error) { connection(state.data ? "cached" : "error", state.data ? "Saved" : "Unavailable"); if (!state.data) throw error; toast("Could not refresh. Saved data remains visible."); }
+  refreshPromise = (async () => {
+    try {
+      const result = await api.bootstrap(), syncedAt = Date.now();
+      state.data = result; state.cached = false; state.lastSyncedAt = syncedAt; state.snapshotSavedAt = syncedAt;
+      await saveSnapshot(state.session.identity.email, result);
+      connection("online"); render();
+      return true;
+    } catch (error) {
+      if (!state.data) { connection("error", "Unavailable"); throw error; }
+      state.cached = true; connection("cached"); render();
+      if (!quiet) toast("Could not refresh. Saved data remains visible.");
+      return false;
+    } finally { refreshPromise = null; }
+  })();
+  return refreshPromise;
+}
+
+async function maybeAutomaticRefresh(minimumAge = AUTO_SYNC_INTERVAL_MS) {
+  if (!state.session || !state.data || !navigator.onLine || document.visibilityState !== "visible") return;
+  const reference = state.lastSyncedAt || state.snapshotSavedAt;
+  if (reference && Date.now() - reference < minimumAge) return;
+  if (Date.now() - lastAutomaticAttemptAt < AUTO_RETRY_COOLDOWN_MS) return;
+  lastAutomaticAttemptAt = Date.now();
+  await refresh(false, { quiet: true });
 }
 
 async function start() {
@@ -315,10 +361,10 @@ async function start() {
     try { await refresh(false); }
     catch (networkError) {
       const saved = await loadSnapshot(state.session.identity.email); if (!saved) throw networkError;
-      state.data = saved.data; state.cached = true; connection("cached", "Saved"); render();
+      state.data = saved.data; state.cached = true; state.snapshotSavedAt = saved.savedAt; connection("cached"); render();
       [4000, 15000].forEach(delay => setTimeout(() => { if (state.cached && navigator.onLine) refresh(false); }, delay));
     }
-    setLoadingStage(100, "Action Desk ready.");
+    setLoadingStage(100, "MBW Nest ready.");
     await new Promise(resolve => setTimeout(resolve, 180));
     loadingStages.forEach(clearTimeout); $("#loadingState").hidden = true; $("#workspace").hidden = false; $("#bottomNav").hidden = false;
     const params = new URLSearchParams(location.search); route(params.get("view") || "actions"); if (params.get("guest")) openGuest(params.get("guest"), params.get("task") || "");
@@ -354,6 +400,11 @@ $("#guestSearch").addEventListener("input", event => { if (!event.currentTarget.
 $("#guestsView").addEventListener("click", event => { const button = event.target.closest("[data-guest-status-filter]"); if (!button) return; state.guestStatusFilter = button.dataset.guestStatusFilter; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuestStatusFilters(); renderGuests(); });
 $("#guestsView").addEventListener("change", event => { if (event.target.id !== "guestMoreStatusFilter" || !event.target.value) return; state.guestStatusFilter = event.target.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuestStatusFilters(); renderGuests(); });
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
-window.addEventListener("online", () => refresh(false)); window.addEventListener("offline", () => connection("cached", "Offline"));
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=18", { scope: "/app/" }).catch(() => {});
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") maybeAutomaticRefresh(FOREGROUND_SYNC_MIN_AGE_MS); });
+window.addEventListener("focus", () => maybeAutomaticRefresh(FOREGROUND_SYNC_MIN_AGE_MS));
+window.addEventListener("online", () => { connection(state.cached ? "cached" : "online"); maybeAutomaticRefresh(RECONNECT_SYNC_MIN_AGE_MS); });
+window.addEventListener("offline", () => connection("offline", "Offline"));
+setInterval(updateConnectionAge, 30 * 1000);
+setInterval(() => maybeAutomaticRefresh(AUTO_SYNC_INTERVAL_MS), 60 * 1000);
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=19", { scope: "/app/" }).catch(() => {});
 start();
