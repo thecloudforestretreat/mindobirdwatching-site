@@ -3143,12 +3143,22 @@ function syncCrmFollowupQueue() {
   return reconcileCrmFollowupQueue_(ss);
 }
 
-function reconcileCrmFollowupQueue_(ss) {
+function reconcileCrmFollowupQueue_(ss, dryRun) {
   const inquiries = ss.getSheetByName(CRM_TABS.inquiries);
   const followups = ss.getSheetByName(CRM_TABS.followups);
   if (!inquiries || !followups) return { openTasks: 0, closedTasks: 0, removedTasks: 0 };
 
   const inquiryItems = getObjectsWithRowNumbers_(inquiries);
+  // Read manual override notes once per column, rather than once per enquiry.
+  const noteRowCount = Math.max(0, inquiries.getLastRow() - 1);
+  const noteHeaders = inquiries.getRange(1, 1, 1, inquiries.getLastColumn()).getValues()[0].map(String);
+  function columnNotes(header) {
+    const column = noteHeaders.indexOf(header) + 1;
+    return column && noteRowCount ? inquiries.getRange(2, column, noteRowCount, 1).getNotes() : [];
+  }
+  const statusNotes = columnNotes("status");
+  const startNotes = columnNotes("requested_date_start");
+  const endNotes = columnNotes("requested_date_end");
   const existingRows = getObjects_(followups);
   const existingByKey = {};
   const scheduleConflictRows = [];
@@ -3174,8 +3184,12 @@ function reconcileCrmFollowupQueue_(ss) {
     if (!inquiryId) return;
     if (clean_(row.status) === "duplicate" || clean_(row.is_archived).toLowerCase() === "yes") return;
 
-    const dateRange = bestInquiryDateRange_(row, inquiries, item.rowNumber);
-    const aligned = isManualStatusOverride_(inquiries, item.rowNumber)
+    const noteIndex = item.rowNumber - 2;
+    const manualDates = clean_((startNotes[noteIndex] || [])[0]).indexOf(MANUAL_REQUESTED_DATE_OVERRIDE_NOTE) >= 0 ||
+      clean_((endNotes[noteIndex] || [])[0]).indexOf(MANUAL_REQUESTED_DATE_OVERRIDE_NOTE) >= 0;
+    const manualStatus = clean_((statusNotes[noteIndex] || [])[0]).indexOf(MANUAL_STATUS_OVERRIDE_NOTE) >= 0;
+    const dateRange = bestInquiryDateRange_(row, null, null, manualDates);
+    const aligned = manualStatus
       ? row
       : alignInquiryStatusFromSubstatuses_(row, dateRange);
     const action = nextActionForInquiry_(aligned, dateRange);
@@ -3203,12 +3217,13 @@ function reconcileCrmFollowupQueue_(ss) {
 
   const rebuiltRows = scheduleConflictRows.concat(desiredRows);
   const removedTasks = Math.max(0, existingRows.length - rebuiltRows.length);
-  replaceSheetBodyWithObjects_(followups, rebuiltRows);
+  if (!dryRun) replaceSheetBodyWithObjects_(followups, rebuiltRows);
 
   return {
     openTasks: desiredRows.filter(function(row) { return clean_(row.status) === "open"; }).length,
     closedTasks: closedTasks,
-    removedTasks: removedTasks
+    removedTasks: removedTasks,
+    rows: dryRun ? rebuiltRows : undefined
   };
 }
 
@@ -4127,7 +4142,29 @@ function updateInquiryStatus(inquiryId, newStatus, notes) {
 function sendDailyFollowupDigest() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   reconcileCrmFollowupQueue_(ss);
-  const followups = getObjects_(ss.getSheetByName(CRM_TABS.followups));
+  const digest = buildDailyFollowupDigest_(ss, getObjects_(ss.getSheetByName(CRM_TABS.followups)));
+  if (!digest.count) return { sent: false, dueCount: 0 };
+  MailApp.sendEmail(digest.message);
+  Logger.log("Daily follow-up digest sent: " + digest.count + " enquiries.");
+  return { sent: true, dueCount: digest.count };
+}
+
+/** Read-only preview: no email and no changes to the follow-up queue. */
+function previewDailyFollowupDigest() {
+  const startedAt = Date.now();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const queue = reconcileCrmFollowupQueue_(ss, true);
+  const digest = buildDailyFollowupDigest_(ss, queue.rows || []);
+  const result = { dryRun: true, dueCount: digest.count, openTasks: queue.openTasks,
+    closedTasks: queue.closedTasks, recipient: INTERNAL_NOTIFY_EMAIL,
+    bodyCharacters: digest.message ? digest.message.body.length : 0,
+    htmlCharacters: digest.message ? digest.message.htmlBody.length : 0,
+    durationMs: Date.now() - startedAt };
+  Logger.log(JSON.stringify(result));
+  return result;
+}
+
+function buildDailyFollowupDigest_(ss, followups) {
   const inquiries = {};
   getObjects_(ss.getSheetByName(CRM_TABS.inquiries)).forEach(function(row) {
     if (row.inquiry_id) inquiries[clean_(row.inquiry_id)] = row;
@@ -4137,6 +4174,8 @@ function sendDailyFollowupDigest() {
   followups.forEach(function(row) {
     const inquiryId = clean_(row.inquiry_id);
     if (!inquiryId || !inquiries[inquiryId]) return;
+    const inquiry = inquiries[inquiryId];
+    if (clean_(inquiry.is_archived).toLowerCase() === "yes" || clean_(inquiry.status) === "duplicate") return;
     if (clean_(row.followup_type) === "schedule_conflict") return;
     if (clean_(row.status) !== "open") return;
     if (!row.due_at || normalizeDateForSheet_(row.due_at) > today) return;
@@ -4150,19 +4189,19 @@ function sendDailyFollowupDigest() {
     return clean_(a.due_at).localeCompare(clean_(b.due_at));
   });
 
-  if (!due.length) return;
+  if (!due.length) return { count: 0, message: null };
 
   const groups = groupDigestFollowups_(due);
   const displayDate = formatDigestDate_(today, true);
   const plainText = buildFollowupDigestPlainText_(groups, due.length, displayDate, ss.getUrl(), today);
   const htmlBody = buildFollowupDigestHtml_(groups, due.length, displayDate, ss.getUrl(), today);
 
-  MailApp.sendEmail({
+  return { count: due.length, message: {
     to: INTERNAL_NOTIFY_EMAIL,
     subject: "MBW CRM: " + due.length + " follow-ups due - " + formatDigestDate_(today, false),
     body: plainText,
     htmlBody: htmlBody
-  });
+  } };
 }
 
 function groupDigestFollowups_(dueRows) {
