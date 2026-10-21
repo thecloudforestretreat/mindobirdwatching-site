@@ -105,13 +105,23 @@ export async function onRequestPost({ request, env }) {
         "transportation": { tour:"Transportation Requested", service_type:"Transportation", product_selected:"" },
         "accommodation assistance": { tour:"Accommodation Assistance", service_type:"Accommodation", product_selected:"ACCOM01" }
       };
-      let groupingPreference = "unknown";
+      const formatMap = {
+        "private tour":"private_only", "tour privado":"private_only",
+        "join a small group":"open_to_group", "unirse a un grupo pequeno":"open_to_group",
+        "either private or small group":"open_to_group", "privado o grupo pequeno":"open_to_group"
+      };
+      const normalizeFormat = value => String(value || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const parseFormat = value => {
+        const key = normalizeFormat(value);
+        return Object.prototype.hasOwnProperty.call(formatMap, key) ? formatMap[key] : null;
+      };
+      const selectedFormat = parseFormat(data.get("tour_format_ui"));
+      let groupingPreference = selectedFormat || "unknown";
       const additions = [];
       rawAddOns.split(/\s*\|\s*/).filter(Boolean).forEach(value => {
         const lower = value.toLowerCase();
         if (lower.indexOf("tour format:") === 0) {
-          if (lower.includes("private") && !lower.includes("either")) groupingPreference = "private_only";
-          else if (lower.includes("group") || lower.includes("either")) groupingPreference = "open_to_group";
+          if (!selectedFormat) groupingPreference = parseFormat(value.slice(value.indexOf(":") + 1)) || "unknown";
           return;
         }
         if (lower.indexOf("other:") === 0) {
@@ -134,7 +144,7 @@ export async function onRequestPost({ request, env }) {
         product_selected:primary.product,
         duration_preference:primary.duration,
         grouping_preference:groupingPreference,
-        transportation_needed:additions.some(item => item.service_type === "Transportation") ? "Yes" : "Unknown",
+        transportation_needed:primaryKey === "quito to mindo day trip" || additions.some(item => item.service_type === "Transportation") ? "Yes" : "Unknown",
         tour_items:JSON.stringify(tourItems),
         tour_items_json:JSON.stringify(tourItems),
         tour_count:String(tourItems.length),

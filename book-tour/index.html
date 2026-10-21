@@ -681,7 +681,7 @@ header.topbar a.pill *,
       "name": "Private or Small Group Mindo Birdwatching Tour Request",
       "description": "Request a private Mindo birdwatching tour or ask to join a compatible small group of 2–8. Bilingual guides, conversational English, and manual planning.",
       "inLanguage": "en",
-      "dateModified": "2026-09-11"
+      "dateModified": "2026-10-21"
     },
     {
       "@type": "BreadcrumbList",
@@ -700,7 +700,7 @@ header.topbar a.pill *,
           "item": "https://mindobirdwatching.com/book-tour/"
         }
       ],
-      "dateModified": "2026-09-11"
+      "dateModified": "2026-10-21"
     },
     {
       "@type": "Service",
@@ -718,7 +718,7 @@ header.topbar a.pill *,
       },
       "url": "https://mindobirdwatching.com/book-tour/",
       "inLanguage": "en",
-      "dateModified": "2026-09-11"
+      "dateModified": "2026-10-21"
     },
     {
       "@type": "FAQPage",
@@ -790,7 +790,7 @@ header.topbar a.pill *,
         }
       ],
       "inLanguage": "en",
-      "dateModified": "2026-09-11"
+      "dateModified": "2026-10-21"
     }
   ]
 }
@@ -1308,6 +1308,7 @@ header.topbar a.pill *,
 }
 </style>
 <!-- MBW inline fonts end -->
+<link rel="stylesheet" href="/assets/css/pages/booking-flow.css?v=20261021">
 </head>
 <body class="tourRequestPage" data-page-content-group="tour_request" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="tour_request_page" data-css-cluster="tour_collection">
 <div class="container">
@@ -1514,6 +1515,9 @@ header.topbar a.pill *,
 <label class="field">Number of Guests<select name="number_of_guests"><option value="">Select</option><option>1</option><option>2</option><option>3 to 4</option><option>5 to 8</option><option>9+</option></select></label>
 <label class="field">Accommodation Needs<input name="accommodation_needs" placeholder="Optional hotel name, pickup notes, or route needs" type="text"></label>
 </div>
+<label class="field">Pickup address / hotel (optional)<input name="pickup_location" type="text" placeholder="Hotel name and address, Quito area, airport or meeting point" autocomplete="off"></label>
+<p class="formNote" data-booking-context="night-walk" hidden>Night walk: starts at 7 PM and lasts 2–2.5 hours. Pickup within 4 km of Mindo is included; farther locations may have a small additional charge. If you need water boots, add each guest’s shoe size to your message and tell us if you need ponchos. Please mention mobility needs before booking.</p>
+<p class="formNote" data-booking-context="quito-day-trip" hidden>Quito day trip: your package quote includes private door-to-door round-trip transportation. Add your pickup address and preferred departure or activities to your message. Airport pickup is available; pricing outside Quito may vary. We confirm the itinerary and emailed quote before booking.</p>
 <fieldset class="tourPrimary tourFormatPreference" aria-describedby="tourFormatHelp">
 <legend>Preferred Tour Format*</legend>
 <p class="fieldHelp" id="tourFormatHelp">Choose a private tour, request to join a compatible small group of 2–8 guests, or let us check both options.</p>
@@ -1568,8 +1572,9 @@ header.topbar a.pill *,
 <button class="btn primary" data-analytics-event="tour_request_click" data-analytics-form="tour_request_form" data-analytics-label="Send Tour Request" data-analytics-location="request_form" data-analytics-page-language="en" data-analytics-page-type="tour_request_page" data-analytics-tour="private_birdwatching_mindo" id="submitBtn" type="submit">Send Tour Request</button>
 <a class="btn secondary" href="#request-form" data-whatsapp-message-key="book_tour_en" data-analytics-event="tour_whatsapp_click" data-analytics-form="tour_request_form" data-analytics-label="Message on WhatsApp" data-analytics-link-type="whatsapp" data-analytics-link-url="dynamic_whatsapp" data-analytics-location="request_form" data-analytics-page-language="en" data-analytics-page-type="tour_request_page">Message on WhatsApp</a>
 </div>
-<div class="success" id="formSuccessMsg" data-form-success="" data-analytics-form="tour_request_form">Your request has been sent. We will email you a confirmation shortly.</div>
-<div class="errorMsg" id="formErrorMsg" data-form-error="" data-analytics-form="tour_request_form">Something went wrong. Please try again, or email us at bookings@mindobirdwatching.com.</div>
+<p class="formNote" id="formPendingMsg" aria-live="polite" hidden>Your request is still processing. Please wait for confirmation before sending it again. If you need help, contact us by WhatsApp or email and mention that you already sent a request.</p>
+<div class="success" aria-live="polite" id="formSuccessMsg" data-form-success="" data-analytics-form="tour_request_form">Your request has been sent. We will email you a confirmation shortly.</div>
+<div class="errorMsg" aria-live="assertive" id="formErrorMsg" data-form-error="" data-analytics-form="tour_request_form">Something went wrong. Please try again, or email us at bookings@mindobirdwatching.com.</div>
 </form>
 </div>
 <div class="tourRequestSideStack">
@@ -1981,6 +1986,8 @@ header.topbar a.pill *,
       var fallbackTimer = null;
 
       function hideMsgs(){
+        var notice = document.getElementById("formPendingMsg");
+        if(notice) notice.hidden = true;
         if(successEl) successEl.style.display = "none";
         if(errorEl) errorEl.style.display = "none";
       }
@@ -1997,11 +2004,14 @@ header.topbar a.pill *,
       }
 
       function completeOk(){
+        var notice = document.getElementById("formPendingMsg");
+        if(notice) notice.hidden = true;
         if(done) return;
         done = true;
         pending = false;
         if(fallbackTimer) clearTimeout(fallbackTimer);
         setBtnSending(false);
+        try{ if(window.turnstile) window.turnstile.reset(); }catch(e){}
         if(successEl){
           successEl.style.display = "block";
           window.setTimeout(function(){
@@ -2031,6 +2041,8 @@ header.topbar a.pill *,
       }
 
       function completeError(msg){
+        var notice = document.getElementById("formPendingMsg");
+        if(notice) notice.hidden = true;
         if(done) return;
         done = true;
         pending = false;
@@ -2043,6 +2055,7 @@ header.topbar a.pill *,
         });
         if(fallbackTimer) clearTimeout(fallbackTimer);
         setBtnSending(false);
+        try{ if(window.turnstile) window.turnstile.reset(); }catch(e){}
         if(errorEl){
           errorEl.textContent = msg || "Something went wrong. Please try again, or email us at bookings@mindobirdwatching.com.";
           errorEl.style.display = "block";
@@ -2092,7 +2105,8 @@ header.topbar a.pill *,
           if(fallbackTimer) clearTimeout(fallbackTimer);
           fallbackTimer = setTimeout(function(){
             if(!done){
-              completeError("Still waiting. Please try again, or email us at bookings@mindobirdwatching.com.");
+              var pendingNotice = document.getElementById("formPendingMsg");
+              if(pendingNotice) pendingNotice.hidden = false;
             }
           }, 12000);
         });
@@ -2122,5 +2136,6 @@ header.topbar a.pill *,
 <script defer src="/assets/js/site-config.js?v=1"></script>
 <script defer src="/assets/js/includes.js?v=1"></script>
 <script defer src="/assets/js/site.js?v=34"></script>
+<script defer src="/assets/js/booking-context.js?v=20261021"></script>
 </body>
 </html>

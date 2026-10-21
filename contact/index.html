@@ -1087,7 +1087,7 @@ input[type="date"]{
       "about": {
         "@id": "https://mindobirdwatching.com/#organization"
       },
-      "dateModified": "2026-07-27"
+      "dateModified": "2026-10-21"
     },
     {
       "@type": "BreadcrumbList",
@@ -1106,7 +1106,7 @@ input[type="date"]{
           "item": "https://mindobirdwatching.com/contact/"
         }
       ],
-      "dateModified": "2026-07-27"
+      "dateModified": "2026-10-21"
     },
     {
       "@type": "FAQPage",
@@ -1677,6 +1677,7 @@ input[type="date"]{
 }
 </style>
 <!-- MBW inline fonts end -->
+<link rel="stylesheet" href="/assets/css/pages/booking-flow.css?v=20261021">
 </head>
 <body data-css-cluster="travel_guides" data-page-content-group="contact" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="contact_page">
 <div class="container">
@@ -1927,6 +1928,9 @@ input[type="date"]{
 <span class="labelText">Special Interests</span>
 <input name="special_interests" placeholder="Photography, hummingbirds, tanagers, night walk, etc." type="text"/>
 </label>
+<label class="field">Pickup address / hotel (optional)<input name="pickup_location" type="text" placeholder="Hotel name and address, Quito area, airport or meeting point" autocomplete="off"></label>
+<p class="formNote" data-booking-context="night-walk" hidden>Night walk: starts at 7 PM and lasts 2–2.5 hours. Pickup within 4 km of Mindo is included; farther locations may have a small additional charge. If you need water boots, add each guest’s shoe size to your message and tell us if you need ponchos. Please mention mobility needs before booking.</p>
+<p class="formNote" data-booking-context="quito-day-trip" hidden>Quito day trip: your package quote includes private door-to-door round-trip transportation. Add your pickup address and preferred departure or activities to your message. Airport pickup is available; pricing outside Quito may vary. We confirm the itinerary and emailed quote before booking.</p>
 <input id="sourcePage" name="source_page" type="hidden" value=""/>
 <input id="uaField" name="user_agent" type="hidden" value=""/>
 <p class="help">
@@ -1937,8 +1941,9 @@ input[type="date"]{
 <button class="btn primary" data-analytics-event="contact_form_submit" data-analytics-form="contact_form" data-analytics-label="Send Message" data-analytics-location="contact_form" data-analytics-page-language="en" data-analytics-page-type="contact_page" id="submitBtn" type="submit">Send Message</button>
 <a class="btn secondary" data-analytics-content-group="contact" data-analytics-event="secondary_cta_click" data-analytics-form="contact_form" data-analytics-label="View Tours" data-analytics-link-type="internal" data-analytics-link-url="https://mindobirdwatching.com/tours/" data-analytics-location="contact_form" data-analytics-page-language="en" data-analytics-page-type="contact_page" data-analytics-region="mindo" href="/tours/">View Tours</a>
 </div>
-<div class="success" data-analytics-event="form_submit_success" data-analytics-form="contact_form" data-analytics-label="Contact Form Success" data-analytics-location="contact_form" data-analytics-page-language="en" data-analytics-page-type="contact_page" id="formSuccessMsg" data-form-success="">✅ Your message has been sent - we’ll email you a confirmation shortly.</div>
-<div class="errorMsg" data-analytics-event="form_submit_error" data-analytics-form="contact_form" data-analytics-label="Contact Form Error" data-analytics-location="contact_form" data-analytics-page-language="en" data-analytics-page-type="contact_page" id="formErrorMsg" data-form-error="">⚠️ Something went wrong. Please try again, or email us directly at info@mindobirdwatching.com.</div>
+<p class="formNote" id="formPendingMsg" aria-live="polite" hidden>Your request is still processing. Please wait for confirmation before sending it again. If you need help, contact us by WhatsApp or email and mention that you already sent a request.</p>
+<div class="success" data-analytics-event="form_submit_success" data-analytics-form="contact_form" data-analytics-label="Contact Form Success" data-analytics-location="contact_form" data-analytics-page-language="en" data-analytics-page-type="contact_page" aria-live="polite" id="formSuccessMsg" data-form-success="">✅ Your message has been sent - we’ll email you a confirmation shortly.</div>
+<div class="errorMsg" data-analytics-event="form_submit_error" data-analytics-form="contact_form" data-analytics-label="Contact Form Error" data-analytics-location="contact_form" data-analytics-page-language="en" data-analytics-page-type="contact_page" aria-live="assertive" id="formErrorMsg" data-form-error="">⚠️ Something went wrong. Please try again, or email us directly at info@mindobirdwatching.com.</div>
 </form>
 </div>
 </div>
@@ -2284,6 +2289,8 @@ input[type="date"]{
   var fallbackTimer = null;
 
   function hideMsgs(){
+        var notice = document.getElementById("formPendingMsg");
+        if(notice) notice.hidden = true;
     if(successEl) successEl.style.display = "none";
     if(errorEl) errorEl.style.display = "none";
   }
@@ -2300,11 +2307,14 @@ input[type="date"]{
   }
 
   function completeOk(){
+        var notice = document.getElementById("formPendingMsg");
+        if(notice) notice.hidden = true;
     if(done) return;
     done = true;
     pending = false;
     if(fallbackTimer) clearTimeout(fallbackTimer);
     setBtnSending(false);
+        try{ if(window.turnstile) window.turnstile.reset(); }catch(e){}
     if(successEl) successEl.style.display = "block";
     if(errorEl) errorEl.style.display = "none";
 
@@ -2319,11 +2329,14 @@ input[type="date"]{
   }
 
   function completeError(msg){
+        var notice = document.getElementById("formPendingMsg");
+        if(notice) notice.hidden = true;
     if(done) return;
     done = true;
     pending = false;
     if(fallbackTimer) clearTimeout(fallbackTimer);
     setBtnSending(false);
+        try{ if(window.turnstile) window.turnstile.reset(); }catch(e){}
     if(errorEl){
       errorEl.textContent = msg || "⚠️ Something went wrong. Please try again, or email us directly at info@mindobirdwatching.com.";
       errorEl.style.display = "block";
@@ -2348,7 +2361,8 @@ input[type="date"]{
       if(fallbackTimer) clearTimeout(fallbackTimer);
       fallbackTimer = setTimeout(function(){
         if(!done){
-          completeError("⚠️ Still waiting... please try again, or email us directly at info@mindobirdwatching.com.");
+          var pendingNotice = document.getElementById("formPendingMsg");
+              if(pendingNotice) pendingNotice.hidden = false;
         }
       }, 12000);
     });
@@ -2379,5 +2393,6 @@ input[type="date"]{
 <script defer="" src="/assets/js/site-config.js?v=1"></script>
 <script defer="" src="/assets/js/includes.js?v=1"></script>
 <script defer="" src="/assets/js/site.js?v=34"></script>
+<script defer src="/assets/js/booking-context.js?v=20261021"></script>
 </body>
 </html>
