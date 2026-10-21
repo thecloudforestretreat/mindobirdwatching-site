@@ -1319,6 +1319,10 @@ function latestContactIntentId_(value) {
   return candidates.length ? candidates[candidates.length - 1] : "";
 }
 
+function canonicalContactIntentId_(preferredValue, fallbackValue) {
+  return latestContactIntentId_(preferredValue) || latestContactIntentId_(fallbackValue);
+}
+
 function backfillInquiryAttribution_(ss, inquiryId, attribution) {
   const sh = ss.getSheetByName(CRM_TABS.inquiries);
   if (!sh) throw new Error("Missing CRM inquiries sheet.");
@@ -1370,7 +1374,9 @@ function backfillInquiryAttribution_(ss, inquiryId, attribution) {
     const value = clean_(updates[key]);
     if (!value) return;
     if (key === "contact_intent_id") {
-      merged[key] = mergeDistinctText_(merged[key], value);
+      // contact_intent_id is a single canonical foreign key, not a history field.
+      // Prefer the exact D1 result and only fall back to the current CRM value.
+      merged[key] = canonicalContactIntentId_(value, merged[key]);
     } else {
       merged[key] = value;
     }
@@ -1381,14 +1387,15 @@ function backfillInquiryAttribution_(ss, inquiryId, attribution) {
 }
 
 /**
- * One-time repair for the two pre-upgrade inquiries that already contained
- * multiple valid contact-intent references before the D1 backfill.
+ * One-time repair for pre-upgrade inquiries that already contained multiple
+ * contact-intent references before the D1 backfill. The canonical field must
+ * contain one exact reference; history belongs in the activity log.
  * Safe to run repeatedly.
  */
 function repairMergedContactIntentReferences() {
   const repairs = {
-    "INQ-20260909013136-0000": "ci_tdr46r6pqb4 | ci_uj8mjpirfnh",
-    "INQ-20260826235233-1611": "ci_b1pklb6ehkg | ci_ddkgzqlz6e3"
+    "INQ-20260909013136-0000": "ci_uj8mjpirfnh",
+    "INQ-20260826235233-1611": "ci_ddkgzqlz6e3"
   };
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sh = ss.getSheetByName(CRM_TABS.inquiries);
@@ -1768,7 +1775,9 @@ function mergeInquiryRows_(existing, incoming, now) {
     service_type: keepBest_(existing.service_type, incoming.service_type),
     duration_preference: keepBest_(existing.duration_preference, incoming.duration_preference),
     requested_date: keepBest_(existing.requested_date, incoming.requested_date),
-    contact_intent_id: mergeDistinctText_(existing.contact_intent_id, incoming.contact_intent_id),
+    // A contact intent is a single canonical reference. Website/D1 data wins
+    // when present; repeated imports must never pipe-join foreign keys.
+    contact_intent_id: canonicalContactIntentId_(incoming.contact_intent_id, existing.contact_intent_id),
     website_visitor_id: keepBest_(existing.website_visitor_id, incoming.website_visitor_id),
     website_session_id: keepBest_(incoming.website_session_id, existing.website_session_id),
     attribution_status: keepBest_(incoming.attribution_status, existing.attribution_status),

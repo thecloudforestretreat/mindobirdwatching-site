@@ -21,6 +21,14 @@ test("recurring website merges fill blanks without replacing canonical tour plan
   }
 });
 
+test("contact intent remains one canonical reference during imports and D1 backfills", () => {
+  const router = fs.readFileSync(path.join(root, "deployment/multi-invoice-ledger/crm-router.gs"), "utf8");
+  assert.match(router, /contact_intent_id: canonicalContactIntentId_\(incoming\.contact_intent_id, existing\.contact_intent_id\)/);
+  assert.match(router, /merged\[key\] = canonicalContactIntentId_\(value, merged\[key\]\)/);
+  assert.match(router, /"INQ-20260909013136-0000": "ci_uj8mjpirfnh"/);
+  assert.doesNotMatch(router, /"INQ-20260909013136-0000": "ci_tdr46r6pqb4 \| ci_uj8mjpirfnh"/);
+});
+
 test("new website add-ons record which values were inherited", () => {
   const handler = fs.readFileSync(path.join(root, "functions/api/book-tour/index.js"), "utf8");
   assert.match(handler, /inherit_date:true, inherit_guests:true, inherit_pickup:true/);
