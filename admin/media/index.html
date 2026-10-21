@@ -13,7 +13,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/admin.css?v=hub-pilot-20260928" />
-  <link rel="stylesheet" href="/assets/css/media-studio.css?v=3" />
+  <link rel="stylesheet" href="/assets/css/media-studio.css?v=4" />
 </head>
 <body data-admin-layout="media" data-admin-page="media">
   <div data-admin-nav data-admin-page="media"></div>
@@ -76,10 +76,16 @@
           <div><p class="eyebrow">All publishing records</p><h2>Combined queue</h2></div>
           <label class="searchBox"><span class="srOnly">Search media</span><input id="mediaSearch" type="search" placeholder="Search subjects, descriptions, or IDs" /></label>
         </div>
-        <div class="filterRow" role="group" aria-label="Filter media type">
-          <button class="filterButton isActive" type="button" data-type-filter="all">All <span id="countAll">0</span></button>
-          <button class="filterButton" type="button" data-type-filter="reel">Reels <span id="countReels">0</span></button>
-          <button class="filterButton" type="button" data-type-filter="carousel">Carousels <span id="countCarousels">0</span></button>
+        <div class="queueFilters">
+          <div class="filterRow" role="group" aria-label="Filter media type">
+            <button class="filterButton isActive" type="button" data-type-filter="all">All <span id="countAll">0</span></button>
+            <button class="filterButton" type="button" data-type-filter="reel">Reels <span id="countReels">0</span></button>
+            <button class="filterButton" type="button" data-type-filter="carousel">Carousels <span id="countCarousels">0</span></button>
+          </div>
+          <div class="selectFilters">
+            <label><span>Status</span><select id="statusFilter"><option value="all">All statuses</option><option value="upcoming">Scheduled</option><option value="review">Needs review</option><option value="failed">Needs attention</option><option value="published">Published</option></select></label>
+            <label><span>Platform</span><select id="platformFilter"><option value="all">All platforms</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="youtube">YouTube</option></select></label>
+          </div>
         </div>
         <div class="combinedQueue" id="combinedQueue"></div>
       </section>
@@ -90,12 +96,9 @@
           <label class="periodSelect">Reporting period<select id="analyticsPeriod"><option value="7d">Last 7 days</option><option value="28d" selected>Last 28 days</option><option value="90d">Last 90 days</option></select></label>
         </div>
         <div class="analyticsNotice" id="analyticsNotice" role="status">Checking analytics connections…</div>
+        <div class="analyticsSummary" id="analyticsSummary"></div>
         <div class="platformAnalytics" id="platformAnalytics"></div>
-        <section class="analyticsPlan"><h3>What this dashboard will track</h3><div class="analyticsPlanGrid">
-          <article><strong>Instagram</strong><span>Reach, plays, likes, comments, shares, saves, and follower change.</span></article>
-          <article><strong>Facebook</strong><span>Reach, views, reactions, comments, shares, and page follower change.</span></article>
-          <article><strong>YouTube</strong><span>Views, engaged views, watch time, average view duration, likes, comments, shares, and subscribers gained.</span></article>
-        </div></section>
+        <div class="analyticsVisuals" id="analyticsVisuals"></div>
       </section>
     </section>
   </main>
@@ -111,7 +114,15 @@
     </section>
   </div>
 
+  <div class="mediaModalBackdrop" id="mediaDetailBackdrop" hidden>
+    <aside class="mediaDetailDrawer" role="dialog" aria-modal="true" aria-labelledby="mediaDetailTitle">
+      <header><div><p class="eyebrow" id="mediaDetailType">Scheduled media</p><h2 id="mediaDetailTitle">Media details</h2></div><button class="iconButton" id="closeMediaDetail" type="button" aria-label="Close">×</button></header>
+      <div id="mediaDetailContent"></div>
+      <footer id="mediaDetailActions"></footer>
+    </aside>
+  </div>
+
   <script defer src="/assets/js/admin-nav.js?v=studio-remote-20260928"></script>
-  <script defer src="/assets/js/media-studio.js?v=2"></script>
+  <script defer src="/assets/js/media-studio.js?v=3"></script>
 </body>
 </html>

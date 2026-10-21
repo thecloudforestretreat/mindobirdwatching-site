@@ -5,7 +5,10 @@
   // and explicitly allows requests from the protected admin origin.
   var API = "https://mindobirdwatching.com/api/admin/reels";
   var state = { rows: [], activeStatus: "review", query: "", selected: null, loading: false, generationPoll: null };
-  var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && new URLSearchParams(window.location.search).get("demo") === "1";
+  var routeParams = new URLSearchParams(window.location.search), pendingOpenId = cleanRoute(routeParams.get("id"));
+  var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && routeParams.get("demo") === "1";
+
+  function cleanRoute(value) { return String(value == null ? "" : value).trim(); }
 
   function $(id) { return document.getElementById(id); }
   function clean(value) { return String(value == null ? "" : value).trim(); }
@@ -150,6 +153,7 @@
       var incoming = Array.isArray(data.reels) ? data.reels : Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
       state.rows = incoming.filter(isActionableReel);
       render();
+      if (pendingOpenId) { var openId = pendingOpenId; pendingOpenId = ""; openReview(openId); }
       setQueueStatus((demoMode ? "Preview data loaded" : "Live queue updated") + " · " + state.rows.length + " reel" + (state.rows.length === 1 ? "" : "s"), "success");
     } catch (error) {
       state.rows = [];
@@ -467,6 +471,12 @@
   }
 
   function init() {
+    var returnPath = clean(routeParams.get("return"));
+    if (returnPath.indexOf("/media/") === 0) {
+      $("backToMedia").href = returnPath;
+      $("backToMedia").textContent = returnPath.includes("view=queue") ? "← Back to queue" : returnPath.includes("view=analytics") ? "← Back to analytics" : "← Back to calendar";
+    }
+    if (routeParams.get("new") === "1") window.setTimeout(openComposer, 0);
     $("batchStartDate").min = todayInEastern();
     $("batchStartDate").value = todayInEastern();
     bindEvents(); addBatchRow(); loadRows();
