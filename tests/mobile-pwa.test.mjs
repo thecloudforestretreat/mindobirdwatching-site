@@ -13,18 +13,19 @@ test("MBW Nest uses the dedicated gold home-screen icon and conservative CRM syn
   const app = fs.readFileSync(path.join(root, "admin/app/app.mjs"), "utf8");
   assert.equal(manifest.name, "MBW Nest");
   assert.equal(manifest.short_name, "MBW Nest");
-  assert.equal(manifest.start_url, "/app/?installed=nest-v5");
+  assert.equal(manifest.start_url, "/app/?installed=nest-v6");
   assert.equal(manifest.scope, "/app/");
   assert.deepEqual(manifest.icons.map(icon => icon.src), [
     "https://mindobirdwatching.com/assets/images/mbw-nest-ios-public-v2-192.png",
     "https://mindobirdwatching.com/assets/images/mbw-nest-ios-public-v2-512.png",
   ]);
   assert.match(index, /apple-mobile-web-app-title" content="MBW Nest"/);
-  assert.match(index, /apple-touch-icon[^>]+https:\/\/mindobirdwatching\.com\/assets\/images\/mbw-nest-ios-public-v2-180\.png/);
+  assert.match(index, /apple-touch-icon[^>]+\/assets\/images\/app\/mbw-app-gold-transparent-180\.png\?v=nest-ios-20261020-v3/);
+  assert.match(index, /apple-touch-icon-precomposed[^>]+\/assets\/images\/app\/mbw-app-gold-transparent-180\.png\?v=nest-ios-20261020-v3/);
   assert.doesNotMatch(index, /href="\/favicon\.ico"/);
   assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
   assert.match(index, /<small>Nest<\/small>/);
-  assert.match(worker, /mbw-mobile-shell-v21/);
+  assert.match(worker, /mbw-mobile-shell-v22/);
   assert.match(app, /AUTO_SYNC_INTERVAL_MS = 10 \* 60 \* 1000/);
   assert.match(app, /FOREGROUND_SYNC_MIN_AGE_MS = 5 \* 60 \* 1000/);
   assert.match(app, /setInterval\(updateConnectionAge, 30 \* 1000\)/);
