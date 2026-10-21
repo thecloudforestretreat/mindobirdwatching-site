@@ -27,13 +27,14 @@ test('security failures never forward a guest request',async()=>{
  let r=await submit(booking.onRequestPost,{},false);assert.equal(r.calls,1);assert.equal(r.forwarded,null);assert.match(r.html,/status:"error"/);
  r=await submit(contact.onRequestPost,{'cf-turnstile-response':''});assert.equal(r.calls,0);assert.equal(r.forwarded,null);
 });
-function stateHarness(path){
+function stateHarness(path, fetchResult){
  let s=read(path),isBook=path.includes('reservar-tour')||path.startsWith('book-tour');let start=s.indexOf('var pending = false;');let end=s.indexOf('\n    })();',start);if(end<0)end=s.indexOf('\n})();',start);let code=s.slice(start,end);
  let events={},timers=[],winEvents={},reset=0,tracked=[];
  let node=()=>({style:{},hidden:true,textContent:'',setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];},scrollIntoView(){}});
  let successEl=node(),errorEl=node(),submitBtn=node(),notice=node(),iframe={contentWindow:{},addEventListener(){}};
  let form={addEventListener(t,f){events[t]=f;},reset(){reset++;}};
  let context={form,successEl,errorEl,submitBtn,iframe,ds:null,de:null,ua:null,sp:null,document:{getElementById:()=>notice},updateTourAddOns(){},applyDateMinimums(){},applyDateLimits(){},validateDates(){return true;},combineDates(){},trackGA(...args){tracked.push(args);},navigator:{userAgent:'test'},setTimeout(f,ms){timers.push({f,ms});return timers.length;},clearTimeout(){},window:{location:{origin:'https://test.invalid',pathname:'/',href:'https://test.invalid/'},turnstile:{reset(){reset++;}},setTimeout(f){f();},addEventListener(t,f){winEvents[t]=f;}}};
+ if(fetchResult){context.FormData=class{};context.URLSearchParams=URLSearchParams;context.window.fetch=async()=>({ok:true,json:async()=>fetchResult});}
  vm.runInNewContext(code,context);
  return {events,notice,submitBtn,successEl,errorEl,tracked,reset:()=>reset,slow(){timers.find(x=>x.ms===12000).f();},reply(status,valid=true){winEvents.message({origin:valid?'https://test.invalid':'https://other.invalid',source:iframe.contentWindow,data:{type:isBook?'mbw-booktour':'mbw-contact',status,message:'Test rejection'}});}};
 }
@@ -58,4 +59,9 @@ test('fetch acknowledgements report definitive delivery and security rejection a
   let r=await submit(handler,{preferred_tour_type:'Quito to Mindo Day Trip'},true,true);assert.equal(JSON.parse(r.html).status,'ok');assert.equal(r.forwarded.get('transportation_needed'),'Yes');
   r=await submit(handler,{},false,true);assert.equal(JSON.parse(r.html).status,'error');assert.equal(r.forwarded,null);
  }
+});
+
+for(const path of ['book-tour/index.html','es/reservar-tour/index.html','contact/index.html','es/contacto/index.html'])test(path+': direct acknowledgement completes once without an iframe message',async()=>{
+ let h=stateHarness(path,{status:'ok'}),prevented=0;h.events.submit({preventDefault(){prevented++;}});await new Promise(resolve=>setImmediate(resolve));assert.equal(prevented,1);assert.equal(h.successEl.style.display,'block');assert.equal(h.submitBtn.disabled,undefined);assert.equal(h.notice.hidden,true);
+ h=stateHarness(path,{status:'error',message:'Test rejection'});h.events.submit({preventDefault(){}});await new Promise(resolve=>setImmediate(resolve));assert.equal(h.errorEl.textContent.includes('Test rejection'),true);assert.equal(h.submitBtn.disabled,undefined);
 });
