@@ -329,6 +329,20 @@
     return null;
   }
 
+  function existingContactIntentId(href) {
+    var url;
+    try {
+      url = new URL(href || "", window.location.origin);
+    } catch (error) {
+      return null;
+    }
+
+    var message = cleanValue(url.searchParams.get("text"), 3500) ||
+      cleanValue(url.searchParams.get("body"), 3500) || "";
+    var match = message.match(/(?:Reference|Referencia):\s*(ci_[A-Za-z0-9_-]{4,120})/i);
+    return match ? match[1] : null;
+  }
+
   function whatsappDestination(url, anchor) {
     var configured = cleanValue(anchor.getAttribute("data-whatsapp-number"), 32);
     if (configured) return configured.replace(/\D/g, "");
@@ -572,6 +586,8 @@
     var channel = contactType(anchor);
     if (!channel) return;
 
+    if (existingContactIntentId(anchor.getAttribute("href") || "")) return;
+
     var contactIntentId = makeContactIntentId();
     var details = channel === "whatsapp"
       ? addReferenceToWhatsApp(anchor, contactIntentId)
@@ -612,6 +628,8 @@
       if (!anchor || anchor.tagName !== "A") return null;
       var channel = contactType(anchor);
       if (!channel) return null;
+      var existingId = existingContactIntentId(anchor.getAttribute("href") || "");
+      if (existingId) return existingId;
       var contactIntentId = makeContactIntentId();
       var details = channel === "whatsapp"
         ? addReferenceToWhatsApp(anchor, contactIntentId)
@@ -632,6 +650,14 @@
 
       var channel = contactType(anchor);
       if (!channel) return { url: String(href || ""), contact_intent_id: null };
+
+      var existingId = existingContactIntentId(anchor.getAttribute("href") || "");
+      if (existingId) {
+        return {
+          url: anchor.getAttribute("href") || String(href || ""),
+          contact_intent_id: existingId
+        };
+      }
 
       var contactIntentId = makeContactIntentId();
       var details = channel === "whatsapp"

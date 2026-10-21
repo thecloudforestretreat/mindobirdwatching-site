@@ -235,17 +235,37 @@
 
   var path = window.location.pathname || "/";
   if (/^\/admin(?:\/|$)/i.test(path) || /^\/book-tour\/pay(?:\/|$)/i.test(path)) return;
-  if (window.MBWAttribution || document.querySelector('script[data-mbw-attribution="true"]')) return;
+  if (window.MBWAttribution) {
+    window.MBWAttributionReady = window.MBWAttributionReady || Promise.resolve(window.MBWAttribution);
+    window.MBWLoadAttribution = window.MBWLoadAttribution || function () { return window.MBWAttributionReady; };
+    return;
+  }
+
+  var existingScript = document.querySelector('script[data-mbw-attribution="true"]');
+  if (existingScript) {
+    window.MBWLoadAttribution = window.MBWLoadAttribution || function () {
+      return window.MBWAttributionReady || Promise.reject(new Error("MBW attribution collector is unavailable"));
+    };
+    return;
+  }
 
   var script = document.createElement("script");
-  script.src = "/assets/js/mbw-attribution.js?v=20260825-4";
+  script.src = "/assets/js/mbw-attribution.js?v=20261021-1";
   script.async = true;
   script.setAttribute("data-mbw-attribution", "true");
-  script.onerror = function () {
-    if (window.console && typeof window.console.warn === "function") {
-      window.console.warn("MBW attribution collector could not be loaded");
-    }
-  };
+  window.MBWAttributionReady = new Promise(function (resolve, reject) {
+    script.addEventListener("load", function () {
+      if (window.MBWAttribution) resolve(window.MBWAttribution);
+      else reject(new Error("MBW attribution collector did not initialize"));
+    }, { once: true });
+    script.addEventListener("error", function () {
+      if (window.console && typeof window.console.warn === "function") {
+        window.console.warn("MBW attribution collector could not be loaded");
+      }
+      reject(new Error("MBW attribution collector could not be loaded"));
+    }, { once: true });
+  });
+  window.MBWLoadAttribution = function () { return window.MBWAttributionReady; };
   document.head.appendChild(script);
 })();
 
@@ -1273,7 +1293,7 @@
 
     function prepareAttributedWhatsAppLink(link, label, location) {
       var attribution = window.MBWAttribution;
-      if (!attribution || typeof attribution.prepareContactUrl !== "function") return link;
+      if (!attribution || typeof attribution.prepareContactUrl !== "function") return "";
 
       var prepared = attribution.prepareContactUrl(link, {
         label: label || "WhatsApp smart CTA",
@@ -1317,6 +1337,17 @@
       var link = buildLink(template);
       if (!link) return;
       link = prepareAttributedWhatsAppLink(link, label, location);
+      if (!link) {
+        var loader = (window.MBW_SITE_CONFIG && window.MBW_SITE_CONFIG.loadAttribution) || window.MBWLoadAttribution;
+        if (typeof loader === "function") {
+          loader().then(function () {
+            goWhatsApp(template, label, location);
+          }).catch(function () {
+            window.alert("WhatsApp is still loading. Please try again so your inquiry reference is included.");
+          });
+        }
+        return;
+      }
       trackWhatsApp(label || "WhatsApp smart CTA", location || "floating_whatsapp", link);
       window.location.href = link;
     }
@@ -1364,6 +1395,17 @@
 
         var actionLabel = cleanText(a.textContent) || "WhatsApp smart CTA option";
         link = prepareAttributedWhatsAppLink(link, actionLabel, "floating_whatsapp_panel");
+        if (!link) {
+          var loader = (window.MBW_SITE_CONFIG && window.MBW_SITE_CONFIG.loadAttribution) || window.MBWLoadAttribution;
+          if (typeof loader === "function") {
+            loader().then(function () {
+              a.click();
+            }).catch(function () {
+              window.alert("WhatsApp is still loading. Please try again so your inquiry reference is included.");
+            });
+          }
+          return;
+        }
         trackWhatsApp(actionLabel, "floating_whatsapp_panel", link);
         closePanel();
         window.open(link, "_blank", "noopener,noreferrer");
