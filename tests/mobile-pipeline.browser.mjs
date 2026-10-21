@@ -78,6 +78,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.match(await page.locator(".loadingReveal img").evaluate(element => getComputedStyle(element).clipPath), /^inset\(0px 0px /, "gold logo should reveal from top to bottom");
     assert.equal(await page.locator(".loadingReveal img").isVisible(), true);
     assert.match(await page.locator(".appHeader .brand img").getAttribute("src"), /mbw-header-logo-160\.png/);
+    assert.ok((await page.locator(".appHeader .brand img").boundingBox()).width >= 60, "header logo should have a strong mobile presence");
     assert.equal(await page.locator(".appHeader .brand small").innerText(), "NEST");
     await page.screenshot({ path: "/tmp/mbw-loader-mobile-qa.png", fullPage: false });
     const card = page.locator(".actionCard").first(); await card.waitFor({ state: "visible" });
