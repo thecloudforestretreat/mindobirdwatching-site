@@ -6,10 +6,11 @@
    - Update WhatsApp links dynamically across the site
    - Avoid hardcoding the WhatsApp number on every page
 
-   How to update:
-   - Change the whatsappNumberDigits variable only
-   - Use digits only, no +, spaces, dashes, or parentheses
-   - Upload this file again and purge its CDN cache after changing the value
+   WhatsApp routing:
+   - "scheduled" sends new daytime and overnight clicks to separate numbers
+   - "single" sends every click to singleContactKey ("day" or "night")
+   - Numbers must contain digits only, with no +, spaces, dashes, or parentheses
+   - Upload this file again and purge its CDN cache after changing the routing
 */
 
 (function () {
@@ -122,14 +123,96 @@
     } catch (_) {}
   }
 
-  // This is the only WhatsApp number stored in the site files.
-  var whatsappNumberDigits = "13054585402";
-
-  window.MBW_SITE_CONFIG.contact = {
-    whatsappNumberDigits: whatsappNumberDigits,
-    whatsappDisplayNumber: "+" + whatsappNumberDigits,
-    email: "mindobirdwatching@gmail.com"
+  var whatsappRouting = {
+    mode: "scheduled",
+    timeZone: "America/Guayaquil",
+    dayStartsAtMinutes: 7 * 60,
+    nightStartsAtMinutes: 19 * 60,
+    singleContactKey: "day",
+    contacts: {
+      day: {
+        numberDigits: "13054585402",
+        agentId: "susana",
+        shift: "day_shift"
+      },
+      night: {
+        numberDigits: "593969076501",
+        agentId: "mbw_admin",
+        shift: "night_shift"
+      }
+    }
   };
+
+  function digitsOnly(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function minutesInTimeZone(date, timeZone) {
+    try {
+      var parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: timeZone,
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(date || new Date());
+      var hour = 0;
+      var minute = 0;
+
+      parts.forEach(function (part) {
+        if (part.type === "hour") hour = Number(part.value || 0);
+        if (part.type === "minute") minute = Number(part.value || 0);
+      });
+
+      return (hour * 60) + minute;
+    } catch (_) {
+      // Ecuador uses UTC-5 year-round. Retain a deterministic fallback for
+      // browsers that do not support IANA time zones in Intl.DateTimeFormat.
+      var utc = date || new Date();
+      return ((utc.getUTCHours() + 19) % 24) * 60 + utc.getUTCMinutes();
+    }
+  }
+
+  function getActiveWhatsAppContact(date) {
+    var routing = whatsappRouting;
+    var contactKey = routing.singleContactKey === "night" ? "night" : "day";
+
+    if (routing.mode === "scheduled") {
+      var minuteOfDay = minutesInTimeZone(date || new Date(), routing.timeZone);
+      contactKey = minuteOfDay >= routing.dayStartsAtMinutes && minuteOfDay < routing.nightStartsAtMinutes
+        ? "day"
+        : "night";
+    }
+
+    var selected = routing.contacts[contactKey] || routing.contacts.day;
+    var fallback = routing.contacts.day;
+    var numberDigits = digitsOnly(selected && selected.numberDigits) || digitsOnly(fallback.numberDigits);
+
+    return {
+      key: contactKey,
+      numberDigits: numberDigits,
+      displayNumber: numberDigits ? "+" + numberDigits : "",
+      agentId: String(selected && selected.agentId || fallback.agentId || ""),
+      shift: String(selected && selected.shift || "single_shift")
+    };
+  }
+
+  var contactConfig = {
+    email: "mindobirdwatching@gmail.com",
+    whatsappRouting: whatsappRouting
+  };
+
+  Object.defineProperties(contactConfig, {
+    whatsappNumberDigits: {
+      enumerable: true,
+      get: function () { return getActiveWhatsAppContact().numberDigits; }
+    },
+    whatsappDisplayNumber: {
+      enumerable: true,
+      get: function () { return getActiveWhatsAppContact().displayNumber; }
+    }
+  });
+
+  window.MBW_SITE_CONFIG.contact = contactConfig;
 
   window.MBW_SITE_CONFIG.whatsappMessages = {
     default_en: "Hi Mindo Bird Watching, I am interested in planning a birdwatching tour in Mindo. Can you help me check availability?\n\nPage: {url}",
@@ -205,7 +288,8 @@
 
   function buildWhatsAppUrl(messageKey) {
     var config = window.MBW_SITE_CONFIG;
-    var number = String(config.contact.whatsappNumberDigits || "").replace(/\D/g, "");
+    var activeContact = getActiveWhatsAppContact();
+    var number = activeContact.numberDigits;
     var safeMessageKey = getFallbackMessageKey(messageKey);
     var template = config.whatsappMessages[safeMessageKey] || "";
     var sourceUrl = window.location.href;
@@ -243,6 +327,16 @@
       var anchor = target && typeof target.closest === "function" ? target.closest("a") : null;
       if (!isWhatsAppAnchor(anchor)) return;
 
+      var messageKey = anchor.getAttribute("data-whatsapp-message-key");
+      if (messageKey) {
+        var safeMessageKey = getFallbackMessageKey(messageKey);
+        var activeContact = getActiveWhatsAppContact();
+        anchor.setAttribute("href", buildWhatsAppUrl(safeMessageKey));
+        anchor.setAttribute("data-agent-id", activeContact.agentId);
+        anchor.setAttribute("data-whatsapp-number", activeContact.numberDigits);
+        anchor.setAttribute("data-whatsapp-shift", activeContact.shift);
+      }
+
       if (window.MBWAttribution && typeof window.MBWAttribution.prepareContactUrl === "function") return;
 
       event.preventDefault();
@@ -256,7 +350,8 @@
         location: anchor.getAttribute("data-analytics-location") || anchor.getAttribute("data-whatsapp-source-page") || "site_whatsapp_link",
         tour: anchor.getAttribute("data-analytics-tour") || "",
         message_key: anchor.getAttribute("data-whatsapp-message-key") || "",
-        agent_id: anchor.getAttribute("data-agent-id") || ""
+        agent_id: anchor.getAttribute("data-agent-id") || "",
+        shift: anchor.getAttribute("data-whatsapp-shift") || ""
       };
 
       prepareAttributedWhatsAppUrl(href, metadata).then(function (prepared) {
@@ -288,6 +383,7 @@
       var originalMessageKey = link.getAttribute("data-whatsapp-message-key");
       var safeMessageKey = getFallbackMessageKey(originalMessageKey);
       var url = buildWhatsAppUrl(safeMessageKey);
+      var activeContact = getActiveWhatsAppContact();
 
       link.setAttribute("href", url);
       link.setAttribute("data-whatsapp-message-key", safeMessageKey);
@@ -295,6 +391,9 @@
       link.setAttribute("data-analytics-source-page", sourcePage);
       link.setAttribute("data-analytics-message-key", safeMessageKey);
       link.setAttribute("data-whatsapp-source-page", sourcePage);
+      link.setAttribute("data-agent-id", activeContact.agentId);
+      link.setAttribute("data-whatsapp-number", activeContact.numberDigits);
+      link.setAttribute("data-whatsapp-shift", activeContact.shift);
       link.setAttribute("target", "_blank");
       link.setAttribute("rel", "noopener noreferrer");
     });
@@ -331,6 +430,8 @@
   }
 
   window.MBW_SITE_CONFIG.buildWhatsAppUrl = buildWhatsAppUrl;
+  window.MBW_SITE_CONFIG.getActiveWhatsAppContact = getActiveWhatsAppContact;
+  window.MBW_SITE_CONFIG.whatsappRouting = whatsappRouting;
   window.MBW_SITE_CONFIG.loadAttribution = loadAttribution;
   window.MBW_SITE_CONFIG.prepareAttributedWhatsAppUrl = prepareAttributedWhatsAppUrl;
   window.MBW_SITE_CONFIG.reportAttributionFailure = reportAttributionFailure;
