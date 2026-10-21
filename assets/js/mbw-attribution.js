@@ -439,6 +439,8 @@
   }
 
   function sendContactIntent(payload) {
+    // Freeze the touch that caused this enquiry before later tabs change the session.
+    payload.attribution = JSON.parse(JSON.stringify(payloadFor(state)));
     return window.fetch(CONTACT_ENDPOINT, {
       method: "POST",
       credentials: "same-origin",

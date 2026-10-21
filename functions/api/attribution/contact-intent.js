@@ -146,6 +146,22 @@ export async function onRequestPost({ request, env }) {
       return reply(409, { ok: false, error: "visitor_session_mismatch" });
     }
 
+    let snapshot = null;
+    const supplied = payload.attribution || {};
+    const suppliedSession = supplied.session || {};
+    if (supplied.visitor && supplied.visitor.visitor_id === visitorId && suppliedSession.session_id === sessionId) {
+      snapshot = { version:1, attribution_status:cleanString(suppliedSession.attribution_status,32) || "unavailable" };
+      ["first", "last"].forEach(prefix => {
+        const touch = suppliedSession[prefix + "_touch"] || {};
+        ["source","medium","campaign","content","term","landing_page","referrer","date"].forEach(key => {
+          snapshot[prefix + "_touch_" + key] = cleanString(touch[key], key === "landing_page" || key === "referrer" ? 2048 : 255) || "";
+        });
+      });
+      ["source","medium","campaign","content","term"].forEach(key => { snapshot["utm_" + key] = cleanString((suppliedSession.utm || {})[key],255) || ""; });
+      ["gclid","gbraid","wbraid","fbclid"].forEach(key => { snapshot[key] = cleanString((suppliedSession.click_ids || {})[key],512) || ""; });
+      ["meta_campaign_id","meta_adset_id","meta_ad_id"].forEach(key => { snapshot[key] = cleanString((suppliedSession.meta || {})[key],255) || ""; });
+    }
+
     const occurredAt = cleanTimestamp(payload.occurred_at);
     const agentId = cleanString(payload.agent_id, 64);
     const destination = cleanString(payload.destination, 320);
@@ -226,6 +242,7 @@ export async function onRequestPost({ request, env }) {
         channel,
         agent_id: agentId,
         cta_location: ctaLocation,
+        attribution_snapshot: snapshot,
       }),
       occurredAt,
     );

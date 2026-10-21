@@ -6,10 +6,10 @@ const read = p => fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const load = async p => import('data:text/javascript;base64,'+Buffer.from(read(p)).toString('base64'));
 const booking = await load('functions/api/book-tour/index.js');
 const contact = await load('functions/api/contact/index.js');
-async function submit(handler, fields, verify=true) {
+async function submit(handler, fields, verify=true, json=false) {
   const original=globalThis.fetch;let forwarded=null,calls=0;
   globalThis.fetch=async(url,options)=>{calls++;if(String(url).includes('/siteverify'))return Response.json({success:verify});assert.equal(url,'https://upstream.invalid');forwarded=new URLSearchParams(options.body);return Response.json({ok:true});};
-  try {const response=await handler({request:new Request('https://site.invalid/api/test',{method:'POST',body:new URLSearchParams({'cf-turnstile-response':'test-token',...fields})}),env:{GAS_WEB_APP_URL:'https://upstream.invalid',GAS_CONTACT_URL:'https://upstream.invalid',TURNSTILE_SECRET_KEY:'test-only',CF_SHARED_SECRET:'test-only'}});return {html:await response.text(),forwarded,calls};}finally{globalThis.fetch=original;}
+  try {const response=await handler({request:new Request('https://site.invalid/api/test',{method:'POST',headers:json?{accept:'application/json'}:{},body:new URLSearchParams({'cf-turnstile-response':'test-token',...fields})}),env:{GAS_WEB_APP_URL:'https://upstream.invalid',GAS_CONTACT_URL:'https://upstream.invalid',TURNSTILE_SECRET_KEY:'test-only',CF_SHARED_SECRET:'test-only'}});return {html:await response.text(),forwarded,calls};}finally{globalThis.fetch=original;}
 }
 test('English, Spanish and legacy format choices retain their meaning upstream',async()=>{
  for(const [label,expected] of [['Private Tour','private_only'],['Join a Small Group','open_to_group'],['Either Private or Small Group','open_to_group'],['Tour Privado','private_only'],['Unirse a un Grupo Pequeño','open_to_group'],['Privado o Grupo Pequeño','open_to_group']]){
@@ -51,4 +51,11 @@ test('allowlisted context preselects editable EN/ES booking/contact choices and 
  for(const lang of ['en','es'])for(const contact of [true,false])for(const experience of ['night-walk','quito-day-trip']){let h=contextHarness({lang,contact,experience});assert.equal(h.notes[experience==='night-walk'?0:1].hidden,false);assert.equal(h.sourceField.value,'https://test.invalid/activities/night-walk/');if(contact)h.fields[0].value='';else h.fields.forEach(f=>f.checked=false);h.listeners.change();assert.equal(h.notes.every(n=>n.hidden),true);h.addon.checked=true;h.listeners.change();assert.equal(h.notes[0].hidden,false);}
  for(const source of ['//evil.invalid/','https://evil.invalid/','/book-tour/?private=1'])assert.equal(contextHarness({source}).sourceField.value,'original');
  for(const experience of ['unsupported','constructor','toString','__proto__']) assert.equal(contextHarness({experience}).notes.every(n=>n.hidden),true);assert.equal(contextHarness({itinerary:true}).fields.every(f=>!f.checked),true);
+});
+
+test('fetch acknowledgements report definitive delivery and security rejection as JSON',async()=>{
+ for(const handler of [booking.onRequestPost,contact.onRequestPost]){
+  let r=await submit(handler,{preferred_tour_type:'Quito to Mindo Day Trip'},true,true);assert.equal(JSON.parse(r.html).status,'ok');assert.equal(r.forwarded.get('transportation_needed'),'Yes');
+  r=await submit(handler,{},false,true);assert.equal(JSON.parse(r.html).status,'error');assert.equal(r.forwarded,null);
+ }
 });

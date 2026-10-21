@@ -12,6 +12,9 @@ export async function onRequestPost({ request, env }) {
   const sharedSecret = env.CF_SHARED_SECRET;
 
   function iframeReply(status, message) {
+    if ((request.headers.get("accept") || "").includes("application/json")) {
+      return Response.json({ status, message: message || "" }, { headers: { "cache-control":"no-store" } });
+    }
     const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>
 <script>
 (function(){
@@ -107,7 +110,7 @@ export async function onRequestPost({ request, env }) {
       const dates = String(data.get("dates_of_visit") || "").trim();
       const guests = String(data.get("number_of_guests") || "").trim();
       const items = match[2] ? [{ id:"primary", tour:match[2], date:dates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:product, service_type:match[1], duration:match[3], status:"new", pickup_location:String(data.get("pickup_location") || "").trim(), price:"", notes:"Primary request" }] : [];
-      return { tour_type:match[0], tour_category:match[0], interest_category:match[0], service_type:match[1], product_selected:product, duration_preference:match[3], tour_items:JSON.stringify(items), tour_items_json:JSON.stringify(items), tour_count:String(items.length), tour_content:String(items.length) };
+      return { transportation_needed:match[2] === "Quito to Mindo Day Trip" ? "Yes" : "Unknown", tour_type:match[0], tour_category:match[0], interest_category:match[0], service_type:match[1], product_selected:product, duration_preference:match[3], tour_items:JSON.stringify(items), tour_items_json:JSON.stringify(items), tour_count:String(items.length), tour_content:String(items.length) };
     }
 
     // Build payload for Apps Script (must include cf_secret)
