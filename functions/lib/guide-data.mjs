@@ -6,6 +6,13 @@ const CLOSED_ASSIGNMENTS = new Set(["cancelled", "canceled"]);
 const lower = value => String(value || "").trim().toLowerCase();
 const phoneDigits = value => String(value || "").replace(/[^0-9]/g, "");
 
+function recentCutoff(now = new Date()) {
+  const ecuador = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+  const value = new Date(`${ecuador}T12:00:00Z`);
+  value.setUTCDate(value.getUTCDate() - 7);
+  return value.toISOString().slice(0, 10);
+}
+
 function bookingIsBooked(booking) {
   return booking && !booking.archived && BOOKED.has(booking.status);
 }
@@ -40,8 +47,10 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
   for (const booking of bookings) if (booking.inquiryId && bookingIsBooked(booking)) bookingByInquiry.set(booking.inquiryId, booking);
   const providers = providerRows.map(normalizeProvider).filter(item => item.active && item.role === "guide").map(item => item.name);
   const providerName = identity.role === "guide" ? identity.providerName : requestedProvider || providers[0] || "";
+  const cutoff = recentCutoff();
   const tours = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
-    assignment.assignmentId && assignmentMatchesProvider(assignment, providerName) && !CLOSED_ASSIGNMENTS.has(assignment.status)
+    assignment.assignmentId && assignmentMatchesProvider(assignment, providerName) && !CLOSED_ASSIGNMENTS.has(assignment.status) &&
+    (!assignment.serviceDate || assignment.serviceDate >= cutoff)
   ).map(({ row, assignment }) => {
     const inquiry = inquiryById.get(assignment.inquiryId);
     const booked = Boolean(inquiry && BOOKED.has(inquiry.status)) || bookingByInquiry.has(assignment.inquiryId);
