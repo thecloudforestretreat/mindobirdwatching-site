@@ -21,6 +21,25 @@ test("recurring website merges fill blanks without replacing canonical tour plan
   }
 });
 
+test("manual structured-data repair also preserves staff-curated planning", () => {
+  const router = fs.readFileSync(path.join(root, "deployment/multi-invoice-ledger/crm-router.gs"), "utf8");
+  const repairStart = router.indexOf("function repairStructuredSiteRequestDetails()");
+  const repairEnd = router.indexOf("function mapWhatsappInquiryRow_", repairStart);
+  const repair = router.slice(repairStart, repairEnd);
+  for (const field of ["tour_items", "tour_items_json", "tour_count", "tour_content", "product_selected", "service_type", "duration_preference", "requested_date"]) {
+    assert.match(repair, new RegExp(`${field}: keepBest_\\(match\\.row\\.${field},`), `${field} must keep the staff-curated CRM value`);
+  }
+  for (const field of ["pickup_location", "country", "home_country"]) {
+    assert.match(repair, new RegExp(`${field}: keepBest_\\(match\\.row\\.${field},`), `${field} must keep the staff-curated CRM value`);
+  }
+});
+
+test("CRM saves retain a multi-day end date unless staff changes the start date", () => {
+  const crm = fs.readFileSync(path.join(root, "admin/guest-crm/index.html"), "utf8");
+  assert.match(crm, /const requestedEnd=savedStart&&savedStart===date&&savedEnd\?savedEnd:date/);
+  assert.match(crm, /requested_date_end:requestedEnd,requested_date_text:requestedText/);
+});
+
 test("contact intent remains one canonical reference during imports and D1 backfills", () => {
   const router = fs.readFileSync(path.join(root, "deployment/multi-invoice-ledger/crm-router.gs"), "utf8");
   assert.match(router, /contact_intent_id: canonicalContactIntentId_\(incoming\.contact_intent_id, existing\.contact_intent_id\)/);
