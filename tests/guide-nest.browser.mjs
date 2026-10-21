@@ -30,7 +30,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     ok: true, preview: false, identity: { role: "guide", name: "Neycer" }, providerName: "Neycer · Night Walk Guide", checkedAt: "2026-10-21T15:00:00Z",
     availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-23", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
     offers: [{ assignmentId: "O-1", serviceDate: "2026-10-30", startTime: "6:00 AM", service: "Custom birding package", pickup: "Mindo", response: "", bidAmount: "" }],
-    tours: [{ assignmentId: "A-1", bookingId: "B-1", serviceDate: "2026-10-23", dateLabel: "Oct 23, 2026", startTime: "5:00 AM", endTime: "3:00 PM", service: "Quest for Five Toucans", guestName: "Daniel Kalmes", guestCount: "2", pickup: "Mindo Lodge", status: "confirmed", accepted: false, contactAvailable: true, hasConflict: true, conflictReason: "availability", phone: "+352 621 492 066", whatsappUrl: "https://wa.me/352621492066", guestMessage: "Hi Daniel, this is Neycer from Mindo Bird Watching." }],
+    tours: [{ assignmentId: "A-1", bookingId: "B-1", serviceDate: "2026-10-23", dateLabel: "Oct 23, 2026", startTime: "5:00 AM", endTime: "3:00 PM", service: "Quest for Five Toucans", guestName: "Daniel Kalmes", guestCount: "2", pickup: "Mindo Lodge", status: "confirmed", accepted: false, acceptanceRequired: true, contactAvailable: true, hasConflict: true, conflictReason: "availability", phone: "+352 621 492 066", whatsappUrl: "https://wa.me/352621492066", guestMessage: "Hi Daniel, this is Neycer from Mindo Bird Watching." }],
     links: { google: "https://google.example/review", tripadvisor: "https://tripadvisor.example/review", instagram: "https://instagram.example/mbw", facebook: "https://facebook.example/mbw", youtube: "https://youtube.example/mbw", shop: "https://shop.example/mbw" },
   };
   await page.route(`http://127.0.0.1:${port}/api/guide/bootstrap**`, route => route.fulfill({ json: {
@@ -39,6 +39,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   await page.route(`http://127.0.0.1:${port}/api/guide/assignments/**`, async route => {
     writes.push({ url: route.request().url(), method: route.request().method() });
     bootstrap.tours[0].accepted = true;
+    bootstrap.tours[0].acceptanceRequired = false;
     await route.fulfill({ json: { ok: true, verified: true } });
   });
   await page.route(`http://127.0.0.1:${port}/api/guide/availability`, async route => {
