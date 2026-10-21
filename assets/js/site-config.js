@@ -17,7 +17,9 @@
 
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
-  var ATTRIBUTION_SCRIPT_URL = "/assets/js/mbw-attribution.js?v=20261021-1";
+  var ATTRIBUTION_SCRIPT_URL = "/assets/js/mbw-attribution.js?v=20261021-2";
+  var ATTRIBUTION_FAILURE_ENDPOINT = "/api/attribution/client-error";
+  var ATTRIBUTION_WAIT_MS = 1800;
 
   function loadAttribution() {
     if (window.MBWAttribution && typeof window.MBWAttribution.prepareContactUrl === "function") {
@@ -28,7 +30,7 @@
       return window.MBWAttributionReady;
     }
 
-    window.MBWAttributionReady = new Promise(function (resolve, reject) {
+    var readyPromise = new Promise(function (resolve, reject) {
       var script = document.querySelector('script[data-mbw-attribution="true"]');
 
       function finish() {
@@ -58,7 +60,66 @@
       document.head.appendChild(script);
     });
 
+    window.MBWAttributionReady = readyPromise.catch(function (error) {
+      var failedScript = document.querySelector('script[data-mbw-attribution="true"]');
+      if (failedScript && !window.MBWAttribution && failedScript.parentNode) {
+        failedScript.parentNode.removeChild(failedScript);
+      }
+      if (window.MBWAttributionReady) window.MBWAttributionReady = null;
+      throw error;
+    });
+
     return window.MBWAttributionReady;
+  }
+
+  function timeoutAfter(milliseconds) {
+    return new Promise(function (_, reject) {
+      window.setTimeout(function () {
+        reject(new Error("MBW attribution timed out"));
+      }, milliseconds);
+    });
+  }
+
+  function failureType(error) {
+    var message = String(error && error.message || error || "").toLowerCase();
+    if (message.indexOf("timed out") !== -1) return "timeout";
+    if (message.indexOf("could not be loaded") !== -1) return "script_load_failure";
+    if (message.indexOf("did not initialize") !== -1) return "initialization_failure";
+    if (message.indexOf("reference") !== -1) return "reference_generation_failure";
+    return "attribution_unavailable";
+  }
+
+  function reportAttributionFailure(error, metadata) {
+    var details = metadata || {};
+    var payload = JSON.stringify({
+      failure_id: "af_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 9),
+      error_type: failureType(error),
+      page_url: window.location.href,
+      cta_location: details.location || "site_whatsapp_link",
+      cta_label: details.label || "WhatsApp CTA",
+      message_key: details.message_key || "",
+      occurred_at: new Date().toISOString()
+    });
+
+    try {
+      if (window.navigator && typeof window.navigator.sendBeacon === "function") {
+        var queued = window.navigator.sendBeacon(
+          ATTRIBUTION_FAILURE_ENDPOINT,
+          new Blob([payload], { type: "application/json" })
+        );
+        if (queued) return;
+      }
+    } catch (_) {}
+
+    try {
+      window.fetch(ATTRIBUTION_FAILURE_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: payload,
+        credentials: "same-origin",
+        keepalive: true
+      }).catch(function () {});
+    } catch (_) {}
   }
 
   // This is the only WhatsApp number stored in the site files.
@@ -158,7 +219,7 @@
   }
 
   function prepareAttributedWhatsAppUrl(url, metadata) {
-    return loadAttribution().then(function (attribution) {
+    return Promise.race([loadAttribution(), timeoutAfter(ATTRIBUTION_WAIT_MS)]).then(function (attribution) {
       var prepared = attribution.prepareContactUrl(url, metadata || {});
       if (!prepared || !prepared.url || !prepared.contact_intent_id) {
         throw new Error("WhatsApp reference could not be created");
@@ -205,11 +266,15 @@
         }
         window.location.href = prepared.url;
       }).catch(function (error) {
-        if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
         if (window.console && typeof window.console.error === "function") {
           window.console.error("WhatsApp reference could not be prepared", error);
         }
-        window.alert("WhatsApp is still loading. Please try again so your inquiry reference is included.");
+        reportAttributionFailure(error, metadata);
+        if (pendingWindow && !pendingWindow.closed) {
+          pendingWindow.location.replace(href);
+          return;
+        }
+        window.location.href = href;
       });
     }, true);
   }
@@ -268,11 +333,10 @@
   window.MBW_SITE_CONFIG.buildWhatsAppUrl = buildWhatsAppUrl;
   window.MBW_SITE_CONFIG.loadAttribution = loadAttribution;
   window.MBW_SITE_CONFIG.prepareAttributedWhatsAppUrl = prepareAttributedWhatsAppUrl;
+  window.MBW_SITE_CONFIG.reportAttributionFailure = reportAttributionFailure;
   window.MBW_SITE_CONFIG.updateWhatsAppLinks = updateWhatsAppLinks;
 
-  loadAttribution().catch(function () {
-    // A click receives a visible retry message if attribution still cannot load.
-  });
+  loadAttribution().catch(function () {});
   protectWhatsAppClicks();
 
   if (document.readyState === "loading") {
