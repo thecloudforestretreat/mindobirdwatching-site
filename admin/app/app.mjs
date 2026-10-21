@@ -237,7 +237,7 @@ async function openGuest(id, task = "") {
       <section class="detailSection" data-section="payments"><h3>Payments</h3><p class="paymentHint">Suggested: ${guest.countryCode === "US" ? "Zelle or Stripe" : "Stripe"}. Review the guest and amount before creating or sending an invoice.</p><div class="recordList">${paymentMarkup(result.data.payments)}</div><div class="toolLinks"><a href="${esc(toolUrl("/zelle-invoice-generator/", guest))}" target="_blank" rel="noopener noreferrer">Zelle invoice</a><a href="${esc(toolUrl("https://mindobirdwatching.com/book-tour/create/", guest))}" target="_blank" rel="noopener noreferrer">Stripe invoice</a></div></section>
       <section class="detailSection" data-section="confirmation"><h3>Confirmation</h3><p>Open the existing generator with this guest and tour information, then verify the details before sending.</p><div class="toolLinks"><a href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Open confirmation generator</a></div></section>
       <section class="detailSection" data-section="operations"><h3>Operations</h3>${assignmentCreateMarkup(guest, canWrite)}<div class="recordList">${assignmentMarkup(result.data.assignments, canWrite)}</div></section>
-      <section class="detailSection" data-section="communication"><h3>Communication</h3><form id="interactionForm"><label class="field"><span>Channel</span><select name="channel" ${canWrite ? "" : "disabled"}><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="in_person">In person</option><option value="other">Other</option></select></label><label class="field"><span>Direction</span><select name="direction" ${canWrite ? "" : "disabled"}><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option><option value="internal">Internal note</option></select></label><label class="field"><span>Note</span><textarea name="note" maxlength="4000" required ${canWrite ? "" : "disabled"}></textarea></label><label class="field"><span>Follow-up date (optional)</span><input type="date" name="followupAt" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Log communication</button></div></form><div class="recordList">${interactionMarkup(result.data.interactions)}</div></section>`;
+      <section class="detailSection" data-section="communication"><h3>Communication</h3><form id="interactionForm"><label class="field"><span>Channel</span><select name="channel" ${canWrite ? "" : "disabled"}><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="in_person">In person</option><option value="other">Other</option></select></label><label class="field"><span>Guest message (incoming)</span><textarea name="guest_note" maxlength="4000" placeholder="Paste or summarize what the guest sent" ${canWrite ? "" : "disabled"}></textarea></label><label class="field"><span>Our response (outgoing)</span><textarea name="staff_note" maxlength="4000" placeholder="Paste or summarize your reply" ${canWrite ? "" : "disabled"}></textarea></label><label class="field"><span>Follow-up date (optional)</span><input type="date" name="followupAt" ${canWrite ? "" : "disabled"}></label><div class="formActions"><button type="submit" ${canWrite ? "" : "disabled"}>Log exchange</button></div><p class="formNote">Enter either message, or both to save the full conversation in order.</p></form><div class="recordList">${interactionMarkup(result.data.interactions)}</div></section>`;
     hydrateAssignedRep(guest, canWrite); enhanceServiceCreate();
     $("#profileForm")?.addEventListener("submit", saveProfile); $("#statusForm")?.addEventListener("submit", saveStatus); $("#followupForm")?.addEventListener("submit", saveFollowup); $("#interactionForm")?.addEventListener("submit", saveInteraction); $("#serviceCreateForm")?.addEventListener("submit", createService); $("#assignmentCreateForm")?.addEventListener("submit", createAssignment); $("#assignmentCreateForm select[name=service_index]")?.addEventListener("change", syncAssignmentService); body.querySelectorAll(".serviceStatusForm").forEach(form => form.addEventListener("submit", saveServiceStatus)); body.querySelectorAll(".assignmentForm").forEach(form => form.addEventListener("submit", saveAssignment));
     if (task) setTimeout(() => body.querySelector(`[data-section="${CSS.escape(task === "interaction-follow-up" ? "communication" : task)}"]`)?.scrollIntoView({ behavior: "smooth" }), 80);
@@ -274,8 +274,22 @@ async function saveFollowup(event) {
   try { await api.patchGuest(guest.inquiryId, { expectedUpdatedAt: guest.updatedAt, patch: { followup_date: new FormData(event.currentTarget).get("followup_date") } }); toast("Follow-up saved and verified."); await openGuest(guest.inquiryId, "follow-up"); await refresh(false); } catch (error) { toast(error.message); button.disabled = false; }
 }
 async function saveInteraction(event) {
-  event.preventDefault(); const guest = state.guest.record, data = Object.fromEntries(new FormData(event.currentTarget)); const button = event.currentTarget.querySelector("button"); button.disabled = true;
-  try { await api.addInteraction(guest.inquiryId, { ...data, type: data.direction === "internal" ? "internal_note" : data.direction === "incoming" ? "guest_message" : "staff_reply" }); toast("Communication logged."); await openGuest(guest.inquiryId, "communication"); await refresh(false); } catch (error) { toast(error.message); button.disabled = false; }
+  event.preventDefault(); const guest = state.guest.record, data = Object.fromEntries(new FormData(event.currentTarget)); const button = event.currentTarget.querySelector("button");
+  const entries = [
+    { direction: "incoming", type: "guest_message", note: String(data.guest_note || "").trim(), followupAt: "" },
+    { direction: "outgoing", type: "staff_reply", note: String(data.staff_note || "").trim(), followupAt: data.followupAt || "" },
+  ].filter(item => item.note);
+  if (!entries.length) return toast("Enter the guest message, your response, or both.");
+  button.disabled = true; let saved = 0;
+  try {
+    const occurredAt = Date.now();
+    for (const [index, entry] of entries.entries()) { await api.addInteraction(guest.inquiryId, { channel: data.channel, occurredAt: new Date(occurredAt + index * 1000).toISOString(), ...entry }); saved += 1; }
+    toast(entries.length === 2 ? "Guest message and response logged." : "Communication logged."); await openGuest(guest.inquiryId, "communication"); await refresh(false);
+  } catch (error) {
+    toast(saved ? `${saved} message saved; ${error.message}` : error.message);
+    if (saved) { await openGuest(guest.inquiryId, "communication"); await refresh(false); }
+    else button.disabled = false;
+  }
 }
 async function createService(event) {
   event.preventDefault();
@@ -406,5 +420,5 @@ window.addEventListener("online", () => { connection(state.cached ? "cached" : "
 window.addEventListener("offline", () => connection("offline", "Offline"));
 setInterval(updateConnectionAge, 30 * 1000);
 setInterval(() => maybeAutomaticRefresh(AUTO_SYNC_INTERVAL_MS), 60 * 1000);
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=22", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=23", { scope: "/app/" }).catch(() => {});
 start();

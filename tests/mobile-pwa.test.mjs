@@ -25,7 +25,7 @@ test("MBW Nest uses the dedicated gold home-screen icon and conservative CRM syn
   assert.doesNotMatch(index, /href="\/favicon\.ico"/);
   assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
   assert.match(index, /<small>Nest<\/small>/);
-  assert.match(worker, /mbw-mobile-shell-v22/);
+  assert.match(worker, /mbw-mobile-shell-v23/);
   assert.match(app, /AUTO_SYNC_INTERVAL_MS = 10 \* 60 \* 1000/);
   assert.match(app, /FOREGROUND_SYNC_MIN_AGE_MS = 5 \* 60 \* 1000/);
   assert.match(app, /setInterval\(updateConnectionAge, 30 \* 1000\)/);

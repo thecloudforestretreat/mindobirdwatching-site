@@ -14,6 +14,7 @@ let record = {
 };
 const completedRecord = { ...record, inquiryId: "I-CLOSED-1", guestId: "G-CLOSED-1", name: "Completed Guest", status: "completed", effectiveStatus: "completed", requestedDate: "2026-10-19", tours: [{ id: "C-1", tour: "Completed Tour", date: "2026-10-19", guests: "2", status: "completed" }] };
 let createdRecord = null;
+let interactions = [];
 const schedule = [
   { inquiryId: record.inquiryId, guest: record.name, date: "2026-10-22", startTime: "05:00", tour: "Quoted Birding", partySize: "2", pickup: "Mindo", source: "itinerary", status: "quoted", risk: "No assignment" },
   { inquiryId: record.inquiryId, guest: record.name, date: "2026-10-23", startTime: "19:00", tour: "Confirmed Night Walk", partySize: "2", pickup: "Mindo", source: "assignment", status: "confirmed", risk: "" },
@@ -64,9 +65,15 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
       record = { ...record, tours: record.tours.map(item => item.id === "T-1" ? { ...item, status: payload.status } : item), updatedAt: "2026-10-20T15:01:00Z" };
       return route.fulfill({ json: { ok: true, verified: true, record, service: record.tours[0] } });
     }
+    if (path.endsWith(`/guests/${record.inquiryId}/interactions`) && route.request().method() === "POST") {
+      const payload = route.request().postDataJSON();
+      const interaction = { interactionId: `INT-${interactions.length + 1}`, channel: payload.channel, direction: payload.direction, type: payload.type, note: payload.note, occurredAt: payload.occurredAt, createdBy: "JPG" };
+      interactions.push(interaction);
+      return route.fulfill({ status: 201, json: { ok: true, verified: true, record: interaction } });
+    }
     if (path.endsWith(`/guests/${record.inquiryId}`)) {
       await new Promise(resolve => setTimeout(resolve, 600));
-      return route.fulfill({ json: { ok: true, record, readiness: readiness(), journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
+      return route.fulfill({ json: { ok: true, record, readiness: readiness(), journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions, assignments: [], bookings: [], payments: [] } } });
     }
     if (createdRecord && path.endsWith(`/guests/${createdRecord.inquiryId}`)) return route.fulfill({ json: { ok: true, record: createdRecord, journey: [{ id: "contact", label: "Contact", state: "attention", evidence: "Response not logged" }], data: { interactions: [], assignments: [], bookings: [], payments: [] } } });
     return route.fulfill({ status: 404, json: { ok: false, error: "Not found" } });
@@ -183,6 +190,17 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await invoicePage.waitForURL(/mindobirdwatching\.com\/book-tour\/create/);
     const invoiceParams = new URL(invoicePage.url()).searchParams, invoiceTours = JSON.parse(invoiceParams.get("tour_items_json"));
     assert.equal(invoiceTours.length, 1); assert.equal(invoiceTours[0].tour, "Night Walk"); assert.equal(invoiceParams.get("tour_date"), "2026-10-23");
+    await page.locator('[data-section="communication"]').scrollIntoViewIfNeeded();
+    await page.locator('#interactionForm select[name="channel"]').selectOption("email");
+    await page.locator('#interactionForm textarea[name="guest_note"]').fill("Guest asked whether pickup is included.");
+    await page.locator('#interactionForm textarea[name="staff_note"]').fill("Confirmed pickup is included and sent the invoice.");
+    await page.locator('#interactionForm button[type="submit"]').click();
+    await page.getByText("Guest message and response logged.", { exact: true }).waitFor({ state: "visible" });
+    assert.deepEqual(interactions.map(item => item.direction), ["incoming", "outgoing"]);
+    assert.deepEqual(interactions.map(item => item.type), ["guest_message", "staff_reply"]);
+    const communicationText = await page.locator('[data-section="communication"] .recordList').innerText();
+    assert.match(communicationText, /Email · Incoming[\s\S]*Guest asked whether pickup is included\./);
+    assert.match(communicationText, /Email · Outgoing[\s\S]*Confirmed pickup is included/);
     await page.locator("#closeGuest").click();
     assert.equal(await page.locator("#moreStatusFilter option").count(), 9);
     assert.equal(await page.locator("#moreStatusFilter").isVisible(), true);
