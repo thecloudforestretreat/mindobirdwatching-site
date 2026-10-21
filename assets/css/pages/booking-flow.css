@@ -1,0 +1,25 @@
+#bookTourForm [hidden], #contactForm [hidden] { display: none !important; }
+#bookTourForm :is(.tourPrimary, .tourAddOns) {
+  min-width: 0; margin: 0; padding: 14px;
+  border: 1px solid var(--line); border-radius: 16px;
+}
+#bookTourForm legend { padding: 0 6px; color: var(--forest); font-weight: 900; }
+#bookTourForm .fieldHelp { margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+#bookTourForm :is(.tourPrimaryGrid, .tourAddOnGrid) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption) {
+  display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding: 12px;
+  border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.72); cursor: pointer;
+}
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption) input { flex: 0 0 18px; width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--forest); }
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption) span { min-width: 0; }
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption) strong { display: block; font-size: 14px; line-height: 1.4; }
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption) small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: var(--muted); }
+#bookTourForm :is(.tourPrimaryOption--wide, .tourAddOnOption--wide) { grid-column: 1 / -1; }
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption):has(input:checked) { border-color: var(--forest); background: rgba(13,89,37,.08); }
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption):focus-within { outline: 2px solid var(--forest); outline-offset: 2px; }
+#bookTourForm :is(.tourPrimaryOption, .tourAddOnOption):has(input:disabled) { opacity: .6; cursor: default; }
+#bookTourForm .tourOtherDetails { margin-top: 12px; }
+#contactForm .formNote { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+@media (max-width: 600px) {
+  #bookTourForm :is(.tourPrimaryGrid, .tourAddOnGrid) { grid-template-columns: minmax(0, 1fr); }
+}

@@ -106,7 +106,7 @@ export async function onRequestPost({ request, env }) {
       const product = match[2] === "Night Walk" ? "MBW016" : "";
       const dates = String(data.get("dates_of_visit") || "").trim();
       const guests = String(data.get("number_of_guests") || "").trim();
-      const items = match[2] ? [{ id:"primary", tour:match[2], date:dates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:product, service_type:match[1], duration:match[3], status:"new", pickup_location:"", price:"", notes:"Primary request" }] : [];
+      const items = match[2] ? [{ id:"primary", tour:match[2], date:dates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:product, service_type:match[1], duration:match[3], status:"new", pickup_location:String(data.get("pickup_location") || "").trim(), price:"", notes:"Primary request" }] : [];
       return { tour_type:match[0], tour_category:match[0], interest_category:match[0], service_type:match[1], product_selected:product, duration_preference:match[3], tour_items:JSON.stringify(items), tour_items_json:JSON.stringify(items), tour_count:String(items.length), tour_content:String(items.length) };
     }
 
