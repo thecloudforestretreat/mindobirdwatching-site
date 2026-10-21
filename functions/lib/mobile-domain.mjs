@@ -141,8 +141,13 @@ export function normalizeInteraction(row) {
 }
 
 export function normalizeAssignment(row) {
+  const confirmationNote = text(row.confirmation_note, 2000);
+  const guideResponseMarker = confirmationNote.match(/\[GUIDE_RESPONSE\s+(interested|pass)(?:\|([^|\]]*))?/i);
+  const guideAccepted = /\[GUIDE_ACCEPTED(?:\s|\])/i.test(confirmationNote);
   return {
     assignmentId: text(row.assignment_id, 128),
+    assignmentGroupId: text(row.assignment_group_id, 128),
+    assignmentKind: key(row.assignment_kind || "assignment"),
     inquiryId: text(row.inquiry_id, 128),
     guestId: text(row.guest_id, 128),
     serviceDate: dateOnly(row.service_date),
@@ -157,6 +162,8 @@ export function normalizeAssignment(row) {
     dropoff: text(row.dropoff_location, 500),
     status: key(row.assignment_status || "pending"),
     providerInformed: yes(row.provider_informed),
+    guideResponse: key(row.guide_response || (guideAccepted ? "accepted" : guideResponseMarker?.[1])),
+    guideBidAmount: text(row.guide_bid_amount || guideResponseMarker?.[2], 40),
     calendarStatus: key(row.calendar_sync_status),
     calendarUrl: text(row.calendar_event_url, 1000),
     note: text(row.internal_note, 2000),

@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Guide Nest">
   <title>MBW Guide Nest</title>
   <link rel="apple-touch-icon" href="/assets/images/app/mbw-app-gold-transparent-180.png">
-  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261021-v4">
+  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261021-v5">
 </head>
 <body>
   <div class="shell">
@@ -29,6 +29,8 @@
         </section>
         <section class="view" data-view="calendar" hidden>
           <div class="heading"><div><p data-i18n="assignedOnly">Solo tours asignados</p><h1 data-i18n="calendar">Calendario</h1></div></div>
+          <section id="availabilityPanel" class="panel availabilityPanel" hidden><h2 data-i18n="availability">Disponibilidad</h2><p data-i18n="availabilityHelp">Bloquea las horas en que no puedes recibir asignaciones.</p><form id="availabilityForm"><label><span data-i18n="date">Fecha</span><input name="date" type="date" required></label><div class="timeFields"><label><span data-i18n="start">Inicio</span><input name="startTime" type="time"></label><label><span data-i18n="end">Fin</span><input name="endTime" type="time"></label></div><label><span data-i18n="noteOptional">Nota opcional</span><input name="note" maxlength="500"></label><button class="primary" type="submit" data-i18n="blockTime">Bloquear horario</button></form></section>
+          <section class="availabilityHistory"><div class="sectionTitle"><div><p data-i18n="scheduleProtection">Protección de agenda</p><h2 data-i18n="unavailableTimes">Horarios no disponibles</h2></div></div><div id="availabilityList" class="availabilityList"></div></section>
           <div id="calendarList" class="calendar"></div>
         </section>
         <section class="view" data-view="sightings" hidden>
@@ -41,16 +43,22 @@
           <p class="intro" data-i18n="shareIntro">Elige un mensaje después del tour. Cada botón copia una nota breve con el enlace oficial de MBW.</p>
           <div id="shareList" class="shareList"></div>
         </section>
+        <section class="view" data-view="offers" hidden>
+          <div class="heading"><div><p data-i18n="futureWork">Próximas oportunidades</p><h1 data-i18n="offers">Ofertas</h1></div></div>
+          <div class="privacy" data-i18n="offersPrivacy">Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.</div>
+          <div id="offerList" class="offerList"></div>
+        </section>
       </div>
     </main>
     <nav id="nav" class="nav" hidden>
       <button class="active" data-route="today" type="button"><span class="navIcon navIcon--tours" aria-hidden="true"></span><span data-i18n="tours">Tours</span></button>
       <button data-route="calendar" type="button"><span class="navIcon navIcon--calendar" aria-hidden="true"></span><span data-i18n="calendar">Calendario</span></button>
       <button data-route="sightings" type="button"><span class="navIcon navIcon--sightings" aria-hidden="true"></span><span data-i18n="sightings">Avistamientos</span></button>
+      <button data-route="offers" type="button"><span class="navIcon navIcon--offers" aria-hidden="true"></span><span data-i18n="offers">Ofertas</span></button>
       <button data-route="share" type="button"><span class="navIcon navIcon--share" aria-hidden="true"></span>Share</button>
     </nav>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </div>
-  <script type="module" src="/guide/guide.mjs?v=guide-20261021-v4"></script>
+  <script type="module" src="/guide/guide.mjs?v=guide-20261021-v5"></script>
 </body>
 </html>

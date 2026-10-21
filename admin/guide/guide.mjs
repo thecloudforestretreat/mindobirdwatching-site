@@ -15,6 +15,9 @@ const COPY = {
     noReports: "Todavía no hay reportes anteriores.", historyUnlinked: "El historial aparecerá cuando el número de colaborador esté vinculado a esta cuenta.", historyUnavailable: "No se pudieron cargar los reportes anteriores.", reports: "reportes",
     species: "especies", observations: "registros", reference: "Referencia", reportRecorded: "Reporte enviado", googleTitle: "Reseña en Google", googleSub: "Solicitar una reseña", tripTitle: "Tripadvisor", tripSub: "Solicitar una reseña",
     instagram: "Instagram", instagramSub: "Compartir novedades", facebook: "Facebook", facebookSub: "Compartir la página de MBW", youtube: "YouTube", youtubeSub: "Compartir el canal de MBW", shop: "Tienda MBW", shopSub: "Compartir la tienda oficial", copy: "Copiar",
+    acceptTour: "Aceptar tour", awaitingAcceptance: "Por aceptar", accepted: "Aceptado", scheduleConflict: "Conflicto de horario", unavailableConflict: "Coincide con un bloqueo de disponibilidad", assignmentConflict: "Coincide con otro tour asignado", contactClosed: "Contacto cerrado", reportNeeded: "Reporte pendiente", reportSubmitted: "Reporte enviado", reportScheduled: "Reporte después del tour",
+    availability: "Disponibilidad", availabilityHelp: "Bloquea las horas en que no puedes recibir asignaciones.", date: "Fecha", start: "Inicio", end: "Fin", noteOptional: "Nota opcional", blockTime: "Bloquear horario", scheduleProtection: "Protección de agenda", unavailableTimes: "Horarios no disponibles", noAvailability: "No tienes horarios bloqueados.", remove: "Quitar", availabilitySaved: "Horario bloqueado", availabilityRemoved: "Bloqueo eliminado",
+    futureWork: "Próximas oportunidades", offers: "Ofertas", offersPrivacy: "Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.", noOffers: "No hay ofertas disponibles en este momento.", interested: "Me interesa", pass: "No disponible", bidOptional: "Tarifa opcional (USD)", responseSaved: "Respuesta guardada", pendingResponse: "Sin respuesta", adminReadOnly: "La vista de administrador es de solo lectura.",
   },
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
@@ -29,6 +32,9 @@ const COPY = {
     noReports: "No previous reports yet.", historyUnlinked: "History will appear after the contributor number is linked to this account.", historyUnavailable: "Previous reports could not be loaded.", reports: "reports",
     species: "species", observations: "observations", reference: "Reference", reportRecorded: "Report submitted", googleTitle: "Google review", googleSub: "Request a Google review", tripTitle: "Tripadvisor", tripSub: "Request a Tripadvisor review",
     instagram: "Instagram", instagramSub: "Share birding updates", facebook: "Facebook", facebookSub: "Share the MBW page", youtube: "YouTube", youtubeSub: "Share the MBW channel", shop: "MBW Shop", shopSub: "Share the official shop", copy: "Copy",
+    acceptTour: "Accept tour", awaitingAcceptance: "Awaiting acceptance", accepted: "Accepted", scheduleConflict: "Schedule conflict", unavailableConflict: "Overlaps an unavailable block", assignmentConflict: "Overlaps another assigned tour", contactClosed: "Contact closed", reportNeeded: "Report needed", reportSubmitted: "Report submitted", reportScheduled: "Report after tour",
+    availability: "Availability", availabilityHelp: "Block times when you cannot receive assignments.", date: "Date", start: "Start", end: "End", noteOptional: "Optional note", blockTime: "Block time", scheduleProtection: "Schedule protection", unavailableTimes: "Unavailable times", noAvailability: "You have no unavailable times.", remove: "Remove", availabilitySaved: "Time blocked", availabilityRemoved: "Block removed",
+    futureWork: "Future opportunities", offers: "Offers", offersPrivacy: "Offers remain separate from confirmed tours. They enter your calendar only after MBW approval.", noOffers: "No tour offers are available right now.", interested: "Interested", pass: "Pass", bidOptional: "Optional bid (USD)", responseSaved: "Response saved", pendingResponse: "No response", adminReadOnly: "Admin preview is read-only.",
   },
 };
 
@@ -66,8 +72,10 @@ function tourType(tour) {
 function reportUrl(tour) {
   const base = language === "es" ? "https://mindobirdwatching.com/es/reporte-de-avistamientos/" : "https://mindobirdwatching.com/guide-tour-recap/";
   const url = new URL(base);
-  const reference = tour.bookingId || tour.assignmentId;
+  const reference = tour.assignmentId || tour.bookingId;
   if (reference) url.searchParams.set("booking", reference);
+  if (tour.assignmentId) url.searchParams.set("assignment", tour.assignmentId);
+  if (tour.bookingId) url.searchParams.set("booking_id", tour.bookingId);
   if (tour.serviceDate) url.searchParams.set("date", tour.serviceDate);
   url.searchParams.set("tour_type", tourType(tour));
   return url.toString();
@@ -82,9 +90,19 @@ function guestMessage(tour) {
 }
 
 function tourCard(tour) {
-  const phone = tour.phone ? `<a class="whatsapp" href="${esc(tour.whatsappUrl)}" target="_blank" rel="noopener noreferrer">${icon("whatsapp")}${t("whatsapp")}</a>` : `<button type="button" disabled>${t("unavailablePhone")}</button>`;
+  const phone = tour.phone && tour.contactAvailable ? `<a class="whatsapp" href="${esc(tour.whatsappUrl)}" target="_blank" rel="noopener noreferrer">${icon("whatsapp")}${t("whatsapp")}</a>` : `<button type="button" disabled>${t(tour.contactAvailable ? "unavailablePhone" : "contactClosed")}</button>`;
   const calendar = tour.calendarUrl ? `<a href="${esc(tour.calendarUrl)}" target="_blank" rel="noopener noreferrer">${icon("calendar")}${t("openCalendar")}</a>` : "";
-  return `<article class="tourCard"><div class="tourHead"><h2>${esc(tour.guestName)}</h2><span>${t("booked")}</span></div><div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div class="wide"><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t("unavailablePhone"))}</strong></div></div><div class="tourActions">${phone}<button type="button" data-copy="${encodeURIComponent(guestMessage(tour))}">${icon("copy")}${t("copyGuest")}</button><a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}</div></article>`;
+  const canAccept = data?.identity?.role === "guide" && !tour.accepted;
+  const reportLabel = reportState(tour);
+  const conflict = tour.hasConflict ? `<div class="conflict"><b>${t("scheduleConflict")}</b><span>${t(tour.conflictReason === "availability" ? "unavailableConflict" : "assignmentConflict")}</span></div>` : "";
+  return `<article class="tourCard ${tour.hasConflict ? "tourCard--conflict" : ""}"><div class="tourHead"><h2>${esc(tour.guestName)}</h2><div class="tourBadges"><span>${t("booked")}</span><span class="statusBadge ${tour.accepted ? "statusBadge--ok" : "statusBadge--pending"}">${t(tour.accepted ? "accepted" : "awaitingAcceptance")}</span><span class="statusBadge ${reportLabel.key === "reportSubmitted" ? "statusBadge--ok" : ""}">${t(reportLabel.key)}</span></div></div>${conflict}<div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div class="wide"><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t(tour.contactAvailable ? "unavailablePhone" : "contactClosed"))}</strong></div></div><div class="tourActions">${canAccept ? `<button class="acceptButton" type="button" data-accept="${esc(tour.assignmentId)}">${t("acceptTour")}</button>` : ""}${phone}<button type="button" ${tour.contactAvailable ? `data-copy="${encodeURIComponent(guestMessage(tour))}"` : "disabled"}>${icon("copy")}${tour.contactAvailable ? t("copyGuest") : t("contactClosed")}</button><a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}</div></article>`;
+}
+
+function reportState(tour) {
+  const submitted = reports.some(report => [tour.assignmentId, tour.bookingId].filter(Boolean).includes(report.bookingReference));
+  if (submitted) return { key: "reportSubmitted" };
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  return { key: tour.serviceDate && tour.serviceDate <= today ? "reportNeeded" : "reportScheduled" };
 }
 
 function updateReportLink() {
@@ -98,8 +116,21 @@ function renderTours() {
   const groups = Map.groupBy ? Map.groupBy(data.tours, item => item.serviceDate || "pending") : data.tours.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
   $("#calendarList").innerHTML = data.tours.length ? [...groups.entries()].map(([, tours]) => `<section class="dateGroup"><h2>${esc(dateLabel(tours[0].serviceDate))}</h2>${tours.map(tour => `<div class="dateItem"><time>${esc(tour.startTime || t("timePending"))}</time><div><strong>${esc(tour.service)} · ${esc(tour.guestName)}</strong><small>${esc(tour.pickup || t("pickupMissing"))}</small></div></div>`).join("")}</section>`).join("") : empty(t("noCalendar"));
   const selected = $("#reportTour").value;
-  $("#reportTour").innerHTML = data.tours.length ? data.tours.map(tour => `<option value="${esc(tour.bookingId || tour.assignmentId)}" ${(tour.bookingId || tour.assignmentId) === selected ? "selected" : ""}>${esc(dateLabel(tour.serviceDate))} · ${esc(tour.guestName)}</option>`).join("") : `<option value="">${t("noTour")}</option>`;
+  $("#reportTour").innerHTML = data.tours.length ? data.tours.map(tour => `<option value="${esc(tour.bookingId || tour.assignmentId)}" ${(tour.bookingId || tour.assignmentId) === selected ? "selected" : ""}>${esc(dateLabel(tour.serviceDate))} · ${esc(tour.guestName)} · ${t(reportState(tour).key)}</option>`).join("") : `<option value="">${t("noTour")}</option>`;
   updateReportLink();
+}
+
+function renderAvailability() {
+  const canEdit = data?.identity?.role === "guide";
+  $("#availabilityPanel").hidden = !canEdit;
+  const rows = data?.availability || [];
+  $("#availabilityList").innerHTML = rows.length ? rows.map(item => `<article class="availabilityItem"><div><strong>${esc(dateLabel(item.serviceDate))}</strong><small>${esc([item.startTime, item.endTime].filter(Boolean).join("–") || (language === "es" ? "Todo el día" : "All day"))}${item.note ? ` · ${esc(item.note)}` : ""}</small></div>${canEdit ? `<button type="button" data-remove-availability="${esc(item.assignmentId)}">${t("remove")}</button>` : ""}</article>`).join("") : empty(t("noAvailability"));
+}
+
+function renderOffers() {
+  const canRespond = data?.identity?.role === "guide";
+  const offers = data?.offers || [];
+  $("#offerList").innerHTML = offers.length ? offers.map(offer => `<article class="offerCard"><div class="offerHead"><div><h2>${esc(offer.service)}</h2><p>${esc(dateLabel(offer.serviceDate))}${offer.startTime ? ` · ${esc(offer.startTime)}` : ""}${offer.pickup ? ` · ${esc(offer.pickup)}` : ""}</p></div><span>${esc(offer.response ? t(offer.response === "pass" ? "pass" : "interested") : t("pendingResponse"))}</span></div>${canRespond ? `<label>${t("bidOptional")}<input type="number" min="1" step="0.01" inputmode="decimal" data-bid="${esc(offer.assignmentId)}" value="${esc(offer.bidAmount || "")}"></label><div class="offerActions"><button type="button" data-offer-response="interested" data-id="${esc(offer.assignmentId)}">${t("interested")}</button><button type="button" data-offer-response="pass" data-id="${esc(offer.assignmentId)}">${t("pass")}</button></div>` : `<p>${t("adminReadOnly")}</p>`}</article>`).join("") : empty(t("noOffers"));
 }
 
 function shareMessage(kind, url) {
@@ -153,7 +184,7 @@ async function loadReports() {
     reports = Array.isArray(body.reports) ? body.reports : [];
     reportsLinked = body.linked !== false;
   } catch { reports = []; reportsLinked = true; }
-  finally { reportsLoading = false; reportsLoaded = true; renderHistory(); }
+  finally { reportsLoading = false; reportsLoaded = true; renderHistory(); renderTours(); }
 }
 
 function renderPreview() {
@@ -169,10 +200,19 @@ function applyLanguage() {
   document.querySelectorAll("[data-i18n]").forEach(node => { node.textContent = t(node.dataset.i18n); });
   document.querySelectorAll("[data-language]").forEach(button => button.classList.toggle("active", button.dataset.language === language));
   $("#refresh").setAttribute("aria-label", language === "es" ? "Actualizar" : "Refresh");
-  if (data) { renderPreview(); renderTours(); renderShare(); renderHistory(); }
+  if (data) { renderPreview(); renderTours(); renderAvailability(); renderOffers(); renderShare(); renderHistory(); }
 }
 
-function render() { applyLanguage(); renderPreview(); renderTours(); renderShare(); renderHistory(); }
+function render() { applyLanguage(); renderPreview(); renderTours(); renderAvailability(); renderOffers(); renderShare(); renderHistory(); }
+
+async function mutate(url, method = "POST", body = {}) {
+  const response = await fetch(url, { method, credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: method === "DELETE" ? undefined : JSON.stringify(body) });
+  const result = await response.json();
+  if (!response.ok || result.verified === false) throw new Error(result.error || (language === "es" ? "No se confirmó el cambio." : "The change was not confirmed."));
+  return result;
+}
+
+async function refreshCurrent() { await load(data?.providerId || data?.providerName || ""); }
 
 async function load(provider = "") {
   $("#error").hidden = true; $("#loading").hidden = false; $("#workspace").hidden = true; $("#nav").hidden = true;
@@ -200,7 +240,14 @@ document.addEventListener("click", event => {
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
   const languageButton = event.target.closest("[data-language]");
   if (languageButton) { language = languageButton.dataset.language; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(); }
+  const accept = event.target.closest("[data-accept]");
+  if (accept) { accept.disabled = true; mutate(`/api/guide/assignments/${encodeURIComponent(accept.dataset.accept)}/accept`).then(refreshCurrent).catch(error => { accept.disabled = false; alert(error.message); }); }
+  const removeAvailability = event.target.closest("[data-remove-availability]");
+  if (removeAvailability) { removeAvailability.disabled = true; mutate(`/api/guide/availability/${encodeURIComponent(removeAvailability.dataset.removeAvailability)}`, "DELETE").then(refreshCurrent).catch(error => { removeAvailability.disabled = false; alert(error.message); }); }
+  const offerResponse = event.target.closest("[data-offer-response]");
+  if (offerResponse) { const bid = document.querySelector(`[data-bid="${CSS.escape(offerResponse.dataset.id)}"]`)?.value || ""; offerResponse.disabled = true; mutate(`/api/guide/offers/${encodeURIComponent(offerResponse.dataset.id)}/respond`, "POST", { response: offerResponse.dataset.offerResponse, bidAmount: bid }).then(refreshCurrent).catch(error => { offerResponse.disabled = false; alert(error.message); }); }
 });
+$("#availabilityForm").addEventListener("submit", event => { event.preventDefault(); const form = event.currentTarget, button = form.querySelector("button"), values = Object.fromEntries(new FormData(form)); button.disabled = true; mutate("/api/guide/availability", "POST", values).then(() => { form.reset(); return refreshCurrent(); }).catch(error => { button.disabled = false; alert(error.message); }); });
 $("#providerSelect").addEventListener("change", event => load(event.target.value));
 $("#reportTour").addEventListener("change", updateReportLink);
 $("#refresh").addEventListener("click", () => load(data?.providerId || data?.providerName || ""));

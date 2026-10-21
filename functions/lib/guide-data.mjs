@@ -6,6 +6,43 @@ const CLOSED_ASSIGNMENTS = new Set(["cancelled", "canceled"]);
 const lower = value => String(value || "").trim().toLowerCase();
 const phoneDigits = value => String(value || "").replace(/[^0-9]/g, "");
 
+function todayInEcuador(now = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
+function assignmentKind(row, assignment) {
+  const explicit = lower(row.assignment_kind || assignment.assignmentKind);
+  if (explicit && explicit !== "assignment") return explicit;
+  if (String(row.assignment_group_id || assignment.assignmentGroupId).startsWith("AVAIL-")) return "availability";
+  if (String(row.assignment_group_id || assignment.assignmentGroupId).startsWith("OFFER-")) return "offer";
+  if (lower(assignment.serviceType) === "guide unavailable") return "availability";
+  if (lower(assignment.serviceType) === "guide offer") return "offer";
+  return "assignment";
+}
+
+function minuteValue(value) {
+  const match = String(value || "").trim().toLowerCase().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?/);
+  if (!match) return null;
+  let hour = Number(match[1]);
+  if (match[3] === "am" && hour === 12) hour = 0;
+  if (match[3] === "pm" && hour < 12) hour += 12;
+  return hour * 60 + Number(match[2]);
+}
+
+function timeRange(assignment) {
+  const start = minuteValue(assignment.startTime), end = minuteValue(assignment.endTime);
+  if (start === null && end === null) return [0, 1440];
+  if (start === null) return [0, end];
+  if (end === null) return [start, Math.min(start + 60, 1440)];
+  return [start, end];
+}
+
+function overlaps(left, right) {
+  if (!left.serviceDate || left.serviceDate !== right.serviceDate) return false;
+  const [leftStart, leftEnd] = timeRange(left), [rightStart, rightEnd] = timeRange(right);
+  return leftStart < rightEnd && rightStart < leftEnd;
+}
+
 function recentCutoff(now = new Date()) {
   const ecuador = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
   const value = new Date(`${ecuador}T12:00:00Z`);
@@ -57,16 +94,25 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
   const providerName = selectedProvider.name || "";
   const providerId = selectedProvider.providerId || "";
   const cutoff = recentCutoff();
-  const tours = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
-    assignment.assignmentId && assignmentMatchesProvider(assignment, selectedProvider) && !CLOSED_ASSIGNMENTS.has(assignment.status) &&
-    (!assignment.serviceDate || assignment.serviceDate >= cutoff)
-  ).map(({ row, assignment }) => {
+  const providerAssignments = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
+    assignment.assignmentId && assignmentMatchesProvider(assignment, selectedProvider) && !CLOSED_ASSIGNMENTS.has(assignment.status)
+  );
+  const availability = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "availability")
+    .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= cutoff)
+    .map(({ assignment }) => ({ assignmentId: assignment.assignmentId, serviceDate: assignment.serviceDate, startTime: assignment.startTime, endTime: assignment.endTime, note: assignment.note }));
+  const offers = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "offer")
+    .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= todayInEcuador())
+    .map(({ assignment }) => ({ assignmentId: assignment.assignmentId, serviceDate: assignment.serviceDate, startTime: assignment.startTime, endTime: assignment.endTime, service: assignment.product || assignment.serviceType || "Tour opportunity", pickup: assignment.pickup, response: assignment.guideResponse, bidAmount: assignment.guideBidAmount }));
+  const scheduled = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "assignment");
+  const tours = scheduled.filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= cutoff).map(({ row, assignment }) => {
     const inquiry = inquiryById.get(assignment.inquiryId);
     const booked = Boolean(inquiry && BOOKED.has(inquiry.status)) || bookingByInquiry.has(assignment.inquiryId);
     if (!booked) return null;
     const guestName = inquiry?.name || String(row.guest_name || "Guest").trim();
-    const phone = inquiry?.phone || String(row.guest_phone || "").trim();
+    const contactAvailable = assignment.status !== "completed" && inquiry?.status !== "completed";
+    const phone = contactAvailable ? (inquiry?.phone || String(row.guest_phone || "").trim()) : "";
     const service = assignment.product || assignment.serviceType || "Tour";
+    const conflict = providerAssignments.find(candidate => candidate.assignment.assignmentId !== assignment.assignmentId && assignmentKind(candidate.row, candidate.assignment) !== "offer" && overlaps(assignment, candidate.assignment));
     const tour = {
       assignmentId: assignment.assignmentId,
       bookingId: bookingByInquiry.get(assignment.inquiryId)?.bookingId || inquiry?.bookingId || String(row.booking_id || "").trim(),
@@ -80,6 +126,10 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
       pickup: assignment.pickup || inquiry?.pickup || "",
       dropoff: assignment.dropoff,
       status: assignment.status,
+      accepted: assignment.guideResponse === "accepted",
+      contactAvailable,
+      hasConflict: Boolean(conflict),
+      conflictReason: conflict ? (assignmentKind(conflict.row, conflict.assignment) === "availability" ? "availability" : "assignment") : "",
       providerName: assignment.providerName,
       phone,
       whatsappUrl: phoneDigits(phone) ? `https://wa.me/${phoneDigits(phone)}` : "",
@@ -89,5 +139,5 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
     return tour;
   }).filter(Boolean).sort((a, b) => `${a.serviceDate} ${a.startTime}`.localeCompare(`${b.serviceDate} ${b.startTime}`));
   const providerOptions = providerRecords.map(item => ({ providerId: item.providerId, name: item.name })).sort((a, b) => a.name.localeCompare(b.name));
-  return { providerId, providerName, providers: providerOptions.map(item => item.name), providerOptions, tours };
+  return { providerId, providerName, providers: providerOptions.map(item => item.name), providerOptions, availability, offers, tours };
 }

@@ -4,6 +4,10 @@ import fs from "node:fs";
 import { guideIdentity, mobileIdentity } from "../functions/lib/mobile-auth.mjs";
 import { onRequestGet } from "../functions/api/guide/bootstrap.js";
 import { onRequestGet as getGuideReports } from "../functions/api/guide/reports.js";
+import { onRequestPost as acceptGuideAssignment } from "../functions/api/guide/assignments/[assignmentId]/accept.js";
+import { onRequestPost as createGuideAvailability } from "../functions/api/guide/availability/index.js";
+import { onRequestDelete as deleteGuideAvailability } from "../functions/api/guide/availability/[assignmentId].js";
+import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/offers/[assignmentId]/respond.js";
 
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
@@ -56,11 +60,15 @@ test("guide bootstrap returns only booked assignments for the selected guide and
           { assignment_id: "A-2", inquiry_id: "I-2", service_date: "2026-10-24", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "pending" },
           { assignment_id: "A-3", inquiry_id: "I-3", service_date: "2026-10-24", provider_name: "Other Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
           { assignment_id: "A-OLD", inquiry_id: "I-1", service_date: "2026-09-01", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
+          { assignment_id: "AV-1", assignment_group_id: "AVAIL-1", assignment_kind: "availability", service_date: "2026-10-23", start_time: "04:00", end_time: "07:00", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Guide Unavailable", assignment_status: "confirmed" },
+          { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2026-10-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
+          { assignment_id: "A-4", inquiry_id: "I-4", service_date: "2026-10-24", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "completed" },
         ],
         list_inquiries: [
           { inquiry_id: "I-1", guest_id: "G-1", full_name: "Booked Guest", phone_raw: "+1 (555) 123-4567", email: "private@example.test", status: "booked", guest_count: "2", pickup_location: "Mindo Lodge", notes: "PRIVATE" },
           { inquiry_id: "I-2", guest_id: "G-2", full_name: "Quoted Guest", phone_raw: "+1 555 999 0000", status: "quoted" },
           { inquiry_id: "I-3", guest_id: "G-3", full_name: "Other Guest", phone_raw: "+1 555 111 0000", status: "booked" },
+          { inquiry_id: "I-4", guest_id: "G-4", full_name: "Completed Guest", phone_raw: "+1 555 222 0000", status: "completed" },
         ],
         list_bookings: [],
         list_providers: [{ provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", provider_role: "guide", active: "yes" }, { provider_id: "PROV-008", provider_name: "Other Guide", provider_role: "guide", active: "yes" }],
@@ -70,15 +78,103 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     const response = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Neycer%20%C2%B7%20Night%20Walk%20Guide"), env });
     const body = await response.json();
     assert.equal(response.status, 200);
-    assert.equal(body.tours.length, 1);
+    assert.equal(body.tours.length, 2);
     assert.equal(body.providerId, "PROV-007");
     assert.equal(body.providerOptions[0].providerId, "PROV-007");
-    assert.equal(body.tours[0].guestName, "Booked Guest");
-    assert.equal(body.tours[0].phone, "+1 (555) 123-4567");
-    assert.equal(body.tours[0].whatsappUrl, "https://wa.me/15551234567");
-    assert.equal(body.tours[0].internalNote, undefined);
-    assert.equal(body.tours[0].email, undefined);
-    assert.match(body.tours[0].guestMessage, /Mindo Lodge/);
+    const bookedTour = body.tours.find(item => item.guestName === "Booked Guest"), completedTour = body.tours.find(item => item.guestName === "Completed Guest");
+    assert.equal(bookedTour.phone, "+1 (555) 123-4567");
+    assert.equal(bookedTour.whatsappUrl, "https://wa.me/15551234567");
+    assert.equal(bookedTour.hasConflict, true);
+    assert.equal(bookedTour.conflictReason, "availability");
+    assert.equal(bookedTour.internalNote, undefined);
+    assert.equal(bookedTour.email, undefined);
+    assert.match(bookedTour.guestMessage, /Mindo Lodge/);
+    assert.equal(completedTour.contactAvailable, false);
+    assert.equal(completedTour.phone, "");
+    assert.equal(body.availability.length, 1);
+    assert.equal(body.offers.length, 1);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("a linked guide can accept only their own assignment", async () => {
+  const savedFetch = globalThis.fetch;
+  let row = { assignment_id: "A-ACCEPT", assignment_kind: "assignment", provider_id: "PROV-007", provider_name: "Neycer renamed", assignment_status: "pending", provider_informed: "No", updated_at: "v1" };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (body.action === "list_assignments") return Response.json({ ok: true, records: [row] });
+      if (body.action === "update_assignment") { row = { ...body.assignment, updated_at: "v2" }; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const request = new Request("http://localhost/api/guide/assignments/A-ACCEPT/accept", { method: "POST", headers: { Origin: "http://localhost" } });
+    const response = await acceptGuideAssignment({ request, env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test", MBW_MOBILE_WRITE_ENABLED: "true" }, params: { assignmentId: "A-ACCEPT" } });
+    const body = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(body.verified, true);
+    assert.equal(row.assignment_status, "confirmed");
+    assert.equal(row.provider_informed, "Yes");
+    assert.equal(row.guide_response, "accepted");
+    assert.match(row.confirmation_note, /\[GUIDE_ACCEPTED/);
+    assert.equal(row.created_by, "JPG");
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("guide availability is stored as a separate non-tour assignment", async () => {
+  const savedFetch = globalThis.fetch;
+  let created;
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (body.action === "create_assignment") { created = { ...body.assignment, assignment_id: "AV-NEW" }; return Response.json({ ok: true }); }
+      if (body.action === "list_assignments") return Response.json({ ok: true, records: created ? [created] : [] });
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const request = new Request("http://localhost/api/guide/availability", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ date: "2026-11-02", startTime: "08:00", endTime: "12:00", note: "Personal" }) });
+    const response = await createGuideAvailability({ request, env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test", MBW_MOBILE_WRITE_ENABLED: "true" } });
+    const body = await response.json();
+    assert.equal(response.status, 201);
+    assert.equal(body.verified, true);
+    assert.equal(created.assignment_kind, "availability");
+    assert.equal(created.provider_id, "PROV-007");
+    assert.equal(created.inquiry_id, "GUIDE-AVAIL-PROV-007");
+    assert.equal(created.created_by, "JPG");
+    assert.match(created.assignment_group_id, /^AVAIL-/);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("a guide can remove only their own availability block", async () => {
+  const savedFetch = globalThis.fetch;
+  let rows = [{ assignment_id: "AV-DELETE", assignment_group_id: "AVAIL-DELETE", provider_id: "PROV-007", provider_name: "Neycer", service_type: "Guide Unavailable" }];
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (body.action === "list_assignments") return Response.json({ ok: true, records: rows });
+      if (body.action === "delete_assignment") { rows = []; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const request = new Request("http://localhost/api/guide/availability/AV-DELETE", { method: "DELETE", headers: { Origin: "http://localhost" } });
+    const response = await deleteGuideAvailability({ request, env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test", MBW_MOBILE_WRITE_ENABLED: "true" }, params: { assignmentId: "AV-DELETE" } });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).verified, true);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("guide offer responses persist through the existing assignment schema", async () => {
+  const savedFetch = globalThis.fetch;
+  let row = { assignment_id: "O-RESPOND", assignment_group_id: "OFFER-1", provider_id: "PROV-007", provider_name: "Neycer", assignment_status: "pending", created_by: "SS", confirmation_note: "Admin offer note", updated_at: "v1" };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (body.action === "list_assignments") return Response.json({ ok: true, records: [row] });
+      if (body.action === "update_assignment") { row = { ...body.assignment, updated_at: "v2" }; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const request = new Request("http://localhost/api/guide/offers/O-RESPOND/respond", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ response: "interested", bidAmount: "125.50" }) });
+    const response = await respondToGuideOffer({ request, env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test", MBW_MOBILE_WRITE_ENABLED: "true" }, params: { assignmentId: "O-RESPOND" } });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).verified, true);
+    assert.match(row.confirmation_note, /Admin offer note\n\[GUIDE_RESPONSE interested\|125\.50\|/);
+    assert.equal(row.created_by, "SS");
   } finally { globalThis.fetch = savedFetch; }
 });
 
