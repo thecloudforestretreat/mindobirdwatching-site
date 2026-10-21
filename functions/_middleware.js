@@ -7,10 +7,12 @@ const GUIDE_PAGES = new Set([
   "/", "/index.html", "/birding", "/birding/", "/birding/index.html",
   "/birding/species", "/birding/species/", "/birding/species/index.html",
   "/birding/sightings", "/birding/sightings/", "/birding/sightings/index.html",
+  "/guide", "/guide/", "/guide/index.html", "/api/guide/bootstrap", "/api/guide/reports",
 ]);
 const GUIDE_ASSETS = new Set([
   "/assets/css/admin.css", "/assets/css/birding.css",
   "/assets/js/admin-nav.js", "/assets/js/sightings.js",
+  "/guide/guide.css", "/guide/guide.mjs", "/assets/images/app/mbw-header-logo-160.png", "/assets/images/app/mbw-app-gold-transparent-180.png",
   "/favicon.ico", "/favicon.svg", "/apple-touch-icon.png", "/site.webmanifest",
 ]);
 let cachedKeys;
@@ -63,6 +65,14 @@ function reject(status, message) {
   return new Response(message, {status, headers: {"Content-Type":"text/plain; charset=utf-8", "Cache-Control":"private, no-store", "X-Content-Type-Options":"nosniff"}});
 }
 
+function configuredGuide(env, email) {
+  try {
+    const roles = typeof env?.MBW_MOBILE_ROLE_MAP === "string" ? JSON.parse(env.MBW_MOBILE_ROLE_MAP) : env?.MBW_MOBILE_ROLE_MAP;
+    const entry = roles?.[email];
+    return String(typeof entry === "string" ? entry : entry?.role || "").trim().toLowerCase() === "guide";
+  } catch { return false; }
+}
+
 export async function onRequest(context) {
   const {request} = context;
   const url = new URL(request.url);
@@ -73,8 +83,9 @@ export async function onRequest(context) {
   let email;
   try { email = await verifyIdentity(request.headers.get("Cf-Access-Jwt-Assertion")); }
   catch { return reject(401, "Sign in through MBW Admin to continue."); }
-  const guide = email === GUIDE;
-  if (guide && !guideMayRequest(request)) return reject(403, "Your account has Birding access only. Return to https://admin.mindobirdwatching.com/birding/");
+  const nestGuide = configuredGuide(context.env, email);
+  const guide = email === GUIDE || nestGuide;
+  if (guide && !guideMayRequest(request)) return reject(403, nestGuide ? "Your guide account is limited to Guide Nest. Return to https://admin.mindobirdwatching.com/guide/" : "Your account has Birding access only. Return to https://admin.mindobirdwatching.com/birding/");
   let response = await context.next();
   if (guide && response.headers.get("Content-Type")?.includes("text/html")) {
     response = new HTMLRewriter()

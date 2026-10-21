@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -9,47 +9,48 @@
   <meta name="apple-mobile-web-app-title" content="Guide Nest">
   <title>MBW Guide Nest</title>
   <link rel="apple-touch-icon" href="/assets/images/app/mbw-app-gold-transparent-180.png">
-  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261021-v2">
+  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261021-v3">
 </head>
 <body>
   <div class="shell">
     <header class="topbar">
       <a class="brand" href="/guide/"><img src="/assets/images/app/mbw-header-logo-160.png" alt=""><span><strong>MBW</strong><small>Guide Nest</small></span></a>
-      <span class="live"><i></i>Private</span>
+      <div class="topActions"><div class="language" role="group" aria-label="Idioma"><button class="active" data-language="es" type="button">ES</button><button data-language="en" type="button">EN</button></div><span class="live"><i></i><span data-i18n="private">Privado</span></span></div>
     </header>
     <main>
-      <section id="loading" class="state"><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""><h1>Opening Guide Nest</h1><p>Loading your assigned tours.</p></section>
-      <section id="error" class="state" hidden><b>!</b><h1>Guide Nest unavailable</h1><p id="errorText"></p><button id="retry" type="button">Try again</button></section>
+      <section id="loading" class="state"><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""><h1 data-i18n="opening">Abriendo Guide Nest</h1><p data-i18n="loadingTours">Cargando tus tours asignados.</p></section>
+      <section id="error" class="state" hidden><b>!</b><h1 data-i18n="unavailable">Guide Nest no está disponible</h1><p id="errorText"></p><button id="retry" type="button" data-i18n="retry">Intentar de nuevo</button></section>
       <div id="workspace" hidden>
         <section class="view" data-view="today">
-          <div class="heading"><div><p>Booked assignments</p><h1>My Tours</h1></div><button id="refresh" class="icon" type="button" aria-label="Refresh">↻</button></div>
-          <div id="adminPreview" class="preview" hidden><label for="providerSelect">Preview guide</label><select id="providerSelect"></select><small>This preview uses the same limited view a guide receives.</small></div>
-          <div class="privacy">Guest contact appears only after the tour is booked. Internal CRM, pricing, payments, and notes are not shared.</div>
+          <div class="heading"><div><p data-i18n="bookedAssignments">Tours reservados</p><h1 data-i18n="myTours">Mis tours</h1></div><button id="refresh" class="icon" type="button" aria-label="Actualizar">↻</button></div>
+          <div id="adminPreview" class="preview" hidden><label for="providerSelect" data-i18n="previewGuide">Vista del guía</label><select id="providerSelect"></select><small data-i18n="previewNote">Esta vista muestra exactamente la información limitada que recibe el guía.</small></div>
+          <div class="privacy" data-i18n="privacy">Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.</div>
           <div id="tourList" class="cards"></div>
         </section>
         <section class="view" data-view="calendar" hidden>
-          <div class="heading"><div><p>Assigned tours only</p><h1>Calendar</h1></div></div>
+          <div class="heading"><div><p data-i18n="assignedOnly">Solo tours asignados</p><h1 data-i18n="calendar">Calendario</h1></div></div>
           <div id="calendarList" class="calendar"></div>
         </section>
         <section class="view" data-view="sightings" hidden>
-          <div class="heading"><div><p>After the tour</p><h1>Sightings</h1></div></div>
-          <article class="panel"><span class="panelIcon"><img src="https://mindobirdwatching.com/assets/images/icons/mbw_lorito_floating_02.png" alt=""></span><h2>Submit a sighting report</h2><p>Build a route checklist, record birds seen or heard, and submit the report to MBW.</p><label for="reportTour">Tour reference</label><select id="reportTour"></select><a id="openReport" class="primary" href="/guide-tour-recap/">Open sighting report</a></article>
+          <div class="heading"><div><p data-i18n="afterTour">Después del tour</p><h1 data-i18n="sightings">Avistamientos</h1></div></div>
+          <article class="panel"><span class="panelIcon"><img src="https://mindobirdwatching.com/assets/images/icons/mbw_lorito_floating_02.png" alt=""></span><h2 data-i18n="submitReport">Enviar reporte de avistamientos</h2><p data-i18n="reportHelp">Crea la lista de la ruta, registra las aves vistas o escuchadas y envía el reporte a MBW.</p><label for="reportTour" data-i18n="tourReference">Tour de referencia</label><select id="reportTour"></select><a id="openReport" class="primary" href="https://mindobirdwatching.com/es/reporte-de-avistamientos/" target="_blank" rel="noopener noreferrer" data-i18n="openReport">Abrir reporte</a></article>
+          <section class="history"><div class="sectionTitle"><div><p data-i18n="historyEyebrow">Tu historial</p><h2 data-i18n="previousReports">Reportes anteriores</h2></div><span id="reportCount"></span></div><div id="reportHistory" class="historyList"><div class="empty" data-i18n="historyLoading">Cargando reportes anteriores…</div></div></section>
         </section>
         <section class="view" data-view="share" hidden>
-          <div class="heading"><div><p>Guest-ready follow-up</p><h1>Share MBW</h1></div></div>
-          <p class="intro">Choose one relevant message after the tour. Each button copies a short note with the verified MBW link.</p>
+          <div class="heading"><div><p data-i18n="guestFollowup">Seguimiento para huéspedes</p><h1>Share MBW</h1></div></div>
+          <p class="intro" data-i18n="shareIntro">Elige un mensaje después del tour. Cada botón copia una nota breve con el enlace oficial de MBW.</p>
           <div id="shareList" class="shareList"></div>
         </section>
       </div>
     </main>
     <nav id="nav" class="nav" hidden>
-      <button class="active" data-route="today" type="button"><span class="navIcon navIcon--tours" aria-hidden="true"></span>Tours</button>
-      <button data-route="calendar" type="button"><span class="navIcon navIcon--calendar" aria-hidden="true"></span>Calendar</button>
-      <button data-route="sightings" type="button"><span class="navIcon navIcon--sightings" aria-hidden="true"></span>Sightings</button>
+      <button class="active" data-route="today" type="button"><span class="navIcon navIcon--tours" aria-hidden="true"></span><span data-i18n="tours">Tours</span></button>
+      <button data-route="calendar" type="button"><span class="navIcon navIcon--calendar" aria-hidden="true"></span><span data-i18n="calendar">Calendario</span></button>
+      <button data-route="sightings" type="button"><span class="navIcon navIcon--sightings" aria-hidden="true"></span><span data-i18n="sightings">Avistamientos</span></button>
       <button data-route="share" type="button"><span class="navIcon navIcon--share" aria-hidden="true"></span>Share</button>
     </nav>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </div>
-  <script type="module" src="/guide/guide.mjs?v=guide-20261021-v2"></script>
+  <script type="module" src="/guide/guide.mjs?v=guide-20261021-v3"></script>
 </body>
 </html>
