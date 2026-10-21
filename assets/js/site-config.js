@@ -17,6 +17,50 @@
 
   window.MBW_SITE_CONFIG = window.MBW_SITE_CONFIG || {};
 
+  var ATTRIBUTION_SCRIPT_URL = "/assets/js/mbw-attribution.js?v=20261021-1";
+
+  function loadAttribution() {
+    if (window.MBWAttribution && typeof window.MBWAttribution.prepareContactUrl === "function") {
+      return Promise.resolve(window.MBWAttribution);
+    }
+
+    if (window.MBWAttributionReady && typeof window.MBWAttributionReady.then === "function") {
+      return window.MBWAttributionReady;
+    }
+
+    window.MBWAttributionReady = new Promise(function (resolve, reject) {
+      var script = document.querySelector('script[data-mbw-attribution="true"]');
+
+      function finish() {
+        if (window.MBWAttribution && typeof window.MBWAttribution.prepareContactUrl === "function") {
+          resolve(window.MBWAttribution);
+          return;
+        }
+        reject(new Error("MBW attribution collector did not initialize"));
+      }
+
+      if (script) {
+        script.addEventListener("load", finish, { once: true });
+        script.addEventListener("error", function () {
+          reject(new Error("MBW attribution collector could not be loaded"));
+        }, { once: true });
+        return;
+      }
+
+      script = document.createElement("script");
+      script.src = ATTRIBUTION_SCRIPT_URL;
+      script.async = true;
+      script.setAttribute("data-mbw-attribution", "true");
+      script.addEventListener("load", finish, { once: true });
+      script.addEventListener("error", function () {
+        reject(new Error("MBW attribution collector could not be loaded"));
+      }, { once: true });
+      document.head.appendChild(script);
+    });
+
+    return window.MBWAttributionReady;
+  }
+
   // This is the only WhatsApp number stored in the site files.
   var whatsappNumberDigits = "13054585402";
 
@@ -110,6 +154,63 @@
     return "https://wa.me/" + number + "?text=" + encodeURIComponent(message);
   }
 
+  function prepareAttributedWhatsAppUrl(url, metadata) {
+    return loadAttribution().then(function (attribution) {
+      var prepared = attribution.prepareContactUrl(url, metadata || {});
+      if (!prepared || !prepared.url || !prepared.contact_intent_id) {
+        throw new Error("WhatsApp reference could not be created");
+      }
+      return prepared;
+    });
+  }
+
+  function isWhatsAppAnchor(anchor) {
+    if (!anchor || anchor.tagName !== "A") return false;
+    if (anchor.hasAttribute("data-whatsapp-message-key")) return true;
+
+    var href = String(anchor.getAttribute("href") || "").trim();
+    return /^(?:https?:\/\/)?(?:wa\.me|api\.whatsapp\.com|web\.whatsapp\.com)(?:\/|$)/i.test(href) ||
+      /^whatsapp:/i.test(href);
+  }
+
+  function protectWhatsAppClicks() {
+    document.addEventListener("click", function (event) {
+      var target = event.target;
+      var anchor = target && typeof target.closest === "function" ? target.closest("a") : null;
+      if (!isWhatsAppAnchor(anchor)) return;
+
+      if (window.MBWAttribution && typeof window.MBWAttribution.prepareContactUrl === "function") return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      var href = anchor.getAttribute("href") || "";
+      var targetName = anchor.getAttribute("target") || "_self";
+      var pendingWindow = targetName === "_blank" ? window.open("", "_blank") : null;
+      var metadata = {
+        label: anchor.getAttribute("data-analytics-label") || anchor.getAttribute("aria-label") || anchor.textContent || "WhatsApp CTA",
+        location: anchor.getAttribute("data-analytics-location") || anchor.getAttribute("data-whatsapp-source-page") || "site_whatsapp_link",
+        tour: anchor.getAttribute("data-analytics-tour") || "",
+        message_key: anchor.getAttribute("data-whatsapp-message-key") || "",
+        agent_id: anchor.getAttribute("data-agent-id") || ""
+      };
+
+      prepareAttributedWhatsAppUrl(href, metadata).then(function (prepared) {
+        if (pendingWindow && !pendingWindow.closed) {
+          pendingWindow.location.replace(prepared.url);
+          return;
+        }
+        window.location.href = prepared.url;
+      }).catch(function (error) {
+        if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
+        if (window.console && typeof window.console.error === "function") {
+          window.console.error("WhatsApp reference could not be prepared", error);
+        }
+        window.alert("WhatsApp is still loading. Please try again so your inquiry reference is included.");
+      });
+    }, true);
+  }
+
   function updateWhatsAppLinks(root) {
     var scope = root && root.querySelectorAll ? root : document;
     var links = scope.querySelectorAll("[data-whatsapp-message-key]");
@@ -162,7 +263,14 @@
   }
 
   window.MBW_SITE_CONFIG.buildWhatsAppUrl = buildWhatsAppUrl;
+  window.MBW_SITE_CONFIG.loadAttribution = loadAttribution;
+  window.MBW_SITE_CONFIG.prepareAttributedWhatsAppUrl = prepareAttributedWhatsAppUrl;
   window.MBW_SITE_CONFIG.updateWhatsAppLinks = updateWhatsAppLinks;
+
+  loadAttribution().catch(function () {
+    // A click receives a visible retry message if attribution still cannot load.
+  });
+  protectWhatsAppClicks();
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
