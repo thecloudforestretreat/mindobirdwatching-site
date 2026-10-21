@@ -13,24 +13,26 @@ test("MBW Nest uses the dedicated gold home-screen icon and conservative CRM syn
   const app = fs.readFileSync(path.join(root, "admin/app/app.mjs"), "utf8");
   assert.equal(manifest.name, "MBW Nest");
   assert.equal(manifest.short_name, "MBW Nest");
-  assert.equal(manifest.start_url, "/app/?installed=gold-v2");
+  assert.equal(manifest.start_url, "/app/?installed=nest-v4");
   assert.equal(manifest.scope, "/app/");
   assert.deepEqual(manifest.icons.map(icon => icon.src), [
-    "/assets/images/app/mbw-app-gold-transparent-192.png",
-    "/assets/images/app/mbw-app-gold-transparent-512.png",
+    "/assets/images/app/mbw-nest-ios-v1-192.png",
+    "/assets/images/app/mbw-nest-ios-v1-512.png",
   ]);
-  assert.match(index, /apple-touch-icon[^>]+mbw-app-gold-transparent-180\.png/);
+  assert.match(index, /apple-mobile-web-app-title" content="MBW Nest"/);
+  assert.match(index, /apple-touch-icon[^>]+mbw-nest-ios-v1-180\.png/);
+  assert.doesNotMatch(index, /href="\/favicon\.ico"/);
   assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
   assert.match(index, /<small>Nest<\/small>/);
-  assert.match(worker, /mbw-mobile-shell-v19/);
+  assert.match(worker, /mbw-mobile-shell-v20/);
   assert.match(app, /AUTO_SYNC_INTERVAL_MS = 10 \* 60 \* 1000/);
   assert.match(app, /FOREGROUND_SYNC_MIN_AGE_MS = 5 \* 60 \* 1000/);
   assert.match(app, /setInterval\(updateConnectionAge, 30 \* 1000\)/);
   const headerIcon = path.join(root, "admin/assets/images/app/mbw-header-logo-160.png"), headerBytes = fs.readFileSync(headerIcon);
   assert.equal(headerBytes.readUInt8(25), 6, "header logo should preserve transparent pixels");
-  for (const file of ["mbw-app-gold-transparent-180.png", "mbw-app-gold-transparent-192.png", "mbw-app-gold-transparent-512.png"]) {
+  for (const file of ["mbw-nest-ios-v1-180.png", "mbw-nest-ios-v1-192.png", "mbw-nest-ios-v1-512.png"]) {
     const iconPath = path.join(root, "admin/assets/images/app", file), bytes = fs.readFileSync(iconPath);
     assert.ok(fs.statSync(iconPath).size > 10_000, `${file} should be a real icon asset`);
-    assert.equal(bytes.readUInt8(25), 6, `${file} should preserve RGBA transparency`);
+    assert.equal(bytes.readUInt8(25), 6, `${file} should use RGBA color`);
   }
 });
