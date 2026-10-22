@@ -13,7 +13,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/admin.css?v=hub-pilot-20260928" />
-  <link rel="stylesheet" href="/assets/css/media-studio.css?v=5" />
+  <link rel="stylesheet" href="/assets/css/media-studio.css?v=6" />
 </head>
 <body data-admin-layout="media" data-admin-page="media">
   <div data-admin-nav data-admin-page="media"></div>
@@ -40,6 +40,11 @@
       <article><span id="statAttention">0</span><small>Needs attention</small></article>
     </section>
 
+    <section class="operationsHealth" id="operationsHealth" aria-label="Publishing system health" aria-live="polite">
+      <div><span class="healthDot" data-state="checking"></span><strong>Checking publishing system…</strong></div>
+      <span>Reels and carousel gateways are being tested.</span>
+    </section>
+
     <section class="mediaWorkspace">
       <div class="workspaceTopbar">
         <div class="viewTabs" role="tablist" aria-label="Media Studio views">
@@ -56,17 +61,27 @@
       <section class="studioView isActive" id="calendarView" data-panel="calendar">
         <div class="calendarToolbar">
           <div><p class="eyebrow">Publishing plan</p><h2 id="calendarTitle">Calendar</h2></div>
-          <div class="calendarControls" aria-label="Calendar controls">
-            <button type="button" id="previousMonth" aria-label="Previous month">←</button>
+          <div class="calendarActionBar">
+            <div class="rangeSwitch" role="group" aria-label="Calendar range"><button class="isActive" type="button" data-calendar-range="month">Month</button><button type="button" data-calendar-range="week">Week</button></div>
+            <div class="calendarControls" aria-label="Calendar controls"><button type="button" id="previousMonth" aria-label="Previous period">←</button>
             <button type="button" id="todayMonth">Today</button>
-            <button type="button" id="nextMonth" aria-label="Next month">→</button>
+            <button type="button" id="nextMonth" aria-label="Next period">→</button>
+            </div>
           </div>
         </div>
-        <div class="calendarLegend" aria-label="Calendar legend">
-          <span><i data-type="reel"></i> Reel</span><span><i data-type="carousel"></i> Carousel</span>
-          <span><i data-status="review"></i> Needs review</span><span><i data-status="failed"></i> Needs attention</span>
+        <div class="calendarOptions">
+          <div class="calendarLegend" aria-label="Calendar legend">
+            <span><i data-type="reel"></i> Reel</span><span><i data-type="carousel"></i> Carousel</span>
+            <span><i data-status="review"></i> Needs review</span><span><i data-status="failed"></i> Needs attention</span>
+          </div>
+          <div class="calendarFilters">
+            <label><span>Content</span><select id="calendarTypeFilter"><option value="all">All media</option><option value="reel">Reels</option><option value="carousel">Carousels</option></select></label>
+            <label><span>Status</span><select id="calendarStatusFilter"><option value="all">All statuses</option><option value="upcoming">Scheduled</option><option value="review">Needs review</option><option value="failed">Needs attention</option><option value="published">Published</option></select></label>
+          </div>
         </div>
+        <section class="scheduleRecommendations" id="scheduleRecommendations" aria-label="Recommended publishing windows"><p>Loading evidence-based posting windows…</p></section>
         <div class="calendarWeekdays" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+        <p class="srOnly" id="calendarDragHelp">Drag a scheduled item to another future date to reschedule it. You will be asked to confirm before it is saved.</p>
         <div class="mediaCalendar" id="mediaCalendar" aria-label="Scheduled media calendar"></div>
         <div class="agendaPanel"><div><p class="eyebrow">Next posts</p><h3>Upcoming schedule</h3></div><div id="agendaList"></div></div>
       </section>
@@ -123,6 +138,6 @@
   </div>
 
   <script defer src="/assets/js/admin-nav.js?v=studio-remote-20260928"></script>
-  <script defer src="/assets/js/media-studio.js?v=4"></script>
+  <script defer src="/assets/js/media-studio.js?v=5"></script>
 </body>
 </html>
