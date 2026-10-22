@@ -829,8 +829,12 @@
         if(!rule || rule.model !== 'per_person') return 1;
         return Math.max(1,Number($('guestCount').value || 1));
       }
+      function isVehicleItem(item){return /^TRANS/i.test(String(item.productPreset||item.product_selected||item.product||item.name||""))||String(item.type||item.service_type||"").toLowerCase()==="transportation";}
+      function vehicleQuantityText(item,language){const qty=Number(item.quantity||1);return String(qty)+" "+(language==="es"?(qty===1?"vehículo":"vehículos"):(qty===1?"vehicle":"vehicles"));}
+      function inboundItemQuantity(item, fallback){return Number(isVehicleItem(item)?(item.vehicle_count||item.quantity||(item.id==="primary"?1:item.guests)||1):(item.quantity||item.guests||fallback||1));}
       function billingQuantityLabel(item){
         const rule = pricingRuleFor(item);
+        if(isVehicleItem(item))return 'Vehicles';
         if(!rule) return 'Quantity';
         if(rule.model === 'per_person') return 'Guests billed';
         if(rule.model === 'per_quad') return 'Quads';
@@ -845,7 +849,7 @@
         const adjusted = Number(item.unitPrice || 0) !== Number(rule.price || 0);
         const minimum = rule.minGuests > 1 ? ` · usual minimum ${rule.minGuests}` : '';
         const status = adjusted ? `Agreed rate entered · catalog reference ${money(rule.price)}` : `Catalog rate ${money(rule.price)}`;
-        return `<div class="catalogMeta${adjusted ? ' adjusted' : ''}" data-catalog-meta><span>${escapeHtml(status)} · ${escapeHtml(pricingModelLabel(rule.model))}${escapeHtml(minimum)}</span><strong>${adjusted ? 'Adjusted' : 'Standard'}</strong></div>`;
+        return `<div class="catalogMeta${adjusted ? ' adjusted' : ''}" data-catalog-meta><span>${escapeHtml(status)} · ${escapeHtml(isVehicleItem(item)?'per vehicle':pricingModelLabel(rule.model))}${escapeHtml(minimum)}</span><strong>${adjusted ? 'Adjusted' : 'Standard'}</strong></div>`;
       }
       function toast(message){
         const el = $('toast');
@@ -1099,7 +1103,7 @@
         const pricingLines = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0) !== 0).map(item => {
           const total = Number(item.quantity || 0) * Number(item.unitPrice || 0);
           const qty = Number(item.quantity || 0);
-          return `<div class="priceLine"><span>${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
+          return `<div class="priceLine"><span>${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
         }).join('');
 
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
@@ -1227,7 +1231,7 @@
           const priceRows = priced.map(item => {
             const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0);
             const qty = Number(item.quantity || 0);
-            return `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${qty > 1 ? ` × ${qty}` : ''}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;font-weight:900;white-space:nowrap;">${money(amount,data.language)}</td></tr>`;
+            return `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;font-weight:900;white-space:nowrap;">${money(amount,data.language)}</td></tr>`;
           }).join('');
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:18px;">
@@ -1383,7 +1387,7 @@
               productPreset:known||'Other',
               name:known||item.tour||item.tour_type||product||'Custom service',
               note:item.note||item.notes||'',
-              quantity:Number(item.quantity||item.guests||params.get('guests')||1),
+              quantity:inboundItemQuantity(item,params.get('guests')),
               unitPrice:Number(item.unitPrice||item.price||item.price_per_person||0)
             };
           }):[];
@@ -1391,7 +1395,7 @@
         const fallbackProduct=String(params.get('product_selected')||'').trim();
         const fallbackCode=(fallbackProduct.match(/[A-Z]+\d+/)||[])[0]||'';
         const fallbackKnown=PRODUCT_OPTIONS.find(option=>option===fallbackProduct||(fallbackCode&&option.startsWith(fallbackCode+' ')))||'';
-        if(!inboundItems.length&&(params.get('tour')||fallbackProduct)) inboundItems.push({date:params.get('start_date')||params.get('date')||'',type:params.get('service_type')||'Custom',productPreset:fallbackKnown||'Other',name:fallbackKnown||params.get('tour')||fallbackProduct,quantity:Number(params.get('guests')||1),unitPrice:Number(params.get('quoted_amount')||0)});
+        if(!inboundItems.length&&(params.get('tour')||fallbackProduct)) inboundItems.push({date:params.get('start_date')||params.get('date')||'',type:params.get('service_type')||'Custom',productPreset:fallbackKnown||'Other',name:fallbackKnown||params.get('tour')||fallbackProduct,quantity:inboundItemQuantity({product_selected:fallbackProduct,type:params.get('service_type')},params.get('guests')),unitPrice:Number(params.get('quoted_amount')||0)});
         return {
           source:'guest_crm',
           inquiryId:params.get('inquiry_id') || '',
@@ -1539,7 +1543,7 @@
           tour_items_json:JSON.stringify(data.items.map(item => ({
             date:item.date, tour:productDisplayName(item,'en') || item.name || serviceTypeLabel(item.type,'en'),
             description:productDisplayName(item,'en') || item.name || serviceTypeLabel(item.type,'en'),
-            guests:Number(item.quantity || 0), quantity:Number(item.quantity || 0),
+            guests:Number(item.quantity || 0), quantity:Number(item.quantity || 0), vehicle_count:isVehicleItem(item)?Number(item.quantity||1):"",
             price:Number(item.unitPrice || 0), unit_price:Number(item.unitPrice || 0), note:item.note || '',
             start_time:item.startTime || '', duration:item.duration || '', product_selected:item.productPreset || ''
           }))),

@@ -55,3 +55,11 @@ test('communication log continues to default to current time while missing quote
   h.q.fillQuoteOptions({});assert.equal(h.node('quoteSentAtInput').value,'');
   assert.ok(h.q.localDateTimeValue());
 });
+
+test('ordinary saves allow direct deposit and payment stages without requiring quote or follow-up',async()=>{
+  for(const status of ['deposit_pending','payment_pending','deposit_paid','booked']){
+    const h=harness({status});h.q.fillQuoteOptions(h.base);h.node('followupInput').value='';
+    assert.equal(await h.q.saveRecord(),true);assert.equal(h.rows[0].status,status);
+    assert.equal(h.rows[0].quote_status,'not_sent');assert.equal(h.rows[0].quote_sent_at,'');
+  }
+});
