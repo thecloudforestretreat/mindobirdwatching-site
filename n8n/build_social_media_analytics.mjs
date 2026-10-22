@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const output = process.env.MBW_ANALYTICS_OUTPUT || path.join("/tmp", "MBW_Social_Media_Analytics_v4.json");
+const output = process.env.MBW_ANALYTICS_OUTPUT || path.join("/tmp", "MBW_Social_Media_Analytics_v5.json");
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing";
 const GOOGLE_SHEETS = { id: "sJdVMmql2IyZ94ti", name: "Google Sheets - MBW" };
@@ -23,10 +23,10 @@ function add(name, type, typeVersion, position, parameters = {}, extra = {}) {
 
 add("[API] Media Insights", "n8n-nodes-base.webhook", 2, [-1100, -120], {
   httpMethod: "POST",
-  path: "mbw-media-insights-v4",
+  path: "mbw-media-insights-v5",
   responseMode: "responseNode",
   options: {},
-}, { webhookId: "mbw-media-insights-v4" });
+}, { webhookId: "mbw-media-insights-v5" });
 add("[TEST] Manual Trigger", "n8n-nodes-base.manualTrigger", 1, [-1100, 40], {});
 add("[SYNC] Hourly Trigger", "n8n-nodes-base.scheduleTrigger", 1.2, [-1100, 200], {
   rule: { interval: [{ field: "hours", triggerAtMinute: 17 }] },
@@ -106,8 +106,8 @@ const fb = unique(records.map(r => r.facebook_post_id));
 const yt = unique(records.map(r => r.youtube_post_id));
 const enc = encodeURIComponent;
 return [{json:{...ctx,records,
-  ig_url: ig.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(ig.join(','))+'&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
-  fb_url: 'https://graph.facebook.com/v23.0/753092067877601/posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true)'),
+  ig_url: ig.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(ig.join(','))+'&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
+  fb_url: 'https://graph.facebook.com/v23.0/753092067877601/posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true)'),
   yt_url: 'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id='+enc(yt.join(',')),
   yt_daily_url: 'https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&startDate='+ctx.previous_start_date+'&endDate='+ctx.end_date+'&metrics=views%2CestimatedMinutesWatched%2CaverageViewDuration%2CaverageViewPercentage%2Clikes%2Ccomments%2Cshares%2CsubscribersGained&dimensions=day&sort=day'
 }}];`,
@@ -153,20 +153,21 @@ const igById = {};
 for (const [key,value] of Object.entries(igRaw || {})) {
   if (!value || typeof value !== 'object' || key === 'error') continue;
   const m = insightMap(value.insights);
-  igById[key] = {reach:num(m.reach),views:num(m.views),saves:num(m.saved),shares:num(m.shares),interactions:num(m.total_interactions),likes:num(value.like_count),comments:num(value.comments_count),permalink:value.permalink||''};
+  igById[key] = {reach:num(m.reach),views:num(m.views),saves:num(m.saved),shares:num(m.shares),interactions:num(m.total_interactions),likes:num(value.like_count),comments:num(value.comments_count),permalink:value.permalink||'',thumbnail:value.thumbnail_url||value.media_url||''};
 }
 const fbById = {};
 for (const value of (fbRaw.data || [])) {
   if (!value || typeof value !== 'object' || !value.id) continue;
   const m = insightMap(value.insights);
-  const parsed = {id:String(value.id),reach:num(m.post_impressions_unique),engaged_users:num(m.post_engaged_users),clicks:num(m.post_clicks),shares:num(value.shares && value.shares.count),reactions:num(value.reactions && value.reactions.summary && value.reactions.summary.total_count),comments:num(value.comments && value.comments.summary && value.comments.summary.total_count),permalink:value.permalink_url||''};
+  const parsed = {id:String(value.id),reach:num(m.post_impressions_unique),engaged_users:num(m.post_engaged_users),clicks:num(m.post_clicks),shares:num(value.shares && value.shares.count),reactions:num(value.reactions && value.reactions.summary && value.reactions.summary.total_count),comments:num(value.comments && value.comments.summary && value.comments.summary.total_count),permalink:value.permalink_url||'',thumbnail:value.full_picture||''};
   fbById[String(value.id)] = parsed;
   fbById[String(value.id).split('_').pop()] = parsed;
 }
 const ytById = {};
 for (const value of (ytRaw.items || [])) {
   const s = value.statistics || {};
-  ytById[value.id] = {views:num(s.viewCount),likes:num(s.likeCount),comments:num(s.commentCount),title:(value.snippet||{}).title||'',published_at:(value.snippet||{}).publishedAt||''};
+  const snippet=value.snippet||{},thumbs=snippet.thumbnails||{};
+  ytById[value.id] = {views:num(s.viewCount),likes:num(s.likeCount),comments:num(s.commentCount),title:snippet.title||'',published_at:snippet.publishedAt||'',thumbnail:(thumbs.medium||thumbs.high||thumbs.default||{}).url||''};
 }
 const fbUnique = Object.values(fbById).filter((value,index,array)=>array.findIndex(other=>other.id===value.id)===index);
 const headers = (ydRaw.columnHeaders || []).map(h=>h.name);
@@ -186,18 +187,18 @@ for (const r of base.records) {
   if (r.instagram_post_id && igById[r.instagram_post_id]) {
     const v=igById[r.instagram_post_id], engagement=v.likes+v.comments+v.shares+v.saves;
     const denominator=v.reach||v.views, result=denominator||engagement;
-    postResults.push({...common,platform:'Instagram',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.instagram_permalink});
+    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Instagram',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.instagram_permalink});
     if(r.cohort==='current')samples.push({platform:'Instagram + Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
   }
   if (r.facebook_post_id && fbById[r.facebook_post_id]) {
     const v=fbById[r.facebook_post_id], engagement=v.reactions+v.comments+v.shares;
     const denominator=v.reach, result=v.reach||v.engaged_users||engagement;
-    postResults.push({...common,platform:'Facebook',reach:v.reach,views:0,result,result_metric:v.reach?'Reach':v.engaged_users?'Engaged users':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.facebook_permalink});
+    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Facebook',reach:v.reach,views:0,result,result_metric:v.reach?'Reach':v.engaged_users?'Engaged users':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.facebook_permalink});
     if(r.cohort==='current')samples.push({platform:'Instagram + Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
   }
   if (r.youtube_post_id && ytById[r.youtube_post_id]) {
     const v=ytById[r.youtube_post_id], engagement=v.likes+v.comments;
-    postResults.push({...common,title:r.title||v.title,platform:'YouTube',reach:0,views:v.views,result:v.views,result_metric:'Views',engagements:engagement,denominator:v.views,engagement_rate:v.views?engagement/v.views*100:0,href:r.youtube_url||('https://youtu.be/'+r.youtube_post_id)});
+    postResults.push({...common,title:r.title||v.title,thumbnail:v.thumbnail||common.thumbnail,platform:'YouTube',reach:0,views:v.views,result:v.views,result_metric:'Views',engagements:engagement,denominator:v.views,engagement_rate:v.views?engagement/v.views*100:0,href:r.youtube_url||('https://youtu.be/'+r.youtube_post_id)});
     if(r.cohort==='current')samples.push({platform:'YouTube',day:common.publish_day,hour:common.publish_hour,value:v.views});
   }
 }
@@ -273,13 +274,13 @@ const connections = {
 };
 
 const workflow = {
-  name: "MBW - Social Media Analytics v4 - Production",
+  name: "MBW - Social Media Analytics v5 - Production",
   nodes,
   pinData: {},
   connections,
   active: false,
   settings: { executionOrder: "v1", timezone: "America/New_York", callerPolicy: "workflowsFromSameOwner", availableInMCP: false },
-  versionId: "b52ea6d6-d21f-49c0-94b6-d891b052a7b2",
+  versionId: "d8a3c940-a84a-4e2c-b8d5-7cc8e4904e12",
   meta: { templateCredsSetupCompleted: true },
   tags: [],
 };
