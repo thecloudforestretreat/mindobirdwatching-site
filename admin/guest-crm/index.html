@@ -1241,6 +1241,10 @@
           if(state.view==="intake"&&getSelected())loadGuestWorkspace();
         }catch(e){
           if(refreshObsolete()||hasUnsavedTourChanges()) return;
+          if(state.operationsStatus==="loading"){
+            state.operationsStatus="error";
+            state.operationsError="CRM refresh failed before assignments loaded. Retry Refresh CRM.";
+          }
           loadLocalRecords();
           fillForm(getSelected());
           render();

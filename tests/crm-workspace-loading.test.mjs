@@ -42,3 +42,7 @@ test('saving an unlinked transport explicitly clears stale birding service ID',a
  node('assignmentId').value='existing';node('assignmentDate').value='2099-11-26';node('assignmentService').value='Transportation';node('assignmentTourItem').value='';node('assignmentTourItem').dataset.product='MBW006';node('assignmentProvider').value='Juan';
  await q.saveAssignment();assert.equal(writes.length,1);assert.equal(writes[0].service_item_id,'');assert.equal(writes[0].product_selected,'Transportation');
 });
+
+test('failed global assignment read is explicitly unavailable and retains prior snapshot',async()=>{
+ const {q}=harness(async action=>{if(action==='list_assignments')throw Error('offline');return{records:[]}});q.state.allAssignments=[assignment('one')];await q.loadGlobalOperationsData();assert.equal(q.state.operationsStatus,'error');assert.equal(q.state.allAssignments[0].assignment_id,'A-one');assert.match(q.state.operationsError,/Retry/);
+});
