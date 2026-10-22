@@ -2145,7 +2145,11 @@
           calendarEntriesForRecord(record).forEach(entry=>{
             const date=toDateValue(entry.requested_date||entry.requested_date_start);
             if(!date) return;
-            rows.push(Object.assign({},entry,{_report_date:date,_report_type:reportServiceKey(entry)}));
+            const inquiryStatus=normalizeStatus(record.status);
+            // A closed inquiry cannot leave old child services in operational reports.
+            const preserveClosedService=inquiryStatus==="completed"&&["cancelled","did_not_book"].includes(normalizeStatus(entry.status));
+            const status=isClosedStatus(inquiryStatus)&&!preserveClosedService?inquiryStatus:entry.status;
+            rows.push(Object.assign({},entry,{status,_report_date:date,_report_type:reportServiceKey(entry)}));
           });
         });
         return rows.sort((a,b)=>a._report_date.localeCompare(b._report_date)||String(a.full_name||"").localeCompare(String(b.full_name||"")));
@@ -2176,6 +2180,8 @@
         const status=normalizeStatus(record.status);
         const payment=normalizePayment(record.payment_status);
         if(filter==="all") return true;
+        if(isArchivedStatus(record)) return false;
+        if(isClosedStatus(status)) return filter===status;
         if(filter==="active") return !["completed","cancelled","did_not_book","duplicate"].includes(status);
         if(filter==="pipeline") return ["new","contacted","planning","qualified","follow_up"].includes(status);
         if(filter==="quoted") return status==="quoted"||record.quote_status==="sent";
