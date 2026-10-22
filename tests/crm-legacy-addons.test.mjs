@@ -14,9 +14,9 @@ function harness(record={}){
   const base={inquiry_id:'QA-QUOTE-DATE',guest_id:'QA-GUEST',status:'new',quote_status:'not_sent',quote_sent_at:'',is_archived:'No',source_page:'/book-tour/',created_at:'2026-10-20T10:00:00Z',...record};
   const rows=[structuredClone(base)],calls=[];
   const backend=payload=>new Function('$','$input',processor)(()=>({first:()=>({json:payload})}),{all:()=>rows.map(json=>({json}))})[0].json;
-  const context={console,URL,URLSearchParams,Date,Intl,setTimeout,clearTimeout,location:{hostname:'localhost',search:''},localStorage:{getItem(){return null;},setItem(){}},document:{getElementById:node,addEventListener(){},querySelectorAll(){return[];}},window:{addEventListener(){},location:{search:''}},persist:async(action,payload)=>{assert.equal(action,'update_inquiry');calls.push(structuredClone(payload));const saved=backend(payload);assert.notEqual(saved.ok,false);Object.assign(rows[0],saved.record);return saved;}};
+  const context={console,URL,URLSearchParams,Date,Intl,setTimeout:()=>0,clearTimeout:()=>{},location:{hostname:'localhost',search:''},localStorage:{getItem(){return null;},setItem(){}},document:{getElementById:node,addEventListener(){},querySelectorAll(){return[];}},window:{addEventListener(){},location:{search:''}},persist:async(action,payload)=>{assert.equal(action,'update_inquiry');calls.push(structuredClone(payload));const saved=backend(payload);assert.notEqual(saved.ok,false);Object.assign(rows[0],saved.record);return saved;}};
   vm.createContext(context);
-  vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,fillQuoteOptions,formRecord,saveRecord,normalizeCrmRecord,primaryTourItemFromRecord,additionalTourItemsForForm,normalizeTourItems,install(){api=persist;resolveReference=async()=>null;render=()=>{};saveLocalRecords=()=>{};showToast=()=>{};upsert=record=>{state.records=[normalizeCrmRecord(record)]}}};})();`),context);
+  vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,fillQuoteOptions,formRecord,saveRecord,normalizeCrmRecord,primaryTourItemFromRecord,additionalTourItemsForForm,normalizeTourItems,assignmentTourItems,renderAssignmentTourItems,tourFormSnapshot,hasUnsavedTourChanges,refreshCrm,install(){api=persist;resolveReference=async()=>null;render=()=>{};saveLocalRecords=()=>{};showToast=()=>{};upsert=record=>{state.records=[normalizeCrmRecord(record)]}}};})();`),context);
   const q=context.qa;q.cache();q.install();Object.assign(base,q.normalizeCrmRecord(base));q.state.records=[base];q.state.selectedId=base.inquiry_id;
   for(const [id,value] of Object.entries({modeInput:'update',guestIdInput:base.guest_id,firstNameInput:'QA',fullNameInput:'QA Guest',emailInput:'qa@example.invalid',countryInput:'US',sourceInput:'site_book_tour',tourInput:'Birdwatching',guestCountInput:'2',dateInput:'2099-11-26',recordStatusInput:base.status,quoteStatusInput:base.quote_status,paymentStatusInput:'unpaid',serviceTypeInput:'Birdwatching',priorityInput:'normal',followupInput:'2099-11-01'}))node(id).value=value;
   function load(){
@@ -70,4 +70,35 @@ test('opening an archived legacy request preserves archive and activity state',(
 });
 for(const status of ['deposit_pending','payment_pending','deposit_paid','booked']) test('legacy extras do not prevent direct '+status+' saves',async()=>{
   const h=harness({tour_type:'Birdwatching',tour_add_ons:'Night Walk',status});h.load();h.node('followupInput').value='';assert.equal(await h.q.saveRecord(),true);assert.equal(h.rows[0].status,status);assert.equal(JSON.parse(h.rows[0].tour_items_json).length,2);
+});
+
+test('legacy combined activity is expanded identically in the editor and assignment selector',()=>{
+ const h=harness({product_selected:'MBW006',tour_type:'Birdwatching',requested_date:'2099-11-26',tour_add_ons:'Other: chocolate tour, orchid garden tour. Both would be nice depending on price and convenience.'});
+ const {extras}=h.load();const options=h.q.assignmentTourItems(h.q.state.records[0]);
+ for(const item of extras){const option=options.find(row=>row.id===item.id);assert.ok(option,item.id);assert.equal(option.tour,item.tour);assert.equal(option.product_selected,item.product_selected)}
+});
+test('edited chocolate and orchid dates, rates, statuses and IDs survive three backend saves and selector rebuilds',async()=>{
+ const h=harness({product_selected:'MBW006',tour_type:'Birdwatching',requested_date:'2099-11-26',tour_add_ons:'Other: chocolate tour, orchid garden tour'});
+ let originalIds;
+ for(let cycle=0;cycle<3;cycle++){
+  const {extras}=h.load();if(!originalIds)originalIds=extras.map(item=>item.id);
+  for(const item of extras){item.date='2099-11-30';item.tour_date='2099-11-30';item.status='booked';item.price=item.tour==='Chocolate Tour'?'15':'10'}
+  assert.equal(await h.q.saveRecord(),true);
+  const saved=JSON.parse(h.rows[0].tour_items_json);assert.equal(saved.length,3);
+  const options=h.q.assignmentTourItems(h.q.state.records[0]);
+  for(const id of originalIds){const item=options.find(row=>row.id===id);assert.ok(item);assert.equal(item.date,'2099-11-30');assert.equal(item.status,'booked');assert.ok(['15','10'].includes(item.price))}
+  h.q.renderAssignmentTourItems(originalIds[0]);assert.equal(h.node('assignmentTourItem').value,originalIds[0]);assert.match(h.node('assignmentTourItem').innerHTML,/Chocolate Tour/);assert.match(h.node('assignmentTourItem').innerHTML,/Orchid Garden Tour/);
+ }
+});
+test('selector rebuild preserves the assignment being edited and does not reset its schedule or provider',()=>{
+ const h=harness({product_selected:'MBW006',tour_add_ons:'Night Walk'});const {extras}=h.load();
+ for(const [id,value]of Object.entries({assignmentTime:'09:00',assignmentEndTime:'10:00',assignmentProvider:'QA Provider',assignmentDate:'2099-11-30',assignmentNote:'Keep me'}))h.node(id).value=value;
+ h.q.renderAssignmentTourItems(extras[0].id);
+ assert.equal(h.node('assignmentTourItem').value,extras[0].id);assert.equal(h.node('assignmentTime').value,'09:00');assert.equal(h.node('assignmentProvider').value,'QA Provider');assert.equal(h.node('assignmentDate').value,'2099-11-30');assert.equal(h.node('assignmentNote').value,'Keep me');
+});
+for(const background of [false,true])test((background?'background':'manual')+' refresh cannot discard unsaved activity edits',async()=>{
+ const h=harness({product_selected:'MBW006',tour_add_ons:'Night Walk'});const {extras}=h.load();h.q.state.tourFormSnapshot=h.q.tourFormSnapshot();
+ extras[0].date='2099-11-30';assert.equal(h.q.hasUnsavedTourChanges(),true);
+ // The actual refresh function must stop before invoking the backend or rebuilding the form.
+ await h.q.refreshCrm(background);assert.equal(h.calls.length,0);assert.equal(h.q.hasUnsavedTourChanges(),true);assert.equal(h.q.tourFormSnapshot().includes('2099-11-30'),true);
 });
