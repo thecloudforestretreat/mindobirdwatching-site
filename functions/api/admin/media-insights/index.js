@@ -5,7 +5,7 @@ function json(request,body,status=200){return new Response(JSON.stringify(body),
 function emptyPlatform(){return{connected:false,metrics:{}}}
 function unavailable(request,message){return json(request,{ok:true,configured:false,message,summary:{},series:[],top_posts:[],post_results:[],youtube_retention:{available:false},data_health:{stale:true,note:message,platforms:{}},recommendations:{configured:false,timezone:"America/New_York",sample_size:0,slots:[]},platforms:{instagram:emptyPlatform(),facebook:emptyPlatform(),youtube:emptyPlatform()}})}
 export async function onRequestGet({request,env}){
-  const webhook=String(env.N8N_ADMIN_MEDIA_INSIGHTS_WEBHOOK_URL||env.N8N_ADMIN_SOCIAL_ANALYTICS_WEBHOOK_URL||"https://n8n.mindobirdwatching.com/webhook/mbw-media-insights-v4").trim();
+  const webhook=String(env.N8N_ADMIN_MEDIA_INSIGHTS_WEBHOOK_URL||env.N8N_ADMIN_SOCIAL_ANALYTICS_WEBHOOK_URL||"https://n8n.mindobirdwatching.com/webhook/mbw-media-insights-v5").trim();
   if(!webhook)return unavailable(request,"Existing n8n reporting covers Meta ads and website/SEO. Connect an organic Meta Insights and YouTube Analytics collector to add post-level reach, engagement, saves, shares, and watch-time trends here.");
   const requested=new URL(request.url).searchParams.get("period")||"28d",period=PERIODS.has(requested)?requested:"28d";
   try{
