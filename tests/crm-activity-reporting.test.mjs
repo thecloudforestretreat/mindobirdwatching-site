@@ -92,3 +92,15 @@ test('country flags follow recorded country without guessing ambiguous NANP nati
 test('report phone opens normalized WhatsApp URL without a message and invalid numbers stay unlinked',()=>{
  const {q}=harness();const link=q.reportPhoneMarkup('(202) 555-0123',{country:'United States',full_name:'QA & Guest'});assert.match(link,/href="https:\/\/wa.me\/12025550123"/);assert.doesNotMatch(link,/\?text=/);assert.match(link,/QA &amp; Guest/);assert.match(link,/rel="noopener noreferrer"/);assert.equal(q.reportPhoneMarkup('',{}),'—');assert.equal(q.reportPhoneMarkup('123',{}),'123');
 });
+
+ test('sidebar inquiry filters scope report rows, totals and exports without changing service dates',()=>{
+ const {q,node,record}=harness([services[0],services[5]]);
+ record.requested_date='2099-11-26';record.assigned_to='Juan';record.quote_status='sent';
+ const other={...record,inquiry_id:'QA-OTHER',full_name:'Other Guest',status:'quoted',assigned_to:'Susana',tour_items_json:JSON.stringify([services[0]])};q.state.records.push(other);
+ node('viewFilter').value='booked';q.renderReports();assert.equal(q.filteredReportRows().length,2);assert.equal(Number(node('reportActivityCount').textContent),2);assert.doesNotMatch(q.reportCsv(),/Other Guest/);assert.doesNotMatch(q.reportPlainText(),/Other Guest/);assert.ok(q.filteredReportRows().every(row=>row.inquiry_id===record.inquiry_id));
+ node('viewFilter').value='all';node('searchInput').value='Other Guest';assert.equal(q.filteredReportRows().length,1);
+ node('searchInput').value='';node('repFilter').value='SS';assert.equal(q.filteredReportRows().length,1);
+ node('repFilter').value='';node('statusFilter').value='booked';assert.equal(q.filteredReportRows().length,2);
+ node('statusFilter').value='';node('paymentFilter').value='paid';assert.equal(q.filteredReportRows().length,0);
+ node('paymentFilter').value='';assert.equal(q.filteredReportRows().length,3);
+ });
