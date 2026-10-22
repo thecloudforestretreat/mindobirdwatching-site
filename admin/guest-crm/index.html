@@ -282,7 +282,7 @@
             <div class="reportHeader">
               <div>
                 <h2 class="calendarTitle">Tour Reports</h2>
-                <p class="hint">Filter upcoming activities, review totals, export rows, or copy a guide-ready WhatsApp schedule.</p>
+                <p class="hint">Sidebar filters select guest inquiries. Use the filters below to select their services, then review totals or export the results.</p>
               </div>
               <div class="reportActions">
                 <button id="copyReportBtn" type="button">Copy Report</button>
@@ -2326,11 +2326,19 @@
         if(filter==="confirmed") return ["booked","confirmed"].includes(status)||["deposit_paid","paid"].includes(payment)||status==="deposit_paid";
         return status===filter;
       }
+      function reportInquiryFilters(){
+        const labels={searchInput:"Search",inlineSearchInput:"Search",viewFilter:"View",statusFilter:"Inquiry status",inlineStatusFilter:"Inquiry status",quoteFilter:"Quote",paymentFilter:"Payment",repFilter:"Rep",inlineRepFilter:"Rep",followupFilter:"Follow-up"};
+        return Object.entries(labels).filter(([id])=>clean(els[id]?.value)&&!(id==="viewFilter"&&els[id].value==="all")).map(([id,label])=>{
+          const input=els[id],option=Array.from(input.options||[]).find(option=>option.value===input.value);
+          return label+": "+(option?option.textContent:clean(input.value));
+        }).filter((label,index,all)=>all.indexOf(label)===index);
+      }
       function filteredReportRows(){
         const bounds=reportBounds();
         const type=els.reportTypeInput.value||"all";
         const status=els.reportStatusInput.value||"active";
-        return allReportActivities().filter(row=>(!bounds.start||row._report_date>=bounds.start)&&(!bounds.end||row._report_date<=bounds.end)&&(type==="all"||row._report_type===type)&&reportStatusMatches(row,status));
+        const inquiryIds=reportInquiryFilters().length?new Set(getFiltered().map(record=>record.inquiry_id)):null;
+        return allReportActivities().filter(row=>(!inquiryIds||inquiryIds.has(row.inquiry_id))&&(!bounds.start||row._report_date>=bounds.start)&&(!bounds.end||row._report_date<=bounds.end)&&(type==="all"||row._report_type===type)&&reportStatusMatches(row,status));
       }
       function renderReports(){
         if(!els.reportTableBody) return;
@@ -2343,7 +2351,7 @@
         els.reportGuestCount.textContent=guests;
         els.reportBookedCount.textContent=booked;
         els.reportActionCount.textContent=action;
-        els.reportRangeHint.textContent=bounds.label+" · "+reportTypeLabel(els.reportTypeInput.value)+" · "+reportStatusLabel(els.reportStatusInput.value);
+        els.reportRangeHint.textContent=bounds.label+" · "+reportTypeLabel(els.reportTypeInput.value)+" · "+reportStatusLabel(els.reportStatusInput.value)+" · "+(reportInquiryFilters().join(" · ")||"All guest inquiries");
         els.reportTableBody.innerHTML=rows.length?rows.map(row=>{
           const visual=serviceVisual(row);
           const status=normalizeStatus(row.status);
