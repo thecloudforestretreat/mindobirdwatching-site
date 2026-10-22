@@ -1148,9 +1148,10 @@
       }
 
       function itemPrice(item, description, product, quotedAmount){
-        const direct = numberFromMoney(item.price || item.quoted_amount || item.unit_price || item.price_per_person || item.per_person || item.rate || item.amount);
-        if(direct > 0) return direct;
-        return Number(priceFor(description, product, quotedAmount)) || 0;
+        const explicit = [item.price,item.quoted_amount,item.unit_price,item.price_per_person,item.per_person,item.rate,item.amount].find(value => value !== null && value !== undefined && String(value).trim() !== "");
+        const raw = String(explicit ?? "").trim().replace(/^\$/, "").replace(/,/g, "");
+        if(/^\d+(?:\.\d{1,2})?$/.test(raw)) return numberFromMoney(raw);
+        return Number(priceFor(description, product)) || 0;
       }
 
       function numberFromMoney(value){
@@ -1270,7 +1271,7 @@
       function normalizeDescription(value){ const text=clean(value); const code=productCodeFromText(text); return code&&PRODUCT_LABEL_BY_CODE[code] ? PRODUCT_LABEL_BY_CODE[code] : (itemOptions.includes(text) ? text : (text || "Other"));
       }
 
-      function priceFor(description, product, quotedAmount){ const quoted=Number(quotedAmount||""); const code=productCodeFromText(description)||productCodeFromText(product); if(code&&PRODUCT_PRICE_BY_CODE[code]) return Number(PRODUCT_PRICE_BY_CODE[code])||0; return quoted>0 ? quoted : 0;
+      function priceFor(description, product, quotedAmount){ const code=productCodeFromText(description)||productCodeFromText(product); if(code&&PRODUCT_PRICE_BY_CODE[code]) return Number(PRODUCT_PRICE_BY_CODE[code])||0; return 0;
       }
 
       function setDefaultDates(){
@@ -1291,7 +1292,7 @@
             "<div class='field'><label>Item / Description</label><select data-field='description'>" + itemOptions.map(option => "<option value='" + attr(option) + "'" + (option === item.description ? " selected" : "") + ">" + esc(option) + "</option>").join("") + "</select></div>" +
             "<div class='threeGrid'>" +
               "<div class='field'><label>"+(isVehicleItem(item)?"Vehicles":"Qty")+"</label><select data-field='qty'>" + buildQtyOptions(item.qty) + "</select></div>" +
-              "<div class='field'><label>"+(isVehicleItem(item)?"Price per vehicle":"Price")+"</label><input data-field='price' type='number' step='0.01' value='" + attr(item.price) + "' /></div>" +
+              "<div class='field'><label>"+(isVehicleItem(item)?"Price per vehicle":"Price")+"</label><input data-field='price' type='number' step='0.01' value='" + attr(String(item.price ?? "")) + "' /></div>" +
               "<div class='field'><label>Amount</label><input type='text' value='" + attr(formatMoney(lineTotal(item))) + "' disabled /></div>" +
             "</div>" +
             "<div class='field'><label>Line Note</label><input data-field='note' type='text' value='" + attr(item.note || "") + "' placeholder='Pickup, guest names, private note, or discount note' /></div>";
@@ -1382,7 +1383,7 @@
       function getPaymentPlan(total){
         const mode = els.paymentMode.value === "deposit" ? "deposit" : "full";
         const deposit = Math.max(0, Number(els.depositAmount.value) || 100);
-        const requested = mode === "deposit" ? (total > 0 ? Math.min(deposit, Math.max(total, 0)) : deposit) : Math.max(total, 0);
+        const requested = mode === "deposit" ? Math.min(deposit, Math.max(total, 0)) : Math.max(total, 0);
         return {
           mode,
           modeLabel: mode === "deposit" ? "Tour deposit" : "Full payment",
