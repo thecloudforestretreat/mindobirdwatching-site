@@ -22,6 +22,7 @@ const env = {
 
 test("guide service identity follows the linked itinerary item and rejects copied primary products", () => {
   const inquiry = { tours: [{ id: "night", product: "MBW016 - Night Walk", tour: "Night Walk" }] };
+  assert.equal(resolveAssignmentService({ serviceItemId: "night", note: "", product: "MBW006 - Five Toucans", serviceType: "Night Walk" }, inquiry), "MBW016 - Night Walk");
   assert.equal(resolveAssignmentService({ note: "Service reference: night", product: "MBW006 - Five Toucans", serviceType: "Night Walk" }, inquiry), "MBW016 - Night Walk");
   assert.equal(resolveAssignmentService({ note: "", product: "MBW006 - Five Toucans", serviceType: "Transportation" }, inquiry), "Transportation");
   assert.equal(resolveAssignmentService({ note: "", product: "MBW006 - Five Toucans", serviceType: "Birdwatching" }, inquiry), "MBW006 - Five Toucans");

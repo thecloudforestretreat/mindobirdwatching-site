@@ -75,6 +75,7 @@ export function tourItems(record) {
     pickup: text(item.pickup_location || record.pickup_location, 500),
     dropoff: text(item.dropoff_location, 500),
     startTime: text(item.start_time || item.startTime, 30),
+    endTime: text(item.end_time || item.endTime, 30),
   }));
 }
 
@@ -147,6 +148,7 @@ export function normalizeAssignment(row) {
   return {
     assignmentId: text(row.assignment_id, 128),
     assignmentGroupId: text(row.assignment_group_id, 128),
+    serviceItemId: text(row.service_item_id, 128),
     assignmentKind: key(row.assignment_kind || "assignment"),
     inquiryId: text(row.inquiry_id, 128),
     guestId: text(row.guest_id, 128),

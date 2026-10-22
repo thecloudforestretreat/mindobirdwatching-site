@@ -27,6 +27,7 @@ export async function onRequestPost({ request, env }) {
     const record = {
       assignment_id: "",
       assignment_group_id: "",
+      service_item_id: text(assignment.service_item_id, 128),
       inquiry_id: inquiryId,
       guest_id: text(body.guestId, 128),
       booking_id: text(body.bookingId, 128),

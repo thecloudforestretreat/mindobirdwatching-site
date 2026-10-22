@@ -84,7 +84,7 @@ function productMatchesService(product, serviceType) {
 }
 
 export function resolveAssignmentService(assignment, inquiry) {
-  const reference = assignmentServiceReference(assignment.note);
+  const reference = assignment.serviceItemId || assignmentServiceReference(assignment.note);
   const linked = reference && inquiry?.tours?.find(item => item.id === reference);
   if (linked) return linked.product || linked.tour || linked.serviceType || assignment.serviceType || "Tour";
   if (assignment.product && productMatchesService(assignment.product, assignment.serviceType)) return assignment.product;

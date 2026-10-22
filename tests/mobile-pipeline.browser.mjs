@@ -10,7 +10,7 @@ let record = {
   inquiryId: "I-MT-1", guestId: "G-MT-1", name: "Test Testerer", country: "United States", countryCode: "US", brand: "MT",
   phone: "+13055550123", email: "test@example.test", partySize: "2", assignedTo: "JPG", status: "payment_pending", effectiveStatus: "payment_pending",
   paymentStatus: "payment_pending", requestedDate: "2026-10-22", requestedDateEnd: "2026-10-22", followupDate: "2026-10-21", updatedAt: "2026-10-20T14:00:00Z",
-  tours: [{ id: "T-1", tour: "Mindo Tours Test", product: "MT-TEST", date: "2026-10-22", guests: "2", status: "payment_pending" }],
+  tours: [{ id: "T-1", tour: "Mindo Tours Test", product: "MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock", date: "2026-10-22", guests: "2", status: "payment_pending" }],
 };
 const completedRecord = { ...record, inquiryId: "I-CLOSED-1", guestId: "G-CLOSED-1", name: "Completed Guest", status: "completed", effectiveStatus: "completed", requestedDate: "2026-10-19", tours: [{ id: "C-1", tour: "Completed Tour", date: "2026-10-19", guests: "2", status: "completed" }] };
 let createdRecord = null;
@@ -169,6 +169,10 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     const itineraryPage = await context.newPage(); await itineraryPage.goto(new URL(itineraryHref, page.url()).href); await itineraryPage.locator("#guestName").waitFor({ state: "visible" });
     assert.equal(await itineraryPage.locator("#guestName").inputValue(), "Test Testerer"); assert.equal(await itineraryPage.locator("#guestEmail").inputValue(), "test@example.test"); assert.equal(await itineraryPage.locator("#startDate").inputValue(), "2026-10-22"); assert.ok(await itineraryPage.locator(".itemEditor").count() > 0); await itineraryPage.close();
     await page.getByText("Add guide, driver, or provider", { exact: true }).click();
+    assert.equal(await page.locator('input[name="start_time"]').inputValue(), "05:00", "known tour start should prefill from the MBW catalog");
+    assert.equal(await page.locator('input[name="end_time"]').inputValue(), "15:00", "known tour end should prefill from the MBW catalog");
+    await page.locator('input[name="start_time"]').fill("05:30");
+    assert.equal(await page.locator('input[name="start_time"]').inputValue(), "05:30", "prefilled service time must remain editable");
     const startBox = await page.locator('input[name="start_time"]').boundingBox(), endBox = await page.locator('input[name="end_time"]').boundingBox();
     assert.ok(startBox && endBox && endBox.y - (startBox.y + startBox.height) >= 8, "Start and end time inputs need separate mobile rows");
     await page.locator('input[name="start_time"]').scrollIntoViewIfNeeded();
