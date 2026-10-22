@@ -1091,7 +1091,7 @@
       }
       function findDuplicateRecords(record){ const email=comparableEmail(record); const phone=comparablePhone(record); const name=clean(record.full_name).toLowerCase(); const date=toDateValue(record.requested_date||record.requested_date_start); return activeOtherRecords(record).filter(item=>{ const sameEmail=email&&comparableEmail(item)===email; const samePhone=phone&&comparablePhone(item)===phone; const sameNameDate=name&&date&&clean(item.full_name).toLowerCase()===name&&toDateValue(item.requested_date||item.requested_date_start)===date; return sameEmail||samePhone||sameNameDate; }); }
       function renderDuplicateNotice(){ if(!els.duplicateNotice) return; const record=formRecord(); const matches=findDuplicateRecords(record); if(!matches.length){ els.duplicateNotice.hidden=true; els.duplicateNotice.classList.remove("show"); els.duplicateNotice.innerHTML=""; return; } const recordDate=toDateValue(record.requested_date||record.requested_date_start); const duplicates=matches.filter(item=>sourceIdentityMatch(item,record)||(recordDate&&toDateValue(item.requested_date||item.requested_date_start)===recordDate)); const shown=(duplicates.length?duplicates:matches).slice(0,3); const duplicateMode=duplicates.length>0; els.duplicateNotice.hidden=false; els.duplicateNotice.classList.add("show"); els.duplicateNotice.innerHTML=`<strong>${duplicateMode?"Possible duplicate submission:":"Returning guest:"}</strong> ${shown.map(r=>esc(r.full_name||"Guest")+" ("+esc(r.requested_date||r.requested_date_start||"No date")+")").join(", ")}. ${duplicateMode?"Review the matching record before saving another copy.":"This guest has another trip. Keep each trip as a separate record."}<br>${shown.map(r=>`<button type="button" data-id="${esc(r.inquiry_id)}">Review ${esc(r.requested_date||r.requested_date_start||"record")}</button>`).join("")}`; els.duplicateNotice.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>selectRecord(btn.dataset.id))); }
-      function calendarEntriesForRecord(record){ const items=normalizeTourItems(record); if(items.length) return items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||record.tour_type,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})); return [record]; }
+      function calendarEntriesForRecord(record){ const items=normalizeTourItems(record); if(items.length) return items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||productTitle(item.product_selected)||item.service_type,tour_category:item.tour||productTitle(item.product_selected)||item.service_type,service_type:activityServiceDetails(item).service,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})); return [record]; }
       function loadDemoRecords(show){ state.records=[demo("INQ-DEMO-001","Jeanne Friedman","Full-Day Birdwatching Tour","2026-12-08","new","not_sent","unpaid","Cock-of-the-rock, tanagers, umbrella bird"),demo("INQ-DEMO-002","Jared","Two full days guided birding","2026-11-19","quoted","sent","unpaid","Rental vehicle. Interested in target bird builder."),demo("INQ-DEMO-003","Lauren","Quito to Mindo Day Trip","2026-11-13","booked","accepted","deposit_paid","2 guests, door-to-door Quito pickup")]; state.selectedId=state.records[0].inquiry_id; saveLocalRecords(); fillForm(getSelected()); render(); if(show) showToast("Demo records loaded"); }
       function demo(id,name,tour,date,status,quote,payment,notes){ return {inquiry_id:id,guest_id:"G-"+id.slice(-3),full_name:name,first_name:name.split(" ")[0]||"",last_name:name.split(" ").slice(1).join(" "),phone_number:"",phone_normalized:"",email:"",country:"",tour_type:tour,interest_category:tour,guest_count:"2",requested_date:date,duration_preference:"",transportation_needed:"",status,quote_status:quote,payment_status:payment,availability_status:"pending",followup_date:"",notes,internal_notes:"",created_at:new Date().toISOString(),updated_at:new Date().toISOString()}; }
       async function api(action,data){
@@ -2090,16 +2090,25 @@
       function matchesCalendarLegend(record,iso){ const filter=state.calendarLegendFilter; if(!filter) return true; if(filter.kind==="status") return calendarType(record,iso)===filter.value; return serviceVisual(record).label===filter.value; }
       function isRecordOnTourDate(r,iso){ if(r._calendar_item) return r.requested_date===iso; const items=normalizeTourItems(r); if(items.length) return items.some(item=>item.tour_date===iso); const start=toDateValue(r.requested_date||r.requested_date_start); if(!start) return false; return iso===start; }
       function calendarEvent(r,iso){ const type=calendarType(r,iso); const service=serviceVisual(r,type==="follow"&&state.calendarMode!=="tour"); const name=clean(r.full_name)||"Guest"; const guests=r.guest_count?` · ${clean(r.guest_count)}p`:""; const fullText=service.fullLabel+" · "+name+guests; return `<span class="calEvent ${type}" data-id="${esc(r.inquiry_id)}" title="${esc(fullText)}"><span class="serviceIcon" aria-hidden="true">${service.icon}</span><span class="calEventText">${esc(service.label)} · ${esc(name)}${esc(guests)}</span></span>`; }
+      function activityServiceDetails(record){
+        const item=record._calendar_item||record;
+        const product=clean(item.product_selected);
+        const code=productCodeFromValue(product);
+        return {title:clean(item.tour||item.tour_type||item.tour_category||productTitle(product)||item.service_type),product,code,service:MBW_PRODUCT_SERVICE_BY_CODE[code]||clean(item.service_type)};
+      }
       function serviceVisual(record,isFollowup){
         if(isFollowup||record._calendar_followup) return {icon:"↻",label:"Follow-up",fullLabel:"Follow-up"};
-        const full=clean(record._calendar_item&&record._calendar_item.tour||record.tour_type||record.tour_category||record.service_type||record.product_selected||"");
-        const search=[full,record.service_type,record.product_selected].map(clean).join(" ").toLowerCase();
+        const details=activityServiceDetails(record);
+        const full=details.title;
+        const search=[full,details.service,details.product].map(clean).join(" ").toLowerCase();
         if(search.includes("insect")||search.includes("macro")) return {icon:"✦",label:"Macro wildlife",fullLabel:full||"Private Insect & Macro Wildlife Search"};
         if(search.includes("night")) return {icon:"🌙",label:"Night walk",fullLabel:full||"Night Walk"};
         if(search.includes("transport")||search.includes("quito to mindo")) return {icon:"🚐",label:"Transport",fullLabel:full||"Transportation"};
         if(search.includes("waterfall")||search.includes("hike")||search.includes("hiking")) return {icon:"🥾",label:"Waterfall",fullLabel:full||"Waterfall Tour / Hike"};
         if(search.includes("chocolate")||search.includes("cacao")) return {icon:"🍫",label:"Chocolate",fullLabel:full||"Chocolate Tour"};
         if(search.includes("lodg")||search.includes("hotel")||search.includes("glamp")||search.includes("accommodation")) return {icon:"🏨",label:"Lodging",fullLabel:full||"Lodging"};
+        if(/mountain bik|biking|cycling/.test(search)) return {icon:"🚵🏼",label:"Mountain biking",fullLabel:full||"Mountain Biking"};
+        if(details.service&&!/^(birdwatching|tour upgrade)$/i.test(details.service)) return {icon:"✦",label:full||"Other",fullLabel:full||"Other activity"};
         if(search.includes("custom")&&!search.includes("bird")) return {icon:"✦",label:"Custom",fullLabel:full||"Custom activity"};
         if(search.includes("half")) return {icon:"🐦",label:"Half day",fullLabel:full||"Half Day Birding"};
         if(search.includes("full")||search.includes("quest")||search.includes("toucan")) return {icon:"🐦",label:"Full day",fullLabel:full||"Full Day Birding"};
@@ -2108,12 +2117,20 @@
         return {icon:"✦",label:full||"Other",fullLabel:full||"Other activity"};
       }
       function reportServiceKey(record){
-        const full=[record._calendar_item&&record._calendar_item.tour,record.tour_type,record.tour_category,record.service_type,record.product_selected].map(clean).join(" ").toLowerCase();
+        const details=activityServiceDetails(record);
+        const service=details.service.toLowerCase();
+        const knownType={MBW016:"night_walk",MBW013:"waterfall",MBW011:"chocolate"}[details.code];
+        if(knownType) return knownType;
+        if(service==="transportation") return "transportation";
+        if(service==="accommodation") return "lodging";
+        if(MBW_PRODUCT_SERVICE_BY_CODE[details.code]) return /^(birdwatching|tour upgrade)$/.test(service)?"birding":"other";
+        const full=[details.title,details.service,details.product].map(clean).join(" ").toLowerCase();
         if(full.includes("night")) return "night_walk";
         if(full.includes("transport")||full.includes("quito to mindo")) return "transportation";
         if(full.includes("waterfall")||full.includes("hike")||full.includes("hiking")) return "waterfall";
         if(full.includes("chocolate")||full.includes("cacao")) return "chocolate";
         if(full.includes("lodg")||full.includes("hotel")||full.includes("glamp")||full.includes("accommodation")) return "lodging";
+        if(service&&!/^(birdwatching|tour upgrade)$/.test(service)) return "other";
         if(full.includes("bird")||full.includes("half")||full.includes("full")||full.includes("quest")||full.includes("toucan")||full.includes("cock")||full.includes("andean")||full.includes("forest")||full.includes("jewels")||full.includes("mbw00")) return "birding";
         return "other";
       }
