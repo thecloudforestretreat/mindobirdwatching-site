@@ -1,0 +1,38 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {mkdtempSync,readFileSync} from "node:fs";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import {spawnSync} from "node:child_process";
+
+const root=new URL("../",import.meta.url).pathname;
+
+function buildWorkflow(){
+  const directory=mkdtempSync(join(tmpdir(),"mbw-analytics-"));
+  const output=join(directory,"workflow.json");
+  const run=spawnSync(process.execPath,[join(root,"n8n/build_social_media_analytics.mjs")],{cwd:root,encoding:"utf8",env:{...process.env,MBW_ANALYTICS_OUTPUT:output}});
+  assert.equal(run.status,0,run.stderr||run.stdout);
+  return JSON.parse(readFileSync(output,"utf8"));
+}
+
+test("analytics workflow queries both stored Facebook IDs and published posts",()=>{
+  const workflow=buildWorkflow();
+  const names=new Set(workflow.nodes.map(node=>node.name));
+  assert.ok(names.has("[META] Facebook Stored IDs"));
+  assert.ok(names.has("[META] Facebook Batch Insights"));
+  assert.ok(names.has("[JOIN] Facebook Sources"));
+  const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
+  assert.match(prepare,/published_posts/);
+  assert.match(prepare,/fb_ids_url/);
+  assert.match(prepare,/facebook_caption/);
+});
+
+test("analytics workflow keeps Facebook recovery deterministic and auditable",()=>{
+  const workflow=buildWorkflow();
+  const report=workflow.nodes.find(node=>node.name==="[REPORT] Build Dashboard Payload").parameters.jsCode;
+  assert.match(report,/score>=\.72/);
+  assert.match(report,/score-candidates\[1\]\.score>=\.15/);
+  assert.match(report,/facebook_match_method/);
+  assert.match(report,/not_returned_or_ambiguous/);
+  for(const node of workflow.nodes.filter(node=>node.type==="n8n-nodes-base.code"))assert.doesNotThrow(()=>new Function(node.parameters.jsCode),node.name);
+});

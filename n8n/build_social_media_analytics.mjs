@@ -114,6 +114,8 @@ const records = rows.map((row,index) => {
     youtube_post_id: clean(row.youtube_post_id),
     instagram_permalink: clean(row.instagram_permalink),
     facebook_permalink: clean(row.facebook_permalink),
+    facebook_caption: clean(row.facebook_caption || row.instagram_caption_final || row.caption || row.reel_description),
+    facebook_published_at: clean(row.facebook_published_date || row.published_date),
     youtube_url: clean(row.youtube_url),
     thumbnail: clean(row.cover_image_url || row.thumbnail_url || row.instagram_thumbnail_url),
     tags: tagsFor(row),
@@ -125,10 +127,17 @@ const unique = values => [...new Set(values.filter(Boolean))];
 const ig = unique(records.map(r => r.instagram_post_id));
 const fb = unique(records.map(r => r.facebook_post_id));
 const yt = unique(records.map(r => r.youtube_post_id));
+const facebookPageId = '753092067877601';
+const fbCandidates = unique(fb.flatMap(value => {
+  const raw=clean(value).replace(/^https?:\/\/[^/]+\//,'').replace(/[?#].*$/,'').replace(/\/$/,'').split('/').pop();
+  const bare=raw.split('_').pop();
+  return [raw,bare && !raw.includes('_') ? facebookPageId+'_'+bare : ''];
+}));
 const enc = encodeURIComponent;
 return [{json:{...ctx,records,
   ig_url: ig.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(ig.join(','))+'&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
-  fb_url: 'https://graph.facebook.com/v23.0/753092067877601/posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true)'),
+  fb_url: 'https://graph.facebook.com/v23.0/'+facebookPageId+'/published_posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_impressions_unique,post_engaged_users,post_clicks)'),
+  fb_ids_url: fbCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_impressions_unique,post_engaged_users,post_clicks)') : 'https://graph.facebook.com/v23.0/me?fields=id',
   yt_url: 'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id='+enc(yt.join(',')),
   yt_daily_url: 'https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&startDate='+ctx.previous_start_date+'&endDate='+ctx.end_date+'&metrics=views%2CestimatedMinutesWatched%2CaverageViewDuration%2CaverageViewPercentage%2Clikes%2Ccomments%2Cshares%2CsubscribersGained&dimensions=day&sort=day'
 }}];`,
@@ -147,6 +156,12 @@ add("[META] Facebook Batch Insights", "n8n-nodes-base.httpRequest", 4.2, [340, -
   queryParameters: { parameters: [{ name: "access_token", value: "={{ (($json.data || []).find(account => String(account.id) === '753092067877601') || {}).access_token || '' }}" }] },
   ...httpDefaults,
 }, { onError: "continueRegularOutput", alwaysOutputData: true });
+add("[META] Facebook Stored IDs", "n8n-nodes-base.httpRequest", 4.2, [340, 10], {
+  url: "={{ $('[CORE] Prepare Batch Queries').first().json.fb_ids_url }}",
+  sendQuery: true,
+  queryParameters: { parameters: [{ name: "access_token", value: "={{ (($json.data || []).find(account => String(account.id) === '753092067877601') || {}).access_token || '' }}" }] },
+  ...httpDefaults,
+}, { onError: "continueRegularOutput", alwaysOutputData: true });
 add("[YT] Video Statistics", "n8n-nodes-base.httpRequest", 4.2, [120, 100], {
   url: "={{ $json.yt_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "youTubeOAuth2Api", ...httpDefaults,
 }, { credentials: { youTubeOAuth2Api: YOUTUBE }, onError: "continueRegularOutput", alwaysOutputData: true });
@@ -155,14 +170,16 @@ add("[YT] Daily Analytics", "n8n-nodes-base.httpRequest", 4.2, [120, 240], {
 }, { credentials: { youTubeOAuth2Api: YOUTUBE }, onError: "continueRegularOutput", alwaysOutputData: true });
 
 add("[JOIN] Meta", "n8n-nodes-base.merge", 3.2, [380, -100], {});
-add("[JOIN] Add YouTube Videos", "n8n-nodes-base.merge", 3.2, [580, 0], {});
-add("[JOIN] Add YouTube Daily", "n8n-nodes-base.merge", 3.2, [780, 100], {});
+add("[JOIN] Facebook Sources", "n8n-nodes-base.merge", 3.2, [560, -60], {});
+add("[JOIN] Add YouTube Videos", "n8n-nodes-base.merge", 3.2, [760, 0], {});
+add("[JOIN] Add YouTube Daily", "n8n-nodes-base.merge", 3.2, [960, 100], {});
 
-add("[REPORT] Build Dashboard Payload", "n8n-nodes-base.code", 2, [1000, 100], {
+add("[REPORT] Build Dashboard Payload", "n8n-nodes-base.code", 2, [1180, 100], {
   jsCode: String.raw`const base = $('\u005bCORE\u005d Prepare Batch Queries').first().json;
 const get = name => { try { return $(name).first().json || {}; } catch { return {}; } };
 const igRaw = get('\u005bMETA\u005d Instagram Batch Insights');
 const fbRaw = get('\u005bMETA\u005d Facebook Batch Insights');
+const fbDirectRaw = get('\u005bMETA\u005d Facebook Stored IDs');
 const ytRaw = get('\u005bYT\u005d Video Statistics');
 const ydRaw = get('\u005bYT\u005d Daily Analytics');
 const num = v => Number(v) || 0;
@@ -177,26 +194,37 @@ for (const [key,value] of Object.entries(igRaw || {})) {
   igById[key] = {reach:num(m.reach),views:num(m.views),saves:num(m.saved),shares:num(m.shares),interactions:num(m.total_interactions),likes:num(value.like_count),comments:num(value.comments_count),permalink:value.permalink||'',thumbnail:value.thumbnail_url||value.media_url||''};
 }
 const fbById = {};
-for (const value of (fbRaw.data || [])) {
-  if (!value || typeof value !== 'object' || !value.id) continue;
+const fbByPermalink = {};
+const fbUniqueRows = [];
+const normalizeUrl = value => String(value||'').trim().replace(/[?#].*$/,'').replace(/\/$/,'').toLowerCase();
+const normalizeText = value => String(value||'').toLowerCase().replace(/https?:\/\/\S+/g,' ').replace(/#[\p{L}\p{N}_-]+/gu,' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const words = value => new Set(normalizeText(value).split(/\s+/).filter(word=>word.length>2));
+const similarity = (left,right) => {const a=words(left),b=words(right);if(a.size<4||b.size<4)return 0;let same=0;for(const word of a)if(b.has(word))same++;return same/Math.max(a.size,b.size)};
+const registerFacebook = value => {
+  if (!value || typeof value !== 'object' || !value.id) return;
   const m = insightMap(value.insights);
-  const parsed = {id:String(value.id),reach:num(m.post_impressions_unique),engaged_users:num(m.post_engaged_users),clicks:num(m.post_clicks),shares:num(value.shares && value.shares.count),reactions:num(value.reactions && value.reactions.summary && value.reactions.summary.total_count),comments:num(value.comments && value.comments.summary && value.comments.summary.total_count),permalink:value.permalink_url||'',thumbnail:value.full_picture||''};
+  const parsed = {id:String(value.id),created_time:value.created_time||'',message:value.message||'',reach:num(m.post_impressions_unique),engaged_users:num(m.post_engaged_users),clicks:num(m.post_clicks),shares:num(value.shares && value.shares.count),reactions:num(value.reactions && value.reactions.summary && value.reactions.summary.total_count),comments:num(value.comments && value.comments.summary && value.comments.summary.total_count),permalink:value.permalink_url||'',thumbnail:value.full_picture||''};
   fbById[String(value.id)] = parsed;
   fbById[String(value.id).split('_').pop()] = parsed;
-}
+  if(parsed.permalink)fbByPermalink[normalizeUrl(parsed.permalink)]=parsed;
+  if(!fbUniqueRows.some(row=>row.id===parsed.id))fbUniqueRows.push(parsed);
+};
+for (const value of (fbRaw.data || [])) registerFacebook(value);
+for (const [key,value] of Object.entries(fbDirectRaw || {})) {if(key!=='error'&&value&&typeof value==='object'&&!value.error)registerFacebook(value)}
 const ytById = {};
 for (const value of (ytRaw.items || [])) {
   const s = value.statistics || {};
   const snippet=value.snippet||{},thumbs=snippet.thumbnails||{};
   ytById[value.id] = {views:num(s.viewCount),likes:num(s.likeCount),comments:num(s.commentCount),title:snippet.title||'',published_at:snippet.publishedAt||'',thumbnail:(thumbs.medium||thumbs.high||thumbs.default||{}).url||''};
 }
-const fbUnique = Object.values(fbById).filter((value,index,array)=>array.findIndex(other=>other.id===value.id)===index);
+const fbUnique = fbUniqueRows;
 const headers = (ydRaw.columnHeaders || []).map(h=>h.name);
 const daily = (ydRaw.rows || []).map(row=>Object.fromEntries(headers.map((h,i)=>[h,row[i]]))).map(row=>({date:row.day,value:num(row.views),views:num(row.views),watch_time_minutes:num(row.estimatedMinutesWatched),average_view_duration_seconds:num(row.averageViewDuration),average_view_percentage:num(row.averageViewPercentage)}));
 const series = daily.filter(r=>r.date>=base.start_date);
 const dailyTotals = series.reduce((a,v)=>({views:a.views+v.views,watch_time_minutes:a.watch_time_minutes+v.watch_time_minutes,duration_weighted:a.duration_weighted+v.average_view_duration_seconds*v.views,percentage_weighted:a.percentage_weighted+v.average_view_percentage*v.views}),{views:0,watch_time_minutes:0,duration_weighted:0,percentage_weighted:0});
 const postResults = [];
 const samples = [];
+const facebookMatches={exact_id:0,permalink:0,caption_date:0,unmatched:0};
 const dayName = d => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(d+'T12:00:00Z').getUTCDay()];
 const timeHour = value => {
   const s=String(value||'').trim(); let m=s.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i); if(!m)return 7;
@@ -211,11 +239,21 @@ for (const r of base.records) {
     postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Instagram',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.instagram_permalink});
     if(r.cohort==='current')samples.push({platform:'Instagram + Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
   }
-  if (r.facebook_post_id && fbById[r.facebook_post_id]) {
-    const v=fbById[r.facebook_post_id], engagement=v.reactions+v.comments+v.shares;
+  if (r.facebook_post_id) {
+    const rawId=String(r.facebook_post_id).trim(),idCandidates=[rawId,rawId.split('_').pop()],permalinkKey=normalizeUrl(r.facebook_permalink);
+    let v=idCandidates.map(id=>fbById[id]).find(Boolean),matchMethod=v?'exact_id':'';
+    if(!v&&permalinkKey&&fbByPermalink[permalinkKey]){v=fbByPermalink[permalinkKey];matchMethod='permalink'}
+    if(!v&&r.facebook_caption){
+      const candidates=fbUnique.filter(item=>String(item.created_time||'').slice(0,10)===r.published_date).map(item=>({item,score:similarity(r.facebook_caption,item.message)})).filter(candidate=>candidate.score>=.72).sort((a,b)=>b.score-a.score);
+      if(candidates.length&&(!candidates[1]||candidates[0].score-candidates[1].score>=.15)){v=candidates[0].item;matchMethod='caption_date'}
+    }
+    if(v){
+    if(r.cohort==='current')facebookMatches[matchMethod]++;
+    const engagement=v.reactions+v.comments+v.shares;
     const denominator=v.reach, result=v.reach||v.engaged_users||engagement;
-    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Facebook',reach:v.reach,views:0,result,result_metric:v.reach?'Reach':v.engaged_users?'Engaged users':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.facebook_permalink});
+    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Facebook',reach:v.reach,views:0,result,result_metric:v.reach?'Reach':v.engaged_users?'Engaged users':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.facebook_permalink,facebook_match_method:matchMethod,facebook_canonical_post_id:v.id});
     if(r.cohort==='current')samples.push({platform:'Instagram + Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
+    }else if(r.cohort==='current')facebookMatches.unmatched++;
   }
   if (r.youtube_post_id && ytById[r.youtube_post_id]) {
     const v=ytById[r.youtube_post_id], engagement=v.likes+v.comments;
@@ -257,7 +295,7 @@ const response={
   summary:{published_posts:uniqueCurrent.length,total_reach:igTotals.reach+fbTotals.reach,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,youtube_views_period:dailyTotals.views},
   series,top_posts:top.slice(0,12),post_results:postResults,
   youtube_retention:{available:dailyTotals.views>0,views:dailyTotals.views,average_view_duration_seconds:dailyTotals.views?dailyTotals.duration_weighted/dailyTotals.views:0,average_view_percentage:dailyTotals.views?dailyTotals.percentage_weighted/dailyTotals.views:0,completed_through:base.end_date},
-  data_health:{stale:false,note:'Post IDs are matched to current platform totals. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const expected=countExpected(platform),matched=countMatched(platform);return[platform,{expected,matched,unmatched:Math.max(0,expected-matched)}]}))},
+  data_health:{stale:false,note:'Post IDs are matched to current platform totals. Facebook uses direct ID, permalink, and high-confidence caption/date reconciliation. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const expected=countExpected(platform),matched=countMatched(platform),details=platform==='facebook'?{match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,expected-matched)}}:{};return[platform,{expected,matched,unmatched:Math.max(0,expected-matched),...details}]}))},
   sources:[
     {platform:'instagram',status:Object.keys(igById).length?'connected':'no matched data',mode:'current lifetime post insights'},
     {platform:'facebook',status:fbUnique.length?'connected':'no matched data',mode:'current organic reactions, comments, and shares'},
@@ -332,9 +370,14 @@ const connections = {
     { node: "[YT] Video Statistics", type: "main", index: 0 },
     { node: "[YT] Daily Analytics", type: "main", index: 0 },
   ]] },
-  "[META] Load Page Access": { main: [[{ node: "[META] Facebook Batch Insights", type: "main", index: 0 }]] },
+  "[META] Load Page Access": { main: [[
+    { node: "[META] Facebook Batch Insights", type: "main", index: 0 },
+    { node: "[META] Facebook Stored IDs", type: "main", index: 0 },
+  ]] },
   "[META] Instagram Batch Insights": { main: [[{ node: "[JOIN] Meta", type: "main", index: 0 }]] },
-  "[META] Facebook Batch Insights": { main: [[{ node: "[JOIN] Meta", type: "main", index: 1 }]] },
+  "[META] Facebook Batch Insights": { main: [[{ node: "[JOIN] Facebook Sources", type: "main", index: 0 }]] },
+  "[META] Facebook Stored IDs": { main: [[{ node: "[JOIN] Facebook Sources", type: "main", index: 1 }]] },
+  "[JOIN] Facebook Sources": { main: [[{ node: "[JOIN] Meta", type: "main", index: 1 }]] },
   "[JOIN] Meta": { main: [[{ node: "[JOIN] Add YouTube Videos", type: "main", index: 0 }]] },
   "[YT] Video Statistics": { main: [[{ node: "[JOIN] Add YouTube Videos", type: "main", index: 1 }]] },
   "[JOIN] Add YouTube Videos": { main: [[{ node: "[JOIN] Add YouTube Daily", type: "main", index: 0 }]] },
