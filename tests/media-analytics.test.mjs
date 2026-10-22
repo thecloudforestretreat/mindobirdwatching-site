@@ -59,3 +59,27 @@ test("observed winners require a real comparison group",()=>{
 test("views and reach are not compared across platforms",()=>{
   assert.deepEqual(analytics.observedPatterns(posts,"result"),[]);
 });
+
+test("response map refuses to combine platform visibility measures",()=>{
+  const map=analytics.responseMap(posts);
+  assert.equal(map.comparable,false);
+  assert.equal(map.summaries.length,2);
+});
+
+test("response map positions posts only after one platform is selected",()=>{
+  const map=analytics.responseMap(posts.filter(post=>post.platform==="Instagram"));
+  assert.equal(map.comparable,true);
+  assert.equal(map.platform,"Instagram");
+  assert.equal(map.points.length,2);
+  assert.equal(map.median_visibility,200);
+  assert.equal(map.median_engagement_rate,7.5);
+  assert.ok(map.points.every(point=>point.x>=3&&point.x<=97&&point.y>=3&&point.y<=97));
+});
+
+test("facebook reconciliation evidence remains available to data health",()=>{
+  const health=analytics.health({data_health:{platforms:{facebook:{expected:10,matched:8,unmatched:2,match_methods:{exact_id:5,permalink:2,caption_date:1},unmatched_reasons:{not_returned_or_ambiguous:2}}}}},posts);
+  const facebook=health.platforms.find(row=>row.key==="facebook");
+  assert.equal(facebook.rate,80);
+  assert.equal(facebook.match_methods.caption_date,1);
+  assert.equal(facebook.unmatched_reasons.not_returned_or_ambiguous,2);
+});
