@@ -391,7 +391,7 @@
               <div class="field"><label for="groupingStatusInput">Grouping Status</label><select id="groupingStatusInput"><option>unmatched</option><option>candidate</option><option>invited</option><option>accepted</option></select></div>
               <div class="field"><label for="quotedAmountInput">Accepted Quote Total</label><input id="quotedAmountInput" type="number" min="0" step="0.01" placeholder="Enter only after the guest selects an option" /></div>
             </div>
-            <section class="tourItemsPanel" aria-label="Original request"><h3>Requested services</h3><div id="requestedServicesSummary" class="hint"></div><p class="hint">This summarizes the request, not an accepted itinerary. Verify dates, party size and transport coverage before quoting.</p></section>
+            <section class="tourItemsPanel" aria-label="Request summary"><h3>Requested services</h3><div id="requestedServicesSummary" class="hint"></div><p class="hint">This summarizes the request, not an accepted itinerary. Verify dates, party size and transport coverage before quoting.</p></section>
             <section class="tourItemsPanel" aria-labelledby="tourItemsTitle">
               <div class="tourItemsHeader">
                 <div><h3 id="tourItemsTitle">Additional Tours / Activities</h3><p>The main form above is Tour 1. Keep unselected birding alternatives in Tour Quotes Sent below. Requested activities may remain here as New or Planning; they are not booked until confirmed.</p></div>
@@ -997,8 +997,8 @@
         const parts=[record.tour_type||record.tour_category,addons];
         if(/birdwatch|birding/i.test(message))parts.push("Birdwatching requested");
         if(/night[ -]?walk/i.test(message))parts.push("Night Walk requested");
-        if(record.requested_date_text)parts.push("Visit dates: "+clean(record.requested_date_text));
-        if(record.guest_count_text)parts.push("Guest count supplied: "+clean(record.guest_count_text));
+        if(record.requested_date_text)parts.push("Saved visit dates: "+clean(record.requested_date_text));
+        if(record.guest_count_text)parts.push("Saved guest count: "+clean(record.guest_count_text));
         if(/transport|quito|pickup|pick.up/i.test(message)||clean(record.transportation_needed).toLowerCase()==="yes")parts.push("Transportation requested or mentioned — verify coverage");
         target.textContent=parts.filter(Boolean).join(" · ")+(message?" — Guest message: "+message:"")||"No original request details available. Review the guest conversation.";
       }
