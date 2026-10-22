@@ -516,7 +516,8 @@
       "use strict";
       const CRM_API_DEFAULT = "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
       const els = {};
-      const state = { records: [], selectedId: "", view: "calendar", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", calendarDisplay: localStorage.getItem("mbwCalendarDisplay")==="list"?"list":"month", calendarLegendFilter:null, tourItems: [], interactions:[], assignments:[], allAssignments:[], providers:[], bookings:[], payments:[], editingPaymentId:"", workspaceLoading:false };
+      const state = { records: [], selectedId: "", view: "calendar", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", calendarDisplay: localStorage.getItem("mbwCalendarDisplay")==="list"?"list":"month", calendarLegendFilter:null, tourItems: [], interactions:[], assignments:[], allAssignments:[], providers:[], bookings:[], payments:[], editingPaymentId:"", workspaceLoading:false, workspaceGeneration:0, workspaceError:"", operationsStatus:"loading", operationsError:"" };
+      let operationsLoadPromise=null;
       let refreshInFlight=false;
       let recordSaveInFlight=false;
       let recordSaveGeneration=0;
@@ -1237,6 +1238,7 @@
           const archivedCount=state.records.filter(record=>isArchivedStatus(record)).length;
           const workingCount=state.records.length-archivedCount;
           showToast((isBackground?"Live CRM connection restored: ":"CRM refreshed: ")+state.records.length+" loaded · "+workingCount+" working · "+archivedCount+" archived");
+          if(state.view==="intake"&&getSelected())loadGuestWorkspace();
         }catch(e){
           if(refreshObsolete()||hasUnsavedTourChanges()) return;
           loadLocalRecords();
@@ -1248,17 +1250,21 @@
         }finally{ refreshInFlight=false; }
       }
       async function loadGlobalOperationsData(){
-        if(!(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)) return;
-        try{
-          const [assignmentResult,providerResult]=await Promise.all([
+        if(operationsLoadPromise)return operationsLoadPromise;
+        state.operationsStatus="loading";
+        operationsLoadPromise=(async()=>{
+          const results=await Promise.allSettled([
             api("list_assignments",{}),
             state.providers.length?Promise.resolve({records:state.providers}):api("list_providers",{})
           ]);
-          state.allAssignments=extractRecords(assignmentResult);
-          state.providers=extractRecords(providerResult);
-        }catch(error){
-          console.warn("Global CRM operations data unavailable",error);
-        }
+          if(results[0].status==="fulfilled"){
+            state.allAssignments=extractRecords(results[0].value);
+            state.operationsStatus="ready";state.operationsError="";
+          }else{state.operationsStatus="error";state.operationsError="Assignments could not be refreshed. Displayed services may be incomplete. Retry Refresh CRM.";}
+          if(results[1].status==="fulfilled")state.providers=extractRecords(results[1].value);
+          render();
+        }) /* shared operations request */ ();
+        try{await operationsLoadPromise;}finally{operationsLoadPromise=null;}
       }
 
       let referenceMatch=null,referenceGeneration=0;
@@ -1536,6 +1542,10 @@
         const providerState=closed?"muted":coverage.total?(!coverage.missing&&!coverage.incomplete&&coverage.informed===coverage.total?"complete":(urgent?"urgent":"pending")):!assignments.length?(bookedish&&urgent?"urgent":"muted"):(informed>=assignments.length?"complete":(urgent?"urgent":"pending"));
         const providerLabel=coverage.missing?`Providers missing: ${coverage.missing}`:coverage.incomplete?`Schedule incomplete: ${coverage.incomplete}`:coverage.total?`Providers informed ${coverage.informed}/${coverage.total}`:!assignments.length?(bookedish?"Providers needed":"Providers later"):`Providers ${informed}/${assignments.length}`;
         const confirmationSent=hasConfirmationSignal(record,assignments,informed);
+        const operationsPending=state.operationsStatus&&state.operationsStatus!=="ready";
+        if(operationsPending)return [
+          {key:"providers",label:state.operationsStatus==="loading"?"Loading provider coverage…":"Provider coverage unavailable",state:"pending",compact:true,title:state.operationsError||"Waiting for assignment data"}
+        ];
         const confirmationState=confirmationSent?"complete":(bookedish?(urgent?"urgent":"pending"):"muted");
         return [
           {key:"quote",label:quoteSent?"Quote sent":"Quote not sent",state:quoteSent?"complete":(status==="new"||closed?"muted":"pending"),compact:false,title:"Guest quote / proposal status"},
@@ -1689,23 +1699,34 @@
         if(els.assignmentsSectionMeta) els.assignmentsSectionMeta.textContent=record?`${state.assignments.length} assignment${state.assignments.length===1?"":"s"}`:"Select guest";
         if(!record) return;
         renderInteractions(); renderAssignments(); renderProviderOptions();
+        if(state.workspaceLoading||state.workspaceError){
+          const message=state.workspaceLoading?"Refreshing guest details…":state.workspaceError;
+          els.assignmentList.insertAdjacentHTML("afterbegin",`<div class="loadingState" role="status">${esc(message)}</div>`);
+          if(!state.assignments.length){els.assignmentCount.textContent=state.workspaceLoading?"Loading assignments…":"Assignments unavailable — retry Refresh CRM";els.assignmentList.innerHTML=`<div class="loadingState" role="status">${esc(message)}</div>`;}
+        }
       }
       async function loadGuestWorkspace(){
-        const record=getSelected(); if(!record) return; const requestedId=record.inquiry_id;
-        state.workspaceLoading=true;
-        if(state.view==="activity") els.interactionTimeline.innerHTML='<div class="loadingState">Loading communication history…</div>';
-        if(state.view==="operations") els.assignmentList.innerHTML='<div class="loadingState">Loading assignments…</div>';
-        try{
-          const [interactionResult,assignmentResult,allAssignmentResult,providerResult,bookingResult,paymentResult]=await Promise.all([
-            api("list_interactions",{guest_id:record.guest_id||"",inquiry_id:""}),
-            api("list_assignments",{guest_id:record.guest_id||"",inquiry_id:""}),
-            api("list_assignments",{}),
-            state.providers.length?Promise.resolve({records:state.providers}):api("list_providers",{}),
-            api("list_bookings",{guest_id:record.guest_id||"",inquiry_id:""}).catch(()=>({records:[]})),
-            api("list_payments",{guest_id:record.guest_id||"",inquiry_id:""}).catch(()=>({records:[]}))
-          ]);
-          if(state.selectedId!==requestedId) return; state.interactions=extractRecords(interactionResult); state.assignments=extractRecords(assignmentResult); state.allAssignments=extractRecords(allAssignmentResult); state.providers=extractRecords(providerResult); state.bookings=extractRecords(bookingResult); state.payments=extractRecords(paymentResult); renderWorkspaces(); renderGuestHistory(); renderPaymentLedger(); renderRecords(els.priorityRecords,getPriorityRecords(getFiltered()).slice(0,6)); renderRecords(els.recordList,getFiltered()); renderCalendar(); renderReports();
-        }catch(error){showToast(error.message);renderWorkspaces();renderGuestHistory();renderPaymentLedger();}finally{state.workspaceLoading=false;}
+        const record=getSelected();if(!record)return;
+        const requestedId=record.inquiry_id,generation=++state.workspaceGeneration;
+        state.workspaceLoading=true;state.workspaceError="";
+        state.assignments=currentAssignmentRows(record);renderWorkspaces();
+        const results=await Promise.allSettled([
+          api("list_interactions",{guest_id:record.guest_id||"",inquiry_id:""}),
+          api("list_assignments",{guest_id:record.guest_id||"",inquiry_id:""}),
+          api("list_bookings",{guest_id:record.guest_id||"",inquiry_id:""}),
+          api("list_payments",{guest_id:record.guest_id||"",inquiry_id:""})
+        ]);
+        if(state.selectedId!==requestedId||generation!==state.workspaceGeneration)return;
+        const keys=["interactions","assignments","bookings","payments"];
+        results.forEach((result,index)=>{if(result.status==="fulfilled")state[keys[index]]=extractRecords(result.value);});
+        if(results[1].status==="fulfilled"){
+          const scoped=state.assignments;
+          state.allAssignments=(state.allAssignments||[]).filter(item=>!assignmentBelongsToRecord(item,record)).concat(scoped);
+        }
+        state.workspaceLoading=false;
+        state.workspaceError=results.some(result=>result.status==="rejected")?"Some guest details could not be refreshed. Existing assignments are retained; retry Refresh CRM.":"";
+        render();
+        if(state.workspaceError)showToast(state.workspaceError);
       }
       function localDateTimeValue(date){ const d=date?new Date(date):new Date(); if(Number.isNaN(d.getTime())) return ""; const off=d.getTimezoneOffset(); return new Date(d.getTime()-off*60000).toISOString().slice(0,16); }
       function clearInteractionForm(){ els.saveInteractionBtn.dataset.id=""; els.saveInteractionBtn.dataset.pendingFollowupDate=""; if(els.interactionSaveStatus)els.interactionSaveStatus.textContent=""; els.interactionDirection.value="incoming"; els.interactionChannel.value="whatsapp"; els.interactionType.value="guest_message"; els.interactionOccurredAt.value=localDateTimeValue(); els.interactionNote.value=""; els.interactionFollowup.checked=false; els.interactionFollowupAt.value=""; els.interactionFollowupFields.hidden=true; els.saveInteractionBtn.textContent="Save Interaction"; }
@@ -2235,7 +2256,14 @@
         const openToGroup=booked.some(row=>row.grouping_preference==="open_to_group");
         return {services:services.length,followups:rows.length-services.length,guests,bookedServices:booked.length,openToGroup};
       }
-      function renderCalendar(){ if(!els.calendarGrid) return; const activeServiceCount=state.records.filter(record=>!isArchivedStatus(record)&&!isClosedStatus(record.status)).reduce((sum,record)=>sum+calendarEntriesForRecord(record).length,0); els.calendarPipelineCount.textContent=activeServiceCount; els.calendarLegends.querySelectorAll("[data-legend-kind]").forEach(button=>button.classList.toggle("selected",Boolean(state.calendarLegendFilter&&state.calendarLegendFilter.kind===button.dataset.legendKind&&state.calendarLegendFilter.value===button.dataset.legendValue))); const listMode=state.calendarDisplay==="list"; els.calendarNavigationRow.hidden=listMode; els.calendarMonthViewBtn.classList.toggle("active",!listMode); els.calendarListViewBtn.classList.toggle("active",listMode); els.calendarMonthPanel.hidden=listMode; els.calendarPipelineListPanel.hidden=!listMode; [els.calendarModeInput,els.calendarPrevBtn,els.calendarTodayBtn,els.calendarNextBtn].forEach(control=>control.hidden=listMode); if(listMode){renderActivePipelineCalendarList();return;} const base=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth(),1); const title=base.toLocaleDateString("en-US",{month:"long",year:"numeric"}); const modeLabel=state.calendarMode==="followups"?"Follow-ups":state.calendarMode==="all"?"All activity":"Tour dates"; els.calendarTitle.textContent=title+" · "+modeLabel; if(els.calendarModeInput) els.calendarModeInput.value=state.calendarMode; const first=new Date(base); first.setDate(1-first.getDay()); const cells=[]; cells.push(...["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(day=>`<div class="weekday">${day}</div>`)); for(let i=0;i<42;i++){ const day=new Date(first); day.setDate(first.getDate()+i); const iso=toIsoDate(day); const outside=day.getMonth()!==base.getMonth(); const today=iso===datePlusDays(0); const past=iso<datePlusDays(0); const selected=iso===state.selectedCalendarDate; const records=calendarRecordsForDate(iso); const summary=calendarDaySummary(records); const capacity=summary.bookedServices?capacityInfo(summary.guests.count):{className:"open",label:summary.services?"Not booked":"Follow-ups"}; if(summary.bookedServices&&(summary.guests.uncertain||!summary.guests.count)) capacity.label=summary.guests.count?summary.guests.label+" guests booked":"Guest count needed"; const visibleEvents=records.slice(0,3).map(r=>calendarEvent(r,iso)).join(""); const moreEvents=records.length>3?`<span class="moreEvents">+${records.length-3} more</span>`:""; cells.push(`<button class="dayCell ${outside?"outside":""} ${past?"past":""} ${today?"today":""} ${selected?"selected":""}" data-date="${iso}" type="button"><span class="dayHead"><span>${day.getDate()}</span><span class="dayCount">${records.length?(state.calendarMode==="followups"?records.length+" follow-up"+(records.length===1?"":"s"):summary.services+" service"+(summary.services===1?"":"s")+(summary.followups?" · "+summary.followups+" follow-up"+(summary.followups===1?"":"s"):"")):""}</span></span><span class="dayEvents">${visibleEvents}${moreEvents}</span>${records.length?`<span class="capacity ${capacity.className}">${esc(capacity.label)}${capacity.alert?`<span class="capacityAlert">${esc(capacity.alert)}</span>`:""}</span>${summary.openToGroup?`<span class="capacity open">Open to group</span>`:""}`:""}</button>`); }
+      function renderCalendar(){ if(!els.calendarGrid) return;
+        if(state.operationsStatus&&state.operationsStatus!=="ready"){
+          els.calendarTitle.textContent=state.operationsStatus==="loading"?"Loading calendar services…":"Calendar services unavailable";
+          els.calendarGrid.innerHTML=`<div class="loadingState" role="status">${esc(state.operationsError||"Loading assignment-backed calendar…")}</div>`;
+          els.agendaRecords.innerHTML="";els.calendarPipelineCount.textContent="—";
+          if(els.calendarPipelineRecords)els.calendarPipelineRecords.innerHTML=els.calendarGrid.innerHTML;
+          return;
+        } const activeServiceCount=state.records.filter(record=>!isArchivedStatus(record)&&!isClosedStatus(record.status)).reduce((sum,record)=>sum+calendarEntriesForRecord(record).length,0); els.calendarPipelineCount.textContent=activeServiceCount; els.calendarLegends.querySelectorAll("[data-legend-kind]").forEach(button=>button.classList.toggle("selected",Boolean(state.calendarLegendFilter&&state.calendarLegendFilter.kind===button.dataset.legendKind&&state.calendarLegendFilter.value===button.dataset.legendValue))); const listMode=state.calendarDisplay==="list"; els.calendarNavigationRow.hidden=listMode; els.calendarMonthViewBtn.classList.toggle("active",!listMode); els.calendarListViewBtn.classList.toggle("active",listMode); els.calendarMonthPanel.hidden=listMode; els.calendarPipelineListPanel.hidden=!listMode; [els.calendarModeInput,els.calendarPrevBtn,els.calendarTodayBtn,els.calendarNextBtn].forEach(control=>control.hidden=listMode); if(listMode){renderActivePipelineCalendarList();return;} const base=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth(),1); const title=base.toLocaleDateString("en-US",{month:"long",year:"numeric"}); const modeLabel=state.calendarMode==="followups"?"Follow-ups":state.calendarMode==="all"?"All activity":"Tour dates"; els.calendarTitle.textContent=title+" · "+modeLabel; if(els.calendarModeInput) els.calendarModeInput.value=state.calendarMode; const first=new Date(base); first.setDate(1-first.getDay()); const cells=[]; cells.push(...["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(day=>`<div class="weekday">${day}</div>`)); for(let i=0;i<42;i++){ const day=new Date(first); day.setDate(first.getDate()+i); const iso=toIsoDate(day); const outside=day.getMonth()!==base.getMonth(); const today=iso===datePlusDays(0); const past=iso<datePlusDays(0); const selected=iso===state.selectedCalendarDate; const records=calendarRecordsForDate(iso); const summary=calendarDaySummary(records); const capacity=summary.bookedServices?capacityInfo(summary.guests.count):{className:"open",label:summary.services?"Not booked":"Follow-ups"}; if(summary.bookedServices&&(summary.guests.uncertain||!summary.guests.count)) capacity.label=summary.guests.count?summary.guests.label+" guests booked":"Guest count needed"; const visibleEvents=records.slice(0,3).map(r=>calendarEvent(r,iso)).join(""); const moreEvents=records.length>3?`<span class="moreEvents">+${records.length-3} more</span>`:""; cells.push(`<button class="dayCell ${outside?"outside":""} ${past?"past":""} ${today?"today":""} ${selected?"selected":""}" data-date="${iso}" type="button"><span class="dayHead"><span>${day.getDate()}</span><span class="dayCount">${records.length?(state.calendarMode==="followups"?records.length+" follow-up"+(records.length===1?"":"s"):summary.services+" service"+(summary.services===1?"":"s")+(summary.followups?" · "+summary.followups+" follow-up"+(summary.followups===1?"":"s"):"")):""}</span></span><span class="dayEvents">${visibleEvents}${moreEvents}</span>${records.length?`<span class="capacity ${capacity.className}">${esc(capacity.label)}${capacity.alert?`<span class="capacityAlert">${esc(capacity.alert)}</span>`:""}</span>${summary.openToGroup?`<span class="capacity open">Open to group</span>`:""}`:""}</button>`); }
         els.calendarGrid.innerHTML=cells.join(""); els.calendarGrid.querySelectorAll(".dayCell").forEach(btn=>btn.addEventListener("click",()=>{state.selectedCalendarDate=btn.dataset.date; renderCalendar();})); els.calendarGrid.querySelectorAll(".calEvent[data-id]").forEach(event=>event.addEventListener("click",click=>{click.stopPropagation();selectRecord(event.dataset.id);})); renderAgenda(); }
       function renderActivePipelineCalendarList(){ const active=state.records.filter(record=>!isArchivedStatus(record)&&!isClosedStatus(record.status)); let entries=active.flatMap(record=>calendarEntriesForRecord(record).map(entry=>{ const item=entry._calendar_item||primaryTourItemFromRecord(entry); const itemStatus=normalizeStatus(item.status||entry.status); const date=toDateValue(item.date||item.tour_date||entry.requested_date||entry.requested_date_start); const single=Object.assign({},item,{status:itemStatus,date:date,tour_date:date}); return Object.assign({},entry,{_pipeline_list:true,status:itemStatus,requested_date:date,requested_date_start:date,tour_type:item.tour||entry.tour_type,product_selected:item.product_selected||entry.product_selected,guest_count:item.guests||entry.guest_count,pickup_location:item.pickup_location||entry.pickup_location,tour_items:JSON.stringify([single]),tour_items_json:JSON.stringify([single]),tour_count:"1"}); })); const filter=clean(els.pipelineStatusFilter.value); if(filter) entries=entries.filter(entry=>normalizeStatus(entry.status)===filter); if(els.pipelineSortInput.value==="updated") entries.sort((a,b)=>String(b.updated_at||b.created_at||"").localeCompare(String(a.updated_at||a.created_at||""))); else entries.sort((a,b)=>{ const ad=toDateValue(a.requested_date)||"9999-12-31"; const bd=toDateValue(b.requested_date)||"9999-12-31"; return ad.localeCompare(bd)||statusRank(a)-statusRank(b)||clean(a.full_name).localeCompare(clean(b.full_name)); }); els.calendarTitle.textContent="Active Pipeline · "+entries.length+" service"+(entries.length===1?"":"s"); renderRecords(els.calendarPipelineRecords,entries); }
       function renderAgenda(){ const records=calendarRecordsForDate(state.selectedCalendarDate).sort((a,b)=>statusRank(a)-statusRank(b)); const date=parseDateOnly(state.selectedCalendarDate); const label=date?date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}):"Select a day"; const summary=calendarDaySummary(records); const services=summary.services+" service"+(summary.services===1?"":"s"); const guests=summary.bookedServices?(summary.guests.label+" guest"+(summary.guests.label==="1"?"":"s")+" booked"):"Not booked"; const details=state.calendarMode==="followups"?records.length+" follow-up"+(records.length===1?"":"s"):guests+" · "+services+(summary.followups?" · "+summary.followups+" follow-up"+(summary.followups===1?"":"s"):""); els.agendaDate.textContent=state.selectedCalendarDate?(label+" · "+details):"Select a day"; renderRecords(els.agendaRecords,records); }
@@ -2363,6 +2391,14 @@
       }
       function renderReports(){
         if(!els.reportTableBody) return;
+        const loading=state.operationsStatus&&state.operationsStatus!=="ready";
+        [els.copyReportBtn,els.downloadReportBtn,els.printReportBtn,els.copyGuideReportBtn].forEach(button=>{if(button)button.disabled=Boolean(loading);});
+        if(loading){
+          [els.reportActivityCount,els.reportGuestCount,els.reportBookedCount,els.reportActionCount].forEach(node=>node.textContent="—");
+          els.reportRangeHint.textContent=state.operationsStatus==="loading"?"Loading assignment-backed report…":state.operationsError;
+          els.reportTableBody.innerHTML=`<tr><td colspan="8" class="emptyReport" role="status">${esc(els.reportRangeHint.textContent)}</td></tr>`;
+          return;
+        }
         const rows=filteredReportRows();
         const bounds=reportBounds();
         const guests=uniqueGuestSummary(rows).label;
