@@ -39,9 +39,15 @@ test("Media Studio keeps clean downloads as the default and brands single or ZIP
 
 test("Media Studio loads the watermark helper before the download controller",()=>{
   const html=fs.readFileSync(path.join(root,"admin/media/index.html"),"utf8");
+  assert.match(html,/media-studio\.css\?v=14/);
   const helper=html.indexOf("media-watermark.js?v=1");
   const controller=html.indexOf("media-studio.js?v=12");
   assert.ok(helper>=0&&controller>helper);
+});
+
+test("watermark preview overrides the publishing-image canvas background",()=>{
+  const css=fs.readFileSync(path.join(root,"admin/assets/css/media-studio.css"),"utf8");
+  assert.match(css,/\.brandPreview img\{[^}]*background:transparent/);
 });
 
 test("the local watermark logo is the high-resolution 1024px asset",()=>{
