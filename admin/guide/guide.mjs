@@ -4,8 +4,8 @@ const LANGUAGE_KEY = "mbw-guide-language-v1";
 const COPY = {
   es: {
     private: "Privado", opening: "Abriendo el Nido", loadingTours: "Cargando tus tours asignados.", unavailable: "Guide Nest no está disponible", retry: "Intentar de nuevo",
-    bookedAssignments: "Tours reservados", myTours: "Mis tours", previewGuide: "Vista del guía", previewNote: "Esta vista muestra exactamente la información limitada que recibe el guía.",
-    privacy: "Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.", assignedOnly: "Solo tours asignados", calendar: "Calendario", monthView: "Mes", listView: "Lista", tourDays: "Tours", blockedDays: "No disponible", previousMonth: "Mes anterior", nextMonth: "Mes siguiente",
+    bookedAssignments: "Tours reservados", myTours: "Mis tours", previewGuide: "Vista del guía", previewNote: "Esta vista muestra la información limitada que recibe el guía. Solo el guía puede aceptar sus tours.",
+    privacy: "Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.", assignedOnly: "Solo tours asignados", calendar: "Calendario", monthView: "Mes", listView: "Lista", currentFuture: "Actuales y futuros", includePast: "Incluir pasados", tourDays: "Tours", blockedDays: "No disponible", previousMonth: "Mes anterior", nextMonth: "Mes siguiente", viewingDate: "Mostrando", clearDate: "Ver todos",
     afterTour: "Después del tour", sightings: "Avistamientos", submitReport: "Enviar reporte de avistamientos", reportHelp: "Crea la lista de la ruta, registra las aves vistas o escuchadas y envía el reporte a MBW.",
     tourReference: "Tour de referencia", openReport: "Abrir reporte", historyEyebrow: "Tu historial", previousReports: "Reportes anteriores", historyLoading: "Cargando reportes anteriores…",
     guestFollowup: "Seguimiento para huéspedes", shareIntro: "Elige un mensaje después del tour. Cada botón copia una nota breve con el enlace oficial de MBW.", tours: "Tours",
@@ -22,8 +22,8 @@ const COPY = {
   },
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
-    bookedAssignments: "Booked assignments", myTours: "My Tours", previewGuide: "Preview guide", previewNote: "This preview uses the same limited view a guide receives.",
-    privacy: "Guest contact appears only after the tour is booked. Internal CRM, pricing, payments, and notes are not shared.", assignedOnly: "Assigned tours only", calendar: "Calendar", monthView: "Month", listView: "List", tourDays: "Tours", blockedDays: "Unavailable", previousMonth: "Previous month", nextMonth: "Next month",
+    bookedAssignments: "Booked assignments", myTours: "My Tours", previewGuide: "Preview guide", previewNote: "This preview shows the guide’s limited information. Only the guide can accept their tours.",
+    privacy: "Guest contact appears only after the tour is booked. Internal CRM, pricing, payments, and notes are not shared.", assignedOnly: "Assigned tours only", calendar: "Calendar", monthView: "Month", listView: "List", currentFuture: "Current & future", includePast: "Include past", tourDays: "Tours", blockedDays: "Unavailable", previousMonth: "Previous month", nextMonth: "Next month", viewingDate: "Showing", clearDate: "Show all",
     afterTour: "After the tour", sightings: "Sightings", submitReport: "Submit a sighting report", reportHelp: "Build a route checklist, record birds seen or heard, and submit the report to MBW.",
     tourReference: "Tour reference", openReport: "Open sighting report", historyEyebrow: "Your history", previousReports: "Previous reports", historyLoading: "Loading previous reports…",
     guestFollowup: "Guest-ready follow-up", shareIntro: "Choose one relevant message after the tour. Each button copies a short note with the verified MBW link.", tours: "Tours",
@@ -51,7 +51,10 @@ let tourView = localStorage.getItem("mbw-guide-tour-view") === "all" ? "all" : "
 let tourRange = ["7", "30", "all"].includes(localStorage.getItem("mbw-guide-tour-range")) ? localStorage.getItem("mbw-guide-tour-range") : "7";
 let tourSearch = "";
 let calendarView = localStorage.getItem("mbw-guide-calendar-view") === "list" ? "list" : "month";
+let calendarScope = localStorage.getItem("mbw-guide-calendar-scope") === "all" ? "all" : "upcoming";
 let calendarMonth = todayInEcuador().slice(0, 7);
+let selectedCalendarDate = "";
+let selectedAssignmentId = "";
 const t = key => COPY[language][key] || key;
 const icon = name => `<span class="buttonIcon buttonIcon--${name}" aria-hidden="true"></span>`;
 const empty = message => `<div class="empty">${esc(message)}</div>`;
@@ -89,9 +92,12 @@ function renderCalendar() {
   document.querySelectorAll("[data-calendar-view]").forEach(button => button.classList.toggle("active", button.dataset.calendarView === calendarView));
   $("#calendarMonthPanel").hidden = calendarView !== "month";
   $("#calendarList").hidden = calendarView !== "list";
+  $("#calendarScopeSwitch").hidden = calendarView !== "list";
+  document.querySelectorAll("[data-calendar-scope]").forEach(button => button.classList.toggle("active", button.dataset.calendarScope === calendarScope));
 
-  const groups = Map.groupBy ? Map.groupBy(data.tours, item => item.serviceDate || "pending") : data.tours.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
-  $("#calendarList").innerHTML = data.tours.length ? [...groups.entries()].map(([, tours]) => `<section class="dateGroup"><h2>${esc(dateLabel(tours[0].serviceDate))}</h2>${tours.map(tour => `<div class="dateItem"><time>${esc(tour.startTime || t("timePending"))}</time><div><strong>${esc(tour.service)} · ${esc(tour.guestName)}</strong><small>${esc(tour.pickup || t("pickupMissing"))}</small></div></div>`).join("")}</section>`).join("") : empty(t("noCalendar"));
+  const calendarTours = calendarScope === "all" ? data.tours : data.tours.filter(tour => !tour.serviceDate || tour.serviceDate >= todayInEcuador());
+  const groups = Map.groupBy ? Map.groupBy(calendarTours, item => item.serviceDate || "pending") : calendarTours.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
+  $("#calendarList").innerHTML = calendarTours.length ? [...groups.entries()].map(([, tours]) => `<section class="dateGroup"><h2>${esc(dateLabel(tours[0].serviceDate))}</h2>${tours.map(tour => `<button type="button" class="dateItem" data-open-tour="${esc(tour.assignmentId)}" data-tour-date="${esc(tour.serviceDate)}"><time>${esc(tour.startTime || t("timePending"))}</time><span><strong>${esc(tour.service)} · ${esc(tour.guestName)}</strong><small>${esc(tour.pickup || t("pickupMissing"))}</small></span><span class="dateItemArrow" aria-hidden="true">›</span></button>`).join("")}</section>`).join("") : empty(t("noCalendar"));
 
   const [year, month] = calendarMonth.split("-").map(Number);
   const monthStart = new Date(Date.UTC(year, month - 1, 1));
@@ -111,7 +117,8 @@ function renderCalendar() {
     const tourCount = toursByDate.get(date) || 0;
     const blocked = blockedDates.has(date);
     const parts = [dateLabel(date), tourCount ? `${tourCount} ${t("tourDays")}` : "", blocked ? t("blockedDays") : ""].filter(Boolean).join(", ");
-    cells.push(`<span class="calendarDay ${date === today ? "calendarDay--today" : ""} ${tourCount || blocked ? "calendarDay--busy" : ""}" aria-label="${esc(parts)}"><b>${day}</b><span class="calendarMarkers">${tourCount ? `<i class="tourDot"></i>${tourCount > 1 ? `<em>${tourCount}</em>` : ""}` : ""}${blocked ? '<i class="blockedDot"></i>' : ""}</span></span>`);
+    const content = `<b>${day}</b><span class="calendarMarkers">${tourCount ? `<i class="tourDot"></i>${tourCount > 1 ? `<em>${tourCount}</em>` : ""}` : ""}${blocked ? '<i class="blockedDot"></i>' : ""}</span>`;
+    cells.push(tourCount ? `<button type="button" class="calendarDay ${date === today ? "calendarDay--today" : ""} calendarDay--busy" data-calendar-date="${date}" aria-label="${esc(parts)}">${content}</button>` : `<span class="calendarDay ${date === today ? "calendarDay--today" : ""} ${blocked ? "calendarDay--busy" : ""}" aria-label="${esc(parts)}">${content}</span>`);
   }
   $("#calendarGrid").innerHTML = cells.join("");
   const controls = document.querySelectorAll("[data-calendar-shift]");
@@ -216,8 +223,12 @@ function renderTours() {
   const today = todayInEcuador();
   const endDate = tourRange === "7" ? addDays(today, 6) : tourRange === "30" ? addDays(today, 29) : "9999-12-31";
   const query = tourSearch.trim().toLowerCase();
-  let visible = data.tours.filter(tour => tourView === "all" || !tour.serviceDate || (tour.serviceDate >= today && tour.serviceDate <= endDate));
-  if (tourView === "all" && query) visible = visible.filter(tour => [tour.guestName, tour.service, tour.country, tour.pickup].some(value => String(value || "").toLowerCase().includes(query)));
+  let visible = selectedAssignmentId
+    ? data.tours.filter(tour => tour.assignmentId === selectedAssignmentId)
+    : selectedCalendarDate
+      ? data.tours.filter(tour => tour.serviceDate === selectedCalendarDate)
+      : data.tours.filter(tour => tourView === "all" || !tour.serviceDate || (tour.serviceDate >= today && tour.serviceDate <= endDate));
+  if (!selectedCalendarDate && !selectedAssignmentId && tourView === "all" && query) visible = visible.filter(tour => [tour.guestName, tour.service, tour.country, tour.pickup].some(value => String(value || "").toLowerCase().includes(query)));
   visible.sort((left, right) => {
     const leftFuture = !left.serviceDate || left.serviceDate >= today, rightFuture = !right.serviceDate || right.serviceDate >= today;
     if (leftFuture !== rightFuture) return leftFuture ? -1 : 1;
@@ -227,17 +238,18 @@ function renderTours() {
   });
   document.querySelectorAll("[data-tour-view]").forEach(button => button.classList.toggle("active", button.dataset.tourView === tourView));
   document.querySelectorAll("[data-tour-range]").forEach(button => button.classList.toggle("active", button.dataset.tourRange === tourRange));
-  $("#tourRange").hidden = tourView === "all";
-  $("#tourSearchWrap").hidden = tourView !== "all";
+  $("#tourRange").hidden = Boolean(selectedCalendarDate || selectedAssignmentId) || tourView === "all";
+  $("#tourSearchWrap").hidden = Boolean(selectedCalendarDate || selectedAssignmentId) || tourView !== "all";
   if ($("#tourSearch").value !== tourSearch) $("#tourSearch").value = tourSearch;
   const attention = visible.filter(tour => tour.acceptanceRequired || tour.hasConflict || (reportsLoaded && reportState(tour).key === "reportNeeded")).length;
   const synced = data.checkedAt ? new Intl.DateTimeFormat(language === "es" ? "es-EC" : "en-US", { hour: "numeric", minute: "2-digit" }).format(new Date(data.checkedAt)) : "—";
   const attentionLabel = language === "es" ? `${attention} ${attention === 1 ? "requiere" : "requieren"} atención` : `${attention} ${attention === 1 ? "needs" : "need"} attention`;
   const visibleLabel = language === "es" ? `${visible.length} tour${visible.length === 1 ? "" : "s"} visible${visible.length === 1 ? "" : "s"}` : `${visible.length} tour${visible.length === 1 ? "" : "s"} shown`;
-  $("#tourSummary").innerHTML = `<span class="${attention ? "attentionCount" : "allSet"}">${attention ? attentionLabel : t("allSet")}</span><span>${visibleLabel}</span><span>${t("lastSynced")}: ${esc(synced)}</span>`;
+  const selection = selectedCalendarDate || selectedAssignmentId ? `<span class="calendarSelection">${t("viewingDate")} ${esc(dateLabel(visible[0]?.serviceDate || selectedCalendarDate))}<button type="button" data-clear-calendar-selection>${t("clearDate")}</button></span>` : "";
+  $("#tourSummary").innerHTML = `${selection}<span class="${attention ? "attentionCount" : "allSet"}">${attention ? attentionLabel : t("allSet")}</span><span>${visibleLabel}</span><span>${t("lastSynced")}: ${esc(synced)}</span>`;
   const displayGroups = visible.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
   let cardIndex = 0;
-  $("#tourList").innerHTML = visible.length ? [...displayGroups.entries()].map(([date, tours]) => `<section class="tourDateGroup"><h2>${esc(dateGroupLabel(date === "pending" ? "" : date))}</h2>${tours.map(tour => tourCard(tour, { next: tourView === "upcoming" && cardIndex++ === 0 })).join("")}</section>`).join("") : empty(data.tours.length ? t("noMatchingTours") : (data.providerName ? `${t("noTours")} ${data.providerName}.` : t("chooseGuide")));
+  $("#tourList").innerHTML = visible.length ? [...displayGroups.entries()].map(([date, tours]) => `<section class="tourDateGroup"><h2>${esc(dateGroupLabel(date === "pending" ? "" : date))}</h2>${tours.map(tour => tourCard(tour, { next: !selectedCalendarDate && !selectedAssignmentId && tourView === "upcoming" && cardIndex++ === 0 })).join("")}</section>`).join("") : empty(data.tours.length ? t("noMatchingTours") : (data.providerName ? `${t("noTours")} ${data.providerName}.` : t("chooseGuide")));
   renderCalendar();
   const selected = $("#reportTour").value;
   $("#reportTour").innerHTML = data.tours.length ? data.tours.map(tour => `<option value="${esc(tour.bookingId || tour.assignmentId)}" ${(tour.bookingId || tour.assignmentId) === selected ? "selected" : ""}>${esc(dateLabel(tour.serviceDate))} · ${esc(tour.guestName)} · ${t(reportState(tour).key)}</option>`).join("") : `<option value="">${t("noTour")}</option>`;
@@ -363,13 +375,21 @@ async function copyText(text) {
 document.addEventListener("click", event => {
   const nav = event.target.closest("[data-route]"); if (nav) route(nav.dataset.route);
   const viewButton = event.target.closest("[data-tour-view]");
-  if (viewButton) { tourView = viewButton.dataset.tourView; localStorage.setItem("mbw-guide-tour-view", tourView); renderTours(); }
+  if (viewButton) { selectedCalendarDate = ""; selectedAssignmentId = ""; tourView = viewButton.dataset.tourView; localStorage.setItem("mbw-guide-tour-view", tourView); renderTours(); }
   const rangeButton = event.target.closest("[data-tour-range]");
-  if (rangeButton) { tourRange = rangeButton.dataset.tourRange; localStorage.setItem("mbw-guide-tour-range", tourRange); renderTours(); }
+  if (rangeButton) { selectedCalendarDate = ""; selectedAssignmentId = ""; tourRange = rangeButton.dataset.tourRange; localStorage.setItem("mbw-guide-tour-range", tourRange); renderTours(); }
   const calendarViewButton = event.target.closest("[data-calendar-view]");
   if (calendarViewButton) { calendarView = calendarViewButton.dataset.calendarView; localStorage.setItem("mbw-guide-calendar-view", calendarView); renderCalendar(); }
+  const calendarScopeButton = event.target.closest("[data-calendar-scope]");
+  if (calendarScopeButton) { calendarScope = calendarScopeButton.dataset.calendarScope; localStorage.setItem("mbw-guide-calendar-scope", calendarScope); renderCalendar(); }
   const calendarShift = event.target.closest("[data-calendar-shift]");
   if (calendarShift) { calendarMonth = shiftMonth(calendarMonth, Number(calendarShift.dataset.calendarShift)); renderCalendar(); }
+  const calendarDate = event.target.closest("[data-calendar-date]");
+  if (calendarDate) { selectedCalendarDate = calendarDate.dataset.calendarDate; selectedAssignmentId = ""; route("today"); renderTours(); }
+  const calendarTour = event.target.closest("[data-open-tour]");
+  if (calendarTour) { selectedCalendarDate = calendarTour.dataset.tourDate; selectedAssignmentId = calendarTour.dataset.openTour; route("today"); renderTours(); }
+  const clearCalendarSelection = event.target.closest("[data-clear-calendar-selection]");
+  if (clearCalendarSelection) { selectedCalendarDate = ""; selectedAssignmentId = ""; renderTours(); }
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
   const languageButton = event.target.closest("[data-language]");
   if (languageButton) { language = languageButton.dataset.language; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(); }
