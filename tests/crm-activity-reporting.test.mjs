@@ -7,7 +7,7 @@ const script=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map
 const services=[['bird','MBW004','Jewels of the Morning Forest','Birdwatching','birding'],['bike','ACT017','Mountain Biking','Activity','other'],['coffee','MBW012','Coffee Tour','Activity','other'],['orchid','ACT009','Cloud Forest Orchid Garden','Activity','other'],['bear','OSO002','Full-Day Spectacled Bear Tour','Wildlife','other'],['night','MBW016','Night Walk','Activity','night_walk'],['car','TRANS06','Quito return','Transportation','transportation'],['waterfall','MBW013','Waterfall Hike','Activity','waterfall'],['choc','MBW011','Chocolate Tour','Activity','chocolate'],['room','ACCOM01','Accommodation Assistance','Accommodation','lodging']].map(([id,product_selected,tour,service_type,expected])=>({id,product_selected,tour,service_type,expected,date:['coffee','bear'].includes(id)?'2099-11-27':'2099-11-26',guests:id==='car'?'1':'3',status:'booked',price:id==='car'?'180':'35',custom_ref:'keep-'+id}));
 function harness(items=services){
  const nodes=new Map(),node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',dataset:{},textContent:'',innerHTML:'',options:[],classList:{add(){},remove(){},toggle(){}},addEventListener(){},querySelectorAll:()=>[]});return nodes.get(id)};
- const c={Date,Intl,URL,URLSearchParams,setTimeout,clearTimeout,console,location:{search:'',hostname:'localhost'},localStorage:{getItem:()=>null,setItem(){}},document:{getElementById:node,addEventListener(){},querySelectorAll:()=>[]},window:{addEventListener(){},location:{search:''}}};vm.createContext(c);vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,calendarEntriesForRecord,calendarRecordsForDate,uniqueGuestSummary,calendarDaySummary,capacityInfo,assignmentServiceDisplay,assignmentDisplayProduct,generateOperationsMessage,renderCalendar,renderAgenda,serviceVisual,reportServiceKey,allReportActivities,filteredReportRows,renderReports,reportDateMarkup,reportCountryFlag,reportPhoneMarkup,reportCsv,reportPlainText};})();`),c);
+ const c={Date,Intl,URL,URLSearchParams,setTimeout,clearTimeout,console,location:{search:'',hostname:'localhost'},localStorage:{getItem:()=>null,setItem(){}},document:{getElementById:node,addEventListener(){},querySelectorAll:()=>[]},window:{addEventListener(){},location:{search:''}}};vm.createContext(c);vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,calendarEntriesForRecord,calendarRecordsForDate,uniqueGuestSummary,calendarDaySummary,capacityInfo,assignmentMatchedTourItem,assignmentProductForService,saveAssignment,assignmentServiceDisplay,assignmentDisplayProduct,generateOperationsMessage,renderCalendar,renderAgenda,serviceVisual,reportServiceKey,allReportActivities,filteredReportRows,renderReports,reportDateMarkup,reportCountryFlag,reportPhoneMarkup,reportCsv,reportPlainText};})();`),c);
  const q=c.qa;q.cache();const record={inquiry_id:'QA-MIXED-REPORT',full_name:'QA Mixed Services',tour_type:'Birdwatching',tour_category:'Birdwatching',service_type:'Birdwatching',product_selected:'MBW004',status:'booked',guest_count:'3',payment_status:'unpaid',tour_items_json:JSON.stringify(items)};q.state.records=[record];node('reportRangeInput').value='all';node('reportTypeInput').value='all';node('reportStatusInput').value='all';return{q,node,record};
 }
 test('each mixed service uses its own category, dates, quantity and status without changing stored records',()=>{
@@ -104,3 +104,17 @@ test('report phone opens normalized WhatsApp URL without a message and invalid n
  node('statusFilter').value='';node('paymentFilter').value='paid';assert.equal(q.filteredReportRows().length,0);
  node('paymentFilter').value='';assert.equal(q.filteredReportRows().length,3);
  });
+
+test('transport assignment cannot resolve a stale primary birding reference or product',()=>{
+ const {q,record}=harness([services[0],services[6]]);q.state.selectedId=record.inquiry_id;
+ const stale={service_type:'Transportation',service_item_id:'bird',product_selected:'MBW004',service_date:'2099-11-26'};
+ assert.equal(q.assignmentMatchedTourItem(stale,record).id,'car');
+ assert.equal(q.assignmentProductForService('Transportation',null,'MBW004'),'Transportation');
+ assert.equal(q.assignmentProductForService('Transportation',services[6],'MBW004'),services[6].product_selected);
+ assert.equal(q.assignmentProductForService('Birdwatching',services[0],''),'MBW004');
+});
+test('incompatible selected itinerary service stops assignment save before any API write',async()=>{
+ const {q,node,record}=harness([services[0],services[6]]);q.state.selectedId=record.inquiry_id;
+ node('assignmentDate').value='2099-11-26';node('assignmentService').value='Transportation';node('assignmentTourItem').value='bird';
+ await q.saveAssignment();assert.match(node('toast').textContent,/matches the assignment service type/);
+});
