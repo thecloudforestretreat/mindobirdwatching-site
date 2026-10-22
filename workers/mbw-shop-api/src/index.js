@@ -1,4 +1,4 @@
-/* MBW SHOP API V26 - TOUR DEPOSIT EMAILS + PRINTIFY BYPASS */
+/* MBW SHOP API V27 - USD GUIDE TIPS + TOUR DEPOSIT EMAILS */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com"
@@ -31,6 +31,13 @@ export default {
       url.pathname === "/checkout/session"
     ) {
       return handleCheckoutSession(request, env);
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/tips/checkout"
+    ) {
+      return handleTipCheckoutSession(request, env);
     }
 
     if (
@@ -82,6 +89,8 @@ export default {
             Boolean(env.DB),
           stripe_webhook_configured:
             Boolean(getStripeWebhookSecret(env)),
+          stripe_shop_event_filter_version:
+            "v27-deposit-safe",
           resend_configured:
             Boolean(env.RESEND_API_KEY),
           admin_order_email_configured:
@@ -107,7 +116,7 @@ export default {
           google_merchant_feed_enabled:
             true,
           google_merchant_feed_version:
-            "v25",
+            "v26",
           printify_product_publish_sync_supported:
             true,
           printify_production_submission_enabled:
@@ -134,6 +143,10 @@ export default {
 
     if (url.pathname === "/google-merchant-feed.xml") {
       return handleGoogleMerchantFeed(request, env);
+    }
+
+    if (url.pathname === "/merchant-image") {
+      return handleMerchantImage(request, url);
     }
 
     if (url.pathname === "/catalog") {
@@ -1118,6 +1131,34 @@ async function handleStripeWebhook(
     );
   }
 
+  if (!isMbwShopCheckoutSession(sessionFromEvent)) {
+    const metadata =
+      sessionFromEvent.metadata &&
+      typeof sessionFromEvent.metadata === "object"
+        ? sessionFromEvent.metadata
+        : {};
+
+    return jsonResponse(
+      {
+        ok: true,
+        received: true,
+        ignored: true,
+        reason:
+          "Checkout Session is not an MBW shop order",
+        stripe_session_id:
+          sessionFromEvent.id,
+        payment_purpose:
+          cleanText(metadata.payment_purpose, 120) ||
+          null,
+        source_system:
+          cleanText(metadata.source_system, 120) ||
+          null
+      },
+      200,
+      request
+    );
+  }
+
   const stripeResult =
     await fetchStripeCheckoutForOrder(
       env,
@@ -1292,6 +1333,20 @@ async function handleStripeWebhook(
     },
     200,
     request
+  );
+}
+
+function isMbwShopCheckoutSession(session) {
+  const metadata =
+    session &&
+    session.metadata &&
+    typeof session.metadata === "object"
+      ? session.metadata
+      : {};
+
+  return Boolean(
+    cleanText(metadata.mbw_reference_id, 160) &&
+    cleanText(metadata.mbw_items, 5000)
   );
 }
 
@@ -6211,6 +6266,168 @@ async function handleCheckoutSession(
   );
 }
 
+async function handleTipCheckoutSession(request, env) {
+  const originError = validateWriteOrigin(request);
+
+  if (originError) {
+    return jsonResponse(originError, 403, request);
+  }
+
+  const stripeSecretKey = getStripeSecretKey(env);
+
+  if (!stripeSecretKey) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Stripe is not configured"
+      },
+      500,
+      request
+    );
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Invalid request"
+      },
+      400,
+      request
+    );
+  }
+
+  const amount = Number(body.amount);
+  const amountCents = Math.round(amount * 100);
+  const guestName = cleanText(body.guest_name, 120);
+  const customerEmail = cleanText(body.customer_email, 254).toLowerCase();
+  const selectedGuide = cleanText(body.guide_name, 80);
+  const otherGuide = cleanText(body.other_guide_name, 80);
+  const language = body.language === "es" ? "es" : "en";
+  const allowedGuides = new Set([
+    "Chicho",
+    "Neicer",
+    "Javier",
+    "Staff",
+    "Other"
+  ]);
+
+  if (
+    !Number.isFinite(amount) ||
+    amountCents < 100 ||
+    amountCents > 100000
+  ) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          language === "es"
+            ? "Ingresa una propina entre US$1 y US$1.000."
+            : "Enter a tip between US$1 and US$1,000."
+      },
+      400,
+      request
+    );
+  }
+
+  if (!guestName) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          language === "es"
+            ? "Ingresa tu nombre."
+            : "Enter your name."
+      },
+      400,
+      request
+    );
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(customerEmail)) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          language === "es"
+            ? "Ingresa un correo electrónico válido."
+            : "Enter a valid email address."
+      },
+      400,
+      request
+    );
+  }
+
+  if (!allowedGuides.has(selectedGuide)) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          language === "es"
+            ? "Selecciona un guía."
+            : "Select a guide."
+      },
+      400,
+      request
+    );
+  }
+
+  const guideName =
+    selectedGuide === "Other"
+      ? otherGuide
+      : selectedGuide;
+
+  if (!guideName) {
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          language === "es"
+            ? "Ingresa el nombre del guía."
+            : "Enter the guide's name."
+      },
+      400,
+      request
+    );
+  }
+
+  const referenceId = `tip_${crypto.randomUUID()}`;
+  const stripeResult = await createStripeTipCheckoutSession(
+    env,
+    {
+      amountCents,
+      customerEmail,
+      guestName,
+      guideName,
+      language,
+      referenceId
+    }
+  );
+
+  if (!stripeResult.ok) {
+    return jsonResponse(
+      stripeResult.body,
+      stripeResult.status,
+      request
+    );
+  }
+
+  return jsonResponse(
+    {
+      ok: true,
+      checkout_url: stripeResult.session.url,
+      reference_id: referenceId,
+      currency: "usd"
+    },
+    200,
+    request
+  );
+}
+
 async function handleShippingQuote(
   request,
   env
@@ -6868,6 +7085,126 @@ function normalizeShippingOptions(raw) {
   return result.slice(0, 5);
 }
 
+async function createStripeTipCheckoutSession(env, data) {
+  const params = new URLSearchParams();
+  const pagePath =
+    data.language === "es"
+      ? "/es/propina-para-tu-guia/"
+      : "/tip-your-guide/";
+
+  params.set("mode", "payment");
+  params.set(
+    "success_url",
+    `https://mindobirdwatching.com${pagePath}?status=success&session_id={CHECKOUT_SESSION_ID}`
+  );
+  params.set(
+    "cancel_url",
+    `https://mindobirdwatching.com${pagePath}?status=cancelled`
+  );
+  params.set("client_reference_id", data.referenceId);
+  params.set("customer_email", data.customerEmail);
+  params.set("submit_type", "pay");
+  params.set("adaptive_pricing[enabled]", "false");
+  params.set("line_items[0][quantity]", "1");
+  params.set("line_items[0][price_data][currency]", "usd");
+  params.set(
+    "line_items[0][price_data][unit_amount]",
+    String(data.amountCents)
+  );
+  params.set(
+    "line_items[0][price_data][product_data][name]",
+    data.language === "es"
+      ? "Propina para tu guía de Mindo Bird Watching"
+      : "Tip for Your Mindo Bird Watching Guide"
+  );
+  params.set(
+    "line_items[0][price_data][product_data][description]",
+    data.language === "es"
+      ? `Propina voluntaria para ${data.guideName}. Separada del pago del tour.`
+      : `Voluntary gratuity for ${data.guideName}. Separate from the tour payment.`
+  );
+
+  const metadata = {
+    payment_purpose: "guide_tip",
+    service_type: "guide_gratuity",
+    tour_code: "TIP001",
+    guide_name: data.guideName,
+    guest_name: data.guestName,
+    customer_email: data.customerEmail,
+    source_system: "mbw_tip_page",
+    page_language: data.language,
+    reference_id: data.referenceId
+  };
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    params.set(`metadata[${key}]`, String(value));
+    params.set(
+      `payment_intent_data[metadata][${key}]`,
+      String(value)
+    );
+  });
+
+  let response;
+
+  try {
+    response = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getStripeSecretKey(env)}`,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: params.toString()
+      }
+    );
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          data.language === "es"
+            ? "No fue posible conectar con Stripe. Inténtalo nuevamente."
+            : "Unable to connect to Stripe. Please try again."
+      }
+    };
+  }
+
+  let stripeData;
+
+  try {
+    stripeData = await response.json();
+  } catch {
+    stripeData = null;
+  }
+
+  if (!response.ok || !stripeData || !stripeData.url) {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          data.language === "es"
+            ? "Stripe no pudo iniciar el pago. Inténtalo nuevamente."
+            : "Stripe could not start the payment. Please try again.",
+        stripe_error:
+          stripeData && stripeData.error
+            ? cleanText(stripeData.error.message, 300)
+            : null
+      }
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    session: stripeData
+  };
+}
+
 async function createStripeCheckoutSession(
   env,
   data
@@ -7423,6 +7760,98 @@ ${items}
   });
 }
 
+async function handleMerchantImage(request, url) {
+  const rawSource = url.searchParams.get("src");
+
+  if (!rawSource) {
+    return new Response("Missing image source", {
+      status: 400
+    });
+  }
+
+  let source;
+
+  try {
+    source = new URL(rawSource);
+  } catch (_) {
+    return new Response("Invalid image source", {
+      status: 400
+    });
+  }
+
+  if (
+    source.protocol !== "https:" ||
+    source.hostname !== "images-api.printify.com" ||
+    !source.pathname.startsWith("/mockup/")
+  ) {
+    return new Response("Image source not allowed", {
+      status: 403
+    });
+  }
+
+  const upstream = await fetch(source.toString(), {
+    headers: {
+      Accept: "image/avif,image/webp,image/*,*/*;q=0.8"
+    },
+    cf: {
+      cacheEverything: true,
+      cacheTtl: 604800
+    }
+  });
+
+  if (!upstream.ok) {
+    return new Response("Image unavailable", {
+      status: upstream.status
+    });
+  }
+
+  const contentType =
+    upstream.headers.get("Content-Type") ||
+    "image/jpeg";
+
+  if (!contentType.toLowerCase().startsWith("image/")) {
+    return new Response("Invalid image response", {
+      status: 502
+    });
+  }
+
+  return new Response(upstream.body, {
+    status: 200,
+    headers: {
+      "Content-Type": contentType,
+      "Cache-Control":
+        "public, max-age=604800, s-maxage=604800, immutable",
+      "Access-Control-Allow-Origin": "*",
+      "X-Content-Type-Options": "nosniff"
+    }
+  });
+}
+
+function merchantImageProxyUrl(source) {
+  if (!source) {
+    return source;
+  }
+
+  try {
+    const url = new URL(source);
+
+    if (
+      url.protocol === "https:" &&
+      url.hostname === "images-api.printify.com" &&
+      url.pathname.startsWith("/mockup/")
+    ) {
+      return (
+        "https://mbw-shop-api.thecloudforestretreat.workers.dev/merchant-image?src=" +
+        encodeURIComponent(url.toString())
+      );
+    }
+  } catch (_) {
+    return source;
+  }
+
+  return source;
+}
+
 function normalizeGoogleMerchantProduct(product) {
   const enabledVariants = getEnabledVariants(product);
 
@@ -7688,7 +8117,7 @@ function isGoogleMerchantApparelProduct(title) {
   const value = String(title || "")
     .toLowerCase();
 
-  return /(tee|t-shirt|t shirt|shirt|hoodie|sweatshirt|long sleeve|long-sleeve)/.test(
+  return /(tee|t-shirt|t shirt|shirt|hoodie|sweatshirt|long sleeve|long-sleeve|tote)/.test(
     value
   );
 }
