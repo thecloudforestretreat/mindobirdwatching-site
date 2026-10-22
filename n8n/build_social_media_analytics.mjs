@@ -78,6 +78,26 @@ const dateOnly = v => {
   const d = new Date(s);
   return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
 };
+const values = v => {
+  if (Array.isArray(v)) return v.map(clean).filter(Boolean);
+  const s = clean(v); if (!s) return [];
+  try { const parsed=JSON.parse(s); if(Array.isArray(parsed)) return parsed.map(item=>clean(item && typeof item==='object' ? item.label||item.name||item.value : item)).filter(Boolean); } catch {}
+  return s.split(/[,;|]+/).map(clean).filter(Boolean);
+};
+const slug = v => clean(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/^#+/,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const tagsFor = row => {
+  const tags=[];
+  const add=(category,label)=>{label=clean(label).replace(/^#+/,'').replace(/_/g,' ');const value=slug(label);if(value)tags.push({key:category+':'+value,label,category});};
+  values(row.tags).concat(values(row.internal_tags),values(row.search_tags),values(row.species_tags),values(row.content_tags)).forEach(v=>add('topic',v));
+  const hashtags=[row.instagram_hashtags,row.facebook_hashtags,row.youtube_hashtags,row.tiktok_hashtags,row.tiktok_additional_hashtags,row.reddit_hashtags].flatMap(v=>clean(v).match(/#[\p{L}\p{N}_-]+/gu)||[]);
+  hashtags.forEach(v=>add('hashtag',v));
+  if(clean(row.bird_name))add('species',row.bird_name);
+  if(clean(row.scientific_name))add('scientific',row.scientific_name);
+  if(clean(row.featured_birds))add('subject',row.featured_birds);
+  if(clean(row.activity_name))add('activity',row.activity_name);
+  if(clean(row.location))add('location',row.location);
+  return [...new Map(tags.map(tag=>[tag.key,tag])).values()].slice(0,24);
+};
 const rows = $input.all().map(i => i.json);
 const records = rows.map((row,index) => {
   const type = clean(row.carousel_id) ? 'carousel' : 'reel';
@@ -96,6 +116,7 @@ const records = rows.map((row,index) => {
     facebook_permalink: clean(row.facebook_permalink),
     youtube_url: clean(row.youtube_url),
     thumbnail: clean(row.cover_image_url || row.thumbnail_url || row.instagram_thumbnail_url),
+    tags: tagsFor(row),
     is_published: clean(row.status).toLowerCase() === 'published' || Boolean(clean(row.instagram_post_id || row.facebook_post_id || row.youtube_post_id)),
   };
 }).filter(r => r.is_published && r.published_date && r.published_date >= ctx.previous_start_date && r.published_date <= ctx.end_date)
@@ -183,7 +204,7 @@ const timeHour = value => {
 };
 const displayTime = h => String(h%12||12)+':00 '+(h>=12?'PM':'AM');
 for (const r of base.records) {
-  const common={cohort:r.cohort,content_id:r.id,title:r.title,type:r.type,published_date:r.published_date,scheduled_date:r.scheduled_date,publish_day:dayName(r.scheduled_date),publish_hour:timeHour(r.scheduled_time),thumbnail:r.thumbnail};
+  const common={cohort:r.cohort,content_id:r.id,title:r.title,type:r.type,published_date:r.published_date,scheduled_date:r.scheduled_date,publish_day:dayName(r.scheduled_date),publish_hour:timeHour(r.scheduled_time),thumbnail:r.thumbnail,tags:r.tags||[]};
   if (r.instagram_post_id && igById[r.instagram_post_id]) {
     const v=igById[r.instagram_post_id], engagement=v.likes+v.comments+v.shares+v.saves;
     const denominator=v.reach||v.views, result=denominator||engagement;
@@ -214,6 +235,23 @@ for (const s of samples) { const k=[s.platform,s.day,s.hour].join('|'); const g=
 const eligible=[...groups.values()].filter(g=>g.count>=3).map(g=>({...g,avg:g.total/g.count}));
 const maxAvg=Math.max(1,...eligible.map(g=>g.avg));
 const slots=eligible.sort((a,b)=>b.avg-a.avg||b.count-a.count).slice(0,3).map(g=>({days:[g.day],time:displayTime(g.hour),platform:g.platform,score:Math.min(95,Math.round(55+30*(g.avg/maxAvg)+Math.min(10,g.count))),basis:String(g.count)+' matched posts'}));
+const median = values => { const a=values.map(num).sort((x,y)=>x-y); if(!a.length)return 0; const i=Math.floor(a.length/2); return a.length%2?a[i]:(a[i-1]+a[i])/2; };
+const confidence = count => count>=10?'reliable':count>=5?'developing':'early';
+const platformCounts=current.reduce((map,post)=>(map[post.platform]=(map[post.platform]||0)+1,map),{});
+const primaryPlatform=Object.entries(platformCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
+const analysisRows=current.filter(post=>post.platform===primaryPlatform);
+const patternGroups=(field,kind)=>{
+  const grouped=new Map(); for(const post of analysisRows){const label=String(post[field]||'').trim();if(!label)continue;const a=grouped.get(label)||[];a.push(post);grouped.set(label,a)}
+  const eligible=[...grouped.entries()].filter(([,rows])=>rows.length>=2).map(([label,rows])=>({id:kind+':'+label.toLowerCase(),kind,label,value:median(rows.map(p=>p.result)),sample_size:rows.length,confidence:confidence(rows.length)})).sort((a,b)=>b.value-a.value);
+  return eligible.length>=2?{...eligible[0],statistic:'median',metric:'views_or_reach'}:null;
+};
+const overallMedian=median(analysisRows.map(p=>p.result));
+const observedPatterns=[patternGroups('type','format')].filter(Boolean).map(p=>({...p,label:primaryPlatform+' · '+p.label,platform:primaryPlatform,baseline:overallMedian,delta_percent:overallMedian?(p.value-overallMedian)/overallMedian*100:null,evidence:p.sample_size+' matched '+primaryPlatform+' results'}));
+const timingGroups=new Map();
+for(const post of analysisRows){const key=post.publish_day+'|'+post.publish_hour,g=timingGroups.get(key)||{day:post.publish_day,hour:post.publish_hour,count:0,total:0};g.count++;g.total+=post.result;timingGroups.set(key,g)}
+const comparableSlots=[...timingGroups.values()].filter(g=>g.count>=3).map(g=>({...g,avg:g.total/g.count}));
+const bestSlot=comparableSlots.length>=2?comparableSlots.sort((a,b)=>b.avg-a.avg||b.count-a.count)[0]:null;
+if(bestSlot)observedPatterns.push({id:'timing:'+bestSlot.day+'|'+bestSlot.hour,kind:'timing',label:primaryPlatform+' · '+bestSlot.day+' · '+displayTime(bestSlot.hour),platform:primaryPlatform,value:bestSlot.avg,baseline:overallMedian,delta_percent:overallMedian?(bestSlot.avg-overallMedian)/overallMedian*100:null,sample_size:bestSlot.count,confidence:confidence(bestSlot.count),statistic:'average',metric:'views_or_reach',evidence:bestSlot.count+' matched '+primaryPlatform+' results'});
 const response={
   ok:true,configured:true,period:base.period,updated_at:new Date().toISOString(),
   summary:{published_posts:uniqueCurrent.length,total_reach:igTotals.reach+fbTotals.reach,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,youtube_views_period:dailyTotals.views},
@@ -225,6 +263,7 @@ const response={
     {platform:'facebook',status:fbUnique.length?'connected':'no matched data',mode:'current organic reactions, comments, and shares'},
     {platform:'youtube',status:(ytRaw.items||[]).length?'connected':'no matched data',mode:'daily finalized through '+base.end_date}
   ],
+  observed_patterns:observedPatterns,
   recommendations:{configured:slots.length>0,timezone:'America/New_York',sample_size:samples.length,source:'Matched MBW organic post performance; minimum 3 posts per time slot',slots},
   platforms:{
     instagram:{connected:!igRaw.error,metrics:{reach:igTotals.reach,views:igTotals.views,engagements:igTotals.engagements,matched_posts:countMatched('instagram')}},
@@ -236,7 +275,38 @@ const state=$getWorkflowStaticData('global'); state.last_success=response.update
 return [{json:response}];`,
 });
 
-add("[API] Respond", "n8n-nodes-base.respondToWebhook", 1.1, [1240, 100], {
+add("[AI] Interpret Measured Patterns", "n8n-nodes-base.httpRequest", 4.2, [1220, 100], {
+  method: "POST",
+  url: "http://127.0.0.1:11434/api/chat",
+  sendHeaders: true,
+  headerParameters: { parameters: [{ name: "Content-Type", value: "application/json" }] },
+  sendBody: true,
+  specifyBody: "json",
+  jsonBody: "={{ { model: 'gpt-oss:20b', messages: [{ role: 'system', content: 'You interpret already-calculated organic social media evidence for Mindo Bird Watching. Never invent or recalculate numbers. The value and baseline fields are performance measures, never post counts; sample_size is the only count. Use only the supplied patterns. Treat associations as hypotheses, not causes. Return one cautious interpretation and one practical single-variable experiment per evidence ID. Return valid JSON only.' }, { role: 'user', content: `Evidence: ${JSON.stringify($json.observed_patterns || [])}\\nFilters cover ${$json.period || 'the selected period'}. Every pattern is already limited to the platform field supplied with it. For Instagram and Facebook, views_or_reach means reach; for YouTube it means views. The statistic field says whether value is a median or average. sample_size is the number of matched platform results supporting the pattern. For every supplied evidence item, return: {\"items\":[{\"evidence_id\":\"exact supplied id\",\"interpretation\":\"plain-language explanation that correctly names the platform, metric, statistic, and sample size\",\"experiment\":\"one specific next test that changes only one variable and compares the same metric within the same platform\"}]}. For a format pattern, compare the named format against another actual format while holding subject, day, and time as similar as possible; a carousel is a multi-image post and must never be called a single image. For a timing pattern, keep platform, format, and subject similar and compare the named slot with one other slot. Do not describe value as a number of posts. Do not mention any platform not named in that evidence item. Do not call an early or developing signal proven. Do not recommend a posting time unless it appears in the supplied evidence.` }], stream: false, think: 'low', format: 'json', keep_alive: '30m', options: { temperature: 0.1, num_predict: 900 } } }}",
+  options: { response: { response: { responseFormat: "json" } } },
+}, { retryOnFail: true, maxTries: 2, waitBetweenTries: 3000, onError: "continueRegularOutput", alwaysOutputData: true });
+
+add("[AI] Validate Guidance", "n8n-nodes-base.code", 2, [1440, 100], {
+  jsCode: String.raw`const report={...$('[REPORT] Build Dashboard Payload').first().json};
+const evidenceById=new Map((report.observed_patterns||[]).map(pattern=>[String(pattern.id||''),pattern]));
+const allowed=new Set(evidenceById.keys());
+let parsed={};
+try{parsed=JSON.parse($json.message?.content||$json.response||'{}')}catch{}
+const items=(Array.isArray(parsed.items)?parsed.items:[]).map(item=>({
+  evidence_id:String(item.evidence_id||'').trim(),
+  interpretation:String(item.interpretation||'').trim().slice(0,600),
+  experiment:String(item.experiment||'').trim().slice(0,600),
+})).filter(item=>allowed.has(item.evidence_id)&&item.interpretation).map(item=>{
+  const pattern=evidenceById.get(item.evidence_id)||{},platform=String(pattern.platform||'the same platform'),measure=platform==='YouTube'?'views':'reach';
+  if(pattern.kind==='format')item.experiment='On '+platform+', publish comparable posts about the same subject in the leading format and one other available format at similar times. Compare '+measure+' after the same measurement window.';
+  if(pattern.kind==='timing')item.experiment='Repeat a comparable post in this '+platform+' time slot and in one other established '+platform+' slot shown in the dashboard. Keep the subject and format similar, then compare '+measure+' after the same measurement window.';
+  return item;
+});
+report.ai_guidance={available:items.length>0,metric:'result',generated_at:items.length?new Date().toISOString():'',model:items.length?'gpt-oss:20b':'',items,note:items.length?'Local AI interpreted measured views / reach evidence; calculations were not AI-generated.':'Local AI guidance was unavailable; measured patterns are still shown.'};
+return [{json:report}];`,
+});
+
+add("[API] Respond", "n8n-nodes-base.respondToWebhook", 1.1, [1660, 100], {
   respondWith: "json",
   responseBody: "={{ $json }}",
   options: { responseHeaders: { entries: [
@@ -270,7 +340,9 @@ const connections = {
   "[JOIN] Add YouTube Videos": { main: [[{ node: "[JOIN] Add YouTube Daily", type: "main", index: 0 }]] },
   "[YT] Daily Analytics": { main: [[{ node: "[JOIN] Add YouTube Daily", type: "main", index: 1 }]] },
   "[JOIN] Add YouTube Daily": { main: [[{ node: "[REPORT] Build Dashboard Payload", type: "main", index: 0 }]] },
-  "[REPORT] Build Dashboard Payload": { main: [[{ node: "[API] Respond", type: "main", index: 0 }]] },
+  "[REPORT] Build Dashboard Payload": { main: [[{ node: "[AI] Interpret Measured Patterns", type: "main", index: 0 }]] },
+  "[AI] Interpret Measured Patterns": { main: [[{ node: "[AI] Validate Guidance", type: "main", index: 0 }]] },
+  "[AI] Validate Guidance": { main: [[{ node: "[API] Respond", type: "main", index: 0 }]] },
 };
 
 const workflow = {
