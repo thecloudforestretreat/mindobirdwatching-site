@@ -2094,7 +2094,11 @@
         const item=record._calendar_item||record;
         const product=clean(item.product_selected);
         const code=productCodeFromValue(product);
-        return {title:clean(item.tour||item.tour_type||item.tour_category||productTitle(product)||item.service_type),product,code,service:MBW_PRODUCT_SERVICE_BY_CODE[code]||clean(item.service_type)};
+        const service=MBW_PRODUCT_SERVICE_BY_CODE[code]||clean(item.service_type);
+        const title=clean(item.tour||item.tour_type||item.tour_category||productTitle(product)||item.service_type);
+        const genericBirding=/^(?:birdwatching|birding)(?:\s+(?:half[ -]?day|full[ -]?day))?(?:\s+tour)?$/i.test(title);
+        const displayTitle=genericBirding&&MBW_PRODUCT_SERVICE_BY_CODE[code]&&!/^(birdwatching|tour upgrade)$/i.test(service)?productTitle(product):title;
+        return {title:displayTitle,product,code,service};
       }
       function serviceVisual(record,isFollowup){
         if(isFollowup||record._calendar_followup) return {icon:"↻",label:"Follow-up",fullLabel:"Follow-up"};
