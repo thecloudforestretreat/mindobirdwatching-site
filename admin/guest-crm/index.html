@@ -455,6 +455,7 @@
                   <label class="inlineCheck fullSpan"><input id="interactionFollowup" type="checkbox" /> Follow-up required</label>
                   <div class="field fullSpan followupFields" id="interactionFollowupFields" hidden><label for="interactionFollowupAt">Follow-up date</label><input id="interactionFollowupAt" type="datetime-local" /></div>
                 </div>
+                <p id="interactionSaveStatus" class="hint" role="status" aria-live="polite"></p>
                 <div class="workspaceActions"><button id="clearInteractionBtn" type="button">Clear</button><button id="saveInteractionBtn" class="primary" type="button">Save Interaction</button></div>
               </section>
               <section class="workspaceCard"><h3>Communication timeline</h3><p class="workspaceCardLead" id="interactionCount">No interactions recorded.</p><div id="interactionTimeline" class="timeline"></div></section></div></div>
@@ -525,7 +526,7 @@
       const fields = ["referenceIdInput","apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","repFilter","inlineSearchInput","inlineStatusFilter","inlineRepFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","assignedToInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","notesInput","internalInput"];
       document.addEventListener("DOMContentLoaded", init);
       function init(){cache();["assignmentEndTime","repFilter","inlineRepFilter","assignedToInput","statPaymentPending"].forEach(id=>els[id]=document.getElementById(id));renderPrimaryProductOptions();populateAssignmentTimeOptions();bind();clearInteractionForm();clearAssignmentForm();initQuickFilters();loadSettings();loadLocalRecords();if(!state.records.length)loadDemoRecords(false);els.sortInput.value=localStorage.getItem("mbwCrmSort")||"created_at";els.sortDirectionInput.value=localStorage.getItem("mbwCrmSortDirection")||"desc";render();window.addEventListener("online",()=>{refreshRetryAttempt=0;scheduleRefreshRetry(500);});window.addEventListener("storage",event=>{if(event.key==="mbwCrmItinerarySaved"&&event.newValue)syncSavedItineraryFromOtherTab();});window.addEventListener("focus",()=>{if(localStorage.getItem("mbwCrmItinerarySaved"))syncSavedItineraryFromOtherTab();});if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)refreshCrm();}
-      function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","calendarMonthViewBtn","calendarListViewBtn","calendarMonthPanel","calendarPipelineListPanel","calendarPipelineRecords","calendarPipelineCount","calendarNavigationRow","calendarLegendToggle","calendarLegends","pipelineStatusFilter","pipelineSortInput","selectedActionsToggle","selectedActionsBody","reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput","reportRangeHint","reportActivityCount","reportGuestCount","reportBookedCount","reportActionCount","reportTableBody","copyReportBtn","downloadReportBtn","printReportBtn","copyGuideReportBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","guestHistory","addTourItemBtn","tourItemsList","quoteOptionsPanel","quoteOptionsList","quoteSentAtInput","quoteSentChannelInput","quoteNotesInput","markQuotesSentBtn","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","copyInvoiceBackendTsvBtn","copyDepositLinkBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailCopyInvoiceBackendTsvBtn","detailCopyDepositLinkBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyStatusMessageBtn","generateItineraryBtn","editSavedItineraryBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","collaborationToAcctBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast","inquiryIdDisplay","activityContext","activityEmpty","activityWorkspace","interactionDirection","interactionChannel","interactionType","interactionStaff","interactionOccurredAt","interactionNote","interactionFollowup","interactionFollowupFields","interactionFollowupAt","clearInteractionBtn","saveInteractionBtn","interactionCount","interactionTimeline","operationsContext","operationsEmpty","operationsWorkspace","assignmentId","assignmentGroupId","assignmentService","assignmentStatus","assignmentDate","assignmentTime","assignmentProvider","assignmentProviderOtherWrap","assignmentProviderOther","assignmentPickup","assignmentDropoff","assignmentDirection","assignmentCost","assignmentExtraCost","assignmentStaff","assignmentInformed","assignmentNote","clearAssignmentBtn","saveAssignmentBtn","assignmentCount","assignmentList","messageServiceFilter","messageIncludeCosts","generateMessageBtn","copyOperationsMessageBtn","operationsMessage","communicationSectionMeta","assignmentsSectionMeta","communicationSectionBody","assignmentsSectionBody"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
+      function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","calendarMonthViewBtn","calendarListViewBtn","calendarMonthPanel","calendarPipelineListPanel","calendarPipelineRecords","calendarPipelineCount","calendarNavigationRow","calendarLegendToggle","calendarLegends","pipelineStatusFilter","pipelineSortInput","selectedActionsToggle","selectedActionsBody","reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput","reportRangeHint","reportActivityCount","reportGuestCount","reportBookedCount","reportActionCount","reportTableBody","copyReportBtn","downloadReportBtn","printReportBtn","copyGuideReportBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","guestHistory","addTourItemBtn","tourItemsList","quoteOptionsPanel","quoteOptionsList","quoteSentAtInput","quoteSentChannelInput","quoteNotesInput","markQuotesSentBtn","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","copyInvoiceBackendTsvBtn","copyDepositLinkBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailCopyInvoiceBackendTsvBtn","detailCopyDepositLinkBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyStatusMessageBtn","generateItineraryBtn","editSavedItineraryBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","collaborationToAcctBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast","inquiryIdDisplay","activityContext","activityEmpty","activityWorkspace","interactionDirection","interactionChannel","interactionType","interactionStaff","interactionOccurredAt","interactionNote","interactionFollowup","interactionFollowupFields","interactionFollowupAt","clearInteractionBtn","saveInteractionBtn","interactionSaveStatus","interactionCount","interactionTimeline","operationsContext","operationsEmpty","operationsWorkspace","assignmentId","assignmentGroupId","assignmentService","assignmentStatus","assignmentDate","assignmentTime","assignmentProvider","assignmentProviderOtherWrap","assignmentProviderOther","assignmentPickup","assignmentDropoff","assignmentDirection","assignmentCost","assignmentExtraCost","assignmentStaff","assignmentInformed","assignmentNote","clearAssignmentBtn","saveAssignmentBtn","assignmentCount","assignmentList","messageServiceFilter","messageIncludeCosts","generateMessageBtn","copyOperationsMessageBtn","operationsMessage","communicationSectionMeta","assignmentsSectionMeta","communicationSectionBody","assignmentsSectionBody"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
       ["followupFilter","attributionPanel","attributionPanelBody","attributionSummary","followupFieldState","paymentLedger","paymentLedgerSummary","paymentLedgerList","paymentLedgerWarning"].forEach(id=>els[id]=document.getElementById(id));
       els.assignmentTourItem=document.getElementById("assignmentTourItem");
       function bind(){
@@ -922,18 +923,33 @@
       function isTransportItem(item){return /^TRANS\d*/i.test(clean(item.product_selected||item.product))||clean(item.service_type||item.type).toLowerCase()==="transportation"||/transportation|transport requested/i.test(clean(item.tour));}
       function vehicleQuantity(item){return clean(item.vehicle_count||item.quantity||(item.id==="primary"?1:item.guests))||"1";}
       function updateTransportLabels(card){const item={product_selected:card.querySelector('[data-tour-field="product"]')?.value,service_type:card.querySelector('[data-tour-field="service"]')?.value,tour:card.querySelector('[data-tour-field="tour"]')?.value};const transport=isTransportItem(item);const quantity=card.querySelector('[data-tour-field="guests"]');if(card.dataset.pricingUnit!=="vehicle"&&transport)quantity.value="1";else if(card.dataset.pricingUnit==="vehicle"&&!transport)quantity.value=clean(els.guestCountInput.value);quantity.placeholder=transport?"1":"2";card.dataset.pricingUnit=transport?"vehicle":"person";const heading=card.querySelector(".tourItemTop strong");if(heading)heading.textContent=[item.tour||productTitle(item.product_selected)||"Service",item.service_type].filter(Boolean).join(" · ");card.querySelector('[data-quantity-label]').textContent=transport?"Vehicles":"Guests";card.querySelector('[data-price-label]').textContent=transport?"Price per vehicle":"Price per person";}
-      function primaryTourItemFromForm(){ const product=clean(els.productSelectedInput.value); const tour=productTitle(product)||clean(els.tourInput.value); return normalizeTourItem({id:"primary",tour:tour,date:toDateValue(els.dateInput.value),guests:clean(els.guestCountInput.value),product_selected:product||deriveProductCode(tour),duration:clean(els.durationInput.value),status:normalizeStatus(els.recordStatusInput.value||"booked"),pickup_location:clean(els.pickupLocationInput.value),price:"",notes:"Primary tour"}); }
+      function primaryTourItemFromForm(){
+        const product=clean(els.productSelectedInput.value);
+        const tour=productTitle(product)||clean(els.tourInput.value);
+        const primary=normalizeTourItem({id:"primary",tour:tour,date:toDateValue(els.dateInput.value),guests:clean(els.guestCountInput.value),product_selected:product||deriveProductCode(tour),duration:clean(els.durationInput.value),status:normalizeStatus(els.recordStatusInput.value||"new"),pickup_location:clean(els.pickupLocationInput.value),price:"",notes:"Primary tour"});
+        const selected=getSelected();
+        const stored=selected&&primaryTourItemFromRecord(selected);
+        // Only reuse a service's own saved rate when the product and date still match.
+        if(stored&&sameTourItem(stored,primary)){
+          primary.price=stored.price;
+          if(stored.vehicle_count) primary.vehicle_count=stored.vehicle_count;
+        }
+        return primary;
+      }
       function primaryTourItemFromRecord(record){
         record=record||{};
         const items=normalizeTourItems(record);
         const explicitProduct=clean(record.product_selected).split(" - ")[0];
+        const hasStoredItems=Boolean(record.tour_items_json||record.tour_items);
         const storedPrimary=explicitProduct
           ? items.find(item=>clean(item.product_selected).split(" - ")[0]===explicitProduct)
-          : items[0];
+          : hasStoredItems
+            ? items.find(item=>clean(item.id)==="primary")||items.find(item=>!/^addon-/.test(clean(item.id)))
+            : null;
         if(storedPrimary) return normalizeTourItem(Object.assign({},storedPrimary,{id:"primary"}));
         const product=clean(record.product_selected);
         const tour=productTitle(product)||clean(record.tour_type||record.tour_category);
-        return normalizeTourItem({id:"primary",tour:tour,date:toDateValue(record.requested_date||record.requested_date_start),guests:clean(record.guest_count||record.guest_count_text),product_selected:product||deriveProductCode(tour),duration:clean(record.duration_preference),status:normalizeStatus(record.status||"booked"),pickup_location:clean(record.pickup_location),price:"",notes:"Primary tour"});
+        return normalizeTourItem({id:"primary",tour:tour,date:toDateValue(record.requested_date||record.requested_date_start),guests:clean(record.guest_count||record.guest_count_text),product_selected:product||deriveProductCode(tour),duration:clean(record.duration_preference),status:normalizeStatus(record.status||"new"),pickup_location:clean(record.pickup_location),price:"",notes:"Primary tour"});
       }
       function sameTourItem(a,b){ a=normalizeTourItem(a); b=normalizeTourItem(b); const productA=clean(a.product_selected).split(" - ")[0]; const productB=clean(b.product_selected).split(" - ")[0]; const sameProduct=productA&&productB&&productA===productB; const sameTour=clean(a.tour).toLowerCase()&&clean(a.tour).toLowerCase()===clean(b.tour).toLowerCase(); return a.date===b.date&&(sameProduct||sameTour); }
       function additionalTourItemsForForm(record){
@@ -985,8 +1001,25 @@
         return matches.map((allocation,index)=>normalizeTourItem(Object.assign({},normalized,allocation,{id:normalized.id+"-"+(index+1),notes:[normalized.notes,"Guest request: "+text].filter(Boolean).join(" · ")})));
       }
       function legacyAddOnItems(record){const raw=pick(record,"tour_add_ons","optional_additions","add_ons");if(!raw)return[];return raw.split(/\s*\|\s*/).filter(Boolean).flatMap((value,index)=>{const lower=clean(value).toLowerCase();if(lower.startsWith("tour format:"))return[];if(lower==="night walk")return[{id:"addon-"+(index+1),tour:"Night Walk",service_type:"Activity",product_selected:"MBW016",duration:"Evening activity",status:"new",notes:"Requested on website"}];if(lower==="additional birding day")return[{id:"addon-"+(index+1),tour:"Additional Birding Day",service_type:"Birdwatching",status:"new",notes:"Requested on website"}];if(lower==="transportation")return[{id:"addon-"+(index+1),tour:"Transportation Requested",service_type:"Transportation",status:"new",notes:"Requested on website"}];if(lower==="accommodation assistance")return[{id:"addon-"+(index+1),tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01",status:"new",notes:"Requested on website"}];const detail=lower.startsWith("other:")?value.slice(value.indexOf(":")+1).trim():value;return[{id:"addon-"+(index+1),tour:detail||"Other Activity or Tour",service_type:"Custom",product_selected:"Other",status:"new",notes:"Requested on website"}];});}
-      function normalizeTourItems(record){ if(!record) return []; let source=record.tour_items_json||record.tour_items||""; if(Array.isArray(source)) return source.map(normalizeTourItem).filter(validTourItem); if(typeof source==="string"&&source.trim()){ try{ const parsed=JSON.parse(source); if(Array.isArray(parsed)) return parsed.map(normalizeTourItem).filter(validTourItem); }catch(e){ return source.split(/\\s*\\|\\s*/).map(chunk=>{ const parts=chunk.split("::"); return normalizeTourItem({date:parts[0],tour:parts[1],guests:parts[2],product:parts[3],status:parts[4],pickup_location:parts[5],price:parts[6],notes:parts[7]}); }).filter(validTourItem); } } return legacyAddOnItems(record).map(normalizeTourItem).filter(validTourItem); }
-      function normalizeTourItem(item){ item=item||{}; const tour=clean(item.tour||item.tour_type||item.name||item.product_selected); const date=toDateValue(item.date||item.tour_date||item.requested_date); const guests=clean(item.guests||item.guest_count||item.party_size); const product=clean(item.product_selected||item.product||deriveProductCode(tour)); const price=clean(item.price||item.quoted_amount||item.unit_price||item.price_per_person||item.per_person||item.amount); const serviceType=clean(item.service_type)||deriveServiceType(product||tour); return Object.assign({},item,{id:clean(item.id)||"TI-"+stamp()+"-"+Math.random().toString(16).slice(2,6),tour:tour,service_type:serviceType,date:date,tour_date:date,guests:guests,product_selected:product,duration:clean(item.duration||item.duration_preference),status:normalizeStatus(item.status||"booked"),pickup_location:clean(item.pickup_location||item.pickup||""),price:price,notes:clean(item.notes||"")}); }
+      function normalizeTourItems(record){
+        if(!record) return [];
+        const normalizeWithContext=item=>normalizeTourItem(Object.assign({},item,{status:clean(item&&item.status)||clean(record.status)||"new"}));
+        const source=record.tour_items_json||record.tour_items||"";
+        if(Array.isArray(source)) return source.map(normalizeWithContext).filter(validTourItem);
+        if(typeof source==="string"&&source.trim()){
+          try{
+            const parsed=JSON.parse(source);
+            if(Array.isArray(parsed)) return parsed.map(normalizeWithContext).filter(validTourItem);
+          }catch(e){
+            return source.split(/\\s*\\|\\s*/).map(chunk=>{
+              const parts=chunk.split("::");
+              return normalizeWithContext({date:parts[0],tour:parts[1],guests:parts[2],product:parts[3],status:parts[4],pickup_location:parts[5],price:parts[6],notes:parts[7]});
+            }).filter(validTourItem);
+          }
+        }
+        return legacyAddOnItems(record).map(normalizeWithContext).filter(validTourItem);
+      }
+      function normalizeTourItem(item){ item=item||{}; const tour=clean(item.tour||item.tour_type||item.name||item.product_selected); const date=toDateValue(item.date||item.tour_date||item.requested_date); const guests=clean(item.guests||item.guest_count||item.party_size); const product=clean(item.product_selected||item.product||deriveProductCode(tour)); const price=clean(item.price||item.quoted_amount||item.unit_price||item.price_per_person||item.per_person||item.amount); const serviceType=clean(item.service_type)||deriveServiceType(product||tour); return Object.assign({},item,{id:clean(item.id)||"TI-"+stamp()+"-"+Math.random().toString(16).slice(2,6),tour:tour,service_type:serviceType,date:date,tour_date:date,guests:guests,product_selected:product,duration:clean(item.duration||item.duration_preference),status:normalizeStatus(clean(item.status)||"new"),pickup_location:clean(item.pickup_location||item.pickup||""),price:price,notes:clean(item.notes||"")}); }
       function validTourItem(item){ return Boolean(clean(item.tour)||clean(item.product_selected)||clean(item.notes)||clean(item.price)); }
       function collectTourItems(){ if(!els.tourItemsList) return []; return Array.from(els.tourItemsList.querySelectorAll(".tourItem")).map(card=>{const original=(state.tourItems||[]).find(item=>clean(item.id)===clean(card.dataset.id))||{};return normalizeTourItem(Object.assign({},original,{id:card.dataset.id,vehicle_count:isTransportItem({product_selected:card.querySelector('[data-tour-field="product"]').value,service_type:card.querySelector('[data-tour-field="service"]')?.value,tour:card.querySelector('[data-tour-field="tour"]').value})?clean(card.querySelector('[data-tour-field="guests"]').value):"",tour:card.querySelector('[data-tour-field="tour"]').value,service_type:card.querySelector('[data-tour-field="service"]')?.value,date:card.querySelector('[data-tour-field="date"]').value,guests:card.querySelector('[data-tour-field="guests"]').value,product_selected:card.querySelector('[data-tour-field="product"]').value,price:card.querySelector('[data-tour-field="price"]').value,duration:card.querySelector('[data-tour-field="duration"]').value,status:card.querySelector('[data-tour-field="status"]').value,pickup_location:card.querySelector('[data-tour-field="pickup"]').value,notes:card.querySelector('[data-tour-field="notes"]').value}));}).filter(validTourItem); }
       function serializeTourItems(items){ return items&&items.length?JSON.stringify(items.map(item=>normalizeTourItem(item))):""; }
@@ -1058,7 +1091,52 @@
       }
       function findDuplicateRecords(record){ const email=comparableEmail(record); const phone=comparablePhone(record); const name=clean(record.full_name).toLowerCase(); const date=toDateValue(record.requested_date||record.requested_date_start); return activeOtherRecords(record).filter(item=>{ const sameEmail=email&&comparableEmail(item)===email; const samePhone=phone&&comparablePhone(item)===phone; const sameNameDate=name&&date&&clean(item.full_name).toLowerCase()===name&&toDateValue(item.requested_date||item.requested_date_start)===date; return sameEmail||samePhone||sameNameDate; }); }
       function renderDuplicateNotice(){ if(!els.duplicateNotice) return; const record=formRecord(); const matches=findDuplicateRecords(record); if(!matches.length){ els.duplicateNotice.hidden=true; els.duplicateNotice.classList.remove("show"); els.duplicateNotice.innerHTML=""; return; } const recordDate=toDateValue(record.requested_date||record.requested_date_start); const duplicates=matches.filter(item=>sourceIdentityMatch(item,record)||(recordDate&&toDateValue(item.requested_date||item.requested_date_start)===recordDate)); const shown=(duplicates.length?duplicates:matches).slice(0,3); const duplicateMode=duplicates.length>0; els.duplicateNotice.hidden=false; els.duplicateNotice.classList.add("show"); els.duplicateNotice.innerHTML=`<strong>${duplicateMode?"Possible duplicate submission:":"Returning guest:"}</strong> ${shown.map(r=>esc(r.full_name||"Guest")+" ("+esc(r.requested_date||r.requested_date_start||"No date")+")").join(", ")}. ${duplicateMode?"Review the matching record before saving another copy.":"This guest has another trip. Keep each trip as a separate record."}<br>${shown.map(r=>`<button type="button" data-id="${esc(r.inquiry_id)}">Review ${esc(r.requested_date||r.requested_date_start||"record")}</button>`).join("")}`; els.duplicateNotice.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>selectRecord(btn.dataset.id))); }
-      function calendarEntriesForRecord(record){ const items=normalizeTourItems(record); if(items.length) return items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||record.tour_type,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})); return [record]; }
+      // Project scheduled work for display only; never rewrite enquiry or pricing data.
+      function calendarAssignmentsForRecord(record){
+        const seen=new Set();
+        return currentAssignmentRows(record).filter(item=>{
+          const inquiry=clean(item.inquiry_id),booking=clean(item.booking_id);
+          // An explicit trip identity takes precedence over a shared guest identity.
+          if(inquiry&&inquiry!==clean(record.inquiry_id)) return false;
+          if(!inquiry&&booking&&booking!==clean(record.booking_id)) return false;
+          if(!inquiry&&!booking){
+            const siblings=state.records.filter(other=>!isArchivedStatus(other)&&guestIdentityMatch(other,record));
+            if(siblings.length!==1) return false;
+          }
+          if(!toDateValue(item.service_date)) return false;
+          const key=clean(item.assignment_id)||JSON.stringify([item.service_item_id,item.service_date,item.start_time,item.end_time,item.service_type,item.product_selected,item.trip_direction]);
+          if(seen.has(key)) return false;
+          seen.add(key); return true;
+        });
+      }
+      function calendarEntriesForRecord(record){
+        const items=normalizeTourItems(record);
+        const base=items.length?items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||productTitle(item.product_selected)||item.service_type,tour_category:item.tour||productTitle(item.product_selected)||item.service_type,service_type:activityServiceDetails(item).service,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})):[record];
+        const assignments=calendarAssignmentsForRecord(record),replaced=new Set(),scheduled=[];
+        assignments.forEach(assignment=>{
+          const service=clean(assignment.service_type)||"Custom";
+          const reference=clean(assignment.service_item_id)||assignmentReference(assignment.internal_note);
+          const code=productCodeFromValue(assignment.product_selected);
+          const expected=MBW_PRODUCT_SERVICE_BY_CODE[code];
+          const productCompatible=expected&&(expected===service||(service==="Night Walk"&&code==="MBW016")||(service==="Specialty Wildlife"&&expected==="Wildlife"));
+          const product=productCompatible?clean(assignment.product_selected):"";
+          const compatible=base.filter(entry=>assignmentItemService(entry._calendar_item||entry)===service);
+          let matches=reference?compatible.filter(entry=>clean(entry._calendar_item?.id)===reference):[];
+          if(!matches.length){
+            const sameDay=compatible.filter(entry=>toDateValue(entry.requested_date)===toDateValue(assignment.service_date));
+            matches=product?sameDay.filter(entry=>productCodeFromValue((entry._calendar_item||entry).product_selected)===code):[];
+            // Legacy assignments often have no product code or an obsolete service reference.
+            // Match a unique same-day service, but never conflate distinct known products.
+            if(!matches.length&&service!=="Activity"&&service!=="Custom") matches=sameDay.filter(entry=>!product||!productCodeFromValue((entry._calendar_item||entry).product_selected));
+          }
+          if(matches.length===1) replaced.add(matches[0]);
+          const title=product?productTitle(product):service;
+          const status=normalizeStatus(assignment.assignment_status);
+          const item={id:"assignment-"+clean(assignment.assignment_id),tour:title,service_type:service,product_selected:product,date:toDateValue(assignment.service_date),guests:assignment.guest_count||record.guest_count,status:status==="pending"?"planning":status,pickup_location:assignment.pickup_location||record.pickup_location};
+          scheduled.push(Object.assign({},record,{_calendar_item:item,_calendar_assignment:assignment,tour_type:title,tour_category:title,service_type:service,product_selected:product,requested_date:item.date,requested_date_start:item.date,requested_date_end:item.date,guest_count:item.guests,status:item.status,pickup_location:item.pickup_location}));
+        });
+        return base.filter(entry=>!replaced.has(entry)).concat(scheduled);
+      }
       function loadDemoRecords(show){ state.records=[demo("INQ-DEMO-001","Jeanne Friedman","Full-Day Birdwatching Tour","2026-12-08","new","not_sent","unpaid","Cock-of-the-rock, tanagers, umbrella bird"),demo("INQ-DEMO-002","Jared","Two full days guided birding","2026-11-19","quoted","sent","unpaid","Rental vehicle. Interested in target bird builder."),demo("INQ-DEMO-003","Lauren","Quito to Mindo Day Trip","2026-11-13","booked","accepted","deposit_paid","2 guests, door-to-door Quito pickup")]; state.selectedId=state.records[0].inquiry_id; saveLocalRecords(); fillForm(getSelected()); render(); if(show) showToast("Demo records loaded"); }
       function demo(id,name,tour,date,status,quote,payment,notes){ return {inquiry_id:id,guest_id:"G-"+id.slice(-3),full_name:name,first_name:name.split(" ")[0]||"",last_name:name.split(" ").slice(1).join(" "),phone_number:"",phone_normalized:"",email:"",country:"",tour_type:tour,interest_category:tour,guest_count:"2",requested_date:date,duration_preference:"",transportation_needed:"",status,quote_status:quote,payment_status:payment,availability_status:"pending",followup_date:"",notes,internal_notes:"",created_at:new Date().toISOString(),updated_at:new Date().toISOString()}; }
       async function api(action,data){
@@ -1304,7 +1382,7 @@
         const source=pick(row,"source_type","source_tab")||"manual_whatsapp";
         const existingCompleted=pick(row,"tour_completed");
         const tourItems=normalizeTourItems(row);
-        const storedPrimary=tourItems[0]||{};
+        const storedPrimary=primaryTourItemFromRecord(row);
         const explicitProduct=pick(row,"product_selected")||clean(storedPrimary.product_selected).split(" - ")[0];
         const explicitDuration=normalizeDuration(pick(row,"duration_preference")||storedPrimary.duration);
         const explicitService=pick(row,"service_type")||deriveServiceType(storedPrimary.tour||tour);
@@ -1580,21 +1658,60 @@
             api("list_bookings",{guest_id:record.guest_id||"",inquiry_id:""}).catch(()=>({records:[]})),
             api("list_payments",{guest_id:record.guest_id||"",inquiry_id:""}).catch(()=>({records:[]}))
           ]);
-          if(state.selectedId!==requestedId) return; state.interactions=extractRecords(interactionResult); state.assignments=extractRecords(assignmentResult); state.allAssignments=extractRecords(allAssignmentResult); state.providers=extractRecords(providerResult); state.bookings=extractRecords(bookingResult); state.payments=extractRecords(paymentResult); renderWorkspaces(); renderGuestHistory(); renderPaymentLedger(); renderRecords(els.priorityRecords,getPriorityRecords(getFiltered()).slice(0,6)); renderRecords(els.recordList,getFiltered());
+          if(state.selectedId!==requestedId) return; state.interactions=extractRecords(interactionResult); state.assignments=extractRecords(assignmentResult); state.allAssignments=extractRecords(allAssignmentResult); state.providers=extractRecords(providerResult); state.bookings=extractRecords(bookingResult); state.payments=extractRecords(paymentResult); renderWorkspaces(); renderGuestHistory(); renderPaymentLedger(); renderRecords(els.priorityRecords,getPriorityRecords(getFiltered()).slice(0,6)); renderRecords(els.recordList,getFiltered()); renderCalendar(); renderReports();
         }catch(error){showToast(error.message);renderWorkspaces();renderGuestHistory();renderPaymentLedger();}finally{state.workspaceLoading=false;}
       }
       function localDateTimeValue(date){ const d=date?new Date(date):new Date(); if(Number.isNaN(d.getTime())) return ""; const off=d.getTimezoneOffset(); return new Date(d.getTime()-off*60000).toISOString().slice(0,16); }
-      function clearInteractionForm(){ els.saveInteractionBtn.dataset.id=""; els.interactionDirection.value="incoming"; els.interactionChannel.value="whatsapp"; els.interactionType.value="guest_message"; els.interactionOccurredAt.value=localDateTimeValue(); els.interactionNote.value=""; els.interactionFollowup.checked=false; els.interactionFollowupAt.value=""; els.interactionFollowupFields.hidden=true; els.saveInteractionBtn.textContent="Save Interaction"; }
+      function clearInteractionForm(){ els.saveInteractionBtn.dataset.id=""; els.saveInteractionBtn.dataset.pendingFollowupDate=""; if(els.interactionSaveStatus)els.interactionSaveStatus.textContent=""; els.interactionDirection.value="incoming"; els.interactionChannel.value="whatsapp"; els.interactionType.value="guest_message"; els.interactionOccurredAt.value=localDateTimeValue(); els.interactionNote.value=""; els.interactionFollowup.checked=false; els.interactionFollowupAt.value=""; els.interactionFollowupFields.hidden=true; els.saveInteractionBtn.textContent="Save Interaction"; }
       function renderInteractions(){
         const rows=state.interactions||[]; els.interactionCount.textContent=rows.length?`${rows.length} interaction${rows.length===1?"":"s"}, newest first.`:"No interactions recorded yet.";
         els.interactionTimeline.innerHTML=rows.length?rows.map(item=>`<article class="timelineItem ${esc(item.direction||"internal")}"><div class="timelineHead"><span class="timelineTitle">${esc(labelStatus(item.direction||"internal"))} · ${esc(labelStatus(item.channel||"other"))}</span><time class="timelineTime">${esc(formatDateTime(item.occurred_at||item.created_at))}</time></div><p>${esc(item.note||"")}</p><div class="timelineMeta"><div class="timelineTags"><span class="miniTag">${esc(labelStatus(item.interaction_type||"other"))}</span><span class="miniTag">${esc(item.created_by||"")}</span>${String(item.followup_required).toLowerCase()==="yes"?`<span class="miniTag">Follow-up ${esc(displayDate(item.followup_at))}</span>`:""}</div><div class="timelineActions"><button class="miniAction" type="button" data-interaction-action="edit" data-id="${esc(item.interaction_id)}">Edit</button><button class="miniAction danger" type="button" data-interaction-action="delete" data-id="${esc(item.interaction_id)}">Delete</button></div></div></article>`).join(""):'<div class="workspaceEmpty">Log the first email, message, call, or internal note.</div>';
       }
       async function saveInteraction(){
-        const record=getSelected(); if(!record){showToast("Select a guest first");return;} const note=clean(els.interactionNote.value); if(!note){showToast("Enter a communication note");return;}
-        const interaction={interaction_id:els.saveInteractionBtn.dataset.id||"",guest_id:record.guest_id||"",inquiry_id:record.inquiry_id||"",booking_id:record.booking_id||"",occurred_at:els.interactionOccurredAt.value?new Date(els.interactionOccurredAt.value).toISOString():"",direction:els.interactionDirection.value,channel:els.interactionChannel.value,interaction_type:els.interactionType.value,note,created_by:els.interactionStaff.value,followup_required:els.interactionFollowup.checked?"Yes":"No",followup_at:els.interactionFollowupAt.value?new Date(els.interactionFollowupAt.value).toISOString():""};
-        els.saveInteractionBtn.disabled=true; try{await api(interaction.interaction_id?"update_interaction":"create_interaction",{interaction});clearInteractionForm();await loadGuestWorkspace();showToast("Interaction saved");}catch(error){showToast(error.message);}finally{els.saveInteractionBtn.disabled=false;}
+        if(els.saveInteractionBtn.disabled) return;
+        const record=getSelected(); if(!record){showToast("Select a guest first");return;}
+        const note=clean(els.interactionNote.value); if(!note){showToast("Enter a communication note");return;}
+        const required=els.interactionFollowup.checked;
+        const followupValue=clean(els.interactionFollowupAt.value);
+        if(required&&(!followupValue||Number.isNaN(new Date(followupValue).getTime()))){showToast("Choose a valid follow-up date before saving");return;}
+        const previous=state.interactions.find(item=>item.interaction_id===els.saveInteractionBtn.dataset.id);
+        const changed=!previous||String(previous.followup_required).toLowerCase()!=="yes"||localDateTimeValue(previous.followup_at)!==followupValue;
+        const followupDate=required&&(changed||clean(els.saveInteractionBtn.dataset.pendingFollowupDate))?toDateValue(followupValue):"";
+        const interaction={interaction_id:els.saveInteractionBtn.dataset.id||"",guest_id:record.guest_id||"",inquiry_id:record.inquiry_id||"",booking_id:record.booking_id||"",occurred_at:els.interactionOccurredAt.value?new Date(els.interactionOccurredAt.value).toISOString():"",direction:els.interactionDirection.value,channel:els.interactionChannel.value,interaction_type:els.interactionType.value,note,created_by:els.interactionStaff.value,followup_required:required?"Yes":"No",followup_at:required?new Date(followupValue).toISOString():""};
+        let interactionSaved=false,savedId=interaction.interaction_id;
+        const statusMessage=message=>{if(els.interactionSaveStatus)els.interactionSaveStatus.textContent=message;showToast(message);};
+        els.saveInteractionBtn.disabled=true;
+        try{
+          const result=await api(interaction.interaction_id?"update_interaction":"create_interaction",{interaction});
+          interactionSaved=true;
+          savedId=clean(result.record?.interaction_id)||savedId;
+          if(state.selectedId===record.inquiry_id){
+            els.saveInteractionBtn.dataset.id=savedId;
+            els.saveInteractionBtn.dataset.pendingFollowupDate=followupDate;
+          }
+          if(followupDate){
+            // Patch only the queue date; do not save unrelated, possibly stale form fields.
+            const patch={inquiry_id:record.inquiry_id,followup_date:followupDate};
+            await api("update_inquiry",{record:patch,inquiry_row:patch});
+            state.records=state.records.map(item=>item.inquiry_id===record.inquiry_id?Object.assign({},item,{followup_date:followupDate}):item);
+            if(state.selectedId===record.inquiry_id&&toDateValue(els.followupInput.value)===toDateValue(record.followup_date))els.followupInput.value=followupDate;
+            saveLocalRecords();render();
+          }
+          if(state.selectedId===record.inquiry_id)clearInteractionForm();
+          await loadGuestWorkspace();
+          statusMessage(followupDate?"Communication saved; inquiry follow-up updated to "+followupDate:!required&&previous&&String(previous.followup_required).toLowerCase()==="yes"?"Communication follow-up removed. Inquiry follow-up unchanged; review it in Guest & Inquiry if needed.":"Communication saved");
+        }catch(error){
+          if(interactionSaved){
+            if(state.selectedId===record.inquiry_id){
+              if(savedId)els.saveInteractionBtn.textContent="Retry Follow-up Update";
+              else clearInteractionForm();
+            }
+            await loadGuestWorkspace();
+            statusMessage(savedId?"Communication saved, but inquiry follow-up was not updated. Retry Follow-up Update to try again.":"Communication saved, but inquiry follow-up was not updated. Set Follow-up in Guest & Inquiry and save the record.");
+          }else statusMessage(error.message);
+        }finally{els.saveInteractionBtn.disabled=false;}
       }
-      async function handleInteractionAction(event){ const button=event.target.closest("[data-interaction-action]");if(!button)return;const item=state.interactions.find(row=>row.interaction_id===button.dataset.id);if(!item)return;if(button.dataset.interactionAction==="edit"){els.saveInteractionBtn.dataset.id=item.interaction_id;els.interactionDirection.value=item.direction||"internal";els.interactionChannel.value=item.channel||"other";els.interactionType.value=item.interaction_type||"other";els.interactionStaff.value=item.created_by||"JPG";els.interactionOccurredAt.value=localDateTimeValue(item.occurred_at);els.interactionNote.value=item.note||"";els.interactionFollowup.checked=String(item.followup_required).toLowerCase()==="yes";els.interactionFollowupFields.hidden=!els.interactionFollowup.checked;els.interactionFollowupAt.value=localDateTimeValue(item.followup_at);els.saveInteractionBtn.textContent="Update Interaction";window.scrollTo({top:els.activityWorkspace.offsetTop-20,behavior:"smooth"});return;}if(!confirm("Remove this interaction from the timeline?"))return;try{await api("delete_interaction",{interaction:{...item}});await loadGuestWorkspace();showToast("Interaction removed");}catch(error){showToast(error.message);} }
+      async function handleInteractionAction(event){ const button=event.target.closest("[data-interaction-action]");if(!button)return;const item=state.interactions.find(row=>row.interaction_id===button.dataset.id);if(!item)return;if(button.dataset.interactionAction==="edit"){if(els.saveInteractionBtn.dataset.id!==item.interaction_id){els.saveInteractionBtn.dataset.pendingFollowupDate="";if(els.interactionSaveStatus)els.interactionSaveStatus.textContent="";}els.saveInteractionBtn.dataset.id=item.interaction_id;els.interactionDirection.value=item.direction||"internal";els.interactionChannel.value=item.channel||"other";els.interactionType.value=item.interaction_type||"other";els.interactionStaff.value=item.created_by||"JPG";els.interactionOccurredAt.value=localDateTimeValue(item.occurred_at);els.interactionNote.value=item.note||"";els.interactionFollowup.checked=String(item.followup_required).toLowerCase()==="yes";els.interactionFollowupFields.hidden=!els.interactionFollowup.checked;els.interactionFollowupAt.value=localDateTimeValue(item.followup_at);els.saveInteractionBtn.textContent="Update Interaction";window.scrollTo({top:els.activityWorkspace.offsetTop-20,behavior:"smooth"});return;}if(!confirm("Remove this interaction from the timeline?"))return;try{await api("delete_interaction",{interaction:{...item}});await loadGuestWorkspace();showToast("Interaction removed");}catch(error){showToast(error.message);} }
       function providerServiceAliases(service){ const normalized=clean(service).toLowerCase(); if(normalized==="activity"||normalized==="other activities") return ["activity","other activities"]; if(normalized==="accommodation") return ["accommodation"]; return [normalized]; }
       function providerSortName(name){ const normalized=clean(name).toLowerCase(); return normalized==="niecer"?"neicer":normalized; }
       function providerDisplayOrder(service){ const normalized=clean(service).toLowerCase(); if(normalized==="birdwatching") return ["chicho","neicer","anderson","other"]; if(normalized==="activity"||normalized==="other activities") return ["chicho","neicer","mindo green","other"]; if(normalized==="accommodation") return ["mindo glambird","other"]; return []; }
@@ -1817,7 +1934,7 @@
       function openConfirmationTool(){ const r=toolRecord(getSelected()||formRecord()); const tourItems=serializeTourItems(normalizeTourItems(r)); const draft=Object.assign({},r,{source:"guest_crm",guest_name:r.full_name||"",guest:r.full_name||"",guest_phone:r.phone_number||"",tour_date:r.requested_date||"",tour_date_end:r.requested_date_end||"",tour:r.tour_type||"",tour_type:r.tour_type||"",pickup_location:r.pickup_location||"",transportation:r.transportation_needed||"",duration:r.duration_preference||"",notes:"",tour_items_json:tourItems,tour_items:tourItems}); localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(draft)); localStorage.setItem("mbwGuestCrmSelectedRecord",JSON.stringify(draft)); localStorage.setItem("mbwTourConfirmationDraft",JSON.stringify(draft)); const params=new URLSearchParams({source:"guest_crm",inquiry_id:r.inquiry_id||"",guest_id:r.guest_id||"",guest:draft.guest_name||"",guest_name:draft.guest_name||"",full_name:draft.guest_name||"",guest_phone:draft.guest_phone||"",phone:draft.guest_phone||"",tour_date:draft.tour_date||"",requested_date:draft.tour_date||"",tour_date_end:draft.tour_date_end||"",tour:draft.tour||"",tour_type:draft.tour_type||"",pickup_location:draft.pickup_location||"",pickup:draft.pickup_location||"",transportation:draft.transportation||"",duration:draft.duration||"",tour_items_json:tourItems,tour_items:tourItems}); window.open("https://admin.mindobirdwatching.com/tour-confirmation-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
       function itineraryProduct(value,tour){ const product=clean(value); const map={MBW002:"MBW002 - Private Birdwatching Tour",MBW004:"MBW004 - Jewels of the Morning Forest",MBW005:"MBW005 - Andean Cock-of-the-Rock Dawn Tour",MBW006:"MBW006 - Quest for Five Toucans Full Day"}; return map[product]||product||clean(tour)||"Other"; }
       function itineraryServiceType(item){ const text=(clean(item.product_selected)+" "+clean(item.tour)).toLowerCase(); if(text.includes("transport")) return "Transportation"; if(text.includes("insect")||text.includes("macro")||text.includes("bear")||text.includes("oso")) return "Specialty Wildlife"; if(/night|waterfall|chocolate|coffee|butterfly|frog|quad|canopy|orchid|tubing|rafting|canyoning|paintball|horseback|mountain biking|swing|sky bike|sky ride/.test(text)) return "Activity"; return "Birdwatching"; }
-      function openItineraryTool(){ const record=formRecord(); const sourceItems=itineraryItemsFromForm(collectTourItems()); const items=sourceItems.map((item,index)=>{ const product=itineraryProduct(item.product_selected,item.tour); const pickup=clean(item.pickup_location); const itemNote=dedupeNoteText(item.notes); return {date:toDateValue(item.date||item.tour_date||record.requested_date),startTime:"",duration:clean(item.duration||record.duration_preference),type:itineraryServiceType(item),productPreset:product,name:product,description:itemNote,note:[itemNote,pickup?("Pickup: "+pickup):""].filter(Boolean).join(" · "),quantity:Number(String(isTransportItem(item)?vehicleQuantity(item):(item.guests||record.guest_count||1)).match(/\d+/)?.[0]||1),unitPrice:Number(item.price||(index===0?record.quoted_amount:0)||0)}; }); const dates=items.map(item=>item.date).filter(Boolean).sort(); const draft={source:"guest_crm",createdAt:new Date().toISOString(),inquiryId:record.inquiry_id||"",guestName:record.full_name||"",whatsappNumber:record.phone_number||"",guestCount:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),startDate:dates[0]||record.requested_date||"",endDate:dates[dates.length-1]||record.requested_date_end||record.requested_date||"",tripTitle:"Your Mindo Tour Itinerary",openingText:"Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.",items:items}; localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record))); localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft)); const draftJson=JSON.stringify(draft); const params=new URLSearchParams({source:"guest_crm",inquiry_id:draft.inquiryId,draft:draft.createdAt,itinerary_json:draftJson,guest:draft.guestName,phone:draft.whatsappNumber,start_date:draft.startDate,end_date:draft.endDate,guests:String(draft.guestCount)}); window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
+      function openItineraryTool(){ const record=formRecord(); const sourceItems=itineraryItemsFromForm(collectTourItems()); const items=sourceItems.map((item,index)=>{ const product=itineraryProduct(item.product_selected,item.tour); const pickup=clean(item.pickup_location); const itemNote=dedupeNoteText(item.notes); return {date:toDateValue(item.date||item.tour_date||record.requested_date),startTime:"",duration:clean(item.duration||record.duration_preference),type:itineraryServiceType(item),productPreset:product,name:product,description:itemNote,note:[itemNote,pickup?("Pickup: "+pickup):""].filter(Boolean).join(" · "),quantity:Number(String(isTransportItem(item)?vehicleQuantity(item):(item.guests||record.guest_count||1)).match(/\d+/)?.[0]||1),unitPrice:clean(item.price)===""?"":Number(item.price)}; }); const dates=items.map(item=>item.date).filter(Boolean).sort(); const draft={source:"guest_crm",createdAt:new Date().toISOString(),inquiryId:record.inquiry_id||"",guestName:record.full_name||"",whatsappNumber:record.phone_number||"",guestCount:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),startDate:dates[0]||record.requested_date||"",endDate:dates[dates.length-1]||record.requested_date_end||record.requested_date||"",tripTitle:"Your Mindo Tour Itinerary",openingText:"Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.",items:items}; localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record))); localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft)); const draftJson=JSON.stringify(draft); const params=new URLSearchParams({source:"guest_crm",inquiry_id:draft.inquiryId,draft:draft.createdAt,itinerary_json:draftJson,guest:draft.guestName,phone:draft.whatsappNumber,start_date:draft.startDate,end_date:draft.endDate,guests:String(draft.guestCount)}); window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
       function openSavedItinerary(){
         const record=getSelected();
         if(!record){ showToast("Select a record first"); return; }
@@ -1852,7 +1969,7 @@
             description:itemNote,
             note:[itemNote,pickup?("Pickup: "+pickup):""].filter(Boolean).join(" · "),
             quantity:Number(String(isTransportItem(item)?vehicleQuantity(item):(item.guests||record.guest_count||1)).match(/\d+/)?.[0]||1),
-            unitPrice:Number(item.price||(index===0?record.quoted_amount:0)||0)
+            unitPrice:clean(item.price)===""?"":Number(item.price)
           };
         });
         if(!items.length){
@@ -1867,7 +1984,7 @@
             description:"",
             note:clean(record.pickup_location)?("Pickup: "+clean(record.pickup_location)):"",
             quantity:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),
-            unitPrice:Number(record.quoted_amount||0)
+            unitPrice:""
           });
         }
         const dates=items.map(item=>item.date).filter(Boolean).sort();
@@ -2018,16 +2135,29 @@
       function matchesCalendarLegend(record,iso){ const filter=state.calendarLegendFilter; if(!filter) return true; if(filter.kind==="status") return calendarType(record,iso)===filter.value; return serviceVisual(record).label===filter.value; }
       function isRecordOnTourDate(r,iso){ if(r._calendar_item) return r.requested_date===iso; const items=normalizeTourItems(r); if(items.length) return items.some(item=>item.tour_date===iso); const start=toDateValue(r.requested_date||r.requested_date_start); if(!start) return false; return iso===start; }
       function calendarEvent(r,iso){ const type=calendarType(r,iso); const service=serviceVisual(r,type==="follow"&&state.calendarMode!=="tour"); const name=clean(r.full_name)||"Guest"; const guests=r.guest_count?` · ${clean(r.guest_count)}p`:""; const fullText=service.fullLabel+" · "+name+guests; return `<span class="calEvent ${type}" data-id="${esc(r.inquiry_id)}" title="${esc(fullText)}"><span class="serviceIcon" aria-hidden="true">${service.icon}</span><span class="calEventText">${esc(service.label)} · ${esc(name)}${esc(guests)}</span></span>`; }
+      function activityServiceDetails(record){
+        const item=record._calendar_item||record;
+        const product=clean(item.product_selected);
+        const code=productCodeFromValue(product);
+        const service=MBW_PRODUCT_SERVICE_BY_CODE[code]||clean(item.service_type);
+        const title=clean(item.tour||item.tour_type||item.tour_category||productTitle(product)||item.service_type);
+        const genericBirding=/^(?:birdwatching|birding)(?:\s+(?:half[ -]?day|full[ -]?day))?(?:\s+tour)?$/i.test(title);
+        const displayTitle=genericBirding&&MBW_PRODUCT_SERVICE_BY_CODE[code]&&!/^(birdwatching|tour upgrade)$/i.test(service)?productTitle(product):title;
+        return {title:displayTitle,product,code,service};
+      }
       function serviceVisual(record,isFollowup){
         if(isFollowup||record._calendar_followup) return {icon:"↻",label:"Follow-up",fullLabel:"Follow-up"};
-        const full=clean(record._calendar_item&&record._calendar_item.tour||record.tour_type||record.tour_category||record.service_type||record.product_selected||"");
-        const search=[full,record.service_type,record.product_selected].map(clean).join(" ").toLowerCase();
+        const details=activityServiceDetails(record);
+        const full=details.title;
+        const search=[full,details.service,details.product].map(clean).join(" ").toLowerCase();
         if(search.includes("insect")||search.includes("macro")) return {icon:"✦",label:"Macro wildlife",fullLabel:full||"Private Insect & Macro Wildlife Search"};
         if(search.includes("night")) return {icon:"🌙",label:"Night walk",fullLabel:full||"Night Walk"};
         if(search.includes("transport")||search.includes("quito to mindo")) return {icon:"🚐",label:"Transport",fullLabel:full||"Transportation"};
         if(search.includes("waterfall")||search.includes("hike")||search.includes("hiking")) return {icon:"🥾",label:"Waterfall",fullLabel:full||"Waterfall Tour / Hike"};
         if(search.includes("chocolate")||search.includes("cacao")) return {icon:"🍫",label:"Chocolate",fullLabel:full||"Chocolate Tour"};
         if(search.includes("lodg")||search.includes("hotel")||search.includes("glamp")||search.includes("accommodation")) return {icon:"🏨",label:"Lodging",fullLabel:full||"Lodging"};
+        if(/mountain bik|biking|cycling/.test(search)) return {icon:"🚵🏼",label:"Mountain biking",fullLabel:full||"Mountain Biking"};
+        if(details.service&&!/^(birdwatching|tour upgrade)$/i.test(details.service)) return {icon:"✦",label:full||"Other",fullLabel:full||"Other activity"};
         if(search.includes("custom")&&!search.includes("bird")) return {icon:"✦",label:"Custom",fullLabel:full||"Custom activity"};
         if(search.includes("half")) return {icon:"🐦",label:"Half day",fullLabel:full||"Half Day Birding"};
         if(search.includes("full")||search.includes("quest")||search.includes("toucan")) return {icon:"🐦",label:"Full day",fullLabel:full||"Full Day Birding"};
@@ -2036,12 +2166,20 @@
         return {icon:"✦",label:full||"Other",fullLabel:full||"Other activity"};
       }
       function reportServiceKey(record){
-        const full=[record._calendar_item&&record._calendar_item.tour,record.tour_type,record.tour_category,record.service_type,record.product_selected].map(clean).join(" ").toLowerCase();
+        const details=activityServiceDetails(record);
+        const service=details.service.toLowerCase();
+        const knownType={MBW016:"night_walk",MBW013:"waterfall",MBW011:"chocolate"}[details.code];
+        if(knownType) return knownType;
+        if(service==="transportation") return "transportation";
+        if(service==="accommodation") return "lodging";
+        if(MBW_PRODUCT_SERVICE_BY_CODE[details.code]) return /^(birdwatching|tour upgrade)$/.test(service)?"birding":"other";
+        const full=[details.title,details.service,details.product].map(clean).join(" ").toLowerCase();
         if(full.includes("night")) return "night_walk";
         if(full.includes("transport")||full.includes("quito to mindo")) return "transportation";
         if(full.includes("waterfall")||full.includes("hike")||full.includes("hiking")) return "waterfall";
         if(full.includes("chocolate")||full.includes("cacao")) return "chocolate";
         if(full.includes("lodg")||full.includes("hotel")||full.includes("glamp")||full.includes("accommodation")) return "lodging";
+        if(service&&!/^(birdwatching|tour upgrade)$/.test(service)) return "other";
         if(full.includes("bird")||full.includes("half")||full.includes("full")||full.includes("quest")||full.includes("toucan")||full.includes("cock")||full.includes("andean")||full.includes("forest")||full.includes("jewels")||full.includes("mbw00")) return "birding";
         return "other";
       }
@@ -2052,7 +2190,11 @@
           calendarEntriesForRecord(record).forEach(entry=>{
             const date=toDateValue(entry.requested_date||entry.requested_date_start);
             if(!date) return;
-            rows.push(Object.assign({},entry,{_report_date:date,_report_type:reportServiceKey(entry)}));
+            const inquiryStatus=normalizeStatus(record.status);
+            // A closed inquiry cannot leave old child services in operational reports.
+            const preserveClosedService=inquiryStatus==="completed"&&["cancelled","did_not_book"].includes(normalizeStatus(entry.status));
+            const status=isClosedStatus(inquiryStatus)&&!preserveClosedService?inquiryStatus:entry.status;
+            rows.push(Object.assign({},entry,{status,_report_date:date,_report_type:reportServiceKey(entry)}));
           });
         });
         return rows.sort((a,b)=>a._report_date.localeCompare(b._report_date)||String(a.full_name||"").localeCompare(String(b.full_name||"")));
@@ -2083,6 +2225,8 @@
         const status=normalizeStatus(record.status);
         const payment=normalizePayment(record.payment_status);
         if(filter==="all") return true;
+        if(isArchivedStatus(record)) return false;
+        if(isClosedStatus(status)) return filter===status;
         if(filter==="active") return !["completed","cancelled","did_not_book","duplicate"].includes(status);
         if(filter==="pipeline") return ["new","contacted","planning","qualified","follow_up"].includes(status);
         if(filter==="quoted") return status==="quoted"||record.quote_status==="sent";
