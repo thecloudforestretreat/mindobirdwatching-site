@@ -1,1 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>Propina para tu Guía de Mindo Bird Watching</title>
+  <meta content="Deja una propina opcional para tu guía de Mindo Bird Watching mediante un pago seguro de Stripe únicamente en USD." name="description">
+  <meta content="noindex,follow" name="robots">
+  <link href="https://mindobirdwatching.com/es/propina-para-tu-guia/" rel="canonical">
+  <link href="https://mindobirdwatching.com/tip-your-guide/" hreflang="en" rel="alternate">
+  <link href="https://mindobirdwatching.com/es/propina-para-tu-guia/" hreflang="es" rel="alternate">
+  <link href="https://mindobirdwatching.com/tip-your-guide/" hreflang="x-default" rel="alternate">
+  <meta content="website" property="og:type">
+  <meta content="Mindo Bird Watching" property="og:site_name">
+  <meta content="Propina para tu Guía de Mindo Bird Watching" property="og:title">
+  <meta content="Deja una propina opcional mediante un pago seguro de Stripe únicamente en USD." property="og:description">
+  <meta content="https://mindobirdwatching.com/es/propina-para-tu-guia/" property="og:url">
+  <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image">
+  <link href="/favicon.ico" rel="icon" sizes="any">
+  <link href="/favicon.svg" rel="icon" type="image/svg+xml">
+  <link href="/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="/site.webmanifest" rel="manifest">
+  <link href="/assets/css/site.css" rel="stylesheet">
+  <link href="/assets/css/header.css" rel="stylesheet">
+  <link href="/assets/css/pages/guide-tip.css?v=20261022-1" rel="stylesheet">
+  <script defer src="/assets/js/head.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Propina para tu Guía de Mindo Bird Watching",
+    "url": "https://mindobirdwatching.com/es/propina-para-tu-guia/",
+    "description": "Deja una propina opcional para tu guía mediante un pago seguro de Stripe únicamente en USD.",
+    "inLanguage": "es",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Mindo Bird Watching",
+      "url": "https://mindobirdwatching.com/"
+    }
+  }
+  </script>
+</head>
+<body class="guideTipPage" data-page-content-group="payments" data-page-language="es" data-page-location="mindo" data-page-region="mindo" data-page-type="guide_tip_page">
+  <div class="container tipShell">
+    <div data-current-lang="es" id="siteHeader"></div>
+    <nav aria-label="Selector de idioma" class="rawLangLinks">
+      <a href="/tip-your-guide/" hreflang="en" lang="en">English</a>
+      <a aria-current="page" href="/es/propina-para-tu-guia/" hreflang="es" lang="es">Español</a>
+    </nav>
 
+    <main class="page card">
+      <section class="tipHero" aria-labelledby="tipTitle">
+        <div class="tipIntro">
+          <span class="tipEyebrow">Propina opcional para el guía</span>
+          <h1 id="tipTitle">Deja una Propina para tu Guía</h1>
+          <p>Si tu guía hizo que tu visita a Mindo fuera especial, puedes dejar una propina opcional aquí. Selecciona al guía, ingresa el monto que deseas entregar y continúa a Stripe para realizar el pago seguro.</p>
+          <p>La propina es independiente del pago del tour y del saldo de tu reserva. No cambia el precio ni el estado de la reservación.</p>
+          <ul class="tipFacts" aria-label="Detalles del pago">
+            <li>El pago se procesa únicamente en dólares estadounidenses.</li>
+            <li>No solicitamos el correo electrónico del guía.</li>
+            <li>El guía seleccionado y el motivo de la propina quedan registrados con el pago.</li>
+            <li>Stripe procesa el pago con tarjeta de forma segura.</li>
+          </ul>
+        </div>
+
+        <div class="tipPanel">
+          <h2>Elige tu propina</h2>
+          <p class="tipPanelLead">Sugerimos US$5. Puedes ingresar cualquier monto entre US$1 y US$1.000.</p>
+          <form class="tipForm" data-language="es" id="guideTipForm" novalidate>
+            <label class="tipField" for="tipAmount">
+              Monto de la propina en USD
+              <span class="tipAmountWrap">
+                <span aria-hidden="true" class="tipCurrency">US$</span>
+                <input id="tipAmount" inputmode="decimal" max="1000" min="1" name="amount" required step="0.01" type="number" value="5.00">
+              </span>
+            </label>
+
+            <label class="tipField" for="guideName">
+              Nombre del guía
+              <select id="guideName" name="guide_name" required>
+                <option value="">Selecciona un guía</option>
+                <option value="Chicho">Chicho</option>
+                <option value="Neicer">Neicer</option>
+                <option value="Javier">Javier</option>
+                <option value="Staff">Equipo</option>
+                <option value="Other">Otro</option>
+              </select>
+            </label>
+
+            <label class="tipField" for="otherGuideName" hidden id="otherGuideField">
+              Nombre del otro guía
+              <input autocomplete="off" id="otherGuideName" maxlength="80" name="other_guide_name" type="text">
+            </label>
+
+            <label class="tipField" for="guestName">
+              Tu nombre
+              <input autocomplete="name" id="guestName" maxlength="120" name="guest_name" required type="text">
+            </label>
+
+            <label class="tipField" for="guestEmail">
+              Tu correo electrónico
+              <input autocomplete="email" id="guestEmail" maxlength="254" name="customer_email" required type="email">
+            </label>
+
+            <p aria-live="assertive" class="tipMessage tipMessage--error" id="tipError" role="alert"></p>
+            <p aria-live="polite" class="tipMessage tipMessage--success" id="tipSuccess" role="status"></p>
+
+            <button class="tipButton" id="tipSubmit" type="submit">Continuar al Pago Seguro</button>
+            <p class="tipFinePrint">Podrás revisar el monto en USD en Stripe antes de pagar. Las propinas son voluntarias y no son reembolsables una vez entregadas al guía.</p>
+          </form>
+        </div>
+      </section>
+
+      <section aria-label="Cómo funcionan las propinas" class="tipInfo">
+        <article>
+          <h2>¿Quién la recibe?</h2>
+          <p>El pago se identifica como una propina y se asigna al guía que seleccionaste.</p>
+        </article>
+        <article>
+          <h2>¿Qué moneda se usa?</h2>
+          <p>El pago se crea en USD con la conversión automática a monedas locales desactivada.</p>
+        </article>
+        <article>
+          <h2>¿Necesitas ayuda?</h2>
+          <p>Si no sabes qué guía elegir, selecciona Equipo o comunícate con Mindo Bird Watching antes de pagar.</p>
+        </article>
+      </section>
+    </main>
+    <div id="siteFooter"></div>
+  </div>
+  <script defer src="/assets/js/site-config.js?v=1"></script>
+  <script defer src="/assets/js/includes.js?v=1"></script>
+  <script defer src="/assets/js/site.js?v=34"></script>
+  <script defer src="/assets/js/guide-tip.js?v=20261022-1"></script>
+</body>
+</html>
