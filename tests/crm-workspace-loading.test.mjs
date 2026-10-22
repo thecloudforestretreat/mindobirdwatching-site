@@ -7,7 +7,7 @@ const script=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map
 function harness(api){
  const nodes=new Map(),node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',dataset:{},textContent:'',innerHTML:'',options:[],classList:{add(){},remove(){},toggle(){}},addEventListener(){},querySelectorAll:()=>[]});return nodes.get(id)};
  const c={Date,Intl,URL,URLSearchParams,setTimeout,clearTimeout,console,localStorage:{getItem:()=>null},document:{getElementById:node,addEventListener(){},querySelectorAll:()=>[]},window:{}};
- vm.createContext(c);vm.runInContext(script.replace('    })();',`globalThis.qa={state,els,cache,loadGuestWorkspace,loadGlobalOperationsData,renderReports,renderCalendar,install(fn){api=fn;render=()=>{};renderWorkspaces=()=>{};showToast=()=>{}}};})();`),c);
+ vm.createContext(c);vm.runInContext(script.replace('    })();',`globalThis.qa={state,els,cache,loadGuestWorkspace,loadGlobalOperationsData,renderReports,renderCalendar,saveAssignment,install(fn){api=fn;render=()=>{};renderWorkspaces=()=>{};showToast=()=>{}}};})();`),c);
  const q=c.qa;q.cache();q.install(api);return{q,node};
 }
 const record=id=>({inquiry_id:id,guest_id:'G-'+id,status:'booked'});
@@ -34,4 +34,11 @@ test('report and calendar do not display incomplete service totals while loading
 });
 test('provider directory failure does not discard successful global assignment refresh',async()=>{
  const {q}=harness(async action=>{if(action==='list_providers')throw Error('directory offline');return{records:[assignment('one')]}});await q.loadGlobalOperationsData();assert.equal(q.state.operationsStatus,'ready');assert.equal(q.state.allAssignments.length,1);
+});
+
+test('saving an unlinked transport explicitly clears stale birding service ID',async()=>{
+ const writes=[];const {q,node}=harness(async(action,data)=>{if(action==='update_assignment')writes.push(JSON.parse(JSON.stringify(data.assignment)));return{records:[]}});
+ q.state.records=[record('one')];q.state.selectedId='one';q.els.assignmentEndTime=node('assignmentEndTime');
+ node('assignmentId').value='existing';node('assignmentDate').value='2099-11-26';node('assignmentService').value='Transportation';node('assignmentTourItem').value='';node('assignmentTourItem').dataset.product='MBW006';node('assignmentProvider').value='Juan';
+ await q.saveAssignment();assert.equal(writes.length,1);assert.equal(writes[0].service_item_id,'');assert.equal(writes[0].product_selected,'Transportation');
 });
