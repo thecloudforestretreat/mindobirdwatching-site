@@ -1083,16 +1083,19 @@
         if(params.get("source") === "itinerary"){
           try{
             const candidate = JSON.parse(localStorage.getItem(ITINERARY_HANDOFF_KEY) || "null");
-            if(candidate && candidate.source === "itinerary_generator") itineraryDraft = candidate;
+            const inquiryId = clean(params.get("inquiry_id"));
+            const candidateId = clean(candidate && (candidate.inquiry_id || candidate.inquiryId));
+            const matches = inquiryId ? candidateId === inquiryId : Boolean(params.get("draft") && params.get("draft") === candidate?.createdAt);
+            if(candidate && candidate.source === "itinerary_generator" && matches) itineraryDraft = candidate;
           }catch(e){ itineraryDraft = null; }
         }
         let stored = null;
         try { stored = JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { stored = null; }
         const parameterInquiryId = clean(params.get("inquiry_id"));
         const storedInquiryId = clean(stored && (stored.inquiry_id || stored.inquiryId));
-        const compatibleStored = !parameterInquiryId
-          ? stored
-          : (storedInquiryId === parameterInquiryId ? stored : null);
+        const parameterGuestId = clean(params.get("guest_id"));
+        const storedGuestId = clean(stored && (stored.guest_id || stored.guestId));
+        const compatibleStored = /^[A-Za-z0-9_.-]{1,128}$/.test(parameterInquiryId) && storedInquiryId === parameterInquiryId && (!parameterGuestId || storedGuestId === parameterGuestId) ? stored : null;
         const fromParams = {
           full_name: params.get("guest") || params.get("name") || params.get("full_name") || "",
           email: params.get("email") || "",

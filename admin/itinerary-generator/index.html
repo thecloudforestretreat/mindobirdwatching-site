@@ -1568,6 +1568,7 @@
         }catch(error){ toast('Could not prepare the Zelle invoice draft.'); return; }
         const url = new URL(ZELLE_INVOICE_URL);
         url.searchParams.set('source','itinerary');
+        url.searchParams.set('draft',createdAt);
         if(draft.inquiry_id) url.searchParams.set('inquiry_id',draft.inquiry_id);
         if(sourceVersion) url.searchParams.set('itinerary_version',String(sourceVersion));
         window.open(url.toString(),'_blank','noopener');

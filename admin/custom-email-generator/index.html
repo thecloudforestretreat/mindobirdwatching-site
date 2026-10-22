@@ -907,6 +907,8 @@ experiences waiting for you in Mindo.</textarea>
         const fromParams = { full_name: params.get("guest") || params.get("name") || "", email: params.get("email") || "", phone_number: params.get("phone") || "", guest_count: params.get("guests") || "", requested_date: params.get("date") || "", tour_type: params.get("tour") || "", pickup_location: params.get("pickup") || "", tour_items_json:params.get("tour_items_json")||params.get("tour_items")||"", tour_items:params.get("tour_items")||params.get("tour_items_json")||"" };
         let stored=null;
         try { stored=JSON.parse(localStorage.getItem("mbwSelectedCrmRecord") || localStorage.getItem("mbwGuestCrmSelectedRecord") || "null"); } catch(e) { stored=null; }
+        const inquiryId=clean(params.get("inquiry_id")),guestId=clean(params.get("guest_id"));
+        if(!/^[A-Za-z0-9_.-]{1,128}$/.test(inquiryId)||clean(stored?.inquiry_id||stored?.inquiryId)!==inquiryId||(guestId&&clean(stored?.guest_id||stored?.guestId)!==guestId))stored=null;
         if(Object.values(fromParams).some(Boolean)) return Object.assign({},stored||{},Object.fromEntries(Object.entries(fromParams).filter(([,value])=>value)));
         return stored;
       }

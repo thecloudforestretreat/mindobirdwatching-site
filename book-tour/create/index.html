@@ -1235,6 +1235,10 @@ function createItem(initial = {}) {
     ["mbwSelectedCrmRecord", "mbwGuestCrmSelectedRecord"].forEach(key => {
       try {
         const stored = JSON.parse(localStorage.getItem(key) || "{}");
+        const inquiryId = getInboundValue(data,"inquiry_id","inquiryId");
+        const storedInquiryId = getInboundValue(stored,"inquiry_id","inquiryId");
+        const guestId = getInboundValue(data,"guest_id","guestId");
+        if(!/^[A-Za-z0-9_.-]{1,128}$/.test(inquiryId) || storedInquiryId !== inquiryId || (guestId && getInboundValue(stored,"guest_id","guestId") !== guestId)) return;
         Object.keys(stored).forEach(storedKey => {
           if (data[storedKey] === undefined || data[storedKey] === "") {
             data[storedKey] = stored[storedKey];
