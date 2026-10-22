@@ -10,7 +10,7 @@ assert(
   "Reels Studio must use the main-site Pages Function, not the static admin host"
 );
 assert(!ui.includes('var API = "/api/admin/reels";'), "Relative Reels API URL would resolve to the static admin host");
-assert(html.includes('reels-studio.js?v=9'), "Reels Studio asset cache key must expose the approval-first queue");
+assert(html.includes('reels-studio.js?v=11'), "Reels Studio asset cache key must expose the current approval-first queue");
 assert(html.includes('reels-studio.css?v=4'), "Reels Studio CSS cache key must expose media-only replacement styles");
 assert(ui.includes('Number(row.quality_score || 0) >= 92'), "Reels Studio must not present copy below quality 92 as approved");
 assert(ui.includes('group === "review" || group === "upcoming"'), "Scheduled reels must remain eligible for explicit copy regeneration");
@@ -39,6 +39,6 @@ assert(ui.includes('It is currently '), "Past-time guidance must show the curren
 console.log(JSON.stringify({
   ok: true,
   api: "https://mindobirdwatching.com/api/admin/reels",
-  cacheKey: "v9",
+  cacheKey: "v11",
   handlers: ["GET", "POST", "OPTIONS"]
 }, null, 2));
