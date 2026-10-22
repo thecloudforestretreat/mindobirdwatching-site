@@ -1130,10 +1130,11 @@
             if(!matches.length&&service!=="Activity"&&service!=="Custom") matches=sameDay.filter(entry=>!product||!productCodeFromValue((entry._calendar_item||entry).product_selected));
           }
           if(matches.length===1) replaced.add(matches[0]);
-          const title=product?productTitle(product):service;
+          const display=assignmentServiceDisplay(assignment,record);
+          const title=display.label,displayProduct=display.product;
           const status=normalizeStatus(assignment.assignment_status);
-          const item={id:"assignment-"+clean(assignment.assignment_id),tour:title,service_type:service,product_selected:product,date:toDateValue(assignment.service_date),guests:assignment.guest_count||record.guest_count,status:status==="pending"?"planning":status,pickup_location:assignment.pickup_location||record.pickup_location};
-          scheduled.push(Object.assign({},record,{_calendar_item:item,_calendar_assignment:assignment,tour_type:title,tour_category:title,service_type:service,product_selected:product,requested_date:item.date,requested_date_start:item.date,requested_date_end:item.date,guest_count:item.guests,status:item.status,pickup_location:item.pickup_location}));
+          const item={id:"assignment-"+clean(assignment.assignment_id),tour:title,service_type:service,product_selected:displayProduct,date:toDateValue(assignment.service_date),guests:assignment.guest_count||record.guest_count,status:status==="pending"?"planning":status,pickup_location:assignment.pickup_location||record.pickup_location};
+          scheduled.push(Object.assign({},record,{_calendar_item:item,_calendar_assignment:assignment,tour_type:title,tour_category:title,service_type:service,product_selected:displayProduct,requested_date:item.date,requested_date_start:item.date,requested_date_end:item.date,guest_count:item.guests,status:item.status,pickup_location:item.pickup_location}));
         });
         return base.filter(entry=>!replaced.has(entry)).concat(scheduled);
       }
@@ -1764,7 +1765,34 @@
       function renderAssignmentTourItems(selected=""){const items=assignmentTourItems();if(!els.assignmentTourItem)return;els.assignmentTourItem.innerHTML='<option value="">Unlinked / custom assignment</option>'+items.map(item=>{const label=serviceItemLabel(item);return `<option value="${esc(item.id)}">${esc([displayDate(item.date),item.product_selected||label.label].filter(Boolean).join(" · "))}</option>`;}).join("");els.assignmentTourItem.value=items.some(item=>clean(item.id)===clean(selected))?clean(selected):"";}
       function applySelectedAssignmentTourItem(){const item=selectedAssignmentTourItem();if(!item)return;const schedule=productSchedule(item.product_selected||item.tour);els.assignmentService.value=assignmentItemService(item);renderProviderOptions();els.assignmentDate.value=item.date||els.assignmentDate.value;els.assignmentTime.value=nearestQuarterTime(item.start_time)||schedule.start_time||defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value=nearestQuarterTime(item.end_time)||schedule.end_time;els.assignmentPickup.value=item.pickup_location||getSelected()?.pickup_location||els.assignmentPickup.value;els.assignmentDropoff.value=clean(item.dropoff_location);els.assignmentDirection.value=clean(item.trip_direction);}
       function assignmentMatchedTourItem(item,record=getSelected()){const items=assignmentTourItems(record),reference=clean(item.service_item_id)||assignmentReference(item.internal_note);const linked=reference&&items.find(tour=>clean(tour.id)===reference);if(linked)return linked;const product=productCodeFromValue(item.product_selected),exact=product&&items.filter(tour=>productCodeFromValue(tour.product_selected||tour.tour)===product&&(!item.service_date||tour.date===item.service_date));if(exact?.length===1)return exact[0];const compatible=items.filter(tour=>(!item.service_date||tour.date===item.service_date)&&assignmentItemService(tour)===item.service_type);return compatible.length===1?compatible[0]:null;}
-      function assignmentDisplayProduct(item){const linked=assignmentMatchedTourItem(item);if(linked)return linked.product_selected||linked.tour||item.service_type||"Service";const code=productCodeFromValue(item.product_selected),expected=MBW_PRODUCT_SERVICE_BY_CODE[code];return !expected||expected===item.service_type?item.product_selected||item.service_type||"Service":item.service_type||"Service";}
+      function assignmentServiceDisplay(item,record=getSelected()){
+        const service=clean(item.service_type)||"Service";
+        const compatible=value=>{
+          const code=productCodeFromValue(value),expected=MBW_PRODUCT_SERVICE_BY_CODE[code];
+          return expected&&(expected===service||(service==="Night Walk"&&code==="MBW016")||(service==="Specialty Wildlife"&&expected==="Wildlife"))?clean(value):"";
+        };
+        const own=compatible(item.product_selected);
+        if(own) return {product:own,label:productTitle(own),source:"assignment"};
+        const raw=clean(item.product_selected);
+        const knownWrong=Boolean(MBW_PRODUCT_SERVICE_BY_CODE[productCodeFromValue(raw)]);
+        const generic=/^(?:activity|custom|other|other activity or tour|service)$/i.test(raw);
+        if(raw&&!knownWrong&&!generic) return {product:"",label:raw,source:"assignment name"};
+        const reference=clean(item.service_item_id)||assignmentReference(item.internal_note);
+        const linked=reference&&assignmentTourItems(record).find(tour=>clean(tour.id)===reference);
+        const linkedProduct=linked&&compatible(linked.product_selected);
+        if(linkedProduct) return {product:linkedProduct,label:productTitle(linkedProduct),source:"linked service"};
+        // A unique saved itinerary product at the exact date AND time can name a generic activity.
+        // Do not guess from guest requests, ordering, rates, or a different day's plan.
+        if(service==="Activity"&&record&&clean(item.service_date)&&clean(item.start_time)){
+          try{
+            const draft=typeof record.itinerary_json==="string"?JSON.parse(record.itinerary_json):record.itinerary_json;
+            const candidates=(Array.isArray(draft?.items)?draft.items:[]).filter(tour=>toDateValue(tour.date)===toDateValue(item.service_date)&&clean(tour.startTime)&&assignmentTimeMinutes(tour.startTime,-1)===assignmentTimeMinutes(item.start_time,-2)&&compatible(tour.productPreset||tour.name));
+            if(candidates.length===1){ const product=compatible(candidates[0].productPreset||candidates[0].name); return {product,label:productTitle(product),source:"saved itinerary date/time"}; }
+          }catch(error){ /* Invalid or missing itinerary leaves an explicit review label. */ }
+        }
+        return {product:"",label:service==="Activity"?"Activity — name needs review":service,source:"needs review"};
+      }
+      function assignmentDisplayProduct(item){return assignmentServiceDisplay(item).label; }
       function assignmentLifecycle(item,now=new Date()){const status=normalizeStatus(item?.assignment_status||"pending");if(status==="completed")return{key:"completed",label:"✓ Completed"};if(status==="cancelled")return{key:"cancelled",label:"Cancelled"};if(status==="pending")return{key:"pending",label:"● Pending"};const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Guayaquil",year:"numeric",month:"2-digit",day:"2-digit"}).format(now);const time=clean(item?.end_time)||clean(item?.start_time);const key=[clean(item?.service_date),time].filter(Boolean).join(" ");const current=today+" "+new Intl.DateTimeFormat("en-GB",{timeZone:"America/Guayaquil",hour:"2-digit",minute:"2-digit",hour12:false}).format(now);return key&&key<current?{key:"past",label:"! Past — verify"}:{key:"scheduled",label:"✓ Scheduled"};}
       function clearAssignmentForm(){ const record=getSelected();els.assignmentId.value="";els.assignmentGroupId.value="";renderAssignmentTourItems();els.assignmentTourItem.value="";els.assignmentTourItem.dataset.product="";els.assignmentService.value=assignmentServiceForRecord(record);els.assignmentStatus.value="pending";els.assignmentDate.value=record?.requested_date||"";els.assignmentTime.value=defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value="";els.assignmentPickup.value=record?.pickup_location||"";els.assignmentDropoff.value="";els.assignmentDirection.value="";els.assignmentCost.value="";els.assignmentExtraCost.value="";els.assignmentInformed.checked=false;els.assignmentNote.value="";els.assignmentProviderOther.value="";els.saveAssignmentBtn.textContent="Save Assignment";els.messageServiceFilter.value="";renderProviderOptions(); }
       function hasReturnLeg(item,rows){ if(item.service_type!=="Transportation") return false; if(clean(item.trip_direction).toLowerCase()==="return") return true; const group=clean(item.assignment_group_id)||clean(item.assignment_id); const pickup=clean(item.pickup_location).toLowerCase(),dropoff=clean(item.dropoff_location).toLowerCase(),date=clean(item.service_date); return rows.some(row=>row!==item&&row.service_type==="Transportation"&&normalizeStatus(row.assignment_status)!=="cancelled"&&((group&&clean(row.assignment_group_id)===group&&clean(row.trip_direction).toLowerCase()==="return")||(date&&clean(row.service_date)===date&&clean(row.pickup_location).toLowerCase()===dropoff&&clean(row.dropoff_location).toLowerCase()===pickup))); }
@@ -1831,7 +1859,7 @@
       function formatTime(value){if(!value)return"";const parts=String(value).split(":");let hour=Number(parts[0]),minute=parts[1]||"00";const suffix=hour>=12?"pm":"am";hour=hour%12||12;return hour+":"+minute+suffix;}
       function nearestQuarterTime(value){const raw=clean(value).toLowerCase();if(!raw)return"";const match=raw.match(/^(\d{1,2}):(\d{2})(?:\s*(am|pm))?/);if(!match)return"";let hour=Number(match[1]),minute=Number(match[2]);if(match[3]==="pm"&&hour<12)hour+=12;if(match[3]==="am"&&hour===12)hour=0;let total=hour*60+Math.round(minute/15)*15;total%=1440;return String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0");}
       function providerDisplayName(item){ return item.provider_name==="Other"?(item.provider_name_other||"Other"):(item.provider_name||"Unassigned"); }
-      function serviceLabel(item){ return item.product_selected||item.service_type||"Scheduled service"; }
+      function serviceLabel(item){ return assignmentDisplayProduct(item); }
       function assignmentCostText(item){ const cost=Number(item.provider_cost||0),extra=Number(item.extra_cost||0),total=cost+extra; if(!els.messageIncludeCosts.checked||!total) return ""; return extra?`Cost: $${cost.toFixed(2)} + $${extra.toFixed(2)} extra = $${total.toFixed(2)}`:`Cost: $${cost.toFixed(2)}`; }
       function scheduledServiceSummary(rows){ return rows.map(item=>`- ${item.service_type||"Service"}: ${displayDate(item.service_date)||"Date TBD"}${item.start_time?" · "+formatTime(item.start_time):""}${item.end_time?"-"+formatTime(item.end_time):""} · ${providerDisplayName(item)}`).join("\n"); }
       function generateOperationsMessage(){
@@ -2172,7 +2200,8 @@
         const service=MBW_PRODUCT_SERVICE_BY_CODE[code]||clean(item.service_type);
         const title=clean(item.tour||item.tour_type||item.tour_category||productTitle(product)||item.service_type);
         const genericBirding=/^(?:birdwatching|birding)(?:\s+(?:half[ -]?day|full[ -]?day))?(?:\s+tour)?$/i.test(title);
-        const displayTitle=genericBirding&&MBW_PRODUCT_SERVICE_BY_CODE[code]&&!/^(birdwatching|tour upgrade)$/i.test(service)?productTitle(product):title;
+        const genericActivity=/^(?:activity|custom|other|other activity or tour)$/i.test(title);
+        const displayTitle=(genericBirding||genericActivity)&&MBW_PRODUCT_SERVICE_BY_CODE[code]&&!/^(birdwatching|tour upgrade)$/i.test(service)?productTitle(product):title;
         return {title:displayTitle,product,code,service};
       }
       function serviceVisual(record,isFollowup){
