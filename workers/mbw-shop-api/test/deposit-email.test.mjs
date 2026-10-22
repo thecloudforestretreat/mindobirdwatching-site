@@ -13,6 +13,8 @@ export {
   buildCustomerOrderEmailHtml,
   buildCustomerTourDepositEmailHtml,
   buildCustomerTourDepositEmailText,
+  buildGuideTipEmailHtml,
+  buildGuideTipEmailText,
   createPrintifyOrderIfEnabled,
   getOrderPaymentContext
 };`;
@@ -306,6 +308,95 @@ assert.equal(
 assert.equal(
   legacyDepositPrintifyResult.fulfillment_status,
   "tour_deposit_received"
+);
+
+const guideTipOrder = {
+  ...depositOrder,
+  id: 18,
+  mbw_order_id: "TIP-TEST-001",
+  total_cents: 3500,
+  raw_stripe_session_json:
+    JSON.stringify({
+      metadata: {},
+      custom_fields: [
+        {
+          key: "guide_name",
+          text: {
+            value: "Example Guide"
+          }
+        }
+      ]
+    })
+};
+const guideTipItems = [
+  {
+    product_title:
+      "Tip for Your Mindo Bird Watching Guide",
+    quantity: 1,
+    unit_amount_cents: 3500,
+    line_total_cents: 3500
+  }
+];
+const guideTipContext =
+  worker.getOrderPaymentContext(
+    guideTipOrder,
+    guideTipItems
+  );
+
+assert.equal(guideTipContext.isGuideTip, true);
+assert.equal(guideTipContext.kind, "guide_tip");
+assert.equal(
+  guideTipContext.guideName,
+  "Example Guide"
+);
+
+for (const body of [
+  worker.buildGuideTipEmailHtml(
+    guideTipOrder,
+    guideTipContext,
+    "customer"
+  ),
+  worker.buildGuideTipEmailHtml(
+    guideTipOrder,
+    guideTipContext,
+    "admin"
+  ),
+  worker.buildGuideTipEmailText(
+    guideTipOrder,
+    guideTipContext,
+    "customer"
+  ),
+  worker.buildGuideTipEmailText(
+    guideTipOrder,
+    guideTipContext,
+    "admin"
+  )
+]) {
+  assert.match(body, /Guide tip received/i);
+  assert.match(body, /\$35\.00/);
+  assert.doesNotMatch(body, /Printify/i);
+  assert.doesNotMatch(body, /tour deposit/i);
+}
+
+const guideTipDb =
+  createDb(guideTipOrder, guideTipItems);
+const guideTipPrintifyResult =
+  await worker.createPrintifyOrderIfEnabled(
+    {
+      DB: guideTipDb,
+      PRINTIFY_ORDER_CREATION_ENABLED:
+        "true"
+    },
+    "cs_guide_tip"
+  );
+
+assert.equal(
+  guideTipPrintifyResult.status,
+  "not_applicable"
+);
+assert.equal(
+  guideTipPrintifyResult.fulfillment_status,
+  "guide_tip_received"
 );
 
 const merchandiseDb =

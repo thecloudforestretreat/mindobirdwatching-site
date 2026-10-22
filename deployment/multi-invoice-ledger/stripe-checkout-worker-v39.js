@@ -4070,6 +4070,21 @@ export default {
         const inquiryId = String(session.client_reference_id || md.inquiry_id || "").trim();
         let checkoutGuestId = String(md.guest_id || "").trim();
         const isDeposit = String(md.payment_purpose || "").toLowerCase() === "tour_deposit";
+        const isGuideTip = String(md.payment_purpose || "").toLowerCase() === "guide_tip" ||
+          String(md.service_type || "").toLowerCase() === "guide_gratuity";
+        const customFields = Array.isArray(session.custom_fields) ? session.custom_fields : [];
+        const guideNameField = customFields.find((field) =>
+          String(field && field.key || "").trim().toLowerCase() === "guide_name"
+        );
+        const guideName = String(
+          guideNameField && guideNameField.text && guideNameField.text.value || md.guide_name || ""
+        ).trim();
+        const paidDate = formatDateNY(createdAt);
+        const tipReference = session.id
+          ? String(session.id).slice(-10).toUpperCase()
+          : String(event.id || "").slice(-10).toUpperCase();
+        const tipInvoiceNo = isGuideTip ? `TIP-${paidDate.replace(/-/g, "")}-${tipReference}` : "";
+        const tipAmount = amountTotalCents != null ? centsToDollarsString(amountTotalCents) : "";
 
         const fields = {
           created_at_iso: formatISOInNY(createdAt),
@@ -4082,9 +4097,9 @@ export default {
           stripe_price_id: md.price_id || "",
           stripe_payment_link_id: session.payment_link || "",
           stripe_receipt_url: "",
-          invoice_no: "",
-          date_paid: formatDateNY(createdAt),
-          tour_date: md.tour_date || "",
+          invoice_no: tipInvoiceNo,
+          date_paid: paidDate,
+          tour_date: isGuideTip ? paidDate : (md.tour_date || ""),
           tour_completed: "",
           guest_first_name: nameParts.first,
           guest_last_name: nameParts.last,
@@ -4092,13 +4107,13 @@ export default {
           guest_phone: guestPhone,
           home_country: session.customer_details && session.customer_details.address && session.customer_details.address.country ? String(session.customer_details.address.country) : "",
           party_size: md.number_of_people ? String(md.number_of_people) : "",
-          service_type: md.service_type || "",
-          tour_title: md.tour_title || "",
-          tour_guide: "",
+          service_type: isGuideTip ? "Guide Tip" : (md.service_type || ""),
+          tour_title: isGuideTip ? "Tip for Your Mindo Bird Watching Guide" : (md.tour_title || ""),
+          tour_guide: isGuideTip ? guideName : "",
           payment_method: "Stripe",
           invoice_id: "",
           transaction_id: session.payment_intent || "",
-          product_selected: md.tour_code ? String(md.tour_code) : "",
+          product_selected: isGuideTip ? "TIP001" : (md.tour_code ? String(md.tour_code) : ""),
           guest_rate_override: "",
           discount_rate_guest: "",
           discount_reason: "",
@@ -4106,8 +4121,8 @@ export default {
           transaction_fee_total: "",
           fee_pct_of_amount_received: "",
           mbw_fee_pct_override: "",
-          total_tip_collected: "",
-          tip_paid_to_guide_override: "",
+          total_tip_collected: isGuideTip ? tipAmount : "",
+          tip_paid_to_guide_override: isGuideTip ? tipAmount : "",
           pickup_location: md.pickup_location_label || "",
           pickup_address_or_hotel: md.pickup_address_or_hotel || "",
           other_guests: "",
@@ -4128,11 +4143,11 @@ export default {
           guide_base_rate: "",
           guide_base_payout: "",
           guide_tip_pct_used: "",
-          tip_paid_to_guide: "",
-          tip_paid_to_mbw: "",
-          total_amount_owed_to_guide: "",
-          mbw_gross_expected: "",
-          mbw_gross_actual: "",
+          tip_paid_to_guide: isGuideTip ? tipAmount : "",
+          tip_paid_to_mbw: isGuideTip ? "0.00" : "",
+          total_amount_owed_to_guide: isGuideTip ? tipAmount : "",
+          mbw_gross_expected: isGuideTip ? "0.00" : "",
+          mbw_gross_actual: isGuideTip ? "0.00" : "",
           gross_discrepency: "",
           mbw_profit_expected: "",
           mbw_profit_accrual: "",
@@ -4146,14 +4161,14 @@ export default {
           guide_paid_actual: "",
           fees_paid_actual: "",
           expense_reconciled_flag: "",
-          invoice_no_txt: "",
-          tour_key: "",
+          invoice_no_txt: tipInvoiceNo,
+          tour_key: tipInvoiceNo,
           agent_id: checkoutAgentId,
           inquiry_id: inquiryId,
           guest_id: checkoutGuestId,
           booking_id: String(md.booking_id || ""),
           quote_id: String(md.quote_id || ""),
-          payment_purpose: String(md.payment_purpose || ""),
+          payment_purpose: isGuideTip ? "guide_tip" : String(md.payment_purpose || ""),
           deposit_status: isDeposit && session.payment_status === "paid" ? "available" : "",
           applied_invoice_id: "",
           applied_invoice_no: "",
@@ -4161,6 +4176,8 @@ export default {
           stripe_customer_id: typeof session.customer === "string" ? session.customer : (session.customer && session.customer.id || ""),
           currency: String(session.currency || "").toUpperCase(),
           gross_payment_amount: amountTotalCents != null ? centsToDollarsString(amountTotalCents) : "",
+          record_type: isGuideTip ? "guide_tip" : "",
+          source_line_id: isGuideTip ? (session.id || event.id || "") : "",
         };
 
         await (async () => {

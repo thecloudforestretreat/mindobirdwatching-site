@@ -2325,21 +2325,33 @@ async function createPrintifyOrderIfEnabled(
   const paymentContext =
     getOrderPaymentContext(order, items);
 
-  if (paymentContext.isTourDeposit) {
+  if (
+    paymentContext.isTourDeposit ||
+    paymentContext.isGuideTip
+  ) {
     const now =
       new Date().toISOString();
+
+    const fulfillmentStatus =
+      paymentContext.isGuideTip
+        ? "guide_tip_received"
+        : "tour_deposit_received";
 
     await env.DB
       .prepare(
         `UPDATE orders
          SET
            printify_status = 'not_applicable',
-           fulfillment_status = 'tour_deposit_received',
+           fulfillment_status = ?,
            printify_order_error = NULL,
            updated_at = ?
          WHERE id = ?`
       )
-      .bind(now, order.id)
+      .bind(
+        fulfillmentStatus,
+        now,
+        order.id
+      )
       .run();
 
     return {
@@ -2347,7 +2359,7 @@ async function createPrintifyOrderIfEnabled(
       status: "not_applicable",
       skipped: true,
       fulfillment_status:
-        "tour_deposit_received"
+        fulfillmentStatus
     };
   }
 
@@ -4056,6 +4068,10 @@ function getOrderPaymentContext(
     cleanText(metadata.service_type, 80)
       .trim()
       .toLowerCase();
+  const paymentPurpose =
+    cleanText(metadata.payment_purpose, 80)
+      .trim()
+      .toLowerCase();
   const firstItemTitle =
     cleanText(
       items && items[0]
@@ -4074,15 +4090,42 @@ function getOrderPaymentContext(
       firstItemTitle ===
         "tour reservation deposit"
     );
+  const isGuideTip =
+    paymentPurpose === "guide_tip" ||
+    serviceType === "guide_gratuity" ||
+    firstItemTitle ===
+      "tip for your mindo bird watching guide";
+  const customFields =
+    Array.isArray(session.custom_fields)
+      ? session.custom_fields
+      : [];
+  const guideField =
+    customFields.find((field) =>
+      cleanText(field && field.key, 80)
+        .trim()
+        .toLowerCase() === "guide_name"
+    );
+  const guideName =
+    cleanText(
+      guideField && guideField.text
+        ? guideField.text.value
+        : "",
+      160
+    ).trim();
 
   return {
     kind:
-      isTourDeposit
-        ? "tour_deposit"
-        : "shop_order",
+      isGuideTip
+        ? "guide_tip"
+        : isTourDeposit
+          ? "tour_deposit"
+          : "shop_order",
     isTourDeposit,
+    isGuideTip,
     tourCode,
     serviceType,
+    paymentPurpose,
+    guideName,
     tourTitle:
       cleanText(
         metadata.tour_title ||
@@ -4306,13 +4349,21 @@ async function sendCustomerOrderConfirmation(
     );
 
   const subject =
-    paymentContext.isTourDeposit
-      ? `Your Mindo Bird Watching tour deposit was received - ${order.mbw_order_id}`
-      : `Your Mindo Bird Watching order is confirmed - ${order.mbw_order_id}`;
+    paymentContext.isGuideTip
+      ? `Thank you for tipping your Mindo Bird Watching guide - ${order.mbw_order_id}`
+      : paymentContext.isTourDeposit
+        ? `Your Mindo Bird Watching tour deposit was received - ${order.mbw_order_id}`
+        : `Your Mindo Bird Watching order is confirmed - ${order.mbw_order_id}`;
 
   const html =
-    paymentContext.isTourDeposit
-      ? buildCustomerTourDepositEmailHtml(
+    paymentContext.isGuideTip
+      ? buildGuideTipEmailHtml(
+          order,
+          paymentContext,
+          "customer"
+        )
+      : paymentContext.isTourDeposit
+        ? buildCustomerTourDepositEmailHtml(
           order,
           orderItems,
           paymentContext
@@ -4323,8 +4374,14 @@ async function sendCustomerOrderConfirmation(
         );
 
   const text =
-    paymentContext.isTourDeposit
-      ? buildCustomerTourDepositEmailText(
+    paymentContext.isGuideTip
+      ? buildGuideTipEmailText(
+          order,
+          paymentContext,
+          "customer"
+        )
+      : paymentContext.isTourDeposit
+        ? buildCustomerTourDepositEmailText(
           order,
           orderItems,
           paymentContext
@@ -4470,6 +4527,124 @@ async function markCustomerEmailFailed(
       orderId
     )
     .run();
+}
+
+function buildGuideTipEmailHtml(
+  order,
+  context,
+  audience
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+  const isAdmin =
+    audience === "admin";
+  const firstName =
+    cleanText(
+      order.customer_first_name || "there",
+      80
+    );
+  const customerName =
+    [
+      order.customer_first_name,
+      order.customer_last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    "Not provided";
+  const introduction =
+    isAdmin
+      ? "Stripe has verified this voluntary guide gratuity and saved the payment to the MBW payment record."
+      : `Hi ${escapeEmailHtml(firstName)}, thank you for recognizing your Mindo Bird Watching guide.`;
+  const nextStep =
+    isAdmin
+      ? "Record the full gratuity as guide tips payable, assign it to the correct guide, and record the Stripe processing fee separately. Do not treat the gratuity as tour or shop revenue."
+      : "The gratuity will be passed to your guide. It is separate from your tour payment and does not change your booking balance.";
+
+  return `<!doctype html>
+<html>
+<body style="margin:0;padding:0;background:#F3F7F1;font-family:Arial,Helvetica,sans-serif;color:#173A24;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F3F7F1;">
+    <tr>
+      <td align="center" style="padding:28px 14px;">
+        <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:620px;background:#FFFFFF;border:1px solid #DDE7DE;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="padding:24px 26px;background:#0D5925;color:#FFFFFF;">
+              <div style="font-size:12px;line-height:18px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Mindo Bird Watching</div>
+              <div style="font-size:25px;line-height:31px;font-weight:800;margin-top:2px;">Guide tip received</div>
+              <div style="font-size:13px;line-height:20px;margin-top:12px;opacity:.92;">${introduction}</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 26px;">
+              <div style="padding:13px 15px;border-radius:12px;background:#F5F9F4;border:1px solid #DDE7DE;">
+                <div style="font-size:11px;line-height:17px;color:#667085;text-transform:uppercase;letter-spacing:.06em;font-weight:800;">Payment ID</div>
+                <div style="font-size:13px;line-height:20px;font-weight:800;color:#0D5925;word-break:break-all;margin-top:3px;">${escapeEmailHtml(order.mbw_order_id)}</div>
+              </div>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:22px;">
+                ${context.guideName ? `<tr><td style="padding:7px 0;color:#667085;">Guide</td><td align="right" style="padding:7px 0;font-weight:700;">${escapeEmailHtml(context.guideName)}</td></tr>` : ""}
+                <tr><td style="padding:14px 0 0;border-top:1px solid #DDE7DE;font-size:15px;font-weight:800;">Tip received</td><td align="right" style="padding:14px 0 0;border-top:1px solid #DDE7DE;font-size:18px;font-weight:800;color:#0D5925;">${formatEmailMoney(order.total_cents, currency)}</td></tr>
+              </table>
+              ${isAdmin ? `<div style="margin-top:22px;font-size:13px;line-height:20px;color:#475467;"><strong>Guest</strong><br>${escapeEmailHtml(customerName)}<br>${escapeEmailHtml(order.customer_email || "Email not provided")}<br>${escapeEmailHtml(order.customer_phone || "Phone not provided")}</div>` : ""}
+              <div style="margin-top:24px;padding:14px 16px;border-radius:12px;background:#FFF8DD;border:1px solid #F2C94C;font-size:13px;line-height:20px;color:#5B4600;"><strong>${isAdmin ? "Accounting:" : "What happens next:"}</strong> ${escapeEmailHtml(nextStep)}</div>
+            </td>
+          </tr>
+          ${buildTransactionalEmailFooterHtml()}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildGuideTipEmailText(
+  order,
+  context,
+  audience
+) {
+  const currency =
+    String(order.currency || "usd")
+      .toUpperCase();
+  const isAdmin =
+    audience === "admin";
+  const lines = [
+    "MINDO BIRD WATCHING",
+    "Guide tip received",
+    "",
+    isAdmin
+      ? "Stripe verified this voluntary guide gratuity."
+      : "Thank you for recognizing your Mindo Bird Watching guide.",
+    `Payment ID: ${order.mbw_order_id}`,
+    context.guideName
+      ? `Guide: ${context.guideName}`
+      : "",
+    `TIP RECEIVED: ${formatEmailMoney(order.total_cents, currency)}`,
+    ""
+  ];
+
+  if (isAdmin) {
+    lines.push(
+      `Guest: ${[order.customer_first_name, order.customer_last_name].filter(Boolean).join(" ") || "Not provided"}`,
+      `Email: ${order.customer_email || "Not provided"}`,
+      "",
+      "ACCOUNTING:",
+      "Record the full gratuity as guide tips payable, assign it to the correct guide, and record the Stripe processing fee separately. Do not treat the gratuity as tour or shop revenue."
+    );
+  } else {
+    lines.push(
+      "WHAT HAPPENS NEXT:",
+      "The gratuity will be passed to your guide. It is separate from your tour payment and does not change your booking balance."
+    );
+  }
+
+  return lines
+    .filter((line, index, array) =>
+      line !== "" ||
+      index === 0 ||
+      array[index - 1] !== ""
+    )
+    .join("\n");
 }
 
 function buildTourDepositDetailRows(
@@ -5130,13 +5305,21 @@ async function sendAdminOrderConfirmation(
     );
 
   const subject =
-    paymentContext.isTourDeposit
-      ? `[MBW Tour Deposit] Deposit received ${order.mbw_order_id}`
-      : `[MBW Shop] New paid order ${order.mbw_order_id}`;
+    paymentContext.isGuideTip
+      ? `[MBW Guide Tip] Tip received ${order.mbw_order_id}`
+      : paymentContext.isTourDeposit
+        ? `[MBW Tour Deposit] Deposit received ${order.mbw_order_id}`
+        : `[MBW Shop] New paid order ${order.mbw_order_id}`;
 
   const html =
-    paymentContext.isTourDeposit
-      ? buildAdminTourDepositEmailHtml(
+    paymentContext.isGuideTip
+      ? buildGuideTipEmailHtml(
+          order,
+          paymentContext,
+          "admin"
+        )
+      : paymentContext.isTourDeposit
+        ? buildAdminTourDepositEmailHtml(
           order,
           orderItems,
           paymentContext
@@ -5147,8 +5330,14 @@ async function sendAdminOrderConfirmation(
         );
 
   const text =
-    paymentContext.isTourDeposit
-      ? buildAdminTourDepositEmailText(
+    paymentContext.isGuideTip
+      ? buildGuideTipEmailText(
+          order,
+          paymentContext,
+          "admin"
+        )
+      : paymentContext.isTourDeposit
+        ? buildAdminTourDepositEmailText(
           order,
           orderItems,
           paymentContext

@@ -404,7 +404,10 @@ function buildServiceExpense_(row) {
   var normalizedType = serviceType.toLowerCase();
   var expenseType = "Guide Payout";
   var category = "COGS";
-  if (normalizedType.indexOf("transport") >= 0) {
+  if (normalizedType.indexOf("guide tip") >= 0 || normalizedType.indexOf("gratuity") >= 0) {
+    expenseType = "Guide Tip Payable";
+    category = "Guide Payable";
+  } else if (normalizedType.indexOf("transport") >= 0) {
     expenseType = "Transportation";
     category = "Transportation COGS";
   } else if (normalizedType.indexOf("lodg") >= 0 || normalizedType.indexOf("accommodation") >= 0) {
@@ -436,7 +439,9 @@ function buildServiceExpense_(row) {
     amount: -roundSyncMoney_(payout),
     receipt_link: "",
     payment_reference: "",
-    notes: "Product " + cleanSyncValue_(row.product_selected) + ". Expense obligation created from invoice service " + sourceIdentity + ".",
+    notes: expenseType === "Guide Tip Payable"
+      ? "Voluntary guest gratuity payable in full to " + guide + ". Stripe processing fee is recorded separately."
+      : "Product " + cleanSyncValue_(row.product_selected) + ". Expense obligation created from invoice service " + sourceIdentity + ".",
     expense_category: category,
     accrual_month: monthKeySync_(tourDate),
     reconciled: "No",
