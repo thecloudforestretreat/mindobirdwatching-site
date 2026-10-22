@@ -1120,11 +1120,15 @@
           const expected=MBW_PRODUCT_SERVICE_BY_CODE[code];
           const productCompatible=expected&&(expected===service||(service==="Night Walk"&&code==="MBW016")||(service==="Specialty Wildlife"&&expected==="Wildlife"));
           const product=productCompatible?clean(assignment.product_selected):"";
-          const matches=base.filter(entry=>{
-            const item=entry._calendar_item||entry;
-            if(reference) return clean(item.id)===reference&&assignmentItemService(item)===service;
-            return product&&productCodeFromValue(item.product_selected)===code&&toDateValue(entry.requested_date)===toDateValue(assignment.service_date)&&assignmentItemService(item)===service;
-          });
+          const compatible=base.filter(entry=>assignmentItemService(entry._calendar_item||entry)===service);
+          let matches=reference?compatible.filter(entry=>clean(entry._calendar_item?.id)===reference):[];
+          if(!matches.length){
+            const sameDay=compatible.filter(entry=>toDateValue(entry.requested_date)===toDateValue(assignment.service_date));
+            matches=product?sameDay.filter(entry=>productCodeFromValue((entry._calendar_item||entry).product_selected)===code):[];
+            // Legacy assignments often have no product code or an obsolete service reference.
+            // Match a unique same-day service, but never conflate distinct known products.
+            if(!matches.length&&service!=="Activity"&&service!=="Custom") matches=sameDay.filter(entry=>!product||!productCodeFromValue((entry._calendar_item||entry).product_selected));
+          }
           if(matches.length===1) replaced.add(matches[0]);
           const title=product?productTitle(product):service;
           const status=normalizeStatus(assignment.assignment_status);
