@@ -60,11 +60,38 @@ function assignmentMatchesProvider(assignment, provider) {
   return lower(assignment.providerName) === lower(provider.name);
 }
 
+function guestServiceName(value) {
+  return String(value || "tour").replace(/^\s*(?:MBW|ACT|TRANS|OSO|ACCOM)\d+\s*[-–—:]\s*/i, "").trim() || "tour";
+}
+
+function guestGuideName(value) {
+  return String(value || "your guide").split(" · ")[0].trim() || "your guide";
+}
+
+function guestTimeLabel(value) {
+  const match = String(value || "").trim().toLowerCase().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/);
+  if (!match) return String(value || "").trim();
+  let hour = Number(match[1]);
+  const minute = match[2];
+  if (match[3]) return `${hour}:${minute} ${match[3].toUpperCase()}`;
+  const suffix = hour >= 12 ? "PM" : "AM";
+  hour %= 12;
+  return `${hour || 12}:${minute} ${suffix}`;
+}
+
+function guestDateLabel(value) {
+  if (!value) return "";
+  const date = new Date(`${value}T12:00:00Z`);
+  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(date);
+}
+
 function messageFor(tour, guideName) {
   const firstName = tour.guestName.split(/\s+/)[0] || "there";
-  const when = [tour.dateLabel, tour.startTime ? `at ${tour.startTime}` : ""].filter(Boolean).join(" ");
+  const service = guestServiceName(tour.service);
+  const time = guestTimeLabel(tour.startTime);
+  const when = [guestDateLabel(tour.serviceDate), time ? `at ${time}` : ""].filter(Boolean).join(" ");
   const pickup = tour.pickup ? ` The pickup location is ${tour.pickup}.` : "";
-  return `Hi ${firstName}, this is ${guideName || "your guide"} from Mindo Bird Watching. I’m your guide for ${tour.service}${when ? ` on ${when}` : ""}.${pickup} Please reply here if you have any questions before the tour.`;
+  return `Hello ${firstName}, I’m ${guestGuideName(guideName)} from Mindo Bird Watching. I’ll be your guide for the ${service}${when ? ` on ${when}` : ""}.${pickup}\n\nPlease message me here if you have any questions before the tour.\n\nThank you.`;
 }
 
 function assignmentServiceReference(note) {
@@ -147,6 +174,8 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
       service,
       guestName,
       guestCount: inquiry?.partySize || String(row.guest_count || "").trim(),
+      country: inquiry?.country || String(row.guest_country || row.country || "").trim(),
+      countryCode: inquiry?.countryCode || "",
       pickup: assignment.pickup || inquiry?.pickup || "",
       dropoff: assignment.dropoff,
       status: assignment.status,

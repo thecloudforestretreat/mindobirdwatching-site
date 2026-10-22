@@ -31,7 +31,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-23", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
     offers: [{ assignmentId: "O-1", serviceDate: "2026-10-30", startTime: "6:00 AM", service: "Custom birding package", pickup: "Mindo", response: "", bidAmount: "" }],
     tours: [
-      { assignmentId: "A-1", bookingId: "B-1", serviceDate: "2026-10-23", dateLabel: "Oct 23, 2026", startTime: "5:00 AM", endTime: "3:00 PM", service: "Quest for Five Toucans", guestName: "Daniel Kalmes", guestCount: "2", pickup: "Mindo Lodge", status: "confirmed", accepted: false, acceptanceRequired: true, contactAvailable: true, hasConflict: true, conflictReason: "availability", phone: "+352 621 492 066", whatsappUrl: "https://wa.me/352621492066", guestMessage: "Hi Daniel, this is Neycer from Mindo Bird Watching." },
+      { assignmentId: "A-1", bookingId: "B-1", serviceDate: "2026-10-23", dateLabel: "Oct 23, 2026", startTime: "5:00 AM", endTime: "3:00 PM", service: "MBW006 - Quest for Five Toucans", guestName: "Daniel Kalmes", guestCount: "2", country: "Luxembourg", countryCode: "LU", pickup: "Mindo Lodge", status: "confirmed", accepted: false, acceptanceRequired: true, contactAvailable: true, hasConflict: true, conflictReason: "availability", providerName: "Neycer · Night Walk Guide", phone: "+352 621 492 066", whatsappUrl: "https://wa.me/352621492066", guestMessage: "Hello Daniel, I’m Neycer from Mindo Bird Watching. I’ll be your guide for the Quest for Five Toucans on October 23, 2026 at 5:00 AM. The pickup location is Mindo Lodge.\n\nPlease message me here if you have any questions before the tour.\n\nThank you." },
       { assignmentId: "A-2", bookingId: "B-2", serviceDate: "2026-11-10", startTime: "6:00 AM", service: "Night Walk", guestName: "November Guest", guestCount: "1", pickup: "Casa Mindo", status: "confirmed", accepted: true, acceptanceRequired: false, contactAvailable: true, hasConflict: false, phone: "+593 999 000 111", whatsappUrl: "https://wa.me/593999000111" },
       { assignmentId: "A-3", bookingId: "B-3", serviceDate: "2026-12-15", startTime: "7:00 AM", service: "Birdwatching", guestName: "December Guest", guestCount: "3", pickup: "Quito", status: "confirmed", accepted: true, acceptanceRequired: false, contactAvailable: true, hasConflict: false, phone: "+593 999 000 222", whatsappUrl: "https://wa.me/593999000222" },
       { assignmentId: "A-PAST", bookingId: "B-PAST", serviceDate: "2026-10-15", startTime: "6:00 AM", service: "Past Birding", guestName: "Past Guest", guestCount: "2", pickup: "Mindo", status: "completed", accepted: true, acceptanceRequired: false, contactAvailable: false, hasConflict: false, phone: "", whatsappUrl: "" },
@@ -75,6 +75,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.getByText("December Guest", { exact: true }).count(), 0);
     await page.getByRole("button", { name: "Todos los tours" }).click();
     await page.getByText("Past Guest", { exact: true }).waitFor();
+    assert.equal(await page.locator('.tourCard--completed [data-route="share"]').count(), 1);
     assert.equal(await page.locator("#tourSearch").isVisible(), true);
     await page.locator("#tourSearch").fill("December");
     await page.getByText("December Guest", { exact: true }).waitFor();
@@ -83,10 +84,16 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "Próximos" }).click();
     assert.equal(await page.locator("#adminPreview").isVisible(), false);
     assert.match(await page.locator(".tourCard").first().innerText(), /Mindo Lodge/);
+    assert.match(await page.locator(".tourCard").first().innerText(), /🇱🇺 Luxembourg/);
     assert.match(await page.locator(".tourCard").first().innerText(), /\+352 621 492 066/);
     assert.match(await page.locator(".tourCard").first().innerText(), /Conflicto de horario/);
     assert.match(await page.locator(".tourCard").first().innerText(), /Reporte después del tour/i);
     assert.equal(await page.locator('.tourCard').first().locator('a[href^="https://wa.me/"]').count(), 1);
+    assert.equal(await page.locator('.tourCard').first().locator('a[href^="tel:"]').count(), 1);
+    const copyMessage = decodeURIComponent(await page.locator(".tourCard").first().locator("[data-copy]").getAttribute("data-copy"));
+    assert.match(copyMessage, /^Hello Daniel, I’m Neycer from Mindo Bird Watching\./);
+    assert.doesNotMatch(copyMessage, /Hola|MBW006/);
+    assert.match(copyMessage, /\n\nThank you\.$/);
     assert.equal(await page.locator(".tourCard").first().innerText().then(text => text.includes("private@example")), false);
     await page.getByRole("button", { name: "Aceptar tour" }).click();
     await page.getByText("Aceptado", { exact: true }).waitFor();

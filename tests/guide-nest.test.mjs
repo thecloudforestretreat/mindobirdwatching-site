@@ -83,7 +83,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
           { assignment_id: "A-4", inquiry_id: "I-4", service_date: "2026-10-24", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "completed" },
         ],
         list_inquiries: [
-          { inquiry_id: "I-1", guest_id: "G-1", full_name: "Booked Guest", phone_raw: "+1 (555) 123-4567", email: "private@example.test", status: "booked", guest_count: "2", pickup_location: "Mindo Lodge", notes: "PRIVATE" },
+          { inquiry_id: "I-1", guest_id: "G-1", full_name: "Booked Guest", phone_raw: "+1 (555) 123-4567", email: "private@example.test", country: "Luxembourg", status: "booked", guest_count: "2", pickup_location: "Mindo Lodge", notes: "PRIVATE" },
           { inquiry_id: "I-2", guest_id: "G-2", full_name: "Quoted Guest", phone_raw: "+1 555 999 0000", status: "quoted" },
           { inquiry_id: "I-3", guest_id: "G-3", full_name: "Other Guest", phone_raw: "+1 555 111 0000", status: "booked" },
           { inquiry_id: "I-4", guest_id: "G-4", full_name: "Completed Guest", phone_raw: "+1 555 222 0000", status: "completed" },
@@ -103,11 +103,17 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     const bookedTour = body.tours.find(item => item.assignmentId === "A-1"), completedTour = body.tours.find(item => item.guestName === "Completed Guest");
     assert.equal(bookedTour.phone, "+1 (555) 123-4567");
     assert.equal(bookedTour.whatsappUrl, "https://wa.me/15551234567");
+    assert.equal(bookedTour.country, "Luxembourg");
+    assert.equal(bookedTour.countryCode, "LU");
     assert.equal(bookedTour.hasConflict, true);
     assert.equal(bookedTour.conflictReason, "availability");
     assert.equal(bookedTour.internalNote, undefined);
     assert.equal(bookedTour.email, undefined);
     assert.match(bookedTour.guestMessage, /Mindo Lodge/);
+    assert.match(bookedTour.guestMessage, /^Hello Booked, I’m Neycer from Mindo Bird Watching\./);
+    assert.match(bookedTour.guestMessage, /October 23, 2026 at 5:00 AM/);
+    assert.match(bookedTour.guestMessage, /\n\nPlease message me here/);
+    assert.match(bookedTour.guestMessage, /\n\nThank you\.$/);
     assert.equal(completedTour.contactAvailable, false);
     assert.equal(completedTour.phone, "");
     assert.equal(body.availability.length, 1);

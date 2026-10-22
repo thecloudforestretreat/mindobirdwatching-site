@@ -9,7 +9,7 @@ const COPY = {
     afterTour: "Después del tour", sightings: "Avistamientos", submitReport: "Enviar reporte de avistamientos", reportHelp: "Crea la lista de la ruta, registra las aves vistas o escuchadas y envía el reporte a MBW.",
     tourReference: "Tour de referencia", openReport: "Abrir reporte", historyEyebrow: "Tu historial", previousReports: "Reportes anteriores", historyLoading: "Cargando reportes anteriores…",
     guestFollowup: "Seguimiento para huéspedes", shareIntro: "Elige un mensaje después del tour. Cada botón copia una nota breve con el enlace oficial de MBW.", tours: "Tours",
-    booked: "Reservado", completed: "Completado", pending: "Pendiente", scheduled: "Confirmado", dateTime: "Fecha y hora", service: "Servicio", pickup: "Recogida", pickupMissing: "Punto de recogida pendiente", guests: "Personas", phone: "Teléfono", unavailablePhone: "No disponible",
+    booked: "Reservado", completed: "Completado", pending: "Pendiente", scheduled: "Confirmado", dateTime: "Fecha y hora", service: "Servicio", pickup: "Recogida", pickupMissing: "Punto de recogida pendiente", country: "País", guests: "Personas", phone: "Teléfono", unavailablePhone: "No disponible",
     whatsapp: "WhatsApp", copyGuest: "Copiar mensaje", report: "Reporte", openCalendar: "Abrir calendario", noTours: "No hay tours reservados asignados", chooseGuide: "Elige un guía para revisar sus tours reservados.",
     datePending: "Fecha pendiente", timePending: "Hora pendiente", noCalendar: "No hay tours reservados para mostrar en el calendario.", noTour: "No hay un tour reservado disponible", copied: "Copiado",
     noReports: "Todavía no hay reportes anteriores.", historyUnlinked: "El historial aparecerá cuando el número de colaborador esté vinculado a esta cuenta.", historyUnavailable: "No se pudieron cargar los reportes anteriores.", reports: "reportes",
@@ -18,7 +18,7 @@ const COPY = {
     acceptTour: "Aceptar tour", awaitingAcceptance: "Por aceptar", accepted: "Aceptado", scheduleConflict: "Conflicto de horario", unavailableConflict: "Coincide con un bloqueo de disponibilidad", assignmentConflict: "Coincide con otro tour asignado", contactClosed: "Contacto cerrado", reportNeeded: "Reporte pendiente", reportSubmitted: "Reporte enviado", reportScheduled: "Reporte después del tour",
     availability: "Disponibilidad", availabilityHelp: "Bloquea las horas en que no puedes recibir asignaciones.", date: "Fecha", start: "Inicio", end: "Fin", noteOptional: "Nota opcional", blockTime: "Bloquear horario", scheduleProtection: "Protección de agenda", unavailableTimes: "Horarios no disponibles", noAvailability: "No tienes horarios bloqueados.", remove: "Quitar", availabilitySaved: "Horario bloqueado", availabilityRemoved: "Bloqueo eliminado",
     futureWork: "Próximas oportunidades", offers: "Ofertas", offersPrivacy: "Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.", noOffers: "No hay ofertas disponibles en este momento.", interested: "Me interesa", pass: "No disponible", bidOptional: "Tarifa opcional (USD)", responseSaved: "Respuesta guardada", pendingResponse: "Sin respuesta", adminReadOnly: "La vista de administrador es de solo lectura.",
-    upcoming: "Próximos", allTours: "Todos los tours", sevenDays: "7 días", thirtyDays: "30 días", allDates: "Todos", searchTours: "Buscar tours", searchPlaceholder: "Huésped, servicio o recogida", today: "Hoy", tomorrow: "Mañana", nextTour: "Próximo tour", needsAttention: "requieren atención", allSet: "Todo al día", showingTours: "tours visibles", noMatchingTours: "No hay tours que coincidan con estos filtros.", lastSynced: "Sincronizado", openMap: "Abrir mapa", shareLinks: "Compartir enlaces",
+    upcoming: "Próximos", allTours: "Todos los tours", sevenDays: "7 días", thirtyDays: "30 días", allDates: "Todos", searchTours: "Buscar tours", searchPlaceholder: "Huésped, servicio, país o recogida", today: "Hoy", tomorrow: "Mañana", nextTour: "Próximo tour", needsAttention: "requieren atención", allSet: "Todo al día", showingTours: "tours visibles", noMatchingTours: "No hay tours que coincidan con estos filtros.", lastSynced: "Sincronizado", openMap: "Abrir mapa", callGuest: "Llamar", shareLinks: "Compartir enlaces",
   },
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
@@ -27,7 +27,7 @@ const COPY = {
     afterTour: "After the tour", sightings: "Sightings", submitReport: "Submit a sighting report", reportHelp: "Build a route checklist, record birds seen or heard, and submit the report to MBW.",
     tourReference: "Tour reference", openReport: "Open sighting report", historyEyebrow: "Your history", previousReports: "Previous reports", historyLoading: "Loading previous reports…",
     guestFollowup: "Guest-ready follow-up", shareIntro: "Choose one relevant message after the tour. Each button copies a short note with the verified MBW link.", tours: "Tours",
-    booked: "Booked", completed: "Completed", pending: "Pending", scheduled: "Confirmed", dateTime: "Date & time", service: "Service", pickup: "Pickup", pickupMissing: "Pickup not set", guests: "Guests", phone: "Phone", unavailablePhone: "Not available",
+    booked: "Booked", completed: "Completed", pending: "Pending", scheduled: "Confirmed", dateTime: "Date & time", service: "Service", pickup: "Pickup", pickupMissing: "Pickup not set", country: "Country", guests: "Guests", phone: "Phone", unavailablePhone: "Not available",
     whatsapp: "WhatsApp", copyGuest: "Copy guest message", report: "Sightings report", openCalendar: "Open calendar", noTours: "No booked assignments are currently assigned", chooseGuide: "Choose a guide to preview booked assignments.",
     datePending: "Date pending", timePending: "Time pending", noCalendar: "No booked assignments to place on the calendar.", noTour: "No booked tour available", copied: "Copied to clipboard",
     noReports: "No previous reports yet.", historyUnlinked: "History will appear after the contributor number is linked to this account.", historyUnavailable: "Previous reports could not be loaded.", reports: "reports",
@@ -36,7 +36,7 @@ const COPY = {
     acceptTour: "Accept tour", awaitingAcceptance: "Awaiting acceptance", accepted: "Accepted", scheduleConflict: "Schedule conflict", unavailableConflict: "Overlaps an unavailable block", assignmentConflict: "Overlaps another assigned tour", contactClosed: "Contact closed", reportNeeded: "Report needed", reportSubmitted: "Report submitted", reportScheduled: "Report after tour",
     availability: "Availability", availabilityHelp: "Block times when you cannot receive assignments.", date: "Date", start: "Start", end: "End", noteOptional: "Optional note", blockTime: "Block time", scheduleProtection: "Schedule protection", unavailableTimes: "Unavailable times", noAvailability: "You have no unavailable times.", remove: "Remove", availabilitySaved: "Time blocked", availabilityRemoved: "Block removed",
     futureWork: "Future opportunities", offers: "Offers", offersPrivacy: "Offers remain separate from confirmed tours. They enter your calendar only after MBW approval.", noOffers: "No tour offers are available right now.", interested: "Interested", pass: "Pass", bidOptional: "Optional bid (USD)", responseSaved: "Response saved", pendingResponse: "No response", adminReadOnly: "Admin preview is read-only.",
-    upcoming: "Upcoming", allTours: "All tours", sevenDays: "7 days", thirtyDays: "30 days", allDates: "All", searchTours: "Search tours", searchPlaceholder: "Guest, service, or pickup", today: "Today", tomorrow: "Tomorrow", nextTour: "Next tour", needsAttention: "need attention", allSet: "All set", showingTours: "tours shown", noMatchingTours: "No tours match these filters.", lastSynced: "Last synced", openMap: "Open map", shareLinks: "Share links",
+    upcoming: "Upcoming", allTours: "All tours", sevenDays: "7 days", thirtyDays: "30 days", allDates: "All", searchTours: "Search tours", searchPlaceholder: "Guest, service, country, or pickup", today: "Today", tomorrow: "Tomorrow", nextTour: "Next tour", needsAttention: "need attention", allSet: "All set", showingTours: "tours shown", noMatchingTours: "No tours match these filters.", lastSynced: "Last synced", openMap: "Open map", callGuest: "Call guest", shareLinks: "Share links",
   },
 };
 
@@ -112,24 +112,48 @@ function reportUrl(tour) {
 }
 
 function guestMessage(tour) {
-  if (language === "en") return tour.guestMessage;
-  const firstName = String(tour.guestName || "").split(/\s+/)[0] || "hola";
-  const when = [dateLabel(tour.serviceDate), tour.startTime ? `a las ${tour.startTime}` : ""].filter(Boolean).join(" ");
-  const pickup = tour.pickup ? ` El punto de recogida es ${tour.pickup}.` : "";
-  return `Hola ${firstName}, soy ${data?.identity?.name || data?.providerName || "tu guía"} de Mindo Bird Watching. Seré tu guía para ${tour.service}${when ? ` el ${when}` : ""}.${pickup} Escríbeme por aquí si tienes alguna pregunta antes del tour.`;
+  if (tour.guestMessage) return tour.guestMessage;
+  const firstName = String(tour.guestName || "").split(/\s+/)[0] || "there";
+  const guide = String(tour.providerName || data?.providerName || data?.identity?.name || "your guide").split(" · ")[0].trim();
+  const service = String(tour.service || "tour").replace(/^\s*(?:MBW|ACT|TRANS|OSO|ACCOM)\d+\s*[-–—:]\s*/i, "").trim() || "tour";
+  const date = tour.serviceDate ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${tour.serviceDate}T12:00:00Z`)) : "";
+  const timeMatch = String(tour.startTime || "").trim().toLowerCase().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/);
+  let time = String(tour.startTime || "").trim();
+  if (timeMatch) {
+    let hour = Number(timeMatch[1]);
+    const suffix = timeMatch[3]?.toUpperCase() || (hour >= 12 ? "PM" : "AM");
+    if (!timeMatch[3]) hour %= 12;
+    time = `${hour || 12}:${timeMatch[2]} ${suffix}`;
+  }
+  const pickup = tour.pickup ? ` The pickup location is ${tour.pickup}.` : "";
+  return `Hello ${firstName}, I’m ${guide} from Mindo Bird Watching. I’ll be your guide for the ${service}${date ? ` on ${date}` : ""}${time ? ` at ${time}` : ""}.${pickup}\n\nPlease message me here if you have any questions before the tour.\n\nThank you.`;
+}
+
+function countryFlag(code) {
+  const value = String(code || "").toUpperCase();
+  return /^[A-Z]{2}$/.test(value) ? String.fromCodePoint(...[...value].map(letter => 127397 + letter.charCodeAt(0))) : "";
+}
+
+function phoneHref(value) {
+  const phone = String(value || "").trim();
+  const digits = phone.replace(/[^0-9]/g, "");
+  return phone.startsWith("+") ? `+${digits}` : digits;
 }
 
 function tourCard(tour, { next = false } = {}) {
   const phone = tour.phone && tour.contactAvailable ? `<a class="whatsapp" href="${esc(tour.whatsappUrl)}" target="_blank" rel="noopener noreferrer">${icon("whatsapp")}${t("whatsapp")}</a>` : `<button type="button" disabled>${t(tour.contactAvailable ? "unavailablePhone" : "contactClosed")}</button>`;
   const calendar = tour.calendarUrl ? `<a href="${esc(tour.calendarUrl)}" target="_blank" rel="noopener noreferrer">${icon("calendar")}${t("openCalendar")}</a>` : "";
   const map = tour.pickup ? `<a href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(tour.pickup)}" target="_blank" rel="noopener noreferrer">${icon("map")}${t("openMap")}</a>` : "";
-  const afterTour = tour.status === "completed" || (tour.serviceDate && tour.serviceDate < todayInEcuador()) ? `<button type="button" data-route="share">${icon("share")}${t("shareLinks")}</button>` : "";
+  const afterTour = tour.status === "completed" || (tour.serviceDate && tour.serviceDate < todayInEcuador());
+  const finalAction = afterTour ? `<button type="button" data-route="share">${icon("share")}${t("shareLinks")}</button>` : tour.phone && tour.contactAvailable ? `<a href="tel:${esc(phoneHref(tour.phone))}">${icon("phone")}${t("callGuest")}</a>` : `<button type="button" disabled>${icon("phone")}${t("contactClosed")}</button>`;
   const canAccept = data?.identity?.role === "guide" && tour.acceptanceRequired;
   const reportLabel = reportState(tour);
   const lifecycle = tour.status === "completed" ? { key: "completed", label: t("completed") } : tour.status === "pending" ? { key: "pending", label: t("pending") } : { key: "scheduled", label: t("scheduled") };
   const conflict = tour.hasConflict ? `<div class="conflict"><b>${t("scheduleConflict")}</b><span>${t(tour.conflictReason === "availability" ? "unavailableConflict" : "assignmentConflict")}</span></div>` : "";
   const acceptanceBadge = tour.accepted ? `<span class="statusBadge statusBadge--ok">${t("accepted")}</span>` : tour.acceptanceRequired ? `<span class="statusBadge statusBadge--pending">${t("awaitingAcceptance")}</span>` : "";
-  return `<article class="tourCard tourCard--${lifecycle.key} ${tour.hasConflict ? "tourCard--conflict" : ""} ${next ? "tourCard--next" : ""}">${next ? `<div class="nextTourLabel">${t("nextTour")}</div>` : ""}<div class="tourHead"><h2>${esc(tour.guestName)}</h2><div class="tourBadges"><span class="statusBadge statusBadge--${lifecycle.key}">${esc(lifecycle.label)}</span>${acceptanceBadge}<span class="statusBadge ${reportLabel.key === "reportSubmitted" ? "statusBadge--ok" : ""}">${t(reportLabel.key)}</span></div></div>${conflict}<div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div class="wide"><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t(tour.contactAvailable ? "unavailablePhone" : "contactClosed"))}</strong></div></div><div class="tourActions">${canAccept ? `<button class="acceptButton" type="button" data-accept="${esc(tour.assignmentId)}">${t("acceptTour")}</button>` : ""}${phone}<button type="button" ${tour.contactAvailable ? `data-copy="${encodeURIComponent(guestMessage(tour))}"` : "disabled"}>${icon("copy")}${tour.contactAvailable ? t("copyGuest") : t("contactClosed")}</button>${map}<a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}${afterTour}</div></article>`;
+  const flag = countryFlag(tour.countryCode);
+  const country = tour.country ? `${flag ? `${flag} ` : ""}${tour.country}` : t("unavailablePhone");
+  return `<article class="tourCard tourCard--${lifecycle.key} ${tour.hasConflict ? "tourCard--conflict" : ""} ${next ? "tourCard--next" : ""}">${next ? `<div class="nextTourLabel">${t("nextTour")}</div>` : ""}<div class="tourHead"><h2>${esc(tour.guestName)}</h2><div class="tourBadges"><span class="statusBadge statusBadge--${lifecycle.key}">${esc(lifecycle.label)}</span>${acceptanceBadge}<span class="statusBadge ${reportLabel.key === "reportSubmitted" ? "statusBadge--ok" : ""}">${t(reportLabel.key)}</span></div></div>${conflict}<div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("country")}</small><strong>${esc(country)}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t(tour.contactAvailable ? "unavailablePhone" : "contactClosed"))}</strong></div></div><div class="tourActions">${canAccept ? `<button class="acceptButton" type="button" data-accept="${esc(tour.assignmentId)}">${t("acceptTour")}</button>` : ""}${phone}<button type="button" ${tour.contactAvailable ? `data-copy="${encodeURIComponent(guestMessage(tour))}"` : "disabled"}>${icon("copy")}${tour.contactAvailable ? t("copyGuest") : t("contactClosed")}</button>${map}<a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}${finalAction}</div></article>`;
 }
 
 function reportState(tour) {
@@ -150,7 +174,7 @@ function renderTours() {
   const endDate = tourRange === "7" ? addDays(today, 6) : tourRange === "30" ? addDays(today, 29) : "9999-12-31";
   const query = tourSearch.trim().toLowerCase();
   let visible = data.tours.filter(tour => tourView === "all" || !tour.serviceDate || (tour.serviceDate >= today && tour.serviceDate <= endDate));
-  if (tourView === "all" && query) visible = visible.filter(tour => [tour.guestName, tour.service, tour.pickup].some(value => String(value || "").toLowerCase().includes(query)));
+  if (tourView === "all" && query) visible = visible.filter(tour => [tour.guestName, tour.service, tour.country, tour.pickup].some(value => String(value || "").toLowerCase().includes(query)));
   visible.sort((left, right) => {
     const leftFuture = !left.serviceDate || left.serviceDate >= today, rightFuture = !right.serviceDate || right.serviceDate >= today;
     if (leftFuture !== rightFuture) return leftFuture ? -1 : 1;
