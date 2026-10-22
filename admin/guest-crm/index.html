@@ -1007,7 +1007,7 @@
       async function markQuotesSent(){
         if(els.markQuotesSentBtn.disabled)return;
         const selected=getSelected()||{};
-        if(isArchivedStatus(selected)||isClosedStatus(selected.status)){showToast("Closed or archived inquiries cannot be marked quote sent.");return;}
+        if(isArchivedStatus(selected)||isClosedStatus(selected.status)||isClosedStatus(els.recordStatusInput.value)){showToast("Closed or archived inquiries cannot be marked quote sent.");return;}
         if(["accepted","declined"].includes(clean(els.quoteStatusInput.value))){showToast("Preserve the guest’s decision. Record any revised offer in Quote notes.");return;}
         const options=collectQuoteOptions();if(!options.length){showToast("Enter at least one quoted price");return;}
         if(options.some(item=>!Number.isFinite(Number(item.price))||Number(item.price)<0)){showToast("Quote prices must be valid amounts of zero or more.");return;}
