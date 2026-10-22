@@ -13,7 +13,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/admin.css?v=hub-pilot-20260928" />
-  <link rel="stylesheet" href="/assets/css/media-studio.css?v=6" />
+  <link rel="stylesheet" href="/assets/css/media-studio.css?v=7" />
 </head>
 <body data-admin-layout="media" data-admin-page="media">
   <div data-admin-nav data-admin-page="media"></div>
@@ -38,6 +38,21 @@
       <article><span id="statReview">0</span><small>Needs review</small></article>
       <article><span id="statPublished">0</span><small>Published</small></article>
       <article><span id="statAttention">0</span><small>Needs attention</small></article>
+    </section>
+
+    <section class="contentTracker" aria-label="Reels and carousel publishing totals">
+      <article data-type="reel">
+        <div class="trackerIdentity"><span class="trackerIcon" aria-hidden="true">🎥</span><div><span>Reels</span><strong><b id="trackerReelsPublished">0</b> posted</strong></div></div>
+        <div class="trackerPending"><strong id="trackerReelsPending">0</strong><span>pending</span></div>
+        <div class="trackerProgress" id="trackerReelsProgress" role="progressbar" aria-label="Reels posted" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="trackerReelsBar"></i></div>
+        <small id="trackerReelsBreakdown">0 scheduled · 0 review · 0 attention</small>
+      </article>
+      <article data-type="carousel">
+        <div class="trackerIdentity"><span class="trackerIcon" aria-hidden="true">📸</span><div><span>Carousels</span><strong><b id="trackerCarouselsPublished">0</b> posted</strong></div></div>
+        <div class="trackerPending"><strong id="trackerCarouselsPending">0</strong><span>pending</span></div>
+        <div class="trackerProgress" id="trackerCarouselsProgress" role="progressbar" aria-label="Carousels posted" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="trackerCarouselsBar"></i></div>
+        <small id="trackerCarouselsBreakdown">0 scheduled · 0 review · 0 attention</small>
+      </article>
     </section>
 
     <section class="operationsHealth" id="operationsHealth" aria-label="Publishing system health" aria-live="polite">
@@ -71,7 +86,7 @@
         </div>
         <div class="calendarOptions">
           <div class="calendarLegend" aria-label="Calendar legend">
-            <span><i data-type="reel"></i> Reel</span><span><i data-type="carousel"></i> Carousel</span>
+            <span class="legendType"><b aria-hidden="true">🎥</b> Reel</span><span class="legendType"><b aria-hidden="true">📸</b> Carousel</span>
             <span><i data-status="review"></i> Needs review</span><span><i data-status="failed"></i> Needs attention</span>
           </div>
           <div class="calendarFilters">
@@ -122,8 +137,8 @@
     <section class="addMediaModal" role="dialog" aria-modal="true" aria-labelledby="addMediaTitle">
       <header><div><p class="eyebrow">New content</p><h2 id="addMediaTitle">What are you adding?</h2></div><button class="iconButton" id="closeAddMenu" type="button" aria-label="Close">×</button></header>
       <div class="addChoices">
-        <a href="/media/reels/?new=1"><span class="typeIcon reelIcon">▶</span><strong>Reel</strong><small>Add one or several Cloudinary video URLs.</small><em>Open Reels Studio →</em></a>
-        <a href="/media/carousels/?new=1"><span class="typeIcon carouselIcon">▦</span><strong>Carousel</strong><small>Upload 2–10 images and review the 4:5 crops.</small><em>Open Carousel Studio →</em></a>
+        <a href="/media/reels/?new=1"><span class="typeIcon reelIcon" aria-hidden="true">🎥</span><strong>Reel</strong><small>Add one or several Cloudinary video URLs.</small><em>Open Reels Studio →</em></a>
+        <a href="/media/carousels/?new=1"><span class="typeIcon carouselIcon" aria-hidden="true">📸</span><strong>Carousel</strong><small>Upload 2–10 images and review the 4:5 crops.</small><em>Open Carousel Studio →</em></a>
       </div>
       <p class="modalNote">Reels and carousels share this planning calendar but keep separate publishing engines for safer retries and duplicate protection.</p>
     </section>
@@ -138,6 +153,6 @@
   </div>
 
   <script defer src="/assets/js/admin-nav.js?v=studio-remote-20260928"></script>
-  <script defer src="/assets/js/media-studio.js?v=5"></script>
+  <script defer src="/assets/js/media-studio.js?v=6"></script>
 </body>
 </html>
