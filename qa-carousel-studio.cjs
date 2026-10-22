@@ -31,7 +31,7 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
-  assert(html.includes("carousel-studio.css?v=6") && html.includes("carousel-studio.js?v=9"), "Carousel asset cache keys must expose the current review-screen controls");
+  assert(html.includes("carousel-studio.css?v=7") && html.includes("carousel-studio.js?v=11"), "Carousel asset cache keys must expose the current recovery controls");
   assert(html.includes("Carousel subject") && html.includes("recent night walks") && !html.includes("Bird name</span>"), "Intake must accept birds, trips, tours, and open-ended subjects");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
@@ -50,6 +50,9 @@ function compileWorkflow(path) {
   assert(!replacementFlow.includes('api("regenerate_carousel"'), "Replacing an image must not regenerate or erase approved copy");
   assert(replacementFlow.includes("quality score, approval, date, and time were kept unchanged"), "Image replacement must explain that copy and scheduling were preserved");
   assert(ui.includes("startReviewPolling") && ui.includes("refreshSelected") && ui.includes("AI review in progress"), "Live review status refresh is missing");
+  assert(ui.includes("startRecoveryPolling") && ui.includes("Recover missing platform") && ui.includes("Only platforms without a saved post ID are eligible"), "Safe recovery progress UI is missing");
+  assert(ui.includes("platformComplete") && ui.indexOf('["failed","partial","error","recovery_required"]') < ui.indexOf('if(s==="published"&&platformComplete'), "Partial publication must remain recoverable instead of appearing published");
+  assert(css.includes("publishingProgress") && css.includes("platformProgress"), "Publishing recovery progress is not styled");
   assert(ui.includes("HUMAN_EDITED"), "Human-edited review state is missing");
   assert(ui.includes("quality_score||0)<92") && ui.includes("Regenerate copy"), "Legacy sub-92 copy must be routed to regeneration, not approval");
   assert(!ui.includes('value="manual"'), "New carousel slides must not bypass 4:5 normalization");
@@ -65,7 +68,7 @@ function compileWorkflow(path) {
   assert(adminMain.nodes.some((node) => node.name === "[ADMIN] Trigger Carousel Processing"), "Admin processing webhook is missing");
   const schedule = adminMain.nodes.find((node) => node.name === "[CORE] Scheduled Trigger");
   assert(schedule, "Carousel schedule trigger is missing");
-  assert.deepStrictEqual(schedule.parameters.rule.interval, [{ field: "hours", hoursInterval: 1, triggerAtMinute: 0 }], "Carousel production queue must run hourly at minute 00");
+  assert.deepStrictEqual(schedule.parameters.rule.interval, [{ field: "hours", hoursInterval: 1, triggerAtMinute: 10 }], "Carousel production queue must run hourly at minute 10");
   assert(JSON.stringify(adminMain).includes("Beyond the Portrait") && JSON.stringify(adminMain).includes("contentMode === 'experience'"), "Admin-trigger workflow must contain both bird and experience copy modes");
   const allMainText = JSON.stringify(main);
   assert(!allMainText.includes("generativelanguage.googleapis.com"), "Carousel copy must remain local-first");
@@ -205,6 +208,31 @@ function compileWorkflow(path) {
   assert(gatewayPayload.images[0].delivery_url.includes("c_fill,g_auto,h_1350,w_1080"), "Replacement cover must receive the exact 4:5 crop");
   const gatewayPlanner = gateway.nodes.find((node) => node.name === "Plan Carousel Action").parameters.jsCode;
   assert(!gatewayPlanner.includes("IMAGE_REPLACED_REVIEW_REQUIRED"), "Gateway must preserve existing copy and approval state during image replacement");
+  assert(JSON.stringify(gateway).includes("mbw-carousels-process-v14"), "Gateway must call the stable v14 publisher webhook");
+  assert(gateway.nodes.find((node) => node.name === "Trigger Carousel Processing").onError === "continueRegularOutput", "Hourly recovery fallback must survive an unavailable immediate handoff");
+  assert(gatewayPlanner.includes("staleLock") && gatewayPlanner.includes("Automatic retry is blocked to prevent a duplicate post"), "Retry planner must guard active locks and ambiguous platform artifacts");
+  assert(!gatewayPlanner.includes("instagram_container_id:ig?'':") && !gatewayPlanner.includes("facebook_photo_ids:fb?'':"), "Retry must never erase platform artifacts automatically");
+  const runGatewayPlanner = async (body, rows) => {
+    const select = () => ({ first: () => ({ json: { body } }) });
+    const input = { all: () => rows.map((row) => ({ json: row })) };
+    return new AsyncFunction("$", "$input", "DateTime", gatewayPlanner)(select, input, {});
+  };
+  const retryRow = {
+    carousel_id: "CAR-QA-RETRY", approval_status: "APPROVED", copy_review_status: "HUMAN_EDITED", quality_score: 92,
+    status: "Partial", post_to_instagram: true, post_to_facebook: true, instagram_post_id: "IG-SAVED", facebook_post_id: "",
+    instagram_container_id: "IG-CONTAINER-SAVED", facebook_photo_ids: "", publishing_lock: "", image_1_url: "https://example.test/1.jpg", image_2_url: "https://example.test/2.jpg",
+  };
+  let planned = await runGatewayPlanner({ action: "retry_carousel", carousel_id: retryRow.carousel_id, request_id: "qa-safe" }, [retryRow]);
+  assert.strictEqual(planned[0].json._route, "update_trigger", "A missing platform without ambiguous artifacts should be retried immediately");
+  assert.strictEqual(planned[0].json.post_to_instagram, true, "Retry must preserve the original destination selection");
+  assert.strictEqual(planned[0].json.instagram_post_id, "IG-SAVED", "Retry must preserve an existing platform post ID");
+  planned = await runGatewayPlanner({ action: "retry_carousel", carousel_id: retryRow.carousel_id, request_id: "qa-artifact" }, [{ ...retryRow, facebook_photo_ids: '["FB-UPLOAD"]' }]);
+  assert.strictEqual(planned[0].json.ok, false, "Ambiguous Facebook uploads must block automatic retry");
+  planned = await runGatewayPlanner({ action: "retry_carousel", carousel_id: retryRow.carousel_id, request_id: "qa-lock" }, [{ ...retryRow, publishing_lock: `execution-qa-${new Date().toISOString()}` }]);
+  assert.strictEqual(planned[0].json.ok, false, "A current publishing lock must block concurrent retry");
+  planned = await runGatewayPlanner({ action: "retry_carousel", carousel_id: retryRow.carousel_id, request_id: "qa-stale" }, [{ ...retryRow, publishing_lock: "execution-qa-2026-01-01T00:00:00.000-05:00" }]);
+  assert.strictEqual(planned[0].json._route, "update_trigger", "A stale lock without unfinished artifacts should recover safely");
+  assert.strictEqual(planned[0].json.publishing_lock, "", "Safe stale-lock recovery must clear the obsolete lock");
 
   console.log(JSON.stringify({
     ok: true,

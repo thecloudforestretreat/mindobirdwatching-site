@@ -11,12 +11,18 @@ assert.equal(node('[CORE] Scheduled Trigger').parameters.rule.interval[0].trigge
 assert.match(node('Classify Carousel').parameters.jsCode, /publishReady && repairableStatus/);
 assert.match(node('Classify Carousel').parameters.jsCode, /r\.status = 'Scheduled'/);
 assert.match(node('Classify Carousel').parameters.jsCode, /!copyComplete \|\| \(!publishReady/);
+assert.match(node('Classify Carousel').parameters.jsCode, /staleLock/);
+assert.match(node('Classify Carousel').parameters.jsCode, /hasUnfinishedArtifacts/);
 assert.match(node('[CORE] Reclassify Prepared Row').parameters.jsCode, /\['PASS','HUMAN_EDITED'\]/);
 assert.match(node('[CORE] Reclassify Prepared Row').parameters.jsCode, /reviewStatus==='HUMAN_EDITED'/);
 assert.match(node('[TG] Mark Preview Sent').parameters.columns.value.status, /\['PASS','HUMAN_EDITED'\]/);
 assert.match(node('[TG] Mark Preview Sent').parameters.columns.value.status, /\? \$json\.status/);
 assert.match(node('[TG] Build Preview Message').parameters.jsCode, /\['PASS','HUMAN_EDITED'\]/);
 assert.match(node('[TG] Build Success Message').parameters.jsCode, /\['PASS','HUMAN_EDITED'\]/);
+assert.match(node('[CORE] Validate and Lock').parameters.jsCode, /reviewStatus!=='HUMAN_EDITED'/);
+assert.doesNotMatch(node('[CORE] Validate and Lock').parameters.jsCode, /swipe through/i);
+assert.match(node('[CORE] Finalize Status').parameters.jsCode, /r\.publishing_lock=''/);
+assert.equal(node('[ADMIN] Trigger Carousel Processing').parameters.path, 'mbw-carousels-process-v14');
 
 const target = {
   approval_status: 'APPROVED',
