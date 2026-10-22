@@ -128,7 +128,7 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
     .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= todayInEcuador())
     .map(({ assignment }) => ({ assignmentId: assignment.assignmentId, serviceDate: assignment.serviceDate, startTime: assignment.startTime, endTime: assignment.endTime, service: assignment.product || assignment.serviceType || "Tour opportunity", pickup: assignment.pickup, response: assignment.guideResponse, bidAmount: assignment.guideBidAmount }));
   const scheduled = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "assignment");
-  const tours = scheduled.filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= cutoff).map(({ row, assignment }) => {
+  const tours = scheduled.map(({ row, assignment }) => {
     const inquiry = inquiryById.get(assignment.inquiryId);
     const booked = Boolean(inquiry && BOOKED.has(inquiry.status)) || bookingByInquiry.has(assignment.inquiryId);
     if (!booked) return null;

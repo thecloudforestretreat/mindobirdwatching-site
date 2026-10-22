@@ -18,6 +18,7 @@ const COPY = {
     acceptTour: "Aceptar tour", awaitingAcceptance: "Por aceptar", accepted: "Aceptado", scheduleConflict: "Conflicto de horario", unavailableConflict: "Coincide con un bloqueo de disponibilidad", assignmentConflict: "Coincide con otro tour asignado", contactClosed: "Contacto cerrado", reportNeeded: "Reporte pendiente", reportSubmitted: "Reporte enviado", reportScheduled: "Reporte después del tour",
     availability: "Disponibilidad", availabilityHelp: "Bloquea las horas en que no puedes recibir asignaciones.", date: "Fecha", start: "Inicio", end: "Fin", noteOptional: "Nota opcional", blockTime: "Bloquear horario", scheduleProtection: "Protección de agenda", unavailableTimes: "Horarios no disponibles", noAvailability: "No tienes horarios bloqueados.", remove: "Quitar", availabilitySaved: "Horario bloqueado", availabilityRemoved: "Bloqueo eliminado",
     futureWork: "Próximas oportunidades", offers: "Ofertas", offersPrivacy: "Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.", noOffers: "No hay ofertas disponibles en este momento.", interested: "Me interesa", pass: "No disponible", bidOptional: "Tarifa opcional (USD)", responseSaved: "Respuesta guardada", pendingResponse: "Sin respuesta", adminReadOnly: "La vista de administrador es de solo lectura.",
+    upcoming: "Próximos", allTours: "Todos los tours", sevenDays: "7 días", thirtyDays: "30 días", allDates: "Todos", searchTours: "Buscar tours", searchPlaceholder: "Huésped, servicio o recogida", today: "Hoy", tomorrow: "Mañana", nextTour: "Próximo tour", needsAttention: "requieren atención", allSet: "Todo al día", showingTours: "tours visibles", noMatchingTours: "No hay tours que coincidan con estos filtros.", lastSynced: "Sincronizado", openMap: "Abrir mapa", shareLinks: "Compartir enlaces",
   },
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
@@ -35,6 +36,7 @@ const COPY = {
     acceptTour: "Accept tour", awaitingAcceptance: "Awaiting acceptance", accepted: "Accepted", scheduleConflict: "Schedule conflict", unavailableConflict: "Overlaps an unavailable block", assignmentConflict: "Overlaps another assigned tour", contactClosed: "Contact closed", reportNeeded: "Report needed", reportSubmitted: "Report submitted", reportScheduled: "Report after tour",
     availability: "Availability", availabilityHelp: "Block times when you cannot receive assignments.", date: "Date", start: "Start", end: "End", noteOptional: "Optional note", blockTime: "Block time", scheduleProtection: "Schedule protection", unavailableTimes: "Unavailable times", noAvailability: "You have no unavailable times.", remove: "Remove", availabilitySaved: "Time blocked", availabilityRemoved: "Block removed",
     futureWork: "Future opportunities", offers: "Offers", offersPrivacy: "Offers remain separate from confirmed tours. They enter your calendar only after MBW approval.", noOffers: "No tour offers are available right now.", interested: "Interested", pass: "Pass", bidOptional: "Optional bid (USD)", responseSaved: "Response saved", pendingResponse: "No response", adminReadOnly: "Admin preview is read-only.",
+    upcoming: "Upcoming", allTours: "All tours", sevenDays: "7 days", thirtyDays: "30 days", allDates: "All", searchTours: "Search tours", searchPlaceholder: "Guest, service, or pickup", today: "Today", tomorrow: "Tomorrow", nextTour: "Next tour", needsAttention: "need attention", allSet: "All set", showingTours: "tours shown", noMatchingTours: "No tours match these filters.", lastSynced: "Last synced", openMap: "Open map", shareLinks: "Share links",
   },
 };
 
@@ -45,6 +47,9 @@ let reportsLinked = true;
 let reportsLoaded = false;
 let reportsLoading = false;
 let toastTimer;
+let tourView = localStorage.getItem("mbw-guide-tour-view") === "all" ? "all" : "upcoming";
+let tourRange = ["7", "30", "all"].includes(localStorage.getItem("mbw-guide-tour-range")) ? localStorage.getItem("mbw-guide-tour-range") : "7";
+let tourSearch = "";
 const t = key => COPY[language][key] || key;
 const icon = name => `<span class="buttonIcon buttonIcon--${name}" aria-hidden="true"></span>`;
 const empty = message => `<div class="empty">${esc(message)}</div>`;
@@ -53,6 +58,31 @@ function dateLabel(value) {
   if (!value) return t("datePending");
   const date = new Date(`${value}T12:00:00Z`);
   return new Intl.DateTimeFormat(language === "es" ? "es-EC" : "en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(date);
+}
+
+function todayInEcuador() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guayaquil", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+
+function addDays(value, days) {
+  const date = new Date(`${value}T12:00:00Z`); date.setUTCDate(date.getUTCDate() + days); return date.toISOString().slice(0, 10);
+}
+
+function dateGroupLabel(value) {
+  if (!value) return t("datePending");
+  const today = todayInEcuador();
+  if (value === today) return t("today");
+  if (value === addDays(today, 1)) return t("tomorrow");
+  return dateLabel(value);
+}
+
+function timeMinutes(value) {
+  const match = String(value || "").trim().toLowerCase().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?/);
+  if (!match) return 1440;
+  let hour = Number(match[1]);
+  if (match[3] === "am" && hour === 12) hour = 0;
+  if (match[3] === "pm" && hour < 12) hour += 12;
+  return hour * 60 + Number(match[2]);
 }
 
 function countLabel(value) {
@@ -89,15 +119,17 @@ function guestMessage(tour) {
   return `Hola ${firstName}, soy ${data?.identity?.name || data?.providerName || "tu guía"} de Mindo Bird Watching. Seré tu guía para ${tour.service}${when ? ` el ${when}` : ""}.${pickup} Escríbeme por aquí si tienes alguna pregunta antes del tour.`;
 }
 
-function tourCard(tour) {
+function tourCard(tour, { next = false } = {}) {
   const phone = tour.phone && tour.contactAvailable ? `<a class="whatsapp" href="${esc(tour.whatsappUrl)}" target="_blank" rel="noopener noreferrer">${icon("whatsapp")}${t("whatsapp")}</a>` : `<button type="button" disabled>${t(tour.contactAvailable ? "unavailablePhone" : "contactClosed")}</button>`;
   const calendar = tour.calendarUrl ? `<a href="${esc(tour.calendarUrl)}" target="_blank" rel="noopener noreferrer">${icon("calendar")}${t("openCalendar")}</a>` : "";
+  const map = tour.pickup ? `<a href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(tour.pickup)}" target="_blank" rel="noopener noreferrer">${icon("map")}${t("openMap")}</a>` : "";
+  const afterTour = tour.status === "completed" || (tour.serviceDate && tour.serviceDate < todayInEcuador()) ? `<button type="button" data-route="share">${icon("share")}${t("shareLinks")}</button>` : "";
   const canAccept = data?.identity?.role === "guide" && tour.acceptanceRequired;
   const reportLabel = reportState(tour);
   const lifecycle = tour.status === "completed" ? { key: "completed", label: t("completed") } : tour.status === "pending" ? { key: "pending", label: t("pending") } : { key: "scheduled", label: t("scheduled") };
   const conflict = tour.hasConflict ? `<div class="conflict"><b>${t("scheduleConflict")}</b><span>${t(tour.conflictReason === "availability" ? "unavailableConflict" : "assignmentConflict")}</span></div>` : "";
   const acceptanceBadge = tour.accepted ? `<span class="statusBadge statusBadge--ok">${t("accepted")}</span>` : tour.acceptanceRequired ? `<span class="statusBadge statusBadge--pending">${t("awaitingAcceptance")}</span>` : "";
-  return `<article class="tourCard tourCard--${lifecycle.key} ${tour.hasConflict ? "tourCard--conflict" : ""}"><div class="tourHead"><h2>${esc(tour.guestName)}</h2><div class="tourBadges"><span class="statusBadge statusBadge--${lifecycle.key}">${esc(lifecycle.label)}</span>${acceptanceBadge}<span class="statusBadge ${reportLabel.key === "reportSubmitted" ? "statusBadge--ok" : ""}">${t(reportLabel.key)}</span></div></div>${conflict}<div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div class="wide"><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t(tour.contactAvailable ? "unavailablePhone" : "contactClosed"))}</strong></div></div><div class="tourActions">${canAccept ? `<button class="acceptButton" type="button" data-accept="${esc(tour.assignmentId)}">${t("acceptTour")}</button>` : ""}${phone}<button type="button" ${tour.contactAvailable ? `data-copy="${encodeURIComponent(guestMessage(tour))}"` : "disabled"}>${icon("copy")}${tour.contactAvailable ? t("copyGuest") : t("contactClosed")}</button><a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}</div></article>`;
+  return `<article class="tourCard tourCard--${lifecycle.key} ${tour.hasConflict ? "tourCard--conflict" : ""} ${next ? "tourCard--next" : ""}">${next ? `<div class="nextTourLabel">${t("nextTour")}</div>` : ""}<div class="tourHead"><h2>${esc(tour.guestName)}</h2><div class="tourBadges"><span class="statusBadge statusBadge--${lifecycle.key}">${esc(lifecycle.label)}</span>${acceptanceBadge}<span class="statusBadge ${reportLabel.key === "reportSubmitted" ? "statusBadge--ok" : ""}">${t(reportLabel.key)}</span></div></div>${conflict}<div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div class="wide"><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t(tour.contactAvailable ? "unavailablePhone" : "contactClosed"))}</strong></div></div><div class="tourActions">${canAccept ? `<button class="acceptButton" type="button" data-accept="${esc(tour.assignmentId)}">${t("acceptTour")}</button>` : ""}${phone}<button type="button" ${tour.contactAvailable ? `data-copy="${encodeURIComponent(guestMessage(tour))}"` : "disabled"}>${icon("copy")}${tour.contactAvailable ? t("copyGuest") : t("contactClosed")}</button>${map}<a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}${afterTour}</div></article>`;
 }
 
 function reportState(tour) {
@@ -114,7 +146,31 @@ function updateReportLink() {
 }
 
 function renderTours() {
-  $("#tourList").innerHTML = data.tours.length ? data.tours.map(tourCard).join("") : empty(data.providerName ? `${t("noTours")} ${data.providerName}.` : t("chooseGuide"));
+  const today = todayInEcuador();
+  const endDate = tourRange === "7" ? addDays(today, 6) : tourRange === "30" ? addDays(today, 29) : "9999-12-31";
+  const query = tourSearch.trim().toLowerCase();
+  let visible = data.tours.filter(tour => tourView === "all" || !tour.serviceDate || (tour.serviceDate >= today && tour.serviceDate <= endDate));
+  if (tourView === "all" && query) visible = visible.filter(tour => [tour.guestName, tour.service, tour.pickup].some(value => String(value || "").toLowerCase().includes(query)));
+  visible.sort((left, right) => {
+    const leftFuture = !left.serviceDate || left.serviceDate >= today, rightFuture = !right.serviceDate || right.serviceDate >= today;
+    if (leftFuture !== rightFuture) return leftFuture ? -1 : 1;
+    const dateOrder = String(left.serviceDate || "9999-12-31").localeCompare(String(right.serviceDate || "9999-12-31"));
+    if (dateOrder) return leftFuture ? dateOrder : -dateOrder;
+    return timeMinutes(left.startTime) - timeMinutes(right.startTime);
+  });
+  document.querySelectorAll("[data-tour-view]").forEach(button => button.classList.toggle("active", button.dataset.tourView === tourView));
+  document.querySelectorAll("[data-tour-range]").forEach(button => button.classList.toggle("active", button.dataset.tourRange === tourRange));
+  $("#tourRange").hidden = tourView === "all";
+  $("#tourSearchWrap").hidden = tourView !== "all";
+  if ($("#tourSearch").value !== tourSearch) $("#tourSearch").value = tourSearch;
+  const attention = visible.filter(tour => tour.acceptanceRequired || tour.hasConflict || (reportsLoaded && reportState(tour).key === "reportNeeded")).length;
+  const synced = data.checkedAt ? new Intl.DateTimeFormat(language === "es" ? "es-EC" : "en-US", { hour: "numeric", minute: "2-digit" }).format(new Date(data.checkedAt)) : "—";
+  const attentionLabel = language === "es" ? `${attention} ${attention === 1 ? "requiere" : "requieren"} atención` : `${attention} ${attention === 1 ? "needs" : "need"} attention`;
+  const visibleLabel = language === "es" ? `${visible.length} tour${visible.length === 1 ? "" : "s"} visible${visible.length === 1 ? "" : "s"}` : `${visible.length} tour${visible.length === 1 ? "" : "s"} shown`;
+  $("#tourSummary").innerHTML = `<span class="${attention ? "attentionCount" : "allSet"}">${attention ? attentionLabel : t("allSet")}</span><span>${visibleLabel}</span><span>${t("lastSynced")}: ${esc(synced)}</span>`;
+  const displayGroups = visible.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
+  let cardIndex = 0;
+  $("#tourList").innerHTML = visible.length ? [...displayGroups.entries()].map(([date, tours]) => `<section class="tourDateGroup"><h2>${esc(dateGroupLabel(date === "pending" ? "" : date))}</h2>${tours.map(tour => tourCard(tour, { next: tourView === "upcoming" && cardIndex++ === 0 })).join("")}</section>`).join("") : empty(data.tours.length ? t("noMatchingTours") : (data.providerName ? `${t("noTours")} ${data.providerName}.` : t("chooseGuide")));
   const groups = Map.groupBy ? Map.groupBy(data.tours, item => item.serviceDate || "pending") : data.tours.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
   $("#calendarList").innerHTML = data.tours.length ? [...groups.entries()].map(([, tours]) => `<section class="dateGroup"><h2>${esc(dateLabel(tours[0].serviceDate))}</h2>${tours.map(tour => `<div class="dateItem"><time>${esc(tour.startTime || t("timePending"))}</time><div><strong>${esc(tour.service)} · ${esc(tour.guestName)}</strong><small>${esc(tour.pickup || t("pickupMissing"))}</small></div></div>`).join("")}</section>`).join("") : empty(t("noCalendar"));
   const selected = $("#reportTour").value;
@@ -200,6 +256,7 @@ function renderPreview() {
 function applyLanguage() {
   document.documentElement.lang = language;
   document.querySelectorAll("[data-i18n]").forEach(node => { node.textContent = t(node.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(node => { node.placeholder = t(node.dataset.i18nPlaceholder); });
   document.querySelectorAll("[data-language]").forEach(button => button.classList.toggle("active", button.dataset.language === language));
   $("#refresh").setAttribute("aria-label", language === "es" ? "Actualizar" : "Refresh");
   if (data) { renderPreview(); renderTours(); renderAvailability(); renderOffers(); renderShare(); renderHistory(); }
@@ -239,6 +296,10 @@ async function copyText(text) {
 
 document.addEventListener("click", event => {
   const nav = event.target.closest("[data-route]"); if (nav) route(nav.dataset.route);
+  const viewButton = event.target.closest("[data-tour-view]");
+  if (viewButton) { tourView = viewButton.dataset.tourView; localStorage.setItem("mbw-guide-tour-view", tourView); renderTours(); }
+  const rangeButton = event.target.closest("[data-tour-range]");
+  if (rangeButton) { tourRange = rangeButton.dataset.tourRange; localStorage.setItem("mbw-guide-tour-range", tourRange); renderTours(); }
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
   const languageButton = event.target.closest("[data-language]");
   if (languageButton) { language = languageButton.dataset.language; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(); }
@@ -251,6 +312,7 @@ document.addEventListener("click", event => {
 });
 $("#availabilityForm").addEventListener("submit", event => { event.preventDefault(); const form = event.currentTarget, button = form.querySelector("button"), values = Object.fromEntries(new FormData(form)); button.disabled = true; mutate("/api/guide/availability", "POST", values).then(() => { form.reset(); return refreshCurrent(); }).catch(error => { button.disabled = false; alert(error.message); }); });
 $("#providerSelect").addEventListener("change", event => load(event.target.value));
+$("#tourSearch").addEventListener("input", event => { tourSearch = event.target.value; renderTours(); });
 $("#reportTour").addEventListener("change", updateReportLink);
 $("#refresh").addEventListener("click", () => load(data?.providerId || data?.providerName || ""));
 $("#retry").addEventListener("click", () => load());

@@ -96,10 +96,11 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     const response = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Neycer%20%C2%B7%20Night%20Walk%20Guide"), env });
     const body = await response.json();
     assert.equal(response.status, 200);
-    assert.equal(body.tours.length, 2);
+    assert.equal(body.tours.length, 3);
+    assert.equal(body.tours.some(item => item.assignmentId === "A-OLD"), true);
     assert.equal(body.providerId, "PROV-007");
     assert.equal(body.providerOptions[0].providerId, "PROV-007");
-    const bookedTour = body.tours.find(item => item.guestName === "Booked Guest"), completedTour = body.tours.find(item => item.guestName === "Completed Guest");
+    const bookedTour = body.tours.find(item => item.assignmentId === "A-1"), completedTour = body.tours.find(item => item.guestName === "Completed Guest");
     assert.equal(bookedTour.phone, "+1 (555) 123-4567");
     assert.equal(bookedTour.whatsappUrl, "https://wa.me/15551234567");
     assert.equal(bookedTour.hasConflict, true);
