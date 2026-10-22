@@ -22,7 +22,7 @@
   <link href="/site.webmanifest" rel="manifest">
   <link href="/assets/css/site.css" rel="stylesheet">
   <link href="/assets/css/header.css" rel="stylesheet">
-  <link href="/assets/css/pages/guide-tip.css?v=20261022-1" rel="stylesheet">
+  <link href="/assets/css/pages/guide-tip.css?v=20261022-2" rel="stylesheet">
   <script defer src="/assets/js/head.js"></script>
   <script type="application/ld+json">
   {
@@ -49,7 +49,16 @@
     </nav>
 
     <main class="page card">
-      <section class="tipHero" aria-labelledby="tipTitle">
+      <section class="tipSuccessView" hidden id="tipSuccessView" aria-labelledby="tipSuccessTitle">
+        <span class="tipSuccessIcon" aria-hidden="true">✓</span>
+        <span class="tipEyebrow">Pago exitoso</span>
+        <h1 id="tipSuccessTitle">Gracias por Dejar una Propina</h1>
+        <p id="tipSuccessDetail">Tu propina fue pagada correctamente y quedó registrada por separado del pago del tour.</p>
+        <p>Si otro guía te acompañó en un tour o actividad diferente, puedes dejarle una propina por separado.</p>
+        <a class="tipButton tipButton--link" href="/es/propina-para-tu-guia/">Dar Propina a Otro Guía</a>
+      </section>
+
+      <section class="tipHero" id="tipHero" aria-labelledby="tipTitle">
         <div class="tipIntro">
           <span class="tipEyebrow">Propina opcional para el guía</span>
           <h1 id="tipTitle">Deja una Propina para tu Guía</h1>
@@ -65,13 +74,13 @@
 
         <div class="tipPanel">
           <h2>Elige tu propina</h2>
-          <p class="tipPanelLead">Sugerimos US$5. Puedes ingresar cualquier monto entre US$1 y US$1.000.</p>
+          <p class="tipPanelLead">Sugerimos US$5. Ingresa un monto sin centavos entre US$1 y US$1.000.</p>
           <form class="tipForm" data-language="es" id="guideTipForm" novalidate>
             <label class="tipField" for="tipAmount">
               Monto de la propina en USD
               <span class="tipAmountWrap">
                 <span aria-hidden="true" class="tipCurrency">US$</span>
-                <input id="tipAmount" inputmode="decimal" max="1000" min="1" name="amount" required step="0.01" type="number" value="5.00">
+                <input id="tipAmount" inputmode="numeric" max="1000" min="1" name="amount" required step="1" type="number" value="5">
               </span>
             </label>
 
@@ -89,12 +98,12 @@
 
             <label class="tipField" for="otherGuideName" hidden id="otherGuideField">
               Nombre del otro guía
-              <input autocomplete="off" id="otherGuideName" maxlength="80" name="other_guide_name" type="text">
+              <input autocapitalize="words" autocomplete="off" id="otherGuideName" maxlength="80" name="other_guide_name" type="text">
             </label>
 
             <label class="tipField" for="guestName">
               Tu nombre
-              <input autocomplete="name" id="guestName" maxlength="120" name="guest_name" required type="text">
+              <input autocapitalize="words" autocomplete="name" id="guestName" maxlength="120" name="guest_name" required type="text">
             </label>
 
             <label class="tipField" for="guestEmail">
@@ -111,7 +120,7 @@
         </div>
       </section>
 
-      <section aria-label="Cómo funcionan las propinas" class="tipInfo">
+      <section aria-label="Cómo funcionan las propinas" class="tipInfo" id="tipInfo">
         <article>
           <h2>¿Quién la recibe?</h2>
           <p>El pago se identifica como una propina y se asigna al guía que seleccionaste.</p>
@@ -131,6 +140,6 @@
   <script defer src="/assets/js/site-config.js?v=1"></script>
   <script defer src="/assets/js/includes.js?v=1"></script>
   <script defer src="/assets/js/site.js?v=34"></script>
-  <script defer src="/assets/js/guide-tip.js?v=20261022-1"></script>
+  <script defer src="/assets/js/guide-tip.js?v=20261022-2"></script>
 </body>
 </html>

@@ -58,6 +58,10 @@ export default {
       );
     }
 
+    if (url.pathname === "/tips/session") {
+      return handleTipSessionStatus(request, env, url);
+    }
+
     if (url.pathname === "/") {
       return jsonResponse(
         {
@@ -6266,6 +6270,116 @@ async function handleCheckoutSession(
   );
 }
 
+async function handleTipSessionStatus(request, env, url) {
+  const originError = validateWriteOrigin(request);
+
+  if (originError) {
+    return jsonResponse(originError, 403, request);
+  }
+
+  const sessionId = cleanText(
+    url.searchParams.get("session_id"),
+    255
+  );
+
+  if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Invalid Checkout Session"
+      },
+      400,
+      request
+    );
+  }
+
+  const stripeSecretKey = getStripeSecretKey(env);
+
+  if (!stripeSecretKey) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Stripe is not configured"
+      },
+      500,
+      request
+    );
+  }
+
+  let response;
+
+  try {
+    response = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions/" +
+        encodeURIComponent(sessionId),
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${stripeSecretKey}`,
+          Accept: "application/json"
+        }
+      }
+    );
+  } catch {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Unable to verify payment"
+      },
+      502,
+      request
+    );
+  }
+
+  let session;
+
+  try {
+    session = await response.json();
+  } catch {
+    session = null;
+  }
+
+  const metadata =
+    session && session.metadata &&
+    typeof session.metadata === "object"
+      ? session.metadata
+      : {};
+  const isGuideTip =
+    metadata.payment_purpose === "guide_tip" &&
+    metadata.source_system === "mbw_tip_page";
+
+  if (!response.ok || !session || !isGuideTip) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Guide tip payment could not be verified"
+      },
+      404,
+      request
+    );
+  }
+
+  const paid = session.payment_status === "paid";
+  const amountTotal = Number(session.amount_total);
+
+  return jsonResponse(
+    {
+      ok: true,
+      paid,
+      payment_status: session.payment_status,
+      amount:
+        Number.isInteger(amountTotal)
+          ? amountTotal / 100
+          : null,
+      currency:
+        String(session.currency || "").toLowerCase(),
+      guide_name: cleanText(metadata.guide_name, 80)
+    },
+    200,
+    request
+  );
+}
+
 async function handleTipCheckoutSession(request, env) {
   const originError = validateWriteOrigin(request);
 
@@ -6302,7 +6416,7 @@ async function handleTipCheckoutSession(request, env) {
   }
 
   const amount = Number(body.amount);
-  const amountCents = Math.round(amount * 100);
+  const amountCents = amount * 100;
   const guestName = cleanText(body.guest_name, 120);
   const customerEmail = cleanText(body.customer_email, 254).toLowerCase();
   const selectedGuide = cleanText(body.guide_name, 80);
@@ -6317,7 +6431,7 @@ async function handleTipCheckoutSession(request, env) {
   ]);
 
   if (
-    !Number.isFinite(amount) ||
+    !Number.isInteger(amount) ||
     amountCents < 100 ||
     amountCents > 100000
   ) {
@@ -6326,8 +6440,8 @@ async function handleTipCheckoutSession(request, env) {
         ok: false,
         error:
           language === "es"
-            ? "Ingresa una propina entre US$1 y US$1.000."
-            : "Enter a tip between US$1 and US$1,000."
+            ? "Ingresa una propina en dólares enteros entre US$1 y US$1.000."
+            : "Enter a whole-dollar tip between US$1 and US$1,000."
       },
       400,
       request
