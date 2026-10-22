@@ -9,17 +9,13 @@ const main = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
 const loadTemplate = main.nodes.find((node) => node.name === "[CORE] Load ai_carousels");
 const writeTemplate = main.nodes.find((node) => node.name === "[GEN] Write Copy to Sheet");
 if (!loadTemplate || !writeTemplate) throw new Error("Carousel workflow Sheet templates were not found.");
+const scheduledTemplate = main.nodes.find((node) => node.name === "[CORE] Scheduled Trigger");
+if (!scheduledTemplate) throw new Error("Carousel workflow schedule trigger was not found.");
+scheduledTemplate.parameters.rule.interval = [{ field: "hours", hoursInterval: 1, triggerAtMinute: 10 }];
 
 const uuid = () => crypto.randomUUID();
 const gatewayPath = "mbw-admin-carousels-gateway";
-const metaPath = `${outputDir}/carousel-gateway-meta.json`;
-let previousTriggerPath = "";
-try {
-  previousTriggerPath = JSON.parse(fs.readFileSync(metaPath, "utf8")).triggerPath || "";
-} catch {}
-const triggerPath = /^mbw-carousels-process-[a-f0-9-]+$/.test(previousTriggerPath)
-  ? previousTriggerPath
-  : `mbw-carousels-process-${uuid()}`;
+const triggerPath = "mbw-carousels-process-v14";
 const sheetFields = writeTemplate.parameters.columns.schema
   .filter((field) => field.id !== "row_number")
   .map((field) => field.id);
@@ -166,7 +162,15 @@ if (action === 'retry_carousel') {
   const ig=truthy(row.post_to_instagram)&&!clean(row.instagram_post_id);
   const fb=truthy(row.post_to_facebook)&&!clean(row.facebook_post_id);
   if (!ig&&!fb) return response(false,'No missing selected platform is available to retry.');
-  Object.assign(row,{status:'Scheduled',post_to_instagram:ig,post_to_facebook:fb,error_message:'',publishing_lock:'',instagram_container_id:ig?'':row.instagram_container_id,facebook_photo_ids:fb?'':row.facebook_photo_ids});
+  const lock=clean(row.publishing_lock);
+  const lockMatch=lock.match(/(20\d\d-\d\d-\d\dT[^\s]+)$/);
+  const lockMillis=lockMatch?Date.parse(lockMatch[1]):NaN;
+  const staleLock=Boolean(lock)&&Number.isFinite(lockMillis)&&Date.now()-lockMillis>15*60*1000;
+  if (lock&&!staleLock) return response(false,'Publishing is already running. Wait for the current attempt to finish before starting another recovery.');
+  if (lock&&!Number.isFinite(lockMillis)) return response(false,'A publishing lock exists but its age cannot be verified. Review the workflow execution before retrying.');
+  if (ig&&clean(row.instagram_container_id)) return response(false,'Instagram created a container but no post ID was saved. Automatic retry is blocked to prevent a duplicate post; reconcile the existing container first.');
+  if (fb&&clean(row.facebook_photo_ids)) return response(false,'Facebook uploaded carousel photos but no post ID was saved. Automatic retry is blocked to prevent a duplicate post; reconcile the existing upload first.');
+  Object.assign(row,{status:'Scheduled',error_message:'',publishing_lock:''});
   return [{json:{...row,_route:'update_trigger'}}];
 }
 return response(false,'Unsupported gateway action.');`;
@@ -188,7 +192,7 @@ const route={parameters:{rules:{values:routeValues},options:{fallbackOutput:"ext
 const append=googleNode("Append Carousel","append",[960,120]);
 const updateOnly=googleNode("Update Carousel Only","update",[960,300]);
 const updateTrigger=googleNode("Update Carousel and Trigger","update",[960,460]);
-const triggerMain={parameters:{method:"POST",url:`https://n8n.mindobirdwatching.com/webhook/${triggerPath}`,sendHeaders:true,headerParameters:{parameters:[{name:"Content-Type",value:"application/json"}]},sendBody:true,specifyBody:"json",jsonBody:"={{ { source: 'admin_carousels_gateway', action: $('Admin Carousels Webhook').first().json.body.action } }}",options:{timeout:10000}},id:uuid(),name:"Trigger Carousel Processing",type:"n8n-nodes-base.httpRequest",typeVersion:4.2,position:[1220,220]};
+const triggerMain={parameters:{method:"POST",url:`https://n8n.mindobirdwatching.com/webhook/${triggerPath}`,sendHeaders:true,headerParameters:{parameters:[{name:"Content-Type",value:"application/json"}]},sendBody:true,specifyBody:"json",jsonBody:"={{ { source: 'admin_carousels_gateway', action: $('Admin Carousels Webhook').first().json.body.action, carousel_id: $('Admin Carousels Webhook').first().json.body.carousel_id, request_id: $('Admin Carousels Webhook').first().json.body.request_id } }}",options:{timeout:10000}},id:uuid(),name:"Trigger Carousel Processing",type:"n8n-nodes-base.httpRequest",typeVersion:4.2,position:[1220,220],onError:"continueRegularOutput"};
 const success={parameters:{jsCode:responseCode},id:uuid(),name:"Build Carousel Success",type:"n8n-nodes-base.code",typeVersion:2,position:[1460,220]};
 const direct={parameters:{respondWith:"json",responseBody:"={{ $json }}",options:{}},id:uuid(),name:"Respond Carousel Direct",type:"n8n-nodes-base.respondToWebhook",typeVersion:1.1,position:[960,-80]};
 const respond={parameters:{respondWith:"json",responseBody:"={{ $json }}",options:{}},id:uuid(),name:"Respond Carousel Success",type:"n8n-nodes-base.respondToWebhook",typeVersion:1.1,position:[1700,220]};
