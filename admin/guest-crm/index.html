@@ -939,9 +939,12 @@
         record=record||{};
         const items=normalizeTourItems(record);
         const explicitProduct=clean(record.product_selected).split(" - ")[0];
+        const hasStoredItems=Boolean(record.tour_items_json||record.tour_items);
         const storedPrimary=explicitProduct
           ? items.find(item=>clean(item.product_selected).split(" - ")[0]===explicitProduct)
-          : items[0];
+          : hasStoredItems
+            ? items.find(item=>clean(item.id)==="primary")||items.find(item=>!/^addon-/.test(clean(item.id)))
+            : null;
         if(storedPrimary) return normalizeTourItem(Object.assign({},storedPrimary,{id:"primary"}));
         const product=clean(record.product_selected);
         const tour=productTitle(product)||clean(record.tour_type||record.tour_category);
@@ -1316,7 +1319,7 @@
         const source=pick(row,"source_type","source_tab")||"manual_whatsapp";
         const existingCompleted=pick(row,"tour_completed");
         const tourItems=normalizeTourItems(row);
-        const storedPrimary=tourItems[0]||{};
+        const storedPrimary=primaryTourItemFromRecord(row);
         const explicitProduct=pick(row,"product_selected")||clean(storedPrimary.product_selected).split(" - ")[0];
         const explicitDuration=normalizeDuration(pick(row,"duration_preference")||storedPrimary.duration);
         const explicitService=pick(row,"service_type")||deriveServiceType(storedPrimary.tour||tour);
