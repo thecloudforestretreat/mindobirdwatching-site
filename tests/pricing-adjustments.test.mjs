@@ -165,3 +165,13 @@ test('Jewels and Night Walk sandbox mappings use the test key and supplied produ
   assert(!r.calls.some(c=>c.pathname==='/v1/products'));
  }
 });
+
+test('mixed birding, night walk and vehicle lines keep passenger counts out of flat charges',async()=>{
+ for(const vehicles of [1,2]){
+  const items=[{tour_code:'MBW004',language:'en',quantity:3,tour_date:'2099-11-26'},{tour_code:'MBW016',language:'en',quantity:3,tour_date:'2099-11-26'},...Array.from({length:vehicles},()=>({tour_code:'TRANS06',language:'en',quantity:3,tour_date:'2099-11-26'}))];
+  const r=await callWorker('create-invoice-multi',{...basePayload,items});assert.equal(r.status,200,JSON.stringify(r.result));
+  const lines=r.calls.filter(c=>c.pathname==='/v1/invoiceitems').map(c=>c.form);
+  for(const line of lines.slice(2)){assert.equal(line.get('quantity'),'1');assert.equal(line.get('price_data[unit_amount]'),'18000')}
+  assert.equal(r.result.amount_before_deposit,285+180*vehicles);
+ }
+});
