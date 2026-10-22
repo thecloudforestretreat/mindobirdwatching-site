@@ -3154,7 +3154,7 @@ export default {
     if (path === "/debug" && request.method === "GET") {
       return json({
         ok: true,
-        worker_version: "mbw-stripe-v39-multi-invoice-ledger",
+        worker_version: "mbw-stripe-v44-guide-tip-accounting",
         stripe_mode_default: env.STRIPE_SECRET_KEY_TEST ? "sandbox" : env.STRIPE_SECRET_KEY ? "live" : "not_configured",
         agent_activity_webapp_configured: !!env.AGENT_ACTIVITY_WEBAPP_URL,
         agent_activity_token_configured: !!env.AGENT_ACTIVITY_WEBAPP_TOKEN,
