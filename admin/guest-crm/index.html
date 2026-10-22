@@ -518,6 +518,8 @@
       const els = {};
       const state = { records: [], selectedId: "", view: "calendar", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", calendarDisplay: localStorage.getItem("mbwCalendarDisplay")==="list"?"list":"month", calendarLegendFilter:null, tourItems: [], interactions:[], assignments:[], allAssignments:[], providers:[], bookings:[], payments:[], editingPaymentId:"", workspaceLoading:false };
       let refreshInFlight=false;
+      let recordSaveInFlight=false;
+      let recordSaveGeneration=0;
       let refreshRetryTimer=0;
       let refreshRetryAttempt=0;
       const STATUS_FOLLOW_UP_MESSAGES = {
@@ -1202,7 +1204,9 @@
         refreshRetryTimer=setTimeout(()=>refreshCrm(true),retryDelay);
       }
       async function refreshCrm(background){
-        if(refreshInFlight) return;
+        if(refreshInFlight||recordSaveInFlight) return;
+        const generation=recordSaveGeneration;
+        const refreshObsolete=()=>generation!==recordSaveGeneration||recordSaveInFlight;
         const isBackground=background===true;
         if(hasUnsavedTourChanges()){
           if(isBackground) scheduleRefreshRetry(30000);
@@ -1215,10 +1219,12 @@
           const result=await api("list_inquiries",{filters:{}});
           const incoming=applyDuplicateFamilyArchives(extractRecords(result).filter(hasMeaningfulCrmData).map(normalizeCrmRecord).filter(r=>r.inquiry_id));
           const records=applyDuplicateFamilyArchives(dedupeRecords(mergeLiveWithLocal(incoming)));
+          if(refreshObsolete()) return;
+          if(hasUnsavedTourChanges()){showToast("Activity edits kept. Save Record before refreshing CRM.");return;}
+          await loadGlobalOperationsData();
+          if(refreshObsolete()) return;
           if(hasUnsavedTourChanges()){showToast("Activity edits kept. Save Record before refreshing CRM.");return;}
           state.records=records;
-          await loadGlobalOperationsData();
-          if(hasUnsavedTourChanges()){showToast("Activity edits kept. Save Record before refreshing CRM.");return;}
           state.lastRefresh=new Date().toISOString();
           localStorage.setItem("mbwCrmLastRefresh",state.lastRefresh);
           if(!state.selectedId&&state.records[0]) state.selectedId=state.records[0].inquiry_id;
@@ -1231,6 +1237,7 @@
           const workingCount=state.records.length-archivedCount;
           showToast((isBackground?"Live CRM connection restored: ":"CRM refreshed: ")+state.records.length+" loaded · "+workingCount+" working · "+archivedCount+" archived");
         }catch(e){
+          if(refreshObsolete()||hasUnsavedTourChanges()) return;
           loadLocalRecords();
           fillForm(getSelected());
           render();
@@ -1272,10 +1279,19 @@
       }
       document.addEventListener("focusout",event=>{if(event.target.id==="referenceIdInput")resolveReference().catch(()=>{});});
       document.addEventListener("input",event=>{if(event.target.id==="referenceIdInput"){referenceGeneration++;referenceMatch=null;referenceStatus("Reference will be checked before saving.");}});
+      function savedInquiryFromResponse(response,requested){
+        const saved=extractRecords(response).find(row=>clean(row.inquiry_id)===clean(requested.inquiry_id));
+        if(!saved) throw new Error("Save not verified. Your edits are kept; the CRM did not return the saved inquiry.");
+        const fingerprint=row=>serializeTourItems(normalizeTourItems(row));
+        if(fingerprint(saved)!==fingerprint(requested)) throw new Error("Activity save not verified. Your edits are kept; the CRM returned different services. Do not refresh before reviewing.");
+        return {...requested,...saved};
+      }
       async function saveRecord(){
         let payload=buildSavePayload();
         const saveButtons=[els.saveBtn,els.bottomSaveBtn,els.detailTopSaveBtn].filter(Boolean);
-        if(saveButtons.some(button=>button.disabled)) return;
+        if(recordSaveInFlight||saveButtons.some(button=>button.disabled)) return;
+        recordSaveInFlight=true;
+        recordSaveGeneration+=1;
         saveButtons.forEach(button=>{ button.disabled=true; button.dataset.originalText=button.textContent; button.textContent="Saving…"; });
         try{
           const isCreate=els.modeInput.value==="create"||els.modeInput.value==="returning";
@@ -1298,8 +1314,9 @@
           }
           const reusedGuest=els.modeInput.value==="create"&&payload.action==="create_returning_inquiry";
           if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT){
-            await api(payload.action,payload);
-            upsert(payload.record);
+            const response=await api(payload.action,payload);
+            const saved=savedInquiryFromResponse(response,payload.record);
+            upsert(saved);
 
             if(attribution){try{
               const linked=await api("link_reference",{inquiry_id:payload.record.inquiry_id,guest_id:payload.record.guest_id,contact_intent_id:attribution.contact_intent_id});
@@ -1316,6 +1333,7 @@
           return true;
         }catch(e){ showToast(e.message); return false; }
         finally {
+          recordSaveInFlight=false;
           state.forceContactedAt=false;
           saveButtons.forEach(button=>{ button.disabled=false; button.textContent=button.dataset.originalText||"Save Record"; });
         }

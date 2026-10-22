@@ -16,7 +16,7 @@ function harness(record={}){
   const backend=payload=>new Function('$','$input',processor)(()=>({first:()=>({json:payload})}),{all:()=>rows.map(json=>({json}))})[0].json;
   const context={console,URL,URLSearchParams,Date,Intl,setTimeout:()=>0,clearTimeout:()=>{},location:{hostname:'localhost',search:''},localStorage:{getItem(){return null;},setItem(){}},document:{getElementById:node,addEventListener(){},querySelectorAll(){return[];}},window:{addEventListener(){},location:{search:''}},persist:async(action,payload)=>{assert.equal(action,'update_inquiry');calls.push(structuredClone(payload));const saved=backend(payload);assert.notEqual(saved.ok,false);Object.assign(rows[0],saved.record);return saved;}};
   vm.createContext(context);
-  vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,fillQuoteOptions,formRecord,saveRecord,normalizeCrmRecord,primaryTourItemFromRecord,additionalTourItemsForForm,normalizeTourItems,assignmentTourItems,renderAssignmentTourItems,tourFormSnapshot,hasUnsavedTourChanges,refreshCrm,install(){api=persist;resolveReference=async()=>null;render=()=>{};saveLocalRecords=()=>{};showToast=()=>{};upsert=record=>{state.records=[normalizeCrmRecord(record)]}}};})();`),context);
+  vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,fillQuoteOptions,formRecord,saveRecord,normalizeCrmRecord,primaryTourItemFromRecord,additionalTourItemsForForm,normalizeTourItems,assignmentTourItems,renderAssignmentTourItems,savedInquiryFromResponse,setApi(fn){api=fn},setOperations(fn){loadGlobalOperationsData=fn},tourFormSnapshot,hasUnsavedTourChanges,refreshCrm,install(){api=persist;resolveReference=async()=>null;render=()=>{};saveLocalRecords=()=>{};showToast=()=>{};upsert=record=>{state.records=[normalizeCrmRecord(record)]}}};})();`),context);
   const q=context.qa;q.cache();q.install();Object.assign(base,q.normalizeCrmRecord(base));q.state.records=[base];q.state.selectedId=base.inquiry_id;
   for(const [id,value] of Object.entries({modeInput:'update',guestIdInput:base.guest_id,firstNameInput:'QA',fullNameInput:'QA Guest',emailInput:'qa@example.invalid',countryInput:'US',sourceInput:'site_book_tour',tourInput:'Birdwatching',guestCountInput:'2',dateInput:'2099-11-26',recordStatusInput:base.status,quoteStatusInput:base.quote_status,paymentStatusInput:'unpaid',serviceTypeInput:'Birdwatching',priorityInput:'normal',followupInput:'2099-11-01'}))node(id).value=value;
   function load(){
@@ -101,4 +101,31 @@ for(const background of [false,true])test((background?'background':'manual')+' r
  extras[0].date='2099-11-30';assert.equal(h.q.hasUnsavedTourChanges(),true);
  // The actual refresh function must stop before invoking the backend or rebuilding the form.
  await h.q.refreshCrm(background);assert.equal(h.calls.length,0);assert.equal(h.q.hasUnsavedTourChanges(),true);assert.equal(h.q.tourFormSnapshot().includes('2099-11-30'),true);
+});
+
+
+test('save uses the returned persisted row and rejects an acknowledgement without it',async()=>{
+ const h=harness({tour_add_ons:'Night Walk'});h.load();
+ h.q.setApi(async()=>({ok:true}));assert.equal(await h.q.saveRecord(),false);
+ h.q.setApi(async(action,payload)=>({...payload.record,updated_at:'2099-12-01T00:00:00Z'}));
+ assert.equal(await h.q.saveRecord(),true);assert.equal(h.q.state.records[0].updated_at,'2099-12-01T00:00:00Z');
+});
+test('save rejects stale returned activity rows and preserves the edited form',async()=>{
+ const h=harness({tour_add_ons:'Night Walk'});const {extras}=h.load();extras[0].date='2099-11-30';extras[0].status='booked';
+ h.q.setApi(async()=>({record:h.base}));assert.equal(await h.q.saveRecord(),false);
+ assert.equal(extras[0].date,'2099-11-30');assert.equal(extras[0].status,'booked');
+});
+test('a refresh started before a save cannot overwrite the saved activity rows',async()=>{
+ const h=harness({tour_add_ons:'Night Walk'});const {extras}=h.load();h.q.state.tourFormSnapshot=h.q.tourFormSnapshot();
+ let completeRead;const old=structuredClone(h.base);
+ h.q.setApi((action,payload)=>action==='list_inquiries'?new Promise(resolve=>completeRead=resolve):Promise.resolve({record:payload.record}));h.q.setOperations(async()=>{});
+ const refreshing=h.q.refreshCrm();extras[0].date='2099-11-30';extras[0].status='booked';
+ assert.equal(await h.q.saveRecord(),true);completeRead({records:[old]});await refreshing;
+ const saved=JSON.parse(h.q.state.records[0].tour_items_json);assert.equal(saved[1].date,'2099-11-30');assert.equal(saved[1].status,'booked');
+});
+test('a failed refresh cannot discard activity edits made during the request',async()=>{
+ const h=harness({tour_add_ons:'Night Walk'});const {extras}=h.load();h.q.state.tourFormSnapshot=h.q.tourFormSnapshot();let failRead;
+ h.q.setApi(()=>new Promise((resolve,reject)=>failRead=reject));
+ const refreshing=h.q.refreshCrm();extras[0].date='2099-11-30';failRead(new Error('Offline'));await refreshing;
+ assert.equal(extras[0].date,'2099-11-30');assert.equal(h.q.hasUnsavedTourChanges(),true);
 });
