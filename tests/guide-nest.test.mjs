@@ -8,6 +8,7 @@ import { onRequestPost as acceptGuideAssignment } from "../functions/api/guide/a
 import { onRequestPost as createGuideAvailability } from "../functions/api/guide/availability/index.js";
 import { onRequestDelete as deleteGuideAvailability } from "../functions/api/guide/availability/[assignmentId].js";
 import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/offers/[assignmentId]/respond.js";
+import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
 
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
@@ -18,6 +19,22 @@ const env = {
   N8N_CRM_ADMIN_TOKEN: "test-token",
   N8N_CRM_ADMIN_URL: "https://n8n.example.test/webhook/mobile",
 };
+
+test("guide service identity follows the linked itinerary item and rejects copied primary products", () => {
+  const inquiry = { tours: [{ id: "night", product: "MBW016 - Night Walk", tour: "Night Walk" }] };
+  assert.equal(resolveAssignmentService({ note: "Service reference: night", product: "MBW006 - Five Toucans", serviceType: "Night Walk" }, inquiry), "MBW016 - Night Walk");
+  assert.equal(resolveAssignmentService({ note: "", product: "MBW006 - Five Toucans", serviceType: "Transportation" }, inquiry), "Transportation");
+  assert.equal(resolveAssignmentService({ note: "", product: "MBW006 - Five Toucans", serviceType: "Birdwatching" }, inquiry), "MBW006 - Five Toucans");
+});
+
+test("CRM assignments link to itinerary services, sort earliest first, and expose lifecycle states", () => {
+  const crm = fs.readFileSync(new URL("../admin/guest-crm/index.html", import.meta.url), "utf8");
+  assert.match(crm, /id="assignmentTourItem"/);
+  assert.match(crm, /Service reference:/);
+  assert.match(crm, /const rows=sortAssignmentsAscending\(state\.assignments\|\|\[\]\)/);
+  assert.match(crm, /Past — verify/);
+  assert.match(crm, /assignmentItem--completed/);
+});
 
 test("guide identity is available only to Guide Nest and is provider-bound", async () => {
   const request = new Request("http://localhost/api/guide/bootstrap");

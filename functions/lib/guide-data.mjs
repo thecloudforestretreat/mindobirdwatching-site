@@ -67,6 +67,30 @@ function messageFor(tour, guideName) {
   return `Hi ${firstName}, this is ${guideName || "your guide"} from Mindo Bird Watching. I’m your guide for ${tour.service}${when ? ` on ${when}` : ""}.${pickup} Please reply here if you have any questions before the tour.`;
 }
 
+function assignmentServiceReference(note) {
+  return String(note || "").match(/(?:^|\n)Service reference:\s*([^\n]+)/i)?.[1]?.trim() || "";
+}
+
+function productMatchesService(product, serviceType) {
+  const productValue = lower(product), serviceValue = lower(serviceType);
+  const code = productValue.match(/\b(mbw|act|trans|oso|accom)\d+\b/)?.[0] || "";
+  if (!productValue || !serviceValue) return true;
+  if (serviceValue.includes("night")) return code === "mbw016" || productValue.includes("night");
+  if (serviceValue.includes("transport") || serviceValue.includes("pickup") || serviceValue.includes("drop-off")) return code.startsWith("trans") || productValue.includes("transport");
+  if (serviceValue.includes("activity")) return code.startsWith("act") || /^mbw01[1-5]$/.test(code) || /chocolate|coffee|orchid|butterfly|frog|waterfall|activity|canopy|rafting|tubing|biking|horseback/.test(productValue);
+  if (serviceValue.includes("bird")) return /^mbw00[4-9]$/.test(code) || /^mbw0(?:10|17|19)$/.test(code) || /bird|toucan|cock-of-the-rock|tanager|choc[oó]|yanacocha|antpitta/.test(productValue);
+  if (serviceValue.includes("wildlife") || serviceValue.includes("bear")) return code.startsWith("oso") || /bear|oso|wildlife/.test(productValue);
+  return true;
+}
+
+export function resolveAssignmentService(assignment, inquiry) {
+  const reference = assignmentServiceReference(assignment.note);
+  const linked = reference && inquiry?.tours?.find(item => item.id === reference);
+  if (linked) return linked.product || linked.tour || linked.serviceType || assignment.serviceType || "Tour";
+  if (assignment.product && productMatchesService(assignment.product, assignment.serviceType)) return assignment.product;
+  return assignment.serviceType || assignment.product || "Tour";
+}
+
 function dateLabel(value) {
   if (!value) return "Date pending";
   const date = new Date(`${value}T12:00:00Z`);
@@ -111,7 +135,7 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
     const guestName = inquiry?.name || String(row.guest_name || "Guest").trim();
     const contactAvailable = assignment.status !== "completed" && inquiry?.status !== "completed";
     const phone = contactAvailable ? (inquiry?.phone || String(row.guest_phone || "").trim()) : "";
-    const service = assignment.product || assignment.serviceType || "Tour";
+    const service = resolveAssignmentService(assignment, inquiry);
     const conflict = providerAssignments.find(candidate => candidate.assignment.assignmentId !== assignment.assignmentId && assignmentKind(candidate.row, candidate.assignment) !== "offer" && overlaps(assignment, candidate.assignment));
     const tour = {
       assignmentId: assignment.assignmentId,
