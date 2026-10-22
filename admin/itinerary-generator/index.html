@@ -945,11 +945,13 @@
           updateAll(false);
           return;
         }
-        item[field] = ['quantity','unitPrice'].includes(field) ? Number(value || 0) : value;
+        item[field] = field === 'unitPrice' && value.trim() === '' ? '' : ['quantity','unitPrice'].includes(field) ? Number(value || 0) : value;
         if(field === 'unitPrice'){
           const card = document.querySelector(`.itemEditor[data-id="${CSS.escape(id)}"]`);
           const current = card && card.querySelector('[data-catalog-meta]');
           if(current) current.outerHTML = catalogMetaMarkup(item);
+          const warning = card && card.querySelector('[data-missing-rate]');
+          if(warning) warning.hidden = item.unitPrice !== "";
         }
         updateAll(false);
       }
@@ -986,6 +988,7 @@
               <select data-field="productPreset">${PRODUCT_OPTIONS.map(option => `<option value="${escapeHtml(option)}" ${inferProductPreset(item)===option?'selected':''}>${escapeHtml(productOptionLabel(option,$('language').value))}</option>`).join('')}</select>
             </div>
             ${catalogMetaMarkup(item)}
+            ${item.unitPrice === '' ? '<p class="hint" data-missing-rate role="status">Service rate missing. Enter the agreed rate before sharing prices or preparing an invoice. The accepted trip total is not a service rate.</p>' : ''}
             ${inferProductPreset(item) === 'Other' ? `<div class="field">
               <label>Other product or service</label>
               <input type="text" data-field="customName" value="${escapeHtml(item.name)}" placeholder="Type the product or service name" />
@@ -1360,6 +1363,15 @@
           return true;
         }catch(error){ return false; }
       }
+      function crmServiceUnitPrice(item){
+        for(const value of [item.unitPrice,item.price,item.price_per_person]){
+          if(value!==undefined && value!==null && String(value).trim()!==''){
+            const amount=Number(value);
+            if(Number.isFinite(amount) && amount>=0) return amount;
+          }
+        }
+        return '';
+      }
       function loadCrmItineraryDraft(){
         const params = new URLSearchParams(window.location.search);
         if(params.get('source') !== 'guest_crm') return null;
@@ -1388,14 +1400,14 @@
               name:known||item.tour||item.tour_type||product||'Custom service',
               note:item.note||item.notes||'',
               quantity:inboundItemQuantity(item,params.get('guests')),
-              unitPrice:Number(item.unitPrice||item.price||item.price_per_person||0)
+              unitPrice:crmServiceUnitPrice(item)
             };
           }):[];
         }catch(error){ inboundItems=[]; }
         const fallbackProduct=String(params.get('product_selected')||'').trim();
         const fallbackCode=(fallbackProduct.match(/[A-Z]+\d+/)||[])[0]||'';
         const fallbackKnown=PRODUCT_OPTIONS.find(option=>option===fallbackProduct||(fallbackCode&&option.startsWith(fallbackCode+' ')))||'';
-        if(!inboundItems.length&&(params.get('tour')||fallbackProduct)) inboundItems.push({date:params.get('start_date')||params.get('date')||'',type:params.get('service_type')||'Custom',productPreset:fallbackKnown||'Other',name:fallbackKnown||params.get('tour')||fallbackProduct,quantity:inboundItemQuantity({product_selected:fallbackProduct,type:params.get('service_type')},params.get('guests')),unitPrice:Number(params.get('quoted_amount')||0)});
+        if(!inboundItems.length&&(params.get('tour')||fallbackProduct)) inboundItems.push({date:params.get('start_date')||params.get('date')||'',type:params.get('service_type')||'Custom',productPreset:fallbackKnown||'Other',name:fallbackKnown||params.get('tour')||fallbackProduct,quantity:inboundItemQuantity({product_selected:fallbackProduct,type:params.get('service_type')},params.get('guests')),unitPrice:''});
         return {
           source:'guest_crm',
           inquiryId:params.get('inquiry_id') || '',
@@ -1459,7 +1471,7 @@
             name:knownProduct ? requestedProduct : String(raw.name || requestedProduct),
             note:raw.note || raw.description || '',
             quantity:hasQuantity ? Number(raw.quantity) : (rule?.model === 'per_person' ? Math.max(1,Number(draft.guestCount || 1)) : 1),
-            unitPrice:hasUnitPrice ? Number(raw.unitPrice) : Number(rule?.price || 0)
+            unitPrice:hasUnitPrice ? Number(raw.unitPrice) : ''
           });
         });
         applyLanguageDefaults($('language').value,true);
@@ -1523,6 +1535,7 @@
           $('zelleEmailField').hidden = false;
         }
         const data = getFormData();
+        if(data.items.some(item=>item.unitPrice === '')){ toast('Enter each agreed service rate before preparing an invoice.'); return; }
         const sum = totals(data);
         if(!data.items.length){ toast('Add at least one service before creating the invoice.'); return; }
         const createdAt = new Date().toISOString();
