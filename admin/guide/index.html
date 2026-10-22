@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Guide Nest">
   <title>MBW Guide Nest</title>
   <link rel="apple-touch-icon" href="/assets/images/app/mbw-app-gold-transparent-180.png">
-  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261022-v9">
+  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261022-v10">
 </head>
 <body>
   <div class="shell">
@@ -18,7 +18,7 @@
       <div class="topActions"><div class="language" role="group" aria-label="Idioma"><button class="active" data-language="es" type="button">ES</button><button data-language="en" type="button">EN</button></div><span class="live"><i></i><span data-i18n="private">Privado</span></span></div>
     </header>
     <main>
-      <section id="loading" class="state"><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""><h1 data-i18n="opening">Abriendo Guide Nest</h1><p data-i18n="loadingTours">Cargando tus tours asignados.</p></section>
+      <section id="loading" class="state"><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""><h1 data-i18n="opening">Abriendo el Nido</h1><p data-i18n="loadingTours">Cargando tus tours asignados.</p></section>
       <section id="error" class="state" hidden><b>!</b><h1 data-i18n="unavailable">Guide Nest no está disponible</h1><p id="errorText"></p><button id="retry" type="button" data-i18n="retry">Intentar de nuevo</button></section>
       <div id="workspace" hidden>
         <section class="view" data-view="today">
@@ -35,9 +35,11 @@
         </section>
         <section class="view" data-view="calendar" hidden>
           <div class="heading"><div><p data-i18n="assignedOnly">Solo tours asignados</p><h1 data-i18n="calendar">Calendario</h1></div></div>
+          <div class="calendarViewSwitch" role="group" aria-label="Vista del calendario"><button class="active" data-calendar-view="month" type="button" data-i18n="monthView">Mes</button><button data-calendar-view="list" type="button" data-i18n="listView">Lista</button></div>
+          <section id="calendarMonthPanel" class="monthCalendar panel" aria-live="polite"><div class="monthCalendarHead"><button type="button" data-calendar-shift="-1" aria-label="Mes anterior">‹</button><h2 id="calendarMonthLabel"></h2><button type="button" data-calendar-shift="1" aria-label="Mes siguiente">›</button></div><div id="calendarWeekdays" class="calendarWeekdays"></div><div id="calendarGrid" class="calendarGrid"></div><div class="calendarLegend"><span><i class="tourDot"></i><span data-i18n="tourDays">Tours</span></span><span><i class="blockedDot"></i><span data-i18n="blockedDays">No disponible</span></span></div></section>
+          <div id="calendarList" class="calendar" hidden></div>
           <section id="availabilityPanel" class="panel availabilityPanel" hidden><h2 data-i18n="availability">Disponibilidad</h2><p data-i18n="availabilityHelp">Bloquea las horas en que no puedes recibir asignaciones.</p><form id="availabilityForm"><label><span data-i18n="date">Fecha</span><input name="date" type="date" required></label><div class="timeFields"><label><span data-i18n="start">Inicio</span><input name="startTime" type="time"></label><label><span data-i18n="end">Fin</span><input name="endTime" type="time"></label></div><label><span data-i18n="noteOptional">Nota opcional</span><input name="note" maxlength="500"></label><button class="primary" type="submit" data-i18n="blockTime">Bloquear horario</button></form></section>
           <section class="availabilityHistory"><div class="sectionTitle"><div><p data-i18n="scheduleProtection">Protección de agenda</p><h2 data-i18n="unavailableTimes">Horarios no disponibles</h2></div></div><div id="availabilityList" class="availabilityList"></div></section>
-          <div id="calendarList" class="calendar"></div>
         </section>
         <section class="view" data-view="sightings" hidden>
           <div class="heading"><div><p data-i18n="afterTour">Después del tour</p><h1 data-i18n="sightings">Avistamientos</h1></div></div>
@@ -65,6 +67,6 @@
     </nav>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </div>
-  <script type="module" src="/guide/guide.mjs?v=guide-20261022-v9"></script>
+  <script type="module" src="/guide/guide.mjs?v=guide-20261022-v10"></script>
 </body>
 </html>

@@ -3,9 +3,9 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&a
 const LANGUAGE_KEY = "mbw-guide-language-v1";
 const COPY = {
   es: {
-    private: "Privado", opening: "Abriendo Guide Nest", loadingTours: "Cargando tus tours asignados.", unavailable: "Guide Nest no está disponible", retry: "Intentar de nuevo",
+    private: "Privado", opening: "Abriendo el Nido", loadingTours: "Cargando tus tours asignados.", unavailable: "Guide Nest no está disponible", retry: "Intentar de nuevo",
     bookedAssignments: "Tours reservados", myTours: "Mis tours", previewGuide: "Vista del guía", previewNote: "Esta vista muestra exactamente la información limitada que recibe el guía.",
-    privacy: "Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.", assignedOnly: "Solo tours asignados", calendar: "Calendario",
+    privacy: "Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.", assignedOnly: "Solo tours asignados", calendar: "Calendario", monthView: "Mes", listView: "Lista", tourDays: "Tours", blockedDays: "No disponible", previousMonth: "Mes anterior", nextMonth: "Mes siguiente",
     afterTour: "Después del tour", sightings: "Avistamientos", submitReport: "Enviar reporte de avistamientos", reportHelp: "Crea la lista de la ruta, registra las aves vistas o escuchadas y envía el reporte a MBW.",
     tourReference: "Tour de referencia", openReport: "Abrir reporte", historyEyebrow: "Tu historial", previousReports: "Reportes anteriores", historyLoading: "Cargando reportes anteriores…",
     guestFollowup: "Seguimiento para huéspedes", shareIntro: "Elige un mensaje después del tour. Cada botón copia una nota breve con el enlace oficial de MBW.", tours: "Tours",
@@ -23,7 +23,7 @@ const COPY = {
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
     bookedAssignments: "Booked assignments", myTours: "My Tours", previewGuide: "Preview guide", previewNote: "This preview uses the same limited view a guide receives.",
-    privacy: "Guest contact appears only after the tour is booked. Internal CRM, pricing, payments, and notes are not shared.", assignedOnly: "Assigned tours only", calendar: "Calendar",
+    privacy: "Guest contact appears only after the tour is booked. Internal CRM, pricing, payments, and notes are not shared.", assignedOnly: "Assigned tours only", calendar: "Calendar", monthView: "Month", listView: "List", tourDays: "Tours", blockedDays: "Unavailable", previousMonth: "Previous month", nextMonth: "Next month",
     afterTour: "After the tour", sightings: "Sightings", submitReport: "Submit a sighting report", reportHelp: "Build a route checklist, record birds seen or heard, and submit the report to MBW.",
     tourReference: "Tour reference", openReport: "Open sighting report", historyEyebrow: "Your history", previousReports: "Previous reports", historyLoading: "Loading previous reports…",
     guestFollowup: "Guest-ready follow-up", shareIntro: "Choose one relevant message after the tour. Each button copies a short note with the verified MBW link.", tours: "Tours",
@@ -50,6 +50,8 @@ let toastTimer;
 let tourView = localStorage.getItem("mbw-guide-tour-view") === "all" ? "all" : "upcoming";
 let tourRange = ["7", "30", "all"].includes(localStorage.getItem("mbw-guide-tour-range")) ? localStorage.getItem("mbw-guide-tour-range") : "7";
 let tourSearch = "";
+let calendarView = localStorage.getItem("mbw-guide-calendar-view") === "list" ? "list" : "month";
+let calendarMonth = todayInEcuador().slice(0, 7);
 const t = key => COPY[language][key] || key;
 const icon = name => `<span class="buttonIcon buttonIcon--${name}" aria-hidden="true"></span>`;
 const empty = message => `<div class="empty">${esc(message)}</div>`;
@@ -74,6 +76,47 @@ function dateGroupLabel(value) {
   if (value === today) return t("today");
   if (value === addDays(today, 1)) return t("tomorrow");
   return dateLabel(value);
+}
+
+function shiftMonth(value, offset) {
+  const [year, month] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1 + offset, 1));
+  return date.toISOString().slice(0, 7);
+}
+
+function renderCalendar() {
+  if (!data) return;
+  document.querySelectorAll("[data-calendar-view]").forEach(button => button.classList.toggle("active", button.dataset.calendarView === calendarView));
+  $("#calendarMonthPanel").hidden = calendarView !== "month";
+  $("#calendarList").hidden = calendarView !== "list";
+
+  const groups = Map.groupBy ? Map.groupBy(data.tours, item => item.serviceDate || "pending") : data.tours.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
+  $("#calendarList").innerHTML = data.tours.length ? [...groups.entries()].map(([, tours]) => `<section class="dateGroup"><h2>${esc(dateLabel(tours[0].serviceDate))}</h2>${tours.map(tour => `<div class="dateItem"><time>${esc(tour.startTime || t("timePending"))}</time><div><strong>${esc(tour.service)} · ${esc(tour.guestName)}</strong><small>${esc(tour.pickup || t("pickupMissing"))}</small></div></div>`).join("")}</section>`).join("") : empty(t("noCalendar"));
+
+  const [year, month] = calendarMonth.split("-").map(Number);
+  const monthStart = new Date(Date.UTC(year, month - 1, 1));
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const leadingDays = (monthStart.getUTCDay() + 6) % 7;
+  const monthName = new Intl.DateTimeFormat(language === "es" ? "es-EC" : "en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(monthStart);
+  $("#calendarMonthLabel").textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  const weekdays = language === "es" ? ["L", "M", "M", "J", "V", "S", "D"] : ["M", "T", "W", "T", "F", "S", "S"];
+  $("#calendarWeekdays").innerHTML = weekdays.map(day => `<span>${day}</span>`).join("");
+  const toursByDate = new Map();
+  for (const tour of data.tours) if (tour.serviceDate) toursByDate.set(tour.serviceDate, (toursByDate.get(tour.serviceDate) || 0) + 1);
+  const blockedDates = new Set((data.availability || []).map(item => item.serviceDate).filter(Boolean));
+  const cells = Array.from({ length: leadingDays }, () => '<span class="calendarDay calendarDay--empty" aria-hidden="true"></span>');
+  const today = todayInEcuador();
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = `${calendarMonth}-${String(day).padStart(2, "0")}`;
+    const tourCount = toursByDate.get(date) || 0;
+    const blocked = blockedDates.has(date);
+    const parts = [dateLabel(date), tourCount ? `${tourCount} ${t("tourDays")}` : "", blocked ? t("blockedDays") : ""].filter(Boolean).join(", ");
+    cells.push(`<span class="calendarDay ${date === today ? "calendarDay--today" : ""} ${tourCount || blocked ? "calendarDay--busy" : ""}" aria-label="${esc(parts)}"><b>${day}</b><span class="calendarMarkers">${tourCount ? `<i class="tourDot"></i>${tourCount > 1 ? `<em>${tourCount}</em>` : ""}` : ""}${blocked ? '<i class="blockedDot"></i>' : ""}</span></span>`);
+  }
+  $("#calendarGrid").innerHTML = cells.join("");
+  const controls = document.querySelectorAll("[data-calendar-shift]");
+  controls[0]?.setAttribute("aria-label", t("previousMonth"));
+  controls[1]?.setAttribute("aria-label", t("nextMonth"));
 }
 
 function timeMinutes(value) {
@@ -195,8 +238,7 @@ function renderTours() {
   const displayGroups = visible.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
   let cardIndex = 0;
   $("#tourList").innerHTML = visible.length ? [...displayGroups.entries()].map(([date, tours]) => `<section class="tourDateGroup"><h2>${esc(dateGroupLabel(date === "pending" ? "" : date))}</h2>${tours.map(tour => tourCard(tour, { next: tourView === "upcoming" && cardIndex++ === 0 })).join("")}</section>`).join("") : empty(data.tours.length ? t("noMatchingTours") : (data.providerName ? `${t("noTours")} ${data.providerName}.` : t("chooseGuide")));
-  const groups = Map.groupBy ? Map.groupBy(data.tours, item => item.serviceDate || "pending") : data.tours.reduce((map, item) => map.set(item.serviceDate || "pending", [...(map.get(item.serviceDate || "pending") || []), item]), new Map());
-  $("#calendarList").innerHTML = data.tours.length ? [...groups.entries()].map(([, tours]) => `<section class="dateGroup"><h2>${esc(dateLabel(tours[0].serviceDate))}</h2>${tours.map(tour => `<div class="dateItem"><time>${esc(tour.startTime || t("timePending"))}</time><div><strong>${esc(tour.service)} · ${esc(tour.guestName)}</strong><small>${esc(tour.pickup || t("pickupMissing"))}</small></div></div>`).join("")}</section>`).join("") : empty(t("noCalendar"));
+  renderCalendar();
   const selected = $("#reportTour").value;
   $("#reportTour").innerHTML = data.tours.length ? data.tours.map(tour => `<option value="${esc(tour.bookingId || tour.assignmentId)}" ${(tour.bookingId || tour.assignmentId) === selected ? "selected" : ""}>${esc(dateLabel(tour.serviceDate))} · ${esc(tour.guestName)} · ${t(reportState(tour).key)}</option>`).join("") : `<option value="">${t("noTour")}</option>`;
   updateReportLink();
@@ -324,6 +366,10 @@ document.addEventListener("click", event => {
   if (viewButton) { tourView = viewButton.dataset.tourView; localStorage.setItem("mbw-guide-tour-view", tourView); renderTours(); }
   const rangeButton = event.target.closest("[data-tour-range]");
   if (rangeButton) { tourRange = rangeButton.dataset.tourRange; localStorage.setItem("mbw-guide-tour-range", tourRange); renderTours(); }
+  const calendarViewButton = event.target.closest("[data-calendar-view]");
+  if (calendarViewButton) { calendarView = calendarViewButton.dataset.calendarView; localStorage.setItem("mbw-guide-calendar-view", calendarView); renderCalendar(); }
+  const calendarShift = event.target.closest("[data-calendar-shift]");
+  if (calendarShift) { calendarMonth = shiftMonth(calendarMonth, Number(calendarShift.dataset.calendarShift)); renderCalendar(); }
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
   const languageButton = event.target.closest("[data-language]");
   if (languageButton) { language = languageButton.dataset.language; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(); }

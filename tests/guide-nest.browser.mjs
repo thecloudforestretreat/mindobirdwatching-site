@@ -100,6 +100,18 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/assignments/A-1/accept")), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-tours.png", fullPage: true });
     await page.locator('[data-route="calendar"]').click();
+    assert.equal(await page.locator("#calendarMonthPanel").isVisible(), true);
+    assert.match(await page.locator("#calendarMonthLabel").innerText(), /octubre (?:de )?2026/i);
+    assert.equal(await page.locator('.calendarDay[aria-label*="23 oct 2026"]').count(), 1);
+    assert.equal(await page.locator('.calendarDay[aria-label*="23 oct 2026"] .tourDot').count(), 1);
+    assert.equal(await page.locator('.calendarDay[aria-label*="23 oct 2026"] .blockedDot').count(), 1);
+    await page.screenshot({ path: "/tmp/mbw-guide-nest-calendar-month.png", fullPage: true });
+    await page.getByRole("button", { name: "Mes siguiente" }).click();
+    assert.match(await page.locator("#calendarMonthLabel").innerText(), /noviembre (?:de )?2026/i);
+    await page.getByRole("button", { name: "Mes anterior" }).click();
+    assert.match(await page.locator("#calendarMonthLabel").innerText(), /octubre (?:de )?2026/i);
+    await page.getByRole("button", { name: "Lista", exact: true }).click();
+    assert.equal(await page.locator("#calendarList").isVisible(), true);
     assert.match(await page.locator("#calendarList").innerText(), /23 oct 2026/i);
     assert.match(await page.locator("#availabilityList").innerText(), /Personal/);
     await page.locator('#availabilityForm input[name="date"]').fill("2026-10-31");
