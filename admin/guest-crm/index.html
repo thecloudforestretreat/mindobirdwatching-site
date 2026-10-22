@@ -1091,7 +1091,48 @@
       }
       function findDuplicateRecords(record){ const email=comparableEmail(record); const phone=comparablePhone(record); const name=clean(record.full_name).toLowerCase(); const date=toDateValue(record.requested_date||record.requested_date_start); return activeOtherRecords(record).filter(item=>{ const sameEmail=email&&comparableEmail(item)===email; const samePhone=phone&&comparablePhone(item)===phone; const sameNameDate=name&&date&&clean(item.full_name).toLowerCase()===name&&toDateValue(item.requested_date||item.requested_date_start)===date; return sameEmail||samePhone||sameNameDate; }); }
       function renderDuplicateNotice(){ if(!els.duplicateNotice) return; const record=formRecord(); const matches=findDuplicateRecords(record); if(!matches.length){ els.duplicateNotice.hidden=true; els.duplicateNotice.classList.remove("show"); els.duplicateNotice.innerHTML=""; return; } const recordDate=toDateValue(record.requested_date||record.requested_date_start); const duplicates=matches.filter(item=>sourceIdentityMatch(item,record)||(recordDate&&toDateValue(item.requested_date||item.requested_date_start)===recordDate)); const shown=(duplicates.length?duplicates:matches).slice(0,3); const duplicateMode=duplicates.length>0; els.duplicateNotice.hidden=false; els.duplicateNotice.classList.add("show"); els.duplicateNotice.innerHTML=`<strong>${duplicateMode?"Possible duplicate submission:":"Returning guest:"}</strong> ${shown.map(r=>esc(r.full_name||"Guest")+" ("+esc(r.requested_date||r.requested_date_start||"No date")+")").join(", ")}. ${duplicateMode?"Review the matching record before saving another copy.":"This guest has another trip. Keep each trip as a separate record."}<br>${shown.map(r=>`<button type="button" data-id="${esc(r.inquiry_id)}">Review ${esc(r.requested_date||r.requested_date_start||"record")}</button>`).join("")}`; els.duplicateNotice.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>selectRecord(btn.dataset.id))); }
-      function calendarEntriesForRecord(record){ const items=normalizeTourItems(record); if(items.length) return items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||productTitle(item.product_selected)||item.service_type,tour_category:item.tour||productTitle(item.product_selected)||item.service_type,service_type:activityServiceDetails(item).service,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})); return [record]; }
+      // Project scheduled work for display only; never rewrite enquiry or pricing data.
+      function calendarAssignmentsForRecord(record){
+        const seen=new Set();
+        return currentAssignmentRows(record).filter(item=>{
+          const inquiry=clean(item.inquiry_id),booking=clean(item.booking_id);
+          // An explicit trip identity takes precedence over a shared guest identity.
+          if(inquiry&&inquiry!==clean(record.inquiry_id)) return false;
+          if(!inquiry&&booking&&booking!==clean(record.booking_id)) return false;
+          if(!inquiry&&!booking){
+            const siblings=state.records.filter(other=>!isArchivedStatus(other)&&guestIdentityMatch(other,record));
+            if(siblings.length!==1) return false;
+          }
+          if(!toDateValue(item.service_date)) return false;
+          const key=clean(item.assignment_id)||JSON.stringify([item.service_item_id,item.service_date,item.start_time,item.end_time,item.service_type,item.product_selected,item.trip_direction]);
+          if(seen.has(key)) return false;
+          seen.add(key); return true;
+        });
+      }
+      function calendarEntriesForRecord(record){
+        const items=normalizeTourItems(record);
+        const base=items.length?items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||productTitle(item.product_selected)||item.service_type,tour_category:item.tour||productTitle(item.product_selected)||item.service_type,service_type:activityServiceDetails(item).service,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})):[record];
+        const assignments=calendarAssignmentsForRecord(record),replaced=new Set(),scheduled=[];
+        assignments.forEach(assignment=>{
+          const service=clean(assignment.service_type)||"Custom";
+          const reference=clean(assignment.service_item_id)||assignmentReference(assignment.internal_note);
+          const code=productCodeFromValue(assignment.product_selected);
+          const expected=MBW_PRODUCT_SERVICE_BY_CODE[code];
+          const productCompatible=expected&&(expected===service||(service==="Night Walk"&&code==="MBW016")||(service==="Specialty Wildlife"&&expected==="Wildlife"));
+          const product=productCompatible?clean(assignment.product_selected):"";
+          const matches=base.filter(entry=>{
+            const item=entry._calendar_item||entry;
+            if(reference) return clean(item.id)===reference&&assignmentItemService(item)===service;
+            return product&&productCodeFromValue(item.product_selected)===code&&toDateValue(entry.requested_date)===toDateValue(assignment.service_date)&&assignmentItemService(item)===service;
+          });
+          if(matches.length===1) replaced.add(matches[0]);
+          const title=product?productTitle(product):service;
+          const status=normalizeStatus(assignment.assignment_status);
+          const item={id:"assignment-"+clean(assignment.assignment_id),tour:title,service_type:service,product_selected:product,date:toDateValue(assignment.service_date),guests:assignment.guest_count||record.guest_count,status:status==="pending"?"planning":status,pickup_location:assignment.pickup_location||record.pickup_location};
+          scheduled.push(Object.assign({},record,{_calendar_item:item,_calendar_assignment:assignment,tour_type:title,tour_category:title,service_type:service,product_selected:product,requested_date:item.date,requested_date_start:item.date,requested_date_end:item.date,guest_count:item.guests,status:item.status,pickup_location:item.pickup_location}));
+        });
+        return base.filter(entry=>!replaced.has(entry)).concat(scheduled);
+      }
       function loadDemoRecords(show){ state.records=[demo("INQ-DEMO-001","Jeanne Friedman","Full-Day Birdwatching Tour","2026-12-08","new","not_sent","unpaid","Cock-of-the-rock, tanagers, umbrella bird"),demo("INQ-DEMO-002","Jared","Two full days guided birding","2026-11-19","quoted","sent","unpaid","Rental vehicle. Interested in target bird builder."),demo("INQ-DEMO-003","Lauren","Quito to Mindo Day Trip","2026-11-13","booked","accepted","deposit_paid","2 guests, door-to-door Quito pickup")]; state.selectedId=state.records[0].inquiry_id; saveLocalRecords(); fillForm(getSelected()); render(); if(show) showToast("Demo records loaded"); }
       function demo(id,name,tour,date,status,quote,payment,notes){ return {inquiry_id:id,guest_id:"G-"+id.slice(-3),full_name:name,first_name:name.split(" ")[0]||"",last_name:name.split(" ").slice(1).join(" "),phone_number:"",phone_normalized:"",email:"",country:"",tour_type:tour,interest_category:tour,guest_count:"2",requested_date:date,duration_preference:"",transportation_needed:"",status,quote_status:quote,payment_status:payment,availability_status:"pending",followup_date:"",notes,internal_notes:"",created_at:new Date().toISOString(),updated_at:new Date().toISOString()}; }
       async function api(action,data){
@@ -1613,7 +1654,7 @@
             api("list_bookings",{guest_id:record.guest_id||"",inquiry_id:""}).catch(()=>({records:[]})),
             api("list_payments",{guest_id:record.guest_id||"",inquiry_id:""}).catch(()=>({records:[]}))
           ]);
-          if(state.selectedId!==requestedId) return; state.interactions=extractRecords(interactionResult); state.assignments=extractRecords(assignmentResult); state.allAssignments=extractRecords(allAssignmentResult); state.providers=extractRecords(providerResult); state.bookings=extractRecords(bookingResult); state.payments=extractRecords(paymentResult); renderWorkspaces(); renderGuestHistory(); renderPaymentLedger(); renderRecords(els.priorityRecords,getPriorityRecords(getFiltered()).slice(0,6)); renderRecords(els.recordList,getFiltered());
+          if(state.selectedId!==requestedId) return; state.interactions=extractRecords(interactionResult); state.assignments=extractRecords(assignmentResult); state.allAssignments=extractRecords(allAssignmentResult); state.providers=extractRecords(providerResult); state.bookings=extractRecords(bookingResult); state.payments=extractRecords(paymentResult); renderWorkspaces(); renderGuestHistory(); renderPaymentLedger(); renderRecords(els.priorityRecords,getPriorityRecords(getFiltered()).slice(0,6)); renderRecords(els.recordList,getFiltered()); renderCalendar(); renderReports();
         }catch(error){showToast(error.message);renderWorkspaces();renderGuestHistory();renderPaymentLedger();}finally{state.workspaceLoading=false;}
       }
       function localDateTimeValue(date){ const d=date?new Date(date):new Date(); if(Number.isNaN(d.getTime())) return ""; const off=d.getTimezoneOffset(); return new Date(d.getTime()-off*60000).toISOString().slice(0,16); }
