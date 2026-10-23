@@ -27,6 +27,8 @@ assert(api.includes('code: "MAC_MINI_WORKFLOW_UNAVAILABLE"'), "Mac mini outages 
 assert(api.includes('}, 503)'), "Mac mini outages must return HTTP 503");
 assert(api.includes('"replace_media"'), "Reels API must expose a dedicated media-only replacement action");
 assert(api.includes("payload.video_url = videoUrl"), "Reels API must forward only the validated replacement URL");
+assert(api.includes("function withDerivedLinks(row)"), "Reels API must repair missing YouTube URLs from saved video IDs");
+assert(api.includes(".map(withDerivedLinks)"), "Every returned reel must receive link enrichment");
 assert(ui.includes('request("replace_media"'), "Reels Studio must call the media-only replacement action");
 assert(ui.includes("Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are."), "The replacement UI must clearly describe preserved fields");
 assert(ui.includes("mediaCanBeReplaced"), "Reels Studio must lock media replacement after publishing starts");

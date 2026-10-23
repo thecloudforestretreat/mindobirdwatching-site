@@ -57,6 +57,13 @@ function validVideoUrl(value) {
   }
 }
 
+function withDerivedLinks(row) {
+  if (!row || typeof row !== "object") return row;
+  const youtubeId = clean(row.youtube_post_id, 32);
+  if (clean(row.youtube_url, 1000) || !/^[A-Za-z0-9_-]{11}$/.test(youtubeId)) return row;
+  return { ...row, youtube_url: `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}` };
+}
+
 function easternNowParts() {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
@@ -173,8 +180,8 @@ export async function onRequestGet({ request, env }) {
   });
   if (result.error) return result.error;
   const body = result.response;
-  const reels = Array.isArray(body) ? body : Array.isArray(body.reels) ? body.reels : Array.isArray(body.data) ? body.data : [];
-  return json(request, { ok: true, count: reels.slice(0, limit).length, reels: reels.slice(0, limit), request_id: requestId });
+  const reels = (Array.isArray(body) ? body : Array.isArray(body.reels) ? body.reels : Array.isArray(body.data) ? body.data : []).slice(0, limit).map(withDerivedLinks);
+  return json(request, { ok: true, count: reels.length, reels, request_id: requestId });
 }
 
 export async function onRequestPost({ request, env }) {
