@@ -1,5 +1,9 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v46
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v47
+ *
+ * v47 updates:
+ * - Requires successful CRM booking and payment ledger sync before acknowledging linked paid invoices.
+ * - Leaves legacy invoices without CRM links compatible with accounting-only processing.
  *
  * v46 updates:
  * - Processes paid Stripe invoice events synchronously before returning 2xx.
@@ -3162,7 +3166,7 @@ export default {
     if (path === "/debug" && request.method === "GET") {
       return json({
         ok: true,
-        worker_version: "mbw-stripe-v44-guide-tip-accounting",
+        worker_version: "mbw-stripe-v47-crm-ledger-retry",
         stripe_mode_default: env.STRIPE_SECRET_KEY_TEST ? "sandbox" : env.STRIPE_SECRET_KEY ? "live" : "not_configured",
         agent_activity_webapp_configured: !!env.AGENT_ACTIVITY_WEBAPP_URL,
         agent_activity_token_configured: !!env.AGENT_ACTIVITY_WEBAPP_TOKEN,
@@ -5006,7 +5010,7 @@ export default {
                 }
               }
               const firstServiceMetadata = serviceLines.length ? (serviceLines[0].metadata || {}) : invMd;
-              await syncCrmInvoiceLedger(env, {
+              const paidCrmLedgerResult = await syncCrmInvoiceLedger(env, {
                 inquiry_id: firstServiceMetadata.inquiry_id || invMd.inquiry_id || "",
                 guest_id: firstServiceMetadata.guest_id || invMd.guest_id || "",
                 booking_id: firstServiceMetadata.booking_id || invMd.booking_id || "",
@@ -5028,6 +5032,12 @@ export default {
                 currency: inv.currency ? String(inv.currency).toUpperCase() : "USD",
                 notes: "Stripe invoice paid and synchronized from webhook.",
               });
+              const hasCrmIdentity = Boolean(firstServiceMetadata.inquiry_id || invMd.inquiry_id || firstServiceMetadata.guest_id || invMd.guest_id);
+              // Accounting may already be saved. Do not acknowledge a linked invoice
+              // until both CRM ledger writes succeed; Stripe can retry the same IDs.
+              if (!paidCrmLedgerResult.ok && (hasCrmIdentity || !paidCrmLedgerResult.skipped)) {
+                throw new Error("CRM paid invoice ledger sync failed; retry required");
+              }
             } catch (err) {
               console.log("Invoice sheets logging failed", {
                 stripe_event_id: event.id || "",
