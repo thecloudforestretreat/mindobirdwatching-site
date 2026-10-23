@@ -1420,9 +1420,12 @@
         const params = new URLSearchParams(window.location.search);
         const data = {};
         params.forEach((value, key) => { data[key] = value; });
+        const inquiry=String(data.inquiry_id||"").trim(),guest=String(data.guest_id||"").trim();
+        if(!inquiry)return data;
         ["mbwTourConfirmationDraft", "mbwSelectedCrmRecord", "mbwGuestCrmSelectedRecord"].forEach(key => {
           try {
             const stored = JSON.parse(localStorage.getItem(key) || "{}");
+            if(String(stored.inquiry_id||"").trim()!==inquiry || (guest&&String(stored.guest_id||"").trim()!==guest))return;
             Object.keys(stored).forEach(storedKey => {
               if(data[storedKey] === undefined || data[storedKey] === "") data[storedKey] = stored[storedKey];
             });
@@ -1443,6 +1446,8 @@
       function displayTourFromCrm(tourText){
         const normalized = normalizeInboundTourText(tourText);
         if(!normalized) return "";
+        const knownCodes={mbw004:"Jewels of the Morning Forest",mbw005:"Dance of the Andean Cock-of-the-Rock",mbw006:"Quest for Five Toucans & the Andean Cock-of-the-Rock",mbw016:"Night Walk"};
+        if(knownCodes[normalized])return knownCodes[normalized];
         if(normalized.includes("act021")) return "Private Insect & Macro Wildlife Search";
         if(normalized.includes("act015")) return "Paintball";
         if(normalized.includes("act013")) return "Canyoning";
@@ -1496,30 +1501,29 @@
         return displayTourFromCrm(item.product_selected||item.product||item.tour||item.tour_type||item.name||"");
       }
 
-      function defaultGuideForInboundItem(item){
-        const text=normalizeInboundTourText([item.service_type,item.product_selected,item.product,item.tour].filter(Boolean).join(" "));
-        if(text.includes("night walk")) return window.MBW_CONFIRMATION_CONFIG.nightWalkGuide||"Neicer";
-        if(text.includes("transport")) return "Juan";
-        if(text.includes("bear")||text.includes("oso001")||text.includes("oso002")) return "Javier";
-        if(/bird|mbw004|mbw005|mbw006|cock|toucan|jewels/.test(text)) return "Chicho";
-        return "Other";
+      function confirmationAssignmentTime(value){
+        const match=String(value||"").match(/^(\d{1,2}):(\d{2})$/);
+        if(!match||Number(match[1])>23||Number(match[2])>59)return "";
+        const hour=Number(match[1]);return (hour%12||12)+":"+match[2]+(hour<12?" AM":" PM");
       }
 
       function confirmationDraftFromInboundItem(item,common){
         const tour=inboundItemTour(item)||"Custom Service";
-        const guide=defaultGuideForInboundItem(item);
+        const assignment=item.confirmation_assignment||{};
+        const savedGuide=String(assignment.provider_name||"").trim();
+        const guide="Other";
         const draft=defaultDraftForTour(tour,null);
         draft.tour=tour;
         draft.display=tour;
         draft.date=toDateInputValue(item.date||item.tour_date||common.tourDate);
         draft.guide=guide;
-        draft.customGuideName="";
-        draft.contact=contactForGuide(guide)||"";
+        draft.customGuideName=savedGuide;
+        draft.contact=String(assignment.provider_phone||"").trim()||(savedGuide?contactForGuide(savedGuide):"");
         draft.length=lengthFromCrm(tour,item.duration||item.duration_preference)||draft.length;
-        draft.pickupTime=pickupTimeFromCrm(tour,item.duration||item.duration_preference);
+        draft.pickupTime=confirmationAssignmentTime(assignment.start_time)||"To be confirmed";
         draft.transportation=normalizeTransportation(item.transportation_needed||common.transportation)||"Pick Up";
         draft.pickupLocation=item.pickup_location||item.pickup||common.pickup||"";
-        draft.notes=item.notes||"";
+        draft.notes=[item.notes||"",assignment.start_time?"Service time (Mindo, Ecuador): "+assignment.start_time+(assignment.end_time?"–"+assignment.end_time:""):"Start time to be confirmed",assignment.trip_direction?"Transport leg: "+assignment.trip_direction:""].filter(Boolean).join(" · ");
         return draft;
       }
 
@@ -1535,6 +1539,7 @@
         const displayTour = displayTourFromCrm(tourText);
         const displayLength = lengthFromCrm(tourText, duration) || "Full Day";
         const items=inboundTourItems(data);
+        if(!items.length&&displayTour)items.push({tour:displayTour,date:tourDate,duration,pickup_location:pickup});
 
         state.activeIndex = -1;
         els.bookingSelect.value = "manual";
@@ -1543,8 +1548,9 @@
         els.guestsInput.value = fullName;
         els.guestPhoneInput.value = phone;
         els.tourDateInput.value = toDateInputValue(tourDate);
-        setSelectValue(els.guideInput, "Chicho");
-        els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
+        setSelectValue(els.guideInput, "Other");
+        els.customGuideInput.value = "";
+        els.contactInput.value = "";
         setSelectValue(els.lengthInput, displayLength);
         setSelectValue(els.pickupTimeInput, pickupTimeFromCrm(tourText, duration));
         const itemTours=items.map(inboundItemTour);
@@ -1895,6 +1901,7 @@
         if(!els.guideInput.value) missing.push("guide");
         if(els.guideInput.value === "Other" && !els.customGuideInput.value.trim()) missing.push("custom guide name");
         if(!els.contactInput.value.trim()) missing.push("guide phone");
+        if(els.pickupTimeInput.value === "To be confirmed") missing.push("start / pickup time");
         if(els.transportationInput.value.trim().toLowerCase() === "pick up" && !els.pickupLocationInput.value.trim()) missing.push("pickup location");
         if(missing.length){
           setHint("Before exporting, add: " + missing.join(", "));
