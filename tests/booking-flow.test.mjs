@@ -27,6 +27,20 @@ test('security failures never forward a guest request',async()=>{
  let r=await submit(booking.onRequestPost,{},false);assert.equal(r.calls,1);assert.equal(r.forwarded,null);assert.match(r.html,/status:"error"/);
  r=await submit(contact.onRequestPost,{'cf-turnstile-response':''});assert.equal(r.calls,0);assert.equal(r.forwarded,null);
 });
+test('transport quantities use vehicles while birding and night walks retain party size',async()=>{
+ for(const language of ['en','es']){
+  const r=await submit(booking.onRequestPost,{language,preferred_tour_type:'Half-Day Birdwatching',tour_add_ons:'Night Walk | Transportation',number_of_guests:'3 to 4'});
+  const items=JSON.parse(r.forwarded.get('tour_items'));
+  assert.equal(items[0].guests,'3 to 4');
+  assert.equal(items[1].guests,'3 to 4');
+  assert.equal(items[1].inherit_guests,true);
+  assert.equal(items[2].service_type,'Transportation');
+  assert.equal(items[2].guests,'1');
+  assert.equal(items[2].inherit_guests,false);
+  assert.match(items[2].notes,/vehicle count to be confirmed/);
+  assert.equal(items[2].price,'');
+ }
+});
 function stateHarness(path, fetchResult){
  let s=read(path),isBook=path.includes('reservar-tour')||path.startsWith('book-tour');let start=s.indexOf('var pending = false;');let end=s.indexOf('\n    })();',start);if(end<0)end=s.indexOf('\n})();',start);let code=s.slice(start,end);
  let events={},timers=[],winEvents={},reset=0,tracked=[];
