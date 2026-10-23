@@ -6412,11 +6412,15 @@ async function handleTipSessionStatus(request, env, url) {
 
 async function handleGuideTipNotification(request, env) {
   const suppliedSecret =
-    request.headers.get("X-MBW-Shared-Secret") || "";
+    request.headers.get("X-MBW-Tip-Token") ||
+    request.headers.get("X-MBW-Shared-Secret") ||
+    "";
+  const expectedSecret =
+    env.TIP_NOTIFICATION_TOKEN || env.CF_SHARED_SECRET || "";
 
   if (
-    !env.CF_SHARED_SECRET ||
-    suppliedSecret !== env.CF_SHARED_SECRET
+    !expectedSecret ||
+    suppliedSecret !== expectedSecret
   ) {
     return jsonResponse(
       { ok: false, error: "Unauthorized" },

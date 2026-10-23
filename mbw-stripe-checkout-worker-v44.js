@@ -2592,8 +2592,10 @@ function buildGuideTipTourKey(invoiceNo, guideName, paidDate) {
 }
 
 async function postGuideTipNotification(env, payload) {
-  if (!env.CF_SHARED_SECRET) {
-    return { ok: false, skipped: true, reason: "CF_SHARED_SECRET not set" };
+  const notificationToken = env.TIP_NOTIFICATION_TOKEN || env.CF_SHARED_SECRET;
+
+  if (!notificationToken) {
+    throw new Error("TIP_NOTIFICATION_TOKEN not set");
   }
 
   return await postJsonWithRetry({
@@ -2603,7 +2605,7 @@ async function postGuideTipNotification(env, payload) {
     attempts: 3,
     retryDelayMs: 800,
     headers: {
-      "X-MBW-Shared-Secret": env.CF_SHARED_SECRET,
+      "X-MBW-Tip-Token": notificationToken,
     },
   });
 }
@@ -4202,6 +4204,13 @@ export default {
         return text(`Webhook signature verification failed: ${err.message}`, 400);
       }
 
+      const eventObject = event.data && event.data.object ? event.data.object : {};
+      const eventMetadata = eventObject.metadata || {};
+      const requiresSynchronousGuideTip =
+        event.type === "checkout.session.completed" &&
+        String(eventMetadata.payment_purpose || "").toLowerCase() === "guide_tip" &&
+        String(eventMetadata.source_system || "").toLowerCase() === "mbw_tip_page";
+
       const processVerifiedWebhookEvent = (async () => {
       if (event.type === "checkout.session.completed") {
         const session = event.data && event.data.object ? event.data.object : {};
@@ -4483,6 +4492,10 @@ export default {
                 fallback_error: String(fallbackErr && fallbackErr.message ? fallbackErr.message : fallbackErr),
               });
               throw fallbackErr;
+            }
+
+            if (isGuideTip) {
+              throw err;
             }
           }
         })();
@@ -4934,6 +4947,22 @@ export default {
       }
 
       })();
+
+      // Guide tips are completed synchronously so Stripe retries the webhook if
+      // accounting or the dedicated admin notice fails. All writes use Stripe
+      // identifiers as idempotency keys, so a retry cannot overwrite another tip.
+      if (requiresSynchronousGuideTip) {
+        try {
+          await processVerifiedWebhookEvent;
+          return text("ok", 200);
+        } catch (err) {
+          console.log("Guide tip webhook processing failed", {
+            stripe_event_id: event.id || "",
+            error: String(err && err.message ? err.message : err),
+          });
+          return text("Guide tip processing failed; retry required", 500);
+        }
+      }
 
       // Stripe requires a prompt 2xx response. The verified event continues in
       // Cloudflare's request context, avoiding Stripe's delivery timeout while
