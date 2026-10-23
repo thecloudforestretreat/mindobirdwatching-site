@@ -270,14 +270,7 @@ function renderOffers() {
 }
 
 function shareMessage(kind, url) {
-  const messages = language === "es" ? {
-    google: `¡Gracias por acompañarnos en Mindo Bird Watching! Si disfrutaste el tour, ¿podrías compartir tu experiencia en Google? ${url}`,
-    tripadvisor: `¡Gracias por explorar Mindo con nosotros! Tu reseña en Tripadvisor ayuda a otros viajeros a encontrarnos: ${url}`,
-    social: `Sigue las aves y los avistamientos recientes de Mindo en Instagram: ${url}`,
-    facebook: `Sigue a Mindo Bird Watching en Facebook para ver avistamientos y novedades: ${url}`,
-    youtube: `Mira más aves y momentos de Mindo en nuestro canal de YouTube: ${url}`,
-    shop: `¡Gracias por visitarnos! Puedes conocer la tienda de Mindo Bird Watching aquí: ${url}`,
-  } : {
+  const messages = {
     google: `Thank you for joining Mindo Bird Watching! If you enjoyed your tour, would you share your experience on Google? ${url}`,
     tripadvisor: `Thank you for exploring Mindo with us! If you have a moment, your Tripadvisor review would help other travelers find us: ${url}`,
     social: `Keep following Mindo’s birds and our latest sightings on Instagram: ${url}`,

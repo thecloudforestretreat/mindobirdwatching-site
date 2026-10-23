@@ -169,7 +169,10 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     const googleCopy = decodeURIComponent(await page.locator(".shareCard--google .copyButton").getAttribute("data-copy"));
     const shopCopy = decodeURIComponent(await page.locator(".shareCard--shop .copyButton").getAttribute("data-copy"));
     assert.match(googleCopy, /https:\/\/g\.page\/r\/CdMlIYMGgBIvEAE\/review$/);
+    assert.match(googleCopy, /^Thank you for joining Mindo Bird Watching!/);
+    assert.doesNotMatch(googleCopy, /¡Gracias/);
     assert.doesNotMatch(googleCopy, /utm_/);
+    assert.match(shopCopy, /^Thank you for touring with us!/);
     assert.match(shopCopy, /utm_source=mbw_guide/);
     assert.match(shopCopy, /utm_content=neycer/);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-share.png", fullPage: true });
