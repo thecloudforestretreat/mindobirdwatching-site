@@ -4192,6 +4192,85 @@ export default {
       }
     }
 
+    if (path === "/internal/guide-tip-payment" && request.method === "POST") {
+      const suppliedToken = request.headers.get("X-MBW-Reconcile-Token") || "";
+      if (!env.TIP_RECONCILE_TOKEN || suppliedToken !== env.TIP_RECONCILE_TOKEN) {
+        return json({ ok: false, error: "Unauthorized" }, 401);
+      }
+
+      try {
+        const body = await request.json();
+        const paymentIntentId = requiredString(body.payment_intent_id || "", "payment_intent_id");
+        const paymentIntent = await stripeRequest(
+          env,
+          false,
+          "GET",
+          `/v1/payment_intents/${encodeURIComponent(paymentIntentId)}`,
+          null
+        );
+        const sessionList = await stripeRequest(
+          env,
+          false,
+          "GET",
+          `/v1/checkout/sessions?payment_intent=${encodeURIComponent(paymentIntentId)}&limit=1`,
+          null
+        );
+        const session = sessionList && Array.isArray(sessionList.data) ? sessionList.data[0] || null : null;
+        const enriched = await enrichChargeAndFees(env, false, paymentIntentId);
+        let notification = null;
+
+        if (body.send_notification === true && session) {
+          const metadata = session.metadata || paymentIntent.metadata || {};
+          const gross = Number(paymentIntent.amount_received || 0) / 100;
+          const stripeFee = Number(enriched.transaction_fee_total || 0);
+          const paidAt = new Date(Number(paymentIntent.created || Math.floor(Date.now() / 1000)) * 1000);
+          notification = await postGuideTipNotification(env, {
+            stripe_event_id: `reconcile-${paymentIntentId}`,
+            stripe_session_id: session.id || "",
+            payment_intent_id: paymentIntentId,
+            invoice_no: buildGuideTipInvoiceNumber(session.id || paymentIntentId, paidAt),
+            guide_name: String(metadata.guide_name || "Staff"),
+            guest_name: String(metadata.guest_name || "Guest"),
+            guest_email: String(metadata.customer_email || session.customer_email || ""),
+            amount: gross.toFixed(2),
+            stripe_fee: stripeFee.toFixed(2),
+            guide_net: Math.max(0, gross - stripeFee).toFixed(2),
+            currency: String(paymentIntent.currency || "usd").toUpperCase(),
+            language: metadata.page_language === "es" ? "es" : "en",
+            stripe_receipt_url: enriched.stripe_receipt_url || "",
+          });
+        }
+
+        return json({
+          ok: true,
+          payment_intent: {
+            id: paymentIntent.id || "",
+            amount_received: paymentIntent.amount_received || 0,
+            currency: paymentIntent.currency || "usd",
+            created: paymentIntent.created || 0,
+            metadata: paymentIntent.metadata || {},
+          },
+          session: session ? {
+            id: session.id || "",
+            payment_status: session.payment_status || "",
+            customer_email: session.customer_details && session.customer_details.email
+              ? session.customer_details.email
+              : session.customer_email || "",
+            customer_name: session.customer_details && session.customer_details.name
+              ? session.customer_details.name
+              : "",
+            metadata: session.metadata || {},
+          } : null,
+          fee: enriched.transaction_fee_total || "",
+          charge_id: enriched.stripe_charge_id || "",
+          receipt_url: enriched.stripe_receipt_url || "",
+          notification,
+        }, 200);
+      } catch (err) {
+        return json({ ok: false, error: err.message || "Lookup failed" }, 400);
+      }
+    }
+
     if (path === "/webhook" && request.method === "POST") {
       const sig = request.headers.get("stripe-signature");
       if (!sig) return text("Missing stripe-signature", 400);
@@ -4479,6 +4558,14 @@ export default {
               });
             }
           } catch (err) {
+            // A guide tip must never be persisted before Stripe's actual fee is
+            // available. Otherwise the idempotent retry sees a partial invoice
+            // and cannot build the matching fee expense or net guide payout.
+            // Return an error first so Stripe retries the event cleanly.
+            if (isGuideTip) {
+              throw err;
+            }
+
             try {
               await postToSheetsLogger(env, { fields });
               console.log("Checkout Sheets logging recovered with fallback write", {
@@ -4494,9 +4581,6 @@ export default {
               throw fallbackErr;
             }
 
-            if (isGuideTip) {
-              throw err;
-            }
           }
         })();
       }
