@@ -22,7 +22,7 @@
   <link href="/site.webmanifest" rel="manifest">
   <link href="/assets/css/site.css" rel="stylesheet">
   <link href="/assets/css/header.css" rel="stylesheet">
-  <link href="/assets/css/pages/guide-tip.css?v=20261022-1" rel="stylesheet">
+  <link href="/assets/css/pages/guide-tip.css?v=20261022-2" rel="stylesheet">
   <script defer src="/assets/js/head.js"></script>
   <script type="application/ld+json">
   {
@@ -49,7 +49,16 @@
     </nav>
 
     <main class="page card">
-      <section class="tipHero" aria-labelledby="tipTitle">
+      <section class="tipSuccessView" hidden id="tipSuccessView" aria-labelledby="tipSuccessTitle">
+        <span class="tipSuccessIcon" aria-hidden="true">✓</span>
+        <span class="tipEyebrow">Payment successful</span>
+        <h1 id="tipSuccessTitle">Thank You for Tipping Your Guide</h1>
+        <p id="tipSuccessDetail">Your guide tip was paid successfully and recorded separately from your tour payment.</p>
+        <p>If another guide helped during a different tour or activity, you can leave a separate tip for them.</p>
+        <a class="tipButton tipButton--link" href="/tip-your-guide/">Tip Another Guide</a>
+      </section>
+
+      <section class="tipHero" id="tipHero" aria-labelledby="tipTitle">
         <div class="tipIntro">
           <span class="tipEyebrow">Optional guide gratuity</span>
           <h1 id="tipTitle">Tip Your Guide</h1>
@@ -65,13 +74,13 @@
 
         <div class="tipPanel">
           <h2>Choose your tip</h2>
-          <p class="tipPanelLead">US$5 is suggested. You can enter any amount from US$1 to US$1,000.</p>
+          <p class="tipPanelLead">US$5 is suggested. Enter a whole-dollar amount from US$1 to US$1,000.</p>
           <form class="tipForm" data-language="en" id="guideTipForm" novalidate>
             <label class="tipField" for="tipAmount">
               Tip amount in USD
               <span class="tipAmountWrap">
                 <span aria-hidden="true" class="tipCurrency">US$</span>
-                <input id="tipAmount" inputmode="decimal" max="1000" min="1" name="amount" required step="0.01" type="number" value="5.00">
+                <input id="tipAmount" inputmode="numeric" max="1000" min="1" name="amount" required step="1" type="number" value="5">
               </span>
             </label>
 
@@ -89,12 +98,12 @@
 
             <label class="tipField" for="otherGuideName" hidden id="otherGuideField">
               Other guide’s name
-              <input autocomplete="off" id="otherGuideName" maxlength="80" name="other_guide_name" type="text">
+              <input autocapitalize="words" autocomplete="off" id="otherGuideName" maxlength="80" name="other_guide_name" type="text">
             </label>
 
             <label class="tipField" for="guestName">
               Your name
-              <input autocomplete="name" id="guestName" maxlength="120" name="guest_name" required type="text">
+              <input autocapitalize="words" autocomplete="name" id="guestName" maxlength="120" name="guest_name" required type="text">
             </label>
 
             <label class="tipField" for="guestEmail">
@@ -111,7 +120,7 @@
         </div>
       </section>
 
-      <section aria-label="How guide tips work" class="tipInfo">
+      <section aria-label="How guide tips work" class="tipInfo" id="tipInfo">
         <article>
           <h2>Who receives it?</h2>
           <p>The payment is identified as a guide gratuity and assigned to the guide you select.</p>
@@ -131,6 +140,6 @@
   <script defer src="/assets/js/site-config.js?v=1"></script>
   <script defer src="/assets/js/includes.js?v=1"></script>
   <script defer src="/assets/js/site.js?v=34"></script>
-  <script defer src="/assets/js/guide-tip.js?v=20261022-1"></script>
+  <script defer src="/assets/js/guide-tip.js?v=20261022-2"></script>
 </body>
 </html>

@@ -3,6 +3,8 @@
 
   var API_URL =
     "https://mbw-shop-api.thecloudforestretreat.workers.dev/tips/checkout";
+  var STATUS_URL =
+    "https://mbw-shop-api.thecloudforestretreat.workers.dev/tips/session";
   var form = document.getElementById("guideTipForm");
 
   if(!form){
@@ -17,6 +19,10 @@
   var errorMessage = document.getElementById("tipError");
   var successMessage = document.getElementById("tipSuccess");
   var params = new URLSearchParams(window.location.search);
+  var successView = document.getElementById("tipSuccessView");
+  var successDetail = document.getElementById("tipSuccessDetail");
+  var tipHero = document.getElementById("tipHero");
+  var tipInfo = document.getElementById("tipInfo");
 
   function track(eventName, details){
     var payload = Object.assign({
@@ -57,17 +63,75 @@
     }
   }
 
+  function capitalizeName(value){
+    return value.replace(
+      /(^|[\s'-])([a-záéíóúüñ])/gi,
+      function(match, separator, letter){
+        return separator + letter.toLocaleUpperCase(language);
+      }
+    );
+  }
+
+  function applyNameCapitalization(input){
+    input.addEventListener("blur", function(){
+      input.value = capitalizeName(input.value.trim());
+    });
+  }
+
+  function showSuccessView(data){
+    var amount = Number(data.amount);
+    var amountLabel = Number.isInteger(amount)
+      ? "US$" + amount
+      : "";
+    var guideLabel = data.guide_name || "";
+
+    successDetail.textContent = language === "es"
+      ? "Tu propina de " + amountLabel + " para " + guideLabel + " fue pagada correctamente y quedó registrada por separado del pago del tour."
+      : "Your " + amountLabel + " tip for " + guideLabel + " was paid successfully and recorded separately from your tour payment.";
+    successView.hidden = false;
+    tipHero.hidden = true;
+    tipInfo.hidden = true;
+    document.title = language === "es"
+      ? "Propina Pagada | Mindo Bird Watching"
+      : "Guide Tip Paid | Mindo Bird Watching";
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  async function verifySuccessfulPayment(sessionId){
+    try{
+      var response = await fetch(
+        STATUS_URL + "?session_id=" + encodeURIComponent(sessionId)
+      );
+      var data = await response.json();
+
+      if(!response.ok || !data.paid){
+        throw new Error("Payment not verified");
+      }
+
+      showSuccessView(data);
+      track("guide_tip_payment_return", {
+        payment_status:"success",
+        guide_name:data.guide_name,
+        value:data.amount
+      });
+    }catch(error){
+      showMessage(
+        errorMessage,
+        language === "es"
+          ? "Recibimos el regreso de Stripe, pero no pudimos verificar el pago. Comunícate con Mindo Bird Watching antes de intentarlo nuevamente."
+          : "Stripe returned you to this page, but we could not verify the payment. Contact Mindo Bird Watching before trying again."
+      );
+      track("guide_tip_payment_return", {payment_status:"verification_error"});
+    }
+  }
+
   guideSelect.addEventListener("change", syncOtherGuide);
+  applyNameCapitalization(document.getElementById("guestName"));
+  applyNameCapitalization(otherInput);
   syncOtherGuide();
 
-  if(params.get("status") === "success"){
-    showMessage(
-      successMessage,
-      language === "es"
-        ? "Gracias. Stripe confirmó tu pago. La propina se registrará por separado del pago del tour."
-        : "Thank you. Stripe confirmed your payment. The tip will be recorded separately from the tour payment."
-    );
-    track("guide_tip_payment_return", {payment_status:"success"});
+  if(params.get("status") === "success" && params.get("session_id")){
+    verifySuccessfulPayment(params.get("session_id"));
   }else if(params.get("status") === "cancelled"){
     showMessage(
       errorMessage,
@@ -87,12 +151,12 @@
 
     var amount = Number(document.getElementById("tipAmount").value);
 
-    if(!Number.isFinite(amount) || amount < 1 || amount > 1000){
+    if(!Number.isInteger(amount) || amount < 1 || amount > 1000){
       showMessage(
         errorMessage,
         language === "es"
-          ? "Ingresa una propina entre US$1 y US$1.000."
-          : "Enter a tip between US$1 and US$1,000."
+          ? "Ingresa una propina en dólares enteros entre US$1 y US$1.000."
+          : "Enter a whole-dollar tip between US$1 and US$1,000."
       );
       return;
     }
@@ -115,10 +179,10 @@
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
           amount:amount,
-          guest_name:document.getElementById("guestName").value.trim(),
+          guest_name:capitalizeName(document.getElementById("guestName").value.trim()),
           customer_email:document.getElementById("guestEmail").value.trim(),
           guide_name:guideSelect.value,
-          other_guide_name:otherInput.value.trim(),
+          other_guide_name:capitalizeName(otherInput.value.trim()),
           language:language
         })
       });

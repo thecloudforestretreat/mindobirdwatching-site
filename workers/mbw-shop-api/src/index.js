@@ -42,6 +42,13 @@ export default {
 
     if (
       request.method === "POST" &&
+      url.pathname === "/internal/guide-tip-notification"
+    ) {
+      return handleGuideTipNotification(request, env);
+    }
+
+    if (
+      request.method === "POST" &&
       url.pathname === "/shipping/quote"
     ) {
       return handleShippingQuote(request, env);
@@ -56,6 +63,10 @@ export default {
         405,
         request
       );
+    }
+
+    if (url.pathname === "/tips/session") {
+      return handleTipSessionStatus(request, env, url);
     }
 
     if (url.pathname === "/") {
@@ -6266,6 +6277,265 @@ async function handleCheckoutSession(
   );
 }
 
+async function handleTipSessionStatus(request, env, url) {
+  const originError = validateWriteOrigin(request);
+
+  if (originError) {
+    return jsonResponse(originError, 403, request);
+  }
+
+  const sessionId = cleanText(
+    url.searchParams.get("session_id"),
+    255
+  );
+
+  if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Invalid Checkout Session"
+      },
+      400,
+      request
+    );
+  }
+
+  const stripeSecretKey = getStripeSecretKey(env);
+
+  if (!stripeSecretKey) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Stripe is not configured"
+      },
+      500,
+      request
+    );
+  }
+
+  let response;
+
+  try {
+    response = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions/" +
+        encodeURIComponent(sessionId) +
+        "?expand[]=payment_intent.latest_charge.balance_transaction",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${stripeSecretKey}`,
+          Accept: "application/json"
+        }
+      }
+    );
+  } catch {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Unable to verify payment"
+      },
+      502,
+      request
+    );
+  }
+
+  let session;
+
+  try {
+    session = await response.json();
+  } catch {
+    session = null;
+  }
+
+  const metadata =
+    session && session.metadata &&
+    typeof session.metadata === "object"
+      ? session.metadata
+      : {};
+  const isGuideTip =
+    metadata.payment_purpose === "guide_tip" &&
+    metadata.source_system === "mbw_tip_page";
+
+  if (!response.ok || !session || !isGuideTip) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Guide tip payment could not be verified"
+      },
+      404,
+      request
+    );
+  }
+
+  const paid = session.payment_status === "paid";
+  const amountTotal = Number(session.amount_total);
+  const paymentIntent =
+    session.payment_intent &&
+    typeof session.payment_intent === "object"
+      ? session.payment_intent
+      : {};
+  const charge =
+    paymentIntent.latest_charge &&
+    typeof paymentIntent.latest_charge === "object"
+      ? paymentIntent.latest_charge
+      : {};
+  const balanceTransaction =
+    charge.balance_transaction &&
+    typeof charge.balance_transaction === "object"
+      ? charge.balance_transaction
+      : {};
+  const feeCents = Number(balanceTransaction.fee);
+
+  return jsonResponse(
+    {
+      ok: true,
+      paid,
+      payment_status: session.payment_status,
+      amount:
+        Number.isInteger(amountTotal)
+          ? amountTotal / 100
+          : null,
+      currency:
+        String(session.currency || "").toLowerCase(),
+      guide_name: cleanText(metadata.guide_name, 80),
+      guest_name: cleanText(metadata.guest_name, 120),
+      payment_intent_id: cleanText(paymentIntent.id, 255),
+      transaction_fee:
+        Number.isInteger(feeCents)
+          ? feeCents / 100
+          : null
+    },
+    200,
+    request
+  );
+}
+
+async function handleGuideTipNotification(request, env) {
+  const suppliedSecret =
+    request.headers.get("X-MBW-Shared-Secret") || "";
+
+  if (
+    !env.CF_SHARED_SECRET ||
+    suppliedSecret !== env.CF_SHARED_SECRET
+  ) {
+    return jsonResponse(
+      { ok: false, error: "Unauthorized" },
+      401,
+      request
+    );
+  }
+
+  if (
+    !env.RESEND_API_KEY ||
+    !env.MBW_ORDER_FROM_EMAIL ||
+    !env.MBW_ADMIN_ORDER_EMAIL
+  ) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Guide tip email configuration is incomplete"
+      },
+      500,
+      request
+    );
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse(
+      { ok: false, error: "Invalid request" },
+      400,
+      request
+    );
+  }
+
+  const eventId = cleanText(body.stripe_event_id, 255);
+  const invoiceNo = cleanText(body.invoice_no, 120);
+  const guideName = cleanText(body.guide_name, 80) || "Staff";
+  const guestName = cleanText(body.guest_name, 120) || "Guest";
+  const guestEmail = cleanText(body.guest_email, 254);
+  const currency = cleanText(body.currency, 8).toUpperCase() || "USD";
+  const language = body.language === "es" ? "es" : "en";
+  const amount = Number(body.amount || 0);
+  const stripeFee = Number(body.stripe_fee || 0);
+  const guideNet = Number(body.guide_net || 0);
+
+  if (
+    !eventId ||
+    !invoiceNo ||
+    !Number.isFinite(amount) ||
+    amount <= 0 ||
+    currency !== "USD"
+  ) {
+    return jsonResponse(
+      { ok: false, error: "Incomplete guide tip notification" },
+      400,
+      request
+    );
+  }
+
+  const amountLabel = `US$${amount.toFixed(2)}`;
+  const subject = language === "es"
+    ? `Propina recibida para ${guideName} - ${amountLabel}`
+    : `Guide tip received for ${guideName} - ${amountLabel}`;
+  const heading = language === "es"
+    ? "Propina recibida"
+    : "Guide tip received";
+  const intro = language === "es"
+    ? `${guestName} dejó una propina voluntaria para ${guideName}.`
+    : `${guestName} left a voluntary tip for ${guideName}.`;
+  const allocationNote = language === "es"
+    ? "La persona que recibe la propina asume el 100% de la comisión de Stripe. MBW no retiene ninguna parte de la propina."
+    : "The tip recipient is responsible for 100% of the Stripe processing fee. MBW retains none of the tip.";
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#202124;line-height:1.5;">
+      <h2 style="margin:0 0 12px;color:#0D5925;">${heading}</h2>
+      <p>${intro}</p>
+      <div style="background:#F4F8F1;border:1px solid #D6E2D3;border-radius:10px;padding:14px 16px;max-width:640px;">
+        <p style="margin:0 0 6px;"><strong>Invoice:</strong> ${invoiceNo}</p>
+        <p style="margin:0 0 6px;"><strong>Gross tip:</strong> US$${amount.toFixed(2)}</p>
+        <p style="margin:0 0 6px;"><strong>Stripe fee:</strong> US$${stripeFee.toFixed(2)}</p>
+        <p style="margin:0 0 6px;"><strong>Net owed to ${guideName}:</strong> US$${guideNet.toFixed(2)}</p>
+        <p style="margin:12px 0 0;">${allocationNote}</p>
+      </div>
+    </div>`;
+
+  const text = [
+    heading,
+    "",
+    intro,
+    `Invoice: ${invoiceNo}`,
+    `Gross tip: US$${amount.toFixed(2)}`,
+    `Stripe fee: US$${stripeFee.toFixed(2)}`,
+    `Net owed to ${guideName}: US$${guideNet.toFixed(2)}`,
+    "",
+    allocationNote
+  ].join("\n");
+
+  const result = await sendResendShippingEmail(env, {
+    to: env.MBW_ADMIN_ORDER_EMAIL,
+    subject,
+    html,
+    text,
+    idempotencyKey: `mbw-guide-tip-${eventId}`
+  });
+
+  return jsonResponse(
+    {
+      ok: result.ok,
+      status: result.status,
+      resend_email_id: result.resend_email_id || null,
+      guest_email: guestEmail || null
+    },
+    result.ok ? 200 : 502,
+    request
+  );
+}
+
 async function handleTipCheckoutSession(request, env) {
   const originError = validateWriteOrigin(request);
 
@@ -6302,7 +6572,7 @@ async function handleTipCheckoutSession(request, env) {
   }
 
   const amount = Number(body.amount);
-  const amountCents = Math.round(amount * 100);
+  const amountCents = amount * 100;
   const guestName = cleanText(body.guest_name, 120);
   const customerEmail = cleanText(body.customer_email, 254).toLowerCase();
   const selectedGuide = cleanText(body.guide_name, 80);
@@ -6317,7 +6587,7 @@ async function handleTipCheckoutSession(request, env) {
   ]);
 
   if (
-    !Number.isFinite(amount) ||
+    !Number.isInteger(amount) ||
     amountCents < 100 ||
     amountCents > 100000
   ) {
@@ -6326,8 +6596,8 @@ async function handleTipCheckoutSession(request, env) {
         ok: false,
         error:
           language === "es"
-            ? "Ingresa una propina entre US$1 y US$1.000."
-            : "Enter a tip between US$1 and US$1,000."
+            ? "Ingresa una propina en dólares enteros entre US$1 y US$1.000."
+            : "Enter a whole-dollar tip between US$1 and US$1,000."
       },
       400,
       request
