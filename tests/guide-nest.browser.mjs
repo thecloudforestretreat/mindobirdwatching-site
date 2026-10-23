@@ -185,7 +185,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.goto(`http://127.0.0.1:${port}/guide/`);
     await page.getByText("Daniel Kalmes", { exact: true }).waitFor();
     assert.equal(await page.locator("#adminPreview").isVisible(), true);
-    assert.match(await page.locator("#adminPreview").innerText(), /Solo el guía puede aceptar sus tours/i);
+    assert.match(await page.locator("#adminPreview").innerText(), /Modo de auditoría · Solo lectura/i);
+    assert.match(await page.locator("#adminPreview").innerText(), /acciones del guía permanecen desactivadas/i);
     assert.equal(await page.locator("[data-accept]").count(), 0);
     await page.locator('[data-route="calendar"]').click();
     assert.equal(await page.locator("#availabilityPanel").isVisible(), false);

@@ -22,10 +22,12 @@ test("MBW Nest uses the dedicated gold home-screen icon and conservative CRM syn
   assert.match(index, /apple-mobile-web-app-title" content="MBW Nest"/);
   assert.match(index, /apple-touch-icon[^>]+\/assets\/images\/app\/mbw-app-gold-transparent-180\.png\?v=nest-ios-20261020-v3/);
   assert.match(index, /apple-touch-icon-precomposed[^>]+\/assets\/images\/app\/mbw-app-gold-transparent-180\.png\?v=nest-ios-20261020-v3/);
-  assert.doesNotMatch(index, /href="\/favicon\.ico"/);
+  assert.match(index, /rel="icon"[^>]+\/assets\/images\/app\/mbw-app-gold-transparent-192\.png\?v=nest-favicon-20261023-v1/);
   assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
   assert.match(index, /<small>Nest<\/small>/);
-  assert.match(worker, /mbw-mobile-shell-v24/);
+  assert.match(worker, /mbw-mobile-shell-v25/);
+  assert.match(worker, /app\.css\?v=nest-20261023-v18/);
+  assert.match(worker, /app\.mjs\?v=nest-20261021-v17/);
   assert.match(app, /actionRepFilter/);
   assert.match(app, /guestRepFilter/);
   assert.match(index, /id="previousGuest"/);

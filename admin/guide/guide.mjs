@@ -5,7 +5,7 @@ const TIP_URL = "https://mindobirdwatching.com/tip-your-guide/";
 const COPY = {
   es: {
     private: "Privado", opening: "Abriendo el Nido", loadingTours: "Cargando tus tours asignados.", unavailable: "Guide Nest no está disponible", retry: "Intentar de nuevo",
-    bookedAssignments: "Tours reservados", myTours: "Mis tours", previewGuide: "Vista del guía", previewNote: "Esta vista muestra la información limitada que recibe el guía. Solo el guía puede aceptar sus tours.",
+    bookedAssignments: "Tours reservados", myTours: "Mis tours", auditMode: "Modo de auditoría · Solo lectura", returnNest: "Volver a MBW Nest", previewGuide: "Auditar como guía", previewNote: "Elige un guía para revisar exactamente los datos que recibe. Las acciones del guía permanecen desactivadas.",
     privacy: "Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.", assignedOnly: "Solo tours asignados", calendar: "Calendario", monthView: "Mes", listView: "Lista", currentFuture: "Actuales y futuros", includePast: "Incluir pasados", tourDays: "Tours", blockedDays: "No disponible", previousMonth: "Mes anterior", nextMonth: "Mes siguiente", viewingDate: "Mostrando", clearDate: "Ver todos",
     afterTour: "Después del tour", sightings: "Avistamientos", submitReport: "Enviar reporte de avistamientos", reportHelp: "Crea la lista de la ruta, registra las aves vistas o escuchadas y envía el reporte a MBW.",
     tourReference: "Tour de referencia", openReport: "Abrir reporte", historyEyebrow: "Tu historial", previousReports: "Reportes anteriores", historyLoading: "Cargando reportes anteriores…",
@@ -23,7 +23,7 @@ const COPY = {
   },
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
-    bookedAssignments: "Booked assignments", myTours: "My Tours", previewGuide: "Preview guide", previewNote: "This preview shows the guide’s limited information. Only the guide can accept their tours.",
+    bookedAssignments: "Booked assignments", myTours: "My Tours", auditMode: "Audit mode · Read only", returnNest: "Return to MBW Nest", previewGuide: "Audit as guide", previewNote: "Choose a guide to review exactly the data they receive. Guide actions remain disabled.",
     privacy: "Guest contact appears only after the tour is booked. Internal CRM, pricing, payments, and notes are not shared.", assignedOnly: "Assigned tours only", calendar: "Calendar", monthView: "Month", listView: "List", currentFuture: "Current & future", includePast: "Include past", tourDays: "Tours", blockedDays: "Unavailable", previousMonth: "Previous month", nextMonth: "Next month", viewingDate: "Showing", clearDate: "Show all",
     afterTour: "After the tour", sightings: "Sightings", submitReport: "Submit a sighting report", reportHelp: "Build a route checklist, record birds seen or heard, and submit the report to MBW.",
     tourReference: "Tour reference", openReport: "Open sighting report", historyEyebrow: "Your history", previousReports: "Previous reports", historyLoading: "Loading previous reports…",

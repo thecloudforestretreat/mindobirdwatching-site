@@ -10,6 +10,15 @@ import { onRequestDelete as deleteGuideAvailability } from "../functions/api/gui
 import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/offers/[assignmentId]/respond.js";
 import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
 
+test("Guide Nest exposes branded browser icons and an explicit read-only admin audit mode", () => {
+  const index = fs.readFileSync(new URL("../admin/guide/index.html", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../admin/app/app.css", import.meta.url), "utf8");
+  assert.match(index, /rel="icon"[^>]+mbw-app-gold-transparent-192\.png/);
+  assert.match(index, /data-i18n="auditMode"/);
+  assert.match(index, /href="\/app\/" data-i18n="returnNest"/);
+  assert.match(css, /#actionList\{grid-template-columns:1fr\}/);
+});
+
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
   MBW_MOBILE_ROLE_MAP: JSON.stringify({
