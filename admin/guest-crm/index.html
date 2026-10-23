@@ -1643,12 +1643,18 @@
         }catch(error){ showToast(error.message); button.disabled=false; button.textContent="Save Invoice Changes"; }
       }
       async function syncLatestPaymentSummary(inquiryId){
-        const record=(state.records||[]).find(item=>clean(item.inquiry_id)===clean(inquiryId))||getSelected();
+        const id=clean(inquiryId),selected=getSelected();
+        if(!id) return;
+        const record=(state.records||[]).find(item=>clean(item.inquiry_id)===id)||(clean(selected?.inquiry_id)===id?selected:null);
         if(!record) return;
         const latest=(state.payments||[]).filter(item=>clean(item.inquiry_id)===clean(record.inquiry_id)).sort(comparePaymentRecency)[0];
         if(!latest) return;
-        const updated={...record,invoice_no:clean(latest.invoice_no),date_paid:toDateValue(latest.payment_date||latest.created_at),payment_method:clean(latest.payment_method),payment_status:normalizePayment(latest.payment_status||record.payment_status)};
-        await api("update_inquiry",{record:updated,inquiry_row:updated});
+        // Only patch the payment summary; cached guest and tour fields may be older than the server.
+        const patch={inquiry_id:id,invoice_no:clean(latest.invoice_no),date_paid:toDateValue(latest.payment_date||latest.created_at),payment_method:clean(latest.payment_method),payment_status:normalizePayment(latest.payment_status||record.payment_status)};
+        const result=await api("update_inquiry",{record:patch,inquiry_row:patch});
+        const saved=extractRecords(result).find(item=>clean(item.inquiry_id)===id);
+        if(!saved) throw new Error("Invoice saved, but the inquiry payment summary was not verified. Refresh CRM before continuing.");
+        const updated={...record,...saved};
         upsert(updated);
         if(clean(updated.inquiry_id)===clean(state.selectedId)) fillForm(updated);
         saveLocalRecords();
