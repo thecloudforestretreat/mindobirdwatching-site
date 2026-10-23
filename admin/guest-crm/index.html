@@ -729,7 +729,7 @@
           priority:"",
           availability_status:"archived",
           grouping_status:"unmatched",
-          internal_notes:existingNotes&&!existingNotes.includes(note)?existingNotes+"\n"+note:(existingNotes||note),
+          internal_notes:[existingNotes,note,"[MBW_ARCHIVE] "+JSON.stringify({status:normalizeStatus(record.status)})].filter(Boolean).join("\n"),
           updated_at:new Date().toISOString()
         });
       }
@@ -1977,7 +1977,16 @@
       function updateDuplicateActionButtons(record){ const restore=isArchivedStatus(record); [els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean).forEach(button=>{ button.textContent=restore?"Restore Record":"Mark Duplicate"; button.classList.toggle("dangerBtn",!restore); }); }
       function canonicalRecordScore(record){ let score=0; if(toDateValue(record.requested_date||record.requested_date_start)) score+=40; if(!["","new","duplicate"].includes(normalizeStatus(record._source_status||record.status))) score+=30; if(clean(record.last_contacted_at)) score+=20; if(clean(record.next_action)) score+=10; if(!["","unknown"].includes(clean(record.grouping_preference).toLowerCase())) score+=10; return score; }
       function chooseCanonicalRecord(records){ return records.slice().sort((a,b)=>canonicalRecordScore(b)-canonicalRecordScore(a)||String(a.created_at||"").localeCompare(String(b.created_at||"")))[0]||null; }
-      function inferRestoredStatus(record){ const previous=normalizeStatus(record.previous_status||""); if(previous&&!isArchivedStatus(previous)&&previous!=="new") return previous; const source=normalizeStatus(record._source_status||""); if(source&&!isArchivedStatus(source)&&source!=="new") return source; const action=clean(record.next_action).toLowerCase(); if(clean(record.last_contacted_at)&&(action.includes("itinerary")||action.includes("planning")||action.includes("prepare"))) return "planning"; return source&&!isArchivedStatus(source)?source:"contacted"; }
+      function inferRestoredStatus(record){
+        const valid=value=>{const status=normalizeStatus(value||"");return ["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book"].includes(status)?status:"";};
+        const previous=valid(record.previous_status);if(previous)return previous;
+        const markers=[...clean(record.internal_notes).matchAll(/\[MBW_ARCHIVE\] (\{[^\n]+\})/g)];
+        for(let index=markers.length-1;index>=0;index--){try{const status=valid(JSON.parse(markers[index][1]).status);if(status)return status;}catch(error){}}
+        const primary=valid(primaryTourItemFromRecord(record).status);if(primary)return primary;
+        const payment=normalizePayment(record.payment_status);if(["deposit_pending","deposit_paid","payment_pending"].includes(payment))return payment;
+        const source=valid(record._source_status);if(source)return source;
+        const action=clean(record.next_action).toLowerCase();return clean(record.last_contacted_at)&&(action.includes("itinerary")||action.includes("planning")||action.includes("prepare"))?"planning":"contacted";
+      }
       async function markDuplicateRecord(){
         const current=getSelected()||formRecord();
         if(!current||!current.inquiry_id){ showToast("Select a record first"); return; }
@@ -2021,18 +2030,21 @@
       }
       async function restoreDuplicateRecord(){
         const current=getSelected();
-        if(!current||!current.inquiry_id){ showToast("Select an archived duplicate first"); return; }
-        const itemStatus=(normalizeTourItems(current).map(item=>normalizeStatus(item.status)).find(status=>status&&!isArchivedStatus(status)))||inferRestoredStatus(current);
-        const restored=Object.assign({},current,{status:itemStatus,is_archived:"No",archived_at:"",archive_reason:"",superseded_by_inquiry_id:"",availability_status:"pending",priority:normalizePriority(current.priority||autoPriority(current.requested_date)),updated_at:new Date().toISOString(),internal_notes:(clean(current.internal_notes)+"\nRestored from duplicate archive on "+datePlusDays(0)+".").trim()});
+        if(!current||!current.inquiry_id||!isArchivedStatus(current)){ showToast("Select an archived duplicate first"); return; }
+        const itemStatus=inferRestoredStatus(current);
+        const primary=primaryTourItemFromRecord(current);
+        const items=normalizeTourItems(current).map(item=>clean(item.id)===clean(primary.id)&&normalizeStatus(item.status)==="duplicate"?Object.assign({},item,{status:itemStatus}):item);
+        const restored=Object.assign({},current,{tour_items:serializeTourItems(items),tour_items_json:serializeTourItems(items),status:itemStatus,is_archived:"No",archived_at:"",archive_reason:"",superseded_by_inquiry_id:"",availability_status:"pending",priority:normalizePriority(current.priority||autoPriority(current.requested_date)),updated_at:new Date().toISOString(),internal_notes:(clean(current.internal_notes)+"\nRestored from duplicate archive on "+datePlusDays(0)+".").trim()});
         const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
         buttons.forEach(button=>{button.disabled=true;button.textContent="Restoring…";});
         try{
-          await api("update_inquiry",{record:restored,inquiry_row:restored});
+          const payload=Object.assign({},restored,{lifecycle_override:"Yes"});
+          await api("update_inquiry",{record:payload,inquiry_row:payload});
           const index=state.records.findIndex(record=>record.inquiry_id===restored.inquiry_id);
           if(index>=0) state.records[index]=normalizeCrmRecord(restored);
           saveLocalRecords(); fillForm(restored); render(); showToast("Record restored to active queues");
         }catch(error){ showToast("Restore failed: "+error.message); }
-        finally{ updateDuplicateActionButtons(getSelected()); }
+        finally{ buttons.forEach(button=>button.disabled=false); updateDuplicateActionButtons(getSelected()); }
       }
       function toolHandoffSnapshot(){return JSON.stringify(["firstNameInput","lastNameInput","fullNameInput","emailInput","phoneInput","countryInput","quotedAmountInput","paymentStatusInput","quoteStatusInput","pickupLocationInput","notesInput","internalInput"].map(id=>els[id]?.value||""));}
       function openTool(url){ if(els.modeInput.value==="update"&&(hasUnsavedTourChanges()||(state.toolHandoffSnapshot&&state.toolHandoffSnapshot!==toolHandoffSnapshot()))){showToast("Save Record before opening this tool so it uses your latest guest and service details.");return;} const r=toolRecord(getSelected()||formRecord()); localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(r)); localStorage.setItem("mbwGuestCrmSelectedRecord",JSON.stringify(r)); const first=r.first_name||String(r.full_name||"").split(" ")[0]||""; const last=r.last_name||String(r.full_name||"").split(" ").slice(1).join(" ")||""; const paymentStatus=normalizePayment(r.payment_status||""); const depositMode=paymentStatus!=="paid"&&paymentStatus!=="deposit_paid"; const tourItems=serializeTourItems(normalizeTourItems(r)); const params=new URLSearchParams({inquiry_id:r.inquiry_id||"",guest_id:r.guest_id||"",booking_id:r.booking_id||"",guest:r.full_name||"",name:r.full_name||"",full_name:r.full_name||"",first_name:first,last_name:last,guest_first_name:first,guest_last_name:last,email:r.email||"",guest_email:r.email||"",phone:r.phone_number||"",guest_phone:r.phone_number||"",whatsapp:r.phone_number||"",whatsapp_number:r.phone_number||"",guests:r.guest_count||"",guest_count:r.guest_count||"",party:r.guest_count||"",date:r.requested_date||"",tour_date:r.requested_date||"",tour:r.tour_type||"",tour_type:r.tour_type||"",duration:r.duration_preference||"",duration_preference:r.duration_preference||"",transportation:r.transportation_needed||"",transportation_needed:r.transportation_needed||"",pickup:r.pickup_location||"",pickup_location:r.pickup_location||"",pickup_address_or_hotel:r.pickup_location||"",invoice_no:r.invoice_no||"",date_paid:r.date_paid||"",payment_method:r.payment_method||"",service_type:r.service_type||"",product_selected:r.product_selected||"",quoted_amount:r.quoted_amount||"",tour_items_json:tourItems,tour_items:tourItems,status:r.status||"",quote_status:r.quote_status||"",payment_status:r.payment_status||"",payment_request:depositMode?"deposit":"full",deposit_amount:"100",notes:r.notes||""}); window.open(url+(url.includes("?")?"&":"?")+params.toString(),"_blank","noopener,noreferrer"); }
@@ -2042,7 +2054,10 @@
           const item=entry._calendar_item||primaryTourItemFromRecord(record),assignment=entry._calendar_assignment;
           if(!assignment)return Object.assign({},item,{confirmation_assignment:null});
           const provider=assignmentCalendarProvider(assignment)||{};
-          return Object.assign({},item,{confirmation_assignment:{provider_name:assignment.provider_name==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name),provider_phone:clean(provider.phone_number||provider.phone||provider.whatsapp_number),start_time:clean(assignment.start_time),end_time:clean(assignment.end_time),trip_direction:clean(assignment.trip_direction),status:clean(assignment.assignment_status)}});
+          const matched=assignmentMatchedTourItem(assignment,record);
+          const linked=normalizeTourItems(record).find(saved=>clean(saved.id)===clean(matched?.id))||matched;
+          const duration=clean(linked?.duration||linked?.duration_preference);
+          return Object.assign({},item,{duration,confirmation_assignment:{provider_name:assignment.provider_name==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name),provider_phone:clean(provider.phone_number||provider.phone||provider.whatsapp_number),start_time:clean(assignment.start_time),end_time:clean(assignment.end_time),trip_direction:clean(assignment.trip_direction),status:clean(assignment.assignment_status)}});
         });
       }
       function openConfirmationTool(){ if(state.workspaceLoading||state.workspaceError||state.operationsStatus!=="ready"){showToast("Wait for assignments to load successfully before opening confirmation; retry Refresh CRM if needed.");return;} if(hasUnsavedTourChanges()||(state.toolHandoffSnapshot&&state.toolHandoffSnapshot!==toolHandoffSnapshot())){showToast("Save Record before opening this tool so it uses your latest guest and service details.");return;} const r=toolRecord(getSelected()||formRecord()); const tourItems=JSON.stringify(confirmationHandoffItems(r)); const draft=Object.assign({},r,{source:"guest_crm",guest_name:r.full_name||"",guest:r.full_name||"",guest_phone:r.phone_number||"",tour_date:r.requested_date||"",tour_date_end:r.requested_date_end||"",tour:r.tour_type||"",tour_type:r.tour_type||"",pickup_location:r.pickup_location||"",transportation:r.transportation_needed||"",duration:r.duration_preference||"",notes:"",tour_items_json:tourItems,tour_items:tourItems}); localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(draft)); localStorage.setItem("mbwGuestCrmSelectedRecord",JSON.stringify(draft)); localStorage.setItem("mbwTourConfirmationDraft",JSON.stringify(draft)); const params=new URLSearchParams({source:"guest_crm",inquiry_id:r.inquiry_id||"",guest_id:r.guest_id||"",guest:draft.guest_name||"",guest_name:draft.guest_name||"",full_name:draft.guest_name||"",guest_phone:draft.guest_phone||"",phone:draft.guest_phone||"",tour_date:draft.tour_date||"",requested_date:draft.tour_date||"",tour_date_end:draft.tour_date_end||"",tour:draft.tour||"",tour_type:draft.tour_type||"",pickup_location:draft.pickup_location||"",pickup:draft.pickup_location||"",transportation:draft.transportation||"",duration:draft.duration||"",tour_items_json:tourItems,tour_items:tourItems}); window.open("https://admin.mindobirdwatching.com/tour-confirmation-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
