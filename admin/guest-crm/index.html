@@ -1978,7 +1978,7 @@
       function canonicalRecordScore(record){ let score=0; if(toDateValue(record.requested_date||record.requested_date_start)) score+=40; if(!["","new","duplicate"].includes(normalizeStatus(record._source_status||record.status))) score+=30; if(clean(record.last_contacted_at)) score+=20; if(clean(record.next_action)) score+=10; if(!["","unknown"].includes(clean(record.grouping_preference).toLowerCase())) score+=10; return score; }
       function chooseCanonicalRecord(records){ return records.slice().sort((a,b)=>canonicalRecordScore(b)-canonicalRecordScore(a)||String(a.created_at||"").localeCompare(String(b.created_at||"")))[0]||null; }
       function inferRestoredStatus(record){
-        const valid=value=>{const status=normalizeStatus(value||"");return ["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book"].includes(status)?status:"";};
+        const valid=value=>{if(!clean(value))return "";const status=normalizeStatus(value);return ["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book"].includes(status)?status:"";};
         const previous=valid(record.previous_status);if(previous)return previous;
         const markers=[...clean(record.internal_notes).matchAll(/\[MBW_ARCHIVE\] (\{[^\n]+\})/g)];
         for(let index=markers.length-1;index>=0;index--){try{const status=valid(JSON.parse(markers[index][1]).status);if(status)return status;}catch(error){}}
