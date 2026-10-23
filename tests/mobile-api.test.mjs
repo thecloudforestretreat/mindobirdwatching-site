@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { onRequestPatch as patchGuest } from "../functions/api/mobile/guests/[inquiryId].js";
+import { onRequestGet as getGuest, onRequestPatch as patchGuest } from "../functions/api/mobile/guests/[inquiryId].js";
 import { onRequestPost as createGuest } from "../functions/api/mobile/guests/index.js";
 import { onRequestPatch as patchAssignment } from "../functions/api/mobile/assignments/[assignmentId].js";
 import { onRequestPost as createAssignment } from "../functions/api/mobile/assignments/index.js";
@@ -17,6 +17,25 @@ const env = {
 const request = (path, body) => new Request(`http://localhost${path}`, { method: "PATCH", headers: { Origin: "http://localhost", "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" }, body: JSON.stringify(body) });
 const postRequest = (path, body) => new Request(`http://localhost${path}`, { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" }, body: JSON.stringify(body) });
 const payload = options => JSON.parse(new URLSearchParams(options.body).get("payload"));
+
+test("guest detail keeps the canonical record visible when one related CRM section fails", async () => {
+  const savedFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: [{ inquiry_id: "INQ-PARTIAL", guest_id: "G-PARTIAL", full_name: "Partial Guest", status: "quoted" }] });
+      if (body.action === "list_payments") throw new Error("upstream unavailable");
+      if (["list_interactions", "list_assignments", "list_bookings"].includes(body.action)) return Response.json({ ok: true, records: [] });
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const response = await getGuest({ request: new Request("http://localhost/api/mobile/guests/INQ-PARTIAL"), env, params: { inquiryId: "INQ-PARTIAL" } });
+    const result = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(result.record.name, "Partial Guest");
+    assert.deepEqual(result.warnings, ["payments"]);
+    assert.deepEqual(result.data.payments, []);
+  } finally { globalThis.fetch = savedFetch; }
+});
 
 test("mobile app creates a new guest and verifies the canonical CRM inquiry", async () => {
   const savedFetch = globalThis.fetch; let row = null; const actions = [];

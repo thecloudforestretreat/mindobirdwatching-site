@@ -12,17 +12,24 @@ async function loadGuest(env, inquiryId) {
   if (!raw) throw Object.assign(new Error("Guest inquiry not found."), { status: 404 });
   const record = normalizeInquiry(raw);
   const scope = { guest_id: record.guestId, inquiry_id: "" };
-  const interactionRows = await listRecords(env, "list_interactions", scope);
-  const assignmentRows = await listRecords(env, "list_assignments", scope);
-  const bookingRows = await listRecords(env, "list_bookings", scope);
-  const paymentRows = await listRecords(env, "list_payments", scope);
+  const warnings = [];
+  const related = async (action, section) => {
+    try { return await listRecords(env, action, scope); }
+    catch { warnings.push(section); return []; }
+  };
+  // Keep these reads sequential to avoid a burst of concurrent n8n executions.
+  // A failed history section must not hide the canonical guest record.
+  const interactionRows = await related("list_interactions", "communications");
+  const assignmentRows = await related("list_assignments", "assignments");
+  const bookingRows = await related("list_bookings", "bookings");
+  const paymentRows = await related("list_payments", "payments");
   const interactions = interactionRows.map(normalizeInteraction);
   const assignments = assignmentRows.map(normalizeAssignment);
   const payments = paymentRows.map(normalizePayment);
   const bookings = bookingRows.map(normalizeBooking);
   const enriched = enrichInquiry(record, bookings, payments);
   return {
-    raw, record: enriched, interactions, assignments, payments, bookings,
+    raw, record: enriched, interactions, assignments, payments, bookings, warnings,
     journey: guestJourney(record, interactions, assignments, payments, bookings),
     readiness: serviceReadiness(record, assignments, payments, bookings, interactions),
   };
@@ -39,6 +46,7 @@ export async function onRequestGet({ request, env, params }) {
       record: data.record,
       journey: data.journey,
       readiness: data.readiness,
+      warnings: data.warnings,
       data: { interactions: data.interactions, assignments: data.assignments, bookings: data.bookings, payments: data.payments },
       checkedAt: new Date().toISOString(),
     });

@@ -187,6 +187,10 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("#adminPreview").isVisible(), true);
     assert.match(await page.locator("#adminPreview").innerText(), /Modo de auditoría · Solo lectura/i);
     assert.match(await page.locator("#adminPreview").innerText(), /acciones del guía permanecen desactivadas/i);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const auditPosition = await page.locator("#adminPreview").evaluate(element => ({ position: getComputedStyle(element).position, top: element.getBoundingClientRect().top }));
+    assert.equal(auditPosition.position, "sticky");
+    assert.ok(auditPosition.top >= 80 && auditPosition.top < 120, `audit control should remain below the header, received ${auditPosition.top}px`);
     assert.equal(await page.locator("[data-accept]").count(), 0);
     await page.locator('[data-route="calendar"]').click();
     assert.equal(await page.locator("#availabilityPanel").isVisible(), false);
