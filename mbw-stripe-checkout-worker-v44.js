@@ -1,5 +1,11 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v44
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v46
+ *
+ * v46 updates:
+ * - Processes paid Stripe invoice events synchronously before returning 2xx.
+ * - Returns a retryable 500 when invoice accounting or CRM ledger writes fail.
+ * - Prevents a transient Sheets or CRM failure from becoming a permanently
+ *   acknowledged-but-missing paid invoice.
  *
  * v44 updates:
  * - Adds MBW019 Mindo Hummingbird Tour in English and Spanish.
@@ -3002,7 +3008,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v45-fast-webhook-ack-2026-10-20", 200);
+      return text("MBW Stripe Worker is running. version=v46-durable-invoice-ack-2026-10-23", 200);
     }
 
     if (path === "/api/tours" && request.method === "GET") {
@@ -4289,6 +4295,11 @@ export default {
         event.type === "checkout.session.completed" &&
         String(eventMetadata.payment_purpose || "").toLowerCase() === "guide_tip" &&
         String(eventMetadata.source_system || "").toLowerCase() === "mbw_tip_page";
+      const requiresSynchronousPaidInvoice = [
+        "invoice_payment.paid",
+        "invoice.paid",
+        "invoice.payment_succeeded",
+      ].includes(event.type);
 
       const processVerifiedWebhookEvent = (async () => {
       if (event.type === "checkout.session.completed") {
@@ -5032,19 +5043,21 @@ export default {
 
       })();
 
-      // Guide tips are completed synchronously so Stripe retries the webhook if
-      // accounting or the dedicated admin notice fails. All writes use Stripe
-      // identifiers as idempotency keys, so a retry cannot overwrite another tip.
-      if (requiresSynchronousGuideTip) {
+      // Guide tips and paid invoices are completed synchronously so Stripe retries
+      // the webhook if accounting, CRM ledger, or notification writes fail. All
+      // writes use Stripe identifiers as idempotency keys, so a retry cannot
+      // overwrite or duplicate an existing payment.
+      if (requiresSynchronousGuideTip || requiresSynchronousPaidInvoice) {
         try {
           await processVerifiedWebhookEvent;
           return text("ok", 200);
         } catch (err) {
-          console.log("Guide tip webhook processing failed", {
+          console.log("Durable accounting webhook processing failed", {
             stripe_event_id: event.id || "",
+            event_type: event.type || "",
             error: String(err && err.message ? err.message : err),
           });
-          return text("Guide tip processing failed; retry required", 500);
+          return text("Accounting processing failed; retry required", 500);
         }
       }
 
