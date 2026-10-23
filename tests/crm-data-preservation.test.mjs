@@ -51,7 +51,7 @@ test("contact intent remains one canonical reference during imports and D1 backf
 
 test("new website add-ons record which values were inherited", () => {
   const handler = fs.readFileSync(path.join(root, "functions/api/book-tour/index.js"), "utf8");
-  assert.match(handler, /inherit_date:true, inherit_guests:true, inherit_pickup:true/);
+  assert.match(handler, /inherit_date:true, inherit_guests:!transport, inherit_pickup:true/);
 });
 
 
