@@ -45,6 +45,17 @@ button { cursor: pointer; }
 .studioStats article:last-child { border-right: 0; }
 .studioStats span { color: var(--rs-green); font-family: Georgia, "Times New Roman", serif; font-size: 28px; font-weight: 800; }
 .studioStats small { color: var(--rs-muted); font-weight: 850; }
+.systemHealth { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 11px; padding: 11px 14px; border: 1px solid var(--rs-line); border-radius: 13px; background: rgba(248,251,243,.92); box-shadow: var(--rs-shadow); }
+.systemHealth strong, .systemHealth small { display: block; }
+.systemHealth strong { color: var(--rs-green); font-size: 13px; }
+.systemHealth small { margin-top: 2px; color: var(--rs-muted); font-size: 11px; font-weight: 750; line-height: 1.4; }
+.healthDot { width: 12px; height: 12px; border-radius: 999px; background: #c69224; box-shadow: 0 0 0 4px rgba(198,146,36,.13); }
+.systemHealth[data-tone="healthy"] .healthDot { background: #21823b; box-shadow: 0 0 0 4px rgba(33,130,59,.13); }
+.systemHealth[data-tone="warning"] { border-color: #e7c45a; background: #fff7df; }
+.systemHealth[data-tone="warning"] .healthDot { background: #b97900; }
+.systemHealth[data-tone="offline"] { border-color: #e5a197; background: #fde8e5; }
+.systemHealth[data-tone="offline"] .healthDot { background: #b9382d; box-shadow: 0 0 0 4px rgba(185,56,45,.13); }
+.systemHealth[data-tone="offline"] strong { color: #8e241b; }
 
 .workspacePanel { min-height: 570px; padding: 20px; border-radius: var(--rs-radius); background: var(--rs-paper); }
 .queueToolbar { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
@@ -192,6 +203,8 @@ textarea { resize: vertical; line-height: 1.45; }
   .modalFooter .button { flex: 1; }
   .reviewMeta { grid-template-columns: 1fr; }
   .mediaEditorHeader, .mediaEditorFooter { align-items: stretch; flex-direction: column; }
+  .systemHealth { grid-template-columns: auto minmax(0,1fr); }
+  .systemHealth .smallButton { grid-column: 1 / -1; width: 100%; }
 }
 
 @media (max-width: 520px) {

@@ -1,5 +1,5 @@
 const ADMIN_ORIGIN = "https://admin.mindobirdwatching.com";
-const ALLOWED_ACTIONS = new Set(["create_batch", "update_reel", "replace_media", "approve_reel", "regenerate_reel", "retry_reel"]);
+const ALLOWED_ACTIONS = new Set(["create_batch", "update_reel", "replace_media", "approve_reel", "regenerate_reel", "retry_reel", "publish_overdue"]);
 const ALLOWED_MODES = new Set(["review", "auto"]);
 const ALLOWED_TIMEZONES = new Set(["America/Guayaquil", "America/New_York"]);
 const ALLOWED_VIDEO_HOSTS = new Set(["res.cloudinary.com"]);
@@ -143,6 +143,24 @@ async function callWorkflow(request, env, payload) {
 export async function onRequestGet({ request, env }) {
   const params = new URL(request.url).searchParams;
   const limit = Math.min(250, Math.max(1, Number(params.get("limit")) || 150));
+  if (params.get("health") === "1") {
+    const requestId = "reels_health_" + crypto.randomUUID();
+    const startedAt = Date.now();
+    const result = await callWorkflow(request, env, { action: "health", request_id: requestId });
+    if (result.error) return result.error;
+    const body = result.response && typeof result.response === "object" ? result.response : {};
+    return json(request, {
+      ok: body.ok !== false,
+      request_id: requestId,
+      checked_at: new Date().toISOString(),
+      latency_ms: Date.now() - startedAt,
+      services: body.services || {
+        n8n: { ok: true },
+        sheets: { ok: true },
+        ollama: { ok: body.ollama_ok === true }
+      }
+    });
+  }
   const requestId = "reels_list_" + crypto.randomUUID();
   const result = await callWorkflow(request, env, {
     action: "list_reels",

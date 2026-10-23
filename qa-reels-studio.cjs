@@ -10,8 +10,8 @@ assert(
   "Reels Studio must use the main-site Pages Function, not the static admin host"
 );
 assert(!ui.includes('var API = "/api/admin/reels";'), "Relative Reels API URL would resolve to the static admin host");
-assert(html.includes('reels-studio.js?v=11'), "Reels Studio asset cache key must expose the current approval-first queue");
-assert(html.includes('reels-studio.css?v=4'), "Reels Studio CSS cache key must expose media-only replacement styles");
+assert(html.includes('reels-studio.js?v=12'), "Reels Studio asset cache key must expose recovery controls");
+assert(html.includes('reels-studio.css?v=5'), "Reels Studio CSS cache key must expose service health styles");
 assert(ui.includes('Number(row.quality_score || 0) >= 92'), "Reels Studio must not present copy below quality 92 as approved");
 assert(ui.includes('group === "review" || group === "upcoming"'), "Scheduled reels must remain eligible for explicit copy regeneration");
 assert(ui.includes(': copyIsApproved(row) ? ""'), "Approved reels must not show stale generation warnings");
@@ -35,10 +35,16 @@ assert(html.indexOf('data-status="review"') < html.indexOf('data-status="upcomin
 assert(html.includes('data-status="review">Needs approval'), "The review queue must use action-oriented wording");
 assert(html.includes('data-status="failed">Needs attention'), "Publishing failures must use the same Needs attention wording as the summary");
 assert(ui.includes('It is currently '), "Past-time guidance must show the current Eastern time");
+assert(api.includes('"publish_overdue"'), "Reels API must expose the protected overdue recovery action");
+assert(api.includes('action: "health"'), "Reels API must expose a dependency health check");
+assert(ui.includes('function isOverdue(row)'), "Reels Studio must identify approved posts that missed their publishing window");
+assert(ui.includes('request(action === "save" ? "update_reel" : action === "publish-overdue" ? "publish_overdue"'), "Overdue recovery must use its dedicated API action");
+assert(ui.includes('platforms already published will be skipped'), "Recovery confirmation must explain destination idempotency");
+assert(html.includes('id="systemHealth"'), "Reels Studio must display publishing service health");
 
 console.log(JSON.stringify({
   ok: true,
   api: "https://mindobirdwatching.com/api/admin/reels",
-  cacheKey: "v11",
+  cacheKey: "v12",
   handlers: ["GET", "POST", "OPTIONS"]
 }, null, 2));
