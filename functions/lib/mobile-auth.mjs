@@ -13,16 +13,24 @@ function parseRoleMap(raw) {
   return value;
 }
 
+function combinedRoleMap(env) {
+  return { ...parseRoleMap(env.MBW_MOBILE_ROLE_MAP), ...parseRoleMap(env.MBW_GUIDE_ROLE_MAP) };
+}
+
 function roleEntry(roleMap, email) {
   const configured = roleMap[email];
   if (typeof configured === "string") return { role: configured, staffCode: "", providerName: "", providerId: "", contributorNumber: "" };
   if (configured && typeof configured === "object") {
+    const configuredIds = Array.isArray(configured.providerIds || configured.provider_ids) ? configured.providerIds || configured.provider_ids : [];
+    const providerIds = [...new Set([configured.providerId || configured.provider_id, ...configuredIds]
+      .map(value => String(value || "").trim().slice(0, 128)).filter(Boolean))];
     return {
       role: String(configured.role || "").toLowerCase(),
       staffCode: String(configured.staffCode || configured.staff_code || "").toUpperCase(),
       name: String(configured.name || "").slice(0, 80),
       providerName: String(configured.providerName || configured.provider_name || "").trim().slice(0, 160),
-      providerId: String(configured.providerId || configured.provider_id || "").trim().slice(0, 128),
+      providerId: providerIds[0] || "",
+      providerIds,
       contributorNumber: String(configured.contributorNumber || configured.contributor_number || "").trim()
         ? String(configured.contributorNumber || configured.contributor_number).trim().replace(/\.0+$/, "").padStart(3, "0")
         : "",
@@ -42,7 +50,7 @@ async function identityEmail(request, env) {
 
 export async function mobileIdentity(request, env) {
   const email = await identityEmail(request, env);
-  const entry = roleEntry(parseRoleMap(env.MBW_MOBILE_ROLE_MAP), email);
+  const entry = roleEntry(combinedRoleMap(env), email);
   if (!entry || !PHASE_ONE_ROLES.has(entry.role)) {
     throw Object.assign(new Error("This account is not enabled for the mobile pilot."), { status: 403 });
   }
@@ -55,7 +63,7 @@ export async function mobileIdentity(request, env) {
 
 export async function guideIdentity(request, env) {
   const email = await identityEmail(request, env);
-  const entry = roleEntry(parseRoleMap(env.MBW_MOBILE_ROLE_MAP), email);
+  const entry = roleEntry(combinedRoleMap(env), email);
   if (!entry || !["owner", "agent", "guide"].includes(entry.role)) {
     throw Object.assign(new Error("This account is not enabled for Guide Nest."), { status: 403 });
   }
@@ -72,6 +80,14 @@ export async function guideIdentity(request, env) {
     name: entry.name || entry.providerName || email.split("@")[0],
     providerName: entry.providerName,
     providerId: entry.providerId,
+    providerIds: entry.providerIds || (entry.providerId ? [entry.providerId] : []),
     contributorNumber: entry.contributorNumber,
   };
+}
+
+export function identityMatchesProvider(identity, providerId, providerName) {
+  const configuredIds = identity?.providerIds?.length ? identity.providerIds : identity?.providerId ? [identity.providerId] : [];
+  const rowId = String(providerId || "").trim();
+  if (rowId && configuredIds.length) return configuredIds.includes(rowId);
+  return String(providerName || "").trim().toLowerCase() === String(identity?.providerName || "").trim().toLowerCase();
 }

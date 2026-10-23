@@ -1,11 +1,9 @@
-import { guideIdentity } from "../../../lib/mobile-auth.mjs";
+import { guideIdentity, identityMatchesProvider } from "../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../lib/mobile-crm.mjs";
 import { errorResponse, json, methodNotAllowed, assertSameOrigin, validId, writesEnabled } from "../../../lib/mobile-http.mjs";
 
 const lower = value => String(value || "").trim().toLowerCase();
-const belongsToGuide = (row, identity) => identity.providerId && row.provider_id
-  ? String(row.provider_id) === identity.providerId
-  : lower(row.provider_name === "Other" ? row.provider_name_other : row.provider_name) === lower(identity.providerName);
+const belongsToGuide = (row, identity) => identityMatchesProvider(identity, row.provider_id, row.provider_name === "Other" ? row.provider_name_other : row.provider_name);
 const isAvailability = row => lower(row.assignment_kind) === "availability" || String(row.assignment_group_id || "").startsWith("AVAIL-") || lower(row.service_type) === "guide unavailable";
 
 export async function onRequestDelete({ request, env, params }) {

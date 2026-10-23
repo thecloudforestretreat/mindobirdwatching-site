@@ -1,5 +1,6 @@
 import { listRecords } from "./mobile-crm.mjs";
 import { normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeProvider } from "./mobile-domain.mjs";
+import { identityMatchesProvider } from "./mobile-auth.mjs";
 
 const BOOKED = new Set(["booked", "deposit_pending", "deposit_paid", "payment_pending", "completed"]);
 const CLOSED_ASSIGNMENTS = new Set(["cancelled", "canceled"]);
@@ -56,8 +57,7 @@ function bookingIsBooked(booking) {
 
 function assignmentMatchesProvider(assignment, provider) {
   if (!provider?.name && !provider?.providerId) return false;
-  if (provider.providerId && assignment.providerId) return assignment.providerId === provider.providerId;
-  return lower(assignment.providerName) === lower(provider.name);
+  return identityMatchesProvider({ providerId: provider.providerId, providerIds: provider.providerIds, providerName: provider.name }, assignment.providerId, assignment.providerName);
 }
 
 function guestServiceName(value) {
@@ -137,7 +137,7 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
   for (const booking of bookings) if (booking.inquiryId && bookingIsBooked(booking)) bookingByInquiry.set(booking.inquiryId, booking);
   const providerRecords = providerRows.map(normalizeProvider).filter(item => item.active && item.role === "guide" && item.name);
   const selectedProvider = identity.role === "guide"
-    ? { providerId: identity.providerId, name: identity.providerName }
+    ? { providerId: identity.providerId, providerIds: identity.providerIds, name: identity.providerName }
     : providerRecords.find(item => item.providerId && item.providerId === requestedProvider)
       || providerRecords.find(item => lower(item.name) === lower(requestedProvider))
       || providerRecords[0]

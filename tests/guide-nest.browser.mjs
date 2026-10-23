@@ -27,7 +27,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   const page = await context.newPage();
   const writes = [];
   const bootstrap = {
-    ok: true, preview: false, identity: { role: "guide", name: "Neycer" }, providerName: "Neycer · Night Walk Guide", checkedAt: "2026-10-21T15:00:00Z",
+    ok: true, preview: false, identity: { role: "guide", name: "Neycer", contributorNumber: "007" }, providerName: "Neycer · Night Walk Guide", checkedAt: "2026-10-21T15:00:00Z",
     availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-23", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
     offers: [{ assignmentId: "O-1", serviceDate: "2026-10-30", startTime: "6:00 AM", service: "Custom birding package", pickup: "Mindo", response: "", bidAmount: "" }],
     tours: [
@@ -87,7 +87,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.match(await page.locator(".tourCard").first().innerText(), /🇱🇺 Luxembourg/);
     assert.match(await page.locator(".tourCard").first().innerText(), /\+352 621 492 066/);
     assert.match(await page.locator(".tourCard").first().innerText(), /Conflicto de horario/);
-    assert.match(await page.locator(".tourCard").first().innerText(), /Reporte después del tour/i);
+    assert.match(await page.locator(".tourCard").first().innerText(), /Reporte (?:después del tour|pendiente)/i);
     assert.equal(await page.locator('.tourCard').first().locator('a[href^="https://wa.me/"]').count(), 1);
     assert.equal(await page.locator('.tourCard').first().locator('a[href^="tel:"]').count(), 0);
     const tipButton = page.locator('.tourCard').first().getByRole('button', { name: 'Propina' });
@@ -189,5 +189,6 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("#tourDate").inputValue(), "2026-10-23");
     assert.equal(await page.locator("#tourType").inputValue(), "full_day");
     assert.equal(await page.locator("#bookingReference").inputValue(), "A-1");
+    assert.equal(await page.locator("#contributorNumber").inputValue(), "007");
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 });

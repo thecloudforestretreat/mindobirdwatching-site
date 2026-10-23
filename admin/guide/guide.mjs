@@ -159,6 +159,7 @@ function reportUrl(tour) {
   if (tour.bookingId) url.searchParams.set("booking_id", tour.bookingId);
   if (tour.serviceDate) url.searchParams.set("date", tour.serviceDate);
   url.searchParams.set("tour_type", tourType(tour));
+  if (data?.identity?.contributorNumber) url.searchParams.set("contributor", data.identity.contributorNumber);
   return url.toString();
 }
 

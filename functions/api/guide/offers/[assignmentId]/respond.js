@@ -1,11 +1,9 @@
-import { guideIdentity } from "../../../../lib/mobile-auth.mjs";
+import { guideIdentity, identityMatchesProvider } from "../../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../../lib/mobile-crm.mjs";
 import { errorResponse, json, methodNotAllowed, assertSameOrigin, readJson, validId, writesEnabled } from "../../../../lib/mobile-http.mjs";
 
 const lower = value => String(value || "").trim().toLowerCase();
-const belongsToGuide = (row, identity) => identity.providerId && row.provider_id
-  ? String(row.provider_id) === identity.providerId
-  : lower(row.provider_name === "Other" ? row.provider_name_other : row.provider_name) === lower(identity.providerName);
+const belongsToGuide = (row, identity) => identityMatchesProvider(identity, row.provider_id, row.provider_name === "Other" ? row.provider_name_other : row.provider_name);
 const isOffer = row => lower(row.assignment_kind) === "offer" || String(row.assignment_group_id || "").startsWith("OFFER-") || lower(row.service_type) === "guide offer";
 
 export async function onRequestPost({ request, env, params }) {

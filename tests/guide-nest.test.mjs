@@ -14,7 +14,9 @@ const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
   MBW_MOBILE_ROLE_MAP: JSON.stringify({
     "owner@example.test": { role: "owner", staffCode: "JPG", name: "Juan" },
-    "guide@example.test": { role: "guide", name: "Neycer", providerId: "PROV-007", providerName: "Neycer · Night Walk Guide", contributorNumber: "7" },
+  }),
+  MBW_GUIDE_ROLE_MAP: JSON.stringify({
+    "guide@example.test": { role: "guide", name: "Neycer", providerIds: ["PROV-007", "PROV-NIGHT"], providerName: "Neycer · Night Walk Guide", contributorNumber: "7" },
   }),
   N8N_CRM_ADMIN_TOKEN: "test-token",
   N8N_CRM_ADMIN_URL: "https://n8n.example.test/webhook/mobile",
@@ -43,10 +45,11 @@ test("guide identity is available only to Guide Nest and is provider-bound", asy
   assert.equal(identity.role, "guide");
   assert.equal(identity.providerName, "Neycer · Night Walk Guide");
   assert.equal(identity.providerId, "PROV-007");
+  assert.deepEqual(identity.providerIds, ["PROV-007", "PROV-NIGHT"]);
   assert.equal(identity.contributorNumber, "007");
   await assert.rejects(() => mobileIdentity(request, { ...env, LOCAL_TEST_IDENTITY: "guide@example.test" }), /not enabled/);
   await assert.rejects(() => guideIdentity(request, { ...env, LOCAL_TEST_IDENTITY: "missing@example.test" }), /not enabled/);
-  await assert.rejects(() => guideIdentity(request, { ...env, LOCAL_TEST_IDENTITY: "guide@example.test", MBW_MOBILE_ROLE_MAP: JSON.stringify({ "guide@example.test": { role: "guide" } }) }), /not linked/);
+  await assert.rejects(() => guideIdentity(request, { ...env, LOCAL_TEST_IDENTITY: "guide@example.test", MBW_GUIDE_ROLE_MAP: JSON.stringify({ "guide@example.test": { role: "guide" } }) }), /not linked/);
 });
 
 test("guide report history is grouped and restricted to the linked contributor", async () => {
@@ -97,6 +100,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     const body = await response.json();
     assert.equal(response.status, 200);
     assert.equal(body.tours.length, 3);
+    assert.equal(body.tours.some(item => item.assignmentId === "A-4"), true);
     assert.equal(body.tours.some(item => item.assignmentId === "A-OLD"), true);
     assert.equal(body.providerId, "PROV-007");
     assert.equal(body.providerOptions[0].providerId, "PROV-007");
@@ -123,7 +127,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
 
 test("a linked guide can accept only their own assignment", async () => {
   const savedFetch = globalThis.fetch;
-  let row = { assignment_id: "A-ACCEPT", assignment_kind: "assignment", provider_id: "PROV-007", provider_name: "Neycer renamed", assignment_status: "pending", provider_informed: "No", updated_at: "v1" };
+  let row = { assignment_id: "A-ACCEPT", assignment_kind: "assignment", provider_id: "PROV-NIGHT", provider_name: "Neycer", assignment_status: "pending", provider_informed: "No", updated_at: "v1" };
   try {
     globalThis.fetch = async (_url, options) => {
       const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
@@ -209,7 +213,7 @@ test("a guide cannot switch to another provider with a query parameter", async (
     globalThis.fetch = async (_url, options) => {
       const action = JSON.parse(new URLSearchParams(options.body).get("payload")).action;
       if (action === "list_assignments") return Response.json({ ok: true, records: [
-        { assignment_id: "A-1", inquiry_id: "I-1", provider_id: "PROV-007", provider_name: "Neycer renamed", service_date: "2026-10-23" },
+        { assignment_id: "A-1", inquiry_id: "I-1", provider_id: "PROV-NIGHT", provider_name: "Neycer", service_date: "2026-10-23" },
         { assignment_id: "A-2", inquiry_id: "I-2", provider_name: "Other Guide", service_date: "2026-10-23" },
       ] });
       if (action === "list_inquiries") return Response.json({ ok: true, records: [
@@ -249,4 +253,5 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   const recap = fs.readFileSync(new URL("../assets/js/guide-tour-recap.js", import.meta.url), "utf8");
   assert.match(recap, /params\.get\("date"\)/);
   assert.match(recap, /params\.get\("tour_type"\)/);
+  assert.match(recap, /params\.get\("contributor"\)/);
 });

@@ -3,15 +3,19 @@ const ADMIN = "https://admin.mindobirdwatching.com";
 const ISSUER = "https://tcfr-mbw.cloudflareaccess.com";
 const AUDIENCE = "62ad79ee3af18f90b4827d5a84be038d4df901a56cbc21abda1ac5991ea89060";
 const GUIDE = "faustoandrade635@gmail.com";
-const GUIDE_PAGES = new Set([
+const BIRDING_GUIDE_PAGES = new Set([
   "/", "/index.html", "/birding", "/birding/", "/birding/index.html",
   "/birding/species", "/birding/species/", "/birding/species/index.html",
   "/birding/sightings", "/birding/sightings/", "/birding/sightings/index.html",
+]);
+const NEST_GUIDE_PAGES = new Set([
   "/guide", "/guide/", "/guide/index.html", "/api/guide/bootstrap", "/api/guide/reports",
 ]);
-const GUIDE_ASSETS = new Set([
+const BIRDING_GUIDE_ASSETS = new Set([
   "/assets/css/admin.css", "/assets/css/birding.css",
   "/assets/js/admin-nav.js", "/assets/js/sightings.js",
+]);
+const NEST_GUIDE_ASSETS = new Set([
   "/guide/guide.css", "/guide/guide.mjs", "/assets/images/app/mbw-header-logo-160.png", "/assets/images/app/mbw-app-gold-transparent-180.png",
   "/favicon.ico", "/favicon.svg", "/apple-touch-icon.png", "/site.webmanifest",
 ]);
@@ -49,18 +53,21 @@ export async function verifyIdentity(token) {
   return claims.email.trim().toLowerCase();
 }
 
-export function guideMayRequest(request) {
+export function guideMayRequest(request, { nestOnly = false } = {}) {
   const path = new URL(request.url).pathname;
-  if (["GET", "HEAD"].includes(request.method)) return GUIDE_PAGES.has(path) || GUIDE_ASSETS.has(path);
+  if (["GET", "HEAD"].includes(request.method)) {
+    if (NEST_GUIDE_PAGES.has(path) || NEST_GUIDE_ASSETS.has(path)) return true;
+    return !nestOnly && (BIRDING_GUIDE_PAGES.has(path) || BIRDING_GUIDE_ASSETS.has(path));
+  }
   if (request.method === "POST" && (/^\/api\/guide\/assignments\/[A-Za-z0-9_.-]+\/accept$/.test(path) || path === "/api/guide/availability" || /^\/api\/guide\/offers\/[A-Za-z0-9_.-]+\/respond$/.test(path))) return true;
   if (request.method === "DELETE" && /^\/api\/guide\/availability\/[A-Za-z0-9_.-]+$/.test(path)) return true;
   return false;
 }
 
-export function guideMayNavigate(href) {
+export function guideMayNavigate(href, { nestOnly = false } = {}) {
   try {
     const url = new URL(href, ADMIN);
-    return url.origin === ADMIN && GUIDE_PAGES.has(url.pathname);
+    return url.origin === ADMIN && (NEST_GUIDE_PAGES.has(url.pathname) || (!nestOnly && BIRDING_GUIDE_PAGES.has(url.pathname)));
   } catch { return false; }
 }
 
@@ -70,7 +77,11 @@ function reject(status, message) {
 
 function configuredGuide(env, email) {
   try {
-    const roles = typeof env?.MBW_MOBILE_ROLE_MAP === "string" ? JSON.parse(env.MBW_MOBILE_ROLE_MAP) : env?.MBW_MOBILE_ROLE_MAP;
+    const roles = {};
+    for (const raw of [env?.MBW_MOBILE_ROLE_MAP, env?.MBW_GUIDE_ROLE_MAP]) {
+      if (!raw) continue;
+      Object.assign(roles, typeof raw === "string" ? JSON.parse(raw) : raw);
+    }
     const entry = roles?.[email];
     return String(typeof entry === "string" ? entry : entry?.role || "").trim().toLowerCase() === "guide";
   } catch { return false; }
@@ -88,13 +99,13 @@ export async function onRequest(context) {
   catch { return reject(401, "Sign in through MBW Admin to continue."); }
   const nestGuide = configuredGuide(context.env, email);
   const guide = email === GUIDE || nestGuide;
-  if (guide && !guideMayRequest(request)) return reject(403, nestGuide ? "Your guide account is limited to Guide Nest. Return to https://admin.mindobirdwatching.com/guide/" : "Your account has Birding access only. Return to https://admin.mindobirdwatching.com/birding/");
+  if (guide && !guideMayRequest(request, { nestOnly: nestGuide })) return reject(403, nestGuide ? "Your guide account is limited to Guide Nest. Return to https://admin.mindobirdwatching.com/guide/" : "Your account has Birding access only. Return to https://admin.mindobirdwatching.com/birding/");
   let response = await context.next();
   if (guide && response.headers.get("Content-Type")?.includes("text/html")) {
     response = new HTMLRewriter()
       .on("body", {element(el) {el.setAttribute("data-admin-role", "birding-guide");}})
       .on("a[href]", {element(el) {
-        if (!guideMayNavigate(el.getAttribute("href"))) {
+        if (!guideMayNavigate(el.getAttribute("href"), { nestOnly: nestGuide })) {
           el.removeAttribute("href"); el.removeAttribute("target");
           el.setAttribute("aria-disabled", "true");
           el.setAttribute("title", "Your account has Birding access only.");

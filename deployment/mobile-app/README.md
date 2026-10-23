@@ -13,6 +13,7 @@ Configure these Production variables in the `mindobirdwatching-admin` Pages proj
 | `MBW_ADMIN_ORIGIN` | Text | `https://admin.mindobirdwatching.com` |
 | `MBW_MOBILE_WRITE_ENABLED` | Text | `false` during validation, then `true` after the n8n gateway test |
 | `MBW_MOBILE_ROLE_MAP` | Secret | JSON described below |
+| `MBW_GUIDE_ROLE_MAP` | Secret | Guide-only email, provider aliases, and contributor mappings |
 | `N8N_CRM_ADMIN_URL` | Text | Protected n8n gateway production URL |
 | `N8N_CRM_ADMIN_TOKEN` | Secret | Same random secret stored by the protected n8n gateway |
 
@@ -38,6 +39,22 @@ Use the exact Cloudflare Access email addresses, all lowercase:
 ```
 
 Replace the two placeholder keys before saving the secret. Phase 1 recognizes only `owner` and `agent`. The staff code must be `JPG` or `SS` because the existing CRM workflow enforces those values.
+
+Keep guide accounts in the separate `MBW_GUIDE_ROLE_MAP` secret so the owner and agent map can be maintained independently. A guide may have several CRM provider IDs for different service roles:
+
+```json
+{
+  "guide@example.com": {
+    "role": "guide",
+    "name": "Guide name",
+    "providerName": "Guide name",
+    "providerIds": ["PROV-BIRDING", "PROV-ACTIVITY"],
+    "contributorNumber": "001"
+  }
+}
+```
+
+Guide accounts are limited at the origin to `/guide/` and its required API and asset routes. Do not add the guide emails to the owner or agent role map.
 
 ## n8n gateway
 

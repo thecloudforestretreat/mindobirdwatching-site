@@ -19,7 +19,7 @@ export async function onRequestGet({ request, env }) {
     return json(200, {
       ok: true,
       checkedAt: new Date().toISOString(),
-      identity: { name: identity.name, role: identity.role },
+      identity: { name: identity.name, role: identity.role, contributorNumber: identity.contributorNumber },
       preview: identity.role !== "guide",
       ...data,
       links,

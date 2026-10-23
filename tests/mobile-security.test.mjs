@@ -15,10 +15,13 @@ test("role map authorizes only explicit owner and agent entries", async () => {
 });
 
 test("restricted guide navigation includes only Guide Nest and its read endpoints", () => {
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guide/")), true);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/guide/reports")), true);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guest-crm/")), false);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/mobile/guests")), false);
+  const nestOnly = { nestOnly: true };
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guide/"), nestOnly), true);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/guide/reports"), nestOnly), true);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/"), nestOnly), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/birding/"), nestOnly), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guest-crm/"), nestOnly), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/mobile/guests"), nestOnly), false);
 });
 
 test("writes fail closed unless flag, n8n token, and staff code all exist", () => {
