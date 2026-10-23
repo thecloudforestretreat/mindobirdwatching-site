@@ -55,6 +55,7 @@ Keep guide accounts in the separate `MBW_GUIDE_ROLE_MAP` secret so the owner and
 ```
 
 Guide accounts are limited at the origin to `/guide/` and its required API and asset routes. Do not add the guide emails to the owner or agent role map.
+Every Access-authenticated email must also appear in either `MBW_MOBILE_ROLE_MAP` or `MBW_GUIDE_ROLE_MAP`; unmapped identities are denied at the origin. Guide-specific attribution is added only to links on MBW-owned domains. Keep Google, Tripadvisor, and social profile destinations canonical and free of UTM parameters.
 
 ## n8n gateway
 

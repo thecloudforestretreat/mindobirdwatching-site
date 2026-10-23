@@ -104,6 +104,16 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     assert.equal(body.tours.some(item => item.assignmentId === "A-OLD"), true);
     assert.equal(body.providerId, "PROV-007");
     assert.equal(body.providerOptions[0].providerId, "PROV-007");
+    assert.equal(body.links.google, "https://g.page/r/CdMlIYMGgBIvEAE/review");
+    assert.equal(new URL(body.links.google).searchParams.has("utm_source"), false);
+    const shopLink = new URL(body.links.shop);
+    assert.equal(shopLink.searchParams.get("utm_source"), "mbw_guide");
+    assert.equal(shopLink.searchParams.get("utm_medium"), "referral");
+    assert.equal(shopLink.searchParams.get("utm_campaign"), "post_tour");
+    assert.equal(shopLink.searchParams.get("utm_content"), "neycer-night-walk-guide");
+    const tipLink = new URL(body.links.tip);
+    assert.equal(tipLink.searchParams.get("utm_campaign"), "guide_tip");
+    assert.equal(tipLink.searchParams.get("utm_content"), "neycer-night-walk-guide");
     const bookedTour = body.tours.find(item => item.assignmentId === "A-1"), completedTour = body.tours.find(item => item.guestName === "Completed Guest");
     assert.equal(bookedTour.phone, "+1 (555) 123-4567");
     assert.equal(bookedTour.whatsappUrl, "https://wa.me/15551234567");
@@ -227,6 +237,48 @@ test("a guide cannot switch to another provider with a query parameter", async (
     assert.deepEqual(body.tours.map(item => item.guestName), ["Allowed"]);
     assert.equal(body.providerName, "Neycer · Night Walk Guide");
     assert.equal(body.preview, false);
+    assert.equal(new URL(body.links.shop).searchParams.get("utm_content"), "neycer");
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("two guide identities receive only their own tours and cannot mutate each other's assignment", async () => {
+  const savedFetch = globalThis.fetch;
+  let writeAttempted = false;
+  const pilotEnv = {
+    ...env,
+    MBW_GUIDE_ROLE_MAP: JSON.stringify({
+      "chicho@example.test": { role: "guide", name: "Chicho", providerName: "Chicho", providerIds: ["PROV-CHICHO", "PROV-ACTIVITY-CHICHO"], contributorNumber: "001" },
+      "neicer@example.test": { role: "guide", name: "Neicer", providerName: "Neicer", providerIds: ["PROV-NEICER", "PROV-NEICER-NIGHT"], contributorNumber: "002" },
+    }),
+    MBW_MOBILE_WRITE_ENABLED: "true",
+  };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const action = JSON.parse(new URLSearchParams(options.body).get("payload")).action;
+      if (action === "list_assignments") return Response.json({ ok: true, records: [
+        { assignment_id: "A-CHICHO", inquiry_id: "I-CHICHO", provider_id: "PROV-ACTIVITY-CHICHO", provider_name: "Chicho", service_date: "2026-11-01", assignment_status: "confirmed" },
+        { assignment_id: "A-NEICER", inquiry_id: "I-NEICER", provider_id: "PROV-NEICER-NIGHT", provider_name: "Neicer", service_date: "2026-11-02", assignment_status: "pending" },
+      ] });
+      if (action === "list_inquiries") return Response.json({ ok: true, records: [
+        { inquiry_id: "I-CHICHO", full_name: "Chicho Guest", status: "booked" },
+        { inquiry_id: "I-NEICER", full_name: "Neicer Guest", status: "booked" },
+      ] });
+      if (["list_bookings", "list_providers"].includes(action)) return Response.json({ ok: true, records: [] });
+      if (action === "update_assignment") { writeAttempted = true; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${action}`);
+    };
+    const chichoResponse = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Neicer"), env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "chicho@example.test" } });
+    const neicerResponse = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Chicho"), env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "neicer@example.test" } });
+    assert.deepEqual((await chichoResponse.json()).tours.map(item => item.guestName), ["Chicho Guest"]);
+    assert.deepEqual((await neicerResponse.json()).tours.map(item => item.guestName), ["Neicer Guest"]);
+
+    const denied = await acceptGuideAssignment({
+      request: new Request("http://localhost/api/guide/assignments/A-NEICER/accept", { method: "POST", headers: { Origin: "http://localhost" } }),
+      env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "chicho@example.test" },
+      params: { assignmentId: "A-NEICER" },
+    });
+    assert.equal(denied.status, 404);
+    assert.equal(writeAttempted, false);
   } finally { globalThis.fetch = savedFetch; }
 });
 

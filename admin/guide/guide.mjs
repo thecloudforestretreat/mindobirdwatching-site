@@ -187,7 +187,7 @@ function countryFlag(code) {
 }
 
 function tipMessage() {
-  return `It was my pleasure being your guide. Here is the tip link you requested:\n\n${TIP_URL}`;
+  return `It was my pleasure being your guide. Here is the tip link you requested:\n\n${data?.links?.tip || TIP_URL}`;
 }
 
 function tourCard(tour, { next = false } = {}) {

@@ -36,7 +36,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
       { assignmentId: "A-3", bookingId: "B-3", serviceDate: "2026-12-15", startTime: "7:00 AM", service: "Birdwatching", guestName: "December Guest", guestCount: "3", pickup: "Quito", status: "confirmed", accepted: true, acceptanceRequired: false, contactAvailable: true, hasConflict: false, phone: "+593 999 000 222", whatsappUrl: "https://wa.me/593999000222" },
       { assignmentId: "A-PAST", bookingId: "B-PAST", serviceDate: "2026-10-15", startTime: "6:00 AM", service: "Past Birding", guestName: "Past Guest", guestCount: "2", pickup: "Mindo", status: "completed", accepted: true, acceptanceRequired: false, contactAvailable: false, hasConflict: false, phone: "", whatsappUrl: "" },
     ],
-    links: { google: "https://google.example/review", tripadvisor: "https://tripadvisor.example/review", instagram: "https://instagram.example/mbw", facebook: "https://facebook.example/mbw", youtube: "https://youtube.example/mbw", shop: "https://shop.example/mbw" },
+    links: { google: "https://g.page/r/CdMlIYMGgBIvEAE/review", tripadvisor: "https://tripadvisor.example/review", instagram: "https://instagram.example/mbw", facebook: "https://facebook.example/mbw", youtube: "https://youtube.example/mbw", shop: "https://mindobirdwatching.com/shop/?utm_source=mbw_guide&utm_medium=referral&utm_campaign=post_tour&utm_content=neycer", tip: "https://mindobirdwatching.com/tip-your-guide/?utm_source=mbw_guide&utm_medium=referral&utm_campaign=guide_tip&utm_content=neycer" },
   };
   await page.route(`http://127.0.0.1:${port}/api/guide/bootstrap**`, route => route.fulfill({ json: {
     ...bootstrap,
@@ -93,7 +93,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     const tipButton = page.locator('.tourCard').first().getByRole('button', { name: 'Propina' });
     assert.equal(await tipButton.count(), 1);
     const tipCopy = decodeURIComponent(await tipButton.getAttribute('data-copy'));
-    assert.equal(tipCopy, 'It was my pleasure being your guide. Here is the tip link you requested:\n\nhttps://mindobirdwatching.com/tip-your-guide/');
+    assert.equal(tipCopy, 'It was my pleasure being your guide. Here is the tip link you requested:\n\nhttps://mindobirdwatching.com/tip-your-guide/?utm_source=mbw_guide&utm_medium=referral&utm_campaign=guide_tip&utm_content=neycer');
     const copyMessage = decodeURIComponent(await page.locator(".tourCard").first().getByRole("button", { name: "Copiar mensaje" }).getAttribute("data-copy"));
     assert.match(copyMessage, /^Hello Daniel, I’m Neycer from Mindo Bird Watching\./);
     assert.doesNotMatch(copyMessage, /Hola|MBW006/);
@@ -166,6 +166,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.match(await page.locator("#shareList").innerText(), /Reseña en Google/);
     assert.match(await page.locator("#shareList").innerText(), /Tripadvisor/);
     assert.match(await page.locator("#shareList").innerText(), /Tienda MBW/);
+    const googleCopy = decodeURIComponent(await page.locator(".shareCard--google .copyButton").getAttribute("data-copy"));
+    const shopCopy = decodeURIComponent(await page.locator(".shareCard--shop .copyButton").getAttribute("data-copy"));
+    assert.match(googleCopy, /https:\/\/g\.page\/r\/CdMlIYMGgBIvEAE\/review$/);
+    assert.doesNotMatch(googleCopy, /utm_/);
+    assert.match(shopCopy, /utm_source=mbw_guide/);
+    assert.match(shopCopy, /utm_content=neycer/);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-share.png", fullPage: true });
     const width = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
     assert.ok(width.scroll <= width.client + 1, `Guide Nest overflows: ${width.scroll}px > ${width.client}px`);

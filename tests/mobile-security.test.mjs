@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mobileIdentity } from "../functions/lib/mobile-auth.mjs";
-import { guideMayRequest } from "../functions/_middleware.js";
+import { configuredRole, guideMayRequest } from "../functions/_middleware.js";
 import { crmCall } from "../functions/lib/mobile-crm.mjs";
 import { assertMobileWriteReady, assertSameOrigin, mobileWriteReady, readJson, writesEnabled } from "../functions/lib/mobile-http.mjs";
 
@@ -15,13 +15,23 @@ test("role map authorizes only explicit owner and agent entries", async () => {
 });
 
 test("restricted guide navigation includes only Guide Nest and its read endpoints", () => {
-  const nestOnly = { nestOnly: true };
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guide/"), nestOnly), true);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/guide/reports"), nestOnly), true);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/"), nestOnly), false);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/birding/"), nestOnly), false);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guest-crm/"), nestOnly), false);
-  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/mobile/guests"), nestOnly), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guide/")), true);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/guide/reports")), true);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/")), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/birding/")), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guest-crm/")), false);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/mobile/guests")), false);
+});
+
+test("the origin denies identities that are absent from both explicit role maps", () => {
+  const env = {
+    MBW_MOBILE_ROLE_MAP: JSON.stringify({ "owner@example.com": { role: "owner" } }),
+    MBW_GUIDE_ROLE_MAP: JSON.stringify({ "guide@example.com": { role: "guide" } }),
+  };
+  assert.equal(configuredRole(env, "owner@example.com"), "owner");
+  assert.equal(configuredRole(env, "guide@example.com"), "guide");
+  assert.equal(configuredRole(env, "other@example.com"), "");
+  assert.equal(configuredRole({ ...env, MBW_GUIDE_ROLE_MAP: "invalid-json" }, "owner@example.com"), "");
 });
 
 test("writes fail closed unless flag, n8n token, and staff code all exist", () => {
