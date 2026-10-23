@@ -1471,12 +1471,18 @@
       }
 
       function lengthFromCrm(tourText, durationText){
-        const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
-        if(text.includes("insect") || text.includes("macro")) return "Flexible";
-        if(text.includes("mbw019") || text.includes("hummingbird") || text.includes("colibri")) return "3 hrs";
-        if(text.includes("night walk")) return "Night Walk";
-        if(text.includes("half")) return "Half Day";
-        if(text.includes("full")) return "Full Day";
+        const text=normalizeInboundTourText(tourText);
+        const duration=String(durationText||"").trim();
+        if(duration){
+          const normalized=normalizeInboundTourText(duration);
+          if(text.includes("night walk")&&["evening","evening activity"].includes(normalized))return "Night Walk";
+          return duration;
+        }
+        if(text.includes("insect")||text.includes("macro"))return "Flexible";
+        if(text.includes("mbw019")||text.includes("hummingbird")||text.includes("colibri"))return "3 hrs";
+        if(text.includes("night walk")||text.includes("mbw016"))return "Night Walk";
+        if(text.includes("half")||text.includes("jewels")||text.includes("mbw004")||text.includes("mbw005")||text.includes("dance of the andean"))return "Half Day";
+        if(text.includes("full")||text.includes("mbw006")||text.includes("quest for five"))return "Full Day";
         return "";
       }
 
@@ -1519,7 +1525,7 @@
         draft.guide=guide;
         draft.customGuideName=savedGuide;
         draft.contact=String(assignment.provider_phone||"").trim()||(savedGuide?contactForGuide(savedGuide):"");
-        draft.length=lengthFromCrm(tour,item.duration||item.duration_preference)||draft.length;
+        draft.length=lengthFromCrm(tour,item.duration||item.duration_preference)||"To be confirmed";
         draft.pickupTime=confirmationAssignmentTime(assignment.start_time)||"To be confirmed";
         draft.transportation=normalizeTransportation(item.transportation_needed||common.transportation)||"Pick Up";
         draft.pickupLocation=item.pickup_location||item.pickup||common.pickup||"";
@@ -1901,6 +1907,7 @@
         if(!els.guideInput.value) missing.push("guide");
         if(els.guideInput.value === "Other" && !els.customGuideInput.value.trim()) missing.push("custom guide name");
         if(!els.contactInput.value.trim()) missing.push("guide phone");
+        if(els.lengthInput.value === "To be confirmed") missing.push("tour duration");
         if(els.pickupTimeInput.value === "To be confirmed") missing.push("start / pickup time");
         if(els.transportationInput.value.trim().toLowerCase() === "pick up" && !els.pickupLocationInput.value.trim()) missing.push("pickup location");
         if(missing.length){
