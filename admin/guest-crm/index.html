@@ -2034,15 +2034,17 @@
         const itemStatus=inferRestoredStatus(current);
         const primary=primaryTourItemFromRecord(current);
         const items=normalizeTourItems(current).map(item=>clean(item.id)===clean(primary.id)&&normalizeStatus(item.status)==="duplicate"?Object.assign({},item,{status:itemStatus}):item);
-        const restored=Object.assign({},current,{tour_items:serializeTourItems(items),tour_items_json:serializeTourItems(items),status:itemStatus,is_archived:"No",archived_at:"",archive_reason:"",superseded_by_inquiry_id:"",availability_status:"pending",priority:normalizePriority(current.priority||autoPriority(current.requested_date)),updated_at:new Date().toISOString(),internal_notes:(clean(current.internal_notes)+"\nRestored from duplicate archive on "+datePlusDays(0)+".").trim()});
+        const restored=Object.assign({},current,{tour_items:serializeTourItems(items),tour_items_json:serializeTourItems(items),status:itemStatus,is_archived:"No",archived_at:"",archive_reason:"",superseded_by_inquiry_id:"",availability_status:"pending",priority:isClosedStatus(itemStatus)?"":normalizePriority(current.priority||autoPriority(current.requested_date)),updated_at:new Date().toISOString(),internal_notes:(clean(current.internal_notes)+"\nRestored from duplicate archive on "+datePlusDays(0)+".").trim()});
         const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
         buttons.forEach(button=>{button.disabled=true;button.textContent="Restoring…";});
         try{
           const payload=Object.assign({},restored,{lifecycle_override:"Yes"});
-          await api("update_inquiry",{record:payload,inquiry_row:payload});
+          const response=await api("update_inquiry",{record:payload,inquiry_row:payload});
+          const saved=savedInquiryFromResponse(response,restored);
+          if(isArchivedStatus(saved))throw new Error("The server did not confirm the restore. The record remains archived.");
           const index=state.records.findIndex(record=>record.inquiry_id===restored.inquiry_id);
-          if(index>=0) state.records[index]=normalizeCrmRecord(restored);
-          saveLocalRecords(); fillForm(restored); render(); showToast("Record restored to active queues");
+          if(index>=0) state.records[index]=normalizeCrmRecord(saved);
+          saveLocalRecords(); fillForm(saved); render(); showToast("Record restored to active queues");
         }catch(error){ showToast("Restore failed: "+error.message); }
         finally{ buttons.forEach(button=>button.disabled=false); updateDuplicateActionButtons(getSelected()); }
       }
