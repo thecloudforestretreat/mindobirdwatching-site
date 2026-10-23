@@ -89,8 +89,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.match(await page.locator(".tourCard").first().innerText(), /Conflicto de horario/);
     assert.match(await page.locator(".tourCard").first().innerText(), /Reporte después del tour/i);
     assert.equal(await page.locator('.tourCard').first().locator('a[href^="https://wa.me/"]').count(), 1);
-    assert.equal(await page.locator('.tourCard').first().locator('a[href^="tel:"]').count(), 1);
-    const copyMessage = decodeURIComponent(await page.locator(".tourCard").first().locator("[data-copy]").getAttribute("data-copy"));
+    assert.equal(await page.locator('.tourCard').first().locator('a[href^="tel:"]').count(), 0);
+    const tipButton = page.locator('.tourCard').first().getByRole('button', { name: 'Propina' });
+    assert.equal(await tipButton.count(), 1);
+    const tipCopy = decodeURIComponent(await tipButton.getAttribute('data-copy'));
+    assert.equal(tipCopy, 'It was my pleasure being your guide. Here is the tip link you requested:\n\nhttps://mindobirdwatching.com/tip-your-guide/');
+    const copyMessage = decodeURIComponent(await page.locator(".tourCard").first().getByRole("button", { name: "Copiar mensaje" }).getAttribute("data-copy"));
     assert.match(copyMessage, /^Hello Daniel, I’m Neycer from Mindo Bird Watching\./);
     assert.doesNotMatch(copyMessage, /Hola|MBW006/);
     assert.match(copyMessage, /\n\nThank you\.$/);
