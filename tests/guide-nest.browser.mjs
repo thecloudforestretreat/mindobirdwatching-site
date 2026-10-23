@@ -26,8 +26,9 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   const writes = [];
+  let requestedProvider = "";
   const bootstrap = {
-    ok: true, preview: false, identity: { role: "guide", name: "Neycer", contributorNumber: "007" }, providerName: "Neycer · Night Walk Guide", checkedAt: "2026-10-21T15:00:00Z",
+    ok: true, preview: false, identity: { role: "guide", name: "Neycer", contributorNumber: "007" }, providerId: "PROV-007", providerName: "Neycer · Night Walk Guide", checkedAt: "2026-10-21T15:00:00Z",
     availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-23", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
     offers: [{ assignmentId: "O-1", serviceDate: "2026-10-30", startTime: "6:00 AM", service: "Custom birding package", pickup: "Mindo", response: "", bidAmount: "" }],
     tours: [
@@ -38,9 +39,10 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     ],
     links: { google: "https://g.page/r/CdMlIYMGgBIvEAE/review", tripadvisor: "https://tripadvisor.example/review", instagram: "https://instagram.example/mbw", facebook: "https://facebook.example/mbw", youtube: "https://youtube.example/mbw", shop: "https://mindobirdwatching.com/shop/?utm_source=mbw_guide&utm_medium=referral&utm_campaign=post_tour&utm_content=neycer", tip: "https://mindobirdwatching.com/tip-your-guide/?utm_source=mbw_guide&utm_medium=referral&utm_campaign=guide_tip&utm_content=neycer" },
   };
-  await page.route(`http://127.0.0.1:${port}/api/guide/bootstrap**`, route => route.fulfill({ json: {
-    ...bootstrap,
-  } }));
+  await page.route(`http://127.0.0.1:${port}/api/guide/bootstrap**`, route => {
+    requestedProvider = new URL(route.request().url()).searchParams.get("provider") || "";
+    return route.fulfill({ json: { ...bootstrap } });
+  });
   await page.route(`http://127.0.0.1:${port}/api/guide/assignments/**`, async route => {
     writes.push({ url: route.request().url(), method: route.request().method() });
     bootstrap.tours[0].accepted = true;
@@ -182,9 +184,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     bootstrap.preview = true;
     bootstrap.identity = { role: "owner", name: "Juan" };
     bootstrap.providerOptions = [{ providerId: "PROV-007", name: "Neycer · Night Walk Guide" }];
-    await page.goto(`http://127.0.0.1:${port}/guide/`);
+    await page.goto(`http://127.0.0.1:${port}/guide/?provider=PROV-007`);
     await page.getByText("Daniel Kalmes", { exact: true }).waitFor();
+    assert.equal(requestedProvider, "PROV-007");
+    assert.equal(new URL(page.url()).searchParams.get("provider"), "PROV-007");
     assert.equal(await page.locator("#adminPreview").isVisible(), true);
+    assert.equal(await page.locator('label[for="providerSelect"]').innerText(), "Guide View");
     assert.match(await page.locator("#adminPreview").innerText(), /Modo de auditoría · Solo lectura/i);
     assert.match(await page.locator("#adminPreview").innerText(), /acciones del guía permanecen desactivadas/i);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));

@@ -48,7 +48,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     if (path.endsWith("/session")) return route.fulfill({ json: { ok: true, identity: { email: "owner@example.test", name: "Juan", role: "owner" }, capabilities: { write: true } } });
     if (path.endsWith("/bootstrap")) {
       await new Promise(resolve => setTimeout(resolve, 700));
-      return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: schedule, providers: [{ name: "Test Guide", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }], recentGuests: [record, completedRecord], inquiries: [record, completedRecord], bookings: [] } });
+      return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: schedule, providers: [{ providerId: "PROV-CHICHO", name: "Chicho", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }, { providerId: "PROV-NEICER", name: "Neicer", role: "guide", serviceType: "Birdwatching", active: true }], recentGuests: [record, completedRecord], inquiries: [record, completedRecord], bookings: [] } });
     }
     if (path.endsWith("/guests") && route.request().method() === "POST") {
       const payload = route.request().postDataJSON().guest;
@@ -115,6 +115,13 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.screenshot({ path: "/tmp/mbw-guests-mobile-qa.png", fullPage: false });
     await page.locator("#guestRepFilter").selectOption("all");
     await page.locator('#bottomNav [data-route="today"]').click();
+    assert.equal(await page.getByRole("heading", { name: "Guide View", exact: true }).isVisible(), true);
+    assert.deepEqual(await page.locator("#guideViewSelect option").allTextContents(), ["Select a guide", "Chicho", "Neicer"]);
+    assert.equal(await page.locator("#guideViewLink").getAttribute("aria-disabled"), "true");
+    await page.locator("#guideViewSelect").selectOption("PROV-NEICER");
+    const guideViewUrl = new URL(await page.locator("#guideViewLink").getAttribute("href"), page.url());
+    assert.equal(guideViewUrl.pathname, "/guide/");
+    assert.equal(guideViewUrl.searchParams.get("provider"), "PROV-NEICER");
     assert.equal(await page.locator("#todayList .todayCard").count(), 2, "completed services should be hidden from operations");
     const todayText = await page.locator("#todayList").innerText(); assert.match(todayText, /Oct 22, 2026/); assert.match(todayText, /Oct 23, 2026/); assert.doesNotMatch(todayText, /Completed Tour/);
     assert.equal(await page.locator("#todayList .statusBadge.status-quoted").count(), 1); assert.equal(await page.locator("#todayList .statusBadge.status-confirmed").count(), 1);
@@ -215,7 +222,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.equal(await page.locator("#moreStatusFilter").isVisible(), true);
     await page.locator('#bottomNav [data-route="more"]').click();
     assert.ok(await page.locator(".toolGrid a").count() >= 15, "mobile tool launcher should expose the Admin Hub workflows");
-    assert.equal(await page.locator("[data-owner-only]").isVisible(), true);
+    assert.equal(await page.locator(".ownerTools[data-owner-only]").isVisible(), true);
     await page.screenshot({ path: "/tmp/mbw-mobile-tools-qa.png", fullPage: true });
     await page.locator('#bottomNav [data-route="actions"]').click();
     await page.screenshot({ path: "/tmp/mbw-mobile-pipeline-qa.png", fullPage: true });

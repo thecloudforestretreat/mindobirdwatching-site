@@ -25,9 +25,12 @@ test("MBW Nest uses the dedicated gold home-screen icon and conservative CRM syn
   assert.match(index, /rel="icon"[^>]+\/assets\/images\/app\/mbw-app-gold-transparent-192\.png\?v=nest-favicon-20261023-v1/);
   assert.match(index, /<img src="\/assets\/images\/app\/mbw-header-logo-160\.png[^\"]*" alt="">/);
   assert.match(index, /<small>Nest<\/small>/);
-  assert.match(worker, /mbw-mobile-shell-v26/);
-  assert.match(worker, /app\.css\?v=nest-20261023-v19/);
-  assert.match(worker, /app\.mjs\?v=nest-20261023-v18/);
+  assert.match(worker, /mbw-mobile-shell-v27/);
+  assert.match(worker, /app\.css\?v=nest-20261023-v20/);
+  assert.match(worker, /app\.mjs\?v=nest-20261023-v19/);
+  assert.match(index, /id="guideViewPanel"[^>]+data-owner-only/);
+  assert.match(index, />Guide View</);
+  assert.match(app, /\/guide\/\?provider=/);
   assert.match(app, /actionRepFilter/);
   assert.match(app, /guestRepFilter/);
   assert.match(index, /id="previousGuest"/);

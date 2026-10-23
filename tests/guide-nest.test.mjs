@@ -12,10 +12,14 @@ import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
 
 test("Guide Nest exposes branded browser icons and an explicit read-only admin audit mode", () => {
   const index = fs.readFileSync(new URL("../admin/guide/index.html", import.meta.url), "utf8");
+  const script = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
   const css = fs.readFileSync(new URL("../admin/app/app.css", import.meta.url), "utf8");
   assert.match(index, /rel="icon"[^>]+mbw-app-gold-transparent-192\.png/);
   assert.match(index, /data-i18n="auditMode"/);
-  assert.match(index, /href="\/app\/" data-i18n="returnNest"/);
+  assert.match(index, /href="\/app\/\?view=today" data-i18n="returnNest"/);
+  assert.match(index, /<label for="providerSelect" data-i18n="previewGuide">Guide View<\/label>/);
+  assert.match(script, /previewGuide: "Guide View"/);
+  assert.match(script, /initialParams\.get\("provider"\)/);
   assert.match(css, /#actionList\{grid-template-columns:1fr\}/);
 });
 

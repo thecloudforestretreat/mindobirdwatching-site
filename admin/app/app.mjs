@@ -160,9 +160,26 @@ function renderGuests(records = state.guestSearchResults || state.data?.recentGu
   state.guestQueue = visible.map(item => item.inquiryId);
   $("#guestList").innerHTML = visible.length ? visible.map(guestCard).join("") : empty(explicitSearch ? "No matching guests were found." : "No guests match this status.");
 }
+function updateGuideViewLink() {
+  const select = $("#guideViewSelect"), link = $("#guideViewLink"), provider = select.value;
+  if (!provider) { link.removeAttribute("href"); link.setAttribute("aria-disabled", "true"); return; }
+  link.href = `/guide/?provider=${encodeURIComponent(provider)}`;
+  link.removeAttribute("aria-disabled");
+}
+function renderGuideView() {
+  const panel = $("#guideViewPanel"), isOwner = state.session?.identity?.role === "owner";
+  panel.hidden = !isOwner;
+  if (!isOwner) return;
+  const select = $("#guideViewSelect"), current = select.value;
+  const guides = (state.data?.providers || []).filter(item => item.active !== false && item.role === "guide" && item.name).sort((left, right) => left.name.localeCompare(right.name));
+  select.innerHTML = `<option value="">Select a guide</option>${guides.map(item => `<option value="${esc(item.providerId || item.name)}">${esc(item.name)}</option>`).join("")}`;
+  if ([...select.options].some(option => option.value === current)) select.value = current;
+  updateGuideViewLink();
+}
 function renderToday() {
   const today = todayIso(), end = addIsoDays(today, 7), closed = new Set(["completed", "cancelled", "canceled", "did_not_book", "duplicate", "archived"]), records = (state.data?.upcoming || state.data?.today || []).filter(item => !closed.has(item.status)), todayRecords = records.filter(item => item.date === today), later = records.filter(item => item.date > today && item.date <= end);
   state.todayQueue = [...new Set(records.map(item => item.inquiryId).filter(Boolean))];
+  renderGuideView();
   const cards = rows => rows.map(item => `<button class="todayCard ${statusClass(item.status)}" data-guest="${esc(item.inquiryId)}" data-task="operations" type="button"><div class="cardTop"><strong>${esc(item.startTime ? time(item.startTime) : "Time pending")} · ${esc(item.guest)}</strong><span class="operationsBadge ${item.risk ? "operationsBadge--attention" : "operationsBadge--ready"}">${item.risk ? "Attention" : "Ready"}</span></div><p>${esc(item.tour || "Tour")} · ${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"}</p><div class="todayFacts"><span class="statusBadge ${statusClass(item.status)}">${esc(pretty(item.status))}</span><span class="serviceDate"><b>${esc(shortDate(item.date))}</b></span></div><div class="todayMeta"><span>${esc(item.pickup || "Pickup not set")}</span><span>${item.source === "assignment" ? "Assignment schedule" : "Itinerary"}</span></div>${item.risk ? `<p><strong>${esc(item.risk)}</strong></p>` : ""}</button>`).join("");
   $("#todayList").innerHTML = `<section class="scheduleGroup"><h2>Today <span>${todayRecords.length} service${todayRecords.length === 1 ? "" : "s"}</span></h2>${todayRecords.length ? cards(todayRecords) : empty("No services are recorded for today in Ecuador.")}</section><section class="scheduleGroup"><h2>Next 7 days <span>${later.length} service${later.length === 1 ? "" : "s"}</span></h2>${later.length ? cards(later) : empty("No additional services are recorded for the next seven days.")}</section>`;
 }
@@ -463,6 +480,7 @@ $("#guestsView").addEventListener("change", event => {
   if (event.target.id !== "guestMoreStatusFilter" || !event.target.value) return;
   state.guestStatusFilter = event.target.value; state.guestSearchResults = null; $("#guestSearch").value = ""; renderGuestStatusFilters(); renderGuests();
 });
+$("#guideViewSelect").addEventListener("change", updateGuideViewLink);
 $("#clearCacheButton").addEventListener("click", async () => { if (state.session?.identity?.email) await clearSnapshot(state.session.identity.email); toast("Saved snapshot cleared."); });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") maybeAutomaticRefresh(FOREGROUND_SYNC_MIN_AGE_MS); });
 window.addEventListener("focus", () => maybeAutomaticRefresh(FOREGROUND_SYNC_MIN_AGE_MS));
@@ -470,5 +488,5 @@ window.addEventListener("online", () => { connection(state.cached ? "cached" : "
 window.addEventListener("offline", () => connection("offline", "Offline"));
 setInterval(updateConnectionAge, 30 * 1000);
 setInterval(() => maybeAutomaticRefresh(AUTO_SYNC_INTERVAL_MS), 60 * 1000);
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=24", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=27", { scope: "/app/" }).catch(() => {});
 start();
