@@ -45,6 +45,11 @@
     var now = easternNow();
     return isoDate(date) + "T" + time24(time) <= now.date + "T" + now.time;
   }
+  function isOverdue(row) {
+    if (!row || bucketBase(row) !== "upcoming") return false;
+    if (reconciliationPlatforms(row).length) return false;
+    return scheduleIsPast(row.scheduled_date, row.scheduled_time) && !automatedPlatforms(row).every(function (platform) { return Boolean(platformId(row, platform)); });
+  }
   function platformSelected(row, platform) {
     var key = platform === "youtube" ? "post_on_youtube" : platform === "tiktok" ? "post_on_tiktok" : "post_to_" + platform;
     return truthy(row[key]);
@@ -88,7 +93,7 @@
     var started = Date.parse(clean(row.draft_generated_at));
     return Number.isFinite(started) && started <= Date.now() - (15 * 60 * 1000);
   }
-  function bucket(row) {
+  function bucketBase(row) {
     var status = clean(row.status).toLowerCase();
     var approval = clean(row.approval_status).toUpperCase();
     var selected = automatedPlatforms(row);
@@ -99,9 +104,11 @@
     if (["scheduled", "publishing", "ready"].includes(status) && approval === "APPROVED") return "upcoming";
     return "review";
   }
+  function bucket(row) { return isOverdue(row) ? "failed" : bucketBase(row); }
   function statusLabel(row) {
     var group = bucket(row);
     if (group === "published") return { label: "Published", tone: "live" };
+    if (isOverdue(row)) return { label: "Overdue", tone: "error" };
     if (isStaleGeneration(row)) return { label: "Generation timed out", tone: "error" };
     if (reconciliationPlatforms(row).length) return { label: "Reconciliation required", tone: "error" };
     if (group === "failed") return { label: clean(row.status) || "Partial", tone: "error" };
@@ -141,6 +148,30 @@
     try { data = JSON.parse(text || "{}"); } catch (_) { data = { ok: false, message: "The Reels service returned an unreadable response." }; }
     if (!response.ok || data.ok === false) throw new Error(data.message || "Reels service returned " + response.status + ".");
     return data;
+  }
+
+  async function loadHealth() {
+    var panel = $("systemHealth"), button = $("refreshHealth");
+    if (!panel || !button) return;
+    panel.dataset.tone = "checking";
+    $("healthHeadline").textContent = "Checking publishing services…";
+    $("healthDetails").textContent = "Confirming n8n, Google Sheets, and the Mac mini writing service.";
+    button.disabled = true;
+    try {
+      if (demoMode) throw new Error("Health checks use the production service.");
+      var response = await fetch(API + "?health=1", { cache: "no-store" });
+      var data = await response.json();
+      if (!response.ok || data.ok === false) throw new Error(data.message || "Publishing services did not answer.");
+      var services = data.services || {}, unavailable = Object.keys(services).filter(function (name) { return services[name] && services[name].ok === false; });
+      var checked = data.checked_at ? new Date(data.checked_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "just now";
+      panel.dataset.tone = unavailable.length ? "warning" : "healthy";
+      $("healthHeadline").textContent = unavailable.length ? "Publishing needs attention" : "Publishing services are ready";
+      $("healthDetails").textContent = unavailable.length ? unavailable.join(", ") + " did not pass the latest check. Scheduled posts remain queued." : "n8n, Google Sheets, and Ollama responded at " + checked + ".";
+    } catch (error) {
+      panel.dataset.tone = "offline";
+      $("healthHeadline").textContent = "Publishing service is unreachable";
+      $("healthDetails").textContent = error.message + " Scheduled posts remain safely queued.";
+    } finally { button.disabled = false; }
   }
 
   async function loadRows() {
@@ -196,7 +227,7 @@
     var info = statusLabel(row);
     var group = bucket(row);
     var id = rowId(row);
-    var primaryAction = group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : isStaleGeneration(row) ? "Review & regenerate" : reconciliationPlatforms(row).length ? "Inspect status" : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
+    var primaryAction = isOverdue(row) ? "Publish overdue reel" : group === "review" ? (copyIsGenerating(row) ? "View progress" : copyIsApproved(row) ? "Open copy" : "Review copy") : isStaleGeneration(row) ? "Review & regenerate" : reconciliationPlatforms(row).length ? "Inspect status" : group === "failed" ? "Inspect & retry" : group === "published" ? "View details" : "Review schedule";
     var youtube = youtubeUrl(row);
     return '<article class="reelCard" data-reel-id="' + esc(id) + '">' +
       '<div class="videoShell"><video src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls aria-label="Preview ' + esc(id) + '"></video><div class="videoMeta"><span>REEL</span><span>' + esc(clean(row.location) || "Mindo") + "</span></div></div>" +
@@ -344,6 +375,7 @@
     var youtube = youtubeUrl(row);
     var reviewNotice = reconciliationPlatforms(row).length
       ? "Do not retry yet. The previous run may already have posted to " + reconciliationPlatforms(row).join(", ") + ". Verify the live platform first; automatic retry is disabled to prevent duplicates."
+      : isOverdue(row) ? "This approved reel missed its scheduled publishing window. Its original schedule will be preserved in the record; use Publish now to start one protected recovery attempt."
       : copyIsApproved(row) ? ""
       : isStaleGeneration(row)
         ? "Copy generation timed out before it finished. The reel was not approved or published. Regenerate it to start one protected attempt."
@@ -354,7 +386,6 @@
       mediaEditor(row) +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
       (reviewNotice ? '<div class="warningBox">' + esc(reviewNotice) + "</div>" : "") +
-      (reconciliationPlatforms(row).length ? '<div class="warningBox"><strong>Do not retry yet.</strong> The previous run may already have posted to ' + esc(reconciliationPlatforms(row).join(", ")) + '. Verify the live platform first; automatic retry is disabled to prevent duplicates.</div>' : "") +
       (platformSelected(row, "tiktok") ? '<div class="infoBox"><strong>TikTok copy only.</strong> The caption and hashtags are prepared here, but this workflow does not publish to TikTok.</div>' : "") +
       scheduleEditor(row) +
       copyField("Original description", "reel_description", row.reel_description, true) +
@@ -366,11 +397,11 @@
       copyField("YouTube title", "youtube_title", row.youtube_title, false) +
       (links.length ? '<div class="copyLinkRow">' + links.map(function (entry) { return '<a class="externalLink" href="' + esc(entry[1]) + '" target="_blank" rel="noopener noreferrer">' + esc(entry[0]) + " ↗</a>"; }).join("") + "</div>" : "");
     var group = bucket(row);
-    $("reviewContent").querySelectorAll("[data-review-field]").forEach(function (control) { control.disabled = group === "published"; });
-    $("reviewActions").innerHTML = (group === "published" ? "" : '<button class="button buttonGhost" type="button" data-action="save">Save edits</button>') +
+    $("reviewContent").querySelectorAll("[data-review-field]").forEach(function (control) { control.disabled = group === "published" || isOverdue(row); });
+    $("reviewActions").innerHTML = (group === "published" || isOverdue(row) ? "" : '<button class="button buttonGhost" type="button" data-action="save">Save edits</button>') +
       (group === "review" || group === "upcoming" ? '<button class="button buttonGhost" type="button" data-action="regenerate">Regenerate</button>' : "") +
       (group === "review" ? '<button class="button buttonPrimary" type="button" data-action="approve">Approve & schedule</button>' : "") +
-      (isStaleGeneration(row) ? '<button class="button buttonPrimary" type="button" data-action="regenerate">Regenerate copy</button>' : group === "failed" && !reconciliationPlatforms(row).length ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
+      (isOverdue(row) ? '<button class="button buttonPrimary" type="button" data-action="publish-overdue">Publish now</button>' : isStaleGeneration(row) ? '<button class="button buttonPrimary" type="button" data-action="regenerate">Regenerate copy</button>' : group === "failed" && !reconciliationPlatforms(row).length ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
       (youtube ? '<button class="button buttonGhost" type="button" data-copy-youtube>Copy YouTube URL</button>' : "");
     $("reviewBackdrop").hidden = false; document.body.style.overflow = "hidden";
   }
@@ -423,6 +454,7 @@
       }
       return;
     }
+    if (action === "publish-overdue" && !window.confirm("Publish this approved overdue reel now? The original scheduled time will remain in its record, and platforms already published will be skipped.")) return;
     var edits = reviewEdits();
     if (["save", "approve"].includes(action) && !validateReviewEdits(edits)) return;
     var buttons = Array.from($("reviewActions").querySelectorAll("button")); buttons.forEach(function (button) { button.disabled = true; });
@@ -433,11 +465,12 @@
         payload.scheduled_date = edits.scheduled_date;
         payload.scheduled_time = edits.scheduled_time;
       }
-      await request(action === "save" ? "update_reel" : action + "_reel", payload);
+      await request(action === "save" ? "update_reel" : action === "publish-overdue" ? "publish_overdue" : action + "_reel", payload);
       if (demoMode) {
         Object.assign(state.selected, payload.edits || {});
         if (action === "approve") { state.selected.status = "Scheduled"; state.selected.approval_status = "APPROVED"; state.selected.quality_score = Math.max(92, Number(state.selected.quality_score) || 100); }
         if (action === "retry") { state.selected.status = "Scheduled"; state.selected.failed_platforms = ""; state.selected.error_message = "Retry queued for missing platforms only."; }
+        if (action === "publish-overdue") { state.selected.status = "Publishing"; state.selected.error_message = "Protected recovery started."; }
       }
       closeReview(); render(); if (!demoMode) await loadRows();
     } catch (error) { window.alert(error.message); buttons.forEach(function (button) { button.disabled = false; }); }
@@ -455,6 +488,7 @@
     ["batchStartDate", "batchTime", "batchPattern"].forEach(function (id) { $(id).addEventListener("change", refreshBatchDates); });
     $("batchForm").addEventListener("submit", submitBatch);
     $("refreshQueue").addEventListener("click", loadRows);
+    $("refreshHealth").addEventListener("click", loadHealth);
     $("searchInput").addEventListener("input", function (event) { state.query = clean(event.target.value); renderCards(); });
     document.querySelectorAll(".statusTab").forEach(function (button) { button.addEventListener("click", function () { state.activeStatus = button.dataset.status; syncTabs(); renderCards(); }); });
     $("reelsGrid").addEventListener("click", function (event) { var button = event.target.closest("[data-review-id]"); if (button) openReview(button.dataset.reviewId); });
@@ -479,7 +513,7 @@
     if (routeParams.get("new") === "1") window.setTimeout(openComposer, 0);
     $("batchStartDate").min = todayInEastern();
     $("batchStartDate").value = todayInEastern();
-    bindEvents(); addBatchRow(); loadRows();
+    bindEvents(); addBatchRow(); loadRows(); loadHealth();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();

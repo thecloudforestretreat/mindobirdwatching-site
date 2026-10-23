@@ -76,6 +76,22 @@ post ID. That state is intentionally ambiguous: the platform request may have su
 while the following Sheet update failed. Reconcile the platform first; do not clear a
 claim merely to make the workflow run again.
 
+### `publish_overdue`
+
+Receives an approved overdue `reel_id`/`post_id`. The gateway must verify that the
+scheduled time has passed, the copy remains approved with `quality_score>=92`, and no
+destination has an unresolved publication claim. It preserves the original scheduled
+date and time, queues only destinations without a durable platform ID, and invokes the
+single publishing workflow immediately. The response means recovery was accepted; it
+does not claim that a platform post is live.
+
+### `health`
+
+Confirms the complete local path from the Pages Function through n8n and Google Sheets,
+then checks Ollama from the Mac mini. Return a `services` object with separate `ok`
+values for `n8n`, `sheets`, and `ollama`. A partial failure must remain visible rather
+than being collapsed into a generic success response.
+
 ## Publication safety model
 
 Instagram, Facebook, and YouTube are claimed in `ai_reels` before any external API call.
@@ -99,8 +115,9 @@ Rows stay eligible after their scheduled time, so an outage does not discard the
 row scheduled between hourly checks can publish at the next check; the normal 7:00 AM
 schedule aligns exactly with the 7:00 AM check.
 
-An independent external monitor is still needed for proactive outage notifications. A
-computer that is powered off cannot run its own alerting workflow.
+The Studio health strip is an operator check, not an outage monitor. An independent
+cloud monitor is still needed for proactive notifications because a computer that is
+powered off cannot run its own alerting workflow.
 
 ## Time zones
 

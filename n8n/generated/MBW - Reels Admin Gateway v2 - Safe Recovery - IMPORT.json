@@ -1,0 +1,2999 @@
+{
+  "name": "MBW - Reels Admin Gateway v2 - Safe Recovery",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mbw-admin-reels-gateway",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "79c55f96-7210-45ec-a2a4-02382f40462f",
+      "name": "Admin Reels Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        80
+      ],
+      "webhookId": "mbw-admin-reels-gateway"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1281322677,
+          "mode": "list",
+          "cachedResultName": "ai_reels",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit#gid=1281322677"
+        },
+        "options": {}
+      },
+      "id": "80ba05bb-13dc-4716-813c-34b7b696c5fb",
+      "name": "Load AI Reels",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -720,
+        80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Admin Reels Webhook').first().json.body || {};\nconst rows = $input.all().map(item => ({ ...item.json }));\nconst action = String(body.action || '').trim();\nconst clean = value => String(value ?? '').trim();\nconst truthy = value => value === true || ['true','1','yes','on'].includes(clean(value).toLowerCase());\nconst words = value => clean(value).split(/\\s+/).filter(Boolean).length;\nconst forbiddenCopy = /\\b(this reel shows|the video shows|imagine|step into|hidden paradise|nature['’]s symphony|mist-kissed|living tapestry|feathered wonders|where time slows down|whether you(?:'re| are)|something for everyone|perfect blend|immerse yourself|embark on|adventure awaits|discover the magic|unforgettable (?:journey|adventure|experience)|set(?:s|ting)? the scene|rich avian diversity|add(?:s|ed|ing)? (?:a )?splash of colou?r|striking species|vivid encounters?|showcas(?:e|es|ed|ing)|witness[^.!?]{0,60}up close)\\b/i;\nconst find = () => rows.find(row => (clean(body.reel_id) && clean(row.reel_id) === clean(body.reel_id)) || (clean(body.post_id) && clean(row.post_id) === clean(body.post_id)));\nconst response = (ok, message, extra = {}) => [{ json: { _route: 'respond', ok, message, ...extra } }];\nconst toSheetDate = value => {\n  const text = clean(value);\n  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(text)) return DateTime.fromISO(text, { zone: 'America/New_York' }).toFormat('M/d/yyyy');\n  return text;\n};\nconst toSheetTime = value => {\n  const text = clean(value);\n  if (/^\\d{2}:\\d{2}$/.test(text)) return DateTime.fromFormat(text, 'HH:mm', { zone: 'America/New_York' }).toFormat('h:mm a');\n  return text;\n};\nconst scheduledAt = source => DateTime.fromFormat(clean(source.scheduled_date) + ' ' + clean(source.scheduled_time), 'M/d/yyyy h:mm a', { zone: 'America/New_York' });\nconst scheduleIsFuture = source => { const when = scheduledAt(source); return when.isValid && when.toMillis() > DateTime.now().setZone('America/New_York').toMillis(); };\nconst sheetFields = [\"post_id\",\"video_url\",\"reel_description\",\"featured_birds\",\"activity_name\",\"location\",\"verified_details\",\"input_status\",\"post_type\",\"scheduled_date\",\"scheduled_time\",\"status\",\"media_type\",\"error_message\",\"local_blurb\",\"local_validation_status\",\"local_validation_flags\",\"local_generated_at\",\"local_model\",\"copy_review_status\",\"draft_model\",\"draft_generated_at\",\"supervision_status\",\"supervision_notes\",\"final_copy_source\",\"quality_score\",\"approval_status\",\"approval_timestamp\",\"posting_defaults_applied_at\",\"blurb\",\"post_to_instagram\",\"instagram_caption_raw\",\"instagram_caption_final\",\"instagram_hashtags\",\"instagram_published_date\",\"instagram_post_id\",\"post_to_facebook\",\"facebook_published_date\",\"facebook_post_id\",\"post_on_youtube\",\"youtube_title\",\"youtube_published_date\",\"youtube_post_id\",\"post_on_tiktok\",\"tiktok_caption\",\"tiktok_hashtags\",\"tiktok_additional_hashtags\",\"tiktok_published_date\",\"tiktok_post_id\",\"telegram_sent_date\",\"generate_for_x\",\"x_caption\",\"x_hashtags\",\"x_post_final\",\"x_published_date\",\"x_post_id\",\"post_to_x\",\"youtube_url\",\"reel_id\",\"submitted_at\",\"source\",\"timezone\",\"admin_mode\",\"_route\",\"_trigger_main\",\"instagram_publish_state\",\"instagram_publish_claim_id\",\"instagram_publish_claimed_at\",\"instagram_publish_error\",\"facebook_publish_state\",\"facebook_publish_claim_id\",\"facebook_publish_claimed_at\",\"facebook_publish_error\",\"youtube_publish_state\",\"youtube_publish_claim_id\",\"youtube_publish_claimed_at\",\"youtube_publish_error\",\"tiktok_publish_state\",\"tiktok_publish_claim_id\",\"tiktok_publish_claimed_at\",\"tiktok_publish_error\"];\nconst normalizedRow = source => Object.fromEntries(sheetFields.map(field => [field, source[field] ?? '']));\nconst applyEdits = (row, edits) => {\n  for (const [key,value] of Object.entries(edits && typeof edits === 'object' ? edits : {})) {\n    if (!sheetFields.includes(key)) continue;\n    row[key] = key === 'scheduled_date' ? toSheetDate(value) : key === 'scheduled_time' ? toSheetTime(value) : clean(value);\n  }\n};\n\nif (action === 'health') return [{ json: { _route: 'health', checked_at: new Date().toISOString() } }];\n\nif (action === 'list_reels') {\n  const query = clean(body.query).toLowerCase();\n  // The sheet contains future schedule placeholders. They are not actionable\n  // reels until a source video has been assigned, so keep them out of the\n  // Studio queue and its review counts.\n  let filtered = rows.filter(row => clean(row.video_url) || clean(row.reel_description));\n  if (query) filtered = filtered.filter(row => [row.post_id,row.reel_id,row.reel_description,row.activity_name,row.status,row.youtube_title].join(' ').toLowerCase().includes(query));\n  const limit = Math.min(250, Math.max(1, Number(body.limit) || 150));\n  filtered.sort((a,b) => Number(b.post_id || 0) - Number(a.post_id || 0));\n  return response(true, '', { reels: filtered.slice(0, limit), count: Math.min(filtered.length, limit) });\n}\n\nif (action === 'create_batch') {\n  const incoming = Array.isArray(body.reels) ? body.reels : [];\n  if (!incoming.length || incoming.length > 20) return response(false, 'Submit between 1 and 20 reels.');\n  const existingUrls = new Set(rows.map(row => clean(row.video_url)).filter(Boolean));\n  const incomingUrls = incoming.map(row => clean(row.video_url));\n  if (incomingUrls.some(url => existingUrls.has(url))) return response(false, 'One or more video URLs already exist in ai_reels.');\n  if (new Set(incomingUrls).size !== incomingUrls.length) return response(false, 'Video URLs must be unique within the batch.');\n  const maxId = rows.reduce((max,row) => Math.max(max, Number(row.post_id) || 0), 0);\n  const auto = clean(body.mode).toLowerCase() === 'auto';\n  return incoming.map((input,index) => {\n    const row = normalizedRow({\n      ...input,\n      post_id: String(maxId + index + 1),\n      reel_id: clean(input.reel_id) || ('reel_' + crypto.randomUUID()),\n      submitted_at: clean(input.submitted_at) || new Date().toISOString(),\n      source: 'admin_reels_studio',\n      timezone: clean(input.timezone) || clean(body.timezone) || 'America/New_York',\n      admin_mode: auto ? 'auto' : 'review',\n      scheduled_date: toSheetDate(input.scheduled_date),\n      scheduled_time: toSheetTime(input.scheduled_time),\n      status: 'Testing',\n      input_status: auto ? 'VERIFIED' : 'READY',\n      media_type: 'REELS',\n      location: clean(input.location) || 'Mindo, Ecuador',\n      post_to_instagram: truthy(input.post_to_instagram),\n      post_to_facebook: truthy(input.post_to_facebook),\n      post_on_youtube: truthy(input.post_on_youtube),\n      post_on_tiktok: truthy(input.post_on_tiktok),\n      generate_for_x: true,\n      post_to_x: false,\n      approval_status: 'NEEDS_REVIEW',\n      quality_score: 0,\n    });\n    return { json: { ...row, _route: 'append', _trigger_main: true } };\n  });\n}\n\nconst existing = find();\nif (!existing) return response(false, 'The requested reel was not found.');\nconst row = normalizedRow(existing);\n\nif (action === 'replace_media') {\n  const videoUrl = clean(body.video_url);\n  if (!/^https:\\/\\/res\\.cloudinary\\.com\\/[^/]+\\/video\\/upload\\/.+\\.(?:mp4|mov|m4v)(?:[?#].*)?$/i.test(videoUrl)) return response(false, 'Enter a valid Cloudinary video URL ending in MP4, MOV, or M4V.');\n  const started = ['instagram','facebook','youtube'].some(platform => clean(row[platform + '_post_id']) || clean(row[platform + '_publish_claim_id']) || ['CLAIMED','PUBLISHING','UNKNOWN','RECONCILE','PUBLISHED'].includes(clean(row[platform + '_publish_state']).toUpperCase()));\n  if (started) return response(false, 'The video cannot be replaced because publishing has already started.');\n  if (rows.some(candidate => clean(candidate.video_url) === videoUrl && clean(candidate.post_id) !== clean(row.post_id))) return response(false, 'That video URL is already assigned to another reel.');\n  row.video_url = videoUrl;\n  return [{ json: { ...row, _route: 'update_only' } }];\n}\n\nif (action === 'update_reel') {\n  const edits = body.edits && typeof body.edits === 'object' ? body.edits : {};\n  applyEdits(row, edits);\n  if (clean(edits.video_url) && rows.some(candidate => clean(candidate.video_url) === clean(edits.video_url) && clean(candidate.post_id) !== clean(row.post_id))) return response(false, 'That video URL is already assigned to another reel.');\n  if (!scheduleIsFuture(row)) return response(false, 'Choose a future Eastern date and time.');\n  // Editing a future item does not need to start the main publisher. Keeping\n  // this on the update-only path prevents an admin save from overlapping the\n  // hourly scheduler and creating two publication attempts.\n  return [{ json: { ...row, _route: 'update_only' } }];\n}\n\nif (action === 'approve_reel') {\n  // Approval is atomic: persist the exact fields visible in Studio and validate\n  // those values in the same request. This prevents approving stale Sheet copy.\n  applyEdits(row, body.edits);\n  const errors = [];\n  if (clean(body.edits?.video_url) && rows.some(candidate => clean(candidate.video_url) === clean(body.edits.video_url) && clean(candidate.post_id) !== clean(row.post_id))) errors.push('That video URL is already assigned to another reel.');\n  const selected = [truthy(row.post_to_instagram),truthy(row.post_to_facebook),truthy(row.post_on_youtube),truthy(row.post_on_tiktok)];\n  if (!selected.slice(0, 3).some(Boolean)) errors.push('Select Instagram, Facebook, or YouTube for automated publishing. TikTok currently generates copy only.');\n  if ((selected[0] || selected[1])) {\n    const tags = clean(row.instagram_hashtags).split(/\\s+/).filter(Boolean);\n    const bodyText = clean(row.instagram_caption_final).split(/\\n\\s*\\n(?=#)/)[0];\n    if (!bodyText) errors.push('Instagram/Facebook caption is required.');\n    if (words(bodyText) < 35 || words(bodyText) > 100) errors.push('Instagram/Facebook caption must contain 35–100 words.');\n    if (tags.length !== 5 || tags.some(tag => !/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Instagram requires exactly five valid hashtags.');\n    row.instagram_caption_raw = bodyText;\n    row.instagram_caption_final = bodyText + '\\n\\n' + tags.join(' ');\n  }\n  if (selected[2] && (!clean(row.youtube_title) || clean(row.youtube_title).length > 100)) errors.push('YouTube title must contain 1–100 characters.');\n  if (selected[3]) {\n    const count = words(row.tiktok_caption);\n    if (count < 8 || count > 45) errors.push('TikTok caption must contain 8–45 words.');\n    if (!clean(row.tiktok_hashtags) || !clean(row.tiktok_additional_hashtags)) errors.push('TikTok hashtags are required.');\n  }\n  const proseAndTitle = [row.instagram_caption_raw,row.youtube_title,row.tiktok_caption,row.x_caption].filter(Boolean).join(' ');\n  if (/(^|\\s)#[A-Za-z0-9_]+\\b/.test(proseAndTitle)) errors.push('Captions and titles cannot contain inline hashtags.');\n  if (/[\\p{Extended_Pictographic}\\uFE0F]/u.test(proseAndTitle)) errors.push('Captions and titles cannot contain emojis.');\n  if (forbiddenCopy.test(proseAndTitle)) errors.push('Copy contains stock AI or travel-brochure wording. Rewrite it in a natural guide voice before approval.');\n  if (!clean(row.video_url)) errors.push('A Cloudinary video URL is required.');\n  if (!scheduleIsFuture(row)) errors.push('Choose a future Eastern date and time.');\n  if (errors.length) return response(false, errors.join(' '));\n  const now = new Date().toISOString();\n  Object.assign(row, {\n    status: 'Scheduled', input_status: 'VERIFIED', error_message: '', quality_score: 100,\n    approval_status: 'APPROVED', approval_timestamp: now, copy_review_status: 'FINAL',\n    supervision_status: 'APPROVED', supervision_notes: 'Human-reviewed in Reels Studio.',\n    local_validation_status: 'PASS', local_validation_flags: '', final_copy_source: 'HUMAN_REVIEWED',\n  });\n  // Approval only changes durable queue state. The hourly scheduler owns the\n  // publication attempt, so approval must not create a competing execution.\n  return [{ json: { ...row, _route: 'update_only' } }];\n}\n\nif (action === 'regenerate_reel') {\n  if ([row.instagram_post_id,row.facebook_post_id,row.youtube_post_id,row.tiktok_post_id].some(value => clean(value))) return response(false, 'Published or partially published reels cannot be regenerated. Use retry for missing platforms.');\n  const claimed = ['instagram','facebook','youtube','tiktok'].filter(platform => clean(row[platform + '_publish_claim_id']) || ['CLAIMED','PUBLISHING','UNKNOWN','RECONCILE'].includes(clean(row[platform + '_publish_state']).toUpperCase()));\n  if (claimed.length) return response(false, 'Regeneration is blocked while platform publication needs reconciliation: ' + claimed.join(', ') + '.');\n  for (const field of ['featured_birds','activity_name','verified_details','local_blurb','local_validation_status','local_validation_flags','local_generated_at','local_model','copy_review_status','draft_model','draft_generated_at','supervision_status','supervision_notes','final_copy_source','approval_timestamp','posting_defaults_applied_at','blurb','instagram_caption_raw','instagram_caption_final','instagram_hashtags','youtube_title','tiktok_caption','tiktok_hashtags','tiktok_additional_hashtags','x_caption','x_hashtags','x_post_final']) row[field] = '';\n  Object.assign(row, { status: 'Testing', error_message: '', quality_score: 0, approval_status: 'NEEDS_REVIEW', input_status: clean(row.admin_mode).toLowerCase() === 'auto' ? 'VERIFIED' : 'READY' });\n  return [{ json: { ...row, _route: 'update_trigger' } }];\n}\n\nif (action === 'publish_overdue') {\n  if (clean(row.approval_status).toUpperCase() !== 'APPROVED' || Number(row.quality_score || 0) < 92 || clean(row.copy_review_status).toUpperCase() !== 'FINAL') return response(false, 'This reel must have final approved copy with a quality score of at least 92 before recovery.');\n  const when = scheduledAt(row);\n  if (!when.isValid || when.toMillis() > DateTime.now().setZone('America/New_York').toMillis()) return response(false, 'This reel is not overdue. Keep its future schedule instead.');\n  const automated = [\n    ['instagram','post_to_instagram'],\n    ['facebook','post_to_facebook'],\n    ['youtube','post_on_youtube'],\n  ];\n  const ambiguous = automated.filter(([platform,flag]) => truthy(row[flag]) && !clean(row[platform + '_post_id']) && (clean(row[platform + '_publish_claim_id']) || ['CLAIMED','PUBLISHING','UNKNOWN','RECONCILE'].includes(clean(row[platform + '_publish_state']).toUpperCase()))).map(([platform]) => platform);\n  if (ambiguous.length) return response(false, 'Recovery is blocked to prevent duplicates. Verify these platforms first: ' + ambiguous.join(', ') + '.');\n  const missing = automated.filter(([platform,flag]) => truthy(row[flag]) && !clean(row[platform + '_post_id'])).map(([platform]) => platform);\n  if (!missing.length) return response(false, 'Every automated destination already has a saved platform ID.');\n  row.post_to_instagram = missing.includes('instagram');\n  row.post_to_facebook = missing.includes('facebook');\n  row.post_on_youtube = missing.includes('youtube');\n  row.status = 'Scheduled';\n  row.error_message = '';\n  return [{ json: { ...row, _route: 'update_trigger', recovery_requested_at: new Date().toISOString() } }];\n}\n\nif (action === 'retry_reel') {\n  if (clean(row.approval_status).toUpperCase() !== 'APPROVED' || Number(row.quality_score || 0) < 92) return response(false, 'Copy must be approved with a quality score of at least 92 before retrying publication.');\n  const ambiguous = ['instagram','facebook','youtube','tiktok'].filter(platform => {\n    const state = clean(row[platform + '_publish_state']).toUpperCase();\n    return !clean(row[platform + '_post_id']) && (clean(row[platform + '_publish_claim_id']) || ['CLAIMED','PUBLISHING','UNKNOWN','RECONCILE'].includes(state));\n  });\n  if (ambiguous.length) return response(false, 'Automatic retry blocked to prevent duplicates. Verify these platforms first: ' + ambiguous.join(', ') + '.');\n  const retryInstagram = truthy(row.post_to_instagram) && !clean(row.instagram_post_id);\n  const retryFacebook = truthy(row.post_to_facebook) && !clean(row.facebook_post_id);\n  const retryYoutube = truthy(row.post_on_youtube) && !clean(row.youtube_post_id);\n  if (![retryInstagram,retryFacebook,retryYoutube].some(Boolean)) return response(false, 'No missing automated platform is available to retry.');\n  Object.assign(row, { status: 'Scheduled', error_message: '', post_to_instagram: retryInstagram, post_to_facebook: retryFacebook, post_on_youtube: retryYoutube });\n  // Retry is queued for the next hourly scheduler pass. There is only one\n  // publication owner, which removes the manual-trigger/scheduler race that\n  // previously produced duplicate platform posts.\n  return [{ json: { ...row, _route: 'update_only' } }];\n}\n\nreturn response(false, 'Unsupported gateway action.');"
+      },
+      "id": "c3fae064-2adb-4826-8702-409a8deb00bf",
+      "name": "Plan Reels Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "respond",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "respond"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "append",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "append"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "update_only",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update_only"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "update_trigger",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update_trigger"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "health",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "health"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "907f794a-23ae-41a9-91ae-72b49e0d96a1",
+      "name": "Route Reels Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -240,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1281322677,
+          "mode": "list",
+          "cachedResultName": "ai_reels",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit#gid=1281322677"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_url",
+              "displayName": "video_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reel_description",
+              "displayName": "reel_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "featured_birds",
+              "displayName": "featured_birds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "activity_name",
+              "displayName": "activity_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "verified_details",
+              "displayName": "verified_details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_status",
+              "displayName": "input_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_type",
+              "displayName": "post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_date",
+              "displayName": "scheduled_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_time",
+              "displayName": "scheduled_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "media_type",
+              "displayName": "media_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_blurb",
+              "displayName": "local_blurb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_validation_status",
+              "displayName": "local_validation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_validation_flags",
+              "displayName": "local_validation_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_generated_at",
+              "displayName": "local_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_model",
+              "displayName": "local_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "copy_review_status",
+              "displayName": "copy_review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_model",
+              "displayName": "draft_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_generated_at",
+              "displayName": "draft_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "supervision_status",
+              "displayName": "supervision_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "supervision_notes",
+              "displayName": "supervision_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final_copy_source",
+              "displayName": "final_copy_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality_score",
+              "displayName": "quality_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approval_timestamp",
+              "displayName": "approval_timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "posting_defaults_applied_at",
+              "displayName": "posting_defaults_applied_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "blurb",
+              "displayName": "blurb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_instagram",
+              "displayName": "post_to_instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_caption_raw",
+              "displayName": "instagram_caption_raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_caption_final",
+              "displayName": "instagram_caption_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_hashtags",
+              "displayName": "instagram_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_published_date",
+              "displayName": "instagram_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_post_id",
+              "displayName": "instagram_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_facebook",
+              "displayName": "post_to_facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_published_date",
+              "displayName": "facebook_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_post_id",
+              "displayName": "facebook_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_on_youtube",
+              "displayName": "post_on_youtube",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_title",
+              "displayName": "youtube_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_published_date",
+              "displayName": "youtube_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_post_id",
+              "displayName": "youtube_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_on_tiktok",
+              "displayName": "post_on_tiktok",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_caption",
+              "displayName": "tiktok_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_hashtags",
+              "displayName": "tiktok_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_additional_hashtags",
+              "displayName": "tiktok_additional_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_published_date",
+              "displayName": "tiktok_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_post_id",
+              "displayName": "tiktok_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telegram_sent_date",
+              "displayName": "telegram_sent_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generate_for_x",
+              "displayName": "generate_for_x",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_caption",
+              "displayName": "x_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_hashtags",
+              "displayName": "x_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_post_final",
+              "displayName": "x_post_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_published_date",
+              "displayName": "x_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_post_id",
+              "displayName": "x_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_x",
+              "displayName": "post_to_x",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_url",
+              "displayName": "youtube_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reel_id",
+              "displayName": "reel_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_mode",
+              "displayName": "admin_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "_route",
+              "displayName": "_route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "_trigger_main",
+              "displayName": "_trigger_main",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_state",
+              "displayName": "instagram_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_claim_id",
+              "displayName": "instagram_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_claimed_at",
+              "displayName": "instagram_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_error",
+              "displayName": "instagram_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_state",
+              "displayName": "facebook_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_claim_id",
+              "displayName": "facebook_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_claimed_at",
+              "displayName": "facebook_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_error",
+              "displayName": "facebook_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_state",
+              "displayName": "youtube_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_claim_id",
+              "displayName": "youtube_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_claimed_at",
+              "displayName": "youtube_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_error",
+              "displayName": "youtube_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_state",
+              "displayName": "tiktok_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_claim_id",
+              "displayName": "tiktok_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_claimed_at",
+              "displayName": "tiktok_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_error",
+              "displayName": "tiktok_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "8c4d09d7-3ac1-4edd-bd2a-78d31da3dc82",
+      "name": "Append Reels",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1281322677,
+          "mode": "list",
+          "cachedResultName": "ai_reels",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit#gid=1281322677"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post_id": "={{ $json.post_id }}",
+            "video_url": "={{ $json.video_url }}",
+            "reel_description": "={{ $json.reel_description }}",
+            "featured_birds": "={{ $json.featured_birds }}",
+            "activity_name": "={{ $json.activity_name }}",
+            "location": "={{ $json.location }}",
+            "verified_details": "={{ $json.verified_details }}",
+            "input_status": "={{ $json.input_status }}",
+            "post_type": "={{ $json.post_type }}",
+            "scheduled_date": "={{ $json.scheduled_date }}",
+            "scheduled_time": "={{ $json.scheduled_time }}",
+            "status": "={{ $json.status }}",
+            "media_type": "={{ $json.media_type }}",
+            "error_message": "={{ $json.error_message }}",
+            "local_blurb": "={{ $json.local_blurb }}",
+            "local_validation_status": "={{ $json.local_validation_status }}",
+            "local_validation_flags": "={{ $json.local_validation_flags }}",
+            "local_generated_at": "={{ $json.local_generated_at }}",
+            "local_model": "={{ $json.local_model }}",
+            "copy_review_status": "={{ $json.copy_review_status }}",
+            "draft_model": "={{ $json.draft_model }}",
+            "draft_generated_at": "={{ $json.draft_generated_at }}",
+            "supervision_status": "={{ $json.supervision_status }}",
+            "supervision_notes": "={{ $json.supervision_notes }}",
+            "final_copy_source": "={{ $json.final_copy_source }}",
+            "quality_score": "={{ $json.quality_score }}",
+            "approval_status": "={{ $json.approval_status }}",
+            "approval_timestamp": "={{ $json.approval_timestamp }}",
+            "posting_defaults_applied_at": "={{ $json.posting_defaults_applied_at }}",
+            "blurb": "={{ $json.blurb }}",
+            "post_to_instagram": "={{ $json.post_to_instagram }}",
+            "instagram_caption_raw": "={{ $json.instagram_caption_raw }}",
+            "instagram_caption_final": "={{ $json.instagram_caption_final }}",
+            "instagram_hashtags": "={{ $json.instagram_hashtags }}",
+            "instagram_published_date": "={{ $json.instagram_published_date }}",
+            "instagram_post_id": "={{ $json.instagram_post_id }}",
+            "post_to_facebook": "={{ $json.post_to_facebook }}",
+            "facebook_published_date": "={{ $json.facebook_published_date }}",
+            "facebook_post_id": "={{ $json.facebook_post_id }}",
+            "post_on_youtube": "={{ $json.post_on_youtube }}",
+            "youtube_title": "={{ $json.youtube_title }}",
+            "youtube_published_date": "={{ $json.youtube_published_date }}",
+            "youtube_post_id": "={{ $json.youtube_post_id }}",
+            "post_on_tiktok": "={{ $json.post_on_tiktok }}",
+            "tiktok_caption": "={{ $json.tiktok_caption }}",
+            "tiktok_hashtags": "={{ $json.tiktok_hashtags }}",
+            "tiktok_additional_hashtags": "={{ $json.tiktok_additional_hashtags }}",
+            "tiktok_published_date": "={{ $json.tiktok_published_date }}",
+            "tiktok_post_id": "={{ $json.tiktok_post_id }}",
+            "telegram_sent_date": "={{ $json.telegram_sent_date }}",
+            "generate_for_x": "={{ $json.generate_for_x }}",
+            "x_caption": "={{ $json.x_caption }}",
+            "x_hashtags": "={{ $json.x_hashtags }}",
+            "x_post_final": "={{ $json.x_post_final }}",
+            "x_published_date": "={{ $json.x_published_date }}",
+            "x_post_id": "={{ $json.x_post_id }}",
+            "post_to_x": "={{ $json.post_to_x }}",
+            "youtube_url": "={{ $json.youtube_url }}",
+            "reel_id": "={{ $json.reel_id }}",
+            "submitted_at": "={{ $json.submitted_at }}",
+            "source": "={{ $json.source }}",
+            "timezone": "={{ $json.timezone }}",
+            "admin_mode": "={{ $json.admin_mode }}",
+            "_route": "={{ $json._route }}",
+            "_trigger_main": "={{ $json._trigger_main }}",
+            "instagram_publish_state": "={{ $json.instagram_publish_state }}",
+            "instagram_publish_claim_id": "={{ $json.instagram_publish_claim_id }}",
+            "instagram_publish_claimed_at": "={{ $json.instagram_publish_claimed_at }}",
+            "instagram_publish_error": "={{ $json.instagram_publish_error }}",
+            "facebook_publish_state": "={{ $json.facebook_publish_state }}",
+            "facebook_publish_claim_id": "={{ $json.facebook_publish_claim_id }}",
+            "facebook_publish_claimed_at": "={{ $json.facebook_publish_claimed_at }}",
+            "facebook_publish_error": "={{ $json.facebook_publish_error }}",
+            "youtube_publish_state": "={{ $json.youtube_publish_state }}",
+            "youtube_publish_claim_id": "={{ $json.youtube_publish_claim_id }}",
+            "youtube_publish_claimed_at": "={{ $json.youtube_publish_claimed_at }}",
+            "youtube_publish_error": "={{ $json.youtube_publish_error }}",
+            "tiktok_publish_state": "={{ $json.tiktok_publish_state }}",
+            "tiktok_publish_claim_id": "={{ $json.tiktok_publish_claim_id }}",
+            "tiktok_publish_claimed_at": "={{ $json.tiktok_publish_claimed_at }}",
+            "tiktok_publish_error": "={{ $json.tiktok_publish_error }}"
+          },
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": [
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_url",
+              "displayName": "video_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reel_description",
+              "displayName": "reel_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "featured_birds",
+              "displayName": "featured_birds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "activity_name",
+              "displayName": "activity_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "verified_details",
+              "displayName": "verified_details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_status",
+              "displayName": "input_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_type",
+              "displayName": "post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_date",
+              "displayName": "scheduled_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_time",
+              "displayName": "scheduled_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "media_type",
+              "displayName": "media_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_blurb",
+              "displayName": "local_blurb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_validation_status",
+              "displayName": "local_validation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_validation_flags",
+              "displayName": "local_validation_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_generated_at",
+              "displayName": "local_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_model",
+              "displayName": "local_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "copy_review_status",
+              "displayName": "copy_review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_model",
+              "displayName": "draft_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_generated_at",
+              "displayName": "draft_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "supervision_status",
+              "displayName": "supervision_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "supervision_notes",
+              "displayName": "supervision_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final_copy_source",
+              "displayName": "final_copy_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality_score",
+              "displayName": "quality_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approval_timestamp",
+              "displayName": "approval_timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "posting_defaults_applied_at",
+              "displayName": "posting_defaults_applied_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "blurb",
+              "displayName": "blurb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_instagram",
+              "displayName": "post_to_instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_caption_raw",
+              "displayName": "instagram_caption_raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_caption_final",
+              "displayName": "instagram_caption_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_hashtags",
+              "displayName": "instagram_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_published_date",
+              "displayName": "instagram_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_post_id",
+              "displayName": "instagram_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_facebook",
+              "displayName": "post_to_facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_published_date",
+              "displayName": "facebook_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_post_id",
+              "displayName": "facebook_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_on_youtube",
+              "displayName": "post_on_youtube",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_title",
+              "displayName": "youtube_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_published_date",
+              "displayName": "youtube_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_post_id",
+              "displayName": "youtube_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_on_tiktok",
+              "displayName": "post_on_tiktok",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_caption",
+              "displayName": "tiktok_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_hashtags",
+              "displayName": "tiktok_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_additional_hashtags",
+              "displayName": "tiktok_additional_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_published_date",
+              "displayName": "tiktok_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_post_id",
+              "displayName": "tiktok_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telegram_sent_date",
+              "displayName": "telegram_sent_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generate_for_x",
+              "displayName": "generate_for_x",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_caption",
+              "displayName": "x_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_hashtags",
+              "displayName": "x_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_post_final",
+              "displayName": "x_post_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_published_date",
+              "displayName": "x_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_post_id",
+              "displayName": "x_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_x",
+              "displayName": "post_to_x",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_url",
+              "displayName": "youtube_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reel_id",
+              "displayName": "reel_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_mode",
+              "displayName": "admin_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "_route",
+              "displayName": "_route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "_trigger_main",
+              "displayName": "_trigger_main",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_state",
+              "displayName": "instagram_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_claim_id",
+              "displayName": "instagram_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_claimed_at",
+              "displayName": "instagram_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_error",
+              "displayName": "instagram_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_state",
+              "displayName": "facebook_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_claim_id",
+              "displayName": "facebook_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_claimed_at",
+              "displayName": "facebook_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_error",
+              "displayName": "facebook_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_state",
+              "displayName": "youtube_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_claim_id",
+              "displayName": "youtube_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_claimed_at",
+              "displayName": "youtube_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_error",
+              "displayName": "youtube_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_state",
+              "displayName": "tiktok_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_claim_id",
+              "displayName": "tiktok_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_claimed_at",
+              "displayName": "tiktok_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_error",
+              "displayName": "tiktok_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "feece3e0-a070-4c21-96cf-48c15c65275f",
+      "name": "Update Reel Only",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        352
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1281322677,
+          "mode": "list",
+          "cachedResultName": "ai_reels",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit#gid=1281322677"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post_id": "={{ $json.post_id }}",
+            "video_url": "={{ $json.video_url }}",
+            "reel_description": "={{ $json.reel_description }}",
+            "featured_birds": "={{ $json.featured_birds }}",
+            "activity_name": "={{ $json.activity_name }}",
+            "location": "={{ $json.location }}",
+            "verified_details": "={{ $json.verified_details }}",
+            "input_status": "={{ $json.input_status }}",
+            "post_type": "={{ $json.post_type }}",
+            "scheduled_date": "={{ $json.scheduled_date }}",
+            "scheduled_time": "={{ $json.scheduled_time }}",
+            "status": "={{ $json.status }}",
+            "media_type": "={{ $json.media_type }}",
+            "error_message": "={{ $json.error_message }}",
+            "local_blurb": "={{ $json.local_blurb }}",
+            "local_validation_status": "={{ $json.local_validation_status }}",
+            "local_validation_flags": "={{ $json.local_validation_flags }}",
+            "local_generated_at": "={{ $json.local_generated_at }}",
+            "local_model": "={{ $json.local_model }}",
+            "copy_review_status": "={{ $json.copy_review_status }}",
+            "draft_model": "={{ $json.draft_model }}",
+            "draft_generated_at": "={{ $json.draft_generated_at }}",
+            "supervision_status": "={{ $json.supervision_status }}",
+            "supervision_notes": "={{ $json.supervision_notes }}",
+            "final_copy_source": "={{ $json.final_copy_source }}",
+            "quality_score": "={{ $json.quality_score }}",
+            "approval_status": "={{ $json.approval_status }}",
+            "approval_timestamp": "={{ $json.approval_timestamp }}",
+            "posting_defaults_applied_at": "={{ $json.posting_defaults_applied_at }}",
+            "blurb": "={{ $json.blurb }}",
+            "post_to_instagram": "={{ $json.post_to_instagram }}",
+            "instagram_caption_raw": "={{ $json.instagram_caption_raw }}",
+            "instagram_caption_final": "={{ $json.instagram_caption_final }}",
+            "instagram_hashtags": "={{ $json.instagram_hashtags }}",
+            "instagram_published_date": "={{ $json.instagram_published_date }}",
+            "instagram_post_id": "={{ $json.instagram_post_id }}",
+            "post_to_facebook": "={{ $json.post_to_facebook }}",
+            "facebook_published_date": "={{ $json.facebook_published_date }}",
+            "facebook_post_id": "={{ $json.facebook_post_id }}",
+            "post_on_youtube": "={{ $json.post_on_youtube }}",
+            "youtube_title": "={{ $json.youtube_title }}",
+            "youtube_published_date": "={{ $json.youtube_published_date }}",
+            "youtube_post_id": "={{ $json.youtube_post_id }}",
+            "post_on_tiktok": "={{ $json.post_on_tiktok }}",
+            "tiktok_caption": "={{ $json.tiktok_caption }}",
+            "tiktok_hashtags": "={{ $json.tiktok_hashtags }}",
+            "tiktok_additional_hashtags": "={{ $json.tiktok_additional_hashtags }}",
+            "tiktok_published_date": "={{ $json.tiktok_published_date }}",
+            "tiktok_post_id": "={{ $json.tiktok_post_id }}",
+            "telegram_sent_date": "={{ $json.telegram_sent_date }}",
+            "generate_for_x": "={{ $json.generate_for_x }}",
+            "x_caption": "={{ $json.x_caption }}",
+            "x_hashtags": "={{ $json.x_hashtags }}",
+            "x_post_final": "={{ $json.x_post_final }}",
+            "x_published_date": "={{ $json.x_published_date }}",
+            "x_post_id": "={{ $json.x_post_id }}",
+            "post_to_x": "={{ $json.post_to_x }}",
+            "youtube_url": "={{ $json.youtube_url }}",
+            "reel_id": "={{ $json.reel_id }}",
+            "submitted_at": "={{ $json.submitted_at }}",
+            "source": "={{ $json.source }}",
+            "timezone": "={{ $json.timezone }}",
+            "admin_mode": "={{ $json.admin_mode }}",
+            "_route": "={{ $json._route }}",
+            "_trigger_main": "={{ $json._trigger_main }}",
+            "instagram_publish_state": "={{ $json.instagram_publish_state }}",
+            "instagram_publish_claim_id": "={{ $json.instagram_publish_claim_id }}",
+            "instagram_publish_claimed_at": "={{ $json.instagram_publish_claimed_at }}",
+            "instagram_publish_error": "={{ $json.instagram_publish_error }}",
+            "facebook_publish_state": "={{ $json.facebook_publish_state }}",
+            "facebook_publish_claim_id": "={{ $json.facebook_publish_claim_id }}",
+            "facebook_publish_claimed_at": "={{ $json.facebook_publish_claimed_at }}",
+            "facebook_publish_error": "={{ $json.facebook_publish_error }}",
+            "youtube_publish_state": "={{ $json.youtube_publish_state }}",
+            "youtube_publish_claim_id": "={{ $json.youtube_publish_claim_id }}",
+            "youtube_publish_claimed_at": "={{ $json.youtube_publish_claimed_at }}",
+            "youtube_publish_error": "={{ $json.youtube_publish_error }}",
+            "tiktok_publish_state": "={{ $json.tiktok_publish_state }}",
+            "tiktok_publish_claim_id": "={{ $json.tiktok_publish_claim_id }}",
+            "tiktok_publish_claimed_at": "={{ $json.tiktok_publish_claimed_at }}",
+            "tiktok_publish_error": "={{ $json.tiktok_publish_error }}"
+          },
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": [
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_url",
+              "displayName": "video_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reel_description",
+              "displayName": "reel_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "featured_birds",
+              "displayName": "featured_birds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "activity_name",
+              "displayName": "activity_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "verified_details",
+              "displayName": "verified_details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_status",
+              "displayName": "input_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_type",
+              "displayName": "post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_date",
+              "displayName": "scheduled_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_time",
+              "displayName": "scheduled_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "media_type",
+              "displayName": "media_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_blurb",
+              "displayName": "local_blurb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_validation_status",
+              "displayName": "local_validation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_validation_flags",
+              "displayName": "local_validation_flags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_generated_at",
+              "displayName": "local_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_model",
+              "displayName": "local_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "copy_review_status",
+              "displayName": "copy_review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_model",
+              "displayName": "draft_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_generated_at",
+              "displayName": "draft_generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "supervision_status",
+              "displayName": "supervision_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "supervision_notes",
+              "displayName": "supervision_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final_copy_source",
+              "displayName": "final_copy_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality_score",
+              "displayName": "quality_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approval_timestamp",
+              "displayName": "approval_timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "posting_defaults_applied_at",
+              "displayName": "posting_defaults_applied_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "blurb",
+              "displayName": "blurb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_instagram",
+              "displayName": "post_to_instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_caption_raw",
+              "displayName": "instagram_caption_raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_caption_final",
+              "displayName": "instagram_caption_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_hashtags",
+              "displayName": "instagram_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_published_date",
+              "displayName": "instagram_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_post_id",
+              "displayName": "instagram_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_facebook",
+              "displayName": "post_to_facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_published_date",
+              "displayName": "facebook_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_post_id",
+              "displayName": "facebook_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_on_youtube",
+              "displayName": "post_on_youtube",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_title",
+              "displayName": "youtube_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_published_date",
+              "displayName": "youtube_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_post_id",
+              "displayName": "youtube_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_on_tiktok",
+              "displayName": "post_on_tiktok",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_caption",
+              "displayName": "tiktok_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_hashtags",
+              "displayName": "tiktok_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_additional_hashtags",
+              "displayName": "tiktok_additional_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_published_date",
+              "displayName": "tiktok_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_post_id",
+              "displayName": "tiktok_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telegram_sent_date",
+              "displayName": "telegram_sent_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generate_for_x",
+              "displayName": "generate_for_x",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_caption",
+              "displayName": "x_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_hashtags",
+              "displayName": "x_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_post_final",
+              "displayName": "x_post_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_published_date",
+              "displayName": "x_published_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_post_id",
+              "displayName": "x_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "post_to_x",
+              "displayName": "post_to_x",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_url",
+              "displayName": "youtube_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reel_id",
+              "displayName": "reel_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_mode",
+              "displayName": "admin_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "_route",
+              "displayName": "_route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "_trigger_main",
+              "displayName": "_trigger_main",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_state",
+              "displayName": "instagram_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_claim_id",
+              "displayName": "instagram_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_claimed_at",
+              "displayName": "instagram_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instagram_publish_error",
+              "displayName": "instagram_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_state",
+              "displayName": "facebook_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_claim_id",
+              "displayName": "facebook_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_claimed_at",
+              "displayName": "facebook_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facebook_publish_error",
+              "displayName": "facebook_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_state",
+              "displayName": "youtube_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_claim_id",
+              "displayName": "youtube_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_claimed_at",
+              "displayName": "youtube_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_publish_error",
+              "displayName": "youtube_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_state",
+              "displayName": "tiktok_publish_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_claim_id",
+              "displayName": "tiktok_publish_claim_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_claimed_at",
+              "displayName": "tiktok_publish_claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tiktok_publish_error",
+              "displayName": "tiktok_publish_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "424500e7-fb78-432f-9f14-0a0d3ed814cb",
+      "name": "Update Reel and Trigger",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        480
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n.mindobirdwatching.com/webhook/mbw-reels-process-v17",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { source: 'admin_reels_gateway', action: $('Admin Reels Webhook').first().json.body.action } }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "80be0e6f-b8c6-4d12-8c58-47db7d9b1ad3",
+      "name": "Trigger Existing Reels Workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Admin Reels Webhook').first().json.body || {};\nconst planned = $('Plan Reels Action').all().map(item => item.json);\nconst cleanRow = row => Object.fromEntries(Object.entries(row).filter(([key]) => !key.startsWith('_')));\nif (body.action === 'create_batch') return [{ json: { ok: true, count: planned.length, created: planned.map(cleanRow) } }];\nreturn [{ json: { ok: true, action: body.action, reel: planned[0] ? cleanRow(planned[0]) : null } }];"
+      },
+      "id": "5a891a12-c241-4345-9605-776197b326c9",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "5aaed345-6393-4c29-93ae-1fa75dbec4a7",
+      "name": "Respond Direct",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "5dc0ee26-9810-430b-8217-abd6bfaf2fe6",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Admin Reels Webhook').first().json.body || {};\nconst planned = $('Plan Reels Action').all().map(item => item.json);\nconst cleanRow = row => Object.fromEntries(Object.entries(row).filter(([key]) => !key.startsWith('_')));\nif (body.action === 'create_batch') return [{ json: { ok: true, count: planned.length, created: planned.map(cleanRow) } }];\nreturn [{ json: { ok: true, action: body.action, reel: planned[0] ? cleanRow(planned[0]) : null } }];"
+      },
+      "id": "87c678a0-bfb1-4de1-9b9e-011364537ae4",
+      "name": "Build Update Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "35c76fe6-a7c1-4594-b8d8-57a36afd2499",
+      "name": "Respond Update",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://127.0.0.1:11434/api/tags",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "cec920f1-93d3-4e74-871d-05ae3934a73f",
+      "name": "Check Ollama Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        560
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value = $json || {};\nconst failed = Boolean(value.error) || (!Array.isArray(value.models) && !value.models);\nreturn [{ json: {\n  ok: !failed,\n  checked_at: new Date().toISOString(),\n  services: {\n    n8n: { ok: true },\n    sheets: { ok: true },\n    ollama: { ok: !failed, message: failed ? String(value.error?.message || value.message || 'Ollama did not answer.') : (Array.isArray(value.models) ? value.models.length + ' model(s) available' : 'Ready') }\n  }\n} }];"
+      },
+      "id": "7a871647-1dab-4a79-8ea1-80b9b6f6285c",
+      "name": "Build Health Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "fe28c7e9-fa26-478a-aa59-1a9982332829",
+      "name": "Respond Health",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1460,
+        560
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Admin Reels Webhook": {
+      "main": [
+        [
+          {
+            "node": "Load AI Reels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load AI Reels": {
+      "main": [
+        [
+          {
+            "node": "Plan Reels Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Reels Action": {
+      "main": [
+        [
+          {
+            "node": "Route Reels Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Reels Action": {
+      "main": [
+        [
+          {
+            "node": "Respond Direct",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append Reels",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Reel Only",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Reel and Trigger",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Ollama Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Reels": {
+      "main": [
+        [
+          {
+            "node": "Trigger Existing Reels Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Reel and Trigger": {
+      "main": [
+        [
+          {
+            "node": "Trigger Existing Reels Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Existing Reels Workflow": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Success Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Reel Only": {
+      "main": [
+        [
+          {
+            "node": "Build Update Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Update Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Ollama Health": {
+      "main": [
+        [
+          {
+            "node": "Build Health Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Health Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "instanceId": "6a4efba651db808c30e4fe2c7bae2825dd5ce83446256251c019be827604e65a"
+  },
+  "tags": []
+}
