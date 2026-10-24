@@ -128,6 +128,8 @@ const coreByCode = Object.fromEntries(coreRows.map(row => [clean(row.speciesCode
 const recaps = rows('Google Sheets • Read Recaps');
 const recapSpecies = rows('Google Sheets • Read Recap Species');
 const inquiries = rows('Google Sheets • Read CRM Inquiries');
+const assignmentResponses = rows('HTTP • Read Guide Assignments');
+const assignments = assignmentResponses.flatMap(row => Array.isArray(row.records) ? row.records : Array.isArray(row.data) ? row.data : []);
 const queue = rows('Google Sheets • Read Approval Queue');
 const existingById = Object.fromEntries(queue.map(row => [clean(row.queue_id), row]).filter(([id]) => id));
 const today = DateTime.now().setZone('America/Guayaquil').startOf('day');
@@ -136,16 +138,15 @@ const normalizeRef = value => clean(value).toLowerCase().replace(/[^a-z0-9]+/g,'
 const normalizeGuide = value => clean(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'');
 const usableGuide = value => value && !['other','otro','tbd','pending','unassigned'].includes(value);
 const completed = value => ['yes','true','1','completed','complete'].includes(status(value));
-const recapsByDate = {};
-const guidesByDate = {};
+const recapsByGuideDate = {};
 for (const recap of recaps) {
   const date = isoDate(recap.tour_date);
   const dt = date ? DateTime.fromISO(date,{zone:'America/Guayaquil'}) : null;
   const guideKey = normalizeGuide(recap.guide_name);
   if (!usableGuide(guideKey) || !date || !dt?.isValid || dt < earliest || dt > today) continue;
-  (guidesByDate[date] ||= new Set()).add(guideKey);
-  const prior = recapsByDate[date];
-  if (!prior || clean(recap.submitted_at || recap.updated_at) > clean(prior.submitted_at || prior.updated_at)) recapsByDate[date] = recap;
+  const key=date+'|'+guideKey;
+  const prior = recapsByGuideDate[key];
+  if (!prior || clean(recap.submitted_at || recap.updated_at) > clean(prior.submitted_at || prior.updated_at)) recapsByGuideDate[key] = recap;
 }
 const speciesByRecap = {};
 for (const bird of recapSpecies) {
@@ -155,6 +156,13 @@ for (const bird of recapSpecies) {
   (speciesByRecap[recapId] ||= []).push(code);
 }
 const readyTours=[];
+const assignmentGuide = assignment => clean(assignment.provider_name)==='Other' ? clean(assignment.provider_name_other) : clean(assignment.provider_name);
+const assignmentActive = assignment => !['yes','true','1'].includes(status(assignment.is_deleted)) && !['cancelled','canceled','deleted'].includes(status(assignment.assignment_status));
+const assignmentBirding = assignment => status(assignment.service_type).includes('bird') || status(assignment.provider_role)==='guide';
+const assignmentsFor = (guest,date) => assignments.filter(assignment => {
+  const sameGuest=(clean(assignment.inquiry_id) && clean(assignment.inquiry_id)===clean(guest.inquiry_id)) || (clean(assignment.guest_id) && clean(assignment.guest_id)===clean(guest.guest_id));
+  return sameGuest && isoDate(assignment.service_date || assignment.tour_date || assignment.date)===date && assignmentActive(assignment) && assignmentBirding(assignment) && usableGuide(normalizeGuide(assignmentGuide(assignment)));
+});
 const isBirding = item => {
   const service=status(item.service_type);
   const product=clean(item.product_selected);
@@ -175,11 +183,14 @@ for (const guest of inquiries) {
     (byDate[date] ||= []).push(item);
   }
   for (const [date,tourItems] of Object.entries(byDate)) {
-    if ((guidesByDate[date]?.size || 0)!==1) continue;
-    const recap=recapsByDate[date];
+    const matchedAssignments=assignmentsFor(guest,date);
+    const guideKeys=uniq(matchedAssignments.map(assignment=>normalizeGuide(assignmentGuide(assignment))));
+    if (guideKeys.length!==1) continue;
+    const guideKey=guideKeys[0];
+    const recap=recapsByGuideDate[date+'|'+guideKey];
     if (!recap) continue;
     const guestKey=clean(guest.guest_id)||clean(guest.inquiry_id)||clean(guest.email).toLowerCase();
-    const reference=date+'_'+guestKey;
+    const reference=date+'_'+guestKey+'_'+guideKey;
     const invoice={
       guest_first_name:clean(guest.first_name)||clean(guest.full_name).split(/\s+/)[0],
       guest_email:clean(guest.email),
@@ -225,7 +236,7 @@ for (const {invoice,guest,recap,date,reference} of readyTours) {
   const existing=existingById[queueId]||{};
   const existingVersion=clean(existing.workflow_version);
   if (['SENDING','SENT'].includes(clean(existing.delivery_status).toUpperCase())) continue;
-  if (existingVersion==='post_tour_sightings_v3' && ['APPROVED','REJECTED'].includes(clean(existing.approval_status).toUpperCase())) continue;
+  if (existingVersion==='post_tour_sightings_v4' && ['APPROVED','REJECTED'].includes(clean(existing.approval_status).toUpperCase())) continue;
   const tours=clean(invoice.product_selected)||clean(recap.tour_type)||'Birdwatching';
   const routes=clean(recap.route_name)||'Mindo cloud forest';
   const guides=clean(recap.guide_name);
@@ -234,7 +245,7 @@ for (const {invoice,guest,recap,date,reference} of readyTours) {
   const text=['Hi '+firstName+',','Here is your Mindo bird list.','','Thank you for exploring Mindo with us.','Your guide recorded these birds during your tour on '+formatDate(date)+'.','','Birds recorded:',...species.map((bird,index)=>(index+1)+'. '+bird.en+' | '+bird.es+' | '+bird.scientific+' | '+bird.code),'','If you enjoyed your tour, we would appreciate a review:','Google: https://g.page/r/CdMlIYMGgBIvEAE/review','Tripadvisor: https://www.tripadvisor.com/Attraction_Review-g609138-d34192556-Reviews-Mindo_Bird_Watching-Mindo_Pichincha_Province.html','','Follow our tour recaps:','Instagram: https://www.instagram.com/mindobirdwatching/','TikTok: https://www.tiktok.com/@mindobirdwatching','Facebook: https://www.facebook.com/profile.php?id=61577783327957','YouTube: https://www.youtube.com/@MindoBirdWatching','','Shop: https://mindobirdwatching.com/shop/?utm_source=sightings_email&utm_medium=email&utm_campaign=post_tour_followup&utm_content=shop_text','','Thank you for choosing Mindo Bird Watching.'].join('\n');
   const email=clean(invoice.guest_email).toLowerCase();
   const sourceHash=hash([reference,date,recapIds.join('|'),codes.join('|'),email].join('::'));
-  output.push({json:{queue_id:queueId,tour_date:date,guest_id:clean(guest.guest_id),inquiry_id:clean(guest.inquiry_id),first_name:firstName,email,preferred_language:'en',tour_names:tours,guide_names:guides,route_names:routes,recap_ids:recapIds.join(' | '),species_count:species.length,species_codes:codes.join(' | '),email_subject:subject,email_html:emailHtml({firstName,date,tours,routes,species,queueId}),email_text:text,approval_status:'PENDING_REVIEW',delivery_status:'QUEUED',draft_created_at:existing.draft_created_at||now,approved_at:'',sent_at:'',gmail_message_id:'',error:'',source_hash:sourceHash,workflow_version:'post_tour_sightings_v3',created_at:existing.created_at||now,updated_at:now}});
+  output.push({json:{queue_id:queueId,tour_date:date,guest_id:clean(guest.guest_id),inquiry_id:clean(guest.inquiry_id),first_name:firstName,email,preferred_language:'en',tour_names:tours,guide_names:guides,route_names:routes,recap_ids:recapIds.join(' | '),species_count:species.length,species_codes:codes.join(' | '),email_subject:subject,email_html:emailHtml({firstName,date,tours,routes,species,queueId}),email_text:text,approval_status:'PENDING_REVIEW',delivery_status:'QUEUED',draft_created_at:existing.draft_created_at||now,approved_at:'',sent_at:'',gmail_message_id:'',error:'',source_hash:sourceHash,workflow_version:'post_tour_sightings_v4',created_at:existing.created_at||now,updated_at:now}});
 }
 return output;
 `;
@@ -252,30 +263,29 @@ const workflow = {
     { id:'wait-after-species', name:'Wait • Sheets quota after species', type:'n8n-nodes-base.wait', typeVersion:1.1, position:[960,80], parameters:{amount:20} },
     readSheet({name:'Google Sheets • Read CRM Inquiries',spreadsheetId:CRM_SHEET,sheetId:613590723,sheetName:'crm_inquiries',position:[1200,80]}),
     { id:'wait-after-crm', name:'Wait • Sheets quota after CRM', type:'n8n-nodes-base.wait', typeVersion:1.1, position:[1440,80], parameters:{amount:20} },
-    readSheet({name:'Google Sheets • Read Invoices',spreadsheetId:CRM_SHEET,sheetId:1789795074,sheetName:'invoices',position:[1680,80]}),
-    { id:'wait-after-invoices', name:'Wait • Sheets quota after invoices', type:'n8n-nodes-base.wait', typeVersion:1.1, position:[1920,80], parameters:{amount:20} },
+    { id:'read-guide-assignments', name:'HTTP • Read Guide Assignments', type:'n8n-nodes-base.httpRequest', typeVersion:4.2, position:[1680,80], executeOnce:true, parameters:{method:'POST',url:'https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api',sendBody:true,contentType:'form-urlencoded',bodyParameters:{parameters:[{name:'payload',value:'{"action":"list_assignments"}'}]},options:{timeout:30000,response:{response:{neverError:false,responseFormat:'json'}}}} },
     readSheet({name:'Google Sheets • Read Approval Queue',spreadsheetId:CRM_SHEET,sheetId:QUEUE_GID,sheetName:'post_tour_sightings_email_queue',position:[2160,80],alwaysOutputData:true}),
     { id:'fetch-species', name:'HTTP • Fetch species_core CSV', type:'n8n-nodes-base.httpRequest', typeVersion:4.2, position:[2400,80], executeOnce:true, parameters:{url:'https://docs.google.com/spreadsheets/d/1FGmAm92kMYIMCLjGL_m-OOaUmD6og_mvsKcTIGs_GJE/gviz/tq?tqx=out:csv&sheet=species_core',options:{response:{response:{neverError:true,responseFormat:'text'}}}} },
     { id:'build-candidates', name:'Code • Build Approval Queue', type:'n8n-nodes-base.code', typeVersion:2, position:[2640,80], parameters:{jsCode:buildCandidatesCode} },
     upsertQueue({name:'Google Sheets • Upsert Approval Queue',position:[2880,80]}),
-    { id:'prepare-summary', name:'Code • Prepare Telegram Summary', type:'n8n-nodes-base.code', typeVersion:2, position:[3120,80], parameters:{jsCode:String.raw`const items=$items('Code • Build Approval Queue'); if(!items.length) return []; const dates=[...new Set(items.map(i=>i.json.tour_date))]; return [{json:{chat_id:'-1003067570080',text:'<b>Post-tour sightings emails ready for review</b>\n\nGuests: <b>'+items.length+'</b>\nTour dates: <b>'+dates.join(', ')+'</b>\n\nEach draft matched a completed birdwatching item to the guide report with the same tour date. Review the row and change <code>approval_status</code> to <b>APPROVED</b>. Approved rows are sent at the next scheduled run.\n\n<a href="https://docs.google.com/spreadsheets/d/${CRM_SHEET}/edit#gid=${QUEUE_GID}">Open approval queue</a>'}}];`} },
+    { id:'prepare-summary', name:'Code • Prepare Telegram Summary', type:'n8n-nodes-base.code', typeVersion:2, position:[3120,80], parameters:{jsCode:String.raw`const items=$items('Code • Build Approval Queue'); if(!items.length) return []; const dates=[...new Set(items.map(i=>i.json.tour_date))]; return [{json:{chat_id:'-1003067570080',text:'<b>Post-tour sightings emails ready for review</b>\n\nGuests: <b>'+items.length+'</b>\nTour dates: <b>'+dates.join(', ')+'</b>\n\nEach draft matched a completed birdwatching tour and its assigned guide to that guide’s report on the same date. Review the row and change <code>approval_status</code> to <b>APPROVED</b>. Approved rows are sent at the next scheduled run.\n\n<a href="https://docs.google.com/spreadsheets/d/${CRM_SHEET}/edit#gid=${QUEUE_GID}">Open approval queue</a>'}}];`} },
     { id:'telegram-prepare', name:'Telegram • Queue Ready', type:'n8n-nodes-base.telegram', typeVersion:1.2, position:[3360,80], parameters:{chatId:'={{$json.chat_id}}',text:'={{$json.text}}',additionalFields:{appendAttribution:false,disable_web_page_preview:true,parse_mode:'HTML'}},credentials:{telegramApi:TELEGRAM_CREDENTIAL} },
 
     { id:'manual-send', name:'Manual Trigger • Send Approved', type:'n8n-nodes-base.manualTrigger', typeVersion:1, position:[0,520], parameters:{} },
     { id:'schedule-send', name:'Schedule • Check Approved', type:'n8n-nodes-base.scheduleTrigger', typeVersion:1.2, position:[0,680], parameters:{rule:{interval:[{field:'cronExpression',expression:'30 */6 * * *'}]}} },
     readSheet({name:'Google Sheets • Read Queue for Sending',spreadsheetId:CRM_SHEET,sheetId:QUEUE_GID,sheetName:'post_tour_sightings_email_queue',position:[240,600],alwaysOutputData:true}),
-    { id:'select-approved', name:'Code • Select Approved Emails', type:'n8n-nodes-base.code', typeVersion:2, position:[480,600], parameters:{jsCode:String.raw`const valid=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); const seen=new Set(); return $input.all().filter(item=>{const r=item.json||{}; const ok=String(r.workflow_version||'').trim()==='post_tour_sightings_v3' && String(r.approval_status||'').trim().toUpperCase()==='APPROVED' && !['SENDING','SENT','SKIPPED'].includes(String(r.delivery_status||'').trim().toUpperCase()) && valid(r.email) && r.email_html && r.email_subject && r.queue_id && !seen.has(r.queue_id); if(ok) seen.add(r.queue_id); return ok;});`} },
+    { id:'select-approved', name:'Code • Select Approved Emails', type:'n8n-nodes-base.code', typeVersion:2, position:[480,600], parameters:{jsCode:String.raw`const valid=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); const seen=new Set(); return $input.all().filter(item=>{const r=item.json||{}; const ok=String(r.workflow_version||'').trim()==='post_tour_sightings_v4' && String(r.approval_status||'').trim().toUpperCase()==='APPROVED' && !['SENDING','SENT','SKIPPED'].includes(String(r.delivery_status||'').trim().toUpperCase()) && valid(r.email) && r.email_html && r.email_subject && r.queue_id && !seen.has(r.queue_id); if(ok) seen.add(r.queue_id); return ok;});`} },
     { id:'lock-approved', name:'Code • Lock Approved Emails', type:'n8n-nodes-base.code', typeVersion:2, position:[720,600], parameters:{jsCode:String.raw`const now=new Date().toISOString(); return $input.all().map(item=>({json:{...item.json,delivery_status:'SENDING',approved_at:item.json.approved_at||now,error:'',updated_at:now}}));`} },
     upsertQueue({name:'Google Sheets • Save Send Lock',position:[960,600]}),
     { id:'restore-locked', name:'Code • Restore Locked Email Payloads', type:'n8n-nodes-base.code', typeVersion:2, position:[1200,600], parameters:{jsCode:String.raw`return $items('Code • Lock Approved Emails').map(item=>({json:item.json}));`} },
     { id:'gmail-send', name:'Gmail • Send Approved Sightings Email', type:'n8n-nodes-base.gmail', typeVersion:2.1, position:[1440,600], continueOnFail:true, parameters:{sendTo:'={{$json.email}}',subject:'={{$json.email_subject}}',emailType:'html',message:'={{$json.email_html}}',options:{appendAttribution:false,replyTo:'mindobirdwatching@gmail.com',senderName:'Mindo Bird Watching'}},credentials:{gmailOAuth2:GMAIL_CREDENTIAL} },
     { id:'mark-result', name:'Code • Mark Delivery Result', type:'n8n-nodes-base.code', typeVersion:2, position:[1680,600], parameters:{jsCode:String.raw`const sent=$input.all(); const source=$items('Code • Restore Locked Email Payloads'); const now=new Date().toISOString(); return source.map((item,index)=>{const response=sent[index]?.json||{}; const failed=Boolean(response.error||response.message?.includes?.('error')); return {json:{...item.json,delivery_status:failed?'FAILED':'SENT',sent_at:failed?'':now,gmail_message_id:String(response.id||response.messageId||response.threadId||''),error:failed?String(response.error||response.message||'Gmail send failed'):'',updated_at:now}};});`} },
     upsertQueue({name:'Google Sheets • Save Delivery Result',position:[1920,600]}),
-    { id:'crm-log', name:'Code • Build CRM Email Log', type:'n8n-nodes-base.code', typeVersion:2, position:[2160,600], parameters:{jsCode:String.raw`return $items('Code • Mark Delivery Result').filter(i=>i.json.delivery_status==='SENT').map(i=>({json:{email_log_id:'EMAIL-'+i.json.queue_id,created_at:i.json.sent_at,message_date:i.json.sent_at,direction:'outbound',inquiry_id:i.json.inquiry_id,guest_id:i.json.guest_id,email:i.json.email,email_normalized:String(i.json.email||'').toLowerCase(),gmail_thread_id:'',gmail_message_id:i.json.gmail_message_id,subject:i.json.email_subject,snippet:String(i.json.email_text||'').slice(0,500),template_key:'post_tour_sightings_v3',status:'sent',matched_by:'completed_birding_date',notes:'Approval queue '+i.json.queue_id}}));`} },
+    { id:'crm-log', name:'Code • Build CRM Email Log', type:'n8n-nodes-base.code', typeVersion:2, position:[2160,600], parameters:{jsCode:String.raw`return $items('Code • Mark Delivery Result').filter(i=>i.json.delivery_status==='SENT').map(i=>({json:{email_log_id:'EMAIL-'+i.json.queue_id,created_at:i.json.sent_at,message_date:i.json.sent_at,direction:'outbound',inquiry_id:i.json.inquiry_id,guest_id:i.json.guest_id,email:i.json.email,email_normalized:String(i.json.email||'').toLowerCase(),gmail_thread_id:'',gmail_message_id:i.json.gmail_message_id,subject:i.json.email_subject,snippet:String(i.json.email_text||'').slice(0,500),template_key:'post_tour_sightings_v4',status:'sent',matched_by:'completed_birding_date_and_guide',notes:'Approval queue '+i.json.queue_id}}));`} },
     { id:'append-crm-log', name:'Google Sheets • Append CRM Email Log', type:'n8n-nodes-base.googleSheets', typeVersion:4.7, position:[2400,600], ...SHEETS_RETRY, parameters:{operation:'append',documentId:{__rl:true,value:CRM_SHEET,mode:'id'},sheetName:{__rl:true,value:1459468470,mode:'list',cachedResultName:'crm_email_log',cachedResultUrl:`https://docs.google.com/spreadsheets/d/${CRM_SHEET}/edit#gid=1459468470`},columns:{mappingMode:'autoMapInputData',value:{},matchingColumns:[],schema:[],attemptToConvertTypes:false,convertFieldsToString:false},options:{}},credentials:{googleSheetsOAuth2Api:GOOGLE_SHEETS_CREDENTIAL} },
     { id:'sent-summary', name:'Code • Sent Telegram Summary', type:'n8n-nodes-base.code', typeVersion:2, position:[2640,600], parameters:{jsCode:String.raw`const rows=$items('Code • Mark Delivery Result'); if(!rows.length) return []; const sent=rows.filter(i=>i.json.delivery_status==='SENT'); const failed=rows.filter(i=>i.json.delivery_status==='FAILED'); return [{json:{chat_id:'-1003067570080',text:'<b>Post-tour sightings email run complete</b>\n\nSent: <b>'+sent.length+'</b>\nFailed: <b>'+failed.length+'</b>'+ (failed.length?'\n\nFailed queue IDs:\n'+failed.map(i=>'• <code>'+i.json.queue_id+'</code>').join('\n'):'')}}];`} },
     { id:'telegram-sent', name:'Telegram • Delivery Summary', type:'n8n-nodes-base.telegram', typeVersion:1.2, position:[2880,600], parameters:{chatId:'={{$json.chat_id}}',text:'={{$json.text}}',additionalFields:{appendAttribution:false,disable_web_page_preview:true,parse_mode:'HTML'}},credentials:{telegramApi:TELEGRAM_CREDENTIAL} },
-    { id:'sticky', name:'Sticky Note • Approval Workflow', type:'n8n-nodes-base.stickyNote', typeVersion:1, position:[720,-260], parameters:{content:'MBW Post-Tour Sightings Email — Approval Mode\n\n1. Four times daily at :25 Ecuador time, look for completed birdwatching items and a guide report with the same tour date.\n2. Create one email draft per guest and date. Ignore non-birding activities, missing emails, archived inquiries and incomplete tour items.\n3. If reports from different guides exist on the same date, create nothing for that date instead of guessing.\n4. Set approval_status to APPROVED to authorize sending.\n5. The guarded sender runs at :30 every six hours and logs successful email IDs.\n\nSafety: no email can send from a report or completed tour alone; manual approval is still required during the pilot.',height:340,width:560} },
+    { id:'sticky', name:'Sticky Note • Approval Workflow', type:'n8n-nodes-base.stickyNote', typeVersion:1, position:[720,-260], parameters:{content:'MBW Post-Tour Sightings Email — Approval Mode\n\n1. Four times daily at :25 Ecuador time, read completed birdwatching tours, guide assignments and submitted guide reports.\n2. Match only when the inquiry/guest, tour date and normalized assigned guide all agree.\n3. Two guides may report on the same date; each guest receives only the report from their assigned guide. Missing or conflicting guide assignments create no draft.\n4. Set approval_status to APPROVED to authorize sending.\n5. The guarded sender runs at :30 every six hours and logs successful email IDs.\n\nSafety: neither a report nor a completed tour can send alone; a matching guide assignment and manual pilot approval are required.',height:340,width:560} },
   ],
   connections: {},
   pinData: {},
@@ -295,9 +305,8 @@ for (const trigger of ['Manual Trigger • Prepare Queue','Schedule • Prepare 
   ['Google Sheets • Read Recap Species','Wait • Sheets quota after species'],
   ['Wait • Sheets quota after species','Google Sheets • Read CRM Inquiries'],
   ['Google Sheets • Read CRM Inquiries','Wait • Sheets quota after CRM'],
-  ['Wait • Sheets quota after CRM','Google Sheets • Read Invoices'],
-  ['Google Sheets • Read Invoices','Wait • Sheets quota after invoices'],
-  ['Wait • Sheets quota after invoices','Google Sheets • Read Approval Queue'],
+  ['Wait • Sheets quota after CRM','HTTP • Read Guide Assignments'],
+  ['HTTP • Read Guide Assignments','Google Sheets • Read Approval Queue'],
   ['Google Sheets • Read Approval Queue','HTTP • Fetch species_core CSV'],
   ['HTTP • Fetch species_core CSV','Code • Build Approval Queue'],
   ['Code • Build Approval Queue','Google Sheets • Upsert Approval Queue'],
