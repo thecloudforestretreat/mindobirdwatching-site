@@ -26,7 +26,11 @@ const catalog={
         "es": "Half Day Tour 2 - Jewels of the Morning Forest"
       },
       "image": "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw004_en.jpg",
-      "url": "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/"
+      "url": "https://mindobirdwatching.com/tours/jewels-morning-forest-birding/",
+      "description": {
+        "en": "Morning birdwatching in Mindo in search of toucans, tanagers and hummingbirds. Includes transportation from Mindo, reserve entrance fees and use of binoculars. Sightings vary.",
+        "es": "Aviturismo matutino en Mindo en busca de tucanes, tangaras y colibríes. Incluye transporte desde Mindo, entradas a las reservas y uso de binoculares. Los avistamientos varían."
+      }
     },
     {
       "id": "tour-andean",
@@ -48,7 +52,11 @@ const catalog={
         "es": "Half Day Tour 1 - Dance of the Andean Cock-of-the-Rock"
       },
       "image": "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_HDT_mbw005_en.jpg",
-      "url": "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/"
+      "url": "https://mindobirdwatching.com/tours/andean-cock-of-the-rock-dawn/",
+      "description": {
+        "en": "Observe the Andean Cock-of-the-Rock at dawn, followed by forest birdwatching. Includes transportation from Mindo, reserve entrance fees and use of binoculars. Wildlife sightings are not guaranteed.",
+        "es": "Observe el gallito de las rocas andino al amanecer y continúe con una caminata de aviturismo por el bosque. Incluye transporte desde Mindo, entradas a las reservas y uso de binoculares. No se garantizan avistamientos de fauna."
+      }
     },
     {
       "id": "tour-full-day",
@@ -70,7 +78,11 @@ const catalog={
         "es": "Full Day Tour - Quest for Five Toucans & the Andean Cock-of-the-Rock"
       },
       "image": "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_FDT_mbw006_en.jpg",
-      "url": "https://mindobirdwatching.com/tours/quest-five-toucans-guide/"
+      "url": "https://mindobirdwatching.com/tours/quest-five-toucans-guide/",
+      "description": {
+        "en": "Dawn Cock-of-the-Rock observation followed by an extended forest hike in search of five toucan species and other cloud forest birds. Includes transportation from Mindo, reserve entrance fees and use of binoculars. Sightings are not guaranteed.",
+        "es": "Observación del gallito de las rocas al amanecer, seguida de una caminata más extensa por el bosque en busca de cinco especies de tucanes y otras aves del bosque nublado. Incluye transporte desde Mindo, entradas a las reservas y uso de binoculares. No se garantizan avistamientos."
+      }
     },
     {
       "id": "tour-hummingbird",
@@ -93,7 +105,11 @@ const catalog={
       },
       "image": "https://mindobirdwatching.com/assets/images/tours/mbw-tour-hummingbirds-001.jpeg",
       "soloPrice": 75,
-      "url": "https://mindobirdwatching.com/tours/mindo-hummingbird-tour/"
+      "url": "https://mindobirdwatching.com/tours/mindo-hummingbird-tour/",
+      "description": {
+        "en": "A three-hour hummingbird-focused outing in Mindo, from 11:00 AM to 2:00 PM, with a local birding guide. Includes transportation from Mindo and entrance fees. Species and sightings vary with weather, season and bird activity.",
+        "es": "Recorrido de tres horas dedicado a los colibríes de Mindo, de 11:00 a 14:00, con un guía local de aviturismo. Incluye transporte desde Mindo y entradas. Las especies y los avistamientos varían según el clima, la temporada y la actividad de las aves."
+      }
     },
     {
       "id": "tour-bear-half-day",
@@ -115,7 +131,11 @@ const catalog={
         "es": "Extended Half-Day Spectacled Bear Tour"
       },
       "image": "https://mindobirdwatching.com/assets/images/tours/mbw-tour-spectacled-bear-001.jpeg",
-      "url": "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/"
+      "url": "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/",
+      "description": {
+        "en": "A private morning search for spectacled bears in Antisana or Cayambe-Coca. Includes transportation, a local guide, binoculars and spotting scope. The route depends on recent wildlife activity, weather and access. Sightings are never guaranteed.",
+        "es": "Búsqueda privada de osos de anteojos durante la mañana en Antisana o Cayambe-Coca. Incluye transporte, guía local, binoculares y telescopio. La ruta depende de la actividad reciente de la fauna, el clima y el acceso. No se garantizan avistamientos."
+      }
     },
     {
       "id": "tour-bear-full-day",
@@ -137,7 +157,11 @@ const catalog={
         "es": "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour"
       },
       "image": "https://mindobirdwatching.com/assets/images/tours/mbw-tour-spectacled-bear-001.jpeg",
-      "url": "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/"
+      "url": "https://mindobirdwatching.com/tours/spectacled-bear-tour-ecuador/",
+      "description": {
+        "en": "A private full-day outing with a morning spectacled bear search and afternoon Andean Condor search in Antisana or Cayambe-Coca. Includes transportation, a local guide, binoculars and spotting scope. Routes depend on wildlife activity, weather and access; sightings are never guaranteed.",
+        "es": "Salida privada de día completo con búsqueda de osos de anteojos por la mañana y de cóndores andinos por la tarde en Antisana o Cayambe-Coca. Incluye transporte, guía local, binoculares y telescopio. La ruta depende de la actividad de la fauna, el clima y el acceso; no se garantizan avistamientos."
+      }
     },
     {
       "id": "night-walk",
@@ -159,7 +183,11 @@ const catalog={
         "es": "Caminata Nocturna"
       },
       "image": "https://mindobirdwatching.com/assets/images/pages/tours/promos/wide/mbw_tour_promos_night_walk_wide_en.jpg",
-      "url": "https://mindobirdwatching.com/activities/night-walk/"
+      "url": "https://mindobirdwatching.com/activities/night-walk/",
+      "description": {
+        "en": "Explore the Mindo cloud forest after dark with a guide, looking for frogs, insects, spiders and other nocturnal wildlife. Confirm timing and availability before booking. Sightings are not guaranteed.",
+        "es": "Explore el bosque nublado de Mindo después del anochecer con un guía, en busca de ranas, insectos, arañas y otra fauna nocturna. Confirme el horario y la disponibilidad antes de reservar. No se garantizan avistamientos."
+      }
     },
     {
       "id": "activity-chocolate",
@@ -181,7 +209,11 @@ const catalog={
         "es": "Chocolate Tour"
       },
       "image": "https://mindobirdwatching.com/assets/images/pages/activities/chocolate-tour/chocolate_tour_horizontal_01.jpg",
-      "url": "https://mindobirdwatching.com/activities/chocolate-tour/"
+      "url": "https://mindobirdwatching.com/activities/chocolate-tour/",
+      "description": {
+        "en": "Discover the process that turns cacao into chocolate on a local chocolate tour in Mindo.",
+        "es": "Conozca el proceso que transforma el cacao en chocolate en un tour local en Mindo."
+      }
     },
     {
       "id": "activity-butterfly",
@@ -203,7 +235,11 @@ const catalog={
         "es": "Butterfly Tour"
       },
       "image": "https://mindobirdwatching.com/assets/images/pages/activities/butterly-tour/mbw_butterflies_0001.jpg",
-      "url": "https://mindobirdwatching.com/activities/butterfly-tour/"
+      "url": "https://mindobirdwatching.com/activities/butterfly-tour/",
+      "description": {
+        "en": "Visit a butterfly garden in Mindo and learn about the butterfly life cycle.",
+        "es": "Visite un mariposario en Mindo y conozca el ciclo de vida de las mariposas."
+      }
     },
     {
       "id": "activity-canopy",
