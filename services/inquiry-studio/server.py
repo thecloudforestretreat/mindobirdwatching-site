@@ -234,6 +234,9 @@ class Handler(BaseHTTPRequestHandler):
   path=self.app_path()
   if path=='/api/inquiries':return self.reply(200,snapshot())
   if path=='/api/session':return self.reply(200,{'token':TOKEN,'model':MODEL,'mode':'local AI; reviewed CRM saves; no sending'})
+  if path=='/api/providers':
+   try:return self.reply(200,{'providers':studio_store.list_guides()})
+   except Exception:return self.reply(502,{'error':'Guide records could not be loaded.'})
   if path.startswith('/api/jobs/'):
    identifier=path.removeprefix('/api/jobs/')
    with JOB_LOCK:
@@ -312,6 +315,24 @@ class Handler(BaseHTTPRequestHandler):
     if not isinstance(record,dict):raise ValueError('Missing Studio record')
     updated=studio_store.add_guide_response(record,body.get('response'),body.get('sender'))
     studio_store.save(updated)
+    with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
+    return self.reply(200,{'ok':True,'record':updated})
+   if path=='/api/send-guide-quote':
+    inquiry_id=str(body.get('inquiry_id') or '').strip()
+    studio_id=str(body.get('inquiry_studio_id') or '').strip()
+    record=studio_store.get(inquiry_id=inquiry_id,inquiry_studio_id=studio_id)
+    if not record:raise ValueError('Save the Inquiry Studio record before sending it to a guide')
+    providers=studio_store.list_guides()
+    provider_id=str(body.get('provider_id') or '').strip()
+    provider=next((item for item in providers if item['provider_id']==provider_id),None)
+    if not provider:raise ValueError('Choose an active guide')
+    updated,result=studio_store.create_guide_quote_request(record,provider_id,provider['provider_name'],str(body.get('brand_id') or 'mbw'),str(body.get('response_due_at') or ''))
+    with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
+    return self.reply(200,{'ok':True,'record':updated,'assignment':result.get('record') or {}})
+   if path=='/api/review-guide-quote':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    updated=studio_store.review_guide_quote(record,body.get('quote_id'),body.get('decision'),body.get('note'),"MBW Admin")
     with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
     return self.reply(200,{'ok':True,'record':updated})
    return self.reply(404,{'error':'Not found'})

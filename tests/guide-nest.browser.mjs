@@ -44,6 +44,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-26", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
     offers: [{ assignmentId: "O-1", serviceDate: "2026-10-30", startTime: "6:00 AM", service: "Custom birding package", pickup: "Mindo", response: "", bidAmount: "" }],
     plans: [robertPlan({ providerId: "PROV-007", name: "Neycer · Night Walk Guide" })],
+    quoteRequests: [{ assignmentId: "Q-1", inquiryId: "I-Q1", studioId: "IST-Q1", studioRevision: 1, brandId: "mindo-tours", title: "Mindo, Intag and Otavalo", summary: "One older novice birdwatcher needs short walks, Quito pickup, and practical route options.", guestProfile: { party_size: "1", age_or_group: "78 years old", experience_level: "novice" }, requestedDates: ["Dates pending"], requirements: ["Short walks", "2–3 star accommodation"], unknowns: ["Confirm Campo Colibrí"], checks: ["Verify train availability"], proposedDays: [{ day_number: 1, location: "Mindo", activity: "Easy birding and cloud forest", logistics: ["Quito pickup"], pricing_needed: ["guide", "transport"] }], status: "new", quote: null }],
     tours: [
       { assignmentId: "A-1", bookingId: "B-1", serviceDate: "2026-10-26", dateLabel: "Oct 26, 2026", startTime: "5:00 AM", endTime: "3:00 PM", service: "MBW006 - Quest for Five Toucans", guestName: "Daniel Kalmes", guestCount: "2", country: "Luxembourg", countryCode: "LU", pickup: "Mindo Lodge", status: "confirmed", accepted: false, acceptanceRequired: true, contactAvailable: true, hasConflict: true, conflictReason: "availability", providerName: "Neycer · Night Walk Guide", phone: "+352 621 492 066", whatsappUrl: "https://wa.me/352621492066", guestMessage: "Hello Daniel, I’m Neycer from Mindo Bird Watching. I’ll be your guide for the Quest for Five Toucans on October 26, 2026 at 5:00 AM. The pickup location is Mindo Lodge.\n\nPlease message me here if you have any questions before the tour.\n\nThank you." },
       { assignmentId: "A-2", bookingId: "B-2", serviceDate: "2026-11-10", startTime: "6:00 AM", service: "Night Walk", guestName: "November Guest", guestCount: "1", pickup: "Casa Mindo", status: "confirmed", accepted: true, acceptanceRequired: false, contactAvailable: true, hasConflict: false, phone: "+593 999 000 111", whatsappUrl: "https://wa.me/593999000111" },
@@ -86,6 +87,15 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     writes.push({ url: route.request().url(), method: route.request().method(), body });
     bootstrap.plans[0] = { ...bootstrap.plans[0], status: body.status, days: body.days, originalTotal: body.days.reduce((sum, day) => sum + Number(day.originalCost || 0), 0), adjustments: body.adjustments, comments: body.comments, synthetic: false, assignmentId: "PLAN-1" };
     await route.fulfill({ json: { ok: true, verified: true, plan: bootstrap.plans[0] }, status: 201 });
+  });
+  await page.route(`http://127.0.0.1:${port}/api/guide/quotes/**`, async route => {
+    const body = route.request().postDataJSON();
+    writes.push({ url: route.request().url(), method: route.request().method(), body });
+    const saved = { ...body.quote, quote_id: "GQ-Q-1-1", version: 1, status: body.mode === "submit" ? "submitted" : "draft" };
+    bootstrap.quoteRequests[0].quote = saved;
+    bootstrap.quoteRequests[0].status = saved.status;
+    bootstrap.quoteRequests[0].studioRevision += 1;
+    await route.fulfill({ json: { ok: true, verified: true, quote: saved, studioRevision: bootstrap.quoteRequests[0].studioRevision } });
   });
   await page.route(`http://127.0.0.1:${port}/api/guide/reports**`, route => route.fulfill({ json: {
     ok: true, linked: true, reports: [{ recapId: "recap-1", observedAt: "2026-10-22", location: "San Lorenzo", bookingReference: "B-1", speciesCount: 42, totalObservations: 57 }],

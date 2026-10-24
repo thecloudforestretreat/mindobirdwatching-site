@@ -271,6 +271,142 @@ def add_guide_response(record, response_text, sender="Guide"):
     return normalize_record(updated)
 
 
+def _records(result):
+    for key in ("records", "data", "rows", "items"):
+        value = result.get(key)
+        if isinstance(value, list):
+            return [item.get("json", item) if isinstance(item, dict) else item for item in value]
+    return []
+
+
+def list_guides(opener=urlopen):
+    rows = _records(request_n8n({"action": "list_providers"}, opener))
+    guides = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        role = str(row.get("provider_role") or "").strip().lower()
+        active = str(row.get("active", row.get("is_active", "yes"))).strip().lower()
+        name = str(row.get("provider_name_other") if row.get("provider_name") == "Other" else row.get("provider_name") or "").strip()
+        if role == "guide" and name and active not in {"no", "false", "0", "inactive"}:
+            guides.append({"provider_id": str(row.get("provider_id") or "").strip(), "provider_name": name})
+    return sorted(guides, key=lambda item: item["provider_name"].casefold())
+
+
+def create_guide_quote_request(record, provider_id, provider_name, brand_id="mbw", response_due_at="", opener=urlopen):
+    inquiry_id = str(record.get("inquiry_id") or "").strip()
+    studio_id = str(record.get("inquiry_studio_id") or "").strip()
+    provider_id = str(provider_id or "").strip()[:128]
+    provider_name = str(provider_name or "").strip()[:160]
+    brand_id = brand_id if brand_id in {"mbw", "mindo-tours", "choco-andino"} else "mbw"
+    if not inquiry_id or not studio_id:
+        raise ValueError("Save and link the Inquiry Studio record before sending it to a guide")
+    if not provider_name:
+        raise ValueError("Choose a guide")
+    existing = _records(request_n8n({"action": "list_assignments", "inquiry_id": inquiry_id}, opener))
+    for row in existing:
+        same_provider = (provider_id and str(row.get("provider_id") or "") == provider_id) or str(row.get("provider_name") or "").casefold() == provider_name.casefold()
+        active = str(row.get("assignment_status") or "pending").lower() not in {"cancelled", "canceled", "completed"}
+        kind = str(row.get("assignment_kind") or "").lower() == "quote_request" or str(row.get("assignment_group_id") or "").startswith("QUOTE-")
+        if same_provider and active and kind:
+            raise ValueError("This guide already has an active quote request for this inquiry")
+    timestamp = now()
+    dates = _iso_dates(_parse(record.get("requested_dates_json"), []))
+    assignment = {
+        "assignment_id": "",
+        "assignment_group_id": f"QUOTE-{studio_id}"[:128],
+        "assignment_kind": "quote_request",
+        "service_item_id": studio_id,
+        "inquiry_id": inquiry_id,
+        "guest_id": str(record.get("guest_id") or "")[:128],
+        "service_date": dates[0] if dates else "",
+        "start_time": "",
+        "end_time": "",
+        "service_type": "Guide Trip Quote",
+        "product_selected": str(record.get("source_subject") or "Custom trip request")[:240],
+        "provider_id": provider_id,
+        "provider_role": "guide",
+        "provider_name": provider_name,
+        "pickup_location": "",
+        "dropoff_location": "",
+        "currency": "USD",
+        "assignment_status": "pending",
+        "provider_informed": "Yes",
+        "provider_informed_by": "JPG",
+        "internal_note": f"[TRIP_BUILDER studio={studio_id} brand={brand_id}{' due='+str(response_due_at)[:30] if response_due_at else ''}]",
+        "confirmation_note": "Custom trip quote request. Complete the agenda and net costs in Guide Nest.",
+        "guide_response": "pending",
+        "created_by": "JPG",
+        "created_at": timestamp,
+        "updated_at": timestamp,
+    }
+    result = request_n8n({"action": "create_assignment", "assignment": assignment}, opener)
+    verified_rows = _records(request_n8n({"action": "list_assignments", "inquiry_id": inquiry_id}, opener))
+    verified = next((row for row in verified_rows if str(row.get("assignment_group_id") or "") == assignment["assignment_group_id"] and ((provider_id and str(row.get("provider_id") or "") == provider_id) or str(row.get("provider_name") or "").casefold() == provider_name.casefold())), None)
+    if not verified:
+        raise ValueError("The Guide Nest quote request was not verified. Refresh before retrying")
+    handoff = _parse(record.get("handoff_json"), {})
+    requests = handoff.get("guide_quote_requests") if isinstance(handoff.get("guide_quote_requests"), list) else []
+    requests.append({
+        "provider_id": provider_id,
+        "provider_name": provider_name,
+        "brand_id": brand_id,
+        "sent_at": timestamp,
+        "response_due_at": str(response_due_at or "")[:80],
+        "status": "sent",
+    })
+    handoff.update({"brand_id": brand_id, "guide_quote_requests": requests})
+    updated = dict(record)
+    updated["handoff_json"] = handoff
+    updated["status"] = "awaiting_guide_quote"
+    updated["updated_at"] = timestamp
+    updated["revision"] = int(record.get("revision") or 0) + 1
+    save(updated, opener)
+    return normalize_record(updated), {**result, "record": verified}
+
+
+def review_guide_quote(record, quote_id, decision, note="", reviewer="MBW Admin", opener=urlopen):
+    if decision not in {"approve", "request_revision"}:
+        raise ValueError("Choose approve or request revision")
+    quotes = _parse(record.get("guide_quotes_json"), [])
+    selected = next((item for item in quotes if str(item.get("quote_id") or "") == str(quote_id or "")), None)
+    if not selected or selected.get("status") != "submitted":
+        raise ValueError("Choose a submitted guide quote")
+    timestamp = now()
+    selected["admin_status"] = "approved" if decision == "approve" else "revision_requested"
+    selected["reviewed_at"] = timestamp
+    selected["reviewed_by"] = str(reviewer or "MBW Admin")[:120]
+    selected["revision_note"] = str(note or "").strip()[:3000]
+    updated = dict(record)
+    updated["guide_quotes_json"] = quotes
+    updated["updated_at"] = timestamp
+    updated["revision"] = int(record.get("revision") or 0) + 1
+    if decision == "approve":
+        updated["status"] = "guide_quote_approved"
+        updated["final_plan_json"] = {
+            "source": "guide_trip_builder",
+            "quote_id": selected.get("quote_id"),
+            "quote_version": selected.get("version"),
+            "provider_id": selected.get("provider_id"),
+            "provider_name": selected.get("provider_name"),
+            "brand_id": selected.get("brand_id", "mbw"),
+            "currency": selected.get("currency", "USD"),
+            "net_options": selected.get("options", []),
+            "approved_at": timestamp,
+            "approved_by": str(reviewer or "MBW Admin")[:120],
+            "pricing_status": "markup_required",
+        }
+        handoff = _parse(record.get("handoff_json"), {})
+        handoff.update({"approved_quote_id": selected.get("quote_id"), "approved_quote_version": selected.get("version"), "itinerary_status": "awaiting_markup"})
+        updated["handoff_json"] = handoff
+    else:
+        if not selected["revision_note"]:
+            raise ValueError("Explain what the guide should revise")
+        updated["status"] = "guide_revision_requested"
+    save(updated, opener)
+    return normalize_record(updated)
+
+
 def normalize_record(record):
     normalized = {}
     for field in FIELDS:
