@@ -17,6 +17,10 @@
     status.textContent = es ? 'Verificando el estado del pago…' : 'Checking payment status…';
     fetch(api+'deposit-session?session_id='+encodeURIComponent(session),{cache:'no-store'}).then(r=>r.json()).then(data=>{
       if (!data.ok) throw Error();
+      if (data.sandbox && data.payment_status === 'paid') {
+        status.textContent = es ? 'Pago de prueba confirmado por Stripe: $100 USD. No se movieron fondos reales ni se crearon registros de producción.' : 'Stripe confirmed the $100 USD sandbox payment. No real funds moved and no production records were created.';
+        return;
+      }
       status.textContent = data.payment_status === 'paid' ? (es ? 'Stripe confirmó tu depósito de $100 USD. Conserva el recibo que recibirás por correo.' : 'Stripe confirmed your $100 USD deposit. Please keep the receipt sent by email.') : (es ? 'Stripe aún no ha confirmado el pago. Contacta a nuestro equipo antes de pagar de nuevo.' : 'Stripe has not confirmed payment yet. Contact our team before paying again.');
     }).catch(()=>{status.textContent=es?'No podemos verificar el pago todavía. Revisa tu recibo de Stripe o contacta a nuestro equipo.':'We cannot verify payment yet. Check your Stripe receipt or contact our team.';});
     return;

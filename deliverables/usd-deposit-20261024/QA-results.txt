@@ -14,7 +14,11 @@ Worker compiles with Wrangler dry run.
 Automated unit/integration tests use mocked Stripe, CRM and accounting destinations.
 Both generators pass 390px and 1440px browser checks with all three brands.
 Deposit page passes 390px and 1440px checks in EN/ES: no overflow, error recovery, missing-reference guard and unpaid-session handling.
-No emails sent, real payments made or production CRM records created during this work.
+No emails sent, real payments made or production CRM records created during this work. One virtual Stripe sandbox payment was completed with Stripe's published Canadian Visa test card and fictional payer information.
 Spanish copy uses verified existing payment facts; human language review remains pending.
 
-Deployment pending account-scoped Cloudflare authorization. Do not publish generator links until worker API is available. New real Stripe sandbox session and receipt/payment verification remain pending deployment.
+Deployment complete: worker version 29543b0a-9e81-4c6d-bf36-2d4e40e75ab4 (v47). Public worker route verified.
+Public site and admin Cloudflare Pages builds completed successfully.
+Actual Stripe sandbox Checkout: Canadian test card, $100 USD, no currency selector or conversion surcharge. Payment status endpoint returned paid / usd / 100 / sandbox=true; guest return page verified success. Test receipts are not represented as delivered emails.
+A bounded CRM read confirmed zero INQ-QA-USD records after the virtual payment. Paid deposit event isolation and CRM retry/accounting behavior are covered by local mocked integration tests; production payment processing has not been exercised.
+Existing static Stripe Payment Links already sent to guests cannot be changed by this release and still offer Stripe currency conversion. Newly generated CRM/itinerary deposit links use the USD-only route.
