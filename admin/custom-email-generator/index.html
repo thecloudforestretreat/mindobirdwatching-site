@@ -1317,7 +1317,8 @@ experiences waiting for you in Mindo.</textarea>
 
       function t(key){
         const lang = getLanguage();
-        return (EMAIL_I18N[lang] && EMAIL_I18N[lang].ui && EMAIL_I18N[lang].ui[key]) || EMAIL_I18N.en.ui[key] || key;
+        const text=(EMAIL_I18N[lang] && EMAIL_I18N[lang].ui && EMAIL_I18N[lang].ui[key]) || EMAIL_I18N.en.ui[key] || key;
+        return key === "whatsappMessage" ? text.replace("Mindo Bird Watching",communications.brand(state.brandId).name) : text;
       }
 
       function applyLanguageDefaults(){

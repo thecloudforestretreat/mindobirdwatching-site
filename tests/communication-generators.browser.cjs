@@ -32,7 +32,7 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
  for(const [id,name]of [['mindo-tours','Mindo Tours'],['choco-andino','Chocó Andino Tours'],['mbw','Mindo Bird Watching']]){
   await page.locator('#communicationBrand').selectOption(id);await page.waitForTimeout(50);
   const html=await page.locator('#htmlOutput').inputValue();assert(html.includes(name));assert((await page.locator(preview).innerText()).includes(name));
-  if(email)assert(html.includes('Agreed rate: $28'));
+  if(email){assert(html.includes('Agreed rate: $28'));const wa=await page.locator(preview+' a[href*="wa.me"]').first().getAttribute('href');assert(decodeURIComponent(wa).includes(name));}
   if(!email){assert.equal(await page.locator('.itemEditor').last().locator('[data-field=unitPrice]').inputValue(),'105');assert.equal(await page.locator('#subtotalValue').innerText(),before);}
  }
  await page.locator('#communicationBrand').selectOption('choco-andino');
