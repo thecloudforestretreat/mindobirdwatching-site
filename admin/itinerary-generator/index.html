@@ -836,14 +836,14 @@
         return String(hour24).padStart(2,'0') + ':' + (['00','15','30','45'].includes(minute) ? minute : '00');
       }
       function normalizeDurationChoice(value,type=''){
-        const text = String(value || '').trim().toLowerCase();
-        if(text === 'extended half day' || text === 'medio día extendido') return 'Extended Half Day';
+        const text = String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+        if(text === 'extended half day' || text === 'medio dia extendido') return 'Extended Half Day';
         if(text === 'custom' || text === 'a convenir') return 'Custom';
         if(text === '2 hours' || text === '2 horas') return '2 Hours';
-        if(text === '3 hours' || text.includes('3 hour')) return '3 Hours';
-        if(text === 'half day' || text.includes('half')) return 'Half Day';
-        if(text === 'full day' || text.includes('full') || text.includes('10 hour')) return 'Full Day';
-        if(text === 'evening' || text.includes('evening') || text.includes('night') || (text.includes('2 hour') && String(type).toLowerCase().includes('night'))) return 'Evening';
+        if(text === '3 hours' || text === '3 horas' || text.includes('3 hour')) return '3 Hours';
+        if(text === 'half day' || text === 'medio dia' || text.includes('half')) return 'Half Day';
+        if(text === 'full day' || text === 'dia completo' || text === 'dia entero' || text.includes('full') || text.includes('10 hour')) return 'Full Day';
+        if(text === 'evening' || text === 'por la noche' || text === 'noche' || text.includes('evening') || text.includes('night') || (text.includes('2 hour') && String(type).toLowerCase().includes('night'))) return 'Evening';
         return 'Flexible';
       }
       function productCodeFromPreset(value){
@@ -1656,7 +1656,7 @@
           ...item,
           name:inferProductPreset(item) === 'Other' ? translateKnownText(item.name,language) : inferProductPreset(item),
           productPreset:inferProductPreset(item),
-          duration:translateKnownText(item.duration,language),
+          duration:normalizeDurationChoice(item.duration,item.type),
           note:translateKnownText(item.note,language)
         }));
         renderEditors();

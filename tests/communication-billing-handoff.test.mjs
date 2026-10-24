@@ -14,6 +14,6 @@ for(const brandId of ['mbw','mindo-tours','choco-andino'])test('Zelle handoff re
 
 test('custom and extended half-day durations never silently display as the first duration choice',()=>{
  const a=source.indexOf('      function normalizeDurationChoice('),b=source.indexOf('\n      function ',a+1),c={};vm.createContext(c);vm.runInContext(source.slice(a,b),c);
- assert.equal(c.normalizeDurationChoice('Custom'),'Custom');assert.equal(c.normalizeDurationChoice('Extended Half Day'),'Extended Half Day');assert.equal(c.normalizeDurationChoice('2 horas'),'2 Hours');
+ assert.equal(c.normalizeDurationChoice('Custom'),'Custom');assert.equal(c.normalizeDurationChoice('Extended Half Day'),'Extended Half Day');assert.equal(c.normalizeDurationChoice('2 horas'),'2 Hours');for(const [input,expected]of [['A convenir','Custom'],['Medio día extendido','Extended Half Day'],['Medio día','Half Day'],['Día completo','Full Day'],['Por la noche','Evening']])assert.equal(c.normalizeDurationChoice(input),expected);
  for(const duration of ['Custom','Extended Half Day'])assert.ok(source.includes("'"+duration+"'"));
 });

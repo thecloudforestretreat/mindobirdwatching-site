@@ -62,7 +62,7 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
  await page.locator(email?'#languageInput':'#language').selectOption('es');
  assert((await page.locator('#htmlOutput').inputValue()).includes('Experiencias en el Chocó Andino'));assert((await page.locator('#htmlOutput').inputValue()).includes('Facturado por Mindo Bird Watching.'));
  if(email){assert((await page.locator('#htmlOutput').inputValue()).includes('Paseo en cuatrimoto'));assert((await page.locator('#htmlOutput').inputValue()).includes('$110 por persona por sesión privada'));}
- else assert((await page.locator('#htmlOutput').inputValue()).includes('mbw-activities-macro-001.jpeg'));
+ else {assert((await page.locator('#htmlOutput').inputValue()).includes('mbw-activities-macro-001.jpeg'));assert.equal(await page.locator('.itemEditor').last().locator('[data-field=duration]').inputValue(),'Custom');}
  if(!email){
   const total=await page.locator('#totalValue').innerText();await page.locator('#showImages').uncheck();const compact=await page.locator('#htmlOutput').inputValue();assert(!compact.includes('mbw_waterfall_003.jpg'));assert(!compact.includes('mbw-activities-macro-001.jpeg'));assert.equal(await page.locator('#totalValue').innerText(),total);
  }
