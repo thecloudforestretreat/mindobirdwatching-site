@@ -24,7 +24,7 @@ test('brand rendering changes identity while retaining real shared contact and o
  for(const id of Object.keys(lib.brands)){
   const b=lib.brand(id),html=lib.header(id,'es')+lib.signature(id,'es',[],'https://wa.me/593969076501')+lib.footer(id);
   assert.match(html,new RegExp(b.name));assert.ok(html.includes(b.site));assert.ok(html.includes(b.logo));assert.ok(html.includes('mindobirdwatching@gmail.com'));
-  if(id!=='mbw'){assert.ok(!html.includes('Mindo Bird Watching'));assert.ok(!html.includes('instagram.com/mindobirdwatching'));}
+  if(id!=='mbw'){assert.ok(!lib.header(id,'es').includes('Mindo Bird Watching'));assert.ok(html.includes('Facturado por Mindo Bird Watching.'));assert.ok(!html.includes('instagram.com/mindobirdwatching'));}
  }
 });
 test('brand-only future cards are filtered, shared cards remain available',()=>{
@@ -48,4 +48,15 @@ test('each brand uses its own Instagram in signatures and social cards',()=>{
   const html=lib.signature(id,'en',[],'https://wa.me/593969076501');assert.ok(html.includes('https://www.instagram.com/'+handle+'/'));
   const social=lib.emailCatalog(baseSocial,id).blocks.find(x=>x.id==='social-links');assert.equal(social.links[0][1],'https://www.instagram.com/'+handle+'/');assert.match(social.description,/Mindo Bird Watching/);
  }
+});
+test('funnel identity never changes the shared MBW billing identity',()=>{
+ for(const id of Object.keys(lib.brands)){
+  assert.equal(lib.billing.brandId,'mbw');assert.equal(lib.billing.name,'Mindo Bird Watching');
+  for(const lang of ['en','es']){
+   const html=lib.signature(id,lang,[],'https://wa.me/593969076501');
+   if(id==='mbw')assert.equal(lib.billingNote(id,lang),'');
+   else {assert.ok(html.includes(lang==='es'?'Facturado por Mindo Bird Watching.':'Billed by Mindo Bird Watching.'));assert.ok(html.includes(lib.brand(id).name));}
+  }
+ }
+ assert.equal(Object.isFrozen(lib.billing),true);
 });

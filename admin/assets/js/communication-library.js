@@ -674,7 +674,9 @@ const brands=Object.freeze({
  'mindo-tours':{id:'mindo-tours',instagram:'https://www.instagram.com/mindo.tours/',name:'Mindo Tours',site:'https://mindotours.com',logo:'https://mindotours.com/assets/logo/mindo_tours_logo_512.png',email:'mindobirdwatching@gmail.com',tagline:{en:'Mindo activities & day trips',es:'Actividades y excursiones en Mindo'}},
  'choco-andino':{id:'choco-andino',instagram:'https://www.instagram.com/chocoandino.tours/',name:'Chocó Andino Tours',site:'https://chocoandinotours.com',logo:'https://chocoandinotours.com/assets/logo/choco_andino_tours_logo_512.png',email:'mindobirdwatching@gmail.com',tagline:{en:'Experiences in the Chocó Andino',es:'Experiencias en el Chocó Andino'}}
 });
+const billing=Object.freeze({brandId:'mbw',name:'Mindo Bird Watching'});
 const brand=id=>brands[id]||brands.mbw;
+function billingNote(id,lang='en'){return brand(id).id==='mbw'?'':(lang==='es'?'Facturado por ':'Billed by ')+billing.name+'.';}
 const allows=(item,id)=>!item.brands||item.brands.includes(brand(id).id);
 const byCode=code=>catalog.experiences.find(x=>x.productCode===code);
 const byId=id=>catalog.experiences.find(x=>x.id===id);
@@ -737,16 +739,16 @@ function header(id,lang='en'){
 }
 function iconsFor(id,icons,whatsapp){const b=brand(id);return b.id==='mbw'?icons:[{href:b.site,img:b.logo,w:28,h:28,alt:b.name},{href:b.instagram,img:'https://cdn-icons-png.flaticon.com/512/2111/2111463.png',w:28,h:28,alt:'Instagram'},{href:whatsapp,img:'https://i.imgur.com/0sfOKs8.png',w:28,h:28,alt:'WhatsApp'}];}
 function signature(id,lang,icons=[],whatsapp=''){
- const b=brand(id);return `<tr><td style="padding:0 20px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fff;border:1px solid #d9e2d5;border-radius:18px;"><tr><td style="padding:18px;"><p style="margin:0 0 10px;font-size:14px;line-height:20px;">${lang==='es'?'Saludos cordiales,':'Warm regards,'}<br><strong>${esc(b.name)}</strong></p><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>${iconsFor(id,icons,whatsapp).map(x=>`<td style="padding:0 7px 7px 0;"><a href="${esc(x.href)}"><img src="${esc(x.img)}" width="28" height="28" alt="${esc(x.alt)}" style="display:block;width:28px;height:28px;object-fit:contain;border:0;"></a></td>`).join('')}</tr></table><p style="margin:5px 0 0;font-size:12px;line-height:18px;">Ecuador<br><a href="${b.site}">${esc(new URL(b.site).hostname)}</a> | <a href="mailto:${b.email}">${b.email}</a></p></td></tr></table></td></tr>`;
+ const b=brand(id);return `<tr><td style="padding:0 20px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fff;border:1px solid #d9e2d5;border-radius:18px;"><tr><td style="padding:18px;"><p style="margin:0 0 10px;font-size:14px;line-height:20px;">${lang==='es'?'Saludos cordiales,':'Warm regards,'}<br><strong>${esc(b.name)}</strong></p>${billingNote(id,lang)?`<p data-billing-brand="mbw" style="margin:0 0 10px;font-size:12px;line-height:18px;color:#536067;">${esc(billingNote(id,lang))}</p>`:''}<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>${iconsFor(id,icons,whatsapp).map(x=>`<td style="padding:0 7px 7px 0;"><a href="${esc(x.href)}"><img src="${esc(x.img)}" width="28" height="28" alt="${esc(x.alt)}" style="display:block;width:28px;height:28px;object-fit:contain;border:0;"></a></td>`).join('')}</tr></table><p style="margin:5px 0 0;font-size:12px;line-height:18px;">Ecuador<br><a href="${b.site}">${esc(new URL(b.site).hostname)}</a> | <a href="mailto:${b.email}">${b.email}</a></p></td></tr></table></td></tr>`;
 }
 function footer(id){const b=brand(id);return `<tr><td align="center" style="padding:14px 24px 6px;font-size:11px;line-height:16px;color:#32453d;"><a href="${b.site}" style="text-decoration:none;color:inherit;">${esc(b.name)} © ${new Date().getFullYear()}</a></td></tr>`;}
 function mountSelector(anchor,selected,onChange){
  const bar=document.createElement('section');bar.className='communicationBrandBar';bar.setAttribute('aria-label','Communication brand');
  const label=document.createElement('label');label.textContent='Communication brand';const select=document.createElement('select');select.id='communicationBrand';
  for(const b of Object.values(brands)){const option=document.createElement('option');option.value=b.id;option.textContent=b.name;select.append(option);}select.value=brand(selected).id;label.append(select);
- const note=document.createElement('span');note.textContent='Shared activities, images and standard prices · branding changes only';bar.append(label,note);anchor.before(bar);
+ const note=document.createElement('span');note.textContent='Shared activities, images and prices · Billed by '+billing.name;bar.append(label,note);anchor.before(bar);
  select.addEventListener('change',()=>onChange(select.value));return select;
 }
-global.MBW_COMMUNICATIONS=Object.freeze({catalog,brands,brand,allows,byCode,byId,block,emailCatalog,applyItineraryCatalog,experienceFor,imageRow,header,signature,footer,mountSelector});
+global.MBW_COMMUNICATIONS=Object.freeze({catalog,brands,brand,billing,billingNote,allows,byCode,byId,block,emailCatalog,applyItineraryCatalog,experienceFor,imageRow,header,signature,footer,mountSelector});
 
 })(window);

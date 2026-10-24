@@ -34,18 +34,33 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
   await last.locator('[data-field=productPreset]').selectOption('MBW013 - Waterfall Hike');assert.equal(await page.locator(preview+' img[src*="mbw_waterfall_003.jpg"]').count(),1);
   await page.locator('#addItemBtn').click();
   await page.locator('#guestCount').fill('2');
-  await last.locator('[data-field=productPreset]').selectOption({label:'ACT021 - Private Insect & Macro Wildlife Search'});await last.locator('[data-field=unitPrice]').fill('105');
+  await last.locator('[data-field=productPreset]').selectOption({label:'ACT021 - Private Insect & Macro Wildlife Search'});await last.locator('[data-field=unitPrice]').fill('105');assert.equal(await last.locator('[data-field=duration]').inputValue(),'Custom');
  }
  const before=email?null:await page.locator('#subtotalValue').innerText();
  for(const [id,name]of [['mindo-tours','Mindo Tours'],['choco-andino','Chocó Andino Tours'],['mbw','Mindo Bird Watching']]){
   await page.locator('#communicationBrand').selectOption(id);await page.waitForTimeout(50);
   const html=await page.locator('#htmlOutput').inputValue();assert(html.includes(name));if(id!=='mbw')assert(html.includes('https://www.instagram.com/'+(id==='mindo-tours'?'mindo.tours':'chocoandino.tours')+'/'));assert((await page.locator(preview).innerText()).includes(name));
+  if(id!=='mbw')assert(html.includes('Billed by Mindo Bird Watching.'));
   if(email){assert(html.includes('Agreed rate: $28'));const wa=await page.locator(preview+' a[href*="wa.me"]').first().getAttribute('href');assert(decodeURIComponent(wa).includes(name));}
   if(!email){assert.equal(await page.locator('.itemEditor').last().locator('[data-field=unitPrice]').inputValue(),'105');assert.equal(await page.locator('#subtotalValue').innerText(),before);}
+  if(!email){
+   const total=await page.locator('#totalValue').innerText();
+   for(const stage of ['preliminary','approved_pending','deposit_received','paid_in_full']){
+    await page.locator('#itineraryStage').selectOption(stage);
+    const links=await page.locator(preview+' a[href*="buy.stripe.com/"]').evaluateAll(xs=>xs.map(x=>x.getAttribute('href')));
+    assert.equal(links.length,stage==='approved_pending'?1:0);
+    if(links.length)assert.equal(links[0],'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05');
+    if(id!=='mbw')assert.equal(await page.locator(preview+' [data-billing-brand="mbw"]').count(),stage==='preliminary'?1:2);
+    if(width===1440&&id==='choco-andino'&&stage==='approved_pending'){await page.locator(preview+' [data-billing-brand="mbw"]').first().scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/mbw-billing-payment-qa.png'});}
+    assert.equal(await page.locator('#totalValue').innerText(),total);
+   }
+   await page.locator('#itineraryStage').selectOption('preliminary');
+   const draft=await page.evaluate(()=>JSON.parse(localStorage.getItem('mbw_itinerary_generator_v1')));assert.equal(draft.brandId,id);assert.equal(draft.billingBrandId,'mbw');
+  }
  }
  await page.locator('#communicationBrand').selectOption('choco-andino');
  await page.locator(email?'#languageInput':'#language').selectOption('es');
- assert((await page.locator('#htmlOutput').inputValue()).includes('Experiencias en el Chocó Andino'));
+ assert((await page.locator('#htmlOutput').inputValue()).includes('Experiencias en el Chocó Andino'));assert((await page.locator('#htmlOutput').inputValue()).includes('Facturado por Mindo Bird Watching.'));
  if(email){assert((await page.locator('#htmlOutput').inputValue()).includes('Paseo en cuatrimoto'));assert((await page.locator('#htmlOutput').inputValue()).includes('$110 por persona por sesión privada'));}
  else assert((await page.locator('#htmlOutput').inputValue()).includes('mbw-activities-macro-001.jpeg'));
  if(!email){

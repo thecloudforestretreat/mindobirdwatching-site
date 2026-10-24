@@ -44,3 +44,18 @@ Email drafts and their brand are saved in local browser storage, consistent with
 - `Include photos in itinerary` defaults off. It controls cover and activity photos together while keeping the brand logo/social icons. Saved local and CRM itinerary JSON contains `showImages`. Legacy drafts lacking that flag open in compact mode. Changing photo mode never changes agreed rates, service quantities or totals. The cover selector is disabled while photos are off.
 - The existing service-type defaults used unsupported values such as Adventure/Wildlife, which made the native selector display Birdwatching. Shared activity defaults and known legacy activity types now normalize to the supported Activity/Specialty Wildlife choices without altering prices or quantities.
 - QA: 46 unit/regression checks pass. Browser QA at 390px and 1440px covers both brands' Instagram links, both biking route rates, 2-hour duration, waterfall image, compact/image exports, saved photo preference in both directions, unchanged totals and existing quote preservation. No email sends or CRM writes.
+
+
+## Billing model clarification and QA
+
+User confirmed that Mindo Tours and Chocó Andino Tours are marketing funnels billed through Mindo Bird Watching's existing business/Stripe setup. No separate merchant accounts are required by this implementation, and no company legal suffix or statement descriptor was inferred.
+
+- Added a short bilingual disclosure for the other funnels: "Billed by Mindo Bird Watching." / "Facturado por Mindo Bird Watching." It appears in communication signatures and beside itinerary payment actions. It does not assert that a preliminary itinerary is paid or confirmed.
+- Funnel identity remains `brandId`; new itinerary/email draft metadata uses a separate fixed `billingBrandId: mbw`. Zelle handoffs retain `marketing_brand_id` and `billing_brand_id` separately. This is draft/handoff metadata, not a claim that every downstream accounting or analytics field has been implemented.
+- The existing MBW Stripe deposit link, invoice links, Stripe Worker credentials/account selection and Zelle recipients are unchanged. No live financial settings were edited, and the Stripe legal account identity/statement descriptor was not independently audited.
+- 51 unit/regression tests passed, including synthetic Zelle handoffs for all three funnels with exact service rates, vehicle quantity, adjustments, inquiry IDs and recipient retained.
+- Isolated browser QA at 390px and 1440px passed for both generators, all three brands, English/Spanish, photo modes and all four payment stages. Preliminary itineraries have no deposit link; approved/pending uses the same existing MBW link; deposit-received and paid-in-full do not offer a second deposit. Brand/stage/photo changes do not change quoted totals.
+- Checked 20 unique public experience-detail links using GET and page-title validation: all returned 200 with non-error titles.
+- No guest emails, live invoices, payments or CRM writes were performed. Delivered-email rendering in Gmail/Outlook, live payment completion/webhook reconciliation and human bilingual review remain unverified.
+
+Visual QA also found that Custom and Extended Half Day durations were absent from the native duration options, causing the browser to show the first available duration (2 Hours) for a newly selected macro/bear service. Added those choices and preserved them on reload and Spanish translation. This fixes a misleading display without changing rates or guest counts.

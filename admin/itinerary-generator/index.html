@@ -351,7 +351,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="/assets/js/communication-library.js?v=20261024-3"></script>
+<script src="/assets/js/communication-library.js?v=20261024-4"></script>
 <link rel="stylesheet" href="/assets/css/communication-brand.css?v=20261024-1">
   <script>
     (() => {
@@ -714,6 +714,10 @@
           if(String(value)===original)return entry.description[to]+(entry.priceNote?' '+entry.priceNote[to]:'');
         }
 
+        if(value==='Extended Half Day'&&language==='es')return 'Medio día extendido';
+        if(value==='Medio día extendido'&&language==='en')return 'Extended Half Day';
+        if(value==='Custom'&&language==='es')return 'A convenir';
+        if(value==='A convenir'&&language==='en')return 'Custom';
         if(value==='2 Hours'&&language==='es')return '2 horas';
         if(value==='2 horas'&&language==='en')return '2 Hours';
         const text = String(value || '');
@@ -833,6 +837,8 @@
       }
       function normalizeDurationChoice(value,type=''){
         const text = String(value || '').trim().toLowerCase();
+        if(text === 'extended half day' || text === 'medio día extendido') return 'Extended Half Day';
+        if(text === 'custom' || text === 'a convenir') return 'Custom';
         if(text === '2 hours' || text === '2 horas') return '2 Hours';
         if(text === '3 hours' || text.includes('3 hour')) return '3 Hours';
         if(text === 'half day' || text.includes('half')) return 'Half Day';
@@ -1028,7 +1034,7 @@
               </div>
               <div class="field">
                 <label>Duration</label>
-                <select data-field="duration">${['2 Hours','3 Hours','Half Day','Full Day','Flexible','Evening'].map(duration=>`<option value="${duration}" ${item.duration===duration?'selected':''}>${duration}</option>`).join('')}</select>
+                <select data-field="duration">${['2 Hours','3 Hours','Half Day','Extended Half Day','Full Day','Flexible','Evening','Custom'].map(duration=>`<option value="${duration}" ${item.duration===duration?'selected':''}>${duration}</option>`).join('')}</select>
               </div>
             </div>
             <div class="field">
@@ -1054,6 +1060,7 @@
         const selectedStage = itineraryStage();
         return {
           brandId:communicationBrandId,
+          billingBrandId:communications.billing.brandId,
           itineraryStage:selectedStage,
           guestName:$('guestName').value.trim(),
           guestEmail:$('guestEmail').value.trim(),
@@ -1277,6 +1284,7 @@
               <tr><td align="center" style="padding:22px 20px;">
                 <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(stageCopy.paymentTitle)}</h2>
                 <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(stageCopy.paymentText)}</p>
+                ${communications.billingNote(data.brandId,data.language)?`<p data-billing-brand="mbw" style="margin:0 0 14px;font-size:13px;line-height:19px;color:#ffffff;">${escapeHtml(communications.billingNote(data.brandId,data.language))}</p>`:''}
                 ${stage === 'paid_in_full' ? `<span style="display:inline-block;margin:0 4px 14px;padding:8px 14px;border-radius:999px;background:#ffffff;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</span><br>` : ''}
                 ${stage === 'approved_pending' && validHttpsUrl(data.depositLink) ? `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
                 <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
@@ -1551,6 +1559,7 @@
         const sourceVersion = Number(state.itineraryVersion || 0);
         const draft = {
           source:'itinerary_generator', createdAt,
+          marketing_brand_id:data.brandId||'mbw',billing_brand_id:'mbw',
           itineraryVersion:sourceVersion, itineraryTitle:data.tripTitle,
           inquiry_id:String(state.inquiryId || state.crmRecord?.inquiry_id || ''),
           guest_id:String(state.crmRecord?.guest_id || ''), booking_id:String(state.crmRecord?.booking_id || ''), quote_id:String(state.crmRecord?.quote_id || ''),
