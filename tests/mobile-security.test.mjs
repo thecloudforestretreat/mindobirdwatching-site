@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mobileIdentity } from "../functions/lib/mobile-auth.mjs";
-import { configuredRole, guideMayRequest } from "../functions/_middleware.js";
+import { configuredRole, guideMayRequest, hasTrustedAudience } from "../functions/_middleware.js";
 import { crmCall } from "../functions/lib/mobile-crm.mjs";
 import { assertMobileWriteReady, assertSameOrigin, mobileWriteReady, readJson, writesEnabled } from "../functions/lib/mobile-http.mjs";
 
@@ -21,6 +21,13 @@ test("restricted guide navigation includes only Guide Nest and its read endpoint
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/birding/")), false);
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guest-crm/")), false);
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/mobile/guests")), false);
+});
+
+test("origin authentication trusts only the Admin and path-scoped Guide Nest audiences", () => {
+  assert.equal(hasTrustedAudience(["62ad79ee3af18f90b4827d5a84be038d4df901a56cbc21abda1ac5991ea89060"]), true);
+  assert.equal(hasTrustedAudience(["b4d788474b91e0b737ff8d49489f7b127fc63dd3ed9ece6464b999ca84aaa7e0"]), true);
+  assert.equal(hasTrustedAudience(["unrelated-access-application"]), false);
+  assert.equal(hasTrustedAudience("b4d788474b91e0b737ff8d49489f7b127fc63dd3ed9ece6464b999ca84aaa7e0"), false);
 });
 
 test("the origin denies identities that are absent from both explicit role maps", () => {
