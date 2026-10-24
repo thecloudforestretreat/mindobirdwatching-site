@@ -25,6 +25,15 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   const browser = await chromium.launch({ headless: true, executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
+  await page.addInitScript(() => {
+    const NativeDate = Date;
+    const fixedNow = new NativeDate("2026-10-23T17:00:00Z").valueOf();
+    class FixedDate extends NativeDate {
+      constructor(...args) { super(...(args.length ? args : [fixedNow])); }
+      static now() { return fixedNow; }
+    }
+    Object.defineProperty(window, "Date", { value: FixedDate });
+  });
   const writes = [];
   let requestedProvider = "";
   const bootstrap = {
@@ -141,6 +150,10 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/availability") && write.method === "POST"), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-calendar.png", fullPage: true });
     await page.locator('[data-route="sightings"]').click();
+    assert.equal(await page.locator("#reportTour option").count(), 2);
+    assert.equal(await page.locator('#reportTour option', { hasText: "November Guest" }).count(), 0);
+    assert.equal(await page.locator('#reportTour option', { hasText: "December Guest" }).count(), 0);
+    await page.locator("#reportTour").selectOption("B-1");
     const reportHref = await page.locator("#openReport").getAttribute("href");
     assert.match(reportHref, /^https:\/\/mindobirdwatching\.com\/es\/reporte-de-avistamientos\//);
     assert.match(reportHref, /booking=A-1/);

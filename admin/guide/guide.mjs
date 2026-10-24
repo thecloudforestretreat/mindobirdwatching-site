@@ -213,9 +213,16 @@ function reportState(tour) {
   return { key: tour.serviceDate && tour.serviceDate <= today ? "reportNeeded" : "reportScheduled" };
 }
 
+function reportEligibleTours() {
+  const today = todayInEcuador();
+  return (data?.tours || []).filter(tour =>
+    tour.accepted === true && (!tour.serviceDate || tour.serviceDate <= today)
+  );
+}
+
 function updateReportLink() {
   const reference = $("#reportTour").value;
-  const tour = data?.tours.find(item => (item.bookingId || item.assignmentId) === reference);
+  const tour = reportEligibleTours().find(item => (item.bookingId || item.assignmentId) === reference);
   $("#openReport").href = tour ? reportUrl(tour) : (language === "es" ? "https://mindobirdwatching.com/es/reporte-de-avistamientos/" : "https://mindobirdwatching.com/guide-tour-recap/");
 }
 
@@ -252,7 +259,8 @@ function renderTours() {
   $("#tourList").innerHTML = visible.length ? [...displayGroups.entries()].map(([date, tours]) => `<section class="tourDateGroup"><h2>${esc(dateGroupLabel(date === "pending" ? "" : date))}</h2>${tours.map(tour => tourCard(tour, { next: !selectedCalendarDate && !selectedAssignmentId && tourView === "upcoming" && cardIndex++ === 0 })).join("")}</section>`).join("") : empty(data.tours.length ? t("noMatchingTours") : (data.providerName ? `${t("noTours")} ${data.providerName}.` : t("chooseGuide")));
   renderCalendar();
   const selected = $("#reportTour").value;
-  $("#reportTour").innerHTML = data.tours.length ? data.tours.map(tour => `<option value="${esc(tour.bookingId || tour.assignmentId)}" ${(tour.bookingId || tour.assignmentId) === selected ? "selected" : ""}>${esc(dateLabel(tour.serviceDate))} · ${esc(tour.guestName)} · ${t(reportState(tour).key)}</option>`).join("") : `<option value="">${t("noTour")}</option>`;
+  const eligibleTours = reportEligibleTours();
+  $("#reportTour").innerHTML = eligibleTours.length ? eligibleTours.map(tour => `<option value="${esc(tour.bookingId || tour.assignmentId)}" ${(tour.bookingId || tour.assignmentId) === selected ? "selected" : ""}>${esc(dateLabel(tour.serviceDate))} · ${esc(tour.guestName)} · ${t(reportState(tour).key)}</option>`).join("") : `<option value="">${t("noTour")}</option>`;
   updateReportLink();
 }
 

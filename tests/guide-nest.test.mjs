@@ -308,6 +308,7 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(js, /Copy guest message/);
   assert.match(js, /Google review/);
   assert.match(js, /Tripadvisor/);
+  assert.match(js, /tour\.accepted === true && \(!tour\.serviceDate \|\| tour\.serviceDate <= today\)/);
   assert.match(js, /MBW Shop/);
   assert.match(js, /assets\/images\/icons\/mbw_gr\.png/);
   assert.match(js, /assets\/images\/icons\/mbw_icons_trip_advisor\.png/);
