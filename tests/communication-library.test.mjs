@@ -35,3 +35,17 @@ test('shared catalog updates default rates without changing already quoted itine
  const key='ACT021 - Private Insect & Macro Wildlife Search',defaults={[key]:{unitPrice:999,note:'old'}},rules={ACT021:{model:'per_private_session',price:999}},labels={};const quoted={productPreset:key,quantity:3,unitPrice:105};
  lib.applyItineraryCatalog([key],defaults,rules,labels);assert.equal(rules.ACT021.model,'per_person');assert.equal(rules.ACT021.price,110);assert.equal(defaults[key].unitPrice,110);assert.equal(quoted.unitPrice,105);assert.match(labels[key],/Búsqueda privada/);
 });
+test('biking has two distinct approved rates and one shared photograph',()=>{
+ const short=lib.byCode('ACT017'),long=lib.byCode('ACT017-R2');assert.equal(short.price,20);assert.equal(long.price,50);assert.equal(short.image,long.image);assert.match(short.image,/mountain-biking-001.jpeg$/);
+ const options=[],defaults={},rules={},labels={};lib.applyItineraryCatalog(options,defaults,rules,labels);assert.ok(options.includes(short.productPreset));assert.ok(options.includes(long.productPreset));assert.equal(rules.ACT017.price,20);assert.equal(rules['ACT017-R2'].price,50);assert.equal(defaults[short.productPreset].type,'Activity');
+});
+test('the waterfall hike image can be included or suppressed without changing the item',()=>{
+ const item={productPreset:'MBW013 - Waterfall Hike',quantity:3,unitPrice:20};assert.match(lib.imageRow(item,'en',true),/waterfall-fall-tour\/mbw_waterfall_003.jpg/);assert.equal(lib.imageRow(item,'en',false),'');assert.equal(item.quantity*item.unitPrice,60);
+});
+test('each brand uses its own Instagram in signatures and social cards',()=>{
+ const baseSocial={...base,blocks:[{id:'social-links',group:'social',links:[['Instagram','https://www.instagram.com/mindobirdwatching/']]}]};
+ for(const [id,handle]of [['mindo-tours','mindo.tours'],['choco-andino','chocoandino.tours']]){
+  const html=lib.signature(id,'en',[],'https://wa.me/593969076501');assert.ok(html.includes('https://www.instagram.com/'+handle+'/'));
+  const social=lib.emailCatalog(baseSocial,id).blocks.find(x=>x.id==='social-links');assert.equal(social.links[0][1],'https://www.instagram.com/'+handle+'/');assert.match(social.description,/Mindo Bird Watching/);
+ }
+});

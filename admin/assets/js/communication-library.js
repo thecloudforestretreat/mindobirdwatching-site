@@ -610,14 +610,69 @@ const catalog={
       "minGuests": 1,
       "model": "flat",
       "rateOnly": true
+    },
+    {
+      "brands": [
+        "mbw",
+        "mindo-tours",
+        "choco-andino"
+      ],
+      "model": "per_person",
+      "minGuests": 1,
+      "image": "https://mindobirdwatching.com/assets/images/activities/mbw-activities-mountain-biking-001.jpeg",
+      "group": "activities",
+      "url": "https://mindobirdwatching.com/activities/mountain-biking/",
+      "id": "activity-mountain-biking",
+      "productCode": "ACT017",
+      "productPreset": "ACT017 - Mountain Biking",
+      "sourceId": "en-0049",
+      "price": 20,
+      "duration": "2 Hours",
+      "title": {
+        "en": "Mountain Biking — 2-hour Route",
+        "es": "Ciclismo de montaña — ruta de 2 horas"
+      },
+      "description": {
+        "en": "A guided route of approximately 4 km around Mindo. Butterfly Garden admission can be added for $10 per person.",
+        "es": "Ruta guiada de aproximadamente 4 km por los alrededores de Mindo. Puede añadir la entrada al mariposario por $10 por persona."
+      }
+    },
+    {
+      "brands": [
+        "mbw",
+        "mindo-tours",
+        "choco-andino"
+      ],
+      "model": "per_person",
+      "minGuests": 1,
+      "image": "https://mindobirdwatching.com/assets/images/activities/mbw-activities-mountain-biking-001.jpeg",
+      "group": "activities",
+      "url": "https://mindobirdwatching.com/activities/mountain-biking/",
+      "id": "activity-mountain-biking-waterfalls",
+      "productCode": "ACT017-R2",
+      "productPreset": "ACT017-R2 - Mountain Biking - Cable Car and Waterfalls Route",
+      "sourceId": "en-act017-r2",
+      "price": 50,
+      "duration": "Flexible",
+      "title": {
+        "en": "Mountain Biking — Cable Car & Waterfalls",
+        "es": "Ciclismo de montaña — teleférico y cascadas"
+      },
+      "description": {
+        "en": "A more demanding 10 km round-trip route, including the cable car and two waterfalls. Confirm availability and participation requirements with our team.",
+        "es": "Ruta más exigente de 10 km de ida y vuelta, que incluye el teleférico y dos cascadas. Consulte la disponibilidad y los requisitos de participación con nuestro equipo."
+      }
     }
-  ]
+  ],
+  "itineraryImages": {
+    "MBW013": "https://mindobirdwatching.com/assets/images/pages/activities/waterfall-fall-tour/mbw_waterfall_003.jpg"
+  }
 };
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const brands=Object.freeze({
  'mbw':{id:'mbw',name:'Mindo Bird Watching',site:'https://mindobirdwatching.com',logo:'https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png',email:'mindobirdwatching@gmail.com',tagline:{en:'Private & group cloud forest tours',es:'Tours privados y grupales en el bosque nublado'}},
- 'mindo-tours':{id:'mindo-tours',name:'Mindo Tours',site:'https://mindotours.com',logo:'https://mindotours.com/assets/logo/mindo_tours_logo_512.png',email:'mindobirdwatching@gmail.com',tagline:{en:'Mindo activities & day trips',es:'Actividades y excursiones en Mindo'}},
- 'choco-andino':{id:'choco-andino',name:'Chocó Andino Tours',site:'https://chocoandinotours.com',logo:'https://chocoandinotours.com/assets/logo/choco_andino_tours_logo_512.png',email:'mindobirdwatching@gmail.com',tagline:{en:'Experiences in the Chocó Andino',es:'Experiencias en el Chocó Andino'}}
+ 'mindo-tours':{id:'mindo-tours',instagram:'https://www.instagram.com/mindo.tours/',name:'Mindo Tours',site:'https://mindotours.com',logo:'https://mindotours.com/assets/logo/mindo_tours_logo_512.png',email:'mindobirdwatching@gmail.com',tagline:{en:'Mindo activities & day trips',es:'Actividades y excursiones en Mindo'}},
+ 'choco-andino':{id:'choco-andino',instagram:'https://www.instagram.com/chocoandino.tours/',name:'Chocó Andino Tours',site:'https://chocoandinotours.com',logo:'https://chocoandinotours.com/assets/logo/choco_andino_tours_logo_512.png',email:'mindobirdwatching@gmail.com',tagline:{en:'Experiences in the Chocó Andino',es:'Experiencias en el Chocó Andino'}}
 });
 const brand=id=>brands[id]||brands.mbw;
 const allows=(item,id)=>!item.brands||item.brands.includes(brand(id).id);
@@ -645,10 +700,12 @@ function block(base,item,lang='en',id='mbw'){
  }
  const result={...base,...extra};
  if(result.id==='social-links'&&brand(id).id!=='mbw'){
-  result.title=lang==='es'?'Reseñas, fotos y videos de Mindo Bird Watching':'Mindo Bird Watching reviews, photos & videos';
-  result.description=lang==='es'?'Consulte reseñas de huéspedes, fotos y videos de Mindo Bird Watching.':'Read Mindo Bird Watching guest reviews and explore its photos and videos.';
+  const current=brand(id);
+  result.title=lang==='es'?'Reseñas y redes sociales':'Reviews & social links';
+  result.description=lang==='es'?'Consulte reseñas y videos de Mindo Bird Watching y siga a '+current.name+' en Instagram.':'Read Mindo Bird Watching guest reviews, explore its videos and follow '+current.name+' on Instagram.';
+  result.links=(result.links||[]).map(link=>/instagram/i.test(link[0])?[link[0],current.instagram]:link);
  }
- if(lang==='es')result.duration=({'Half Day':'Medio día','Extended Half Day':'Medio día extendido','Full Day':'Día completo','3 Hours':'3 horas','Flexible':'Flexible','Custom':'A convenir','Evening':'Por la noche'})[result.duration]||result.duration;
+ if(lang==='es')result.duration=({'2 Hours':'2 horas','Half Day':'Medio día','Extended Half Day':'Medio día extendido','Full Day':'Día completo','3 Hours':'3 horas','Flexible':'Flexible','Custom':'A convenir','Evening':'Por la noche'})[result.duration]||result.duration;
  if(brand(id).id!=='mbw'&&result.group==='tours')result.group='activities';
  return result;
 }
@@ -662,20 +719,23 @@ function emailCatalog(base,id='mbw',lang='en'){
 }
 function applyItineraryCatalog(options,defaults,rules,labels){
  for(const x of catalog.experiences){
-  const key=Object.keys(defaults).find(k=>k.startsWith(x.productCode+' - '));
+  let key=Object.keys(defaults).find(k=>k.startsWith(x.productCode+' - '));
+  if(!key&&x.productPreset){key=x.productPreset;defaults[key]={type:'Activity',duration:x.duration||'Flexible'};}
   if(!key)continue;
+  if(x.productPreset&&!options.includes(key))options.push(key);
   rules[x.productCode]={...rules[x.productCode],model:x.model,price:x.price,minGuests:x.minGuests,minimumBilledQuantity:x.productCode==='ACT011'?4:1,soloPrice:x.soloPrice||null};
   defaults[key]={...defaults[key],unitPrice:x.price};
+  if(x.group==='activities')defaults[key].type=x.productCode==='ACT021'?'Specialty Wildlife':'Activity';
   if(x.description){defaults[key].note=x.description.en+(x.priceNote?' '+x.priceNote.en:'');defaults[key].duration=x.duration;}
   if(x.title&&labels)labels[key]=x.productCode+' - '+x.title.es;
  }
 }
 function experienceFor(item){const code=String(item.productPreset||item.name||'').match(/^([A-Z0-9-]+)\s+-\s+/)?.[1];return byCode(code);}
-function imageRow(item,lang='en'){const x=experienceFor(item);return x?.image?`<tr><td colspan="3" style="padding:0;"><img src="${esc(x.image)}" width="600" alt="${esc(x.title?.[lang]||x.title?.en||'Activity')}" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>`:'';}
+function imageRow(item,lang='en',show=true){if(!show)return '';const x=experienceFor(item),code=String(item.productPreset||item.name||'').match(/^([A-Z0-9-]+)\s+-\s+/)?.[1],image=catalog.itineraryImages?.[code]||x?.image;return image?`<tr><td colspan="3" style="padding:0;"><img src="${esc(image)}" width="600" alt="${esc(x?.title?.[lang]||x?.title?.en||(lang==='es'?'Caminata a las cascadas':'Waterfall hike'))}" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>`:'';}
 function header(id,lang='en'){
  const b=brand(id);return `<tr><td style="padding:0 20px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fff;border:1px solid #d9e2d5;border-radius:18px;"><tr><td style="padding:14px 18px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding-right:12px;"><a href="${b.site}"><img src="${b.logo}" width="78" height="78" alt="${esc(b.name)}" style="display:block;width:78px;height:78px;object-fit:contain;border:0;"></a></td><td><a href="${b.site}" style="text-decoration:none;color:#0D5925;"><strong style="display:block;font-family:Georgia,serif;font-size:25px;line-height:29px;">${esc(b.name)}</strong><span style="display:block;margin-top:3px;color:#536067;font-size:12px;line-height:17px;">${esc(b.tagline[lang]||b.tagline.en)}</span></a></td></tr></table></td></tr></table></td></tr>`;
 }
-function iconsFor(id,icons,whatsapp){const b=brand(id);return b.id==='mbw'?icons:[{href:b.site,img:b.logo,w:28,h:28,alt:b.name},{href:whatsapp,img:'https://i.imgur.com/0sfOKs8.png',w:28,h:28,alt:'WhatsApp'}];}
+function iconsFor(id,icons,whatsapp){const b=brand(id);return b.id==='mbw'?icons:[{href:b.site,img:b.logo,w:28,h:28,alt:b.name},{href:b.instagram,img:'https://cdn-icons-png.flaticon.com/512/2111/2111463.png',w:28,h:28,alt:'Instagram'},{href:whatsapp,img:'https://i.imgur.com/0sfOKs8.png',w:28,h:28,alt:'WhatsApp'}];}
 function signature(id,lang,icons=[],whatsapp=''){
  const b=brand(id);return `<tr><td style="padding:0 20px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fff;border:1px solid #d9e2d5;border-radius:18px;"><tr><td style="padding:18px;"><p style="margin:0 0 10px;font-size:14px;line-height:20px;">${lang==='es'?'Saludos cordiales,':'Warm regards,'}<br><strong>${esc(b.name)}</strong></p><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>${iconsFor(id,icons,whatsapp).map(x=>`<td style="padding:0 7px 7px 0;"><a href="${esc(x.href)}"><img src="${esc(x.img)}" width="28" height="28" alt="${esc(x.alt)}" style="display:block;width:28px;height:28px;object-fit:contain;border:0;"></a></td>`).join('')}</tr></table><p style="margin:5px 0 0;font-size:12px;line-height:18px;">Ecuador<br><a href="${b.site}">${esc(new URL(b.site).hostname)}</a> | <a href="mailto:${b.email}">${b.email}</a></p></td></tr></table></td></tr>`;
 }

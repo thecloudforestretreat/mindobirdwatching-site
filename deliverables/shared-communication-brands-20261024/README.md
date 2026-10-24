@@ -21,7 +21,7 @@ The same product IDs, standard rates and 12 user-supplied image files are availa
 
 ## Maintenance
 
-Edit the catalog and brand profiles in the shared library once, then bump its query version in both generators. `emailCatalog` adds new experience cards and overlays the legacy email catalog. `applyItineraryCatalog` applies reference defaults to existing itinerary products without rewriting draft lines. For a future new product, add its canonical product option/default to the itinerary and its shared experience entry with the desired `brands` allowlist. Unpriced/new activities need approved source facts before use.
+Edit the catalog and brand profiles in the shared library once, then bump its query version in both generators. `emailCatalog` adds new experience cards and overlays the legacy email catalog. `applyItineraryCatalog` applies reference defaults to existing itinerary products without rewriting draft lines. For a future approved product, add a shared experience entry with its canonical `productPreset` and desired `brands` allowlist; the shared catalog registers that option/default for the itinerary. Unpriced/new activities need approved source facts before use.
 
 Email drafts and their brand are saved in local browser storage, consistent with existing itinerary draft storage; this is not cross-device draft synchronization. CRM-saved itinerary JSON also includes `brandId`. CRM handoff falls back to MBW for historical drafts with no brand.
 
@@ -33,3 +33,14 @@ Email drafts and their brand are saved in local browser storage, consistent with
 - Hummingbird solo selection uses $75 for one guest; Level I tubing defaults to four billed guests ($40). Other usual minimums are displayed without silently inflating guest quantities.
 - External services mocked in browser QA; no emails sent, Stripe sessions created or CRM records written.
 - Guest inbox rendering in Gmail/Outlook and human bilingual review remain manual follow-ups.
+
+
+## Follow-up: biking, Instagram and optional photos
+
+- Added two separate bilingual mountain biking cards using the newly uploaded `mbw-activities-mountain-biking-001.jpeg`: ACT017, approximately 4 km / 2 hours, $20/person; ACT017-R2, 10 km round trip with cable car and two waterfalls, $50/person. Source entries en-0049 and en-act017-r2 in the previously read Staff Info feed. The optional butterfly admission remains a separate $10/person add-on, not automatically included in the base route charge.
+- Registered the existing biking product IDs as selectable itinerary services; no Stripe products or prices were created or changed.
+- User supplied Instagram handles: Mindo Tours uses https://www.instagram.com/mindo.tours/ and Chocó Andino Tours uses https://www.instagram.com/chocoandino.tours/. Applied to both signatures and the email social card. MBW review/video links retain explicit MBW attribution.
+- Itinerary Waterfall Hike (MBW013) uses the user-specified `assets/images/pages/activities/waterfall-fall-tour/mbw_waterfall_003.jpg`. The email waterfall image and pricing remain unchanged.
+- `Include photos in itinerary` defaults off. It controls cover and activity photos together while keeping the brand logo/social icons. Saved local and CRM itinerary JSON contains `showImages`. Legacy drafts lacking that flag open in compact mode. Changing photo mode never changes agreed rates, service quantities or totals. The cover selector is disabled while photos are off.
+- The existing service-type defaults used unsupported values such as Adventure/Wildlife, which made the native selector display Birdwatching. Shared activity defaults and known legacy activity types now normalize to the supported Activity/Specialty Wildlife choices without altering prices or quantities.
+- QA: 46 unit/regression checks pass. Browser QA at 390px and 1440px covers both brands' Instagram links, both biking route rates, 2-hour duration, waterfall image, compact/image exports, saved photo preference in both directions, unchanged totals and existing quote preservation. No email sends or CRM writes.

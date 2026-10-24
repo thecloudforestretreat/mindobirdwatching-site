@@ -227,6 +227,8 @@
                 <option value="es">Español</option>
               </select>
             </div>
+            <label class="checkRow"><input id="showImages" type="checkbox" /><span>Include photos in itinerary</span></label>
+            <p class="hint">Adds the cover and activity photos to the preview and exports. Leave off for a shorter review copy; the brand logo remains visible.</p>
             <div class="field">
               <label for="heroImage">Hero image</label>
               <select id="heroImage">
@@ -349,7 +351,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="/assets/js/communication-library.js?v=20261024-2"></script>
+<script src="/assets/js/communication-library.js?v=20261024-3"></script>
 <link rel="stylesheet" href="/assets/css/communication-brand.css?v=20261024-1">
   <script>
     (() => {
@@ -712,6 +714,8 @@
           if(String(value)===original)return entry.description[to]+(entry.priceNote?' '+entry.priceNote[to]:'');
         }
 
+        if(value==='2 Hours'&&language==='es')return '2 horas';
+        if(value==='2 horas'&&language==='en')return '2 Hours';
         const text = String(value || '');
         const map = language === 'es' ? SAMPLE_TRANSLATIONS.enToEs : SAMPLE_TRANSLATIONS.esToEn;
         return map[text] || text;
@@ -829,6 +833,7 @@
       }
       function normalizeDurationChoice(value,type=''){
         const text = String(value || '').trim().toLowerCase();
+        if(text === '2 hours' || text === '2 horas') return '2 Hours';
         if(text === '3 hours' || text.includes('3 hour')) return '3 Hours';
         if(text === 'half day' || text.includes('half')) return 'Half Day';
         if(text === 'full day' || text.includes('full') || text.includes('10 hour')) return 'Full Day';
@@ -886,6 +891,8 @@
         item.startTime = timeFromParts(item.startHour,item.startMinute,item.startMeridiem);
         item.duration = normalizeDurationChoice(item.duration,item.type);
         item.productPreset = inferProductPreset(item);
+        const sharedExperience=communications.byCode(productCodeFromPreset(item.productPreset));
+        if(!SERVICE_TYPES.includes(item.type)&&sharedExperience?.group==='activities')item.type=sharedExperience.productCode==='ACT021'?'Specialty Wildlife':'Activity';
         if(item.productPreset !== 'Other') item.name = item.productPreset;
         const rule = pricingRuleFor(item);
         if(rule){
@@ -1021,7 +1028,7 @@
               </div>
               <div class="field">
                 <label>Duration</label>
-                <select data-field="duration">${['3 Hours','Half Day','Full Day','Flexible','Evening'].map(duration=>`<option value="${duration}" ${item.duration===duration?'selected':''}>${duration}</option>`).join('')}</select>
+                <select data-field="duration">${['2 Hours','3 Hours','Half Day','Full Day','Flexible','Evening'].map(duration=>`<option value="${duration}" ${item.duration===duration?'selected':''}>${duration}</option>`).join('')}</select>
               </div>
             </div>
             <div class="field">
@@ -1073,6 +1080,7 @@
           zelleEmail:$('zelleEmail').value,
           showInvoice:['approved_pending','deposit_received'].includes(selectedStage) && $('showInvoice').checked,
           invoiceLink:$('invoiceLink').value.trim(),
+          showImages:$('showImages').checked,
           showItemPrices:$('showItemPrices').checked,
           items:state.items.map(item => ({...item}))
         };
@@ -1190,7 +1198,7 @@
 
         rows.push(row(
           `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0D5925;border-radius:18px;overflow:hidden;">
-            <tr><td><img src="${heroImageUrl(data.heroImage)}" width="600" alt="Mindo cloud forest birdwatching tour" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
+            ${data.showImages ? `<tr><td><img src="${heroImageUrl(data.heroImage)}" width="600" alt="Mindo cloud forest birdwatching tour" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>` : ''}
             <tr><td style="padding:24px 26px;">
               <div style="font-size:11px;line-height:15px;letter-spacing:.08em;text-transform:uppercase;color:#DCEBC8;font-weight:900;">${escapeHtml(stageCopy.eyebrow)}</div>
               <div style="margin-top:6px;font-size:13px;line-height:18px;color:#DCEBC8;font-weight:900;">${escapeHtml(dateRange)} | ${escapeHtml(data.guestCount || 1)} ${escapeHtml(c.guests)}</div>
@@ -1216,7 +1224,7 @@
             const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
             return `<tr><td style="padding:0 0 10px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #cfe0c8;border-radius:14px;">
-                ${communications.imageRow(item,data.language)}
+                ${communications.imageRow(item,data.language,data.showImages)}
                 <tr>
                   <td width="98" valign="top" style="padding:13px 10px 13px 13px;color:#0D5925;font-size:13px;line-height:18px;font-weight:900;">${escapeHtml(formatTime(item.startTime,data.language))}${item.duration ? `<span style="display:block;margin-top:3px;color:#65736b;font-size:11px;line-height:15px;font-weight:700;">${escapeHtml(translateKnownText(item.duration,data.language))}</span>` : ''}</td>
                   <td valign="top" style="padding:13px 8px;">
@@ -1354,6 +1362,7 @@
           $('zelleEmailField').hidden = !$('offerZelle').checked;
           $('depositPaid').checked = ['deposit_received','paid_in_full'].includes($('itineraryStage').value);
           $('showInvoice').checked = data.showInvoice === true;
+          $('showImages').checked = data.showImages === true;
           $('showItemPrices').checked = data.showItemPrices !== false;
           state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
           applyLanguageDefaults($('language').value,true);
@@ -1452,6 +1461,7 @@
         $('depositLink').value = draft.depositLink || DEPOSIT_LINK;
         $('showInvoice').checked = draft.showInvoice === true;
         $('invoiceLink').value = draft.invoiceLink || draft.invoice_url || '';
+        $('showImages').checked = draft.showImages === true;
         $('showItemPrices').checked = draft.showItemPrices !== false;
         applyLanguageDefaults($('language').value,true);
         state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
@@ -1577,6 +1587,7 @@
         if(shouldRenderEditors) renderEditors();
         applyDateMinimums();
         const data = getFormData();
+        $('heroImage').disabled = !data.showImages;
         const sum = totals(data);
         $('subtotalValue').textContent = money(sum.subtotal,data.language);
         $('adjustmentValue').textContent = money(sum.adjustment,data.language);
@@ -1727,6 +1738,7 @@
         $('depositLink').value=DEPOSIT_LINK;
         $('showInvoice').checked=false;
         $('invoiceLink').value='';
+        $('showImages').checked=false;
         $('showItemPrices').checked=true;
         updateStageControls();
         state.items=[];
