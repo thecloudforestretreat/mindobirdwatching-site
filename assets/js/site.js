@@ -426,6 +426,27 @@
     }
   }
 
+  /*
+    The first page view is intentionally sent in advanced-consent mode while a
+    new visitor decides. If the visitor accepts after that initial hit, send one
+    fresh page view with the original landing URL still intact. Without this
+    recovery hit, GA4 can receive the page only as a denied-consent ping and the
+    campaign can disappear from standard session/campaign reports even though
+    Meta counted a landing-page view.
+  */
+  function recoverPageViewAfterConsent(event) {
+    var detail = event && event.detail ? event.detail : {};
+    if (detail.status !== "accepted" || window.__mbwConsentRecoveryPageViewSent) return;
+
+    window.__mbwConsentRecoveryPageViewSent = true;
+    ensureGtag();
+    window.gtag("event", "page_view", basePayload({
+      page_view_reason: "analytics_consent_granted"
+    }));
+  }
+
+  document.addEventListener("mbw:consent-update", recoverPageViewAfterConsent);
+
   function gtmOwnsGa4() {
     return window.__mbwGtmOwnsGa4 === true;
   }
