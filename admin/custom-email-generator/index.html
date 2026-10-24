@@ -694,11 +694,15 @@ experiences waiting for you in Mindo.</textarea>
 
   <div class="toast" id="toast">Copied</div>
 
+<script src="/assets/js/communication-library.js?v=20261024-1"></script>
+<link rel="stylesheet" href="/assets/css/communication-brand.css?v=20261024-1">
   <script>
     (function(){
       "use strict";
 
+      const communications = window.MBW_COMMUNICATIONS;
       const state = {
+        brandId:"mbw",
         selected: new Set(),
         order: [],
         groupOrder: ["tours", "activities", "planning", "nextSteps", "social"],
@@ -719,6 +723,14 @@ experiences waiting for you in Mindo.</textarea>
 
       function init(){
         cacheEls();
+        communications.mountSelector(document.querySelector('.appGrid'),state.brandId,id=>{
+          const previous=communications.brand(state.brandId);
+          state.brandId=id;
+          if(els.heroEyebrowInput.value===previous.tagline.en||els.heroEyebrowInput.value===previous.tagline.es) els.heroEyebrowInput.value=communications.brand(id).tagline[getLanguage()];
+          if(id!=='mbw') state.openGroups.add('activities');
+          state.order=normalizeGroupedOrder(state.order);
+          renderBlockControls();updateEmail();
+        });
         configureTitleOptions("Birdwatching Options");
         loadWhatsappPreference();
         try{
@@ -738,6 +750,7 @@ experiences waiting for you in Mindo.</textarea>
             const savedOrder = loadSavedOrder();
             state.groupOrder = loadSavedGroupOrder();
             state.order = normalizeGroupedOrder(mergeSavedOrder(savedOrder, smartOrder(catalog.blocks.filter(block => state.selected.has(block.id))).map(block => block.id)));
+            restoreCommunicationDraft();
             renderBlockControls();
             bindEvents();
             applyCrmHandoff();
@@ -851,6 +864,8 @@ experiences waiting for you in Mindo.</textarea>
 
       function emailBlockForCrmItem(item){
         const text=String((item&&item.product_selected)||item.product||item.tour||"").toLowerCase();
+        const shared=communications.byCode((text.match(/^([a-z0-9-]+)(?:\s|$)/)||[])[1]?.toUpperCase());
+        if(shared&&!shared.rateOnly)return shared.id;
         if(/mbw004|jewels of the morning/.test(text)) return "tour-jewels";
         if(/mbw005|andean cock|cock-of-the-rock dawn/.test(text)) return "tour-andean";
         if(/mbw006|five toucans|quest for five/.test(text)) return "tour-full-day";
@@ -867,8 +882,16 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function applyCrmHandoff(){
+        const requestedBrand=new URLSearchParams(location.search).get('brand');
+        if(requestedBrand&&communications.brands[requestedBrand]){
+          state.brandId=requestedBrand;document.getElementById('communicationBrand').value=state.brandId;
+        }
         const record = getCrmHandoff();
         if(!record) return;
+        const recordBrand=record.brandId||record.brand_id||record.brand;
+        if(!requestedBrand&&!state.restoredDraft&&communications.brands[recordBrand]){
+          state.brandId=recordBrand;document.getElementById('communicationBrand').value=state.brandId;
+        }
         const guestName = record.full_name || record.guest_name || record.guestName || "";
         const guests = record.guest_count || record.guestCount || "";
         const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
@@ -1194,7 +1217,7 @@ experiences waiting for you in Mindo.</textarea>
       };
 
       function getCatalog(){
-        return ensureRequiredBlocks(window.MBW_EMAIL_BLOCKS || buildDefaultCatalog());
+        return communications.emailCatalog(ensureRequiredBlocks(window.MBW_EMAIL_BLOCKS || buildDefaultCatalog()),state.brandId,"en");
       }
 
       function ensureRequiredBlocks(catalog){
@@ -1205,7 +1228,7 @@ experiences waiting for you in Mindo.</textarea>
         fallback.blocks.forEach(block => { if(!mergedById.has(block.id)) mergedById.set(block.id, block); });
         const desiredOrder = [
           "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
-          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
+          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activity-frog-concert", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
         ];
@@ -1237,7 +1260,7 @@ experiences waiting for you in Mindo.</textarea>
           groups: (catalog.groups || []).map(group => Object.assign({}, group, {
             label: getTranslation("groups", group.id, "label") || group.label
           })),
-          blocks: (catalog.blocks || []).map(localizeBlock)
+          blocks: (catalog.blocks || []).map(block=>communications.block(localizeBlock(block),communications.byId(block.id),lang,state.brandId))
         });
       }
 
@@ -1833,6 +1856,7 @@ experiences waiting for you in Mindo.</textarea>
         catalog.groups.forEach(group => {
           const wrap = document.createElement("section");
           const groupBlocks = catalog.blocks.filter(block => block.group === group.id);
+          if(!groupBlocks.length)return;
           const selectedCount = groupBlocks.filter(block => state.selected.has(block.id)).length;
           const isOpen = state.openGroups.has(group.id);
           wrap.className = "blockGroup" + (isOpen ? " isOpen" : "");
@@ -1851,6 +1875,7 @@ experiences waiting for you in Mindo.</textarea>
           els.blockGroups.appendChild(wrap);
         });
         renderSelectedSummary();
+        persistCommunicationDraft();
       }
 
       function renderSelectedSummary(){
@@ -1923,7 +1948,7 @@ experiences waiting for you in Mindo.</textarea>
         const priceValue = attr((state.overrides[block.id] && state.overrides[block.id].price) || "");
         const privateValue = attr((state.overrides[block.id] && state.overrides[block.id].privatePrice) || "");
         const durationValue = attr((state.overrides[block.id] && state.overrides[block.id].duration) || "");
-        const showOverrides = ["tour", "feature", "info"].includes(block.type);
+        const showOverrides = ["tour", "activity", "feature", "info"].includes(block.type);
 
         card.innerHTML =
           "<div class='toggleHead'>" +
@@ -2060,7 +2085,7 @@ experiences waiting for you in Mindo.</textarea>
           },
           "activities": {
             title: "Tour and Activity Options",
-            blocks: ["night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more", "next-steps", "social-links"],
+            blocks: ["night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activity-frog-concert", "activities-more", "next-steps", "social-links"],
             intro: "Thank you for reaching out. I’ve selected several Mindo activities that work well on their own or alongside a birdwatching tour. The options below include timing, pricing, and links to help you compare them.",
             compact: false,
             hero: true
@@ -2088,6 +2113,40 @@ experiences waiting for you in Mindo.</textarea>
         showToast("Preset applied");
       }
 
+      function communicationContextKey(){
+        const params=new URLSearchParams(location.search);
+        return params.get('inquiry_id')||params.get('guest_id')||params.get('guest')||params.get('name')||'';
+      }
+      function restoreCommunicationDraft(){
+        try{
+          const draft=JSON.parse(localStorage.getItem('mbwEmailCommunicationDraftV1')||'null');
+          if(!draft||(draft.contextKey||'')!==communicationContextKey())return;
+          state.restoredDraft=true;
+          state.brandId=communications.brand(draft.brandId).id;
+          document.getElementById('communicationBrand').value=state.brandId;
+          for(const [id,value]of Object.entries(draft.fields||{})){
+            const input=document.getElementById(id);
+            if(!input||!input.closest('main')||['htmlOutput','communicationBrand'].includes(id))continue;
+            if(input.type==='checkbox')input.checked=value===true;else input.value=String(value);
+          }
+          configureTitleOptions(els.emailTitleInput.value);
+          const valid=new Set(getCatalog().blocks.map(x=>x.id));
+          state.selected=new Set((draft.selected||[]).filter(id=>valid.has(id)));
+          state.order=(draft.order||[]).filter(id=>valid.has(id));
+          state.overrides=draft.overrides||{};
+          if(state.brandId!=='mbw')state.openGroups.add('activities');
+        }catch(error){console.warn('Saved email draft could not be restored');}
+      }
+      function persistCommunicationDraft(){
+        try{
+          const fields={};
+          document.querySelectorAll('main input[id],main select[id],main textarea[id]').forEach(input=>{
+            if(['htmlOutput','communicationBrand'].includes(input.id))return;
+            fields[input.id]=input.type==='checkbox'?input.checked:input.value;
+          });
+          localStorage.setItem('mbwEmailCommunicationDraftV1',JSON.stringify({contextKey:communicationContextKey(),brandId:state.brandId,fields,selected:[...state.selected],order:state.order,overrides:state.overrides}));
+        }catch(error){console.warn('Email draft could not be saved on this browser');}
+      }
       function updateEmail(){
         const html = buildEmailHtml();
         els.emailPreview.innerHTML = html;
@@ -2189,7 +2248,7 @@ experiences waiting for you in Mindo.</textarea>
       function blockPriority(block){
         const canonical = [
           "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
-          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
+          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activity-frog-concert", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
         ];
@@ -2228,7 +2287,7 @@ experiences waiting for you in Mindo.</textarea>
         const config = window.MBW_SITE_CONFIG || {};
         const contact = config.contact || {};
         const number = selectedWhatsappNumber();
-        if(contact.email) nextBrand.email = contact.email;
+        if(state.brandId === "mbw" && contact.email) nextBrand.email = contact.email;
         nextBrand.whatsapp = "https://wa.me/" + number;
         if(Array.isArray(nextBrand.icons)){
           nextBrand.icons = nextBrand.icons.map(icon => {
@@ -2239,15 +2298,7 @@ experiences waiting for you in Mindo.</textarea>
         return nextBrand;
       }
 
-      function renderHeader(brand){
-        return "" +
-          "<tr><td style='padding:0 20px 10px;'>" +
-          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#ffffff; border:1px solid rgba(7,25,35,.14); border-radius:18px; box-shadow:0 18px 55px rgba(7,25,35,.10);'><tr><td style='padding:14px 18px;'>" +
-          "<table role='presentation' cellspacing='0' cellpadding='0' border='0'><tr>" +
-          "<td valign='middle' style='padding-right:12px;'><a href='" + attr(brand.site) + "'><img src='" + attr(brand.logo) + "' width='78' height='78' alt='Mindo Bird Watching' style='display:block; width:78px; height:78px; border:0;'></a></td>" +
-          "<td valign='middle'><a href='" + attr(brand.site) + "' style='text-decoration:none; color:#071923;'><span style=\"display:block; font-family:Georgia, 'Times New Roman', serif; font-size:25px; line-height:29px; color:#0D5925; font-weight:700;\">Mindo Bird Watching</span><span style='display:block; margin-top:2px; font-size:12px; line-height:16px; color:rgba(7,25,35,.72); font-weight:900; letter-spacing:.06em; text-transform:uppercase;'>" + esc(getLanguage() === "es" ? "Tours privados y grupales en el bosque nublado" : "Private & group cloud forest tours") + "</span></a></td>" +
-          "</tr></table></td></tr></table></td></tr>";
-      }
+      function renderHeader(brand){ return communications.header(state.brandId,getLanguage()); }
 
       function renderHero(brand, title, guestName, meta, intro){
         return "" +
@@ -2439,17 +2490,7 @@ experiences waiting for you in Mindo.</textarea>
           "</td></tr></table></td></tr>";
       }
 
-      function renderSignature(brand){
-        return "" +
-          "<tr><td style='padding:0 20px;'>" +
-          "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:rgba(255,255,255,.86); border:1px solid rgba(7,25,35,.14); border-radius:18px;'><tr><td style='padding:18px;'>" +
-          "<p style='margin:0 0 10px; font-size:14px; line-height:20px; color:#071923;'>" + esc(t("warmRegards")) + "<br><strong>Mindo Bird Watching</strong></p>" +
-          "<table role='presentation' cellspacing='0' cellpadding='0' border='0'><tr>" +
-          (brand.icons || []).map(icon => "<td style='padding:0 7px 7px 0;'><a href='" + attr(icon.href) + "'><img src='" + attr(icon.img) + "' width='" + attr(icon.w) + "' height='" + attr(icon.h) + "' alt='" + attr(icon.alt) + "' style='display:block; width:" + attr(icon.w) + "px; height:" + attr(icon.h) + "px; border:0;'></a></td>").join("") +
-          "</tr></table>" +
-          "<p style='margin:5px 0 0; font-size:12px; line-height:18px; color:rgba(7,25,35,.72); font-weight:800;'>Mindo, Ecuador<br><a href='" + attr(brand.site) + "' style='color:#0D5925; text-decoration:underline;'>mindobirdwatching.com</a> | <a href='mailto:" + attr(brand.email) + "' style='color:#0D5925; text-decoration:underline;'>" + esc(brand.email) + "</a></p>" +
-          "</td></tr></table></td></tr>";
-      }
+      function renderSignature(brand){ return communications.signature(state.brandId,getLanguage(),brand.icons||[],buildWhatsAppUrl("")); }
 
       function renderTravelerNote(){
         return "" +
@@ -2459,14 +2500,7 @@ experiences waiting for you in Mindo.</textarea>
           "</td></tr></table></td></tr>";
       }
 
-      function renderBrandFooter(brand){
-        return "" +
-          "<tr><td align='center' style='padding:14px 24px 6px;'>" +
-          "<table role='presentation' cellspacing='0' cellpadding='0' border='0'><tr>" +
-          "<td valign='middle' style='padding-right:6px;'><a href='" + attr(brand.site) + "'><img src='" + attr(brand.logo) + "' width='34' height='34' alt='Mindo Bird Watching logo' style='display:block; width:34px; height:34px; border:0;'></a></td>" +
-          "<td valign='middle' style='color:#32453d; font-size:11px; line-height:16px; font-weight:900;'>Mindo Bird Watching © " + new Date().getFullYear() + "</td>" +
-          "</tr></table></td></tr>";
-      }
+      function renderBrandFooter(brand){ return communications.footer(state.brandId); }
 
       function buildWhatsAppUrl(message){
         return "https://wa.me/" + selectedWhatsappNumber() + "?text=" + encodeURIComponent(message);
@@ -2503,7 +2537,7 @@ experiences waiting for you in Mindo.</textarea>
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "mbw-custom-email-" + (guest || "guest") + ".html";
+        link.download = state.brandId + "-custom-email-" + (guest || "guest") + ".html";
         document.body.appendChild(link);
         link.click();
         link.remove();
