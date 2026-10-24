@@ -432,6 +432,11 @@
                 <div class="field"><label for="datePaidInput">Date Paid</label><input id="datePaidInput" type="date" /></div>
                 <div class="field"><label for="paymentMethodInput">Payment Method</label><select id="paymentMethodInput"><option></option><option>Stripe</option><option>Zelle</option><option>Bank Transfer EC</option><option>Bank Transfer US</option><option>Cash</option><option>Venmo</option><option>PayPal</option><option>Marketing Collaboration</option><option>Other</option></select></div>
               </div>
+              <div class="paymentLedger" id="stripeDepositPanel">
+                <div class="paymentLedgerHead"><strong>Stripe deposits · this inquiry</strong><button id="checkStripeDeposits" type="button">Check Stripe deposits</button></div>
+                <p class="hint">Live Stripe records, separate from invoice totals. A deposit is credited once when applied to an invoice.</p>
+                <div id="stripeDepositResults" aria-live="polite" class="paymentLedgerList">Select an inquiry, then check its deposits.</div>
+              </div>
               <div class="paymentLedger" id="paymentLedger" aria-live="polite">
                 <div class="paymentLedgerHead"><strong>Invoice &amp; payment history</strong><span id="paymentLedgerSummary">No ledger entries</span></div>
                 <div class="paymentLedgerList" id="paymentLedgerList"><div class="paymentLedgerEmpty">Save or select an inquiry to load its invoices.</div></div>
@@ -544,6 +549,7 @@
         els.paymentStatusInput.addEventListener("change",()=>{ if(normalizePayment(els.paymentStatusInput.value)==="no_payment_required"){ els.datePaidInput.value=""; els.paymentMethodInput.value="Marketing Collaboration"; } toggleInvoiceActions(formRecord()); renderPayload(); });
         els.addNewBtn.addEventListener("click", startNewRecord);
         els.paymentLedgerList.addEventListener("click",handlePaymentLedgerAction);
+        document.getElementById("checkStripeDeposits").addEventListener("click",checkStripeDeposits);
         els.refreshBtn.addEventListener("click", refreshCrm);
         els.saveBtn.addEventListener("click", saveRecord);
         els.bottomSaveBtn.addEventListener("click", saveRecord);
@@ -1349,7 +1355,7 @@
           saveButtons.forEach(button=>{ button.disabled=false; button.textContent=button.dataset.originalText||"Save Record"; });
         }
       }
-      function startNewRecord(){ renderRequestedServices({}); referenceMatch=null; referenceGeneration++; referenceStatus("Paste the reference from the guest’s message."); state.selectedId=""; state.tourItems=[]; fillQuoteOptions({}); state.interactions=[]; state.assignments=[]; state.bookings=[]; state.payments=[]; state.editingPaymentId=""; fields.filter(id=>!["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].includes(id)).forEach(id=>{ if(els[id]) els[id].value=""; }); if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=""; els.modeInput.value="create"; els.sourceInput.value="manual_whatsapp"; els.recordStatusInput.value="new"; els.quoteStatusInput.value="not_sent"; els.paymentStatusInput.value="unpaid"; els.serviceTypeInput.value="Birdwatching"; els.priorityInput.value="auto"; els.availabilityInput.value="pending"; els.groupingPreferenceInput.value="unknown"; els.groupingStatusInput.value="unmatched"; els.transportInput.value="Unknown"; els.followupInput.value=datePlusDays(3); renderTourItems(); renderPaymentLedger(); updateStatusField(); updateStatusMessageButton(); toggleReviewActions({status:"new"}); toggleInvoiceActions({status:"new",payment_status:"unpaid"}); setView("intake"); renderDuplicateNotice(); renderPayload(); setTimeout(()=>els.firstNameInput.focus(),80); window.scrollTo({top:0,behavior:"smooth"}); showToast("Ready for new guest"); }
+      function startNewRecord(){ resetStripeDeposits(); renderRequestedServices({}); referenceMatch=null; referenceGeneration++; referenceStatus("Paste the reference from the guest’s message."); state.selectedId=""; state.tourItems=[]; fillQuoteOptions({}); state.interactions=[]; state.assignments=[]; state.bookings=[]; state.payments=[]; state.editingPaymentId=""; fields.filter(id=>!["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].includes(id)).forEach(id=>{ if(els[id]) els[id].value=""; }); if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=""; els.modeInput.value="create"; els.sourceInput.value="manual_whatsapp"; els.recordStatusInput.value="new"; els.quoteStatusInput.value="not_sent"; els.paymentStatusInput.value="unpaid"; els.serviceTypeInput.value="Birdwatching"; els.priorityInput.value="auto"; els.availabilityInput.value="pending"; els.groupingPreferenceInput.value="unknown"; els.groupingStatusInput.value="unmatched"; els.transportInput.value="Unknown"; els.followupInput.value=datePlusDays(3); renderTourItems(); renderPaymentLedger(); updateStatusField(); updateStatusMessageButton(); toggleReviewActions({status:"new"}); toggleInvoiceActions({status:"new",payment_status:"unpaid"}); setView("intake"); renderDuplicateNotice(); renderPayload(); setTimeout(()=>els.firstNameInput.focus(),80); window.scrollTo({top:0,behavior:"smooth"}); showToast("Ready for new guest"); }
       function buildSavePayload(){ const mode=els.modeInput.value; const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; if(mode==="create"){ const existing=findExistingGuest(record); if(existing&&existing.guest_id){ record.guest_id=existing.guest_id; action="create_returning_inquiry"; } } return {action,record,guest_row:buildGuestRow(record),inquiry_row:record}; }
       function formRecord(){
         const now=new Date().toISOString();
@@ -1487,7 +1493,7 @@
         target.querySelectorAll(".record").forEach(el=>el.addEventListener("click",event=>{ if(event.target.closest("details")) return; selectRecord(el.dataset.id); }));
         target.querySelectorAll(".followupBadge[tabindex]").forEach(badge=>badge.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();selectRecord(badge.closest(".record").dataset.id);}}));
       }
-      function selectRecord(id){state.selectedId=id;state.interactions=[];state.assignments=[];state.bookings=[];state.payments=[];state.editingPaymentId="";updateQueueCursor();fillForm(getSelected());clearAssignmentForm();els.assignedToInput.value=normalizeRep(getSelected()?.assigned_to);renderPaymentLedger();setView("intake");window.scrollTo({top:0,behavior:"smooth"});}
+      function selectRecord(id){resetStripeDeposits();state.selectedId=id;state.interactions=[];state.assignments=[];state.bookings=[];state.payments=[];state.editingPaymentId="";updateQueueCursor();fillForm(getSelected());clearAssignmentForm();els.assignedToInput.value=normalizeRep(getSelected()?.assigned_to);renderPaymentLedger();setView("intake");window.scrollTo({top:0,behavior:"smooth"});}
       function countStatus(status){ return state.records.filter(r=>normalizeStatus(r.status)===status).length; }
       function normalizeStatus(value){ const status=clean(value).toLowerCase().replace(/[-\s]+/g,"_"); if(status==="confirmed") return "booked"; if(status==="closed") return "did_not_book"; if(status==="active") return "contacted"; return status||"new"; }
       function normalizeRep(value){const rep=clean(value).toUpperCase();if(["J","JUAN","JPG"].includes(rep))return"JPG";if(["S","SUSANA","SS"].includes(rep))return"SS";return"";}
@@ -1571,6 +1577,25 @@
         els.guestHistory.innerHTML=`<div class="guestHistoryHead"><strong>Guest history</strong><span>${trips.length} trip${trips.length===1?"":"s"} · ${completed} completed</span></div><div class="selectedRepSummary">${repBadgeHtml(current.assigned_to,true)}</div>${readinessChipsHtml(current,"full")}<div class="guestHistoryTrips">${trips.slice(0,6).map(row=>{const items=recordItineraryItems(row),summary=items.map(item=>serviceItemLabel(item).icon+" "+(item.tour||serviceItemLabel(item).label)).join(" · ");return `<span class="guestHistoryTrip">${urgentDateHtml(row.requested_date||row.requested_date_start||"No date")} · ${esc(labelStatus(row.status))}<small class="guestHistoryTripServices">${esc(summary||row.tour_type||row.service_type||"Tour")}</small></span>`;}).join("")}</div>`;
       }
       function money(value){ const amount=Number(String(value??"").replace(/[^0-9.-]/g,"")); return Number.isFinite(amount)?"$"+amount.toFixed(2):"—"; }
+      let depositLookupGeneration=0;
+      function resetStripeDeposits(){depositLookupGeneration++;const out=document.getElementById("stripeDepositResults");if(out)out.textContent="Select an inquiry, then check its deposits.";const button=document.getElementById("checkStripeDeposits");if(button)button.disabled=false;}
+      async function checkStripeDeposits(){
+        const id=clean(getSelected()?.inquiry_id),out=document.getElementById("stripeDepositResults"),button=document.getElementById("checkStripeDeposits");
+        if(!id){out.textContent="Save or select an inquiry first.";return;}
+        const generation=++depositLookupGeneration;button.disabled=true;out.textContent="Checking live Stripe deposits…";
+        try{
+          const r=await fetch("/api/crm/deposits?inquiry_id="+encodeURIComponent(id),{cache:"no-store"}),data=await r.json();
+          if(!r.ok||!data.ok||!Array.isArray(data.deposits))throw Error(data.error||"Deposit lookup unavailable.");
+          if(generation!==depositLookupGeneration||clean(getSelected()?.inquiry_id)!==id)return;
+          out.innerHTML=data.deposits.length?data.deposits.map(d=>{
+            const receipt=/^https:\/\/(pay|dashboard)\.stripe\.com\//.test(String(d.receipt_url||""))?`<a href="${esc(d.receipt_url)}" target="_blank" rel="noopener noreferrer">Receipt</a>`:"Receipt unavailable";
+            const amount=Number(d.amount);const formatted=Number.isFinite(amount)?"$"+amount.toLocaleString("en-US",{maximumFractionDigits:2}):"—";
+            return `<div class="paymentLedgerRow"><strong>${esc(formatted)} ${esc(d.currency)} · ${esc(labelStatus(d.status))}</strong><span>Paid: ${esc(d.paid_at?displayDate(d.paid_at):"Not recorded")}</span><span>${d.applied_invoice_id?"Applied to "+esc(d.applied_invoice_no||d.applied_invoice_id):"Not applied to an invoice"}${Number(d.refunded_amount)>0?" · Refunded: "+esc(money(d.refunded_amount)):""}</span><span>${receipt}</span><small>${esc(d.payment_intent_id)}</small></div>`;
+          }).join(""):"No linked Stripe deposits found. Historical payments without this inquiry ID require manual reconciliation.";
+          if(data.more)out.insertAdjacentHTML("beforeend",'<p class="hint">Showing the first 100 results. Review the full history in Stripe.</p>');
+        }catch{if(generation===depositLookupGeneration)out.textContent="Unable to verify Stripe deposits. Retry; no payment status was changed.";}
+        finally{if(generation===depositLookupGeneration)button.disabled=false;}
+      }
       function renderPaymentLedger(){
         if(!els.paymentLedgerList) return;
         const record=getSelected();

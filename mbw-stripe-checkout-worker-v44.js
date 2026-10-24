@@ -3013,7 +3013,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v47-usd-deposit-2026-10-24", 200);
+      return text("MBW Stripe Worker is running. version=v48-deposit-history-2026-10-24", 200);
     }
 
     // Fixed USD deposit Checkout. No browser-supplied amount or guest identity is trusted.
@@ -3027,7 +3027,7 @@ export default {
         if (isTest && !/^INQ-QA-[A-Za-z0-9_-]+$/.test(inquiryId)) return json({ok:false,error:"Sandbox requires a fictional QA reference."},400);
         const crm = isTest ? { inquiry_id: inquiryId, guest_id: "G-QA-DEPOSIT" } : await lookupCrmInquiry(env, inquiryId);
         if (!crm || !crm.guest_id) return json({ok:false,error:"This deposit reference could not be verified. Please ask our team for a new link."},400);
-        if (/^(completed|cancelled|canceled|duplicate|did_not_book|archived)$/.test(String(crm.status || "").toLowerCase()) || ["paid","deposit_paid"].includes(String(crm.payment_status || "").toLowerCase())) {
+        if (/^(completed|cancelled|canceled|duplicate|did_not_book|archived|deposit_paid|paid)$/.test(String(crm.status || "").toLowerCase()) || ["paid","deposit_paid"].includes(String(crm.payment_status || "").toLowerCase())) {
           return json({ok:false,error:"This inquiry is closed or already paid. Please contact our team."},409);
         }
         if (!isTest) {
@@ -3101,6 +3101,36 @@ export default {
           "cache-control": "no-store, no-cache, must-revalidate",
         },
       });
+    }
+
+    // Private staff lookup: only the authenticated Pages proxy holds this secret.
+    if (path === "/api/deposits/history" && request.method === "GET") {
+      const privateReply = (body, status = 200) => new Response(JSON.stringify(body), {status, headers:{"Content-Type":"application/json", "Cache-Control":"private, no-store"}});
+      const expected = env.CF_SHARED_SECRET;
+      const supplied = request.headers.get("Authorization") || "";
+      if (!expected) return privateReply({ok:false,error:"Deposit history is not configured."},503);
+      const digest = async value => new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value)));
+      const [a,b] = await Promise.all([digest(supplied),digest("Bearer " + expected)]);
+      if (a.reduce((diff, value, i) => diff | (value ^ b[i]),0)) return privateReply({ok:false,error:"Staff authentication required."},401);
+      let inquiryId;
+      try { inquiryId = validInternalId(url.searchParams.get("inquiry_id"), "INQ"); } catch { return privateReply({ok:false,error:"Select a saved inquiry."},400); }
+      if (!inquiryId) return privateReply({ok:false,error:"Select a saved inquiry."},400);
+      try {
+        const query = `metadata['inquiry_id']:'${inquiryId}' AND metadata['payment_purpose']:'tour_deposit'`;
+        const result = await stripeRequest(env,false,"GET",`/v1/payment_intents/search?limit=100&query=${encodeURIComponent(query)}&expand[]=data.latest_charge`,null);
+        const deposits = [...new Map((result.data || []).filter(pi => pi.metadata?.inquiry_id === inquiryId && pi.metadata?.payment_purpose === "tour_deposit").map(pi => [pi.id,pi])).values()].map(pi => {
+          const md=pi.metadata || {}, charge=typeof pi.latest_charge === "object" && pi.latest_charge || {};
+          const amount=Number(pi.amount_received || 0), refunded=Number(charge.amount_refunded || 0);
+          let status=pi.status === "succeeded" ? (md.applied_invoice_id ? "applied" : "available") : pi.status === "canceled" ? "canceled" : "pending";
+          if (refunded > 0) status=refunded >= amount ? "refunded" : "partially_refunded";
+          const receipt=String(charge.receipt_url || "");
+          const receiptUrl=/^https:\/\/(pay|dashboard)\.stripe\.com\//.test(receipt) ? receipt : "";
+          return {payment_intent_id:pi.id, amount:amount/100, currency:String(pi.currency || "").toUpperCase(), status,
+            paid_at:pi.status === "succeeded" && charge.created ? new Date(charge.created*1000).toISOString() : null,
+            receipt_url:receiptUrl, refunded_amount:refunded/100, applied_invoice_id:md.applied_invoice_id || "", applied_invoice_no:md.applied_invoice_no || "", applied_at:md.applied_at || ""};
+        }).sort((a,b)=>String(b.paid_at || "").localeCompare(String(a.paid_at || "")));
+        return privateReply({ok:true,inquiry_id:inquiryId,deposits,more:!!result.has_more,checked_at:new Date().toISOString()});
+      } catch { return privateReply({ok:false,error:"Stripe deposit history is unavailable. Retry; no records were changed."},503); }
     }
 
     if (path === "/api/deposits/available" && request.method === "GET") {
