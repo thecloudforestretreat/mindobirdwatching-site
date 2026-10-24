@@ -438,10 +438,16 @@
     var detail = event && event.detail ? event.detail : {};
     if (detail.status !== "accepted" || window.__mbwConsentRecoveryPageViewSent) return;
 
+    var campaign = new URLSearchParams(window.location.search || "");
     window.__mbwConsentRecoveryPageViewSent = true;
     ensureGtag();
     window.gtag("event", "page_view", basePayload({
-      page_view_reason: "analytics_consent_granted"
+      page_view_reason: "analytics_consent_granted",
+      campaign_source: campaign.get("utm_source") || undefined,
+      campaign_medium: campaign.get("utm_medium") || undefined,
+      campaign_name: campaign.get("utm_campaign") || undefined,
+      campaign_content: campaign.get("utm_content") || undefined,
+      campaign_term: campaign.get("utm_term") || undefined
     }));
   }
 
