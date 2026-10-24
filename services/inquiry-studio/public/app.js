@@ -2,6 +2,7 @@
 
 const APP_BASE = location.pathname.startsWith('/inquiry-studio/') ? '/inquiry-studio' : '';
 const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 
 let rows = [];
 let token = '';
@@ -14,6 +15,7 @@ let currentDraft = null;
 let studioAnalysis = null;
 let studioManifest = [];
 let studioRecord = null;
+let guideProviders = [];
 
 const text = (id, value) => {
   $(id).textContent = value || '';
@@ -423,7 +425,8 @@ $('analyzeStudio').onclick = async () => {
 function parseJson(value, fallback) {
   if (value && typeof value === 'object') return value;
   try {
-    return JSON.parse(value || '');
+    const parsed = JSON.parse(value || '');
+    return parsed ?? fallback;
   } catch {
     return fallback;
   }
@@ -491,6 +494,55 @@ function renderStudio(analysis) {
   $('guideBrief').value = analysis.guide_brief_draft || '';
   $('guideResponse').value = '';
   text('saveNote', studioRecord ? 'Loaded revision ' + studioRecord.revision + '. Saving creates a new revision.' : 'Review both drafts before saving.');
+  renderGuideHandoffStatus();
+  renderGuideQuotes();
+}
+
+function renderGuideHandoffStatus() {
+  if (!studioRecord?.inquiry_studio_id) {
+    text('guideTripStatus', 'Save the Studio record before creating a Guide Nest request.');
+    return;
+  }
+  const handoff = parseJson(studioRecord.handoff_json, {});
+  const requests = Array.isArray(handoff.guide_quote_requests) ? handoff.guide_quote_requests : [];
+  text(
+    'guideTripStatus',
+    requests.length
+      ? requests.map(item => [item.provider_name, item.status, item.sent_at ? new Date(item.sent_at).toLocaleString() : ''].filter(Boolean).join(' · ')).join('\n')
+      : 'Ready to send a private quote request to Guide Nest.',
+  );
+}
+
+function formatMoney(value) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value || 0));
+}
+
+function renderGuideQuotes() {
+  const section = $('guideQuoteReview');
+  const quotes = parseJson(studioRecord?.guide_quotes_json, []);
+  section.hidden = !Array.isArray(quotes) || !quotes.length;
+  if (section.hidden) {
+    $('guideQuotes').replaceChildren();
+    return;
+  }
+  $('guideQuotes').innerHTML = [...quotes].reverse().map(quote => {
+    if (quote.archived_summary) {
+      return `<article class="guideQuoteCard"><div class="guideQuoteHead"><h4>${esc(quote.provider_name || 'Guide')} · version ${esc(quote.version)}</h4><span>archived summary</span></div><p class="muted">${(quote.option_totals || []).map(option => `${esc(option.name)} · ${formatMoney(option.net_total)}`).join(' · ')}</p></article>`;
+    }
+    const options = (quote.options || []).map(option => `<section class="guideQuoteOption"><div class="guideQuoteOptionHead"><h5>${esc(option.name)}</h5><strong>${formatMoney(option.net_total)} net</strong></div>${option.summary ? `<p>${esc(option.summary)}</p>` : ''}${(option.days || []).map(day => `<div class="guideQuoteDay"><strong>Day ${esc(day.day_number)} · ${esc(day.title)}</strong><span>${esc(day.agenda)}</span><span>Walking: ${esc(day.walking_minutes || 0)} min · Longest: ${esc(day.longest_walk_minutes || 0)} min · Suitability: ${esc(day.suitability)}</span>${day.accessibility_notes ? `<span>Accessibility: ${esc(day.accessibility_notes)}</span>` : ''}<ul class="guideQuoteCosts">${(day.costs || []).map(cost => `<li>${esc(cost.description)} · ${formatMoney(Number(cost.amount || 0) * Number(cost.quantity || 0))} · ${esc(cost.status)}</li>`).join('')}</ul></div>`).join('')}</section>`).join('');
+    const status = quote.admin_status || quote.status || 'draft';
+    const actions = quote.status === 'submitted' && status !== 'approved' ? `<div class="guideQuoteActions"><label>Revision instructions<input data-revision-note="${esc(quote.quote_id)}" placeholder="Required when requesting a revision"></label><button type="button" class="primary" data-review-quote="approve" data-quote-id="${esc(quote.quote_id)}">Approve route & net costs</button><button type="button" data-review-quote="request_revision" data-quote-id="${esc(quote.quote_id)}">Request revision</button></div>` : '';
+    return `<article class="guideQuoteCard"><div class="guideQuoteHead"><h4>${esc(quote.provider_name || 'Guide')} · version ${esc(quote.version || 1)}</h4><span>${esc(status.replaceAll('_', ' '))}</span></div>${quote.guide_summary ? `<p>${esc(quote.guide_summary)}</p>` : ''}${options}${quote.revision_note ? `<p><strong>Revision note:</strong> ${esc(quote.revision_note)}</p>` : ''}${actions}</article>`;
+  }).join('');
+}
+
+async function loadGuideProviders() {
+  const result = await api('/api/providers');
+  guideProviders = result.providers || [];
+  $('tripGuide').replaceChildren(
+    new Option('Choose an active guide', ''),
+    ...guideProviders.map(provider => new Option(provider.provider_name, provider.provider_id)),
+  );
 }
 
 function currentAnalysis() {
@@ -542,6 +594,7 @@ $('saveStudio').onclick = async () => {
         : 'Saved to crm_inquiry_studio and linked to the CRM inquiry.',
     );
     text('saveNote', 'Saved as ' + studioRecord.inquiry_studio_id + ' · revision ' + studioRecord.revision);
+    renderGuideHandoffStatus();
   } catch (error) {
     text('studioStatus', error.message);
   } finally {
@@ -549,6 +602,76 @@ $('saveStudio').onclick = async () => {
     $('saveStudio').disabled = false;
   }
 };
+
+$('sendGuideTrip').onclick = async () => {
+  if (!studioRecord?.inquiry_studio_id) return text('guideTripStatus', 'Save the Studio record before sending it to Guide Nest.');
+  if (!$('tripGuide').value) return text('guideTripStatus', 'Choose an active guide.');
+  if (busy) return;
+  busy = true;
+  $('sendGuideTrip').disabled = true;
+  text('guideTripStatus', 'Creating the private Guide Nest quote request…');
+  try {
+    const result = await api('/api/send-guide-quote', {
+      inquiry_id: studioRecord.inquiry_id,
+      inquiry_studio_id: studioRecord.inquiry_studio_id,
+      provider_id: $('tripGuide').value,
+      brand_id: $('tripBrand').value,
+      response_due_at: $('tripResponseDue').value,
+    });
+    studioRecord = result.record;
+    renderGuideHandoffStatus();
+  } catch (error) {
+    text('guideTripStatus', error.message);
+  } finally {
+    busy = false;
+    $('sendGuideTrip').disabled = false;
+  }
+};
+
+$('refreshGuideQuotes').onclick = async () => {
+  if (!studioRecord?.inquiry_id || busy) return;
+  busy = true;
+  $('refreshGuideQuotes').disabled = true;
+  try {
+    studioRecord = await api('/api/studio/' + encodeURIComponent(studioRecord.inquiry_id));
+    renderGuideHandoffStatus();
+    renderGuideQuotes();
+    text('studioStatus', 'Guide quote records refreshed.');
+  } catch (error) {
+    text('studioStatus', error.message);
+  } finally {
+    busy = false;
+    $('refreshGuideQuotes').disabled = false;
+  }
+};
+
+$('guideQuotes').addEventListener('click', async event => {
+  const button = event.target.closest('[data-review-quote]');
+  if (!button || busy) return;
+  const decision = button.dataset.reviewQuote;
+  const note = document.querySelector(`[data-revision-note="${CSS.escape(button.dataset.quoteId)}"]`)?.value.trim() || '';
+  if (decision === 'request_revision' && !note) return text('studioStatus', 'Enter revision instructions for the guide.');
+  busy = true;
+  button.disabled = true;
+  try {
+    const result = await api('/api/review-guide-quote', {
+      inquiry_id: studioRecord.inquiry_id,
+      inquiry_studio_id: studioRecord.inquiry_studio_id,
+      quote_id: button.dataset.quoteId,
+      decision,
+      note,
+    });
+    studioRecord = result.record;
+    renderGuideHandoffStatus();
+    renderGuideQuotes();
+    text('studioStatus', decision === 'approve' ? 'Guide route approved. Markup is still required before a guest proposal.' : 'Revision request saved for the guide.');
+  } catch (error) {
+    text('studioStatus', error.message);
+    button.disabled = false;
+  } finally {
+    busy = false;
+  }
+});
 
 $('saveGuideResponse').onclick = async () => {
   if (!studioRecord) return text('studioStatus', 'Save the Studio record before adding a guide response.');
@@ -578,6 +701,10 @@ $('saveGuideResponse').onclick = async () => {
     const session = await api('/api/session');
     token = session.token;
     await loadInquiries();
+    await loadGuideProviders().catch(error => {
+      $('tripGuide').replaceChildren(new Option('Guide list unavailable', ''));
+      text('guideTripStatus', error.message);
+    });
   } catch (error) {
     text('source', error.message);
   }

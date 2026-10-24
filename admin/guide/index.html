@@ -10,7 +10,7 @@
   <title>MBW Guide Nest</title>
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/images/app/mbw-app-gold-transparent-192.png?v=guide-favicon-20261023-v1">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/app/mbw-app-gold-transparent-180.png?v=guide-icon-20261023-v1">
-  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261024-v20">
+  <link rel="stylesheet" href="/guide/guide.css?v=guide-trip-builder-20261024-v1">
 </head>
 <body>
   <div class="shell">
@@ -54,21 +54,35 @@
           <div id="shareList" class="shareList"></div>
         </section>
         <section class="view" data-view="offers" hidden>
-          <div class="heading"><div><p data-i18n="futureWork">Próximas oportunidades</p><h1 data-i18n="offers">Ofertas</h1></div></div>
+          <div class="heading"><div><p data-i18n="futureWork">Próximas oportunidades</p><h1 data-i18n="offers">Cotizaciones</h1></div></div>
           <div class="privacy" data-i18n="offersPrivacy">Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.</div>
+          <div id="quoteRequestList" class="quoteRequestList"></div>
           <div id="offerList" class="offerList"></div>
         </section>
       </div>
     </main>
+    <dialog id="tripBuilder" class="tripBuilder">
+      <form method="dialog" class="tripBuilderShell">
+        <header class="tripBuilderHeader"><div><small data-i18n="tripBuilderEyebrow">SOLICITUD DE VIAJE</small><h1 id="tripBuilderTitle">Trip Builder</h1></div><button value="cancel" aria-label="Close" class="icon">×</button></header>
+        <div class="tripBuilderBody">
+          <section id="tripRequestBrief" class="tripRequestBrief"></section>
+          <div class="builderToolbar"><button id="addTripOption" type="button" data-i18n="addOption">+ Agregar opción</button><span id="builderSaveState"></span></div>
+          <div id="tripOptions" class="tripOptions"></div>
+          <label class="builderField"><span data-i18n="guideSummary">Resumen y recomendaciones del guía</span><textarea id="tripGuideSummary" rows="4"></textarea></label>
+          <div id="tripBuilderErrors" class="builderErrors" role="alert" hidden></div>
+        </div>
+        <footer class="tripBuilderFooter"><button value="cancel" data-i18n="close">Cerrar</button><button id="saveTripDraft" type="button" data-i18n="saveDraft">Guardar borrador</button><button id="submitTripQuote" type="button" class="primary" data-i18n="submitQuote">Enviar cotización</button></footer>
+      </form>
+    </dialog>
     <nav id="nav" class="nav" hidden>
       <button class="active" data-route="today" type="button"><span class="navIcon navIcon--tours" aria-hidden="true"></span><span data-i18n="tours">Tours</span></button>
       <button data-route="calendar" type="button"><span class="navIcon navIcon--calendar" aria-hidden="true"></span><span data-i18n="calendar">Calendario</span></button>
       <button data-route="sightings" type="button"><span class="navIcon navIcon--sightings" aria-hidden="true"></span><span data-i18n="sightings">Avistamientos</span></button>
-      <button data-route="offers" type="button"><span class="navIcon navIcon--offers" aria-hidden="true"></span><span data-i18n="offers">Ofertas</span></button>
+      <button data-route="offers" type="button"><span class="navIcon navIcon--offers" aria-hidden="true"></span><span data-i18n="offers">Cotizaciones</span></button>
       <button data-route="share" type="button"><span class="navIcon navIcon--share" aria-hidden="true"></span>Share</button>
     </nav>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </div>
-  <script type="module" src="/guide/guide.mjs?v=guide-20261024-v20"></script>
+  <script type="module" src="/guide/guide.mjs?v=guide-trip-builder-20261024-v1"></script>
 </body>
 </html>

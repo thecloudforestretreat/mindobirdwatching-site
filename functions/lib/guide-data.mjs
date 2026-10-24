@@ -1,6 +1,7 @@
-import { listRecords } from "./mobile-crm.mjs";
+import { crmCall, listRecords } from "./mobile-crm.mjs";
 import { normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeProvider } from "./mobile-domain.mjs";
 import { identityMatchesProvider } from "./mobile-auth.mjs";
+import { isTripQuoteAssignment, safeTripRequest } from "./guide-trip-builder.mjs";
 
 const BOOKED = new Set(["booked", "deposit_pending", "deposit_paid", "payment_pending", "completed"]);
 const CLOSED_ASSIGNMENTS = new Set(["cancelled", "canceled"]);
@@ -124,6 +125,43 @@ function dateLabel(value) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(date);
 }
 
+function parseArray(value) {
+  if (Array.isArray(value)) return value;
+  try { const parsed = JSON.parse(value || "[]"); return Array.isArray(parsed) ? parsed : []; }
+  catch { return []; }
+}
+
+function latestGuideQuote(studio, assignment, provider) {
+  return parseArray(studio.guide_quotes_json)
+    .filter(quote => String(quote.assignment_id || "") === String(assignment.assignment_id || "")
+      && (!quote.provider_id || !provider.providerId || String(quote.provider_id) === String(provider.providerId)))
+    .sort((left, right) => Number(right.version || 0) - Number(left.version || 0))[0] || null;
+}
+
+async function loadQuoteRequests(env, assignments, provider) {
+  const requests = [];
+  for (const { row, assignment } of assignments.filter(({ row }) => isTripQuoteAssignment(row))) {
+    let studio = {};
+    try {
+      const result = await crmCall(env, "get_inquiry_studio", { inquiry_id: assignment.inquiryId });
+      studio = result.record || result.data?.record || {};
+    } catch {
+      studio = {};
+    }
+    if (!studio.inquiry_studio_id) continue;
+    const request = safeTripRequest(studio, row);
+    const quote = latestGuideQuote(studio, row, provider);
+    requests.push({
+      ...request,
+      serviceDate: assignment.serviceDate,
+      providerResponse: assignment.guideResponse,
+      quote,
+      status: quote?.admin_status || quote?.status || (assignment.guideResponse === "pass" ? "declined" : "new"),
+    });
+  }
+  return requests;
+}
+
 export async function loadGuideData(env, identity, requestedProvider = "") {
   // Keep CRM reads sequential to protect the rate-limited Google Sheets credential.
   const assignmentRows = await listRecords(env, "list_assignments");
@@ -148,10 +186,11 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
   const providerAssignments = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
     assignment.assignmentId && assignmentMatchesProvider(assignment, selectedProvider) && !CLOSED_ASSIGNMENTS.has(assignment.status)
   );
+  const quoteRequests = await loadQuoteRequests(env, providerAssignments, selectedProvider);
   const availability = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "availability")
     .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= cutoff)
     .map(({ assignment }) => ({ assignmentId: assignment.assignmentId, serviceDate: assignment.serviceDate, startTime: assignment.startTime, endTime: assignment.endTime, note: assignment.note }));
-  const offers = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "offer")
+  const offers = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "offer" && !isTripQuoteAssignment(row))
     .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= todayInEcuador())
     .map(({ assignment }) => ({ assignmentId: assignment.assignmentId, serviceDate: assignment.serviceDate, startTime: assignment.startTime, endTime: assignment.endTime, service: assignment.product || assignment.serviceType || "Tour opportunity", pickup: assignment.pickup, response: assignment.guideResponse, bidAmount: assignment.guideBidAmount }));
   const scheduled = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "assignment");
@@ -193,5 +232,5 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
     return tour;
   }).filter(Boolean).sort((a, b) => `${a.serviceDate} ${a.startTime}`.localeCompare(`${b.serviceDate} ${b.startTime}`));
   const providerOptions = providerRecords.map(item => ({ providerId: item.providerId, name: item.name })).sort((a, b) => a.name.localeCompare(b.name));
-  return { providerId, providerName, providers: providerOptions.map(item => item.name), providerOptions, availability, offers, tours };
+  return { providerId, providerName, providers: providerOptions.map(item => item.name), providerOptions, availability, offers, quoteRequests, tours };
 }

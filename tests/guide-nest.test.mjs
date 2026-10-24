@@ -96,6 +96,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
           { assignment_id: "A-OLD", inquiry_id: "I-1", service_date: "2026-09-01", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
           { assignment_id: "AV-1", assignment_group_id: "AVAIL-1", assignment_kind: "availability", service_date: "2026-10-23", start_time: "04:00", end_time: "07:00", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Guide Unavailable", assignment_status: "confirmed" },
           { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2026-10-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
+          { assignment_id: "Q-1", assignment_group_id: "QUOTE-IST-1", assignment_kind: "quote_request", inquiry_id: "I-Q", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Mindo custom route", assignment_status: "pending", internal_note: "[TRIP_BUILDER studio=IST-1 brand=mindo-tours due=2026-10-28]" },
           { assignment_id: "A-4", inquiry_id: "I-4", service_date: "2026-10-24", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "completed" },
         ],
         list_inquiries: [
@@ -107,6 +108,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
         list_bookings: [],
         list_providers: [{ provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", provider_role: "guide", active: "yes" }, { provider_id: "PROV-008", provider_name: "Other Guide", provider_role: "guide", active: "yes" }],
       };
+      if (body.action === "get_inquiry_studio") return Response.json({ ok: true, record: { inquiry_studio_id: "IST-1", inquiry_id: "I-Q", revision: 2, source_subject: "Mindo custom route", source_message: "private@example.test", request_summary: "One traveler needs short walks.", guest_profile_json: JSON.stringify({ party_size: 1, age: 78, email: "private@example.test" }), requested_dates_json: JSON.stringify(["Dates pending"]), requirements_json: JSON.stringify(["Short walks"]), proposed_days_json: JSON.stringify([{ day_number: 1, location: "Mindo", activity: "Easy birding" }]), guide_quotes_json: "[]" } });
       return Response.json({ ok: true, records: records[body.action] || [] });
     };
     const response = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Neycer%20%C2%B7%20Night%20Walk%20Guide"), env });
@@ -145,6 +147,10 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     assert.equal(completedTour.phone, "");
     assert.equal(body.availability.length, 1);
     assert.equal(body.offers.length, 1);
+    assert.equal(body.quoteRequests.length, 1);
+    assert.equal(body.quoteRequests[0].brandId, "mindo-tours");
+    assert.equal(body.quoteRequests[0].responseDeadline, "2026-10-28");
+    assert.equal(JSON.stringify(body.quoteRequests).includes("private@example.test"), false);
   } finally { globalThis.fetch = savedFetch; }
 });
 
