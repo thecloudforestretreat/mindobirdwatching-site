@@ -307,7 +307,7 @@
               <textarea id="closingText">Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.</textarea>
             </div>
             <input id="showDeposit" type="checkbox" hidden />
-            <div class="field"><label for="depositLink">Deposit payment URL</label><input id="depositLink" type="url" value="https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05" placeholder="https://…" /><p class="hint">The deposit button appears only when this is a valid HTTPS URL.</p></div>
+            <div class="field"><label for="depositLink">Deposit payment URL</label><input id="depositLink" readonly type="url" value="https://mindobirdwatching.com/book-tour/deposit/" placeholder="https://…" /><p class="hint">USD-only checkout. A saved CRM inquiry is required before the deposit button appears.</p></div>
             <label class="checkRow"><input id="offerZelle" type="checkbox" /><span>Also offer Zelle for this U.S. guest.</span></label>
             <div class="field" id="zelleEmailField" hidden>
               <label for="zelleEmail">Zelle payment email</label>
@@ -366,16 +366,18 @@
       });
       const DEFAULT_HERO_IMAGE = 'cock-of-the-rock';
       function heroImageUrl(value){ return HERO_IMAGES[value] || HERO_IMAGES[DEFAULT_HERO_IMAGE]; }
-      const DEPOSIT_LINK = 'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05';
+      const DEPOSIT_LINK = 'https://mindobirdwatching.com/book-tour/deposit/';
       const ZELLE_INVOICE_URL = 'https://admin.mindobirdwatching.com/zelle-invoice-generator/';
       const ZELLE_HANDOFF_KEY = 'mbwZelleInvoiceDraft';
       function validHttpsUrl(value){ try{ const url=new URL(String(value||'').trim()); return url.protocol==='https:' ? url.toString() : ''; }catch(error){ return ''; } }
       function getDepositLink(){
-        const inquiryId = String(state.inquiryId || state.crmRecord?.inquiry_id || '').trim();
-        if(!inquiryId) return DEPOSIT_LINK;
-        const customLink = validHttpsUrl($('depositLink')?.value) || DEPOSIT_LINK;
+        const inquiryId = String(state.inquiryId || state.crmRecord?.inquiry_id || new URLSearchParams(location.search).get('inquiry_id') || '').trim();
+        if(!inquiryId) return "";
+        const customLink = DEPOSIT_LINK;
         const url = new URL(customLink);
-        url.searchParams.set('client_reference_id',inquiryId);
+        url.searchParams.set('inquiry_id',inquiryId);
+        url.searchParams.set('lang',$('language').value === 'es' ? 'es' : 'en');
+        url.searchParams.set('brand',communicationBrandId || 'mbw');
         return url.toString();
       }
       const DEFAULT_WHATSAPP_NUMBER = '593969076501';
@@ -1169,7 +1171,7 @@
           ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
           ${data.pricingNote ? `<section class="guestNote${stage === 'paid_in_full' ? ' paidInFullNote' : ''}">${stage === 'paid_in_full' ? `<strong>${escapeHtml(data.pricingNote)}</strong>` : escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${stage !== 'preliminary' ? `<section class="depositBox${stage === 'paid_in_full' ? ' paidInFullBox' : ''}"><h3>${escapeHtml(stageCopy.paymentTitle)}</h3><p>${escapeHtml(stageCopy.paymentText)}</p>${stage === 'paid_in_full' ? `<div class="balancePaid">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</div>` : ''}<div class="ctaButtons">${stage === 'approved_pending' && validHttpsUrl(data.depositLink) ? `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div>${data.offerZelle && stage === 'approved_pending' ? `<p style="margin:14px auto 0;max-width:470px;font-size:15px;line-height:22px"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}</section>` : ''}
+          ${stage !== 'preliminary' ? `<section class="depositBox${stage === 'paid_in_full' ? ' paidInFullBox' : ''}"><h3>${escapeHtml(stageCopy.paymentTitle)}</h3><p>${escapeHtml(stageCopy.paymentText)}</p>${stage === 'paid_in_full' ? `<div class="balancePaid">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</div>` : ''}<div class="ctaButtons">${stage === 'approved_pending' && validHttpsUrl(getDepositLink()) ? `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div>${data.offerZelle && stage === 'approved_pending' ? `<p style="margin:14px auto 0;max-width:470px;font-size:15px;line-height:22px"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}</section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -1286,7 +1288,7 @@
                 <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(stageCopy.paymentText)}</p>
                 ${communications.billingNote(data.brandId,data.language)?`<p data-billing-brand="mbw" style="margin:0 0 14px;font-size:13px;line-height:19px;color:#ffffff;">${escapeHtml(communications.billingNote(data.brandId,data.language))}</p>`:''}
                 ${stage === 'paid_in_full' ? `<span style="display:inline-block;margin:0 4px 14px;padding:8px 14px;border-radius:999px;background:#ffffff;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</span><br>` : ''}
-                ${stage === 'approved_pending' && validHttpsUrl(data.depositLink) ? `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
+                ${stage === 'approved_pending' && validHttpsUrl(getDepositLink()) ? `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
                 <a href="${whatsappUrl}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#2f7443;color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:12px 0;border-radius:14px;border:1px solid #9fc8aa;text-align:center;">${escapeHtml(c.whatsapp)}</a>
                 ${data.offerZelle && stage === 'approved_pending' ? `<p style="margin:14px auto 0;max-width:470px;color:#ffffff;font-size:15px;line-height:22px;"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}
               </td></tr>
@@ -1341,7 +1343,7 @@
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
         }
-        if(stage === 'approved_pending') lines.push(stageCopy.paymentText,...(!validHttpsUrl(data.depositLink) ? [] : [getDepositLink()]),'');
+        if(stage === 'approved_pending') lines.push(stageCopy.paymentText,...(!validHttpsUrl(getDepositLink()) ? [] : [getDepositLink()]),'');
         if(stage === 'deposit_received') lines.push(stageCopy.paymentText,'');
         if(stage === 'paid_in_full') lines.push(`*${stageCopy.pricing}*`,stageCopy.paymentText,data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00','');
         if(data.offerZelle && stage === 'approved_pending') lines.push(`${c.zelleOption} ${data.zelleEmail}`,'');
@@ -1466,7 +1468,7 @@
         $('zelleEmail').value = draft.zelleEmail || 'mindobirdwatching@gmail.com';
         $('zelleEmailField').hidden = !$('offerZelle').checked;
         $('depositPaid').checked = ['deposit_received','paid_in_full'].includes($('itineraryStage').value);
-        $('depositLink').value = draft.depositLink || DEPOSIT_LINK;
+        $('depositLink').value = DEPOSIT_LINK;
         $('showInvoice').checked = draft.showInvoice === true;
         $('invoiceLink').value = draft.invoiceLink || draft.invoice_url || '';
         $('showImages').checked = draft.showImages === true;
@@ -1561,7 +1563,7 @@
           source:'itinerary_generator', createdAt,
           marketing_brand_id:data.brandId||'mbw',billing_brand_id:'mbw',
           itineraryVersion:sourceVersion, itineraryTitle:data.tripTitle,
-          inquiry_id:String(state.inquiryId || state.crmRecord?.inquiry_id || ''),
+          inquiry_id:String(state.inquiryId || state.crmRecord?.inquiry_id || new URLSearchParams(location.search).get('inquiry_id') || ''),
           guest_id:String(state.crmRecord?.guest_id || ''), booking_id:String(state.crmRecord?.booking_id || ''), quote_id:String(state.crmRecord?.quote_id || ''),
           full_name:data.guestName,
           email:data.guestEmail || state.crmRecord?.email || state.crmRecord?.guest_email || '',

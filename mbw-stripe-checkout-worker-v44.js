@@ -2174,11 +2174,12 @@ function dollarsToDisplay(v) {
   return n.toFixed(2);
 }
 
-async function stripeRequest(env, isTest, method, path, formBody) {
+async function stripeRequest(env, isTest, method, path, formBody, idempotencyKey) {
   const key = getStripeKey(env, isTest);
   if (!key) throw new Error("Stripe secret key not configured");
 
   const init = { method, headers: { Authorization: `Bearer ${key}` } };
+  if (idempotencyKey) init.headers["Idempotency-Key"] = idempotencyKey;
 
   if (method !== "GET") {
     init.headers["Content-Type"] = "application/x-www-form-urlencoded";
@@ -3012,7 +3013,62 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v46-durable-invoice-ack-2026-10-23", 200);
+      return text("MBW Stripe Worker is running. version=v47-usd-deposit-2026-10-24", 200);
+    }
+
+    // Fixed USD deposit Checkout. No browser-supplied amount or guest identity is trusted.
+    if (path === "/api/create-deposit-session" && request.method === "POST") {
+      try {
+        const body = await request.json();
+        const isTest = body.stripe_environment === "sandbox";
+        if (body.stripe_environment && !["live","sandbox"].includes(body.stripe_environment)) return json({ok:false,error:"Invalid checkout environment."},400);
+        const inquiryId = validInternalId(body.inquiry_id, "INQ");
+        if (!inquiryId) return json({ ok: false, error: "A saved inquiry is required. Please contact our team for a deposit link." }, 400);
+        if (isTest && !/^INQ-QA-[A-Za-z0-9_-]+$/.test(inquiryId)) return json({ok:false,error:"Sandbox requires a fictional QA reference."},400);
+        const crm = isTest ? { inquiry_id: inquiryId, guest_id: "G-QA-DEPOSIT" } : await lookupCrmInquiry(env, inquiryId);
+        if (!crm || !crm.guest_id) return json({ok:false,error:"This deposit reference could not be verified. Please ask our team for a new link."},400);
+        if (/^(completed|cancelled|canceled|duplicate|did_not_book|archived)$/.test(String(crm.status || "").toLowerCase()) || ["paid","deposit_paid"].includes(String(crm.payment_status || "").toLowerCase())) {
+          return json({ok:false,error:"This inquiry is closed or already paid. Please contact our team."},409);
+        }
+        if (!isTest) {
+          const existing = await findAvailableDeposit(env, false, inquiryId);
+          if (existing) return json({ok:false,error:"A deposit has already been recorded for this inquiry. Please contact our team before paying again."},409);
+        }
+        const language = body.language === "es" ? "es" : "en";
+        const brand = ["mbw","mindo-tours","choco-andino"].includes(body.brand_id) ? body.brand_id : "mbw";
+        const md = { inquiry_id: inquiryId, guest_id: String(crm.guest_id), booking_id: String(crm.booking_id || ""),
+          payment_purpose: "tour_deposit", deposit_type: "reservation", deposit_amount: "100", deposit_status: "pending",
+          source_system: "mbw_usd_deposit", stripe_environment: isTest ? "sandbox" : "live", billing_brand_id: "mbw", marketing_brand_id: brand,
+          language, agent_id: String(crm.assigned_to || ""), tour_date: String(crm.requested_date || crm.requested_date_start || ""),
+          tour_code: "DEP001", tour_title: "Tour Reservation Deposit", service_type: "reservation_deposit",
+          number_of_people: String(crm.guest_count || "") };
+        const form = new URLSearchParams({ mode: "payment", customer_creation: "always", "adaptive_pricing[enabled]": "false",
+          "payment_method_types[0]": "card", "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": "usd", "line_items[0][price_data][unit_amount]": "10000",
+          client_reference_id: inquiryId, locale: language, "phone_number_collection[enabled]": "true",
+          "payment_intent_data[description]": "Mindo Bird Watching — $100 USD reservation deposit" });
+        const deposit = TOURS.find(t => t.tour_code === "DEP001" && t.language === "en");
+        if (!isTest) form.set("line_items[0][price_data][product]", deposit.product_id_live);
+        else if (env.STRIPE_DEPOSIT_PRODUCT_TEST) form.set("line_items[0][price_data][product]",env.STRIPE_DEPOSIT_PRODUCT_TEST);
+        else form.set("line_items[0][price_data][product_data][name]", "QA ONLY — Tour Reservation Deposit");
+        for (const [key,value] of Object.entries(md)) { form.set(`metadata[${key}]`,value); form.set(`payment_intent_data[metadata][${key}]`,value); }
+        const back = new URL("https://mindobirdwatching.com/book-tour/deposit/");
+        back.searchParams.set("inquiry_id",inquiryId); back.searchParams.set("lang",language); back.searchParams.set("brand",brand);
+        if (isTest) back.searchParams.set("env","sandbox");
+        form.set("cancel_url",back.toString());
+        form.set("success_url",back.toString()+"&session_id={CHECKOUT_SESSION_ID}");
+        const session = await stripeRequest(env,isTest,"POST","/v1/checkout/sessions",form,`usd-deposit-${inquiryId}-${brand}-${language}-${Math.floor(Date.now()/1800000)}`);
+        if (!session.url || session.currency !== "usd" || session.amount_total !== 10000 || session.adaptive_pricing?.enabled === true) throw new Error("Checkout did not return the expected USD deposit.");
+        return json({ok:true,url:session.url,session_id:session.id,currency:"USD",amount:100,sandbox:isTest});
+      } catch (error) { console.log("USD deposit checkout failed",{error:String(error.message || error)}); return json({ok:false,error:"Checkout is temporarily unavailable. Please contact our team before paying."},503); }
+    }
+    if (path === "/api/deposit-session" && request.method === "GET") {
+      const id = url.searchParams.get("session_id") || "";
+      if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(id)) return json({ok:false,error:"Invalid checkout reference."},400);
+      try {
+        const session = await stripeRequest(env,id.startsWith("cs_test_"),"GET",`/v1/checkout/sessions/${encodeURIComponent(id)}`,null);
+        if (session.metadata?.source_system !== "mbw_usd_deposit") return json({ok:false,error:"Unknown deposit checkout."},404);
+        return json({ok:true,payment_status:session.payment_status,currency:session.currency,amount:session.amount_total/100,sandbox:!session.livemode});
+      } catch { return json({ok:false,error:"Payment status is not available yet. Please check your Stripe receipt or contact our team."},503); }
     }
 
     if (path === "/api/tours" && request.method === "GET") {
@@ -3311,6 +3367,7 @@ export default {
 
         const form = new URLSearchParams();
         form.set("mode", "payment");
+        form.set("adaptive_pricing[enabled]", "false");
         form.set("success_url", successUrl);
         form.set("cancel_url", cancelUrl);
         if (tour.use_inline_price) {
@@ -4295,6 +4352,9 @@ export default {
 
       const eventObject = event.data && event.data.object ? event.data.object : {};
       const eventMetadata = eventObject.metadata || {};
+      const isUsdDeposit = String(eventMetadata.source_system || "") === "mbw_usd_deposit";
+      if (isUsdDeposit && !event.livemode) return text("ok — sandbox deposit isolated from live CRM and accounting",200);
+      const requiresSynchronousDeposit = isUsdDeposit && event.type === "checkout.session.completed";
       const requiresSynchronousGuideTip =
         event.type === "checkout.session.completed" &&
         String(eventMetadata.payment_purpose || "").toLowerCase() === "guide_tip" &&
@@ -4440,6 +4500,26 @@ export default {
           exclude_from_invoice_sync: "No",
           record_status: session.payment_status === "paid" ? "paid" : "",
         };
+
+        if (isUsdDeposit) {
+          if (session.payment_status !== "paid") return;
+          if (!isDeposit || !inquiryId || !checkoutGuestId || session.currency !== "usd" || amountTotalCents !== 10000 || !session.payment_intent) throw new Error("Invalid USD deposit payment");
+          const enriched = await enrichChargeAndFees(env,false,session.payment_intent);
+          Object.assign(fields,enriched,{record_type:"deposit",deposit_status:"available"});
+          const piMetadata = new URLSearchParams({"metadata[deposit_status]":"available"});
+          await stripeRequest(env,false,"POST",`/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`,piMetadata);
+          const logged = await postToSheetsLogger(env,{fields});
+          if (!logged || logged.ok === false || logged.skipped) throw new Error("Deposit accounting sync failed");
+          // A deposit is not a fully-paid tour and must not trigger a tour confirmation.
+          const current = await lookupCrmInquiry(env,inquiryId);
+          if (!current || String(current.guest_id) !== checkoutGuestId) throw new Error("Deposit CRM identity unavailable");
+          const patch = {inquiry_id:inquiryId,guest_id:checkoutGuestId,
+            payment_status: String(current.payment_status || "").toLowerCase() === "paid" ? "paid" : "deposit_paid",
+            payment_method:"Stripe"};
+          const result = await postCrmLedgerAction(env,"update_inquiry","record",patch);
+          if (!result.ok) throw new Error("Deposit CRM update failed");
+          return;
+        }
 
         await (async () => {
           try {
@@ -5057,7 +5137,7 @@ export default {
       // the webhook if accounting, CRM ledger, or notification writes fail. All
       // writes use Stripe identifiers as idempotency keys, so a retry cannot
       // overwrite or duplicate an existing payment.
-      if (requiresSynchronousGuideTip || requiresSynchronousPaidInvoice) {
+      if (requiresSynchronousDeposit || requiresSynchronousGuideTip || requiresSynchronousPaidInvoice) {
         try {
           await processVerifiedWebhookEvent;
           return text("ok", 200);

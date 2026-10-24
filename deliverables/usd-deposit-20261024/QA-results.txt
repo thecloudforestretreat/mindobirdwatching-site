@@ -1,0 +1,20 @@
+USD deposit checkout — October 24, 2026
+
+New guest page: /book-tour/deposit/?inquiry_id=<saved CRM inquiry>.
+Fixed server-side amount: $100 USD, quantity 1, adaptive_pricing.enabled=false.
+Live catalog product DEP001 reused. Customer creation enabled for invoice credit attachment.
+CRM and itinerary links use the new page; itinerary requires a saved inquiry.
+Brand attribution retained; MBW remains the billing entity.
+A paid deposit updates payment_status, not tour booking/confirmation status.
+Original PaymentIntent metadata remains usable for invoice attachment and accounting.
+Sandbox QA references never read or write production CRM/accounting.
+
+Verification:
+Worker compiles with Wrangler dry run.
+Automated unit/integration tests use mocked Stripe, CRM and accounting destinations.
+Both generators pass 390px and 1440px browser checks with all three brands.
+Deposit page passes 390px and 1440px checks in EN/ES: no overflow, error recovery, missing-reference guard and unpaid-session handling.
+No emails sent, real payments made or production CRM records created during this work.
+Spanish copy uses verified existing payment facts; human language review remains pending.
+
+Deployment pending account-scoped Cloudflare authorization. Do not publish generator links until worker API is available. New real Stripe sandbox session and receipt/payment verification remain pending deployment.

@@ -6,7 +6,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
 for(const width of [390,1440])for(const tool of ['custom-email-generator','itinerary-generator']){
  const context=await browser.newContext({viewport:{width,height:1000}});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://**/*',async route=>{const u=new URL(route.request().url());if(u.pathname==='/api/reviews')return route.fulfill({json:{ok:true,summary:{rating:4.9,review_count:20},place:{maps_url:'https://example.com/reviews'}}});if(u.pathname.startsWith('/assets/images/')){const p=path.join(root,u.pathname);if(fs.existsSync(p))return route.fulfill({path:p});}if(u.pathname.includes('logo')){const name=u.hostname==='mindotours.com'?'mindotours.com':u.hostname==='chocoandinotours.com'?'chocoandinotours.com':'mindobirdwatching.com';return route.fulfill({path:path.join(root,'admin/portfolio/brands',name+'.png')});}return route.fulfill({status:200,body:'',contentType:'application/javascript'});});
- await page.goto(origin+'/'+tool+'/');await page.locator('#communicationBrand').waitFor();await page.waitForTimeout(200);
+ await page.goto(origin+'/'+tool+'/' + (tool==='itinerary-generator'?'?inquiry_id=INQ-QA-USD':''));await page.locator('#communicationBrand').waitFor();await page.waitForTimeout(200);
  if(errors.length)throw Error(tool+': '+JSON.stringify(errors));
  const email=tool==='custom-email-generator',preview=email?'#emailPreview':'#guestPreview';
  
@@ -47,9 +47,9 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
    const total=await page.locator('#totalValue').innerText();
    for(const stage of ['preliminary','approved_pending','deposit_received','paid_in_full']){
     await page.locator('#itineraryStage').selectOption(stage);
-    const links=await page.locator(preview+' a[href*="buy.stripe.com/"]').evaluateAll(xs=>xs.map(x=>x.getAttribute('href')));
+    const links=await page.locator(preview+' a[href*="/book-tour/deposit/"]').evaluateAll(xs=>xs.map(x=>x.getAttribute('href')));
     assert.equal(links.length,stage==='approved_pending'?1:0);
-    if(links.length)assert.equal(links[0],'https://buy.stripe.com/4gM4grgMh1cu9jwfTW2ZO05');
+    if(links.length){const link=new URL(links[0]);assert.equal(link.origin+link.pathname,'https://mindobirdwatching.com/book-tour/deposit/');assert.equal(link.searchParams.get('inquiry_id'),'INQ-QA-USD');assert.equal(link.searchParams.get('brand'),id);}
     if(id!=='mbw')assert.equal(await page.locator(preview+' [data-billing-brand="mbw"]').count(),stage==='preliminary'?1:2);
     if(width===1440&&id==='choco-andino'&&stage==='approved_pending'){await page.locator(preview+' [data-billing-brand="mbw"]').first().scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/mbw-billing-payment-qa.png'});}
     assert.equal(await page.locator('#totalValue').innerText(),total);
